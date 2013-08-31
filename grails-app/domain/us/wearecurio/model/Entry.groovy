@@ -1053,7 +1053,7 @@ class Entry {
 		if (entryStr == '') return null // no input
 
 		Date date = baseDate
-		long baseDateTime = baseDate?.getTime()
+		Long baseDateTime = baseDate?.getTime()
 		Integer hours = null
 		Integer minutes = null
 		boolean today = isToday(time, date)

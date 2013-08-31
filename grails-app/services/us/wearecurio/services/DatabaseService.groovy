@@ -54,6 +54,6 @@ class DatabaseService {
 	}
 
 	public def eachRow(String statement, Closure c) {
-		resultSqlQuery(statement).iterator().each(c)
+		resultSqlQuery(statement).list().each(c)
 	}
 }
