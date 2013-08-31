@@ -1,0 +1,13 @@
+.DS_Store
+.classpath
+.groovy/**
+.project
+.settings/**
+target/**
+target-eclipse/**
+/.link_to_grails_plugins
+/target
+/stacktrace.log
+/grails-app/conf/LocalConfig.groovy
+.metadata/**
+Servers/**
