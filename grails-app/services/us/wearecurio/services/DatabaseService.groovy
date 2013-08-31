@@ -31,16 +31,26 @@ class DatabaseService {
 		
 	SessionFactory sessionFactory
 	
-	public Query sqlQuery(String statement) {
+	public Query sqlQuery(String statement, def args = []) {
 		Session session = sessionFactory.getCurrentSession()
 		Query query = session.createSQLQuery(statement)
+		int l = args.size()
+		for (int i = 0; i < l; ++i) {
+			def arg = args[i]
+			query.setParameter(i, arg)
+		}
 		query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE)
 		return query
 	}
 	
-	public Query resultSqlQuery(String statement) {
+	public Query resultSqlQuery(String statement, def args = []) {
 		Session session = sessionFactory.getCurrentSession()
 		Query query = session.createSQLQuery(statement)
+		int l = args.size()
+		for (int i = 0; i < l; ++i) {
+			def arg = args[i]
+			query.setParameter(i, arg)
+		}
 		query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE)
 		return query
 	}
@@ -49,8 +59,8 @@ class DatabaseService {
 		sqlQuery(statement).executeUpdate()
 	}
 	
-	public def sqlRows(String statement) {
-		return resultSqlQuery(statement).list()
+	public def sqlRows(String statement, args = []) {
+		return resultSqlQuery(statement, args).list()
 	}
 
 	public def eachRow(String statement, Closure c) {

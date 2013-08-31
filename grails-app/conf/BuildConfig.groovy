@@ -66,6 +66,6 @@ grails.project.dependency.resolution = {
 
 		runtime ":message-digest:1.1"
 		
-		//runtime ":gorm-labs:0.8.5"
+		runtime ":csv:0.3.1"
     }
 }

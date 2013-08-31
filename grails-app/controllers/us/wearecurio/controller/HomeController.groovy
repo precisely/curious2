@@ -210,7 +210,7 @@ class HomeController extends DataController {
 
 		debug "CSV type: " + params.csvtype
 		def f = request.getFile('csvFile')
-		if(!f.empty) {
+		if (!f.empty) {
 			def csvIn = f.getInputStream()
 			if (params.csvtype.equals('dateAcross')) {
 				doParseCSVAcross(csvIn,  user.getId())

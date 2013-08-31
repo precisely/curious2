@@ -67,19 +67,8 @@ abstract class CuriousControllerTestCase extends GroovyTestCase {
 			if (aClass == Object.class)
 				break
 		}
-	}
-	
-	boolean checkFilterRedirectUrl(url) {
-		// Check that we have been redirected to the expected URL.
-		ModelAndView mv = new ModelAndView()
-		
-		filterInterceptor.postHandle(getFilterRequest(), getFilterResponse(), null, mv)
-		
-		if (url == null)
-			return getFilterResponse().redirectedUrl == null
-		return getFilterResponse().redirectedUrl.endsWith(url)
 	}*/
-
+	
 	def filterLoggedIn(def controller, Map params, controllerName, actionName) {
 		def request = controller.request
 		def response = controller.response
