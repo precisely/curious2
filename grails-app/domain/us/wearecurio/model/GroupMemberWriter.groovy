@@ -28,7 +28,7 @@ class GroupMemberWriter {
 		memberId column: 'member_id', index:'member_id_index'
 	}
 	
-	public static delete(GroupMemberDiscussion item) {
+	public static delete(GroupMemberWriter item) {
 		if (item) {
 			item.delete()
 			return true

@@ -8,6 +8,8 @@ import us.wearecurio.model.*
 import us.wearecurio.model.Entry.RepeatType
 
 class RemindEmailService {
+	
+	def mailService
 
 	private static def log = LogFactory.getLog(this)
 
@@ -54,7 +56,7 @@ class RemindEmailService {
 			
 			for (Entry event in remindEvents) {
 				log.debug "Trying to send reminder email " + event + " to " + email
-				Utils.getMailService().sendMail {
+				mailService.sendMail {
 					to email
 					from "contact@wearecurio.us"
 					subject "Reminder to track:" + event.getTag().getDescription()

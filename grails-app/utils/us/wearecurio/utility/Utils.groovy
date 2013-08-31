@@ -113,7 +113,7 @@ class Utils {
 	
 	static MailService mailService
 	
-	public static def setMailService(MailService service) { mailService = service }
+	public static setMailService(MailService service) { mailService = service }
 	
 	public static MailService getMailService() { return mailService }
 

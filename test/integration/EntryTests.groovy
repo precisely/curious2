@@ -14,9 +14,8 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-
 class EntryTests extends GroovyTestCase {
-	boolean transactional = true
+	static transactional = true
 
 	DateFormat dateFormat
 	Date earlyBaseDate

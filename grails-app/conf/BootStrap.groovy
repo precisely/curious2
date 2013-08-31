@@ -9,9 +9,11 @@ class BootStrap {
 	FitBitDataService fitBitDataService
 	RemindEmailService remindEmailService
 	DatabaseService databaseService
+	MailService mailService
 	
     def init = { servletContext ->
 		DatabaseService.set(databaseService)
+		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		withingsDataService.initialize()
 		withingsDataService.poll()

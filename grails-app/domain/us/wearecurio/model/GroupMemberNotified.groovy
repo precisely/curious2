@@ -28,7 +28,7 @@ class GroupMemberNotified {
 		memberId column: 'member_id', index:'member_id_index'
 	}
 	
-	public static delete(GroupMemberDiscussion item) {
+	public static delete(GroupMemberNotified item) {
 		if (item) {
 			item.delete()
 			return true

@@ -440,11 +440,11 @@ class UserGroup {
 				['id':getId()])
 	}
 	
-	private static sendMessages(people, String fromAddress, String subjectString, String message) {
+	private sendMessages(people, String fromAddress, String subjectString, String message) {
 		for (User p in people) {
 			if (p.getEmail() != null) {
 				log.debug("Sending email about '" + subjectString + "' to " + p.getEmail())
-				Utils.getMailService()?.sendMail {
+				Utils.getMailService().sendMail {
 					to p.getEmail()
 					from fromAddress
 					subject subjectString

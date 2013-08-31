@@ -29,7 +29,7 @@ class GroupMemberNotifiedMajor {
 		memberId column: 'member_id', index:'member_id_index'
 	}
 	
-	public static delete(GroupMemberDiscussion item) {
+	public static delete(GroupMemberNotifiedMajor item) {
 		if (item) {
 			item.delete()
 			return true
