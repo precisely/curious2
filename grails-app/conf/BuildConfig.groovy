@@ -62,7 +62,7 @@ grails.project.dependency.resolution = {
 		
 		runtime ":mail:1.0.1"
 		
-		//runtime ":quartz:1.0-RC9"
+		runtime ":quartz:1.0-RC9"
 
 		runtime ":message-digest:1.1"
 		
