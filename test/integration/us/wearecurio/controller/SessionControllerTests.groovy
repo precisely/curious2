@@ -46,7 +46,7 @@ class SessionControllerTests extends GroovyTestCase {
 	}
 
 	@Test
-	def testSessionCache() {
+	void testSessionCache() {
 		assert "bar".equals(controller.setSessionCache("foo", "bar", 100000))
 		
 		assert "bar".equals(controller.getSessionCache("foo", { return "expired" }))
