@@ -195,7 +195,7 @@ function TreeItem(args) {
 	this.id = args.id;
 	this.type = args.type;
 	this.uniqueId = this.type + this.id;
-	
+	this.treeStore = args.treeStore;
 	this.state = TREEITEM_CREATED;
 	
 	// Wrapping all init statements that we want to override in a method
@@ -211,6 +211,12 @@ function TreeItem(args) {
 	// Note: this is called after server notifies client the element has been removed, so do not notify server
 	this.removed = function() {
 		$(this).trigger("deleteEvent");
+	}
+	
+	this.toJSON = function () {
+		var copy = $.extend({},this);
+		delete copy.treeStore;
+		return copy;
 	}
 	
 	this.init();
@@ -411,7 +417,7 @@ function TreeItemView(args) {
 	}
 	
 	this.render = function(extraParams) {
-		// Needed to be overriden
+		// Needed to be overridden
 	}
 	
 	this.remove = function() {
@@ -419,7 +425,7 @@ function TreeItemView(args) {
 	}
 	
 	this.update = function(data) {
-		// Needed to be overriden
+		// Needed to be overridden
 	}
 	
 	this.hasParentItemView = function() {

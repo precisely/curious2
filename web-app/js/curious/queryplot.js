@@ -445,7 +445,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.processLoadedLine(save, parentLine);
 			
 		} else {
-			save.tag = tagStore.getTagByName(save.tag.description);
+			save.tag = tagList.store.getTagByName(save.tag.description);
 			if(typeof save.tag !=='undefined' && save.tag instanceof TagGroup) {
 				save.tag.fetch(function() { this.processLoadedLine(save, parentLine); }.bind(this));
 			} else {
@@ -507,6 +507,16 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		for (var i in plotData.data) {
 			if (version < 2) {
 				plotData.data[i].entries = _reverseEntries(plotData.data[i].entries);
+			}
+			
+			if (version <= 4) {
+				for (var j in plotData.data[i].tags) {
+					tagList.listItems.add(new Tag({
+						id:plotData.data[i].name+j,
+						type: "Tag",
+						description: plotData.data[i].tags[j], 
+						treeStore: tagList.store}));
+				}
 			}
 			this.loadLine(plotData.data[i]);
 		}
@@ -1161,13 +1171,20 @@ function PlotLine(p) {
 			return false;
 		plotLine.addTag(tagListItem);
 	}
-	this.displayTag = function(tagName) {
-		var div = $("#plotline" + this.plot.id + this.id + 'list').append('<div class="plotLine" style="color:' + this.color + '"/>').children().last()
-				.append('<a href="" style="color:' + this.color + '"/>');
-		if (this.snapshot) {
-			div.append(escapehtml(tagName)).append('<span class="plotLine"></span>');
+	this.displayTag = function(tag) {
+		if (!this.snapshot && typeof tag == 'string') {
+			var div = $("#plotline" + this.plot.id + this.id + 'list').append('<div class="plotLine" style="color:' + this.color + '"/>').children().last()
+			.append('<a href="" style="color:' + this.color + '"/>');
+			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/images/x.gif"/></a></span>');
 		} else {
-			div.append(escapehtml(tagName)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/images/x.gif"/></a></span>');
+			var viewInstance;
+			if (tag instanceof TagGroup) {
+				viewInstance = new TagGroupView(tag);
+			} else {
+				viewInstance = new TagView(tag);
+			}
+			$("#plotline" + this.plot.id + this.id + 'list').append(viewInstance.render());
+			$(viewInstance.getDOMElement()).data(DATA_KEY_FOR_ITEM_VIEW, viewInstance);
 		}
 				
 	}
@@ -1222,9 +1239,12 @@ function PlotLine(p) {
 			}
 		} else {
 			if (!this.tag) return;
-			tags = this.tag.tagList();
-			for (var i=0;i<tags.length; i++) {
-				this.displayTag(tags[i].description);
+			if (this.tag instanceof TagGroup) {
+				for (var i=0;i<this.tag.children.length;i++) {
+					this.displayTag(this.tag.children[i]);
+				}
+			} else {
+				this.displayTag(this.tag);
 			}
 		}
 		
@@ -1344,7 +1364,7 @@ function PlotLine(p) {
 			html += '<div style="display:inline-block;">smooth <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div></div>';
 			//html += '<div style="display:inline-block;">frequency <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinefreqwidth' + idSuffix + '"></div></div>';
 		}
-		html += '<div id="plotline' + idSuffix + 'list"></div></div></div>';
+		html += '<ul class="tags" id="plotline' + idSuffix + 'list"></ul></div></div>';
 		
 		if (this.isCycle) {
 			var cycleTagDiv = this.plot.properties.getCycleTagDiv();
