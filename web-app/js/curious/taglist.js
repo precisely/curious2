@@ -266,7 +266,11 @@ function TagStore(args) {
 			treeStore : this
 		};
 		if (typeof listItem == 'undefined') {
-			listItem = new typeClass(initArgs);
+			if (args instanceof Tag || args instanceof TagGroup) {
+				listItem = args;
+			} else {
+				listItem = new typeClass(initArgs);
+			}
 			this.store[type+args.id]=listItem;
 		} else {
 			listItem.update(initArgs);

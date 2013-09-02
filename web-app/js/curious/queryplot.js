@@ -434,24 +434,70 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.rightLinearSlider = plotData.rightLinearSlider;
 	}
 	
-	this.loadLine = function(save) {
+	this.loadLine = function(save,version) {
 		var parentLine = null;
+		var version = version || 5;
 		if (save.parentLineName) {
 			parentLine = this.getLineByTagName(save.parentLineName);
 		}
 		save.plot = this;
 		save.parentLine = parentLine;
 		
-		save.tag = tagList.store.getTagByName(save.tag.description);
-		if (!save.snapshot && save.tag instanceof TagGroup && save.tag.children.length == 0) {
-			save.tag.getChildren(function() { this.loadSavedTag(save, parentLine); }.bind(this));
+		if (version <= 4 && save.tags.length > 0) {
+			var tagInstance;
+			if (save.tags.length == 1) {
+				tagInstance = new Tag({
+					id:save.name+0,
+					type: "Tag",
+					description: save.tags[0], 
+					treeStore: tagList.store});
+				tagInstance = tagList.store.createOrUpdate(tagInstance);
+				save.tag = tagInstance;
+			} else if (save.tags.length > 1) {
+				var tagInstance = new TagGroup({
+					id: "tagGroup"+save.name+i,
+					description: save.name,
+					type: "TagGroup",
+					treeStore: tagList.store
+				});
+				tagInstance = tagList.store.createOrUpdate(tagInstance);
+				for (var j in save.tags) {
+					var childTagInstance = new Tag({
+						id:"tag"+save.name+j,
+						type: "Tag",
+						description: save.tags[j], 
+						treeStore: tagList.store});
+					childTagInstance = tagList.store.createOrUpdate(childTagInstance);
+					tagInstance.addChild(childTagInstance);
+				}
+				save.tag = tagInstance;
+			}
+		} 
+		
+		var isSnapshot = false;
+		if (save.entries != null && save.entries != undefined) {
+			isSnapshot = true;
+		}
+		
+		if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
+			if (save.tag.type.indexOf("Group") !== -1) {
+				save.tag = this.restoreTagGroup(save.tag);
+			} else {
+				save.tag = this.restoreTag(save.tag);
+			}
 		} else {
-			this.loadSavedTag(save, parentLine);
+			save.tag = tagList.store.getTagByName(save.tag.description);
+		}
+
+		if (!isSnapshot && save.tag instanceof TagGroup && save.tag.children.length == 0) {
+			save.tag.getChildren(function() { this.createPlotLine(save, parentLine); }.bind(this));
+		} else {
+			this.createPlotLine(save, parentLine);
 		}
 		
 	}
 	
-	this.loadSavedTag = function(save, parentLine) {
+	this.createPlotLine = function(save, parentLine) {
 		var plotLine = new PlotLine(save);
 		if (parentLine) {
 			if (save.isFreqLineFlag)
@@ -471,6 +517,45 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				parentLine.activated = true;
 			}
 		}
+	}
+	
+	this.restoreTag = function(tag) {
+		tag = new Tag({
+			id:tag.id,
+			type: "Tag",
+			description: tag.description, 
+			treeStore: tagList.store});
+		tag = tagList.store.createOrUpdate(tag);
+		return tag;
+	}
+	
+	this.restoreTagGroup = function(tagGroup) {
+		/**
+		 * tagGroup is a generic object using which we create an Instance of type TagGroup called tagGroupInstance
+		 */ 
+		
+		var tagGroupInstance = new TagGroup({
+			id: tagGroup.id,
+			description: tagGroup.description,
+			type: "TagGroup",
+			treeStore: tagList.store
+		});
+		tagGroupInstance = tagList.store.createOrUpdate(tagGroupInstance);
+		for (var j in tagGroup.children) {
+			var child;
+			if (tagGroup.children[j].type.indexOf("Group") !== -1) {
+				child = this.restoreTagGroup(tagGroup.children[j]);
+			} else {
+				child = new Tag({
+					id:"tag"+tagGroup.children[j].id,
+					type: "Tag",
+					description: tagGroup.children[j].description, 
+					treeStore: tagList.store});
+			}
+			child = tagList.store.createOrUpdate(child);
+			tagGroupInstance.addChild(child);
+		}
+		return tagGroupInstance;
 	}
 	
 	this.restore = function() {
@@ -503,37 +588,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (version < 2) {
 				plotData.data[i].entries = _reverseEntries(plotData.data[i].entries);
 			}
-			var tagInstance;
-			if (version <= 4) {
-				if (plotData.data[i].tags.length == 1) {
-					tagInstance = new Tag({
-						id:plotData.data[i].name+0,
-						type: "Tag",
-						description: plotData.data[i].tags[0], 
-						treeStore: tagList.store});
-					tagInstance = tagList.store.createOrUpdate(tagInstance);
-					plotData.data[i].tag = tagInstance;
-				} else if (plotData.data[i].tags.length > 1) {
-					var tagInstance = new TagGroup({
-						id: "tagGroup"+plotData.data[i].name+i,
-						description: plotData.data[i].name,
-						type: "TagGroup",
-						treeStore: tagList.store
-					});
-					tagInstance = tagList.store.createOrUpdate(tagInstance);
-					for (var j in plotData.data[i].tags) {
-						var childTagInstance = new Tag({
-							id:"tag"+plotData.data[i].name+j,
-							type: "Tag",
-							description: plotData.data[i].tags[j], 
-							treeStore: tagList.store});
-						childTagInstance = tagList.store.createOrUpdate(childTagInstance);
-						tagInstance.addChild(childTagInstance);
-					}
-					plotData.data[i].tag = tagInstance;
-				}
-			}
-			this.loadLine(plotData.data[i]);
+			
+			this.loadLine(plotData.data[i],version);
 		}
 		if (plotData.cycleData) {
 			this.loadLine(plotData.cycleData);
@@ -1103,7 +1159,7 @@ function PlotLine(p) {
 	}
 	
 	this.getTags = function () {
-		if (this.snapshot) {
+		if (this.snapshot && this.version <= 4) {
 			// lecacy snapshots that do not have instances of Tag or TagGroup as references
 			return this.tags;
 		}
