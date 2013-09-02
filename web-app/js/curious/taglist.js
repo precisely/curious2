@@ -13,7 +13,6 @@ function Tag(args) {
 	this.description = args.description;
 	this.isContinuous = args.isContinuous;
 	this.showPoints = args.showPoints;
-	
 	this.update = function(args) {
 		this.state = TREEITEM_MARKED;
 		if (this.description != args['description']) {
@@ -109,7 +108,8 @@ function TagGroup(args) {
 				description: this.getDescription()
 			}, function(data) {
 				jQuery.each(data, function(index, tag) {
-					this.addChild(tagStore.createOrUpdate(tag));
+					tag.type = tag.class;
+					this.addChild(this.treeStore.createOrUpdate(tag));
 				}.bind(this));
 				callback(this);
 			}.bind(this));
@@ -262,7 +262,8 @@ function TagStore(args) {
 			description : args['description'],
 			isContinuous : args['isContinuous'],
 			type : type,
-			id : args['id']
+			id : args['id'],
+			treeStore : this
 		};
 		if (typeof listItem == 'undefined') {
 			listItem = new typeClass(initArgs);
@@ -288,8 +289,6 @@ function TagStore(args) {
 
 inherit(TreeStore, TagStore);
 
-var tagStore = new TagStore();
-var tagList;
 
 /**
  * TagList is a list of items
@@ -411,7 +410,8 @@ function TagList(args) {
 					+ " group"),
 			tagIds : [ sourceTag.id, targetTag.id ].toString()
 		}, function(data) {
-			this.addAfter(tagStore.createOrUpdate(data), targetTag);
+			var listItem = this.store.createOrUpdate(data)
+			this.addAfter(listItem, targetTag);
 			if ( typeof callback !== 'undefined') {
 				listItem.fetch(callback);
 			}
@@ -683,14 +683,18 @@ function tagListSetInputText(inp, text) {
 }
 
 // must be called from within $(document).ready()
-function initTagListOnly() {
+function initTagListOnly(load) {
+	var tagStore = new TagStore();
 	tagList = tagList || new TagList({store:tagStore});
-	tagList.load();
+	if (load) {
+		tagList.load();
+	}
 }
 
 //must be called from within $(document).ready()
 function initTagListWidget() {
-	tagList = tagList || new TagList({store:tagStore});
+	var tagStore = new TagStore(); 
+	tagList = new TagList({store:tagStore});
 	tagListWidget = tagListWidget || new TagListWidget({list:tagList});
 	tagListWidget.bindClickOnTreeItemGroupView();
 	tagListWidget.bindClickOnAllItems();

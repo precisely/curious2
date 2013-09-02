@@ -11,9 +11,8 @@ function refreshPage() {
 }
 
 var plot = null;
-var tagList;
 var tagListWidget;
-
+var tagList;
 function doLogout() {
 	callLogoutCallbacks();
 }
@@ -34,7 +33,7 @@ $(function(){
 					// set first user id as the current
 					setUserId(this['id']);
 					setUserName(this['username']);
-					plot = new Plot(tagList, this['id'], this['username'], "#plotArea", true, true, new PlotProperties({
+					plot = new Plot(tagListWidget.list, this['id'], this['username'], "#plotArea", true, true, new PlotProperties({
 						'startDate':'#startdatepicker1',
 						'startDateInit':'start date and/or tag',
 						'endDate':'#enddatepicker1',
@@ -86,7 +85,7 @@ $(function(){
 						plot.loadId(${plotDataId});
 					} else {
 						var tagStorePoller = setInterval(function() {
-							if(Object.keys(tagStore.store).length>0) {
+							if(Object.keys(tagList.store.store).length>0) {
 								clearInterval(tagStorePoller);
 								plot.restore();
 							}
