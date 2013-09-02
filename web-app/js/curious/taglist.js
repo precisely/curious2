@@ -242,7 +242,7 @@ function TagStore(args) {
 		var typeClass;
 		var listItem;
 		var type;
-		if (typeof args.type !== 'undefined') { 
+		if (typeof args.type !== 'undefined' && args.type.indexOf('Group')!==-1) { 
 			type = args.type.replace("us.wearecurio.model.", "");
 			type = type.replace(/^[A-Z]/g, function(s) {
 					return s.toLowerCase();
