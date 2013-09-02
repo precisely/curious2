@@ -233,7 +233,7 @@ function TreeItemGroup (args) {
 			this.fetch(callback);
 			return;
 		}
-		callback();
+		callback(this);
 	}
 	
 	this.fetch = function(callback) {
@@ -637,27 +637,6 @@ function TreeWidget(args) {
 	}
 	
 	this.bindClickOnTreeItemGroupView = function() {
-		$(document).on("click", TreeItemGroupView.cssClass.join(","),
-			function(e) { // This will bind click event for all future
-								// element.
-				e.stopPropagation(); // Prevents triggering click event
-											// of parent tag group if any.
-				var target;
-				if ($(e.target).hasClass('ui-icon-pencil') || $(e.target).hasClass('ui-icon-close')) {
-					return;
-				} else if (typeof $(e.target).attr('class')!=='undefined' && 
-						($(e.target).attr('class').indexOf('ui-icon-triangle') !==-1 || 
-								$(e.target).hasClass('description'))) {
-					//if clicked on the dropdown icon
-					target = e.target.parentElement;
-				} else {
-					target = e.target;
-				}
-				var treeItemGroupView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
-				treeItemGroupView.showTagGroup();	
-			}
-		.bind(this));
-		
 		$(document).on("click",TreeItemGroupView.cssClass[0]+" > .ui-icon-pencil", function(e) {
 			e.stopPropagation();
 			var target = e.target.parentElement;
@@ -699,3 +678,24 @@ function TreeWidget(args) {
 		this.makeDraggableAndDroppable();
 	}
 }
+
+$(document).on("click", TreeItemGroupView.cssClass.join(","),
+	function(e) { // This will bind click event for all future
+						// element.
+		e.stopPropagation(); // Prevents triggering click event
+									// of parent tag group if any.
+		var target;
+		if ($(e.target).hasClass('ui-icon-pencil') || $(e.target).hasClass('ui-icon-close')) {
+			return;
+		} else if (typeof $(e.target).attr('class')!=='undefined' && 
+				($(e.target).attr('class').indexOf('ui-icon-triangle') !==-1 || 
+						$(e.target).hasClass('description'))) {
+			//if clicked on the dropdown icon
+			target = e.target.parentElement;
+		} else {
+			target = e.target;
+		}
+		var treeItemGroupView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+		treeItemGroupView.showTagGroup();	
+	}
+.bind(this));

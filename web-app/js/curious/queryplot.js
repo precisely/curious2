@@ -533,11 +533,15 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		/**
 		 * tagGroup is a generic object using which we create an Instance of type TagGroup called tagGroupInstance
 		 */ 
+		var type = "tagGroup";
 		
+		if (tagGroup.type.indexOf("wildcard") !== -1) {
+			type = "wildcardTagGroup";
+		}
 		var tagGroupInstance = new TagGroup({
 			id: tagGroup.id,
 			description: tagGroup.description,
-			type: "TagGroup",
+			type: type,
 			treeStore: tagList.store
 		});
 		tagGroupInstance = tagList.store.createOrUpdate(tagGroupInstance);
@@ -548,7 +552,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			} else {
 				child = new Tag({
 					id:"tag"+tagGroup.children[j].id,
-					type: "Tag",
+					type: "tag",
 					description: tagGroup.children[j].description, 
 					treeStore: tagList.store});
 			}
@@ -1011,7 +1015,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		// prevent adding duplicate lines
 		if (this.getLineByTag(initialTag)) 
 			return;
-		//var tags = initialTag.nameList();
+		
 		var plotLine = new PlotLine({plot:this, name:initialTag.description, color:this.leastUsedPlotLineColor(),
 				tag: initialTag,showYAxis: false/*this.countYAxesShowing() == 0*/,
 				isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints});
@@ -1230,10 +1234,11 @@ function PlotLine(p) {
 	}
 	this.getSaveSnapshotData = function() {
 		var save = this.getSavePlotData();
-		save.tags = this.getTags();
+		
 		save.entries = this.entries;
 		return save;
 	}
+	
 	this.handleDropTag = function(event, ui) {
 		var plotLine = this;
 		var $sourceElement = $(ui.draggable[0]);
@@ -1574,6 +1579,16 @@ function PlotLine(p) {
 			drop:function(event, ui) { plotLine.handleDropTag(event, ui); }
 		});
 	}
+	
+	/**
+	 * Loading all innner tag groups so that snapshots persists them
+	 */
+	this.loadAllTagGroupChildren = function(tagGroup) {
+		if (tagGroup instanceof TagGroup) {
+			tagGroup.fetchAll();
+		}
+	}
+	
 	this.getPlotData = function() {
 		if (this.hidden) {
 			return [];

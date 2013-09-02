@@ -116,6 +116,12 @@ function TagGroup(args) {
 		}
 	}
 	
+	this.fetchAll = function() {
+		this.fetch(function(tagGroup){
+	
+		});
+	}
+	
 	this.tagList = function() {
 		var list = new Array();
 		console.log(this.children);
