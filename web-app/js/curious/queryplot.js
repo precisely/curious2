@@ -341,7 +341,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		var startTime = this.getStartTime();
 		var endTime = this.getEndTime();
-		var plotDef = {version:4,name:this.getName(),manualName:this.manualName,userName:this.userName,userId:this.userId,startTime:startTime,endTime:endTime,data:plotData,
+		var plotDef = {version:5,name:this.getName(),manualName:this.manualName,userName:this.userName,userId:this.userId,startTime:startTime,endTime:endTime,data:plotData,
 				cycleData:cycleTagData,leftCycleSlider:this.leftCycleSlider,rightCycleSlider:this.rightCycleSlider,
 				leftLinearSlider:this.leftLinearSlider,rightLinearSlider:this.rightLinearSlider};
 		var plotDataStr = $.toJSON(plotDef);
@@ -380,7 +380,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		var startTime = this.getStartTime();
 		var endTime = this.getEndTime();
-		var plotDef = {version:4,name:this.getName(),manualName:this.manualName,userName:this.userName,userId:this.userId,startTime:startTime,endTime:endTime,data:plotData,
+		var plotDef = {version:5,name:this.getName(),manualName:this.manualName,userName:this.userName,userId:this.userId,startTime:startTime,endTime:endTime,data:plotData,
 				cycleData:cycleTagData,leftCycleSlider:this.leftCycleSlider,rightCycleSlider:this.rightCycleSlider,
 				leftLinearSlider:this.leftLinearSlider,rightLinearSlider:this.rightLinearSlider};
 		var plotDataStr = $.toJSON(plotDef);
@@ -433,6 +433,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.leftLinearSlider = plotData.leftLinearSlider;
 		this.rightLinearSlider = plotData.rightLinearSlider;
 	}
+	
 	this.loadLine = function(save) {
 		var parentLine = null;
 		if (save.parentLineName) {
@@ -440,21 +441,17 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		save.plot = this;
 		save.parentLine = parentLine;
-		if (typeof save.tags !== 'undefined') {
-			//Legacy tags
-			this.processLoadedLine(save, parentLine);
-			
+		
+		save.tag = tagList.store.getTagByName(save.tag.description);
+		if (!save.snapshot && save.tag instanceof TagGroup && save.tag.children.length == 0) {
+			save.tag.getChildren(function() { this.loadSavedTag(save, parentLine); }.bind(this));
 		} else {
-			save.tag = tagList.store.getTagByName(save.tag.description);
-			if(typeof save.tag !=='undefined' && save.tag instanceof TagGroup) {
-				save.tag.fetch(function() { this.processLoadedLine(save, parentLine); }.bind(this));
-			} else {
-				this.processLoadedLine(save, parentLine);
-			}
+			this.loadSavedTag(save, parentLine);
 		}
+		
 	}
 	
-	this.processLoadedLine = function(save, parentLine) {
+	this.loadSavedTag = function(save, parentLine) {
 		var plotLine = new PlotLine(save);
 		if (parentLine) {
 			if (save.isFreqLineFlag)
@@ -474,8 +471,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				parentLine.activated = true;
 			}
 		}
-
-		return plotLine;
 	}
 	
 	this.restore = function() {
@@ -508,14 +503,34 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (version < 2) {
 				plotData.data[i].entries = _reverseEntries(plotData.data[i].entries);
 			}
-			
+			var tagInstance;
 			if (version <= 4) {
-				for (var j in plotData.data[i].tags) {
-					tagList.listItems.add(new Tag({
-						id:plotData.data[i].name+j,
+				if (plotData.data[i].tags.length == 1) {
+					tagInstance = new Tag({
+						id:plotData.data[i].name+0,
 						type: "Tag",
-						description: plotData.data[i].tags[j], 
-						treeStore: tagList.store}));
+						description: plotData.data[i].tags[0], 
+						treeStore: tagList.store});
+					tagInstance = tagList.store.createOrUpdate(tagInstance);
+					plotData.data[i].tag = tagInstance;
+				} else if (plotData.data[i].tags.length > 1) {
+					var tagInstance = new TagGroup({
+						id: "tagGroup"+plotData.data[i].name+i,
+						description: plotData.data[i].name,
+						type: "TagGroup",
+						treeStore: tagList.store
+					});
+					tagInstance = tagList.store.createOrUpdate(tagInstance);
+					for (var j in plotData.data[i].tags) {
+						var childTagInstance = new Tag({
+							id:"tag"+plotData.data[i].name+j,
+							type: "Tag",
+							description: plotData.data[i].tags[j], 
+							treeStore: tagList.store});
+						childTagInstance = tagList.store.createOrUpdate(childTagInstance);
+						tagInstance.addChild(childTagInstance);
+					}
+					plotData.data[i].tag = tagInstance;
 				}
 			}
 			this.loadLine(plotData.data[i]);
@@ -1232,21 +1247,16 @@ function PlotLine(p) {
 	this.refreshTagList = function () {
 		$("#plotline" + this.plot.id + this.id + 'list').html('');
 		var tags = null;
-		if (this.snapshot) {
-			tags = this.tags;
-			for (var i=0;i<tags.length; i++) {
-				this.displayTag(tags[i]);
+		
+		if (!this.tag) return;
+		if (this.tag instanceof TagGroup) {
+			for (var i=0;i<this.tag.children.length;i++) {
+				this.displayTag(this.tag.children[i]);
 			}
 		} else {
-			if (!this.tag) return;
-			if (this.tag instanceof TagGroup) {
-				for (var i=0;i<this.tag.children.length;i++) {
-					this.displayTag(this.tag.children[i]);
-				}
-			} else {
-				this.displayTag(this.tag);
-			}
+			this.displayTag(this.tag);
 		}
+		
 		
 	}
 	this.isSmoothLine = function() {
@@ -2005,7 +2015,7 @@ function PlotLine(p) {
 	}
 	this.appendHTML();
 	 //Displaying Tags in a TagGroup or Snapshot
-	if (this.snapshot || (this.tag && this.tag instanceof TagGroup)) {
+	if (this.tag && this.tag instanceof TagGroup) {
 		this.refreshTagList();
 	}
 	
