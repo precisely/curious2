@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.GenericTagGroup
 import us.wearecurio.model.GenericTagGroupProperties
+import us.wearecurio.model.TagProperties;
 import us.wearecurio.model.WildcardTagGroup;
 import us.wearecurio.model.Tag
 import us.wearecurio.model.Entry
@@ -111,5 +112,9 @@ class TagController extends LoginController {
 		}
 		renderJSONGet([success: true])
 	}
+    
+    def getTagProperties = {
+		renderJSONGet(TagProperties.findByTagId(params.id))
+    }
 
 }

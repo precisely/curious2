@@ -44,6 +44,16 @@ function Tag(args) {
 		this.description = description;
 		$(this).trigger("updateEvent",{oldDescription:oldDescription, description:description});
 	}
+	
+	this.getTagProperties = function(callback) {
+		$.getJSON("/tag/getTagProperties?callback=?", {
+			id : this.id
+		}, function(data) {
+			this.isContinuous = data.isContinuous;
+			this.showPoints = data.showPoints;
+			callback(this);
+		}.bind(this));
+	}
 
 	this.getDescription = function() {
 		return this.description;
