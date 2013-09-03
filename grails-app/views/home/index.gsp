@@ -531,41 +531,79 @@ $(function(){
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
-		var oldEntryId = ui.unselecting.id.substring(7);
-		var unselectee = $("#" + ui.unselecting.id);
-		if (unselectee.data('entryIsSelected') == 1) {
-			unselectee.data('entryIsSelected', 2);
-			$("#entrydelid" + oldEntryId).css('display', 'none');
+		var $unselectee = $("#" + ui.unselecting.id);
+		unselecting($unselectee);
+	});
+	function unselecting($unselectee) {
+		if($unselectee.data('entryIsSelected') == 1) {
+			$unselectee.removeClass('ui-selected');
+			$unselectee.data('entryIsSelected', 2);
+			$("a.entryDelete", $unselectee).hide();
 			currentEntryId = null;
 			setEntryText('');
 		}
-	});
+	}
 	$("#entry0").on("listableselected", function(e, ui) {
-		currentEntryId = ui.selected.id.substring(7);
-		var selectee = $("#" + ui.selected.id);
-		var state = selectee.data('entryIsSelected');
+		var $selectee = $("#" + ui.selected.id);
+		selected($selectee);
+	});
+	function selected($selectee) {
+		currentEntryId = null;
+		if($selectee.attr("id")) {
+			currentEntryId = $selectee.attr("id").substring(7);
+		}
+		var state = $selectee.data('entryIsSelected');
 		if (state == 1) {
-			selectee.removeClass('ui-selected');
-			selectee.data('entryIsSelected', 0);
-			$("#entrydelid" + currentEntryId).css('display', 'none');
+			$selectee.removeClass('ui-selected');
+			$selectee.data('entryIsSelected', 0);
+			$("a.entryDelete", $selectee).hide();
 			currentEntryId = null;
 			setEntryText('');
 		} else if (!state) {
-			selectee.data('entryIsSelected', 1);
+			$selectee.data('entryIsSelected', 1);
+			$selectee.addClass('ui-selected');
 			$("#entrydelid" + currentEntryId).css('display', 'inline');
-			setEntryText(ui.selected.textContent);
+			var entryText = $selectee.text();
+			setEntryText(entryText);
 			var selectRange = entrySelectData[currentEntryId];
 			if (selectRange)
-				setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
+				setEntryText(entryText, selectRange[0], selectRange[1]);
 			else
-				setEntryText(ui.selected.textContent);
+				setEntryText(entryText);
 			if (lastEntrySelected != null)
 				lastEntrySelected.data('entryIsSelected', 0);
-			lastEntrySelected = selectee;
+			lastEntrySelected = $selectee;
 		} else if (state == 2) {
-			selectee.removeClass('ui-selected');
-			selectee.data('entryIsSelected', 0);
+			$selectee.removeClass('ui-selected');
+			$selectee.data('entryIsSelected', 0);
 		}
+	}
+	/**
+	 * Keycode: 37:left, 38:up, 39:right, 40:down
+	 */
+	$(document).keydown(function(e) {
+		if($.inArray(e.keyCode, [37, 38, 39, 40]) == -1) {
+			return true;
+		}
+		var $unselectee = $("li.ui-selected", "ol#entry0");
+		if(!$unselectee) {
+			//$currentSelectedEntry = $("li:first-child", "ol#entry0");
+		}
+		if(!$unselectee) {
+			return false;
+		}
+		var $selectee;
+		if(e.keyCode == 37 || e.keyCode == 40) { 
+			$selectee = $unselectee.next();
+		}
+		if(e.keyCode == 38 || e.keyCode == 39) { 
+			$selectee = $unselectee.prev();
+		}
+		if($selectee) {
+			unselecting($unselectee);
+			selected($selectee);
+		}
+		return false
 	});
 	
 	/*
