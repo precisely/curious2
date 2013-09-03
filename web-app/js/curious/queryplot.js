@@ -924,7 +924,16 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var $sourceElement = $(ui.draggable[0]);
 		var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
 		var plot = this;
-		tagListItem.getChildren(function() { plot.addLine(tagListItem); });
+		if (tagListItem instanceof TagGroup) {
+			tagListItem.getChildren(function() { plot.addLine(tagListItem); });
+		} else {
+			tagListItem.getTagProperties(function(tagProperties){
+				//TODO import tag properties
+				console.log("import tag properties");
+				plot.addLine(tagListItem);
+			});
+		}
+		
 	}
 	this.addLine = function(initialTag) {
 		// prevent adding duplicate lines
