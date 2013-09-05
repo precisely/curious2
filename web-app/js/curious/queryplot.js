@@ -807,20 +807,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				var dialogDiv = plot.getDialogDiv(); 
 				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
 				// if this has a loaded smooth line which isn't active, then deactivate the other active line
-				if ((plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothLine.id != plot.activeLineId)
-						|| (!plotLine.smoothLine)) {
-					var activeLine = plot.getLine(plot.activeLineId);
-					if (activeLine) {
-						activeLine.deactivate();
-						plot.getDialogDiv().dialog("close");
-					}
-				}
+				plot.deactivateActivatedLine(plotLine);
 				plot.ignoreClick = true;
-				if (!plotLine.smoothLine) {
+				if (!plotLine.smoothLine) {	// If current line clicked is a smooth line (child line)
 					plot.activeLineId = plotLine.id;
 					plotLine.activate();
 				}
-				if (!plotLine.isSmoothLine()) {
+				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
 					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': ' + $.datepicker.formatDate('M d', new Date(item.datapoint[0]))
 							+ ' (' + item.datapoint[1] + ')');
 					dialogDiv.dialog({ position: [pos.pageX + 10, pos.pageY], width: 140, height: 42});
@@ -832,6 +825,27 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.addPendingLoad = function() {
 		++this.pendingLoads;
+	}
+	/**
+	 * Deactivate any active line determined by activateLineId in Plot instance.
+	 * If any plotLine is given and activated line is not equal to the smoothline's id
+	 * than this will do not deactivate the activated line.
+	 */
+	this.deactivateActivatedLine = function(plotLine) {
+		var plot = this;
+
+		if (plotLine) {
+			if(plotLine.smoothLine) {
+				if(plotLine.smoothLine == 1 || plotLine.smoothLine.id == plot.activeLineId) {
+					return false;
+				}
+			}
+		}
+		var activeLine = plot.getLine(plot.activeLineId);
+		if (activeLine) {
+			activeLine.deactivate();
+			plot.getDialogDiv().dialog("close");
+		}
 	}
 	this.removePendingLoad = function() {
 		if (!--this.pendingLoads) {
@@ -1290,7 +1304,7 @@ function PlotLine(p) {
 		}
 	}
 	this.yAxisVisible = function() {
-		if (this.parentLine) return (this.parentLine.hidden || this.parentLine.activated) && this.parentLine.showYAxis;
+		//if (this.parentLine) return (this.parentLine.hidden || this.parentLine.activated) && this.parentLine.showYAxis;
 		if (this.smoothLine) {
 			if (this.smoothDataWidth == 0 && this.showYAxis) {
 				if (this.freqLine)
@@ -1337,9 +1351,9 @@ function PlotLine(p) {
 				+ (this.isContinuous ? 'checked' : '') + '/> continuous \
 				<input type="checkbox" name="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
 				+ (this.showPoints ? 'checked' : '') + '/> points ';
-		if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
+		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
-				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';
+				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/
 		if (!this.isCycle) {
 			html += '<div style="display:inline-block;">smooth <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div></div>';
 			//html += '<div style="display:inline-block;">frequency <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinefreqwidth' + idSuffix + '"></div></div>';
@@ -1481,6 +1495,22 @@ function PlotLine(p) {
 		});
 		var div = $('#plotline' + idSuffix);
 		div.accordion({ active: makeActive, collapsible: true, clearStyle: true });
+
+		div.click(function() {
+			var plotLine = plot.getLine(plotLineId);
+			if($("h3", this).hasClass("ui-state-active")) {
+				plot.deactivateActivatedLine(plotLine);
+				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+					plot.activeLineId = plotLine.smoothLine.id;
+					plotLine.smoothLine.activate();
+				} else {
+					plot.activeLineId = plotLine.id;
+					plotLine.activate();
+				}
+			} else {
+				// When accordion is collpsed.
+			}
+		});
 		
 		var plotLine = this;
 		
@@ -1725,21 +1755,25 @@ function PlotLine(p) {
 		this.plot.addFreqLine(this, freqValue);
 	}
 	this.activate = function() {
+		this.showYAxis = true;
+		//this.activated = true;
 		if (this.parentLine) {
 			this.parentLine.hidden = false;
 			this.parentLine.activated = true;
 			this.parentLine.prepEntries();
-			this.plot.store();
-			this.plot.refreshPlot();
 		}
+		this.plot.store();
+		this.plot.refreshPlot();
 	}
 	this.deactivate = function() {
+		this.showYAxis = false;
+		//this.activated = false;
 		if (this.parentLine) {
 			this.parentLine.hidden = true;
 			this.parentLine.activated = false;
-			this.plot.store();
-			this.plot.refreshPlot();
 		}
+		this.plot.store();
+		this.plot.refreshPlot();
 	}
 	this.isHidden = function() {
 		if (this.smoothLine && this.smoothDataWidth > 0) {
