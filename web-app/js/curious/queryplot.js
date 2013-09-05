@@ -442,6 +442,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		save.plot = this;
 		save.parentLine = parentLine;
+		var isSnapshot = false;
+		if (save.entries != null && save.entries != undefined) {
+			isSnapshot = true;
+		}
 		
 		if (version <= 4 && save.tags.length > 0) {
 			var tagInstance;
@@ -474,10 +478,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 		} 
 		
-		var isSnapshot = false;
-		if (save.entries != null && save.entries != undefined) {
-			isSnapshot = true;
-		}
+		
 		
 		if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
 			if (save.tag.type.indexOf("Group") !== -1) {
@@ -524,7 +525,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			id:tag.id,
 			type: "Tag",
 			description: tag.description, 
-			treeStore: tagList.store});
+			treeStore: tagList.store,
+			state: TREEITEM_SNAPSHOT});
 		tag = tagList.store.createOrUpdate(tag);
 		return tag;
 	}
@@ -542,7 +544,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			id: tagGroup.id,
 			description: tagGroup.description,
 			type: type,
-			treeStore: tagList.store
+			treeStore: tagList.store,
+			state: TREEITEM_SNAPSHOT
 		});
 		tagGroupInstance = tagList.store.createOrUpdate(tagGroupInstance);
 		for (var j in tagGroup.children) {
@@ -550,13 +553,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (tagGroup.children[j].type.indexOf("Group") !== -1) {
 				child = this.restoreTagGroup(tagGroup.children[j]);
 			} else {
-				child = new Tag({
-					id:"tag"+tagGroup.children[j].id,
-					type: "tag",
-					description: tagGroup.children[j].description, 
-					treeStore: tagList.store});
+				child = this.restoreTag(tagGroup.children[j]);
 			}
-			child = tagList.store.createOrUpdate(child);
 			tagGroupInstance.addChild(child);
 		}
 		return tagGroupInstance;

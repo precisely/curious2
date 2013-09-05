@@ -190,13 +190,14 @@ var TREEITEM_UNMARKED = 0; // reloading object, if still unmarked after reloadin
 var TREEITEM_CREATED = 1; // newly created object
 var TREEITEM_MARKED = 2; // marked for keeping
 var TREEITEM_UPDATED = 3; // marked for keeping and also updated
+var TREEITEM_SNAPSHOT = 4; // marking it as a snapshot
 
 function TreeItem(args) {
 	this.id = args.id;
 	this.type = args.type;
 	this.uniqueId = this.type + this.id;
 	this.treeStore = args.treeStore;
-	this.state = TREEITEM_CREATED;
+	this.state = typeof args.state !== 'undefined' ? args.state : TREEITEM_CREATED;
 	
 	// Wrapping all init statements that we want to override in a method
 	this.init = function() {
@@ -564,7 +565,11 @@ function TreeItemGroupView(args) {
 	}
 	
 	this.showTagGroup = function() {
-		this.data.getChildren(this.toggleShow.bind(this));
+		if (this.data.state !== TREEITEM_SNAPSHOT) {
+			this.data.getChildren(this.toggleShow.bind(this));
+		} else {
+			this.toggleShow();
+		}
 	}
 	
 	this.toggleShow = function() {
