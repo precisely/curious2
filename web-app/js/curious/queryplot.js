@@ -1497,20 +1497,19 @@ function PlotLine(p) {
 		div.accordion({ active: makeActive, collapsible: true, clearStyle: true });
 
 		div.click(function() {
-			var plotLine = plot.getLine(plotLineId);
-			if($("h3", this).hasClass("ui-state-active")) {
-				plot.deactivateActivatedLine(plotLine);
-				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
-					plot.activeLineId = plotLine.smoothLine.id;
-					plotLine.smoothLine.activate();
-				} else {
-					plot.activeLineId = plotLine.id;
-					plotLine.activate();
-				}
+			var plotLine = this;
+			var plot = this.plot;
+			
+			plot.deactivateActivatedLine(plotLine);
+			if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+				plot.activeLineId = plotLine.smoothLine.id;
+				plotLine.smoothLine.activate();
 			} else {
-				// When accordion is collpsed.
+				plot.activeLineId = plotLine.id;
+				plotLine.activate();
 			}
-		});
+			
+		}.bind(this));
 		
 		var plotLine = this;
 		
