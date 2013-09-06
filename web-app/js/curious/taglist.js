@@ -122,9 +122,14 @@ function TagGroup(args) {
 		}
 	}
 	
-	this.fetchAll = function() {
+	this.fetchAll = function(callback) {
 		this.fetch(function(tagGroup){
-	
+			for(var i in tagGroup.children) {
+				if (!tagGroup.children[i].isTag()) {
+					tagGroup.children[i].fetchAll(function() {} );
+				}
+			}
+			callback();
 		});
 	}
 	

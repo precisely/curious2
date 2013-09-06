@@ -59,7 +59,7 @@ class TagController extends LoginController {
 	
 	def addTagGroupToTagGroup = {
 		def parentTagGroupInstance = TagGroup.get(params.parentTagGroupId)
-		def childTagGroupInstance = TagGroup.get(params.childTagGroupId)
+		def childTagGroupInstance = GenericTagGroup.get(params.childTagGroupId)
 		parentTagGroupInstance.addToSubTagGroups(childTagGroupInstance)
 		parentTagGroupInstance.save()
 		renderJSONGet(["dummy"])
