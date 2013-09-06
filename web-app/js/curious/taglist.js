@@ -14,7 +14,12 @@ function Tag(args) {
 	this.isContinuous = args.isContinuous;
 	this.showPoints = args.showPoints;
 	this.update = function(args) {
-		this.state = TREEITEM_MARKED;
+		if (typeof args.state !== 'undefined' && args.state == TREEITEM_SNAPSHOT) {
+			this.state = TREEITEM_SNAPSHOT;
+		} else {
+			this.state = TREEITEM_MARKED;
+		}
+		
 		if (this.description != args['description']) {
 			this.setDescription(args['description']);
 			this.state = TREEITEM_UPDATED;
@@ -126,9 +131,14 @@ function TagGroup(args) {
 		}
 	}
 	
-	this.fetchAll = function() {
+	this.fetchAll = function(callback) {
 		this.fetch(function(tagGroup){
-	
+			for(var i in tagGroup.children) {
+				if (!tagGroup.children[i].isTag()) {
+					tagGroup.children[i].fetchAll(function() {} );
+				}
+			}
+			callback();
 		});
 	}
 	
@@ -279,7 +289,8 @@ function TagStore(args) {
 			isContinuous : args['isContinuous'],
 			type : type,
 			id : args['id'],
-			treeStore : this
+			treeStore : this,
+			state: args['state']
 		};
 		if (typeof listItem == 'undefined') {
 			if (args instanceof Tag || args instanceof TagGroup) {

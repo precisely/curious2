@@ -354,6 +354,11 @@ ul.tags li.tag {
 	padding-left: 5px;
 }
 
+.treeItemGroupView ul.tags {
+	height: 150px;
+	overflow-y: scroll;
+}
+
 .wildcardTagGroup span.ui-icon-triangle-1-e {
 	background-position: -32px 0 !important;
 }
