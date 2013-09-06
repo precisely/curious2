@@ -832,8 +832,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	/**
 	 * Deactivate any active line determined by activateLineId in Plot instance.
-	 * If any plotLine is given and activated line is not equal to the smoothline's id
-	 * than this will do not deactivate the activated line.
+	 * If the current line that was clicked on is a smooth line and also active do not deactivate it.
 	 */
 	this.deactivateActivatedLine = function(plotLine) {
 		var plot = this;
