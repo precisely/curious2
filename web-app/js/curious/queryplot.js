@@ -343,7 +343,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var endTime = this.getEndTime();
 		var plotDef = {version:4,name:this.getName(),manualName:this.manualName,userName:this.userName,userId:this.userId,startTime:startTime,endTime:endTime,data:plotData,
 				cycleData:cycleTagData,leftCycleSlider:this.leftCycleSlider,rightCycleSlider:this.rightCycleSlider,
-				leftLinearSlider:this.leftLinearSlider,rightLinearSlider:this.rightLinearSlider};
+				leftLinearSlider:this.leftLinearSlider,rightLinearSlider:this.rightLinearSlider,activeLineId:this.activeLineId};
 		var plotDataStr = $.toJSON(plotDef);
 		if (this.doStore && supportsLocalStorage()) {
 			localStorage['plotData' + this.id] = plotDataStr;
@@ -432,6 +432,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.rightCycleSlider = plotData.rightCycleSlider;
 		this.leftLinearSlider = plotData.leftLinearSlider;
 		this.rightLinearSlider = plotData.rightLinearSlider;
+		this.activeLineId = plotData.activeLineId;
 	}
 	this.loadLine = function(save) {
 		var parentLine = null;
@@ -474,7 +475,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				parentLine.activated = true;
 			}
 		}
-
+		
+		if (plotLine.showYAxis) {
+			plotLine.activate();
+		}
 		return plotLine;
 	}
 	
