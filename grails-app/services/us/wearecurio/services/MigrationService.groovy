@@ -12,6 +12,7 @@ import us.wearecurio.utility.Utils;
 import us.wearecurio.model.*;
 import grails.util.Environment
 
+import groovy.lang.Closure;
 import groovy.sql.Sql
 
 class MigrationService {
@@ -23,14 +24,18 @@ class MigrationService {
 	public static final long TEST_MIGRATION_ID = 30L
 	
 	SessionFactory sessionFactory
-	
-	public Query sqlQuery(String statement) {
-		Session session = sessionFactory.getCurrentSession()
-		return session.createSQLQuery(statement)
-	}
+	DatabaseService databaseService
 	
 	public def sql(String statement) {
-		sqlQuery(statement).executeUpdate()
+		databaseService.sql(statement)
+	}
+	
+	public def sqlRows(String statement, args = []) {
+		return databaseService.sqlRows(statement, args)
+	}
+
+	public def eachRow(String statement, Closure c) {
+		databaseService.eachRow(statement, c)
 	}
 	
 	public def shouldDoMigration(long code) {
