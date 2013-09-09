@@ -355,8 +355,8 @@ ul.tags li.tag {
 }
 
 .treeItemGroupView ul.tags {
-	height: 150px;
-	overflow-y: scroll;
+	max-height: 150px;
+	overflow-y: auto;
 }
 
 .wildcardTagGroup span.ui-icon-triangle-1-e {
