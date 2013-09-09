@@ -44,6 +44,27 @@ class TagProperties {
 	static public def lookup(long userId, long tagId) {
 		return TagProperties.findByTagIdAndUserId(tagId, userId)
 	}
+	
+	static public def lookupJSONDesc(long userId, long tagId) {
+		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
+		
+		if (!props) { // return default settings, don't create new TagProperties
+			return [userId:userId,
+				tagId:tagId,
+				isContinuous:false,
+				showPoints:false]
+		}
+		
+		return props.getJSONDesc()
+	}
+	
+	// note: changes here should also be made to lookupJSONDesc()
+	def getJSONDesc() {
+		return [userId:userId,
+			tagId:tagId,
+			isContinuous:isContinuous,
+			showPoints:showPoints]
+	}
 			
 	public String toString() {
 		return "TagProperties(userId:" + userId + ", tagId:" + tagId + ", isContinuous:" \
