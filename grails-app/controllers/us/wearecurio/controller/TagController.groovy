@@ -122,7 +122,7 @@ class TagController extends LoginController {
 			return
 		}
 
-		renderJSONGet(TagProperties.lookupJSONDesc(user.id, params.id))
+		renderJSONGet(TagProperties.lookupJSONDesc(user.id, Long.valueOf(params.id)))
     }
 
 }
