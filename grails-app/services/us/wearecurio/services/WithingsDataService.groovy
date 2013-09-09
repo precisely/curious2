@@ -100,14 +100,14 @@ class WithingsDataService {
 		if (accessTokenFromService == null)
 			return null
 			
-		OAuthAccount withingsAccount = OAuthAccount.createOrUpdate(OAuthAccount.WITHINGS_ID, userId, withingsUserId,
+		OAuthAccount withingsAccount = OAuthAccount.createOrUpdate(OAuthAccount.WITHINGS_ID, userId, withingsUserId.toString(),
 				accessTokenFromService.getToken(), accessTokenFromService.getSecret())
 		
 		Utils.save(withingsAccount, true)
 		
 		this.subscribe(withingsAccount)
 		
-		this.poll(userId)
+		this.poll(withingsUserId.toString())
 	}
 	
 	def poll() {
@@ -255,7 +255,7 @@ class WithingsDataService {
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
 					System.out.println("type: " + measure.type + " value: " + value)
-					int amountPrecision = 0
+					int amountPrecision = 2
 					String description
 					String units
 					
