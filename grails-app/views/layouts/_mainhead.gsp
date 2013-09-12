@@ -6,11 +6,11 @@
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.offline.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'base.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'curious.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'autocomplete.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'treeview.js?v=4')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'taglist.js?v=4')}"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?v=5"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?v=5"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?v=5"></script>
+<script type="text/javascript" src="/static/js/curious/treeview.js?v=5"></script>
+<script type="text/javascript" src="/static/js/curious/taglist.js?v=5"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="${resource(dir:'css', file:'main.css?v=4')}"/>
 <g:if test="${templateVer == 'lhp'}">
