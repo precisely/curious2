@@ -488,6 +488,7 @@ class HomeController extends DataController {
 	}
 	
 	def testWeatherService = {
-		weatherService.fetchConditions()
+		def result = weatherService.fetchConditions()
+		render(result)
 	}
 }
