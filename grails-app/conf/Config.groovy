@@ -77,7 +77,7 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
-grails.api {
+api {
 	weatherunderground {
 		key = "0de9ca6314e3b2ee"
 	}
