@@ -764,7 +764,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 			var rangeLine = line.isSmoothLine() ? line.parentLine : line;
 			yaxes[line.id] = { show: line.yAxisVisible(),
-					position: rangeLine.id % 2 == 0 ? 'left' : 'right', tickDecimals: 1 };
+					position: 'left', tickDecimals: 1 };
 			if (!rangeLine.isContinuous) {
 				var min = rangeLine.minVal < 0 ? rangeLine.minVal : 0;
 				yaxes[line.id]['min'] = min;
@@ -878,7 +878,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		plotArea.on("plotclick", function(event, pos, item) {
 	        if (item) {
 	        	var now = new Date().getTime();
-	        	if (plot.lastItemClicked == null) {
+	        	/*if (plot.lastItemClicked == null) {
 	        		plot.lastItemClicked = item;
 	        		plot.lastItemClickTime = now;
 	        	} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
@@ -889,7 +889,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
         				plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
         			}
         			return;
-        		}
+        		}*/
         		plot.lastItemClicked = item;
         		plot.lastItemClickTime = now;
 				var dialogDiv = plot.getDialogDiv(); 
@@ -902,7 +902,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					plotLine.activate();
 				}
 				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
-					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': ' + $.datepicker.formatDate('M d', new Date(item.datapoint[0]))
+					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
+							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
 					dialogDiv.dialog({ position: [pos.pageX + 10, pos.pageY], width: 140, height: 42});
 				}

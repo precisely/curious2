@@ -101,11 +101,15 @@ function PlotProperties(divIdArray) {
 		return this.cycleTagDiv;
 	}
 	// show data for a given userId at a given timestamp
-	this.showData = function(userId, userName, timestamp) {
+	this.showDataUrl = function(userId, userName, timestamp) {
 		if (currentUserId != userId) return;
 		if (currentUserName != userName) return;
 		if (currentUserId < 0) return; // disallow showData for anonymous users
-		window.location = "/home/index?showTime=" + timestamp;
+		return "/home/index?showTime=" + timestamp;
+	}
+	// show data for a given userId at a given timestamp
+	this.showData = function(userId, userName, timestamp) {
+		window.location = this.showDataUrl(userId, userName, timestamp);
 	}
 }
 </script>
