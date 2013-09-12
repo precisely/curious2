@@ -228,6 +228,7 @@ class Discussion {
 	def createPost(DiscussionAuthor author, Long plotDataId, String comment, Date created) {
 		log.debug "DiscussionAuthor.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + "', created:" + created
 		DiscussionPost post = DiscussionPost.create(this, author, plotDataId, comment, null)
+		Utils.save(this, true) // write new updated state
 		Utils.save(post, true)
 		
 		if (userId == null)
