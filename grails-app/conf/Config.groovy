@@ -77,6 +77,12 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
+grails.api {
+	weatherunderground {
+		key = "0de9ca6314e3b2ee"
+	}
+}
+
 environments {
     development {
         grails.logging.jul.usebridge = true
