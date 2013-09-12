@@ -91,7 +91,7 @@ environments {
         grails.logging.jul.usebridge = true
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
-        grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
     }
     production {
         grails.logging.jul.usebridge = false
@@ -101,6 +101,7 @@ environments {
     test {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
     }
 }
 
