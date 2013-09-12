@@ -21,7 +21,6 @@ class HomeController extends DataController {
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
-	WeatherService weatherService
 	
 	private static def log = LogFactory.getLog(this)
 	
@@ -487,8 +486,4 @@ class HomeController extends DataController {
 		}
 	}
 	
-	def testWeatherService = {
-		def result = weatherService.fetchConditions()
-		render(result)
-	}
 }

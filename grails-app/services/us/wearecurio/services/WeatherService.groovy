@@ -1,4 +1,5 @@
 package us.wearecurio.services
+import grails.converters.JSON;
 import us.wearecurio.http.*
 
 class WeatherService {
@@ -10,7 +11,7 @@ class WeatherService {
 		def url = "http://api.wunderground.com/api/${key}/conditions/q/${state}/${city}.json"
 		HttpConnection connection = new HttpConnection(url)
 		def result = connection.sendGet()
-		println result.dump()
-		return result
+		result = JSON.parse(result)
+		return result.current_observation
 	}
 }
