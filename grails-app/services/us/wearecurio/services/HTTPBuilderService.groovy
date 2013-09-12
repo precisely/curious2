@@ -15,6 +15,7 @@ class HTTPBuilderService {
 	 *        be performed
 	 * @param method The HTTP method of request (must be all upper case).
 	 * @param args A map containing request parameters to send.
+	 * @param body in <b>args</b> is list of parameter to pass in form of map
 	 * @return Returns the raw response with an addition method stating
 	 *         that request is successful or not.
 	 */
@@ -25,10 +26,11 @@ class HTTPBuilderService {
 		Method httpMethod = Method[method]
 		HTTPBuilder http = new HTTPBuilder(requestURL)
 
-		String logText = " Requesting rest request to $requestURL : "
+		String logText = "$method request to $requestURL : "
 		if(args.body) logText += "with request body: $args.body : ";
 
-		log.debug logText
+		if(log.debugEnabled) log.debug logText;
+		else println logText;	// TODO Enable log for services & remove these lines.
 
 		try {
 			http.request(httpMethod) {
@@ -52,7 +54,7 @@ class HTTPBuilderService {
 			}
 		} catch(Exception e) {
 			success = false
-			log.error "${logText} throws an exception: " + e?.dump()
+			log.error "${logText} throws an exception: " + e.dump()
 		}
 
 		result.getMetaClass().isSuccess = { return success }

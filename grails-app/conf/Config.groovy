@@ -81,6 +81,9 @@ api {
 	weatherunderground {
 		key = "0de9ca6314e3b2ee"
 	}
+	bingMapKey {
+		key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+	}
 }
 
 environments {
