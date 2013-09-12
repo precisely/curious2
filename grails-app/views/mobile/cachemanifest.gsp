@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 273
+# rev 274
 
 CACHE:
 #/mobile/index
@@ -7,9 +7,9 @@ CACHE:
 /js/jquery/jquery.json-2.2.js
 /js/jquery/jquery-ui-1.8.18.custom.js
 /js/jquery/jquery.offline.js
-/js/curious/base.js?ver=4
-/js/curious/curious.js?ver=4
-/js/curious/autocomplete.js?ver=4
+/js/curious/base.js?ver=5
+/js/curious/curious.js?ver=5
+/js/curious/autocomplete.js?ver=5
 /images/favicon.ico
 /images/apple-touch-icon-precomposed.png
 /images/email.png
