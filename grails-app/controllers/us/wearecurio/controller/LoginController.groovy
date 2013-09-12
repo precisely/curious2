@@ -80,7 +80,7 @@ class LoginController extends SessionController {
 		def repl = str.replaceAll("'", "\\\\'")
 		render "'${repl}'"
 	}
-	def login = {
+	def login() {
 		debug "LoginController.login()"
 		
 		def message = flash.message
@@ -89,7 +89,7 @@ class LoginController extends SessionController {
 		render(view:loginView(),
 				model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
 	}
-	def dologin = {
+	def dologin() {
 		debug "LoginController.dologin()"
 		
 		def user = execLogin()
@@ -107,7 +107,7 @@ class LoginController extends SessionController {
 			return
 		}
 	}
-	def dologinData = {
+	def dologinData() {
 		debug "LoginController.dologinData()"
 		
 		def user = execLogin()
@@ -121,7 +121,7 @@ class LoginController extends SessionController {
 			return
 		}
 	}
-	def forgot = {
+	def forgot() {
 		debug "LoginController.forgot()"
 
 		render(view:forgotView(),
@@ -167,7 +167,7 @@ class LoginController extends SessionController {
 		}
 		return execForgot(user)
 	}
-	def doforgot = {
+	def doforgot() {
 		debug "LoginController.doforgot()"
 		
 		if (params.cancel) {
@@ -189,7 +189,7 @@ class LoginController extends SessionController {
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		}
 	}
-	def doforgotData = {
+	def doforgotData() {
 		debug "LoginController.doForgotData()"
 		
 		if (params.email && execForgotEmail(params.email) == FORGOT_SUCCESS) {
@@ -200,7 +200,7 @@ class LoginController extends SessionController {
 			renderJSONGet([message:"We don't recognize that user.",success:false])
 		}
 	}
-	def recover = {
+	def recover() {
 		debug "LoginController.recover()"
 		
 		PasswordRecovery recovery = PasswordRecovery.look(params.code)
@@ -218,7 +218,7 @@ class LoginController extends SessionController {
 		render(view:"/" + name() + "/recover",
 				model:[precontroller:params.precontroller, preaction:params.preaction, code:params.code, templateVer:urlService.template(request)])
 	}
-	def dorecover = {
+	def dorecover() {
 		debug "LoginController.dorecover()"
 		
 		PasswordRecovery recovery = PasswordRecovery.look(params.code)
@@ -260,7 +260,7 @@ class LoginController extends SessionController {
 		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
-	def register = {
+	def register() {
 		debug "LoginController.register()"
 
 		render(view:registerView(),
@@ -333,7 +333,7 @@ class LoginController extends SessionController {
 			return retVal
 		}
 	}
-	def doregister = {
+	def doregister() {
 		debug "LoginController.doregister()"
 		
 		if (params.cancel) {
@@ -355,7 +355,7 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(action:"register"))
 		}
 	}
-	def doregisterData = {
+	def doregisterData() {
 		debug "LoginController.doregisterData()"
 		
 		def retVal = execRegister(params)
@@ -368,7 +368,7 @@ class LoginController extends SessionController {
 			renderJSONPost([success:false, message:"All fields are required."])
 		}
 	}
-	def logout = {
+	def logout() {
 		debug "LoginController.logout()"
 		
 		def user = sessionUser()

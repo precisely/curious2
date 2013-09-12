@@ -22,12 +22,12 @@ class MobileController extends SessionController {
 	def MobileController() {
 	}
 
-	def cachemanifest = {
+	def cachemanifest() {
 		debug "MobileController.cachemanifest()"
 		render(contentType:"text/cache-manifest", view:"/mobile/cachemanifest", model:[templateVer:urlService.template(request)])
 	}
 
-	def index = {
+	def index() {
 		debug "MobileController.index()"
 		
 		def user = sessionUser()
@@ -40,7 +40,7 @@ class MobileController extends SessionController {
 		}
 	}
 
-	def login = {
+	def login() {
 		debug "MobileController.login()"
 		
 		render(view:"/mobile/index",

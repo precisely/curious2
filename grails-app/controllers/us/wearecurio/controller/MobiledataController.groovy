@@ -48,7 +48,7 @@ class MobiledataController extends DataController {
 		return user
 	}
 
-	def dologinData = {
+	def dologinData() {
 		debug "MobiledataController.dologinData()"
 		
 		def user = execLogin()
@@ -61,7 +61,7 @@ class MobiledataController extends DataController {
 		}
 	}
 
-	def doregisterData = {
+	def doregisterData() {
 		debug "LoginController.doregisterData()"
 		
 		def p = params

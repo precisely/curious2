@@ -485,7 +485,7 @@ class DataController extends LoginController {
 		writer.flush()
 	}
 
-	def getPeopleData = {
+	def getPeopleData() {
 		debug "DataController.getPeopleData"
 		
 		def user = sessionUser()
@@ -501,7 +501,7 @@ class DataController extends LoginController {
 		renderJSONGet([user])
 	}
 
-	def getEntriesData = {
+	def getEntriesData() {
 		debug "DataController.getEntriesData() userId:" + params.userId + " date: " + params.date
 		
 		def user = userFromIdStr(params.userId);
@@ -516,7 +516,7 @@ class DataController extends LoginController {
 		renderJSONGet(entries)
 	}
 
-	def getData = {
+	def getData() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
@@ -529,7 +529,7 @@ class DataController extends LoginController {
 		renderDataGet(json)
 	}
 
-	def getSumData = {
+	def getSumData() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
@@ -543,7 +543,7 @@ class DataController extends LoginController {
 		renderDataGet(json)
 	}
 
-	def correlateData = {
+	def correlateData() {
 		debug("DataController.correlateData()")
 
 		if (params.tags1 == null) {
@@ -570,13 +570,13 @@ class DataController extends LoginController {
 		def data2 = findEntriesStartEnd(sessionUser(), tags2, startDateStr, endDateStr)
 	}
 
-	def getTagsData = {
+	def getTagsData() {
 		debug("DataController.getTagsData() order:" + params.sort)
 		
 		renderJSONGet(Entry.getTags(sessionUser(), params.sort == 'freq' ? Entry.BYCOUNT : Entry.BYALPHA))
 	}
 	
-	def addEntryData = { // old API
+	def addEntryData() { // old API
 		debug("DataController.addEntryData() params:" + params)
 		
 		def userId = userFromIdStr(params.userId)
@@ -600,7 +600,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def addEntrySData = { // new API
+	def addEntrySData() { // new API
 		debug("DataController.addEntrySData() params:" + params)
 		
 		def userId = userFromIdStr(params.userId)
@@ -624,7 +624,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def updateEntryData = { // old API
+	def updateEntryData() { // old API
 		debug("DataController.updateEntryData() displayDate: " + params.displayDate)
 
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
@@ -637,7 +637,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def updateEntrySData = { // new API
+	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() displayDate: " + params.displayDate)
 
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
@@ -651,7 +651,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def deleteEntryData = { // old API
+	def deleteEntryData() { // old API
 		debug "DataController.deleteEntryData() params:" + params
 		
 		def user = sessionUser()
@@ -679,7 +679,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def deleteEntrySData = { // new API
+	def deleteEntrySData() { // new API
 		debug "DataController.deleteEntrySData() params:" + params
 		
 		def user = sessionUser()
@@ -709,7 +709,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def setTagPropertiesData = {
+	def setTagPropertiesData() {
 		debug "DataController.setTagPropertiesData() params:" + params
 		
 		def user = sessionUser()
@@ -740,7 +740,7 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 
-	def setPreferencesData = {
+	def setPreferencesData() {
 		debug "DataController.setPreferencesData() params:" + params
 		
 		def user = sessionUser()
@@ -840,7 +840,7 @@ class DataController extends LoginController {
 		})
 	}
 	
-	def autocompleteData = {
+	def autocompleteData() {
 		debug "DataController.autocompleteData() params:" + params
 		
 		def user = sessionUser()
@@ -866,7 +866,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def listPlotData = {
+	def listPlotData() {
 		debug "DataController.listPlotData() params:" + params
 		
 		def user = sessionUser()
@@ -896,7 +896,7 @@ class DataController extends LoginController {
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
 
-	def savePlotData = {
+	def savePlotData() {
 		debug "DataController.savePlotData() params:" + params
 		
 		def user = sessionUser()
@@ -918,7 +918,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def loadPlotDataId = {
+	def loadPlotDataId() {
 		debug "DataController.loadPlotDataId() params:" + params
 		
 		def user = sessionUser()
@@ -948,7 +948,7 @@ class DataController extends LoginController {
 		renderDataGet(plotData.getJsonPlotData())
 	}
 	
-	def deletePlotDataId = {
+	def deletePlotDataId() {
 		debug "DataController.deletePlotDataId() params:" + params
 		
 		def user = sessionUser()
@@ -982,7 +982,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def listSnapshotData = {
+	def listSnapshotData() {
 		debug "DataController.listSnapshotData() params:" + params
 		
 		def user = sessionUser()
@@ -1010,7 +1010,7 @@ class DataController extends LoginController {
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
 
-	def listDiscussionData = {
+	def listDiscussionData() {
 		debug "DataController.listDiscussionData() params:" + params
 		
 		def user = sessionUser()
@@ -1035,7 +1035,7 @@ class DataController extends LoginController {
 		renderJSONGet(entries)
 	}
 
-	def saveSnapshotData = {
+	def saveSnapshotData() {
 		debug "DataController.saveSnapshotData() params:" + params
 		
 		def user = sessionUser()
@@ -1055,7 +1055,7 @@ class DataController extends LoginController {
 		renderJSONPost([plotDataId:plotDataObj.getId()])
 	}
 	
-	def loadSnapshotDataId = {
+	def loadSnapshotDataId() {
 		debug "DataController.loadSnapshotDataId() params:" + params
 		
 		Long plotDataId = Long.valueOf(params.id)
@@ -1090,7 +1090,7 @@ class DataController extends LoginController {
 		renderDataGet(plotData.getJsonPlotData())
 	}
 
-	def deleteSnapshotDataId = {
+	def deleteSnapshotDataId() {
 		debug "DataController.deleteSnapshotDataId() params:" + params
 		
 		def user = sessionUser()
@@ -1120,7 +1120,7 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 	
-	def setDiscussionNameData = {
+	def setDiscussionNameData() {
 		debug "DataController.setDiscussionNameData() params:" + params
 		
 		def user = sessionUser()
@@ -1147,7 +1147,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def deleteDiscussionId = {
+	def deleteDiscussionId() {
 		debug "DataController.deleteDiscussionId() params:" + params
 		
 		def user = sessionUser()

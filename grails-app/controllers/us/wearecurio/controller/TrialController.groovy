@@ -77,10 +77,10 @@ class TrialController extends LoginController {
 		return Utils.listJSONDesc(entries)
 	}
 
-	def registertwitter = {
+	def registertwitter() {
 		redirect(url:twitterDataService.twitterAuthorizationURL(toUrl(controller:'trial', action:'doregistertwitter')))
 	}
-	def doregistertwitter = {
+	def doregistertwitter() {
 		User user = sessionUser()
 
 		def twitterUsername = null
@@ -98,11 +98,11 @@ class TrialController extends LoginController {
 			redirect(url:toUrl(controller:'trial', action:'survey'))
 		}
 	}
-	def survey = {
+	def survey() {
 		def user = sessionUser()
 		[prefs:user.getPreferences()]
 	}
-	def doupdatesurvey = {
+	def doupdatesurvey() {
 		User user = sessionUser()
 
 		for (def param in params) {
@@ -118,7 +118,7 @@ class TrialController extends LoginController {
 
 		redirect(url:toUrl(controller:'trial', action:'instructions'))
 	}
-	def getMetaData = {
+	def getMetaData() {
 		def user = userFromIdStr(params.userId);
 		if (user == null) {
 			render "${params.callback}('Illegal user')"
@@ -128,7 +128,7 @@ class TrialController extends LoginController {
 		println("Entries: " + entries)
 		render "${params.callback}(${new JSON(entries)})"
 	}
-	def addMetaEntryData = {
+	def addMetaEntryData() {
 		println("params: " + params)
 
 		def result = doAddMetaEntry(params.userId, params.text)
@@ -138,7 +138,7 @@ class TrialController extends LoginController {
 			render "${params.callback}('error')"
 		}
 	}
-	def updateMetaEntryData = {
+	def updateMetaEntryData() {
 		def entry = doUpdateMetaEntry(params.entryId, params.text)
 		if (entry != null) {
 			render "${params.callback}(${new JSON(findMetaEntries(userFromId(entry.getUserId())))})"
@@ -147,7 +147,7 @@ class TrialController extends LoginController {
 		}
 	}
 
-	def deleteMetaEntryData = {
+	def deleteMetaEntryData() {
 		def user = sessionUser()
 
 		if (user == null) {
@@ -164,7 +164,7 @@ class TrialController extends LoginController {
 			render "${params.callback}(${new JSON(findMetaEntries(sessionUser()))})"
 		}
 	}
-	def setPreferencesData = {
+	def setPreferencesData() {
 		def user = sessionUser()
 
 		user.updatePreferences(params)
@@ -174,7 +174,7 @@ class TrialController extends LoginController {
 		render "${params.callback}({1})"
 	}
 	// override login
-	def dologin = {
+	def dologin() {
 		params.username = params.username.toLowerCase()
 		def user = User.lookup(params.username, params.password)
 		if (user) {
@@ -194,7 +194,7 @@ class TrialController extends LoginController {
 		}
 	}
 	// override registration
-	def doregister = {
+	def doregister() {
 		if (params.username == null)
 			params.username = session.username.toLowerCase()
 		if (params.password == null)
@@ -230,11 +230,11 @@ class TrialController extends LoginController {
 			redirect(url:toUrl(controller:params.precontroller, action:params.preaction))
 		}
 	}
-	def index = {
+	def index() {
 		def user = sessionUser()
 		[prefs:user.getPreferences()]
 	}
-	def instructions = {
+	def instructions() {
 		def user = sessionUser()
 		if (user.getEmail() != null) {
 			sendMail {

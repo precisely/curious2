@@ -31,12 +31,12 @@ class HomeController extends DataController {
 		debug "HomeController()"
 	}
 
-	def registerwithings = {
+	def registerwithings() {
 		debug "HomeController.registerwithings() request:" + request
 		redirect(url:withingsDataService.getAuthorizationURL())
 	}
 
-	def doregisterwithings = {
+	def doregisterwithings() {
 		debug "HomeController.doregisterwithings() params:" + params
 
 		User user = sessionUser()
@@ -54,7 +54,7 @@ class HomeController extends DataController {
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
 	
-	def notifywithings = {
+	def notifywithings() {
 		debug "HomeController.notifywithings() params:" + params
 		
 		if (withingsDataService.poll(params.userid))
@@ -63,7 +63,7 @@ class HomeController extends DataController {
 			renderStringGet('failure')
 	}
 	
-	def polldevices = {
+	def polldevices() {
 		debug "HomeController.polldevices() request:" + request
 		
 		User user = sessionUser()
@@ -79,12 +79,12 @@ class HomeController extends DataController {
 	}
 
 	
-	def registerfitbit = {
+	def registerfitbit() {
 		debug "HomeController.registerfitbit() request:" + request
 		redirect(url:fitBitDataService.getAuthorizationURL())
 	}
 	
-	def doregisterfitbit = {
+	def doregisterfitbit() {
 		debug "HomeController.doregisterfitbit() params:" + params
 		User user = sessionUser()
 		
@@ -103,7 +103,7 @@ class HomeController extends DataController {
 	/**
 	 * FitBit Subscriber Endpoint
 	 */
-	def notifyfitbit = {
+	def notifyfitbit() {
 		
 		debug "HomeController.notifyfitbit() params:" + params
 		debug "File text as is: " + request.getFile("updates").inputStream.text
@@ -114,13 +114,13 @@ class HomeController extends DataController {
 		return
 	}
 	
-	def registertwitter = {
+	def registertwitter() {
 		debug "HomeController.registertwitter() request:" + request
 		
 		redirect(url:twitterDataService.twitterAuthorizationURL(toUrl(controller:'home', action:'doregistertwitter')))
 	}
 
-	def doregistertwitter = {
+	def doregistertwitter() {
 		debug "HomeController.doregistertwitter() params:" + params
 		
 		User user = sessionUser()
@@ -148,7 +148,7 @@ class HomeController extends DataController {
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
 
-	def userpreferences = {
+	def userpreferences() {
 		debug "HomeController.userpreferences() params:" + params
 		
 		User user = userFromIdStr(params.userId)
@@ -165,7 +165,7 @@ class HomeController extends DataController {
 					prefs:user.getPreferences(), templateVer:urlService.template(request)])
 	}
 
-	def doupdateuserpreferences = {
+	def doupdateuserpreferences() {
 		debug "HomeController.doupdateuserpreferences() params:" + params
 		
 		User user = userFromIdStr(params.userId)
@@ -197,7 +197,7 @@ class HomeController extends DataController {
 		}
 	}
 
-	def doUpload = {
+	def doUpload() {
 		debug "HomeController.doUpload() params:" + params
 		
 		def user = sessionUser()
@@ -227,31 +227,31 @@ class HomeController extends DataController {
 		}
 	}
 
-	def index = {
+	def index() {
 		debug "HomeController.index()"
 		def user = sessionUser()
 		[prefs:user.getPreferences(), showTime:params.showTime?:0, templateVer:urlService.template(request)]
 	}
 
-	def load = {
+	def load() {
 		debug "HomeController.load()"
 		def user = sessionUser()
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
 
-	def graph = {
+	def graph() {
 		debug "HomeController.graph()"
 		def user = sessionUser()
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
 
-	def upload = {
+	def upload() {
 		debug "HomeController.upload()"
 		def user = sessionUser()
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
 
-	def download = {
+	def download() {
 		debug "HomeController.download()"
 		
 		def user = sessionUser()
@@ -271,12 +271,12 @@ class HomeController extends DataController {
         response.outputStream.flush()
 	}
 
-	def termsofservice = {
+	def termsofservice() {
 		debug "HomeController.termsofservice()"
 		[templateVer:urlService.template(request)]
 	}
 
-	def viewgraph = {
+	def viewgraph() {
 		debug "HomeController.viewgraph()"
 		
 		def user = sessionUser()
@@ -291,7 +291,7 @@ class HomeController extends DataController {
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
 
-	def community = {
+	def community() {
 		debug "HomeController.community()"
 		def user = sessionUser()
 
@@ -329,7 +329,7 @@ class HomeController extends DataController {
 		[prefs:user.getPreferences(), userId:user.getId(), templateVer:urlService.template(request)]
 	}
 
-	def discuss = {
+	def discuss() {
 		/*
 		 * Old discussion format used plotDataId to identify discussions (maintain compatibility)
 		 * 
