@@ -384,15 +384,13 @@ function TagList(args) {
 		for (i = 0; i < list.length; ++i) {
 			var tag = list[i];
 			var match = false;
-			if (tag.isTag()) {
-				var tagName = tag.description;
-				if (tagName in skipSet) continue;
-				match = true;
-				for (j in terms) {
-					if (terms[j].length >0 && (!(tagName.startsWith(terms[j]) || (termLonger && (tagName.indexOf(spaceTerms[j]) >= 0)) ))) {
-						match = false;
-						break;
-					}
+			var tagName = tag.description;
+			if (tagName in skipSet) continue;
+			match = true;
+			for (j in terms) {
+				if (terms[j].length >0 && (!(tagName.startsWith(terms[j]) || (termLonger && (tagName.indexOf(spaceTerms[j]) >= 0)) ))) {
+					match = false;
+					break;
 				}
 			}
 			if (match) {

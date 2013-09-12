@@ -10,7 +10,7 @@
 <script type="text/javascript" src="/static/js/curious/curious.js?v=5"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?v=5"></script>
 <script type="text/javascript" src="/static/js/curious/treeview.js?v=5"></script>
-<script type="text/javascript" src="/static/js/curious/taglist.js?v=5"></script>
+<script type="text/javascript" src="/static/js/curious/taglist.js?v=6"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="${resource(dir:'css', file:'main.css?v=4')}"/>
 <g:if test="${templateVer == 'lhp'}">
