@@ -77,12 +77,21 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
+api {
+	weatherunderground {
+		key = "0de9ca6314e3b2ee"
+	}
+	bingMapKey {
+		key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+	}
+}
+
 environments {
     development {
         grails.logging.jul.usebridge = true
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
-        grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
     }
     production {
         grails.logging.jul.usebridge = false
@@ -92,6 +101,7 @@ environments {
     test {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
     }
 }
 
