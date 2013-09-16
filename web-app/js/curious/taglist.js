@@ -488,6 +488,17 @@ function NameIterator(names) {
 function TagView(args) {
 	TreeItemView.call(this,args);
 	this.pinned = args.pinned || false;
+	
+	this.pin = function() {
+		this.getDOMElement().addClass("pinned");
+		this.hide();
+	}
+	
+	this.unpin = function() {
+		this.getDOMElement().removeClass("pinned");
+		this.show();
+	}
+	
 	this.render = function(extraParams) {
 		var pinIcon = "ui-icon-pin-w";
 		if (this.pinned) {
@@ -676,7 +687,9 @@ function TagListWidget(args) {
 	this.showMatchingTags = function(description) {
 		var elements = this.getListItemElements();
 		this.list.eachMatchingTag(description, function(tag, i) {
-			$(elements[i]).show();
+			if (!$(elements[i]).hasClass('pinned')) {
+				$(elements[i]).show();
+			}
 		}.bind(this), function(tag, i) {
 			$(elements[i]).hide();
 		}.bind(this));
@@ -713,11 +726,11 @@ function TagListWidget(args) {
 		var pinnedView = this.createTreeItemView(itemView.getData());
 		pinnedView.pinned = true;
 		this.addToPinnedList(pinnedView);
-		itemView.hide();
+		itemView.pin();
+		
+		//Show the view in the list view once unpinned
 		$(itemView.getData()).on("unpinned",function(event, target){
-			console.log("Unpinned");
-			console.log(target);
-			this.show();
+			this.unpin();
 		}.bind(itemView));
 	}.bind(this));
 	
