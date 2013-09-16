@@ -10,6 +10,7 @@ import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.TwitterDataService
+import us.wearecurio.services.WeatherService;
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.utility.Utils
@@ -484,4 +485,5 @@ class HomeController extends DataController {
 			render(view:"/home/discuss", model:model)
 		}
 	}
+	
 }
