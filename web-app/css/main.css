@@ -373,6 +373,10 @@ li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil {
 	display:block;
 }
 
+.leftNav li.treeItemView .ui-icon-pin-w {
+	display: none;
+}
+
 li.wildcardTagGroup.active ul .ui-icon-close {
 	display:none;
 }
