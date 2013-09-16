@@ -6,6 +6,7 @@
 			<input type="text" value="Search tags for..." class="textInput" id="tagSearch" />
 		</div>
 		<ul id="wildcardTagGroupSearch" class="hide tags"></ul>
+		<ul id="stickyTagList" class="hide tags"></ul>
 		<ul id="tagList" class="tags"></ul>
 	</div>
 	

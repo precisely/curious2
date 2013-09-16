@@ -367,6 +367,7 @@ ul.tags li.tag {
 	background-position: -64px 0 !important;
 }
 
+#tagNav li.treeItemView .ui-icon-pin-w, #tagNav li.treeItemView .ui-icon-pin-s,
 li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil {
 	float: right;
 	display:block;
