@@ -708,7 +708,10 @@ $(document).on("click", TreeItemGroupView.cssClass.join(","),
 		} else {
 			target = e.target;
 		}
-		var treeItemGroupView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
-		treeItemGroupView.showTagGroup();	
+		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+		itemView.highlight();
+		if (itemView instanceof TreeItemGroupView) {
+			itemView.showTagGroup();
+		}	
 	}
 .bind(this));
