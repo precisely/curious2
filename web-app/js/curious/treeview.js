@@ -413,6 +413,14 @@ function TreeItemView(args) {
 		return $('#'+this.element);
 	}
 	
+	this.hide = function() {
+		this.getDOMElement().hide();
+	}
+	
+	this.show = function() {
+		this.getDOMElement().show();
+	}
+	
 	this.getData = function() {
 		return this.data;
 	}

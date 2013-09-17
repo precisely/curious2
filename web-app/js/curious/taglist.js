@@ -487,10 +487,27 @@ function NameIterator(names) {
 
 function TagView(args) {
 	TreeItemView.call(this,args);
+	this.pinned = args.pinned || false;
+	
+	this.pin = function() {
+		this.getDOMElement().addClass("pinned");
+		this.hide();
+	}
+	
+	this.unpin = function() {
+		this.getDOMElement().removeClass("pinned");
+		this.show();
+	}
 	
 	this.render = function(extraParams) {
-		return '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' + this.data.description +'</span>'
-			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class=" hide ui-icon ui-icon-close"></span>' : '') + '</li>';
+		var pinIcon = "ui-icon-pin-w";
+		if (this.pinned) {
+			pinIcon = "ui-icon-pin-s";
+		}
+		
+		return '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
+		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>'
+			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class="hide ui-icon ui-icon-close"></span>' : '') + '</li>';
 	}
 	
 	this.update = function(data) {
@@ -519,7 +536,12 @@ function TagGroupView(args) {
 		
 	}
 	
-	this.render = function(template) {
+	this.render = function(extraParams) {
+		var pinIcon = "ui-icon-pin-w";
+		if (this.pinned) {
+			pinIcon = "ui-icon-pin-s";
+		}
+		
 		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass()+' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
 		+ this.data.description +'</span><span class=" hide ui-icon ui-icon-close"></span>';
@@ -527,7 +549,7 @@ function TagGroupView(args) {
 		if (!this.data.isWildcard) {
 			html +='<span class=" hide ui-icon ui-icon-pencil"></span>';
 		}
-		html+='<ul class="hide tags"></ul></li>';
+		html+='<span class="ui-icon '+pinIcon+'"></span><ul class="hide tags"></ul></li>';
 		return html;
 	}
 	
@@ -593,8 +615,11 @@ function TagListWidget(args) {
 		return itemView
 	}
 	
-	this.makeDraggableAndDroppable = function() {
-		$(this.element).delegate(".treeItemView","mouseenter",function(){
+	this.makeDraggableAndDroppable = function(element) {
+		if (typeof element == 'undefined') {
+			element = this.element;
+		}
+		$(element).delegate(".treeItemView","mouseenter",function(){
 			$(this).draggable({
 				revert : 'invalid',
 				helper: function(event) {
@@ -662,7 +687,9 @@ function TagListWidget(args) {
 	this.showMatchingTags = function(description) {
 		var elements = this.getListItemElements();
 		this.list.eachMatchingTag(description, function(tag, i) {
-			$(elements[i]).show();
+			if (!$(elements[i]).hasClass('pinned')) {
+				$(elements[i]).show();
+			}
 		}.bind(this), function(tag, i) {
 			$(elements[i]).hide();
 		}.bind(this));
@@ -672,8 +699,16 @@ function TagListWidget(args) {
 		this.getListItemElements().show();
 	}
 	
-	this.makeDraggableAndDroppable();
+	this.addToPinnedList = function(itemView) {
+		$("#stickyTagList").append(itemView.render({pinned:true}));
+		if ($("#stickyTagList").hasClass("hide")) {
+			$("#stickyTagList").removeClass("hide");
+		}
+		$(itemView.getDOMElement()).data(DATA_KEY_FOR_ITEM_VIEW, itemView);
+	}
 	
+	this.makeDraggableAndDroppable();
+	this.makeDraggableAndDroppable("#stickyTagList");
 	$(document).on("click","li.tagGroup > .ui-icon-pencil", function(e) {
 		e.stopPropagation();
 		var target = e.target.parentElement;
@@ -682,6 +717,31 @@ function TagListWidget(args) {
 		$("input","#tagGroupEditDialog").data(DATA_KEY_FOR_TAGLIST_ITEM,tagGroupView.getData());
 		$("#tagGroupEditDialog").dialog("open");
 	}.bind(this));
+	
+	$(document).on("click","li.treeItemView > .ui-icon-pin-w", function(e) {
+		e.stopPropagation();
+		var target = e.target.parentElement;
+		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+		console.log("Clicked on tree item:" + itemView.getData());
+		var pinnedView = this.createTreeItemView(itemView.getData());
+		pinnedView.pinned = true;
+		this.addToPinnedList(pinnedView);
+		itemView.pin();
+		
+		//Show the view in the list view once unpinned
+		$(itemView.getData()).on("unpinned",function(event, target){
+			this.unpin();
+		}.bind(itemView));
+	}.bind(this));
+	
+	$(document).on("click","li.treeItemView > .ui-icon-pin-s", function(e) {
+		e.stopPropagation();
+		var target = e.target.parentElement;
+		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+		$(itemView.getData()).trigger("unpinned");
+		itemView.remove();
+	}.bind(this));
+	
 }
 
 inherit(TagListWidget, TreeWidget);
