@@ -4,6 +4,7 @@
 <head>
 	<title>Curious</title>
 	<meta name="layout" content="main" />
+	<r:require module="basic"/>
 	<meta name="description" content="A platform for health hackers" />
 
 	<style type="text/css">
@@ -32,35 +33,6 @@
 			min-width: 300px;
 		}
 	</style>
-
-	<script type="text/javascript">
-	    function refreshPage() {
-	    }
-	    function doLogout() {
-	        callLogoutCallbacks();
-	    }
-	    $(function() {
-	        initTemplate();
-	
-	        $.getJSON("/home/getPeopleData?callback=?", function(data) {
-	            if (!checkData(data))
-	                return;
-	
-	            found = false;
-	
-	            jQuery.each(data, function() {
-	                if (!found) {
-	                    // set first user id as the current
-	                    setUserId(this['id']);
-	                    found = true;
-	                }
-	                addPerson(this['first'] + ' ' + this['last'], this['username'],
-	                        this['id'], this['sex']);
-	                return true;
-	            });
-	        });
-	    });
-	</script>
 </head>
 <body>
 	<div class="red-strip"></div>

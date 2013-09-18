@@ -87,3 +87,4 @@
 <div style="clear:both;"></div>
 </div>
 </div>
+<r:layoutResources/>
