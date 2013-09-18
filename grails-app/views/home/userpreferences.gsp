@@ -93,43 +93,34 @@
 							<tr>
 								<td><label for="first">Email Notifications</label></td>
 								<td>
-									<input type="radio" name="notifyOnComments" value="off"
-										${!user.getNotifyOnComments() ? 'checked' : ''}> No emails on comments<br><br>
-
-									<input type="radio" name="notifyOnComments" value="on"
-										${user.getNotifyOnComments() ? 'checked' : ''}> Emails on comments
+									<g:radio name="notifyOnComments" value="off"
+										checked="${!user.getNotifyOnComments()}" /> No emails on comments<br>
+									<g:radio name="notifyOnComments" value="on"
+										checked="${user.getNotifyOnComments()}" /> Emails on comments
 								</td>
 							</tr>
 
 							<tr>
 								<td><label for="sex">Gender</label></td>
 								<td style="padding-bottom: 0px;">
-									<g:radio name="sex" value="F" checked="${user.sex == 'F' }"/> Female<br><br>
+									<g:radio name="sex" value="F" checked="${user.sex == 'F' }"/> Female<br>
 									<g:radio name="sex" value="M" checked="${user.sex == 'M' }"/> Male<br><br>
 								</td>
 							</tr>
 
 							<tr>
-								<td><label>Twitter Account</label>
+								<td><label>Other Accounts</label>
 								<td>
 									<g:if test="${!user.twitterAccountName}">
 										<g:link action="registertwitter">Link Twitter Account</g:link>
 									</g:if>
 									<g:else>
-										${user.twitterAccountName}<br>
-										<g:link action="registertwitter">Link Other Twitter Account</g:link>
-									</g:else>
+										Twitter Account: ${user.twitterAccountName}<br>
+										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
+									</g:else><br>
+									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
+									<g:link action="registerwithings">Link Withings Account</g:link>
 								</td>
-							</tr>
-
-							<tr>
-								<td></td>
-								<td><g:link action="registerfitbit">Link FitBit Account</g:link></td>
-							</tr>
-
-							<tr>
-								<td></td>
-								<td><g:link action="registerwithings">Link Withings Account</g:link></td>
 							</tr>
 
 							<tr>
