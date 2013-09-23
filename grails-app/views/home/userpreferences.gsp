@@ -32,13 +32,17 @@
 			padding: 6px;
 			min-width: 300px;
 		}
+		.logo {
+			background-color: #ccc;
+			min-height: 218px;
+		}
 	</style>
 </head>
 <body>
 	<div class="red-strip"></div>
 	<div class="row">
 		<div class="span3 text-center">
-			<r:img dir="images" width="150px" file="logo.gif" />
+			<div class="logo"></div>
 		</div>
 		<div class="span9 profile-container">
 			<div id="addData">
