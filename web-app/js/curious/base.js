@@ -111,3 +111,13 @@ DateUtil.prototype.getDateRangeForToday = function() {
 		end: end
 	}
 }
+
+window.App = {};
+var App = window.App;
+App.CSRF = {};
+App.CSRF.SyncTokenKeyName = "SYNCHRONIZER_TOKEN"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_KEY
+App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_URI
+
+function getCSRFPreventionURI(key) {
+    return App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
+}

@@ -4,8 +4,6 @@ import grails.converters.*
 
 import java.text.SimpleDateFormat
 
-import org.apache.commons.logging.LogFactory
-
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.JawboneService
@@ -17,12 +15,22 @@ import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
 	
+	def beforeInterceptor = [action: this.&validateToken, only: ["addEntrySData"]]
+	
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
+	def genericService
 	
-	private static def log = LogFactory.getLog(this)
+	private boolean validateToken() {
+		println params
+		if(!genericService.isTokenValid(request, params)) {
+			response.sendError 401
+			return false
+		}
+		return true
+	}
 	
 	static debug(str) {
 		log.debug(str)

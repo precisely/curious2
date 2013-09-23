@@ -5,6 +5,7 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
+<c:jsCSRFToken key="addEntry" />
 <script type="text/javascript">
 /**
  * Custom Curious mobile widget forked from jQuery UI selectable widget
@@ -424,7 +425,8 @@ function addEntry(userId, text, defaultToNow) {
 	
 	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
-			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&callback=?",
+			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0')
+			+ "&" + getCSRFPreventionURI("addEntry") + "&callback=?",
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {
 					if (entries[1] != null) {
