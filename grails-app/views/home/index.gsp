@@ -5,7 +5,13 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
-<c:jsCSRFToken key="addEntry" />
+
+<c:jsCSRFToken key="addEntryCSRF" />
+<c:jsCSRFToken key="getPeopleDataCSRF" />
+<c:jsCSRFToken key="getEntriesDataCSRF" />
+<c:jsCSRFToken key="autoCompleteDataCSRF" />
+<c:jsCSRFToken key="listTagsAndTagGroupsCSRF" />
+
 <script type="text/javascript">
 /**
  * Custom Curious mobile widget forked from jQuery UI selectable widget
@@ -294,6 +300,7 @@ function refreshPage() {
 	cacheDate();
 	
 	$.getJSON("/home/getEntriesData?date="+ cachedDateUTC + "&userId=" + currentUserId + "&callback=?",
+		getCSRFPreventionObject("getEntriesDataCSRF"),
 		function(entries){
 			if (checkData(entries))
 				refreshEntries(entries);
@@ -426,7 +433,7 @@ function addEntry(userId, text, defaultToNow) {
 	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
 			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0')
-			+ "&" + getCSRFPreventionURI("addEntry") + "&callback=?",
+			+ getCSRFPreventionURI("addEntry", "&") + "&callback=?",
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {
 					if (entries[1] != null) {
@@ -625,7 +632,7 @@ $(function(){
 
 	initTemplate();
 	
-	$.getJSON("/home/getPeopleData?callback=?",
+	$.getJSON("/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data){
 			if (!checkData(data))
 				return;

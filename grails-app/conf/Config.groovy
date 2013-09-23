@@ -124,4 +124,6 @@ log4j = {
            'org.springframework',
            'org.hibernate',
            'net.sf.ehcache.hibernate'
+
+	debug "grails.app.services.us.wearecurio.services"
 }

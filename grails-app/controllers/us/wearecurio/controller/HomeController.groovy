@@ -15,23 +15,11 @@ import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
 	
-	def beforeInterceptor = [action: this.&validateToken, only: ["addEntrySData"]]
-	
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
-	def genericService
-	
-	private boolean validateToken() {
-		println params
-		if(!genericService.isTokenValid(request, params)) {
-			response.sendError 401
-			return false
-		}
-		return true
-	}
-	
+
 	static debug(str) {
 		log.debug(str)
 	}

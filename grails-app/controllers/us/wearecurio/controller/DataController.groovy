@@ -15,13 +15,9 @@ import java.util.Date;
 import java.util.SimpleTimeZone
 import java.util.TimeZone;
 
-import org.apache.commons.logging.LogFactory
-
 class DataController extends LoginController {
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-	private static def log = LogFactory.getLog(this)
-	
 	CorrelationService correlationService
 	
 	DateFormat dateFormat
@@ -34,7 +30,7 @@ class DataController extends LoginController {
 	Date baseDate
 	User user
 	Long userId
-	
+
 	static debug(str) {
 		log.debug(str)
 	}

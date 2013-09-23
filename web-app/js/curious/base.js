@@ -118,6 +118,18 @@ App.CSRF = {};
 App.CSRF.SyncTokenKeyName = "SYNCHRONIZER_TOKEN"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_KEY
 App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_URI
 
-function getCSRFPreventionURI(key) {
-    return App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
+function getCSRFPreventionURI(key, prefix, suffix) {
+	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
+	return prefix + preventionURI + (suffix ? suffix : "");
+}
+
+function getCSRFPreventionObject(key, data) {
+	var CSRFPreventionObject = new Object();
+	if(App.CSRF[key]) {
+		CSRFPreventionObject[App.CSRF.SyncTokenKeyName] = App.CSRF[key];
+	} else {
+		console.error("Missing csrf prevention token for key", key)
+	}
+	CSRFPreventionObject[App.CSRF.SyncTokenUriName] = key;
+	return $.extend(CSRFPreventionObject, data);
 }
