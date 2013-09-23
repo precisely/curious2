@@ -4,6 +4,11 @@
 <head>
 <meta name="layout" content="plot" />
 <title>Curious</title>
+
+<c:jsCSRFToken keys="getDataCSRF, showTagGroupCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+deleteTagGroupCSRF, getTagPropertiesCSRF, autoCompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
+
 <script type="text/javascript">
 function refreshPage() {
 	// TODO: used to reload taglist here, instead do incremental updates on changes
@@ -22,6 +27,7 @@ $(function(){
 	initTagListWidget();
 	
 	$.getJSON("/home/getPeopleData?callback=?",
+		getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data) {
 			if (!checkData(data))
 				return;

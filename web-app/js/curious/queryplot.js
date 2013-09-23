@@ -1664,7 +1664,7 @@ function PlotLine(p) {
 		var method = (this.sumData || this.sumNights) ? "getSumData" : "getData";
 		var plotLine = this;
 		
-		$.getJSON(makeGetUrl(method), makeGetArgs({ tags:$.toJSON(this.getTags()),
+		$.getJSON(makeGetUrl(method), getCSRFPreventionObject("getDataCSRF", { tags:$.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				sumNights:this.sumNights ? "true" : "",

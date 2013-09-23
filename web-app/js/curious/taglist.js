@@ -50,9 +50,9 @@ function Tag(args) {
 	}
 	
 	this.getTagProperties = function(callback) {
-		$.getJSON("/tag/getTagProperties?callback=?", {
-			id : this.id
-		}, function(data) {
+		$.getJSON("/tag/getTagProperties?callback=?",
+		getCSRFPreventionObject("getTagPropertiesCSRF", {id : this.id}),
+		function(data) {
 			this.isContinuous = data.isContinuous;
 			this.showPoints = data.showPoints;
 			callback(this);
@@ -118,10 +118,10 @@ function TagGroup(args) {
 			}.bind(this));
 			callback(this);
 		} else {
-			$.getJSON("/tag/showTagGroup?callback=?", {
+			$.getJSON("/tag/showTagGroup?callback=?", getCSRFPreventionObject("showTagGroupCSRF", {
 				id : this.id,
 				description: this.getDescription()
-			}, function(data) {
+			}), function(data) {
 				jQuery.each(data, function(index, tag) {
 					tag.type = tag.class;
 					this.addChild(this.treeStore.createOrUpdate(tag));
@@ -217,23 +217,25 @@ function TagGroup(args) {
 	}
 	
 	this.removeChildAtBackend = function(childItem, callback) {
+		var csrfKey = "removeTagFromTagGroupCSRF"
 		var url = "/tag/removeTagFromTagGroup?callback=?";
 		if(childItem.type.indexOf("Group")!==-1) {
+			csrfKey = "removeTagGroupFromTagGroupCSRF"
 			url = "/tag/removeTagGroupFromTagGroup?callback=?";
 		}
-		$.getJSON(url, {
+		$.getJSON(url, getCSRFPreventionObject(csrfKey, {
 			tagGroupId : this.id,
 			id: childItem.id
-		}, function(data) {
+		}), function(data) {
 			callback();
 		}.bind(this));
 		
 	}
 
 	this.remove = function() {
-		$.getJSON("/tag/deleteTagGroup?callback=?", {
+		$.getJSON("/tag/deleteTagGroup?callback=?", getCSRFPreventionObject("deleteTagGroupCSRF", {
 			id : this.id
-		}, function(data) {
+		}), function(data) {
 			this.removed();
 		}.bind(this));
 	}
@@ -434,11 +436,11 @@ function TagList(args) {
 	}
 	
 	this.createTagGroupFromTags = function(targetTag, sourceTag, callback) {
-		$.getJSON("/tag/createTagGroup?callback=?", {
+		$.getJSON("/tag/createTagGroup?callback=?", getCSRFPreventionObject("createTagGroupCSRF", {
 			tagGroupName : this.generateUniqueTagName(targetTag.description
 					+ " group"),
 			tagIds : [ sourceTag.id, targetTag.id ].toString()
-		}, function(data) {
+		}), function(data) {
 			var listItem = this.store.createOrUpdate(data)
 			this.addAfter(listItem, targetTag);
 			if ( typeof callback !== 'undefined') {
@@ -449,10 +451,10 @@ function TagList(args) {
 	
 	this.addTagGroupToTagGroup = function(targetTagGroup, sourceTagGroup) {
 		console.log("Debug addTagGroupToTagGroup");
-		$.getJSON("/tag/addTagGroupToTagGroup?callback=?", {
+		$.getJSON("/tag/addTagGroupToTagGroup?callback=?", getCSRFPreventionObject("addTagGroupToTagGroupCSRF", {
 			parentTagGroupId : targetTagGroup.id,
 			childTagGroupId : sourceTagGroup.id
-		}, function(data) {
+		}), function(data) {
 			targetTagGroup.updateChildren(sourceTagGroup);
 			console.log("Debug addTagGroupToTagGroup callback");
 		});
@@ -460,10 +462,10 @@ function TagList(args) {
 	
 	this.addTagToTagGroup = function(tagGroup, tag) {
 		console.log("Debug addTagToTagGroup");
-		$.getJSON("/tag/addTagToTagGroup?callback=?", {
+		$.getJSON("/tag/addTagToTagGroup?callback=?", getCSRFPreventionObject("addTagToTagGroupCSRF", {
 			tagGroupId : tagGroup.id,
 			id : tag.id
-		}, function(data) {
+		}), function(data) {
 			console.log("Debug addTagToTagGroup callback");
 			tagGroup.updateChildren(tag);
 		});
