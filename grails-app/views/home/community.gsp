@@ -30,6 +30,7 @@
 .communityMessage {padding-bottom:1em;}
 .discussHeader { padding-top:12px;margin-left:15px;}
 </style>
+<c:jsCSRFToken keys="getPeopleDataCSRF" />
 <script type="text/javascript">
 
 function minLinkName(name) {
@@ -60,6 +61,7 @@ $(function(){
 	initTemplate();
 	
 	$.getJSON("/home/getPeopleData?callback=?",
+			getCSRFPreventionObject("getPeopleDataCSRF"),
 			function(data){
 				if (!checkData(data))
 					return;

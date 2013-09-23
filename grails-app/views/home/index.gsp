@@ -6,7 +6,9 @@
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF" />
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
 
 <script type="text/javascript">
 /**
