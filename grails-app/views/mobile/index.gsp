@@ -48,7 +48,7 @@ setInterval(function(){cache.update()}, 10000);
 </script-->
 <meta name="description" content="A platform for health hackers" />
 <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <script type="text/javascript">
 //Check if a new cache is available on page load.
@@ -346,6 +346,19 @@ function askLogout() {
 	}
 }
 
+function showAlert(alertText) {
+	$("#alert-message-text").text(alertText);
+	$("#alert-message").dialog({
+		dialogClass: "no-close",
+		modal: true,
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+}
+
 // flag to determine whether the system is ready to submit data
 var dataReady = false;
 
@@ -518,9 +531,18 @@ $(function(){
 </script>
 </head>
 <body>
+<div id="alert-message" title="">
+  <p>
+  	<div id="alert-message-text"></div>
+  </p>
+</div>
 <div id="body">
 <div id="loginPage" style="display: none;">
 	<style type="text/css">
+	.no-close .ui-dialog-titlebar-close {
+		display: none;
+	}
+		
 	#loginlogo {
 		padding-top: 50px;
 		margin-bottom: 50px;
@@ -667,7 +689,7 @@ $(function(){
 		
 		function submitForm() {
 			if (!isOnline()) {
-				alert("Please wait until online");
+				showAlert("Please wait until online");
 				return;
 			}
 			var email = $("#emailField").val();
@@ -681,17 +703,17 @@ $(function(){
 						dataReady=true;
 						launchTrack();
 					} else {
-						alert('Username or password not correct, please try again');
+						showAlert('Username or password not correct, please try again');
 						startLogin(0);
 					}
 				});
 			} else if (loginMode == 10) { // forgot password
 				$.getJSON(makeGetUrl('doforgotData'), makeGetArgs({ username:username }), function(data) {
 					if (data['success']) {
-						alert('Look for instructions on recovering your account information in your email.');
+						showAlert('Look for instructions on recovering your account information in your email.');
 						startLogin(0);
 					} else {
-						alert(data['message'] + " Please try again or hit Cancel to return to the login screen.");
+						showAlert(data['message'] + " Please try again or hit Cancel to return to the login screen.");
 					}
 				});
 			} else if (loginMode == 20) { // create an account
@@ -707,7 +729,7 @@ $(function(){
 							dataReady=true;
 							launchTrack();
 						} else {
-							alert(data['message'] + ' Please try again or hit Cancel to return to the login screen.');
+							showAlert(data['message'] + ' Please try again or hit Cancel to return to the login screen.');
 						}
 					});
 			}
@@ -1115,11 +1137,11 @@ $(function(){
 			return;
 		}
 		if (!isOnline()) {
-			alert("Please wait until online to delete an entry");
+			showAlert("Please wait until online to delete an entry");
 			return;
 		}
 		if (entryId == undefined) {
-			alert("Please select entry you wish to delete");
+			showAlert("Please select entry you wish to delete");
 		} else {
 			//if (!confirm("Are you sure you want to delete this entry?"))
 			//	return;
@@ -1137,7 +1159,7 @@ $(function(){
 						if (entries[2] != null)
 							updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 					} else {
-						alert("Error deleting entry");
+						showAlert("Error deleting entry");
 					}
 				});
 		}
@@ -1156,7 +1178,7 @@ $(function(){
 			return;
 		}
 		if (!isOnline()) {
-			alert("Please wait until online to update an entry");
+			showAlert("Please wait until online to update an entry");
 			return;
 		}
 		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs({ entryId:entryId,
@@ -1169,7 +1191,7 @@ $(function(){
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			} else {
-				alert("Error updating entry");
+				showAlert("Error updating entry");
 			}
 		});
 	}
@@ -1183,7 +1205,7 @@ $(function(){
 			return;
 		}
 		if (!isOnline()) {
-			alert("Please wait until online to add an entry");
+			showAlert("Please wait until online to add an entry");
 			return;
 		}
 		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs({ currentTime:currentTimeUTC,
@@ -1192,12 +1214,12 @@ $(function(){
 		function(entries){
 			if (checkData(entries)) {
 				if (entries[1] != null) {
-					alert(entries[1]);
+					showAlert(entries[1]);
 				}
 				refreshEntries(entries[0]);
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			} else {
-				alert("Error adding entry");
+				showAlert("Error adding entry");
 			}
 		});
 	}
