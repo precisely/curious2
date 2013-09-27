@@ -341,9 +341,9 @@ function doLogout() {
  })(jQuery);
 
 function askLogout() {
-	if (confirm("Log out?")) {
+	if (showYesNo("Log out?"), function() {
 		startLogin(0);
-	}
+	});
 }
 
 function showAlert(alertText) {
@@ -353,6 +353,23 @@ function showAlert(alertText) {
 		modal: true,
 		buttons: {
 			Ok: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+}
+
+function showYesNo(alertText, onConfirm) {
+	$("#alert-message-text").text(alertText);
+	$("#alert-message").dialog({
+		dialogClass: "no-close",
+		modal: true,
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+				onConfirm();
+			}
+			Cancel: function() {
 				$( this ).dialog( "close" );
 			}
 		}
