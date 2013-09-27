@@ -81,7 +81,7 @@ function doLogout() {
 <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
 <link rel="apple-touch-icon" href="/images/apple-touch-icon-precomposed.png" />
 <link rel="stylesheet" href="/css/mobile.css" />
-<link type="text/css" href="/css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet">
+<link type="text/css" href="/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <script type="text/javascript">
 
 /**
