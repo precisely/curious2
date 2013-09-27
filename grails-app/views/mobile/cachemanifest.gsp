@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 282
+# rev 287
 
 CACHE:
 #/mobile/index
@@ -26,7 +26,7 @@ CACHE:
 /images/logo.gif
 </g:else>
 /css/mobile.css
-/css/smoothness/jquery-ui-1.8.16.custom.css
+/css/smoothness/jquery-ui-1.8.16.custom2.css
 /css/smoothness/images/ui-bg_flat_75_ffffff_40x100.png
 /css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png
 /css/smoothness/images/ui-icons_222222_256x240.png

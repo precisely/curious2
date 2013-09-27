@@ -341,7 +341,7 @@ function doLogout() {
  })(jQuery);
 
 function askLogout() {
-	if (showYesNo("Log out?"), function() {
+	showYesNo("Log out?", function() {
 		startLogin(0);
 	});
 }
@@ -349,7 +349,6 @@ function askLogout() {
 function showAlert(alertText) {
 	$("#alert-message-text").text(alertText);
 	$("#alert-message").dialog({
-		dialogClass: "no-close",
 		modal: true,
 		buttons: {
 			Ok: function() {
@@ -365,11 +364,11 @@ function showYesNo(alertText, onConfirm) {
 		dialogClass: "no-close",
 		modal: true,
 		buttons: {
-			Ok: function() {
+			"Yes ": function() {
 				$( this ).dialog( "close" );
 				onConfirm();
-			}
-			Cancel: function() {
+			},
+			No: function() {
 				$( this ).dialog( "close" );
 			}
 		}
@@ -546,6 +545,12 @@ $(function(){
 	reloadPage();
 });
 </script>
+<style type="text/css">
+	.ui-dialog-titlebar-close {
+		display: none;
+	}
+		
+</style>
 </head>
 <body>
 <div id="alert-message" title="">
@@ -556,10 +561,6 @@ $(function(){
 <div id="body">
 <div id="loginPage" style="display: none;">
 	<style type="text/css">
-	.no-close .ui-dialog-titlebar-close {
-		display: none;
-	}
-		
 	#loginlogo {
 		padding-top: 50px;
 		margin-bottom: 50px;
