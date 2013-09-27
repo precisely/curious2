@@ -349,7 +349,10 @@ function askLogout() {
 function showAlert(alertText) {
 	$("#alert-message-text").text(alertText);
 	$("#alert-message").dialog({
+		dialogClass: "no-close",
 		modal: true,
+		resizable: false,
+		title: "Alert",
 		buttons: {
 			Ok: function() {
 				$( this ).dialog( "close" );
@@ -363,6 +366,8 @@ function showYesNo(alertText, onConfirm) {
 	$("#alert-message").dialog({
 		dialogClass: "no-close",
 		modal: true,
+		resizable: false,
+		title: "Query",
 		buttons: {
 			"Yes ": function() {
 				$( this ).dialog( "close" );
@@ -546,15 +551,17 @@ $(function(){
 });
 </script>
 <style type="text/css">
-	.ui-dialog-titlebar-close {
+	.no-close .ui-dialog-titlebar-close {
 		display: none;
 	}
-		
+	.no-close .ui-dialog-titlebar {
+		display: none;
+	}
 </style>
 </head>
 <body>
-<div id="alert-message" title="">
-  <p>
+<div id="alert-message" title="" style="display:none">
+  <p>&nbsp;<p>
   	<div id="alert-message-text"></div>
   </p>
 </div>
