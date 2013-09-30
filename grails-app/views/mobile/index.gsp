@@ -71,17 +71,17 @@ function doLogout() {
 	startLogin(0);
 }
 </script>
-<script type="text/javascript" src="/js/jquery/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="/js/jquery/jquery.offline.js"></script>
-<script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
-<script type="text/javascript" src="/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/js/curious/base.js?ver=5"></script>
-<script type="text/javascript" src="/js/curious/curious.js?ver=5"></script>
-<script type="text/javascript" src="/js/curious/autocomplete.js?ver=5"></script>
-<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
-<link rel="apple-touch-icon" href="/images/apple-touch-icon-precomposed.png" />
-<link rel="stylesheet" href="/css/mobile.css" />
-<link type="text/css" href="/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
+<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=5"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=5"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=5"></script>
+<link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
+<link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
+<link rel="stylesheet" href="/static/css/mobile.css" />
+<link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <script type="text/javascript">
 
 /**
