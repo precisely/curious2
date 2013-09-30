@@ -86,24 +86,31 @@ class WithingsDataService {
 	 * Second stage in OAuth verification.
 	 */
 	def authorizeAccount(Long userId, Long withingsUserId, String authToken, String authVerifier) {
+		debug "Authorizing WithingsDataService for user " + userId + " and userId " + withingsUserId
 		// retrieve requestToken from map, then remove from map to avoid memory leak
 
 		Token requestToken = requestMap.get(authToken)
 
-		if (requestToken == null)
+		if (requestToken == null) {
+			debug "requestToken is null, failure"
 			return null
+		}
 
 		requestMap.remove(authToken)
 
 		Token accessTokenFromService = service.getAccessToken(requestToken, new Verifier(authVerifier))
 
-		if (accessTokenFromService == null)
+		if (accessTokenFromService == null) {
+			debug "accessTokenFromService is null, failure"
 			return null
+		}
 			
 		OAuthAccount withingsAccount = OAuthAccount.createOrUpdate(OAuthAccount.WITHINGS_ID, userId, withingsUserId.toString(),
 				accessTokenFromService.getToken(), accessTokenFromService.getSecret())
 		
 		Utils.save(withingsAccount, true)
+		
+		debug "Created withingsAccount " + withingsAccount
 		
 		this.subscribe(withingsAccount)
 		

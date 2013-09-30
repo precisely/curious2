@@ -21,7 +21,7 @@ class OAuthAccount {
 	Date lastSubscribed
 
 	static constraints = {
-		userId(unique:true)
+		userId(unique:['typeId'])
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
 	}
@@ -30,11 +30,10 @@ class OAuthAccount {
 		int c = 0
 		
 		while (++c < 3) {
-			OAuthAccount account = OAuthAccount.findByUserId(userId)
+			OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, typeId)
 			
 			if (account) {
 				account.setAccountId(accountId)
-				account.setTypeId(typeId)
 				account.setAccessToken(accessToken)
 				account.setAccessSecret(accessSecret)
 				

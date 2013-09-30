@@ -22,6 +22,7 @@ class MigrationService {
 	static transactional = true
 	
 	public static final long TEST_MIGRATION_ID = 30L
+	public static final long FIX_OAUTH_UNIQUE_CONSTRAINT_ID = 32L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -74,6 +75,9 @@ class MigrationService {
 			
 		tryMigration(TEST_MIGRATION_ID) {
 			sql('ALTER TABLE entry CHANGE COLUMN comment comment TEXT')
+		}
+		tryMigration(FIX_OAUTH_UNIQUE_CONSTRAINT_ID) {
+			sql('alter table oauth_account drop index user_id')
 		}
 /*
 		tryMigration(LENGTHEN_COMMENT_ID) {
