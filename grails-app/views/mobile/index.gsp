@@ -75,9 +75,9 @@ function doLogout() {
 <script type="text/javascript" src="/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/js/curious/base.js?ver=3"></script>
-<script type="text/javascript" src="/js/curious/curious.js?ver=3"></script>
-<script type="text/javascript" src="/js/curious/autocomplete.js?ver=3"></script>
+<script type="text/javascript" src="/js/curious/base.js?ver=5"></script>
+<script type="text/javascript" src="/js/curious/curious.js?ver=5"></script>
+<script type="text/javascript" src="/js/curious/autocomplete.js?ver=5"></script>
 <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
 <link rel="apple-touch-icon" href="/images/apple-touch-icon-precomposed.png" />
 <link rel="stylesheet" href="/css/mobile.css" />
