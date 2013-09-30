@@ -566,7 +566,7 @@ $(function(){
   </p>
 </div>
 <div id="body">
-<div id="loginPage" style="display: none;">
+<div id="loginPage" style="display: none; width: 350px; margin-left: auto; margin-right: auto;">
 	<style type="text/css">
 	#loginlogo {
 		padding-top: 50px;
