@@ -59,6 +59,17 @@ class DatabaseService {
 		sqlQuery(statement).executeUpdate()
 	}
 	
+	public boolean sqlNoRollback(String statement) {
+		try {
+			sqlQuery(statement).executeUpdate()
+		} catch (RuntimeException e) {
+			e.printStackTrace()
+			return false
+		}
+	
+		return true
+	}
+	
 	public def sqlRows(String statement, args = []) {
 		return resultSqlQuery(statement, args).list()
 	}

@@ -28,11 +28,7 @@ class MigrationService {
 	DatabaseService databaseService
 	
 	public def sql(String statement) {
-		try {
-			databaseService.sql(statement)
-		} catch (Exception e) {
-			e.printStackTrace()
-		}
+		databaseService.sqlNoRollback(statement)
 	}
 	
 	public def sqlRows(String statement, args = []) {
@@ -80,9 +76,9 @@ class MigrationService {
 		tryMigration(TEST_MIGRATION_ID) {
 			sql('ALTER TABLE entry CHANGE COLUMN comment comment TEXT')
 		}
-		/* tryMigration(FIX_OAUTH_UNIQUE_CONSTRAINT_ID) {
+		tryMigration(FIX_OAUTH_UNIQUE_CONSTRAINT_ID) {
 			sql('alter table oauth_account drop index user_id')
-		} */
+		}
 /*
 		tryMigration(LENGTHEN_COMMENT_ID) {
 			Entry.sql 'ALTER TABLE entry CHANGE COLUMN comment comment TEXT'
