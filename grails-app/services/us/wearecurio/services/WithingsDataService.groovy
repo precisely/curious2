@@ -212,6 +212,11 @@ class WithingsDataService {
 	def getData(OAuthAccount account, boolean refreshAll) {
 		debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 		
+		if (!service) {
+			debug "WithingsDataService not yet initialized"
+			return
+		}
+		
 		Integer offset = 0
 		boolean more = true
 		long serverTimestamp = 0
