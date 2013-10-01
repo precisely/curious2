@@ -146,14 +146,6 @@ class FitBitDataService {
 		}
 	}
 	
-	def poll() {
-		def accounts = OAuthAccount.findAllByTypeId(OAuthAccount.FITBIT_ID)
-		
-		for (OAuthAccount account in accounts) {
-			this.getData(account, false)
-		}
-	}
-	
 	def poll(def notification) {
 		debug "poll() accountId:" + notification.ownerId
 		debug "poll() notification: " + notification.dump()
@@ -198,7 +190,7 @@ class FitBitDataService {
 						"/${notification.ownerId}/${collectionType}/log/fat/date/${formatter.format(notification.date)}.json"
 					this.getData(account, requestUrl, false)*/
 				} else if (collectionType.equals('activities')) {
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					requestUrl = "http://api.fitbit.com/${API_VERSION}/user" +
 						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					def activityData = this.getData(account, requestUrl, false)
 					def setName = formatter.format(notification.date)+"activity"
