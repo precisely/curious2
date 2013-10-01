@@ -2,7 +2,6 @@ package us.wearecurio.utility
 
 import org.apache.commons.logging.LogFactory
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import grails.plugin.mail.MailService
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -60,6 +59,16 @@ class Utils {
 		return true;
 	}
 
+	/**
+	 * Simple utility method to do equals in a null-safe manner
+	 */
+	static boolean equals(a, b) {
+		if (a == null) return b == null
+		if (b == null) return false
+		if (a == b) return true
+		return a.equals(b)
+	}
+	
 	/**
 	 *
 	 * Save object but ignore stale object exception

@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 296
+# rev 297
 
 CACHE:
 #/mobile/index

@@ -458,9 +458,8 @@ $(function(){
 		if (cachedObj['data'] != null) {
 			refreshEntries(data);
 		}
-
-		var argsToSend = getCSRFPreventionObject('getEntriesDataCSRF', { date:cachedDateUTC, userId:currentUserId });
-		$.getJSON(makeGetUrl("getEntriesData"), makeGetArgs(argsToSend),
+		var argsToSend = getCSRFPreventionObject('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
+		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 			function(data){
 				if (checkData(data)) {
 					refreshEntries(data);

@@ -17,6 +17,8 @@ import java.util.TreeSet
 import java.math.MathContext
 import java.math.RoundingMode
 import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date;
 
 import grails.util.GrailsUtil
 
@@ -39,6 +41,7 @@ class Entry {
 		datePrecisionSecs(nullable:true)
 		amountPrecision(nullable:true)
 		repeatType(nullable:true)
+		repeatEnd(nullable:true)
 		units(maxSize:MAXUNITSLENGTH)
 		comment(maxSize:MAXCOMMENTLENGTH)
 		setName(maxSize:MAXSETNAMELENGTH, nullable:true)
@@ -47,6 +50,7 @@ class Entry {
 		durationType(nullable:true)
 		timeZoneOffsetSecs(nullable:true)
 	}
+	
 	static mapping = {
 		table 'entry'
 		userId column:'user_id', index:'user_id_index'
@@ -56,27 +60,86 @@ class Entry {
 		repeatType column:'repeat_type', index:'repeat_type_index'
 		durationType column:'duration_type', index:'duration_type_index'
 	}
+	
 	public static enum RepeatType {
 		// if you add more remind types, please edit the sql in RemindEmailService
-		DAILY(1, 24L * 60L * 60000, false), WEEKLY(2, 7L * 24L * 60L * 60000, false), REMINDDAILY(3, 24L * 60L * 60000, true), REMINDWEEKLY(4, 7L * 24L * 60L * 60000, true)
-
-		final Integer id
+		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
+		REMINDDAILY(REMIND_BIT | DAILY_BIT, 24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
+		
+		CONTINUOUS(CONTINUOUS_BIT, 1),
+		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
+		
+		DAILYGHOST(GHOST_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000),
+		WEEKLYGHOST(GHOST_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
+		
+		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000)
+		
+		public static final int DAILY_BIT = 1
+		public static final int WEEKLY_BIT = 2
+		public static final int REMIND_BIT = 4
+		public static final int CONTINUOUS_BIT = 0x0100
+		public static final int GHOST_BIT = 0x0200
+		
+		final Long id
 		final long duration
 		final boolean reminder
+		final boolean continuous
 
-		RepeatType(Integer id, long duration, boolean reminder) {
+
+		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>();
+		
+		static {
+			RepeatType.each {
+				map.put(it.getId(), it)
+			}
+		 }
+		
+		static RepeatType get(Long id) {
+			return map.get(id)
+		}
+		
+		RepeatType(Long id, long duration) {
 			this.id = id
 			this.duration = duration
-			this.reminder = reminder
+		}
+		
+		def isGhost() {
+			return (this.id & GHOST_BIT) > 0
+		}
+		
+		def isContinuous() {
+			return (this.id & CONTINUOUS_BIT) > 0
+		}
+		
+		def isDaily() {
+			return (this.id & DAILY_BIT) > 0
+		}
+		
+		def isWeekly() {
+			return (this.id & WEEKLY_BIT) > 0
+		}
+		
+		def isReminder() {
+			return (this.id & REMIND_BIT) > 0
+		}
+		
+		def RepeatType toggleGhost() {
+			if (isGhost())
+				return RepeatType.get(this.id & (~GHOST_BIT))
+			return RepeatType.get(this.id | GHOST_BIT)
 		}
 	}
-	static repeatTypeFromId(Long id) {
-		RepeatType.each {
-			if (it.getId().equals(id))
-				return it
-		}
-		return null
-	}
+	
+	public static def DAILY_IDS = [ RepeatType.DAILY.getId(), RepeatType.DAILYGHOST.getId(), RepeatType.REMINDDAILY.getId(), RepeatType.REMINDDAILYGHOST.getId() ]
+			
+	public static def WEEKLY_IDS = [ RepeatType.WEEKLY.getId(), RepeatType.WEEKLYGHOST.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
+			
+	public static def REMIND_IDS = [ RepeatType.REMINDDAILY.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDDAILYGHOST.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
+	
+	public static def CONTINUOUS_IDS = [ RepeatType.CONTINUOUS.getId(), RepeatType.CONTINUOUSGHOST.getId() ]
+	
+	public static def GHOST_IDS = [ RepeatType.CONTINUOUSGHOST.getId(), RepeatType.DAILYGHOST.getId(), RepeatType.WEEKLYGHOST.getId(), RepeatType.REMINDDAILYGHOST.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
+
 	public static enum DurationType {
 		NONE(0), START(1), END(2)
 		
@@ -99,6 +162,7 @@ class Entry {
 	String units
 	String comment
 	RepeatType repeatType
+	Date repeatEnd
 	Tag baseTag
 	DurationType durationType
 	String setName // used for importing to identify entries as having been imported from a specific file
@@ -135,13 +199,6 @@ class Entry {
 		TagStats newTagStats
 	}
 	
-	/**
-	 * Factory/manager methods: create, update, delete
-	 */
-	static Entry create(Long userId, Map m, Date now, TagStatsRecord tagStatsRecord) {
-		return Entry.create(userId, m, now, true, tagStatsRecord)
-	}
-	
 	static final MathContext mc = new MathContext(9)
 	
 	public static final int DEFAULT_AMOUNTPRECISION = 3
@@ -163,11 +220,11 @@ class Entry {
 				'setName':setName,
 				'amountPrecision': amountPrecision,
 				],
-				null, false, null)
+				null, null)
 	}
 	
-	static Entry create(Long userId, Map m, Date now, boolean generateRepeat, TagStatsRecord tagStatsRecord) {
-		log.debug "Entry.create() userId:" + userId + ", m:" + m + ", now:" + now + ", generateRepeat:" + generateRepeat
+	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
+		log.debug "Entry.create() userId:" + userId + ", m:" + m
 		
 		if (m == null) return null
 		
@@ -189,7 +246,7 @@ class Entry {
 			amount:m['amount'], \
 			units:m['units']==null?'':m['units'], \
 			comment:m['comment']==null?'':m['comment'], \
-			repeatType:generateRepeat ? m['repeatType'] : null, \
+			repeatType: m['repeatType'], \
 			baseTag:baseTag, \
 			durationType:durationType, \
 			setName:m['setName']==null?'':m['setName'], \
@@ -210,36 +267,20 @@ class Entry {
 		
 		if (generator != null)
 			entry = generator.updateDurationEntry() // make sure duration entries remain consistent
+			
+		entry.createRepeat()
 		
-		// generate repeating entries if need be
-		if (generateRepeat)
-			entry.generateRepeatingEntries(now.getTime() + DAYTICKS, false)
-
-		return entry;
+		return entry
 	}
 
-	/**
-	 * Create new entry with current date = now
-	 */
-	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
-		return create(userId, m, new Date(), true, tagStatsRecord)
-	}
-	
 	/**
 	 * Update entry given map of parameters (output of the parse method or manually created)
 	 */
-	public static update(Entry entry, Map m, TagStatsRecord tagStatsRecord) {
-		return update(entry, m, new Date().getTime() + DAYTICKS, true, tagStatsRecord)
-	}
-	
-	/**
-	 * Update entry given map of parameters, current time, generate repeat entries
-	 */
-	public static TagStatsRecord update(Entry entry, Map m, long currentTime, boolean repeat, TagStatsRecord tagStatsRecord) {
-		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", currentTime:" + currentTime + ", repeat:" + repeat
+	public static TagStatsRecord update(Entry entry, Map m, TagStatsRecord tagStatsRecord) {
+		log.debug "Entry.update() entry:" + entry + ", m:" + m
 		
 		long oldTagId = entry.getTag().getId()
-		entry.doUpdate(m, currentTime, repeat)
+		entry.doUpdate(m)
 		long newTagId = entry.getTag().getId()
 		
 		TagStats oldTagStats = TagStats.createOrUpdate(entry.getUserId(), oldTagId)
@@ -260,16 +301,14 @@ class Entry {
 	 * 
 	 * isToday - if true, delete subsequent repeating entries, if present
 	 */
-	public static delete(Entry entry, long now, boolean isToday, TagStatsRecord tagStatsRecord) {
-		log.debug "Entry.delete() entry:" + entry + ", now:" + now + ", isToday:" + isToday
+	public static delete(Entry entry, TagStatsRecord tagStatsRecord) {
+		log.debug "Entry.delete() entry:" + entry
 
 		Entry updateDurationEntry = entry.preDeleteProcessing()
-		
-		// if this was an end entry, delete current duration entry, delete this entry, then recalculate subsequent duration entry
+
+		entry.deleteRepeat()
 				
-		if (isToday) {
-			entry.deleteRepeatingEntries(now + DAYTICKS * 30)
-		}
+		// if this was an end entry, delete current duration entry, delete this entry, then recalculate subsequent duration entry
 		
 		long oldUserId = entry.getUserId()
 		
@@ -285,29 +324,6 @@ class Entry {
 		if (updateDurationEntry != null) {
 			updateDurationEntry.updateDurationEntry()
 		}
-	}
-	
-	/**
-	 * Delete actually just hides the entries, rather than deleting them
-	 * 
-	 * now is the current time from the point of view of the browser client
-	 * baseDate is the base date of the entry (to determine whether this is "today" or not
-	 * 
-	 * If the entry being deleted is "today", will delete subsequent repeat entries, otherwise won't
-	 * 
-	 */
-	public static deleteViaClient(Entry entry, Date now, Date baseDate, TagStatsRecord tagStatsRecord) {
-		if (now == null)
-			delete(entry, tagStatsRecord)
-		else
-			delete(entry, now.getTime(), isToday(now, baseDate), tagStatsRecord)
-	}
-	
-	/**
-	 * Delete actually just hides the entries, rather than deleting them
-	 */
-	public static delete(Entry entry, TagStatsRecord tagStatsRecord) {
-		delete(entry, 0L, false, tagStatsRecord);
 	}
 	
 	// look for any duration entry that needs to be updated after a delete
@@ -738,7 +754,7 @@ class Entry {
 				m['baseTag'] = baseTag
 				m['durationType'] = DurationType.NONE
 				m['amountPrecision'] = DEFAULT_AMOUNTPRECISION
-				durationEntry = Entry.create(userId, m, date, false, null)
+				durationEntry = Entry.create(userId, m, null)
 			} else {
 				durationEntry.setAmount(amount)
 			}
@@ -828,17 +844,87 @@ class Entry {
 	}
 	
 	/**
-	 * Update existing entry and save. generate new repeat entries if needed
+	 * Update existing entry and save
+	 */
+	private deleteRepeat() {
+		if (this.repeatType == null) return
+		
+		if (this.repeatType.isContinuous()) {
+			String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date < :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
+			
+			def entries = Entry.executeQuery(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			
+			Entry e = entries[0]
+			
+			if (e != null) {
+				e.setRepeatEnd(this.repeatEnd)
+				Utils.save(e)
+			}	
+		} else {
+			String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date < :entryDate and time(entry.date) = time(:entryDate) and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
+			
+			def entries = Entry.executeQuery(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			
+			Entry e = entries[0]
+			
+			if (e != null)
+				e.setRepeatEnd(this.repeatEnd)
+		}
+	}
+	
+	def deleteGhost(Date ghostTime, Date currentDate) {
+		if (this.repeatType == null) return
+		
+		if (this.repeatType.isContinuous()) {
+			this.repeatEnd = ghostTime
+			Utils.save(this)
+		} else {
+			this.repeatEnd = currentDate
+			Utils.save(this)
+		}
+	}
+	
+	private createRepeat() {
+		if (this.repeatType == null) return
+		
+		if (this.repeatType.isContinuous()) {
+			String queryStr = "select entry.id from Entry entry, Tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			
+			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			
+			def v = entries[0]
+			
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
+				
+				if (e != null) {
+					e.setRepeatEnd(this.date)
+					Utils.save(e, true)
+				}
+			}
+		} else {
+			String queryStr = "select entry.id from Entry entry, Tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			
+			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:DAILY_IDS])
+			
+			def v = entries[0]
+			
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
+				
+				if (e != null) {
+					e.setRepeatEnd(this.date)
+					Utils.save(e, true)
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Update existing entry and save
 	 */
 	private doUpdate(Map m) {
-		doUpdate(m, new Date().getTime() + DAYTICKS, true)
-	}
-
-	/**
-	 * Update existing entry and save. generate new repeat entries if needed
-	 */
-	private doUpdate(Map m, long currentTime, boolean repeat) {
-		log.debug "Entry.doUpdate() this:" + this + ", m:" + m + ", currenTime:" + currentTime + ", repeat:" + repeat
+		log.debug "Entry.doUpdate() this:" + this + ", m:" + m
 		
 		if (m == null) return null
 		
@@ -847,17 +933,6 @@ class Entry {
 		newDescription = newDescription.toLowerCase()
 		
 		def (newBaseTag, newDurationType) = getDurationInfoFromStrings(newDescription, m['units'])
-
-		def updatedRepeatingLevel = 0
-		def lastDeletedEntry = null
-
-		// only update repeating entries if modifying an entry on today's date
-		if (repeat && m['today']) {
-			(updatedRepeatingLevel, lastDeletedEntry) = updateRepeatingEntries(m, currentTime + DAYTICKS)
-			log.debug "Result of updateRepeatingEntries() is: updatedRepeatingLevel:" + updatedRepeatingLevel \
-					+ ", lastDeletedEntry:" + lastDeletedEntry
-		} else
-			repeat = false
 
 		def updateDurationEntry = null
 		
@@ -868,23 +943,35 @@ class Entry {
 		def descriptionChanged = !description.equals(newDescription)
 		
 		def amt = m['amount']
+		amt = amt == null ? null : new BigDecimal(amt, mc)
+		
+		/**
+		 * check to see if entry repeat type has changed. If so, merge and/or create new repeat structure
+		 */
+		boolean updateRepeatType = false
+		
+		if (m['repeatType'] != null && this.date != m['date'] || (!Utils.equals(amt, this.amount))
+				|| (!Utils.equals(this.repeatType, m['repeatType']))) {
+			deleteRepeat()
+			updateRepeatType = true
+		}
 		
 		setDate(m['date'])
 		setDatePrecisionSecs(m['datePrecisionSecs'])
 		updateDescription(newDescription)
-		setAmount(amt == null ? null : new BigDecimal(amt, mc))
+		setAmount(amt)
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		if (repeat)
-			setRepeatType(m['repeatType'])
-		if (updatedRepeatingLevel == 2)
-			repeatType = null
+		setRepeatType(m['repeatType'])
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
 		
 		Utils.save(this, true)
+		
+		if (updateRepeatType)
+			createRepeat()
 		
 		if (updateDurationEntry != null) {
 			updateDurationEntry.updateDurationEntry()
@@ -893,13 +980,157 @@ class Entry {
 		processAndSave()
 		
 		log.debug "Repeat type: " + m['repeatType']
+	}
+	
+	/**
+	 * Fetch methods - for getting different subsets of entries
+	 */
+	public static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
+		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.date < :entryDate and entry.repeatEnd is null or entry.repeatEnd >= :entryDate and (not entry.repeatType is null) and entry.repeatType.id in (:repeatIds)"
+		
+		def entries = Entry.executeQuery(continuousQuery, [userId:userId, entryDate:now, repeatIds:CONTINUOUS_IDS])
 
-		if ((lastDeletedEntry > 0) && repeat && (updatedRepeatingLevel == 0)) {
-			log.debug "Attempting to generate repeating entries for deleted entries until: " + lastDeletedEntry
-			generateRepeatingEntries(lastDeletedEntry + DAYTICKS, lastDeletedEntry < currentTime)
-		}
+		return entries		
 	}
 
+	static SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+	static def fetchListData(User user, Date date) {
+		def c = Entry.createCriteria()
+		
+		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
+				+ "from Entry entry, Tag tag where entry.user_id = :userId and " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
+				+ "and entry.tag_id = tag.id " \
+				+ "order by tag.description asc"
+		
+		def rawResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), startDate:date, continuousIds:CONTINUOUS_IDS])
+		
+		def results = []
+		
+		for (result in rawResults) {
+			Entry entry = Entry.get(result['id'])
+			def desc = entry.getJSONDesc()
+			desc['date'] = result['dateTime']
+			results.add(desc)
+		}
+
+		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
+				+ "from Entry entry, Tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) or " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds))) " \
+				+ "and entry.tag_id = tag.id " \
+				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
+				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
+				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
+				
+		rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS])
+		
+		for (result in rawResults) {
+			Entry entry = Entry.get(result['id'])
+			def desc = entry.getJSONDesc()
+			desc['date'] = result['dateTime']
+			results.add(desc)
+		}
+
+		return Utils.listJSONDesc(results)
+	}
+
+	static def fetchListDataNoRepeats(User user, Date date) {
+		def c = Entry.createCriteria()
+		
+		def results = []
+		
+		String queryStr = "select distinct entry.id " \
+				+ "from Entry entry, Tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:ghostIds))) " \
+				+ "and entry.tag_id = tag.id " \
+				+ "order by case when entry.date_precision_secs < 1000 " \
+				+ "then unix_timestamp(entry.date) else 0 end desc, tag.description asc"
+				
+		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, ghostIds:GHOST_IDS])
+		
+		for (result in rawResults) {
+			Entry entry = Entry.get(result['id'])
+			def desc = entry.getJSONDesc()
+			results.add(desc)
+		}
+
+		return Utils.listJSONDesc(results)
+	}
+
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate) {
+		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
+				+ ", endDate:" + endDate
+		
+		def map = [userId:user.getId(), tagIds:tagIds]
+		
+		String queryStr = "from Entry entry where entry.userId = :userId and entry.tag.id in (:tagIds) "
+		
+		if (startDate != null) {
+			queryStr += "and entry.date >= :startDate "
+			map['startDate'] = startDate
+		}
+		
+		if (endDate != null) {
+			queryStr += "and entry.date < :endDate "
+			map['endDate'] = endDate
+		}
+		
+		queryStr += "and entry.date is not null and entry.amount is not null order by entry.date asc"
+
+		Utils.listJSONShortDesc(Entry.executeQuery(queryStr, map))
+	}
+	
+	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
+
+	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, int timeZoneSec) {
+		if (sumNights) {
+			if (startDate != null)
+				startDate = new Date(startDate.getTime() + HALFDAYTICKS)
+			if (endDate != null)
+				endDate = new Date(endDate.getTime() + HALFDAYTICKS)
+		}
+		
+		def map = [userId:user.getId(), tagIds:tagIds]
+		
+		int timeZoneHours = (timeZoneSec / 3600)
+		int timeZoneMinutes = ((int)((timeZoneSec < 0 ? -timeZoneSec : timeZoneSec) / 60)) % 60
+		
+		String mysqlTimeZone = timeZoneHours + ":" + ((timeZoneMinutes < 10 ? "0" : "") + timeZoneMinutes)
+
+		def sourceTimeZone = sumNights ? '+12:00' : '+00:00';
+
+		String queryStr = "select date as dt, sum(amount) as amount from Entry entry where entry.userId = :userId and entry.amount IS NOT NULL and " \
+			+ "entry.tag.id in (:tagIds) "
+		
+		if (startDate != null) {
+			queryStr += "and entry.date >= :startDate "
+			map['startDate'] = startDate
+		}
+		
+		if (endDate != null) {
+			queryStr += "and entry.date < :endDate "
+			map['endDate'] = endDate
+		}
+		
+		queryStr += "and entry.date is not null group by date(convert_tz(entry.date,'" + sourceTimeZone + "','" + mysqlTimeZone + "')) " \
+			+ "order by date(convert_tz(entry.date,'+00:00','" + mysqlTimeZone + "')) asc";
+
+		log.debug "QUERY: " + queryStr;
+
+		def rawResults = Entry.executeQuery(queryStr, map)
+		def results = []
+
+		for (result in rawResults) {
+			log.debug "RESULT: " + result
+			results.push([
+				new Date(result[0].getTime() + 43200000),
+				result[1]
+			])
+		}
+
+		return results
+	}
+	
 	static def parseInt(String str) {
 		return str == null ? null : Integer.parseInt(str)
 	}
@@ -908,7 +1139,7 @@ class Entry {
 		return parse(null, null, entryStr, null, false)
 	}
 
-	// new end-of-tweet repeat indicators:
+	// new end-of-entry repeat indicators:
 	// repeat daily
 	// delete repeat indicator to end repeat sequence
 	// OR: repeat end
@@ -932,37 +1163,37 @@ class Entry {
 			if ((retVal = matchEndStr(comment, "repeat weekly", RepeatType.WEEKLY)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "remind weekly", RepeatType.REMINDWEEKLY)) != null) {
+			if ((retVal = matchEndStr(comment, "remind weekly", RepeatType.REMINDWEEKLYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "reminder weekly", RepeatType.REMINDWEEKLY)) != null) {
+			if ((retVal = matchEndStr(comment, "reminder weekly", RepeatType.REMINDWEEKLYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "weekly reminder", RepeatType.REMINDWEEKLY)) != null) {
+			if ((retVal = matchEndStr(comment, "weekly reminder", RepeatType.REMINDWEEKLYGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "repeat daily", RepeatType.DAILY)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "remind daily", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "remind daily", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "reminder daily", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "reminder daily", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "daily remind", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "daily remind", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "daily reminder", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "daily reminder", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "repeat", RepeatType.DAILY)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "remind", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "remind", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "reminder", RepeatType.REMINDDAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "reminder", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "daily", RepeatType.DAILY)) != null) {
@@ -1391,6 +1622,37 @@ class Entry {
 		def amt = retVal['amount']
 		
 		retVal['amount'] = amt == null ? null : new BigDecimal(amt, mc)
+		
+		if (retVal['repeatType'] != null) {
+			if (!retVal['repeatType'].isReminder()) {
+				if (retVal['repeatType'].isDaily()) {
+					if (foundAmount) {
+						if (foundTime) {
+							retVal['repeatType'] = RepeatType.DAILY
+						} else {
+							retVal['repeatType'] = RepeatType.CONTINUOUS
+						}
+					} else {
+						if (foundTime) {
+							retVal['repeatType'] = RepeatType.DAILYGHOST
+						} else {
+							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
+						}
+					}
+				} else if (retVal['repeatType'].isWeekly()) {
+					if (foundAmount) {
+						retVal['repeatType'] = RepeatType.WEEKLY
+					} else {
+						retVal['repeatType'] = RepeatType.WEEKLYGHOST
+					}
+				}
+
+			} else {
+				if (foundAmount) {
+					retVal['repeatType'] = retVal['repeatType'].toggleGhost()
+				}
+			}
+		}
 
 		return retVal
 	}
@@ -1420,187 +1682,6 @@ class Entry {
 
 	private def updateDescription(d) {
 		tag = Tag.look(d)
-	}
-	
-	/**
-	 * Delete future matching repeat entries up to the "notLaterThan" time
-	 * 
-	 * Used when editing a repeating entry tag.
-	 *
-	 * Returns timestamp of last deleted event, or the passed in notLaterThan if none deleted
-	 */
-	private long deleteRepeatingEntries(long notLaterThan) {
-		log.debug "Entry.deleteRepeatingEntries() this:" + this
-
-		def (str1, str2, origRepeatType) = matchRepeatStr(this.comment)
-
-		long interval = 0
-		if (origRepeatType == null) {
-			log.debug("no repeat type to delete")
-			return notLaterThan
-		} else {
-			interval = origRepeatType.getDuration()
-		}
-
-		long time = date.getTime()
-
-		log.debug("Trying to delete repeat entries, interval " + interval + " time " + time + " duration " + ((float)notLaterThan - time) / DAYTICKS);
-
-		def lastDeletedTime = notLaterThan
-
-		def end = notLaterThan + 10000
-
-		long halfPrecisionTicks = this.datePrecisionSecs * 1000L / 2
-
-		for (time += interval; time < end; time += interval) {
-			def matchDate = new Date(time)
-			def c = Entry.createCriteria()
-			def results = c {
-				and {
-					eq("userId", userId)
-					eq("date", matchDate)
-					eq("tag", tag)
-					eq("comment", comment)
-					eq("repeatType", origRepeatType)
-				}
-				maxResults(1)
-			}
-			if (results == null || results.size() == 0) {
-				def matchDateLow = new Date(time - halfPrecisionTicks)
-				def matchDateHigh = new Date(time + halfPrecisionTicks)
-				
-				log.debug "Looking for entry at " + time
-	
-				c = Entry.createCriteria()
-				results = c {
-					and {
-						eq("userId", userId)
-						ge("date", matchDateLow)
-						le("date", matchDateHigh)
-						eq("tag", tag)
-						eq("comment", comment)
-					}
-					maxResults(1)
-				}
-			}
-			if (results != null && results.size() > 0) {
-				for (obj in results) {
-					lastDeletedTime = time
-					log.debug("Deleted event " + obj)
-					Entry.delete(obj, null)
-				}
-			} else {
-				log.debug "No more entries found to delete"
-				break
-			}
-		}
-		
-		log.debug "Done deleting repeated entries, lastDeletedTime:" + lastDeletedTime
-
-		return lastDeletedTime
-	}
-
-	/**
-	 * Update future matching repeat entries up to the "notLaterThan" time
-	 * 
-	 * Used when editing a repeating entry tag.
-	 *
-	 * Returns [updatedEntries, lastDeletedEntryTime]
-	 * 
-	 * updatedEntries - 2 if subsequent entries were updated, 1 if we searched for them but didn't find them,
-	 *      0 if we deleted subsequent repeating entries because the update was too radical
-	 *      (only generate repeating entries again if the return value is 0)
-	 * 
-	 * lastDeletedEntryTime - timestamp of last deleted event if events have been deleted, or 0 if events have been updated instead
-	 */
-	private def updateRepeatingEntries(Map m, long notLaterThan) {
-		log.debug "Entry.updateRepeatingEntries() this:" + this
-
-		def (str1, str2, origRepeatType) = matchRepeatStr(this.comment)
-
-		if ((m['repeatType'] != origRepeatType) || (!m['date'].equals(date))) {
-			return [0, deleteRepeatingEntries(notLaterThan)]
-		}
-
-		long interval = 0;
-		if (origRepeatType == null) {
-			log.debug("no repeat type to update")
-			return [0, 0L];
-		} else {
-			interval = origRepeatType.getDuration()
-		}
-
-		def repeatAmount = origRepeatType != null && origRepeatType.isReminder() ? null : m['amount']
-		
-		long time = date.getTime()
-
-		log.debug("Trying to update repeat entries, interval " + interval + " time " + time + " duration " + ((float)notLaterThan - time) / DAYTICKS)
-
-		def end = notLaterThan + 10000
-
-		def origDate = m['date']
-		
-		boolean updated = false
-		
-		long halfPrecisionTicks = this.datePrecisionSecs * 1000L / 2
-
-		for (time += interval; time < end; time += interval) {
-			def matchDate = new Date(time)
-			
-			log.debug "Looking for entry at " + time
-
-			def c = Entry.createCriteria()
-			def results = c {
-				and {
-					eq("userId", userId)
-					eq("date", matchDate)
-					eq("tag", tag)
-					eq("comment", comment)
-					eq("repeatType", origRepeatType)
-				}
-				maxResults(1)
-			}
-			if (results == null || results.size() == 0) {
-				def matchDateLow = new Date(time - halfPrecisionTicks)
-				def matchDateHigh = new Date(time + halfPrecisionTicks)
-				
-				log.debug "Looking for entry at " + time
-	
-				c = Entry.createCriteria()
-				results = c {
-					and {
-						eq("userId", userId)
-						ge("date", matchDateLow)
-						le("date", matchDateHigh)
-						eq("tag", tag)
-						eq("comment", comment)
-						eq("repeatType", origRepeatType)
-					}
-					maxResults(1)
-				}
-			}
-			if (results != null && results.size() > 0) {
-				for (obj in results) {
-					log.debug("Updating repeat event " + obj)
-					def oldDate = m['date']
-					def oldAmount = m['amount']
-					m['date'] = new Date(time)
-					m['amount'] = repeatAmount
-					obj.doUpdate(m, notLaterThan, false)
-					m['date'] = oldDate
-					m['amount'] = oldAmount
-					updated = true
-					log.debug("Updated event " + obj)
-				}
-			} else {
-				log.debug "Repeat entry not found, stopping update"
-				break
-			}
-		}
-
-		m['date'] = origDate
-
-		return [updated ? 2 : 1, 0L]
 	}
 	
 	/**
@@ -1648,105 +1729,6 @@ class Entry {
 		
 		for (Entry entry in results) {
 			entry.initializeDurations()
-		}
-	}
-
-	/**
-	 * Generate repeat entries for this entry up through today
-	 */
-	
-	private void generateRepeatingEntries() {
-		long now = new Date().getTime()
-		generateRepeatingEntries(now + DAYTICKS, false)
-	}
-
-	/**
-	 * Generate repeat entries up to the "notLaterThan" time.
-	 *
-	 * Does not generate repeat entries for any dates earlier than notEarlierThan
-	 *
-	 * If repeat entry is generated, delete the "repeatType" entry so the system
-	 * won't re-create repeat entries. If there is a duplicate event already
-	 * in the DB, stop the repeat entry generation at that point, as well.
-	 *
-	 * Returns true if any entries were generated.
-	 */
-	private void generateRepeatingEntries(long notLaterThan, boolean force) {
-		log.debug "Entry.generateRepeatingEntries() this:" + this + ", notLaterThan:" + new Date(notLaterThan) + ", force:" + force
-
-		def origRepeatType = repeatType;
-
-		long interval = 0;
-		if (repeatType == null) {
-			log.debug("no repeat type")
-			return
-		} else {
-			interval = repeatType.getDuration()
-		}
-
-		def repeatAmount = repeatType != null && repeatType.isReminder() ? null : amount
-		def repeatAmountPrecision = repeatType != null && repeatType.isReminder() ? -1 : amountPrecision
-		
-		long time = date.getTime()
-
-		log.debug("Trying to generate repeat entries, interval " + interval + " time " + time + " duration " + ((float)notLaterThan - time) / DAYTICKS);
-
-		boolean generatedEvents = false
-
-		def end = notLaterThan + 10000
-
-		if (time + interval < end) {
-			log.debug("Entry generator generating entries, nullifying repeatType field")
-			repeatType = null
-			generatedEvents = true
-		} else {
-			log.debug("Not yet time to repeat this entry")
-			return
-		}
-
-		if (time < notLaterThan - 100L * DAYTICKS && (!force)) { // don't generate repeat entries more than 100 days old
-			log.debug "Won't be generating entries: event too old, mark quiescent"
-			return
-		}
-		
-		for (time += interval; time < end; time += interval) {
-			// nullify repeat type except for last entry
-			def newRepeatType = time + interval < end ? null : origRepeatType;
-
-			def newDate = new Date(time)
-
-			def c = Entry.createCriteria()
-			def results = c {
-				and {
-					eq("userId", userId)
-					eq("date", newDate)
-					eq("tag", tag)
-					eq("amount", repeatAmount)
-					eq("units", units)
-				}
-				maxResults(1)
-			}
-			if (results != null && results.size() > 0) {
-				// stop when hitting duplicate entry
-				log.debug("Found repeat event, end repeat generation")
-			}
-
-			log.debug("Creating new repeat event")
-
-			def entry = new Entry( \
-				userId:userId, \
-				date:newDate, \
-				datePrecisionSecs:datePrecisionSecs, \
-				timeZoneOffsetSecs:timeZoneOffsetSecs, \
-				tag:tag, \
-				amount:repeatAmount, \
-				amountPrecision:repeatAmountPrecision, \
-				units:units, \
-				comment:comment, \
-				setName:setName, \
-				repeatType:newRepeatType \
-			)
-			Utils.save(entry, true)
 		}
 	}
 

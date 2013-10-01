@@ -5,7 +5,7 @@
 <meta name="layout" content="plot" />
 <title>Curious</title>
 
-<c:jsCSRFToken keys="getDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+<c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCRSF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, getTagPropertiesCSRF, autoCompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF" />
 

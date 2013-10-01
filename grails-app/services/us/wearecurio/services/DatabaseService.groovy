@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import java.util.Date;
+import javax.persistence.TemporalType
 
 import org.apache.commons.logging.LogFactory
 import org.hibernate.Query
@@ -34,22 +35,21 @@ class DatabaseService {
 	public Query sqlQuery(String statement, def args = []) {
 		Session session = sessionFactory.getCurrentSession()
 		Query query = session.createSQLQuery(statement)
-		int l = args.size()
-		for (int i = 0; i < l; ++i) {
-			def arg = args[i]
-			query.setParameter(i, arg)
-		}
-		query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE)
-		return query
-	}
-	
-	public Query resultSqlQuery(String statement, def args = []) {
-		Session session = sessionFactory.getCurrentSession()
-		Query query = session.createSQLQuery(statement)
-		int l = args.size()
-		for (int i = 0; i < l; ++i) {
-			def arg = args[i]
-			query.setParameter(i, arg)
+		if (args instanceof Map) {
+			for (e in args) {
+				def key = e.key
+				def value = e.value
+				if (value instanceof List)
+					query.setParameterList(key, value)
+				else
+					query.setParameter(key, value)
+			}
+		} else {
+			int l = args.size()
+			for (int i = 0; i < l; ++i) {
+				def arg = args[i]
+				query.setParameter(i, arg)
+			}
 		}
 		query.setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE)
 		return query
@@ -71,10 +71,10 @@ class DatabaseService {
 	}
 	
 	public def sqlRows(String statement, args = []) {
-		return resultSqlQuery(statement, args).list()
+		return sqlQuery(statement, args).list()
 	}
 
 	public def eachRow(String statement, Closure c) {
-		resultSqlQuery(statement).list().each(c)
+		sqlQuery(statement).list().each(c)
 	}
 }

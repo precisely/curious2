@@ -106,7 +106,7 @@ public abstract class TagUnitMap {
 		]
 		parsedEntry.putAll(args)
 
-		def entry = Entry.create(userId, parsedEntry, date, false, null)
+		def entry = Entry.create(userId, parsedEntry, null)
 		return entry
 	}
 	

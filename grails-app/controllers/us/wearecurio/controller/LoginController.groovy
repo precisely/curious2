@@ -16,7 +16,7 @@ class LoginController extends SessionController {
 	def genericService
 
 	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
-		"autocompleteData", "getEntriesData", "getTagProperties", "getData", "createTagGroup", "addTagGroupToTagGroup",
+		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
 		"addTagToTagGroup", "removeTagGroupFromTagGroup", "removeTagFromTagGroup", "showTagGroup", "deleteTagGroup",
 		"setTagPropertiesData", "updateEntrySData", "deleteEntrySData"]]
 

@@ -2,6 +2,8 @@ import grails.plugin.mail.MailService
 import us.wearecurio.services.*
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.utility.Utils
+import org.hibernate.dialect.function.SQLFunctionTemplate
+import org.hibernate.Hibernate
 
 class BootStrap {
 	MigrationService migrationService

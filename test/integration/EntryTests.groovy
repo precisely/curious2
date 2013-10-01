@@ -3,7 +3,6 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import us.wearecurio.model.User
-import us.wearecurio.services.RepeatingEventService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
@@ -14,6 +13,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
+
 class EntryTests extends GroovyTestCase {
 	static transactional = true
 
@@ -21,10 +21,9 @@ class EntryTests extends GroovyTestCase {
 	Date earlyBaseDate
 	Date currentTime
 	Date endTime
-	Date repeatTime
-	Date noRepeatTime
 	TimeZone timeZone // simulated server time zone
 	Date baseDate
+	Date lateBaseDate
 	User user
 	Long userId
 	
@@ -37,14 +36,13 @@ class EntryTests extends GroovyTestCase {
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
-		repeatTime = new Date(currentTime.getTime()) // "repeat time" for tests of repeating entries 1 day from now
-		noRepeatTime = new Date(currentTime.getTime() - (1000L * 60 * 60 * 24))
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
-
+		lateBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
+		
 		def params = [username:'y', sex:'F', \
-            last:'y', email:'y@y.com', birthdate:'01/01/2001', \
-            first:'y', password:'y', action:'doregister', \
-            controller:'home']
+			last:'y', email:'y@y.com', birthdate:'01/01/2001', \
+			first:'y', password:'y', action:'doregister', \
+			controller:'home']
 
 		user = User.create(params)
 
@@ -60,217 +58,217 @@ class EntryTests extends GroovyTestCase {
 
 	@Test
 	void testParse() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), null)
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:256)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet @4pm repeat weekly", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet @4pm repeat weekly", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat weekly, repeatType:2)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet @4 pm", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet 4pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
 		// test assume recent time
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet 3:00", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet 3:00", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4:00 pm", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4:00 pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4 pm", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4 pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 16h00", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 16h00", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 16:00", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 16:00", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin 1 tablet repeat weekly", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin 1 tablet repeat weekly", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat weekly, repeatType:2)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @9h00 after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @9h00 after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 9:00 after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 9:00 after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 09h00 after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 09h00 after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 9pm after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at 9pm after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T04:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "craving sweets/starches/carbohydrates 3 at 9pm", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "craving sweets/starches/carbohydrates 3 at 9pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T04:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:craving sweets/starches/carbohydrates, amount:3.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
 		// decimal value
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin 1.2 mg repeat weekly", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin 1.2 mg repeat weekly", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.200000000, units:mg, amountPrecision:3, comment:repeat weekly, repeatType:2)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin .7 mg repeat weekly", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "9am aspirin .7 mg repeat weekly", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:0.700000000, units:mg, amountPrecision:3, comment:repeat weekly, repeatType:2)")
 
 		// test metadata entry parsing
 
-		entry = Entry.create(userId, Entry.parseMeta("fast caffeine metabolizer"), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parseMeta("fast caffeine metabolizer"), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:null, datePrecisionSecs:0, timeZoneOffsetSecs:0, description:fast caffeine metabolizer, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// test odd tweets
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "what's going on???", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "what's going on???", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:what's going on???, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3: 2 bags of chips", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3: 2 bags of chips", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:snack#3, amount:2.000000000, units:bags, amountPrecision:3, comment:of chips, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310#", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310#", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:weight, amount:310.000000000, units:#, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310lbs", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310lbs", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:weight, amount:310.000000000, units:lbs, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "headache 8 at 4pm", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "headache 8 at 4pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:headache, amount:8.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
 		// test current time for late base date
 
-		entry = Entry.create(userId, Entry.parse(dateFormat.parse("July 1, 2010 6:00 pm"), timeZone, "just a tag", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(dateFormat.parse("July 1, 2010 6:00 pm"), timeZone, "just a tag", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:just a tag, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// test time before amount
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate at 4pm 72bpm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate at 4pm 72bpm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:heart rate, amount:72.000000000, units:bpm, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate at 4pm = 72bpm", baseDate, false), currentTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate at 4pm = 72bpm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:heart rate, amount:72.000000000, units:bpm, amountPrecision:3, comment:, repeatType:null)")
 
 		// number in tag
 
-		entry = Entry.create(userId, Entry.parse(dateFormat.parse("July 1, 2010 6:00 pm"), timeZone, "methyl b-12", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(dateFormat.parse("July 1, 2010 6:00 pm"), timeZone, "methyl b-12", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// yes/no values
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes at 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes at 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:1.000000000, units:, amountPrecision:0, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12: yes at 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12: yes at 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:1.000000000, units:, amountPrecision:0, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 no at 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 no at 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:0.000000000, units:, amountPrecision:0, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm yes", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm yes", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:1.000000000, units:, amountPrecision:0, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: yes", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: yes", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:1.000000000, units:, amountPrecision:0, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can at 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can at 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12 yes we can, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can 4 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can 4 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12 yes we can, amount:4.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 yes we can 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12 yes we can, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// none value
 		
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: none", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: none", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none we can at 4pm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none we can at 4pm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12 none we can, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// test time parsing with unambiguous formats
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg 9pm after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg 9pm after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T04:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg 9:00 after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg 9:00 after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate 4pm 72bpm", baseDate, false), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "heart rate 4pm 72bpm", baseDate, false), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:heart rate, amount:72.000000000, units:bpm, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat weekly at 9", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat weekly at 9", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T16:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat weekly, repeatType:2)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @12am after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @12am after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T07:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @12pm after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @12pm after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @noon after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg @noon after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at midnight after coffee", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 100mg at midnight after coffee", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T07:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:100.000000000, units:mg, amountPrecision:3, comment:after coffee, repeatType:null)")
 
@@ -278,54 +276,51 @@ class EntryTests extends GroovyTestCase {
 
 	@Test
 	void testRepeat() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", baseDate, true), repeatTime, null)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:null)")
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("repeatType", Entry.RepeatType.DAILY)
-				eq("tag", entry.getTag())
-				eq("userId", userId)
-				gt("date", new Date(currentTime.getTime() + 10000))
-			}
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
+		def entries = Entry.fetchListData(user, baseDate)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
 		}
-		def r
-		for (repeat in repeats) {
-			r = repeat
-			break
-		}
-		assert r != null
-		assert r.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
 	}
+	
+	@Test
+	void testOldRepeat() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
+		def entries = Entry.fetchListDataNoRepeats(user, baseDate)
+		assert entries.size() == 0
+		
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3pm repeat daily", baseDate, true), null)
+		entries = Entry.fetchListDataNoRepeats(user, baseDate)
+		assert entries.size() == 0
 
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3pm", baseDate, true), null)
+		entries = Entry.fetchListDataNoRepeats(user, baseDate)
+		assert entries.size() == 1
+	}
+	
 	@Test
 	void testRemind() {
 		TagStatsRecord record = new TagStatsRecord()
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread remind", baseDate, true), repeatTime, record)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:null)")
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread remind", baseDate, true), record)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517)")
 
 		// tag stats for reminders should be "none" value for the amount
 		def tagStats = record.getOldTagStats()
 		assert tagStats.getLastAmount() == null
 		assert tagStats.getLastAmountPrecision() < 0
 		
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("repeatType", Entry.RepeatType.REMINDDAILY)
-				eq("tag", entry.getTag())
-				eq("userId", userId)
-				gt("date", new Date(currentTime.getTime() + 10000))
-			}
+		// query for reminder should generate the ghost entry only
+		def entries = Entry.fetchListData(user, lateBaseDate)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+			assert entryDesc['date'].toString().equals("2010-07-03 18:30:00.0")
 		}
-		def r
-		for (repeat in repeats) {
-			r = repeat
-			break
-		}
-		assert r != null
-		assert r.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:null, units:, amountPrecision:-1, comment:remind, repeatType:3)")
 	}
 
 	@Test
@@ -335,7 +330,7 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('repeat daily')
-		assert res['repeatType'] == Entry.RepeatType.DAILY
+		assert res['repeatType'] == Entry.RepeatType.DAILYGHOST
 		assert res['units'] == null
 
 		res = Entry.parse(currentTime, timeZone, "bread repeat daily at 4pm foo", baseDate, true)
@@ -343,7 +338,7 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('repeat daily foo')
-		assert res['repeatType'] == Entry.RepeatType.DAILY
+		assert res['repeatType'] == Entry.RepeatType.DAILYGHOST
 		assert res['units'] == null
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices repeat daily at 4pm", baseDate, true)
@@ -391,7 +386,7 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('weekly')
-		assert res['repeatType'] == Entry.RepeatType.WEEKLY
+		assert res['repeatType'] == Entry.RepeatType.WEEKLYGHOST
 		assert res['units'] == null
 		
 		res = Entry.parse(currentTime, timeZone, "bread remind at 4pm", baseDate, true)
@@ -399,7 +394,7 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('remind')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILY
+		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
 		assert res['units'] == null
 
 		res = Entry.parse(currentTime, timeZone, "bread remind daily at 4pm foo", baseDate, true)
@@ -407,7 +402,7 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('remind daily foo')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILY
+		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
 		assert res['units'] == null
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices remind daily at 4pm", baseDate, true)
@@ -431,182 +426,110 @@ class EntryTests extends GroovyTestCase {
 		assert res['description'].equals('bread')
 		assert res['amount'].intValue() == 1
 		assert res['comment'].equals('remind weekly')
-		assert res['repeatType'] == Entry.RepeatType.REMINDWEEKLY
+		assert res['repeatType'] == Entry.RepeatType.REMINDWEEKLYGHOST
 		assert res['units'] == null
+		
+		res = Entry.parse(currentTime, timeZone, "bread 8 slices remind weekly", baseDate, true)
+
+		assert res['description'].equals('bread')
+		assert res['amount'].intValue() == 8
+		assert res['comment'].equals('remind weekly')
+		assert res['repeatType'] == Entry.RepeatType.REMINDWEEKLY
+		assert res['units'].equals('slices')
 		
 	}
 
+	@Test
 	void testUpdate() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), currentTime.getTime(), true, null)
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null)")
 
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), currentTime.getTime(), true, null)
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), null)
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:256)")
 	}
 
 	@Test
 	void testUpdateRepeat() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo repeat daily", baseDate, true), repeatTime, null)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:null)")
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo repeat daily", baseDate, true), null)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
 		println("Attempting to update")
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread repeat daily", baseDate, true), currentTime.getTime(), true, null)
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("repeatType", Entry.RepeatType.DAILY)
-				eq("tag", entry.getTag())
-				eq("userId", userId)
-				eq("comment", entry.getComment())
-				gt("date", new Date(currentTime.getTime() + 10000))
-			}
-			order("date", "desc")
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread repeat daily", baseDate, true), null)
+		def entries = Entry.fetchListData(user, lateBaseDate)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+			assert entryDesc['date'].toString().equals("2010-07-03 18:30:00.0")
 		}
-		def r
-		for (repeat in repeats) {
-			r = repeat
-			break
-		}
-		assert r != null
-		assert r.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
 	}
 
 	@Test
 	void testUpdateRepeatChangeTime() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo repeat daily", earlyBaseDate, true), repeatTime, null)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:null)")
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo repeat daily", earlyBaseDate, true), null)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
 		println("Attempting to update")
 		
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "headache 8 at 4pm repeat daily", earlyBaseDate, true), currentTime.getTime(), true, null)
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("tag", Tag.look("headache"))
-				eq("userId", userId)
-				eq("comment", "repeat daily")
-				gt("date", new Date(earlyBaseDate.getTime() - 10000))
-			}
-			order("date", "desc")
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "headache 8 at 3pm repeat daily", earlyBaseDate, true), null)
+		def entries = Entry.fetchListData(user, baseDate)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+			assert entryDesc['date'].toString().equals("2010-07-01 18:00:00.0")
 		}
-		
-		// make sure it only edits the one repeat entry, not subsequent ones
-		
-		def first = true
-		def r
-		int count = 0;
-		for (repeat in repeats) {
-			if (first)
-				r = repeat
-			++count;
-		}
-		assert count == 1
-		assert r != null
-		assert entry.getRepeatType() == null
 	}
 
 	@Test
-	void testUpdateLastRepeatEntry() {
-		// create repeat entry, repeat it, then edit it
-		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo 4pm repeat daily", baseDate, true), repeatTime, null)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
-		println("Attempting to update")
-		 
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("repeatType", Entry.RepeatType.DAILY)
-				eq("tag", Tag.look("bread foo"))
-				eq("userId", userId)
-				eq("comment", "repeat daily")
-				gt("date", new Date(currentTime.getTime() + 10000))
-			}
-			order("date", "desc")
-			maxResults(1)
-		}
-		
-		def r
-		for (repeat in repeats) {
-			r = repeat
-			break
-		}
-		assert r != null
-		
-		// make sure it doesn't nullify the repeat type of the last entry
-		
-		Entry.update(r, Entry.parse(currentTime, timeZone, "bread foo 8 4pm repeat daily", baseDate, false), currentTime.getTime(), true, null)
-		
-		assert r.getRepeatType() != null
-	}
-
-	@Test
-	void testDeleteRepeat() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo repeat daily", baseDate, true), repeatTime, null)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:null)")
+	void testReplaceRepeat() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "exercise 12pm repeat daily", earlyBaseDate, true), null)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:exercise, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
 		println("Attempting to update")
 
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "headache 8 at 4pm repeat daily", baseDate, true), currentTime.getTime(), true, null)
-		def c = Entry.createCriteria()
-		def repeats = c {
-			and {
-				eq("repeatType", Entry.RepeatType.DAILY)
-				eq("tag", Tag.look("headache"))
-				eq("userId", userId)
-				eq("comment", "repeat daily")
-				gt("date", new Date(currentTime.getTime() + 10000))
-			}
-			order("date", "desc")
-		}
-		def r
-		for (repeat in repeats) {
-			r = repeat
-			break
-		}
-		assert r != null
-		assert r.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:headache, amount:8.000000000, units:, amountPrecision:3, comment:repeat daily, repeatType:1)")
+		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "exercise 8 12pm repeat daily", baseDate, true), null)
+		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:exercise, amount:8.000000000, units:, amountPrecision:3, comment:repeat daily, repeatType:1)")
+		
+		def repeatEnd = entry.getRepeatEnd()
+		assert repeatEnd.equals(entry2.getDate())
 	}
 	
 	@Test
 	void testSleep() {
-		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 3:30pm", baseDate, true), noRepeatTime, null)
+		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 3:30pm", baseDate, true), null)
 		assert entry.getDurationType().equals(Entry.DurationType.START)
 
-		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep start at 4pm", baseDate, true), noRepeatTime, null)
+		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep start at 4pm", baseDate, true), null)
 		assert entry2.getDurationType().equals(Entry.DurationType.START)
 		
-		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep 4 hours at 3:30pm", baseDate, true), noRepeatTime, null)
+		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep 4 hours at 3:30pm", baseDate, true), null)
 		assert entry3.getDurationType().equals(Entry.DurationType.NONE)
 
-		Entry entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm start", baseDate, true), noRepeatTime, null)
+		Entry entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm start", baseDate, true), null)
 		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getDurationType().equals(Entry.DurationType.START)		
+		assert entry4.getDurationType().equals(Entry.DurationType.START)
 
-		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts", baseDate, true), noRepeatTime, null)
+		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts", baseDate, true), null)
 		assert entry4.getDescription().equals("sleep starts")
-		assert entry4.getDurationType().equals(Entry.DurationType.START)		
+		assert entry4.getDurationType().equals(Entry.DurationType.START)
 
-		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts (hola)", baseDate, true), noRepeatTime, null)
-		assert entry4.getDescription().equals("sleep starts")
-		assert entry4.getComment().equals("(hola)")
-		assert entry4.getDurationType().equals(Entry.DurationType.START)		
-
-		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts(hola)", baseDate, true), noRepeatTime, null)
+		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts (hola)", baseDate, true), null)
 		assert entry4.getDescription().equals("sleep starts")
 		assert entry4.getComment().equals("(hola)")
-		assert entry4.getDurationType().equals(Entry.DurationType.START)		
+		assert entry4.getDurationType().equals(Entry.DurationType.START)
 
-		Entry entry5 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm stop", baseDate, true), noRepeatTime, null)
+		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm starts(hola)", baseDate, true), null)
+		assert entry4.getDescription().equals("sleep starts")
+		assert entry4.getComment().equals("(hola)")
+		assert entry4.getDurationType().equals(Entry.DurationType.START)
+
+		Entry entry5 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm stop", baseDate, true), null)
 		assert entry5.getDescription().equals("sleep stop")
-		assert entry5.getDurationType().equals(Entry.DurationType.END)		
+		assert entry5.getDurationType().equals(Entry.DurationType.END)
 
-		Entry entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm end", baseDate, true), noRepeatTime, null)
+		Entry entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep at 4pm end", baseDate, true), null)
 		assert entry6.getDescription().equals("sleep end")
-		assert entry6.getDurationType().equals(Entry.DurationType.END)		
+		assert entry6.getDurationType().equals(Entry.DurationType.END)
 	}
 
 	@Test
@@ -614,14 +537,14 @@ class EntryTests extends GroovyTestCase {
 		// test creation of one side of a duration pair
 		println("=== Test creation of start entry ===")
 		
-		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), noRepeatTime, null)
+		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// test creation of the other side of the duration pair
 		println("=== Test creation of end entry ===")
 
-		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 3:31pm", baseDate, true), noRepeatTime, null)
+		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 3:31pm", baseDate, true), null)
 		println entry2.valueString()
 		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -633,7 +556,7 @@ class EntryTests extends GroovyTestCase {
 		// test editing the start time of the duration pair
 		println("=== Test update start entry ===")
 
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "testxyz start at 3:01pm", baseDate, true), currentTime.getTime(), true, null)
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "testxyz start at 3:01pm", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:01:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		assert entry.fetchEndEntry().fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null)")
@@ -643,7 +566,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new start of a duration pair
 		println("=== Test creation of new start entry in between start and end entry ===")
 
-		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:16pm", baseDate, true), noRepeatTime, null)
+		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:16pm", baseDate, true), null)
 		println entry3.valueString()
 		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:16:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -654,7 +577,7 @@ class EntryTests extends GroovyTestCase {
 		// test deletion of start end of a duration pair
 		println("=== Test deletion of start entry from duration pair ===")
 		
-		Entry.deleteViaClient(entry3, currentTime, baseDate, null)
+		Entry.delete(entry3, null)
 
 		assert entry2.fetchStartEntry().equals(entry)
 		assert entry.fetchEndEntry().equals(entry2)
@@ -662,7 +585,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new end after the duration pair
 		println("=== Test creation of new end after the duration pair ===")
 		
-		Entry entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "testxyz end at 4:31pm", baseDate, true), noRepeatTime, null)
+		Entry entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "testxyz end at 4:31pm", baseDate, true), null)
 		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		assert entry4.fetchStartEntry() == null
@@ -672,7 +595,7 @@ class EntryTests extends GroovyTestCase {
 		// test deletion of start of duration pair
 		println("=== Test deletion of start entry from duration pair ===")
 		
-		Entry.deleteViaClient(entry2, currentTime, baseDate, null)
+		Entry.delete(entry2, null)
 		
 		assert entry.fetchEndEntry().equals(entry4)
 		assert entry4.fetchStartEntry().equals(entry)
@@ -685,14 +608,14 @@ class EntryTests extends GroovyTestCase {
 		// test creation of one side of a duration pair
 		println("=== Test creation of start entry ===")
 		
-		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep 3:30pm", baseDate, true), noRepeatTime, null)
+		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep 3:30pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		// test creation of the other side of the duration pair
 		println("=== Test creation of end entry ===")
 
-		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "wake 3:31pm", baseDate, true), noRepeatTime, null)
+		Entry entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "wake 3:31pm", baseDate, true), null)
 		println entry2.valueString()
 		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:wake, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -704,7 +627,7 @@ class EntryTests extends GroovyTestCase {
 		// test editing the start time of the duration pair
 		println("=== Test update start entry ===")
 
-		Entry.update(entry, Entry.parse(currentTime, timeZone, "sleep at 3:01pm", baseDate, true), currentTime.getTime(), true, null)
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "sleep at 3:01pm", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:01:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		assert entry.fetchEndEntry().fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:sleep, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null)")
@@ -714,7 +637,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new start of a duration pair
 		println("=== Test creation of new start entry in between start and end entry ===")
 
-		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep start at 3:16pm", baseDate, true), noRepeatTime, null)
+		Entry entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep start at 3:16pm", baseDate, true), null)
 		println entry3.valueString()
 		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:16:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:sleep start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -725,7 +648,7 @@ class EntryTests extends GroovyTestCase {
 		// test deletion of start end of a duration pair
 		println("=== Test deletion of start entry from duration pair ===")
 		
-		Entry.deleteViaClient(entry3, currentTime, baseDate, null)
+		Entry.delete(entry3, null)
 
 		assert entry2.fetchStartEntry().equals(entry)
 		assert entry.fetchEndEntry().equals(entry2)
@@ -733,7 +656,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new end after the duration pair
 		println("=== Test creation of new end after the duration pair ===")
 		
-		Entry entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "sleep end at 4:31pm", baseDate, true), noRepeatTime, null)
+		Entry entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "sleep end at 4:31pm", baseDate, true), null)
 		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:sleep end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		assert entry4.fetchStartEntry() == null
@@ -743,7 +666,7 @@ class EntryTests extends GroovyTestCase {
 		// test deletion of start of duration pair
 		println("=== Test deletion of start entry from duration pair ===")
 		
-		Entry.deleteViaClient(entry2, currentTime, baseDate, null)
+		Entry.delete(entry2, null)
 		
 		assert entry.fetchEndEntry().equals(entry4)
 		assert entry4.fetchStartEntry().equals(entry)
@@ -760,7 +683,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of one side of a duration pair
 		println("=== Test creation of start entry ===")
 		
-		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), noRepeatTime, null)
+		Entry entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 		assert entry.fetchEndEntry() == null
@@ -768,7 +691,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of the other side of the duration pair
 		println("=== Test creation of end entry ===")
 
-		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), noRepeatTime, null)
+		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), null)
 		println entry2.valueString()
 		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -779,7 +702,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new start of a duration pair
 		println("=== Test creation of new start entry before start and end entry ===")
 
-		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3pm", baseDate, true), noRepeatTime, null)
+		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3pm", baseDate, true), null)
 		println entry3.valueString()
 		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -787,10 +710,10 @@ class EntryTests extends GroovyTestCase {
 		assert entry2.fetchStartEntry() == entry
 		assert entry.fetchEndEntry() == entry2
 
-		// test creation of new end in between first duration pair		
+		// test creation of new end in between first duration pair
 		println("=== Test creation of new end in between first duration pair ===")
 		
-		def entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "testxyz end at 3:45pm", baseDate, true), noRepeatTime, null)
+		def entry4 = Entry.create(userId, Entry.parse(endTime, timeZone, "testxyz end at 3:45pm", baseDate, true), null)
 		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
 		
@@ -811,7 +734,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of one side of a duration pair
 		println("=== Test creation of start entry ===")
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -820,7 +743,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of the other side of the duration pair
 		println("=== Test creation of end entry ===")
 
-		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), noRepeatTime, null)
+		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), null)
 		println entry2.valueString()
 		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -831,7 +754,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of new start of a duration pair
 		println("=== Test creation of new start entry in between first duration pair ===")
 
-		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:45pm", baseDate, true), noRepeatTime, null)
+		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:45pm", baseDate, true), null)
 		println entry3.valueString()
 		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -850,7 +773,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of one side of a duration pair
 		println("=== Test creation of start entry ===")
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz start at 3:30pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz start, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -859,7 +782,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of the other side of the duration pair
 		println("=== Test creation of end entry ===")
 
-		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), noRepeatTime, null)
+		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), null)
 		println entry2.valueString()
 		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -870,7 +793,7 @@ class EntryTests extends GroovyTestCase {
 		// test creation of orphan end of duration pair
 		println("=== Test creation of new end entry after first duration pair ===")
 
-		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4:30pm", baseDate, true), noRepeatTime, null)
+		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4:30pm", baseDate, true), null)
 		println entry3.valueString()
 		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:testxyz end, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 
@@ -883,7 +806,7 @@ class EntryTests extends GroovyTestCase {
 		
 		println("=== Test deletion of middle end entry ===")
 		
-		Entry.deleteViaClient(entry2, currentTime, baseDate, null)
+		Entry.delete(entry2, null)
 		
 		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
 				
@@ -902,41 +825,41 @@ class EntryTests extends GroovyTestCase {
 		def nineMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 9 * 30)
 		def twoYearsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 24 * 30)
 		
-		def entry = Entry.create(userId, Entry.parse(now, timeZone, "fooxyz 3 tablet", now, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(now, timeZone, "fooxyz 3 tablet", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "fooxyz 1 toblet", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "fooxyz 1 toblet", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "fooxyz 1 tablet", twoMonthsAgo, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "fooxyz 1 tablet", twoMonthsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(nineMonthsAgo, timeZone, "fooxyz 1 tablet", nineMonthsAgo, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(nineMonthsAgo, timeZone, "fooxyz 1 tablet", nineMonthsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoYearsAgo, timeZone, "fooxyz 1 tablet", twoYearsAgo, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoYearsAgo, timeZone, "fooxyz 1 tablet", twoYearsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "foamfoam 1 mg", now, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "foamfoam 1 mg", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "foamfoam 1.5 mg", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "foamfoam 1.5 mg", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "foamfoam 1 mg", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "foamfoam 1 mg", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "blee 1 mg", now, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "blee 1 mg", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "blee 1.5 mg", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "blee 1.5 mg", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "blee 3 mg", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "blee 3 mg", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "whaa 24", now, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "whaa 24", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whaa 14", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whaa 14", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "whaa 11", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "whaa 11", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "gor", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "gor", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor 12", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor 12", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whoa 1 gee repeat daily", yesterday, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whoa 1 gee repeat daily", yesterday, true), null)
 
 		def tag = Tag.look("fooxyz")
 		

@@ -8,7 +8,7 @@
 
 <r:require module="selectable"/>
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
 
@@ -44,8 +44,8 @@ function changeDate(amount) {
 function refreshPage() {
 	cacheDate();
 	
-	$.getJSON("/home/getEntriesData?date="+ cachedDateUTC + "&userId=" + currentUserId + "&callback=?",
-		getCSRFPreventionObject("getEntriesDataCSRF"),
+	$.getJSON("/home/getListData?date="+ cachedDateUTC + "&userId=" + currentUserId + "&callback=?",
+		getCSRFPreventionObject("getListDataCSRF"),
 		function(entries){
 			if (checkData(entries))
 				refreshEntries(entries);

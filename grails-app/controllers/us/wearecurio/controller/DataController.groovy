@@ -8,12 +8,12 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Discussion;
 import us.wearecurio.model.Entry.TagStatsRecord
 
-import java.text.DateFormat;
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date;
+import java.util.Date
 import java.util.SimpleTimeZone
-import java.util.TimeZone;
+import java.util.TimeZone
 
 class DataController extends LoginController {
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -100,142 +100,12 @@ class DataController extends LoginController {
 	}
 
 	// find entries including those with null events
-	protected def findEntriesAll(User user, String dateStr) {
-		debug "DataController.findEntries() userId:" + user.getId() + ", dateStr:" + dateStr
+	protected def listEntries(User user, String dateStr) {
+		debug "DataController.listEntries() userId:" + user.getId() + ", dateStr:" + dateStr
 		
-		def date = parseDate(dateStr)
-
-		def c = Entry.createCriteria()
-		
-		debug dateStr + ":" + systemFormat.format(date)
-
-		String queryStr = "from Entry entry where entry.userId = " + user.getId() + " and date >= '" + systemFormat.format(date) \
-				+ "' and date < '" + systemFormat.format(date + 1) + "' order by case when entry.datePrecisionSecs < 1000 then unix_timestamp(date) else 0 end desc, entry.tag.description asc"
-
-		debug queryStr
-
-		def entries = Entry.executeQuery(queryStr)
-
-		return Utils.listJSONDesc(entries)
+		return Entry.fetchListData(user, parseDate(dateStr))
 	}
 	
-	protected def findEntries(User user, String dateStr) {
-		debug "DataController.findEntries() userId:" + user.getId() + ", dateStr:" + dateStr
-		
-		def date = parseDate(dateStr)
-
-		def c = Entry.createCriteria()
-		
-		debug dateStr + ":" + systemFormat.format(date)
-
-		String queryStr = "from Entry entry where entry.amount IS NOT NULL and entry.userId = " + user.getId() + " and date >= '" + systemFormat.format(date) \
-				+ "' and date < '" + systemFormat.format(date + 1) + "' order by case when entry.datePrecisionSecs < 1000 then unix_timestamp(date) else 0 end desc, entry.tag.description asc"
-
-		debug queryStr
-
-		def entries = Entry.executeQuery(queryStr)
-
-		return Utils.listJSONDesc(entries)
-	}
-	
-	protected def findEntriesStartEnd(User user, def tagStrs, Date startDate, Date endDate) {
-		debug "DataController.findEntriesStartEnd() userId:" + user.getId() + ", tagStrs:" + tagStrs + ", startDate:" + startDate \
-		+ ", endDate:" + endDate
-
-		def tags = []
-		for (tagStr in tagStrs) {
-			tags.add(Tag.look(tagStr))
-		}
-
-		def c = Entry.createCriteria()
-
-		def entries = c {
-			and {
-				eq("userId", user.getId())
-				or {
-					for (tag in tags) eq("tag", tag)
-				}
-				if (startDate != null) {
-					and { ge("date", startDate) }
-				}
-				if (endDate != null) {
-					and { le("date", endDate) }
-				}
-				and {
-					not { isNull("date") }
-					not { isNull("amount") }
-				}
-			}
-			order("date", "asc")
-		}
-		
-		return entries
-	}
-	
-	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
-
-	protected def findSumData(boolean sumNights, def user, def tagStrs, Date startDate, Date endDate, int timeZoneSec) {
-		debug "DataController.findSumData() sumNights:" + sumNights + ", userId:" + user.getId() + ", startDate:" + startDate \
-				+ ", endDate:" + endDate + ", timeZoneSec:" + timeZoneSec
-		
-		if (sumNights) {
-			if (startDate != null)
-				startDate = new Date(startDate.getTime() + HALFDAYTICKS)
-			if (endDate != null)
-				endDate = new Date(endDate.getTime() + HALFDAYTICKS)
-		}
-		
-		int timeZoneHours = (timeZoneSec / 3600)
-		int timeZoneMinutes = ((int)((timeZoneSec < 0 ? -timeZoneSec : timeZoneSec) / 60)) % 60
-		String mysqlTimeZone = timeZoneHours + ":" + ((timeZoneMinutes < 10 ? "0" : "") + timeZoneMinutes)
-
-		def tags = []
-		for (tagStr in tagStrs) {
-			tags.add(Tag.look(tagStr))
-		}
-
-		String queryStr = "select date(convert_tz(entry.date,'+00:00','" + mysqlTimeZone + "')) as dt, sum(amount) as amount from Entry entry where entry.tag.id in (";
-		queryStr = "select date as dt, sum(amount) as amount from Entry entry where entry.amount IS NOT NULL and entry.tag.id in (";
-		
-		boolean first = true;
-
-		for (tag in tags) {
-			if (!first) {
-				queryStr += ","
-			}
-			first = false
-			queryStr += tag.getId();
-		}
-
-		queryStr += ")"
-
-		queryStr += " and entry.userId = " + user.getId()
-
-		if (startDate != null)
-			queryStr += " and date >= '" + systemFormat.format(startDate) + "'"
-		if (endDate != null)
-			queryStr += " and date < '" + systemFormat.format(endDate) + "'"
-			
-		def sourceTimeZone = sumNights ? '+12:00' : '+00:00';
-
-		queryStr += " and date is not null group by date(convert_tz(entry.date,'" + sourceTimeZone + "','" + mysqlTimeZone + "')) order by date(convert_tz(entry.date,'+00:00','" + mysqlTimeZone + "')) asc";
-
-		debug "QUERY: " + queryStr;
-
-		def rawResults = Entry.executeQuery(queryStr)
-		def results = []
-
-		for (result in rawResults) {
-			debug "RESULT: " + result
-			results.push([
-				new Date(result[0].getTime() + 43200000),
-				result[1]
-			])
-		}
-
-		return results
-	}
-
 	protected def doParseCSVAcross(InputStream csvIn, Long userId) {
 		debug "DataController.doParseCSVAcross() userId:" + userId
 		
@@ -246,7 +116,6 @@ class DataController extends LoginController {
 		def timeZoneStr = ""
 		def setName = "import"
 		TimeZone timeZone
-		def now = new Date()
 
 		List<Date> dateList = new ArrayList<Date>()
 
@@ -272,7 +141,7 @@ class DataController extends LoginController {
 					if (tokens[i].length() > 0) {
 						def parsedEntry = Entry.parse(now, timeZone, tokens[i], dateList.get(i), false)
 						parsedEntry['setName'] = setName
-						def entry = Entry.create(userId, parsedEntry, now, false, null)
+						def entry = Entry.create(userId, parsedEntry, null)
 
 						debug("created " + entry)
 					}
@@ -292,10 +161,10 @@ class DataController extends LoginController {
 		String setName = "import"
 		TimeZone timeZone
 		Integer timeZoneOffsetSecs = 0
-		Date now = new Date()
 		Date currentDate = null
 		boolean analysisType = false
 		DateFormat dateFormat
+		Date now = new Date()
 
 		reader.eachCsvLine { tokens ->
 			++lineNum
@@ -338,12 +207,12 @@ class DataController extends LoginController {
 							amount:tokens[2], \
 							units:tokens[3], \
 							comment:tokens[4], \
-							repeatType:repeatTypeId >= 0 ? Entry.repeatTypeFromId(repeatTypeId) : null, \
+							repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get(repeatTypeId) : null, \
 							setName:setName, \
 							amountPrecision:Long.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
 							datePrecisionSecs:(tokens[7].equals("null") ? '180':tokens[7]), \
 						]
-						def entry = Entry.create(userId, parsedEntry, now, false, null)
+						def entry = Entry.create(userId, parsedEntry, null)
 	
 						debug("created " + entry)
 					}
@@ -355,7 +224,7 @@ class DataController extends LoginController {
 					if (currentDate) {
 						def parsedEntry = Entry.parse(now, timeZone, tokens[1], currentDate, false)
 						parsedEntry['setName'] = setName
-						def entry = Entry.create(userId, parsedEntry, now, false, null)
+						def entry = Entry.create(userId, parsedEntry, null)
 	
 						debug("created " + entry)
 					}
@@ -497,6 +366,7 @@ class DataController extends LoginController {
 		renderJSONGet([user])
 	}
 
+	// for backwards compatibility with older mobile apps - no longer used
 	def getEntriesData() {
 		debug "DataController.getEntriesData() userId:" + params.userId + " date: " + params.date
 		
@@ -507,38 +377,68 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entries = findEntriesAll(user, params.date)
+		def entries = Entry.fetchListDataNoRepeats(user, parseDate(params.date))
+		
+		// skip continuous repeat entries with entries within the usage threshold
+
+		renderJSONGet(entries)
+	}
+	
+	def getListData() {
+		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date
+		
+		def user = userFromIdStr(params.userId);
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		def entries = Entry.fetchListData(user, parseDate(params.date))
+		
+		// skip continuous repeat entries with entries within the usage threshold
 
 		renderJSONGet(entries)
 	}
 
-	def getData() {
+	def getPlotData() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
 		
-		debug "DataController.getData() tags: " + tags + " startDate: " + startDateStr + " endDate: " + endDateStr
+		debug "DataController.getPlotData() tags: " + tags + " startDate: " + startDateStr + " endDate: " + endDateStr
 
-		def json = new JSON(Utils.listJSONShortDesc(findEntriesStartEnd(sessionUser(), tags, startDateStr ? parseDate(startDateStr) : null,
-				endDateStr ? parseDate(endDateStr) : null)))
+		def tagIds = []
 		
-		renderDataGet(json)
+		for (tagStr in tags) {
+			tagIds.add(Tag.look(tagStr).getId())
+		}
+
+		def results = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
+				endDateStr ? parseDate(endDateStr) : null)
+		
+		renderDataGet(new JSON(results))
 	}
 
-	def getSumData() {
+	def getSumPlotData() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
 
-		debug "DataController.getSumData() params: " + params
+		debug "DataController.getSumPlotData() params: " + params
+		
+		def tagIds = []
+		for (tagStr in tags) {
+			tagIds.add(Tag.look(tagStr).getId())
+		}
 
-		def json = new JSON(findSumData((params.sumNights?.equals("true"))? true: false, sessionUser(), tags,
-				startDateStr ? parseDate(startDateStr) : null,
-				endDateStr ? parseDate(endDateStr) : null, -Integer.parseInt(params.timeZoneOffset)))
-
-		renderDataGet(json)
+		def results = Entry.fetchSumPlotData((params.sumNights?.equals("true"))? true: false, sessionUser(), tagIds,
+				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, -Integer.parseInt(params.timeZoneOffset))
+		
+		renderDataGet(new JSON(results))
 	}
 
+	/*
 	def correlateData() {
 		debug("DataController.correlateData()")
 
@@ -564,7 +464,7 @@ class DataController extends LoginController {
 		def data1 = findEntriesStartEnd(sessionUser(), tags1, startDateStr, endDateStr)
 		
 		def data2 = findEntriesStartEnd(sessionUser(), tags2, startDateStr, endDateStr)
-	}
+	}*/
 
 	def getTagsData() {
 		debug("DataController.getTagsData() order:" + params.sort)
@@ -586,7 +486,7 @@ class DataController extends LoginController {
 				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
 			renderJSONGet([
-				findEntriesAll(userId, params.baseDate),
+				listEntries(userId, params.baseDate),
 				result[1],
 				result[0].getDescription(),
 				result[2].getJSONShortDesc()
@@ -610,7 +510,7 @@ class DataController extends LoginController {
 				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
 			renderJSONGet([
-				findEntriesAll(userId, params.baseDate),
+				listEntries(userId, params.baseDate),
 				result[1],
 				result[2].getJSONDesc(),
 				result[0].getJSONDesc()
@@ -626,7 +526,7 @@ class DataController extends LoginController {
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
 				params.defaultToNow == '1' ? true : false)
 		if (entry != null) {
-			renderJSONGet(findEntriesAll(userFromId(entry.getUserId()), params.baseDate))
+			renderJSONGet(listEntries(userFromId(entry.getUserId()), params.baseDate))
 		} else {
 			debug "Error while updating: " + message
 			renderStringGet(message)
@@ -639,7 +539,7 @@ class DataController extends LoginController {
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
 				params.defaultToNow == '1' ? true : false)
 		if (entry != null) {
-			renderJSONGet([findEntriesAll(userFromId(entry.getUserId()), params.baseDate),
+			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.baseDate),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
 		} else {
 			debug "Error while updating: " + message
@@ -670,8 +570,8 @@ class DataController extends LoginController {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
 			TagStatsRecord record = new TagStatsRecord()
-			Entry.deleteViaClient(entry, currentTime, baseDate, record)
-			renderJSONGet(findEntriesAll(sessionUser(), params.displayDate))
+			Entry.delete(entry, record)
+			renderJSONGet(listEntries(sessionUser(), params.displayDate))
 		}
 	}
 	
@@ -698,8 +598,8 @@ class DataController extends LoginController {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
 			TagStatsRecord record = new TagStatsRecord()
-			Entry.deleteViaClient(entry, currentTime, baseDate, record)
-			renderJSONGet([findEntriesAll(sessionUser(), params.displayDate),
+			Entry.delete(entry, record)
+			renderJSONGet([listEntries(sessionUser(), params.displayDate),
 				record.getOldTagStats()?.getJSONDesc(),
 				record.getNewTagStats()?.getJSONDesc()])
 		}
