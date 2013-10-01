@@ -28,7 +28,11 @@ class MigrationService {
 	DatabaseService databaseService
 	
 	public def sql(String statement) {
-		databaseService.sql(statement)
+		try {
+			databaseService.sql(statement)
+		} catch (Exception e) {
+			e.printStackTrace()
+		}
 	}
 	
 	public def sqlRows(String statement, args = []) {
