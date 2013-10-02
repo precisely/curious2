@@ -1,6 +1,4 @@
 <title><g:layoutTitle default="Curious" /></title>
-<script type="text/javascript">
-</script>
 <link type="text/css" href="${resource(dir:'css/custom-theme', file:'jquery-ui-1.8.18.custom.css')}" rel= "stylesheet">
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.7.2.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
@@ -17,6 +15,7 @@
 <link rel="stylesheet" href="${resource(dir:'css', file:'mainlhp.css')}"/>
 </g:if>
 <g:layoutHead />
+<r:layoutResources/>
 <script type="text/javascript">
 function makeGetUrl(url) {
 	return "/home/" + url + "?callback=?";

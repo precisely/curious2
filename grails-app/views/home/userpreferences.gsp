@@ -1,216 +1,146 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<g:setProvider library="jquery"/>
+<g:setProvider library="jquery" />
 <html>
 <head>
-  <meta name="layout" content="main" />
-  <title>Curious</title>
-  <meta name="description" content="A platform for health hackers" />
-<style type="text/css">
-.name {
-	font-size:10pt;
-}
-.name a, .prop a, .prop input, .name input {
-	font-size:10pt;
-}
-.savebutton {height:30px;margin:0px;padding-left:5px;padding-right:5px;background-color:#08BBF1;color:#FFFFFF;padding-top:5px;padding-bottom:5px;}
-.main form {
-}
-</style>
-<script type="text/javascript">
-function refreshPage() {
-}
+	<title>Curious</title>
+	<meta name="layout" content="main" />
+	<r:require module="basic"/>
+	<meta name="description" content="A platform for health hackers" />
 
-function doLogout() {
-	callLogoutCallbacks();
-}
-
-$(function(){
-	initTemplate();
-	
-	$.getJSON("/home/getPeopleData?callback=?",
-		function(data){
-			if (!checkData(data))
-				return;
-			
-			found = false;
-			
-			jQuery.each(data, function() {
-				if (!found) {
-					// set first user id as the current
-					setUserId(this['id']);
-					found = true;
-				}
-				addPerson(this['first'] + ' ' + this['last'],
-					this['username'], this['id'], this['sex']);
-				return true;
-			});
-		});
-});
-</script>
+	<style type="text/css">
+		input.savebutton {
+			padding: 5px 10px;
+			background-color: #08BBF1;
+			color: #FFFFFF;
+		}
+		.profile-container table {
+			font-size: 10pt;
+			width: 100%;
+		}
+		.profile-container table tr td {
+			padding-bottom: 20px;
+		}
+		.profile-container table tr td:first-child {
+			font-weight: bold;
+			padding-right: 20px;
+			text-align: right;
+			text-transform: uppercase;
+			width: 200px;
+		}
+		.profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]),
+			.profile-container text-area {
+			padding: 6px;
+			min-width: 300px;
+		}
+		.logo {
+			background-color: #ccc;
+			min-height: 218px;
+		}
+	</style>
 </head>
 <body>
-  <!-- MAIN -->
-  <div class="main">
+	<div class="red-strip"></div>
+	<div class="row">
+		<div class="span3 text-center">
+			<div class="logo"></div>
+		</div>
+		<div class="span9 profile-container">
+			<div id="addData">
+				<g:form action="doupdateuserpreferences">
+					<g:hiddenField name="precontroller" value="${precontroller}" />
+					<g:hiddenField name="preaction" value="${preaction}" />
+					<g:hiddenField name="userId" value="${user.id}" />
+					<table>
+						<tbody>
+							<tr>
+								<td><label for="Username">Username</label></td>
+								<td><g:textField name="username" value="${user.username}" autofocus="" required="" /></td>
+							</tr>
 
-    <div id="area0">
-      <div id="addData">
-		<g:if test="${flash.message}">
-		  <div class="message">${flash.message.encodeAsHTML()}</div>
-		</g:if>
-      <h1>Answer a few questions</h1>
-      <g:form action="doupdateuserpreferences" method="post">
-        <div class="dialog">
-          <input type="hidden" name="precontroller" value="${precontroller}"/>
-          <input type="hidden" name="preaction" value="${preaction}"/>
-          <input type="hidden" name="userId" value="${user.id}"/>
-          <table style="width:300px;">
-            <tbody>
-              <tr class="prop">
-                <td class="name">
-                  <label for="Username">Username:</label>
-                </td>
-                <td>
-                  <input type="text" id="username" name="username" value="${user.username.encodeAsHTML()}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="oldPassword">Old password</label></td>
+								<td><g:passwordField name="oldPassword" value="" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="Password">Change password:</label>
-                </td>
-                <td>
-                  <input type="password" id="password" name="password" value=""/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="Password">New password</label></td>
+								<td><g:passwordField name="password" value="" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="Email">Email:</label>
-                </td>
-                <td>
-                  <input type="text" id="email" name="email" value="${user.email.encodeAsHTML()}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="Email">Email</label></td>
+								<td><g:field type="email" required="" name="email" value="${user.email}" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="Notify Email">Email to send reminders to:</label>
-                </td>
-                <td>
-                  <input type="text" id="remindEmail" name="remindEmail" value="${user.remindEmail ? user.remindEmail.encodeAsHTML() : ""}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="first">First Name</label></td>
+								<td><g:textField name="first" value="${user.first.encodeAsHTML()}" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="first">First Name:</label>
-                </td>
-                <td>
-                  <input type="text" id="first" name="first" value="${user.first.encodeAsHTML()}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="last">Last Name</label></td>
+								<td><g:textField name="last" value="${user.last.encodeAsHTML()}" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="last">Last Name:</label>
-                </td>
-                <td>
-                  <input type="text" id="last" name="last" value="${user.last.encodeAsHTML()}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="birthdate">Birthdate (MM/DD/YYYY)</label></td>
+								<td><g:textField name="birthdate"
+									value="${user.birthdate ? new java.text.SimpleDateFormat("MM/dd/yyyy").format(user.birthdate) : ''}" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="birthdate">Birthdate (MM/DD/YYYY):</label>
-                </td>
-                <td>
-                  <input type="text" id="birthdate" name="birthdate" value="${user.birthdate ? new java.text.SimpleDateFormat("MM/dd/yyyy").format(user.birthdate) : ''}"/>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="Notify Email">Email to send reminders to</label></td>
+								<td><g:textField name="remindEmail"
+									value="${user.remindEmail ? user.remindEmail.encodeAsHTML() : ""}" /></td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name">
-                  <label for="first">Email Notifications</label>
-                </td>
-                <td class="name">
-                  <input type="radio" name="notifyOnComments" value="off" <g:if test="${!user.getNotifyOnComments()}">checked</g:if>>No emails on comments<br>
-                  <input type="radio" name="notifyOnComments" value="on" <g:if test="${user.getNotifyOnComments()}">checked</g:if>>Emails on comments<br>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="first">Email Notifications</label></td>
+								<td>
+									<g:radio name="notifyOnComments" value="off"
+										checked="${!user.getNotifyOnComments()}" /> No emails on comments<br>
+									<g:radio name="notifyOnComments" value="on"
+										checked="${user.getNotifyOnComments()}" /> Emails on comments
+								</td>
+							</tr>
 
-              <tr class="prop">
-                <td class="name" colspan="3">
-                  <g:radioGroup name="sex" labels="['Male','Female']" values="['M','F']" value="${user.sex}">
-                    ${it.label} ${it.radio}
-                  </g:radioGroup>
-                </td>
-              </tr>
+							<tr>
+								<td><label for="sex">Gender</label></td>
+								<td style="padding-bottom: 0px;">
+									<g:radio name="sex" value="F" checked="${user.sex == 'F' }"/> Female<br>
+									<g:radio name="sex" value="M" checked="${user.sex == 'M' }"/> Male<br><br>
+								</td>
+							</tr>
 
-			  <g:if test="${user.twitterAccountName == null || user.twitterAccountName.length() == 0}">
-				<tr class="prop">
-				  <td class="name" colspan="3">
-					<g:link action="registertwitter">Link Twitter Account</g:link>
-				  </td>
-				</tr>
-			  </g:if>
-			  <g:else>
-				<tr class="prop">
-				  <td class="name">
-					<label for="twitterAccountName">Twitter Account Name:</label>
-				  </td>
-				  <td>
-					${user.twitterAccountName}
-				  </td>
-				</tr>
-				<tr class="prop">
-				  <td class="name" colspan="3">
-					<g:link action="registertwitter">Link Other Twitter Account</g:link>
-				  </td>
-				</tr>
-			  </g:else>
+							<tr>
+								<td><label>Other Accounts</label>
+								<td>
+									<g:if test="${!user.twitterAccountName}">
+										<g:link action="registertwitter">Link Twitter Account</g:link>
+									</g:if>
+									<g:else>
+										Twitter Account: ${user.twitterAccountName}<br>
+										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
+									</g:else><br>
+									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
+									<g:link action="registerwithings">Link Withings Account</g:link>
+								</td>
+							</tr>
 
-			  <tr class="prop">
-			    <td class="name" colspan="3">
-				  <g:link action="registerfitbit">Link FitBit Account</g:link>
-			    </td>
-			  </tr>
-
-			  <tr class="prop">
-			    <td class="name" colspan="3">
-				  <g:link action="registerwithings">Link Withings Account</g:link>
-			    </td>
-			  </tr>
-
-              <tr class="prop">
-                <td class="name">
-                  <label for="first">Default Twitter to Now</label>
-                </td>
-                <td class="name">
-                  <input type="checkbox" name="twitterDefaultToNow" style="border: none;width: 20px;"<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>>
-                    Default Twitter timestamp to now
-                </td>
-              </tr>
-
-		  </tbody>
-          </table>
-        </div>
-        <div class="buttons">
-          <input class="savebutton" type="submit" value="Update" />
-        </div>
-      </g:form>
-      </div>
-    </div>
-
-  </div>
-  <!-- /MAIN -->
-
-  <!-- RIGHT NAV -->
-  <div class="tagNav">
-
-  </div>
-  <!-- /RIGHT NAV -->
-
-  <div style="clear:both;"></div>
-
+							<tr>
+								<td><label for="first">Default Twitter to Now</label></td>
+								<td><input type="checkbox" name="twitterDefaultToNow" style="border: none; width: 20px;"
+									<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>> Default Twitter timestamp to now</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td class="text-right"><g:submitButton class="savebutton" name="Update" /></td>
+							</tr>
+						</tbody>
+					</table>
+				</g:form>
+			</div>
+		</div> <!-- .span9 ends -->
+	</div>
 </body>
 </html>

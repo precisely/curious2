@@ -942,3 +942,51 @@ div.plotLine:hover span {
 	padding-left:8px;
 	color:#999999;
 }
+
+/**
+ * Generic & common stuff, useful for every where. Starts here.
+ */
+.text-center {
+	text-align: center;
+}
+.text-right {
+	text-align: right;
+}
+.red-strip {
+	background-color: #EF4B3A;
+	width: 100%;
+	height: 3px;
+	margin-bottom: 20px;
+}
+
+.row {
+	margin-left: -15px;
+	margin-right: -15px;
+}
+.row:before, .row:after {
+	content: " ";
+	display: table;
+}
+.row:after {
+	clear: both;
+}
+[class*="span"] {
+	position: relative;
+	min-height: 1px;
+	padding-left: 15px;
+	padding-right: 15px;
+	float: left;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.span3 {
+	width: 25%;
+}
+.span9 {
+	width: 75%;
+}
+
+ /**
+  * Generic & common stuff, useful for every where. Ends here.
+  */

@@ -1,5 +1,8 @@
 modules = {
-    application {
-        resource url:'js/application.js'
-    }
+	application {
+		resource url: [dir: "js", file: "application.js"]
+	}
+	basic {
+		resource url: [dir: "js", file: "basic.js"]
+	}
 }
