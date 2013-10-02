@@ -13,8 +13,21 @@ import us.wearecurio.utility.Utils
  */
 class LoginController extends SessionController {
 
-	private static def log = LogFactory.getLog(this)
-	
+	def genericService
+
+	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
+		"autocompleteData", "getEntriesData", "getTagProperties", "getData", "createTagGroup", "addTagGroupToTagGroup",
+		"addTagToTagGroup", "removeTagGroupFromTagGroup", "removeTagFromTagGroup", "showTagGroup", "deleteTagGroup",
+		"setTagPropertiesData"]]
+
+	private boolean validateToken() {
+		if(!genericService.isTokenValid(request, params)) {
+			response.sendError 401
+			return false
+		}
+		return true
+	}
+
 	static debug(str) {
 		log.debug(str)
 	}

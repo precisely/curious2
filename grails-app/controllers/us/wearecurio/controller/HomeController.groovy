@@ -4,8 +4,6 @@ import grails.converters.*
 
 import java.text.SimpleDateFormat
 
-import org.apache.commons.logging.LogFactory
-
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.JawboneService
@@ -21,9 +19,7 @@ class HomeController extends DataController {
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
-	
-	private static def log = LogFactory.getLog(this)
-	
+
 	static debug(str) {
 		log.debug(str)
 	}

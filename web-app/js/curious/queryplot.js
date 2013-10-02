@@ -1368,7 +1368,8 @@ function PlotLine(p) {
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
-			$.getJSON(makeGetUrl("setTagPropertiesData"), makeGetArgs({ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
+			$.getJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+					{ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
 					function(result){
 						if (checkData(result)) {
 							if (plotLine.tag) plotLine.tag.setIsContinuous(val);
@@ -1380,7 +1381,8 @@ function PlotLine(p) {
 		if (this.showPoints != val) {
 			this.showPoints = val;
 			var plotLine = this;
-			$.getJSON(makeGetUrl("setTagPropertiesData"), makeGetArgs({ tags:$.toJSON(this.getTags()), showPoints:val ? 'true' : 'false' }),
+			$.getJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+					{ tags:$.toJSON(this.getTags()), showPoints:val ? 'true' : 'false' }),
 					function(result){
 						if (checkData(result)) {
 							if (plotLine.tag) plotLine.tag.setShowPoints(val);
@@ -1664,7 +1666,7 @@ function PlotLine(p) {
 		var method = (this.sumData || this.sumNights) ? "getSumData" : "getData";
 		var plotLine = this;
 		
-		$.getJSON(makeGetUrl(method), makeGetArgs({ tags:$.toJSON(this.getTags()),
+		$.getJSON(makeGetUrl(method), getCSRFPreventionObject("getDataCSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				sumNights:this.sumNights ? "true" : "",

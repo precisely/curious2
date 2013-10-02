@@ -111,3 +111,44 @@ DateUtil.prototype.getDateRangeForToday = function() {
 		end: end
 	}
 }
+
+var App = {};
+App.CSRF = {};
+window.App = App;
+App.CSRF.SyncTokenKeyName = "SYNCHRONIZER_TOKEN"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_KEY
+App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_URI
+
+/**
+ * A method which returns an string representation of an url containing parameters
+ * related to CSRF prevention. This is useful to concate url in any url string of ajax call,
+ * @param key unique string which is passed in jqCSRFToken tag to create token.
+ * @param prefix any string to append before generated url like: <b>&</b>.
+ * @returns string representation of CSRF parameters.
+ */
+function getCSRFPreventionURI(key, prefix, suffix) {
+	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
+	if(App.CSRF[key] == undefined) {
+		console.error("Missing csrf prevention token for key", key);
+	}
+	return prefix + preventionURI + (suffix ? suffix : "");
+}
+
+/**
+ * A method which returns an object containing key & its token based on given key.
+ * This is useful to be easily passed in some jQuery methods like <b>getJSON</b>,
+ * which accepts parameters to be passed as Object.
+ * @param key unique string which is passed in jqCSRFToken tag to create token.
+ * @param data optional object to attach to new object using jQuery's extend method.
+ * @returns the object containing parameters for CSRF prevention.
+ */
+function getCSRFPreventionObject(key, data) {
+	var CSRFPreventionObject = new Object();
+	if(App.CSRF[key]) {
+		CSRFPreventionObject[App.CSRF.SyncTokenKeyName] = App.CSRF[key];
+	} else {
+		console.error("Missing csrf prevention token for key", key);
+	}
+	CSRFPreventionObject[App.CSRF.SyncTokenUriName] = key;
+
+	return $.extend(CSRFPreventionObject, data);
+}
