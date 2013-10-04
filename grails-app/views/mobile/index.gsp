@@ -90,7 +90,7 @@ function doLogout() {
 
 <r:require modules="selectable, mobileTrackPage" />
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF" />
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF" />
 
 <r:script>
 function askLogout() {
@@ -556,9 +556,11 @@ $(function(){
 				setEntryText('');
 				currentEntryId = null;
 			}
-			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs({ entryId:entryId,
+			var argsToSend = getCSRFPreventionObject("deleteEntryDataCSRF", { entryId:entryId,
 				currentTime:currentTimeUTC, baseDate:cachedDateUTC,
-				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC }),
+				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
+
+			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 				function(entries){
 					if (checkData(entries)) {
 						refreshEntries(entries[0]);
@@ -588,9 +590,11 @@ $(function(){
 			showAlert("Please wait until online to update an entry");
 			return;
 		}
-		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs({ entryId:entryId,
+		var argsToSend = getCSRFPreventionObject("updateEntryDataCSRF", { entryId:entryId,
 			currentTime:currentTimeUTC, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' }),
+			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' });
+
+		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
 				$.each(entries[0], function(index, entry) {
@@ -756,24 +760,24 @@ $(function(){
 				selectee.data('entryIsSelected', 1);
 				$("#entrydelid" + currentEntryId).css('display', 'inline');
 				var entryText = ui.selected.textContent;
-				/*var selectRange = entrySelectData[currentEntryId];
-				if (selectRange)
-					setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
-				else
-					setEntryText(ui.selected.textContent);*/
+				var selectRange = entrySelectData[currentEntryId];
 				lastEntrySelected = selectee;
 				
 				$contentWrapper.hide();
 				selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
-				$("#tagTextInput").val(entryText).focus()
+
+				// Binding blur event on element instead of globally to prevent concurrent exception.
+				$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+					var $unselectee = $(this).parent("li");
+					checkAndUpdateEntry($unselectee);
+				})
+				if(selectRange) {
+					$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+				}
 			} else if (state == 2) {
 				selectee.data('entryIsSelected', 0);
 			}
 		});
-		$(document).on("blur", "input#tagTextInput", function(e) {
-			var $unselectee = $(this).parent("li");
-			checkAndUpdateEntry($unselectee);
-		})
 		
 		var cache = getAppCacheData('users');
 		

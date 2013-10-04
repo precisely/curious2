@@ -9,7 +9,7 @@
 <r:require module="selectable"/>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
-showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
 
 <r:script>
@@ -152,8 +152,8 @@ function deleteEntryId(entryId) {
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
-				+ "&timeZoneOffset=" + timeZoneOffset + "&displayDate=" + cachedDateUTC
-				+ "&callback=?",
+				+ "&timeZoneOffset=" + timeZoneOffset + "&displayDate=" + cachedDateUTC + "&"
+				+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 				function(entries) {
 					if (checkData(entries, 'success', "Error deleting entry")) {
 						tagList.load();
@@ -175,7 +175,8 @@ function updateEntry(entryId, text, defaultToNow) {
 	
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
-			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&callback=?",
+			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ getCSRFPreventionURI("updateEntryDataCSRF") + "&callback=?",
 	function(entries){
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
@@ -200,8 +201,8 @@ function addEntry(userId, text, defaultToNow) {
 	
 	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
-			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0')
-			+ getCSRFPreventionURI("addEntryCSRF", "&") + "&callback=?",
+			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {
 					if (entries[1] != null) {
@@ -356,13 +357,18 @@ $(function(){
 
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
-			/*if (selectRange)
-				setEntryText(entryText, selectRange[0], selectRange[1]);
-			else
-				setEntryText(entryText);*/
+
 			$contentWrapper.hide();
 			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
-			$("#tagTextInput").val(entryText).focus()
+
+			// Binding blur event on element instead of globally to prevent concurrent exception.
+			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+				var $unselectee = $(this).parent("li");
+				checkAndUpdateEntry($unselectee);
+			})
+			if(selectRange) {
+				$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+			}
 		} else if(state == 2) {
 			$selectee.data('entryIsSelected', 0);
 		}
@@ -376,10 +382,6 @@ $(function(){
 			unselecting($selectee, true);
 			selected($selectee);
 		}
-	})
-	$(document).on("blur", "input#tagTextInput", function(e) {
-		var $unselectee = $(this).parent("li");
-		checkAndUpdateEntry($unselectee);
 	})
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down
