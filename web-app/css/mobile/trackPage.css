@@ -357,4 +357,5 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	font-size: 100%;
 	vertical-align: baseline;
 	font-style: inherit;
+	width: 90%
 }

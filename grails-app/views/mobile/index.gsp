@@ -723,17 +723,27 @@ $(function(){
 			if ($unselectee.data('entryIsSelected') == 1) {
 				$unselectee.data('entryIsSelected', 2);
 				$("a.entryDelete", $unselectee).hide();
-				var $contentWrapper = lastEntrySelected.find(".content-wrapper");
-	
-				if($contentWrapper.text() != $("input#tagTextInput").val()) {
-					updateEntry(currentEntryId, $("input#tagTextInput").val(), defaultToNow);
-				} else {
-					$contentWrapper.show();
-				}
-
-				$("input#tagTextInput").remove();
+				checkAndUpdateEntry($unselectee);
 				currentEntryId = null;
 			}
+		}
+		/**
+		 * Sees to check if text is different from original text.
+		 * IF different than call updateEntry() method to notify
+		 * server and update in UI.
+		 */
+		function checkAndUpdateEntry($unselectee) {
+			var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
+			var oldText = $contentWrapper.text();
+			var newText = $("input#tagTextInput").val();
+	
+			if(oldText != newText) {
+				updateEntry(currentEntryId, newText, defaultToNow);
+			} else {
+				$contentWrapper.show();
+			}
+
+			$("input#tagTextInput").remove();
 		}
 		$("#entry0").on("listableselected", function(e, ui) {
 			currentEntryId = ui.selected.id.substring(7);
@@ -761,8 +771,8 @@ $(function(){
 			}
 		});
 		$(document).on("blur", "input#tagTextInput", function(e) {
-			var $selectee = $(this).parent("li");
-			unselecting($selectee);
+			var $unselectee = $(this).parent("li");
+			checkAndUpdateEntry($unselectee);
 		})
 		
 		var cache = getAppCacheData('users');
