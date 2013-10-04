@@ -10,7 +10,7 @@
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
 
-<script type="text/javascript">
+<r:script type="text/javascript">
 /**
  * Custom Curious mobile widget forked from jQuery UI selectable widget
  */
@@ -338,7 +338,16 @@ var dayDuration = 86400000;
 
 var entrySelectData;
 
-function displayEntry(id, date, datePrecisionSecs, description, amount, amountPrecision, units, comment) {
+function displayEntry(entry, isUpdating) {
+	var id = entry.id,
+		date = entry.date,
+		datePrecisionSecs = entry.datePrecisionSecs,
+		description = entry.description,
+		amount = entry.amount,
+		amountPrecision = entry.amountPrecision,
+		units = entry.units,
+		comment = entry.comment;
+
 	var diff = date.getTime() - cachedDate.getTime();
 	if (diff < 0 ||  diff >= dayDuration) {
 		return; // skip items outside display
@@ -361,18 +370,24 @@ function displayEntry(id, date, datePrecisionSecs, description, amount, amountPr
 		var selectEnd = selectStart + formattedAmount.length - 1;
 		entrySelectData[id] = [selectStart, selectEnd];
 	}
-	
-	$("#entry0").append("<li id=\"entryid" + id + "\">" + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+
+	var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '<a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a></li>');
+			+ '</span><a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+
+	if(isUpdating) {
+		$("#entry0 li#entryid" + id).html(innerHTMLContent);
+	} else {
+		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+	}
 }
 
 function displayEntries(entries) {
 	entrySelectData = {};
 	jQuery.each(entries, function() {
-		displayEntry(this['id'], this['date'], this['datePrecisionSecs'], this['description'], this['amount'], this['amountPrecision'], this['units'], this['comment']);
+		displayEntry(this, false);
 		return true;
 	});
 }
@@ -417,7 +432,11 @@ function updateEntry(entryId, text, defaultToNow) {
 	function(entries){
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
-			refreshEntries(entries[0]);
+			$.each(entries[0], function(index, entry) {
+				if(entry.id == entryId) {
+					displayEntry(entry, true);
+				}
+			})
 			updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 			if (entries[2] != null)
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -534,20 +553,28 @@ $(function(){
 			processInput(false);
 		}
 	});
-	$("#entry0").listable({cancel:'a'});
+	$("#entry0").listable({cancel: 'a,input'});
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
 	});
-	function unselecting($unselectee) {
+	function unselecting($unselectee, doNotUpdate) {
 		if($unselectee.data('entryIsSelected') == 1) {
 			$unselectee.removeClass('ui-selected');
 			$unselectee.data('entryIsSelected', 2);
 			$("a.entryDelete", $unselectee).hide();
+			var $contentWrapper = lastEntrySelected.find(".content-wrapper");
+
+			if($contentWrapper.text() != $("input#tagTextInput").val() && !doNotUpdate) {
+				updateEntry(currentEntryId, $("input#tagTextInput").val(), defaultToNow);
+			} else {
+				$contentWrapper.show();
+			}
+			
+			$("input#tagTextInput").remove();
 			currentEntryId = null;
-			setEntryText('');
 		}
 	}
 	$("#entry0").on("listableselected", function(e, ui) {
@@ -555,62 +582,67 @@ $(function(){
 		selected($selectee);
 	});
 	function selected($selectee) {
-		currentEntryId = null;
-		if($selectee.attr("id")) {
-			currentEntryId = $selectee.attr("id").substring(7);
-		}
 		var state = $selectee.data('entryIsSelected');
-		if (state == 1) {
-			$selectee.removeClass('ui-selected');
-			$selectee.data('entryIsSelected', 0);
-			$("a.entryDelete", $selectee).hide();
-			currentEntryId = null;
-			setEntryText('');
-		} else if (!state) {
+		var $contentWrapper = $selectee.find(".content-wrapper");
+		$selectee.siblings().data('entryIsSelected', 0);
+
+		if (state == undefined || state == 0) {
+			lastEntrySelected = $selectee;
+			currentEntryId = $selectee.data("entry-id");
 			$selectee.data('entryIsSelected', 1);
 			$selectee.addClass('ui-selected');
 			$("#entrydelid" + currentEntryId).css('display', 'inline');
+
 			var entryText = $selectee.text();
-			setEntryText(entryText);
 			var selectRange = entrySelectData[currentEntryId];
-			if (selectRange)
+			/*if (selectRange)
 				setEntryText(entryText, selectRange[0], selectRange[1]);
 			else
-				setEntryText(entryText);
-			if (lastEntrySelected != null)
-				lastEntrySelected.data('entryIsSelected', 0);
-			lastEntrySelected = $selectee;
-		} else if (state == 2) {
-			$selectee.removeClass('ui-selected');
+				setEntryText(entryText);*/
+			$contentWrapper.hide();
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+			$("#tagTextInput").val(entryText).focus()
+		} else if(state == 2) {
 			$selectee.data('entryIsSelected', 0);
 		}
 	}
+	$(document).on("keyup", "input#tagTextInput", function(e) {
+		var $selectee = $(this).parent("li");
+		if(e.keyCode == 13) {	// Enter pressed
+			unselecting($selectee);
+			selected($selectee);
+		} else if(e.keyCode == 27) {	// Esc pressed
+			unselecting($selectee, true);
+			selected($selectee);
+		}
+	})
+	$(document).on("blur", "input#tagTextInput", function(e) {
+		var $selectee = $(this).parent("li");
+		unselecting($selectee);
+	})
 	/**
-	 * Keycode: 37:left, 38:up, 39:right, 40:down
+	 * Keycode= 37:left, 38:up, 39:right, 40:down
 	 */
-	$(document).keydown(function(e) {
-		if($.inArray(e.keyCode, [37, 38, 39, 40]) == -1) {
+	$("#entry0").keydown(function(e) {
+		if($.inArray(e.keyCode, [38, 40]) == -1) {
 			return true;
 		}
 		var $unselectee = $("li.ui-selected", "ol#entry0");
 		if(!$unselectee) {
-			//$currentSelectedEntry = $("li:first-child", "ol#entry0");
-		}
-		if(!$unselectee) {
 			return false;
 		}
 		var $selectee;
-		if(e.keyCode == 37 || e.keyCode == 40) { 
+		if(e.keyCode == 40) { 
 			$selectee = $unselectee.next();
 		}
-		if(e.keyCode == 38 || e.keyCode == 39) { 
+		if(e.keyCode == 38) { 
 			$selectee = $unselectee.prev();
 		}
 		if($selectee) {
 			unselecting($unselectee);
 			selected($selectee);
 		}
-		return false
+		return false;
 	});
 	
 	/*
@@ -629,7 +661,7 @@ $(function(){
 	});*/
 
 	initTemplate();
-	
+
 	$.getJSON("/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data){
 			if (!checkData(data))
@@ -651,7 +683,7 @@ $(function(){
 		refreshPage();
 	});
 });
-</script>
+</r:script>
 </head>
 <body>
 <!-- MAIN -->
