@@ -180,6 +180,10 @@ function updateEntry(entryId, text, defaultToNow) {
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
 			$.each(entries[0], function(index, entry) {
+				/**
+				 * Finding only that entry which is recently updated, and
+				 * refreshing only that entry in UI.
+				 */
 				if(entry.id == entryId) {
 					displayEntry(entry, true);
 				}
@@ -312,14 +316,14 @@ $(function(){
 			$unselectee.removeClass('ui-selected');
 			$unselectee.data('entryIsSelected', 2);
 			$("a.entryDelete", $unselectee).hide();
-			var $contentWrapper = lastEntrySelected.find(".content-wrapper");
+			var $contentWrapper = $unselectee.find(".content-wrapper");
 
 			if($contentWrapper.text() != $("input#tagTextInput").val() && !doNotUpdate) {
 				updateEntry(currentEntryId, $("input#tagTextInput").val(), defaultToNow);
 			} else {
 				$contentWrapper.show();
 			}
-			
+
 			$("input#tagTextInput").remove();
 			currentEntryId = null;
 		}
@@ -347,7 +351,7 @@ $(function(){
 			else
 				setEntryText(entryText);*/
 			$contentWrapper.hide();
-			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
 			$("#tagTextInput").val(entryText).focus()
 		} else if(state == 2) {
 			$selectee.data('entryIsSelected', 0);

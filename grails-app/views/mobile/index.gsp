@@ -3,6 +3,7 @@
 <title>Curious</title>
 <meta name="layout" content="mobile" />
 <g:setProvider library="jquery" />
+
 <!--script type="text/javascript">
 var cacheStatusValues = [];
 cacheStatusValues[0] = 'uncached';
@@ -89,44 +90,12 @@ function doLogout() {
 
 <r:require modules="selectable, mobileTrackPage" />
 
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF" />
+
 <r:script>
 function askLogout() {
 	showYesNo("Log out?", function() {
 		startLogin(0);
-	});
-}
-
-function showAlert(alertText) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
-		dialogClass: "no-close",
-		modal: true,
-		resizable: false,
-		title: "Alert",
-		buttons: {
-			Ok: function() {
-				$( this ).dialog( "close" );
-			}
-		}
-	});
-}
-
-function showYesNo(alertText, onConfirm) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
-		dialogClass: "no-close",
-		modal: true,
-		resizable: false,
-		title: "Query",
-		buttons: {
-			"Yes ": function() {
-				$( this ).dialog( "close" );
-				onConfirm();
-			},
-			No: function() {
-				$( this ).dialog( "close" );
-			}
-		}
 	});
 }
 
@@ -488,8 +457,9 @@ $(function(){
 		if (cachedObj['data'] != null) {
 			refreshEntries(data);
 		}
-		
-		$.getJSON(makeGetUrl("getEntriesData"), makeGetArgs({ date:cachedDateUTC, userId:currentUserId }),
+
+		var argsToSend = getCSRFPreventionObject('getEntriesDataCSRF', { date:cachedDateUTC, userId:currentUserId });
+		$.getJSON(makeGetUrl("getEntriesData"), makeGetArgs(argsToSend),
 			function(data){
 				if (checkData(data)) {
 					refreshEntries(data);
@@ -508,7 +478,16 @@ $(function(){
 	var dayDuration = 86400000;
 	var entrySelectData;
 	
-	function displayEntry(id, date, datePrecisionSecs, description, amount, amountPrecision, units, comment) {
+	function displayEntry(entry, isUpdating) {
+		var id = entry.id,
+			date = entry.date,
+			datePrecisionSecs = entry.datePrecisionSecs,
+			description = entry.description,
+			amount = entry.amount,
+			amountPrecision = entry.amountPrecision,
+			units = entry.units,
+			comment = entry.comment;
+
 		var diff = dateToTime(date) - cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
 			return; // skip items outside display
@@ -530,15 +509,21 @@ $(function(){
 			var selectEnd = selectStart + formattedAmount.length - 1;
 			entrySelectData[id] = [selectStart, selectEnd];
 		}
-		
-		$("#entry0").append("<li class=\"entryItem\" id=\"entryid" + id + "\">" + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
-			+ '<a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999" onclick="deleteEntryId(' + id + ')"><img style="float:right" width="12" height="12" src="/images/x.gif"></a></li>');
+
+		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
+			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999;float:right;" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/images/x.gif"></a>';
+	
+		if(isUpdating) {
+			$("#entry0 li#entryid" + id).html(innerHTMLContent);
+		} else {
+			$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+		}
 	}
 
 	function displayEntries(entries) {
 		entrySelectData = {};
 		jQuery.each(entries, function() {
-			displayEntry(this['id'], this['date'], this['datePrecisionSecs'], this['description'], this['amount'], this['amountPrecision'], this['units'], this['comment']);
+			displayEntry(this, false);
 			return true;
 		});
 	}
@@ -608,7 +593,15 @@ $(function(){
 			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' }),
 		function(entries){
 			if (checkData(entries)) {
-				refreshEntries(entries[0]);
+				$.each(entries[0], function(index, entry) {
+					/**
+					 * Finding only that entry which is recently updated, and
+					 * refreshing only that entry in UI.
+					 */
+					if(entry.id == entryId) {
+						displayEntry(entry, true);
+					}
+				})
 				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -630,9 +623,11 @@ $(function(){
 			showAlert("Please wait until online to add an entry");
 			return;
 		}
-		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs({ currentTime:currentTimeUTC,
+		var argsToSend = getCSRFPreventionObject("addEntryCSRF", { currentTime:currentTimeUTC,
 			userId:userId, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' }),
+			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' })
+
+		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
 				if (entries[1] != null) {
@@ -717,46 +712,58 @@ $(function(){
 			processInput(false);
 			return false;
 		});
-		$("#entry0").listable({cancel:'a'});
+		$("#entry0").listable({cancel: 'a, input'});
 		$("#entry0").off("listableselected");
 		$("#entry0").off("listableunselecting");
 		$("#entry0").on("listableunselecting", function(e, ui) {
-			var oldEntryId = ui.unselecting.id.substring(7);
-			var unselectee = $("#" + ui.unselecting.id);
-			if (unselectee.data('entryIsSelected') == 1) {
-				unselectee.data('entryIsSelected', 2);
-				$("#entrydelid" + oldEntryId).css('display', 'none');
-				currentEntryId = null;
-				setEntryText('');
-			}
+			var $unselectee = $("#" + ui.unselecting.id);
+			unselecting($unselectee);
 		});
+		function unselecting($unselectee) {
+			if ($unselectee.data('entryIsSelected') == 1) {
+				$unselectee.data('entryIsSelected', 2);
+				$("a.entryDelete", $unselectee).hide();
+				var $contentWrapper = lastEntrySelected.find(".content-wrapper");
+	
+				if($contentWrapper.text() != $("input#tagTextInput").val()) {
+					updateEntry(currentEntryId, $("input#tagTextInput").val(), defaultToNow);
+				} else {
+					$contentWrapper.show();
+				}
+
+				$("input#tagTextInput").remove();
+				currentEntryId = null;
+			}
+		}
 		$("#entry0").on("listableselected", function(e, ui) {
 			currentEntryId = ui.selected.id.substring(7);
 			var selectee = $("#" + ui.selected.id);
 			var state = selectee.data('entryIsSelected');
-			if (state == 1) {
-				selectee.removeClass('ui-selected');
-				selectee.data('entryIsSelected', 0);
-				$("#entrydelid" + currentEntryId).css('display', 'none');
-				currentEntryId = null;
-				setEntryText('');
-			} else if (!state) {
+			selectee.siblings().data('entryIsSelected', 0);
+			var $contentWrapper = selectee.find(".content-wrapper");
+
+			if (state == 0 || state == undefined) {
 				selectee.data('entryIsSelected', 1);
 				$("#entrydelid" + currentEntryId).css('display', 'inline');
-				setEntryText(ui.selected.textContent);
-				var selectRange = entrySelectData[currentEntryId];
+				var entryText = ui.selected.textContent;
+				/*var selectRange = entrySelectData[currentEntryId];
 				if (selectRange)
 					setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
 				else
-					setEntryText(ui.selected.textContent);
-				if (lastEntrySelected != null)
-					lastEntrySelected.data('entryIsSelected', 0);
+					setEntryText(ui.selected.textContent);*/
 				lastEntrySelected = selectee;
+				
+				$contentWrapper.hide();
+				selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+				$("#tagTextInput").val(entryText).focus()
 			} else if (state == 2) {
-				selectee.removeClass('ui-selected');
 				selectee.data('entryIsSelected', 0);
 			}
 		});
+		$(document).on("blur", "input#tagTextInput", function(e) {
+			var $selectee = $(this).parent("li");
+			unselecting($selectee);
+		})
 		
 		var cache = getAppCacheData('users');
 		
@@ -772,7 +779,7 @@ $(function(){
 			refreshPage();
 		}
 
-		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs({}),
+		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs(getCSRFPreventionObject("getPeopleDataCSRF")),
 			function(data){
 				if (!checkData(data))
 					return;

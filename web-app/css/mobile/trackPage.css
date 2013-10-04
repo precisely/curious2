@@ -349,3 +349,12 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	margin: 0px;
 	padding: 14px 14px 14px 14px;
 }
+
+#entry0 li input {
+	padding: 0;
+	outline: 0;
+	border: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	font-style: inherit;
+}
