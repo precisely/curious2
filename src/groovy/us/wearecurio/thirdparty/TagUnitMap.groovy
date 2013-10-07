@@ -13,7 +13,7 @@ public abstract class TagUnitMap {
 	public final static String NAP = "nap"
 
 	public final static int MINUTES_TO_MS = 60 * 1000
-	public final static float MS_TO_MINUTES = 0.001
+	public final static float MS_TO_MINUTES = 0.00001667
 	public final static int SECONDS_TO_HOURS = 3600
 	public final static float SCALE_TO_0_10 = 10 / 100
 	public final static int TO_MILLI = 1000
