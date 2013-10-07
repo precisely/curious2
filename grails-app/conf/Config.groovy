@@ -77,31 +77,59 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
-api {
-	weatherunderground {
-		key = "0de9ca6314e3b2ee"
-	}
-	bingMapKey {
-		key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
-	}
-}
-
 environments {
     development {
         grails.logging.jul.usebridge = true
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		
+		api {
+			weatherunderground {
+				key = "0de9ca6314e3b2ee"
+			}
+			bingMapKey {
+				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+			}
+			withings {
+				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+			}
+		}
     }
     production {
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		api {
+			weatherunderground {
+				key = "0de9ca6314e3b2ee"
+			}
+			bingMapKey {
+				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+			}
+			withings {
+				key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
+				secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
+			}
+		}
     }
     test {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		api {
+			weatherunderground {
+				key = "0de9ca6314e3b2ee"
+			}
+			bingMapKey {
+				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+			}
+			withings {
+				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+			}
+		}
     }
 }
 
@@ -125,5 +153,7 @@ log4j = {
            'org.hibernate',
            'net.sf.ehcache.hibernate'
 
-	debug "grails.app.services.us.wearecurio.services"
+	debug 	"grails.app.services.us.wearecurio.services",
+			"grails.app.controllers.us.wearecurio.controller"
+			
 }
