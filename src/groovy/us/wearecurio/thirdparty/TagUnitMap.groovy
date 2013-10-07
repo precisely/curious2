@@ -80,10 +80,11 @@ public abstract class TagUnitMap {
 			amount = this.convert(amount, currentMapping)
 		}
 		
+		println("The unit is: " +currentMapping.dump())
 		if (args.tagName) {
-			this.createEntry(userId, amount, currentMapping.units, args.tagName, date, args)
+			this.createEntry(userId, amount, currentMapping.unit, args.tagName, date, args)
 		} else {
-			this.createEntry(userId, amount, currentMapping.units, currentMapping.tag, date, args)
+			this.createEntry(userId, amount, currentMapping.unit, currentMapping.tag, date, args)
 		}
 	}
 	
