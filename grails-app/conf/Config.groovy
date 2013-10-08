@@ -95,6 +95,11 @@ environments {
 				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 			}
+			fitbit {
+				key = "949f93d631c0401b853b333d7747a574"
+				secret = "6c813aceab794174a32b7ea1532f7401"
+				apiVersion = "1"
+			}
 		}
     }
     production {
@@ -111,6 +116,11 @@ environments {
 			withings {
 				key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 				secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
+			}
+			fitbit {
+				key = "b2610f22a2314bdc804c3463aa666876"
+				secret = "2b7472411c834c4f9b8c8e611d8e6350"
+				apiVersion = "1"
 			}
 		}
     }
@@ -129,6 +139,11 @@ environments {
 				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 			}
+			fitbit {
+				key = "b2610f22a2314bdc804c3463aa666876"
+				secret = "2b7472411c834c4f9b8c8e611d8e6350"
+				apiVersion = "1"
+			}
 		}
     }
 }
@@ -140,20 +155,35 @@ log4j = {
     //appenders {
     //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
     //}
+	
+	appenders {
+		console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
+	}
 
-    error  'org.codehaus.groovy.grails.web.servlet',        // controllers
-           'org.codehaus.groovy.grails.web.pages',          // GSP
-           'org.codehaus.groovy.grails.web.sitemesh',       // layouts
-           'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-           'org.codehaus.groovy.grails.web.mapping',        // URL mapping
-           'org.codehaus.groovy.grails.commons',            // core / classloading
-           'org.codehaus.groovy.grails.plugins',            // plugins
-           'org.codehaus.groovy.grails.orm.hibernate',      // hibernate integration
-           'org.springframework',
-           'org.hibernate',
-           'net.sf.ehcache.hibernate'
+	debug  'us.wearecurio.model',
+		   'us.wearecurio.controller',
+		   'us.wearecurio.services',
+		   'us.wearecurio.server',
+		   'us.wearecurio.util',
+		   'us.wearecurio.exceptions',
+		   'us.wearecurio.utility',
+		   'grails.app.controllers',
+		   'grails.app.service'
 
-	debug 	"grails.app.services.us.wearecurio.services",
-			"grails.app.controllers.us.wearecurio.controller"
+	warn   'us.wearecurio.parse'
+
+	warn   'org.codehaus.groovy.grails.web.servlet'  //  controllers
+
+	warn   'org.codehaus.groovy.grails.web.pages', //  GSP
+		   'org.codehaus.groovy.grails.web.sitemesh', //  layouts
+		   'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
+		   'org.codehaus.groovy.grails.web.mapping', // URL mapping
+		   'org.codehaus.groovy.grails.commons', // core / classloading
+		   'org.codehaus.groovy.grails.plugins', // plugins
+		   'org.codehaus.groovy.grails.orm.hibernate', // hibernate integration
+		   'org.springframework',
+		   'org.hibernate'
+
+	warn   'org.mortbay.log'
 			
 }
