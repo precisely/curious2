@@ -22,7 +22,7 @@ class FitBitTagUnitMap extends TagUnitMap {
 			minutes: [tag: "$ACTIVITY", unit: "mins", convert: true, type: MS_TO_MINUTES],
 			total: [tag: "$ACTIVITY total ", unit: "miles"],
 			tracker: [tag: "$ACTIVITY tracker", unit: "miles"],
-			veryActive: [tag: "$ACTIVITY veryActive", unit: "miles"],
+			veryActive: [tag: "$ACTIVITY very active", unit: "miles"],
 			moderatelyActive: [tag: "$ACTIVITY moderately active", unit: "miles"],
 			lightlyActive: [tag: "$ACTIVITY lightly active", unit: "miles"],
 			sedentaryActive: [tag: "$ACTIVITY sedentary active", unit: "miles"],
