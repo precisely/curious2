@@ -7,7 +7,7 @@ https://dev.wearecurio.us/static/js/jquery/jquery-1.7.2.min.js
 https://dev.wearecurio.us/static/js/jquery/jquery.json-2.2.js
 https://dev.wearecurio.us/static/js/jquery/jquery-ui-1.8.18.custom.js
 https://dev.wearecurio.us/static/js/jquery/jquery.offline.js
-https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js
+https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js?ver=5
 https://dev.wearecurio.us/static/js/curious/base.js?ver=5
 https://dev.wearecurio.us/static/js/curious/curious.js?ver=5
 https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=5

@@ -79,7 +79,7 @@ function doLogout() {
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=5"></script>
