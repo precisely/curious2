@@ -413,6 +413,14 @@ function TreeItemView(args) {
 		return $('#'+this.element);
 	}
 	
+	this.hide = function() {
+		this.getDOMElement().hide();
+	}
+	
+	this.show = function() {
+		this.getDOMElement().show();
+	}
+	
 	this.getData = function() {
 		return this.data;
 	}
@@ -700,7 +708,10 @@ $(document).on("click", TreeItemGroupView.cssClass.join(","),
 		} else {
 			target = e.target;
 		}
-		var treeItemGroupView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
-		treeItemGroupView.showTagGroup();	
+		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+		itemView.highlight();
+		if (itemView instanceof TreeItemGroupView) {
+			itemView.showTagGroup();
+		}	
 	}
 .bind(this));

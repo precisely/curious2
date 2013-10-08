@@ -367,9 +367,18 @@ ul.tags li.tag {
 	background-position: -64px 0 !important;
 }
 
+#tagNav li.treeItemView .ui-icon-pin-w, #tagNav li.treeItemView .ui-icon-pin-s,
 li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil {
 	float: right;
 	display:block;
+}
+
+#tagNav li.treeItemView .ui-icon-pin-w, .leftNav li.treeItemView .ui-icon-pin-w  {
+	display: none;
+}
+
+#tagNav li.treeItemView.highlight .ui-icon-pin-w {
+	display: block;
 }
 
 li.wildcardTagGroup.active ul .ui-icon-close {
