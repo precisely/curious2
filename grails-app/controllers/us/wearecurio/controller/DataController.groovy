@@ -6,6 +6,7 @@ import us.wearecurio.exceptions.*
 import us.wearecurio.services.CorrelationService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Discussion;
+import us.wearecurio.model.Entry.RepeatType;
 import us.wearecurio.model.Entry.TagStatsRecord
 
 import java.text.DateFormat
@@ -383,7 +384,19 @@ class DataController extends LoginController {
 
 		renderJSONGet(entries)
 	}
-	
+
+	def activateGhostEntry() {
+		debug "DataController.activateGhostEntry()"
+
+		// Code to toggle ghost entries.
+		renderStringGet("Success")  // dummy value for now. Expecting new entry as json.
+	}
+
+	def deleteGhostEntry(Long entryId) {
+		// Code to delete ghost entry
+		renderStringGet("Success")
+	}
+
 	def getListData() {
 		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date
 		

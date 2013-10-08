@@ -18,7 +18,7 @@ class LoginController extends SessionController {
 	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
 		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
 		"addTagToTagGroup", "removeTagGroupFromTagGroup", "removeTagFromTagGroup", "showTagGroup", "deleteTagGroup",
-		"setTagPropertiesData", "updateEntrySData", "deleteEntrySData"]]
+		"setTagPropertiesData", "updateEntrySData", "deleteEntrySData", "activateGhostEntry", "deleteGhostEntry"]]
 
 	private boolean validateToken() {
 		if(!genericService.isTokenValid(request, params)) {

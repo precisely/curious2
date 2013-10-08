@@ -10,7 +10,7 @@
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF" />
 
 <r:script>
 
@@ -84,6 +84,7 @@ $(document).mouseup(function(e) {
 var dayDuration = 86400000;
 
 var entrySelectData;
+var GHOST_BIT = 0x200;
 
 function displayEntry(entry, isUpdating) {
 	var id = entry.id,
@@ -93,7 +94,16 @@ function displayEntry(entry, isUpdating) {
 		amount = entry.amount,
 		amountPrecision = entry.amountPrecision,
 		units = entry.units,
-		comment = entry.comment;
+		comment = entry.comment,
+		classes = "entry";
+
+	var isGhostEntry = false;
+	if(entry.repeatType) {
+		if((entry.repeatType & GHOST_BIT) != 0) {
+			isGhostEntry = true;
+			classes += " ghost";
+		}
+	}
 
 	var diff = date.getTime() - cachedDate.getTime();
 	if (diff < 0 ||  diff >= dayDuration) {
@@ -127,8 +137,9 @@ function displayEntry(entry, isUpdating) {
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
 	} else {
-		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>');
 	}
+	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
 }
 
 function displayEntries(entries) {
@@ -143,12 +154,24 @@ function refreshEntries(entries) {
 	clearEntries();
 	displayEntries(entries);
 }
+function getEntryElement(entryId) {
+	return $("li#entryid" + entryId);
+}
 
 function deleteEntryId(entryId) {
 	cacheNow();
 	
 	if (entryId == undefined) {
 		alert("Please select entry you wish to delete");
+		return false;
+	}
+	var $entryToDelete = getEntryElement(entryId);
+	if($entryToDelete.data("isGhost")) {
+		$.getJSON("/home/deleteGhostEntry?entryId=" + entryId +
+				"&date=" + cachedDateUTC + "&" + getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
+				function() {
+					$entryToDelete.remove();
+				});
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
@@ -215,17 +238,13 @@ function addEntry(userId, text, defaultToNow) {
 			});
 }
 
-function processInput(forceAdd) {
+function processInput() {
 	field = $("#input0");
 	field.autocomplete("close");
 	var text = field.val();
 	if (text == "") return; // no entry data
 	field.val("");
-	if ((!forceAdd) && (currentEntryId != undefined))
-		updateEntry(currentEntryId, text, defaultToNow);
-	else {
-		addEntry(currentUserId, text, defaultToNow);
-	}
+	addEntry(currentUserId, text, defaultToNow);
 	return true;
 }
 
@@ -305,7 +324,7 @@ $(function(){
 			processInput(false);
 		}
 	});
-	$("#entry0").listable({cancel: 'a,input'});
+	$("#entry0").listable({cancel: 'a,input,li.entry.ghost'});
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
@@ -363,6 +382,7 @@ $(function(){
 
 			// Binding blur event on element instead of globally to prevent concurrent exception.
 			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+				$selectee.data('entryIsSelected', 0);
 				var $unselectee = $(this).parent("li");
 				checkAndUpdateEntry($unselectee);
 			})
@@ -407,7 +427,30 @@ $(function(){
 		}
 		return false;
 	});
-	
+	$(document).on("click", "li.entry.ghost", function(e) {
+		if(e.target.nodeName && $(e.target).closest("a,img").length) {
+			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
+			return false;
+		}
+		var $ghostEntry = $(this);
+		var entryId = $ghostEntry.data("entry-id");
+		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
+				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
+				function(newEntry) {
+					/*
+					 * Uncomment these lines after server side code is written.
+					 *
+					var newEntryId = newEntry.id;
+					$ghostEntry.remove();
+					displayEntry(newEntry, false);
+					var $newEntry = $("li#entryid" + newEntryId);
+					selected($newEntry);
+					 *
+					 */
+					tagList.load();
+				});
+	})
+
 	/*
 	$("#entry0").off("selectableselected");
 	$("#entry0").on("selectableselected", function(e, ui) {

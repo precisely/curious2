@@ -1000,7 +1000,21 @@ div.plotLine:hover span {
  * Generic & common stuff, useful for every where. Ends here.
  */
 
- body.track-page #datepicker {
-    width: 260px;
-    text-align: center;
- }
+/**
+ * Styles for track page for web application.
+ */
+
+body.track-page #datepicker {
+	width: 260px;
+	text-align: center;
+}
+body.track-page ol#entry0 li.entry.ghost {
+	color: #A9A9A9;
+}
+body.track-page ol#entry0 li.entry.ghost a.entryDelete {
+	display: inline;
+}
+
+/**
+ * Styles for track page for web application. Ends here.
+ */

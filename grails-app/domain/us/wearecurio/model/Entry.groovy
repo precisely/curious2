@@ -1020,6 +1020,7 @@ class Entry {
 			Entry entry = Entry.get(result['id'])
 			def desc = entry.getJSONDesc()
 			desc['date'] = result['dateTime']
+			desc['repeatType'] = entry.repeatType?.id
 			results.add(desc)
 		}
 
