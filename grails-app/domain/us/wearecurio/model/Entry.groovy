@@ -5,22 +5,13 @@ import grails.converters.*
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.parse.PatternScanner
-import us.wearecurio.parse.PatternClosure
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.User
-import java.text.SimpleDateFormat
 
 import java.util.regex.Pattern
-import java.util.Map
-import java.util.TreeSet
 import java.math.MathContext
-import java.math.RoundingMode
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Date;
-
-import grails.util.GrailsUtil
 
 class Entry {
 	
@@ -888,7 +879,7 @@ class Entry {
 		if (this.repeatType == null) return
 		
 		if (this.repeatType.isContinuous()) {
-			String queryStr = "select entry.id from Entry entry, Tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 			
 			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
 			
@@ -903,7 +894,7 @@ class Entry {
 				}
 			}
 		} else {
-			String queryStr = "select entry.id from Entry entry, Tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 			
 			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:DAILY_IDS])
 			
@@ -999,7 +990,7 @@ class Entry {
 		def c = Entry.createCriteria()
 		
 		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
-				+ "from Entry entry, Tag tag where entry.user_id = :userId and " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and " \
 				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
@@ -1016,7 +1007,7 @@ class Entry {
 		}
 
 		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
-				+ "from Entry entry, Tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) or " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) or " \
 				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
@@ -1041,7 +1032,7 @@ class Entry {
 		def results = []
 		
 		String queryStr = "select distinct entry.id " \
-				+ "from Entry entry, Tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:ghostIds))) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:ghostIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 " \
 				+ "then unix_timestamp(entry.date) else 0 end desc, tag.description asc"
