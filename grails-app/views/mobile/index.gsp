@@ -2,6 +2,7 @@
 <head>
 <title>Curious</title>
 <g:setProvider library="jquery" />
+
 <!--script type="text/javascript">
 var cacheStatusValues = [];
 cacheStatusValues[0] = 'uncached';
@@ -46,10 +47,12 @@ window.applicationCache.addEventListener(
 
 setInterval(function(){cache.update()}, 10000);
 </script-->
+
 <meta name="description" content="A platform for health hackers" />
 <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+
 <script type="text/javascript">
 //Check if a new cache is available on page load.
 window.addEventListener('load', function(e) {
@@ -71,312 +74,29 @@ function doLogout() {
 	startLogin(0);
 }
 </script>
+
 <script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=5"></script>
-<link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
+<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=5"></script>
+
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
+<link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<script type="text/javascript">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=5" rel="stylesheet">
 
-/**
- * Custom Curious mobile widget forked from jQuery UI selectable widget
- */
- (function( $, undefined ) {
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF" />
 
- $.widget("ui.listable", $.ui.mouse, {
- 	options: {
- 		appendTo: 'body',
- 		autoRefresh: true,
- 		distance: 0,
- 		filter: '*',
- 		tolerance: 'touch'
- 	},
- 	_create: function() {
- 		var self = this;
-
- 		this.element.addClass("ui-selectable");
-
- 		this.dragged = false;
-
- 		// cache selectee children based on filter
- 		var selectees;
- 		this.refresh = function() {
- 			selectees = $(self.options.filter, self.element[0]);
- 			selectees.each(function() {
- 				var $this = $(this);
- 				var pos = $this.offset();
- 				$.data(this, "selectable-item", {
- 					element: this,
- 					$element: $this,
- 					left: pos.left,
- 					top: pos.top,
- 					right: pos.left + $this.outerWidth(),
- 					bottom: pos.top + $this.outerHeight(),
- 					startselected: false,
- 					selected: $this.hasClass('ui-selected'),
- 					selecting: $this.hasClass('ui-selecting'),
- 					unselecting: $this.hasClass('ui-unselecting')
- 				});
- 			});
- 		};
- 		this.refresh();
-
- 		this.selectees = selectees.addClass("ui-selectee");
-
- 		this._mouseInit();
-
- 		this.helper = $("<div class='ui-selectable-helper'></div>");
- 	},
-
- 	destroy: function() {
- 		this.selectees
- 			.removeClass("ui-selectee")
- 			.removeData("selectable-item");
- 		this.element
- 			.removeClass("ui-selectable ui-selectable-disabled")
- 			.removeData("selectable")
- 			.unbind(".selectable");
- 		this._mouseDestroy();
-
- 		return this;
- 	},
-
- 	_mouseStart: function(event) {
- 		var self = this;
-
- 		this.opos = [event.pageX, event.pageY];
-
- 		if (this.options.disabled)
- 			return;
-
- 		var options = this.options;
-
- 		this.selectees = $(options.filter, this.element[0]);
-
- 		this._trigger("start", event);
-
- 		$(options.appendTo).append(this.helper);
- 		// position helper (lasso)
- 		this.helper.css({
- 			"left": event.clientX,
- 			"top": event.clientY,
- 			"width": 0,
- 			"height": 0
- 		});
-
- 		if (options.autoRefresh) {
- 			this.refresh();
- 		}
-
- 		this.selectees.filter('.ui-selected').each(function() {
- 			var selectee = $.data(this, "selectable-item");
- 			selectee.startselected = true;
- 			if (!event.metaKey) {
- 				selectee.$element.removeClass('ui-selected');
- 				selectee.selected = false;
- 				selectee.$element.addClass('ui-unselecting');
- 				selectee.unselecting = true;
- 				// selectable UNSELECTING callback
- 				self._trigger("unselecting", event, {
- 					unselecting: selectee.element
- 				});
- 			}
- 		});
-
- 		$(event.target).parents().andSelf().each(function() {
- 			var selectee = $.data(this, "selectable-item");
- 			if (selectee) {
- 				var doSelect = !event.metaKey || !selectee.$element.hasClass('ui-selected');
- 				selectee.$element
- 					.removeClass(doSelect ? "ui-unselecting" : "ui-selected")
- 					.addClass(doSelect ? "ui-selecting" : "ui-unselecting");
- 				selectee.unselecting = !doSelect;
- 				selectee.selecting = doSelect;
- 				selectee.selected = doSelect;
- 				// selectable (UN)SELECTING callback
- 				if (doSelect) {
- 					self._trigger("selecting", event, {
- 						selecting: selectee.element
- 					});
- 				} else {
- 					self._trigger("unselecting", event, {
- 						unselecting: selectee.element
- 					});
- 				}
- 				return false;
- 			}
- 		});
-
- 	},
-
- 	_mouseDrag: function(event) {
- 		var self = this;
- 		this.dragged = true;
-
- 		if (this.options.disabled)
- 			return;
-
- 		var options = this.options;
-
- 		var x1 = this.opos[0], y1 = this.opos[1], x2 = event.pageX, y2 = event.pageY;
- 		if (x1 > x2) { var tmp = x2; x2 = x1; x1 = tmp; }
- 		if (y1 > y2) { var tmp = y2; y2 = y1; y1 = tmp; }
- 		this.helper.css({left: x1, top: y1, width: x2-x1, height: y2-y1});
-
- 		this.selectees.each(function() {
- 			var selectee = $.data(this, "selectable-item");
- 			//prevent helper from being selected if appendTo: selectable
- 			if (!selectee || selectee.element == self.element[0])
- 				return;
- 			var hit = false;
- 			if (options.tolerance == 'touch') {
- 				hit = ( !(selectee.left > x2 || selectee.right < x1 || selectee.top > y2 || selectee.bottom < y1) );
- 			} else if (options.tolerance == 'fit') {
- 				hit = (selectee.left > x1 && selectee.right < x2 && selectee.top > y1 && selectee.bottom < y2);
- 			}
-
- 			if (hit) {
- 				// SELECT
- 				if (selectee.selected) {
- 					selectee.$element.removeClass('ui-selected');
- 					selectee.selected = false;
- 				}
- 				if (selectee.unselecting) {
- 					selectee.$element.removeClass('ui-unselecting');
- 					selectee.unselecting = false;
- 				}
- 				if (!selectee.selecting) {
- 					selectee.$element.addClass('ui-selecting');
- 					selectee.selecting = true;
- 					// selectable SELECTING callback
- 					self._trigger("selecting", event, {
- 						selecting: selectee.element
- 					});
- 				}
- 			} else {
- 				// UNSELECT
- 				if (selectee.selecting) {
- 					if (event.metaKey && selectee.startselected) {
- 						selectee.$element.removeClass('ui-selecting');
- 						selectee.selecting = false;
- 						selectee.$element.addClass('ui-selected');
- 						selectee.selected = true;
- 					} else {
- 						selectee.$element.removeClass('ui-selecting');
- 						selectee.selecting = false;
- 						if (selectee.startselected) {
- 							selectee.$element.addClass('ui-unselecting');
- 							selectee.unselecting = true;
- 						}
- 						// selectable UNSELECTING callback
- 						self._trigger("unselecting", event, {
- 							unselecting: selectee.element
- 						});
- 					}
- 				}
- 				if (selectee.selected) {
- 					if (!event.metaKey && !selectee.startselected) {
- 						selectee.$element.removeClass('ui-selected');
- 						selectee.selected = false;
-
- 						selectee.$element.addClass('ui-unselecting');
- 						selectee.unselecting = true;
- 						// selectable UNSELECTING callback
- 						self._trigger("unselecting", event, {
- 							unselecting: selectee.element
- 						});
- 					}
- 				}
- 			}
- 		});
-
- 		return false;
- 	},
-
- 	_mouseStop: function(event) {
- 		var self = this;
-
- 		this.dragged = false;
-
- 		var options = this.options;
-
- 		$('.ui-unselecting', this.element[0]).each(function() {
- 			var selectee = $.data(this, "selectable-item");
- 			selectee.$element.removeClass('ui-unselecting');
- 			selectee.unselecting = false;
- 			selectee.startselected = false;
- 			self._trigger("unselected", event, {
- 				unselected: selectee.element
- 			});
- 		});
- 		$('.ui-selecting', this.element[0]).each(function() {
- 			var selectee = $.data(this, "selectable-item");
- 			selectee.$element.removeClass('ui-selecting').addClass('ui-selected');
- 			selectee.selecting = false;
- 			selectee.selected = true;
- 			selectee.startselected = true;
- 			self._trigger("selected", event, {
- 				selected: selectee.element
- 			});
- 		});
- 		this._trigger("stop", event);
-
- 		this.helper.remove();
-
- 		return false;
- 	}
-
- });
-
- $.extend($.ui.listable, {
- 	version: "1.8.16"
- });
-
- })(jQuery);
-
+<r:script>
 function askLogout() {
 	showYesNo("Log out?", function() {
 		startLogin(0);
-	});
-}
-
-function showAlert(alertText) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
-		dialogClass: "no-close",
-		modal: true,
-		resizable: false,
-		title: "Alert",
-		buttons: {
-			Ok: function() {
-				$( this ).dialog( "close" );
-			}
-		}
-	});
-}
-
-function showYesNo(alertText, onConfirm) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
-		dialogClass: "no-close",
-		modal: true,
-		resizable: false,
-		title: "Query",
-		buttons: {
-			"Yes ": function() {
-				$( this ).dialog( "close" );
-				onConfirm();
-			},
-			No: function() {
-				$( this ).dialog( "close" );
-			}
-		}
 	});
 }
 
@@ -549,156 +269,15 @@ function reloadPage() {
 $(function(){
 	reloadPage();
 });
-</script>
-<style type="text/css">
-	.no-close .ui-dialog-titlebar-close {
-		display: none;
-	}
-	.no-close .ui-dialog-titlebar {
-		display: none;
-	}
-</style>
+</r:script>
 </head>
 <body>
 <div id="alert-message" title="" style="display:none">
-  <p>&nbsp;<p>
-  	<div id="alert-message-text"></div>
-  </p>
+	<p>&nbsp;<p>
+	<div id="alert-message-text"></div>
 </div>
 <div id="body">
 <div id="loginPage" style="display: none; width: 350px; margin-left: auto; margin-right: auto;">
-	<style type="text/css">
-	#loginlogo {
-		padding-top: 50px;
-		margin-bottom: 50px;
-	}
-	
-	button {
-		padding: 0px 0px 0px 0px;
-		margin: 0px 0px 0px 0px;
-		border: 0px;
-	}
-	
-	.login {
-		text-align: left;
-		width: 100%;
-		margin-left: 0px;
-		margin-right: 0px;
-		margin: 0px 57px;
-	}
-	
-	.login h1 {
-		font-size: .7em;
-		padding: .75em 0 .25em 0;
-		font-weight: bold
-	}
-	
-	.login .textField {
-		-webkit-border-radius: 2px;
-		width: 205px;
-		height: 22px;
-		border: 1px solid #b6b6b6;
-		color: #c7c7c7;
-		font-size: 14px;
-		padding: .2em;
-		margin: .1em 0
-	}
-	
-	.login .passwordField {
-		-webkit-border-radius: 2px;
-		width: 205px;
-		height: 22px;
-		color: #000000;
-		border: 1px solid #b6b6b6;
-		color: #c7c7c7;
-		font-size: 14px;
-		padding: .2em;
-		margin: .1em 0
-	}
-	
-	.okCancelDiv {
-		text-align:right;
-	}
-	
-	.cancelButton {
-		float:left;
-	}
-	
-	.logininput {
-		margin-bottom: 2px;
-	}
-	
-	.login .info {
-		color: #ffa500;
-		padding: .1em .05em .1em .05em;
-		text-transform: uppercase
-	}
-	
-	.loginoptions {
-		font-family: "Helvetica Neue", Helvetica;
-		width: 210px;
-		padding-top: .25em;
-		font-size: .725em;
-	}
-	
-	.loginlabel {
-		font-family: "Helvetica Neue", Helvetica;
-		width: 210px;
-		padding-bottom: .5em;
-		font-size: .725em;
-		color: #666666
-	}
-	
-	.loginoptions A:link {
-		text-decoration: none;
-		color: #666666
-	}
-	
-	.loginoptions A:visited {
-		text-decoration: none;
-		color: #666666
-	}
-	
-	.loginoptions A:active {
-		text-decoration: none;
-		color: #666666
-	}
-	
-	.loginoptions A:hover {
-		text-decoration: none;
-		color: #666666
-	}
-	
-	#emailField {
-		background-image: url('/images/email.png');
-		background-size: 50px 20px;
-		background-repeat: no-repeat;
-		padding-left: 3px;
-	}
-	
-	#usernameField {
-		background-image: url('/images/username.png');
-		background-size: 70px 20px;
-		background-repeat: no-repeat;
-		padding-left: 3px;
-	}
-	
-	#passwordField {
-		background-image: url('/images/password.png');
-		background-size: 70px 20px;
-		background-repeat: no-repeat;
-		padding-left: 3px;
-	}
-	
-	.info {
-		width: 250px;
-		height: 50px;
-		margin: 0px auto;
-		padding: .1em .1em 1em 40%;
-		color: #ffa500;
-		line-height: 1.25em
-	}
-	</style>
 	<script type="text/javascript">
 		function addPerson(name, username, userId, sex) {
 			if (sex == 'F') sex = 'Female';
@@ -843,219 +422,7 @@ $(function(){
 	</div>
 </div>
 <div id="trackPage" style="display: none;">
-	<style type="text/css">
-	.ui-autocomplete a {
-		display: block;
-	}
-	/* The autocomplete must match the text input width */
-	ul.ui-autocomplete {
-		list-style-type:none;
-		width:295px;
-	}
-	/* The autocomplete must match the text input width */
-	.ui-autocomplete {
-		padding-left:0px;
-		max-height: 200px;
-		overflow-y: auto;
-		/* prevent horizontal scrollbar */
-		overflow-x: hidden;
-		/* add padding to account for vertical scrollbar */
-		padding-right: 0px;
-	}
-	.ui-menu-item {
-		height: 25px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		font-weight: bold;
-	}
-	.ui-menu-item a {
-		height: 25px;
-	}
-	.dateBar {
-		background-color: #f5311e;
-		padding: .1em .3em 0em .3em;
-		color: #ffffff;
-		font-weight: bold;
-		text-align: center;
-		font-size: 1em;
-	}
-	
-	.back {
-		display: block;
-		float: left;
-		width: 0px;
-		height: 0px;
-		border-color: transparent #ffffff transparent transparent;
-		border-style: solid;
-		border-width: 5px 10px 5px 10px;
-		margin-top: 5px;
-		vertical-align: baseline;
-	}
-	
-	.next {
-		display: block;
-		float: right;
-		width: 0px;
-		height: 0px;
-		border-color: transparent transparent transparent #ffffff;
-		border-style: solid;
-		border-width: 5px 10px 5px 10px;
-		margin-top: 5px;
-		vertical-align: baseline;
-	}
-	
-	.next span,.back span {
-		display: none;
-	}
-	
-	.dataEntry {
-		background-color: #eaeaea;
-		color: #515151;
-		text-align: center;
-		border-color: #18ADEF;
-		border-style: solid;
-		border-width: 0 0 5px 0;
-		padding: 2px 4%;
-	}
-	
-	.dataEntry .textField {
-		border: 0px;
-		padding: .5em;
-		font-size: 14px;
-		font-weight: bold;
-		color: #cbcbcb;
-		margin: .7em 0 .7em 0;
-		width: 100%;
-		height: 30px;
-		-webkit-border-radius: 2px;
-	}
-	
-	.dataEntry hr {
-		margin: 0;
-		padding: 0;
-		border-color: #CCCCCC transparent transparent transparent;
-		border-style: dotted;
-		border-width: 1px 0 0 0;
-		background: transparent;
-		height: 0px;
-	}
-	
-	.dataEntry .showMore {
-		display: block;
-		text-align: right;
-		padding: .7em .1em .6em 0;
-		color: #404040;
-		text-decoration: none;
-		text-transform: uppercase;
-		font-weight: bold;
-		font-size: .5em;
-	}
-	
-	.entryDelete {
-		display:none;
-	}
-	
-	.dataTags {
-		color: #404040;
-		overflow: auto;
-		-webkit-overflow-scrolling: touch;
-		overflow-x: hidden;
-		height: 100%;
-		padding: 
-	}
-	
-	.dataTags li {
-		display: block;
-		color: #515151;
-		border-color: transparent transparent #E5E5E5 transparent;
-		border-style: dotted;
-		border-width: 0 0 1px 0;
-		text-decoration: none;
-	}
-	
-	.userInfo {
-		background-color: #f5311e;
-		padding: 1px 2%;
-		color: #ffffff;
-	}
-	
-	.userInfo .username {
-		float: left;
-		text-transform: lowercase;
-		font-size: .8em;
-		font-weight: 800;
-		padding-top: .21em;
-		padding-bottom: .21em;
-		padding-left: 5px;
-		vertical-align: middle;
-	}
-	
-	.userInfo .online {
-		float: right;
-		text-transform: uppercase;
-		font-size: .6em;
-		font-weight: 800;
-		padding-top: 4px;
-		padding-bottom: .21em;
-		padding-right: 4%
-	}
-	
-	#content {
-		padding-top: 9px;
-	}
-	
-	#datepicker {
-		width: 200px;
-	}
-	
-	.date input {
-		text-transform: none;
-		background-color: #F5311E;
-		color: #FFFFFF;
-		border: 0px;
-		font-size: .75em;
-		font-weight: 800;
-		vertical-align: top;
-		text-align: center;
-		padding-bottom: 2px;
-		margin-bottom: 3px;
-		-webkit-appearance: none;
-	}
-	
-	a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:active.indicator
-		{
-		text-decoration: none;
-		color: #FFFFFF;
-	}
-	
-	#entry0 .ui-selecting {
-		background: #E5E5E5;
-	}
-	
-	#entry0 .ui-selected {
-		background: #E5E5E5;
-		color: #404040;
-		font-size: 15px;
-		font-weight: bold;
-		margin: 0px;
-		padding: 14px 14px 14px 14px;
-	}
-	
-	#entry0 {
-		list-style-type: none;
-		margin: 0;
-		padding: 0 0;
-	}
-	
-	#entry0 li {
-		font-size: 15px;
-		font-weight: bold;
-		margin: 0px;
-		padding: 14px 14px 14px 14px;
-	}
-	</style>
-	<script type="text/javascript">
+<r:script>
 	var defaultToNow = true;
 	var timeAfterTag = true;
 
@@ -1091,8 +458,9 @@ $(function(){
 		if (cachedObj['data'] != null) {
 			refreshEntries(data);
 		}
-		
-		$.getJSON(makeGetUrl("getEntriesData"), makeGetArgs({ date:cachedDateUTC, userId:currentUserId }),
+
+		var argsToSend = getCSRFPreventionObject('getEntriesDataCSRF', { date:cachedDateUTC, userId:currentUserId });
+		$.getJSON(makeGetUrl("getEntriesData"), makeGetArgs(argsToSend),
 			function(data){
 				if (checkData(data)) {
 					refreshEntries(data);
@@ -1111,7 +479,16 @@ $(function(){
 	var dayDuration = 86400000;
 	var entrySelectData;
 	
-	function displayEntry(id, date, datePrecisionSecs, description, amount, amountPrecision, units, comment) {
+	function displayEntry(entry, isUpdating) {
+		var id = entry.id,
+			date = entry.date,
+			datePrecisionSecs = entry.datePrecisionSecs,
+			description = entry.description,
+			amount = entry.amount,
+			amountPrecision = entry.amountPrecision,
+			units = entry.units,
+			comment = entry.comment;
+
 		var diff = dateToTime(date) - cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
 			return; // skip items outside display
@@ -1133,15 +510,21 @@ $(function(){
 			var selectEnd = selectStart + formattedAmount.length - 1;
 			entrySelectData[id] = [selectStart, selectEnd];
 		}
-		
-		$("#entry0").append("<li class=\"entryItem\" id=\"entryid" + id + "\">" + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
-			+ '<a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999" onclick="deleteEntryId(' + id + ')"><img style="float:right" width="12" height="12" src="/images/x.gif"></a></li>');
+
+		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
+			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999;float:right;" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/images/x.gif"></a>';
+	
+		if(isUpdating) {
+			$("#entry0 li#entryid" + id).html(innerHTMLContent);
+		} else {
+			$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+		}
 	}
 
 	function displayEntries(entries) {
 		entrySelectData = {};
 		jQuery.each(entries, function() {
-			displayEntry(this['id'], this['date'], this['datePrecisionSecs'], this['description'], this['amount'], this['amountPrecision'], this['units'], this['comment']);
+			displayEntry(this, false);
 			return true;
 		});
 	}
@@ -1174,9 +557,11 @@ $(function(){
 				setEntryText('');
 				currentEntryId = null;
 			}
-			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs({ entryId:entryId,
+			var argsToSend = getCSRFPreventionObject("deleteEntryDataCSRF", { entryId:entryId,
 				currentTime:currentTimeUTC, baseDate:cachedDateUTC,
-				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC }),
+				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
+
+			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 				function(entries){
 					if (checkData(entries)) {
 						refreshEntries(entries[0]);
@@ -1206,12 +591,22 @@ $(function(){
 			showAlert("Please wait until online to update an entry");
 			return;
 		}
-		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs({ entryId:entryId,
+		var argsToSend = getCSRFPreventionObject("updateEntryDataCSRF", { entryId:entryId,
 			currentTime:currentTimeUTC, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' }),
+			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' });
+
+		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
-				refreshEntries(entries[0]);
+				$.each(entries[0], function(index, entry) {
+					/**
+					 * Finding only that entry which is recently updated, and
+					 * refreshing only that entry in UI.
+					 */
+					if(entry.id == entryId) {
+						displayEntry(entry, true);
+					}
+				})
 				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -1233,9 +628,11 @@ $(function(){
 			showAlert("Please wait until online to add an entry");
 			return;
 		}
-		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs({ currentTime:currentTimeUTC,
+		var argsToSend = getCSRFPreventionObject("addEntryCSRF", { currentTime:currentTimeUTC,
 			userId:userId, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' }),
+			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' })
+
+		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
 				if (entries[1] != null) {
@@ -1320,43 +717,65 @@ $(function(){
 			processInput(false);
 			return false;
 		});
-		$("#entry0").listable({cancel:'a'});
+		$("#entry0").listable({cancel: 'a, input'});
 		$("#entry0").off("listableselected");
 		$("#entry0").off("listableunselecting");
 		$("#entry0").on("listableunselecting", function(e, ui) {
-			var oldEntryId = ui.unselecting.id.substring(7);
-			var unselectee = $("#" + ui.unselecting.id);
-			if (unselectee.data('entryIsSelected') == 1) {
-				unselectee.data('entryIsSelected', 2);
-				$("#entrydelid" + oldEntryId).css('display', 'none');
-				currentEntryId = null;
-				setEntryText('');
-			}
+			var $unselectee = $("#" + ui.unselecting.id);
+			unselecting($unselectee);
 		});
+		function unselecting($unselectee) {
+			if ($unselectee.data('entryIsSelected') == 1) {
+				$unselectee.data('entryIsSelected', 2);
+				$("a.entryDelete", $unselectee).hide();
+				checkAndUpdateEntry($unselectee);
+				currentEntryId = null;
+			}
+		}
+		/**
+		 * Sees to check if text is different from original text.
+		 * IF different than call updateEntry() method to notify
+		 * server and update in UI.
+		 */
+		function checkAndUpdateEntry($unselectee) {
+			var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
+			var oldText = $contentWrapper.text();
+			var newText = $("input#tagTextInput").val();
+	
+			$contentWrapper.show();
+			if(oldText != newText) {
+				$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
+				updateEntry(currentEntryId, newText, defaultToNow);
+			}
+
+			$("input#tagTextInput").remove();
+		}
 		$("#entry0").on("listableselected", function(e, ui) {
 			currentEntryId = ui.selected.id.substring(7);
 			var selectee = $("#" + ui.selected.id);
 			var state = selectee.data('entryIsSelected');
-			if (state == 1) {
-				selectee.removeClass('ui-selected');
-				selectee.data('entryIsSelected', 0);
-				$("#entrydelid" + currentEntryId).css('display', 'none');
-				currentEntryId = null;
-				setEntryText('');
-			} else if (!state) {
+			selectee.siblings().data('entryIsSelected', 0);
+			var $contentWrapper = selectee.find(".content-wrapper");
+
+			if (state == 0 || state == undefined) {
 				selectee.data('entryIsSelected', 1);
 				$("#entrydelid" + currentEntryId).css('display', 'inline');
-				setEntryText(ui.selected.textContent);
+				var entryText = ui.selected.textContent;
 				var selectRange = entrySelectData[currentEntryId];
-				if (selectRange)
-					setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
-				else
-					setEntryText(ui.selected.textContent);
-				if (lastEntrySelected != null)
-					lastEntrySelected.data('entryIsSelected', 0);
 				lastEntrySelected = selectee;
+				
+				$contentWrapper.hide();
+				selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+
+				// Binding blur event on element instead of globally to prevent concurrent exception.
+				$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+					var $unselectee = $(this).parent("li");
+					checkAndUpdateEntry($unselectee);
+				})
+				if(selectRange) {
+					$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+				}
 			} else if (state == 2) {
-				selectee.removeClass('ui-selected');
 				selectee.data('entryIsSelected', 0);
 			}
 		});
@@ -1375,7 +794,7 @@ $(function(){
 			refreshPage();
 		}
 
-		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs({}),
+		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs(getCSRFPreventionObject("getPeopleDataCSRF")),
 			function(data){
 				if (!checkData(data))
 					return;
@@ -1391,7 +810,7 @@ $(function(){
 				refreshPage();
 			});
 	}
-	</script>
+</r:script>
 	<div id="header">
 		<div class="dateBar">
 		<a class="back" href="#" onclick="changeDate(-1);"><span>back</span></a>

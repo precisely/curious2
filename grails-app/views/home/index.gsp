@@ -6,266 +6,13 @@
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 
+<r:require module="selectable"/>
+
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, listTagsAndTagGroupsCSRF,
-showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF" />
 
-<script type="text/javascript">
-/**
- * Custom Curious mobile widget forked from jQuery UI selectable widget
- */
-(function( $, undefined ) {
-
-$.widget("ui.listable", $.ui.mouse, {
-	options: {
-		appendTo: 'body',
-		autoRefresh: true,
-		distance: 0,
-		filter: '*',
-		tolerance: 'touch'
-	},
-	_create: function() {
-		var self = this;
-
-		this.element.addClass("ui-selectable");
-
-		this.dragged = false;
-
-		// cache selectee children based on filter
-		var selectees;
-		this.refresh = function() {
-			selectees = $(self.options.filter, self.element[0]);
-			selectees.each(function() {
-				var $this = $(this);
-				var pos = $this.offset();
-				$.data(this, "selectable-item", {
-					element: this,
-					$element: $this,
-					left: pos.left,
-					top: pos.top,
-					right: pos.left + $this.outerWidth(),
-					bottom: pos.top + $this.outerHeight(),
-					startselected: false,
-					selected: $this.hasClass('ui-selected'),
-					selecting: $this.hasClass('ui-selecting'),
-					unselecting: $this.hasClass('ui-unselecting')
-				});
-			});
-		};
-		this.refresh();
-
-		this.selectees = selectees.addClass("ui-selectee");
-
-		this._mouseInit();
-
-		this.helper = $("<div class='ui-selectable-helper'></div>");
-	},
-
-	destroy: function() {
-		this.selectees
-			.removeClass("ui-selectee")
-			.removeData("selectable-item");
-		this.element
-			.removeClass("ui-selectable ui-selectable-disabled")
-			.removeData("selectable")
-			.unbind(".selectable");
-		this._mouseDestroy();
-
-		return this;
-	},
-
-	_mouseStart: function(event) {
-		var self = this;
-
-		this.opos = [event.pageX, event.pageY];
-
-		if (this.options.disabled)
-			return;
-
-		var options = this.options;
-
-		this.selectees = $(options.filter, this.element[0]);
-
-		this._trigger("start", event);
-
-		$(options.appendTo).append(this.helper);
-		// position helper (lasso)
-		this.helper.css({
-			"left": event.clientX,
-			"top": event.clientY,
-			"width": 0,
-			"height": 0
-		});
-
-		if (options.autoRefresh) {
-			this.refresh();
-		}
-
-		this.selectees.filter('.ui-selected').each(function() {
-			var selectee = $.data(this, "selectable-item");
-			selectee.startselected = true;
-			if (!event.metaKey) {
-				selectee.$element.removeClass('ui-selected');
-				selectee.selected = false;
-				selectee.$element.addClass('ui-unselecting');
-				selectee.unselecting = true;
-				// selectable UNSELECTING callback
-				self._trigger("unselecting", event, {
-					unselecting: selectee.element
-				});
-			}
-		});
-
-		$(event.target).parents().andSelf().each(function() {
-			var selectee = $.data(this, "selectable-item");
-			if (selectee) {
-				var doSelect = !event.metaKey || !selectee.$element.hasClass('ui-selected');
-				selectee.$element
-					.removeClass(doSelect ? "ui-unselecting" : "ui-selected")
-					.addClass(doSelect ? "ui-selecting" : "ui-unselecting");
-				selectee.unselecting = !doSelect;
-				selectee.selecting = doSelect;
-				selectee.selected = doSelect;
-				// selectable (UN)SELECTING callback
-				if (doSelect) {
-					self._trigger("selecting", event, {
-						selecting: selectee.element
-					});
-				} else {
-					self._trigger("unselecting", event, {
-						unselecting: selectee.element
-					});
-				}
-				return false;
-			}
-		});
-
-	},
-
-	_mouseDrag: function(event) {
-		var self = this;
-		this.dragged = true;
-
-		if (this.options.disabled)
-			return;
-
-		var options = this.options;
-
-		var x1 = this.opos[0], y1 = this.opos[1], x2 = event.pageX, y2 = event.pageY;
-		if (x1 > x2) { var tmp = x2; x2 = x1; x1 = tmp; }
-		if (y1 > y2) { var tmp = y2; y2 = y1; y1 = tmp; }
-		this.helper.css({left: x1, top: y1, width: x2-x1, height: y2-y1});
-
-		this.selectees.each(function() {
-			var selectee = $.data(this, "selectable-item");
-			//prevent helper from being selected if appendTo: selectable
-			if (!selectee || selectee.element == self.element[0])
-				return;
-			var hit = false;
-			if (options.tolerance == 'touch') {
-				hit = ( !(selectee.left > x2 || selectee.right < x1 || selectee.top > y2 || selectee.bottom < y1) );
-			} else if (options.tolerance == 'fit') {
-				hit = (selectee.left > x1 && selectee.right < x2 && selectee.top > y1 && selectee.bottom < y2);
-			}
-
-			if (hit) {
-				// SELECT
-				if (selectee.selected) {
-					selectee.$element.removeClass('ui-selected');
-					selectee.selected = false;
-				}
-				if (selectee.unselecting) {
-					selectee.$element.removeClass('ui-unselecting');
-					selectee.unselecting = false;
-				}
-				if (!selectee.selecting) {
-					selectee.$element.addClass('ui-selecting');
-					selectee.selecting = true;
-					// selectable SELECTING callback
-					self._trigger("selecting", event, {
-						selecting: selectee.element
-					});
-				}
-			} else {
-				// UNSELECT
-				if (selectee.selecting) {
-					if (event.metaKey && selectee.startselected) {
-						selectee.$element.removeClass('ui-selecting');
-						selectee.selecting = false;
-						selectee.$element.addClass('ui-selected');
-						selectee.selected = true;
-					} else {
-						selectee.$element.removeClass('ui-selecting');
-						selectee.selecting = false;
-						if (selectee.startselected) {
-							selectee.$element.addClass('ui-unselecting');
-							selectee.unselecting = true;
-						}
-						// selectable UNSELECTING callback
-						self._trigger("unselecting", event, {
-							unselecting: selectee.element
-						});
-					}
-				}
-				if (selectee.selected) {
-					if (!event.metaKey && !selectee.startselected) {
-						selectee.$element.removeClass('ui-selected');
-						selectee.selected = false;
-
-						selectee.$element.addClass('ui-unselecting');
-						selectee.unselecting = true;
-						// selectable UNSELECTING callback
-						self._trigger("unselecting", event, {
-							unselecting: selectee.element
-						});
-					}
-				}
-			}
-		});
-
-		return false;
-	},
-
-	_mouseStop: function(event) {
-		var self = this;
-
-		this.dragged = false;
-
-		var options = this.options;
-
-		$('.ui-unselecting', this.element[0]).each(function() {
-			var selectee = $.data(this, "selectable-item");
-			selectee.$element.removeClass('ui-unselecting');
-			selectee.unselecting = false;
-			selectee.startselected = false;
-			self._trigger("unselected", event, {
-				unselected: selectee.element
-			});
-		});
-		$('.ui-selecting', this.element[0]).each(function() {
-			var selectee = $.data(this, "selectable-item");
-			selectee.$element.removeClass('ui-selecting').addClass('ui-selected');
-			selectee.selecting = false;
-			selectee.selected = true;
-			selectee.startselected = true;
-			self._trigger("selected", event, {
-				selected: selectee.element
-			});
-		});
-		this._trigger("stop", event);
-
-		this.helper.remove();
-
-		return false;
-	}
-
-});
-
-$.extend($.ui.listable, {
-	version: "1.8.16"
-});
-
-})(jQuery);
+<r:script>
 
 var defaultToNow = true;
 var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:else>false</g:else>;
@@ -338,7 +85,16 @@ var dayDuration = 86400000;
 
 var entrySelectData;
 
-function displayEntry(id, date, datePrecisionSecs, description, amount, amountPrecision, units, comment) {
+function displayEntry(entry, isUpdating) {
+	var id = entry.id,
+		date = entry.date,
+		datePrecisionSecs = entry.datePrecisionSecs,
+		description = entry.description,
+		amount = entry.amount,
+		amountPrecision = entry.amountPrecision,
+		units = entry.units,
+		comment = entry.comment;
+
 	var diff = date.getTime() - cachedDate.getTime();
 	if (diff < 0 ||  diff >= dayDuration) {
 		return; // skip items outside display
@@ -361,18 +117,24 @@ function displayEntry(id, date, datePrecisionSecs, description, amount, amountPr
 		var selectEnd = selectStart + formattedAmount.length - 1;
 		entrySelectData[id] = [selectStart, selectEnd];
 	}
-	
-	$("#entry0").append("<li id=\"entryid" + id + "\">" + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+
+	var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '<a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a></li>');
+			+ '</span><a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+
+	if(isUpdating) {
+		$("#entry0 li#entryid" + id).html(innerHTMLContent);
+	} else {
+		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+	}
 }
 
 function displayEntries(entries) {
 	entrySelectData = {};
 	jQuery.each(entries, function() {
-		displayEntry(this['id'], this['date'], this['datePrecisionSecs'], this['description'], this['amount'], this['amountPrecision'], this['units'], this['comment']);
+		displayEntry(this, false);
 		return true;
 	});
 }
@@ -390,8 +152,8 @@ function deleteEntryId(entryId) {
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
-				+ "&timeZoneOffset=" + timeZoneOffset + "&displayDate=" + cachedDateUTC
-				+ "&callback=?",
+				+ "&timeZoneOffset=" + timeZoneOffset + "&displayDate=" + cachedDateUTC + "&"
+				+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 				function(entries) {
 					if (checkData(entries, 'success', "Error deleting entry")) {
 						tagList.load();
@@ -413,11 +175,20 @@ function updateEntry(entryId, text, defaultToNow) {
 	
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
-			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&callback=?",
+			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ getCSRFPreventionURI("updateEntryDataCSRF") + "&callback=?",
 	function(entries){
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
-			refreshEntries(entries[0]);
+			$.each(entries[0], function(index, entry) {
+				/**
+				 * Finding only that entry which is recently updated, and
+				 * refreshing only that entry in UI.
+				 */
+				if(entry.id == entryId) {
+					displayEntry(entry, true);
+				}
+			})
 			updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 			if (entries[2] != null)
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -430,8 +201,8 @@ function addEntry(userId, text, defaultToNow) {
 	
 	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
-			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0')
-			+ getCSRFPreventionURI("addEntryCSRF", "&") + "&callback=?",
+			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {
 					if (entries[1] != null) {
@@ -534,83 +305,107 @@ $(function(){
 			processInput(false);
 		}
 	});
-	$("#entry0").listable({cancel:'a'});
+	$("#entry0").listable({cancel: 'a,input'});
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
 	});
-	function unselecting($unselectee) {
+	function unselecting($unselectee, doNotUpdate) {
 		if($unselectee.data('entryIsSelected') == 1) {
 			$unselectee.removeClass('ui-selected');
 			$unselectee.data('entryIsSelected', 2);
 			$("a.entryDelete", $unselectee).hide();
+			checkAndUpdateEntry($unselectee);
 			currentEntryId = null;
-			setEntryText('');
 		}
+	}
+	/**
+	 * Sees to check if text is different from original text.
+	 * IF different than call updateEntry() method to notify
+	 * server and update in UI.
+	 */
+	function checkAndUpdateEntry($unselectee) {
+		var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
+		var oldText = $contentWrapper.text();
+		var newText = $("input#tagTextInput").val();
+
+		$contentWrapper.show();
+		if(oldText != newText) {
+			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
+			updateEntry(currentEntryId, newText, defaultToNow);
+		}
+
+		$("input#tagTextInput").remove();
 	}
 	$("#entry0").on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
 		selected($selectee);
 	});
 	function selected($selectee) {
-		currentEntryId = null;
-		if($selectee.attr("id")) {
-			currentEntryId = $selectee.attr("id").substring(7);
-		}
 		var state = $selectee.data('entryIsSelected');
-		if (state == 1) {
-			$selectee.removeClass('ui-selected');
-			$selectee.data('entryIsSelected', 0);
-			$("a.entryDelete", $selectee).hide();
-			currentEntryId = null;
-			setEntryText('');
-		} else if (!state) {
+		var $contentWrapper = $selectee.find(".content-wrapper");
+		$selectee.siblings().data('entryIsSelected', 0);
+
+		if (state == undefined || state == 0) {
+			lastEntrySelected = $selectee;
+			currentEntryId = $selectee.data("entry-id");
 			$selectee.data('entryIsSelected', 1);
 			$selectee.addClass('ui-selected');
 			$("#entrydelid" + currentEntryId).css('display', 'inline');
+
 			var entryText = $selectee.text();
-			setEntryText(entryText);
 			var selectRange = entrySelectData[currentEntryId];
-			if (selectRange)
-				setEntryText(entryText, selectRange[0], selectRange[1]);
-			else
-				setEntryText(entryText);
-			if (lastEntrySelected != null)
-				lastEntrySelected.data('entryIsSelected', 0);
-			lastEntrySelected = $selectee;
-		} else if (state == 2) {
-			$selectee.removeClass('ui-selected');
+
+			$contentWrapper.hide();
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
+
+			// Binding blur event on element instead of globally to prevent concurrent exception.
+			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+				var $unselectee = $(this).parent("li");
+				checkAndUpdateEntry($unselectee);
+			})
+			if(selectRange) {
+				$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+			}
+		} else if(state == 2) {
 			$selectee.data('entryIsSelected', 0);
 		}
 	}
+	$(document).on("keyup", "input#tagTextInput", function(e) {
+		var $selectee = $(this).parent("li");
+		if(e.keyCode == 13) {	// Enter pressed
+			unselecting($selectee);
+			selected($selectee);
+		} else if(e.keyCode == 27) {	// Esc pressed
+			unselecting($selectee, true);
+			selected($selectee);
+		}
+	})
 	/**
-	 * Keycode: 37:left, 38:up, 39:right, 40:down
+	 * Keycode= 37:left, 38:up, 39:right, 40:down
 	 */
-	$(document).keydown(function(e) {
-		if($.inArray(e.keyCode, [37, 38, 39, 40]) == -1) {
+	$("#entry0").keydown(function(e) {
+		if($.inArray(e.keyCode, [38, 40]) == -1) {
 			return true;
 		}
 		var $unselectee = $("li.ui-selected", "ol#entry0");
 		if(!$unselectee) {
-			//$currentSelectedEntry = $("li:first-child", "ol#entry0");
-		}
-		if(!$unselectee) {
 			return false;
 		}
 		var $selectee;
-		if(e.keyCode == 37 || e.keyCode == 40) { 
+		if(e.keyCode == 40) { 
 			$selectee = $unselectee.next();
 		}
-		if(e.keyCode == 38 || e.keyCode == 39) { 
+		if(e.keyCode == 38) { 
 			$selectee = $unselectee.prev();
 		}
 		if($selectee) {
 			unselecting($unselectee);
 			selected($selectee);
 		}
-		return false
+		return false;
 	});
 	
 	/*
@@ -629,7 +424,7 @@ $(function(){
 	});*/
 
 	initTemplate();
-	
+
 	$.getJSON("/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data){
 			if (!checkData(data))
@@ -651,9 +446,9 @@ $(function(){
 		refreshPage();
 	});
 });
-</script>
+</r:script>
 </head>
-<body>
+<body class="track-page">
 <!-- MAIN -->
 <div class="main" id="trackmain">
 
