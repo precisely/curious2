@@ -331,10 +331,10 @@ $(function(){
 		var oldText = $contentWrapper.text();
 		var newText = $("input#tagTextInput").val();
 
+		$contentWrapper.show();
 		if(oldText != newText) {
+			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 			updateEntry(currentEntryId, newText, defaultToNow);
-		} else {
-			$contentWrapper.show();
 		}
 
 		$("input#tagTextInput").remove();

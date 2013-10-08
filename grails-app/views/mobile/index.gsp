@@ -1,7 +1,6 @@
-<html>
+<html manifest="/mobile/cache.manifest">
 <head>
 <title>Curious</title>
-<meta name="layout" content="mobile" />
 <g:setProvider library="jquery" />
 
 <!--script type="text/javascript">
@@ -80,15 +79,17 @@ function doLogout() {
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=5"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=5"></script>
+<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=5"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
+<link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-
-<r:require modules="selectable, mobileTrackPage" />
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=5" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF" />
 
@@ -741,10 +742,10 @@ $(function(){
 			var oldText = $contentWrapper.text();
 			var newText = $("input#tagTextInput").val();
 	
+			$contentWrapper.show();
 			if(oldText != newText) {
+				$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 				updateEntry(currentEntryId, newText, defaultToNow);
-			} else {
-				$contentWrapper.show();
 			}
 
 			$("input#tagTextInput").remove();
