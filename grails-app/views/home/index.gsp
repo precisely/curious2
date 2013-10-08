@@ -437,16 +437,11 @@ $(function(){
 		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
 				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
 				function(newEntry) {
-					/*
-					 * Uncomment these lines after server side code is written.
-					 *
 					var newEntryId = newEntry.id;
 					$ghostEntry.remove();
 					displayEntry(newEntry, false);
 					var $newEntry = $("li#entryid" + newEntryId);
 					selected($newEntry);
-					 *
-					 */
 					tagList.load();
 				});
 	})

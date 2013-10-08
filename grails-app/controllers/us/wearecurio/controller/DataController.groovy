@@ -389,7 +389,9 @@ class DataController extends LoginController {
 		debug "DataController.activateGhostEntry()"
 
 		// Code to toggle ghost entries.
-		renderStringGet("Success")  // dummy value for now. Expecting new entry as json.
+
+		// dummy value for now. Expecting new entry as json.
+		renderJSONGet([id: 513, amount: 13, amountPrecision: 3, date: new Date(), description: "aspirin", units: "mg", comment: "", timeZoneOffsetSecs: 23400, datePrecisionSecs: 180])
 	}
 
 	def deleteGhostEntry(Long entryId) {
