@@ -990,3 +990,12 @@ div.plotLine:hover span {
  /**
   * Generic & common stuff, useful for every where. Ends here.
   */
+
+/**
+ * Generic & common stuff, useful for every where. Ends here.
+ */
+
+ body.track-page #datepicker {
+    width: 260px;
+    text-align: center;
+ }

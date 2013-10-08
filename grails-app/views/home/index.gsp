@@ -448,7 +448,7 @@ $(function(){
 });
 </r:script>
 </head>
-<body>
+<body class="track-page">
 <!-- MAIN -->
 <div class="main" id="trackmain">
 
