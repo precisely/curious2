@@ -82,7 +82,7 @@ class DataController extends LoginController {
 			debug "Can't edit a generated entry"
 			return [null, 'You cannot edit a generated entry.', null, null]
 		}
-			
+		
 		TimeZone tz = Utils.createTimeZone(-Integer.parseInt(timeZoneOffsetStr),"GMTOFFSET" + timeZoneOffsetStr)
 
 		def currentTime = parseDate(currentTimeStr)
