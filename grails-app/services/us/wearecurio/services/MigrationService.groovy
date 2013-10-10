@@ -25,6 +25,8 @@ class MigrationService {
 	public static final long MIGRATE_REPEATS_ID = 31L
 	public static final long FIX_OAUTH_UNIQUE_CONSTRAINT_ID = 32L
 	public static final long REPEAT_END_NULLABLE_ID = 36L
+	public static final long NULLIFY_OLD_REPEATS_ID = 42L
+	public static final long RANGE_OLD_REPEATS_ID = 43L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -88,6 +90,28 @@ class MigrationService {
 		tryMigration(REPEAT_END_NULLABLE_ID) {
 			sql('ALTER TABLE entry CHANGE COLUMN repeat_end repeat_end datetime DEFAULT NULL')
 			sql("update entry set repeat_end = null where repeat_end = '0000-00-00 00:00:00'")
+		}
+		tryMigration(NULLIFY_OLD_REPEATS_ID) {
+			def rows = sqlRows("select entry.id from entry where repeat_type is not null")
+			
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				entry.createRepeat()
+				
+				Utils.save(entry, true)
+			}
+		}
+		tryMigration(RANGE_OLD_REPEATS_ID) {
+			def rows = sqlRows("select entry.id from entry where repeat_end is null and repeat_type is not null and date < '2013-10-01'")
+			
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				entry.repeatEnd = entry.date + 1
+				
+				Utils.save(entry, true)
+			}
 		}
 	}
 }

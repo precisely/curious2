@@ -893,6 +893,19 @@ class Entry {
 					Utils.save(e, true)
 				}
 			}
+			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date > :entryDate order by entry.date asc limit 1"
+			
+			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
+			
+			v = entries[0]
+			
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
+				
+				if (e != null) {
+					repeatEnd = e.getDate()
+				}
+			}
 		} else {
 			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 			
@@ -906,6 +919,19 @@ class Entry {
 				if (e != null) {
 					e.setRepeatEnd(this.date)
 					Utils.save(e, true)
+				}
+			}
+			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and entry.user_id = :userId order by entry.date asc limit 1"
+			
+			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
+			
+			v = entries[0]
+			
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
+				
+				if (e != null) {
+					repeatEnd = e.getDate()
 				}
 			}
 		}
