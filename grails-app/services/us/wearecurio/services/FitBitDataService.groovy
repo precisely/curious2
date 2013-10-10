@@ -193,9 +193,48 @@ class FitBitDataService {
 					requestUrl = "http://api.fitbit.com/${API_VERSION}/user" +
 						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					def activityData = this.getData(account, requestUrl, false)
-					def setName = formatter.format(notification.date)+"activity"
+					def setName = formatter.format(notification.date)+"activityfitbit"
 					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName, userId: account.userId])
+					boolean veryActiveD, moderatelyActiveD, lightlyActiveD, sedentaryActiveD, fairlyActiveD 
+					veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
+					
+					if (activityData.summary) {
+						fitBitTagUnitMap.buildEntry("steps",activityData.summary?.steps.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary?.fairlyActiveMinutes <= 0) {
+						fairlyActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",
+						activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
+						notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
+						lightlyActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",
+							activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
+						sedentaryActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("sedentaryMinutes",
+							activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}	
+					
+					if(!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
+						veryActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("veryActiveMinutes",
+							activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
 					
 					activityData.summary.distances.each { distance ->
 						def entryDate = notification.date
@@ -211,21 +250,19 @@ class FitBitDataService {
 						}
 						if (!distance.activity.equals('loggedActivities')) { //Skipping loggedActivities
 							debug "Importing activity: " + distance.activity
-							fitBitTagUnitMap.buildEntry("miles",distance.distance.toBigDecimal(),account.userId,
-								entryDate,[setName:setName,tagName:"activity $distance.activity"])
+							if ((!veryActiveD && distance.activity.equals("veryActive"))
+								||(!moderatelyActiveD && distance.activity.equals("moderatelyActive"))
+								||(!lightlyActiveD && distance.activity.equals("lightlyActive"))
+								||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
+								println "Discarding activity with 0 time"
+							} else {
+								fitBitTagUnitMap.buildEntry(distance.activity,distance.distance.toBigDecimal(),account.userId,
+								entryDate,[setName:setName])
+							}
 						}
 					}
 					
-					fitBitTagUnitMap.buildEntry("steps",activityData.summary.steps.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("sedentaryMinutes",activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("veryActiveMinutes",activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
+					
 				} else if (collectionType.equals('sleep')) {
 					debug "Fetch sleep data next."
 					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
@@ -265,7 +302,11 @@ class FitBitDataService {
 		def jsonResponse = JSON.parse(response.getBody())
 		debug "Fetch collectionType data:" + jsonResponse
 		debug "Response Code " + response.getCode()
-		return jsonResponse
+		if (response.getCode() == 401) {
+			false
+		} else {
+			return jsonResponse
+		}
 	}
 
 }
