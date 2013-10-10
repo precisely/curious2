@@ -272,7 +272,8 @@ class FitBitDataService {
 							entryDate,[setName:logEntry.logId])
 						fitBitTagUnitMap.buildEntry("awakeningsCount",logEntry.awakeningsCount.toBigDecimal(),account.userId,
 							entryDate,[setName:logEntry.logId])
-						fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
+						if (logEntry.efficiency > 0 )
+							fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
 							entryDate,[setName:logEntry.logId])
 					}
 				}
