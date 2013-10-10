@@ -24,8 +24,10 @@ class Entry {
 	public static final long DAYTICKS = HOURTICKS * 24
 	public static final long HALFDAYTICKS = HOURTICKS * 12
 	public static final long WEEKTICKS = DAYTICKS * 7
-	public static final int NOTIMESTAMPPRECISIONSECS = 60 * 60 * 24
-
+	
+	public static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
+	public static final int VAGUE_DATE_PRECISION_SECS = 86400
+	
 	static constraints = {
 		amount(scale:9, nullable:true)
 		date(nullable:true)
@@ -49,6 +51,7 @@ class Entry {
 		date column:'date', index:'date_index'
 		tag column:'tag_id', index:'tag_id_index'
 		repeatType column:'repeat_type', index:'repeat_type_index'
+		repeatEnd column:'repeat_end', index:'repeat_end_index'
 		durationType column:'duration_type', index:'duration_type_index'
 	}
 	
@@ -937,6 +940,68 @@ class Entry {
 		}
 	}
 	
+	def unGhost() {
+		if (this.repeatType.isGhost()) {
+			this.repeatType = this.repeatType.toggleGhost()
+		}
+		
+		return this
+	}
+	
+	def activateGhostEntry(Date currentDate, Date nowDate) {
+		long dayStartTime = currentDate.getTime()
+		def now = nowDate.getTime()
+		long diff = now - dayStartTime
+		long thisDiff = this.date.getTime() - dayStartTime
+		
+		if (this.repeatType == null)
+			return null
+		if (!this.repeatType.isGhost())
+			return null
+		
+		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
+			// activate this entry
+			this.unGhost()
+			Utils.save(this, true)
+			
+			return this
+		}
+		
+		def m = [:]
+		m['timeZoneOffsetSecs'] = this.timeZoneOffsetSecs
+		m['description'] = this.tag.getDescription()
+		m['amount'] = this.amount
+		m['units'] = this.units
+		m['comment'] = this.comment
+		m['repeatType'] = this.repeatType
+		m['baseTag'] = this.baseTag
+		m['durationType'] = DurationType.NONE
+		m['amountPrecision'] = this.amountPrecision
+
+		if (this.repeatType.isContinuous()) {
+			if (diff >= 0 && diff < DAYTICKS) {
+				m['date'] = nowDate
+				m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
+			} else {
+				m['date'] = new Date(dayStartTime + HALFDAYTICKS)
+				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
+			}
+			def retVal = Entry.create(userId, m, null)
+			retVal.unGhost()
+			
+			Utils.save(retVal, true)
+			return retVal
+		} else { // this repeat element isn't today
+			m['date'] = new Date(((date.getTime() - dayStartTime) % DAYTICKS + DAYTICKS) + dayStartTime)
+			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
+			def retVal = Entry.create(userId, m, null)
+			retVal.unGhost()
+			
+			Utils.save(retVal, true)
+			return retVal
+		}
+	}
+	
 	/**
 	 * Update existing entry and save
 	 */
@@ -1294,8 +1359,6 @@ class Entry {
 		return today
 	}
 	
-	public static int DEFAULT_DATEPRECISION_SECS = 3 * 60
-	
 	static def parse(Date time, TimeZone timeZone, String entryStr, Date baseDate, boolean defaultToNow) {
 		log.debug "Entry.parse() time:" + time + ", timeZone:" + timeZone?.getID() + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
@@ -1512,7 +1575,7 @@ class Entry {
 				if (!(defaultToNow && today)) { // only default to now if entry is for today
 					date = new Date(baseDate.getTime() + 12 * 3600000L);
 					log.debug "SETTING DATE TO " + Utils.dateToGMTString(date) 
-					retVal['datePrecisionSecs'] = NOTIMESTAMPPRECISIONSECS;
+					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else {
 					if (!isSameDay(time, baseDate, timeZone)) {
 						retVal['status'] = "Entering event for today, not displayed";
@@ -1525,7 +1588,7 @@ class Entry {
 				date = time;
 				if (!defaultToNow) {
 					date = new Date(date.getTime() + 12 * 3600000L);
-					retVal['datePrecisionSecs'] = NOTIMESTAMPPRECISIONSECS;
+					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else if (!isSameDay(time, baseDate, timeZone)) {
 					retVal['status'] = "Entering event for today, not displayed";
 				}

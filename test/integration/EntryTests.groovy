@@ -20,6 +20,7 @@ class EntryTests extends GroovyTestCase {
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime
+	Date lateCurrentTime
 	Date endTime
 	TimeZone timeZone // simulated server time zone
 	Date baseDate
@@ -35,6 +36,7 @@ class EntryTests extends GroovyTestCase {
 		dateFormat.setTimeZone(entryTimeZone)
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
+		lateCurrentTime = dateFormat.parse("July 3, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
 		lateBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
@@ -283,6 +285,36 @@ class EntryTests extends GroovyTestCase {
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 		}
+		
+		def activated = entry.activateGhostEntry(baseDate, lateCurrentTime)
+		assert activated.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:256)")
+		
+		def activated2 = entry.activateGhostEntry(baseDate, currentTime)
+		assert activated2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:256)")
+	}
+	
+	@Test
+	void testRepeatNonContinuous() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", earlyBaseDate, true), null)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
+		def entries = Entry.fetchListData(user, baseDate)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+		}
+		
+		def activated = entry.activateGhostEntry(baseDate, lateCurrentTime)
+		v = activated.valueString()
+		assert activated.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
+		
+		def activated2 = entry.activateGhostEntry(baseDate, currentTime)
+		v = activated2.valueString()
+		assert activated2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
+
+		def activated3 = entry.activateGhostEntry(earlyBaseDate, currentTime)
+		v = activated3.valueString()
+		assert activated3.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:1)")
+		assert activated3 == entry
 	}
 	
 	@Test

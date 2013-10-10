@@ -387,15 +387,56 @@ class DataController extends LoginController {
 
 	def activateGhostEntry() {
 		debug "DataController.activateGhostEntry()"
-
 		// Code to toggle ghost entries.
 
-		// dummy value for now. Expecting new entry as json.
-		renderJSONGet([id: 513, amount: 13, amountPrecision: 3, date: new Date(), description: "aspirin", units: "mg", comment: "", timeZoneOffsetSecs: 23400, datePrecisionSecs: 180])
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		Entry entry = Entry.get(params.entryId.toLong());
+		def userId = entry.getUserId();
+		
+		def currentTime = params.date == null ? null : parseDate(params.date)
+		
+		if (entry.getUserId() != sessionUser().getId()) {
+			renderStringGet('You do not have permission to activate this entry.')
+		}
+		Entry newEntry = entry.activateGhostEntry(currentTime, new Date()) // TODO: now should probably come from client, not server; fix later
+		if (newEntry != null) {
+			renderJSONGet(newEntry.getJSONDesc())
+		} else
+			renderJSONGet("Failed to activate entry due to internal server error.")
 	}
 
 	def deleteGhostEntry(Long entryId) {
 		// Code to delete ghost entry
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		def entry = Entry.get(params.entryId.toLong());
+		def userId = entry.getUserId();
+		
+		def currentTime = params.date == null ? null : parseDate(params.date)
+		
+		if (entry.getUserId() != sessionUser().getId()) {
+			renderStringGet('You do not have permission to delete this entry.')
+		} else if (currentTime.getTime() - entry.getDate().getTime() < 24 * 60 * 60000L) {
+			// Actually delete the ghost entry
+			Entry.delete(entry, record)
+		} else {
+			entry.setRepeatEnd(currentTime)
+			Utils.save(entry, true)
+		}
+		
 		renderStringGet("Success")
 	}
 

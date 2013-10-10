@@ -169,8 +169,10 @@ function deleteEntryId(entryId) {
 	if($entryToDelete.data("isGhost")) {
 		$.getJSON("/home/deleteGhostEntry?entryId=" + entryId +
 				"&date=" + cachedDateUTC + "&" + getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
-				function() {
-					$entryToDelete.remove();
+				function(ret) {
+					if (checkData(entries, 'success', "Error deleting entry")) {
+						$entryToDelete.remove();
+					}
 				});
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId

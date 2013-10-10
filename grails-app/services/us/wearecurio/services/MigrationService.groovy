@@ -27,12 +27,13 @@ class MigrationService {
 	public static final long REPEAT_END_NULLABLE_ID = 36L
 	public static final long NULLIFY_OLD_REPEATS_ID = 42L
 	public static final long RANGE_OLD_REPEATS_ID = 43L
+	public static final long REPEAT_END_INDEX_ID = 44L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
 	
 	public def sql(String statement) {
-		databaseService.sqlNoRollback(statement)
+		return databaseService.sqlNoRollback(statement)
 	}
 	
 	public def sqlRows(String statement, args = []) {
@@ -112,6 +113,9 @@ class MigrationService {
 				
 				Utils.save(entry, true)
 			}
+		}
+		tryMigration(REPEAT_END_INDEX_ID) {
+			sql("create index repeat_end_index ON entry (repeat_end)")
 		}
 	}
 }
