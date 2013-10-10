@@ -5,7 +5,7 @@ import us.wearecurio.services.FitBitDataService;
 
 class FitbitNotificationJob extends us.wearecurio.utility.TimerJob {
     static triggers = {
-		simple startDelay: 1 * MINUTE, repeatInterval: 15 * MINUTE
+		simple startDelay: 2 * MINUTE, repeatInterval: 15 * MINUTE
     }
 
 	def group = "curious"
