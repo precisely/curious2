@@ -320,6 +320,26 @@ class Entry {
 		}
 	}
 	
+	/**
+	 * Delete a ghost entry on a given baseDate and for a current date
+	 * @param ghostTime
+	 * @param currentDate
+	 * @return
+	 */
+	public static deleteGhost(Entry entry, Date baseDate) {
+		long entryTime = entry.getDate().getTime()
+		long baseDateTime = baseDate.getTime()
+		if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
+			TagStatsRecord record = new TagStatsRecord()
+			Entry.delete(entry, record)
+		} else if (entryTime <= baseDateTime) { // this should always be true
+			entry.setRepeatEnd(baseDate)
+			Utils.save(entry, true)
+		} else {
+			log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
+		}
+	}
+	
 	// look for any duration entry that needs to be updated after a delete
 	protected Entry preDeleteProcessing() {
 		// if this is the start entry for a subsequent end entry, find it and queue it for updating
@@ -866,18 +886,6 @@ class Entry {
 		}
 	}
 	
-	def deleteGhost(Date ghostTime, Date currentDate) {
-		if (this.repeatType == null) return
-		
-		if (this.repeatType.isContinuous()) {
-			this.repeatEnd = ghostTime
-			Utils.save(this)
-		} else {
-			this.repeatEnd = currentDate
-			Utils.save(this)
-		}
-	}
-	
 	private createRepeat() {
 		if (this.repeatType == null) return
 		
@@ -970,7 +978,7 @@ class Entry {
 		def m = [:]
 		m['timeZoneOffsetSecs'] = this.timeZoneOffsetSecs
 		m['description'] = this.tag.getDescription()
-		m['amount'] = this.amount
+		m['amount'] = this.repeatType.isReminder() ? null : this.amount
 		m['units'] = this.units
 		m['comment'] = this.comment
 		m['repeatType'] = this.repeatType
@@ -1078,44 +1086,58 @@ class Entry {
 	static SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 	static def fetchListData(User user, Date date) {
-		def c = Entry.createCriteria()
-		
-		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
-				+ "and entry.tag_id = tag.id " \
-				+ "order by tag.description asc"
-		
-		def rawResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), startDate:date, continuousIds:CONTINUOUS_IDS])
-		
-		def results = []
-		
-		for (result in rawResults) {
-			Entry entry = Entry.get(result['id'])
-			def desc = entry.getJSONDesc()
-			desc['date'] = result['dateTime']
-			results.add(desc)
-		}
-
+		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) or " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds))) " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 				
-		rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS])
+		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS])
+
+		def timedResults = []
+		
+		Set resultTagIds = new HashSet<Long>()
 		
 		for (result in rawResults) {
 			Entry entry = Entry.get(result['id'])
 			def desc = entry.getJSONDesc()
 			desc['date'] = result['dateTime']
 			desc['repeatType'] = entry.repeatType?.id
-			results.add(desc)
+			timedResults.add(desc)
+			resultTagIds.add(entry.getTag().getId())
+		}
+		
+		// get continuous repeating elements
+		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
+				+ "and entry.tag_id = tag.id " \
+				+ "order by tag.description asc"
+		
+		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), startDate:date, continuousIds:CONTINUOUS_IDS])
+		
+		def results = []
+		
+		// add continuous elements that aren't already in the timed list
+		for (result in continuousResults) {
+			Entry entry = Entry.get(result['id'])
+			if (!resultTagIds.contains(entry.getTag().getId())) {
+				def desc = entry.getJSONDesc()
+				desc['date'] = result['dateTime']
+				desc['repeatType'] = entry.repeatType?.id
+				results.add(desc)
+			}
 		}
 
-		return Utils.listJSONDesc(results)
+		// add timed results
+		for (result in timedResults) {
+			results.add(result)
+		}
+		
+		return results
 	}
 
 	static def fetchListDataNoRepeats(User user, Date date) {
@@ -1573,7 +1595,7 @@ class Entry {
 			if (date != null) {
 				date = time;
 				if (!(defaultToNow && today)) { // only default to now if entry is for today
-					date = new Date(baseDate.getTime() + 12 * 3600000L);
+					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					log.debug "SETTING DATE TO " + Utils.dateToGMTString(date) 
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else {
@@ -1727,7 +1749,10 @@ class Entry {
 						retVal['repeatType'] = RepeatType.WEEKLYGHOST
 					}
 				}
-
+				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
+					retVal['date'] = new Date(baseDate.getTime() + HALFDAYTICKS);
+					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
+				}
 			} else {
 				if (foundAmount) {
 					retVal['repeatType'] = retVal['repeatType'].toggleGhost()

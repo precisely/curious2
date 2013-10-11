@@ -425,17 +425,12 @@ class DataController extends LoginController {
 		def entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 		
-		def currentTime = params.date == null ? null : parseDate(params.date)
+		def currentDate = params.date == null ? null : parseDate(params.date)
 		
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to delete this entry.')
-		} else if (currentTime.getTime() - entry.getDate().getTime() < 24 * 60 * 60000L) {
-			// Actually delete the ghost entry
-			Entry.delete(entry, record)
-		} else {
-			entry.setRepeatEnd(currentTime)
-			Utils.save(entry, true)
-		}
+		} else
+			Entry.deleteGhost(entry, currentDate)
 		
 		renderStringGet("Success")
 	}
