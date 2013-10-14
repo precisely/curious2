@@ -27,6 +27,7 @@ class EntryTests extends GroovyTestCase {
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
 	Date lateBaseDate
+	Date microlateCurrentTime
 	User user
 	Long userId
 	
@@ -44,6 +45,7 @@ class EntryTests extends GroovyTestCase {
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
 		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 2:15 pm")
 		lateBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
+		microlateCurrentTime = dateFormat.parse("July 3, 2010 1:58 pm")
 		
 		def params = [username:'y', sex:'F', \
 			last:'y', email:'y@y.com', birthdate:'01/01/2001', \
@@ -403,9 +405,9 @@ class EntryTests extends GroovyTestCase {
 	void testRemind() {
 		TagStatsRecord record = new TagStatsRecord()
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread remind", baseDate, true), record)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm remind", baseDate, true), record)
 		def v = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517)")
 
 		// tag stats for reminders should be "none" value for the amount
 		def tagStats = record.getOldTagStats()
@@ -416,7 +418,19 @@ class EntryTests extends GroovyTestCase {
 		def entries = Entry.fetchListData(user, lateBaseDate)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
-			assert entryDesc['date'].toString().equals("2010-07-03 18:30:00.0")
+			assert entryDesc['date'].toString().equals("2010-07-03 17:00:00.0")
+		}
+		
+		// repeat should be here
+		def entryIds = Entry.fetchReminders(user, microlateCurrentTime, 5 * 60)
+		for (entryId in entryIds) {
+			assert entryId['id'] == entry.getId()
+		}
+		
+		// should be no repeats here
+		entryIds = Entry.fetchReminders(user, microlateCurrentTime, 100L)
+		for (entryId in entryIds) {
+			assert false
 		}
 	}
 

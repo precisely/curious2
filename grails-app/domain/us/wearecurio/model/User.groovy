@@ -151,6 +151,7 @@ class User implements NameEmail {
 		def c = Entry.createCriteria()
 
 		def remindEvents = c {
+			eq("userId", getId())
 			eq("tag", tag)
 			isNull("date")
 			maxResults(1)

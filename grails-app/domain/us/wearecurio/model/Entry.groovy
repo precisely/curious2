@@ -1085,6 +1085,15 @@ class Entry {
 
 	static SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
+	static def fetchReminders(User user, Date startDate, long intervalMillis) {
+		String queryStr = "select distinct entry.id " \
+		+ "from entry entry where entry.user_id = :userId and " \
+		+ "entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :remindBit <> 0) " \
+		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :intervalMs"
+		
+		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:startDate, intervalMs:intervalMillis, remindBit:RepeatType.REMIND_BIT])
+	}
+	
 	static def fetchListData(User user, Date date) {
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
@@ -1107,7 +1116,9 @@ class Entry {
 			desc['date'] = result['dateTime']
 			desc['repeatType'] = entry.repeatType?.id
 			timedResults.add(desc)
-			resultTagIds.add(entry.getTag().getId())
+			if (!entry.repeatType.isGhost()) {
+				resultTagIds.add(entry.getTag().getId())
+			}
 		}
 		
 		// get continuous repeating elements
@@ -1166,7 +1177,7 @@ class Entry {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate
 		
-		def map = [userId:user.getId(), tagIds:tagIds]
+		def map = [userId:user.getId(), tagIds:tagIds, ghostIds:GHOST_IDS]
 		
 		String queryStr = "from Entry entry where entry.userId = :userId and entry.tag.id in (:tagIds) "
 		
@@ -1180,7 +1191,7 @@ class Entry {
 			map['endDate'] = endDate
 		}
 		
-		queryStr += "and entry.date is not null and entry.amount is not null order by entry.date asc"
+		queryStr += "and entry.date is not null and entry.amount is not null and (not entry.repeatType.id in (:ghostIds)) order by entry.date asc"
 
 		Utils.listJSONShortDesc(Entry.executeQuery(queryStr, map))
 	}
@@ -1195,7 +1206,7 @@ class Entry {
 				endDate = new Date(endDate.getTime() + HALFDAYTICKS)
 		}
 		
-		def map = [userId:user.getId(), tagIds:tagIds]
+		def map = [userId:user.getId(), tagIds:tagIds, ghostIds:GHOST_IDS]
 		
 		int timeZoneHours = (timeZoneSec / 3600)
 		int timeZoneMinutes = ((int)((timeZoneSec < 0 ? -timeZoneSec : timeZoneSec) / 60)) % 60
@@ -1205,7 +1216,7 @@ class Entry {
 		def sourceTimeZone = sumNights ? '+12:00' : '+00:00';
 
 		String queryStr = "select date as dt, sum(amount) as amount from Entry entry where entry.userId = :userId and entry.amount IS NOT NULL and " \
-			+ "entry.tag.id in (:tagIds) "
+			+ "entry.tag.id in (:tagIds) and (not entry.repeatType.id in (:ghostIds)) "
 		
 		if (startDate != null) {
 			queryStr += "and entry.date >= :startDate "
