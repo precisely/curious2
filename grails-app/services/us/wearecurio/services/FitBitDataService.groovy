@@ -18,6 +18,7 @@ import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
 
 class FitBitDataService {
 	UrlService urlService
+	def grailsApplication
 	
 	static class Api extends DefaultApi10a {
 		@Override
@@ -48,11 +49,6 @@ class FitBitDataService {
 	}
 	
 	static transactional = true
-	
-	static String API_KEY = "b2610f22a2314bdc804c3463aa666876"
-	static String API_SECRET = "2b7472411c834c4f9b8c8e611d8e6350"
-	static String API_VERSION = "1"
-	
 
 	Map<String, Token> requestMap = new HashMap<String, Token>()
 	
@@ -61,8 +57,8 @@ class FitBitDataService {
 	protected Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 	
 	def initialize() {
-		service = new ServiceBuilder().provider(Api.class).apiKey(API_KEY)
-				.callback(urlService.make(controller:'home', action:'doregisterfitbit')).apiSecret(API_SECRET)
+		service = new ServiceBuilder().provider(Api.class).apiKey(grailsApplication.config.api.fitbit.key)
+				.callback(urlService.make(controller:'home', action:'doregisterfitbit')).apiSecret(grailsApplication.config.api.fitbit.secret)
 				.signatureType(SignatureType.Header).build()
 	}
 	
@@ -115,7 +111,7 @@ class FitBitDataService {
 	 * @return
 	 */
 	def getUserInfo(def accessToken) {
-		OAuthRequest request = new OAuthRequest(Verb.GET, "http://api.fitbit.com/${API_VERSION}/user/-/profile.json")
+		OAuthRequest request = new OAuthRequest(Verb.GET, "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user/-/profile.json")
 		service.signRequest(accessToken, request)
 		debug request.getHeaders().dump()
 		Response response = request.send()
@@ -126,7 +122,7 @@ class FitBitDataService {
 	}
 	
 	def subscribe(def accessToken,def subscriptionId) {
-		OAuthRequest request = new OAuthRequest(Verb.POST, "http://api.fitbit.com/${API_VERSION}/user/-/apiSubscriptions/${subscriptionId}.json")
+		OAuthRequest request = new OAuthRequest(Verb.POST, "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json")
 		service.signRequest(accessToken, request)
 		debug request.getHeaders().dump()
 		Response response = request.send()
@@ -172,30 +168,69 @@ class FitBitDataService {
 				def collectionType = notification.collectionType
 				def requestUrl
 				if (collectionType.equals("foods")) {
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user"+
 						"/${notification.ownerId}/${collectionType}/log/date/${formatter.format(notification.date)}.json"
 				} else if (collectionType.equals('body')) {
 					//Getting body measurements
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user"+
 						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					return false
 	
 					//Getting body weight
-					/*requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					/*requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user"+
 						"/${notification.ownerId}/${collectionType}/log/weight/date/${formatter.format(notification.date)}.json"
 					this.getData(account, requestUrl, false)
 	
 					//Getting body fat
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user"+
 						"/${notification.ownerId}/${collectionType}/log/fat/date/${formatter.format(notification.date)}.json"
 					this.getData(account, requestUrl, false)*/
 				} else if (collectionType.equals('activities')) {
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user" +
+					requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user" +
 						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					def activityData = this.getData(account, requestUrl, false)
-					def setName = formatter.format(notification.date)+"activity"
+					def setName = formatter.format(notification.date)+"activityfitbit"
 					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName, userId: account.userId])
+					boolean veryActiveD, moderatelyActiveD, lightlyActiveD, sedentaryActiveD, fairlyActiveD 
+					veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
+					
+					if (activityData.summary) {
+						fitBitTagUnitMap.buildEntry("steps",activityData.summary?.steps.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary?.fairlyActiveMinutes <= 0) {
+						fairlyActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",
+						activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
+						notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
+						lightlyActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",
+							activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
+					
+					if(!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
+						sedentaryActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("sedentaryMinutes",
+							activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}	
+					
+					if(!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
+						veryActiveD = false
+					} else {
+						fitBitTagUnitMap.buildEntry("veryActiveMinutes",
+							activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
+							notification.date,[setName:setName])
+					}
 					
 					activityData.summary.distances.each { distance ->
 						def entryDate = notification.date
@@ -211,24 +246,22 @@ class FitBitDataService {
 						}
 						if (!distance.activity.equals('loggedActivities')) { //Skipping loggedActivities
 							debug "Importing activity: " + distance.activity
-							fitBitTagUnitMap.buildEntry("miles",distance.distance.toBigDecimal(),account.userId,
-								entryDate,[setName:setName,tagName:"activity $distance.activity"])
+							if ((!veryActiveD && distance.activity.equals("veryActive"))
+								||(!moderatelyActiveD && distance.activity.equals("moderatelyActive"))
+								||(!lightlyActiveD && distance.activity.equals("lightlyActive"))
+								||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
+								println "Discarding activity with 0 time"
+							} else {
+								fitBitTagUnitMap.buildEntry(distance.activity,distance.distance.toBigDecimal(),account.userId,
+								entryDate,[setName:setName])
+							}
 						}
 					}
 					
-					fitBitTagUnitMap.buildEntry("steps",activityData.summary.steps.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("sedentaryMinutes",activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
-					fitBitTagUnitMap.buildEntry("veryActiveMinutes",activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
+					
 				} else if (collectionType.equals('sleep')) {
 					debug "Fetch sleep data next."
-					requestUrl = "http://api.fitbit.com/${API_VERSION}/user"+
+					requestUrl = "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user"+
 					"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					def sleepData = this.getData(account, requestUrl, false)
 					sleepData.sleep.each { logEntry ->
@@ -239,7 +272,8 @@ class FitBitDataService {
 							entryDate,[setName:logEntry.logId])
 						fitBitTagUnitMap.buildEntry("awakeningsCount",logEntry.awakeningsCount.toBigDecimal(),account.userId,
 							entryDate,[setName:logEntry.logId])
-						fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
+						if (logEntry.efficiency > 0 )
+							fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
 							entryDate,[setName:logEntry.logId])
 					}
 				}
@@ -265,7 +299,11 @@ class FitBitDataService {
 		def jsonResponse = JSON.parse(response.getBody())
 		debug "Fetch collectionType data:" + jsonResponse
 		debug "Response Code " + response.getCode()
-		return jsonResponse
+		if (response.getCode() == 401) {
+			false
+		} else {
+			return jsonResponse
+		}
 	}
 
 }
