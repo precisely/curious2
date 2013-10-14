@@ -944,6 +944,10 @@ div.plotLine:hover span {
 .entryUnits {
 	color: #5A6263;
 }
+
+.ui-selected .entryDelete {
+	display: block !important;
+}
 .entryDelete {
 	display:none;
 	float:right;
@@ -1006,7 +1010,6 @@ div.plotLine:hover span {
 
 body.track-page #datepicker {
 	width: 260px;
-	text-align: center;
 }
 body.track-page ol#entry0 li.entry.ghost {
 	color: #A9A9A9;

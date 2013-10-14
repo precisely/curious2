@@ -132,13 +132,14 @@ function displayEntry(entry, isUpdating) {
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '</span><a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+			+ '</span><a href="#" style="padding-left:0;" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
 	} else {
 		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>');
 	}
+	$("#entry0 li#entryid" + id).data("entry", entry);
 	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
 }
 
@@ -197,7 +198,8 @@ function deleteCurrentEntry() {
 
 function updateEntry(entryId, text, defaultToNow) {
 	cacheNow();
-	
+	var oldEntry = getEntryElement(entryId);
+	$(".content-wrapper",oldEntry).html(text);
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
@@ -364,9 +366,12 @@ $(function(){
 		var $selectee = $("#" + ui.selected.id);
 		selected($selectee);
 	});
+	
+	// Gets called on selection of the entry
 	function selected($selectee) {
 		var state = $selectee.data('entryIsSelected');
 		var $contentWrapper = $selectee.find(".content-wrapper");
+		if ($("#tagTextInput").size() == 1) return;
 		$selectee.siblings().data('entryIsSelected', 0);
 
 		if (state == undefined || state == 0) {
@@ -378,9 +383,8 @@ $(function(){
 
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
-
 			$contentWrapper.hide();
-			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 684px;"></input>');
 
 			// Binding blur event on element instead of globally to prevent concurrent exception.
 			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
