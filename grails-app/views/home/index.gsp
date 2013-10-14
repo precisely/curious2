@@ -366,9 +366,12 @@ $(function(){
 		var $selectee = $("#" + ui.selected.id);
 		selected($selectee);
 	});
+	
+	// Gets called on selection of the entry
 	function selected($selectee) {
 		var state = $selectee.data('entryIsSelected');
 		var $contentWrapper = $selectee.find(".content-wrapper");
+		if ($("#tagTextInput").size() == 1) return;
 		$selectee.siblings().data('entryIsSelected', 0);
 
 		if (state == undefined || state == 0) {
@@ -380,7 +383,6 @@ $(function(){
 
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
-
 			$contentWrapper.hide();
 			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
 
