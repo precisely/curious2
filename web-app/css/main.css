@@ -944,6 +944,10 @@ div.plotLine:hover span {
 .entryUnits {
 	color: #5A6263;
 }
+
+.ui-selected .entryDelete {
+	display: block !important;
+}
 .entryDelete {
 	display:none;
 	float:right;

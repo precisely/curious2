@@ -132,7 +132,7 @@ function displayEntry(entry, isUpdating) {
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '</span><a href="#" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+			+ '</span><a href="#" style="padding-left:0;" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
@@ -384,7 +384,7 @@ $(function(){
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
 			$contentWrapper.hide();
-			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 660px;"></input>');
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 684px;"></input>');
 
 			// Binding blur event on element instead of globally to prevent concurrent exception.
 			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
