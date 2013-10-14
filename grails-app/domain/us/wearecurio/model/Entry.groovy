@@ -1116,7 +1116,7 @@ class Entry {
 			desc['date'] = result['dateTime']
 			desc['repeatType'] = entry.repeatType?.id
 			timedResults.add(desc)
-			if (!entry.repeatType.isGhost()) {
+			if (!entry.repeatType?.isGhost()) {
 				resultTagIds.add(entry.getTag().getId())
 			}
 		}
