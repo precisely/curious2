@@ -1663,10 +1663,10 @@ function PlotLine(p) {
 		
 		var now = new Date();
 		
-		var method = (this.sumData || this.sumNights) ? "getSumData" : "getData";
+		var method = (this.sumData || this.sumNights) ? "getSumPlotData" : "getPlotData";
 		var plotLine = this;
 		
-		$.getJSON(makeGetUrl(method), getCSRFPreventionObject("getDataCSRF", {tags: $.toJSON(this.getTags()),
+		$.getJSON(makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				sumNights:this.sumNights ? "true" : "",

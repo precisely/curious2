@@ -125,12 +125,12 @@ App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grai
  * @param prefix any string to append before generated url like: <b>&</b>.
  * @returns string representation of CSRF parameters.
  */
-function getCSRFPreventionURI(key, prefix, suffix) {
+function getCSRFPreventionURI(key) {
 	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
 	if(App.CSRF[key] == undefined) {
 		console.error("Missing csrf prevention token for key", key);
 	}
-	return prefix + preventionURI + (suffix ? suffix : "");
+	return preventionURI;
 }
 
 /**

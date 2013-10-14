@@ -367,9 +367,18 @@ ul.tags li.tag {
 	background-position: -64px 0 !important;
 }
 
+#tagNav li.treeItemView .ui-icon-pin-w, #tagNav li.treeItemView .ui-icon-pin-s,
 li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil {
 	float: right;
 	display:block;
+}
+
+#tagNav li.treeItemView .ui-icon-pin-w, .leftNav li.treeItemView .ui-icon-pin-w  {
+	display: none;
+}
+
+#tagNav li.treeItemView.highlight .ui-icon-pin-w {
+	display: block;
 }
 
 li.wildcardTagGroup.active ul .ui-icon-close {
@@ -987,6 +996,25 @@ div.plotLine:hover span {
 	width: 75%;
 }
 
- /**
-  * Generic & common stuff, useful for every where. Ends here.
-  */
+/**
+ * Generic & common stuff, useful for every where. Ends here.
+ */
+
+/**
+ * Styles for track page for web application.
+ */
+
+body.track-page #datepicker {
+	width: 260px;
+	text-align: center;
+}
+body.track-page ol#entry0 li.entry.ghost {
+	color: #A9A9A9;
+}
+body.track-page ol#entry0 li.entry.ghost a.entryDelete {
+	display: inline;
+}
+
+/**
+ * Styles for track page for web application. Ends here.
+ */

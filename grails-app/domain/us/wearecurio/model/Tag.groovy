@@ -24,7 +24,7 @@ class Tag {
 	static def create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
-		Utils.save(tag)
+		Utils.save(tag, true)
 		return tag
 	}
 

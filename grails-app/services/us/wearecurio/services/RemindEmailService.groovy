@@ -43,24 +43,18 @@ class RemindEmailService {
 			def lhp = u.hasMetaTag(lhpMemberTag)
 			def url = lhp ? "https://lamhealth.wearecurio.us/mobile/index" : "https://dev.wearecurio.us/mobile/index"
 
-			def remindEvents = c {
-				or {
-					eq("comment", "remind")
-					eq("comment", "remind daily")
-					eq("comment", "remind weekly")
-				}
-				eq("userId", userId)
-				ge("date", oldDate)
-				lt("date", now)
-			}
+			def remindEvents = Entry.fetchReminders(user, oldDate, (now.getTime() - oldDate.getTime()) / 1000L)
 			
-			for (Entry event in remindEvents) {
-				log.debug "Trying to send reminder email " + event + " to " + email
-				mailService.sendMail {
-					to email
-					from "contact@wearecurio.us"
-					subject "Reminder to track:" + event.getTag().getDescription()
-					body url
+			for (def eventId in remindEvents) {
+				def event = Entry.get(eventId)
+				if (event != null) {
+					log.debug "Trying to send reminder email " + event + " to " + email
+					mailService.sendMail {
+						to email
+						from "contact@wearecurio.us"
+						subject "Reminder to track:" + event.getTag().getDescription()
+						body url
+					}
 				}
 			}
 		}

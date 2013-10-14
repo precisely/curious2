@@ -10,7 +10,6 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import us.wearecurio.model.User
-import us.wearecurio.services.RepeatingEventService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
@@ -26,8 +25,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Date earlyBaseDate
 	Date currentTime
 	Date endTime
-	Date repeatTime
-	Date noRepeatTime
 	TimeZone timeZone // simulated server time zone
 	Date baseDate
 
@@ -42,8 +39,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
-		repeatTime = new Date(currentTime.getTime()) // "repeat time" for tests of repeating entries 1 day from now
-		noRepeatTime = new Date(currentTime.getTime() - (1000L * 60 * 60 * 24))
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
 	}
 
@@ -68,12 +63,12 @@ class DataControllerTests extends CuriousControllerTestCase {
     }
 
 	@Test
-	void testGetEntriesData() {
+	void testGetListData() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
@@ -81,19 +76,19 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['userId'] = userId.toString()
 		controller.params['date'] = 'Wed, 1 Jul 2010 00:00:00 -0000'
 		
-		controller.getEntriesData()
+		controller.getListData()
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
 		assert controller.response.contentAsString.endsWith(',"datePrecisionSecs":180,"timeZoneOffsetSecs":-14400,"description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null}])')
     }
 
 	@Test
-	void testGetData() {
+	void testPlotData() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
@@ -103,21 +98,21 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['startDate'] = 'Wed, 1 Jul 2009 00:00:00 -0000'
 		controller.params['endDate'] = 'Wed, 1 Jul 2011 00:00:00 -0000'
 		
-		controller.getData()
+		controller.getPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
 		assert controller.response.contentAsString.endsWith(',1,"bread"]])')
     }
 
 	@Test
-	void testGetSumData() {
+	void testGetSumPlotData() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
 		
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
@@ -127,7 +122,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['sumNights'] = 'true'
 		controller.params['timeZoneOffset'] = '36000'
 		
-		controller.getSumData()
+		controller.getSumPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
 		assert controller.response.contentAsString.endsWith(',2]])')
@@ -139,9 +134,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.session.userId = userId
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
 		
 		controller.params['callback'] = 'callback'
 		controller.params['sort'] = 'alpha'
@@ -159,9 +154,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.session.userId = userId
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
 		
 		controller.params['callback'] = 'callback'
 		controller.params['tags'] = "['bread']"
@@ -241,7 +236,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void testDeleteEntryData() {
 		DataController controller = new DataController()
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
 		controller.session.userId = userId
@@ -290,7 +285,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void testAutocompleteData() {
 		DataController controller = new DataController()
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 
@@ -500,9 +495,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void testExport() {
 		DataController controller = new DataController()
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), noRepeatTime, null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), noRepeatTime, null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), noRepeatTime, null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), null)
 		
 		def out = new ByteArrayOutputStream()
 		
@@ -511,9 +506,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def outString = out.toString()
 		
 		assert outString.equals('"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision"' \
+			+ "\n" + '"2010-07-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",256,3,86400' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180' \
-			+ "\n" + '"2010-07-01 23:30:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,180' \
 			+ "\n")
 	}
 
@@ -537,9 +532,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		def testStr = "Entry('bread 1.000000000 24:30 ', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:null)" \
 				+ "Entry('bread 1.000000000 slice 24:30 ', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:null)" \
-				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:null)" \
-				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:null)" \
-				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:null)"
+				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:1)" \
+				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:1)" \
+				+ "Entry('aspirin 1.000000000 tablet 24:30 repeat daily', date:2010-07-01T23:30:00, datePrecisionSecs:180, repeatType:1)"
 
 		def c = 0;
 				
