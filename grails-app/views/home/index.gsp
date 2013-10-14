@@ -139,6 +139,7 @@ function displayEntry(entry, isUpdating) {
 	} else {
 		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>');
 	}
+	$("#entry0 li#entryid" + id).data("entry", entry);
 	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
 }
 
@@ -197,7 +198,8 @@ function deleteCurrentEntry() {
 
 function updateEntry(entryId, text, defaultToNow) {
 	cacheNow();
-	
+	var oldEntry = getEntryElement(entryId);
+	$(".content-wrapper",oldEntry).html(text);
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
