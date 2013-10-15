@@ -813,10 +813,19 @@ $(function(){
 				selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
 
 				// Binding blur event on element instead of globally to prevent concurrent exception.
-				$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
+				var textInput = $("#tagTextInput").val(entryText).focus();
+				
+				textInput.on("blur", function(e) {
 					var $unselectee = $(this).parent("li");
 					checkAndUpdateEntry($unselectee);
 				})
+				textInput.keyup(function(e) {
+					if (e.keyCode == 13) {
+						var $unselectee = $(this).parent("li");
+						checkAndUpdateEntry($unselectee);
+					}
+				});
+				
 				if(selectRange) {
 					$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 				}

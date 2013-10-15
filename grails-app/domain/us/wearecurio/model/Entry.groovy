@@ -1047,6 +1047,8 @@ class Entry {
 		
 		def newDescription = m['description']
 		
+		if (newDescription == null) return null
+		
 		newDescription = newDescription.toLowerCase()
 		
 		def (newBaseTag, newDurationType) = getDurationInfoFromStrings(newDescription, m['units'])
