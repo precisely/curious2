@@ -124,7 +124,7 @@ class Entry {
 		}
 		
 		def RepeatType forUpdate() {
-			return RepeatType.get(this.id & !(CONTINUOUS_BIT | GHOST_BIT))
+			return RepeatType.get(this.id & ~(CONTINUOUS_BIT | GHOST_BIT))
 		}
 	}
 	
