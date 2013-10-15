@@ -152,7 +152,7 @@ function displayEntry(entry, isUpdating, args) {
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
 	} else {
-		var newEntryContent = '<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
+		var newEntryContent = '<li id="entryid' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
 		if($entryToReplace) {
 			$entryToReplace.replaceWith(newEntryContent);
 		} else if($appendAfterEntry) {
@@ -161,9 +161,8 @@ function displayEntry(entry, isUpdating, args) {
 			$("#entry0").append(newEntryContent);
 		}
 	}
-	$("#entry0 li#entryid" + id).data("entry", entry);
-	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
-	$("#entry0 li#entryid" + id).data("isContinuous", isContinuous);
+	var data = {entry: entry, entryId: id, isGhost: isGhostEntry, isContinuous: isContinuous};
+	$("#entry0 li#entryid" + id).data(data);
 }
 
 function displayEntries(entries) {
