@@ -104,7 +104,7 @@ class DataController extends LoginController {
 	protected def listEntries(User user, String dateStr) {
 		debug "DataController.listEntries() userId:" + user.getId() + ", dateStr:" + dateStr
 		
-		return Entry.fetchListData(user, parseDate(dateStr))
+		return Entry.fetchListData(user, parseDate(dateStr), new Date())
 	}
 	
 	protected def doParseCSVAcross(InputStream csvIn, Long userId) {
@@ -378,7 +378,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entries = Entry.fetchListDataNoRepeats(user, parseDate(params.date))
+		def entries = Entry.fetchListDataNoRepeats(user, parseDate(params.date), new Date())
 		
 		// skip continuous repeat entries with entries within the usage threshold
 
@@ -432,7 +432,7 @@ class DataController extends LoginController {
 		} else
 			Entry.deleteGhost(entry, currentDate)
 		
-		renderStringGet("Success")
+		renderStringGet("success")
 	}
 
 	def getListData() {
@@ -445,7 +445,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entries = Entry.fetchListData(user, parseDate(params.date))
+		def entries = Entry.fetchListData(user, parseDate(params.date), new Date())
 		
 		// skip continuous repeat entries with entries within the usage threshold
 

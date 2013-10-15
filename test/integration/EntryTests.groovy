@@ -20,13 +20,13 @@ class EntryTests extends GroovyTestCase {
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime
-	Date lateCurrentTime
 	Date endTime
 	TimeZone timeZone // simulated server time zone
 	Date baseDate
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
 	Date lateBaseDate
+	Date lateCurrentTime
 	Date microlateCurrentTime
 	User user
 	Long userId
@@ -286,7 +286,7 @@ class EntryTests extends GroovyTestCase {
 	void testRepeat() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
-		def entries = Entry.fetchListData(user, baseDate)
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 		}
@@ -307,7 +307,7 @@ class EntryTests extends GroovyTestCase {
 		
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
-		def entries = Entry.fetchListData(user, baseDate)
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 		}
@@ -332,12 +332,12 @@ class EntryTests extends GroovyTestCase {
 	void testDeleteContinuousRepeat() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
-		def entries = Entry.fetchListData(user, baseDate)
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 		}
 
-		def list = Entry.fetchListData(user, tomorrowBaseDate)
+		def list = Entry.fetchListData(user, tomorrowBaseDate, this.tomorrowCurrentTime)
 		
 		boolean foundRepeat = false
 		
@@ -352,7 +352,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert entry.getRepeatEnd().equals(tomorrowBaseDate)
 		
-		list = Entry.fetchListData(user, tomorrowBaseDate)
+		list = Entry.fetchListData(user, tomorrowBaseDate, this.tomorrowCurrentTime)
 		
 		for (record in list) {
 			if (record.id == entry.getId())
@@ -365,7 +365,7 @@ class EntryTests extends GroovyTestCase {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", earlyBaseDate, true), null)
 		def v = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
-		def entries = Entry.fetchListData(user, baseDate)
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 		}
@@ -415,7 +415,7 @@ class EntryTests extends GroovyTestCase {
 		assert tagStats.getLastAmountPrecision() < 0
 		
 		// query for reminder should generate the ghost entry only
-		def entries = Entry.fetchListData(user, lateBaseDate)
+		def entries = Entry.fetchListData(user, lateBaseDate, lateCurrentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 			assert entryDesc['date'].toString().equals("2010-07-03 17:00:00.0")
@@ -571,7 +571,7 @@ class EntryTests extends GroovyTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:768)")
 		println("Attempting to update")
 		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread repeat daily", baseDate, true), null)
-		def entries = Entry.fetchListData(user, lateBaseDate)
+		def entries = Entry.fetchListData(user, lateBaseDate, lateCurrentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 			assert entryDesc['date'].toString().equals("2010-07-03 15:00:00.0")
@@ -585,7 +585,7 @@ class EntryTests extends GroovyTestCase {
 		println("Attempting to update")
 		
 		Entry.update(entry, Entry.parse(currentTime, timeZone, "headache 8 at 3pm repeat daily", earlyBaseDate, true), null)
-		def entries = Entry.fetchListData(user, baseDate)
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
 			assert entryDesc['date'].toString().equals("2010-07-01 18:00:00.0")

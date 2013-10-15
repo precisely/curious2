@@ -871,8 +871,12 @@ class Entry {
 			Entry e = entries[0]
 			
 			if (e != null) {
-				e.setRepeatEnd(this.repeatEnd)
-				Utils.save(e)
+				long yesterday = this.date.getTime() - DAYTICKS
+				if (yesterday < e.getDate().getTime()) {
+					e.setRepeatEnd(e.getDate())
+				} else
+					e.setRepeatEnd(new Date(yesterday))
+				Utils.save(e, true)
 			}	
 		} else {
 			String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date < :entryDate and time(entry.date) = time(:entryDate) and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
@@ -881,8 +885,13 @@ class Entry {
 			
 			Entry e = entries[0]
 			
-			if (e != null)
-				e.setRepeatEnd(this.repeatEnd)
+			if (e != null) {
+				long yesterday = e.getDate().getTime() - DAYTICKS
+				if (yesterday < this.date.getTime()) {
+					repeatEnd = this.date
+				} else
+					repeatEnd = new Date(yesterday)
+			}
 		}
 	}
 	
@@ -900,7 +909,11 @@ class Entry {
 				Entry e = Entry.get(v['id'])
 				
 				if (e != null) {
-					e.setRepeatEnd(this.date)
+					long yesterday = this.date.getTime() - DAYTICKS
+					if (yesterday < e.getDate().getTime()) {
+						e.setRepeatEnd(e.getDate())
+					} else
+						e.setRepeatEnd(new Date(yesterday))
 					Utils.save(e, true)
 				}
 			}
@@ -914,7 +927,11 @@ class Entry {
 				Entry e = Entry.get(v['id'])
 				
 				if (e != null) {
-					repeatEnd = e.getDate()
+					long yesterday = e.getDate().getTime() - DAYTICKS
+					if (yesterday < this.date.getTime()) {
+						repeatEnd = this.date
+					} else
+						repeatEnd = new Date(yesterday)
 				}
 			}
 		} else {
@@ -928,7 +945,11 @@ class Entry {
 				Entry e = Entry.get(v['id'])
 				
 				if (e != null) {
-					e.setRepeatEnd(this.date)
+					long yesterday = this.date.getTime() - DAYTICKS
+					if (yesterday < e.getDate().getTime()) {
+						e.setRepeatEnd(e.getDate())
+					} else
+						e.setRepeatEnd(new Date(yesterday))
 					Utils.save(e, true)
 				}
 			}
@@ -942,14 +963,18 @@ class Entry {
 				Entry e = Entry.get(v['id'])
 				
 				if (e != null) {
-					repeatEnd = e.getDate()
+					long yesterday = e.getDate().getTime() - DAYTICKS
+					if (yesterday < this.date.getTime()) {
+						repeatEnd = this.date
+					} else
+						repeatEnd = new Date(yesterday)
 				}
 			}
 		}
 	}
 	
 	def unGhost() {
-		if (this.repeatType.isGhost()) {
+		if (this.repeatType?.isGhost()) {
 			this.repeatType = this.repeatType.toggleGhost()
 		}
 		
@@ -980,13 +1005,14 @@ class Entry {
 		m['description'] = this.tag.getDescription()
 		m['amount'] = this.repeatType.isReminder() ? null : this.amount
 		m['units'] = this.units
-		m['comment'] = this.comment
-		m['repeatType'] = this.repeatType
 		m['baseTag'] = this.baseTag
 		m['durationType'] = DurationType.NONE
 		m['amountPrecision'] = this.amountPrecision
 
 		if (this.repeatType.isContinuous()) {
+			// continuous tags create new tags based on the template
+			m['comment'] = ''
+			m['repeatType'] = null
 			if (diff >= 0 && diff < DAYTICKS) {
 				m['date'] = nowDate
 				m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
@@ -995,11 +1021,12 @@ class Entry {
 				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 			}
 			def retVal = Entry.create(userId, m, null)
-			retVal.unGhost()
 			
 			Utils.save(retVal, true)
 			return retVal
 		} else { // this repeat element isn't today
+			m['comment'] = this.comment
+			m['repeatType'] = this.repeatType
 			m['date'] = new Date(((date.getTime() - dayStartTime) % DAYTICKS + DAYTICKS) + dayStartTime)
 			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 			def retVal = Entry.create(userId, m, null)
@@ -1094,17 +1121,23 @@ class Entry {
 		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:startDate, intervalMs:intervalMillis, remindBit:RepeatType.REMIND_BIT])
 	}
 	
-	static def fetchListData(User user, Date date) {
+	static long abs(long x) { return x < 0 ? -x : x }
+	
+	static def fetchListData(User user, Date date, Date now) {
+		long nowTime = now.getTime()
+		
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) or " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) or " \
 				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 				
-		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS])
+		def queryMap = [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS]
+		
+		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []
 		
@@ -1116,19 +1149,19 @@ class Entry {
 			desc['date'] = result['dateTime']
 			desc['repeatType'] = entry.repeatType?.id
 			timedResults.add(desc)
-			if (!entry.repeatType?.isGhost()) {
+			/* if ((!entry.repeatType?.isGhost()) && abs(entry.getDate().getTime() - nowTime) < HOURTICKS) {
 				resultTagIds.add(entry.getTag().getId())
-			}
+			} */
 		}
 		
 		// get continuous repeating elements
 		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
+				+ "(entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
 		
-		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), startDate:date, continuousIds:CONTINUOUS_IDS])
+		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, queryMap)
 		
 		def results = []
 		
@@ -1744,7 +1777,7 @@ class Entry {
 						if (foundTime) {
 							retVal['repeatType'] = RepeatType.DAILY
 						} else {
-							retVal['repeatType'] = RepeatType.CONTINUOUS
+							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
 						}
 					} else {
 						if (foundTime) {

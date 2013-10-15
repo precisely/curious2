@@ -43,7 +43,7 @@ class RemindEmailService {
 			def lhp = u.hasMetaTag(lhpMemberTag)
 			def url = lhp ? "https://lamhealth.wearecurio.us/mobile/index" : "https://dev.wearecurio.us/mobile/index"
 
-			def remindEvents = Entry.fetchReminders(user, oldDate, (now.getTime() - oldDate.getTime()) / 1000L)
+			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
 			for (def eventId in remindEvents) {
 				def event = Entry.get(eventId)

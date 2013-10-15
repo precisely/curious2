@@ -85,6 +85,7 @@ var dayDuration = 86400000;
 
 var entrySelectData;
 var GHOST_BIT = 0x200;
+var CONTINUOUS_BIT = 0x100;
 
 function displayEntry(entry, isUpdating) {
 	var id = entry.id,
@@ -97,11 +98,14 @@ function displayEntry(entry, isUpdating) {
 		comment = entry.comment,
 		classes = "entry";
 
-	var isGhostEntry = false;
-	if(entry.repeatType) {
-		if((entry.repeatType & GHOST_BIT) != 0) {
+	var isGhostEntry = false, isContinuous = false;
+	if (entry.repeatType) {
+		if ((entry.repeatType & GHOST_BIT) != 0) {
 			isGhostEntry = true;
 			classes += " ghost";
+		}
+		if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
+			isContinuous = true;
 		}
 	}
 
@@ -141,6 +145,7 @@ function displayEntry(entry, isUpdating) {
 	}
 	$("#entry0 li#entryid" + id).data("entry", entry);
 	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
+	$("#entry0 li#entryid" + id).data("isContinuous", isContinuous);
 }
 
 function displayEntries(entries) {
@@ -171,7 +176,7 @@ function deleteEntryId(entryId) {
 		$.getJSON("/home/deleteGhostEntry?entryId=" + entryId +
 				"&date=" + cachedDateUTC + "&" + getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 				function(ret) {
-					if (checkData(entries, 'success', "Error deleting entry")) {
+					if (checkData(ret, 'success', "Error deleting entry")) {
 						$entryToDelete.remove();
 					}
 				});
@@ -440,15 +445,19 @@ $(function(){
 		}
 		var $ghostEntry = $(this);
 		var entryId = $ghostEntry.data("entry-id");
+		var isContinuous = $ghostEntry.data("isContinuous");
 		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
 				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
 				function(newEntry) {
-					var newEntryId = newEntry.id;
-					$ghostEntry.remove();
-					displayEntry(newEntry, false);
-					var $newEntry = $("li#entryid" + newEntryId);
-					selected($newEntry);
-					tagList.load();
+					if (checkData(newEntry)) {
+						var newEntryId = newEntry.id;
+						if (!isContinuous)
+							$ghostEntry.remove();
+						displayEntry(newEntry, false);
+						var $newEntry = $("li#entryid" + newEntryId);
+						selected($newEntry);
+						tagList.load();
+					}
 				});
 	})
 
