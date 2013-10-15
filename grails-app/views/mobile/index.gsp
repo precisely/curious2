@@ -826,6 +826,10 @@ $(function(){
 		}
 
 		$(document).on("click", "li.entry.ghost", function(e) {
+			if(e.target.nodeName && $(e.target).closest("a,img").length) {
+				// Not doing anything when delete icon clicked like 'cancel' option in selectable.
+				return false;
+			}
 			var $ghostEntry = $(this);
 			var entryId = $ghostEntry.data("entry-id");
 			var isContinuous = $ghostEntry.data("isContinuous");

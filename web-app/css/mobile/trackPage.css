@@ -343,14 +343,14 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	padding: 0 0;
 }
 
-#entry0 li {
+#entry0 li.entry {
 	font-size: 15px;
 	font-weight: bold;
 	margin: 0px;
 	padding: 14px 14px 14px 14px;
 }
 
-#entry0 li input {
+#entry0 li.entry input {
 	padding: 0;
 	outline: 0;
 	border: 0;
@@ -358,4 +358,12 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	vertical-align: baseline;
 	font-style: inherit;
 	width: 90%
+}
+
+#entry0 li.entry.ghost {
+	color: #A9A9A9;
+}
+
+#entry0 li.entry.ghost a.entryDelete {
+	display: inline;
 }
