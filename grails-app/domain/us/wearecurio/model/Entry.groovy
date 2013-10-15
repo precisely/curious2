@@ -122,6 +122,10 @@ class Entry {
 				return RepeatType.get(this.id & (~GHOST_BIT))
 			return RepeatType.get(this.id | GHOST_BIT)
 		}
+		
+		def RepeatType forUpdate() {
+			return RepeatType.get(this.id & !(CONTINUOUS_BIT | GHOST_BIT))
+		}
 	}
 	
 	public static def DAILY_IDS = [ RepeatType.DAILY.getId(), RepeatType.DAILYGHOST.getId(), RepeatType.REMINDDAILY.getId(), RepeatType.REMINDDAILYGHOST.getId() ]
@@ -1082,7 +1086,7 @@ class Entry {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		setRepeatType(m['repeatType'])
+		setRepeatType(m['repeatType']?.forUpdate()) // do not set continuous or ghost repeat types on edit
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
