@@ -97,11 +97,14 @@ function displayEntry(entry, isUpdating, args) {
 		units = entry.units,
 		comment = entry.comment,
 		classes = "entry",
-		$entryToReplace;
+		$entryToReplace, $appendAfterEntry;
 		
 	if(args && args instanceof Object) {
 		if(args.replaceEntry) {
 			$entryToReplace = $(args.replaceEntry);
+		}
+		if(args.appendAfterEntry) {
+			$appendAfterEntry = $(args.appendAfterEntry);
 		}
 	}
 
@@ -113,6 +116,7 @@ function displayEntry(entry, isUpdating, args) {
 		}
 		if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
 			isContinuous = true;
+			classes += " continuous"
 		}
 	}
 
@@ -150,9 +154,9 @@ function displayEntry(entry, isUpdating, args) {
 	} else {
 		var newEntryContent = '<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
 		if($entryToReplace) {
-			console.log("sa", newEntryContent)
-			console.log($entryToReplace)
 			$entryToReplace.replaceWith(newEntryContent);
+		} else if($appendAfterEntry) {
+			$appendAfterEntry.after(newEntryContent);
 		} else {
 			$("#entry0").append(newEntryContent);
 		}
@@ -471,7 +475,12 @@ $(function(){
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
-						displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
+						if(isContinuous) {
+							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
+							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
+						} else {
+							displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
+						}
 						var $newEntry = $("li#entryid" + newEntryId);
 						selected($newEntry);
 						tagList.load();
@@ -488,10 +497,6 @@ $(function(){
 			setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
 		else
 			setEntryText(ui.selected.textContent);
-	});*/
-	
-	/*$("input[name='tagorder']").change(function(e) {
-		tagList.load(); // now doing reordering on client
 	});*/
 
 	initTemplate();
