@@ -1,4 +1,4 @@
-<html manifest="/mobile/cache.manifest">
+<html <g:if env="development"></g:if><g:else>manifest="/mobile/cache.manifest"</g:else>>
 <head>
 <title>Curious</title>
 <g:setProvider library="jquery" />
@@ -54,6 +54,8 @@ setInterval(function(){cache.update()}, 10000);
 <meta name="apple-mobile-web-app-capable" content="yes" />
 
 <script type="text/javascript">
+<g:if env="development"></g:if>
+<g:else>
 //Check if a new cache is available on page load.
 window.addEventListener('load', function(e) {
 
@@ -68,6 +70,7 @@ window.addEventListener('load', function(e) {
 		}
 	}, false);
 }, false);
+</g:else>
 
 function doLogout() {
 	callLogoutCallbacks();
@@ -91,7 +94,8 @@ function doLogout() {
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <link type="text/css" href="/static/css/mobile/trackPage.css?ver=5" rel="stylesheet">
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF" />
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
+	activateGhostEntryCSRF" />
 
 <r:script>
 function askLogout() {
@@ -215,7 +219,7 @@ function startLogin(mode) {
 			$("#createaccountDiv").show();
 			$("#loginButtonDiv").hide();
 			$("#cancelButtonDiv").show();
-			$("#loginoptionsDiv").hide();						
+			$("#loginoptionsDiv").hide();
 		}
 		$('#loginPage').show(0, initLoginPage);
 	}
@@ -425,6 +429,8 @@ $(function(){
 <r:script>
 	var defaultToNow = true;
 	var timeAfterTag = true;
+	var GHOST_BIT = 0x200;
+	var CONTINUOUS_BIT = 0x100;
 
 	var cachedDate;
 	var cachedDateUTC;
@@ -478,7 +484,7 @@ $(function(){
 	var dayDuration = 86400000;
 	var entrySelectData;
 	
-	function displayEntry(entry, isUpdating) {
+	function displayEntry(entry, isUpdating, args) {
 		var id = entry.id,
 			date = entry.date,
 			datePrecisionSecs = entry.datePrecisionSecs,
@@ -486,7 +492,30 @@ $(function(){
 			amount = entry.amount,
 			amountPrecision = entry.amountPrecision,
 			units = entry.units,
-			comment = entry.comment;
+			comment = entry.comment,
+			classes = "entry",
+			$entryToReplace, $appendAfterEntry;
+			
+		if(args && args instanceof Object) {
+			if(args.replaceEntry) {
+				$entryToReplace = $(args.replaceEntry);
+			}
+			if(args.appendAfterEntry) {
+				$appendAfterEntry = $(args.appendAfterEntry);
+			}
+		}
+
+		var isGhostEntry = false, isContinuous = false;
+		if (entry.repeatType) {
+			if ((entry.repeatType & GHOST_BIT) != 0) {
+				isGhostEntry = true;
+				classes += " ghost";
+			}
+			if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
+				isContinuous = true;
+				classes += " continuous"
+			}
+		}
 
 		var diff = dateToTime(date) - cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
@@ -516,8 +545,18 @@ $(function(){
 		if(isUpdating) {
 			$("#entry0 li#entryid" + id).html(innerHTMLContent);
 		} else {
-			$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '">' + innerHTMLContent + '</li>');
+			var newEntryContent = '<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
+			if($entryToReplace) {
+				$entryToReplace.replaceWith(newEntryContent);
+			} else if($appendAfterEntry) {
+				$appendAfterEntry.after(newEntryContent);
+			} else {
+				$("#entry0").append(newEntryContent);
+			}
 		}
+		$("#entry0 li#entryid" + id).data("entry", entry);
+		$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
+		$("#entry0 li#entryid" + id).data("isContinuous", isContinuous);
 	}
 
 	function displayEntries(entries) {
@@ -716,7 +755,7 @@ $(function(){
 			processInput(false);
 			return false;
 		});
-		$("#entry0").listable({cancel: 'a, input'});
+		$("#entry0").listable({cancel: 'a, input, li.entry.ghost'});
 		$("#entry0").off("listableselected");
 		$("#entry0").off("listableunselecting");
 		$("#entry0").on("listableunselecting", function(e, ui) {
@@ -726,6 +765,7 @@ $(function(){
 		function unselecting($unselectee) {
 			if ($unselectee.data('entryIsSelected') == 1) {
 				$unselectee.data('entryIsSelected', 2);
+				$unselectee.removeClass('ui-selected');
 				$("a.entryDelete", $unselectee).hide();
 				checkAndUpdateEntry($unselectee);
 				currentEntryId = null;
@@ -750,16 +790,23 @@ $(function(){
 			$("input#tagTextInput").remove();
 		}
 		$("#entry0").on("listableselected", function(e, ui) {
-			currentEntryId = ui.selected.id.substring(7);
 			var selectee = $("#" + ui.selected.id);
+			selected(selectee);
+		});
+		/*
+		 * Gets called on selection of the entry, or used to select an entry.
+		 */
+		function selected(selectee) {
 			var state = selectee.data('entryIsSelected');
 			selectee.siblings().data('entryIsSelected', 0);
 			var $contentWrapper = selectee.find(".content-wrapper");
 
 			if (state == 0 || state == undefined) {
+				selectee.addClass('ui-selected');
 				selectee.data('entryIsSelected', 1);
+				currentEntryId = selectee.data("entry-id");
 				$("#entrydelid" + currentEntryId).css('display', 'inline');
-				var entryText = ui.selected.textContent;
+				var entryText = selectee.text();
 				var selectRange = entrySelectData[currentEntryId];
 				lastEntrySelected = selectee;
 				
@@ -777,8 +824,29 @@ $(function(){
 			} else if (state == 2) {
 				selectee.data('entryIsSelected', 0);
 			}
-		});
-		
+		}
+
+		$(document).on("click", "li.entry.ghost", function(e) {
+			var $ghostEntry = $(this);
+			var entryId = $ghostEntry.data("entry-id");
+			var isContinuous = $ghostEntry.data("isContinuous");
+			$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
+					+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
+					function(newEntry) {
+						if (checkData(newEntry)) {
+							var newEntryId = newEntry.id;
+							if(isContinuous) {
+								var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
+								displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
+							} else {
+								displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
+							}
+							var $newEntry = $("li#entryid" + newEntryId);
+							selected($newEntry);
+						}
+					});
+		})
+
 		var cache = getAppCacheData('users');
 		
 		if (cache != null) {

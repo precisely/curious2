@@ -1,6 +1,7 @@
 package us.wearecurio.controller
 
 import grails.converters.*
+import grails.util.Environment;
 import us.wearecurio.model.*
 import us.wearecurio.exceptions.*
 import us.wearecurio.utility.Utils
@@ -23,6 +24,9 @@ class MobileController extends SessionController {
 	}
 
 	def cachemanifest() {
+		if(Environment.current == Environment.DEVELOPMENT) {
+			response.sendError(500)	// Skipping cache on development.
+		}
 		debug "MobileController.cachemanifest()"
 		render(contentType:"text/cache-manifest", view:"/mobile/cachemanifest", model:[templateVer:urlService.template(request)])
 	}
