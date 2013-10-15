@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 297
+# rev 299
 
 CACHE:
 #/mobile/index
@@ -7,12 +7,12 @@ https://dev.wearecurio.us/static/js/jquery/jquery-1.7.2.min.js
 https://dev.wearecurio.us/static/js/jquery/jquery.json-2.2.js
 https://dev.wearecurio.us/static/js/jquery/jquery-ui-1.8.18.custom.js
 https://dev.wearecurio.us/static/js/jquery/jquery.offline.js
-https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js?ver=5
-https://dev.wearecurio.us/static/js/curious/base.js?ver=5
-https://dev.wearecurio.us/static/js/curious/curious.js?ver=5
-https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=5
-https://dev.wearecurio.us/static/js/mobile/mobileBase.js?ver=5
-https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=5
+https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js?ver=6
+https://dev.wearecurio.us/static/js/curious/base.js?ver=6
+https://dev.wearecurio.us/static/js/curious/curious.js?ver=6
+https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=6
+https://dev.wearecurio.us/static/js/mobile/mobileBase.js?ver=6
+https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=6
 https://dev.wearecurio.us/static/images/favicon.ico
 https://dev.wearecurio.us/static/images/apple-touch-icon-precomposed.png
 https://dev.wearecurio.us/static/images/email.png
