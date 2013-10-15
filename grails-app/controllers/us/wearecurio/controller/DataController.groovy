@@ -387,7 +387,6 @@ class DataController extends LoginController {
 
 	def activateGhostEntry() {
 		debug "DataController.activateGhostEntry()"
-		// Code to toggle ghost entries.
 
 		def user = sessionUser()
 
@@ -413,7 +412,6 @@ class DataController extends LoginController {
 	}
 
 	def deleteGhostEntry(Long entryId) {
-		// Code to delete ghost entry
 		def user = sessionUser()
 
 		if (user == null) {
@@ -422,7 +420,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entry = Entry.get(params.entryId.toLong());
+		def entry = Entry.get(entryId)
 		def userId = entry.getUserId();
 		
 		def currentDate = params.date == null ? null : parseDate(params.date)

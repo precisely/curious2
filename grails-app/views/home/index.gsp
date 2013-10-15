@@ -87,7 +87,7 @@ var entrySelectData;
 var GHOST_BIT = 0x200;
 var CONTINUOUS_BIT = 0x100;
 
-function displayEntry(entry, isUpdating) {
+function displayEntry(entry, isUpdating, args) {
 	var id = entry.id,
 		date = entry.date,
 		datePrecisionSecs = entry.datePrecisionSecs,
@@ -96,7 +96,14 @@ function displayEntry(entry, isUpdating) {
 		amountPrecision = entry.amountPrecision,
 		units = entry.units,
 		comment = entry.comment,
-		classes = "entry";
+		classes = "entry",
+		$entryToReplace;
+		
+	if(args && args instanceof Object) {
+		if(args.replaceEntry) {
+			$entryToReplace = $(args.replaceEntry);
+		}
+	}
 
 	var isGhostEntry = false, isContinuous = false;
 	if (entry.repeatType) {
@@ -141,7 +148,14 @@ function displayEntry(entry, isUpdating) {
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
 	} else {
-		$("#entry0").append('<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>');
+		var newEntryContent = '<li id="entryid' + id + '" data-entry-id="' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
+		if($entryToReplace) {
+			console.log("sa", newEntryContent)
+			console.log($entryToReplace)
+			$entryToReplace.replaceWith(newEntryContent);
+		} else {
+			$("#entry0").append(newEntryContent);
+		}
 	}
 	$("#entry0 li#entryid" + id).data("entry", entry);
 	$("#entry0 li#entryid" + id).data("isGhost", isGhostEntry);
@@ -340,6 +354,10 @@ $(function(){
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
 	});
+	/*
+	 * Used to unselect an entry, or called when entry is
+	 * being unselected.
+	 */
 	function unselecting($unselectee, doNotUpdate) {
 		if($unselectee.data('entryIsSelected') == 1) {
 			$unselectee.removeClass('ui-selected');
@@ -372,7 +390,9 @@ $(function(){
 		selected($selectee);
 	});
 	
-	// Gets called on selection of the entry
+	/*
+	 * Gets called on selection of the entry, or used to select an entry.
+	 */
 	function selected($selectee) {
 		var state = $selectee.data('entryIsSelected');
 		var $contentWrapper = $selectee.find(".content-wrapper");
@@ -451,9 +471,7 @@ $(function(){
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
-						if (!isContinuous)
-							$ghostEntry.remove();
-						displayEntry(newEntry, false);
+						displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
 						var $newEntry = $("li#entryid" + newEntryId);
 						selected($newEntry);
 						tagList.load();
