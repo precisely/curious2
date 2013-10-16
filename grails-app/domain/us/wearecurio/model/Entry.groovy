@@ -218,7 +218,7 @@ class Entry {
 				'setName':setName,
 				'amountPrecision': amountPrecision,
 				],
-				null, null)
+				null)
 	}
 	
 	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
