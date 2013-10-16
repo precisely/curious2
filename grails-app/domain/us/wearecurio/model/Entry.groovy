@@ -993,8 +993,6 @@ class Entry {
 		
 		if (this.repeatType == null)
 			return null
-		if (!this.repeatType.isGhost())
-			return null
 		
 		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
@@ -1153,7 +1151,10 @@ class Entry {
 			Entry entry = Entry.get(result['id'])
 			def desc = entry.getJSONDesc()
 			desc['date'] = result['dateTime']
-			desc['repeatType'] = entry.repeatType?.id
+			if ((!entry.getDate().equals(result['dateTime'])) && entry.repeatType != null) { // ghost timed entry
+				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
+			} else
+				desc['repeatType'] = entry.repeatType?.id
 			timedResults.add(desc)
 			/* if ((!entry.repeatType?.isGhost()) && abs(entry.getDate().getTime() - nowTime) < HOURTICKS) {
 				resultTagIds.add(entry.getTag().getId())

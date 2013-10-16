@@ -408,7 +408,7 @@ class DataController extends LoginController {
 		if (newEntry != null) {
 			renderJSONGet(newEntry.getJSONDesc())
 		} else
-			renderJSONGet("Failed to activate entry due to internal server error.")
+			renderStringGet("Failed to activate entry due to internal server error.")
 	}
 
 	def deleteGhostEntry(Long entryId) {
