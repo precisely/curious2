@@ -73,7 +73,11 @@ window.addEventListener('load', function(e) {
 </g:else>
 
 function doLogout() {
+	console.log("Logging out...");
 	callLogoutCallbacks();
+	localStorage['mobileSessionId'] = null;
+	localStorage['appCache'] = null;
+	localStorage['lastPage'] = 'login';
 	startLogin(0);
 }
 </script>
@@ -108,6 +112,7 @@ function askLogout() {
 var dataReady = false;
 
 if (!localStorage['mobileSessionId'] || localStorage['mobileSessionId'] == undefined) {
+	console.log("error: local session is cleared");
 	doLogout(); // clear JSON cache and start over
 }
 
@@ -145,6 +150,7 @@ function initAppCache() {
 	if (supportsLocalStorage()) {
 		if (localStorage['appCache'] == null) {
 			localStorage['appCache'] = {};
+			localStorage['lastPage'] = null;
 			return;
 		}
 	}
@@ -179,7 +185,6 @@ function startLogin(mode) {
 	if (pageLoaded) {
 		loginMode = mode;
 		
-		callLogoutCallbacks();
 		if (supportsLocalStorage()) {
 			localStorage['mobileSessionId'] = null;
 			localStorage['appCache'] = null;
@@ -260,12 +265,14 @@ function launchTrack() {
 function reloadPage() {
 	var mobileSessionId = localStorage['mobileSessionId'];
 	if (!mobileSessionId) {
-		startLogin(0);
+		console.log("mobileSessionId not found!");
+		doLogout();
 	} else { // mobile session exists
 		if (localStorage['lastPage'] == 'track' || localStorage['lastPage'] == null) {
 			startTrack();
 		} else {
-			startLogin(0);
+			console.log("lastPage isn't track or cleared")
+			doLogout();
 		}
 	}
 }
