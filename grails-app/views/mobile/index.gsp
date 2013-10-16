@@ -82,17 +82,17 @@ function doLogout() {
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=5"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=5"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=5"></script>
-<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=5"></script>
-<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=5"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=6"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=6"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=6"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=6"></script>
+<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=6"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=5" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=6" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
@@ -100,7 +100,7 @@ function doLogout() {
 <r:script>
 function askLogout() {
 	showYesNo("Log out?", function() {
-		startLogin(0);
+		doLogout();
 	});
 }
 
@@ -187,9 +187,9 @@ function startLogin(mode) {
 		}
 		$('#trackPage').hide();
 		
-		resetDefaultText($("#emailField"),'url(/images/email.png)');
-		resetDefaultText($("#passwordField"),'url(/images/password.png)');
-		resetDefaultText($("#usernameField"),'url(/images/username.png)');
+		resetDefaultText($("#emailField"),'url(/static/images/email.png)');
+		resetDefaultText($("#passwordField"),'url(/static/images/password.png)');
+		resetDefaultText($("#usernameField"),'url(/static/images/username.png)');
 		if (mode == 0) { // login
 			$("#loginlogo").css('margin-bottom','50px');
 			$("#emailDiv").hide();
@@ -271,6 +271,7 @@ function reloadPage() {
 }
 
 $(function(){
+	pageLoaded = true;
 	reloadPage();
 });
 </r:script>
@@ -371,14 +372,13 @@ $(function(){
 			$("#passwordField").on("keydown", submitLogin);
 		}
 
-		pageLoaded = true;
 	</script>
 	<div class="login">
 <g:if test="${templateVer == 'lhp'}">
-		<a href="javascript:startLogin(0)"><img border="0" id="loginlogo" src="/images/logo_mobile_lhp.gif" width="205" height="230" alt="Curious" /></a>
+		<a href="javascript:startLogin(0)"><img border="0" id="loginlogo" src="/static/images/logo_mobile_lhp.gif" width="205" height="230" alt="Curious" /></a>
 </g:if>
 <g:else>
-		<a href="javascript:startLogin(0)"><img border="0" id="loginlogo" src="/images/logo.gif" width="205" height="230" alt="Curious" /></a>
+		<a href="javascript:startLogin(0)"><img border="0" id="loginlogo" src="/static/images/logo.gif" width="205" height="230" alt="Curious" /></a>
 </g:else>
 	
 		<form id="loginform" onsubmit="return false;" action="#">
@@ -404,11 +404,11 @@ $(function(){
 					name="password" />
 			</div>
 			<div id="loginButtonDiv" class="okCancelDiv">
-				<button class="loginButton"><img src="/images/login.png" width="76" height="24" alt="Login" onclick="submitForm()" /></button><br />
+				<button class="loginButton"><img src="/static/images/login.png" width="76" height="24" alt="Login" onclick="submitForm()" /></button><br />
 			</div>
 			<div id="cancelButtonDiv" class="okCancelDiv">
-				<button class="cancelButton"><img src="/images/cancel.png" width="76" height="24" alt="Cancel" onclick="javascript:startLogin(0)"/></button>
-				<button class="loginButton"><img src="/images/submit.png" width="76" height="24" alt="Submit" onclick="submitForm()" /></button><br />
+				<button class="cancelButton"><img src="/static/images/cancel.png" width="76" height="24" alt="Cancel" onclick="javascript:startLogin(0)"/></button>
+				<button class="loginButton"><img src="/static/images/submit.png" width="76" height="24" alt="Submit" onclick="submitForm()" /></button><br />
 			</div>
 			</div>
 		</form>
@@ -540,7 +540,7 @@ $(function(){
 		}
 
 		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
-			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999;float:right;" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/images/x.gif"></a>';
+			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999;float:right;" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/static/images/x.gif"></a>';
 	
 		if(isUpdating) {
 			$("#entry0 li#entryid" + id).html(innerHTMLContent);
