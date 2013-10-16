@@ -82,19 +82,19 @@ function doLogout() {
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=6"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=6"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=6"></script>
-<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=6"></script>
-<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=6"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=7"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=6" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=7" rel="stylesheet">
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getEntriesDataCSRF, autoCompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
 
 <r:script>

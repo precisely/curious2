@@ -6,7 +6,7 @@
 <title>Curious</title>
 
 <c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCRSF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
-deleteTagGroupCSRF, getTagPropertiesCSRF, autoCompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF" />
 
 <script type="text/javascript">
