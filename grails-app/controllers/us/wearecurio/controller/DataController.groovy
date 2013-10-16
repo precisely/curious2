@@ -88,7 +88,7 @@ class DataController extends LoginController {
 		def currentTime = parseDate(currentTimeStr)
 		def baseDate = parseDate(baseDateStr)
 
-		def m = Entry.parse(currentTime, tz, textStr, baseDate, false)
+		def m = Entry.parse(currentTime, tz, textStr, baseDate, false, true)
 
 		if (entry != null) {
 			TagStatsRecord record = new TagStatsRecord()

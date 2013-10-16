@@ -1432,7 +1432,7 @@ class Entry {
 		return today
 	}
 	
-	static def parse(Date time, TimeZone timeZone, String entryStr, Date baseDate, boolean defaultToNow) {
+	static def parse(Date time, TimeZone timeZone, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
 		log.debug "Entry.parse() time:" + time + ", timeZone:" + timeZone?.getID() + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
@@ -1784,10 +1784,13 @@ class Entry {
 						if (foundTime) {
 							retVal['repeatType'] = RepeatType.DAILY
 						} else {
-							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
+							if (forUpdate)
+								retVal['repeatType'] = RepeatType.DAILY
+							else
+								retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
 						}
 					} else {
-						if (foundTime) {
+						if (foundTime || forUpdate) {
 							retVal['repeatType'] = RepeatType.DAILYGHOST
 						} else {
 							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
