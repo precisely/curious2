@@ -10,7 +10,7 @@ https://dev.wearecurio.us/static/js/jquery/jquery.offline.js
 https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js?ver=7
 https://dev.wearecurio.us/static/js/curious/base.js?ver=7
 https://dev.wearecurio.us/static/js/curious/curious.js?ver=7
-https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=7
+https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=8
 https://dev.wearecurio.us/static/js/mobile/mobileBase.js?ver=7
 https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=7
 https://dev.wearecurio.us/static/images/favicon.ico
