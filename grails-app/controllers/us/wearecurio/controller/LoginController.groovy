@@ -13,7 +13,7 @@ import us.wearecurio.utility.Utils
  */
 class LoginController extends SessionController {
 
-	def genericService
+	def securityService
 
 	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
 		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
@@ -21,7 +21,7 @@ class LoginController extends SessionController {
 		"setTagPropertiesData", "updateEntrySData", "deleteEntrySData", "activateGhostEntry", "deleteGhostEntry"]]
 
 	private boolean validateToken() {
-		if(!genericService.isTokenValid(request, params)) {
+		if (!securityService.isTokenValid(request, params, session, sessionUser())) {
 			response.sendError 401
 			return false
 		}
