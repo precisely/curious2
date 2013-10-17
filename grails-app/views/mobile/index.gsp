@@ -80,6 +80,25 @@ function doLogout() {
 	localStorage['lastPage'] = 'login';
 	startLogin(0);
 }
+
+function getCSRFPreventionURIMobile(key) {
+	if (localStorage['mobileSessionId'] == undefined || localStorage['mobileSessionId'] == null) {
+		console.error("Missing mobileSessionId for CSRF protection");
+	}
+	var preventionURI = "mobileSessionId=" + localStorage['mobileSessionId'];
+	return preventionURI;
+}
+
+function getCSRFPreventionObjectMobile(key, data) {
+	var CSRFPreventionObject = new Object();
+	if(localStorage['mobileSessionId']) {
+		CSRFPreventionObject['mobileSessionId'] = localStorage['mobileSessionId'];
+	} else {
+		console.error("Missing mobileSessionId for CSRF protection");
+	}
+
+	return $.extend(CSRFPreventionObject, data);
+}
 </script>
 
 <script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
@@ -471,7 +490,7 @@ $(function(){
 		if (cachedObj['data'] != null) {
 			refreshEntries(data);
 		}
-		var argsToSend = getCSRFPreventionObject('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
+		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 			function(data){
 				if (checkData(data)) {
@@ -601,7 +620,7 @@ $(function(){
 				setEntryText('');
 				currentEntryId = null;
 			}
-			var argsToSend = getCSRFPreventionObject("deleteEntryDataCSRF", { entryId:entryId,
+			var argsToSend = getCSRFPreventionObjectMobile("deleteEntryDataCSRF", { entryId:entryId,
 				currentTime:currentTimeUTC, baseDate:cachedDateUTC,
 				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
 
@@ -672,7 +691,7 @@ $(function(){
 			showAlert("Please wait until online to add an entry");
 			return;
 		}
-		var argsToSend = getCSRFPreventionObject("addEntryCSRF", { currentTime:currentTimeUTC,
+		var argsToSend = getCSRFPreventionObjectMobile("addEntryCSRF", { currentTime:currentTimeUTC,
 			userId:userId, text:text, baseDate:cachedDateUTC,
 			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' })
 
@@ -850,7 +869,7 @@ $(function(){
 			var entryId = $ghostEntry.data("entry-id");
 			var isContinuous = $ghostEntry.data("isContinuous");
 			$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
-					+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
+					+ getCSRFPreventionURIMobile("activateGhostEntryCSRF") + "&callback=?",
 					function(newEntry) {
 						if (checkData(newEntry)) {
 							var newEntryId = newEntry.id;
@@ -880,7 +899,7 @@ $(function(){
 			refreshPage();
 		}
 
-		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs(getCSRFPreventionObject("getPeopleDataCSRF")),
+		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
 			function(data){
 				if (!checkData(data))
 					return;
