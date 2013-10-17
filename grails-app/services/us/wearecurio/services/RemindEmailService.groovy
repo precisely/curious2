@@ -45,8 +45,8 @@ class RemindEmailService {
 
 			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
-			for (def eventId in remindEvents) {
-				def event = Entry.get(eventId)
+			for (def eventIdRecord in remindEvents) {
+				def event = Entry.get(eventIdRecord['id'])
 				if (event != null) {
 					log.debug "Trying to send reminder email " + event + " to " + email
 					mailService.sendMail {
