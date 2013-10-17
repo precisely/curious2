@@ -659,23 +659,25 @@ $(function(){
 		entryItem.data(data);
 		if (id == activateEntryId) {
 			activateEntryId = -1;
-			if (isGhostEntry) {
-				if (args && args instanceof Object) {
-					args.ghostEntryToActivate = entryItem;
-				}
+			if (args && args instanceof Object) {
+				args.ghostEntryToActivate = entryItem;
 			}
 		}
 	}
 
 	function displayEntries(entries) {
 		entrySelectData = {};
-		var args = {};
+		var ghostEntryToActivate = null;
 		jQuery.each(entries, function() {
+			var args = {};
 			displayEntry(this, false, args);
+			if (args.ghostEntryToActivate) {
+				ghostEntryToActivate = args.ghostEntryToActivate;
+			}
 			return true;
 		});
-		if (args.ghostEntryToActivate) {
-			activateGhostEntry(args.ghostEntryToActivate);
+		if (ghostEntryToActivate) {
+			activateGhostEntry(ghostEntryToActivate);
 		}
 	}
 
