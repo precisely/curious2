@@ -29,10 +29,14 @@ class MobileController extends SessionController {
 		def user = sessionUser()
 		if (user != null) {
 			debug "auth user:" + user
-			[prefs:user.getPreferences(),login:0,templateVer:urlService.template(request)]
+			def entryId = -1
+			if (params.entryId) {
+				entryId = Long.parseLong(params.entryId)
+			}
+			[prefs:user.getPreferences(), login:0, templateVer:urlService.template(request), entryId:entryId]
 		} else {
 			debug "auth failure"
-			[prefs:null,login:0,templateVer:urlService.template(request)]
+			[prefs:null, login:0, templateVer:urlService.template(request), entryId:-1]
 		}
 	}
 

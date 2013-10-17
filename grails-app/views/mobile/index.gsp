@@ -72,6 +72,8 @@ window.addEventListener('load', function(e) {
 }, false);
 </g:else>
 
+var activateEntryId = ${entryId};
+
 function doLogout() {
 	console.log("Logging out...");
 	callLogoutCallbacks();
@@ -100,7 +102,6 @@ function getCSRFPreventionObjectMobile(key, data) {
 	return $.extend(CSRFPreventionObject, data);
 }
 </script>
-
 <script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
@@ -507,6 +508,26 @@ $(function(){
 		$("#entry0").html('');
 	}
 
+	function activateGhostEntry(ghostEntry) {
+		var entryId = ghostEntry.data("entry-id");
+		var isContinuous = ghostEntry.data("isContinuous");
+		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
+				+ getCSRFPreventionURIMobile("activateGhostEntryCSRF") + "&callback=?",
+				function(newEntry) {
+					if (checkData(newEntry)) {
+						var newEntryId = newEntry.id;
+						if(isContinuous) {
+							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
+							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
+						} else {
+							displayEntry(newEntry, false, {replaceEntry:ghostEntry});
+						}
+						var $newEntry = $("li#entryid" + newEntryId);
+						selected($newEntry);
+					}
+				});
+	}
+
 	var dayDuration = 86400000;
 	var entrySelectData;
 	
@@ -581,7 +602,12 @@ $(function(){
 			}
 		}
 		var data = {entry: entry, entryId: id, isGhost: isGhostEntry, isContinuous: isContinuous};
-		$("#entry0 li#entryid" + id).data(data);
+		var entryItem = $("#entry0 li#entryid" + id);
+		entryItem.data(data);
+		if (id == activateEntryId) {
+			if (isGhostEntry)
+				activateGhostEntry(entryItem);
+		}
 	}
 
 	function displayEntries(entries) {
@@ -859,30 +885,13 @@ $(function(){
 				selectee.data('entryIsSelected', 0);
 			}
 		}
-
+		
 		$(document).on("click", "li.entry.ghost", function(e) {
 			if(e.target.nodeName && $(e.target).closest("a,img").length) {
 				// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 				return false;
 			}
-			var $ghostEntry = $(this);
-			var entryId = $ghostEntry.data("entry-id");
-			var isContinuous = $ghostEntry.data("isContinuous");
-			$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
-					+ getCSRFPreventionURIMobile("activateGhostEntryCSRF") + "&callback=?",
-					function(newEntry) {
-						if (checkData(newEntry)) {
-							var newEntryId = newEntry.id;
-							if(isContinuous) {
-								var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
-								displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
-							} else {
-								displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
-							}
-							var $newEntry = $("li#entryid" + newEntryId);
-							selected($newEntry);
-						}
-					});
+			activateGhostEntry($(this));
 		})
 
 		var cache = getAppCacheData('users');
