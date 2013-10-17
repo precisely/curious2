@@ -1186,6 +1186,7 @@ class Entry {
 		// add timed results
 		for (result in timedResults) {
 			results.add(result)
+			log.debug "Entry id: " + result['id'] + " tag: " + result['description']
 		}
 		
 		return results

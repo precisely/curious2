@@ -508,7 +508,50 @@ $(function(){
 		$("#entry0").html('');
 	}
 
+	/*
+	 * Gets called on selection of the entry, or used to select an entry.
+	 */
+	function selected(selectee) {
+		var state = selectee.data('entryIsSelected');
+		selectee.siblings().data('entryIsSelected', 0);
+		var $contentWrapper = selectee.find(".content-wrapper");
+
+		if (state == 0 || state == undefined) {
+			selectee.addClass('ui-selected');
+			selectee.data('entryIsSelected', 1);
+			currentEntryId = selectee.data("entry-id");
+			$("#entrydelid" + currentEntryId).css('display', 'inline');
+			var entryText = selectee.text();
+			var selectRange = entrySelectData[currentEntryId];
+			lastEntrySelected = selectee;
+			
+			$contentWrapper.hide();
+			selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+
+			// Binding blur event on element instead of globally to prevent concurrent exception.
+			var textInput = $("#tagTextInput").val(entryText).focus();
+			
+			textInput.on("blur", function(e) {
+				var $unselectee = $(this).parent("li");
+				checkAndUpdateEntry($unselectee);
+			})
+			textInput.keyup(function(e) {
+				if (e.keyCode == 13) {
+					var $unselectee = $(this).parent("li");
+					checkAndUpdateEntry($unselectee);
+				}
+			});
+			
+			if(selectRange) {
+				$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+			}
+		} else if (state == 2) {
+			selectee.data('entryIsSelected', 0);
+		}
+	}
+	
 	function activateGhostEntry(ghostEntry) {
+		var gEntry = ghostEntry;
 		var entryId = ghostEntry.data("entry-id");
 		var isContinuous = ghostEntry.data("isContinuous");
 		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
@@ -516,11 +559,11 @@ $(function(){
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
-						if(isContinuous) {
+						if (isContinuous) {
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
 							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
 						} else {
-							displayEntry(newEntry, false, {replaceEntry:ghostEntry});
+							displayEntry(newEntry, false, {replaceEntry:gEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
 						selected($newEntry);
@@ -530,6 +573,16 @@ $(function(){
 
 	var dayDuration = 86400000;
 	var entrySelectData;
+	
+	function unselecting($unselectee) {
+		if ($unselectee.data('entryIsSelected') == 1) {
+			$unselectee.data('entryIsSelected', 2);
+			$unselectee.removeClass('ui-selected');
+			$("a.entryDelete", $unselectee).hide();
+			checkAndUpdateEntry($unselectee);
+			currentEntryId = null;
+		}
+	}
 	
 	function displayEntry(entry, isUpdating, args) {
 		var id = entry.id,
@@ -543,11 +596,11 @@ $(function(){
 			classes = "entry",
 			$entryToReplace, $appendAfterEntry;
 			
-		if(args && args instanceof Object) {
-			if(args.replaceEntry) {
+		if (args && args instanceof Object) {
+			if (args.replaceEntry) {
 				$entryToReplace = $(args.replaceEntry);
 			}
-			if(args.appendAfterEntry) {
+			if (args.appendAfterEntry) {
 				$appendAfterEntry = $(args.appendAfterEntry);
 			}
 		}
@@ -605,17 +658,25 @@ $(function(){
 		var entryItem = $("#entry0 li#entryid" + id);
 		entryItem.data(data);
 		if (id == activateEntryId) {
-			if (isGhostEntry)
-				activateGhostEntry(entryItem);
+			activateEntryId = -1;
+			if (isGhostEntry) {
+				if (args && args instanceof Object) {
+					args.ghostEntryToActivate = entryItem;
+				}
+			}
 		}
 	}
 
 	function displayEntries(entries) {
 		entrySelectData = {};
+		var args = {};
 		jQuery.each(entries, function() {
-			displayEntry(this, false);
+			displayEntry(this, false, args);
 			return true;
 		});
+		if (args.ghostEntryToActivate) {
+			activateGhostEntry(args.ghostEntryToActivate);
+		}
 	}
 
 	function refreshEntries(entries) {
@@ -668,6 +729,25 @@ $(function(){
 		deleteEntryId(currentEntryId);
 	}
 
+	/**
+	 * Sees to check if text is different from original text.
+	 * IF different than call updateEntry() method to notify
+	 * server and update in UI.
+	 */
+	function checkAndUpdateEntry($unselectee) {
+		var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
+		var oldText = $contentWrapper.text();
+		var newText = $("input#tagTextInput").val();
+
+		$contentWrapper.show();
+		if(oldText != newText) {
+			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
+			updateEntry(currentEntryId, newText, defaultToNow);
+		}
+
+		$("input#tagTextInput").remove();
+	}
+	
 	function updateEntry(entryId, text, defaultToNow) {
 		cacheNow();
 		
@@ -813,78 +893,10 @@ $(function(){
 			var $unselectee = $("#" + ui.unselecting.id);
 			unselecting($unselectee);
 		});
-		function unselecting($unselectee) {
-			if ($unselectee.data('entryIsSelected') == 1) {
-				$unselectee.data('entryIsSelected', 2);
-				$unselectee.removeClass('ui-selected');
-				$("a.entryDelete", $unselectee).hide();
-				checkAndUpdateEntry($unselectee);
-				currentEntryId = null;
-			}
-		}
-		/**
-		 * Sees to check if text is different from original text.
-		 * IF different than call updateEntry() method to notify
-		 * server and update in UI.
-		 */
-		function checkAndUpdateEntry($unselectee) {
-			var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
-			var oldText = $contentWrapper.text();
-			var newText = $("input#tagTextInput").val();
-	
-			$contentWrapper.show();
-			if(oldText != newText) {
-				$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
-				updateEntry(currentEntryId, newText, defaultToNow);
-			}
-
-			$("input#tagTextInput").remove();
-		}
 		$("#entry0").on("listableselected", function(e, ui) {
 			var selectee = $("#" + ui.selected.id);
 			selected(selectee);
 		});
-		/*
-		 * Gets called on selection of the entry, or used to select an entry.
-		 */
-		function selected(selectee) {
-			var state = selectee.data('entryIsSelected');
-			selectee.siblings().data('entryIsSelected', 0);
-			var $contentWrapper = selectee.find(".content-wrapper");
-
-			if (state == 0 || state == undefined) {
-				selectee.addClass('ui-selected');
-				selectee.data('entryIsSelected', 1);
-				currentEntryId = selectee.data("entry-id");
-				$("#entrydelid" + currentEntryId).css('display', 'inline');
-				var entryText = selectee.text();
-				var selectRange = entrySelectData[currentEntryId];
-				lastEntrySelected = selectee;
-				
-				$contentWrapper.hide();
-				selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
-
-				// Binding blur event on element instead of globally to prevent concurrent exception.
-				var textInput = $("#tagTextInput").val(entryText).focus();
-				
-				textInput.on("blur", function(e) {
-					var $unselectee = $(this).parent("li");
-					checkAndUpdateEntry($unselectee);
-				})
-				textInput.keyup(function(e) {
-					if (e.keyCode == 13) {
-						var $unselectee = $(this).parent("li");
-						checkAndUpdateEntry($unselectee);
-					}
-				});
-				
-				if(selectRange) {
-					$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
-				}
-			} else if (state == 2) {
-				selectee.data('entryIsSelected', 0);
-			}
-		}
 		
 		$(document).on("click", "li.entry.ghost", function(e) {
 			if(e.target.nodeName && $(e.target).closest("a,img").length) {
