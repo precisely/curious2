@@ -699,6 +699,7 @@ $(function(){
 			activateEntry(entryToActivate);
 			activateEntryId = -1;
 		}
+	}
 	
 	function deleteEntryId(entryId) {
 		cacheNow();

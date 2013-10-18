@@ -1116,13 +1116,13 @@ class Entry {
 
 	static SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-	static def fetchReminders(User user, Date startDate, long intervalMillis) {
+	static def fetchReminders(User user, Date startDate, long intervalSecs) {
 		String queryStr = "select distinct entry.id " \
 		+ "from entry entry where entry.user_id = :userId and " \
 		+ "entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :remindBit <> 0) " \
-		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :intervalMs"
+		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :interval"
 		
-		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:startDate, intervalMs:intervalMillis, remindBit:RepeatType.REMIND_BIT])
+		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:startDate, interval:intervalSecs, remindBit:RepeatType.REMIND_BIT])
 	}
 	
 	static long abs(long x) { return x < 0 ? -x : x }
