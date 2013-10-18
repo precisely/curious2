@@ -230,7 +230,7 @@ class Entry {
 
 		m['description'] = m['description'].toLowerCase()
 
-		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'])
+		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
 		
 		Tag tag = Tag.look(m['description'])
 		
@@ -708,7 +708,7 @@ class Entry {
 		
 		if (durationType != null) return; // already calculated
 		
-		def (calculatedBaseTag, calculatedDurationType) = getDurationInfo(tag, units)
+		def (calculatedBaseTag, calculatedDurationType) = getDurationInfo(tag, units, repeatType)
 		
 		this.baseTag = calculatedBaseTag
 		this.durationType = calculatedDurationType
@@ -818,18 +818,18 @@ class Entry {
 	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
 	 * If the passed-in tag is a start tag, calculates the base tag 
 	 */
-	protected static def getDurationInfo(Tag tag, String units) {
-		return getDurationInfoFromStrings(tag.getDescription(), units)
+	protected static def getDurationInfo(Tag tag, String units, RepeatType repeatType) {
+		return getDurationInfoFromStrings(tag.getDescription(), units, repeatType)
 	}
 	
 	/**
 	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
 	 * If the passed-in tag is a start tag, calculates the base tag 
 	 */
-	protected static def getDurationInfoFromStrings(String description, String units) {
+	protected static def getDurationInfoFromStrings(String description, String units, RepeatType repeatType) {
 		log.debug "Entry.getDurationInfoFromStrings() description:" + description + ", units:" + units
 		
-		if (units.equals('hours'))
+		if (units.equals('hours') || repeatType?.isGhost())
 			return [Tag.look(description), DurationType.NONE]
 
 		String synonym = durationSynonyms[description] ?: description
@@ -1053,7 +1053,7 @@ class Entry {
 		
 		newDescription = newDescription.toLowerCase()
 		
-		def (newBaseTag, newDurationType) = getDurationInfoFromStrings(newDescription, m['units'])
+		def (newBaseTag, newDurationType) = getDurationInfoFromStrings(newDescription, m['units'], m['repeatType'])
 
 		def updateDurationEntry = null
 		
@@ -1648,7 +1648,7 @@ class Entry {
 		if (!foundTime) {
 			if (date != null) {
 				date = time;
-				if (!(defaultToNow && today)) { // only default to now if entry is for today
+				if (!(defaultToNow && today && (!forUpdate))) { // only default to now if entry is for today and not editing
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					log.debug "SETTING DATE TO " + Utils.dateToGMTString(date) 
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
@@ -1662,7 +1662,7 @@ class Entry {
 		} else if (date != null) {
 			if (hours == null && date != null) {
 				date = time;
-				if (!defaultToNow) {
+				if ((!defaultToNow) || forUpdate) {
 					date = new Date(date.getTime() + 12 * 3600000L);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else if (!isSameDay(time, baseDate, timeZone)) {
