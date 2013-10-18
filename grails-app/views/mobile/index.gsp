@@ -82,7 +82,9 @@ var localStorageSupported = function() {
 	}
 }
 
-if (!localStorageSupported) alert("HTML5 local storage error");
+if (!localStorageSupported()) {
+	console.log("HTML5 local storage error");
+}
 
 var activateEntryId = ${entryId};
 
