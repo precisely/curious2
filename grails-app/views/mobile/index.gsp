@@ -489,13 +489,16 @@ $(function(){
 		var cachedObj = getAppCacheData(cachedDateUTC);
 		
 		if (cachedObj['data'] != null) {
-			refreshEntries(data);
+			console.log("refresh entries from cache");
+			refreshEntries(data, false);
 		}
+		
 		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 			function(data){
 				if (checkData(data)) {
-					refreshEntries(data);
+					console.log("refresh entries from get list");
+					refreshEntries(data, true);
 					dataReady = true;
 				}
 			});
@@ -550,10 +553,16 @@ $(function(){
 		}
 	}
 	
-	function activateGhostEntry(ghostEntry) {
-		var gEntry = ghostEntry;
-		var entryId = ghostEntry.data("entry-id");
-		var isContinuous = ghostEntry.data("isContinuous");
+	function activateEntry(entry) {
+		var gEntry = entry;
+		var entryId = entry.data("entry-id");
+		var isContinuous = entry.data("isContinuous");
+		var isGhost = entry.data("isGhost");
+		
+		if (!isGhost) {
+			selected(entry);
+			return;
+		}
 		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
 				+ getCSRFPreventionURIMobile("activateGhostEntryCSRF") + "&callback=?",
 				function(newEntry) {
@@ -563,6 +572,7 @@ $(function(){
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
 							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
 						} else {
+							activateEntryId = newEntry.id;
 							displayEntry(newEntry, false, {replaceEntry:gEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
@@ -619,7 +629,7 @@ $(function(){
 
 		var diff = dateToTime(date) - cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
-			return; // skip items outside display
+			return null; // skip items outside display
 		}
 		var dateStr = '';
 		if (datePrecisionSecs < 43200) {
@@ -658,35 +668,37 @@ $(function(){
 		var entryItem = $("#entry0 li#entryid" + id);
 		entryItem.data(data);
 		if (id == activateEntryId) {
-			activateEntryId = -1;
-			if (args && args instanceof Object) {
-				args.ghostEntryToActivate = entryItem;
-			}
+			return entryItem;
 		}
+		
+		return null;
 	}
 
 	function displayEntries(entries) {
 		entrySelectData = {};
-		var ghostEntryToActivate = null;
+		var entryToActivate = null;
 		jQuery.each(entries, function() {
 			var args = {};
-			displayEntry(this, false, args);
-			if (args.ghostEntryToActivate) {
-				ghostEntryToActivate = args.ghostEntryToActivate;
+			var retVal = displayEntry(this, false, args);
+			if (retVal) {
+				entryToActivate = retVal;
 			}
 			return true;
 		});
-		if (ghostEntryToActivate) {
-			activateGhostEntry(ghostEntryToActivate);
-		}
+		
+		return entryToActivate;
 	}
 
-	function refreshEntries(entries) {
+	function refreshEntries(entries, activateGhost) {
 		clearEntries();
-		displayEntries(entries);
+		var entryToActivate = displayEntries(entries);
 		var cache = getAppCacheData(cachedDateUTC);
 		cache['data'] = entries;
-	}
+		
+		if (activateGhost && entryToActivate) {
+			activateEntry(entryToActivate);
+			activateEntryId = -1;
+		}
 	
 	function deleteEntryId(entryId) {
 		cacheNow();
@@ -716,7 +728,7 @@ $(function(){
 			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 				function(entries){
 					if (checkData(entries)) {
-						refreshEntries(entries[0]);
+						refreshEntries(entries[0], false);
 						updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 						if (entries[2] != null)
 							updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -809,7 +821,7 @@ $(function(){
 				if (entries[1] != null) {
 					showAlert(entries[1]);
 				}
-				refreshEntries(entries[0]);
+				refreshEntries(entries[0], false);
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			} else {
 				showAlert("Error adding entry");
@@ -905,7 +917,7 @@ $(function(){
 				// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 				return false;
 			}
-			activateGhostEntry($(this));
+			activateEntry($(this));
 		})
 
 		var cache = getAppCacheData('users');

@@ -213,8 +213,10 @@ var currentUserName;
 function setUserId(userId) {
 	if (userId == undefined) return; // don't change if undefined
 	if (userId != currentUserId) {
+		var oldUserId = currentUserId;
 		currentUserId = userId;
-		refreshPage();
+		if (oldUserId) // don't refresh page on first page load
+			refreshPage();
 	}
 }
 

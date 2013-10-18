@@ -53,7 +53,7 @@ class RemindEmailService {
 						to email
 						from "contact@wearecurio.us"
 						subject "Reminder to track:" + event.getTag().getDescription()
-						body url
+						body url + "?entryId=" + event.getId()
 					}
 				}
 			}
