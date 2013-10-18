@@ -72,6 +72,18 @@ window.addEventListener('load', function(e) {
 }, false);
 </g:else>
 
+var localStorageSupported = function() {
+	try {
+		localStorage.setItem("test", "test");
+		localStorage.removeItem("test");
+		return 'localStorage' in window && window['localStorage'] !== null;
+	} catch (e) {
+		return false;
+	}
+}
+
+if (!localStorageSupported) alert("HTML5 local storage error");
+
 var activateEntryId = ${entryId};
 
 function doLogout() {
