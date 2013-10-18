@@ -108,7 +108,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=7"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=7"></script>
 
