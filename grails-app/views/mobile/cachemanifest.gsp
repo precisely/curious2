@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 309
+# rev 310
 
 CACHE:
 #/mobile/index
@@ -24,10 +24,10 @@ https://dev.wearecurio.us/static/images/submit.png
 https://dev.wearecurio.us/static/images/spinner.gif
 https://dev.wearecurio.us/static/images/x.gif
 <g:if test="${templateVer == 'lhp'}">
-#https://dev.wearecurio.us/static/images/logo_mobile_lhp.gif
+https://dev.wearecurio.us/static/images/logo_mobile_lhp.gif
 </g:if>
 <g:else>
-#https://dev.wearecurio.us/static/images/logo.gif
+https://dev.wearecurio.us/static/images/logo.gif
 </g:else>
 https://dev.wearecurio.us/static/css/mobile.css
 https://dev.wearecurio.us/static/css/smoothness/jquery-ui-1.8.16.custom2.css

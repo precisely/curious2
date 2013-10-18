@@ -180,7 +180,7 @@ function makePlainUrl(url) {
 	return url;
 }
 
-/*function initAppCache() {
+function initAppCache() {
 	if (supportsLocalStorage()) {
 		if (localStorage['appCache'] == null) {
 			localStorage['appCache'] = {};
@@ -204,7 +204,7 @@ function getAppCacheData(key) {
 			}
 		}
 	}
-}*/
+}
 
 var pageLoaded = false;
 
@@ -500,12 +500,12 @@ $(function(){
 	function refreshPage() {
 		cacheDate();
 		
-		/*var cachedObj = getAppCacheData(cachedDateUTC);
+		var cachedObj = getAppCacheData(cachedDateUTC);
 		
 		if (cachedObj['data'] != null) {
 			console.log("refresh entries from cache");
 			refreshEntries(data, false);
-		}*/
+		}
 		
 		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
@@ -706,8 +706,8 @@ $(function(){
 	function refreshEntries(entries, activateGhost) {
 		clearEntries();
 		var entryToActivate = displayEntries(entries);
-		/*var cache = getAppCacheData(cachedDateUTC);
-		cache['data'] = entries;*/
+		var cache = getAppCacheData(cachedDateUTC);
+		cache['data'] = entries;
 		
 		if (activateGhost && entryToActivate) {
 			activateEntry(entryToActivate);
@@ -935,7 +935,7 @@ $(function(){
 			activateEntry($(this));
 		})
 
-		/*var cache = getAppCacheData('users');
+		var cache = getAppCacheData('users');
 		
 		if (cache != null) {
 			setPeopleData(cache['data']);
@@ -947,15 +947,15 @@ $(function(){
 			setPeopleData(data);
 			initAutocomplete();
 			refreshPage();
-		}*/
+		}
 
 		if (isOnline()) $.getJSON(makeGetUrl("getPeopleData"), makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
 			function(data){
 				if (!checkData(data))
 					return;
 		
-				/*var cache = getAppCacheData('users');
-				cache['data'] = data;*/
+				var cache = getAppCacheData('users');
+				cache['data'] = data;
 
 				setPeopleData(data);
 
