@@ -530,6 +530,7 @@ $(function(){
 	 */
 	function selected(selectee) {
 		var state = selectee.data('entryIsSelected');
+		if ($("input#tagTextInput").size() == 1) return;
 		selectee.siblings().data('entryIsSelected', 0);
 		var $contentWrapper = selectee.find(".content-wrapper");
 
@@ -551,15 +552,17 @@ $(function(){
 			textInput.on("blur", function(e) {
 				var $unselectee = $(this).parent("li");
 				checkAndUpdateEntry($unselectee);
+				$unselectee.data('entryIsSelected', 0);
 			})
 			textInput.keyup(function(e) {
 				if (e.keyCode == 13) {
 					var $unselectee = $(this).parent("li");
 					checkAndUpdateEntry($unselectee);
+					$unselectee.data('entryIsSelected', 0);
 				}
 			});
 			
-			if(selectRange) {
+			if (selectRange) {
 				$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 			}
 		} else if (state == 2) {
@@ -776,6 +779,9 @@ $(function(){
 
 		$("input#tagTextInput").remove();
 	}
+	function getEntryElement(entryId) {
+		return $("li#entryid" + entryId);
+	}
 	
 	function updateEntry(entryId, text, defaultToNow) {
 		cacheNow();
@@ -789,6 +795,8 @@ $(function(){
 			showAlert("Please wait until online to update an entry");
 			return;
 		}
+		var oldEntry = getEntryElement(entryId);
+		$(".content-wrapper", oldEntry).html(text);
 		var argsToSend = getCSRFPreventionObject("updateEntryDataCSRF", { entryId:entryId,
 			currentTime:currentTimeUTC, text:text, baseDate:cachedDateUTC,
 			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' });
