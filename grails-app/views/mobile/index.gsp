@@ -128,9 +128,9 @@ function getCSRFPreventionObjectMobile(key, data) {
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
-<link rel="stylesheet" href="/static/css/mobile.css" />
+<link rel="stylesheet" href="/static/css/mobile.css?ver=1" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=8" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=9" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
@@ -559,6 +559,7 @@ $(function(){
 					var $unselectee = $(this).parent("li");
 					checkAndUpdateEntry($unselectee);
 					$unselectee.data('entryIsSelected', 0);
+					$("a.entryDelete", $unselectee).hide();
 				}
 			});
 			
@@ -667,7 +668,7 @@ $(function(){
 		}
 
 		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : escapehtml(dateStr)) + escapehtml(description) + escapehtml(formattedAmount) + escapehtml(formatUnits(units)) + (timeAfterTag ? escapehtml(dateStr) : '') + (comment != '' ? ' ' + escapehtml(comment) : '')
-			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" style="padding-left:8px;color:#999999;float:right;" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/static/images/x.gif"></a>';
+			+ '</span><a class="entryDelete" id="entrydelid' + id + '" href="#" onclick="deleteEntryId(' + id + ')"><img style="width="12" height="12" src="/static/images/x.gif"></a>';
 	
 		if(isUpdating) {
 			$("#entry0 li#entryid" + id).html(innerHTMLContent);

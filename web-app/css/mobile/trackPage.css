@@ -364,6 +364,21 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	color: #A9A9A9;
 }
 
+#entry0 li.entry a.entryDelete {
+	margin-top: -12px;
+	margin-right: -14px;
+	padding: 14px;
+	color: #999999;
+	float: right;
+}
+
+#entry0 li.entry.ui-selected a.entryDelete {
+	margin-top: -12px;
+	margin-right: -14px;
+	padding-top: 16px;
+	padding-bottom: 16px;
+}
+
 #entry0 li.entry.ghost a.entryDelete {
 	display: inline;
 }

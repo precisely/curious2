@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 312
+# rev 313
 
 CACHE:
 #/mobile/index
@@ -12,7 +12,7 @@ https://dev.wearecurio.us/static/js/curious/base.js?ver=7
 https://dev.wearecurio.us/static/js/curious/curious.js?ver=8
 https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=8
 https://dev.wearecurio.us/static/js/mobile/mobileBase.js?ver=7
-https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=8
+https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=9
 https://dev.wearecurio.us/static/images/favicon.ico
 https://dev.wearecurio.us/static/images/apple-touch-icon-precomposed.png
 https://dev.wearecurio.us/static/images/email.png
@@ -29,7 +29,7 @@ https://dev.wearecurio.us/static/images/logo_mobile_lhp.gif
 <g:else>
 https://dev.wearecurio.us/static/images/logo.gif
 </g:else>
-https://dev.wearecurio.us/static/css/mobile.css
+https://dev.wearecurio.us/static/css/mobile.css?ver=1
 https://dev.wearecurio.us/static/css/smoothness/jquery-ui-1.8.16.custom2.css
 https://dev.wearecurio.us/static/css/smoothness/images/ui-bg_flat_75_ffffff_40x100.png
 https://dev.wearecurio.us/static/css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png
