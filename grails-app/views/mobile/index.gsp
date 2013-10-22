@@ -531,7 +531,7 @@ $(function(){
 	function selected(selectee) {
 		var state = selectee.data('entryIsSelected');
 		if ($("input#tagTextInput").size() == 1) return;
-		selectee.siblings().data('entryIsSelected', 0);
+		selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
 		var $contentWrapper = selectee.find(".content-wrapper");
 
 		if (state == 0 || state == undefined) {

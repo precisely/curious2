@@ -400,7 +400,7 @@ $(function(){
 		var state = $selectee.data('entryIsSelected');
 		var $contentWrapper = $selectee.find(".content-wrapper");
 		if ($("#tagTextInput").size() == 1) return;
-		$selectee.siblings().data('entryIsSelected', 0);
+		$selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
 
 		if (state == undefined || state == 0) {
 			lastEntrySelected = $selectee;
