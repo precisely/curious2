@@ -980,6 +980,11 @@ class Entry {
 	def unGhost() {
 		if (this.repeatType?.isGhost()) {
 			this.repeatType = this.repeatType.toggleGhost()
+			
+			def (baseTag, durationType) = getDurationInfoFromStrings(this.tag.getDescription(), this.units, this.repeatType)
+			
+			this.durationType = durationType
+			this.processAndSave()
 		}
 		
 		return this
@@ -997,7 +1002,6 @@ class Entry {
 		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
 			this.unGhost()
-			Utils.save(this, true)
 			
 			return this
 		}
@@ -1006,10 +1010,11 @@ class Entry {
 		m['timeZoneOffsetSecs'] = this.timeZoneOffsetSecs
 		m['description'] = this.tag.getDescription()
 		m['amount'] = this.repeatType.isReminder() ? null : this.amount
-		m['units'] = this.units
-		m['baseTag'] = this.baseTag
-		m['durationType'] = DurationType.NONE
 		m['amountPrecision'] = this.amountPrecision
+		m['units'] = this.units
+		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], null)
+		m['baseTag'] = baseTag
+		m['durationType'] = durationType
 
 		if (this.repeatType.isContinuous()) {
 			// continuous tags create new tags based on the template
@@ -1034,7 +1039,6 @@ class Entry {
 			def retVal = Entry.create(userId, m, null)
 			retVal.unGhost()
 			
-			Utils.save(retVal, true)
 			return retVal
 		}
 	}

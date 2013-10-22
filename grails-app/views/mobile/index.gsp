@@ -528,8 +528,9 @@ $(function(){
 	/*
 	 * Gets called on selection of the entry, or used to select an entry.
 	 */
-	function selected(selectee) {
+	function selected(selectee, forceUpdate) {
 		var state = selectee.data('entryIsSelected');
+		selectee.data('forceUpdate', forceUpdate);
 		if ($("input#tagTextInput").size() == 1) return;
 		selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
 		var $contentWrapper = selectee.find(".content-wrapper");
@@ -578,7 +579,7 @@ $(function(){
 		var isGhost = entry.data("isGhost");
 		
 		if (!isGhost) {
-			selected(entry);
+			selected(entry, false);
 			return;
 		}
 		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
@@ -594,7 +595,7 @@ $(function(){
 							displayEntry(newEntry, false, {replaceEntry:gEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
-						selected($newEntry);
+						selected($newEntry, true);
 					}
 				});
 	}
@@ -773,7 +774,7 @@ $(function(){
 		var newText = $("input#tagTextInput").val();
 
 		$contentWrapper.show();
-		if(oldText != newText) {
+		if (oldText != newText || $unselectee.data('forceUpdate')) {
 			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 			updateEntry(currentEntryId, newText, defaultToNow);
 		}
@@ -805,15 +806,16 @@ $(function(){
 		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
-				$.each(entries[0], function(index, entry) {
+				refreshEntries(entries[0]);
+				// $.each(entries[0], function(index, entry) {
 					/**
 					 * Finding only that entry which is recently updated, and
 					 * refreshing only that entry in UI.
 					 */
-					if(entry.id == entryId) {
+				/*	if(entry.id == entryId) {
 						displayEntry(entry, true);
 					}
-				})
+				}) */
 				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -840,7 +842,7 @@ $(function(){
 			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' })
 
 		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend),
-		function(entries){
+		function(entries) {
 			if (checkData(entries)) {
 				if (entries[1] != null) {
 					showAlert(entries[1]);
@@ -933,7 +935,7 @@ $(function(){
 		});
 		$("#entry0").on("listableselected", function(e, ui) {
 			var selectee = $("#" + ui.selected.id);
-			selected(selectee);
+			selected(selectee, false);
 		});
 		
 		$(document).on("click", "li.entry.ghost", function(e) {
