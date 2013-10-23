@@ -52,9 +52,12 @@ class MobiledataController extends DataController {
 		debug "MobiledataController.dologinData()"
 		
 		def user = execLogin()
+		def csrfTokens=c.jsCSRFToken([keys:"addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, "+
+			"deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,activateGhostEntryCSRF",noScriptTag:true])
 		if (user) {
 			debug "Logged in, mobile session ID " + session.mobileSession.fetchUuid()
-			renderJSONGet([user:user, success:true, mobileSessionId:session.mobileSession.fetchUuid()])
+			renderJSONGet([user:user, success:true, mobileSessionId:session.mobileSession.fetchUuid(),
+				csrfTokens:csrfTokens])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])

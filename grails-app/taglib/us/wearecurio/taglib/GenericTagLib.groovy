@@ -36,7 +36,9 @@ class GenericTagLib {
 		}
 		SynchronizerTokensHolder tokensHolder = SynchronizerTokensHolder.store(session)
 
-		out << "<script type=\"text/javascript\">"
+		if(!attrs.noScriptTag) {
+			out << "<script type=\"text/javascript\">"
+		}
 		out << "\$(function() {$lineSeperator"
 		out << "var App = window.App;$lineSeperator"
 		attrs.keys.tokenize(",").each {
@@ -44,7 +46,9 @@ class GenericTagLib {
 			out << "App.CSRF.${key } = \"${tokensHolder.generateToken(key) }\";$lineSeperator"
 		}
 		out << "});"
-		out << "</script>"
+		if(!attrs.noScriptTag) {
+			out << "</script>"
+		}
 	}
 
 }
