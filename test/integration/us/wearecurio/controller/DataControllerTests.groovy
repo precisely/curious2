@@ -506,7 +506,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def outString = out.toString()
 		
 		assert outString.equals('"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision"' \
-			+ "\n" + '"2010-07-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",256,3,86400' \
+			+ "\n" + '"2010-07-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",768,3,86400' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180' \
 			+ "\n")
