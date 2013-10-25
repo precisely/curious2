@@ -14,9 +14,7 @@ import org.apache.commons.logging.LogFactory
 class MobiledataController extends DataController {
 
 	private static def log = LogFactory.getLog(this)
-	private static String csrfKeys = "addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, "+
-			"deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,activateGhostEntryCSRF"
-
+	
 	static debug(str) {
 		log.debug(str)
 	}
@@ -54,11 +52,9 @@ class MobiledataController extends DataController {
 		debug "MobiledataController.dologinData()"
 		
 		def user = execLogin()
-		def csrfTokens=c.jsCSRFToken([keys:csrfKeys,noScriptTag:true])
 		if (user) {
 			debug "Logged in, mobile session ID " + session.mobileSession.fetchUuid()
-			renderJSONGet([user:user, success:true, mobileSessionId:session.mobileSession.fetchUuid(),
-				csrfTokens:csrfTokens])
+			renderJSONGet([user:user, success:true, mobileSessionId:session.mobileSession.fetchUuid()])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
@@ -86,8 +82,24 @@ class MobiledataController extends DataController {
 		}
 	}
 		
-	def refreshCSRFTokens() {
-		def csrfTokens=c.jsCSRFToken([keys:csrfKeys,noScriptTag:true])
-		renderJSONGet([success:true, csrfTokens:csrfTokens])
+	def registerForPushNotification() {
+		def user = sessionUser()
+		debug user.dump()
+		PushNotificationDevice pushNotificationDeviceInstance = new PushNotificationDevice()
+		pushNotificationDeviceInstance.token = params.token
+		pushNotificationDeviceInstance.deviceType = params.int('deviceType')
+		pushNotificationDeviceInstance.userId = user.id
+		if (pushNotificationDeviceInstance.validate()) {
+			pushNotificationDeviceInstance.save()
+		}
+		else {
+			pushNotificationDeviceInstance.errors.allErrors.each {
+				println it
+			}
+		}
+		
+		debug params.dump()
+		debug "Registering device for push notification"
+		renderJSONGet([success:true])
 	}
 }

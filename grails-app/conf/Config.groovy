@@ -77,6 +77,11 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
+android.gcm.api.key = 'AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk'
+android.gcm.time.to.live=1419200
+android.gcm.delay.'while'.idle=false
+android.gcm.retries=3
+
 environments {
     development {
         grails.logging.jul.usebridge = true
