@@ -25,6 +25,7 @@ class EntryTests extends GroovyTestCase {
 	Date baseDate
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
+	Date dayAfterTomorrowBaseDate
 	Date lateBaseDate
 	Date lateCurrentTime
 	Date microlateCurrentTime
@@ -44,6 +45,7 @@ class EntryTests extends GroovyTestCase {
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
 		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 2:15 pm")
+		dayAfterTomorrowBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
 		lateBaseDate = dateFormat.parse("July 3, 2010 12:00 am")
 		microlateCurrentTime = dateFormat.parse("July 3, 2010 1:58 pm")
 		
@@ -345,7 +347,73 @@ class EntryTests extends GroovyTestCase {
 		
 		assert foundRepeat
 		
-		Entry.deleteGhost(entry, tomorrowBaseDate)
+		Entry.deleteGhost(entry, tomorrowBaseDate, true)
+		
+		assert entry.getRepeatEnd().equals(tomorrowBaseDate)
+		
+		list = Entry.fetchListData(user, tomorrowBaseDate, this.tomorrowCurrentTime)
+		
+		for (record in list) {
+			if (record.id == entry.getId())
+				assert false
+		}
+	}
+	
+	@Test
+	void testDeleteTimedRepeat() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", baseDate, true), null)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+		}
+
+		def list = Entry.fetchListData(user, tomorrowBaseDate, this.tomorrowCurrentTime)
+		
+		boolean foundRepeat = false
+		
+		for (record in list) {
+			if (record.id == entry.getId())
+				foundRepeat = true
+		}
+		
+		assert foundRepeat
+		
+		Entry.deleteGhost(entry, tomorrowBaseDate, false)
+		
+		assert entry.getRepeatEnd().equals(tomorrowBaseDate)
+		
+		list = Entry.fetchListData(user, dayAfterTomorrowBaseDate, this.tomorrowCurrentTime)
+		
+		for (record in list) {
+			def e2 = Entry.get(record.id)
+			assert e2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-03T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
+			assert e2.getId() != entry.getId()
+		}
+	}
+	
+	@Test
+	void testDeleteTimedRepeatAll() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", baseDate, true), null)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat daily, repeatType:513)")
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+		}
+
+		def list = Entry.fetchListData(user, tomorrowBaseDate, this.tomorrowCurrentTime)
+		
+		boolean foundRepeat = false
+		
+		for (record in list) {
+			if (record.id == entry.getId())
+				foundRepeat = true
+		}
+		
+		assert foundRepeat
+		
+		Entry.deleteGhost(entry, tomorrowBaseDate, true)
 		
 		assert entry.getRepeatEnd().equals(tomorrowBaseDate)
 		

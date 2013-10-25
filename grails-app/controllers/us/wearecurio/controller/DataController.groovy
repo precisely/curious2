@@ -411,7 +411,9 @@ class DataController extends LoginController {
 			renderStringGet("Failed to activate entry due to internal server error.")
 	}
 
-	def deleteGhostEntry(Long entryId) {
+	def deleteGhostEntryData() {
+		debug "DataController.deleteGhostEntryData() params:" + params
+		
 		def user = sessionUser()
 
 		if (user == null) {
@@ -420,15 +422,16 @@ class DataController extends LoginController {
 			return
 		}
 
-		def entry = Entry.get(entryId)
+		def entry = Entry.get(Long.parseLong(params.entryId))
 		def userId = entry.getUserId();
+		def allFuture = params.all?.equals("true") ? true : false
 		
 		def currentDate = params.date == null ? null : parseDate(params.date)
 		
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to delete this entry.')
 		} else
-			Entry.deleteGhost(entry, currentDate)
+			Entry.deleteGhost(entry, currentDate, allFuture)
 		
 		renderStringGet("success")
 	}

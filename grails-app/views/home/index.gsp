@@ -9,7 +9,7 @@
 <r:require module="selectable"/>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
-showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF" />
 
 <r:script>
@@ -181,6 +181,16 @@ function getEntryElement(entryId) {
 	return $("li#entryid" + entryId);
 }
 
+function deleteGhost($entryToDelete, entryId, allFuture) {
+	$.getJSON(makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
+			all:(allFuture ? "true" : "false"), date:cachedDateUTC})),
+		function(ret) {
+			if (checkData(ret, 'success', "Error deleting entry")) {
+				$entryToDelete.remove();
+			}
+		});
+}
+
 function deleteEntryId(entryId) {
 	cacheNow();
 	
@@ -189,14 +199,16 @@ function deleteEntryId(entryId) {
 		return false;
 	}
 	var $entryToDelete = getEntryElement(entryId);
-	if($entryToDelete.data("isGhost")) {
-		$.getJSON("/home/deleteGhostEntry?entryId=" + entryId +
-				"&date=" + cachedDateUTC + "&" + getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
-				function(ret) {
-					if (checkData(ret, 'success', "Error deleting entry")) {
-						$entryToDelete.remove();
-					}
+	if ($entryToDelete.data("isGhost")) {
+		if ($entryToDelete.data("isContinuous")) {
+			deleteGhost($entryToDelete, entryId, true);
+		} else {
+			showAB("Delete just this one event or all future events?", "One", "All", function() {
+					deleteGhost($entryToDelete, entryId, false);
+				}, function() {
+					deleteGhost($entryToDelete, entryId, true);
 				});
+		}
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
@@ -527,6 +539,11 @@ $(function(){
 </r:script>
 </head>
 <body class="track-page">
+<!-- JQUERY UI DIALOG BOX -->
+<div id="alert-message" title="" style="display:none">
+	<p>&nbsp;<p>
+	<div id="alert-message-text"></div>
+</div>
 <!-- MAIN -->
 <div class="main" id="trackmain">
 

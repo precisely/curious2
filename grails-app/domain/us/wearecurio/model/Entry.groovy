@@ -330,17 +330,63 @@ class Entry {
 	 * @param currentDate
 	 * @return
 	 */
-	public static deleteGhost(Entry entry, Date baseDate) {
+	public static deleteGhost(Entry entry, Date baseDate, boolean allFuture) {
 		long entryTime = entry.getDate().getTime()
 		long baseDateTime = baseDate.getTime()
-		if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
-			TagStatsRecord record = new TagStatsRecord()
-			Entry.delete(entry, record)
-		} else if (entryTime <= baseDateTime) { // this should always be true
-			entry.setRepeatEnd(baseDate)
-			Utils.save(entry, true)
+		if (allFuture) {
+			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
+				TagStatsRecord record = new TagStatsRecord()
+				Entry.delete(entry, record)
+			} else if (entryTime <= baseDateTime) { // this should always be true
+				entry.setRepeatEnd(baseDate)
+				Utils.save(entry, true)
+			} else {
+				log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
+			}
 		} else {
-			log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
+			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data, change to next day
+				entry.setDate(entry.getDate() + 1)
+				Utils.save(entry, true)
+			} else if (entryTime <= baseDateTime) { // this should always be true
+				entry.setRepeatEnd(baseDate)
+				Utils.save(entry, true)
+				
+				long diff = entryTime - baseDateTime
+				
+				def m = [:]
+				m['description'] = entry.getTag().getDescription()
+				m['date'] = new Date(baseDateTime + ((diff % DAYTICKS + DAYTICKS) % DAYTICKS) + DAYTICKS)
+				
+				def repeatTypes = [entry.getRepeatType().getId(), entry.getRepeatType().toggleGhost().getId()]
+				
+				// look for entry that already exists one day later
+				// new date is one day after current baseDate
+
+				String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
+				
+				def entries = Entry.executeQuery(queryStr, [desc:m['description'], entryDate:m['date'], userId:entry.getUserId(), repeatIds:repeatTypes])
+				
+				Entry e = entries[0]
+				
+				if (e != null) {
+					return // subsequent repeat entry already exists
+				}
+	
+				// create new entry one day after current baseDate
+				m['timeZoneOffsetSecs'] = entry.getTimeZoneOffsetSecs()
+				m['amount'] = entry.getAmount()
+				m['amountPrecision'] = entry.getAmountPrecision()
+				m['units'] = entry.getUnits()
+				m['baseTag'] = entry.getBaseTag()
+				m['durationType'] = entry.getDurationType()
+				m['repeatType'] = entry.getRepeatType()
+				if (!m['repeatType'].isGhost()) m['repeatType'] = m['repeatType'].toggleGhost()
+				m['comment'] = entry.getComment()
+				m['datePrecisionSecs'] = entry.getDatePrecisionSecs()
+				def retVal = Entry.create(entry.getUserId(), m, null)
+			} else {
+				log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
+			}
 		}
 	}
 	
@@ -951,10 +997,16 @@ class Entry {
 				if (e != null) {
 					long yesterday = this.date.getTime() - DAYTICKS
 					if (yesterday < e.getDate().getTime()) {
-						e.setRepeatEnd(e.getDate())
-					} else
-						e.setRepeatEnd(new Date(yesterday))
-					Utils.save(e, true)
+						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > e.getDate.getTime()) { // only reset repeatEnd if it is later
+							e.setRepeatEnd(e.getDate())
+							Utils.save(e, true)
+						}
+					} else {
+						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > yesterday) { // only reset repeatEnd if it is later
+							e.setRepeatEnd(new Date(yesterday))
+							Utils.save(e, true)
+						}
+					}
 				}
 			}
 			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and entry.user_id = :userId order by entry.date asc limit 1"

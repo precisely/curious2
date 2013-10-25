@@ -55,6 +55,10 @@ button {
 	margin: .1em 0
 }
 
+.ui-dialog-titlebar {
+	height:3em;
+}
+
 .okCancelDiv {
 	text-align:right;
 }

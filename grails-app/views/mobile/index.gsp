@@ -121,10 +121,9 @@ function getCSRFPreventionObjectMobile(key, data) {
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=8"></script>
-<script type="text/javascript" src="/static/js/mobile/mobileBase.js?ver=7"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
@@ -132,7 +131,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <link type="text/css" href="/static/css/mobile/trackPage.css?ver=9" rel="stylesheet">
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
 
 <r:script>
@@ -509,7 +508,7 @@ $(function(){
 		
 		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
-			function(data){
+			function(data) {
 				if (checkData(data)) {
 					console.log("refresh entries from get list");
 					refreshEntries(data, true);
@@ -582,8 +581,7 @@ $(function(){
 			selected(entry, false);
 			return;
 		}
-		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
-				+ getCSRFPreventionURIMobile("activateGhostEntryCSRF") + "&callback=?",
+		$.getJSON(makeGetUrl("activateGhostEntry"), makeGetArgs(getCSRFPreventionObjectMobile("activateGhostEntryCSRF", {entryId:entryId, date:cachedDateUTC})),
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
@@ -720,6 +718,16 @@ $(function(){
 		}
 	}
 	
+	function deleteGhost($entryToDelete, entryId, allFuture) {
+		$.getJSON(makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObjectMobile("deleteGhostEntryDataCSRF", {entryId:entryId,
+				all:(allFuture ? "true" : "false"), date:cachedDateUTC})),
+			function(ret) {
+				if (checkData(ret, 'success', "Error deleting entry")) {
+					$entryToDelete.remove();
+				}
+			});
+	}
+	
 	function deleteEntryId(entryId) {
 		cacheNow();
 	
@@ -735,27 +743,34 @@ $(function(){
 		if (entryId == undefined) {
 			showAlert("Please select entry you wish to delete");
 		} else {
-			//if (!confirm("Are you sure you want to delete this entry?"))
-			//	return;
-			if (currentEntryId == entryId) {
-				setEntryText('');
-				currentEntryId = null;
+			var $entryToDelete = getEntryElement(entryId);
+			if ($entryToDelete.data("isGhost")) {
+				if ($entryToDelete.data("isContinuous")) {
+					deleteGhost($entryToDelete, entryId, true);
+				} else {
+					showAB("Delete just this one event or all future events?", "One", "All", function() {
+							deleteGhost($entryToDelete, entryId, false);
+						}, function() {
+							deleteGhost($entryToDelete, entryId, true);
+						});
+				}
+			} else {
+				var argsToSend = getCSRFPreventionObjectMobile("deleteEntryDataCSRF", { entryId:entryId,
+					currentTime:currentTimeUTC, baseDate:cachedDateUTC,
+					timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
+		
+				$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
+					function(entries) {
+						if (checkData(entries)) {
+							refreshEntries(entries[0], false);
+							updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+							if (entries[2] != null)
+								updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+						} else {
+							showAlert("Error deleting entry");
+						}
+					});
 			}
-			var argsToSend = getCSRFPreventionObjectMobile("deleteEntryDataCSRF", { entryId:entryId,
-				currentTime:currentTimeUTC, baseDate:cachedDateUTC,
-				timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
-
-			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
-				function(entries){
-					if (checkData(entries)) {
-						refreshEntries(entries[0], false);
-						updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
-						if (entries[2] != null)
-							updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
-					} else {
-						showAlert("Error deleting entry");
-					}
-				});
 		}
 	}
 

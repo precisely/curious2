@@ -69,6 +69,12 @@ a,a:link,a:hover,a:visited {
 .bugs a span {	
 	display:none;
 }
+.ui-dialog-titlebar {
+	height: auto !important;
+}
+#alert-message-text {
+	font-size: 12pt;
+}
 .header {
 	padding:10px 0px 0px 0px;
 }

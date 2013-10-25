@@ -8,11 +8,7 @@ modules = {
 	selectable {
 		resource url: [dir: "js/jquery", file: "jquery.selectable.custom.js"]
 	}
-	mobileBase {
-		resource url: [dir: "js/mobile", file: "mobileBase.js"]
-	}
 	mobileTrackPage {
 		resource url: [dir: "css/mobile", file: "trackPage.css"]
-		dependsOn "mobileBase"
 	}
 }
