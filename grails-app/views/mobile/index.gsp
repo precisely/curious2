@@ -129,7 +129,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css?ver=1" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=9" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=10" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />

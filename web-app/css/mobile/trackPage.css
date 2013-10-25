@@ -366,6 +366,7 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 
 #entry0 li.entry.ghost {
 	color: #A9A9A9;
+	background-color: #EDEFF0;
 }
 
 #entry0 li.entry a.entryDelete {
