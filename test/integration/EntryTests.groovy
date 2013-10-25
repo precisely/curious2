@@ -301,6 +301,21 @@ class EntryTests extends GroovyTestCase {
 	}
 	
 	@Test
+	void testRepeatAgain() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", baseDate, true), null)
+		
+		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", tomorrowBaseDate, true), null)
+		
+		assert entry.getRepeatEnd().equals(entry.getDate())
+		
+		Entry.delete(entry2, new TagStatsRecord())
+		
+		def entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", dayAfterTomorrowBaseDate, true), null)
+
+		assert entry.getRepeatEnd().equals(entry.getDate())
+	}
+	
+	@Test
 	void testRepeatStart() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep start repeat", earlyBaseDate, true), null)
 		assert entry.getDurationType().equals(Entry.DurationType.NONE)

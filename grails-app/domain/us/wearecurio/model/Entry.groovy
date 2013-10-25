@@ -985,7 +985,7 @@ class Entry {
 				}
 			}
 		} else {
-			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and time(entry.date) = time(:entryDate) and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 			
 			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:DAILY_IDS])
 			
@@ -996,20 +996,13 @@ class Entry {
 				
 				if (e != null) {
 					long yesterday = this.date.getTime() - DAYTICKS
-					if (yesterday < e.getDate().getTime()) {
-						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > e.getDate().getTime()) { // only reset repeatEnd if it is later
-							e.setRepeatEnd(e.getDate())
-							Utils.save(e, true)
-						}
-					} else {
-						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > yesterday) { // only reset repeatEnd if it is later
-							e.setRepeatEnd(new Date(yesterday))
-							Utils.save(e, true)
-						}
+					if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > yesterday) { // only reset repeatEnd if it is later
+						e.setRepeatEnd(new Date(yesterday))
+						Utils.save(e, true)
 					}
 				}
 			}
-			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and entry.user_id = :userId order by entry.date asc limit 1"
+			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and time(entry.date) = time(:entryDate) and entry.user_id = :userId order by entry.date asc limit 1"
 			
 			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
 			
