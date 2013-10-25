@@ -997,7 +997,7 @@ class Entry {
 				if (e != null) {
 					long yesterday = this.date.getTime() - DAYTICKS
 					if (yesterday < e.getDate().getTime()) {
-						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > e.getDate.getTime()) { // only reset repeatEnd if it is later
+						if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > e.getDate().getTime()) { // only reset repeatEnd if it is later
 							e.setRepeatEnd(e.getDate())
 							Utils.save(e, true)
 						}
