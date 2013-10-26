@@ -1204,14 +1204,13 @@ class Entry {
 			desc['date'] = result['dateTime']
 			if ((!entry.getDate().equals(result['dateTime'])) && entry.repeatType != null) { // ghost timed entry
 				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
+				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
+					desc['amount'] = null
+					desc['amountPrecision'] = -1
+				}
 			} else
 				desc['repeatType'] = entry.repeatType?.id
-			
-			if (desc['repeatType'] != null && (desc['repeatType'] & RepeatType.REMIND_BIT != 0)) {
-				desc['amount'] = null
-				desc['amountPrecision'] = -1
-			}
-			
+						
 			timedResults.add(desc)
 		}
 		
