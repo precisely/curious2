@@ -1206,10 +1206,13 @@ class Entry {
 				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
 			} else
 				desc['repeatType'] = entry.repeatType?.id
+			
+			if (desc['repeatType'] & RepeatType.REMIND_BIT) {
+				desc['amount'] = null
+				desc['amountPrecision'] = -1
+			}
+			
 			timedResults.add(desc)
-			/* if ((!entry.repeatType?.isGhost()) && abs(entry.getDate().getTime() - nowTime) < HOURTICKS) {
-				resultTagIds.add(entry.getTag().getId())
-			} */
 		}
 		
 		// get continuous repeating elements

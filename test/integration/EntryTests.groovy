@@ -304,6 +304,8 @@ class EntryTests extends GroovyTestCase {
 	void testRepeatAgain() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", baseDate, true), null)
 		
+		def entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5pm repeat daily", baseDate, true), null)
+		
 		def entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", tomorrowBaseDate, true), null)
 		
 		assert entry.getRepeatEnd().equals(entry.getDate())
@@ -514,6 +516,20 @@ class EntryTests extends GroovyTestCase {
 		}
 	}
 
+	@Test
+	void testRemindList() {
+		TagStatsRecord record = new TagStatsRecord()
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 75 2pm remind", baseDate, true), record)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:75.000000000, units:, amountPrecision:3, comment:remind, repeatType:5)")
+		
+		def list = Entry.fetchListData(user, tomorrowBaseDate, currentTime)
+		
+		for (e in list) {
+			assert e.amount == null
+		}
+	}
+//	[{id=72, userId=12, date=2010-07-02 17:00:00.0, datePrecisionSecs=180, timeZoneOffsetSecs=-14400, description=bread, amount=75.000000000, amountPrecision=3, units=, comment=remind, repeatType=517}]
 	@Test
 	void testRepeatParsing() {
 		def res = Entry.parse(currentTime, timeZone, "bread repeat daily at 4pm", baseDate, true)
