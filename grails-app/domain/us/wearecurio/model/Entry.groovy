@@ -66,7 +66,9 @@ class Entry {
 		DAILYGHOST(GHOST_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000),
 		WEEKLYGHOST(GHOST_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
 		
-		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000)
+		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
+
+		GHOST(GHOST_BIT, 0)
 		
 		public static final int DAILY_BIT = 1
 		public static final int WEEKLY_BIT = 2
@@ -120,6 +122,10 @@ class Entry {
 		def RepeatType toggleGhost() {
 			if (isGhost())
 				return RepeatType.get(this.id & (~GHOST_BIT))
+			return RepeatType.get(this.id | GHOST_BIT)
+		}
+		
+		def RepeatType makeGhost() {
 			return RepeatType.get(this.id | GHOST_BIT)
 		}
 		
@@ -1046,7 +1052,14 @@ class Entry {
 		
 		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
-			this.unGhost()
+			
+			if (!this.repeatType.isReminder())
+				this.unGhost()
+			else {
+				this.setAmount(null)
+				this.setAmountPrecision(-1)
+				Utils.save(this, true)
+			}
 			
 			return this
 		}
@@ -1076,13 +1089,15 @@ class Entry {
 			
 			Utils.save(retVal, true)
 			return retVal
-		} else { // this repeat element isn't today
+		} else { // this repeat element isn't continuous
 			m['comment'] = this.comment
 			m['repeatType'] = this.repeatType
 			m['date'] = new Date(((date.getTime() - dayStartTime) % DAYTICKS + DAYTICKS) + dayStartTime)
 			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 			def retVal = Entry.create(userId, m, null)
-			retVal.unGhost()
+			
+			if (!this.repeatType.isReminder())
+				retVal.unGhost()
 			
 			return retVal
 		}
@@ -1133,7 +1148,10 @@ class Entry {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		setRepeatType(m['repeatType']?.forUpdate()) // do not set continuous or ghost repeat types on edit
+		if (amt == null)
+			setRepeatType(m['repeatType'])
+		else
+			setRepeatType(m['repeatType']?.forUpdate()) // do not set continuous or ghost repeat types on edit
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
@@ -1853,7 +1871,7 @@ class Entry {
 			}
 		}
 
-		if (today) {
+		if (today && (!forUpdate)) {
 			// if base date is today and time is greater than one hour from now, assume
 			// user meant yesterday, unless the element is a ghost
 			if (retVal['repeatType'] == null || (!retVal['repeatType'].isGhost())) {
@@ -1876,6 +1894,13 @@ class Entry {
 		}
 		
 		retVal['date'] = date
+		
+		if (retVal['amount'] == null) {
+			if (retVal['repeatType'] == null)
+				retVal['repeatType'] = RepeatType.GHOST
+			else
+				retVal['repeatType'] = retVal['repeatType'].makeGhost()
+		}
 				
 		return retVal
 	}

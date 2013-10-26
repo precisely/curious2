@@ -301,6 +301,23 @@ class EntryTests extends GroovyTestCase {
 	}
 	
 	@Test
+	void testRemindActivate() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread remind", earlyBaseDate, true), null)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517)")
+		def entries = Entry.fetchListData(user, baseDate, currentTime)
+		for (entryDesc in entries) {
+			assert entryDesc['id'] == entry.getId()
+		}
+		
+		def activated = entry.activateGhostEntry(baseDate, lateCurrentTime)
+		assert activated.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:null, units:, amountPrecision:-1, comment:remind, repeatType:517)")
+
+		def activated2 = entry.activateGhostEntry(earlyBaseDate, currentTime)
+		def v = activated.valueString()
+		assert activated2.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneOffsetSecs:-14400, description:bread, amount:null, units:, amountPrecision:-1, comment:remind, repeatType:517)")
+	}
+	
+	@Test
 	void testRepeatAgain() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm repeat daily", baseDate, true), null)
 		
