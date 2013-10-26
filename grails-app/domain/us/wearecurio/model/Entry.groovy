@@ -1207,7 +1207,7 @@ class Entry {
 			} else
 				desc['repeatType'] = entry.repeatType?.id
 			
-			if (desc['repeatType'] & RepeatType.REMIND_BIT) {
+			if (desc['repeatType'] != null && (desc['repeatType'] & RepeatType.REMIND_BIT != 0)) {
 				desc['amount'] = null
 				desc['amountPrecision'] = -1
 			}
