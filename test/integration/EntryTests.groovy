@@ -538,12 +538,37 @@ class EntryTests extends GroovyTestCase {
 		
 		for (e in list) {
 			assert e.amount == null
+			assert (e.repeatType & Entry.RepeatType.GHOST_BIT) != 0
 		}
 
 		list = Entry.fetchListData(user, baseDate, currentTime)
 		
 		for (e in list) {
 			assert e.amount.intValue() == 75
+			assert (e.repeatType & Entry.RepeatType.GHOST_BIT) == 0
+		}
+	}
+
+	@Test
+	void testRemindList2() {
+		TagStatsRecord record = new TagStatsRecord()
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm remind", baseDate, true), record)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517)")
+		
+		def list = Entry.fetchListData(user, tomorrowBaseDate, currentTime)
+		
+		for (e in list) {
+			assert e.amount == null
+			assert (e.repeatType & Entry.RepeatType.GHOST_BIT) != 0
+		}
+
+		list = Entry.fetchListData(user, baseDate, currentTime)
+		
+		for (e in list) {
+			assert e.amount == null
+			assert (e.repeatType & Entry.RepeatType.GHOST_BIT) != 0
 		}
 	}
 
