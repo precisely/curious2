@@ -535,7 +535,7 @@ class EntryTests extends GroovyTestCase {
 			assert e.amount.intValue() == 75
 		}
 	}
-//	[{id=72, userId=12, date=2010-07-02 17:00:00.0, datePrecisionSecs=180, timeZoneOffsetSecs=-14400, description=bread, amount=75.000000000, amountPrecision=3, units=, comment=remind, repeatType=517}]
+
 	@Test
 	void testRepeatParsing() {
 		def res = Entry.parse(currentTime, timeZone, "bread repeat daily at 4pm", baseDate, true)

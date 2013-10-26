@@ -1208,6 +1208,11 @@ class Entry {
 					desc['amount'] = null
 					desc['amountPrecision'] = -1
 				}
+			} else if (entry.repeatType != null) {
+				if (((entry.repeatType.id & RepeatType.GHOST_BIT) != 0) && ((entry.repeatType.id & RepeatType.REMIND_BIT) != 0)) {
+					desc['amount'] = null
+					desc['amountPrecision'] = -1
+				}
 			} else
 				desc['repeatType'] = entry.repeatType?.id
 						
