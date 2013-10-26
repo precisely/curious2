@@ -86,7 +86,12 @@ if (!localStorageSupported()) {
 	console.log("HTML5 local storage error");
 }
 
+<g:if test="${entryId}">
 var activateEntryId = ${entryId};
+</g:if>
+<g:else>
+var activateEntryId = -1;
+</g:else>
 
 function doLogout() {
 	console.log("Logging out...");
