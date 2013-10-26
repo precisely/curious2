@@ -1714,7 +1714,6 @@ class Entry {
 					}
 				}
 			}
-			retVal['date'] = date;
 		} else if (date != null) {
 			if (hours == null && date != null) {
 				date = time;
@@ -1734,29 +1733,9 @@ class Entry {
 					ts += minutes * 60000L;
 				}
 				date = new Date(ts);
-				if (today) {
-					// if base date is today and time is greater than one hour from now, assume
-					// user meant yesterday
-					if (date.getTime() > time.getTime() + HOURTICKS) {
-						// if am/pm is not specified, then assume user meant half a day ago
-						if (!foundAMPM) {
-							date = new Date(date.getTime() - HALFDAYTICKS)
-							retVal['status'] = "Entering event a half day ago";
-						} else {
-							date = new Date(date.getTime() - DAYTICKS);
-							retVal['status'] = "Entering event for yesterday";
-						}
-					} else
-					// if base date is today and AM/PM isn't specified and time is more than 12 hours ago,
-					// enter as just 12 hours ago
-					if ((!foundAMPM) && (time.getTime() - date.getTime() > HALFDAYTICKS)) {
-						date = new Date(date.getTime() + HALFDAYTICKS)
-					}
-				}
 			}
-			retVal['date'] = date;
 		} else {
-			retVal['date'] = null;
+			date = null;
 		}
 
 		// post-process parsed tag
@@ -1863,7 +1842,7 @@ class Entry {
 					}
 				}
 				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
-					retVal['date'] = new Date(baseDate.getTime() + HALFDAYTICKS);
+					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				}
 			} else {
@@ -1873,6 +1852,30 @@ class Entry {
 			}
 		}
 
+		if (today) {
+			// if base date is today and time is greater than one hour from now, assume
+			// user meant yesterday, unless the element is a ghost
+			if (retVal['repeatType'] == null || (!retVal['repeatType'].isGhost())) {
+				if (date.getTime() > time.getTime() + HOURTICKS) {
+					// if am/pm is not specified, then assume user meant half a day ago
+					if (!foundAMPM) {
+						date = new Date(date.getTime() - HALFDAYTICKS)
+						retVal['status'] = "Entering event a half day ago";
+					} else {
+						date = new Date(date.getTime() - DAYTICKS);
+						retVal['status'] = "Entering event for yesterday";
+					}
+				} else
+					// if base date is today and AM/PM isn't specified and time is more than 12 hours ago,
+					// enter as just 12 hours ago
+					if ((!foundAMPM) && (time.getTime() - date.getTime() > HALFDAYTICKS)) {
+						date = new Date(date.getTime() + HALFDAYTICKS)
+					}
+			}
+		}
+		
+		retVal['date'] = date
+				
 		return retVal
 	}
 
