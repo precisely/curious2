@@ -241,15 +241,16 @@ ul.ui-autocomplete {
 	height: 0px;
 }
 
-.dataEntry .showMore {
+.dataEntry #confirm-repeats {
 	display: block;
-	text-align: right;
-	padding: .7em .1em .6em 0;
+	text-align: left;
+	padding: .5em 0;
 	color: #404040;
 	text-decoration: none;
 	text-transform: uppercase;
 	font-weight: bold;
 	font-size: .5em;
+	cursor: pointer;
 }
 
 .entryDelete {

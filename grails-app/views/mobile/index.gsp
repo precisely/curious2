@@ -134,7 +134,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css?ver=1" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=9" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=10" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
@@ -576,7 +576,7 @@ $(function(){
 		}
 	}
 	
-	function activateEntry(entry) {
+	function activateEntry(entry, doNotSelectEntry) {
 		var gEntry = entry;
 		var entryId = entry.data("entry-id");
 		var isContinuous = entry.data("isContinuous");
@@ -598,7 +598,9 @@ $(function(){
 							displayEntry(newEntry, false, {replaceEntry:gEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
-						selected($newEntry, true);
+						if (!doNotSelectEntry) {
+							selected($newEntry, true);
+						}
 					}
 				});
 	}
@@ -965,6 +967,11 @@ $(function(){
 			}
 			activateEntry($(this));
 		})
+		$("#confirm-repeats").click(function() {
+			$("li.entry.ghost").each(function(index, entry) {
+				activateEntry($(this), true);
+			})
+		})
 
 		var cache = getAppCacheData('users');
 		
@@ -1012,7 +1019,7 @@ $(function(){
 		<input id="input0" type="text" value="" name="data" class="textField"  />
 		</form>
 		<hr />
-		<a class="showMore" href="">Show more</a>
+		<div id="confirm-repeats">CONFIRM REPEATS</div>
 		</div>
 	</div>
 
