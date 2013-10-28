@@ -266,7 +266,7 @@ input.buttonInput {
 
 /* RIGHT NAV */
 	
-#addData {
+#addData, .panel-wrapper {
 	background-color:#EBEBEB;
 	padding:9px;
 	border-bottom:9px solid #CCCCCC;
@@ -275,6 +275,9 @@ input.buttonInput {
 	width: 704px;
 	height:30px;
 	border:none;
+}
+.border-separator {
+	border-bottom: 9px solid #EBEBEB;
 }
 .ui-autocomplete a {
 	display: block;
@@ -1016,6 +1019,15 @@ div.plotLine:hover span {
 
 body.track-page #datepicker {
 	width: 260px;
+}
+body.track-page #area0 .panel-wrapper {
+	border-bottom: 0;
+}
+body.track-page #area0 #confirm-repeats {
+	color: #404040;
+	font-size: .8em;
+	padding: 0 9px;
+	cursor: pointer;
 }
 body.track-page ol#entry0 li.entry.ghost {
 	color: #A9A9A9;
