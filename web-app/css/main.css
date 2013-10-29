@@ -1019,6 +1019,10 @@ body.track-page #datepicker {
 }
 body.track-page ol#entry0 li.entry.ghost {
 	color: #A9A9A9;
+	background-color: #EDEFF0;
+}
+body.track-page ol#entry0 li.entry.ghost span {
+	color: #A9A9A9;
 }
 body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 	display: inline;
