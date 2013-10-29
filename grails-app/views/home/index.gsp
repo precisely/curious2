@@ -428,7 +428,10 @@ $(function(){
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
 			$contentWrapper.hide();
-			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 684px;"></input>');
+			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 635px;"></input>'
+					+ '<img src="/images/repeat.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+					+ '<img src="/images/remind.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+					+ '<img src="/images/pin.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">');
 
 			// Binding blur event on element instead of globally to prevent concurrent exception.
 			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
@@ -565,8 +568,11 @@ $(function(){
 		</div>
 
 		<div id="addData">
-			<input type="text" id="input0" name="data"
+			<input type="text" id="input0" name="data" style="width:630px;margin-right:5px;"
 				value="Enter a tag.  For example: nap at 2pm" class="textInput" />
+			<img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;">
+			<img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;">
+			<img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;">
 			<div style="clear: both"></div>
 		</div>
 
