@@ -98,6 +98,7 @@ public abstract class TagUnitMap {
 	 * @return
 	 */
 	public Entry createEntry(userId, amount, units, description, date, Map args = [:]) {
+		amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
 		Map parsedEntry = [userId: userId, date: date,
 			description: description, amount: amount, units: units,
 			comment: "", timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
@@ -105,7 +106,7 @@ public abstract class TagUnitMap {
 			datePrecisionSecs: args.datePrecisionSecs
 		]
 		parsedEntry.putAll(args)
-
+		
 		def entry = Entry.create(userId, parsedEntry, null)
 		return entry
 	}

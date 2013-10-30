@@ -16,7 +16,7 @@ class FitbitNotificationJob extends us.wearecurio.utility.TimerJob {
 
 		def results = c {
 			eq("status", FitbitNotification.Status.UNPROCESSED)
-			maxResults(5)
+			maxResults(100)
 			order ("date", "asc")
 		}
 
