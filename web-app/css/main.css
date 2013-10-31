@@ -1018,11 +1018,11 @@ body.track-page #datepicker {
 	width: 260px;
 }
 body.track-page ol#entry0 li.entry.ghost {
-	color: #A9A9A9;
-	background-color: #EDEFF0;
+	color: #E9E9E9;
+	background-color: #FFFFFF;
 }
 body.track-page ol#entry0 li.entry.ghost span {
-	color: #A9A9A9;
+	color: #E9E9E9;
 }
 body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 	display: inline;
