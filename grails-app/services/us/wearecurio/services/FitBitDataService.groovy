@@ -122,13 +122,23 @@ class FitBitDataService {
 	}
 	
 	def subscribe(def accessToken,def subscriptionId) {
-		OAuthRequest request = new OAuthRequest(Verb.POST, "http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json")
+		OAuthRequest request = new OAuthRequest(Verb.POST, 
+			"http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json")
 		service.signRequest(accessToken, request)
 		debug request.getHeaders().dump()
 		Response response = request.send()
-			
+		
 		debug "Adding a subscription returns..."
 		debug response.getCode()
+		debug response.getBody()
+		OAuthRequest requestGetSubscriptionList = new OAuthRequest(Verb.POST,
+			"http://api.fitbit.com/${grailsApplication.config.api.fitbit.apiVersion}/user/-/apiSubscriptions.json")
+		service.signRequest(accessToken, requestGetSubscriptionList)
+		debug requestGetSubscriptionList.getHeaders().dump()
+		Response responseSubscriptions = requestGetSubscriptionList.send()
+		debug "Listing subscriptions..."
+		debug responseSubscriptions.getCode()
+		debug responseSubscriptions.getBody()
 	}
 	
 	def queueNotifications(def notifications) {
