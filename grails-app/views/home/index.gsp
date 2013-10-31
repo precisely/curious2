@@ -401,7 +401,7 @@ $(function(){
 			updateEntry(currentEntryId, newText, defaultToNow);
 		}
 
-		$("input#tagTextInput").remove();
+		$("#tagTextEdit").remove();
 	}
 	$("#entry0").on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
@@ -428,10 +428,10 @@ $(function(){
 			var entryText = $selectee.text();
 			var selectRange = entrySelectData[currentEntryId];
 			$contentWrapper.hide();
-			$selectee.append('<input type="text" id="tagTextInput" style="margin: 2px; width: 635px;"></input>'
+			$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 635px;"></input>'
 					+ '<img src="/images/repeat.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 					+ '<img src="/images/remind.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-					+ '<img src="/images/pin.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">');
+					+ '<img src="/images/pin.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
 
 			// Binding blur event on element instead of globally to prevent concurrent exception.
 			$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
@@ -447,7 +447,7 @@ $(function(){
 		}
 	}
 	$(document).on("keyup", "input#tagTextInput", function(e) {
-		var $selectee = $(this).parent("li");
+		var $selectee = $(this).parents("li");
 		if(e.keyCode == 13) {	// Enter pressed
 			unselecting($selectee);
 			selected($selectee, false);
