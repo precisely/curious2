@@ -97,7 +97,11 @@ class EntryTests extends GroovyTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4 pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood seven 4pm", baseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin one tablet 4pm", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null)")
 
@@ -238,11 +242,11 @@ class EntryTests extends GroovyTestCase {
 		
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: none", baseDate, false), null)
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:512)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none 4pm", baseDate, false), null)
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 - 4pm", baseDate, false), null)
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:512)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none we can at 4pm", baseDate, false), null)
 		println entry.valueString()

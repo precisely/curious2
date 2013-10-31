@@ -1496,6 +1496,10 @@ class Entry {
 	static Pattern unitsPattern = ~/(?i)^([^0-9\(\)@\s\.:][^\(\)@\s:]*)/
 	static Pattern tagAmountSeparatorPattern = ~/(?i)^[:=]\s*/
 	
+	static Pattern amountWordEndPattern = ~/(?i)^(.*)\s(zero|one|two|three|four|five|six|seven|eight|nine)$/
+	static Pattern amountWordUnitsEndPattern = ~/(?i)^(.*)\s(zero|one|two|three|four|five|six|seven|eight|nine)\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*)$/
+	static def numberMap = ['zero' : '0', 'one':'1', 'two':'2', 'three':'3', 'four':'4', 'five':'5', 'six':'6', 'seven':'7', 'eight':'8', 'nine':'9']
+	
 	static boolean isToday(Date time, Date baseDate) {
 		boolean today = false
 		
@@ -1676,9 +1680,29 @@ class Entry {
 		if (descriptionBuf.length() > 0) {
 			retVal['description'] = descriptionBuf.toString().trim()
 
+			if (!foundAmount) {
+				def numMatcher = amountWordEndPattern.matcher(retVal['description'])
+				
+				if (numMatcher.find()) {
+					retVal['description'] = numMatcher.group(1)
+					retVal['amount'] = numberMap[numMatcher.group(2)]
+					retVal['amountPrecision'] = DEFAULT_AMOUNTPRECISION			
+					foundAmount = true
+				} else {
+					def numUnitsMatcher = amountWordUnitsEndPattern.matcher(retVal['description'])
+					if (numUnitsMatcher.find()) {
+						retVal['description'] = numUnitsMatcher.group(1)
+						retVal['amount'] = numberMap[numUnitsMatcher.group(2)]
+						retVal['units'] = numUnitsMatcher.group(3)
+						retVal['amountPrecision'] = DEFAULT_AMOUNTPRECISION			
+						foundAmount = true
+					}
+				}
+			}
+	
 			log.debug "description " + retVal['description']
 		}
-
+		
 		if (!foundAmount) {
 			retVal['amount'] = '1'
 			retVal['amountPrecision'] = -1;
@@ -2009,11 +2033,7 @@ class Entry {
 	}
 
 	String toString() {
-		return "Entry('" + this.exportString() \
-				+ "', date:" + Utils.dateToGMTString(date) \
-				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
-				+ ", repeatType:" + repeatType?.getId() \
-				+ ")"
+		return valueString()
 	}
 
 	def String valueString() {
