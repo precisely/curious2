@@ -123,7 +123,8 @@
 										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
 									</g:else><br>
 									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
-									<g:link action="registerwithings">Link Withings Account</g:link>
+									<g:link action="registerwithings">Link Withings Account</g:link><br>
+									<a href="#" onclick="alert('Coming Soon')">Link 23andMe Account</a>
 								</td>
 							</tr>
 
