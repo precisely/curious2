@@ -3,7 +3,8 @@
 /*
  * Add universal startsWith method to all String classes
  */
-String.prototype.startsWith = function(str) {return (this.match("^"+str)==str)}
+String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
+String.prototype.endsWith = function (str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
 
 /*
  * Simple, clean Javascript inheritance scheme
