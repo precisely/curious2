@@ -19,9 +19,11 @@ class EntryTests extends GroovyTestCase {
 
 	DateFormat dateFormat
 	Date earlyBaseDate
+	Date earlyBaseDate2
 	Date currentTime
 	Date endTime
 	TimeZone timeZone // simulated server time zone
+	TimeZone timeZone2 // simulated server time zone
 	Date baseDate
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
@@ -36,9 +38,11 @@ class EntryTests extends GroovyTestCase {
 	void setUp() {
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8")
 		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5")
+		timeZone2 = Utils.createTimeZone(-6 * 60 * 60, "GMTOFFSET6")
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 		dateFormat.setTimeZone(entryTimeZone)
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
+		earlyBaseDate2 = dateFormat.parse("June 24, 2010 11:00 pm")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		lateCurrentTime = dateFormat.parse("July 3, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
@@ -749,6 +753,18 @@ class EntryTests extends GroovyTestCase {
 			assert entryDesc['id'] == entry.getId()
 			assert entryDesc['date'].toString().equals("2010-07-01 18:00:00.0")
 		}
+	}
+
+	@Test
+	void testUpdateRepeatChangeTimeZone() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread foo 2pm", earlyBaseDate, true, false), null)
+		def v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-14400, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
+		println("Attempting to update")
+		
+		Entry.update(entry, Entry.parse(currentTime, timeZone2, "bread foo 3pm", earlyBaseDate2, true, true), null)
+		v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneOffsetSecs:-18000, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null)")
 	}
 
 	@Test

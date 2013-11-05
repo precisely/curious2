@@ -502,7 +502,7 @@ $(function(){
 	}
 
 	function refreshPage() {
-		cacheDate();
+		cacheNow();
 		
 		var cachedObj = getAppCacheData(cachedDateUTC);
 		

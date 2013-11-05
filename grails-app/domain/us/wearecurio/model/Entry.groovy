@@ -1155,6 +1155,7 @@ class Entry {
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
+		setTimeZoneOffsetSecs(m['timeZoneOffsetSecs'])
 		
 		Utils.save(this, true)
 		
@@ -1531,7 +1532,7 @@ class Entry {
 			retVal['datePrecisionSecs'] = 0
 		else
 			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
-		retVal['timeZoneOffsetSecs'] = timeZone == null ? 0 : timeZone.getOffset(baseDateTime) / 1000
+		retVal['timeZoneOffsetSecs'] = (Integer) (timeZone == null ? 0 : ((int) timeZone.getOffset(baseDateTime)) / 1000)
 		retVal['today'] = today
 		entryStr = preprocessEntry(retVal, entryStr)
 		
