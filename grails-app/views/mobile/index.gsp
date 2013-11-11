@@ -136,7 +136,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <link type="text/css" href="/static/css/mobile/trackPage.css?ver=10" rel="stylesheet">
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
 	activateGhostEntryCSRF" />
 
 <r:script>
@@ -924,9 +924,11 @@ $(function(){
 	
 		var datepicker = $("#datepicker");
 		var now = new Date();
-		datepicker.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy'});
+		datepicker.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy', showButtonPanel: true}).datepicker("hide");
 		$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', now));
-		$("#ui-datepicker-div").css('display','none');
+		$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
+			datepicker.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
+		})
 
 		datepicker.change(function () {
 			refreshPage();

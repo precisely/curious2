@@ -344,9 +344,12 @@ $(function(){
 	currentDate = new Date();
 	if (${showTime} > 0)
 		currentDate = new Date(${showTime});
-	datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy'});
+	datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true}).datepicker("hide");
 	$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', currentDate));
-	$("#ui-datepicker-div").css('display','none');
+
+	$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
+		datepicker.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
+	})
 	
 	datepicker.change(function () {
 		refreshPage();
