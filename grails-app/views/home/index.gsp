@@ -17,11 +17,11 @@ removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroup
 var defaultToNow = true;
 var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:else>false</g:else>;
 
-var cachedDate;
-var cachedDateUTC;
+var cachedDate, cachedDateUTC, lastEntrySelected = null;
+var $datepickerField = $("input#datepicker")
 
 function cacheDate() {
-	cachedDate = $("#datepicker").datepicker('getDate');
+	cachedDate = $datepickerField.datepicker('getDate');
 	cachedDateUTC = cachedDate.toUTCString();
 }
 
@@ -36,8 +36,8 @@ function cacheNow() {
 }
 
 function changeDate(amount) {
-	var currentDate = $("#datepicker").datepicker('getDate');
-	$("#datepicker").datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
+	var currentDate = $datepickerField.datepicker('getDate');
+	$datepickerField.datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
 	refreshPage();
 }
 
@@ -315,9 +315,6 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-var datepicker;
-var lastEntrySelected = null;
-
 $(function(){
 	initTemplate();
 	initAutocomplete();
@@ -340,22 +337,24 @@ $(function(){
 		}
 	});
 
-	datepicker = $("#datepicker");
 	currentDate = new Date();
 	if (${showTime} > 0)
 		currentDate = new Date(${showTime});
-	datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true}).datepicker("hide");
-	$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', currentDate));
+
+	$datepickerField
+		.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true})
+		.val($.datepicker.formatDate('DD MM dd, yy', currentDate))
+		.datepicker("hide")
+		.change(function () {
+			refreshPage();
+			localStorage['stateStored'] = "2";
+			localStorage['currentDate'] = $.toJSON($datepickerField.datepicker('getDate'));
+		});
 
 	$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
-		datepicker.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
+		$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
 	})
 	
-	datepicker.change(function () {
-		refreshPage();
-		localStorage['stateStored'] = "2";
-		localStorage['currentDate'] = $.toJSON(datepicker.datepicker('getDate'));
-	});	
 	$("#input0").off("click");
 	$("#input0").on("click", function(e) {
 		if (!entryTextSet)
