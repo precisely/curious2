@@ -6,6 +6,14 @@ class UrlMappings {
 				// apply constraints here
 			}
 		}
+
+		"/authentication/$provider" {
+			controller = "authentication"
+			action = {
+				return "" + params.provider.toString() + "Auth"
+			}
+		}
+
 		"/mobile/cache.manifest" (controller: "mobile", action: "cachemanifest")
 
 		"/"(view:"/index")

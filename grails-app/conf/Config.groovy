@@ -1,3 +1,5 @@
+import us.wearecurio.thirdparty.ttandme.TTAndMeApi
+
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -80,7 +82,7 @@ backgroundThread {
 environments {
     development {
         grails.logging.jul.usebridge = true
-        grails.serverURL = "http://127.0.0.1:8080/"
+        grails.serverURL = "http://127.0.0.1:8080"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
@@ -186,4 +188,18 @@ log4j = {
 
 	warn   'org.mortbay.log'
 			
+}
+
+oauth {
+	providers {
+		ttandme {
+			api = TTAndMeApi
+			key = "96de99b2227025cacb6807e28df20367"
+			secret = "f00f94c857cba5d166463ad6f2c1aab0"
+			callback = "${grails.serverURL }/oauth/ttandme/callback"
+			successUri = "/authentication/ttandme"
+			scope = "profile:read names"
+		}
+	}
+	debug = true
 }
