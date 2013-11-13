@@ -8,12 +8,15 @@ class Twenty3AndMeData {
 	OAuthAccount account
 
 	String data
+	String profileId
 
 	Twenty3AndMeDataType type = Twenty3AndMeDataType.GENOMES
 
 	static constraints = {
 		dateCreated bindable: false
 		lastUpdated bindable: false
+		profileId blank: false, unique: true
+		data nullable: true
 	}
 
 	static mapping = {

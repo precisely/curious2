@@ -17,9 +17,10 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
-	def beforeInterceptor = [action: this.&authRedirect]
+	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider"]]
 
 	def oauthService	// From OAuth Plugin
+	def twenty3AndMeDataService
 
 	private String provider
 	private Token tokenInstance
@@ -32,26 +33,37 @@ class AuthenticationController extends SessionController {
 			redirect controller: "login", action: "auth"
 			return false
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
 		return true
+	}
+
+	def authenticateProvider() {
+		String provider = request.exception.message
+		String returnURI = request.forwardURI
+		if(request.queryString) {
+			returnURI += "?" + request.queryString
+		}
+		session.returnURIWithToken = returnURI
+		redirect(url: toUrl(action: "authenticate", controller: "oauth", params: [provider: provider]))	// redirecting to oauth plugin controller
+		return
 	}
 
 	def twenty3andmeAuth() {
 		User currentUserInstance = sessionUser()
 
 		if(currentUserInstance) {
-			Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/names/")
-			JSONObject parsedResponse = JSON.parse(apiResponse.body)
+			JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
 
 			if(parsedResponse.id) {
 				OAuthAccount.createOrUpdate(OAuthAccount.TWENTY_3_AND_ME_ID, currentUserInstance.id, parsedResponse.id,
 						tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect url: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
 	}
 
 }

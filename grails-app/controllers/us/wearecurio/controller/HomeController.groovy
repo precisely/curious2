@@ -2,15 +2,14 @@ package us.wearecurio.controller
 
 import grails.converters.*
 
-import java.text.SimpleDateFormat
+import org.scribe.model.Token
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
+import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.TwitterDataService
-import us.wearecurio.services.WeatherService;
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.services.FitBitDataService
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -19,6 +18,8 @@ class HomeController extends DataController {
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
+	def oauthService
+	def twenty3AndMeDataService
 
 	static debug(str) {
 		log.debug(str)
@@ -50,7 +51,13 @@ class HomeController extends DataController {
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
-	
+
+	def register23andme() {
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
+		twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
+		redirect(url: toUrl(controller: 'home', action: 'userpreferences'))
+	}
+
 	def notifywithings() {
 		debug "HomeController.notifywithings() params:" + params
 		

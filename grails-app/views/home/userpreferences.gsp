@@ -124,7 +124,7 @@
 									</g:else><br>
 									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
 									<g:link action="registerwithings">Link Withings Account</g:link><br>
-									<a href="#" onclick="alert('Coming Soon')">Link 23andMe Account</a>
+									<g:link action="register23andme">Link 23andMe Account</g:link>
 								</td>
 							</tr>
 

@@ -198,7 +198,7 @@ oauth {
 			secret = "f00f94c857cba5d166463ad6f2c1aab0"
 			callback = "${grails.serverURL }oauth/twenty3andme/callback"
 			successUri = "authentication/twenty3andme"
-			scope = "profile:read names basic genomes"
+			scope = "names basic genomes"
 		}
 	}
 	debug = true
