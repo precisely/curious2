@@ -82,7 +82,7 @@ backgroundThread {
 environments {
     development {
         grails.logging.jul.usebridge = true
-        grails.serverURL = "http://127.0.0.1:8080"
+        grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
@@ -196,8 +196,8 @@ oauth {
 			api = TTAndMeApi
 			key = "96de99b2227025cacb6807e28df20367"
 			secret = "f00f94c857cba5d166463ad6f2c1aab0"
-			callback = "${grails.serverURL }/oauth/ttandme/callback"
-			successUri = "/authentication/ttandme"
+			callback = "${grails.serverURL }oauth/ttandme/callback"
+			successUri = "authentication/ttandme"
 			scope = "profile:read names"
 		}
 	}

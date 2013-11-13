@@ -2,6 +2,12 @@ package us.wearecurio.controller
 
 import org.scribe.model.Token
 
+/**
+ * A generic controller to handle all authentication made by oauth plugin.
+ * Actions of this controller redirects client browser according to given
+ * session. This is useful where authentication may require at any part of
+ * the application and needs to redirect again at the same portion.
+ */
 class AuthenticationController {
 
 	def beforeInterceptor = [action: this.&authRedirect]
