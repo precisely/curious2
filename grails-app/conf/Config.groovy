@@ -1,4 +1,4 @@
-import us.wearecurio.thirdparty.ttandme.TTAndMeApi
+import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
@@ -192,12 +192,12 @@ log4j = {
 
 oauth {
 	providers {
-		ttandme {
-			api = TTAndMeApi
+		twenty3andme {
+			api = Twenty3AndMeApi
 			key = "96de99b2227025cacb6807e28df20367"
 			secret = "f00f94c857cba5d166463ad6f2c1aab0"
 			callback = "${grails.serverURL }oauth/ttandme/callback"
-			successUri = "authentication/ttandme"
+			successUri = "authentication/twenty3andme"
 			scope = "profile:read names"
 		}
 	}

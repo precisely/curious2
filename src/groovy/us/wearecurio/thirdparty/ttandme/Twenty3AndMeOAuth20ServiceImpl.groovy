@@ -12,12 +12,12 @@ import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
 
-class TTAndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
+class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 	DefaultApi20 api
 	OAuthConfig config
 
-	TTAndMeOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
+	Twenty3AndMeOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
 		super(api, config)
 		this.api = api
 		this.config = config

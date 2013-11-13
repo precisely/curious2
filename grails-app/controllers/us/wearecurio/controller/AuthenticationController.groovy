@@ -31,7 +31,7 @@ class AuthenticationController {
 		return true
 	}
 
-	def ttandmeAuth() {
+	def twenty3andmeAuth() {
 	}
 
 }
