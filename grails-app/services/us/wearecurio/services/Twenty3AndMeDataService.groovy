@@ -34,7 +34,7 @@ class Twenty3AndMeDataService {
 			Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileId(account, profileId)
 			twenty3AndMeDataInstance.data = getGenomesDataForProfile(tokenInstance, profileId)
 			twenty3AndMeDataInstance.save()
-			if(twenty3AndMeDataInstance.hasErrors()) {
+			if (twenty3AndMeDataInstance.hasErrors()) {
 				log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
 			}
 		}

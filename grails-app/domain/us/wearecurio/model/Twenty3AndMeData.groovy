@@ -31,5 +31,11 @@ class Twenty3AndMeData {
 }
 
 enum Twenty3AndMeDataType {
-	GENOMES
+	GENOMES(1)
+
+	final int id
+
+	Twenty3AndMeDataType(int id) {
+		this.id = id
+	}
 }
