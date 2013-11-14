@@ -1,11 +1,11 @@
 package us.wearecurio.controller
-import us.wearecurio.model.*
 
-import java.lang.Thread
 import grails.util.GrailsNameUtils
+
 import org.apache.commons.logging.LogFactory
+
+import us.wearecurio.model.User
 import us.wearecurio.server.Session
-import us.wearecurio.utility.Utils
 import us.wearecurio.services.UrlService
 
 class SessionController {
@@ -55,10 +55,10 @@ class SessionController {
 		session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
 	}
 
-	protected def sessionUser() {
+	protected User sessionUser() {
 		debug "SessionController.sessionUser()"
 
-		if (session.userId != null) {
+		if (session.userId) {
 			def user = User.get(session.userId)
 			debug "userId " + session.userId
 			session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default

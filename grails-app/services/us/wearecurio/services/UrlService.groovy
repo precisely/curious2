@@ -2,15 +2,13 @@ package us.wearecurio.services
 
 import org.apache.commons.logging.LogFactory
 
-import us.wearecurio.utility.Utils;
-import us.wearecurio.model.*;
-
 class UrlService {
+
 	def grailsApplication
 
 	private static def log = LogFactory.getLog(this)
 	
-	// temporarily, use UrlService as a holder of static methods. When we switch to Grails 2.x, change to instance methods
+	//TODO temporarily, use UrlService as a holder of static methods. When we switch to Grails 2.x, change to instance methods
 
 	static transactional = true
 	
@@ -36,16 +34,8 @@ class UrlService {
 	 */
 	def make(map, req) {
 		def url = base(req) + map.controller + '/' + map.action
-		def first = true
 		if (map.params) {
-			for (p in map.params) {
-				if (first) {
-					url += '?'
-					first = false
-				} else
-					url = '&'
-				url += p.key + '=' + p.value
-			}
+			url += "?" + map.params.collect { key, value -> "$key=$value" }.join("&")
 		}
 		if (map.fragment) {
 			url += '#' + map.fragment
