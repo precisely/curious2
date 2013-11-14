@@ -18,7 +18,6 @@ class Twenty3AndMeDataService {
 	JSONObject getUserProfiles(Token tokenInstance) {
 		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/names/")
 		JSONObject parsedResponse = JSON.parse(apiResponse.body)
-		println parsedResponse
 		parsedResponse
 	}
 
@@ -32,8 +31,12 @@ class Twenty3AndMeDataService {
 
 		userProfile.profiles?.each { profile ->
 			String profileId = profile.id
-			new Twenty3AndMeData([account: account, profileId: profileId,
-				data: getGenomesDataForProfile(tokenInstance, profileId)]).save()
+			Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileId(account, profileId)
+			twenty3AndMeDataInstance.data = getGenomesDataForProfile(tokenInstance, profileId)
+			twenty3AndMeDataInstance.save()
+			if(twenty3AndMeDataInstance.hasErrors()) {
+				log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
+			}
 		}
 	}
 

@@ -23,6 +23,11 @@ class Twenty3AndMeData {
 		data type: "text"
 	}
 
+	@Override
+	String toString() {
+		"Twenty3AndMeData [$id] OAuthAccount[$account?.id] ProfileId[$profileId]"
+	}
+
 }
 
 enum Twenty3AndMeDataType {
