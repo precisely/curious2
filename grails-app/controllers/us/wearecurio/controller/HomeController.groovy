@@ -53,9 +53,12 @@ class HomeController extends DataController {
 	}
 
 	def register23andme() {
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
 		twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
-		redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+
+		redirect(url: session.deniedURI)
 	}
 
 	def notifywithings() {

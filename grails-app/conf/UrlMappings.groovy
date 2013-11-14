@@ -9,15 +9,20 @@ class UrlMappings {
 			}
 		}
 
-		"/authentication/$provider" {
+		"/authentication/$provider/$status" {
 			controller = "authentication"
 			action = {
 				return "" + params.provider.toString() + "Auth"
 			}
+			constraints {
+				status validator: {  //Used to distinguish URL's like '/authenticate/twenty3andme/success'
+					!it.isNumber()
+				}
+			}
 		}
 
 		"/mobile/cache.manifest" (controller: "mobile", action: "cachemanifest")
-		
+
 		"500" (controller: "authentication", action: "authenticateProvider", exception: AuthenticationRequiredException)
 
 		"/"(view:"/index")

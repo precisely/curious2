@@ -28,11 +28,22 @@ class AuthenticationController extends SessionController {
 	private boolean authRedirect() {
 		provider = params.provider
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
-		if (!tokenInstance) {
-			log.error "No token found after authentication with [$provider]."
-			redirect controller: "login", action: "auth"
+
+		if (params.status == "fail" || !tokenInstance) {
+			if (params.status == "fail") {
+				log.info "User denied to authenticate with [$provider]."
+			} else {
+				log.error "No token found after authentication with [$provider]."
+			}
+			if (session.deniedURI) {
+				redirect uri: session.deniedURI
+				session.deniedURI = null
+				return false
+			}
+			redirect url: toUrl([controller: "login", action: "auth"])
 			return false
 		}
+
 		return true
 	}
 
@@ -42,7 +53,7 @@ class AuthenticationController extends SessionController {
 	def authenticateProvider() {
 		String provider = request.exception.cause.provider
 		String returnURI = request.forwardURI
-		if(request.queryString) {
+		if (request.queryString) {
 			returnURI += "?" + request.queryString
 		}
 		session.returnURIWithToken = returnURI.substring(1)	// Removing "/" from beginning since serverURL is configured with "/" at last.
@@ -53,10 +64,10 @@ class AuthenticationController extends SessionController {
 	def twenty3andmeAuth() {
 		User currentUserInstance = sessionUser()
 
-		if(currentUserInstance) {
+		if (currentUserInstance) {
 			JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
 
-			if(parsedResponse.id) {
+			if (parsedResponse.id) {
 				OAuthAccount.createOrUpdate(OAuthAccount.TWENTY_3_AND_ME_ID, currentUserInstance.id, parsedResponse.id,
 						tokenInstance.token, tokenInstance.secret ?: "")
 			}

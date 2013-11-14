@@ -197,7 +197,8 @@ oauth {
 			key = "96de99b2227025cacb6807e28df20367"
 			secret = "f00f94c857cba5d166463ad6f2c1aab0"
 			callback = "${grails.serverURL }oauth/twenty3andme/callback"
-			successUri = "authentication/twenty3andme"
+			successUri = "authentication/twenty3andme/success"
+			failureUri = "authentication/twenty3andme/fail"
 			scope = "names basic genomes"
 		}
 	}

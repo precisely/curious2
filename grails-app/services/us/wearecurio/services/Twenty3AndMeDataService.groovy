@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import grails.util.Environment;
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
@@ -17,12 +18,18 @@ class Twenty3AndMeDataService {
 
 	JSONObject getUserProfiles(Token tokenInstance) {
 		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/names/")
+		if (Environment.current == Environment.DEVELOPMENT) {
+			log.info "Profile response from 23andme API: $apiResponse.body"
+		}
 		JSONObject parsedResponse = JSON.parse(apiResponse.body)
+		if (parsedResponse.error) {
+			log.error "Error getting profile information from 23andme API: $apiResponse.body"
+		}
 		parsedResponse
 	}
 
 	void storeGenomesData(Token tokenInstance, User userInstance) {
-		if(!tokenInstance || !tokenInstance.token)
+		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("twenty3andme")
 
 		JSONObject userProfile = getUserProfiles(tokenInstance)

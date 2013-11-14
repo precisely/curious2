@@ -41,7 +41,7 @@ class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		Response response = request.send()
 
 		JSONObject responseJSON = JSON.parse(response.body)
-		if(Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current == Environment.DEVELOPMENT) {
 			println "Received response from 23andme api: $response.body"
 		}
 
