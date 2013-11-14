@@ -36,8 +36,11 @@ class AuthenticationController extends SessionController {
 		return true
 	}
 
+	/**
+	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
+	 */
 	def authenticateProvider() {
-		String provider = request.exception.message
+		String provider = request.exception.cause.provider
 		String returnURI = request.forwardURI
 		if(request.queryString) {
 			returnURI += "?" + request.queryString
