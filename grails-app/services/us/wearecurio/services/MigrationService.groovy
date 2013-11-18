@@ -15,6 +15,8 @@ import grails.util.Environment
 import groovy.lang.Closure;
 import groovy.sql.Sql
 
+import org.joda.time.*
+
 class MigrationService {
 
 	private static def log = LogFactory.getLog(this)
@@ -28,6 +30,7 @@ class MigrationService {
 	public static final long NULLIFY_OLD_REPEATS_ID = 42L
 	public static final long RANGE_OLD_REPEATS_ID = 43L
 	public static final long REPEAT_END_INDEX_ID = 44L
+	public static final long CREATE_TIME_ZONES_ID = 45L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -116,6 +119,17 @@ class MigrationService {
 		}
 		tryMigration(REPEAT_END_INDEX_ID) {
 			sql("create index repeat_end_index ON entry (repeat_end)")
+		}
+		tryMigration(CREATE_TIME_ZONES_ID) {
+			def entries = Entry.list()
+			
+			for (Entry e in entries) {
+				def timeZoneName = TimeZoneId.getTimeZoneName(e.getDate(), e.getTimeZoneOffsetSecs())
+				
+				def timeZoneId = TimeZoneId.look(timeZoneName)
+				
+				e.setTimeZoneId((int)timeZoneId.getId())
+			}
 		}
 	}
 }

@@ -9,7 +9,7 @@
 <r:require module="selectable"/>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
-showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF" />
 
 <r:script>
@@ -26,13 +26,13 @@ function cacheDate() {
 }
 
 var currentTimeUTC;
-var timeZoneOffset;
+var timeZoneName;
 
 function cacheNow() {
 	cacheDate();
 	var now = new Date();
 	currentTimeUTC = now.toUTCString();
-	timeZoneOffset = now.getTimezoneOffset() * 60;
+	timeZoneName = jstz.determine().name();
 }
 
 function changeDate(amount) {
@@ -212,7 +212,7 @@ function deleteEntryId(entryId) {
 	} else {
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
-				+ "&timeZoneOffset=" + timeZoneOffset + "&displayDate=" + cachedDateUTC + "&"
+				+ "&timeZoneName=" + timeZoneName + "&displayDate=" + cachedDateUTC + "&"
 				+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 				function(entries) {
 					if (checkData(entries, 'success', "Error deleting entry")) {
@@ -236,8 +236,8 @@ function updateEntry(entryId, text, defaultToNow) {
 	$(".content-wrapper",oldEntry).html(text);
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
-			+ cachedDateUTC + "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
-			+ getCSRFPreventionURI("updateEntryDataCSRF") + "&callback=?",
+			+ cachedDateUTC + "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&callback=?",
 	function(entries){
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
@@ -263,7 +263,7 @@ function addEntry(userId, text, defaultToNow) {
 	
 	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
-			+ "&timeZoneOffset=" + timeZoneOffset + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
+			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {

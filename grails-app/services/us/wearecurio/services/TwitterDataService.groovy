@@ -204,9 +204,9 @@ class TwitterDataService {
 				TimeZone tz = null
 				if (sender.getUtcOffset() != -1) {
 					log.debug "Time zone of DM: " + sender.getTimeZone() + ":" + sender.getUtcOffset()
-					tz = Utils.createTimeZone(sender.getUtcOffset(), sender.getTimeZone())
+					tz = Utils.createTimeZone(sender.getUtcOffset(), sender.getTimeZone(), false)
 				} else {
-					tz = Utils.createTimeZone(0, "UTC")
+					tz = Utils.createTimeZone(0, "UTC", false)
 				}
 
 				log.debug "TimeZone: " + tz + " tweet created at " + message.getCreatedAt()

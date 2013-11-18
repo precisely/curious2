@@ -30,8 +30,8 @@ class SessionControllerTests extends GroovyTestCase {
 	
 	@Before
 	void setUp() {
-		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8")
-		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5")
+		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
+		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5", true)
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 		dateFormat.setTimeZone(entryTimeZone)
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")

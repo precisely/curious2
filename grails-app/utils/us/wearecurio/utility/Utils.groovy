@@ -9,6 +9,8 @@ import java.util.TimeZone
 import java.util.SimpleTimeZone
 import java.util.Calendar
 
+import org.joda.time.*
+
 /**
  *
  * @author mitsu
@@ -50,7 +52,9 @@ class Utils {
 	static def save(obj, boolean flush) {
 		if (!obj.save(flush:flush)) {
 			log.debug "Error saving " + obj.toString()
-			obj.errors.each { log.debug it }
+			obj.errors.each {
+				log.debug it
+			}
 			return false;
 		} else {
 			log.debug "Object saved successfully " + obj.toString()
@@ -89,25 +93,28 @@ class Utils {
 	private static def Map<String, TimeZone> timeZones = new HashMap<Integer, TimeZone>()
 
 	// offset is in seconds, not milliseconds
-	static TimeZone createTimeZone(int offset, String idStr) {
+	static TimeZone createTimeZone(int offset, String idStr, boolean dst) {
 		Integer intOffset = offset;
 
 		TimeZone tz = timeZones.get(idStr)
 
 		if (tz != null) return tz;
 
-		tz = new SimpleTimeZone(offset * 1000, idStr,
-				Calendar.APRIL, 1, -Calendar.SUNDAY,
-				7200000,
-				Calendar.OCTOBER, -1, Calendar.SUNDAY,
-				7200000,
-				3600000)
+		if (dst)
+			tz = new SimpleTimeZone(offset * 1000, idStr,
+					Calendar.APRIL, 1, -Calendar.SUNDAY,
+					7200000,
+					Calendar.OCTOBER, -1, Calendar.SUNDAY,
+					7200000,
+					3600000)
+		else
+			tz = new SimpleTimeZone(offset * 1000, idStr)
 
 		timeZones.put(idStr, tz)
 
 		return tz
 	}
-
+	
 	static DateFormat gmtDateFormat
 
 	static {

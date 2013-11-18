@@ -32,8 +32,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void setUp() {
 		super.setUp()
 
-		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8")
-		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5")
+		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
+		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5", true)
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 		dateFormat.setTimeZone(entryTimeZone)
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
@@ -172,30 +172,30 @@ class DataControllerTests extends CuriousControllerTestCase {
     }
 
 	@Test
-	void testAddEntryData() {
+	void testAddEntrySData() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
 
 		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
 		controller.params['text'] = '3:30pm testing 25 units comment'
-		controller.params['timeZoneOffset'] = '18000'
+		controller.params['timeZoneName'] = 'America/New_York'
 		controller.params['userId'] = userId.toString()
 		controller.params['callback'] = 'jsonp1295646296016'
 		controller.params['_'] = '1295646380043'
 		controller.params['defaultToNow'] = '1'
 		controller.params['baseDate'] = 'Fri, 21 Jan 2011 05:00:00 GMT'
-		controller.params['action'] = 'addEntryData'
+		controller.params['action'] = 'addEntrySData'
 		controller.params['controller'] = 'home'
 
-		controller.addEntryData()
+		controller.addEntrySData()
 
 		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneOffsetSecs":-18000,"description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null}') \
 			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneOffsetSecs":-18000,"description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null}') \
     }
 
 	@Test
-	void testUpdateEntryData() {
+	void testUpdateEntrySData() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
@@ -207,7 +207,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 					tweetId:"",
 					date:'Fri, 21 Jan 2011 21:46:20 GMT',
 					datePrecisionSecs:180,
-					timeZoneOffsetSecs:-18000,
+					timeZoneName:"America/New_York",
 					description:'updatetest',
 					amount:new BigDecimal("2.0"),
 					units:'units',
@@ -223,13 +223,15 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
 		controller.params['text'] = 'updatetest voracious 2 units'
 		controller.params['baseDate'] = 'Fri, 22 Jan 2011 5:00:00 GMT'
-		controller.params['timeZoneOffset'] = "18000"
+		controller.params['timeZoneName'] = "America/Chicago"
 		controller.params['defaultToNow'] = '1'
+		controller.params['action'] = 'updateEntrySData'
+		controller.params['controller'] = 'home'
 
-		controller.updateEntryData()
+		controller.updateEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295715600000),"datePrecisionSecs":86400,"timeZoneOffsetSecs":-18000,"description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null}') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-22T17:00:00Z","datePrecisionSecs":86400,"timeZoneOffsetSecs":-18000,"description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null}') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295715600000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null}') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-22T17:00:00Z","datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null}') \
 	}
 
 	@Test

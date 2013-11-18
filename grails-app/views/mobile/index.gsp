@@ -126,6 +126,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=8"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=8"></script>
@@ -136,7 +137,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
 <link type="text/css" href="/static/css/mobile/trackPage.css?ver=10" rel="stylesheet">
 
-<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntryDataCSRF, getListDataCSRF,
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
 
 <r:script>
@@ -486,13 +487,13 @@ $(function(){
 	}
 
 	var currentTimeUTC;
-	var timeZoneOffset;
+	var timeZoneName;
 	
 	function cacheNow() {
 		cacheDate();
 		var now = new Date();
 		currentTimeUTC = now.toUTCString();
-		timeZoneOffset = now.getTimezoneOffset() * 60;
+		timeZoneName = jstz.determine().name();
 	}
 	
 	function changeDate(amount) {
@@ -762,7 +763,7 @@ $(function(){
 			} else {
 				var argsToSend = getCSRFPreventionObjectMobile("deleteEntryDataCSRF", { entryId:entryId,
 					currentTime:currentTimeUTC, baseDate:cachedDateUTC,
-					timeZoneOffset:timeZoneOffset, displayDate:cachedDateUTC });
+					timeZoneName:timeZoneName, displayDate:cachedDateUTC });
 		
 				$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 					function(entries) {
@@ -819,9 +820,9 @@ $(function(){
 		}
 		var oldEntry = getEntryElement(entryId);
 		$(".content-wrapper", oldEntry).html(text);
-		var argsToSend = getCSRFPreventionObject("updateEntryDataCSRF", { entryId:entryId,
+		var argsToSend = getCSRFPreventionObject("updateEntrySDataCSRF", { entryId:entryId,
 			currentTime:currentTimeUTC, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' });
+			timeZoneName:timeZoneName, defaultToNow:defaultToNow ? '1':'0' });
 
 		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
@@ -859,7 +860,7 @@ $(function(){
 		}
 		var argsToSend = getCSRFPreventionObjectMobile("addEntryCSRF", { currentTime:currentTimeUTC,
 			userId:userId, text:text, baseDate:cachedDateUTC,
-			timeZoneOffset:timeZoneOffset, defaultToNow:defaultToNow ? '1':'0' })
+			timeZoneName:timeZoneName, defaultToNow:defaultToNow ? '1':'0' })
 
 		$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend),
 		function(entries) {

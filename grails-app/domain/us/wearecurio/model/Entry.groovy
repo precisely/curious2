@@ -13,6 +13,8 @@ import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
+import org.joda.time.*
+
 class Entry {
 	
 	private static def log = LogFactory.getLog(this)
@@ -41,7 +43,7 @@ class Entry {
 		tweetId(nullable:true)
 		baseTag(nullable:true)
 		durationType(nullable:true)
-		timeZoneOffsetSecs(nullable:true)
+		timeZoneId(nullable:true)
 	}
 	
 	static mapping = {
@@ -158,6 +160,7 @@ class Entry {
 	Long tweetId
 	Date date
 	Integer timeZoneOffsetSecs
+	Integer timeZoneId
 	Integer datePrecisionSecs
 	Tag tag
 	static hasMany = [hashtags:Tag,commentHashtags:Tag]
@@ -210,12 +213,12 @@ class Entry {
 	/**
 	 * Create and save new entry
 	 */
-	static Entry create(Long userId, Date date, Integer timeZoneOffsetSecs, String description, BigDecimal amount, String units,
+	static Entry create(Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
 			String comment, String setName, int amountPrecision = DEFAULT_AMOUNTPRECISION) {
 		return create(userId,
 				[
 				'date':date,
-				'timeZoneOffsetSecs':timeZoneOffsetSecs,
+				'timeZoneId':(Integer) timeZoneId.getId(),
 				'datePrecisionSecs':DEFAULT_DATEPRECISION_SECS,
 				'description':description,
 				'amount':amount,
@@ -240,21 +243,22 @@ class Entry {
 		
 		Tag tag = Tag.look(m['description'])
 		
-		Entry entry = new Entry( \
-			userId:userId, \
-			tweetId:m['tweetId'], \
-			date:m['date'], \
-			timeZoneOffsetSecs:m['timeZoneOffsetSecs'] ?: 0, \
-			datePrecisionSecs:m['datePrecisionSecs'], \
-			tag:tag, \
-			amount:m['amount'], \
-			units:m['units']==null?'':m['units'], \
-			comment:m['comment']==null?'':m['comment'], \
-			repeatType: m['repeatType'], \
-			baseTag:baseTag, \
-			durationType:durationType, \
-			setName:m['setName']==null?'':m['setName'], \
-			amountPrecision:m['amountPrecision']==null?3:m['amountPrecision']
+		Entry entry = new Entry(
+			userId:userId,
+			tweetId:m['tweetId'],
+			date:m['date'],
+			timeZoneId:(Integer)TimeZoneId.look(m['timeZoneName']).getId(),
+			datePrecisionSecs:m['datePrecisionSecs'],
+			tag:tag,
+			amount:m['amount'],
+			units:m['units']==null?'':m['units'],
+			comment:m['comment']==null?'':m['comment'],
+			repeatType: m['repeatType'],
+			baseTag:baseTag,
+			durationType:durationType,
+			setName:m['setName']==null?'':m['setName'],
+			amountPrecision:m['amountPrecision']==null?3:m['amountPrecision'],
+			timeZoneOffsetSecs:0
 		)
 		
 		log.debug "Created entry:" + entry
@@ -379,7 +383,7 @@ class Entry {
 				}
 	
 				// create new entry one day after current baseDate
-				m['timeZoneOffsetSecs'] = entry.getTimeZoneOffsetSecs()
+				m['timeZoneName'] = entry.fetchTimeZoneName()
 				m['amount'] = entry.getAmount()
 				m['amountPrecision'] = entry.getAmountPrecision()
 				m['units'] = entry.getUnits()
@@ -503,6 +507,23 @@ class Entry {
 		def retVal = [all: allTagStats, freq: freqTags, alg: algTags]
 		
 		return retVal
+	}
+	
+	/**
+	 * fetchDateTimeZone()
+	 * 
+	 * Returns Joda time zone for this entry
+	 */
+	DateTimeZone fetchDateTimeZone() {
+		TimeZoneId timeZoneId = TimeZoneId.fromId(timeZoneId)
+		
+		return timeZoneId.toDateTimeZone()
+	}
+	
+	String fetchTimeZoneName() {
+		TimeZoneId timeZoneId = TimeZoneId.fromId(timeZoneId)
+		
+		return timeZoneId.getName()
 	}
 
 	/**
@@ -815,7 +836,7 @@ class Entry {
 				def m = [:]
 				m['date'] = date
 				m['datePrecisionSecs'] = datePrecisionSecs
-				m['timeZoneOffsetSecs'] = timeZoneOffsetSecs
+				m['timeZoneName'] = TimeZoneId.fromId(timeZoneId).getName()
 				m['description'] = baseTag.getDescription()
 				m['amount'] = amount
 				m['units'] = "hours"
@@ -935,18 +956,22 @@ class Entry {
 				Utils.save(e, true)
 			}	
 		} else {
-			String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date < :entryDate and time(entry.date) = time(:entryDate) and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
-			
-			def entries = Entry.executeQuery(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
-			
-			Entry e = entries[0]
-			
-			if (e != null) {
-				long yesterday = e.getDate().getTime() - DAYTICKS
-				if (yesterday < this.date.getTime()) {
-					repeatEnd = this.date
-				} else
-					repeatEnd = new Date(yesterday)
+			while (true) {
+				String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_add(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date desc limit 1"
+				
+				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+				
+				if (entries.size() > 0) {
+					Entry e = Entry.get(entries[0]['id'])
+				
+					long yesterday = e.getDate().getTime() - DAYTICKS
+					if (yesterday < this.date.getTime()) {
+						repeatEnd = this.date
+					} else
+						repeatEnd = new Date(yesterday)
+				}//TODO
+				
+				break;
 			}
 		}
 	}
@@ -1041,6 +1066,7 @@ class Entry {
 		return this
 	}
 	
+	WORK STOPPED HERE
 	def activateGhostEntry(Date currentDate, Date nowDate) {
 		long dayStartTime = currentDate.getTime()
 		def now = nowDate.getTime()
@@ -1065,7 +1091,7 @@ class Entry {
 		}
 		
 		def m = [:]
-		m['timeZoneOffsetSecs'] = this.timeZoneOffsetSecs
+		m['timeZoneId'] = this.timeZoneId
 		m['description'] = this.tag.getDescription()
 		m['amount'] = this.repeatType.isReminder() ? null : this.amount
 		m['amountPrecision'] = this.amountPrecision
@@ -1092,7 +1118,7 @@ class Entry {
 		} else { // this repeat element isn't continuous
 			m['comment'] = this.comment
 			m['repeatType'] = this.repeatType
-			m['date'] = new Date(((date.getTime() - dayStartTime) % DAYTICKS + DAYTICKS) + dayStartTime)
+			m['date'] = new Date((((thisDiff % DAYTICKS) + DAYTICKS) % DAYTICKS) + dayStartTime)
 			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 			def retVal = Entry.create(userId, m, null)
 			
@@ -1155,7 +1181,7 @@ class Entry {
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
-		setTimeZoneOffsetSecs(m['timeZoneOffsetSecs'])
+		setTimeZoneId((Integer)TimeZoneId.look(m['timeZoneName']).getId())
 		
 		Utils.save(this, true)
 		
@@ -1197,11 +1223,14 @@ class Entry {
 	
 	static long abs(long x) { return x < 0 ? -x : x }
 	
-	static def fetchListData(User user, Date date, Date now) {
+	static def fetchListData(User user, String timeZoneName, Date baseDate, Date now) {
 		long nowTime = now.getTime()
+		long baseTime = baseDate.getTime()
+		
+		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
 		// get regular elements + timed repeating elements next
-		String queryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
+		String queryStr = "select distinct entry.id, entry.time_zone_offset_secs as timeZoneOffset " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds)))) or " \
 				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds)))) " \
 				+ "and entry.tag_id = tag.id " \
@@ -1209,7 +1238,7 @@ class Entry {
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 				
-		def queryMap = [userId:user.getId(), startDate:date, endDate:date + 1, continuousIds:CONTINUOUS_IDS]
+		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousIds:CONTINUOUS_IDS]
 		
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
@@ -1220,8 +1249,35 @@ class Entry {
 		for (result in rawResults) {
 			Entry entry = Entry.get(result['id'])
 			def desc = entry.getJSONDesc()
-			desc['date'] = result['dateTime']
-			if ((!entry.getDate().equals(result['dateTime'])) && entry.repeatType != null) { // ghost timed entry
+			
+			// use JodaTime to figure out the correct time in the current time zone
+			
+			// using the original entry's time zone, figure out what time the event would be if it occurred some time on the current LocalDate
+			DateTimeZone entryTimeZone = entry.fetchDateTimeZone()
+			DateTime dateTime = new DateTime(entry.getDate(), entryTimeZone)
+			LocalTime entryLocalTime = dateTime.toLocalTime()
+			
+			// first calculate the localDate of the current baseDate in the original time zone
+			LocalDate baseLocalDate = new DateTime(baseDate, entryTimeZone).toLocalDate()
+			DateTime tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
+			
+			long tryTime = tryDateTime.getMillis()
+			
+			while (tryTime < baseTime) {
+				baseLocalDate = baseLocalDate.plusDays(1)
+				tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
+				tryTime = tryDateTime.getMillis()
+			}
+			
+			while (tryTime >= baseTime + DAYTICKS) {
+				baseLocalDate = baseLocalDate.minusDays(1)
+				tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
+				tryTime = tryDateTime.getMillis()
+			}
+			
+			desc['date'] = tryDateTime.toDate()
+			desc['timeZoneName'] = timeZoneName
+			if ((!entry.getDate().equals(desc['date'])) && entry.repeatType != null) { // ghost timed entry
 				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
 				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
 					desc['amount'] = null
@@ -1257,6 +1313,7 @@ class Entry {
 				def desc = entry.getJSONDesc()
 				desc['date'] = result['dateTime']
 				desc['repeatType'] = entry.repeatType?.id
+				desc['timeZoneName'] = timeZoneName
 				results.add(desc)
 			}
 		}
@@ -1456,7 +1513,7 @@ class Entry {
 		return remain
 	}
 
-	private static boolean isSameDay(Date time1, Date time2, TimeZone timeZone) {
+	private static boolean isSameDay(Date time1, Date time2) {
 		def t1 = time1.getTime()
 		def t2 = time2.getTime()
 		if (t1 < t2) return false
@@ -1515,8 +1572,8 @@ class Entry {
 		return today
 	}
 	
-	static def parse(Date time, TimeZone timeZone, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
-		log.debug "Entry.parse() time:" + time + ", timeZone:" + timeZone?.getID() + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
+	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
+		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
 
@@ -1532,7 +1589,8 @@ class Entry {
 			retVal['datePrecisionSecs'] = 0
 		else
 			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
-		retVal['timeZoneOffsetSecs'] = (Integer) (timeZone == null ? 0 : ((int) timeZone.getOffset(baseDateTime)) / 1000)
+		
+		retVal['timeZoneName'] = timeZoneName
 		retVal['today'] = today
 		entryStr = preprocessEntry(retVal, entryStr)
 		
@@ -1753,7 +1811,7 @@ class Entry {
 					log.debug "SETTING DATE TO " + Utils.dateToGMTString(date) 
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else {
-					if (!isSameDay(time, baseDate, timeZone)) {
+					if (!isSameDay(time, baseDate)) {
 						retVal['status'] = "Entering event for today, not displayed";
 					}
 				}
@@ -1764,7 +1822,7 @@ class Entry {
 				if ((!defaultToNow) || forUpdate) {
 					date = new Date(date.getTime() + 12 * 3600000L);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
-				} else if (!isSameDay(time, baseDate, timeZone)) {
+				} else if (!isSameDay(time, baseDate)) {
 					retVal['status'] = "Entering event for today, not displayed";
 				}
 			} else {
@@ -1943,11 +2001,20 @@ class Entry {
 	}
 
 	static DateFormat gmtFormat
+	static long GMTMIDNIGHTSECS
 	
 	static {
 		gmtFormat = new SimpleDateFormat("k:mm")
-		gmtFormat.setTimeZone(Utils.createTimeZone(0, "GMT"))
+		gmtFormat.setTimeZone(Utils.createTimeZone(0, "GMT", false))
+		GMTMIDNIGHTSECS = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000
 	}
+	
+	/* static long baseDateToGMTOffsetSecs(Date date) {
+		Date d = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT")
+		long secs = date.getTime() / 1000
+		long offset = ((secs - GMTMIDNIGHTSECS) % (24 * 60 * 60) + (24 * 60 * 60)) % (24 * 60 * 60)
+		return -offset
+	}*/
 	
 	def String exportString() {
 		return description + " " + (amount == null ? "none " : amountPrecision == 0 ? (amount ? "yes " : "no ") : (amountPrecision > 0 ? amount + " " : '')) + (units ? units + ' ' : '') + (datePrecisionSecs < 40000 ? (date ? gmtFormat.format(date) : '') + ' ' : '') + comment
@@ -2013,7 +2080,7 @@ class Entry {
 			userId:userId,
 			date:date,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
-			timeZoneOffsetSecs:timeZoneOffsetSecs,
+			timeZoneName:this.fetchTimeZoneName(),
 			description:tag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
@@ -2041,7 +2108,7 @@ class Entry {
 		return "Entry(userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
-				+ ", timeZoneOffsetSecs:" + timeZoneOffsetSecs \
+				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
 				+ ", description:" + getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \

@@ -44,20 +44,18 @@ class DataController extends LoginController {
 		systemFormat.setTimeZone(TimeZone.getDefault());
 	}
 
-	protected def doAddEntry(currentTimeStr, userIdStr, textStr, baseDateStr, timeZoneOffsetStr, defaultToNow) {
-		debug "DataController.doAddEntry() currentTimeStr:" + currentTimeStr + ", userIdStr:" + userIdStr \
-				+ ", baseDateStr:" + baseDateStr + ", timeZoneOffsetStr:" + timeZoneOffsetStr + ", defaultToNow:" + defaultToNow
+	protected def doAddEntry(currentTimeStr, timeZoneName, userIdStr, textStr, baseDateStr, defaultToNow) {
+		debug "DataController.doAddEntry() currentTimeStr:" + currentTimeStr + ", timeZoneName:" + timeZoneName + ", userIdStr:" + userIdStr \
+				+ ", baseDateStr:" + baseDateStr + ", defaultToNow:" + defaultToNow
 		
 		def user = userFromIdStr(userIdStr)
-
-		TimeZone tz = Utils.createTimeZone(-Integer.parseInt(timeZoneOffsetStr), "GMTOFFSET" + timeZoneOffsetStr)
 
 		def currentTime = parseDate(currentTimeStr)
 		def baseDate = parseDate(baseDateStr)
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
-		def parsedEntry = Entry.parse(currentTime, tz, textStr, baseDate, defaultToNow)
+		def parsedEntry = Entry.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
 		TagStatsRecord record = new TagStatsRecord()
 		def entry = Entry.create(user.getId(), parsedEntry, record)
 
@@ -66,9 +64,9 @@ class DataController extends LoginController {
 		return [entry, parsedEntry['status'], record.getOldTagStats()]
 	}
 
-	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneOffsetStr, defaultToNow) {
+	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow) {
 		debug "DataController.doUpdateEntry() entryIdStr:" + entryIdStr + ", currentTimeStr:" + currentTimeStr \
-				+ ", textStr:" + textStr + ", baseDateStr:" + baseDateStr + ", timeZoneOffsetStr:" + timeZoneOffsetStr \
+				+ ", textStr:" + textStr + ", baseDateStr:" + baseDateStr + ", timeZoneName:" + timeZoneName \
 				+ ", defaultToNow:" + defaultToNow
 		
 		def entry = Entry.get(Long.parseLong(entryIdStr))
@@ -83,12 +81,10 @@ class DataController extends LoginController {
 			return [null, 'You cannot edit a generated entry.', null, null]
 		}
 		
-		TimeZone tz = Utils.createTimeZone(-Integer.parseInt(timeZoneOffsetStr),"GMTOFFSET" + timeZoneOffsetStr)
-
 		def currentTime = parseDate(currentTimeStr)
 		def baseDate = parseDate(baseDateStr)
 
-		def m = Entry.parse(currentTime, tz, textStr, baseDate, false, true)
+		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
 		if (entry != null) {
 			TagStatsRecord record = new TagStatsRecord()
@@ -101,10 +97,10 @@ class DataController extends LoginController {
 	}
 
 	// find entries including those with null events
-	protected def listEntries(User user, String dateStr) {
-		debug "DataController.listEntries() userId:" + user.getId() + ", dateStr:" + dateStr
+	protected def listEntries(User user, String timeZoneName, String dateStr) {
+		debug "DataController.listEntries() userId:" + user.getId() + ", timeZoneName:" + timeZoneName + ", dateStr:" + dateStr
 		
-		return Entry.fetchListData(user, parseDate(dateStr), new Date())
+		return Entry.fetchListData(user, timeZoneName, parseDate(dateStr), new Date())
 	}
 	
 	protected def doParseCSVAcross(InputStream csvIn, Long userId) {
@@ -127,7 +123,7 @@ class DataController extends LoginController {
 				timeZoneStr = tokens[1]
 				def timeZoneOffset = Integer.parseInt(tokens[2])
 				debug "setName: " + setName + " timeZone: " + timeZoneStr + " timeZoneOffset: " + timeZoneOffset
-				timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr)
+				timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr, true)
 				// delete previous import of same data set
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName, userId: userId])
@@ -175,7 +171,7 @@ class DataController extends LoginController {
 					analysisType = true
 					setName = "Imported for " + setName.substring(15)
 					debug "setName: " + setName + " analysis type"
-					timeZone = Utils.createTimeZone(0, "GMT")
+					timeZone = Utils.createTimeZone(0, "GMT", false)
 					timeZoneOffsetSecs = 0
 					dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
 					dateFormat.setTimeZone(timeZone)
@@ -183,7 +179,7 @@ class DataController extends LoginController {
 					timeZoneStr = tokens[1]
 					def timeZoneOffset = Integer.parseInt(tokens[2])
 					debug "setName: " + setName + " timeZone: " + timeZoneStr + " timeZoneOffset: " + timeZoneOffset
-					timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr)
+					timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr, true)
 					dateFormat = new SimpleDateFormat("MM/dd/yy z")
 					dateFormat.setTimeZone(timeZone)
 				}
@@ -278,7 +274,7 @@ class DataController extends LoginController {
 			order("date","asc")
 		}
 		
-		TimeZone timeZone = Utils.createTimeZone(0, "GMT")
+		TimeZone timeZone = Utils.createTimeZone(0, "GMT", false)
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy z")
 		dateFormat.setTimeZone(timeZone)
 		
@@ -325,7 +321,7 @@ class DataController extends LoginController {
 			order("date","asc")
 		}
 		
-		TimeZone timeZone = Utils.createTimeZone(0, "GMT")
+		TimeZone timeZone = Utils.createTimeZone(0, "GMT", false)
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
 		dateFormat.setTimeZone(timeZone)
 		
@@ -524,30 +520,6 @@ class DataController extends LoginController {
 		renderJSONGet(Entry.getTags(sessionUser(), params.sort == 'freq' ? Entry.BYCOUNT : Entry.BYALPHA))
 	}
 	
-	def addEntryData() { // old API
-		debug("DataController.addEntryData() params:" + params)
-		
-		def userId = userFromIdStr(params.userId)
-		
-		if (userId == null) {
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		def result = doAddEntry(params.currentTime, params.userId, params.text, params.baseDate, params.timeZoneOffset,
-				params.defaultToNow == '1' ? true : false)
-		if (result[0] != null) {
-			renderJSONGet([
-				listEntries(userId, params.baseDate),
-				result[1],
-				result[0].getDescription(),
-				result[2].getJSONShortDesc()
-			])
-		} else {
-			renderStringGet('error')
-		}
-	}
-
 	def addEntrySData() { // new API
 		debug("DataController.addEntrySData() params:" + params)
 		
@@ -558,11 +530,11 @@ class DataController extends LoginController {
 			return
 		}
 
-		def result = doAddEntry(params.currentTime, params.userId, params.text, params.baseDate, params.timeZoneOffset,
+		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
 				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
 			renderJSONGet([
-				listEntries(userId, params.baseDate),
+				listEntries(userId, params.timeZoneName, params.baseDate),
 				result[1],
 				result[2].getJSONDesc(),
 				result[0].getJSONDesc()
@@ -572,26 +544,13 @@ class DataController extends LoginController {
 		}
 	}
 
-	def updateEntryData() { // old API
-		debug("DataController.updateEntryData() displayDate: " + params.displayDate)
-
-		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
-				params.defaultToNow == '1' ? true : false)
-		if (entry != null) {
-			renderJSONGet(listEntries(userFromId(entry.getUserId()), params.baseDate))
-		} else {
-			debug "Error while updating: " + message
-			renderStringGet(message)
-		}
-	}
-
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() displayDate: " + params.displayDate)
 
-		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneOffset,
+		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneName,
 				params.defaultToNow == '1' ? true : false)
 		if (entry != null) {
-			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.baseDate),
+			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, params.baseDate),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
 		} else {
 			debug "Error while updating: " + message

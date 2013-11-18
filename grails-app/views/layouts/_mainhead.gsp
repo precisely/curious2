@@ -4,6 +4,7 @@
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.offline.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
+<script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?v=5"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?v=5"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?v=5"></script>
