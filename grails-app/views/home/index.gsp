@@ -505,7 +505,8 @@ $(function(){
 	})
 	$("#confirm-repeats").click(function() {
 		$("li.entry.ghost").each(function(index, entry) {
-			$(entry).trigger("click", true);
+			if (!$(entry).data("isContinuous"))
+				$(entry).trigger("click", true);
 		})
 	})
 

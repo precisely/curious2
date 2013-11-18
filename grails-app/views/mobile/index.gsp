@@ -969,7 +969,8 @@ $(function(){
 		})
 		$("#confirm-repeats").click(function() {
 			$("li.entry.ghost").each(function(index, entry) {
-				activateEntry($(this), true);
+				if (!$(entry).data("isContinuous"))
+					$(entry).trigger("click", true);
 			})
 		})
 
