@@ -476,7 +476,7 @@ $(function(){
 		}
 		return false;
 	});
-	$(document).on("click", "li.entry.ghost", function(e) {
+	$(document).on("click", "li.entry.ghost", function(e, doNotSelectEntry) {
 		if(e.target.nodeName && $(e.target).closest("a,img").length) {
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
@@ -489,17 +489,24 @@ $(function(){
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
-						if(isContinuous) {
+						if (isContinuous) {
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
 							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
 						} else {
 							displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
-						selected($newEntry, true);
+						if (!doNotSelectEntry) {
+							selected($newEntry, true);
+						}
 						tagList.load();
 					}
 				});
+	})
+	$("#confirm-repeats").click(function() {
+		$("li.entry.ghost").each(function(index, entry) {
+			$(entry).trigger("click", true);
+		})
 	})
 
 	/*
@@ -562,11 +569,15 @@ $(function(){
 
 		</div>
 
-		<div id="addData">
+		<div id="addData" class="panel-wrapper">
 			<input type="text" id="input0" name="data"
 				value="Enter a tag.  For example: nap at 2pm" class="textInput" />
 			<div style="clear: both"></div>
 		</div>
+		<div id="confirm-repeats" class="panel-wrapper">
+			CONFIRM REPEATS
+		</div>
+		<div class="border-separator"></div>
 
 		<div id="recordList">
 			<ol id="entry0">
