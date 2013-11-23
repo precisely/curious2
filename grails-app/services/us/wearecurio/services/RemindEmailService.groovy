@@ -39,6 +39,7 @@ class RemindEmailService {
 			def userId = user[0]
 			def email = user[1]
 			def u = User.get(userId)
+			PushNotificationDevice userDevice = PushNotificationDevice.findByUserId(userId)
 			
 			def lhp = u.hasMetaTag(lhpMemberTag)
 			def url = lhp ? "https://lamhealth.wearecurio.us/mobile/index" : "https://dev.wearecurio.us/mobile/index"
@@ -54,6 +55,12 @@ class RemindEmailService {
 						from "contact@wearecurio.us"
 						subject "Reminder to track:" + event.getTag().getDescription()
 						body url + "?entryId=" + event.getId()
+					}
+					
+					if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
+						//TODO Send GCM message for reminder
+					} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
+						//TODO Send APN message for reminder
 					}
 				}
 			}
