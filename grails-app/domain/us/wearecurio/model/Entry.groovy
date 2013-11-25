@@ -1316,8 +1316,8 @@ class Entry {
 			if (entry.repeatType != null) { // adjust dateTime for repeat entries
 				desc['date'] = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
 			}
-			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // ghost timed entry on future dates
-				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
+			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // repeat entry on a future date
+				// desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT - no longer ghost repeat entries
 				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
 					desc['amount'] = null
 					desc['amountPrecision'] = -1
@@ -1519,6 +1519,9 @@ class Entry {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "repeat", RepeatType.DAILY)) != null) {
+				return retVal
+			}
+			if ((retVal = matchEndStr(comment, "pinned", RepeatType.CONTINUOUSGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "remind", RepeatType.REMINDDAILYGHOST)) != null) {
@@ -1958,7 +1961,9 @@ class Entry {
 		
 		if (retVal['repeatType'] != null) {
 			if (!retVal['repeatType'].isReminder()) {
-				if (retVal['repeatType'].isDaily()) {
+				// removed logic for determining continuous vs daily repeats via amount/time specification
+				// instead use "pinned" vs "repeat"
+				/* if (retVal['repeatType'].isDaily()) {
 					if (foundAmount) {
 						if (foundTime) {
 							retVal['repeatType'] = RepeatType.DAILY
@@ -1970,7 +1975,7 @@ class Entry {
 						}
 					} else {
 						if (foundTime || forUpdate) {
-							retVal['repeatType'] = RepeatType.DAILYGHOST
+							retVal['repeatType'] = RepeatType.DAILY
 						} else {
 							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
 						}
@@ -1981,7 +1986,7 @@ class Entry {
 					} else {
 						retVal['repeatType'] = RepeatType.WEEKLYGHOST
 					}
-				}
+				} */
 				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
