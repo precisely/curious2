@@ -107,6 +107,45 @@ class WithingsDataService {
 		}
 	}
 
+	Map unSubscribe(Long userId) {
+		debug "unSubscribe() account:" + userId
+		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.WITHINGS_ID)
+		if(!account) {
+			log.info "No subscription found for userId [$userId]"
+			return [success: false, message: "No subscription found"]
+		}
+		
+		Map queryParameters = ["action": "revoke"]
+		queryParameters.put("userid", account.accountId)
+		if(Environment.current == Environment.PRODUCTION) {
+			queryParameters.put("callbackurl", OAuthEncoder.encode("http://dev.wearecurio.us/home/notifywithings"))
+		} else {
+			queryParameters.put("callbackurl", OAuthEncoder.encode("http://123.201.192.233:8080/home/notifywithings"))
+		}
+		//listSubscription(account)	// Test before un-subscribe
+
+		String subscriptionURL = urlService.makeQueryString("http://wbsapi.withings.net/notify", queryParameters)
+
+		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
+
+		log.info "Unsubscribe return with code: [$response.code] & body: [$response.body]"
+		
+		if (response.getCode() == 200) {
+			account.delete()
+		}
+		//listSubscription(account)	// Test after un-subscribe
+		return [success: true]
+	}
+
+	/**
+	 * Developer method to list the subscriptions for the current account
+	 * @param account
+	 */
+	void listSubscription(OAuthAccount account) {
+		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
+		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
+	}
+
 	def getData(OAuthAccount account) {
 		return getData(account, false)
 	}

@@ -38,7 +38,7 @@ class HomeController extends DataController {
 
 		User user = sessionUser()
 		
-		if (user == null) {
+		if (user == null) {	// TODO Can be remove, since this action is protected
 			debug "auth failure"
 			return
 		}
@@ -52,6 +52,11 @@ class HomeController extends DataController {
 
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
+	}
+
+	def unregisterwithings() {
+		withingsDataService.unSubscribe(sessionUser().id)
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
 
 	def register23andme() {
