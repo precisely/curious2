@@ -124,7 +124,16 @@
 									</g:else><br>
 									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
 									<g:link action="registerwithings">Link Withings Account</g:link><br>
-									<g:link action="register23andme">Link 23andMe Account</g:link>
+									<g:link action="register23andme">
+										<oauth:isLinked typeId="TWENTY_3_AND_ME_ID">
+											<g:if test="${it }">
+												Re-import from 23andMe
+											</g:if>
+											<g:else>
+												Import from 23andme
+											</g:else>
+										</oauth:isLinked>
+									</g:link>
 								</td>
 							</tr>
 

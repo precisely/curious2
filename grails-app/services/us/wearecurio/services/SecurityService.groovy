@@ -2,8 +2,10 @@ package us.wearecurio.services
 
 import javax.servlet.http.HttpServletRequest
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.context.request.RequestContextHolder
+
 import us.wearecurio.model.User
 import us.wearecurio.server.Session
 
@@ -33,7 +35,7 @@ class SecurityService {
 				return false
 			}
 		}
-		
+
 		SynchronizerTokensHolder tokenInSession = request.getSession(false)?.getAttribute(SynchronizerTokensHolder.HOLDER)
 		String tokenInRequest = params[SynchronizerTokensHolder.TOKEN_KEY]
 		String URIInRequest = params[SynchronizerTokensHolder.TOKEN_URI]
@@ -54,4 +56,18 @@ class SecurityService {
 			}
 		}
 	}
+
+	User getCurrentUser() {
+		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
+		
+		if (session.userId) {
+			User user = User.get(session.userId)
+			log.debug "userId " + session.userId
+			session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
+			return user
+		}
+		log.debug "No session user"
+		return null
+	}
+
 }

@@ -13,8 +13,6 @@ import us.wearecurio.utility.Utils
  */
 class LoginController extends SessionController {
 
-	def securityService
-
 	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
 		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
 		"addTagToTagGroup", "removeTagGroupFromTagGroup", "removeTagFromTagGroup", "showTagGroup", "deleteTagGroup",

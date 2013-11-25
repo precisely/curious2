@@ -9,6 +9,8 @@ import us.wearecurio.server.Session
 import us.wearecurio.services.UrlService
 
 class SessionController {
+	
+	def securityService
 	UrlService urlService
 	def name
 
@@ -57,17 +59,7 @@ class SessionController {
 
 	protected def sessionUser() {
 		debug "SessionController.sessionUser()"
-
-		if (session.userId) {
-			def user = User.get(session.userId)
-			debug "userId " + session.userId
-			session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
-			return user
-		}
-		
-		debug "no session user"
-
-		return null
+		return securityService.currentUser
 	}
 	
 	public static class SessionCacheValue {
