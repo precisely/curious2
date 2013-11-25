@@ -30,8 +30,7 @@ class HomeController extends DataController {
 	}
 
 	def registerwithings() {
-		debug "HomeController.registerwithings() request:" + request
-		redirect(url:withingsDataService.getAuthorizationURL())
+		redirect (url: toUrl(action: "doregisterwithings"))
 	}
 
 	def doregisterwithings() {
@@ -45,9 +44,12 @@ class HomeController extends DataController {
 		}
 		
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-
-		withingsDataService.authorizeAccount(user.getId(), Long.parseLong(params.userid), params.oauth_token, params.oauth_verifier)
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("withings")]
+
+		withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
+
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}

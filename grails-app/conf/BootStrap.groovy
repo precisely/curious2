@@ -14,7 +14,6 @@ class BootStrap {
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
-		withingsDataService.initialize()
 		withingsDataService.poll()
 		withingsDataService.refreshSubscriptions()
 		remindEmailService.sendReminders()

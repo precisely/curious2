@@ -17,7 +17,7 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
-	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider"]]
+	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
 
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
@@ -87,6 +87,21 @@ class AuthenticationController extends SessionController {
 			session.returnURIWithToken = null
 		}
 		return
+	}
+
+	def withingsAuth() {
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
+	}
+
+	def withingCallback(String userid) {
+		params.provider = "withings"
+		session.withingsUserId = userid
+		redirect(url: toUrl(action: "callback", controller: "oauth", params: params))	// redirecting to oauth plugin controller
 	}
 
 }

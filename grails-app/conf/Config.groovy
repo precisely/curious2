@@ -1,7 +1,8 @@
-import org.scribe.model.SignatureType;
+import org.scribe.model.SignatureType
 
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
+import us.wearecurio.thirdparty.withings.WithingsApi
 
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
@@ -96,10 +97,6 @@ environments {
 			bingMapKey {
 				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
 			}
-			withings {
-				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
-				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
-			}
 		}
 		oauth {
 			providers {
@@ -107,6 +104,14 @@ environments {
 					key = "949f93d631c0401b853b333d7747a574"
 					secret = "6c813aceab794174a32b7ea1532f7401"
 					apiVersion = "1"
+				}
+				twenty3andme {
+					key = "96de99b2227025cacb6807e28df20367"
+					secret = "f00f94c857cba5d166463ad6f2c1aab0"
+				}
+				withings {
+					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 				}
 			}
 			debug = true
@@ -123,10 +128,6 @@ environments {
 			bingMapKey {
 				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
 			}
-			withings {
-				key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
-				secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
-			}
 		}
 		oauth {
 			providers {
@@ -134,6 +135,14 @@ environments {
 					key = "b2610f22a2314bdc804c3463aa666876"
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
+				}
+				twenty3andme {
+					key = "96de99b2227025cacb6807e28df20367"
+					secret = "f00f94c857cba5d166463ad6f2c1aab0"
+				}
+				withings {
+					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
+					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
 			}
 		}
@@ -149,10 +158,6 @@ environments {
 			bingMapKey {
 				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
 			}
-			withings {
-				key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
-				secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
-			}
 		}
 		oauth {
 			providers {
@@ -160,6 +165,14 @@ environments {
 					key = "b2610f22a2314bdc804c3463aa666876"
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
+				}
+				twenty3andme {
+					key = "96de99b2227025cacb6807e28df20367"
+					secret = "f00f94c857cba5d166463ad6f2c1aab0"
+				}
+				withings {
+					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
 				}
 			}
 		}
@@ -211,12 +224,17 @@ oauth {
 		}
 		twenty3andme {
 			api = Twenty3AndMeApi
-			key = "96de99b2227025cacb6807e28df20367"
-			secret = "f00f94c857cba5d166463ad6f2c1aab0"
 			callback = "${grails.serverURL }oauth/twenty3andme/callback"
 			successUri = "authentication/twenty3andme/success"
 			failureUri = "authentication/twenty3andme/fail"
 			scope = "names basic genomes"
+		}
+		withings {
+			api = WithingsApi
+			callback = "${grails.serverURL }authentication/withingCallback"	// Exceptional case, since withings sends userId as parameter
+			successUri = "authentication/withings/success"
+			failureUri = "authentication/withings/fail"
+			signatureType = SignatureType.QueryString
 		}
 	}
 }

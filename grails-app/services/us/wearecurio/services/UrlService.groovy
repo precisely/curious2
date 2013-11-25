@@ -35,13 +35,17 @@ class UrlService {
 	def make(map, req) {
 		def url = base(req) + map.controller + '/' + map.action
 		if (map.params) {
-			url += "?" + map.params.collect { key, value -> "$key=$value" }.join("&")
+			url = makeQueryString(url, map.params)
 		}
 		if (map.fragment) {
 			url += '#' + map.fragment
 		}
 		
 		return url
+	}
+
+	String makeQueryString(String url, Map params) {
+		url + "?" + params.collect { key, value -> "$key=$value" }.join("&")
 	}
 	
 	public static final String URLATTRIBUTE = "us.wearecurio.serverURL"
