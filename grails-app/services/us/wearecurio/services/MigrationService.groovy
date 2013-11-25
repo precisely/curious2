@@ -124,7 +124,7 @@ class MigrationService {
 			def entries = Entry.list()
 			
 			for (Entry e in entries) {
-				def timeZoneName = TimeZoneId.getTimeZoneName(e.getDate(), e.getTimeZoneOffsetSecs())
+				def timeZoneName = TimeZoneId.guessTimeZoneName(e.getDate(), e.getTimeZoneOffsetSecs())
 				
 				def timeZoneId = TimeZoneId.look(timeZoneName)
 				

@@ -56,8 +56,6 @@ $(function() {
 		  <input type="file" name="csvFile" style="float:left;" />
 		  <input type="image" src="/images/add_data.gif" value="Add Data" class="buttonInput" />
 		  <div style="clear:both"></div>
-		  <input type="radio" name="csvtype" value="dateDown">Date in first column<br>
-		  <input type="radio" name="csvtype" value="dateAcross" checked>Date in second row<br>
 		</g:form>
       </div>
     </div>

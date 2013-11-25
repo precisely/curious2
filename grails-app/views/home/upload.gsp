@@ -57,8 +57,7 @@ $(function(){
 		  <input type="file" name="csvFile" style="float:left;" />
 		  <input type="image" src="/images/add_data.gif" value="Add Data" class="buttonInput" />
 		  <div style="clear:both"></div>
-		  <input type="radio" name="csvtype" value="dateDown" checked>Date in first column, data down<br>
-		  <input type="radio" name="csvtype" value="dateAcross">Date in second row, data across<br>
+		  <input type="radio" name="csvtype" value="dateDown" checked>Curious Data Format<br>
           <g:radio name="csvtype" value="jawbone"/><label for="csvtype">Jawbone Up</label><br>
 		</g:form>
       </div>

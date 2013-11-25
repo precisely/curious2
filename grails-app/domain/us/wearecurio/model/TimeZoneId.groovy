@@ -84,8 +84,8 @@ class TimeZoneId {
 		return firstSunday;
 	}
 
-	// try to guess time zone name from offset
-	static String getTimeZoneName(Date date, int offsetSecs) {		
+	// try to guess time zone name from offset, for converting deprecated entry time values
+	static String guessTimeZoneName(Date date, int offsetSecs) {		
 		DateTime dateTime = new DateTime(date, DateTimeZone.forOffsetMillis((int)offsetSecs * 1000))
 		
 		boolean dst = true
@@ -132,6 +132,11 @@ class TimeZoneId {
 		
 		if (dst) offsetSecs -= 60 * 60
 		
+		return guessTimeZoneNameFromOffset(offsetSecs)
+	}
+	
+	// try to guess time zone name from offset, for converting deprecated entry time values
+	static String guessTimeZoneNameFromOffset(int offsetSecs) {		
 		if (offsetSecs == -28800)
 			return "America/Los_Angeles"
 		else if (offsetSecs == -25200)
@@ -143,6 +148,21 @@ class TimeZoneId {
 		else if (offsetSecs > 0)
 			return "Asia/Kolkata"
 			
+		return "America/New_York" // default everything else to NYC for now
+	}
+	
+	// try to guess time zone name from baseDate alone, for converting deprecated time zone values
+	static String guessTimeZoneNameFromBaseDate(Date baseDate) {
+		LocalTime utcTime = new DateTime(baseDate, DateTimeZone.UTC).toLocalTime()
+		
+		int hours = utcTime.getHours()
+		if (hours == 16 || hours == 17)
+			return "America/Los_Angeles"
+		else if (hours == 19 || hours == 20)
+			return "America/New_York"
+		else if (hours < 13)
+			return "Asia/Kolkata"
+		
 		return "America/New_York" // default everything else to NYC for now
 	}
 }

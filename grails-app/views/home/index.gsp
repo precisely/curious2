@@ -19,20 +19,20 @@ var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:el
 
 var cachedDate;
 var cachedDateUTC;
+var timeZoneName;
 
 function cacheDate() {
 	cachedDate = $("#datepicker").datepicker('getDate');
 	cachedDateUTC = cachedDate.toUTCString();
+	timeZoneName = jstz.determine().name();
 }
 
 var currentTimeUTC;
-var timeZoneName;
 
 function cacheNow() {
 	cacheDate();
 	var now = new Date();
 	currentTimeUTC = now.toUTCString();
-	timeZoneName = jstz.determine().name();
 }
 
 function changeDate(amount) {
@@ -42,9 +42,9 @@ function changeDate(amount) {
 }
 
 function refreshPage() {
-	cacheDate();
+	cacheNow();
 	
-	$.getJSON("/home/getListData?date="+ cachedDateUTC + "&userId=" + currentUserId + "&callback=?",
+	$.getJSON("/home/getListData?date="+ cachedDateUTC + "&currentTime=" + currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + timeZoneName + "&callback=?",
 		getCSRFPreventionObject("getListDataCSRF"),
 		function(entries){
 			if (checkData(entries))
@@ -210,6 +210,7 @@ function deleteEntryId(entryId) {
 				});
 		}
 	} else {
+		cacheNow();
 		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
 				+ "&timeZoneName=" + timeZoneName + "&displayDate=" + cachedDateUTC + "&"
@@ -481,10 +482,11 @@ $(function(){
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
 		}
+		cacheNow();
 		var $ghostEntry = $(this);
 		var entryId = $ghostEntry.data("entry-id");
 		var isContinuous = $ghostEntry.data("isContinuous");
-		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&"
+		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&"
 				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
 				function(newEntry) {
 					if (checkData(newEntry)) {

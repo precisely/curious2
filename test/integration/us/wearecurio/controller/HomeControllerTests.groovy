@@ -116,18 +116,22 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.session.userId = user.getId()
 		
-		controller.request.addFile('csvFile', "\"export_userdemo\",\"GMT\",\"0\"\r\n\"06/17/2012 GMT\",\"betaine hcl 648.000000000 mg \"\r\n\"06/17/2012 GMT\",\"lychee import test 44mg\"\r\n\"06/17/2012 GMT\",\"brownies \"\r\n\"06/17/2012 GMT\",\"b-6 100.000000000 mg \"".getBytes())
-				
+		controller.request.addFile(
+			'csvFile', ('"Date (GMT) for exporttest","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"\n'
+					+ '"2010-07-01 12:39:00 GMT","rererg",122.000000000,"undefined","undefined",-1,3,180,"America/New_York"\n'
+					+ '"2010-07-03 12:20:00 GMT","raspberry ginger smoothie",2.000000000,"mg","",-1,3,180,"America/New_York"\n'
+					+ '"2010-07-03 17:00:00 GMT","hello kitty",1.000000000,"","",-1,3,180,"America/New_York"').getBytes())
+
 		controller.doUpload()
 		
 		def c = Entry.createCriteria()
 		def results = c {
 			and {
 				eq("userId", user.getId())
-				eq("tag", Tag.look("lychee import test"))
-				eq("amount", new BigDecimal(44))
+				eq("tag", Tag.look("raspberry ginger smoothie"))
+				eq("amount", new BigDecimal(2))
 				eq("units", "mg")
-				eq("setName", "export_userdemo")
+				eq("setName", "Date (GMT) for exporttest")
 			}
 			maxResults(1)
 		}

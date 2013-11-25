@@ -512,7 +512,7 @@ $(function(){
 			refreshEntries(data, false);
 		}
 		
-		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId });
+		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', { date:cachedDateUTC, userId:currentUserId, timeZoneName:timeZoneName });
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 			function(data) {
 				if (checkData(data)) {
@@ -587,7 +587,9 @@ $(function(){
 			selected(entry, false);
 			return;
 		}
-		$.getJSON(makeGetUrl("activateGhostEntry"), makeGetArgs(getCSRFPreventionObjectMobile("activateGhostEntryCSRF", {entryId:entryId, date:cachedDateUTC})),
+		cacheNow();
+		$.getJSON(makeGetUrl("activateGhostEntry"), makeGetArgs(getCSRFPreventionObjectMobile("activateGhostEntryCSRF",
+				{entryId:entryId, date:cachedDateUTC, currentTime:currentTimeUTC, timeZoneName:timeZoneName})),
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;

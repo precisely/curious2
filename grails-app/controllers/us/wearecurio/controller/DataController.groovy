@@ -16,6 +16,11 @@ import java.util.Date
 import java.util.SimpleTimeZone
 import java.util.TimeZone
 
+import org.apache.jasper.compiler.Node.ParamsAction;
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.*
+
 class DataController extends LoginController {
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
@@ -52,7 +57,8 @@ class DataController extends LoginController {
 
 		def currentTime = parseDate(currentTimeStr)
 		def baseDate = parseDate(baseDateStr)
-
+		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
+		
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
 		def parsedEntry = Entry.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
@@ -83,7 +89,8 @@ class DataController extends LoginController {
 		
 		def currentTime = parseDate(currentTimeStr)
 		def baseDate = parseDate(baseDateStr)
-
+		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
+		
 		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
 		if (entry != null) {
@@ -100,53 +107,13 @@ class DataController extends LoginController {
 	protected def listEntries(User user, String timeZoneName, String dateStr) {
 		debug "DataController.listEntries() userId:" + user.getId() + ", timeZoneName:" + timeZoneName + ", dateStr:" + dateStr
 		
-		return Entry.fetchListData(user, timeZoneName, parseDate(dateStr), new Date())
+		Date baseDate = parseDate(dateStr)
+		
+		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
+		
+		return Entry.fetchListData(user, timeZoneName, baseDate, new Date())
 	}
 	
-	protected def doParseCSVAcross(InputStream csvIn, Long userId) {
-		debug "DataController.doParseCSVAcross() userId:" + userId
-		
-		Reader reader = new InputStreamReader(csvIn)
-
-		int lineNum = 0
-
-		def timeZoneStr = ""
-		def setName = "import"
-		TimeZone timeZone
-
-		List<Date> dateList = new ArrayList<Date>()
-
-		reader.eachCsvLine { tokens ->
-			++lineNum
-			if (lineNum == 1) {
-				setName = tokens[0]
-				timeZoneStr = tokens[1]
-				def timeZoneOffset = Integer.parseInt(tokens[2])
-				debug "setName: " + setName + " timeZone: " + timeZoneStr + " timeZoneOffset: " + timeZoneOffset
-				timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr, true)
-				// delete previous import of same data set
-				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-						[setName: setName, userId: userId])
-			} else if (lineNum == 2) {
-				for (int i = 0; i < tokens.length; ++i) {
-					def date = Date.parse("MM/dd/yy z", tokens[i] + " " + timeZoneStr);
-					debug "Date: " + Utils.dateToGMTString(date) 
-					dateList.add(date)
-				}
-			} else {
-				for (int i = 0; i < tokens.length; ++i) {
-					if (tokens[i].length() > 0) {
-						def parsedEntry = Entry.parse(now, timeZone, tokens[i], dateList.get(i), false)
-						parsedEntry['setName'] = setName
-						def entry = Entry.create(userId, parsedEntry, null)
-
-						debug("created " + entry)
-					}
-				}
-			}
-		}
-	}
-
 	protected def doParseCSVDown(InputStream csvIn, Long userId) {
 		debug "DataController.doParseCSVDown() userId:" + userId
 		
@@ -154,80 +121,54 @@ class DataController extends LoginController {
 
 		int lineNum = 0
 
-		String timeZoneStr = ""
 		String setName = "import"
-		TimeZone timeZone
-		Integer timeZoneOffsetSecs = 0
+		String timeZoneName
 		Date currentDate = null
-		boolean analysisType = false
-		DateFormat dateFormat
+		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
 		Date now = new Date()
 
 		reader.eachCsvLine { tokens ->
 			++lineNum
 			if (lineNum == 1) {
 				setName = tokens[0]
-				if (setName.startsWith("Date (GMT) for ")) {
-					analysisType = true
+				if (setName.startsWith("Date (UTC) for ")) {
 					setName = "Imported for " + setName.substring(15)
 					debug "setName: " + setName + " analysis type"
-					timeZone = Utils.createTimeZone(0, "GMT", false)
-					timeZoneOffsetSecs = 0
-					dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
-					dateFormat.setTimeZone(timeZone)
 				} else {
-					timeZoneStr = tokens[1]
-					def timeZoneOffset = Integer.parseInt(tokens[2])
-					debug "setName: " + setName + " timeZone: " + timeZoneStr + " timeZoneOffset: " + timeZoneOffset
-					timeZone = Utils.createTimeZone(timeZoneOffset, timeZoneStr, true)
-					dateFormat = new SimpleDateFormat("MM/dd/yy z")
-					dateFormat.setTimeZone(timeZone)
+					return false // format error
 				}
 				// delete previous import of same data set
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName, userId: userId])
 			} else {
-				if (analysisType) {
-					if (tokens[0]) {
-						currentDate = dateFormat.parse(tokens[0])
-						timeZoneOffsetSecs = timeZone == null ? 0 : timeZone.getOffset(currentDate.getTime()) / 1000
-						debug "Date: " + currentDate
-					}
-					if (currentDate) {
-						Long repeatTypeId = Long.valueOf(tokens[5])
-						def parsedEntry = [ \
-							userId:userId, \
-							tweetId:null, \
-							date:currentDate, \
-							timeZoneOffsetSecs:timeZoneOffsetSecs, \
-							description:tokens[1], \
-							amount:tokens[2], \
-							units:tokens[3], \
-							comment:tokens[4], \
-							repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get(repeatTypeId) : null, \
-							setName:setName, \
-							amountPrecision:Long.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
-							datePrecisionSecs:(tokens[7].equals("null") ? '180':tokens[7]), \
-						]
-						def entry = Entry.create(userId, parsedEntry, null)
-	
-						debug("created " + entry)
-					}
-				} else {
-					if (tokens[0]) {
-						currentDate = dateFormat.parse(tokens[0] + " " + timeZoneStr)
-						debug "Date: " + currentDate
-					}
-					if (currentDate) {
-						def parsedEntry = Entry.parse(now, timeZone, tokens[1], currentDate, false)
-						parsedEntry['setName'] = setName
-						def entry = Entry.create(userId, parsedEntry, null)
-	
-						debug("created " + entry)
-					}
+				if (tokens[0]) {
+					currentDate = dateTimeFormatter.parseDateTime(tokens[0]).toDate()
+					debug "Date: " + currentDate
+				}
+				if (currentDate) {
+					Long repeatTypeId = Long.valueOf(tokens[5])
+					def parsedEntry = [ \
+						userId:userId, \
+						tweetId:null, \
+						date:currentDate, \
+						timeZoneName:tokens[8], \
+						description:tokens[1], \
+						amount:tokens[2], \
+						units:tokens[3], \
+						comment:tokens[4], \
+						repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get(repeatTypeId) : null, \
+						setName:setName, \
+						amountPrecision:Long.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
+						datePrecisionSecs:(tokens[7].equals("null") ? '180':tokens[7]), \
+					]
+					def entry = Entry.create(userId, parsedEntry, null)
+
+					debug("created " + entry)
 				}
 			}
 		}
+		
+		return true
 	}
 
 	/**
@@ -251,43 +192,6 @@ class DataController extends LoginController {
 		writer.write(str)
 	}
 	
-	protected def doExportCSVHuman(OutputStream out, User user) {
-		debug "DataController.doExportCSV() + userId:" + user.getId()
-		
-		Writer writer = new OutputStreamWriter(out)
-
-		writeCSV(writer,"export_user" + user.getUsername())
-		writer.write(",")
-		writeCSV(writer,"GMT")
-		writer.write(",")
-		writeCSV(writer,"0")
-		writer.write("\n")
-
-		def c = Entry.createCriteria()
-		def results = c {
-			and {
-				eq("userId", user.getId())
-				not {
-					isNull("date")
-				}
-			}
-			order("date","asc")
-		}
-		
-		TimeZone timeZone = Utils.createTimeZone(0, "GMT", false)
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy z")
-		dateFormat.setTimeZone(timeZone)
-		
-		for (entry in results) {
-			writeCSV(writer, dateFormat.format(entry.getDate()))
-			writer.write(",")
-			writeCSV(writer, entry.exportString())
-			writer.write("\n")
-		}
-		
-		writer.flush()
-	}
-
 	protected def doExportCSVAnalysis(OutputStream out, User user) {
 		debug "DataController.doExportCSV() + userId:" + user.getId()
 		
@@ -308,6 +212,8 @@ class DataController extends LoginController {
 		writeCSV(writer,"Amount Precision")
 		writer.write(",")
 		writeCSV(writer,"Date Precision")
+		writer.write(",")
+		writeCSV(writer,"Time Zone")
 		writer.write("\n")
 
 		def c = Entry.createCriteria()
@@ -341,6 +247,8 @@ class DataController extends LoginController {
 			writeNumber(writer, entry.getAmountPrecision().toString())
 			writer.write(",")
 			writeNumber(writer, entry.getDatePrecisionSecs().toString())
+			writer.write(",")
+			writeCSV(writer, entry.fetchTimeZoneName())
 			writer.write("\n")
 		}
 		
@@ -395,12 +303,14 @@ class DataController extends LoginController {
 		Entry entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 		
-		def currentTime = params.date == null ? null : parseDate(params.date)
-		
+		Date baseDate = params.date == null ? null : parseDate(params.date)
+		Date currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
+		String timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to activate this entry.')
 		}
-		Entry newEntry = entry.activateGhostEntry(currentTime, new Date()) // TODO: now should probably come from client, not server; fix later
+		Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
 		if (newEntry != null) {
 			renderJSONGet(newEntry.getJSONDesc())
 		} else
@@ -433,7 +343,7 @@ class DataController extends LoginController {
 	}
 
 	def getListData() {
-		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date
+		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date + " timeZoneName:" + params.timeZoneName
 		
 		def user = userFromIdStr(params.userId);
 		if (user == null) {
@@ -441,8 +351,12 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
+		
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(params.date) : params.timeZoneName
+		
+		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 
-		def entries = Entry.fetchListData(user, parseDate(params.date), new Date())
+		def entries = Entry.fetchListData(user, timeZoneName, parseDate(params.date), currentTime)
 		
 		// skip continuous repeat entries with entries within the usage threshold
 
@@ -582,7 +496,7 @@ class DataController extends LoginController {
 		} else {
 			TagStatsRecord record = new TagStatsRecord()
 			Entry.delete(entry, record)
-			renderJSONGet(listEntries(sessionUser(), params.displayDate))
+			renderJSONGet(listEntries(sessionUser(), TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate), params.displayDate))
 		}
 	}
 	
@@ -602,6 +516,7 @@ class DataController extends LoginController {
 		
 		def currentTime = params.currentTime == null ? null : parseDate(params.currentTime)
 		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 		
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to delete this entry.')
@@ -610,7 +525,7 @@ class DataController extends LoginController {
 		} else {
 			TagStatsRecord record = new TagStatsRecord()
 			Entry.delete(entry, record)
-			renderJSONGet([listEntries(sessionUser(), params.displayDate),
+			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.displayDate),
 				record.getOldTagStats()?.getJSONDesc(),
 				record.getNewTagStats()?.getJSONDesc()])
 		}

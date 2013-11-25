@@ -14,6 +14,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 import org.joda.time.*
+import org.junit.Before;
 
 class Entry {
 	
@@ -520,6 +521,24 @@ class Entry {
 		return timeZoneId.toDateTimeZone()
 	}
 	
+	/**
+	 * fetchLocalTimeInZone()
+	 * 
+	 * Returns Joda time zone for this entry
+	 */
+	DateTime fetchDateTimeInZone(DateTimeZone dateTimeZome) {
+		return new DateTime(this.date, dateTimeZone)
+	}
+	
+	/**
+	 * fetchLocalTimeInZone()
+	 * 
+	 * Returns Joda date time in current time zone
+	 */
+	DateTime fetchDateTime(DateTimeZone dateTimeZome) {
+		return new DateTime(this.date, this.fetchDateTimeZone())
+	}
+	
 	String fetchTimeZoneName() {
 		TimeZoneId timeZoneId = TimeZoneId.fromId(timeZoneId)
 		
@@ -956,22 +975,34 @@ class Entry {
 				Utils.save(e, true)
 			}	
 		} else {
+			Date searchDate = this.date
 			while (true) {
 				String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_add(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date desc limit 1"
 				
-				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.getDescription(), entryDate:searchDate, userId:this.userId, repeatIds:CONTINUOUS_IDS])
 				
 				if (entries.size() > 0) {
 					Entry e = Entry.get(entries[0]['id'])
-				
-					long yesterday = e.getDate().getTime() - DAYTICKS
-					if (yesterday < this.date.getTime()) {
-						repeatEnd = this.date
-					} else
-						repeatEnd = new Date(yesterday)
-				}//TODO
-				
-				break;
+					
+					// check to see if this entry is actually the same local time as the deleted entry:
+					// find the date of this entry in JodaTime with the time zone of the deleted entry, get its local time in that zone, compare with the local time of the deleted entry
+					
+					DateTimeZone dateTimeZone = this.fetchDateTimeZone()
+					LocalTime thisLocalTime = this.fetchDateTimeInZone(dateTimeZone).toLocalTime()
+					LocalTime entryLocalTime = e.fetchDateTimeInZone(dateTimeZone).toLocalTime()
+					
+					if (thisLocalTime.equals(entryLocalTime)) {
+						long yesterday = e.getDate().getTime() - DAYTICKS
+						if (yesterday < this.date.getTime()) {
+							repeatEnd = this.date
+						} else
+							repeatEnd = new Date(yesterday)
+						break
+					} else {
+						searchDate = e.getDate()
+					}
+				} else
+					break
 			}
 		}
 	}
@@ -1066,10 +1097,47 @@ class Entry {
 		return this
 	}
 	
-	WORK STOPPED HERE
-	def activateGhostEntry(Date currentDate, Date nowDate) {
-		long dayStartTime = currentDate.getTime()
+	
+	/**
+	 * Calculates corresponding DateTime for this entry if it were to have happened on baseDate in the specified time zone
+	 * 
+	 * For example if this entry were at "2pm" in the original time zone, figure out what would be 2pm on a day close to the
+	 * baseDate in the original time zone, adjusting for daylight savings time. Then translate to the new time zone.
+	 * 
+	 * @param baseDate
+	 * @param currentTimeZone
+	 * @return translated dateTime corresponding to new date and new time zone
+	 */
+	DateTime fetchCorrespondingDateTimeInTimeZone(Date baseDate, DateTimeZone currentTimeZone) {
+		DateTimeZone entryTimeZone = this.fetchDateTimeZone()
+		
+		DateTime thisDateTime = this.fetchDateTime()
+		LocalTime localTime = thisDateTime.toLocalTime()
+		// create dateTime in the original time zone, but with today's localDate
+		DateTime baseDateTimeInEntryTimeZone = new DateTime(baseDate, entryTimeZone)
+		LocalDate currentLocalDateInEntryTimeZone = baseDateTimeInEntryTimeZone.toLocalDate()
+		DateTime tryDateTime = currentLocalDateInEntryTimeZone.toDateTime(localTime, entryTimeZone)
+		
+		// compare the currentLocalDate with the local date of tryDateTime
+		LocalDate currentLocalDateInCurrentTimeZone = new DateTime(baseDate, currentTimeZone).toLocalDate()
+		LocalDate tryLocalDate = tryDateTime.toLocalDate()
+		
+		int compare = tryLocalDate.compareTo(currentLocalDateInCurrentTimeZone)
+		
+		// if tryLocalDate is before currentLocalDate, add one day to tryLocalDate and recreate
+		if (compare < 0) {
+			tryDateTime = tryLocalDate.plusDays(1).toDateTime(localTime, entryTimeZone)
+		} else if (compare > 0) {
+			tryDateTime = tryLocalDate.minusDays(1).toDateTime(localTime, entryTimeZone)
+		}
+		
+		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
+	}
+	
+	def activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName) {
+		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
+		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		long diff = now - dayStartTime
 		long thisDiff = this.date.getTime() - dayStartTime
 		
@@ -1079,21 +1147,15 @@ class Entry {
 		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
 			
-			if (!this.repeatType.isReminder())
-				this.unGhost()
-			else {
-				this.setAmount(null)
-				this.setAmountPrecision(-1)
-				Utils.save(this, true)
-			}
+			this.unGhost()
 			
 			return this
 		}
 		
 		def m = [:]
-		m['timeZoneId'] = this.timeZoneId
+		m['timeZoneName'] = timeZoneName
 		m['description'] = this.tag.getDescription()
-		m['amount'] = this.repeatType.isReminder() ? null : this.amount
+		m['amount'] = this.amount
 		m['amountPrecision'] = this.amountPrecision
 		m['units'] = this.units
 		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], null)
@@ -1117,13 +1179,12 @@ class Entry {
 			return retVal
 		} else { // this repeat element isn't continuous
 			m['comment'] = this.comment
-			m['repeatType'] = this.repeatType
-			m['date'] = new Date((((thisDiff % DAYTICKS) + DAYTICKS) % DAYTICKS) + dayStartTime)
+			m['repeatType'] = this.repeatType			
+			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 			def retVal = Entry.create(userId, m, null)
 			
-			if (!this.repeatType.isReminder())
-				retVal.unGhost()
+			retVal.unGhost()
 			
 			return retVal
 		}
@@ -1230,7 +1291,7 @@ class Entry {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
 		// get regular elements + timed repeating elements next
-		String queryStr = "select distinct entry.id, entry.time_zone_offset_secs as timeZoneOffset " \
+		String queryStr = "select distinct entry.id " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds)))) or " \
 				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds)))) " \
 				+ "and entry.tag_id = tag.id " \
@@ -1251,33 +1312,11 @@ class Entry {
 			def desc = entry.getJSONDesc()
 			
 			// use JodaTime to figure out the correct time in the current time zone
-			
-			// using the original entry's time zone, figure out what time the event would be if it occurred some time on the current LocalDate
-			DateTimeZone entryTimeZone = entry.fetchDateTimeZone()
-			DateTime dateTime = new DateTime(entry.getDate(), entryTimeZone)
-			LocalTime entryLocalTime = dateTime.toLocalTime()
-			
-			// first calculate the localDate of the current baseDate in the original time zone
-			LocalDate baseLocalDate = new DateTime(baseDate, entryTimeZone).toLocalDate()
-			DateTime tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
-			
-			long tryTime = tryDateTime.getMillis()
-			
-			while (tryTime < baseTime) {
-				baseLocalDate = baseLocalDate.plusDays(1)
-				tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
-				tryTime = tryDateTime.getMillis()
-			}
-			
-			while (tryTime >= baseTime + DAYTICKS) {
-				baseLocalDate = baseLocalDate.minusDays(1)
-				tryDateTime = baseLocalDate.toDateTime(entryLocalTime, entryTimeZone)
-				tryTime = tryDateTime.getMillis()
-			}
-			
-			desc['date'] = tryDateTime.toDate()
 			desc['timeZoneName'] = timeZoneName
-			if ((!entry.getDate().equals(desc['date'])) && entry.repeatType != null) { // ghost timed entry
+			if (entry.repeatType != null) { // adjust dateTime for repeat entries
+				desc['date'] = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
+			}
+			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // ghost timed entry on future dates
 				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
 				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
 					desc['amount'] = null
@@ -2107,6 +2146,19 @@ class Entry {
 	def String valueString() {
 		return "Entry(userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
+				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
+				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", description:" + getDescription() \
+				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
+				+ ", units:" + units \
+				+ ", amountPrecision:" + fetchAmountPrecision() \
+				+ ", comment:" + comment \
+				+ ", repeatType:" + repeatType?.getId() \
+				+ ")"
+	}
+	
+	def String contentString() {
+		return "Entry(date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
 				+ ", description:" + getDescription() \
