@@ -115,7 +115,12 @@ class HomeController extends DataController {
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user])
 	}
-	
+
+	def unregisterfitbit() {
+		fitBitDataService.unSubscribe(sessionUser().id)
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+	}
+
 	/**
 	 * FitBit Subscriber Endpoint
 	 */

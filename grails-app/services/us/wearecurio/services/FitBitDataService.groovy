@@ -56,16 +56,44 @@ class FitBitDataService {
 		return JSON.parse(response.getBody())
 	}
 
-	def subscribe(def accessToken, def subscriptionId) {
+	def subscribe(Token accessToken, def subscriptionId) {
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
 		String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json"
 		String subscriptionListURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions.json"
-		
+
 		Response response = oauthService.postFitbitResource(accessToken, subscriptionURL)
 		debug "Added a subscription returns with code: [$response.code] & body [$response.body]"
 
 		Response responseSubscriptions = oauthService.postFitbitResource(accessToken, subscriptionListURL)
 		debug "Listing subscriptions with code: [$responseSubscriptions.code] & body [$responseSubscriptions.body]"
+	}
+
+	Map unSubscribe(Long userId) {
+		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.FITBIT_ID)
+		if(!account) {
+			log.info "No subscription found for userId [$userId]"
+			return [success: false, message: "No subscription found"]
+		}
+		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
+
+		JSON.parse(listSubscription(account).body).apiSubscriptions?.each {
+			String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${it.subscriptionId}.json"
+
+			Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
+			debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
+		}
+		//listSubscription(account)	// Test after un-subscribe
+		account.delete()
+		[success: true]
+	}
+
+	def listSubscription(OAuthAccount account) {
+		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
+		String subscriptionListURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions.json"
+
+		Response responseSubscriptions = oauthService.postFitbitResource(account.tokenInstance, subscriptionListURL)
+		debug "Listing subscriptions with code: [$responseSubscriptions.code] & body [$responseSubscriptions.body]"
+		return responseSubscriptions
 	}
 
 	def queueNotifications(def notifications) {
