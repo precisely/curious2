@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import org.scribe.model.Token
 
 import us.wearecurio.utility.Utils
 
@@ -73,4 +74,9 @@ class OAuthAccount {
 				+ ", lastSubscribed:" + lastSubscribed ?: 'null'
 				+ ")"
 	}
+
+	Token getTokenInstance() {
+		new Token(accessToken, accessSecret)
+	}
+
 }

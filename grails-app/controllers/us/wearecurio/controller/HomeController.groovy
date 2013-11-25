@@ -87,8 +87,7 @@ class HomeController extends DataController {
 
 	
 	def registerfitbit() {
-		debug "HomeController.registerfitbit() request:" + request
-		redirect(url:fitBitDataService.getAuthorizationURL())
+		redirect (url: toUrl(action: "doregisterfitbit"))
 	}
 	
 	def doregisterfitbit() {
@@ -101,7 +100,10 @@ class HomeController extends DataController {
 		}
 		
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-		fitBitDataService.authorizeAccount(user.getId(), params.oauth_token, params.oauth_verifier)
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+		
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("fitbit")]
+		fitBitDataService.authorizeAccount(tokenInstance, user.getId())
 		
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user])

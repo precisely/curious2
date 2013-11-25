@@ -80,4 +80,13 @@ class AuthenticationController extends SessionController {
 		return
 	}
 
+	def fitbitAuth() {
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
+	}
+
 }
