@@ -59,8 +59,10 @@ class RemindEmailService {
 					
 					if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
 						//TODO Send GCM message for reminder
+						log.debug "Notifying Android device for user "+userId
 					} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 						//TODO Send APN message for reminder
+						log.debug "Notifying iOS device for user "+userId
 					}
 				}
 			}
