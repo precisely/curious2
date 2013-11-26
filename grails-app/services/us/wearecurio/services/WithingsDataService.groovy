@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.util.Environment
 
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 import org.scribe.utils.OAuthEncoder
@@ -99,8 +100,9 @@ class WithingsDataService {
 		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
 
 		log.info "Subscribe return with code: [$response.code] & body: [$response.body]"
+		JSONObject parsedResponse = JSON.parse(response.body)
 
-		if (response.getCode() == 0) {
+		if (parsedResponse.status == 0) {
 			account.setLastSubscribed(new Date())
 			debug "set last subscribed: " + account.getLastSubscribed()
 			Utils.save(account)
@@ -129,8 +131,9 @@ class WithingsDataService {
 		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
 
 		log.info "Unsubscribe return with code: [$response.code] & body: [$response.body]"
+		JSONObject parsedResponse = JSON.parse(response.body)
 		
-		if (response.getCode() == 200) {
+		if (parsedResponse.status == 0) {
 			account.delete()
 		}
 		//listSubscription(account)	// Test after un-subscribe
