@@ -75,13 +75,10 @@ class FitBitDataService {
 			return [success: false, message: "No subscription found"]
 		}
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
+		String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${userId}.json"
 
-		JSON.parse(listSubscription(account).body).apiSubscriptions?.each {
-			String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${it.subscriptionId}.json"
-
-			Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
-			debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
-		}
+		Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
+		debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
 		//listSubscription(account)	// Test after un-subscribe
 		account.delete()
 		[success: true]
