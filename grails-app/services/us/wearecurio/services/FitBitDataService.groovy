@@ -43,7 +43,7 @@ class FitBitDataService {
 		def userInfo =  getUserInfo(tokenInstance)
 		OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, userId, userInfo.user?.encodedId,
 				tokenInstance.getToken(), tokenInstance.getSecret())
-		this.subscribe(tokenInstance, userId)
+		this.subscribe(fitbitAccount, userId)
 	}
 
 	JSONObject getUserInfo(Token accessToken) {
@@ -56,16 +56,33 @@ class FitBitDataService {
 		return JSON.parse(response.getBody())
 	}
 
-	def subscribe(Token accessToken, def subscriptionId) {
+	Map subscribe(OAuthAccount account, def subscriptionId) {
+		Token accessToken = account.tokenInstance
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
 		String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json"
-		String subscriptionListURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions.json"
 
 		Response response = oauthService.postFitbitResource(accessToken, subscriptionURL)
 		debug "Added a subscription returns with code: [$response.code] & body [$response.body]"
 
-		Response responseSubscriptions = oauthService.postFitbitResource(accessToken, subscriptionListURL)
-		debug "Listing subscriptions with code: [$responseSubscriptions.code] & body [$responseSubscriptions.body]"
+		Map result = [success: false, status: response.code]
+
+		if(response.code in [200, 201, 409]) {
+			result.success = true
+			switch(response.code) {
+				case 200:
+					result.message = "Given subscriber is already subscribed to this stream."
+					break;
+				case 201:
+					result.message = "Subscription is created"
+					break;
+				case 409:
+					result.message = "Given subscribe is already subscribed with different stram."
+					break;
+			}
+		}
+
+		//listSubscription(account) // Test after subscribe
+		result
 	}
 
 	Map unSubscribe(Long userId) {
@@ -79,11 +96,18 @@ class FitBitDataService {
 
 		Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
 		debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
+
+		if(response.code in [204, 404]) {
+			account.delete()
+		}
 		//listSubscription(account)	// Test after un-subscribe
-		account.delete()
 		[success: true]
 	}
-
+	
+	/**
+	 * Method to list the subscriptions for the current account
+	 * @param account
+	 */
 	def listSubscription(OAuthAccount account) {
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
 		String subscriptionListURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions.json"
@@ -111,14 +135,15 @@ class FitBitDataService {
 		def fitBitTagUnitMap = new FitBitTagUnitMap()
 		SimpleDateFormat formatter = new SimpleDateFormat('yyyy-MM-dd', Locale.US)
 		SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-		if (accountId == null)
+		if (accountId == null)	// TODO This can never be the case. Remove this. FitbitNotification have not null field
 			return false
 
 		long now = new Date().getTime()
 
 		Long lastPoll = lastPollTimestamps.get(accountId)
 
-		if (lastPoll != null && now - lastPoll < 500) { // don't allow polling faster than once every 500ms
+		if (lastPoll && now - lastPoll < 500) { // don't allow polling faster than once every 500ms
+			log.warn "Polling faster than 500ms for fitbit accountid: [$accountId]"
 			return false
 		}
 

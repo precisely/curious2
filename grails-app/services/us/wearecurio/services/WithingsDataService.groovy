@@ -67,6 +67,7 @@ class WithingsDataService {
 		Long lastPoll = lastPollTimestamps.get(accountId)
 
 		if (lastPoll != null && now - lastPoll < 500) { // don't allow polling faster than once every 500ms
+			log.warn "Polling faster than 500ms for withings accountid: [$accountId]"
 			return false
 		}
 
@@ -141,7 +142,7 @@ class WithingsDataService {
 	}
 
 	/**
-	 * Developer method to list the subscriptions for the current account
+	 * Method to list the subscriptions for the current account
 	 * @param account
 	 */
 	void listSubscription(OAuthAccount account) {
