@@ -29,7 +29,7 @@ class HomeController extends DataController {
 		debug "HomeController()"
 	}
 
-	def registerwithings() {
+	def registerwithings() {	// TODO Backward support. Remove this
 		redirect (url: toUrl(action: "doregisterwithings"))
 	}
 
