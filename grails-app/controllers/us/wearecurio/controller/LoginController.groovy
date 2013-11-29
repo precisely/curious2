@@ -1,9 +1,10 @@
 package us.wearecurio.controller
 
-import grails.converters.*
-import us.wearecurio.model.*
-import grails.util.GrailsNameUtils
-import org.apache.commons.logging.LogFactory
+import grails.converters.JSON
+import grails.util.Environment
+import us.wearecurio.model.PasswordRecovery
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 
 /**
@@ -12,6 +13,8 @@ import us.wearecurio.utility.Utils
  * @author mitsu
  */
 class LoginController extends SessionController {
+
+	def HTTPBuilderService
 
 	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
 		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
@@ -95,6 +98,16 @@ class LoginController extends SessionController {
 		debug "LoginController.login()"
 		
 		def message = flash.message
+		if(Environment.current == Environment.DEVELOPMENT && !session.myip) {
+			// Fetching public IP to be used in withings/fitbit/facebook/linkedin.
+			try {
+				session.myip = HTTPBuilderService.performRestRequest("http://gt-tests.appspot.com/ip", "GET").readLines()[0]
+				grailsApplication.config.grails.other.serverURL = "http://${session.myip }:8080/"
+				log.info "My public ip: $session.myip"
+			} catch (Exception e) {
+				log.error "Fetching public ip exception: ", e
+			}
+		}
 		
 		execLogout()
 		render(view:loginView(),

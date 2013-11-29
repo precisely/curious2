@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import grails.util.Environment;
+
 import org.apache.commons.logging.LogFactory
 
 class UrlService {
@@ -32,8 +34,8 @@ class UrlService {
 	 * @param req
 	 * @return
 	 */
-	def make(map, req) {
-		def url = base(req) + map.controller + '/' + map.action
+	def make(map, req, boolean usePublicIP = false) {
+		def url = base(req, usePublicIP) + map.controller + '/' + map.action
 		if (map.params) {
 			url = makeQueryString(url, map.params)
 		}
@@ -57,8 +59,12 @@ class UrlService {
 	 * @param req
 	 * @return
 	 */
-	def base(req) {
+	def base(req, boolean usePublicIP = false) {
 		if (req == null) {
+			if(Environment.current == Environment.DEVELOPMENT && usePublicIP) {
+				log.debug "UrlService.base() NULL REQUEST, RETURNING DEFAULT PUBLIC IP SERVER URL"
+				return grailsApplication.config.grails.other.serverURL
+			}
 			log.debug "UrlService.base() NULL REQUEST, RETURNING DEFAULT SERVER URL"
 			return grailsApplication.config.grails.serverURL
 		}

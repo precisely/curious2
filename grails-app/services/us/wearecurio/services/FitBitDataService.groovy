@@ -79,6 +79,8 @@ class FitBitDataService {
 					result.message = "You have already been subscribed"
 					break;
 			}
+		} else {
+			account.delete()	// confirms that subscription is not successful.
 		}
 
 		//listSubscription(account) // Test after subscribe

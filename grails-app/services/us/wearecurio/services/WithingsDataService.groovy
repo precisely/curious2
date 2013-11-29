@@ -1,7 +1,6 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
-import grails.util.Environment
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -89,15 +88,12 @@ class WithingsDataService {
 		debug "subscribe() account:" + account
 
 		Long userId = account.getUserId()
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
 
 		Map queryParameters = ["action": "subscribe"]
 		queryParameters.put("userid", account.accountId)
 		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
-		if(Environment.current == Environment.PRODUCTION) {
-			queryParameters.put("callbackurl", OAuthEncoder.encode("http://dev.wearecurio.us/home/notifywithings"))
-		} else {
-			queryParameters.put("callbackurl", OAuthEncoder.encode("http://123.201.192.233:8080/home/notifywithings"))
-		}
+		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
 
 		String subscriptionURL = urlService.makeQueryString("http://wbsapi.withings.net/notify", queryParameters)
 
@@ -112,6 +108,7 @@ class WithingsDataService {
 			Utils.save(account)
 			return [success: true]
 		}
+		account.delete()	// confirms that subscription is not successful.
 		[success: false]
 	}
 
@@ -122,14 +119,12 @@ class WithingsDataService {
 			log.info "No subscription found for userId [$userId]"
 			return [success: false, message: "No subscription found"]
 		}
+
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
 		
 		Map queryParameters = ["action": "revoke"]
 		queryParameters.put("userid", account.accountId)
-		if(Environment.current == Environment.PRODUCTION) {
-			queryParameters.put("callbackurl", OAuthEncoder.encode("http://dev.wearecurio.us/home/notifywithings"))
-		} else {
-			queryParameters.put("callbackurl", OAuthEncoder.encode("http://123.201.192.233:8080/home/notifywithings"))
-		}
+		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
 		//listSubscription(account)	// Test before un-subscribe
 
 		String subscriptionURL = urlService.makeQueryString("http://wbsapi.withings.net/notify", queryParameters)
