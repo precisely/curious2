@@ -32,7 +32,7 @@ class FitBitDataService {
 
 	protected Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
-	def authorizeAccount(Token tokenInstance, Long userId) {
+	Map authorizeAccount(Token tokenInstance, Long userId) {
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("fitbit")
 
@@ -43,7 +43,7 @@ class FitBitDataService {
 		def userInfo =  getUserInfo(tokenInstance)
 		OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, userId, userInfo.user?.encodedId,
 				tokenInstance.getToken(), tokenInstance.getSecret())
-		this.subscribe(fitbitAccount, userId)
+		subscribe(fitbitAccount, userId)
 	}
 
 	JSONObject getUserInfo(Token accessToken) {
@@ -70,13 +70,13 @@ class FitBitDataService {
 			result.success = true
 			switch(response.code) {
 				case 200:
-					result.message = "Given subscriber is already subscribed to this stream."
+					result.message = "You've already been subscribed."
 					break;
 				case 201:
-					result.message = "Subscription is created"
+					result.message = "" // Successfully subscribed.
 					break;
 				case 409:
-					result.message = "Given subscribe is already subscribed with different stram."
+					result.message = "You have already been subscribed"
 					break;
 			}
 		}
@@ -99,9 +99,10 @@ class FitBitDataService {
 
 		if(response.code in [204, 404]) {
 			account.delete()
+			[success: true]
 		}
 		//listSubscription(account)	// Test after un-subscribe
-		[success: true]
+		[success: false]
 	}
 	
 	/**

@@ -40,6 +40,7 @@
 </head>
 <body>
 	<div class="red-strip"></div>
+    <g:render template="/layouts/alertMessage" />
 	<div class="row">
 		<div class="span3 text-center">
 			<div class="logo"></div>

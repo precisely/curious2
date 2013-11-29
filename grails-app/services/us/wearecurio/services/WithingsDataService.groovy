@@ -31,7 +31,7 @@ class WithingsDataService {
 		log.debug(str)
 	}
 
-	def authorizeAccount(Token tokenInstance, Long userId, String withingsUserId) {
+	Map authorizeAccount(Token tokenInstance, Long userId, String withingsUserId) {
 		debug "Authorizing WithingsDataService for user " + userId + " and userId " + withingsUserId
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("withings")
@@ -43,9 +43,12 @@ class WithingsDataService {
 
 		debug "Created withingsAccount " + withingsAccount
 
-		this.subscribe(withingsAccount)
+		Map result = subscribe(withingsAccount)
 
-		this.poll(withingsUserId)
+		if(result.success) {
+			poll(withingsUserId)
+		}
+		result
 	}
 
 	def poll() {
@@ -56,7 +59,7 @@ class WithingsDataService {
 		}
 	}
 
-	def poll(String accountId) {
+	boolean poll(String accountId) {
 		debug "poll() accountId:" + accountId
 
 		if (accountId == null)
@@ -82,7 +85,7 @@ class WithingsDataService {
 		return true
 	}
 
-	def subscribe(OAuthAccount account) {
+	Map subscribe(OAuthAccount account) {
 		debug "subscribe() account:" + account
 
 		Long userId = account.getUserId()
@@ -107,7 +110,9 @@ class WithingsDataService {
 			account.setLastSubscribed(new Date())
 			debug "set last subscribed: " + account.getLastSubscribed()
 			Utils.save(account)
+			return [success: true]
 		}
+		[success: false]
 	}
 
 	Map unSubscribe(Long userId) {
@@ -136,9 +141,10 @@ class WithingsDataService {
 		
 		if (parsedResponse.status == 0) {
 			account.delete()
+			return [success: true]
 		}
 		//listSubscription(account)	// Test after un-subscribe
-		return [success: true]
+		[success: false]
 	}
 
 	/**

@@ -48,14 +48,24 @@ class HomeController extends DataController {
 		
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("withings")]
 
-		withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
+		Map result = withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
+		if(result.success) {
+			flash.message = g.message(code: "withings.subscribe.success.message")
+		} else {
+			flash.message = g.message(code: "withings.subscribe.failure.message", args: [result.message ?: ""])
+		}
 
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
 
 	def unregisterwithings() {
-		withingsDataService.unSubscribe(sessionUser().id)
+		Map result = withingsDataService.unSubscribe(sessionUser().id)
+		if(result.success) {
+			flash.message = g.message(code: "withings.unsubscribe.success.message")
+		} else {
+			flash.message = g.message(code: "withings.unsubscribe.failure.message", args: [result.message ?: ""])
+		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
 
@@ -63,7 +73,10 @@ class HomeController extends DataController {
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
-		twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
+		Map result = twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
+		if(result.success) {
+			flash.message = message(code: "twenty3andme.import.success.message")
+		}
 
 		redirect(url: session.deniedURI)
 	}
@@ -110,14 +123,25 @@ class HomeController extends DataController {
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("fitbit")]
-		fitBitDataService.authorizeAccount(tokenInstance, user.getId())
-		
+		Map result = fitBitDataService.authorizeAccount(tokenInstance, user.getId())
+		if(result.success) {
+			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
+		} else {
+			flash.message = g.message(code: "fitbit.subscribe.failure.message", args: [result.message ?: ""])
+		}
+
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user])
 	}
 
 	def unregisterfitbit() {
-		fitBitDataService.unSubscribe(sessionUser().id)
+		Map result = fitBitDataService.unSubscribe(sessionUser().id)
+		if(result.success) {
+			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
+		} else {
+			flash.message = g.message(code: "fitbit.unsubscribe.failure.message", args: [result.message ?: ""])
+		}
+
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
 

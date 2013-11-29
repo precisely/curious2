@@ -28,7 +28,7 @@ class Twenty3AndMeDataService {
 		parsedResponse
 	}
 
-	void storeGenomesData(Token tokenInstance, User userInstance) {
+	Map storeGenomesData(Token tokenInstance, User userInstance) {
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("twenty3andme")
 
@@ -45,6 +45,7 @@ class Twenty3AndMeDataService {
 				log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
 			}
 		}
+		[success: true]
 	}
 
 	String getGenomesDataForProfile(Token tokenInstance, String profileId) {

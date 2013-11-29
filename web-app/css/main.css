@@ -965,6 +965,46 @@ div.plotLine:hover span {
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
+.close {
+ 	float: right;
+	font-size: 18px;
+	font-weight: bold;
+	line-height: 1;
+	color: #000000;
+	text-shadow: 0 1px 0 #ffffff;
+	opacity: 0.2;
+	filter: alpha(opacity = 20);
+	background: transparent;
+	cursor: pointer;
+}
+.alert {
+	font-size: 13px;
+	padding: 10px;
+	margin-bottom: 20px;
+	border: 1px solid #EF4B3A;
+	border-radius: 4px;
+	font-weight: bold;
+}
+.alert.alert-danger {
+	background-color: #f2dede;
+	border-color: #ebccd1;
+	color: #CF1E0C;
+}
+.alert.alert-info {
+	background-color: #d9edf7;
+	border-color: #bce8f1;
+	color: #3a87ad;
+}
+.alert.alert-success {
+	background-color: #dff0d8;
+	border-color: #d6e9c6;
+	color: #468847;
+}
+.alert.alert-warning {
+	background-color: #fcf8e3;
+	border-color: #faebcc;
+	color: #c09853;
+}
 .text-center {
 	text-align: center;
 }
