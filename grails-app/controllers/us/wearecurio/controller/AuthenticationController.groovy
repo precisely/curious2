@@ -19,6 +19,7 @@ class AuthenticationController extends SessionController {
 
 	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
 
+	def fitBitDataService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 
@@ -64,6 +65,7 @@ class AuthenticationController extends SessionController {
 	def twenty3andmeAuth() {
 		User currentUserInstance = sessionUser()
 
+		// This will always update access_token to latest access_token.
 		if (currentUserInstance) {
 			JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
 
@@ -81,6 +83,18 @@ class AuthenticationController extends SessionController {
 	}
 
 	def fitbitAuth() {
+		User currentUserInstance = sessionUser()
+
+		// This will always update access_token to latest access_token.
+		if (currentUserInstance) {
+			// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
+			JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
+
+			if (userInfo.user) {
+				OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
+						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
+			}
+		}
 		if (session.returnURIWithToken) {
 			log.debug "Redirecting user to [$session.returnURIWithToken]"
 			redirect uri: session.returnURIWithToken

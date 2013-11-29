@@ -124,6 +124,7 @@ class HomeController extends DataController {
 		
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("fitbit")]
 		Map result = fitBitDataService.authorizeAccount(tokenInstance, user.getId())
+
 		if(result.success) {
 			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
 		} else {

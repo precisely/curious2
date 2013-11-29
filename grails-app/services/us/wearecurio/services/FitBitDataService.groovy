@@ -36,13 +36,7 @@ class FitBitDataService {
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("fitbit")
 
-		/**
-		 * Since FitBit doesn't return user info in response to an authentication
-		 * we explicitly ask for it
-		 */
-		def userInfo =  getUserInfo(tokenInstance)
-		OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, userId, userInfo.user?.encodedId,
-				tokenInstance.getToken(), tokenInstance.getSecret())
+		OAuthAccount fitbitAccount = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.FITBIT_ID)
 		subscribe(fitbitAccount, userId)
 	}
 
@@ -89,7 +83,7 @@ class FitBitDataService {
 
 	Map unSubscribe(Long userId) {
 		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.FITBIT_ID)
-		if(!account) {
+		if (!account) {
 			log.info "No subscription found for userId [$userId]"
 			return [success: false, message: "No subscription found"]
 		}
@@ -99,9 +93,11 @@ class FitBitDataService {
 		Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
 		debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
 
-		if(response.code in [204, 404]) {
+		if (response.code in [204, 404]) {
 			account.delete()
-			[success: true]
+			return [success: true]
+		} else if (response.code == 401) {
+			throw new AuthenticationRequiredException("fitbit")
 		}
 		//listSubscription(account)	// Test after un-subscribe
 		[success: false]
