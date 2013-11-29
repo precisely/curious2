@@ -50,21 +50,23 @@ class HomeControllerTests {
 
 	void testUnregisterwithings() {
 		withingsDataServiceMock.demand.unSubscribe { userId ->
-			return true
+			return [success: true]
 		}
 		controller.withingsDataService = withingsDataServiceMock.createMock()
 
 		controller.unregisterwithings()
+		assert controller.flash.message == "withings.unsubscribe.success.message"
 		assert response.redirectUrl.contains("home/userpreferences")
 	}
 
 	void testUnregisterfitbit() {
 		fitBitDataServiceMock.demand.unSubscribe { userId ->
-			return true
+			return [success: true]
 		}
 		controller.fitBitDataService = fitBitDataServiceMock.createMock()
 
 		controller.unregisterfitbit()
+		assert controller.flash.message == "fitbit.unsubscribe.success.message"
 		assert response.redirectUrl.contains("home/userpreferences")
 	}
 

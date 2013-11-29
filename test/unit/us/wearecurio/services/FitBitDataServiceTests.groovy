@@ -55,22 +55,17 @@ class FitBitDataServiceTests {
 	}
 
 	void testAuthorizeAccountWithToken() {
+		Map mockedResponseFromSubscribe = [mockedKey: "mockedValue"]
+
 		// Approach to mock other methods of a class under test which might be called internally during testing
 		def mockedService = [
 			subscribe: { account, userId ->
-				return [:]
-			},
-			getUserInfo: { token ->
-				new JSONObject([user: [encodedId: "xyz-id"]])
+				return mockedResponseFromSubscribe
 			}
 		] as FitBitDataService
 
-		mockedService.authorizeAccount(new Token("token-dummy-1", "dummy-secret"), 1)
-		assert OAuthAccount.get(1).accessToken == "token-dummy-1"
-		assert OAuthAccount.count() == 1
-
-		mockedService.authorizeAccount(new Token("token-dummy-2", "dummy-secret"), 2)
-		assert OAuthAccount.count() == 2
+		Map response = mockedService.authorizeAccount(new Token("token-dummy-1", "dummy-secret"), 1)
+		assert response == mockedResponseFromSubscribe
 	}
 
 	void testSubscribeIfSuccess() {
@@ -89,6 +84,7 @@ class FitBitDataServiceTests {
 		service.oauthService = oauthServiceMock.createMock()
 		Map result = service.subscribe(OAuthAccount.get(1), "dummy-id")
 		assertFalse result.success
+		assert OAuthAccount.count() == 0
 	}
 
 	void testUnSubscribeIfNoOAuthAccount() {

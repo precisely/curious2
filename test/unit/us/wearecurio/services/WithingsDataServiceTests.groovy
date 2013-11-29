@@ -24,11 +24,9 @@ import us.wearecurio.thirdparty.MockedHttpURLConnection
 class WithingsDataServiceTests {
 
 	GrailsMock oauthServiceMock
+	GrailsMock urlServiceMock
 
 	void setUp() {
-		defineBeans {
-			urlService(UrlService)
-		}
 		User userInstance = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
 		assert userInstance.save()
@@ -38,9 +36,18 @@ class WithingsDataServiceTests {
 		assert userInstance.save()
 
 		oauthServiceMock = mockFor(OauthService, true)
+		urlServiceMock = mockFor(UrlService, true)
 
 		assert new OAuthAccount([typeId: OAuthAccount.WITHINGS_ID, userId: 1l, accessToken: "Dummy-token",
 			accessSecret: "Dummy-secret", accountId: "dummy-id"]).save()
+
+		urlServiceMock.demand.make { map, req, pubIP ->
+			return "http://some-mocked-url.com"
+		}
+		urlServiceMock.demand.makeQueryString(5..10) { url, params ->
+			return "http://some-mocked-url.com?someparams=somevalue"
+		}
+		service.urlService = urlServiceMock.createMock()
 	}
 
 	void tearDown() {
@@ -57,7 +64,7 @@ class WithingsDataServiceTests {
 
 	void testAuthorizeAccountWithToken() {
 		// Approach to mock other methods of a class under test which might be called internally during testing
-		def mockedService = [subscribe: { account -> return }, poll: { accountId -> return }] as WithingsDataService
+		def mockedService = [subscribe: { account -> [success: true] }, poll: { accountId -> return }] as WithingsDataService
 
 		mockedService.authorizeAccount(new Token("token-dummy-1", "dummy-secret"), 1, "dummy-id-1")
 		assert OAuthAccount.get(1).accessToken == "token-dummy-1"
@@ -82,11 +89,11 @@ class WithingsDataServiceTests {
 		}
 		service.oauthService = oauthServiceMock.createMock()
 		service.subscribe(OAuthAccount.get(1))
-		assert !OAuthAccount.get(1).lastSubscribed
+		assert OAuthAccount.count() == 0
 	}
 
 	void testUnSubscribeIfNoOAuthAccount() {
-		Map response = service.unSubscribe(2)
+		Map response = service.unSubscribe(2)	// Passing user's ID whose oauth account doesn't exist 
 		assert response.success == false
 		assert response.message == "No subscription found"
 	}
