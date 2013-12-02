@@ -477,6 +477,7 @@ $(function(){
 	var timeAfterTag = true;
 	var GHOST_BIT = 0x200;
 	var CONTINUOUS_BIT = 0x100;
+	var TIMED_BIT = 0x1 | 0x2 | 0x4;
 
 	var cachedDate;
 	var cachedDateUTC;
@@ -640,7 +641,7 @@ $(function(){
 			}
 		}
 
-		var isGhostEntry = false, isContinuous = false;
+		var isGhostEntry = false, isContinuous = false, isTimed = false;
 		if (entry.repeatType) {
 			if ((entry.repeatType & GHOST_BIT) != 0) {
 				isGhostEntry = true;
@@ -649,6 +650,10 @@ $(function(){
 			if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
 				isContinuous = true;
 				classes += " continuous"
+			}
+			if ((entry.repeatType & TIMED_BIT) != 0) {
+				isTimed = true;
+				classes += " timedrepeat"
 			}
 		}
 
@@ -689,7 +694,7 @@ $(function(){
 				$("#entry0").append(newEntryContent);
 			}
 		}
-		var data = {entry: entry, entryId: id, isGhost: isGhostEntry, isContinuous: isContinuous};
+		var data = {entry: entry, entryId:id, isGhost:isGhostEntry, isContinuous:isContinuous, isTimed:isTimed};
 		var entryItem = $("#entry0 li#entryid" + id);
 		entryItem.data(data);
 		if (id == activateEntryId) {

@@ -1,0 +1,56 @@
+package us.wearecurio.datetime;
+
+import grails.converters.*
+
+import org.apache.commons.logging.LogFactory
+
+import us.wearecurio.model.Entry
+import us.wearecurio.services.DatabaseService
+import us.wearecurio.utility.Utils
+
+import org.joda.time.*
+
+class LocalTimeRepeater {
+	
+	private static def log = LogFactory.getLog(this)
+
+	DateTime currentDateTime
+	long endDateTimeTicks
+	DateTimeZone dateTimeZone
+	LocalDate localDate
+	LocalTime localTime
+	def payload
+	
+	public LocalTimeRepeater(payload, DateTime dateTime, long endDateTimeTicks) {
+		currentDateTime = dateTime
+		this.endDateTimeTicks = endDateTimeTicks
+		dateTimeZone = dateTime.getZone()
+		localDate = dateTime.toLocalDate()
+		localTime = dateTime.toLocalTime()
+		this.payload = payload
+	}
+	
+	public DateTime incrementDate() {
+		localDate = localDate.plusDays(1)
+		
+		currentDateTime = localDate.toDateTime(localTime, dateTimeZone)
+		
+		if (currentDateTime.getMillis() >= endDateTimeTicks) {
+			return currentDateTime = null
+		}
+		
+		return currentDateTime
+	}
+	
+	def isActive() {
+		return currentDateTime != null && currentDateTime.getMillis() < endDateTimeTicks
+	}
+	
+	long getTimestamp() {
+		return currentDateTime.getMillis()
+	}
+	
+	Date getDate() {
+		return currentDateTime.toDate()
+	}
+}

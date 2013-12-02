@@ -70,7 +70,7 @@ class DataController extends LoginController {
 		return [entry, parsedEntry['status'], record.getOldTagStats()]
 	}
 
-	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow) {
+	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow, allFuture) {
 		debug "DataController.doUpdateEntry() entryIdStr:" + entryIdStr + ", currentTimeStr:" + currentTimeStr \
 				+ ", textStr:" + textStr + ", baseDateStr:" + baseDateStr + ", timeZoneName:" + timeZoneName \
 				+ ", defaultToNow:" + defaultToNow
@@ -95,7 +95,7 @@ class DataController extends LoginController {
 
 		if (entry != null) {
 			TagStatsRecord record = new TagStatsRecord()
-			Entry.update(entry, m, record)
+			entry = Entry.update(entry, m, record, baseDate, allFuture)
 			return [entry, '', record.getOldTagStats(), record.getNewTagStats()];
 		} else {
 			debug "Parse error"
@@ -367,8 +367,9 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 		
-		debug "DataController.getPlotData() tags: " + tags + " startDate: " + startDateStr + " endDate: " + endDateStr
+		debug "DataController.getPlotData() tags:" + tags + " startDate:" + startDateStr + " endDate:" + endDateStr + " timeZoneName:" + timeZoneName
 
 		def tagIds = []
 		
@@ -377,7 +378,7 @@ class DataController extends LoginController {
 		}
 
 		def results = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
-				endDateStr ? parseDate(endDateStr) : null)
+				endDateStr ? parseDate(endDateStr) : null, timeZoneName)
 		
 		renderDataGet(new JSON(results))
 	}
@@ -386,7 +387,8 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
-
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+		
 		debug "DataController.getSumPlotData() params: " + params
 		
 		def tagIds = []
@@ -395,7 +397,7 @@ class DataController extends LoginController {
 		}
 
 		def results = Entry.fetchSumPlotData((params.sumNights?.equals("true"))? true: false, sessionUser(), tagIds,
-				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, -Integer.parseInt(params.timeZoneOffset))
+				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, timeZoneName)
 		
 		renderDataGet(new JSON(results))
 	}
@@ -459,10 +461,10 @@ class DataController extends LoginController {
 	}
 
 	def updateEntrySData() { // new API
-		debug("DataController.updateEntrySData() displayDate: " + params.displayDate)
+		debug("DataController.updateEntrySData() params:" + params)
 
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneName,
-				params.defaultToNow == '1' ? true : false)
+				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
 		if (entry != null) {
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, params.baseDate),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])

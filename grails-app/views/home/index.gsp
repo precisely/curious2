@@ -84,8 +84,10 @@ $(document).mouseup(function(e) {
 var dayDuration = 86400000;
 
 var entrySelectData;
-var GHOST_BIT = 0x200;
 var CONTINUOUS_BIT = 0x100;
+var GHOST_BIT = 0x200;
+var CONCRETEGHOST_BIT = 0x400;
+var TIMED_BIT = 0x1 | 0x2 | 0x4;
 
 function displayEntry(entry, isUpdating, args) {
 	var id = entry.id,
@@ -108,15 +110,25 @@ function displayEntry(entry, isUpdating, args) {
 		}
 	}
 
-	var isGhostEntry = false, isContinuous = false;
+	var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false;
 	if (entry.repeatType) {
 		if ((entry.repeatType & GHOST_BIT) != 0) {
-			isGhostEntry = true;
-			classes += " ghost";
+			isGhost = true;
+			isAnyGhost = true;
+			classes += " ghost anyghost";
+		}
+		if ((entry.repeatType & CONCRETEGHOST_BIT) != 0) {
+			isConcreteGhost = true;
+			isAnyGhost = true;
+			classes += " concreteghost anyghost";
 		}
 		if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
 			isContinuous = true;
 			classes += " continuous"
+		}
+		if ((entry.repeatType & TIMED_BIT) != 0) {
+			isTimed = true;
+			classes += " timedrepeat"
 		}
 	}
 
@@ -161,7 +173,7 @@ function displayEntry(entry, isUpdating, args) {
 			$("#entry0").append(newEntryContent);
 		}
 	}
-	var data = {entry: entry, entryId: id, isGhost: isGhostEntry, isContinuous: isContinuous};
+	var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous, isTimed:isTimed};
 	$("#entry0 li#entryid" + id).data(data);
 }
 
@@ -245,7 +257,7 @@ function deleteEntryId(entryId) {
 		return false;
 	}
 	var $entryToDelete = getEntryElement(entryId);
-	if ($entryToDelete.data("isGhost")) {
+	if ($entryToDelete.data("isAnyGhost")) {
 		if ($entryToDelete.data("isContinuous")) {
 			deleteGhost($entryToDelete, entryId, true);
 		} else {
@@ -277,32 +289,43 @@ function deleteCurrentEntry() {
 	deleteEntryId(currentEntryId);
 }
 
-function updateEntry(entryId, text, defaultToNow) {
+function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 	cacheNow();
-	var oldEntry = getEntryElement(entryId);
-	$(".content-wrapper",oldEntry).html(text);
 	$.getJSON("/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 			+ cachedDateUTC + "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
-			+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&callback=?",
-	function(entries){
-		if (checkData(entries, 'success', "Error updating entry")) {
-			tagList.load();
-			refreshEntries(entries[0]);
-			//$.each(entries[0], function(index, entry) {
-				/**
-				 * Finding only that entry which is recently updated, and
-				 * refreshing only that entry in UI.
-				 */
-			/*	if(entry.id == entryId) {
-					displayEntry(entry, true);
-				}
-			}) */
-			updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
-			if (entries[2] != null)
-				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
-		}
-	});
+			+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
+		function(entries){
+			if (checkData(entries, 'success', "Error updating entry")) {
+				tagList.load();
+				refreshEntries(entries[0]);
+				//$.each(entries[0], function(index, entry) {
+					/**
+					 * Finding only that entry which is recently updated, and
+					 * refreshing only that entry in UI.
+					 */
+				/*	if(entry.id == entryId) {
+						displayEntry(entry, true);
+					}
+				}) */
+				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+				if (entries[2] != null)
+					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+			}
+		});
+}
+
+function updateEntry(entryId, text, defaultToNow) {
+	var oldEntry = getEntryElement(entryId);
+	$(".content-wrapper", oldEntry).html(text);
+	if (oldEntry.data("anyGhost")) {
+		showAB("Update just this one event or all future events?", "One", "All", function() {
+				doUpdateEntry(entryId, text, defaultToNow, false);
+			}, function() {
+				doUpdateEntry(entryId, text, defaultToNow, true);
+			});
+	} else
+		doUpdateEntry(entryId, text, defaultToNow, true);
 }
 
 function addEntry(userId, text, defaultToNow) {
@@ -488,7 +511,7 @@ $(function(){
 			processInput();
 		}
 	});
-	$("#entry0").listable({cancel: 'a,input,li.entry.ghost'});
+	$("#entry0").listable({cancel: 'a,input,li.entry.anyghost'});
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {

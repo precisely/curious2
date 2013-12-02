@@ -37,6 +37,9 @@ class TimeZoneId {
 	}
 	
 	static TimeZoneId fromId(Integer id) {
+		if (id == null) {
+			return TimeZoneId.look("America/New_York")
+		}
 		TimeZoneId timeZoneId = idToTimeZoneId.get(id)
 		
 		if (timeZoneId == null) {
@@ -69,6 +72,15 @@ class TimeZoneId {
 		idToTimeZoneId.put((Integer)timeZoneId.getId(), timeZoneId)
 		
 		return timeZoneId
+	}
+	
+	public static DateTime nextDaySameTime(DateTime dateTime) {
+		LocalDate localDate = dateTime.toLocalDate()
+		LocalTime localTime = dateTime.toLocalTime()
+		
+		DateTimeZone dateTimeZone = dateTime.getZone()
+		
+		return localDate.plusDays(1).toDateTime(localTime, dateTimeZone)
 	}
 	
 	public static LocalDate getNthSundayOfMonth(final int n, final int month, final int year) {
@@ -155,7 +167,7 @@ class TimeZoneId {
 	static String guessTimeZoneNameFromBaseDate(Date baseDate) {
 		LocalTime utcTime = new DateTime(baseDate, DateTimeZone.UTC).toLocalTime()
 		
-		int hours = utcTime.getHours()
+		int hours = utcTime.getHourOfDay()
 		if (hours == 16 || hours == 17)
 			return "America/Los_Angeles"
 		else if (hours == 19 || hours == 20)

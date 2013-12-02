@@ -1661,7 +1661,8 @@ function PlotLine(p) {
 		var startDate = this.plot.getStartDate();
 		var endDate = this.plot.getEndDate();
 		
-		var now = new Date();
+		// TODO: change call to global function to injected method as part of query config
+		cacheNow();
 		
 		var method = (this.sumData || this.sumNights) ? "getSumPlotData" : "getPlotData";
 		var plotLine = this;
@@ -1670,7 +1671,7 @@ function PlotLine(p) {
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				sumNights:this.sumNights ? "true" : "",
-				timeZoneOffset:now.getTimezoneOffset() * 60 }),
+				timeZoneName:timeZoneName }),
 				function(entries){
 					if (checkData(entries)) {
 						plotLine.loadEntries(entries);
