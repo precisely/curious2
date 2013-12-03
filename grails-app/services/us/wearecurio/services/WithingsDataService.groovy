@@ -279,7 +279,7 @@ class WithingsDataService {
 						units = "bpm"
 						break
 					}
-					def entry = Entry.create(userId, date, 0, description, value, units, "", "withings import", amountPrecision)
+					def entry = Entry.create(userId, date, 0, description, value, units, "(Withings)", WITHINGS_SET_NAME, amountPrecision)
 				}
 			}
 		}

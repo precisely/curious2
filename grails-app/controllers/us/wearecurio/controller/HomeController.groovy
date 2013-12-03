@@ -5,6 +5,7 @@ import grails.converters.*
 import org.scribe.model.Token
 
 import us.wearecurio.exceptions.*
+import us.wearecurio.jobs.FitbitNotificationJob
 import us.wearecurio.model.*
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
@@ -195,6 +196,7 @@ class HomeController extends DataController {
 	}
 
 	def userpreferences() {
+		//FitbitNotificationJob.schedule(1, 0)	// Trigger a job for testing while development.
 		debug "HomeController.userpreferences() params:" + params
 		
 		User user = userFromIdStr(params.userId)

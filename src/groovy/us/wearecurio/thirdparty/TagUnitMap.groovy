@@ -101,7 +101,7 @@ public abstract class TagUnitMap {
 		amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
 		Map parsedEntry = [userId: userId, date: date,
 			description: description, amount: amount, units: units,
-			comment: "", timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
+			comment: args.comment ?: "", timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
 			repeatType: args.repeatType, setName: args.setName, amountPrecision: args.amountPrecision, 
 			datePrecisionSecs: args.datePrecisionSecs
 		]

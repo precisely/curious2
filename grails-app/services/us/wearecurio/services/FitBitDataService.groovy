@@ -23,6 +23,7 @@ class FitBitDataService {
 	def urlService
 
 	private static def log = LogFactory.getLog(this)
+	private static final String FITBIT_SET_NAME = "fitbit import"
 
 	static debug(str) {
 		log.debug(str)
@@ -148,12 +149,17 @@ class FitBitDataService {
 
 		lastPollTimestamps.put(accountId, now)
 
+		String comment = "(FitBit)"
+		String setName = FITBIT_SET_NAME
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
 		def accounts = OAuthAccount.findAllByAccountIdAndTypeId(accountId, OAuthAccount.FITBIT_ID)
+
 		try {
 			for (OAuthAccount account in accounts) {
 				def collectionType = notification.collectionType
 				def requestUrl
+				Map args = [setName: setName, comment: comment]
+
 				if (collectionType.equals("foods")) {
 					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
 						"/${notification.ownerId}/${collectionType}/log/date/${formatter.format(notification.date)}.json"
@@ -176,15 +182,17 @@ class FitBitDataService {
 					requestUrl = "http://api.fitbit.com/${apiVersion}/user" +
 						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
 					def activityData = this.getData(account, requestUrl, false)
-					def setName = formatter.format(notification.date)+"activityfitbit"
-					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-						[setName: setName, userId: account.userId])
+					String oldSetName = formatter.format(notification.date) + "activityfitbit"	// Backward support
+
+					Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
+						[setNames: [setName, oldSetName], userId: account.userId])
+
 					boolean veryActiveD, moderatelyActiveD, lightlyActiveD, sedentaryActiveD, fairlyActiveD
 					veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
 
 					if (activityData.summary) {
 						fitBitTagUnitMap.buildEntry("steps",activityData.summary?.steps.toBigDecimal(),account.userId,
-							notification.date,[setName:setName])
+							notification.date, args)
 					}
 
 					if(!activityData.summary || activityData.summary?.fairlyActiveMinutes <= 0) {
@@ -192,7 +200,7 @@ class FitBitDataService {
 					} else {
 						fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",
 						activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
-						notification.date,[setName:setName])
+						notification.date, args)
 					}
 
 					if(!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
@@ -200,7 +208,7 @@ class FitBitDataService {
 					} else {
 						fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",
 							activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
-							notification.date,[setName:setName])
+							notification.date, args)
 					}
 
 					if(!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
@@ -208,7 +216,7 @@ class FitBitDataService {
 					} else {
 						fitBitTagUnitMap.buildEntry("sedentaryMinutes",
 							activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
-							notification.date,[setName:setName])
+							notification.date, args)
 					}
 
 					if(!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
@@ -216,7 +224,7 @@ class FitBitDataService {
 					} else {
 						fitBitTagUnitMap.buildEntry("veryActiveMinutes",
 							activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
-							notification.date,[setName:setName])
+							notification.date, args)
 					}
 
 					activityData.summary.distances.each { distance ->
@@ -240,7 +248,7 @@ class FitBitDataService {
 								println "Discarding activity with 0 time"
 							} else {
 								fitBitTagUnitMap.buildEntry(distance.activity,distance.distance.toBigDecimal(),account.userId,
-								entryDate,[setName:setName])
+								entryDate, args)
 							}
 						}
 					}
@@ -253,15 +261,18 @@ class FitBitDataService {
 					def sleepData = this.getData(account, requestUrl, false)
 					sleepData.sleep.each { logEntry ->
 						Date entryDate = inputFormat.parse(logEntry.startTime)
-						Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-							[setName: logEntry.logId.toString(), userId: account.userId])
+						String oldSetName = logEntry.logId	// Backward support
+
+						Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
+							[setNames: [setName, oldSetName], userId: account.userId])
+
 						fitBitTagUnitMap.buildEntry("duration",logEntry.duration.toBigDecimal(),account.userId,
-							entryDate,[setName:logEntry.logId])
+							entryDate, args)
 						fitBitTagUnitMap.buildEntry("awakeningsCount",logEntry.awakeningsCount.toBigDecimal(),account.userId,
-							entryDate,[setName:logEntry.logId])
+							entryDate, args)
 						if (logEntry.efficiency > 0 )
 							fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
-							entryDate,[setName:logEntry.logId])
+							entryDate, args)
 					}
 				}
 

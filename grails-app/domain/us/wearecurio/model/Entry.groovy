@@ -1235,7 +1235,7 @@ class Entry {
 				}
 			} else
 				desc['repeatType'] = entry.repeatType?.id
-						
+			desc['setName'] = entry.setName
 			timedResults.add(desc)
 		}
 		
