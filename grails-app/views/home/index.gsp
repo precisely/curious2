@@ -189,6 +189,7 @@ function refreshEntries(entries) {
 	clearEntries();
 	displayEntries(entries);
 }
+
 function getEntryElement(entryId) {
 	return $("li#entryid" + entryId);
 }
@@ -224,19 +225,21 @@ function toggleSuffix($control, suffix) {
 }
 
 function modifyEdit(suffix) {
-	var $control = $('#tagTextEdit');
+	var $control = $('#tagTextInput');
 	$control.data('cancelBlur', true);
-	if (toggleSuffix($control, suffix)) {
+	toggleSuffix($control, suffix);
+	/*if (toggleSuffix($control, suffix)) {
 		var $selectee = $control.parents("li");
 		unselecting($selectee);
 		selected($selectee, false);
-	}
+	}*/
 }
 
 function modifyInput(suffix) {
 	initInput();
-	if (toggleSuffix($('#input0'), suffix))
-		processInput();
+	toggleSuffix($('#input0'), suffix);
+	//if (toggleSuffix($('#input0'), suffix))
+	//	processInput();
 }
 
 function deleteGhost($entryToDelete, entryId, allFuture) {
@@ -318,6 +321,10 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 function updateEntry(entryId, text, defaultToNow) {
 	var oldEntry = getEntryElement(entryId);
 	$(".content-wrapper", oldEntry).html(text);
+	if (oldEntry.data('originalText') == text) {
+		oldEntry.html(oldEntry.data('originalHTML'));
+		return; // don't update unchanged entry
+	}
 	if (oldEntry.data("anyGhost")) {
 		showAB("Update just this one event or all future events?", "One", "All", function() {
 				doUpdateEntry(entryId, text, defaultToNow, false);
@@ -398,8 +405,13 @@ var lastEntrySelected = null;
  */
 function unselecting($unselectee, doNotUpdate) {
 	if($unselectee.data('entryIsSelected') == 1) {
+		var $textInput = $("#tagTextInput");
+		if ($textInput.data('cancelBlur')) {
+			$textInput.data('cancelBlur', false);
+			return;
+		}
 		$unselectee.removeClass('ui-selected');
-		$unselectee.data('entryIsSelected', 2);
+		$unselectee.data('entryIsSelected', 0);
 		$("a.entryDelete", $unselectee).hide();
 		checkAndUpdateEntry($unselectee);
 		currentEntryId = null;
@@ -418,32 +430,46 @@ function selected($selectee, forceUpdate) {
 
 	if (state == undefined || state == 0) {
 		lastEntrySelected = $selectee;
+		$selectee.data('originalHTML', $selectee.html()); // store original HTML for later restoration
 		currentEntryId = $selectee.data("entry-id");
 		$selectee.data('entryIsSelected', 1);
 		$selectee.addClass('ui-selected');
 		$("#entrydelid" + currentEntryId).css('display', 'inline');
 
 		var entryText = $selectee.text();
+		$selectee.data('originalText', entryText); // store entry text for comparison
 		var selectRange = entrySelectData[currentEntryId];
 		$contentWrapper.hide();
 		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 635px;"></input>'
-				+ '<a href="#" onclick="modifyEdit(\'repeat\')"><img src="/images/repeat.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></a>'
-				+ '<a href="#" onclick="modifyEdit(\'remind\')"><img src="/images/remind.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></a>'
-				+ '<a href="#" onclick="modifyEdit(\'pinned\')"><img src="/images/pin.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></a></span>');
+				+ '<img src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
 
+		$("#tagEditRepeat").off("mousedown");
+		$("#tagEditRemind").off("mousedown");
+		$("#tagEditPinned").off("mousedown");
+		
+		$("#tagEditRepeat").on("mousedown", function(e) {
+			modifyEdit('repeat');
+		});
+		$("#tagEditRemind").on("mousedown", function(e) {
+			modifyEdit('remind');
+		});
+		$("#tagEditPinned").on("mousedown", function(e) {
+			modifyEdit('pinned');
+		});
+		
 		// Binding blur event on element instead of globally to prevent concurrent exception.
 		$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
 			if ($(this).data('cancelBlur')) return;
 			$selectee.data('entryIsSelected', 0);
 			var $unselectee = $(this).parent("li");
 			checkAndUpdateEntry($unselectee);
-		})
+		});
 		$("#tagTextInput").data('entryTextSet', true);
 		if(selectRange) {
 			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 		}
-	} else if(state == 2) {
-		$selectee.data('entryIsSelected', 0);
 	}
 }
 /**
@@ -511,7 +537,7 @@ $(function(){
 			processInput();
 		}
 	});
-	$("#entry0").listable({cancel: 'a,input,li.entry.anyghost'});
+	$("#entry0").listable({cancel: 'a,input,li.entry.ghost'});
 	$("#entry0").off("listableselected");
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
