@@ -3,7 +3,6 @@ package us.wearecurio.controller
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
@@ -93,6 +92,30 @@ class AuthenticationController extends SessionController {
 			if (userInfo.user) {
 				OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
 						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
+			}
+		}
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
+	}
+
+	def movesAuth() {
+		User currentUserInstance = sessionUser()
+
+		if (currentUserInstance) {
+			String rawResponse = tokenInstance.rawResponse
+			if (rawResponse) {	// Moves sends user_id while getting the access token.
+				JSONObject parsedResponse = JSON.parse(rawResponse)
+
+				if (parsedResponse.user_id) {
+					OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
+							parsedResponse.user_id.toString(), tokenInstance.token, tokenInstance.secret ?: "")
+				}
+			} else {
+				log.warn "Unable to create or update oauth account for moves. No raw response found in token."
 			}
 		}
 		if (session.returnURIWithToken) {

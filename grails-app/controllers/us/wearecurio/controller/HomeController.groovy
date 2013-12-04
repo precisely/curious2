@@ -5,12 +5,12 @@ import grails.converters.*
 import org.scribe.model.Token
 
 import us.wearecurio.exceptions.*
-import us.wearecurio.jobs.FitbitNotificationJob
 import us.wearecurio.model.*
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -19,6 +19,7 @@ class HomeController extends DataController {
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
+	def movesDataService
 	def oauthService
 	def twenty3AndMeDataService
 
@@ -90,7 +91,29 @@ class HomeController extends DataController {
 		else
 			renderStringGet('failure')
 	}
-	
+
+	def registermoves() {
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("moves")]
+		if (!tokenInstance) {
+			throw new AuthenticationRequiredException("moves")
+		}
+		flash.message = g.message(code: "moves.subscribe.success.message")
+		redirect(url: session.deniedURI)
+	}
+
+	def unregistermoves() {
+		Map result = movesDataService.unSubscribe(sessionUser().id)
+		if (result.success) {
+			session[oauthService.findSessionKeyForAccessToken("moves")] = null
+			flash.message = g.message(code: "moves.unsubscribe.success.message")
+		} else {
+			flash.message = g.message(code: "moves.unsubscribe.failure.message", args: [result.message ?: ""])
+		}
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+	}
+
 	def polldevices() {
 		debug "HomeController.polldevices() request:" + request
 		
