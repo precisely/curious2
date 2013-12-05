@@ -64,7 +64,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def c = controller.response.contentAsString
 
 		assert controller.response.contentAsString.startsWith('callback([{"class":"us.wearecurio.model.User","id":' + userId + ',"birthdate"')
-		assert controller.response.contentAsString.endsWith('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","last":"y","location":null,"notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","webDefaultToNow":true}])')
+		assert controller.response.contentAsString.contains('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","last":"y","location":null,"notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","webDefaultToNow":true')
     }
 
 	@Test
@@ -86,7 +86,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getListData()
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
-		assert controller.response.contentAsString.endsWith(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null}])')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
     }
 
 	@Test
@@ -197,8 +197,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.addEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null}') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null}') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
     }
 
 	@Test
@@ -266,8 +266,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.updateEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-22T18:00:00Z","datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
+		controller.response.contentAsString.contains('"date":new Date(1278010800000),"datePrecisionSecs":86400,"timeZoneName":"America/Los_Angeles","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null')
 	}
 
 	@Test
@@ -547,7 +546,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def outString = out.toString()
 		
 		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"\n' \
-				+ '"2010-12-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,86400,"America/Los_Angeles"\n' \
+				+ '"2010-12-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1025,3,86400,"America/Los_Angeles"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"\n'
 

@@ -1,20 +1,25 @@
 package us.wearecurio.controller
 
+import grails.test.GrailsMock;
 import grails.test.mixin.*
 import grails.test.mixin.support.*
 
 import org.junit.*
 import org.scribe.model.Token
 
-import us.wearecurio.controller.AuthenticationController;
+import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.controller.AuthenticationController
+import us.wearecurio.services.SecurityService
+import us.wearecurio.model.User
 
 @TestMixin(GrailsUnitTestMixin)
 @TestFor(AuthenticationController)
-//@Mock([User])
+@Mock([User])
 class AuthenticationControllerTests {
 
-	def oauthServiceMock
-
+	GrailsMock oauthServiceMock
+	GrailsMock securityServiceMock
+	
 	void setUp() {
 		/*User userInstance = new User(username: "dummy", email: "dummy@curious.test", sex: "M")
 		 assert userInstance.save()*/
@@ -22,7 +27,8 @@ class AuthenticationControllerTests {
 		oauthServiceMock = mockFor(OauthService)
 		oauthServiceMock.demand.findSessionKeyForAccessToken(1..4) { provider -> return provider }
 		controller.oauthService = oauthServiceMock.createMock()
-
+		securityServiceMock = mockFor(SecurityService)
+		
 		controller.metaClass.toUrl { map ->
 			def url = map.controller + '/' + map.action
 			if (map.params) {
@@ -30,6 +36,15 @@ class AuthenticationControllerTests {
 			}
 			return url
 		}
+		User userInstance = new User([username: "dummy", email: "dummy@curious.test", sex: "M", first: "John", last: "Day",
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
+		
+		securityServiceMock.demand.getCurrentUser(1..2) { ->
+			return User.get(1)
+		}
+		controller.securityService = securityServiceMock.createMock()
+
+		assert userInstance.save()
 	}
 
 	void tearDown() {

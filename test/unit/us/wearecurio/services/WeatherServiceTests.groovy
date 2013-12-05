@@ -1,4 +1,4 @@
-package us.wearecurio.unittest.services
+package us.wearecurio.services
 import us.wearecurio.services.WeatherService;
 import grails.test.mixin.*
 import groovy.json.JsonOutput;

@@ -1,4 +1,4 @@
-package us.wearecurio.unittest.services
+package us.wearecurio.services
 
 import grails.test.mixin.*
 
