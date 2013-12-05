@@ -109,7 +109,7 @@ class MovesDataService {
 				}
 			}
 		}
-		return [:]
+		return [success: true]
 	}
 
 }
