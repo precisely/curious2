@@ -819,7 +819,7 @@ class Entry {
 				m['description'] = baseTag.getDescription()
 				m['amount'] = amount
 				m['units'] = "hours"
-				m['comment'] = ''
+				m['comment'] = this.comment ?: ""
 				m['repeatType'] = null
 				m['baseTag'] = baseTag
 				m['durationType'] = DurationType.NONE
