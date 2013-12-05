@@ -219,7 +219,7 @@ class HomeController extends DataController {
 	}
 
 	def userpreferences() {
-		//FitbitNotificationJob.schedule(1, 0)	// Trigger a job for testing while development.
+		//FitbitNotificationJob.schedule(1000 * 10l, 1)	// Trigger a job for testing while development.
 		debug "HomeController.userpreferences() params:" + params
 		
 		User user = userFromIdStr(params.userId)

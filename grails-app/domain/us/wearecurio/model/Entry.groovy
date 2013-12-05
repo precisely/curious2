@@ -2038,7 +2038,7 @@ class Entry {
 	}
 
 	def String valueString() {
-		return "Entry(userId:" + userId \
+		return "Entry(id: ${id ?: 'un-saved'}, userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneOffsetSecs:" + timeZoneOffsetSecs \
