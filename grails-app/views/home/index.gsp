@@ -616,12 +616,6 @@ $(function(){
 					}
 				});
 	})
-	$("#confirm-repeats").click(function() {
-		$("li.entry.ghost").each(function(index, entry) {
-			if (!$(entry).data("isContinuous"))
-				$(entry).trigger("click", true);
-		})
-	})
 
 	/*
 	$("#entry0").off("selectableselected");
@@ -690,9 +684,6 @@ $(function(){
 			<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
 			<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
 			<div style="clear: both"></div>
-		</div>
-		<div id="confirm-repeats" class="panel-wrapper">
-			CONFIRM REPEATS
 		</div>
 		<div class="border-separator"></div>
 

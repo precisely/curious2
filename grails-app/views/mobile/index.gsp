@@ -1089,12 +1089,6 @@ $(function(){
 			}
 			activateEntry($(this));
 		})
-		$("#confirm-repeats").click(function() {
-			$("li.entry.ghost").each(function(index, entry) {
-				if (!$(entry).data("isContinuous"))
-					$(entry).trigger("click", true);
-			})
-		})
 
 		var cache = getAppCacheData('users');
 		
@@ -1145,7 +1139,6 @@ $(function(){
 		<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
 		</form>
 		<hr />
-		<div id="confirm-repeats">CONFIRM REPEATS</div>
 		</div>
 	</div>
 

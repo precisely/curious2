@@ -172,9 +172,8 @@ ul.ui-autocomplete {
 	height: 25px;
 }
 .dateBar {
-	height: 30px;
 	background-color: #f5311e;
-	padding: 0.1em .3em 0.1em .3em;
+	padding: .1em .3em 0em .3em;
 	color: #ffffff;
 	font-weight: bold;
 	text-align: center;
@@ -239,18 +238,6 @@ ul.ui-autocomplete {
 	border-width: 1px 0 0 0;
 	background: transparent;
 	height: 0px;
-}
-
-.dataEntry #confirm-repeats {
-	display: block;
-	text-align: left;
-	padding: .5em 0;
-	color: #404040;
-	text-decoration: none;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: .5em;
-	cursor: pointer;
 }
 
 .entryDelete {
