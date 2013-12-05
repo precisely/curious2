@@ -6,7 +6,7 @@ import grails.test.mixin.support.*
 import org.junit.*
 import org.scribe.model.Token
 
-import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.controller.AuthenticationController;
 
 @TestMixin(GrailsUnitTestMixin)
 @TestFor(AuthenticationController)

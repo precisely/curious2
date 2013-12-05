@@ -1,4 +1,4 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 import java.util.Map;
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.servlet.ModelAndView
@@ -8,6 +8,7 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 
 import grails.test.*
 
+import us.wearecurio.controller.HomeController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils

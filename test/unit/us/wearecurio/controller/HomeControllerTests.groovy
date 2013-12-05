@@ -7,6 +7,7 @@ import grails.test.mixin.support.*
 
 import org.junit.*
 
+import us.wearecurio.controller.HomeController;
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService;
 import us.wearecurio.services.SecurityService

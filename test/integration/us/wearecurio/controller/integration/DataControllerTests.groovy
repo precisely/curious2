@@ -1,8 +1,9 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 
 import grails.test.*
 
 import grails.converters.*
+import us.wearecurio.controller.DataController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils

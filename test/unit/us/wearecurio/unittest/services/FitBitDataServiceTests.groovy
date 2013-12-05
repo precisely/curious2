@@ -1,4 +1,4 @@
-package us.wearecurio.services
+package us.wearecurio.unittest.services
 
 import grails.converters.JSON
 import grails.test.GrailsMock
@@ -14,6 +14,8 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.FitbitNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
+import us.wearecurio.services.FitBitDataService;
+import us.wearecurio.services.UrlService;
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.MockedHttpURLConnection
 

@@ -1,6 +1,7 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 import grails.test.*
 
+import us.wearecurio.controller.MobileController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils

@@ -1,4 +1,4 @@
-package us.wearecurio.services
+package us.wearecurio.unittest.services
 
 import grails.test.mixin.*
 
@@ -6,6 +6,7 @@ import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 import org.junit.*
 
 import us.wearecurio.services.HTTPBuilderService
+import us.wearecurio.services.LocationService;
 
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions

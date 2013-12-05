@@ -1,4 +1,4 @@
-package us.wearecurio.services
+package us.wearecurio.unittest.services
 
 import grails.test.GrailsMock
 import grails.test.mixin.*
@@ -15,6 +15,8 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
+import us.wearecurio.services.UrlService;
+import us.wearecurio.services.WithingsDataService;
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.MockedHttpURLConnection
 

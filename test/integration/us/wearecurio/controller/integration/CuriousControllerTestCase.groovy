@@ -1,4 +1,4 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 
 import java.util.Map;
 import org.springframework.web.servlet.ModelAndView

@@ -1,9 +1,10 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 import java.util.Map;
 import org.springframework.web.servlet.ModelAndView
 
 import grails.test.*
 
+import us.wearecurio.controller.LoginController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils

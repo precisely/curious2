@@ -1,4 +1,4 @@
-package us.wearecurio.controller
+package us.wearecurio.controller.integration
 
 import java.util.Map;
 import org.springframework.web.servlet.ModelAndView
@@ -6,6 +6,7 @@ import org.springframework.web.servlet.ModelAndView
 import grails.test.*
 import grails.util.GrailsWebUtil
 
+import us.wearecurio.controller.MobiledataController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
