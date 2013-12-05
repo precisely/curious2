@@ -1417,10 +1417,7 @@ class Entry {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		if (amt == null)
-			setRepeatType(m['repeatType'])
-		else
-			setRepeatType(m['repeatType']?.forUpdate()) // do not set continuous or ghost repeat types on edit
+		setRepeatType(m['repeatType'])
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)

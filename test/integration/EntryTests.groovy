@@ -370,6 +370,15 @@ class EntryTests extends GroovyTestCase {
 	}
 	
 	@Test
+	void testUpdateNonRepeatToRepeat() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm ", baseDate, true), null)
+		
+		Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 8 pinned", baseDate, true, true), null, baseDate, true)
+		
+		entry.getRepeatType().equals(Entry.RepeatType.CONTINUOUSGHOST)
+	}
+	
+	@Test
 	void testUpdateRepeatAllFuture() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm repeat daily", earlyBaseDate, true), null)
 		

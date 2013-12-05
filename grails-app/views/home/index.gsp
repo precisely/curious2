@@ -36,8 +36,9 @@ function cacheNow() {
 }
 
 function changeDate(amount) {
-	var currentDate = $("#datepicker").datepicker('getDate');
-	$("#datepicker").datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
+	var $datepicker = $("#datepicker");
+	var currentDate = $datepicker.datepicker('getDate');
+	$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
 	refreshPage();
 }
 
@@ -53,7 +54,6 @@ function refreshPage() {
 	tagList.load();
 }
 var tagList;
-var tagListWidget;
 var currentEntryId = undefined;
 
 function clearEntries() {
@@ -101,11 +101,11 @@ function displayEntry(entry, isUpdating, args) {
 		classes = "entry",
 		$entryToReplace, $appendAfterEntry;
 		
-	if(args && args instanceof Object) {
-		if(args.replaceEntry) {
+	if (args && args instanceof Object) {
+		if (args.replaceEntry) {
 			$entryToReplace = $(args.replaceEntry);
 		}
-		if(args.appendAfterEntry) {
+		if (args.appendAfterEntry) {
 			$appendAfterEntry = $(args.appendAfterEntry);
 		}
 	}
@@ -165,9 +165,9 @@ function displayEntry(entry, isUpdating, args) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
 	} else {
 		var newEntryContent = '<li id="entryid' + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
-		if($entryToReplace) {
+		if ($entryToReplace) {
 			$entryToReplace.replaceWith(newEntryContent);
-		} else if($appendAfterEntry) {
+		} else if ($appendAfterEntry) {
 			$appendAfterEntry.after(newEntryContent);
 		} else {
 			$("#entry0").append(newEntryContent);
@@ -318,14 +318,19 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 		});
 }
 
+function cancelEdit($entryItem) {
+	var $contentWrapper = $entryItem.find(".content-wrapper");
+	$contentWrapper.html($entryItem.data('contentHTML'));
+}
+
 function updateEntry(entryId, text, defaultToNow) {
-	var oldEntry = getEntryElement(entryId);
-	$(".content-wrapper", oldEntry).html(text);
-	if (oldEntry.data('originalText') == text) {
-		oldEntry.html(oldEntry.data('originalHTML'));
+	var $oldEntry = getEntryElement(entryId);
+	$(".content-wrapper", $oldEntry).html(text);
+	if ($oldEntry.data('originalText') == text) {
+		cancelEdit($oldEntry);
 		return; // don't update unchanged entry
 	}
-	if (oldEntry.data("anyGhost")) {
+	if ($oldEntry.data("anyGhost")) {
 		showAB("Update just this one event or all future events?", "One", "All", function() {
 				doUpdateEntry(entryId, text, defaultToNow, false);
 			}, function() {
@@ -361,25 +366,25 @@ function initInput() {
 }
 
 function processInput() {
-	var field = $("#input0");
-	field.autocomplete("close");
-	var text = field.val();
+	var $field = $("#input0");
+	$field.autocomplete("close");
+	var text = $field.val();
 	if (text == "") return; // no entry data
-	field.val("");
+	$field.val("");
 	addEntry(currentUserId, text, defaultToNow);
 	return true;
 }
 
 function setEntryText(text, startSelect, endSelect) {
-	var inp = $("#input0");
-	inp.autocomplete("close");
-	inp.val(text);
-	inp.css('color','#000000');
+	var $inp = $("#input0");
+	$inp.autocomplete("close");
+	$inp.val(text);
+	$inp.css('color','#000000');
 	if (startSelect) {
-		inp.selectRange(startSelect, endSelect);
+		$inp.selectRange(startSelect, endSelect);
 	}
-	inp.focus();
-	inp.data("entryTextSet", true);
+	$inp.focus();
+	$inp.data("entryTextSet", true);
 }
 
 // dynamic autocomplete
@@ -395,9 +400,6 @@ String.prototype.startsWith = function(str) {return (this.match("^"+str)==str)}
 function doLogout() {
 	callLogoutCallbacks();
 }
-
-var datepicker;
-var lastEntrySelected = null;
 
 /*
  * Used to unselect an entry, or called when entry is
@@ -429,8 +431,7 @@ function selected($selectee, forceUpdate) {
 	$selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
 
 	if (state == undefined || state == 0) {
-		lastEntrySelected = $selectee;
-		$selectee.data('originalHTML', $selectee.html()); // store original HTML for later restoration
+		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		currentEntryId = $selectee.data("entry-id");
 		$selectee.data('entryIsSelected', 1);
 		$selectee.addClass('ui-selected');
@@ -477,7 +478,7 @@ function selected($selectee, forceUpdate) {
  * IF different than call updateEntry() method to notify
  * server and update in UI.
  */
-function checkAndUpdateEntry($unselectee) {
+function checkAndUpdateEntry($unselectee, doNotUpdate) {
 	var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
 	var oldText = $contentWrapper.text();
 	var newText = $("input#tagTextInput").val();
@@ -514,18 +515,18 @@ $(function(){
 		}
 	});
 
-	datepicker = $("#datepicker");
+	var $datepicker = $("#datepicker");
 	currentDate = new Date();
 	if (${showTime} > 0)
 		currentDate = new Date(${showTime});
-	datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy'});
+	$datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy'});
 	$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', currentDate));
 	$("#ui-datepicker-div").css('display','none');
 	
-	datepicker.change(function () {
+	$datepicker.change(function () {
 		refreshPage();
 		localStorage['stateStored'] = "2";
-		localStorage['currentDate'] = $.toJSON(datepicker.datepicker('getDate'));
+		localStorage['currentDate'] = $.toJSON($datepicker.datepicker('getDate'));
 	});	
 	$("#input0").off("click");
 	$("#input0").on("click", function(e) {
@@ -551,12 +552,10 @@ $(function(){
 	
 	$(document).on("keyup", "input#tagTextInput", function(e) {
 		var $selectee = $(this).parents("li");
-		if(e.keyCode == 13) {	// Enter pressed
+		if (e.keyCode == 13) {	// Enter pressed
 			unselecting($selectee);
-			selected($selectee, false);
 		} else if(e.keyCode == 27) {	// Esc pressed
 			unselecting($selectee, true);
-			selected($selectee, false);
 		}
 	})
 	/**
@@ -597,7 +596,7 @@ $(function(){
 				function(newEntry) {
 					if (checkData(newEntry)) {
 						var newEntryId = newEntry.id;
-						if(isContinuous) {
+						if (isContinuous) {
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
 							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
 						} else {
