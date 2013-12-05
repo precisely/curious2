@@ -17,12 +17,11 @@ removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroup
 var defaultToNow = true;
 var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:else>false</g:else>;
 
-var cachedDate;
-var cachedDateUTC;
+var cachedDate, cachedDateUTC;
 var timeZoneName;
 
 function cacheDate() {
-	cachedDate = $("#datepicker").datepicker('getDate');
+	cachedDate = $("input#datepicker").datepicker('getDate');
 	cachedDateUTC = cachedDate.toUTCString();
 	timeZoneName = jstz.determine().name();
 }
@@ -516,18 +515,25 @@ $(function(){
 	});
 
 	var $datepicker = $("#datepicker");
+
 	currentDate = new Date();
 	if (${showTime} > 0)
 		currentDate = new Date(${showTime});
-	$datepicker.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy'});
-	$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', currentDate));
-	$("#ui-datepicker-div").css('display','none');
+
+	$datepicker
+		.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true})
+		.val($.datepicker.formatDate('DD MM dd, yy', currentDate))
+		.datepicker("hide")
+		.change(function () {
+			refreshPage();
+			localStorage['stateStored'] = "2";
+			localStorage['currentDate'] = $.toJSON($datepicker.datepicker('getDate'));
+		});
+
+	$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
+		$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
+	})
 	
-	$datepicker.change(function () {
-		refreshPage();
-		localStorage['stateStored'] = "2";
-		localStorage['currentDate'] = $.toJSON($datepicker.datepicker('getDate'));
-	});	
 	$("#input0").off("click");
 	$("#input0").on("click", function(e) {
 		if (!$("#input0").data('entryTextSet'))

@@ -480,11 +480,11 @@ $(function(){
 	var CONCRETEGHOST_BIT = 0x400;
 	var TIMED_BIT = 0x1 | 0x2 | 0x4;
 
-	var cachedDate;
-	var cachedDateUTC;
+	var cachedDate, cachedDateUTC;
+	var $datepickerField = $("input#datepicker");
 
 	function cacheDate() {
-		cachedDate = $("#datepicker").datepicker('getDate');
+		cachedDate = $datepickerField.datepicker('getDate');
 		cachedDateUTC = cachedDate.toUTCString();
 	}
 
@@ -1040,12 +1040,16 @@ $(function(){
 	
 		var $datepicker = $("#datepicker");
 		var now = new Date();
-		$datepicker.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy'});
-		$datepicker.val($.datepicker.formatDate('DD MM dd, yy', now));
-		$("#ui-datepicker-div").css('display','none');
+		$datepicker
+			.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy', showButtonPanel: true})
+			.val($.datepicker.formatDate('DD MM dd, yy', now))
+			.datepicker("hide")
+			.change(function () {
+				refreshPage();
+			});
 
-		$datepicker.change(function () {
-			refreshPage();
+		$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
+			$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
 		})
 		
 		var $entryInput = $("#input0");
