@@ -577,7 +577,7 @@ $(function(){
 		}
 	}
 	
-	function activateEntry(entry) {
+	function activateEntry(entry, doNotSelectEntry) {
 		var gEntry = entry;
 		var entryId = entry.data("entry-id");
 		var isContinuous = entry.data("isContinuous");
@@ -601,7 +601,9 @@ $(function(){
 							displayEntry(newEntry, false, {replaceEntry:gEntry});
 						}
 						var $newEntry = $("li#entryid" + newEntryId);
-						selected($newEntry, true);
+						if (!doNotSelectEntry) {
+							selected($newEntry, true);
+						}
 					}
 				});
 	}
@@ -968,6 +970,12 @@ $(function(){
 			}
 			activateEntry($(this));
 		})
+		$("#confirm-repeats").click(function() {
+			$("li.entry.ghost").each(function(index, entry) {
+				if (!$(entry).data("isContinuous"))
+					$(entry).trigger("click", true);
+			})
+		})
 
 		var cache = getAppCacheData('users');
 		
@@ -1015,7 +1023,7 @@ $(function(){
 		<input id="input0" type="text" value="" name="data" class="textField"  />
 		</form>
 		<hr />
-		<a class="showMore" href="">Show more</a>
+		<div id="confirm-repeats">CONFIRM REPEATS</div>
 		</div>
 	</div>
 
