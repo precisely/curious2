@@ -16,8 +16,14 @@ class User implements NameEmail {
 		username(maxSize:50, unique:true)
 		email(maxSize:200, unique:true, blank:false)
 		remindEmail(maxSize:200, nullable:true)
-		first(maxSize:100)
-		last(maxSize:100)
+		/**
+		 * Workaround for grails constraint issue while testing.
+		 * 
+		 * @see http://jira.grails.org/browse/GRAILS-10603
+		 * @see http://stackoverflow.com/questions/19960840/grails-domain-with-first-and-last-properties/19962381#19962381
+		 */
+		delegate.first(maxSize:100)
+		delegate.last(maxSize:100)
 		password(blank:false)
 		birthdate(nullable:true)
 		sex(maxSize:1, blank:false)

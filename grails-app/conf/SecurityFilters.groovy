@@ -20,6 +20,11 @@ class SecurityFilters {
 	
 	static List noauthActions = [
 		'login',
+		'authenticate',	/** For /oauth/$provider/authenticate OAuth Plugin	*/
+		'callback',	/** For /oauth/$provider/callback of OAuth Plugin	*/
+		'twenty3andme',	/** For /oauth/twenty3andme/authenticate OAuth Plugin	*/
+		'twenty3andmeAuth',	/** For /authenticate/twenty3andmeAuth	*/
+		'authenticateProvider',
 		'dologin',
 		'register',
 		'doregister',

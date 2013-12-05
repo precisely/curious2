@@ -40,6 +40,7 @@
 </head>
 <body>
 	<div class="red-strip"></div>
+    <g:render template="/layouts/alertMessage" />
 	<div class="row">
 		<div class="span3 text-center">
 			<div class="logo"></div>
@@ -122,9 +123,32 @@
 										Twitter Account: ${user.twitterAccountName}<br>
 										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
 									</g:else><br>
-									<g:link action="registerfitbit">Link FitBit Account</g:link><br>
-									<g:link action="registerwithings">Link Withings Account</g:link><br>
-									<a href="#" onclick="alert('Coming Soon')">Link 23andMe Account</a>
+									<oauth:isLinked typeId="FITBIT_ID">
+										<g:if test="${it }">
+											<g:link action="unregisterfitbit">UnLink FitBit Account</g:link><br>
+										</g:if>
+										<g:else>
+											<g:link action="registerfitbit">Link FitBit Account</g:link><br>
+										</g:else>
+									</oauth:isLinked>
+									<oauth:isLinked typeId="WITHINGS_ID">
+										<g:if test="${it }">
+											<g:link action="unregisterwithings">UnLink Withings Account</g:link><br>
+										</g:if>
+										<g:else>
+											<g:link action="registerwithings">Link Withings Account</g:link><br>
+										</g:else>
+									</oauth:isLinked>
+									<g:link action="register23andme">
+										<oauth:isLinked typeId="TWENTY_3_AND_ME_ID">
+											<g:if test="${it }">
+												Re-import from 23andMe
+											</g:if>
+											<g:else>
+												Import from 23andme
+											</g:else>
+										</oauth:isLinked>
+									</g:link>
 								</td>
 							</tr>
 

@@ -2,15 +2,14 @@ package us.wearecurio.controller
 
 import grails.converters.*
 
-import java.text.SimpleDateFormat
+import org.scribe.model.Token
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
+import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.TwitterDataService
-import us.wearecurio.services.WeatherService;
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.services.FitBitDataService
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -19,6 +18,8 @@ class HomeController extends DataController {
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
+	def oauthService
+	def twenty3AndMeDataService
 
 	static debug(str) {
 		log.debug(str)
@@ -28,9 +29,8 @@ class HomeController extends DataController {
 		debug "HomeController()"
 	}
 
-	def registerwithings() {
-		debug "HomeController.registerwithings() request:" + request
-		redirect(url:withingsDataService.getAuthorizationURL())
+	def registerwithings() {	// TODO Backward support. Remove this
+		redirect (url: toUrl(action: "doregisterwithings"))
 	}
 
 	def doregisterwithings() {
@@ -38,19 +38,49 @@ class HomeController extends DataController {
 
 		User user = sessionUser()
 		
-		if (user == null) {
+		if (user == null) {	// TODO Can be remove, since this action is protected
 			debug "auth failure"
 			return
 		}
 		
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-
-		withingsDataService.authorizeAccount(user.getId(), Long.parseLong(params.userid), params.oauth_token, params.oauth_verifier)
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("withings")]
+
+		Map result = withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
+		if(result.success) {
+			flash.message = g.message(code: "withings.subscribe.success.message")
+		} else {
+			flash.message = g.message(code: "withings.subscribe.failure.message", args: [result.message ?: ""])
+		}
+
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
-	
+
+	def unregisterwithings() {
+		Map result = withingsDataService.unSubscribe(sessionUser().id)
+		if(result.success) {
+			flash.message = g.message(code: "withings.unsubscribe.success.message")
+		} else {
+			flash.message = g.message(code: "withings.unsubscribe.failure.message", args: [result.message ?: ""])
+		}
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+	}
+
+	def register23andme() {
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
+		Map result = twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
+		if(result.success) {
+			flash.message = message(code: "twenty3andme.import.success.message")
+		}
+
+		redirect(url: session.deniedURI)
+	}
+
 	def notifywithings() {
 		debug "HomeController.notifywithings() params:" + params
 		
@@ -77,8 +107,7 @@ class HomeController extends DataController {
 
 	
 	def registerfitbit() {
-		debug "HomeController.registerfitbit() request:" + request
-		redirect(url:fitBitDataService.getAuthorizationURL())
+		redirect (url: toUrl(action: "doregisterfitbit"))
 	}
 	
 	def doregisterfitbit() {
@@ -91,12 +120,32 @@ class HomeController extends DataController {
 		}
 		
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-		fitBitDataService.authorizeAccount(user.getId(), params.oauth_token, params.oauth_verifier)
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
+		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("fitbit")]
+		Map result = fitBitDataService.authorizeAccount(tokenInstance, user.getId())
+
+		if(result.success) {
+			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
+		} else {
+			flash.message = g.message(code: "fitbit.subscribe.failure.message", args: [result.message ?: ""])
+		}
+
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user])
 	}
-	
+
+	def unregisterfitbit() {
+		Map result = fitBitDataService.unSubscribe(sessionUser().id)
+		if(result.success) {
+			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
+		} else {
+			flash.message = g.message(code: "fitbit.unsubscribe.failure.message", args: [result.message ?: ""])
+		}
+
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+	}
+
 	/**
 	 * FitBit Subscriber Endpoint
 	 */

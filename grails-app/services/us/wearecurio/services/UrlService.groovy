@@ -1,16 +1,16 @@
 package us.wearecurio.services
 
+import grails.util.Environment;
+
 import org.apache.commons.logging.LogFactory
 
-import us.wearecurio.utility.Utils;
-import us.wearecurio.model.*;
-
 class UrlService {
+
 	def grailsApplication
 
 	private static def log = LogFactory.getLog(this)
 	
-	// temporarily, use UrlService as a holder of static methods. When we switch to Grails 2.x, change to instance methods
+	//TODO temporarily, use UrlService as a holder of static methods. When we switch to Grails 2.x, change to instance methods
 
 	static transactional = true
 	
@@ -34,24 +34,20 @@ class UrlService {
 	 * @param req
 	 * @return
 	 */
-	def make(map, req) {
-		def url = base(req) + map.controller + '/' + map.action
-		def first = true
+	def make(map, req, boolean usePublicIP = false) {
+		def url = base(req, usePublicIP) + map.controller + '/' + map.action
 		if (map.params) {
-			for (p in map.params) {
-				if (first) {
-					url += '?'
-					first = false
-				} else
-					url = '&'
-				url += p.key + '=' + p.value
-			}
+			url = makeQueryString(url, map.params)
 		}
 		if (map.fragment) {
 			url += '#' + map.fragment
 		}
 		
 		return url
+	}
+
+	String makeQueryString(String url, Map params) {
+		url + "?" + params.collect { key, value -> "$key=$value" }.join("&")
 	}
 	
 	public static final String URLATTRIBUTE = "us.wearecurio.serverURL"
@@ -63,8 +59,12 @@ class UrlService {
 	 * @param req
 	 * @return
 	 */
-	def base(req) {
+	def base(req, boolean usePublicIP = false) {
 		if (req == null) {
+			if(Environment.current == Environment.DEVELOPMENT && usePublicIP) {
+				log.debug "UrlService.base() NULL REQUEST, RETURNING DEFAULT PUBLIC IP SERVER URL"
+				return grailsApplication.config.grails.other.serverURL
+			}
 			log.debug "UrlService.base() NULL REQUEST, RETURNING DEFAULT SERVER URL"
 			return grailsApplication.config.grails.serverURL
 		}
