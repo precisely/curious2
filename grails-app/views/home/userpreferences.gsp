@@ -139,6 +139,14 @@
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
 										</g:else>
 									</oauth:isLinked>
+									<oauth:isLinked typeId="MOVES_ID">
+										<g:if test="${it }">
+											<g:link action="unregistermoves">UnLink Moves Account</g:link><br>
+										</g:if>
+										<g:else>
+											<g:link action="registermoves">Link Moves Account</g:link><br>
+										</g:else>
+									</oauth:isLinked>
 									<g:link action="register23andme">
 										<oauth:isLinked typeId="TWENTY_3_AND_ME_ID">
 											<g:if test="${it }">

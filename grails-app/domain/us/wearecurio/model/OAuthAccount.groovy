@@ -12,6 +12,7 @@ class OAuthAccount {
 	public static int WITHINGS_ID = 1
 	public static int FITBIT_ID = 2
 	public static int TWENTY_3_AND_ME_ID = 3
+	public static int MOVES_ID = 4
 
 	Integer typeId
 	Long userId
@@ -25,13 +26,13 @@ class OAuthAccount {
 		userId(unique:['typeId'])
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
-		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID]
+		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID]
 	}
 
 	public static def createOrUpdate(Integer typeId, Long userId, String accountId, String accessToken, String accessSecret) {
 		int c = 0
 
-		while (++c < 3) {
+		while (++c < 4) {
 			OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, typeId)
 
 			if (account) {

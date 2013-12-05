@@ -1,6 +1,7 @@
 import org.scribe.model.SignatureType
 
 import us.wearecurio.thirdparty.fitbit.FitBitApi
+import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
 
@@ -105,6 +106,10 @@ environments {
 					secret = "6c813aceab794174a32b7ea1532f7401"
 					apiVersion = "1"
 				}
+				moves {
+					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
+					secret = "92O48_cAvZ25tpxKV6hmi763zfMFIZFk2MbCdVeVW9i4iCwtgO3E96XZv6RzA6HP"
+				}
 				twenty3andme {
 					key = "96de99b2227025cacb6807e28df20367"
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
@@ -136,6 +141,10 @@ environments {
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
 				}
+				moves {
+					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
+					secret = "92O48_cAvZ25tpxKV6hmi763zfMFIZFk2MbCdVeVW9i4iCwtgO3E96XZv6RzA6HP"
+				}
 				twenty3andme {
 					key = "96de99b2227025cacb6807e28df20367"
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
@@ -165,6 +174,10 @@ environments {
 					key = "b2610f22a2314bdc804c3463aa666876"
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
+				}
+				moves {
+					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
+					secret = "92O48_cAvZ25tpxKV6hmi763zfMFIZFk2MbCdVeVW9i4iCwtgO3E96XZv6RzA6HP"
 				}
 				twenty3andme {
 					key = "96de99b2227025cacb6807e28df20367"
@@ -221,6 +234,14 @@ oauth {
 			successUri = "authentication/fitbit/success"
 			failureUri = "authentication/fitbit/fail"
 			signatureType = SignatureType.Header
+		}
+		moves {
+			api = MovesApi
+			callback = "${grails.serverURL }oauth/moves/callback"
+			successUri = "authentication/moves/success"
+			failureUri = "authentication/moves/fail"
+			scope = "activity"
+			signatureType = SignatureType.QueryString
 		}
 		twenty3andme {
 			api = Twenty3AndMeApi
