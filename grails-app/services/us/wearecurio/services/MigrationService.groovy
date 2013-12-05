@@ -1,3 +1,4 @@
+
 package us.wearecurio.services
 
 import java.util.Date;
@@ -30,7 +31,8 @@ class MigrationService {
 	public static final long NULLIFY_OLD_REPEATS_ID = 42L
 	public static final long RANGE_OLD_REPEATS_ID = 43L
 	public static final long REPEAT_END_INDEX_ID = 44L
-	public static final long CREATE_TIME_ZONES_ID = 45L
+	public static final long CREATE_TIME_ZONES_ID = 46L
+	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -124,11 +126,26 @@ class MigrationService {
 			def entries = Entry.list()
 			
 			for (Entry e in entries) {
-				def timeZoneName = TimeZoneId.guessTimeZoneName(e.getDate(), e.getTimeZoneOffsetSecs())
+				if (e.getTimeZoneId() == null) {
+					def timeZoneName = TimeZoneId.guessTimeZoneName(e.getDate(), e.getTimeZoneOffsetSecs())
+					
+					def timeZoneId = TimeZoneId.look(timeZoneName)
+					
+					e.setTimeZoneId((int)timeZoneId.getId())
+					
+					Utils.save(e)
+				}
+			}
+		}
+		tryMigration(CREATE_CONCRETE_GHOSTS_ID) {
+			def rows = sqlRows("select entry.id from entry where repeat_type in (:repeatIds)", [repeatIds:Entry.REPEAT_IDS])
+			
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
 				
-				def timeZoneId = TimeZoneId.look(timeZoneName)
+				entry.getRepeatType().makeConcreteGhost()
 				
-				e.setTimeZoneId((int)timeZoneId.getId())
+				Utils.save(entry, true)
 			}
 		}
 	}

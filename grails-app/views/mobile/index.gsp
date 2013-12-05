@@ -127,9 +127,9 @@ function getCSRFPreventionObjectMobile(key, data) {
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=8"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=8"></script>
-<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=8"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=9"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=9"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=9"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
@@ -336,10 +336,10 @@ $(function(){
 			$('#displayUser').html(username);
 		}
 	
-		function resetDefaultText(element, backImage) {
-			element.data('defaultTextCleared', false);
-			element.val('');
-			element.css('background-image', backImage);
+		function resetDefaultText($element, backImage) {
+			$element.data('defaultTextCleared', false);
+			$element.val('');
+			$element.css('background-image', backImage);
 		}
 		
 		function submitForm() {
@@ -475,8 +475,10 @@ $(function(){
 <r:script>
 	var defaultToNow = true;
 	var timeAfterTag = true;
-	var GHOST_BIT = 0x200;
 	var CONTINUOUS_BIT = 0x100;
+	var GHOST_BIT = 0x200;
+	var CONCRETEGHOST_BIT = 0x400;
+	var TIMED_BIT = 0x1 | 0x2 | 0x4;
 
 	var cachedDate;
 	var cachedDateUTC;
@@ -497,8 +499,9 @@ $(function(){
 	}
 	
 	function changeDate(amount) {
-		var currentDate = $("#datepicker").datepicker('getDate');
-		$("#datepicker").datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
+		var $datepicker = $("#datepicker");
+		var currentDate = $datepicker.datepicker('getDate');
+		$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
 		refreshPage();
 	}
 
@@ -533,58 +536,83 @@ $(function(){
 	/*
 	 * Gets called on selection of the entry, or used to select an entry.
 	 */
-	function selected(selectee, forceUpdate) {
-		var state = selectee.data('entryIsSelected');
-		selectee.data('forceUpdate', forceUpdate);
-		if ($("input#tagTextInput").size() == 1) return;
-		selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
-		var $contentWrapper = selectee.find(".content-wrapper");
+	function selected($selectee, forceUpdate) {
+		var state = $selectee.data('entryIsSelected');
+		$selectee.data('forceUpdate', forceUpdate);
+		var $contentWrapper = $selectee.find(".content-wrapper");
+		if ($("#tagTextInput").size() == 1) return;
+		$selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
 
-		if (state == 0 || state == undefined) {
-			selectee.addClass('ui-selected');
-			selectee.data('entryIsSelected', 1);
-			currentEntryId = selectee.data("entry-id");
+		if (state == undefined || state == 0) {
+			$selectee.addClass('ui-selected');
+			$selectee.data('entryIsSelected', 1);
+			$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later
+			currentEntryId = $selectee.data("entry-id");
 			$("#entrydelid" + currentEntryId).css('display', 'inline');
-			var entryText = selectee.text();
+			var entryText = $selectee.text();
+			$selectee.data('originalText', entryText); // store entry text for comparison
 			var selectRange = entrySelectData[currentEntryId];
-			lastEntrySelected = selectee;
 			
 			$contentWrapper.hide();
-			selectee.append('<input type="text" id="tagTextInput" style="margin: 2px"></input>');
+			$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 110px);"></input>'
+				+ '<img src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
 
-			// Binding blur event on element instead of globally to prevent concurrent exception.
-			var textInput = $("#tagTextInput").val(entryText).focus();
+			$("#tagEditRepeat").off("mousedown");
+			$("#tagEditRemind").off("mousedown");
+			$("#tagEditPinned").off("mousedown");
 			
-			textInput.on("blur", function(e) {
+			$("#tagEditRepeat").on("mousedown", function(e) {
+				modifyEdit('repeat');
+			});
+			$("#tagEditRemind").on("mousedown", function(e) {
+				modifyEdit('remind');
+			});
+			$("#tagEditPinned").on("mousedown", function(e) {
+				modifyEdit('pinned');
+			});
+			
+			// Binding blur event on element instead of globally to prevent concurrent exception.
+			var $textInput = $("#tagTextInput").val(entryText).focus();
+			
+			$textInput.on("blur", function(e) {
+				if ($(this).data('cancelBlur')) return;
 				var $unselectee = $(this).parent("li");
 				checkAndUpdateEntry($unselectee);
 				$unselectee.data('entryIsSelected', 0);
 			})
-			textInput.keyup(function(e) {
-				if (e.keyCode == 13) {
+			$textInput.keyup(function(e) {
+				var $selectee = $(this).parents("li");
+				if (e.keyCode == 13) {	// Enter pressed
+					unselecting($selectee);
+				} else if(e.keyCode == 27) {	// Esc pressed
+					unselecting($selectee, true);
+				}
+				/*if (e.keyCode == 13) {
 					var $unselectee = $(this).parent("li");
 					checkAndUpdateEntry($unselectee);
 					$unselectee.data('entryIsSelected', 0);
-					$("a.entryDelete", $unselectee).hide();
-				}
+					//$("a.entryDelete", $unselectee).hide();
+				}*/
 			});
 			
 			if (selectRange) {
 				$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 			}
 		} else if (state == 2) {
-			selectee.data('entryIsSelected', 0);
+			$selectee.data('entryIsSelected', 0);
 		}
 	}
 	
-	function activateEntry(entry, doNotSelectEntry) {
-		var gEntry = entry;
-		var entryId = entry.data("entry-id");
-		var isContinuous = entry.data("isContinuous");
-		var isGhost = entry.data("isGhost");
+	function activateEntry($entry, doNotSelectEntry) {
+		var gEntry = $entry;
+		var entryId = $entry.data("entry-id");
+		var isContinuous = $entry.data("isContinuous");
+		var isGhost = $entry.data("isGhost");
 		
 		if (!isGhost) {
-			selected(entry, false);
+			selected($entry, false);
 			return;
 		}
 		cacheNow();
@@ -613,7 +641,12 @@ $(function(){
 	
 	function unselecting($unselectee) {
 		if ($unselectee.data('entryIsSelected') == 1) {
-			$unselectee.data('entryIsSelected', 2);
+			var $textInput = $("#tagTextInput");
+			if ($textInput.data('cancelBlur')) {
+				$textInput.data('cancelBlur', false);
+				return;
+			}
+			$unselectee.data('entryIsSelected', 0);
 			$unselectee.removeClass('ui-selected');
 			$("a.entryDelete", $unselectee).hide();
 			checkAndUpdateEntry($unselectee);
@@ -642,15 +675,25 @@ $(function(){
 			}
 		}
 
-		var isGhostEntry = false, isContinuous = false;
+		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false;
 		if (entry.repeatType) {
 			if ((entry.repeatType & GHOST_BIT) != 0) {
-				isGhostEntry = true;
-				classes += " ghost";
+				isGhost = true;
+				isAnyGhost = true;
+				classes += " ghost anyghost";
+			}
+			if ((entry.repeatType & CONCRETEGHOST_BIT) != 0) {
+				isConcreteGhost = true;
+				isAnyGhost = true;
+				classes += " concreteghost anyghost";
 			}
 			if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
 				isContinuous = true;
 				classes += " continuous"
+			}
+			if ((entry.repeatType & TIMED_BIT) != 0) {
+				isTimed = true;
+				classes += " timedrepeat"
 			}
 		}
 
@@ -691,11 +734,11 @@ $(function(){
 				$("#entry0").append(newEntryContent);
 			}
 		}
-		var data = {entry: entry, entryId: id, isGhost: isGhostEntry, isContinuous: isContinuous};
-		var entryItem = $("#entry0 li#entryid" + id);
-		entryItem.data(data);
+		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous, isTimed:isTimed};
+		var $entryItem = $("#entry0 li#entryid" + id);
+		$entryItem.data(data);
 		if (id == activateEntryId) {
-			return entryItem;
+			return $entryItem;
 		}
 		
 		return null;
@@ -703,29 +746,77 @@ $(function(){
 
 	function displayEntries(entries) {
 		entrySelectData = {};
-		var entryToActivate = null;
+		var $entryToActivate = null;
 		jQuery.each(entries, function() {
 			var args = {};
-			var retVal = displayEntry(this, false, args);
-			if (retVal) {
-				entryToActivate = retVal;
+			var $retVal = displayEntry(this, false, args);
+			if ($retVal) {
+				$entryToActivate = $retVal;
 			}
 			return true;
 		});
 		
-		return entryToActivate;
+		return $entryToActivate;
 	}
 
 	function refreshEntries(entries, activateGhost) {
 		clearEntries();
-		var entryToActivate = displayEntries(entries);
+		var $entryToActivate = displayEntries(entries);
 		var cache = getAppCacheData(cachedDateUTC);
 		cache['data'] = entries;
 		
-		if (activateGhost && entryToActivate) {
-			activateEntry(entryToActivate);
+		if (activateGhost && $entryToActivate) {
+			activateEntry($entryToActivate);
 			activateEntryId = -1;
 		}
+	}
+	
+	function toggleSuffix($control, suffix) {
+		var text = $control.val();
+		
+		if (text.endsWith(" repeat")) {
+			text = text.substr(0, text.length - 7);
+			$control.val(text);
+			
+			if (suffix == "repeat")
+				return text.length > 0;
+		}
+		if (text.endsWith(" remind")) {
+			text = text.substr(0, text.length - 7);
+			$control.val(text);
+			
+			if (suffix == "remind")
+				return text.length > 0;
+		}
+		if (text.endsWith(" pinned")) {
+			text = text.substr(0, text.length - 7);
+			$control.val(text);
+			
+			if (suffix == "pinned")
+				return text.length > 0;
+		}
+		
+		$control.val(text + " " + suffix);
+		
+		return text.length > 0;
+	}
+	
+	function modifyEdit(suffix) {
+		var $control = $('#tagTextInput');
+		$control.data('cancelBlur', true);
+		toggleSuffix($control, suffix);
+		/*if (toggleSuffix($control, suffix)) {
+			var $selectee = $control.parents("li");
+			unselecting($selectee);
+			selected($selectee, false);
+		}*/
+	}
+	
+	function modifyInput(suffix) {
+		initInput();
+		toggleSuffix($('#input0'), suffix);
+		//if (toggleSuffix($('#input0'), suffix))
+		//	processInput();
 	}
 	
 	function deleteGhost($entryToDelete, entryId, allFuture) {
@@ -754,7 +845,7 @@ $(function(){
 			showAlert("Please select entry you wish to delete");
 		} else {
 			var $entryToDelete = getEntryElement(entryId);
-			if ($entryToDelete.data("isGhost")) {
+			if ($entryToDelete.data("isAnyGhost")) {
 				if ($entryToDelete.data("isContinuous")) {
 					deleteGhost($entryToDelete, entryId, true);
 				} else {
@@ -800,33 +891,24 @@ $(function(){
 
 		$contentWrapper.show();
 		if (oldText != newText || $unselectee.data('forceUpdate')) {
+			$unselectee.data('forceUpdate', 0);
 			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 			updateEntry(currentEntryId, newText, defaultToNow);
 		}
 
-		$("input#tagTextInput").remove();
+		$("#tagTextEdit").remove();
 	}
+	
 	function getEntryElement(entryId) {
 		return $("li#entryid" + entryId);
 	}
 	
-	function updateEntry(entryId, text, defaultToNow) {
+	function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 		cacheNow();
 		
-		if (!dataReady) {
-			//alert("Please wait until syncing is done before editing entries");
-			startLogin(0);
-			return;
-		}
-		if (!isOnline()) {
-			showAlert("Please wait until online to update an entry");
-			return;
-		}
-		var oldEntry = getEntryElement(entryId);
-		$(".content-wrapper", oldEntry).html(text);
 		var argsToSend = getCSRFPreventionObject("updateEntrySDataCSRF", { entryId:entryId,
 			currentTime:currentTimeUTC, text:text, baseDate:cachedDateUTC,
-			timeZoneName:timeZoneName, defaultToNow:defaultToNow ? '1':'0' });
+			timeZoneName:timeZoneName, defaultToNow:defaultToNow ? '1':'0', allFuture:allFuture ? '1':'0' });
 
 		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
@@ -850,6 +932,33 @@ $(function(){
 		});
 	}
 
+	function updateEntry(entryId, text, defaultToNow) {
+		if (!dataReady) {
+			//alert("Please wait until syncing is done before editing entries");
+			startLogin(0);
+			return;
+		}
+		if (!isOnline()) {
+			showAlert("Please wait until online to update an entry");
+			return;
+		}
+		var $oldEntry = getEntryElement(entryId);
+		$(".content-wrapper", $oldEntry).html(text);
+		if ($oldEntry.data('originalText') == text) {
+			var $contentWrapper = $oldEntry.find(".content-wrapper");
+			$contentWrapper.html($oldEntry.data('contentHTML'));
+			return; // don't update unchanged entry
+		}
+		if ($oldEntry.data("anyGhost")) {
+			showAB("Update just this one event or all future events?", "One", "All", function() {
+					doUpdateEntry(entryId, text, defaultToNow, false);
+				}, function() {
+					doUpdateEntry(entryId, text, defaultToNow, true);
+				});
+		} else
+			doUpdateEntry(entryId, text, defaultToNow, true);
+	}
+	
 	function addEntry(userId, text, defaultToNow) {
 		cacheNow();
 		
@@ -879,13 +988,17 @@ $(function(){
 			}
 		});
 	}
+	
+	function initInput() {
+		$("#input0").css('color','#000000');
+	}
 
 	function processInput(forceAdd) {
-		field = $("#input0");
-		field.autocomplete("close");
-		var text = field.val();
+		var $field = $("#input0");
+		$field.autocomplete("close");
+		var text = $field.val();
 		if (text == "") return; // no entry data
-		field.val("");
+		$field.val("");
 		if ((!forceAdd) && (currentEntryId != undefined))
 			updateEntry(currentEntryId, text, defaultToNow);
 		else {
@@ -895,13 +1008,13 @@ $(function(){
 	}
 
 	function setEntryText(text, startSelect, endSelect) {
-		var inp = $("#input0");
-		inp.autocomplete("close");
-		inp.data('defaultTextCleared', true);
-		inp.val(text);
-		inp.css('color','#000000');
+		var $inp = $("#input0");
+		$inp.autocomplete("close");
+		$inp.data('defaultTextCleared', true);
+		$inp.val(text);
+		$inp.css('color','#000000');
 		if (startSelect) {
-			inp.selectRange(startSelect, endSelect);
+			$inp.selectRange(startSelect, endSelect);
 		}
 	}
 
@@ -922,27 +1035,27 @@ $(function(){
 		});
 	}
 
-	var lastEntrySelected = null;
-
 	var initTrackPage = function() {
 		localStorage['lastPage'] = 'track';
 	
-		var datepicker = $("#datepicker");
+		var $datepicker = $("#datepicker");
 		var now = new Date();
-		datepicker.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy'});
-		$("#datepicker").val($.datepicker.formatDate('DD MM dd, yy', now));
+		$datepicker.datepicker({defaultDate: now, dateFormat: 'DD MM dd, yy'});
+		$datepicker.val($.datepicker.formatDate('DD MM dd, yy', now));
 		$("#ui-datepicker-div").css('display','none');
 
-		datepicker.change(function () {
+		$datepicker.change(function () {
 			refreshPage();
 		})
+		
+		var $entryInput = $("#input0");
 
-		$("#input0").off("focus");
-		$("#input0").off("click");
-		$("#input0").on("focus", clearDefaultLoginText);
-		$("#input0").on("click", clearDefaultLoginText);
+		$entryInput.off("focus");
+		$entryInput.off("click");
+		$entryInput.on("focus", clearDefaultLoginText);
+		$entryInput.on("click", clearDefaultLoginText);
 
-		$("#input0").keyup(function(e) {
+		$entryInput.keyup(function(e) {
 			if (e.keyCode == 13) {
 				processInput(false);
 			}
@@ -951,16 +1064,18 @@ $(function(){
 			processInput(false);
 			return false;
 		});
-		$("#entry0").listable({cancel: 'a, input, li.entry.ghost'});
-		$("#entry0").off("listableselected");
-		$("#entry0").off("listableunselecting");
-		$("#entry0").on("listableunselecting", function(e, ui) {
+		
+		var $entryArea = $("#entry0");
+		$entryArea.listable({cancel: 'a, input, li.entry.ghost'});
+		$entryArea.off("listableselected");
+		$entryArea.off("listableunselecting");
+		$entryArea.on("listableunselecting", function(e, ui) {
 			var $unselectee = $("#" + ui.unselecting.id);
 			unselecting($unselectee);
 		});
-		$("#entry0").on("listableselected", function(e, ui) {
-			var selectee = $("#" + ui.selected.id);
-			selected(selectee, false);
+		$entryArea.on("listableselected", function(e, ui) {
+			var $selectee = $("#" + ui.selected.id);
+			selected($selectee, false);
 		});
 		
 		$(document).on("click", "li.entry.ghost", function(e) {
@@ -1020,7 +1135,10 @@ $(function(){
 
 	<div class="dataEntry">
 		<form id="taginput" onsubmit="return false;" action="#">
-		<input id="input0" type="text" value="" name="data" class="textField"  />
+		<input type="text" id="input0" name="data" style="width:calc(100% - 110px);margin-right:5px;" class="textField" />
+		<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
+		<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
+		<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
 		</form>
 		<hr />
 		<div id="confirm-repeats">CONFIRM REPEATS</div>

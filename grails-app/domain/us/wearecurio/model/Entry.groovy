@@ -4,6 +4,7 @@ import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
@@ -66,8 +67,8 @@ class Entry {
 		CONTINUOUS(CONTINUOUS_BIT, 1),
 		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
 		
-		DAILYGHOST(GHOST_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000),
-		WEEKLYGHOST(GHOST_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
+		DAILYCONCRETEGHOST(CONCRETEGHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
+		WEEKLYCONCRETEGHOST(CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
 		
 		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
 
@@ -78,6 +79,8 @@ class Entry {
 		public static final int REMIND_BIT = 4
 		public static final int CONTINUOUS_BIT = 0x0100
 		public static final int GHOST_BIT = 0x0200
+		public static final int CONCRETEGHOST_BIT = 0x0400 // like a ghost, but it appears in plot data, it is just a repetition of a prior
+			// entry, must be activated to edit
 		
 		final Long id
 		final long duration
@@ -106,6 +109,14 @@ class Entry {
 			return (this.id & GHOST_BIT) > 0
 		}
 		
+		def isConcreteGhost() {
+			return (this.id & CONCRETEGHOST_BIT) > 0
+		}
+		
+		def isAnyGhost() {
+			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
+		}
+		
 		def isContinuous() {
 			return (this.id & CONTINUOUS_BIT) > 0
 		}
@@ -132,21 +143,29 @@ class Entry {
 			return RepeatType.get(this.id | GHOST_BIT)
 		}
 		
+		def RepeatType makeConcreteGhost() {
+			return RepeatType.get(this.id | CONCRETEGHOST_BIT)
+		}
+		
 		def RepeatType forUpdate() {
 			return RepeatType.get(this.id & ~(CONTINUOUS_BIT | GHOST_BIT))
 		}
 	}
 	
-	public static def DAILY_IDS = [ RepeatType.DAILY.getId(), RepeatType.DAILYGHOST.getId(), RepeatType.REMINDDAILY.getId(), RepeatType.REMINDDAILYGHOST.getId() ]
-			
-	public static def WEEKLY_IDS = [ RepeatType.WEEKLY.getId(), RepeatType.WEEKLYGHOST.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
-			
+	public static def DAILY_IDS = [ RepeatType.DAILY.getId(), RepeatType.DAILYCONCRETEGHOST.getId(), RepeatType.REMINDDAILY.getId(), RepeatType.REMINDDAILYGHOST.getId() ]
+	
+	public static def WEEKLY_IDS = [ RepeatType.WEEKLY.getId(), RepeatType.WEEKLYCONCRETEGHOST.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
+	
+	public static def REPEAT_IDS = [ RepeatType.DAILY.getId(), RepeatType.DAILYCONCRETEGHOST.getId(), RepeatType.WEEKLY.getId(), RepeatType.WEEKLYCONCRETEGHOST.getId() ]
+	
 	public static def REMIND_IDS = [ RepeatType.REMINDDAILY.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDWEEKLY.getId(), RepeatType.REMINDDAILYGHOST.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
 	
 	public static def CONTINUOUS_IDS = [ RepeatType.CONTINUOUS.getId(), RepeatType.CONTINUOUSGHOST.getId() ]
 	
-	public static def GHOST_IDS = [ RepeatType.CONTINUOUSGHOST.getId(), RepeatType.DAILYGHOST.getId(), RepeatType.WEEKLYGHOST.getId(), RepeatType.REMINDDAILYGHOST.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
+	public static def GHOST_IDS = [ RepeatType.CONTINUOUSGHOST.getId(), RepeatType.DAILYCONCRETEGHOST.getId(), RepeatType.WEEKLYCONCRETEGHOST.getId(), RepeatType.REMINDDAILYGHOST.getId(), RepeatType.REMINDWEEKLYGHOST.getId() ]
 
+	public static def DAILY_UNGHOSTED_IDS = [ RepeatType.DAILY.getId(),  RepeatType.REMINDDAILY.getId() ]
+	
 	public static enum DurationType {
 		NONE(0), START(1), END(2)
 		
@@ -255,6 +274,7 @@ class Entry {
 			units:m['units']==null?'':m['units'],
 			comment:m['comment']==null?'':m['comment'],
 			repeatType: m['repeatType'],
+			repeatEnd: m['repeatEnd'],
 			baseTag:baseTag,
 			durationType:durationType,
 			setName:m['setName']==null?'':m['setName'],
@@ -281,34 +301,125 @@ class Entry {
 		
 		return entry
 	}
+	
+	/**
+	 * check to see if parameters match current entry, so repeat doesn't need to update
+	 */
+	boolean repeatParametersMatch(Map m) {
+		log.debug "Entry.repeatParametersMatch() m:" + m + " for " + toString()
+		
+		if (m == null) return false
+		
+		if (m['description'] == null) return false
 
+		if (!(this.tag.description == m['description'].toLowerCase()))
+			return false
+
+		DateTime entryDateTime = fetchDateTime()
+		LocalTime localTime = entryDateTime.toLocalTime()
+		DateTimeZone origTimeZone = entryDateTime.getZone()
+		DateTime newDateTime = new DateTime(m['date'], origTimeZone)
+		
+		if (!localTime.equals(newDateTime.toLocalTime()))
+			return false
+		
+		return m['datePrecisionSecs'] == this.datePrecisionSecs && amount == m['amount'] \
+			&& comment == (m['comment'] ?: '') && repeatType == m['repeatType'] && units == (m['units'] ?: '') \
+			&& amountPrecision == (m['amountPrecision'] ?: 3)
+
+	}
+	
+	private def entryMap() {
+		def m = [:]
+		
+		m['description'] = this.tag.getDescription()
+		m['units'] = this.units
+		m['repeatType'] = this.repeatType
+		m['tweetId'] = this.tweetId
+		m['date'] = this.date
+		m['timeZoneName'] = this.fetchTimeZoneName()
+		m['datePrecisionSecs'] = this.datePrecisionSecs
+		m['amount'] = this.amount
+		m['units'] = this.units
+		m['comment'] = this.comment
+		m['repeatEnd'] = this.repeatEnd
+		m['durationType'] = this.durationType
+		m['setName'] = this.setName
+		m['amountPrecision'] = this.amountPrecision
+				
+		log.debug "Creating entry map:" + m
+
+		return m
+	}
+	
+	private Entry createRepeatOnBaseDate(Date baseDate, Map m, TagStatsRecord record, int addDays) {
+		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
+		LocalTime mLocalTime = new DateTime(m['date'], dateTimeZone).toLocalTime()
+		LocalDate baseLocalDate = new DateTime(baseDate, dateTimeZone).toLocalDate()
+		
+		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
+		
+		DateTime newDateTime = baseLocalDate.toDateTime(mLocalTime, dateTimeZone)
+		
+		if (this.repeatEnd == null || newDateTime.getMillis() < this.repeatEnd.getTime()) {
+			m['date'] = newDateTime.toDate()
+			
+			def newEntry = create(this.userId, m, record)
+			
+			this.setRepeatEnd(baseDate)
+			
+			Utils.save(this, true)
+			
+			return newEntry
+		}
+		
+		
+		return null
+	}
+
+	public static Entry updateGhost(Entry entry, Map m, TagStatsRecord record, Date baseDate, boolean allFuture) {
+		boolean isToday = isToday(entry.getDate(), baseDate)
+		
+		if (entry.repeatParametersMatch(m))
+			return entry // no need to update when entry doesn't change
+		
+		if (isToday) {
+			if (allFuture) {
+				entry.doUpdate(m, record)
+			
+				return entry // allFuture updates can just edit the entry and return
+			} else {
+				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), record, 1)
+				
+				m['repeatEnd'] = m['date']
+				
+				entry.doUpdate(m, record)
+			}
+		} else {
+			if (!allFuture) {
+				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), record, 1)
+			}
+			
+			return entry.createRepeatOnBaseDate(baseDate, m, record, 0)
+		}
+	}
+	
 	/**
 	 * Update entry given map of parameters (output of the parse method or manually created)
 	 */
-	public static TagStatsRecord update(Entry entry, Map m, TagStatsRecord tagStatsRecord) {
-		log.debug "Entry.update() entry:" + entry + ", m:" + m
-		
-		long oldTagId = entry.getTag().getId()
-		entry.doUpdate(m)
-		long newTagId = entry.getTag().getId()
-		
-		TagStats oldTagStats = TagStats.createOrUpdate(entry.getUserId(), oldTagId)
-		TagStats newTagStats = null
-		
-		if (newTagId != oldTagId) {
-			newTagStats = TagStats.createOrUpdate(entry.getUserId(), newTagId)
-		}
-		
-		if (tagStatsRecord != null) {
-			tagStatsRecord.setOldTagStats(oldTagStats)
-			tagStatsRecord.setNewTagStats(newTagStats)
+	public static Entry update(Entry entry, Map m, TagStatsRecord tagStatsRecord, Date baseDate, boolean allFuture = true) {
+		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
+		if (entry.getRepeatType()?.isConcreteGhost()) {
+			return updateGhost(entry, m, tagStatsRecord, baseDate, allFuture)
+		} else {
+			entry.doUpdate(m, tagStatsRecord)
+			
+			return entry
 		}
 	}
 	
 	/**
 	 * Delete actually just hides the entries, rather than deleting them
-	 * 
-	 * isToday - if true, delete subsequent repeating entries, if present
 	 */
 	public static delete(Entry entry, TagStatsRecord tagStatsRecord) {
 		log.debug "Entry.delete() entry:" + entry
@@ -344,6 +455,9 @@ class Entry {
 	public static deleteGhost(Entry entry, Date baseDate, boolean allFuture) {
 		long entryTime = entry.getDate().getTime()
 		long baseDateTime = baseDate.getTime()
+		Long repeatEndTime = entry.getRepeatEnd()?.getTime()
+		boolean endAfterToday = repeatEndTime == null ? true : repeatEndTime >= entry.getDate().getTime() + DAYTICKS - HOURTICKS;
+			
 		if (allFuture) {
 			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
 				TagStatsRecord record = new TagStatsRecord()
@@ -356,45 +470,59 @@ class Entry {
 			}
 		} else {
 			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data, change to next day
-				entry.setDate(entry.getDate() + 1)
-				Utils.save(entry, true)
+				if (endAfterToday) {
+					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
+					
+					if (repeatEndTime < newDateTime.toMillis()) {
+						Entry.delete(entry, null)
+					} else {
+						entry.setDate(newDateTime.toDate())
+						
+						Utils.save(entry, true)
+					}
+				} else { // otherwise, delete entry
+					Entry.delete(entry, null)
+				}
 			} else if (entryTime <= baseDateTime) { // this should always be true
 				entry.setRepeatEnd(baseDate)
 				Utils.save(entry, true)
 				
-				long diff = entryTime - baseDateTime
-				
-				def m = [:]
-				m['description'] = entry.getTag().getDescription()
-				m['date'] = new Date(baseDateTime + ((diff % DAYTICKS + DAYTICKS) % DAYTICKS) + DAYTICKS)
-				
-				def repeatTypes = [entry.getRepeatType().getId(), entry.getRepeatType().toggleGhost().getId()]
-				
-				// look for entry that already exists one day later
-				// new date is one day after current baseDate
-
-				String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
-				
-				def entries = Entry.executeQuery(queryStr, [desc:m['description'], entryDate:m['date'], userId:entry.getUserId(), repeatIds:repeatTypes])
-				
-				Entry e = entries[0]
-				
-				if (e != null) {
-					return // subsequent repeat entry already exists
+				if (endAfterToday) {
+					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
+					
+					if (repeatEndTime >= newDateTime.getMillis()) {
+						def m = [:]
+						m['description'] = entry.getTag().getDescription()
+						m['date'] = newDateTime.toDate()
+						
+						def repeatTypes = [entry.getRepeatType().getId(), entry.getRepeatType().toggleGhost().getId()]
+						
+						// look for entry that already exists one day later
+						// new date is one day after current baseDate
+		
+						String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
+						
+						def entries = Entry.executeQuery(queryStr, [desc:m['description'], entryDate:m['date'], userId:entry.getUserId(), repeatIds:repeatTypes])
+						
+						Entry e = entries[0]
+						
+						if (e != null) {
+							return // subsequent repeat entry already exists
+						}
+			
+						// create new entry one day after current baseDate
+						m['timeZoneName'] = entry.fetchTimeZoneName()
+						m['amount'] = entry.getAmount()
+						m['amountPrecision'] = entry.getAmountPrecision()
+						m['units'] = entry.getUnits()
+						m['baseTag'] = entry.getBaseTag()
+						m['durationType'] = entry.getDurationType()
+						m['repeatType'] = entry.getRepeatType()
+						m['comment'] = entry.getComment()
+						m['datePrecisionSecs'] = entry.getDatePrecisionSecs()
+						def retVal = Entry.create(entry.getUserId(), m, null)
+					}
 				}
-	
-				// create new entry one day after current baseDate
-				m['timeZoneName'] = entry.fetchTimeZoneName()
-				m['amount'] = entry.getAmount()
-				m['amountPrecision'] = entry.getAmountPrecision()
-				m['units'] = entry.getUnits()
-				m['baseTag'] = entry.getBaseTag()
-				m['durationType'] = entry.getDurationType()
-				m['repeatType'] = entry.getRepeatType()
-				if (!m['repeatType'].isGhost()) m['repeatType'] = m['repeatType'].toggleGhost()
-				m['comment'] = entry.getComment()
-				m['datePrecisionSecs'] = entry.getDatePrecisionSecs()
-				def retVal = Entry.create(entry.getUserId(), m, null)
 			} else {
 				log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
 			}
@@ -526,7 +654,7 @@ class Entry {
 	 * 
 	 * Returns Joda time zone for this entry
 	 */
-	DateTime fetchDateTimeInZone(DateTimeZone dateTimeZome) {
+	DateTime fetchDateTimeInZone(DateTimeZone dateTimeZone) {
 		return new DateTime(this.date, dateTimeZone)
 	}
 	
@@ -535,7 +663,7 @@ class Entry {
 	 * 
 	 * Returns Joda date time in current time zone
 	 */
-	DateTime fetchDateTime(DateTimeZone dateTimeZome) {
+	DateTime fetchDateTime() {
 		return new DateTime(this.date, this.fetchDateTimeZone())
 	}
 	
@@ -953,8 +1081,46 @@ class Entry {
 		return [Tag.look(synonym), DurationType.NONE]
 	}
 	
+	private findNeighboringDailyRepeatEntry(String queryStr, parms) {
+		parms['entryDate'] = this.date
+		while (true) {
+			def entries = DatabaseService.get().sqlRows(queryStr, parms)
+			
+			if (entries.size() > 0) {
+				Entry e = Entry.get(entries[0]['id'])
+				
+				// check to see if this entry is actually the same local time as the deleted entry:
+				// find the date of this entry in JodaTime with the time zone of the deleted entry, get its local time in that zone, compare with the local time of the deleted entry
+				
+				DateTimeZone dateTimeZone = this.fetchDateTimeZone()
+				LocalTime thisLocalTime = this.fetchDateTimeInZone(dateTimeZone).toLocalTime()
+				LocalTime entryLocalTime = e.fetchDateTimeInZone(dateTimeZone).toLocalTime()
+				
+				if (thisLocalTime.equals(entryLocalTime)) {
+					return e
+				} else {
+					parms['entryDate'] = e.getDate()
+				}
+			} else
+				break
+		}
+		
+		return null
+	}
+	
+	private findPreviousRepeatEntry() {
+		return findNeighboringDailyRepeatEntry(
+			"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date desc limit 1",
+			[desc:this.tag.getDescription(), userId:this.userId, repeatIds:DAILY_IDS])
+	}
+
+	private findNextRepeatEntry() {
+		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date asc limit 1",
+			[desc:this.tag.getDescription(), userId:this.userId, repeatIds:DAILY_IDS])
+	}
+
 	/**
-	 * Update existing entry and save
+	 * Deletes the repeat; if continuous, leaves repeat in previous entries.
 	 */
 	private deleteRepeat() {
 		if (this.repeatType == null) return
@@ -973,37 +1139,49 @@ class Entry {
 				} else
 					e.setRepeatEnd(new Date(yesterday))
 				Utils.save(e, true)
+			}
+		} else {
+			Entry e = findPreviousRepeatEntry()
+			if (e != null) {
+				long yesterday = e.getDate().getTime() - DAYTICKS
+				if (yesterday < this.date.getTime()) {
+					repeatEnd = this.date
+				} else
+					repeatEnd = new Date(yesterday)
+			}		
+		}
+	}
+	
+	/**
+	 * Deletes a concrete instance of a repeat
+	 */
+	private deleteConcreteRepeat() {
+		if (this.repeatType == null) return
+		
+		if (this.repeatType.isContinuous()) {
+			String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date < :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc limit 1"
+			
+			def entries = Entry.executeQuery(queryStr, [desc:this.tag.getDescription(), entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			
+			Entry e = entries[0]
+			
+			if (e != null) {
+				long yesterday = this.date.getTime() - DAYTICKS
+				if (yesterday < e.getDate().getTime()) {
+					e.setRepeatEnd(e.getDate())
+				} else
+					e.setRepeatEnd(new Date(yesterday))
+				Utils.save(e, true)
 			}	
 		} else {
-			Date searchDate = this.date
-			while (true) {
-				String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_add(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date desc limit 1"
-				
-				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.getDescription(), entryDate:searchDate, userId:this.userId, repeatIds:CONTINUOUS_IDS])
-				
-				if (entries.size() > 0) {
-					Entry e = Entry.get(entries[0]['id'])
-					
-					// check to see if this entry is actually the same local time as the deleted entry:
-					// find the date of this entry in JodaTime with the time zone of the deleted entry, get its local time in that zone, compare with the local time of the deleted entry
-					
-					DateTimeZone dateTimeZone = this.fetchDateTimeZone()
-					LocalTime thisLocalTime = this.fetchDateTimeInZone(dateTimeZone).toLocalTime()
-					LocalTime entryLocalTime = e.fetchDateTimeInZone(dateTimeZone).toLocalTime()
-					
-					if (thisLocalTime.equals(entryLocalTime)) {
-						long yesterday = e.getDate().getTime() - DAYTICKS
-						if (yesterday < this.date.getTime()) {
-							repeatEnd = this.date
-						} else
-							repeatEnd = new Date(yesterday)
-						break
-					} else {
-						searchDate = e.getDate()
-					}
+			Entry e = findPreviousRepeatEntry()
+			if (e != null) {
+				long yesterday = e.getDate().getTime() - DAYTICKS
+				if (yesterday < this.date.getTime()) {
+					repeatEnd = this.date
 				} else
-					break
-			}
+					repeatEnd = new Date(yesterday)
+			}		
 		}
 	}
 	
@@ -1047,40 +1225,26 @@ class Entry {
 				}
 			}
 		} else {
-			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and time(entry.date) = time(:entryDate) and entry.user_id = :userId and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
-			
-			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:DAILY_IDS])
-			
-			def v = entries[0]
-			
-			if (v != null) {
-				Entry e = Entry.get(v['id'])
+			Entry e = findPreviousRepeatEntry()
 				
-				if (e != null) {
-					long yesterday = this.date.getTime() - DAYTICKS
-					if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > yesterday) { // only reset repeatEnd if it is later
-						e.setRepeatEnd(new Date(yesterday))
-						Utils.save(e, true)
-					}
+			if (e != null) {
+				long yesterday = this.date.getTime() - DAYTICKS
+				if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > yesterday) { // only reset repeatEnd if it is later
+					e.setRepeatEnd(new Date(yesterday))
+					Utils.save(e, true)
 				}
 			}
-			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and time(entry.date) = time(:entryDate) and entry.user_id = :userId order by entry.date asc limit 1"
 			
-			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
-			
-			v = entries[0]
-			
-			if (v != null) {
-				Entry e = Entry.get(v['id'])
+			e = findNextRepeatEntry()
 				
-				if (e != null) {
-					long yesterday = e.getDate().getTime() - DAYTICKS
-					if (yesterday < this.date.getTime()) {
-						repeatEnd = this.date
-					} else
-						repeatEnd = new Date(yesterday)
-				}
-			}
+			if (e != null) {
+				long yesterday = e.getDate().getTime() - DAYTICKS
+				if (yesterday < this.date.getTime()) {
+					repeatEnd = this.date
+				} else
+					repeatEnd = new Date(yesterday)
+			} else
+				repeatEnd = null
 		}
 	}
 	
@@ -1181,7 +1345,7 @@ class Entry {
 			m['comment'] = this.comment
 			m['repeatType'] = this.repeatType			
 			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
-			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
+			m['datePrecisionSecs'] = this.datePrecisionSecs
 			def retVal = Entry.create(userId, m, null)
 			
 			retVal.unGhost()
@@ -1193,6 +1357,24 @@ class Entry {
 	/**
 	 * Update existing entry and save
 	 */
+	private doUpdate(Map m, TagStatsRecord tagStatsRecord) {
+		long oldTagId = this.tag.getId()
+		doUpdate(m)
+		long newTagId = this.tag.getId()
+		
+		TagStats oldTagStats = TagStats.createOrUpdate(this.userId, oldTagId)
+		TagStats newTagStats = null
+		
+		if (newTagId != oldTagId) {
+			newTagStats = TagStats.createOrUpdate(this.userId, newTagId)
+		}
+		
+		if (tagStatsRecord != null) {
+			tagStatsRecord.setOldTagStats(oldTagStats)
+			tagStatsRecord.setNewTagStats(newTagStats)
+		}
+	}
+	
 	private doUpdate(Map m) {
 		log.debug "Entry.doUpdate() this:" + this + ", m:" + m
 		
@@ -1235,10 +1417,7 @@ class Entry {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		if (amt == null)
-			setRepeatType(m['repeatType'])
-		else
-			setRepeatType(m['repeatType']?.forUpdate()) // do not set continuous or ghost repeat types on edit
+		setRepeatType(m['repeatType'])
 		setSetName(m['setName']?:'')
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
@@ -1316,18 +1495,19 @@ class Entry {
 			if (entry.repeatType != null) { // adjust dateTime for repeat entries
 				desc['date'] = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
 			}
-			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // ghost timed entry on future dates
-				desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT
+			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // repeat entry on a future date
 				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
-					desc['amount'] = null
-					desc['amountPrecision'] = -1
+					desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT // no longer ghost repeat entries, but do ghost remind
+					/* desc['amount'] = null
+					desc['amountPrecision'] = -1 */
 				}
 			} else if (entry.repeatType != null) {
 				desc['repeatType'] = entry.repeatType.id
+				/* no longer nullify amount for remind entries
 				if (((entry.repeatType.id & RepeatType.GHOST_BIT) != 0) && ((entry.repeatType.id & RepeatType.REMIND_BIT) != 0)) {
 					desc['amount'] = null
 					desc['amountPrecision'] = -1
-				}
+				}*/
 			} else
 				desc['repeatType'] = entry.repeatType?.id
 			desc['setName'] = entry.setName
@@ -1388,32 +1568,99 @@ class Entry {
 		return Utils.listJSONDesc(results)
 	}
 
-	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate) {
+	// limit repeat generation to 300 entries, for now
+	private static def generateRepeaterEntries(def repeaters, long endTimestamp, def results) {
+		if (repeaters.size() == 0) return
+		
+		// sort repeaters by next date time
+		repeaters.sort({ LocalTimeRepeater a, LocalTimeRepeater b ->
+				if (a.getCurrentDateTime() == null) return 1 // sort null repeaters to end
+				if (b.getCurrentDateTime() == null) return -1 // sort null repeaters to end
+				return a.getCurrentDateTime().toMillis() <=> b.getCurrentDateTime().toMillis()
+			})
+		
+		// if current entry time is later than or equal to next repeater timestamp, iterate through repeaters adding new repeat entries
+		for (LocalTimeRepeater repeater in repeaters) {
+			if (!repeater.isActive())
+				return
+			if (repeater.getTimestamp() <= endTimestamp) {
+				Entry entry = repeater.getPayload()
+				def desc = entry.getJSONShortDesc()
+				desc[SHORT_DESC_DATE] = repeater.getDate()
+				repeater.incrementDate()
+				results.add(desc)
+			}
+		}
+	}
+	
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
-				+ ", endDate:" + endDate
+				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
 		
-		def map = [userId:user.getId(), tagIds:tagIds, ghostIds:GHOST_IDS]
+		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
-		String queryStr = "from Entry entry where entry.userId = :userId and entry.tag.id in (:tagIds) "
+		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
+		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
 		
-		if (startDate != null) {
-			queryStr += "and entry.date >= :startDate "
-			map['startDate'] = startDate
-		}
+		// get timed daily repeats (not ghosted)
 		
-		if (endDate != null) {
-			queryStr += "and entry.date < :endDate "
-			map['endDate'] = endDate
-		}
+		String queryStr = "select distinct entry.id " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.repeat_end is null or entry.repeat_end > :startDate and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+				
+		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
 		
-		queryStr += "and entry.date is not null and entry.amount is not null and (not entry.repeatType.id in (:ghostIds)) order by entry.date asc"
+		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
-		Utils.listJSONShortDesc(Entry.executeQuery(queryStr, map))
+		def timedResults = []
+		
+		Set resultTagIds = new HashSet<Long>()
+		
+		// make this repeater list ordered by current timestamp
+		
+		def repeaters = []
+		
+		Long nextRepeaterTimestamp = null
+		
+		for (result in rawResults) {
+			Entry entry = Entry.get(result['id'])
+			
+			Entry.RepeatType repeatType = entry.getRepeatType()
+			if (repeatType != null) { // generate repeat values for query
+				LocalTimeRepeater repeater = new LocalTimeRepeater(entry, entry.fetchDateTime(), entry.getRepeatEnd().getTime())
+				repeaters.add(repeater)
+			}
+		}
+		
+		// get regular results
+		
+		queryStr = "select distinct entry.id " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.date >= :startDate and entry.date < :endDate and entry.repeat_type is null " \
+				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+				
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
+		
+		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
+		
+		def results = []
+		
+		for (result in rawResults) {
+			Entry entry = Entry.get(result['id'])
+			def desc = entry.getJSONShortDesc()
+			long entryTimestamp = entry.getDate().getTime()
+			generateRepeaterEntries(repeaters, entryTimestamp, results)
+			results.add(desc)
+		}
+		
+		// keep generating remaining repeaters until endDate
+		generateRepeaterEntries(repeaters, endDate.getTime(), results)
+		
+		return results
 	}
 	
 	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
 
-	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, int timeZoneSec) {
+	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
 		if (sumNights) {
 			if (startDate != null)
 				startDate = new Date(startDate.getTime() + HALFDAYTICKS)
@@ -1421,45 +1668,35 @@ class Entry {
 				endDate = new Date(endDate.getTime() + HALFDAYTICKS)
 		}
 		
-		def map = [userId:user.getId(), tagIds:tagIds, ghostIds:GHOST_IDS]
-		
-		int timeZoneHours = (timeZoneSec / 3600)
-		int timeZoneMinutes = ((int)((timeZoneSec < 0 ? -timeZoneSec : timeZoneSec) / 60)) % 60
-		
-		String mysqlTimeZone = timeZoneHours + ":" + ((timeZoneMinutes < 10 ? "0" : "") + timeZoneMinutes)
+		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, timeZoneName)
 
-		def sourceTimeZone = sumNights ? '+12:00' : '+00:00';
+		long startTime = startDate.getTime()
+		long startDayTime = startTime
+		long endDayTime = startDayTime + DAYTICKS
 
-		String queryStr = "select date as dt, sum(amount) as amount from Entry entry where entry.userId = :userId and entry.amount IS NOT NULL and " \
-			+ "entry.tag.id in (:tagIds) and (not entry.repeatType.id in (:ghostIds)) "
+		def currentResult = null		
+		def summedResults = []
 		
-		if (startDate != null) {
-			queryStr += "and entry.date >= :startDate "
-			map['startDate'] = startDate
-		}
-		
-		if (endDate != null) {
-			queryStr += "and entry.date < :endDate "
-			map['endDate'] = endDate
-		}
-		
-		queryStr += "and entry.date is not null group by date(convert_tz(entry.date,'" + sourceTimeZone + "','" + mysqlTimeZone + "')) " \
-			+ "order by date(convert_tz(entry.date,'+00:00','" + mysqlTimeZone + "')) asc";
-
-		log.debug "QUERY: " + queryStr;
-
-		def rawResults = Entry.executeQuery(queryStr, map)
-		def results = []
-
 		for (result in rawResults) {
-			log.debug "RESULT: " + result
-			results.push([
-				new Date(result[0].getTime() + 43200000),
-				result[1]
-			])
+			long resultTime = result[SHORT_DESC_DATE].getTime()
+			if (resultTime < startDayTime || resultTime > endDayTime) { // switch to new day
+				currentResult = null
+				startDayTime = resultTime - ((resultTime - startTime) % DAYTICKS) // start of next day
+				endDayTime = startDayTime + DAYTICKS
+			}
+			if (resultTime < endDayTime) {
+				if (currentResult == null) {
+					currentResult = result
+					result[SHORT_DESC_DATE] = new Date(startDayTime + HALFDAYTICKS)
+					summedResults.add(currentResult)
+				} else {
+					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT].add(result[SHORT_DESC_AMOUNT])
+				}
+			}
+			
 		}
-
-		return results
+				
+		return summedResults
 	}
 	
 	static def parseInt(String str) {
@@ -1491,7 +1728,7 @@ class Entry {
 		def retVal
 
 		if (comment != null) {
-			if ((retVal = matchEndStr(comment, "repeat weekly", RepeatType.WEEKLY)) != null) {
+			if ((retVal = matchEndStr(comment, "repeat weekly", RepeatType.WEEKLYCONCRETEGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "remind weekly", RepeatType.REMINDWEEKLYGHOST)) != null) {
@@ -1503,7 +1740,7 @@ class Entry {
 			if ((retVal = matchEndStr(comment, "weekly reminder", RepeatType.REMINDWEEKLYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "repeat daily", RepeatType.DAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "repeat daily", RepeatType.DAILYCONCRETEGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "remind daily", RepeatType.REMINDDAILYGHOST)) != null) {
@@ -1518,7 +1755,10 @@ class Entry {
 			if ((retVal = matchEndStr(comment, "daily reminder", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "repeat", RepeatType.DAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "repeat", RepeatType.DAILYCONCRETEGHOST)) != null) {
+				return retVal
+			}
+			if ((retVal = matchEndStr(comment, "pinned", RepeatType.CONTINUOUSGHOST)) != null) {
 				return retVal
 			}
 			if ((retVal = matchEndStr(comment, "remind", RepeatType.REMINDDAILYGHOST)) != null) {
@@ -1527,10 +1767,10 @@ class Entry {
 			if ((retVal = matchEndStr(comment, "reminder", RepeatType.REMINDDAILYGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "daily", RepeatType.DAILY)) != null) {
+			if ((retVal = matchEndStr(comment, "daily", RepeatType.DAILYCONCRETEGHOST)) != null) {
 				return retVal
 			}
-			if ((retVal = matchEndStr(comment, "weekly", RepeatType.WEEKLY)) != null) {
+			if ((retVal = matchEndStr(comment, "weekly", RepeatType.WEEKLYCONCRETEGHOST)) != null) {
 				return retVal
 			}
 		}
@@ -1958,7 +2198,9 @@ class Entry {
 		
 		if (retVal['repeatType'] != null) {
 			if (!retVal['repeatType'].isReminder()) {
-				if (retVal['repeatType'].isDaily()) {
+				// removed logic for determining continuous vs daily repeats via amount/time specification
+				// instead use "pinned" vs "repeat"
+				/* if (retVal['repeatType'].isDaily()) {
 					if (foundAmount) {
 						if (foundTime) {
 							retVal['repeatType'] = RepeatType.DAILY
@@ -1970,7 +2212,7 @@ class Entry {
 						}
 					} else {
 						if (foundTime || forUpdate) {
-							retVal['repeatType'] = RepeatType.DAILYGHOST
+							retVal['repeatType'] = RepeatType.DAILY
 						} else {
 							retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
 						}
@@ -1981,15 +2223,16 @@ class Entry {
 					} else {
 						retVal['repeatType'] = RepeatType.WEEKLYGHOST
 					}
-				}
+				} */
 				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				}
 			} else {
-				if (foundAmount) {
-					retVal['repeatType'] = retVal['repeatType'].toggleGhost()
-				}
+				/*if (!foundAmount) {
+					retVal['amount'] = null
+					retVal['amountPrecision'] = -1
+				}*/
 			}
 		}
 
@@ -2125,12 +2368,16 @@ class Entry {
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
 			comment:comment,
-			repeatType:repeatType]
+			repeatType:repeatType != null ? repeatType.getId() : 0L]
 	}
 
 	/**
 	 * Get minimal data
 	 */
+	private static final int SHORT_DESC_DATE = 0
+	private static final int SHORT_DESC_AMOUNT = 1
+	private static final int SHORT_DESC_DESCRIPTION = 2
+	
 	def getJSONShortDesc() {
 		return [date, amount, getDescription()];
 	}

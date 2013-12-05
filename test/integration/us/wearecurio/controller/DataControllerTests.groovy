@@ -131,7 +131,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getSumPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
-		assert controller.response.contentAsString.endsWith(',2]])')
+		assert controller.response.contentAsString.endsWith(',2,"bread"]])')
     }
 
 	@Test
@@ -233,6 +233,35 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['defaultToNow'] = '1'
 		controller.params['action'] = 'updateEntrySData'
 		controller.params['controller'] = 'home'
+		controller.params['allFuture'] = '1'
+
+		controller.updateEntrySData()
+
+		assert controller.response.contentAsString.contains(',"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-22T18:00:00Z","datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
+	}
+
+	@Test
+	void testUpdateRepeatEntrySData() {
+		DataController controller = new DataController()
+		
+		controller.session.userId = userId
+
+		println "User ID: " + userId
+
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
+		
+		Utils.save(entry, true)
+
+		controller.params['entryId'] = entry.getId().toString()
+		controller.params['currentTime'] = 'Thu, 1 Jul 2010 21:46:20 GMT'
+		controller.params['text'] = 'updatetest voracious 2 units'
+		controller.params['baseDate'] = 'Thu, 1 Jul 2010 07:00:00 GMT'
+		controller.params['timeZoneName'] = "America/Los_Angeles"
+		controller.params['defaultToNow'] = '1'
+		controller.params['action'] = 'updateEntrySData'
+		controller.params['controller'] = 'home'
+		controller.params['allFuture'] = '1'
 
 		controller.updateEntrySData()
 
@@ -508,7 +537,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1", winterBaseDate, true), null)
 		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1 slice", winterBaseDate, true), null)
-		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), null)
 		
 		def out = new ByteArrayOutputStream()
 		
@@ -517,7 +546,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def outString = out.toString()
 		
 		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"\n' \
-				+ '"2010-12-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",768,3,86400,"America/Los_Angeles"\n' \
+				+ '"2010-12-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,86400,"America/Los_Angeles"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"\n'
 

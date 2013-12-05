@@ -1073,6 +1073,12 @@ body.track-page ol#entry0 li.entry.ghost {
 	color: #D9D9D9;
 	background-color: #FFFFFF;
 }
+li.entry.continuousghost {
+}
+li.entry.anyghost {
+}
+li.entry.concreteghost {
+}
 body.track-page ol#entry0 li.entry.ghost span {
 	color: #D9D9D9;
 }
