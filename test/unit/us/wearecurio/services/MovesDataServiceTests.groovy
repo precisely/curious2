@@ -16,7 +16,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.MockedHttpURLConnection
-import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 @TestMixin(GrailsUnitTestMixin)
 @Mock([User, OAuthAccount, FitbitNotification, Entry, Tag, TagStats])
@@ -73,16 +73,20 @@ class MovesDataServiceTests {
 		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"wlk","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353,"calories":99},{"activity":"trp","startTime":"20121212T072732Z","endTime":"20121212T074616Z","duration":1124,"distance":8443}]},{"type":"place","startTime":"20121212T074617Z","endTime":"20121212T100051Z","activities":[{"activity":"wlk","startTime":"20121212T074804Z","endTime":"20121212T075234Z","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051Z","endTime":"20121212T100715Z","activities":[{"activity":"wlk","startTime":"20121212T100051Z","endTime":"20121212T100715Z","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"place","startTime":"20121212T100715Z","endTime":"20121212T110530Z","activities":[{"activity":"wlk","startTime":"20121212T101215Z","endTime":"20121212T101255Z","duration":40,"distance":18,"steps":37,"calories":99}]},{"type":"move","startTime":"20121212T110530Z","endTime":"20121212T111129Z","activities":[{"activity":"wlk","startTime":"20121212T110530Z","endTime":"20121212T111128Z","duration":358,"distance":493,"steps":441,"calories":99}]},{"type":"place","startTime":"20121212T111129Z","endTime":"20121212T153638Z","activities":[{"activity":"wlk","startTime":"20121212T111233Z","endTime":"20121212T112203Z","duration":570,"distance":565,"steps":809}]},{"type":"move","startTime":"20121212T153638Z","endTime":"20121212T160744Z","activities":[{"activity":"trp","startTime":"20121212T153638Z","endTime":"20121212T155321Z","duration":1003,"distance":8058},{"activity":"wlk","startTime":"20121212T155322Z","endTime":"20121212T160744Z","duration":862,"distance":1086,"steps":1257,"calories":99}]}],"caloriesIdle":1785},{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
 
 		oauthServiceMock.demand.getMovesResource { token, url ->
-			return new Response(new MockedHttpURLConnection(parsedResponse))
+			return new Response(new MockedHttpURLConnection(parsedResponse, 200))
 		}
 		service.oauthService = oauthServiceMock.createMock()
 
-		def tagUnitMapMock = new MockFor(TagUnitMap, true)
-		tagUnitMapMock.demand.createEntry(10..13) { userId, amount, unit, desc, date, args ->
-			return null
-		}
-		TagUnitMap.metaClass.'static'.debug = { msg ->
-			return
+		def tagUnitMapMock = new MockFor(MovesTagUnitMap, true)
+		def tagUnitMapConstructorProxy = tagUnitMapMock.proxyInstance()
+
+		tagUnitMapMock.demand.with {
+			MovesTagUnitMap() {
+				tagUnitMapConstructorProxy
+			}
+			buildEntry(30..40) { tag, amount, userId, date = new Date(), args = [:] ->
+				return null
+			}
 		}
 		tagUnitMapMock.use {
 			Map response = service.poll(OAuthAccount.get(1))

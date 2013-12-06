@@ -59,6 +59,11 @@ class MovesDataService {
 		Response response = oauthService.getMovesResource(tokenInstance, pollURL)
 		log.info "Summary of moves data for userId [$account.userId] with code: [$response.code]"
 
+		if (response.code != 200) {
+			log.error "Error fetching data from moves api for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
+			return
+		}
+
 		JSONArray parsedResponse = JSON.parse(response.body)
 
 		parsedResponse.each { daySummary ->
@@ -68,7 +73,13 @@ class MovesDataService {
 			if(!daySummary["segments"]?.asBoolean()) {
 				return
 			}
-			//Entry.findAllByUserIdAndSetName(userId, MOVES_SET_NAME)*.delete()
+
+			/**
+			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
+			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
+			 */
+			Entry.findAllByUserIdAndSetNameAndDateBetween(userId, MOVES_SET_NAME, currentDate, currentDate + 1)*.delete()
+
 			daySummary["segments"]?.each { currentSegment ->
 				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"
 
