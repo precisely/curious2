@@ -4,7 +4,6 @@ import us.wearecurio.utility.TimerJob
 
 class DeviceIntegrationDailyJob extends TimerJob {
 
-	def movesDataService
 	def withingsDataService
 
 	static triggers = {
@@ -13,7 +12,6 @@ class DeviceIntegrationDailyJob extends TimerJob {
 
 	def execute() {
 		withingsDataService.refreshSubscriptions()
-		movesDataService.poll()
 	}
 
 }
