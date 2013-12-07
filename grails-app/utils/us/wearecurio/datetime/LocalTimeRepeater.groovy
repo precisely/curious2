@@ -21,7 +21,7 @@ class LocalTimeRepeater {
 	LocalTime localTime
 	def payload
 	
-	public LocalTimeRepeater(payload, DateTime dateTime, long endDateTimeTicks) {
+	public LocalTimeRepeater(payload, DateTime dateTime, Long endDateTimeTicks) {
 		currentDateTime = dateTime
 		this.endDateTimeTicks = endDateTimeTicks
 		dateTimeZone = dateTime.getZone()
@@ -46,11 +46,11 @@ class LocalTimeRepeater {
 		return currentDateTime != null && currentDateTime.getMillis() < endDateTimeTicks
 	}
 	
-	long getTimestamp() {
-		return currentDateTime.getMillis()
+	Long getTimestamp() {
+		return currentDateTime?.getMillis()
 	}
 	
 	Date getDate() {
-		return currentDateTime.toDate()
+		return currentDateTime?.toDate()
 	}
 }

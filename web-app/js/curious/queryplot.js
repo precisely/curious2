@@ -1661,8 +1661,7 @@ function PlotLine(p) {
 		var startDate = this.plot.getStartDate();
 		var endDate = this.plot.getEndDate();
 		
-		// TODO: change call to global function to injected method as part of query config
-		cacheNow();
+		var timeZoneName = jstz.determine().name();
 		
 		var method = (this.sumData || this.sumNights) ? "getSumPlotData" : "getPlotData";
 		var plotLine = this;

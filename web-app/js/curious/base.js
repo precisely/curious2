@@ -173,7 +173,7 @@ function showYesNo(alertText, onConfirm) {
 	$("#alert-message-text").text(alertText);
 	$("#alert-message").dialog({
 		dialogClass: "no-close",
-		modal: true,
+		modal: false,
 		resizable: false,
 		title: "Query",
 		buttons: {
@@ -192,16 +192,16 @@ function showAB(alertText, aText, bText, onA, onB) {
 	$("#alert-message-text").text(alertText);
 	var buttons = {};
 	buttons[aText + " "] = function() {
-		$( this ).dialog( "close" );
 		onA();
+		$( this ).dialog( "close" );
 	};
 	buttons[bText] = function() {
-		$( this ).dialog( "close" );
 		onB();
+		$( this ).dialog( "close" );
 	};
 	$("#alert-message").dialog({
 		dialogClass: "no-close",
-		modal: true,
+		modal: false,
 		resizable: false,
 		title: "Query",
 		buttons: buttons

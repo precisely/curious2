@@ -500,6 +500,8 @@ $(function(){
 	var GHOST_BIT = 0x200;
 	var CONCRETEGHOST_BIT = 0x400;
 	var TIMED_BIT = 0x1 | 0x2 | 0x4;
+	var REPEAT_BIT = 0x1 | 0x2;
+	var REMIND_BIT = 0x4;
 
 	var cachedDate, cachedDateUTC;
 	var $datepickerField = $("input#datepicker");
@@ -696,7 +698,7 @@ $(function(){
 			}
 		}
 
-		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false;
+		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
 		if (entry.repeatType) {
 			if ((entry.repeatType & GHOST_BIT) != 0) {
 				isGhost = true;
@@ -715,6 +717,12 @@ $(function(){
 			if ((entry.repeatType & TIMED_BIT) != 0) {
 				isTimed = true;
 				classes += " timedrepeat"
+			}
+			if ((entry.repeatType & REPEAT_BIT) != 0) {
+				isRepeat = true;
+			}
+			if ((entry.repeatType & REMIND_BIT) != 0) {
+				isRemind = true;
 			}
 		}
 
@@ -755,7 +763,8 @@ $(function(){
 				$("#entry0").append(newEntryContent);
 			}
 		}
-		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous, isTimed:isTimed};
+		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
+				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
 		var $entryItem = $("#entry0 li#entryid" + id);
 		$entryItem.data(data);
 		if (id == activateEntryId) {
@@ -866,11 +875,11 @@ $(function(){
 			showAlert("Please select entry you wish to delete");
 		} else {
 			var $entryToDelete = getEntryElement(entryId);
-			if ($entryToDelete.data("isAnyGhost")) {
+			if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
 				if ($entryToDelete.data("isContinuous")) {
 					deleteGhost($entryToDelete, entryId, true);
 				} else {
-					showAB("Delete just this one event or all future events?", "One", "All", function() {
+					showAB("Delete just this one event or also future events?", "One", "Future", function() {
 							deleteGhost($entryToDelete, entryId, false);
 						}, function() {
 							deleteGhost($entryToDelete, entryId, true);
@@ -970,8 +979,8 @@ $(function(){
 			$contentWrapper.html($oldEntry.data('contentHTML'));
 			return; // don't update unchanged entry
 		}
-		if ($oldEntry.data("anyGhost")) {
-			showAB("Update just this one event or all future events?", "One", "All", function() {
+		if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) {
+			showAB("Update just this one event or also future events?", "One", "Future", function() {
 					doUpdateEntry(entryId, text, defaultToNow, false);
 				}, function() {
 					doUpdateEntry(entryId, text, defaultToNow, true);
