@@ -59,9 +59,9 @@ class DatabaseService {
 		sqlQuery(statement).executeUpdate()
 	}
 	
-	public boolean sqlNoRollback(String statement) {
+	public boolean sqlNoRollback(String statement, args = []) {
 		try {
-			sqlQuery(statement).executeUpdate()
+			sqlQuery(statement, args).executeUpdate()
 		} catch (RuntimeException e) {
 			e.printStackTrace()
 			return false

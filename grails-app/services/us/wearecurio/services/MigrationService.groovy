@@ -33,13 +33,13 @@ class MigrationService {
 	public static final long REPEAT_END_INDEX_ID = 44L
 	public static final long CREATE_TIME_ZONES_ID = 46L
 	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
-	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 48L
+	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 50L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
 	
-	public def sql(String statement) {
-		return databaseService.sqlNoRollback(statement)
+	public def sql(String statement, args = []) {
+		return databaseService.sqlNoRollback(statement, args)
 	}
 	
 	public def sqlRows(String statement, args = []) {
@@ -150,15 +150,7 @@ class MigrationService {
 			}
 		}
 		tryMigration(CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID) {
-			def rows = sqlRows("select entry.id from entry where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
-			
-			for (row in rows) {
-				Entry entry = Entry.get(row['id'])
-				
-				entry.setComment("pinned")
-				
-				Utils.save(entry, true)
-			}
+			sql("update entry set comment = 'pinned' where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
 		}
 	}
 }
