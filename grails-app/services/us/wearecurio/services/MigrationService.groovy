@@ -149,8 +149,8 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration(CREATE_CONCRETE_GHOSTS_ID) {
-			def rows = sqlRows("select entry.id from entry where repeat_type is not null and repeat_type in (:repeatIds)", [repeatIds:[Entry.RepeatType.CONTINUOUSGHOST]])
+		tryMigration(CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID) {
+			def rows = sqlRows("select entry.id from entry where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
 			
 			for (row in rows) {
 				Entry entry = Entry.get(row['id'])
