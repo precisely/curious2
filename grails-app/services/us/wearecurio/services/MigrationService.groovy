@@ -33,6 +33,7 @@ class MigrationService {
 	public static final long REPEAT_END_INDEX_ID = 44L
 	public static final long CREATE_TIME_ZONES_ID = 46L
 	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
+	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 48L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -144,6 +145,17 @@ class MigrationService {
 				Entry entry = Entry.get(row['id'])
 				
 				entry.getRepeatType().makeConcreteGhost()
+				
+				Utils.save(entry, true)
+			}
+		}
+		tryMigration(CREATE_CONCRETE_GHOSTS_ID) {
+			def rows = sqlRows("select entry.id from entry where repeat_type is not null and repeat_type in (:repeatIds)", [repeatIds:[Entry.RepeatType.CONTINUOUSGHOST]])
+			
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				entry.setComment("pinned")
 				
 				Utils.save(entry, true)
 			}
