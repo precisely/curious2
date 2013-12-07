@@ -708,7 +708,7 @@ $(function(){
 		</div>
 
 		<div id="addData" class="panel-wrapper">
-			<input type="text" id="input0" name="data" style="width:calc(100% - 110px);margin-right:5px;"
+			<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
 				value="Enter a tag.  For example: nap at 2pm" class="textInput" />
 			<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
 			<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
