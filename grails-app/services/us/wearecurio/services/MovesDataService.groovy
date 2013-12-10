@@ -114,8 +114,8 @@ class MovesDataService {
 							tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, startTime, args)
 						}
 
-						tagUnitMap.buildEntry("${baseType}Start", null, userId, startTime, args)
-						tagUnitMap.buildEntry("${baseType}End", null, userId, endTime, args)
+						tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, startTime, args.plus([amountPrecision: -1]))
+						tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, endTime, args.plus(amountPrecision: -1))
 					}
 				}
 			}
