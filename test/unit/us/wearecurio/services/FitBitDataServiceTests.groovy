@@ -14,8 +14,8 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.FitbitNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
+import us.wearecurio.test.common.MockedHttpURLConnection;
 import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.MockedHttpURLConnection
 
 @TestMixin(GrailsUnitTestMixin)
 @Mock([User, OAuthAccount, FitbitNotification])

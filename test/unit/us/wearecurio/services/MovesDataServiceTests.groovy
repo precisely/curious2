@@ -15,7 +15,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
-import us.wearecurio.thirdparty.MockedHttpURLConnection
+import us.wearecurio.test.common.MockedHttpURLConnection;
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 @TestMixin(GrailsUnitTestMixin)

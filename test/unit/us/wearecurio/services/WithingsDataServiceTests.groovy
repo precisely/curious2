@@ -15,8 +15,8 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
+import us.wearecurio.test.common.MockedHttpURLConnection;
 import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.MockedHttpURLConnection
 
 @TestMixin([ServiceUnitTestMixin, DomainClassUnitTestMixin])
 @Mock([User, OAuthAccount, Entry, Tag, TagStats])

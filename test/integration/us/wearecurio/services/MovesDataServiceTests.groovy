@@ -9,7 +9,7 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
-import us.wearecurio.thirdparty.MockedHttpURLConnection
+import us.wearecurio.test.common.MockedHttpURLConnection
 
 class MovesDataServiceTests {
 
