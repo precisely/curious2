@@ -52,7 +52,6 @@ class AuthenticationControllerTests {
 		// Tear down logic here
 	}
 
-	// Testing before interceptor method for failure case
 	void testAuthRedirect() {
 		params.provider = "someProvider"	// example: fitbit, moves
 		oauthServiceMock.demand.findSessionKeyForAccessToken(4) { provider -> return provider }
