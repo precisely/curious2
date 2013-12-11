@@ -19,7 +19,7 @@ import us.wearecurio.thirdparty.MockedHttpURLConnection
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 @TestMixin(GrailsUnitTestMixin)
-@Mock([User, OAuthAccount, FitbitNotification, Entry, Tag, TagStats])
+@Mock([User, OAuthAccount, Entry, Tag, TagStats])
 @TestFor(MovesDataService)
 class MovesDataServiceTests {
 

@@ -57,11 +57,17 @@ class MovesDataService {
 		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + today.format("yyyy-MM-dd")
 
 		Response response = oauthService.getMovesResource(tokenInstance, pollURL)
-		log.info "Summary of moves data for userId [$account.userId] with code: [$response.code]"
 
-		if (response.code != 200) {
-			log.error "Error fetching data from moves api for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
-			return
+		switch(response.code) {
+			case 200:
+				log.info "Summary of moves data for userId [$account.userId] with code: [$response.code]"
+				break
+			case 401:
+				log.error "Token expired for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
+				return [success: false]
+			default:
+				log.error "Error fetching data from moves api for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
+				return [success: false]
 		}
 
 		JSONArray parsedResponse = JSON.parse(response.body)
@@ -101,7 +107,7 @@ class MovesDataService {
 						case "wlk":
 							baseType = "walk"
 							break
-						case "trp":
+						default:
 							baseType = ""
 							break
 					}
