@@ -11,7 +11,6 @@ public abstract class TagUnitMap {
 	public final static String MOOD = "mood"
 	public final static String SLEEP = "sleep"
 	public final static String NAP = "nap"
-	final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy"
 
 	public final static int MINUTES_TO_MS = 60 * 1000
 	public final static float MS_TO_MINUTES = 0.00001667
@@ -21,7 +20,6 @@ public abstract class TagUnitMap {
 
 	public final static int AVERAGE = 1
 	public final static int METER_TO_KM = 2
-	public final static int STRING_TO_DATE = 3
 
 	private static def log = LogFactory.getLog(this)
 
