@@ -10,6 +10,7 @@ import us.wearecurio.model.Entry.RepeatType
 class RemindEmailService {
 	
 	def mailService
+	def GCMService
 
 	private static def log = LogFactory.getLog(this)
 
@@ -50,15 +51,17 @@ class RemindEmailService {
 				def event = Entry.get(eventIdRecord['id'])
 				if (event != null) {
 					log.debug "Trying to send reminder email " + event + " to " + email
+					def messageBody = url + "?entryId=" + event.getId()
+					def messageSubject = "Reminder to track:" + event.getTag().getDescription()
 					mailService.sendMail {
 						to email
 						from "contact@wearecurio.us"
-						subject "Reminder to track:" + event.getTag().getDescription()
-						body url + "?entryId=" + event.getId()
+						subject messageSubject
+						body messageBody
 					}
 					
 					if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
-						//TODO Send GCM message for reminder
+						GCMService.sendMessage(messageBody, [userDevice.token])
 						log.debug "Notifying Android device for user "+userId
 					} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 						//TODO Send APN message for reminder
