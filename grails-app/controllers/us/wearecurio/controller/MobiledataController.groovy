@@ -85,21 +85,28 @@ class MobiledataController extends DataController {
 	def registerForPushNotification() {
 		def user = sessionUser()
 		debug user.dump()
-		PushNotificationDevice pushNotificationDeviceInstance = new PushNotificationDevice()
-		pushNotificationDeviceInstance.token = params.token
-		pushNotificationDeviceInstance.deviceType = params.int('deviceType')
-		pushNotificationDeviceInstance.userId = user.id
-		if (pushNotificationDeviceInstance.validate()) {
-			pushNotificationDeviceInstance.save()
-		}
-		else {
-			pushNotificationDeviceInstance.errors.allErrors.each {
-				println it
+		PushNotificationDevice pushNotificationDeviceInstance = 
+			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
+		if (!pushNotificationDeviceInstance) {
+			pushNotificationDeviceInstance = new PushNotificationDevice()
+			pushNotificationDeviceInstance.token = params.token
+			pushNotificationDeviceInstance.deviceType = params.int('deviceType')
+			pushNotificationDeviceInstance.userId = user.id
+			if (pushNotificationDeviceInstance.validate()) {
+				pushNotificationDeviceInstance.save()
+				debug "Registering device for push notification"
 			}
+			else {
+				pushNotificationDeviceInstance.errors.allErrors.each {
+					println it
+				}
+			}
+		} else {
+			debug "Device already registered to be notified."
 		}
-		
+			
 		debug params.dump()
-		debug "Registering device for push notification"
+		
 		renderJSONGet([success:true])
 	}
 }
