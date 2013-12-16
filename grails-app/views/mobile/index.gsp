@@ -52,7 +52,12 @@ setInterval(function(){cache.update()}, 10000);
 <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-
+<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
+<script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript">
 <g:if env="development"></g:if>
 <g:else>
@@ -142,12 +147,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 	return $.extend(CSRFPreventionObject, data);
 }
 </script>
-<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
-<script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
+
 <script type="text/javascript" src="/static/js/curious/base.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=9"></script>
@@ -306,7 +306,7 @@ function startTrack() {
 
 function launchTrack() {
 	localStorage['lastPage'] = 'track';
-	location.reload(true);
+	reloadPage();
 }
 
 /*
