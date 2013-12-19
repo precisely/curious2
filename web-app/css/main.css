@@ -1,5 +1,11 @@
 /* FRAME */
 
+.content-size, .content-size:after, .content-size:before {
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+
 * {
 	vertical-align: baseline;
 	font-weight: inherit;
@@ -759,7 +765,6 @@ div.plotLine:hover span {
 	color:#ffffff;
 	font-size:24px;	
 	padding:10px;
-	height:28px;
 }
 
 .sharePage h1 .bittext {
