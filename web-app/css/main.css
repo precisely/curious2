@@ -13,9 +13,16 @@
 }
 h1 {
 	font-weight:bold;
+	margin: 0;
 }
 body {
+	font-size: 16px;
 	text-align:left;
+	line-height: normal;
+	color: rgb(0, 0, 0);
+}
+input {
+	line-height: normal;
 }
 .postcomment textarea {
 	border: 1px solid;
@@ -25,19 +32,14 @@ a,a:link,a:hover,a:visited {
 	text-decoration:none;
 }
 .body1 {
-	margin-left: auto;
-	margin-right: auto;
-	width: 1000px;
 	text-align: left;	
 	border:1px solid #cccccc;
 	border-width:0px 1px 1px 1px;
 }
 .body2 {
-	padding:0px 20px;
+	padding: 0px 10px;
 }
 .main {
-	margin:0px 10px 0px 0px; 
-	float:left;
 	border:1px solid #cccccc;
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
@@ -76,11 +78,11 @@ a,a:link,a:hover,a:visited {
 	font-size: 12pt;
 }
 .header {
-	padding:10px 0px 0px 0px;
+	padding:10px 0px 20px 0px;
 }
 #headerlogo {
 	background:url(../images/logo_alpha.png) no-repeat;
-	width:420px;
+	min-width: 180px;
 	height:30px;
 	display:inline-block;
 	padding:0px 0px 15px 0px;
@@ -94,9 +96,7 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks {
 	display:inline-block;
-	padding:0px 0px 20px 0px;
-	text-align:right;
-	width:350px;
+	padding: 12px 0px 0px 0px;
 }
 .mainLinks li {
 	display:inline;
@@ -116,9 +116,7 @@ a,a:link,a:hover,a:visited {
 	color:#999999;
 }	
 .signin {
-	display:block;
 	padding:14px 20px 0px 0px;
-	float:right;
 	font-size:.8em;
 	color:#999999;
 	vertical-align:middle;
@@ -138,9 +136,7 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 #trackmain {
-	width:722px;
 	height:610px;
-	margin:0px;
 }
 .querymain {
 	width:540px;
@@ -183,9 +179,6 @@ a,a:link,a:hover,a:visited {
 	height: 500px;
 }
 .tagNav {
-	float:left;
-	width:225px;
-	margin-left:10px;
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
@@ -228,6 +221,9 @@ input.textInput {
 	padding-left:5px;
 	float:left;
 	border:1px solid #cccccc;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 .cycleTag {
 	color:#cccccc;
@@ -961,6 +957,10 @@ div.plotLine:hover span {
 	padding-left:8px;
 	color:#999999;
 }
+.custom-row {
+	margin-left: -10px;
+	margin-right: -10px;
+}
 
 /**
  * Generic & common stuff, useful for every where. Starts here.
@@ -1017,15 +1017,6 @@ div.plotLine:hover span {
 	height: 3px;
 	margin-bottom: 20px;
 }
-
-.row {
-	margin-left: -15px;
-	margin-right: -15px;
-}
-.row:before, .row:after {
-	content: " ";
-	display: table;
-}
 .row:after {
 	clear: both;
 }
@@ -1053,7 +1044,6 @@ div.plotLine:hover span {
 /**
  * Styles for track page for web application.
  */
-
 body.track-page #datepicker {
 	width: 260px;
 }

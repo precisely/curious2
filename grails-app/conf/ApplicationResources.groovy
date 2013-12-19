@@ -1,4 +1,8 @@
 modules = {
+	bootstrap {
+		resource url: [dir: "css/bootstrap", file: "bootstrap.min.css"]
+		resource url: [dir: "js/bootstrap", file: "bootstrap.min.js"]
+	}
 	application {
 		resource url: [dir: "js", file: "application.js"]
 	}

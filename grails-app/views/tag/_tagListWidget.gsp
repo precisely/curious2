@@ -1,3 +1,4 @@
+<div class="col-xs-3">
 <div class="tagNav" id="tagNav">
 
 	<h1>Tracking Tags</h1>
@@ -16,4 +17,5 @@
   <form>
   	<input type='text' name="name" />
   </form>
+</div>
 </div>
