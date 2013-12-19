@@ -84,15 +84,20 @@ a,a:link,a:hover,a:visited {
 	font-size: 12pt;
 }
 .header {
-	padding:10px 0px 20px 0px;
+	padding:10px 0px 10px 0px;
 }
 #headerlogo {
 	background:url(../images/logo_alpha.png) no-repeat;
-	min-width: 180px;
+	width: 420px;
 	height:30px;
 	display:inline-block;
 	padding:0px 0px 15px 0px;
 	vertical-align:middle;
+}
+@media (max-width: 992px) {
+	#headerlogo {
+		width: 180px;
+	}
 }
 #headerbutton {
 	background:url(../images/lhpdonate.gif) no-repeat;
@@ -133,6 +138,15 @@ a,a:link,a:hover,a:visited {
 .signin li a {
 	padding-left:10px;
 	text-decoration:none;
+}
+@media (max-width: 768px) {
+	.mainLinks {
+		padding: 0;
+		display: block;
+	}
+	.mainLinks li:first-child {
+		padding-left: 0;
+	}
 }
 #datepicker {
 	width:250px;
@@ -212,6 +226,11 @@ a,a:link,a:hover,a:visited {
 .footer li {
 	display:block;
 	line-height:1.4em
+}
+@media (max-width: 992px) {
+	.footer ul {
+		width: 20%;
+	}
 }
 input.textInput {
 	color:#cccccc;

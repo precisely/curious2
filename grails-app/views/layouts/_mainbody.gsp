@@ -3,26 +3,23 @@
 <div class="bugs"><a href="#"><span>Bugs</span></a></div>
 
 <!-- HEADER -->
-<div class="header row custom-row">
-	<div class="col-sm-4">
-	<a href="/home/index"><span id="headerlogo"></span></a>
+<div class="header">
+	<ul class="signin pull-right">
+		<li><span id="displayUser"></span></li>
+		<li><a href="/home/logout" id="logoutLink">sign out</a></li>
+	</ul>
+	
+	<a href="/home/index"><span id="headerlogo" class="content-size"></span></a>
 <g:if test="${templateVer == 'lhp'}">
 	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
 </g:if>
-	</div>
-	<div class="col-sm-4 col-sm-push-2">
-	<ul class="mainLinks" id="headerlinks">
+	<span id="headerlinks">
+	<ul class="mainLinks">
 		<li><g:link controller='home' action="index">Track</g:link></li>
 		<li><g:link controller='home' action="graph">Graph</g:link></li>
 		<li><g:link controller='home' action="community">Community</g:link></li>
 	</ul>
-	</div>
-	<div class="col-sm-2 col-sm-push-2 text-right">
-		<ul class="signin">
-			<li><span id="displayUser"></span></li>
-			<li><a href="/home/logout" id="logoutLink">sign out</a></li>
-		</ul>
-	</div>
+	</span>
 </div>
 <script>
 	$(window).load(function () {
