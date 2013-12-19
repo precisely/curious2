@@ -834,12 +834,12 @@ $(function(){
 	function modifyEdit(suffix) {
 		var $control = $('#tagTextInput');
 		$control.data('cancelBlur', true);
-		toggleSuffix($control, suffix);
-		/*if (toggleSuffix($control, suffix)) {
+		//toggleSuffix($control, suffix);
+		if (toggleSuffix($control, suffix)) {
 			var $selectee = $control.parents("li");
 			unselecting($selectee);
 			selected($selectee, false);
-		}*/
+		}
 	}
 	
 	function modifyInput(suffix) {
