@@ -110,8 +110,13 @@ $(function(){
 </head>
 <body>
 <div class="row row-custom">
+	<!-- RIGHT NAV -->
+	<g:render template="/tag/tagListWidget" />
+	<!-- /RIGHT NAV -->
 	<!-- LEFT NAV-->
-	<div class="col-xs-2">
+	<div class="col-xs-9 floating-column">
+	<div class="row">
+	<div class="col-xs-3">
 	<div class="leftNav">
 		<div id="plotLeftNav">
 			<div id="plotLinesplotArea"></div>
@@ -120,7 +125,7 @@ $(function(){
 	</div>
 	<!-- /LEFT NAV-->
 	<!-- MAIN -->
-	<div class="col-xs-7">
+	<div class="col-xs-9">
 	<div class="main querymain">
 		<div id="dialogDivplotArea" class="display:none;"></div>
 		<div class="graphData">
@@ -175,9 +180,8 @@ $(function(){
 		<img src="/images/fill.gif" alt="fill" />
 	</div>
 	</div>
-	<!-- RIGHT NAV -->
-	<g:render template="/tag/tagListWidget" />
-	<!-- /RIGHT NAV -->
+	</div>
+	</div>
 </div>
 	<div style="clear: both;"></div>
 

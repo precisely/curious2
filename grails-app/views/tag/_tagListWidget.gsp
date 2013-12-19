@@ -1,4 +1,4 @@
-<div class="col-xs-3">
+<div class="col-xs-3 pull-right fixed-column">
 <div class="tagNav" id="tagNav">
 
 	<h1>Tracking Tags</h1>

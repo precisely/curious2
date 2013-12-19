@@ -691,7 +691,10 @@ $(function(){
 </div>
 <!-- MAIN -->
 <div class="row custom-row">
-<div class="col-xs-9">
+	<!-- RIGHT NAV -->
+	<g:render template="/tag/tagListWidget" />
+	<!-- /RIGHT NAV -->
+<div class="col-xs-9 floating-column">
 <div class="main" id="trackmain">
 
 	<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
@@ -728,9 +731,6 @@ $(function(){
 </div>
 <!-- /MAIN -->
 
-<!-- RIGHT NAV -->
-<g:render template="/tag/tagListWidget" />
-<!-- /RIGHT NAV -->
 </div>
 <div style="clear: both;"></div>
 

@@ -708,6 +708,17 @@ div.plotLine:hover span {
 	-webkit-box-shadow: 3px 3px 3px #ffffff;
 	box-shadow: 3px 3px 3px #ffffff;
 }
+.fixed-column {
+	width: 225px;
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+.floating-column {
+	overflow: hidden;
+	float: none;
+	width: auto;
+}
 #tagNav {
 	height:610px;
 }
