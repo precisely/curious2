@@ -40,7 +40,7 @@ class AuthenticationController extends SessionController {
 				session.deniedURI = null
 				return false
 			}
-			redirect url: toUrl([controller: "login", action: "auth"])
+			redirect url: toUrl([controller: "home", action: "login"])
 			return false
 		}
 
@@ -90,7 +90,7 @@ class AuthenticationController extends SessionController {
 			JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
 
 			if (userInfo.user) {
-				OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
+				OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
 						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
@@ -111,7 +111,7 @@ class AuthenticationController extends SessionController {
 				JSONObject parsedResponse = JSON.parse(rawResponse)
 
 				if (parsedResponse.user_id) {
-					OAuthAccount fitbitAccount = OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
+					OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
 							parsedResponse.user_id.toString(), tokenInstance.token, tokenInstance.secret ?: "")
 				}
 			} else {

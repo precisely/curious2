@@ -1061,7 +1061,7 @@ class Entry {
 				m['description'] = baseTag.getDescription()
 				m['amount'] = amount
 				m['units'] = "hours"
-				m['comment'] = ''
+				m['comment'] = this.comment ?: ""
 				m['repeatType'] = null
 				m['baseTag'] = baseTag
 				m['durationType'] = DurationType.NONE
@@ -2410,7 +2410,17 @@ class Entry {
 	}
 
 	String toString() {
-		return valueString()
+		return "Entry(id: ${id ?: 'un-saved'}, userId:" + userId \
+				+ ", date:" + Utils.dateToGMTString(date) \
+				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
+				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", description:" + getDescription() \
+				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
+				+ ", units:" + units \
+				+ ", amountPrecision:" + fetchAmountPrecision() \
+				+ ", comment:" + comment \
+				+ ", repeatType:" + repeatType?.getId() \
+				+ ")"
 	}
 
 	def String valueString() {

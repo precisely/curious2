@@ -142,8 +142,8 @@ environments {
 					apiVersion = "1"
 				}
 				moves {
-					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
-					secret = "92O48_cAvZ25tpxKV6hmi763zfMFIZFk2MbCdVeVW9i4iCwtgO3E96XZv6RzA6HP"
+					key = "CNhtcT6smpiRts939C84qjUJlS5MJTC6"
+					secret = "Fi4TT55XOFGm6DrOwt189Sk4Oap3cBhWdP1nCMJ8950nSfpjWBa9Ot4kszJxV22X"
 				}
 				twenty3andme {
 					key = "96de99b2227025cacb6807e28df20367"
@@ -205,6 +205,7 @@ log4j = {
 		   'us.wearecurio.util',
 		   'us.wearecurio.exceptions',
 		   'us.wearecurio.utility',
+		   'us.wearecurio',
 		   'grails.app.controllers',
 		   'grails.app.service'
 

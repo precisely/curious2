@@ -10,9 +10,10 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
-import us.wearecurio.services.Twenty3AndMeDataService;
+
+import us.wearecurio.services.Twenty3AndMeDataService
+import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.MockedHttpURLConnection
 
 @TestFor(Twenty3AndMeDataService)
 @Mock([OAuthAccount, Twenty3AndMeData, User])

@@ -1,11 +1,11 @@
 package us.wearecurio.thirdparty
 
-import java.util.Map
-
-import us.wearecurio.model.Entry
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.model.Entry
+
 public abstract class TagUnitMap {
+
 	public final static String MEAL = "meal"
 	public final static String MOVEMENT = "movement"
 	public final static String MOOD = "mood"
@@ -19,12 +19,14 @@ public abstract class TagUnitMap {
 	public final static int TO_MILLI = 1000
 
 	public final static int AVERAGE = 1
-	
+	public final static int METER_TO_KM = 2
+
 	private static def log = LogFactory.getLog(this)
-	
+
 	static debug(str) {
 		log.debug(str)
 	}
+
 	/**
 	 * Generic method to convert a tag value from one unit to another if needed
 	 * @param amount
@@ -32,7 +34,6 @@ public abstract class TagUnitMap {
 	 * @return
 	 */
 	public BigDecimal convert(BigDecimal amount,def currentUnitMapping) {
-		def bucket = this.getBuckets();
 		switch(currentUnitMapping.type) {
 			case this.SECONDS_TO_HOURS:
 				amount = amount / this.SECONDS_TO_HOURS
@@ -49,6 +50,9 @@ public abstract class TagUnitMap {
 			case this.TO_MILLI:
 				amount = amount * this.TO_MILLI
 				break
+			case this.METER_TO_KM:
+				amount = amount / 1000
+				break
 			default:
 				// Else means operation to be performed are on buckets, ex.: merging
 				// Or type provided is a key in bucket[] to hold values
@@ -59,35 +63,35 @@ public abstract class TagUnitMap {
 		
 		return amount
 	}
-	
+
 	/**
 	 * Buckets defined by the implementing class. These buckets will be specific to the type of
 	 * importer
 	 * @return
 	 */
 	public abstract Map getBuckets();
-	
+
 	public abstract Map getTagUnitMappings();
-	
+
 	public Entry buildEntry(def tagName, def amount, def userId, def date = new Date(), def args = [:]) {
 		def currentMapping = this.getTagUnitMappings()[tagName]
 		if (!currentMapping) {
 			debug "No mapping found for tag name: " + tagName
 			return
-			
+
 		}
 		if(currentMapping.convert) {
 			amount = this.convert(amount, currentMapping)
 		}
-		
-		println("The unit is: " +currentMapping.dump())
+
+		debug "The unit is: " + currentMapping
 		if (args.tagName) {
 			this.createEntry(userId, amount, currentMapping.unit, args.tagName, date, args)
 		} else {
 			this.createEntry(userId, amount, currentMapping.unit, currentMapping.tag, date, args)
 		}
 	}
-	
+
 	/**
 	 * Generic method to create an Entry domain object based on a Map
 	 * @param userId
@@ -98,19 +102,21 @@ public abstract class TagUnitMap {
 	 * @return
 	 */
 	public Entry createEntry(userId, amount, units, description, date, Map args = [:]) {
-		amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
+		if (amount != null) {
+			amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
+		}
 		Map parsedEntry = [userId: userId, date: date,
 			description: description, amount: amount, units: units,
 			comment: args.comment ?: "", timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
-			repeatType: args.repeatType, setName: args.setName, amountPrecision: args.amountPrecision, 
+			repeatType: args.repeatType, setName: args.setName, amountPrecision: args.amountPrecision,
 			datePrecisionSecs: args.datePrecisionSecs
 		]
 		parsedEntry.putAll(args)
-		
+
 		def entry = Entry.create(userId, parsedEntry, null)
 		return entry
 	}
-	
+
 	/**
 	 * Calculating entry amount based on the bucket operation and creating an entry for each of the buckets.
 	 * @param userId
@@ -127,10 +133,11 @@ public abstract class TagUnitMap {
 			}
 		}
 	}
-	
+
 	public void emptyBuckets() {
-		this.getBuckets().each { bucketName, bucket ->  
+		this.getBuckets().each { bucketName, bucket ->
 			bucket.values.clear()
 		}
 	}
+
 }
