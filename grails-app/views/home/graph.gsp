@@ -109,15 +109,18 @@ $(function(){
 </script>
 </head>
 <body>
+<div class="row row-custom">
 	<!-- LEFT NAV-->
+	<div class="col-xs-2">
 	<div class="leftNav">
 		<div id="plotLeftNav">
 			<div id="plotLinesplotArea"></div>
 		</div>
-
+	</div>
 	</div>
 	<!-- /LEFT NAV-->
 	<!-- MAIN -->
+	<div class="col-xs-7">
 	<div class="main querymain">
 		<div id="dialogDivplotArea" class="display:none;"></div>
 		<div class="graphData">
@@ -143,36 +146,44 @@ $(function(){
 					<div class="zoomline">
 						<div id="zoomcontrol1"></div>
 					</div>
-					<div class="dateline">
+					<div class="dateline row">
+						<div class="col-sm-4">
 						<div class="startDate">
 							<input id="startdatepicker1" type="text" value=""
 								class="startdatepicker cycleInput" />
 						</div>
+						</div>
+						<div class="col-sm-4">
 						<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
+						</div>
+						<div class="col-sm-4">
 						<div class="endDate">
 							<input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput" />
+						</div>
 						</div>
 					</div>
 				</div>
 			</div>
-
 		</div>
 	</div>
 	<!-- /MAIN -->
-
+	<br>
+	<div class="">
+		view:
+		<img src="/images/scatter.gif" alt="scatter" />
+		<img src="/images/line.gif" alt="line" />
+		<img src="/images/fill.gif" alt="fill" />
+	</div>
+	</div>
 	<!-- RIGHT NAV -->
 	<g:render template="/tag/tagListWidget" />
 	<!-- /RIGHT NAV -->
+</div>
 	<div style="clear: both;"></div>
 
 	<!-- PRE-FOOTER -->
 	<div id="preFooter">
 
-		<div class="tagNav">
-			view: <img src="/images/scatter.gif" alt="scatter" /> <img
-				src="/images/line.gif" alt="line" /> <img src="/images/fill.gif"
-				alt="fill" />
-		</div>
 	</div>
 
 	<!-- /PRE-FOOTER -->

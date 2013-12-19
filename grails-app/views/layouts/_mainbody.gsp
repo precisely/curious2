@@ -17,7 +17,7 @@
 		<li><g:link controller='home' action="community">Community</g:link></li>
 	</ul>
 	</div>
-	<div class="col-sm-4 text-right">
+	<div class="col-sm-2 col-sm-push-2 text-right">
 		<ul class="signin">
 			<li><span id="displayUser"></span></li>
 			<li><a href="/home/logout" id="logoutLink">sign out</a></li>

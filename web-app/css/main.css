@@ -139,19 +139,12 @@ a,a:link,a:hover,a:visited {
 	height:610px;
 }
 .querymain {
-	width:540px;
 	margin:0px;
 }
 .querymain #plotArea {
-	width:530px;
 	height:500px;
-	float:right;
-}
-.querymain .cycletag {
-	margin-left:2px;
 }
 .querycontrols {
-	width:540px;
 	margin:0px;
 }
 .discussmain {
@@ -176,7 +169,7 @@ a,a:link,a:hover,a:visited {
 #recordList {
 	padding: 4px;
 	overflow: auto;
-	height: 500px;
+	height: 509px;
 }
 .tagNav {
 	-moz-box-shadow: 3px 3px 3px #dddddd;
@@ -230,11 +223,10 @@ input.textInput {
 	background-color:#ffffff;
 	margin:0px;
 	border:0px;
-	margin-left:8px;
 	display:inline-block;
 	padding-top:7px;
-	height:23px;
-	width:175px;
+	height:29px;
+	width:100%;
 }
 .startdatepicker, .enddatepicker {
 	height:30px;
@@ -244,7 +236,6 @@ input.textInput {
 }
 .startDate {
 	display:inline-block;
-	float:left;
 }
 .endDate {
 	display:inline-block;
@@ -415,10 +406,8 @@ ul#tagList {
 	overflow-y: scroll;
 }
 .leftNav {
-	width:170px;
 	height:600px;
-	float:left;
-	margin:0px 10px 0px 0px;
+	margin: 0;
 	border:1px solid #cccccc;
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
@@ -741,13 +730,11 @@ div.plotLine:hover span {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
-	width: 60%;
 }
 #entry0 li {
 	margin: 0px;
 	padding: 1px;
 	font-size: 12pt;
-	width: 700px;
 }
 .swatch {
 	padding-left:20px;	
