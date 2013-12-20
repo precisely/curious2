@@ -91,7 +91,7 @@ android.gcm.retries=3
 
 pushNotification {
 	apns {
-		pathToCertificate = "./ios-cert/iphone_dev.p12"
+		pathToCertificate = "./ios-cert/dev/iphone_dev.p12"
 		password = "causecode.11"
 		environment = "sandbox"
 	}
@@ -176,9 +176,9 @@ environments {
 		
 		pushNotification {
 			apns {
-				pathToCertificate = "./ios-cert/iphone_dev.p12"
+				pathToCertificate = "./ios-cert/iphone_prod.p12"
 				password = "causecode.11"
-				environment = "sandbox"
+				environment = "production"
 			}
 			
 			gcm {
