@@ -1060,6 +1060,9 @@ div.plotLine:hover span {
 	border-color: #faebcc;
 	color: #c09853;
 }
+.pointer {
+	cursor: pointer;
+}
 .text-center {
 	text-align: center;
 }

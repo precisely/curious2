@@ -1,7 +1,7 @@
 <div class="col-xs-3 pull-right fixed-column">
 	<div class="red-header">
 		<h1>
-			<span class="icon-triangle icon-triangle-right" id="toggle-tags"></span>
+			<span class="pointer icon-triangle icon-triangle-right" id="toggle-tags"></span>
 			&nbsp;
 			Tracking Tags
 		</h1>
@@ -18,6 +18,8 @@
 		} else {
 			$(this).removeClass("icon-triangle-down").addClass("icon-triangle-right");
 		}
-		elementToCollapse.slideToggle("slow");
+		elementToCollapse.slideToggle("slow", function() {
+			elementToCollapse.css("overflow", "visible");	// For dragging tag to plot graph area.
+		});
 	})
 </r:script>

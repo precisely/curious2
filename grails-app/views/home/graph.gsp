@@ -1,5 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<g:setProvider library="jquery" />
 <html>
 <head>
 <meta name="layout" content="plot" />
