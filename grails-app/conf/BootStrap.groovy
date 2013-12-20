@@ -16,7 +16,6 @@ class BootStrap {
 		migrationService.doMigrations()
 		withingsDataService.poll()
 		withingsDataService.refreshSubscriptions()
-		remindEmailService.sendReminders()
 	}
 
 	def destroy = {

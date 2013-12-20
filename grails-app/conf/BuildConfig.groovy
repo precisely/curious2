@@ -41,7 +41,8 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 		compile 'com.ganyo:gcm-server:1.0.2'
-        runtime 'mysql:mysql-connector-java:5.1.22'
+		compile 'com.notnoop.apns:apns:0.1.6'
+		runtime 'mysql:mysql-connector-java:5.1.22'
     }
 
     plugins {

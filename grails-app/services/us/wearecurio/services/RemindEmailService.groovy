@@ -11,6 +11,7 @@ class RemindEmailService {
 	
 	def mailService
 	def GCMService
+	def APNSService
 
 	private static def log = LogFactory.getLog(this)
 
@@ -68,6 +69,7 @@ class RemindEmailService {
 						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 							//TODO Send APN message for reminder
 							log.debug "Notifying iOS device for user "+userId
+							APNSService.sendMessage(messageBody, [userDevice.token])
 						}
 					}
 				}

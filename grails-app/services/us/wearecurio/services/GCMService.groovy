@@ -23,18 +23,17 @@ class GCMService {
 		log.debug(str)
 	}
 	
-	// The SENDER_ID here is the "Browser Key" that was generated when I
-	// created the API keys for my Google APIs project.
-	private static final String SENDER_ID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
+	def grailsApplication
 	
     def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious') {
+		def gcmConfig = grailsApplication.config.pushNotification.gcm
 		if (devices.size() == 0) {
 			debug ("Need at least one device token to send")
 			return false
 		}
         // Instance of com.android.gcm.server.Sender, that does the
         // transmission of a Message to the Google Cloud Messaging service.
-        Sender sender = new Sender(SENDER_ID)
+        Sender sender = new Sender(gcmConfig.senderID)
          
         // This Message object will hold the data that is being transmitted
         // to the Android client devices.  For this demo, it is a simple text
