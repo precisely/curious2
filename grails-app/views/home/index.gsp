@@ -691,7 +691,7 @@ $(function(){
 	</div>
 
 	<div class="row custom-row">
-		<g:render template="/tag/tagListHeader" />
+		<g:render template="/tag/tagListWidget" model="[header: true]" />
 		<div class="col-xs-9 floating-column">
 			<div class="red-header date-controls">
 				<h1 class="clearfix">

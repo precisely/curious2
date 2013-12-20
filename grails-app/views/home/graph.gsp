@@ -121,7 +121,7 @@ $(function(){
 		<div class="col-xs-10">
 			<div class="row">
 				<!-- RIGHT NAV HEADER -->
-				<g:render template="/tag/tagListHeader" />
+				<g:render template="/tag/tagListWidget" model="[header: true]" />
 				<!-- RIGHT NAV HEADER -->
 				<div class="col-xs-9 floating-column">
 					<div class="red-header date-controls">
