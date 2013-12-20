@@ -108,90 +108,92 @@ $(function(){
 });
 </script>
 </head>
-<body>
-<div class="row row-custom">
-	<!-- RIGHT NAV -->
-	<g:render template="/tag/tagListWidget" />
-	<!-- /RIGHT NAV -->
-	<!-- LEFT NAV-->
-	<div class="col-xs-9 floating-column">
-	<div class="row">
-	<div class="col-xs-3">
-	<div class="leftNav">
-		<div id="plotLeftNav">
-			<div id="plotLinesplotArea"></div>
-		</div>
-	</div>
-	</div>
-	<!-- /LEFT NAV-->
-	<!-- MAIN -->
-	<div class="col-xs-9">
-	<div class="main querymain">
-		<div id="dialogDivplotArea" class="display:none;"></div>
-		<div class="graphData">
+<body class="graph-page">
 
-			<h1>
-				<span id="queryTitle"></span> <span id="queryTitleEdit"><img
-					src="/images/edit.gif"></span>
-				<div id="debug"></div>
-			</h1>
-
-			<div id="actions">
-				<ul>
-					<li><a href="#" onclick="plot.save()">Save</a></li>
-					<li><g:link controller='home' action="load">Load</g:link></li>
-					<li><a href="#" onclick="plot.saveSnapshot()">Share</a></li>
-				</ul>
+	<div class="row row-custom">
+		<div class="col-xs-2">
+			<!-- LEFT NAV -->
+			<div class="leftNav">
+				<div id="plotLeftNav">
+					<div id="plotLinesplotArea"></div>
+				</div>
 			</div>
-
-			<div id="plotArea"></div>
-
-			<div class="main querycontrols">
-				<div class="calendarRange">
-					<div class="zoomline">
-						<div id="zoomcontrol1"></div>
+			<!-- /LEFT NAV -->
+		</div>
+		<div class="col-xs-10">
+			<div class="row">
+				<!-- RIGHT NAV HEADER -->
+				<g:render template="/tag/tagListHeader" />
+				<!-- RIGHT NAV HEADER -->
+				<div class="col-xs-9 floating-column">
+					<div class="red-header date-controls">
+						<h1 class="clearfix">
+							<span id="queryTitle"></span>
+							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
+							<div id="debug"></div>
+						</h1>
 					</div>
-					<div class="dateline row">
-						<div class="col-sm-4">
-						<div class="startDate">
-							<input id="startdatepicker1" type="text" value=""
-								class="startdatepicker cycleInput" />
+				</div>
+			</div>
+			<div class="row">
+				<!-- RIGHT NAV BODY -->
+				<g:render template="/tag/tagListWidget" />
+				<!-- /RIGHT NAV BODY -->
+				<div class="col-xs-9 floating-column">
+					<!-- MAIN -->
+					<div class="main querymain">
+						<div id="dialogDivplotArea" class="hide"></div>
+						<div class="graphData">
+							<div id="actions">
+								<ul>
+									<li><a href="#" onclick="plot.save()">Save</a></li>
+									<li><g:link action="load">Load</g:link></li>
+									<li><a href="#" onclick="plot.saveSnapshot()">Share</a></li>
+								</ul>
+							</div>
+				
+							<div id="plotArea"></div>
+				
+							<div class="main querycontrols">
+								<div class="calendarRange">
+									<div class="zoomline">
+										<div id="zoomcontrol1"></div>
+									</div>
+									<div class="dateline row">
+										<div class="col-sm-4">
+											<div class="startDate">
+												<input id="startdatepicker1" type="text" value="" class="startdatepicker cycleInput" />
+											</div>
+										</div>
+										<div class="col-sm-4">
+											<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
+										</div>
+										<div class="col-sm-4">
+											<div class="endDate">
+												<input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
-						</div>
-						<div class="col-sm-4">
-						<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
-						</div>
-						<div class="col-sm-4">
-						<div class="endDate">
-							<input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput" />
-						</div>
-						</div>
+					</div>
+					<!-- /MAIN -->
+					<br>
+					<div class="view-types">
+						view:
+						<img src="/images/scatter.gif" alt="scatter" />
+						<img src="/images/line.gif" alt="line" />
+						<img src="/images/fill.gif" alt="fill" />
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<!-- /MAIN -->
-	<br>
-	<div class="">
-		view:
-		<img src="/images/scatter.gif" alt="scatter" />
-		<img src="/images/line.gif" alt="line" />
-		<img src="/images/fill.gif" alt="fill" />
-	</div>
-	</div>
-	</div>
-	</div>
-</div>
-	<div style="clear: both;"></div>
 
 	<!-- PRE-FOOTER -->
-	<div id="preFooter">
-
-	</div>
-
+	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
-	<div style="clear: both;"></div>
 
 </body>
 </html>

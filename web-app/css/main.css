@@ -158,15 +158,25 @@ a,a:link,a:hover,a:visited {
 #trackmain {
 	height:610px;
 }
-.querymain {
+/**
+ * Styles for graph page starts here.
+ */
+body.graph-page .querymain {
 	margin:0px;
 }
-.querymain #plotArea {
+body.graph-page .querymain #plotArea {
 	height:500px;
 }
-.querycontrols {
+body.graph-page #plotArea canvas {
+	width: 100%;
+	height: 100%;
+}
+body.graph-page .querycontrols {
 	margin:0px;
 }
+/**
+ * Styles for graph page ends here.
+ */
 .discussmain {
 	width:750px;
 	margin:0px;
@@ -584,6 +594,8 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
+	margin-bottom: 5px;
+	min-height: 608px;
 }
 
 /* FIRST PAGE */
