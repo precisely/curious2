@@ -1,15 +1,15 @@
-<div class="body1">
+<div class="body1 container">
 <div class="body2">
 <div class="bugs"><a href="#"><span>Bugs</span></a></div>
 
 <!-- HEADER -->
 <div class="header">
-	<ul class="signin">
+	<ul class="signin pull-right">
 		<li><span id="displayUser"></span></li>
 		<li><a href="/home/logout" id="logoutLink">sign out</a></li>
 	</ul>
 	
-	<a href="/home/index"><span id="headerlogo"></span></a>
+	<a href="/home/index"><span id="headerlogo" class="content-size"></span></a>
 <g:if test="${templateVer == 'lhp'}">
 	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
 </g:if>

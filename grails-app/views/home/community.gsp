@@ -88,7 +88,7 @@ $(function(){
 			jQuery.each(data, function() {
 				$("#graphList").append('<div class="graphItem">\
 					<div class="summary">\
-					<a href="/home/discuss?discussionId=' + this['id'] + '"><h2>' + minLinkName(this['name']) + '</h2></a>\
+					<a href="/home/discuss?discussionId=' + this['id'] + '"><h2 class="content-size">' + minLinkName(this['name']) + '</h2></a>\
 					<div class="date">' + formatShortDate(this['updated']) + '</div> <div class="userName"> ' + this['userName'] + '</div> '
 					+ (this['isAdmin'] ?
 						(this['isPublic'] ? '<span class="visibility">visiblity: public to the world</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&unpublish=true">change</a>' : '<span class="visibility">visible in: ' + ("" + this['groupName']).toLowerCase() + '</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&publish=true">change</a>')

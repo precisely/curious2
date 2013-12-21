@@ -684,28 +684,39 @@ $(function(){
 </r:script>
 </head>
 <body class="track-page">
-<!-- JQUERY UI DIALOG BOX -->
-<div id="alert-message" title="" style="display:none">
-	<p>&nbsp;<p>
-	<div id="alert-message-text"></div>
-</div>
+
+	<div id="alert-message" class="hide">
+		<p><p>
+		<div id="alert-message-text"></div>
+	</div>
+
+	<div class="row custom-row">
+		<g:render template="/tag/tagListWidget" model="[header: true]" />
+		<div class="col-xs-9 floating-column">
+			<div class="red-header date-controls">
+				<h1 class="clearfix">
+					<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
+						<span class="hide">back</span>
+					</a>
+					<span class="date"><input id="datepicker" type="text" value="" /></span>
+					<a class="next  icon-triangle icon-triangle-right" href="#" onclick="changeDate(1);">
+						<span class="hide">next</span>
+					</a>
+				</h1>
+			</div>
+		</div>
+	</div>
+
 <!-- MAIN -->
+<div class="row custom-row">
+	<!-- RIGHT NAV -->
+	<g:render template="/tag/tagListWidget" />
+	<!-- /RIGHT NAV -->
+<div class="col-xs-9 floating-column">
 <div class="main" id="trackmain">
 
 	<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 	<div id="area0">
-		<div id="records">
-
-			<h1>
-				<a class="back" href="#" onclick="changeDate(-1);"><span>back</span>
-				</a> <span class="date"><input id="datepicker" type="text"
-					value="" />
-				</span> <a class="next" href="#" onclick="changeDate(1);"><span>next</span>
-				</a>
-				<div style="clear: both"></div>
-			</h1>
-
-		</div>
 
 		<div id="addData" class="panel-wrapper">
 			<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
@@ -722,15 +733,11 @@ $(function(){
 			</ol>
 		</div>
 	</div>
-
+</div>
 </div>
 <!-- /MAIN -->
 
-<!-- RIGHT NAV -->
-<g:render template="/tag/tagListWidget" />
-<!-- /RIGHT NAV -->
-
-<div style="clear: both;"></div>
+</div>
 
 </body>
 </html>

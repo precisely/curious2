@@ -114,7 +114,7 @@ function PlotProperties(divIdArray) {
 }
 </script>
 </head>
-<body>
+<body class="${pageProperty(name: 'body.class')}">
 <g:render template="/layouts/mainbody" model="['templateVer':templateVer]" />
 </body>
 </html>

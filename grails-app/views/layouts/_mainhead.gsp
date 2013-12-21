@@ -1,6 +1,9 @@
 <title><g:layoutTitle default="Curious" /></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link type="text/css" href="${resource(dir:'css/bootstrap', file:'bootstrap.min.css')}" rel= "stylesheet">
 <link type="text/css" href="${resource(dir:'css/custom-theme', file:'jquery-ui-1.8.18.custom.css')}" rel= "stylesheet">
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.7.2.js')}"></script>
+<script type="text/javascript" src="${resource(dir:'js/bootstrap', file:'bootstrap.min.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.offline.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
