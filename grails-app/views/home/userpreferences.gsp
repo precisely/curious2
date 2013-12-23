@@ -125,7 +125,7 @@
 									</g:else><br>
 									<oauth:isLinked typeId="FITBIT_ID">
 										<g:if test="${it }">
-											<g:link action="unregisterfitbit">UnLink FitBit Account</g:link><br>
+											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
 										</g:if>
 										<g:else>
 											<g:link action="registerfitbit">Link FitBit Account</g:link><br>
@@ -133,7 +133,7 @@
 									</oauth:isLinked>
 									<oauth:isLinked typeId="WITHINGS_ID">
 										<g:if test="${it }">
-											<g:link action="unregisterwithings">UnLink Withings Account</g:link><br>
+											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
 										</g:if>
 										<g:else>
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
@@ -141,7 +141,7 @@
 									</oauth:isLinked>
 									<oauth:isLinked typeId="MOVES_ID">
 										<g:if test="${it }">
-											<g:link action="unregistermoves">UnLink Moves Account</g:link><br>
+											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
 										</g:if>
 										<g:else>
 											<g:link action="registermoves">Link Moves Account</g:link><br>
