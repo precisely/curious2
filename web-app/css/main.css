@@ -1075,8 +1075,18 @@ div.plotLine:hover span {
 	height: 3px;
 	margin-bottom: 20px;
 }
-.row:after {
-	clear: both;
+.table {
+	display: table;
+}
+.table-cell {
+	display: table-cell;
+}
+.full-width {
+	width: 100%
+}
+.align-middle {
+	text-align: center;
+	vertical-align: middle;
 }
 [class*="span"] {
 	position: relative;

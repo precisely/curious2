@@ -105,6 +105,17 @@ $(function(){
 		});
 });
 </script>
+<r:script>
+	$(document).on(linePlottingEventName, function(e, tag) {
+		$("#plotArea").removeClass("table");
+	})
+	$(document).on(lineRemovedEventName, function(e, plotInstance) {
+		if($("#plotArea").html().trim() == "") {
+			//if(plotInstance.lines.length == 0)
+			$("#plotArea").addClass("table").html('<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
+		}
+	})
+</r:script>
 </head>
 <body class="graph-page">
 
@@ -150,7 +161,9 @@ $(function(){
 								</ul>
 							</div>
 				
-							<div id="plotArea"></div>
+							<div id="plotArea" class="table full-width">
+								<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
+							</div>
 				
 							<div class="main querycontrols">
 								<div class="calendarRange">
