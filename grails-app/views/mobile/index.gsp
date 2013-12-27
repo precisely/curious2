@@ -151,6 +151,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <script type="text/javascript" src="/static/js/curious/base.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=9"></script>
+<script type="text/javascript" src="/static/js/mobile/jgestures.min.js?ver=9"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
@@ -1150,6 +1151,12 @@ $(function(){
 				refreshPage();
 			});
 	}
+	$("body").on("swiperight", function() {
+		changeDate(-1);
+	}).on("swipeleft", function() {
+		changeDate(1);
+	})
+	console.log($.jGestures.data.hasGestures)
 </r:script>
 	<div id="header">
 		<div class="dateBar">
