@@ -38,11 +38,17 @@ class Twenty3AndMeDataService {
 
 		userProfile.profiles?.each { profile ->
 			String profileId = profile.id
-			Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileId(account, profileId)
-			twenty3AndMeDataInstance.data = getGenomesDataForProfile(tokenInstance, profileId)
-			twenty3AndMeDataInstance.save()
-			if (twenty3AndMeDataInstance.hasErrors()) {
-				log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
+			byte[] dataBytes = getGenomesDataForProfile(tokenInstance, profileId).bytes
+			// Splitting bytes into chunks of 1MB to match default packet size of MYSQL Server
+			List dataChunkList = dataBytes.toList().collate(1024 * 1024)
+
+			dataChunkList.eachWithIndex { dataChunk, index ->
+				Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileIdAndSequence(account, profileId, index)
+				twenty3AndMeDataInstance.data = dataChunk as byte[]
+				twenty3AndMeDataInstance.save(flush: true)
+				if (twenty3AndMeDataInstance.hasErrors()) {
+					log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
+				}
 			}
 		}
 		[success: true]
@@ -50,7 +56,32 @@ class Twenty3AndMeDataService {
 
 	String getGenomesDataForProfile(Token tokenInstance, String profileId) {
 		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/genomes/" + profileId)
+		log.debug "Got response from twent3andme data. Getting content from stream ..."
 		apiResponse.body
+	}
+
+	String constructGenomesData(OAuthAccount oauthAccount, String profileId = "") {
+		List twenty3AndMeDataByteList = Twenty3AndMeData.withCriteria {
+			projections {
+				property("data")
+			}
+			account {
+				eq("id", oauthAccount.id)
+			}
+			if(profileId) {
+				eq("profileId", profileId)
+			}
+			order("sequence", "asc")
+		}
+
+		if(!twenty3AndMeDataByteList)	return "";
+
+		ByteArrayOutputStream twenty3AndMeDataByte = new ByteArrayOutputStream()
+		twenty3AndMeDataByteList.each {
+			twenty3AndMeDataByte.write(it as byte[])
+		}
+
+		twenty3AndMeDataByte.toString()
 	}
 
 }

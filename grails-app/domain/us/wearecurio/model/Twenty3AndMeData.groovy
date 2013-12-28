@@ -2,12 +2,14 @@ package us.wearecurio.model
 
 class Twenty3AndMeData {
 
+	byte[] data
+	int sequence
+
 	Date dateCreated
 	Date lastUpdated
 
 	OAuthAccount account
 
-	String data
 	String profileId
 
 	Twenty3AndMeDataType type = Twenty3AndMeDataType.GENOMES
@@ -15,12 +17,11 @@ class Twenty3AndMeData {
 	static constraints = {
 		dateCreated bindable: false
 		lastUpdated bindable: false
-		profileId blank: false, unique: true
-		data nullable: true
+		profileId blank: false
+		data maxSize: 1024 * 1024, nullable: true
 	}
 
 	static mapping = {
-		data type: "text"
 	}
 
 	@Override

@@ -207,7 +207,7 @@ log4j = {
 		   'us.wearecurio.utility',
 		   'us.wearecurio',
 		   'grails.app.controllers',
-		   'grails.app.service'
+		   'grails.app.services.us.wearecurio'
 
 	warn   'us.wearecurio.parse'
 
