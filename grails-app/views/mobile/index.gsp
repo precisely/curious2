@@ -2,6 +2,8 @@
 <head>
 <title>Curious</title>
 <g:setProvider library="jquery" />
+<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 
 <!--script type="text/javascript">
 var cacheStatusValues = [];
@@ -142,16 +144,14 @@ function getCSRFPreventionObjectMobile(key, data) {
 	return $.extend(CSRFPreventionObject, data);
 }
 </script>
-<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.offline.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
-<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js?ver=7"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=9"></script>
-<script type="text/javascript" src="/static/js/mobile/jgestures.min.js?ver=9"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.mobile.touch.min.js?ver=9"></script>
 
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon-precomposed.png" />
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />

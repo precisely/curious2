@@ -1,5 +1,5 @@
 <%@ page contentType="text/cache-manifest" %>CACHE MANIFEST
-# rev 502
+# rev 503
 
 CACHE:
 #/mobile/index
@@ -11,7 +11,7 @@ https://dev.wearecurio.us/static/js/jquery/jquery.selectable.custom.js?ver=7
 https://dev.wearecurio.us/static/js/curious/base.js?ver=9
 https://dev.wearecurio.us/static/js/curious/curious.js?ver=9
 https://dev.wearecurio.us/static/js/curious/autocomplete.js?ver=9
-https://dev.wearecurio.us/static/js/mobile/jgestures.min.js?ver=9
+https://dev.wearecurio.us/static/js/jquery/jquery.mobile.touch.min.js?ver=9
 https://dev.wearecurio.us/static/css/mobile/trackPage.css?ver=10
 https://dev.wearecurio.us/static/images/favicon.ico
 https://dev.wearecurio.us/static/images/apple-touch-icon-precomposed.png
