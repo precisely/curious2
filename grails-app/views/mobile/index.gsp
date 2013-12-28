@@ -644,6 +644,7 @@ $(function(){
 				{entryId:entryId, date:cachedDateUTC, currentTime:currentTimeUTC, timeZoneName:timeZoneName})),
 				function(newEntry) {
 					if (checkData(newEntry)) {
+						newEntry.glow = true;
 						var newEntryId = newEntry.id;
 						if (isContinuous) {
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
@@ -688,7 +689,10 @@ $(function(){
 			units = entry.units,
 			comment = entry.comment,
 			classes = "entry",
+			glowEntry = entry.glow,
 			$entryToReplace, $appendAfterEntry;
+
+		entry.glow = false;
 			
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -697,6 +701,9 @@ $(function(){
 			if (args.appendAfterEntry) {
 				$appendAfterEntry = $(args.appendAfterEntry);
 			}
+		}
+		if (glowEntry) {
+			classes += " glow";
 		}
 
 		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
@@ -763,6 +770,9 @@ $(function(){
 			} else {
 				$("#entry0").append(newEntryContent);
 			}
+			setTimeout(function() {
+				$("li#entryid" + id).removeClass("glow");
+			}, 500)
 		}
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
@@ -944,16 +954,13 @@ $(function(){
 		$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 		function(entries){
 			if (checkData(entries)) {
-				refreshEntries(entries[0]);
-				// $.each(entries[0], function(index, entry) {
-					/**
-					 * Finding only that entry which is recently updated, and
-					 * refreshing only that entry in UI.
-					 */
-				/*	if(entry.id == entryId) {
-						displayEntry(entry, true);
+				$.each(entries[0], function(index, entry) {
+					// Finding entry which is recently updated.
+					if (entry.id == entryId) {
+						entry.glow = true;
 					}
-				}) */
+				})
+				refreshEntries(entries[0]);
 				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -980,6 +987,7 @@ $(function(){
 			$contentWrapper.html($oldEntry.data('contentHTML'));
 			return; // don't update unchanged entry
 		}
+		$oldEntry.addClass("glow");
 		if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) {
 			showAB("Update just this one event or also future events?", "One", "Future", function() {
 					doUpdateEntry(entryId, text, defaultToNow, false);
@@ -1012,6 +1020,12 @@ $(function(){
 				if (entries[1] != null) {
 					showAlert(entries[1]);
 				}
+				$.each(entries[0], function(index, entry) {
+					// Finding entry which is recently added.
+					if (entry.id == entries[3].id) {
+						entry.glow = true;
+					}
+				})
 				refreshEntries(entries[0], false);
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			} else {
@@ -1156,7 +1170,6 @@ $(function(){
 	}).on("swipeleft", function() {
 		changeDate(1);
 	})
-	console.log($.jGestures.data.hasGestures)
 </r:script>
 	<div id="header">
 		<div class="dateBar">
