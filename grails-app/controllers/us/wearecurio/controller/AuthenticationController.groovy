@@ -102,6 +102,10 @@ class AuthenticationController extends SessionController {
 		return
 	}
 
+	def ihealthAuth() {
+
+	}
+
 	def movesAuth() {
 		User currentUserInstance = sessionUser()
 

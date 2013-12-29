@@ -13,6 +13,7 @@ class OAuthAccount {
 	public static int FITBIT_ID = 2
 	public static int TWENTY_3_AND_ME_ID = 3
 	public static int MOVES_ID = 4
+	public static int IHEALTH_ID = 5
 
 	Integer typeId
 	Long userId
