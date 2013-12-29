@@ -62,7 +62,7 @@ grails.project.dependency.resolution = {
 		runtime ":quartz:1.0-RC9"
 
 		runtime ":message-digest:1.1"
-		compile ":oauth:2.1.0"
+		compile ":oauth:2.3"
 		runtime ":csv:0.3.1"
     }
 }

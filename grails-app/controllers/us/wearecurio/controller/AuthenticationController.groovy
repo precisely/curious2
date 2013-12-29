@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import static us.wearecurio.model.OAuthAccount.*
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -16,14 +17,26 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
+	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth"]]
 	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
 
 	def fitBitDataService
+	def humanDataService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 
 	private String provider
 	private Token tokenInstance
+
+	private boolean afterAuthRedirect(model) {
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+			println "sessio nreturn url $session.returnURIWithToken"
+			return false
+		}
+	}
 
 	private boolean authRedirect() {
 		provider = params.provider
@@ -100,6 +113,16 @@ class AuthenticationController extends SessionController {
 			session.returnURIWithToken = null
 		}
 		return
+	}
+
+	def humanAuth() {
+		User currentUserInstance = sessionUser()
+		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
+		if(userInfo.userId) {
+			OAuthAccount.createOrUpdate(HUMAN_ID, currentUserInstance.id, userInfo.userId, tokenInstance.token, "")
+		} else {
+			log.error "userId not found in human api authentication."
+		}
 	}
 
 	def movesAuth() {

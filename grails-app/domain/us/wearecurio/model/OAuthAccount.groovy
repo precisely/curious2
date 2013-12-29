@@ -13,6 +13,7 @@ class OAuthAccount {
 	public static int FITBIT_ID = 2
 	public static int TWENTY_3_AND_ME_ID = 3
 	public static int MOVES_ID = 4
+	static int HUMAN_ID = 6
 
 	Integer typeId
 	Long userId
@@ -23,10 +24,11 @@ class OAuthAccount {
 	Date lastSubscribed
 
 	static constraints = {
+		accessToken maxSize: 1024
 		userId(unique:['typeId'])
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
-		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID]
+		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID, HUMAN_ID]
 	}
 
 	public static def createOrUpdate(Integer typeId, Long userId, String accountId, String accessToken, String accessSecret) {

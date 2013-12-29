@@ -5,6 +5,8 @@ import org.scribe.model.OAuthConfig
 import org.scribe.model.Verb
 import org.scribe.oauth.OAuthService
 
+import us.wearecurio.thirdparty.PayloadTypeOAuth20ServiceImpl
+
 class Twenty3AndMeApi extends DefaultApi20 {
 
 	private static final String AUTHORIZE_URL = "https://api.23andme.com/authorize?response_type=code&redirect_uri=%s&client_id=%s&scope=%s";
@@ -33,7 +35,7 @@ class Twenty3AndMeApi extends DefaultApi20 {
 	 */
 	@Override
 	OAuthService createService(OAuthConfig config) {
-		return new Twenty3AndMeOAuth20ServiceImpl(this, config)
+		return new PayloadTypeOAuth20ServiceImpl(this, config)
 	}
 
 }

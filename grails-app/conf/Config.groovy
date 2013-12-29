@@ -1,6 +1,7 @@
 import org.scribe.model.SignatureType
 
 import us.wearecurio.thirdparty.fitbit.FitBitApi
+import us.wearecurio.thirdparty.human.HumanApi
 import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
@@ -106,6 +107,10 @@ environments {
 					secret = "6c813aceab794174a32b7ea1532f7401"
 					apiVersion = "1"
 				}
+				human {
+					key = "0708a0bf2529bc24042d0bc1b2a3be09660a905f"
+					secret = "24f75e7f789a2a0c1f94b58aa77cd067f10c8c34"
+				}
 				moves {
 					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
 					secret = "92O48_cAvZ25tpxKV6hmi763zfMFIZFk2MbCdVeVW9i4iCwtgO3E96XZv6RzA6HP"
@@ -141,6 +146,10 @@ environments {
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
 				}
+				human {
+					key = "6c735bf30082353bab85112a831bb7a9ec7b1154"
+					secret = "6db556720f847133ccdd92ce93224c9fb481010b"
+				}
 				moves {
 					key = "CNhtcT6smpiRts939C84qjUJlS5MJTC6"
 					secret = "Fi4TT55XOFGm6DrOwt189Sk4Oap3cBhWdP1nCMJ8950nSfpjWBa9Ot4kszJxV22X"
@@ -174,6 +183,10 @@ environments {
 					key = "b2610f22a2314bdc804c3463aa666876"
 					secret = "2b7472411c834c4f9b8c8e611d8e6350"
 					apiVersion = "1"
+				}
+				human {
+					key = "0708a0bf2529bc24042d0bc1b2a3be09660a905f"
+					secret = "24f75e7f789a2a0c1f94b58aa77cd067f10c8c34"
 				}
 				moves {
 					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
@@ -236,6 +249,12 @@ oauth {
 			failureUri = "authentication/fitbit/fail"
 			signatureType = SignatureType.Header
 		}
+		human {
+			api = HumanApi
+			callback = "${grails.serverURL }oauth/human/callback"
+			successUri = "authentication/human/success"
+			failureUri = "authentication/human/fail"
+		}
 		moves {
 			api = MovesApi
 			callback = "${grails.serverURL }oauth/moves/callback"
@@ -259,4 +278,5 @@ oauth {
 			signatureType = SignatureType.QueryString
 		}
 	}
+	debug = true
 }
