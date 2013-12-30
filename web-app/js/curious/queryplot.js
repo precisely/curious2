@@ -412,6 +412,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				});
 	}
 	this.load = function(plotData) {
+		$(document).trigger(beforeLinePlotEvent);
 		var version = plotData.version;
 		if (plotData.startTime) {
 			this.properties.setStartDate(new Date(plotData.startTime));
@@ -439,10 +440,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.leftLinearSlider = plotData.leftLinearSlider;
 		this.rightLinearSlider = plotData.rightLinearSlider;
 		this.activeLineId = plotData.activeLineId;
+		$(document).trigger(afterLinePlotEvent);
 	}
 	
 	this.loadLine = function(save,version) {
-		$(document).trigger(beforeLinePlotEvent);
 		var parentLine = null;
 		var version = version || 5;
 		if (save.parentLineName) {
@@ -502,7 +503,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			this.createPlotLine(save, parentLine);
 		}
-		
 	}
 	
 	this.createPlotLine = function(save, parentLine) {
@@ -1060,7 +1060,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.refreshName();
 		
 		this.store();
-		
+		$(document).trigger(afterLinePlotEvent, [initialTag]);
 	}
 	this.addCycleLine = function(initialTag) {
 		if (this.cycleTagLine != null) {

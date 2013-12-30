@@ -109,12 +109,20 @@ $(function(){
 	$(document).on(beforeLinePlotEvent, function(e, tag) {
 		$("#plotArea").removeClass("table");
 	})
+	$(document).on(afterLinePlotEvent, function(e, tag) {
+		adjustTrackingTagHeaderHeight();
+	})
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
+		adjustTrackingTagHeaderHeight();
 		if($("#plotArea").html().trim() == "") {
 			//if(plotInstance.lines.length == 0)
 			$("#plotArea").addClass("table").html('<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	})
+	function adjustTrackingTagHeaderHeight() {
+		var queryTitleHeight = $("#queryTitle").parent().height();
+		$("#toggle-tags").parent().css("height", queryTitleHeight);
+	}
 </r:script>
 </head>
 <body class="graph-page">
@@ -135,7 +143,7 @@ $(function(){
 				<g:render template="/tag/tagListWidget" model="[header: true]" />
 				<!-- RIGHT NAV HEADER -->
 				<div class="col-xs-9 floating-column">
-					<div class="red-header date-controls">
+					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
 							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
