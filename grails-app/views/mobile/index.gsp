@@ -932,14 +932,15 @@ $(function(){
 
 		$contentWrapper.show();
 		$unselectee.addClass("glow");
-		setTimeout(function() {
-			$unselectee.removeClass("glow");
-		}, 500)
 
 		if (oldText != newText || $unselectee.data('forceUpdate')) {
 			$unselectee.data('forceUpdate', 0);
 			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 			updateEntry(currentEntryId, newText, defaultToNow);
+		} else {
+			setTimeout(function() {
+				$unselectee.removeClass("glow");
+			}, 500)
 		}
 
 		$("#tagTextEdit").remove();
