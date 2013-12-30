@@ -63,7 +63,9 @@ grails.project.dependency.resolution = {
 		
 		runtime ":quartz:1.0-RC9"
 		if(Environment.current == Environment.DEVELOPMENT) {
-			compile ":quartz-monitor:0.3-RC3"
+			compile (":quartz-monitor:0.3-RC3") {
+				excludes "quartz"
+			}
 		}
 
 		runtime ":message-digest:1.1"

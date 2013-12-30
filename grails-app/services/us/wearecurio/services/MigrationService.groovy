@@ -34,6 +34,7 @@ class MigrationService {
 	public static final long CREATE_TIME_ZONES_ID = 46L
 	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
 	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 50L
+	public static final long CHANGE_TOKEN_FIELD_LENGTH = 51L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -151,6 +152,9 @@ class MigrationService {
 		}
 		tryMigration(CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID) {
 			sql("update entry set comment = 'pinned' where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
+		}
+		tryMigration(CHANGE_TOKEN_FIELD_LENGTH) {
+			sql("alter table oauth_account change column access_token access_token varchar(1024)")
 		}
 	}
 }
