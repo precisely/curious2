@@ -34,6 +34,7 @@ class MigrationService {
 	public static final long CREATE_TIME_ZONES_ID = 46L
 	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
 	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 50L
+	public static final long CHANGE_TWENTY3ANDME_DATA_TYPE = 52L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -151,6 +152,9 @@ class MigrationService {
 		}
 		tryMigration(CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID) {
 			sql("update entry set comment = 'pinned' where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
+		}
+		tryMigration(CHANGE_TWENTY3ANDME_DATA_TYPE) {
+			sql("ALTER TABLE twenty3and_me_data CHANGE data data mediumblob")
 		}
 	}
 }
