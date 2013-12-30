@@ -26,7 +26,10 @@ class HumanDataService {
 	def movesDataService
 	def oauthService
 
-	def doWithURL(Token tokenInstance, String url, String type) {
+	def doWithURL(Token tokenInstance, String url, String type, Map args = [:]) {
+		if (args.createdSince) {
+			url += "?created_since=" + args.createdSince.format("yyyyMMdd'T'HHmmss'Z'")
+		}
 		Response apiResponse = oauthService.getHumanResource(tokenInstance, url)
 
 		log.debug "Received response from Human API for type [$type] with code [$apiResponse.code]"
@@ -39,47 +42,47 @@ class HumanDataService {
 
 	JSONArray getDataForActivities(OAuthAccount account) {
 		String url = String.format(BASE_URL, "activities")
-		doWithURL(account.tokenInstance, url, "Activity")
+		doWithURL(account.tokenInstance, url, "Activity", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForBloodGlucode(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_glucose/readings")
-		doWithURL(account.tokenInstance, url, "Blood Glucose")
+		doWithURL(account.tokenInstance, url, "Blood Glucose", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForBloodPressure(OAuthAccount account) {
 		String url = String.format(BASE_URL, "blood_pressure/readings")
-		doWithURL(account.tokenInstance, url, "Blood Pressure")
+		doWithURL(account.tokenInstance, url, "Blood Pressure", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForBodyFat(OAuthAccount account) {
 		String url = String.format(BASE_URL, "body_fat/readings")
-		doWithURL(account.tokenInstance, url, "Body Fat")
+		doWithURL(account.tokenInstance, url, "Body Fat", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForBodyMassIndex(OAuthAccount account) {
 		String url = String.format(BASE_URL, "bmi/readings")
-		doWithURL(account.tokenInstance, url, "Body Mass Index")
+		doWithURL(account.tokenInstance, url, "Body Mass Index", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForHeartRate(OAuthAccount account) {
 		String url = String.format(BASE_URL, "heart_rate/readings")
-		doWithURL(account.tokenInstance, url, "Heart Rate")
+		doWithURL(account.tokenInstance, url, "Heart Rate", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForHeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "height/readings")
-		doWithURL(account.tokenInstance, url, "Height")
+		doWithURL(account.tokenInstance, url, "Height", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForSleeps(OAuthAccount account) {
 		String url = String.format(BASE_URL, "sleeps")
-		doWithURL(account.tokenInstance, url, "Sleeps")
+		doWithURL(account.tokenInstance, url, "Sleeps", [createdSince: account.lastPolled])
 	}
 
 	JSONArray getDataForWeight(OAuthAccount account) {
 		String url = String.format(BASE_URL, "weight/readings")
-		doWithURL(account.tokenInstance, url, "Weight")
+		doWithURL(account.tokenInstance, url, "Weight", [createdSince: account.lastPolled])
 	}
 
 	JSONObject getUserProfile(OAuthAccount account) {
@@ -110,10 +113,10 @@ class HumanDataService {
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
-			String source = activityData.source
+			String source = activityData.sourceType
 			log.debug "Activity Data: [$source] [$activityData.startTime] [$activityData.endTime] [$activityData.type] [$activityData.duration] [$activityData.distance] [$activityData.steps]"
 
-			Map args = [setName: "$source import", comment: "(${source.capitalize()})"]
+			Map args = [setName: "$source import", comment: "(${source?.capitalize()})"]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
 			movesDataService.processActivity(activityData, curiousUserId, activityData.type, startEndTimeFormat, args)
