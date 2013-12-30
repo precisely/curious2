@@ -15,6 +15,7 @@ import org.scribe.model.Token
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
 
@@ -22,6 +23,7 @@ class HumanDataService {
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal MM_TO_FEET = new BigDecimal(328084, 8)
 
+	def movesDataService
 	def oauthService
 
 	def doWithURL(Token tokenInstance, String url, String type) {
@@ -30,10 +32,14 @@ class HumanDataService {
 		log.debug "Received response from Human API for type [$type] with code [$apiResponse.code]"
 		if (Environment.current in [Environment.DEVELOPMENT, Environment.TEST]) {
 			log.debug "Received response from Human API for type [$type] with body [$apiResponse.body]"
-			println "Received response from Human API for type [$type] with body [$apiResponse.body]"
 		}
 
 		JSON.parse(apiResponse.body)
+	}
+
+	JSONArray getDataForActivities(OAuthAccount account) {
+		String url = String.format(BASE_URL, "activities")
+		doWithURL(account.tokenInstance, url, "Activity")
 	}
 
 	JSONArray getDataForBloodGlucode(OAuthAccount account) {
@@ -66,8 +72,8 @@ class HumanDataService {
 		doWithURL(account.tokenInstance, url, "Height")
 	}
 
-	JSONObject getDataForSleeps(OAuthAccount account) {
-		String url = String.format(BASE_URL, "sleeps/summary")
+	JSONArray getDataForSleeps(OAuthAccount account) {
+		String url = String.format(BASE_URL, "sleeps")
 		doWithURL(account.tokenInstance, url, "Sleeps")
 	}
 
@@ -98,7 +104,20 @@ class HumanDataService {
 		TimeZoneId timeZoneId = TimeZoneId.get(1)
 		Token tokenInstance = account.tokenInstance
 
+		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
+
 		DateFormat startEndTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+
+		JSONArray activitiesDataList = getDataForActivities(account)
+		activitiesDataList.each { activityData ->
+			String source = activityData.source
+			log.debug "Activity Data: [$source] [$activityData.startTime] [$activityData.endTime] [$activityData.type] [$activityData.duration] [$activityData.distance] [$activityData.steps]"
+
+			Map args = [setName: "$source import", comment: "(${source.capitalize()})"]
+			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
+
+			movesDataService.processActivity(activityData, curiousUserId, activityData.type, startEndTimeFormat, args)
+		}
 
 		// Done
 		JSONArray bloodGlucoseDataList = getDataForBloodGlucode(account)
@@ -195,8 +214,8 @@ class HumanDataService {
 			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
 		}
 
-		JSONObject sleepData = getDataForSleeps(account)
-		if(!sleepData.isEmpty()) {
+		JSONArray sleepsDataList = getDataForSleeps(account)
+		sleepsDataList.each { sleepData ->
 			String source = sleepData.source
 			log.debug "Sleep Data: [$source] [$sleepData.startTime] [$sleepData.endTime] [$sleepData.timeAsleep] [$sleepData.timeAwake]"
 
