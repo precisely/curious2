@@ -17,7 +17,7 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
-	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth"]]
+	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth", "twenty3andmeAuth", "fitbitAuth", "movesAuth", "withingsAuth"]]
 	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
 
 	def fitBitDataService
@@ -33,7 +33,6 @@ class AuthenticationController extends SessionController {
 			log.debug "Redirecting user to [$session.returnURIWithToken]"
 			redirect uri: session.returnURIWithToken
 			session.returnURIWithToken = null
-			println "sessio nreturn url $session.returnURIWithToken"
 			return false
 		}
 	}
@@ -86,12 +85,6 @@ class AuthenticationController extends SessionController {
 						tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def fitbitAuth() {
@@ -107,12 +100,6 @@ class AuthenticationController extends SessionController {
 						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def humanAuth() {
@@ -141,21 +128,9 @@ class AuthenticationController extends SessionController {
 				log.warn "Unable to create or update oauth account for moves. No raw response found in token."
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def withingsAuth() {
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def withingCallback(String userid) {

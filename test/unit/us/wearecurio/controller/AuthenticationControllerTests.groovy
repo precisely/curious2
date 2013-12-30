@@ -96,6 +96,7 @@ class AuthenticationControllerTests {
 
 		controller.session.returnURIWithToken = "home/some-url"
 		controller.movesAuth()	// Redirect url set & no logged in user
+		controller.afterAuthRedirect()
 		assert response.redirectedUrl == "home/some-url"
 		assert !controller.session.returnURIWithToken
 	}
@@ -134,6 +135,7 @@ class AuthenticationControllerTests {
 
 		controller.session.returnURIWithToken = "home/some-url"
 		controller.fitbitAuth()	// Redirect url set & no logged in user
+		controller.afterAuthRedirect()
 		assert response.redirectedUrl == "home/some-url"
 		assert !controller.session.returnURIWithToken
 	}
@@ -178,6 +180,7 @@ class AuthenticationControllerTests {
 
 		controller.session.returnURIWithToken = "home/some-url"
 		controller.twenty3andmeAuth()	// Redirect url set & no logged in user
+		controller.afterAuthRedirect()
 		assert response.redirectedUrl == "home/some-url"
 		assert !controller.session.returnURIWithToken
 	}
