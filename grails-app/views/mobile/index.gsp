@@ -644,7 +644,7 @@ $(function(){
 				{entryId:entryId, date:cachedDateUTC, currentTime:currentTimeUTC, timeZoneName:timeZoneName})),
 				function(newEntry) {
 					if (checkData(newEntry)) {
-						newEntry.glow = true;
+						//newEntry.glow = true;
 						var newEntryId = newEntry.id;
 						if (isContinuous) {
 							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
@@ -931,6 +931,11 @@ $(function(){
 		var newText = $("input#tagTextInput").val();
 
 		$contentWrapper.show();
+		$unselectee.addClass("glow");
+		setTimeout(function() {
+			$unselectee.removeClass("glow");
+		}, 500)
+
 		if (oldText != newText || $unselectee.data('forceUpdate')) {
 			$unselectee.data('forceUpdate', 0);
 			$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
@@ -981,13 +986,13 @@ $(function(){
 			return;
 		}
 		var $oldEntry = getEntryElement(entryId);
+		$oldEntry.addClass("glow");
 		$(".content-wrapper", $oldEntry).html(text);
 		if ($oldEntry.data('originalText') == text) {
 			var $contentWrapper = $oldEntry.find(".content-wrapper");
 			$contentWrapper.html($oldEntry.data('contentHTML'));
 			return; // don't update unchanged entry
 		}
-		$oldEntry.addClass("glow");
 		if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) {
 			showAB("Update just this one event or also future events?", "One", "Future", function() {
 					doUpdateEntry(entryId, text, defaultToNow, false);
