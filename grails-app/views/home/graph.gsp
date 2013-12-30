@@ -106,10 +106,10 @@ $(function(){
 });
 </script>
 <r:script>
-	$(document).on(linePlottingEventName, function(e, tag) {
+	$(document).on(beforeLinePlotEvent, function(e, tag) {
 		$("#plotArea").removeClass("table");
 	})
-	$(document).on(lineRemovedEventName, function(e, plotInstance) {
+	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if($("#plotArea").html().trim() == "") {
 			//if(plotInstance.lines.length == 0)
 			$("#plotArea").addClass("table").html('<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');

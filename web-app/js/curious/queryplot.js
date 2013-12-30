@@ -2,10 +2,10 @@
  * Supporting Javascript file for plotting/loading/saving graph data ---
  */
 
-var linePlottingEventName = "curious.line.plotting";
-var linePlottedEventName = "curious.line.ploted";
-var lineRemovingEventName = "curious.line.removing";
-var lineRemovedEventName = "curious.line.removed";
+var beforeLinePlotEvent = "curious.before.line.plot";
+var afterLinePlotEvent = "curious.after.line.plot";
+var beforeLineRemoveEvent = "curious.before.line.remove";
+var afterLineRemoveEvent = "curious.after.line.remove";
 
 var plotLineColorSequence =      [ '#FF6633', '#990066', '#5BCDFC', '#449BAF', '#9AD3AE', '#D5D879' ];
 var plotColorClass =  {'#FF6633':'orange', '#990066':'eggplant', '#5BCDFC':'malibu', 
@@ -311,7 +311,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.refreshAll();
 		this.setupSlider();
 		this.store();
-		$(document).trigger(lineRemovedEventName, this);
+		$(document).trigger(afterLineRemoveEvent, this);
 	}
 	this.getCycleTagLine = function() {
 		return this.cycleTagLine;
@@ -442,7 +442,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	
 	this.loadLine = function(save,version) {
-		$(document).trigger(linePlottingEventName);
+		$(document).trigger(beforeLinePlotEvent);
 		var parentLine = null;
 		var version = version || 5;
 		if (save.parentLineName) {
@@ -1049,7 +1049,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (this.getLineByTag(initialTag)) 
 			return;
 
-		$(document).trigger(linePlottingEventName, [initialTag]);
+		$(document).trigger(beforeLinePlotEvent, [initialTag]);
 		var plotLine = new PlotLine({plot:this, name:initialTag.description, color:this.leastUsedPlotLineColor(),
 				tag: initialTag,showYAxis: false/*this.countYAxesShowing() == 0*/,
 				isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints});
