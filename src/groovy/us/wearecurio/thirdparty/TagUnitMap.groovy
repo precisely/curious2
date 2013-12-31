@@ -6,6 +6,11 @@ import us.wearecurio.model.Entry
 
 public abstract class TagUnitMap {
 
+	final static String BLOOD_GLUCOSE = "blood glucose"
+	final static String BLOOD_OXYGEN = "blood oxygen"
+	final static String BLOOD_PRESSURE_DIASTOLIC = "blood pressure diastolic"
+	final static String BLOOD_PRESSURE_SYSTOLIC = "blood pressure systolic"
+
 	public final static String MEAL = "meal"
 	public final static String MOVEMENT = "movement"
 	public final static String MOOD = "mood"

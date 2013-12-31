@@ -103,7 +103,19 @@ class AuthenticationController extends SessionController {
 	}
 
 	def ihealthAuth() {
+		User currentUserInstance = sessionUser()
 
+		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
+
+		if (userInfo.UserID) {
+			OAuthAccount.createOrUpdate(OAuthAccount.IHEALTH_ID, currentUserInstance.id, userInfo.UserID, tokenInstance.token, "")
+		}
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
 	}
 
 	def movesAuth() {
