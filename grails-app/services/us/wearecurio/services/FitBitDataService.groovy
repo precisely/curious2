@@ -158,7 +158,7 @@ class FitBitDataService {
 			for (OAuthAccount account in accounts) {
 				def collectionType = notification.collectionType
 				def requestUrl
-				Map args = [setName: setName, comment: comment]
+				Map args = [setName: setName + " " + notification.date, comment: comment]
 
 				if (collectionType.equals("foods")) {
 					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
