@@ -19,9 +19,11 @@ import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
 
-	static final String BASE_URL = "https://api.humanapi.co/v1/human/%s"
+	static final String BASE_URL = "http://api.humanapi.co/v1/human/%s"
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal MM_TO_FEET = new BigDecimal(328084, 8)
+	static final String COMMENT = "(Human-%s)"
+	static final String SET_NAME = "human %s import"
 
 	def movesDataService
 	def oauthService
@@ -102,8 +104,10 @@ class HumanDataService {
 	Map poll(OAuthAccount account) {
 		boolean success = true
 		int amountPrecision = 2
-		Date lastPolled = new Date()
 		long curiousUserId = account.userId
+
+		Date lastPolled = new Date()
+		String comment, description, setName, source, units
 		TimeZoneId timeZoneId = TimeZoneId.get(1)
 		Token tokenInstance = account.tokenInstance
 
@@ -113,10 +117,12 @@ class HumanDataService {
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
-			String source = activityData.sourceType
+			source = activityData.sourceType
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
 			log.debug "Activity Data: [$source] [$activityData.startTime] [$activityData.endTime] [$activityData.type] [$activityData.duration] [$activityData.distance] [$activityData.steps]"
 
-			Map args = [setName: "$source import", comment: "(${source?.capitalize()})"]
+			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
 			movesDataService.processActivity(activityData, curiousUserId, activityData.type, startEndTimeFormat, args)
@@ -125,131 +131,156 @@ class HumanDataService {
 		// Done
 		JSONArray bloodGlucoseDataList = getDataForBloodGlucode(account)
 		bloodGlucoseDataList.each { bgData ->
-			String source = bgData.source
+			source = bgData.source
 			log.debug "BG Data: [$source] [$bgData.timestamp] [$bgData.value] [$bgData.unit]"
 
-			String units = "mg/dL"
-			String description = "blood glucose"
+			units = "mg/dL"
+			description = "blood glucose"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(bgData.timestamp)
 			BigDecimal value = new BigDecimal(bgData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray bloodPressureDataList = getDataForBloodPressure(account)
 		bloodPressureDataList.each { bpData ->
-			String source = bpData.source
+			source = bpData.source
 			log.debug "BP Data: [$source] [$bpData.timestamp] [$bpData.value] [$bpData.unit]"
 
-			String units = "mmHg"
-			String description = "blood pressure diastolic"
+			units = "mmHg"
+			description = "blood pressure diastolic"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(bpData.timestamp)
 			BigDecimal value = new BigDecimal(bpData.value.diastolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 
 			description = "blood pressure systolic"
 			value = new BigDecimal(bpData.value.systolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray bodyFatDataList = getDataForBodyFat(account)
 		bodyFatDataList.each { fatData ->
-			String source = fatData.source
+			source = fatData.source
 			log.debug "Body Fat Data: [$source] [$fatData.timestamp] [$fatData.value] [$fatData.unit]"
-			String units = "percent"
-			String description = "fat ratio"
+
+			units = "percent"
+			description = "fat ratio"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(fatData.timestamp)
 			BigDecimal value = new BigDecimal(fatData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray bmiDataList = getDataForBodyMassIndex(account)
 		bmiDataList.each { bmiData ->
-			String source = bmiData.source
+			source = bmiData.source
 			log.debug "BMI Data: [$source] [$bmiData.timestamp] [$bmiData.value] [$bmiData.unit]"
 
-			String units = "kg/m2"
-			String description = "body mass index"
+			units = "kg/m2"
+			description = "body mass index"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(bmiData.timestamp)
 			BigDecimal value = new BigDecimal(bmiData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray heartRateDataList = getDataForHeartRate(account)
 		heartRateDataList.each { heartRateData ->
-			String source = heartRateData.source
+			source = heartRateData.source
 			log.debug "Heart Rate Data: [$source] [$heartRateData.timestamp] [$heartRateData.value] [$heartRateData.unit]"
 
-			String units = "bpm"
-			String description = "heart rate"
+			units = "bpm"
+			description = "heart rate"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(heartRateData.timestamp)
 			BigDecimal value = new BigDecimal(heartRateData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray heightDataList = getDataForHeight(account)
 		bmiDataList.each { heartData ->
-			String source = heartData.source
+			source = heartData.source
 			log.debug "Height Data: [$source] [$heartData.timestamp] [$heartData.value] [$heartData.unit]"
 
-			String units = "feet"
-			String description = "height"
+			units = "feet"
+			description = "height"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
+
 			Date entryDate = startEndTimeFormat.parse(heartData.timestamp)
 			BigDecimal value = new BigDecimal(heartData.value)
 			value = value.multiply(MM_TO_FEET).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		JSONArray sleepsDataList = getDataForSleeps(account)
 		sleepsDataList.each { sleepData ->
-			String source = sleepData.source
+			source = sleepData.source
 			log.debug "Sleep Data: [$source] [$sleepData.startTime] [$sleepData.endTime] [$sleepData.timeAsleep] [$sleepData.timeAwake]"
 
-			String units = "mins"
-			String description = "sleep"
+			units = "mins"
+			description = "sleep"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
 			Date entryDate = startEndTimeFormat.parse(sleepData.startTime)
 			BigDecimal value = new BigDecimal(sleepData.timeAsleep + sleepData.timeAwake)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 
 			units = ""
 			description = "sleep interruptions"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
 			value = new BigDecimal(sleepData.timeAwake)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
 		JSONArray weightDataList = getDataForWeight(account)
 		weightDataList.each { weightData ->
-			String source = weightData.source
+			source = weightData.source
 			log.debug "Weight: [$weightData.timestamp] [$weightData.value] [$weightData.unit]"
 
-			String units = "lbs"
-			String description = "weight"
+			units = "lbs"
+			description = "weight"
+			setName = String.format(SET_NAME, source)
+			comment = String.format(COMMENT, source?.capitalize())
 
 			Date entryDate = startEndTimeFormat.parse(weightData.timestamp)
 			BigDecimal value = new BigDecimal(weightData.value)
 			value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, "(${source.capitalize()})", "$source import", amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
 		}
 
 		account.lastPolled = lastPolled
