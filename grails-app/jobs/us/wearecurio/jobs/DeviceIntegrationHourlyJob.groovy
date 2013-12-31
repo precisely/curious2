@@ -4,6 +4,7 @@ import us.wearecurio.utility.TimerJob
 
 class DeviceIntegrationHourlyJob extends TimerJob {
 
+	def IHealthDataService
 	def movesDataService
 
 	static triggers = {
@@ -11,6 +12,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	}
 
 	def execute() {
+		IHealthDataService.poll()
 		movesDataService.poll()
 	}
 

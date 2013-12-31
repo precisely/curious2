@@ -35,6 +35,10 @@ class IHealthDataService {
 
 		String url = String.format(BASE_URL, userId, pathName, clientId, clientSecret, tokenInstance.token, callbackURL)
 
+		if(pathName && account.lastPolled) {	// If asking for other than profile resource
+			url += "&START_TIME=" + account.lastPolled.time
+		}
+
 		Response apiResponse = oauthService.getIHealthResource(tokenInstance, url)
 
 		log.debug "Received [$type] response from IHealth API with code [$apiResponse.code]"
@@ -85,7 +89,7 @@ class IHealthDataService {
 		long curiousUserId = account.userId
 
 		BigDecimal value
-		Date date
+		Date date, now = new Date()
 		Entry entry
 		String description, units = ""
 		TimeZoneId timeZoneId = TimeZoneId.get(1)
@@ -169,6 +173,8 @@ class IHealthDataService {
 			entry = Entry.create(curiousUserId, date, timeZoneId, description, value, units, COMMENT, SET_NAME, amountPrecision)
 		}
 
+		account.lastPolled = now
+		account.save()
 		return [success: success]
 	}
 
