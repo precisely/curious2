@@ -27,7 +27,7 @@ class OAuthAccount {
 		userId(unique:['typeId'])
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
-		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID]
+		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID, IHEALTH_ID]
 	}
 
 	public static def createOrUpdate(Integer typeId, Long userId, String accountId, String accessToken, String accessSecret) {

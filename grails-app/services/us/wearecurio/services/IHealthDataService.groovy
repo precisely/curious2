@@ -54,11 +54,11 @@ class IHealthDataService {
 	}
 
 	JSONObject getDataForBloodOxygen(OAuthAccount account) {
-		doWithURL(account, "Blood Pressure Data", [pathName: "bp"])
+		doWithURL(account, "Blood Pressure Data", [pathName: "spo2"])
 	}
 
 	JSONObject getDataForBloodPressure(OAuthAccount account) {
-		doWithURL(account, "Blood Pressure Data", [pathName: "spo2"])
+		doWithURL(account, "Blood Pressure Data", [pathName: "bp"])
 	}
 
 	JSONObject getDataForSleep(OAuthAccount account) {
