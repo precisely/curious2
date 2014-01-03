@@ -14,8 +14,8 @@ class BootStrap {
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
-		withingsDataService.poll()
-		withingsDataService.refreshSubscriptions()
+		//withingsDataService.poll()
+		//withingsDataService.refreshSubscriptions()
 	}
 
 	def destroy = {
