@@ -22,6 +22,7 @@ class EntryTests extends GroovyTestCase {
 	Date earlyBaseDate
 	Date earlyBaseDate2
 	Date currentTime
+	Date slightDifferentCurrentTime
 	Date endTime
 	String timeZone // simulated server time zone
 	String timeZone2 // simulated server time zone
@@ -49,6 +50,7 @@ class EntryTests extends GroovyTestCase {
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
 		earlyBaseDate2 = dateFormat.parse("June 24, 2010 11:00 pm")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
+		slightDifferentCurrentTime = dateFormat.parse("July 1, 2010 4:00 pm")
 		lateCurrentTime = dateFormat.parse("July 3, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
@@ -404,6 +406,56 @@ class EntryTests extends GroovyTestCase {
 		
 		assert testPlot(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, "America/Los_Angeles") {
 		} == 1
+	}
+	
+	@Test
+	void testSumPlotData() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+	
+		Entry.create(userId, Entry.parse(slightDifferentCurrentTime, timeZone, "bread 3", baseDate, true), null)
+		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", baseDate, true), null)
+		
+		def results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), null, null, "America/Los_Angeles")
+		
+		def c = 0
+		for (result in results) {
+			def date = Utils.dateToGMTString(result[0])
+			assert date == "2010-07-01T19:00:00"
+			assert result[1].intValue() == 1
+			assert result[2] == "bread"
+			++c
+		}
+		
+		assert c == 1
+		
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), lateBaseDate, null, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 0
+		
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, baseDate, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 0
+		
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, lateBaseDate, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 1
 	}
 	
 	@Test

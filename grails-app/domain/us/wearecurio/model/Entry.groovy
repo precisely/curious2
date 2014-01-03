@@ -1646,7 +1646,33 @@ class Entry {
 			}
 		}
 	}
+	
+	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate) {
+		// fetch sum of non-repeat entries
+		String queryStr = "select count(*), sum(sin(time_to_sec(entry.date) / 43200.0 * pi())), sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.repeat_end is null " \
+				+ "and entry.tag_id in (:tagIds)"
 
+		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
+
+		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
+		
+		rawResults = rawResults
+		
+		// fetch sum of repeat entries
+		queryStr = "select sum(datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate)))), " \
+				+ "sum(sin(time_to_sec(entry.date) / 43200.0 * pi())) * datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate))), " \
+				+ "sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) * datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate)))" \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is not null and entry.repeat_end > :startDate) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
+
+		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
+		
+		rawResults = rawResults
+	}	
+	
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
@@ -1720,24 +1746,39 @@ class Entry {
 	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
 
 	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
+		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
+
+		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
+		/*if (startDate == null) {
+			DateTime startDateTime = new DateTime(new Date(-30610137600000), currentTimeZone) // set start date to 1000 AD if startDate isn't specified
+			// set time to zero
+			startDate = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
+		}*/
+		
 		if (sumNights) {
-			if (startDate != null)
-				startDate = new Date(startDate.getTime() + HALFDAYTICKS)
-			if (endDate != null)
-				endDate = new Date(endDate.getTime() + HALFDAYTICKS)
+			startDate = new Date(startDate.getTime() + HALFDAYTICKS)
+			endDate = new Date(endDate.getTime() + HALFDAYTICKS)
 		}
 
 		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, timeZoneName)
 
-		long startTime = startDate.getTime()
-		long startDayTime = startTime
-		long endDayTime = startDayTime + DAYTICKS
+		Long startTime = startDate?.getTime()
+		Long startDayTime = startTime
+		Long endDayTime = startDayTime != null ? startDayTime + DAYTICKS : null
 
 		def currentResult = null
 		def summedResults = []
 
 		for (result in rawResults) {
-			long resultTime = result[SHORT_DESC_DATE].getTime()
+			Date resultDate = result[SHORT_DESC_DATE]
+			if (startDate == null) { // no start date, start a date at midnight
+				DateTime startDateTime = new DateTime(resultDate, currentTimeZone) // set start date to 1000 AD if startDate isn't specified
+				// set time to zero
+				startDate = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
+				startDayTime = startDate.getTime()
+				endDayTime = startDayTime + DAYTICKS
+			}
+			Long resultTime = resultDate.getTime()
 			if (resultTime < startDayTime || resultTime > endDayTime) { // switch to new day
 				currentResult = null
 				startDayTime = resultTime - ((resultTime - startTime) % DAYTICKS) // start of next day
