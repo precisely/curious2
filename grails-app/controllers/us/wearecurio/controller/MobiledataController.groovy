@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory
 class MobiledataController extends DataController {
 
 	private static def log = LogFactory.getLog(this)
-
+	
 	static debug(str) {
 		log.debug(str)
 	}
@@ -80,5 +80,33 @@ class MobiledataController extends DataController {
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {
 			renderJSONPost([success:false, message:"All fields are required."])
 		}
+	}
+		
+	def registerForPushNotification() {
+		def user = sessionUser()
+		debug user.dump()
+		PushNotificationDevice pushNotificationDeviceInstance = 
+			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
+		if (!pushNotificationDeviceInstance) {
+			pushNotificationDeviceInstance = new PushNotificationDevice()
+			pushNotificationDeviceInstance.token = params.token
+			pushNotificationDeviceInstance.deviceType = params.int('deviceType')
+			pushNotificationDeviceInstance.userId = user.id
+			if (pushNotificationDeviceInstance.validate()) {
+				pushNotificationDeviceInstance.save()
+				debug "Registering device for push notification"
+			}
+			else {
+				pushNotificationDeviceInstance.errors.allErrors.each {
+					println it
+				}
+			}
+		} else {
+			debug "Device already registered to be notified."
+		}
+			
+		debug params.dump()
+		
+		renderJSONGet([success:true])
 	}
 }

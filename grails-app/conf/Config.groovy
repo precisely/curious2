@@ -84,6 +84,23 @@ backgroundThread {
   tasksPerDrain = 100 // See Note
 }
 
+android.gcm.api.key = 'AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk'
+android.gcm.time.to.live=1419200
+android.gcm.delay.'while'.idle=false
+android.gcm.retries=3
+
+pushNotification {
+	apns {
+		pathToCertificate = "./ios-cert/dev/iphone_dev.p12"
+		password = "causecode.11"
+		environment = "sandbox"
+	}
+	
+	gcm {
+		senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
+	}
+}
+
 environments {
     development {
         grails.logging.jul.usebridge = true
@@ -99,6 +116,7 @@ environments {
 				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
 			}
 		}
+		
 		oauth {
 			providers {
 				fitbit {
@@ -153,6 +171,18 @@ environments {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
+			}
+		}
+		
+		pushNotification {
+			apns {
+				pathToCertificate = "./ios-cert/iphone_prod.p12"
+				password = "causecode.11"
+				environment = "production"
+			}
+			
+			gcm {
+				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
 			}
 		}
     }

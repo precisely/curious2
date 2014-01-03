@@ -35,10 +35,14 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.codehaus.org"
         mavenRepo "http://download.java.net/maven/2/"
         mavenRepo "http://repository.jboss.com/maven2/"
+		mavenRepo "https://github.com/slorber/gcm-server-repository/raw/master/releases/"
     }
 
     dependencies {
-        runtime 'mysql:mysql-connector-java:5.1.22'
+        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
+		compile 'com.ganyo:gcm-server:1.0.2'
+		compile 'com.notnoop.apns:apns:0.1.6'
+		runtime 'mysql:mysql-connector-java:5.1.22'
     }
 
     plugins {
