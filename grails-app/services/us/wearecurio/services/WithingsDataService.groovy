@@ -10,6 +10,7 @@ import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
@@ -279,7 +280,7 @@ class WithingsDataService {
 						units = "bpm"
 						break
 					}
-					def entry = Entry.create(userId, date, 0, description, value, units, "(Withings)", WITHINGS_SET_NAME, amountPrecision)
+					def entry = Entry.create(userId, date, TimeZoneId.look("America/Los_Angeles"), description, value, units, "(Withings)", WITHINGS_SET_NAME, amountPrecision)
 				}
 			}
 		}
