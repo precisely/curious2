@@ -780,6 +780,7 @@ div.plotLine:hover span {
 
 .sharePage .leftNav,.sharePage .main {
 	border:0px;
+	float:left;
 	-moz-box-shadow: 0px 0px 0px;
 	-webkit-box-shadow: 0px 0px 0px;
 	box-shadow: 0px 0px 0px;	
