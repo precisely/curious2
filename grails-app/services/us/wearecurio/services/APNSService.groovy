@@ -1,7 +1,7 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory;
 
-import com.notnoop.apns.*
+import com.notnoop.apns.ApnsService
 
 class APNSService {
 	

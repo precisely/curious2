@@ -608,9 +608,10 @@ $(function(){
 			
 			$textInput.on("blur", function(e) {
 				if ($(this).data('cancelBlur')) return;
-				var $unselectee = $(this).parent("li");
+				var $unselectee = $(this).parents("li");
 				checkAndUpdateEntry($unselectee);
-				$unselectee.data('entryIsSelected', 0);
+				$unselectee.data('entryIsSelected', 1);
+				unselecting($unselectee);
 			})
 			$textInput.keyup(function(e) {
 				var $selectee = $(this).parents("li");
