@@ -493,7 +493,7 @@ function selected($selectee, forceUpdate) {
 		$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
 			if ($(this).data('cancelBlur')) return;
 			$selectee.data('entryIsSelected', 0);
-			var $unselectee = $(this).parent("li");
+			var $unselectee = $(this).parents("li");
 			checkAndUpdateEntry($unselectee);
 		});
 		$("#tagTextInput").data('entryTextSet', true);
