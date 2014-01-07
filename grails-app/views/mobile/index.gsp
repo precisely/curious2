@@ -163,7 +163,7 @@ function getCSRFPreventionObjectMobile(key, data) {
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="/static/css/mobile.css?ver=1" />
 <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom2.css" rel="stylesheet">
-<link type="text/css" href="/static/css/mobile/trackPage.css?ver=10" rel="stylesheet">
+<link type="text/css" href="/static/css/mobile/trackPage.css?ver=11" rel="stylesheet">
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF, getListDataCSRF,
 	activateGhostEntryCSRF" />
@@ -1195,11 +1195,13 @@ $(function(){
 	<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 
 	<div class="dataEntry">
-		<form id="taginput" onsubmit="return false;" action="#">
-		<input type="text" id="input0" name="data" style="width:calc(100% - 110px);margin-right:5px;" class="textField" />
-		<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
-		<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
-		<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
+		<form id="taginput" onsubmit="return false;" action="#" style="padding-top: 0.7em; padding-bottom: 0.7em;">
+			<input type="text" id="input0" name="data" style="width:calc(100% - 110px);margin-right:5px;" class="textField" />
+			<div style="display: inline-block;vertical-align: middle;">
+				<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;"></a>
+				<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;"></a>
+				<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;"></a>
+			</div>
 		</form>
 		<hr />
 		</div>
