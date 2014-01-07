@@ -470,7 +470,7 @@ function selected($selectee, forceUpdate) {
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		var selectRange = entrySelectData[currentEntryId];
 		$contentWrapper.hide();
-		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 635px;"></input>'
+		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 85%;"></input>'
 				+ '<img src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 				+ '<img src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 				+ '<img src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
