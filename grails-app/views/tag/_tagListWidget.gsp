@@ -22,7 +22,7 @@
 			elementToCollapse.slideToggle("slow", function() {
 				elementToCollapse.css("overflow", "visible");	// For dragging tag to plot graph area.
 			});
-		})
+		})<g:if test="${expandByDefault }">.trigger("click");</g:if>
 	</r:script>
 </g:if>
 <g:else>
