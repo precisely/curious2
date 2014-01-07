@@ -1129,3 +1129,15 @@ body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 /**
  * Styles for track page for web application. Ends here.
  */
+
+.tags-collapsed-right {
+	padding-left: 2px;
+}
+.tags-collapsed-left {
+	padding-right: 0px;
+}
+.tags-collapsed-left .red-header {
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+}

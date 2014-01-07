@@ -142,7 +142,7 @@ $(function(){
 				<!-- RIGHT NAV HEADER -->
 				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column">
+				<div class="col-xs-9 floating-column header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
