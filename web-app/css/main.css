@@ -177,21 +177,11 @@ body.graph-page .querycontrols {
 /**
  * Styles for graph page ends here.
  */
-.discussmain {
-	width:750px;
-	margin:0px;
-}
 .discussmain .cycleTagInput {
 	margin-left:58px;
 }
 .discussmain .discussPlotArea {
-	width:750px;
 	height:550px;
-	float:right;
-}
-.discusscontrols {
-	width:750px;
-	margin:0px;
 }
 #dashmain {
 	width:800px;
@@ -454,7 +444,6 @@ ul#tagList {
 	box-shadow: 3px 3px 3px #dddddd;
 }
 #plotLeftNav {
-	width:172x;
 	height:600px;
 }
 #plotLinesplotArea {
@@ -780,7 +769,6 @@ div.plotLine:hover span {
 
 .sharePage .leftNav,.sharePage .main {
 	border:0px;
-	float:left;
 	-moz-box-shadow: 0px 0px 0px;
 	-webkit-box-shadow: 0px 0px 0px;
 	box-shadow: 0px 0px 0px;	
