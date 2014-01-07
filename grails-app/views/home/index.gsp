@@ -692,7 +692,7 @@ $(function(){
 
 	<div class="row custom-row">
 		<g:render template="/tag/tagListWidget" model="[header: true]" />
-		<div class="col-xs-9 floating-column header-container tags-collapsed-left">
+		<div class="col-xs-9 floating-column header-container">
 			<div class="red-header date-controls">
 				<h1 class="clearfix">
 					<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">

@@ -1,5 +1,5 @@
 <g:if test="${header }">
-	<div class="col-xs-3 pull-right fixed-column tag-header-container ${expandByDefault ? '' : 'tags-collapsed-right' }">
+	<div class="col-xs-3 pull-right fixed-column tag-header-container">
 		<div class="red-header">
 			<h1>
 				<span class="pointer icon-triangle icon-triangle-right" id="toggle-tags"></span>
@@ -32,6 +32,9 @@
 				}
 			});
 		})<g:if test="${expandByDefault }">.trigger("click");</g:if>
+		<g:else>
+			toggleClasses(true);
+		</g:else>
 	</r:script>
 </g:if>
 <g:else>
