@@ -909,7 +909,7 @@ function getEntryElement(entryId) {
 function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 	cacheNow();
 
-	var argsToSend = getCSRFPreventionObject("updateEntrySDataCSRF", {
+	var argsToSend = getCSRFPreventionObjectMobile("updateEntrySDataCSRF", {
 		entryId : entryId,
 		currentTime : currentTimeUTC,
 		text : text,
