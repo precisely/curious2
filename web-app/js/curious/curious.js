@@ -195,7 +195,7 @@ function checkData(data, status, errorMessage, successMessage) {
 		return true;
 	}
 	if (typeof(data) == 'string') {
-		if (status != 'cached') {
+		if (status != 'cached' && data != "") {
 			alert(data);
 			location.reload(true);
 		}

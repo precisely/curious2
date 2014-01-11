@@ -465,6 +465,8 @@ function clearEntries() {
 /*
  * Gets called on selection of the entry, or used to select an entry.
  */
+
+var mouseDownOnDeleteEntry = false; // Used to track mousedown during blur even
 function selected($selectee, forceUpdate) {
 	var state = $selectee.data('entryIsSelected');
 	$selectee.data('forceUpdate', forceUpdate);
@@ -510,16 +512,22 @@ function selected($selectee, forceUpdate) {
 		// Binding blur event on element instead of globally to prevent
 		// concurrent exception.
 		var $textInput = $("#tagTextInput").val(entryText).focus();
-
+		$(".entryDelete").mousedown(function(e) {
+			mouseDownOnDeleteEntry = true;
+		});
 		$textInput.on("blur", function(e) {
-			
 			if ($(this).data('cancelBlur'))
 				return;
+			
+			if(mouseDownOnDeleteEntry) {
+				mouseDownOnDeleteEntry = false;
+				return;
+			}
 			var $unselectee = $(this).parents("li");
 			checkAndUpdateEntry($unselectee);
 			$unselectee.data('entryIsSelected', 1);
 			unselecting($unselectee);
-		})
+		});
 		$textInput.keyup(function(e) {
 			var $selectee = $(this).parents("li");
 			if (e.keyCode == 13) { // Enter pressed
@@ -921,7 +929,11 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 
 	$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 			function(entries) {
-				if (checkData(entries)) {
+				if (entries == "") {
+					return;
+				}
+				//Temporary fix since checkData fails
+				if (typeof entries[0] != 'undefined' && entries[0].length > 0) {
 					$.each(entries[0], function(index, entry) {
 						// Finding entry which is recently updated.
 						if (entry.id == entryId) {
