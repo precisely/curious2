@@ -16,6 +16,6 @@ class MobileController extends SessionController {
 	}
 	
 	def index() {
-		redirect(uri:urlService.make([controller:"mobile",action:"index.html"]))
+		redirect(uri:urlService.make([controller:"mobile",action:"main.html"]))
 	}
 }
