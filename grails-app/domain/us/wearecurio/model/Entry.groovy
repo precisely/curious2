@@ -524,7 +524,7 @@ class Entry {
 		Long repeatEndTime = entry.getRepeatEnd()?.getTime()
 		boolean endAfterToday = repeatEndTime == null ? true : repeatEndTime >= entry.getDate().getTime() + DAYTICKS - HOURTICKS;
 
-		if (allFuture) {
+		if (allFuture || entry.getRepeatType() == null) {
 			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
 				TagStatsRecord record = new TagStatsRecord()
 				Entry.delete(entry, record)
@@ -539,7 +539,7 @@ class Entry {
 				if (endAfterToday) {
 					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
 
-					if (repeatEndTime < newDateTime.toMillis()) {
+					if (repeatEndTime < newDateTime.getMillis()) {
 						Entry.delete(entry, null)
 					} else {
 						entry.setDate(newDateTime.toDate())
