@@ -59,20 +59,23 @@ class Entry {
 		durationType column:'duration_type', index:'duration_type_index'
 	}
 
-	public static enum RepeatType {
+	public static enum RepeatType { // IMPORTANT: there must be ghost entries for all non-ghost entries and vice-versa
 		// if you add more remind types, please edit the sql in RemindEmailService
 		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
+		DAILYGHOST(DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), WEEKLYGHOST(WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
 		REMINDDAILY(REMIND_BIT | DAILY_BIT, 24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-
+		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
+		
 		CONTINUOUS(CONTINUOUS_BIT, 1),
 		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
 
 		DAILYCONCRETEGHOST(CONCRETEGHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
+		DAILYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
 		WEEKLYCONCRETEGHOST(CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-
-		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-
-		GHOST(GHOST_BIT, 0)
+		WEEKLYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
+		
+		GHOST(GHOST_BIT, 0),
+		NOTHING(0, 0)
 
 		public static final int DAILY_BIT = 1
 		public static final int WEEKLY_BIT = 2
@@ -520,26 +523,27 @@ class Entry {
 	 */
 	public static deleteGhost(Entry entry, Date baseDate, boolean allFuture) {
 		long entryTime = entry.getDate().getTime()
-		long baseDateTime = baseDate.getTime()
-		Long repeatEndTime = entry.getRepeatEnd()?.getTime()
+		long baseTime = baseDate.getTime()
+		Date repeatEndDate = entry.getRepeatEnd()
+		Long repeatEndTime = repeatEndDate?.getTime()
 		boolean endAfterToday = repeatEndTime == null ? true : repeatEndTime >= entry.getDate().getTime() + DAYTICKS - HOURTICKS;
 
-		if (allFuture || entry.getRepeatType() == null) {
-			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data
+		if (allFuture) {
+			if (entryTime >= baseTime && entryTime - baseTime < DAYTICKS) { // entry is in today's data
 				TagStatsRecord record = new TagStatsRecord()
 				Entry.delete(entry, record)
-			} else if (entryTime <= baseDateTime) { // this should always be true
+			} else if (entryTime <= baseTime) { // this should always be true
 				entry.setRepeatEnd(baseDate)
 				Utils.save(entry, true)
 			} else {
 				log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
 			}
 		} else {
-			if (entryTime >= baseDateTime && entryTime - baseDateTime < DAYTICKS) { // entry is in today's data, change to next day
+			if (entryTime >= baseTime && entryTime - baseTime < DAYTICKS) { // entry is in today's date, change to next day
 				if (endAfterToday) {
 					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
 
-					if (repeatEndTime < newDateTime.getMillis()) {
+					if (repeatEndTime != null && repeatEndTime < newDateTime.getMillis()) {
 						Entry.delete(entry, null)
 					} else {
 						entry.setDate(newDateTime.toDate())
@@ -549,22 +553,37 @@ class Entry {
 				} else { // otherwise, delete entry
 					Entry.delete(entry, null)
 				}
-			} else if (entryTime <= baseDateTime) { // this should always be true
-				entry.setRepeatEnd(baseDate)
+			} else if (entryTime <= baseTime) { // this should always be true
+				Date prevDate = TimeZoneId.previousDayFromDateSameTime(baseDate, entry.fetchDateTime()).toDate()
+				long prevTime = prevDate.getTime()
+				if (prevTime <= entryTime)
+					entry.setRepeatEnd(entry.getDate())
+				else
+					entry.setRepeatEnd(prevDate)
 				Utils.save(entry, true)
 
 				if (endAfterToday) {
-					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
+					DateTime newDateTime = TimeZoneId.nextDayFromDateSameTime(baseDate, entry.fetchDateTime())
 
-					if (repeatEndTime >= newDateTime.getMillis()) {
+					Date newDate = newDateTime.toDate()
+					
+					if (repeatEndTime == null || repeatEndTime >= newDate.getTime()) {
 						def m = [:]
 						m['description'] = entry.getTag().getDescription()
 						m['date'] = newDateTime.toDate()
 
-						def repeatTypes = [
-							entry.getRepeatType().getId(),
-							entry.getRepeatType().toggleGhost().getId()
-						]
+						def repeatId = entry.getRepeatType().getId()
+						def toggleType = entry.getRepeatType().toggleGhost()
+						
+						def repeatTypes
+						
+						if (toggleType != null)
+							repeatTypes = [
+								repeatId,
+								entry.getRepeatType().toggleGhost().getId()
+							]
+						else
+							repeatTypes = [ repeatId ]
 
 						// look for entry that already exists one day later
 						// new date is one day after current baseDate
@@ -1467,7 +1486,7 @@ class Entry {
 
 		String queryStr = "select distinct entry.id " \
 		+ "from entry entry where entry.user_id = :userId and " \
-		+ "entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :remindBit <> 0) " \
+		+ "entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :remindBit <> 0) " \
 		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :interval"
 
 		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), endDate:endDate, startDate:startDate, interval:intervalSecs, remindBit:RepeatType.REMIND_BIT])
@@ -1484,14 +1503,14 @@ class Entry {
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds)))) or " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds)))) " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds)))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 
 		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousIds:CONTINUOUS_IDS]
-
+		
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []
@@ -1506,7 +1525,7 @@ class Entry {
 			desc['timeZoneName'] = timeZoneName
 			if (entry.repeatType != null) { // adjust dateTime for repeat entries
 				def date = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
-				if (entry.repeatEnd != null && entry.repeatEnd.getTime() <= date.getTime()) // check if adjusted time is after repeat end
+				if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
 					continue
 				desc['date'] = date
 			}
@@ -1532,7 +1551,7 @@ class Entry {
 		// get continuous repeating elements
 		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "(entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end > :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
+				+ "(entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
 
@@ -1625,7 +1644,7 @@ class Entry {
 		// get timed daily repeats (not ghosted)
 
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end > :startDate) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
 		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]

@@ -74,6 +74,19 @@ class TimeZoneId {
 		return timeZoneId
 	}
 	
+	public static DateTime nextDayFromDateSameTime(Date baseDate, DateTime dateTime) {
+		DateTimeZone dateTimeZone = dateTime.getZone()
+		DateTime baseDateTime = new DateTime(baseDate, dateTimeZone)
+		LocalDate localDate = baseDateTime.toLocalDate()
+		LocalTime localTime = dateTime.toLocalTime()
+		
+		DateTime result = localDate.plusDays(1).toDateTime(localTime, dateTimeZone)
+		if (result.toDate() < baseDate + 1) {
+			return localDate.plusDays(2).toDateTime(localTime, dateTimeZone)
+		} else
+			return result
+	}
+	
 	public static DateTime nextDaySameTime(DateTime dateTime) {
 		LocalDate localDate = dateTime.toLocalDate()
 		LocalTime localTime = dateTime.toLocalTime()
@@ -81,6 +94,19 @@ class TimeZoneId {
 		DateTimeZone dateTimeZone = dateTime.getZone()
 		
 		return localDate.plusDays(1).toDateTime(localTime, dateTimeZone)
+	}
+	
+	public static DateTime previousDayFromDateSameTime(Date baseDate, DateTime dateTime) {
+		DateTimeZone dateTimeZone = dateTime.getZone()
+		DateTime baseDateTime = new DateTime(baseDate, dateTimeZone)
+		LocalDate localDate = baseDateTime.toLocalDate()
+		LocalTime localTime = dateTime.toLocalTime()
+		
+		DateTime result = localDate.minusDays(1).toDateTime(localTime, dateTimeZone)
+		if (result.toDate() < baseDate - 1) {
+			return localDate.toDateTime(localTime, dateTimeZone)
+		} else
+			return result
 	}
 	
 	public static LocalDate getNthSundayOfMonth(final int n, final int month, final int year) {
