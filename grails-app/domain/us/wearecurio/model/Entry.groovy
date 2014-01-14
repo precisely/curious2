@@ -59,20 +59,21 @@ class Entry {
 		durationType column:'duration_type', index:'duration_type_index'
 	}
 
-	public static enum RepeatType {
+	public static enum RepeatType { // IMPORTANT: there must be ghost entries for all non-ghost entries and vice-versa
 		// if you add more remind types, please edit the sql in RemindEmailService
 		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
+		DAILYGHOST(DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), WEEKLYGHOST(WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
 		REMINDDAILY(REMIND_BIT | DAILY_BIT, 24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-
+		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
+		
 		CONTINUOUS(CONTINUOUS_BIT, 1),
 		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
 
 		DAILYCONCRETEGHOST(CONCRETEGHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
 		WEEKLYCONCRETEGHOST(CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
 
-		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-
-		GHOST(GHOST_BIT, 0)
+		GHOST(GHOST_BIT, 0),
+		NOTHING(0, 0)
 
 		public static final int DAILY_BIT = 1
 		public static final int WEEKLY_BIT = 2
