@@ -142,42 +142,40 @@ function submitForm() {
 							}
 						});
 	} else if (loginMode == 10) { // forgot password
-		$
-				.getJSON(
-						makeGetUrl('doforgotData'),
-						makeGetArgs({
-							username : username
-						}),
-						function(data) {
-							if (data['success']) {
-								showAlert('Look for instructions on recovering your account information in your email.');
-								startLogin(0);
-							} else {
-								showAlert(data['message']
-										+ " Please try again or hit Cancel to return to the login screen.");
-							}
-						});
+		$.getJSON(
+			makeGetUrl('doforgotData'),
+			makeGetArgs({
+				username : username
+			}),
+			function(data) {
+				if (data['success']) {
+					showAlert('Look for instructions on recovering your account information in your email.');
+					startLogin(0);
+				} else {
+					showAlert(data['message']
+						+ " Please try again or hit Cancel to return to the login screen.");
+				}
+			});
 	} else if (loginMode == 20) { // create an account
-		$
-				.postJSON(
-						makePostUrl('doregisterData'),
-						makePostArgs({
-							email : email,
-							username : username,
-							password : password,
-							groups : "['announce','curious','curious announce']"
-						}),
-
-						function(data) {
-							if (data['success']) {
-								localStorage['mobileSessionId'] = data['mobileSessionId'];
-								dataReady = true;
-								launchTrack();
-							} else {
-								showAlert(data['message']
-										+ ' Please try again or hit Cancel to return to the login screen.');
-							}
-						});
+		$.postJSON(
+			makePostUrl('doregisterData'),
+			makePostArgs({
+				email : email,
+				username : username,
+				password : password,
+				groups : "['announce','curious','curious announce']"
+			}),
+			function(data) {
+				if (data['success']) {
+					localStorage['mobileSessionId'] = data['mobileSessionId'];
+					dataReady = true;
+					launchTrack();
+				} else {
+					showAlert(data['message']
+						+ ' Please try again or hit Cancel to return to the login screen.');
+					}
+			}
+		);
 	}
 }
 
@@ -265,6 +263,22 @@ function initAppCache() {
 function getAppCacheData(key) {
 	if (supportsLocalStorage()) {
 		var cache = localStorage['appCache'];
+		if (cache != null) {
+			var data = cache[key];
+			if (data != null)
+				return data;
+			else {
+				data = {};
+				cache[key] = data;
+				return data;
+			}
+		}
+	}
+}
+
+function getEntryCache(key) {
+	if (supportsLocalStorage()) {
+		var cache = getAppCacheData("entryCache");
 		if (cache != null) {
 			var data = cache[key];
 			if (data != null)
@@ -411,7 +425,6 @@ $(document).ready(function() {
 		console.log("Swipe event left");
 		changeDate(1);
 	});
-
 });
 
 function cacheDate() {
@@ -421,10 +434,16 @@ function cacheDate() {
 
 var currentTimeUTC;
 var timeZoneName;
+var cachedDateTomorrow;
+var cachedDateYesterday;
 
 function cacheNow() {
 	cacheDate();
 	var now = new Date();
+	cachedDateYesterday = new Date(now);
+	cachedDateYesterday.setDate(now.getDate()-1);
+	cachedDateTomorrow = new Date(now);
+	cachedDateTomorrow.setDate(now.getDate()+1);
 	currentTimeUTC = now.toUTCString();
 	timeZoneName = jstz.determine().name();
 }
@@ -440,7 +459,9 @@ function changeDate(amount) {
 function refreshPage(callback) {
 	cacheNow();
 
-	var cachedObj = getAppCacheData(cachedDateUTC);
+	var cachedObj = getEntryCache(cachedDateUTC);
+	var cachedObjYesterday = getEntryCache(cachedDateYesterday.toUTCString());
+	var cachedObjTomorrow = getEntryCache(cachedDateTomorrow.toUTCString());
 
 	if (cachedObj['data'] != null) {
 		console.log("refresh entries from cache");
@@ -463,6 +484,20 @@ function refreshPage(callback) {
 					}
 				}
 			});
+	
+	argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
+		date : [cachedDateYesterday.toUTCString(), cachedDateTomorrow.toUTCString()],
+		userId : currentUserId,
+		timeZoneName : timeZoneName
+	});
+	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
+		function(data) {
+			if (checkData(data)) {
+				console.log("offline data");
+				console.log(data);
+			}
+		}
+	);
 }
 
 var currentEntryId = undefined;
@@ -537,7 +572,7 @@ function selected($selectee, forceUpdate) {
 					unselecting($unselectee);
 				}
 				$(document).unbind('mousedown', arguments.callee);
-			})
+			});
 		});
 		
 		var $textInput = $("#tagTextInput").val(entryText).focus();
