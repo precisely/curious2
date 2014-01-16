@@ -28,37 +28,11 @@ class MobileControllerTests extends CuriousControllerTestCase {
 	}
 	
 	@Test
-	void testCacheManifest() {
-		controller.session.userId = user.getId()
-		
-		controller.cachemanifest()
-		
-		def modelAndView = controller.modelAndView
-		
-		assert modelAndView.getViewName().equals("/mobile/cachemanifest")
-    }
-
-	@Test
 	void testIndex() {
 		controller.session.userId = user.getId()
 		
 		def retVal = controller.index()
 		
-		def modelAndView = controller.modelAndView
-		
-		assert retVal['login'] == 0
-    }
-
-	@Test
-	void testLogin() {
-		controller.session.userId = user.getId()
-		
-		def retVal = controller.login()
-		
-		def modelAndView = controller.modelAndView
-		
-		assert modelAndView.getViewName().equals("/mobile/index")
-		
-		assert modelAndView.model.toString().startsWith("[login:1")
+		assert retVal == null
     }
 }

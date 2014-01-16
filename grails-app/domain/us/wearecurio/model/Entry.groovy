@@ -370,6 +370,14 @@ class Entry {
 
 		return entry
 	}
+	
+	Date fetchPreviousDate(int minusDays = 1) {
+		DateTime dateTime = fetchDateTime()
+		DateTimeZone dateTimeZone = dateTime.getZone()
+		LocalTime localTime = dateTime.toLocalTime()
+		LocalDate newLocalDate = dateTime.toLocalDate().minusDays(minusDays)
+		return newLocalDate.toDateTime(localTime, dateTimeZone).toDate()
+	}
 
 	/**
 	 * check to see if parameters match current entry, so repeat doesn't need to update
@@ -425,17 +433,24 @@ class Entry {
 		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
 		LocalTime mLocalTime = new DateTime(m['date'], dateTimeZone).toLocalTime()
 		LocalDate baseLocalDate = new DateTime(baseDate, dateTimeZone).toLocalDate()
+		DateTime repeatEndDateTime = new DateTime(this.repeatEnd, dateTimeZone)
+		LocalTime repeatEndLocalTime = repeatEndDateTime.toLocalTime()
+		LocalDate repeatEndLocalDate = repeatEndDateTime.toLocalDate()
+		Date tomorrowRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime).toDate()
 
 		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
 
 		DateTime newDateTime = baseLocalDate.toDateTime(mLocalTime, dateTimeZone)
+		DateTime prevDateTime = baseLocalDate.minusDays(1).toDateTime(mLocalTime, dateTimeZone)
 		
-		if (this.repeatEnd == null || newDateTime.getMillis() < this.repeatEnd.getTime()) {
+		if (this.repeatEnd == null || newDateTime.getMillis() <= tomorrowRepeatEnd.getTime()) {
 			m['date'] = newDateTime.toDate()
 
 			def newEntry = create(this.userId, m, record)
 
-			this.setRepeatEnd(newDateTime.toDate())
+			Date prevDate = prevDateTime.toDate()
+			
+			this.setRepeatEnd(prevDate)
 
 			Utils.save(this, true)
 
@@ -459,14 +474,14 @@ class Entry {
 			} else {
 				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), record, 1)
 
-				m['repeatEnd'] = m['date']
+				m['repeatEnd'] = entry.getRepeatEnd()
 
 				entry.doUpdate(m, record)
 				
 				return entry
 			}
 		} else {
-			if (!allFuture) {
+			if (!allFuture) { // create another entry after the base date
 				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), record, 1)
 			}
 
@@ -1225,6 +1240,8 @@ class Entry {
 		if (this.repeatType == null) return
 
 			if (this.repeatType.isContinuous()) {
+				Date previousDate = this.fetchPreviousDate()
+				
 				String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 
 				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
@@ -1233,13 +1250,11 @@ class Entry {
 
 				if (v != null) {
 					Entry e = Entry.get(v['id'])
-
 					if (e != null) {
-						long yesterday = this.date.getTime() - DAYTICKS
-						if (yesterday < e.getDate().getTime()) {
+						if (previousDate < e.getDate()) {
 							e.setRepeatEnd(e.getDate())
 						} else
-							e.setRepeatEnd(new Date(yesterday))
+							e.setRepeatEnd(previousDate)
 						Utils.save(e, true)
 					}
 				}
@@ -1253,11 +1268,11 @@ class Entry {
 					Entry e = Entry.get(v['id'])
 
 					if (e != null) {
-						long yesterday = e.getDate().getTime() - DAYTICKS
-						if (yesterday < this.date.getTime()) {
+						Date yesterday = e.fetchPreviousDate()
+						if (yesterday < this.date) {
 							repeatEnd = this.date
 						} else
-							repeatEnd = new Date(yesterday)
+							repeatEnd = yesterday
 					}
 				}
 			} else {
@@ -1265,7 +1280,7 @@ class Entry {
 
 				if (e != null) {
 					if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > this.date.getTime()) { // only reset repeatEnd if it is later
-						e.setRepeatEnd(this.date)
+						e.setRepeatEnd(this.fetchPreviousDate())
 						Utils.save(e, true)
 					}
 				}
@@ -1273,7 +1288,7 @@ class Entry {
 				e = findNextRepeatEntry()
 
 				if (e != null) {
-					repeatEnd = e.getDate()
+					repeatEnd = e.fetchPreviousDate()
 				} else
 					repeatEnd = null
 			}
