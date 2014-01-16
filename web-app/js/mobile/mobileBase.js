@@ -295,7 +295,13 @@ function getEntryCache(date) {
 }
 
 function setEntryCache(date,entries) {
-	var dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
+	var dateStr;
+	if (typeof date == "object") {
+		dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
+	} else {
+		dateStr = date;
+	}
+
 	return setAppCacheData("appCache.entryCache."+dateStr,entries);
 }
 
