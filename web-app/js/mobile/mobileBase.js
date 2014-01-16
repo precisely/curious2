@@ -262,32 +262,47 @@ function initAppCache() {
 
 function getAppCacheData(key) {
 	if (supportsLocalStorage()) {
-		var cache = localStorage['appCache'];
-		if (cache != null) {
-			var data = cache[key];
-			if (data != null)
-				return data;
-			else {
-				data = {};
-				cache[key] = data;
-				return data;
-			}
+		try {
+			return JSON.parse(localStorage[key]);
+		} catch(err) {
+			console.log("Unable to fetch data from cache. Error: "+err);
+			return null;
 		}
 	}
 }
 
-function getEntryCache(key) {
+function setAppCacheData(key,value) {
 	if (supportsLocalStorage()) {
-		var cache = getAppCacheData("entryCache");
-		if (cache != null) {
-			var data = cache[key];
-			if (data != null)
-				return data;
-			else {
-				data = {};
-				cache[key] = data;
-				return data;
+		try {
+			if (typeof value == "object") {
+				localStorage[key] = JSON.stringify(value);
+			} else {
+				localStorage[key] = value;
 			}
+			
+			return true;
+		} catch(err) {
+			console.log("Unable to save data to cache. Error: "+err);
+			return false;
+		}
+	}
+}
+
+function getEntryCache(date) {
+	var dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
+	return getAppCacheData("appCache.entryCache."+dateStr);
+	
+}
+
+function setEntryCache(date,entries) {
+	var dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
+	return setAppCacheData("appCache.entryCache."+dateStr,entries);
+}
+
+function clearEntryCache() {
+	for (var key in localStorage) {
+		if (key.indexOf("appCache.entryCache")>-1) {
+			localStorage.removeItem(key);
 		}
 	}
 }
@@ -307,7 +322,7 @@ function startLogin(mode) {
 
 		if (supportsLocalStorage()) {
 			localStorage['mobileSessionId'] = null;
-			localStorage['appCache'] = null;
+			localStorage['appCache'] = {};
 			localStorage['lastPage'] = 'login';
 		}
 		$('#trackPage').hide();
@@ -438,8 +453,9 @@ var cachedDateTomorrow;
 var cachedDateYesterday;
 
 function cacheNow() {
-	cacheDate();
 	var now = new Date();
+	cachedDate = now;
+	cachedDateUTC = cachedDate.toUTCString();
 	cachedDateYesterday = new Date(now);
 	cachedDateYesterday.setDate(now.getDate()-1);
 	cachedDateTomorrow = new Date(now);
@@ -459,13 +475,13 @@ function changeDate(amount) {
 function refreshPage(callback) {
 	cacheNow();
 
-	var cachedObj = getEntryCache(cachedDateUTC);
-	var cachedObjYesterday = getEntryCache(cachedDateYesterday.toUTCString());
-	var cachedObjTomorrow = getEntryCache(cachedDateTomorrow.toUTCString());
+	var cachedObj = getEntryCache(cachedDate);
+	var cachedObjYesterday = getEntryCache(cachedDateYesterday);
+	var cachedObjTomorrow = getEntryCache(cachedDateTomorrow);
 
-	if (cachedObj['data'] != null) {
+	if (cachedObj != null) {
 		console.log("refresh entries from cache");
-		refreshEntries(data, false);
+		refreshEntries(cachedObj, false);
 	}
 
 	var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
@@ -493,8 +509,9 @@ function refreshPage(callback) {
 	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 		function(data) {
 			if (checkData(data)) {
-				console.log("offline data");
-				console.log(data);
+				for (var entryDate in data) {
+					setEntryCache(entryDate, data[entryDate]);
+				}
 			}
 		}
 	);
@@ -803,8 +820,8 @@ function displayEntries(entries) {
 function refreshEntries(entries, activateGhost) {
 	clearEntries();
 	var $entryToActivate = displayEntries(entries);
-	var cache = getAppCacheData(cachedDateUTC);
-	cache['data'] = entries;
+	//var cache = getEntryCache(cachedDate);
+	setEntryCache(cachedDate, JSON.stringify(entries));
 
 	if (activateGhost && $entryToActivate) {
 		activateEntry($entryToActivate);
@@ -1182,37 +1199,27 @@ var initTrackPage = function() {
 
 	var cache = getAppCacheData('users');
 
-	if (cache != null) {
-		setPeopleData(cache['data']);
-	}
-
-	var cache = getAppCacheData('users');
-
-	if (cache && cache['data'] && isLoggedIn()) {
-		setPeopleData(data);
+	if (cache && isLoggedIn()) {
+		setPeopleData(cache);
 		initAutocomplete();
 		refreshPage();
+		return;
 	}
 
 	if (isOnline())
-		$
-				.getJSON(
-						makeGetUrl("getPeopleData"),
-						makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
-						function(data) {
-							if (!checkData(data))
-								return;
-
-							var cache = getAppCacheData('users');
-							cache['data'] = data;
-
-							setPeopleData(data);
-
-							// wait to init autocomplete until after login
-							initAutocomplete();
-
-							refreshPage();
-						});
+		$.getJSON(
+			makeGetUrl("getPeopleData"),
+			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
+			function(data) {
+				if (!checkData(data))
+					return;				
+				setAppCacheData("users", data);
+				setPeopleData(data);
+				// wait to init autocomplete until after login
+				initAutocomplete();
+				refreshPage();
+			}
+		);
 }
 
 // Overriding autocomplete from autocomplete.js
