@@ -322,7 +322,7 @@ function startLogin(mode) {
 
 		if (supportsLocalStorage()) {
 			localStorage['mobileSessionId'] = null;
-			localStorage['appCache'] = {};
+			clearEntryCache();
 			localStorage['lastPage'] = 'login';
 		}
 		$('#trackPage').hide();
@@ -409,7 +409,7 @@ function reloadPage() {
 	}
 }
 
-$(function() {
+$(window).load(function() {
 	pageLoaded = true;
 	reloadPage();
 });
@@ -445,6 +445,11 @@ $(document).ready(function() {
 function cacheDate() {
 	cachedDate = $datepickerField.datepicker('getDate');
 	cachedDateUTC = cachedDate.toUTCString();
+	cachedDateYesterday = new Date(cachedDate);
+	cachedDateYesterday.setDate(cachedDate.getDate()-1);
+	cachedDateTomorrow = new Date(cachedDate);
+	cachedDateTomorrow.setDate(cachedDate.getDate()+1);
+	
 }
 
 var currentTimeUTC;
@@ -453,13 +458,8 @@ var cachedDateTomorrow;
 var cachedDateYesterday;
 
 function cacheNow() {
+	cacheDate();
 	var now = new Date();
-	cachedDate = now;
-	cachedDateUTC = cachedDate.toUTCString();
-	cachedDateYesterday = new Date(now);
-	cachedDateYesterday.setDate(now.getDate()-1);
-	cachedDateTomorrow = new Date(now);
-	cachedDateTomorrow.setDate(now.getDate()+1);
 	currentTimeUTC = now.toUTCString();
 	timeZoneName = jstz.determine().name();
 }
@@ -469,6 +469,7 @@ function changeDate(amount) {
 	var currentDate = $datepicker.datepicker('getDate');
 	$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount
 			* 86400000));
+	cachedDate = currentDate;
 	refreshPage();
 }
 
@@ -482,6 +483,7 @@ function refreshPage(callback) {
 	if (cachedObj != null) {
 		console.log("refresh entries from cache");
 		refreshEntries(cachedObj, false);
+<<<<<<< HEAD
 	}
 
 	var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
@@ -490,16 +492,32 @@ function refreshPage(callback) {
 		timeZoneName : timeZoneName
 	});
 	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
+=======
+	} else {
+		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
+			date : cachedDateUTC,
+			userId : currentUserId,
+			timeZoneName : timeZoneName
+		});
+		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
+>>>>>>> Fix: Call to reloadPage should be after page elements are loaded to prevent datepicker from failing
 			function(data) {
 				if (checkData(data)) {
 					console.log("refresh entries from get list");
 					refreshEntries(data, true);
 					dataReady = true;
+<<<<<<< HEAD
 					if (typeof callback != 'undefined') {
 						callback();
 					}
 				}
 			});
+=======
+				}
+			}
+		);
+	}
+>>>>>>> Fix: Call to reloadPage should be after page elements are loaded to prevent datepicker from failing
 	
 	argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
 		date : [cachedDateYesterday.toUTCString(), cachedDateTomorrow.toUTCString()],
@@ -729,13 +747,13 @@ function displayEntry(entry, isUpdating, args) {
 		}
 	}
 
-	var diff = dateToTime(date) - cachedDate.getTime();
-	if (diff < 0 || diff >= dayDuration) {
-		return null; // skip items outside display
-	}
+//	var diff = dateToTime(date) - cachedDate.getTime();
+//	if (diff < 0 || diff >= dayDuration) {
+//		return null; // skip items outside display
+//	}
 	var dateStr = '';
 	if (datePrecisionSecs < 43200) {
-		dateStr = dateToTimeStr(date, false);
+		dateStr = dateToTimeStr(new Date(date), false);
 		if (timeAfterTag) {
 			dateStr = ' ' + dateStr;
 		} else {
@@ -821,7 +839,7 @@ function refreshEntries(entries, activateGhost) {
 	clearEntries();
 	var $entryToActivate = displayEntries(entries);
 	//var cache = getEntryCache(cachedDate);
-	setEntryCache(cachedDate, JSON.stringify(entries));
+	//setEntryCache(cachedDate, JSON.stringify(entries));
 
 	if (activateGhost && $entryToActivate) {
 		activateEntry($entryToActivate);
