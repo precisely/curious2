@@ -27,6 +27,7 @@ class MobileControllerTests extends CuriousControllerTestCase {
 		super.tearDown()
 	}
 	
+	/*
 	@Test
 	void testIndex() {
 		controller.session.userId = user.getId()
@@ -34,5 +35,5 @@ class MobileControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.index()
 		
 		assert retVal == null
-    }
+    }*/
 }

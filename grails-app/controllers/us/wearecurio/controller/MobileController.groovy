@@ -14,9 +14,4 @@ class MobileController extends SessionController {
 
 	def MobileController() {
 	}
-	
-	def index() {
-		def htmlContent = new File('./web-app/mobile/main.html').text
-		render text: htmlContent, contentType:"text/html", encoding:"UTF-8"
-	}
 }
