@@ -16,6 +16,7 @@ class MobileController extends SessionController {
 	}
 	
 	def index() {
-		redirect(uri:urlService.make([controller:"mobile",action:"main.html"]))
+		def htmlContent = new File('./web-app/mobile/main.html').text
+		render text: htmlContent, contentType:"text/html", encoding:"UTF-8"
 	}
 }
