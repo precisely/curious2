@@ -1,7 +1,7 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory;
 
-import com.notnoop.apns.ApnsService
+import com.notnoop.apns.*
 
 class APNSService {
 	
@@ -13,7 +13,7 @@ class APNSService {
 
 	def grailsApplication
 	
-    def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious') {
+    def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious',def customPayload = [:]) {
 		if (devices.size() == 0) {
 			debug ("Need at least one device token to send")
 			return false
@@ -38,9 +38,11 @@ class APNSService {
 					.build()
 			}
 			
-			String payload =
-				APNS.newPayload()
-					.alertBody(messageTxt).build();
+			String payload = APNS.newPayload()
+				.alertBody(messageTxt)
+				.customFields(customPayload)
+				.build();
+					
 			devices.each { token ->
 				service.push(token, payload);
 			}

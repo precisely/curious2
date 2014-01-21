@@ -36,6 +36,8 @@ class RemindEmailService {
 			
 		def remindUsers = User.executeQuery("SELECT u.id, u.remindEmail FROM User u")
 		log.debug "Users to remind " + remindUsers.size()
+		//APNSService.sendMessage("This is a test reminder with data",
+			//["54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"],"Curious", ['entryId':"entryid5228"])
 		for (def user in remindUsers) {
 			def c = Entry.createCriteria()
 			def userId = user[0]
@@ -76,11 +78,12 @@ class RemindEmailService {
 						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 							//TODO Send APN message for reminder
 							log.debug "Notifying iOS device for user "+userId
-							APNSService.sendMessage(notificationMessage, [userDevice.token])
+							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",['entryId':"entryid"+event.getId()])
 						}
 					}
 				}
 			}
+			
 		}
 		
 		rec.setDate(now)
