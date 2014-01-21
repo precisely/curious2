@@ -62,10 +62,22 @@ class User implements NameEmail {
 	public setParameters(Map map) {
 		log.debug "User.setParameters() this:" + this + ", map:" + map
 		
-		username = map.get("username") ?: username
-		email = map.get("email") ? map.get("email").toLowerCase() : email
-		remindEmail = map.get("remindEmail") ? map.get("remindEmail").toLowerCase() : remindEmail
-		def password = map.get("password")
+		def uname = map["username"]
+		def password = map["password"]
+		if (uname && (!password)) {
+			// only change username if password is also changed
+			uname = username
+		}
+		username = uname
+		email = map["email"] != null ? map["email"].toLowerCase() : email
+		def rEmail = map['remindEmail']
+		if (rEmail != null) {
+			if (rEmail.length() == 0) {
+				remindEmail = null
+			} else {
+				remindEmail = rEmail.toLowerCase()
+			}
+		}
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
@@ -74,13 +86,13 @@ class User implements NameEmail {
 		sex = map["sex"] == null ? sex : map['sex']
 		location = map["location"] == null ? location : map['location']
 
-		twitterDefaultToNow = (map.get('twitterDefaultToNow') ?: 'on').equals('on') ? true : false
-		displayTimeAfterTag = (map.get('displayTimeAfterTag') ?: 'on').equals('on') ? true : false
-		webDefaultToNow = (map.get('webDefaultToNow') ?: 'on').equals('on') ? true : false
-		notifyOnComments = (map.get('notifyOnComments') ?: 'on').equals('on') ? true : false
+		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
+		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
+		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
+		notifyOnComments = (map['notifyOnComments'] ?: 'on').equals('on') ? true : false
 		try {
-			if (map.get("birthdate") != null)
-				birthdate = dateFormat.parse(map.get("birthdate"))
+			if (map["birthdate"] != null)
+				birthdate = dateFormat.parse(map["birthdate"])
 		} catch (ParseException e) {
 			birthdate = null
 		}
@@ -93,9 +105,9 @@ class User implements NameEmail {
 	public updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
 		
-		twitterDefaultToNow = (map.get('twitterDefaultToNow') ?: 'on').equals('on') ? true : false
-		displayTimeAfterTag = (map.get('displayTimeAfterTag') ?: 'on').equals('on') ? true : false
-		webDefaultToNow = (map.get('webDefaultToNow') ?: 'on').equals('on') ? true : false
+		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
+		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
+		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
 		
 		log.debug "Updated user:" + this
 	}

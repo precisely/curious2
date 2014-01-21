@@ -2,41 +2,83 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-	<title>Curious</title>
-	<meta name="layout" content="main" />
-	<r:require module="basic"/>
-	<meta name="description" content="A platform for health hackers" />
+<title>Curious</title>
+<meta name="layout" content="main" />
+<meta name="description" content="A platform for health hackers" />
 
-	<style type="text/css">
-		input.savebutton {
-			padding: 5px 10px;
-			background-color: #08BBF1;
-			color: #FFFFFF;
+<r:script>
+function refreshPage() {
+}
+function doLogout() {
+    callLogoutCallbacks();
+}
+var origUsername = "${user.username}";
+
+$(function() {
+    initTemplate();
+
+    $.getJSON("/home/getPeopleData?callback=?", function(data) {
+        if (!checkData(data))
+            return;
+
+        found = false;
+
+        jQuery.each(data, function() {
+            if (!found) {
+                // set first user id as the current
+                setUserId(this['id']);
+                found = true;
+            }
+            addPerson(this['first'] + ' ' + this['last'], this['username'], this['id'], this['sex']);
+            return true;
+        });
+    });
+	$("#updateUserPreferences").submit(function(e) {
+		e.preventDefault();
+		var form = this;
+		var newUsername = $("#username").val();
+		if (origUsername != newUsername) {
+			var newPw = $("#password").val();
+			if (newPw.length == 0) {
+				alert("If you change the username, you must set the password as well");
+				return;
+			}
 		}
-		.profile-container table {
-			font-size: 10pt;
-			width: 100%;
-		}
-		.profile-container table tr td {
-			padding-bottom: 20px;
-		}
-		.profile-container table tr td:first-child {
-			font-weight: bold;
-			padding-right: 20px;
-			text-align: right;
-			text-transform: uppercase;
-			width: 200px;
-		}
-		.profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]),
-			.profile-container text-area {
-			padding: 6px;
-			min-width: 300px;
-		}
-		.logo {
-			background-color: #ccc;
-			min-height: 218px;
-		}
-	</style>
+		form.submit();
+	});
+});
+</r:script>
+
+<style type="text/css">
+	input.savebutton {
+		padding: 5px 10px;
+		background-color: #08BBF1;
+		color: #FFFFFF;
+	}
+	.profile-container table {
+		font-size: 10pt;
+		width: 100%;
+	}
+	.profile-container table tr td {
+		padding-bottom: 20px;
+	}
+	.profile-container table tr td:first-child {
+		font-weight: bold;
+		padding-right: 20px;
+		text-align: right;
+		text-transform: uppercase;
+		width: 200px;
+	}
+	.profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]),
+		.profile-container text-area {
+		padding: 6px;
+		min-width: 300px;
+	}
+	.logo {
+		background-color: #ccc;
+		min-height: 218px;
+	}
+</style>
 </head>
 <body>
 	<div class="red-strip"></div>
@@ -47,7 +89,7 @@
 		</div>
 		<div class="span9 profile-container">
 			<div id="addData">
-				<g:form action="doupdateuserpreferences">
+				<g:form name="updateUserPreferences" action="doupdateuserpreferences">
 					<g:hiddenField name="precontroller" value="${precontroller}" />
 					<g:hiddenField name="preaction" value="${preaction}" />
 					<g:hiddenField name="userId" value="${user.id}" />
