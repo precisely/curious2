@@ -132,6 +132,8 @@ function submitForm() {
 							if (data['success']) {
 								localStorage['mobileSessionId'] = data['mobileSessionId'];
 								dataReady = true;
+								//app.registerNotification();
+								$("#passwordField").blur();
 								launchTrack();
 							} else {
 								showAlert('Username or password not correct, please try again');
@@ -397,13 +399,20 @@ var REMIND_BIT = 0x4;
 var cachedDate, cachedDateUTC;
 var $datepickerField;
 
-$(document).ready(function(){ 
+$(window).load(function(){ 
 	$datepickerField = $("input#datepicker");
 	if (window.location.href.indexOf("lamhealth") > -1) {
 		$("#loginlogo").attr("src","../images/logo_mobile_lhp.gif");
 	}
 	
 	$("#loginlogo").show();
+	$("body").on("swiperight", function() {
+		console.log("Swipe event right");
+		changeDate(-1);
+	}).on("swipeleft", function() {
+		console.log("Swipe event left");
+		changeDate(1);
+	});
 	
 });
 
@@ -511,6 +520,7 @@ function selected($selectee, forceUpdate) {
 
 		// Binding blur event on element instead of globally to prevent
 		// concurrent exception.
+		console.log("Trying to focus on the current entry");
 		var $textInput = $("#tagTextInput").val(entryText).focus();
 		$(".entryDelete").mousedown(function(e) {
 			mouseDownOnDeleteEntry = true;
@@ -552,6 +562,8 @@ function selected($selectee, forceUpdate) {
 }
 
 function activateEntry($entry, doNotSelectEntry) {
+	console.log("Activating entry");
+	console.log($entry);
 	var gEntry = $entry;
 	var entryId = $entry.data("entry-id");
 	var isContinuous = $entry.data("isContinuous");
@@ -562,8 +574,7 @@ function activateEntry($entry, doNotSelectEntry) {
 		return;
 	}
 	cacheNow();
-	$
-			.getJSON(
+	$.getJSON(
 					makeGetUrl("activateGhostEntry"),
 					makeGetArgs(getCSRFPreventionObjectMobile(
 							"activateGhostEntryCSRF", {
@@ -1100,7 +1111,7 @@ var initTrackPage = function() {
 	$entryInput.off("click");
 	$entryInput.on("focus", clearDefaultLoginText);
 	$entryInput.on("click", clearDefaultLoginText);
-
+	
 	$entryInput.keyup(function(e) {
 		if (e.keyCode == 13) {
 			processInput(false);
@@ -1123,6 +1134,7 @@ var initTrackPage = function() {
 	});
 	$entryArea.on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
+		console.log("Select event triggered");
 		selected($selectee, false);
 	});
 
@@ -1169,11 +1181,7 @@ var initTrackPage = function() {
 							refreshPage();
 						});
 }
-$("body").on("swiperight", function() {
-	changeDate(-1);
-}).on("swipeleft", function() {
-	changeDate(1);
-});
+
 
 //Overriding autocomplete from autocomplete.js
 
