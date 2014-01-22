@@ -14,6 +14,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.TimeZoneId;
 import us.wearecurio.model.User
 
 import us.wearecurio.services.UrlService;
@@ -23,7 +24,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection;
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 @TestMixin([ServiceUnitTestMixin, DomainClassUnitTestMixin])
-@Mock([User, OAuthAccount, Entry, Tag, TagStats])
+@Mock([User, OAuthAccount, Entry, Tag, TagStats, TimeZoneId])
 @TestFor(WithingsDataService)
 class WithingsDataServiceTests {
 
