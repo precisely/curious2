@@ -1,5 +1,5 @@
 <g:if test="${header }">
-	<div class="col-xs-3 pull-right fixed-column tag-header-container">
+	<div class="col-xs-3 pull-right fixed-column tags-header-container">
 		<div class="red-header">
 			<h1>
 				<span class="pointer icon-triangle icon-triangle-right" id="toggle-tags"></span>
@@ -11,10 +11,10 @@
 	
 	<r:script>
 		function toggleClasses(switchClass) {
-			$(".tag-header-container").toggleClass("tags-collapsed-right", switchClass);
-			$(".header-container").toggleClass("tags-collapsed-left", switchClass);
+			$("body").toggleClass("tags-collapsed", switchClass);
+			$("body").toggleClass("tags-displayed", !switchClass);
 		}
-		$("#toggle-tags").click(function() {
+		$("#toggle-tags").click(function(e, expandByDefault) {
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
 	
@@ -30,15 +30,21 @@
 				if (!isHidden) {
 					toggleClasses(true);
 				}
+				if (!expandByDefault) {
+					try {
+						plot.refreshPlot();
+					} catch(e) {}	// Okay to catch. Required in track entry page.
+				}
 			});
-		})<g:if test="${expandByDefault }">.trigger("click");</g:if>
+
+		})<g:if test="${expandByDefault }">.trigger("click", [true]);</g:if>
 		<g:else>
 			toggleClasses(true);
 		</g:else>
 	</r:script>
 </g:if>
 <g:else>
-	<div class="col-xs-3 pull-right fixed-column hide" id="tagNav">
+	<div class="col-xs-3 pull-right fixed-column hide tags-container" id="tagNav">
 		<div id="tagListWrapper">
 			<div id="searchTags">
 				<input type="text" value="Search tags for..." class="textInput" id="tagSearch" />

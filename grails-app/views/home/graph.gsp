@@ -143,7 +143,7 @@ $(function(){
 				<!-- RIGHT NAV HEADER -->
 				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column header-container">
+				<div class="col-xs-9 floating-column graph-header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
@@ -157,7 +157,7 @@ $(function(){
 				<!-- RIGHT NAV BODY -->
 				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->
-				<div class="col-xs-9 floating-column">
+				<div class="col-xs-9 floating-column graph-container">
 					<!-- MAIN -->
 					<div class="main querymain">
 						<div id="dialogDivplotArea" class="hide"></div>
