@@ -107,6 +107,7 @@ $(function(){
 </script>
 <r:script>
 	$(document).on(beforeLinePlotEvent, function(e, tag) {
+		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
 		$("#plotArea").removeClass("table");
 	})
 	$(document).on(afterLinePlotEvent, function(e, tag) {
@@ -114,9 +115,9 @@ $(function(){
 	})
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		adjustTrackingTagHeaderHeight();
-		if($("#plotArea").html().trim() == "") {
+		if ($("#plotArea").html().trim() == "") {
 			//if(plotInstance.lines.length == 0)
-			$("#plotArea").addClass("table").html('<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
+			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	})
 	function adjustTrackingTagHeaderHeight() {
@@ -170,7 +171,7 @@ $(function(){
 							</div>
 				
 							<div id="plotArea" class="table full-width">
-								<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
+								<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
 							</div>
 				
 							<div class="main querycontrols">
