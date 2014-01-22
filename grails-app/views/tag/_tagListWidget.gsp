@@ -25,7 +25,7 @@
 				$(this).removeClass("icon-triangle-down").addClass("icon-triangle-right");
 			}
 
-			elementToCollapse.slideToggle("slow", function() {
+			elementToCollapse.slideToggle(200, function() {
 				elementToCollapse.css("overflow", "visible");	// For dragging tag to plot graph area.
 				if (!isHidden) {
 					toggleClasses(true);
