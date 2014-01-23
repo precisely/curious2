@@ -78,7 +78,7 @@ class RemindEmailService {
 						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 							//TODO Send APN message for reminder
 							log.debug "Notifying iOS device for user "+userId
-							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",['entryId':"entryid"+event.getId()])
+							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",['entryId':event.getId()])
 						}
 					}
 				}
