@@ -23,17 +23,18 @@ class APNSService {
 		debug "APNS Certificate" + apnsConfig?.pathToCertificate
 		debug "APNS Environment" + apnsConfig?.environment
 		try {
-			
 			ApnsService service 
 			
+			FileInputStream certStream = new FileInputStream(grailsApplication.getMainContext().getResource(apnsConfig.pathToCertificate).getFile())
+		
 			if (apnsConfig.environment?.equals("sandbox")) {
 				service = APNS.newService()
-					.withCert(apnsConfig.pathToCertificate, apnsConfig.password)
+					.withCert(certStream, apnsConfig.password)
 					.withSandboxDestination()
 					.build()
 			} else {
 				service = APNS.newService()
-					.withCert(apnsConfig.pathToCertificate, apnsConfig.password)
+					.withCert(certStream, apnsConfig.password)
 					.withProductionDestination()
 					.build()
 			}
