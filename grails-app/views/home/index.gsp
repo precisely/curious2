@@ -177,12 +177,10 @@ function displayEntry(entry, isUpdating, args) {
 	// store amount for post-selection highlighting
 	
 	var formattedAmount = formatAmount(amount, amountPrecision);
-	if (formattedAmount.length > 0) {
-		var selectStart = (timeAfterTag ? 0 : dateStr.length) + description.length + 1;
-		var selectEnd = selectStart + formattedAmount.length - 1;
-		entrySelectData[id] = [selectStart, selectEnd];
-	}
-
+	var selectStart = (timeAfterTag ? 0 : dateStr.length) + description.length + 1 + (formattedAmount.length == 0 ? 1 : 0);
+	var selectEnd = selectStart + formattedAmount.length - 1;
+	entrySelectData[id] = [selectStart, selectEnd, formattedAmount == 0]; // if third item is true, insert extra space at cursor
+	
 	var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
@@ -469,6 +467,9 @@ function selected($selectee, forceUpdate) {
 		var entryText = $selectee.text();
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		var selectRange = entrySelectData[currentEntryId];
+		if (selectRange[2]) { // insert space at selectRange[0]
+			entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
+		}
 		$contentWrapper.hide();
 		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 85%;"></input>'
 				+ '<img src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
