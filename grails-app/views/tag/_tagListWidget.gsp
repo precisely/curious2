@@ -1,8 +1,8 @@
 <g:if test="${header }">
 	<div class="col-xs-3 pull-right fixed-column tags-header-container">
-		<div class="red-header">
+		<div class="red-header pointer" id="toggle-tags">
 			<h1>
-				<span class="pointer icon-triangle icon-triangle-right" id="toggle-tags"></span>
+				<span class="icon-triangle icon-triangle-right"></span>
 				&nbsp;
 				Tracking Tags
 			</h1>
@@ -17,12 +17,13 @@
 		$("#toggle-tags").click(function(e, expandByDefault) {
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
+            var triangleElement = $(this).find("span.icon-triangle");
 	
 			if (isHidden) {	// Means tags going to be display.
 				toggleClasses(false);
-				$(this).removeClass("icon-triangle-right").addClass("icon-triangle-down");
+				triangleElement.removeClass("icon-triangle-right").addClass("icon-triangle-down");
 			} else {
-				$(this).removeClass("icon-triangle-down").addClass("icon-triangle-right");
+				triangleElement.removeClass("icon-triangle-down").addClass("icon-triangle-right");
 			}
 
 			elementToCollapse.slideToggle(200, function() {
