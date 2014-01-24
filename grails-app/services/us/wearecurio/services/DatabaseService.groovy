@@ -20,7 +20,7 @@ class DatabaseService {
 
 	private static def log = LogFactory.getLog(this)
 
-	static transactional = true
+	static transactional = false
 	
 	public static final long TEST_MIGRATION_ID = 30L
 	
