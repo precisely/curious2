@@ -1,3 +1,8 @@
+.container {
+	margin-left: 40px;
+	margin-right: 40px;
+	width: auto;
+}
 /* FRAME */
 
 .content-size, .content-size:after, .content-size:before {
@@ -1133,14 +1138,13 @@ body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 /**
  * Styles for track page for web application. Ends here.
  */
-
-.tags-collapsed-right {
+div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
 }
-.tags-collapsed-left {
+div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;
 }
-.tags-collapsed-left .red-header {
+body.tags-collapsed div.tags-header-container .red-header {
 	box-shadow: none;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;

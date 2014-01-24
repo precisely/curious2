@@ -107,6 +107,7 @@ $(function(){
 </script>
 <r:script>
 	$(document).on(beforeLinePlotEvent, function(e, tag) {
+		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
 		$("#plotArea").removeClass("table");
 	})
 	$(document).on(afterLinePlotEvent, function(e, tag) {
@@ -114,9 +115,9 @@ $(function(){
 	})
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		adjustTrackingTagHeaderHeight();
-		if($("#plotArea").html().trim() == "") {
+		if ($("#plotArea").html().trim() == "") {
 			//if(plotInstance.lines.length == 0)
-			$("#plotArea").addClass("table").html('<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
+			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	})
 	function adjustTrackingTagHeaderHeight() {
@@ -142,7 +143,7 @@ $(function(){
 				<!-- RIGHT NAV HEADER -->
 				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column header-container">
+				<div class="col-xs-9 floating-column graph-header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
@@ -156,7 +157,7 @@ $(function(){
 				<!-- RIGHT NAV BODY -->
 				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->
-				<div class="col-xs-9 floating-column">
+				<div class="col-xs-9 floating-column graph-container">
 					<!-- MAIN -->
 					<div class="main querymain">
 						<div id="dialogDivplotArea" class="hide"></div>
@@ -170,7 +171,7 @@ $(function(){
 							</div>
 				
 							<div id="plotArea" class="table full-width">
-								<div class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
+								<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
 							</div>
 				
 							<div class="main querycontrols">
