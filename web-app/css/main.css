@@ -1129,18 +1129,11 @@ body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 /**
  * Styles for track page for web application. Ends here.
  */
-div.tags-header-container, div.tags-container {
-    padding-left: 1px;
-}
-div.entry-header-container, div.graph-header-container {
-    padding-right: 0px;
-}
-
-body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
-    padding-right: 0px;
-}
-body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
+div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
+}
+div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
+	padding-right: 0px;
 }
 body.tags-collapsed div.tags-header-container .red-header {
 	box-shadow: none;
