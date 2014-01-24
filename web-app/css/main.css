@@ -959,9 +959,13 @@ div.plotLine:hover span {
 .entryDelete {
 	display:none;
 	float:right;
-	padding-top:3px;
+	padding-top:5px;
+	padding-bottom:0px;
 	padding-left:8px;
 	color:#999999;
+}
+.entryModify {
+	cursor:pointer;
 }
 .custom-row {
 	margin-left: -10px;

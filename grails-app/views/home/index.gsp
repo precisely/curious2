@@ -185,7 +185,7 @@ function displayEntry(entry, isUpdating, args) {
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '</span><a href="#" style="padding-left:0;" class="entryDelete" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
@@ -253,7 +253,7 @@ function toggleSuffix($control, suffix) {
 
 function modifyEdit(suffix) {
 	var $control = $('#tagTextInput');
-	$control.data('cancelBlur', true);
+	//$control.data('cancelBlur', true);
 	toggleSuffix($control, suffix);
 	/*if (toggleSuffix($control, suffix)) {
 		var $selectee = $control.parents("li");
@@ -433,12 +433,12 @@ function doLogout() {
  * being unselected.
  */
 function unselecting($unselectee, doNotUpdate) {
-	if($unselectee.data('entryIsSelected') == 1) {
+	if ($unselectee.data('entryIsSelected') == 1) {
 		var $textInput = $("#tagTextInput");
-		if ($textInput.data('cancelBlur')) {
+		/*if ($textInput.data('cancelBlur')) {
 			$textInput.data('cancelBlur', false);
 			return;
-		}
+		}*/
 		$unselectee.removeClass('ui-selected');
 		$unselectee.data('entryIsSelected', 0);
 		$("a.entryDelete", $unselectee).hide();
@@ -467,14 +467,16 @@ function selected($selectee, forceUpdate) {
 		var entryText = $selectee.text();
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		var selectRange = entrySelectData[currentEntryId];
-		if (selectRange[2]) { // insert space at selectRange[0]
-			entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
+		if (selectRange != undefined) {
+			if (selectRange[2]) { // insert space at selectRange[0]
+				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
+			}
 		}
 		$contentWrapper.hide();
 		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 85%;"></input>'
-				+ '<img src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
+				+ '<img class="entryModify entryNoBlur" src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img class="entryModify entryNoBlur" src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img class="entryModify entryNoBlur" src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
 
 		$("#tagEditRepeat").off("mousedown");
 		$("#tagEditRemind").off("mousedown");
@@ -490,13 +492,31 @@ function selected($selectee, forceUpdate) {
 			modifyEdit('pinned');
 		});
 		
-		// Binding blur event on element instead of globally to prevent concurrent exception.
-		$("#tagTextInput").val(entryText).focus().on("blur", function(e) {
-			if ($(this).data('cancelBlur')) return;
-			$selectee.data('entryIsSelected', 0);
-			var $unselectee = $(this).parents("li");
-			checkAndUpdateEntry($unselectee);
+		// Adding logic to prevent blur from activating when clicking on certain controls
+		$("#tagTextInput").bind('focus', function() {
+			$(document).bind('mousedown', function(e) {
+				var $target = $(e.target);
+				if ($target.closest('#tagTextInput').length) return;
+				if (! $target.closest('.entryNoBlur').length) {
+					//if ($target.data('cancelBlur')) return;
+					$selectee.data('entryIsSelected', 0);
+					var $unselectee = $target.parents("li");
+					checkAndUpdateEntry($unselectee);
+				}
+				if (! $target.closest('.entryModify').length)
+					$(document).unbind('mousedown', arguments.callee);
+			})
 		});
+		
+		$("#tagTextInput").on("keyup", function(e) {
+			var $selectee = $(this).parents("li");
+			if (e.keyCode == 13) {	// Enter pressed
+				unselecting($selectee);
+			} else if(e.keyCode == 27) {	// Esc pressed
+				unselecting($selectee, true);
+			}
+		});
+		$("#tagTextInput").val(entryText).focus();
 		$("#tagTextInput").data('entryTextSet', true);
 		if(selectRange) {
 			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
@@ -577,24 +597,17 @@ $(function(){
 	});
 	$("#entry0").listable({cancel: 'a,input,li.entry.ghost'});
 	$("#entry0").off("listableselected");
+	/*
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
-	});
+	});*/
 	$("#entry0").on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
 		selected($selectee, false);
 	});
 	
-	$(document).on("keyup", "input#tagTextInput", function(e) {
-		var $selectee = $(this).parents("li");
-		if (e.keyCode == 13) {	// Enter pressed
-			unselecting($selectee);
-		} else if(e.keyCode == 27) {	// Esc pressed
-			unselecting($selectee, true);
-		}
-	})
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down
 	 */
