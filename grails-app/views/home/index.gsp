@@ -496,7 +496,7 @@ function selected($selectee, forceUpdate) {
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
 				var $target = $(e.target);
-				if ($target.closest('#tagTextInput').length) return;
+				if ($target.closest('#tagTextEdit').length) return;
 				if (! $target.closest('.entryNoBlur').length) {
 					//if ($target.data('cancelBlur')) return;
 					$selectee.data('entryIsSelected', 0);
