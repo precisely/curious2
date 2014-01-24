@@ -1,3 +1,8 @@
+.container {
+	margin-left: 40px;
+	margin-right: 40px;
+	width: auto;
+}
 /* FRAME */
 
 .content-size, .content-size:after, .content-size:before {
