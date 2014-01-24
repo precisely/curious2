@@ -345,18 +345,10 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 		});
 }
 
-function cancelEdit($entryItem) {
-	var $contentWrapper = $entryItem.find(".content-wrapper");
-	$contentWrapper.html($entryItem.data('contentHTML'));
-}
-
 function updateEntry(entryId, text, defaultToNow) {
 	var $oldEntry = getEntryElement(entryId);
 	$(".content-wrapper", $oldEntry).html(text);
-	if ($oldEntry.data('originalText') == text) {
-		cancelEdit($oldEntry);
-		return; // don't update unchanged entry
-	}
+
 	if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) {
 		showAB("Update just this one event or also future events?", "One", "Future", function() {
 				doUpdateEntry(entryId, text, defaultToNow, false);
@@ -465,13 +457,13 @@ function selected($selectee, forceUpdate) {
 		$("#entrydelid" + currentEntryId).css('display', 'inline');
 
 		var entryText = $selectee.text();
-		$selectee.data('originalText', entryText); // store entry text for comparison
 		var selectRange = entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
 			if (selectRange[2]) { // insert space at selectRange[0]
 				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
 			}
 		}
+		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: 85%;"></input>'
 				+ '<img class="entryModify entryNoBlur" src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
@@ -498,7 +490,6 @@ function selected($selectee, forceUpdate) {
 				var $target = $(e.target);
 				if ($target.closest('#tagTextEdit').length) return;
 				if (! $target.closest('.entryNoBlur').length) {
-					//if ($target.data('cancelBlur')) return;
 					$selectee.data('entryIsSelected', 0);
 					var $unselectee = $target.parents("li");
 					checkAndUpdateEntry($unselectee);
@@ -528,18 +519,24 @@ function selected($selectee, forceUpdate) {
  * IF different than call updateEntry() method to notify
  * server and update in UI.
  */
-function checkAndUpdateEntry($unselectee, doNotUpdate) {
-	var $contentWrapper = $unselectee.find(".content-wrapper"); // Original wrapper which containing previous text.
-	var oldText = $contentWrapper.text();
+function checkAndUpdateEntry($unselectee) {
+	var $contentWrapper = $unselectee.find(".content-wrapper");
+	
 	var newText = $("input#tagTextInput").val();
+	var $oldEntry = getEntryElement(currentEntryId);
 
-	$contentWrapper.show();
-	if (oldText != newText || $unselectee.data('forceUpdate')) {
+	if (($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate'))) {
+		var $contentWrapper = $oldEntry.find(".content-wrapper");
+		$contentWrapper.html($oldEntry.data('contentHTML'));
+		$contentWrapper.show();
+	} else {
+		$contentWrapper.show();
 		$unselectee.data('forceUpdate', 0);
-		$contentWrapper.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
+		$contentWrapper
+				.append("&nbsp;&nbsp;<img src='../images/spinner.gif' />");
 		updateEntry(currentEntryId, newText, defaultToNow);
 	}
-
+	
 	$("#tagTextEdit").remove();
 }
 

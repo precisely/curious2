@@ -294,6 +294,7 @@ class LoginController extends SessionController {
 	protected static final int REGISTER_ERROR_USER_ALREADY_EXISTS = 1
 	protected static final int REGISTER_MISSING_FIELDS = 2
 	protected static final int REGISTER_DUPLICATE_FIELDS = 3
+	protected static final int REGISTER_DUPLICATE_EMAIL = 4
 	
 	protected def execRegister(params) {
 		def retVal = [:]
@@ -308,6 +309,11 @@ class LoginController extends SessionController {
 		
 		if (User.findByUsername(params.username) != null) {
 			retVal['errorCode'] = REGISTER_ERROR_USER_ALREADY_EXISTS
+			return retVal
+		}
+		
+		if (User.findByEmail(params.email) != null) {
+			retVal['errorCode'] = REGISTER_DUPLICATE_EMAIL
 			return retVal
 		}
 
