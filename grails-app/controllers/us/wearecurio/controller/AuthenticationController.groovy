@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import static us.wearecurio.model.OAuthAccount.*
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -16,14 +17,25 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
+	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth", "twenty3andmeAuth", "fitbitAuth", "movesAuth", "withingsAuth"]]
 	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
 
 	def fitBitDataService
+	def humanDataService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 
 	private String provider
 	private Token tokenInstance
+
+	private boolean afterAuthRedirect(model) {
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+			return false
+		}
+	}
 
 	private boolean authRedirect() {
 		provider = params.provider
@@ -73,12 +85,6 @@ class AuthenticationController extends SessionController {
 						tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def fitbitAuth() {
@@ -94,12 +100,16 @@ class AuthenticationController extends SessionController {
 						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
+	}
+
+	def humanAuth() {
+		User currentUserInstance = sessionUser()
+		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
+		if(userInfo.userId) {
+			OAuthAccount.createOrUpdate(HUMAN_ID, currentUserInstance.id, userInfo.userId, tokenInstance.token, "")
+		} else {
+			log.error "userId not found in human api authentication."
 		}
-		return
 	}
 
 	def movesAuth() {
@@ -118,21 +128,9 @@ class AuthenticationController extends SessionController {
 				log.warn "Unable to create or update oauth account for moves. No raw response found in token."
 			}
 		}
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def withingsAuth() {
-		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
-			redirect uri: session.returnURIWithToken
-			session.returnURIWithToken = null
-		}
-		return
 	}
 
 	def withingCallback(String userid) {

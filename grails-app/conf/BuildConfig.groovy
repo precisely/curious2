@@ -1,3 +1,5 @@
+import grails.util.Environment;
+
 grails.servlet.version = "2.5" // Change depending on target container compliance (2.5 or 3.0)
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
@@ -64,9 +66,14 @@ grails.project.dependency.resolution = {
 		runtime ":mail:1.0.1"
 		
 		runtime ":quartz:1.0-RC9"
+		if(Environment.current == Environment.DEVELOPMENT) {
+			compile (":quartz-monitor:0.3-RC3") {
+				excludes "quartz"
+			}
+		}
 
 		runtime ":message-digest:1.1"
-		compile ":oauth:2.1.0"
+		compile ":oauth:2.3"
 		runtime ":csv:0.3.1"
     }
 }

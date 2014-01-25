@@ -3,9 +3,11 @@ package us.wearecurio.services
 import static us.wearecurio.model.OAuthAccount.*
 import grails.converters.JSON
 
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
@@ -19,18 +21,7 @@ class MovesDataService {
 
 	def oauthService
 
-	Map unSubscribe(Long userId) {
-		log.debug "unSubscribe() account:" + userId
-
-		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, MOVES_ID)
-		if (!account) {
-			log.info "No moves subscription found for userId [$userId]"
-			return [success: false, message: "No subscription found"]
-		}
-
-		account.delete()
-		[success: true]
-	}
+	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 	void poll() {
 		OAuthAccount.findAllByTypeId(MOVES_ID).each {
@@ -47,8 +38,6 @@ class MovesDataService {
 		Map args = [setName: MOVES_SET_NAME, comment: "(Moves)"]
 
 		Token tokenInstance = account.tokenInstance
-
-		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
 		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
@@ -92,41 +81,61 @@ class MovesDataService {
 				currentSegment["activities"]?.each { currentActivity ->
 					log.debug "Processing activity for userId [$account.userId] of type [$currentActivity.activity]"
 
-					String baseType
-					String activity = currentActivity.activity
-					Date startTime = startEndTimeFormat.parse(currentActivity.startTime)
-					Date endTime = startEndTimeFormat.parse(currentActivity.endTime)
-
-					switch(activity) {
-						case "cyc":
-							baseType = "bike"
-							break
-						case "run":
-							baseType = "run"
-							break
-						case "wlk":
-							baseType = "walk"
-							break
-						default:
-							baseType = ""
-							break
-					}
-					if (baseType) {
-						if (currentActivity.steps) {
-							tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps.toBigDecimal(), userId, startTime, args)
-						}
-						tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance.toBigDecimal(), userId, startTime, args)
-						if (currentActivity.calories) {
-							tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, startTime, args)
-						}
-
-						tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, startTime, args.plus([amountPrecision: -1]))
-						tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, endTime, args.plus(amountPrecision: -1))
-					}
+					processActivity(currentActivity, userId, currentActivity.activity, startEndTimeFormat, args)
 				}
 			}
 		}
 		return [success: true]
+	}
+
+	void processActivity(JSONObject currentActivity, Long userId, String activityType, DateFormat timeFormat, Map args) {
+		String baseType
+
+		Date startTime = timeFormat.parse(currentActivity.startTime)
+		Date endTime = timeFormat.parse(currentActivity.endTime)
+
+		switch(activityType) {
+			case "cycling":		// Support type for HumanAPI
+			case "cyc":			// Support type for MovesAPI
+				baseType = "bike"
+				break
+			case "running":
+			case "run":
+				baseType = "run"
+				break
+			case "walking":
+			case "wlk":
+				baseType = "walk"
+				break
+			default:
+				baseType = ""
+				break
+		}
+		if (baseType) {
+			if (currentActivity.steps) {
+				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps.toBigDecimal(), userId, startTime, args)
+			}
+			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance.toBigDecimal(), userId, startTime, args)
+			if (currentActivity.calories) {
+				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, startTime, args)
+			}
+
+			tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, startTime, args.plus([amountPrecision: -1]))
+			tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, endTime, args.plus(amountPrecision: -1))
+		}
+	}
+
+	Map unSubscribe(Long userId) {
+		log.debug "unSubscribe() account:" + userId
+
+		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, MOVES_ID)
+		if (!account) {
+			log.info "No moves subscription found for userId [$userId]"
+			return [success: false, message: "No subscription found"]
+		}
+
+		account.delete()
+		[success: true]
 	}
 
 }

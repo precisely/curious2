@@ -1,4 +1,4 @@
-package us.wearecurio.thirdparty.ttandme
+package us.wearecurio.thirdparty
 
 import grails.converters.JSON
 import grails.util.Environment
@@ -13,12 +13,18 @@ import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
 
-class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
+/**
+ * By default scribe library sends parameter as query string. But some API's
+ * like Twenty3AndMe, Human etc. accepts access token parameters as request
+ * header payload. This class fulfills the same requirement.
+ *
+ */
+class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 	DefaultApi20 api
 	OAuthConfig config
 
-	Twenty3AndMeOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
+	PayloadTypeOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
 		super(api, config)
 		this.api = api
 		this.config = config
@@ -34,7 +40,7 @@ class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		queryParams.put(OAuthConstants.CODE, verifier.getValue())
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.getCallback())
 		queryParams.put("grant_type", "authorization_code")
-		queryParams.put(OAuthConstants.SCOPE, config.getScope())
+		if(config.hasScope()) queryParams.put(OAuthConstants.SCOPE, config.getScope())
 
 		request.addPayload(queryParams.collect { key, value -> "$key=$value" }.join("&"))
 
@@ -42,7 +48,7 @@ class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 		JSONObject responseJSON = JSON.parse(response.body)
 		if (Environment.current == Environment.DEVELOPMENT) {
-			println "Received response from 23andme api: $response.body"
+			println "Received response from ${api.class.simpleName}: $response.body"
 		}
 
 		return new Token(responseJSON.access_token, "", responseJSON.toString())
@@ -51,10 +57,6 @@ class Twenty3AndMeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 	@Override
 	void signRequest(Token accessToken, OAuthRequest request) {
 		request.addQuerystringParameter(OAuthConstants.ACCESS_TOKEN, accessToken.getToken());
-		/**
-		 * Needs to add because 23andme api needs token in header.
-		 * @see https://github.com/fernandezpablo85/scribe-java/blob/master/src/main/java/org/scribe/oauth/OAuth20ServiceImpl.java#L61
-		 */
 		request.addHeader("Authorization", "Bearer $accessToken.token")
 	}
 

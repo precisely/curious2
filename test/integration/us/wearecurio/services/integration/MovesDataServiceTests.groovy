@@ -30,7 +30,7 @@ class MovesDataServiceTests {
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert userInstance2.save()
 
-		OAuthAccount account = new OAuthAccount([typeId: OAuthAccount.MOVES_ID, userId: userInstance1.id, accessToken: "hhpmGJV6FZUU_5GY_21Ny0rERs355_7Cwn923k8XMIf2iPD6wZ3ii1690u4VWwSx",
+		OAuthAccount account = new OAuthAccount([typeId: OAuthAccount.MOVES_ID, userId: userInstance1.id, accessToken: "n4TGD4_g40CpwjLB1Jo80F4IBirI6P_83UdXc1UWX5P6sHWpK1S7PDCK9OCVH9oJ",
 			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775"]).save()
 		assert account.save()
 

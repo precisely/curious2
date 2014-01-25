@@ -35,6 +35,7 @@ class MigrationService {
 	public static final long CREATE_CONCRETE_GHOSTS_ID = 47L
 	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 50L
 	public static final long CHANGE_TWENTY3ANDME_DATA_TYPE = 52L
+	public static final long CHANGE_TOKEN_FIELD_LENGTH = 53L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -155,6 +156,9 @@ class MigrationService {
 		}
 		tryMigration(CHANGE_TWENTY3ANDME_DATA_TYPE) {
 			sql("ALTER TABLE twenty3and_me_data CHANGE data data mediumblob")
+		}
+		tryMigration(CHANGE_TOKEN_FIELD_LENGTH) {
+			sql("alter table oauth_account change column access_token access_token varchar(1024)")
 		}
 	}
 }
