@@ -29,6 +29,11 @@ class TimeZoneId {
 	static Map<String, TimeZoneId> nameToTimeZoneId = new HashMap<String, TimeZoneId>()
 	static Map<Integer, TimeZoneId> idToTimeZoneId = new HashMap<Integer, TimeZoneId>()
 	
+	static void clearCacheForTesting() {
+		nameToTimeZoneId = new HashMap<String, TimeZoneId>()
+		idToTimeZoneId = new HashMap<Integer, TimeZoneId>()
+	}
+	
 	DateTimeZone toDateTimeZone() {
 		if (dateTimeZone != null)
 			return dateTimeZone
@@ -54,7 +59,9 @@ class TimeZoneId {
 		
 		TimeZoneId timeZoneId = nameToTimeZoneId.get(name)
 		
-		if (timeZoneId != null) return timeZoneId
+		if (timeZoneId != null && timeZoneId.name == name) {
+			return timeZoneId
+		}
 		
 		timeZoneId = TimeZoneId.findByName(name)
 		

@@ -7,6 +7,7 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.Entry.TagStatsRecord
 import us.wearecurio.services.DatabaseService
 
@@ -26,6 +27,8 @@ class EntryTests extends GroovyTestCase {
 	Date endTime
 	String timeZone // simulated server time zone
 	String timeZone2 // simulated server time zone
+	TimeZoneId timeZoneId
+	TimeZoneId timeZoneId2
 	Date baseDate
 	Date baseDate2
 	Date tomorrowBaseDate
@@ -42,9 +45,13 @@ class EntryTests extends GroovyTestCase {
 	
 	@Before
 	void setUp() {
+		TimeZoneId.clearCacheForTesting()
+		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
 		timeZone2 = "America/New_York"
+		timeZoneId = TimeZoneId.look(timeZone)
+		timeZoneId2 = TimeZoneId.look(timeZone2)
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 		dateFormat.setTimeZone(entryTimeZone)
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")

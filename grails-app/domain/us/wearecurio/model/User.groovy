@@ -68,7 +68,8 @@ class User implements NameEmail {
 			// only change username if password is also changed
 			uname = username
 		}
-		username = uname
+		if (uname)
+			username = uname
 		email = map["email"] != null ? map["email"].toLowerCase() : email
 		def rEmail = map['remindEmail']
 		if (rEmail != null) {

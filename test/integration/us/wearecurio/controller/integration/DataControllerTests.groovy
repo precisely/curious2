@@ -35,6 +35,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void setUp() {
 		super.setUp()
 
+		TimeZoneId.clearCacheForTesting()
+		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
