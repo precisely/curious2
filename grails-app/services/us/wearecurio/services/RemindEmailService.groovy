@@ -6,6 +6,9 @@ import us.wearecurio.server.DateRecord
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.*
 import us.wearecurio.model.Entry.RepeatType
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+import org.joda.time.*
 
 class RemindEmailService {
 	
@@ -26,6 +29,7 @@ class RemindEmailService {
 			lhpMemberTag = User.lookupMetaTag("lhpmember", "true")
 
 		DateRecord rec = DateRecord.lookup(DateRecord.REMIND_EMAILS)
+		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
 		
 		Date oldDate = rec.getDate()
 		
@@ -37,7 +41,8 @@ class RemindEmailService {
 		def remindUsers = User.executeQuery("SELECT u.id, u.remindEmail FROM User u")
 		log.debug "Users to remind " + remindUsers.size()
 		//APNSService.sendMessage("This is a test reminder with data",
-			//["54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"],"Curious", ['entryId':"entryid5228"])
+			//["54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"],"Curious", 
+			//['entryId':"5229",'entryDate':dateTimeFormatter.print(new DateTime(now).plusDays(3).getMillis())])
 		for (def user in remindUsers) {
 			def c = Entry.createCriteria()
 			def userId = user[0]
@@ -78,7 +83,8 @@ class RemindEmailService {
 						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 							//TODO Send APN message for reminder
 							log.debug "Notifying iOS device for user "+userId
-							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",['entryId':event.getId()])
+							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",
+								['entryId':event.getId(),'entryDate':dateTimeFormatter.print(event.getDate().getTime())])
 						}
 					}
 				}
