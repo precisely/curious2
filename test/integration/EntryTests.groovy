@@ -415,20 +415,25 @@ class EntryTests extends GroovyTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 	
 		Entry.create(userId, Entry.parse(slightDifferentCurrentTime, timeZone, "bread 3", baseDate, true), null)
-		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", baseDate, true), null)
+		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", tomorrowBaseDate, true), null)
 		
 		def results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), null, null, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
 			def date = Utils.dateToGMTString(result[0])
-			assert date == "2010-07-01T19:00:00"
-			assert result[1].intValue() == 1
-			assert result[2] == "bread"
+			if (date == "2010-07-01T19:00:00") {
+				assert result[1].intValue() == 4
+				assert result[2] == "bread"
+			} else if (date == "2010-07-02T19:00:00") {
+				assert result[1].intValue() == 2
+				assert result[2] == "bread"
+			} else
+				assert false
 			++c
 		}
 		
-		assert c == 1
+		assert c == 2
 		
 		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), lateBaseDate, null, "America/Los_Angeles")
 		
@@ -455,7 +460,7 @@ class EntryTests extends GroovyTestCase {
 			++c
 		}
 		
-		assert c == 1
+		assert c == 2
 	}
 	
 	@Test

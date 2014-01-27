@@ -73,13 +73,12 @@ class TagStats {
 		} else {
 			stats.setLastUnits(null) // initialize last units to null
 			stats.setMostRecentUsage(mostRecent[0])
-			def thirdLast
+
 			DatabaseService.get().eachRow("select min(d) as thirdlast from (select e2.date as d from entry e2 where e2.tag_id = "
-					+ tagId + " and e2.user_id = " + userId + " order by e2.date desc limit 3) as dates") { row ->
-					thirdLast = row.thirdLast
+					+ tagId + " and e2.user_id = " + userId + " order by e2.date desc limit 3) as dates") {
+				row ->
+				stats.setThirdMostRecentUsage(row.thirdlast)
 			}
-					
-			stats.setThirdMostRecentUsage(thirdLast)
 			
 			def countLastThreeMonths = Entry.executeQuery(
 				"select count(entry.id) from Entry as entry where entry.tag.id = ? and entry.userId = ? and entry.date is not null and datediff(now(), entry.date) <= 90",

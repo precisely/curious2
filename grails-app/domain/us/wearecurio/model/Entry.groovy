@@ -1781,7 +1781,7 @@ class Entry {
 			Long resultTime = resultDate.getTime()
 			if (resultTime < startDayTime || resultTime > endDayTime) { // switch to new day
 				currentResult = null
-				startDayTime = resultTime - ((resultTime - startTime) % DAYTICKS) // start of next day
+				startDayTime = resultTime - ((resultTime - startDayTime) % DAYTICKS) // start of next day
 				endDayTime = startDayTime + DAYTICKS
 			}
 			if (resultTime < endDayTime) {
