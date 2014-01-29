@@ -1647,39 +1647,49 @@ class Entry {
 		}
 	}
 	
-	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate) {
+	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime) {
+		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
+		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
+
+		// figure out the angle of the startDate
+		String queryStr = "select time_to_sec(:startDate) as secs"
+		
+		def queryMap = [startDate:startDate]
+		
+		def startDateAngle = DatabaseService.get().sqlRows(queryStr, queryMap)
+
 		// fetch sum of non-repeat entries
-		String queryStr = "select count(*), sum(sin(time_to_sec(entry.date) / 43200.0 * pi())), sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.repeat_end is null " \
-				+ "and entry.tag_id in (:tagIds)"
+		queryStr = "select count(*) as c, sum(sin(time_to_sec(entry.date) / 43200.0 * pi())) as y, sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) as x " \
+				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and entry.repeat_end is null " \
+				+ "and entry.tag_id in (:tagIds) and entry.date >= :startDate and entry.date < :endDate"
 
-		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
 
-		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
-		
-		rawResults = rawResults
-		
+		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)
+
 		// fetch sum of repeat entries
-		queryStr = "select sum(datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate)))), " \
-				+ "sum(sin(time_to_sec(entry.date) / 43200.0 * pi())) * datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate))), " \
-				+ "sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) * datediff( if (entry.date > startDate, entry.date, startDate), if (entry.repeat_end is null, endDate, if(entry.repeat_end < endDate, entry.repeat_end, endDate)))" \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is not null and entry.repeat_end > :startDate) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
-				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+		queryStr = "select sum(datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as c, " \
+				+ "sum(sin(time_to_sec(entry.date) / 43200.0 * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as y, " \
+				+ "sum(cos(time_to_sec(entry.date) / 43200.0 * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as x " \
+				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and ((entry.repeat_end is not null and entry.repeat_end > :startDate) or entry.repeat_end is null) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "and entry.tag_id in (:tagIds)"
 
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
 
-		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
+		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)
 		
-		rawResults = rawResults
+		int c = (nonRepeatSum['c'] ?: 0) + (repeatSum['c'] ?: 0)
+		double x = ((nonRepeatSum['x'] ?: 0.0) + (repeatSum['x'] ?: 0.0)) / c
+		double y = ((nonRepeatSum['y'] ?: 0.0) + (repeatSum['y'] ?: 0.0)) / c
 	}	
 	
-	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
 
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
-		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
+		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
 		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
 
 		// get timed daily repeats (not ghosted)
@@ -1745,22 +1755,17 @@ class Entry {
 
 	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
 
-	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, String timeZoneName) {
+	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
 		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
-		/*if (startDate == null) {
-			DateTime startDateTime = new DateTime(new Date(-30610137600000), currentTimeZone) // set start date to 1000 AD if startDate isn't specified
-			// set time to zero
-			startDate = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
-		}*/
 		
 		if (sumNights) {
 			startDate = new Date(startDate.getTime() + HALFDAYTICKS)
 			endDate = new Date(endDate.getTime() + HALFDAYTICKS)
 		}
 
-		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, timeZoneName)
+		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
 
 		Long startTime = startDate?.getTime()
 		Long startDayTime = startTime

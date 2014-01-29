@@ -378,7 +378,7 @@ class DataController extends LoginController {
 		}
 
 		def results = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
-				endDateStr ? parseDate(endDateStr) : null, timeZoneName)
+				endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName)
 		
 		renderDataGet(new JSON(results))
 	}
@@ -397,7 +397,7 @@ class DataController extends LoginController {
 		}
 
 		def results = Entry.fetchSumPlotData((params.sumNights?.equals("true"))? true: false, sessionUser(), tagIds,
-				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, timeZoneName)
+				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName)
 		
 		renderDataGet(new JSON(results))
 	}

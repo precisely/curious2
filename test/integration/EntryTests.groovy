@@ -326,8 +326,8 @@ class EntryTests extends GroovyTestCase {
 		return c
 	}
 	
-	int testPlot(User user, def tagIds, Date startDate, Date endDate, String timeZoneName, Closure test) {
-		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, timeZoneName)
+	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Closure test) {
+		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
 		
 		int c = 0
 		for (result in results) {
@@ -398,20 +398,20 @@ class EntryTests extends GroovyTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
 	
-		assert testPlot(user, Tag.look("bread"), null, null, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert date == "2010-07-01T22:30:00"
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
 		} == 1
 		
-		assert testPlot(user, Tag.look("bread"), lateBaseDate, null, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
-		assert testPlot(user, Tag.look("bread"), earlyBaseDate, baseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
-		assert testPlot(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 1
 	}
 	
@@ -424,7 +424,7 @@ class EntryTests extends GroovyTestCase {
 		Entry.create(userId, Entry.parse(slightDifferentCurrentTime, timeZone, "bread 3", baseDate, true), null)
 		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", tomorrowBaseDate, true), null)
 		
-		def results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), null, null, "America/Los_Angeles")
+		def results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
@@ -442,7 +442,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 2
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), lateBaseDate, null, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -451,7 +451,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, baseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -460,7 +460,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, lateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -471,10 +471,97 @@ class EntryTests extends GroovyTestCase {
 	}
 	
 	@Test
+	void testAverageTime() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am", dayOne, true), null)
+		Entry repeatBreadEntry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am", dayThree, true), null)
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm", dayThree, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		def circusIds = [ Tag.look("circus").getId() ]
+		
+		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
+		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		
+		breadResults = breadResults
+		circusResults = circusResults
+	}
+	
+	@Test
+	void testAverageTimeNoRepeats() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am", dayThree, true), null)
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm", dayThree, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		def circusIds = [ Tag.look("circus").getId() ]
+		
+		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
+		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		
+		breadResults = breadResults
+		circusResults = circusResults
+	}
+	
+	@Test
+	void testAverageTimeOnlyRepeats() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am repeat", dayThree, true), null)
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm repeat", dayThree, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		def circusIds = [ Tag.look("circus").getId() ]
+		
+		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
+		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		
+		breadResults = breadResults
+		circusResults = circusResults
+	}
+	
+	@Test
 	void testRepeatPlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 3pm repeat", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
@@ -485,12 +572,12 @@ class EntryTests extends GroovyTestCase {
 	void testRemindActivatePlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 3pm remind", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
 		entry.activateGhostEntry(earlyBaseDate, currentTime, "America/Los_Angeles")
 
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
@@ -501,17 +588,17 @@ class EntryTests extends GroovyTestCase {
 	void testRepeatNullValuePlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread - 3pm remind", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
 		def activated = entry.activateGhostEntry(earlyBaseDate, currentTime, "America/Los_Angeles")
 
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 
 		def updated = Entry.update(activated, Entry.parse(currentTime, timeZone, "bread 6 3pm remind", earlyBaseDate, true, true), null, earlyBaseDate, true)
 		
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 8
 	}
 		
