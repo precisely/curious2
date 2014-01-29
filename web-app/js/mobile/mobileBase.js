@@ -75,6 +75,7 @@ function doLogout() {
 	localStorage['appCache'] = null;
 	localStorage['lastPage'] = 'login';
 	startLogin(0);
+	$(document).trigger("ask-logout");
 }
 
 function getCSRFPreventionURIMobile(key) {
@@ -132,9 +133,9 @@ function submitForm() {
 							if (data['success']) {
 								localStorage['mobileSessionId'] = data['mobileSessionId'];
 								dataReady = true;
-								// app.registerNotification();
 								$("#passwordField").blur();
 								launchTrack();
+								$(document).trigger("login-success");
 							} else {
 								showAlert('Username or password not correct, please try again');
 								startLogin(0);
