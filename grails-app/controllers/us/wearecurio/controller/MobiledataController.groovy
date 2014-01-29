@@ -84,7 +84,7 @@ class MobiledataController extends DataController {
 		
 	def registerForPushNotification() {
 		def user = sessionUser()
-		debug "MobiledataController.regsiter registerForPushNotification"
+		debug "MobiledataController.registerForPushNotification()"
 		PushNotificationDevice pushNotificationDeviceInstance = 
 			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
 		if (!pushNotificationDeviceInstance) {
