@@ -84,7 +84,7 @@ class MobiledataController extends DataController {
 		
 	def registerForPushNotification() {
 		def user = sessionUser()
-		debug user.dump()
+		debug "MobiledataController.regsiter registerForPushNotification"
 		PushNotificationDevice pushNotificationDeviceInstance = 
 			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
 		if (!pushNotificationDeviceInstance) {
@@ -103,6 +103,23 @@ class MobiledataController extends DataController {
 			}
 		} else {
 			debug "Device already registered to be notified."
+		}
+			
+		debug params.dump()
+		
+		renderJSONGet([success:true])
+	}
+	
+	def unregisterPushNotification() {
+		def user = sessionUser()
+		debug "MobiledataController.regsiter registerForPushNotification"
+		PushNotificationDevice pushNotificationDeviceInstance =
+			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
+		if (!pushNotificationDeviceInstance) {
+			debug "Unable to unregister no push notification found."
+		} else {
+			debug "Unregistering the current device push notification"
+			pushNotificationDeviceInstance.delete()
 		}
 			
 		debug params.dump()

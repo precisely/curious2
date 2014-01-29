@@ -160,4 +160,40 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		
 		assert controller.response.contentAsString.startsWith('{"success":false')
 	}
+	
+	@Test
+	void testRegisterNotification() {
+		MobiledataController controller = new MobiledataController()
+		controller.session.userId = userId
+		
+		controller.params.clear()
+		controller.params.putAll([
+			token:'asdfsdfsdfalsdjflskjdfsalkfj',
+			deviceType:'1',
+		])
+		
+		controller.registerForPushNotification()
+		
+		assert controller.response.contentAsString.startsWith('null({"success":true')
+	}
+	
+	void testunregisterNotification() {
+		MobiledataController controller = new MobiledataController()
+		controller.session.userId = userId
+		
+		def pushNotificationDeviceInstance = 
+			new PushNotificationDevice(token:'asdfsdfasdfsadfas',
+				deviceType:PushNotificationDevice.IOS_DEVICE,
+				userId: user.id)
+			
+		controller.params.clear()
+		controller.params.putAll([
+			token:'asdfsdfasdfsadfas',
+		])
+		
+		controller.unregisterPushNotification()
+		
+		assert controller.response.contentAsString.startsWith('null({"success":true')
+	}
+	
 }
