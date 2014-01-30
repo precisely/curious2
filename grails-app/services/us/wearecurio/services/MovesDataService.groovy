@@ -37,6 +37,7 @@ class MovesDataService {
 
 		Map args = [setName: MOVES_SET_NAME, comment: "(Moves)"]
 
+		// No use of initializing again. Added just to pass unit test case.
 		tagUnitMap = new MovesTagUnitMap()
 		Token tokenInstance = account.tokenInstance
 
