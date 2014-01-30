@@ -135,7 +135,8 @@ class WithingsDataService {
 		log.info "Unsubscribe return with code: [$response.code] & body: [$response.body]"
 		JSONObject parsedResponse = JSON.parse(response.body)
 		
-		if (parsedResponse.status == 0) {
+		// 294 status code is for 'no such subscription available to delete'.
+		if (parsedResponse.status in [0, 294]) {
 			account.delete()
 			return [success: true]
 		}
