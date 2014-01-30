@@ -76,8 +76,5 @@ grails.project.dependency.resolution = {
 
 		compile ":oauth:2.1.0"
 		compile ":csv:0.3.1"
-		if (Environment.getCurrent() == Environment.DEVELOPMENT) {
-			compile ":quartz-monitor:0.3-RC3"
-		}
     }
 }
