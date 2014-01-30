@@ -12,6 +12,7 @@ import us.wearecurio.model.Entry.TagStatsRecord
 import us.wearecurio.services.DatabaseService
 
 import static org.junit.Assert.*
+import org.joda.time.DateTimeZone
 import org.junit.*
 import grails.test.mixin.*
 
@@ -29,6 +30,7 @@ class EntryTests extends GroovyTestCase {
 	String timeZone2 // simulated server time zone
 	TimeZoneId timeZoneId
 	TimeZoneId timeZoneId2
+	DateTimeZone dateTimeZone
 	Date baseDate
 	Date baseDate2
 	Date tomorrowBaseDate
@@ -52,6 +54,7 @@ class EntryTests extends GroovyTestCase {
 		timeZone2 = "America/New_York"
 		timeZoneId = TimeZoneId.look(timeZone)
 		timeZoneId2 = TimeZoneId.look(timeZone2)
+		dateTimeZone = timeZoneId.toDateTimeZone()
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 		dateFormat.setTimeZone(entryTimeZone)
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
@@ -424,15 +427,15 @@ class EntryTests extends GroovyTestCase {
 		Entry.create(userId, Entry.parse(slightDifferentCurrentTime, timeZone, "bread 3", baseDate, true), null)
 		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", tomorrowBaseDate, true), null)
 		
-		def results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
 			def date = Utils.dateToGMTString(result[0])
-			if (date == "2010-07-01T19:00:00") {
+			if (date == "2010-07-01T21:32:48") {
 				assert result[1].intValue() == 4
 				assert result[2] == "bread"
-			} else if (date == "2010-07-02T19:00:00") {
+			} else if (date == "2010-07-02T21:32:48") {
 				assert result[1].intValue() == 2
 				assert result[2] == "bread"
 			} else
@@ -442,7 +445,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 2
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -451,7 +454,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -460,7 +463,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(false, user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -468,6 +471,182 @@ class EntryTests extends GroovyTestCase {
 		}
 		
 		assert c == 2
+	}
+	
+	@Test
+	void testSumPlotDataNight() {
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1am", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 3 2am", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 3am", tomorrowBaseDate, true), null)
+		
+		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		
+		def c = 0
+		for (result in results) {
+			if (c == 0) {
+				assert result[1].intValue() == 4
+			} else {
+				assert result[1].intValue() == 2
+			}
+			++c
+		}
+	}
+	
+	@Test
+	void testSumPlotDataAfternoon() {
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 3pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 5am", tomorrowBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 2pm", tomorrowBaseDate, true), null)
+		
+		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		
+		def c = 0
+		for (result in results) {
+			if (c == 0) {
+				assert result[1].intValue() == 8
+			} else {
+				assert result[1].intValue() == 2
+			}
+			++c
+		}
+		
+		assert c == 2
+	}
+	
+	@Test
+	void testAverageTimeMidnight() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 12am", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 0
+	}
+	
+	@Test
+	void testAverageTimeOneAM() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 3600
+	}
+	
+	@Test
+	void testAverageTimeNoon() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 12pm", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 43200
+	}
+	
+	@Test
+	void testAverageTimeNoonNoStartDateNoEndDate() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 12pm", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, null, null, currentDate, dateTimeZone)
+		
+		assert breadResult == 43200
+	}
+	
+	@Test
+	void testAverageTimeOnePM() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1pm", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 46800
+	}
+	
+	@Test
+	void testAverageTimeAllPoints() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 6pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 6am", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 43200 // when times zero out, it should use noon
+	}
+	
+	@Test
+	void testAverageTimeMorningTwoAfternoons() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 7am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 3pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 5pm", dayOne, true), null)
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert breadResult == 50400
 	}
 	
 	@Test
@@ -479,24 +658,24 @@ class EntryTests extends GroovyTestCase {
 		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
 		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am", dayOne, true), null)
-		Entry repeatBreadEntry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am repeat", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 3 3am", dayOne, true), null)
+		Entry repeatBreadEntry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 2am repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 6 9am", dayThree, true), null)
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 1 1pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 3 5pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 6 4pm", dayThree, true), null)
 		
 		def breadIds = [ Tag.look("bread").getId() ]
 		def circusIds = [ Tag.look("circus").getId() ]
 		
-		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
-		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
 		
-		breadResults = breadResults
-		circusResults = circusResults
+		assert breadResult == 9519
+		assert circusResult == 63215
 	}
 	
 	@Test
@@ -508,24 +687,24 @@ class EntryTests extends GroovyTestCase {
 		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
 		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 3 3am", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 2am", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 6 9am", dayThree, true), null)
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 1 1pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 3 5pm", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 2 7pm", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 6 4pm", dayThree, true), null)
 		
 		def breadIds = [ Tag.look("bread").getId() ]
 		def circusIds = [ Tag.look("circus").getId() ]
 		
-		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
-		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
 		
-		breadResults = breadResults
-		circusResults = circusResults
+		assert breadResult == 11968
+		assert circusResult == 58651
 	}
 	
 	@Test
@@ -537,24 +716,24 @@ class EntryTests extends GroovyTestCase {
 		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
 		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 1am repeat", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3 3am repeat", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 2am repeat", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 6 9am repeat", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 1am repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 3 3am repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 2am repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 6 9am repeat", dayThree, true), null)
 		
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 1 1pm repeat", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 3 5pm repeat", dayOne, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "circus 6 4pm repeat", dayThree, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 1 1pm repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 3 5pm repeat", dayOne, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 2 7pm repeat", dayTwo, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "circus 6 4pm repeat", dayThree, true), null)
 		
 		def breadIds = [ Tag.look("bread").getId() ]
 		def circusIds = [ Tag.look("circus").getId() ]
 		
-		def breadResults = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate)
-		def circusResults = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate)
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
 		
-		breadResults = breadResults
-		circusResults = circusResults
+		assert breadResult == 9207
+		assert circusResult == 58211
 	}
 	
 	@Test

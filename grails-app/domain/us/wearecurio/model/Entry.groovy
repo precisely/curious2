@@ -1647,40 +1647,64 @@ class Entry {
 		}
 	}
 	
-	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime) {
-		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
-		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
+	static final double twoPi = 2.0d * Math.PI
+	
+	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime, DateTimeZone currentTimeZone) {
+		DateTime startDateTime = new DateTime((Date)(startDate ?: currentTime), currentTimeZone) // calculate midnight relative to current time
+		// set time to zero
+		Date dateMidnight = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
 
 		// figure out the angle of the startDate
-		String queryStr = "select time_to_sec(:startDate) as secs"
+		String queryStr = "select (time_to_sec(:dateMidnight) / 43200.0) * pi() as angle"
 		
-		def queryMap = [startDate:startDate]
+		def queryMap = [dateMidnight:dateMidnight]
 		
-		def startDateAngle = DatabaseService.get().sqlRows(queryStr, queryMap)
-
+		double startDateAngle = DatabaseService.get().sqlRows(queryStr, queryMap)[0]['angle']
+		
+		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
+		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
+		
 		// fetch sum of non-repeat entries
-		queryStr = "select count(*) as c, sum(sin(time_to_sec(entry.date) / 43200.0 * pi())) as y, sum(cos(time_to_sec(entry.date) / 43200.0 * pi())) as x " \
+		queryStr = "select count(*) as c, sum(sin((time_to_sec(entry.date) / 43200.0) * pi())) as y, sum(cos((time_to_sec(entry.date) / 43200.0) * pi())) as x " \
 				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and entry.repeat_end is null " \
 				+ "and entry.tag_id in (:tagIds) and entry.date >= :startDate and entry.date < :endDate"
 
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
 
-		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)
+		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
 
 		// fetch sum of repeat entries
 		queryStr = "select sum(datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as c, " \
-				+ "sum(sin(time_to_sec(entry.date) / 43200.0 * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as y, " \
-				+ "sum(cos(time_to_sec(entry.date) / 43200.0 * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as x " \
+				+ "sum(sin((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as y, " \
+				+ "sum(cos((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as x " \
 				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and ((entry.repeat_end is not null and entry.repeat_end > :startDate) or entry.repeat_end is null) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
 				+ "and entry.tag_id in (:tagIds)"
 
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
 
-		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)
+		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
 		
 		int c = (nonRepeatSum['c'] ?: 0) + (repeatSum['c'] ?: 0)
+		if (c == 0)
+			return HALFDAYSECS
+			
 		double x = ((nonRepeatSum['x'] ?: 0.0) + (repeatSum['x'] ?: 0.0)) / c
 		double y = ((nonRepeatSum['y'] ?: 0.0) + (repeatSum['y'] ?: 0.0)) / c
+		
+		double averageAngle
+		
+		if (Math.abs(x) < 1E-8d) x = 0.0d
+		if (Math.abs(y) < 1E-8d) y = 0.0d
+		
+		if ((x == 0.0d) && (y == 0.0d))
+			averageAngle = Math.PI
+		else {
+			averageAngle = Math.atan2(y, x)
+			averageAngle -= startDateAngle
+			averageAngle = ((averageAngle % twoPi) + twoPi) % twoPi
+		}
+		
+		return (int) Math.round((averageAngle / twoPi) * 86400.0d)
 	}	
 	
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
@@ -1754,17 +1778,27 @@ class Entry {
 	}
 
 	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
+	static final int DAYSECS = 24 * 60 * 60
+	static final int HALFDAYSECS = 12 * 60 * 60
+	static final int HOURSECS = 60 * 60
 
-	static def fetchSumPlotData(boolean sumNights, User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
+	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
 		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
 		
-		if (sumNights) {
-			startDate = new Date(startDate.getTime() + HALFDAYTICKS)
-			endDate = new Date(endDate.getTime() + HALFDAYTICKS)
+		int averageSecs = fetchAverageTime(user, tagIds, startDate, endDate, currentDate, currentTimeZone)
+		
+		if (averageSecs > HALFDAYSECS + HOURSECS * 9) { // if the average time is after 9pm, do a "night sum"
+			averageSecs -= DAYSECS
 		}
-
+		
+		long offset = (averageSecs * 1000L) - HALFDAYTICKS
+		if (startDate != null)
+			startDate = new Date(startDate.getTime() + offset)
+		else if (endDate != null)
+			endDate = new Date(endDate.getTime() + offset)
+		
 		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
 
 		Long startTime = startDate?.getTime()
@@ -1780,6 +1814,7 @@ class Entry {
 				DateTime startDateTime = new DateTime(resultDate, currentTimeZone) // set start date to 1000 AD if startDate isn't specified
 				// set time to zero
 				startDate = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
+				startDate = new Date(startDate.getTime() + offset)
 				startDayTime = startDate.getTime()
 				endDayTime = startDayTime + DAYTICKS
 			}
