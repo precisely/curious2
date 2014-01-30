@@ -37,6 +37,7 @@ class MovesDataService {
 
 		Map args = [setName: MOVES_SET_NAME, comment: "(Moves)"]
 
+		tagUnitMap = new MovesTagUnitMap()
 		Token tokenInstance = account.tokenInstance
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
