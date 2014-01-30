@@ -22,6 +22,7 @@ class WithingsDataService {
 	private static def log = LogFactory.getLog(this)
 	private static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	private static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
+	private static final String WITHINGS_BASE_URL = "http://wbsapi.withings.net"
 	private static final String WITHINGS_SET_NAME = "withings import"
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
@@ -96,7 +97,7 @@ class WithingsDataService {
 		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
 		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
 
-		String subscriptionURL = urlService.makeQueryString("http://wbsapi.withings.net/notify", queryParameters)
+		String subscriptionURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/notify", queryParameters)
 
 		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
 
@@ -128,7 +129,7 @@ class WithingsDataService {
 		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
 		//listSubscription(account)	// Test before un-subscribe
 
-		String subscriptionURL = urlService.makeQueryString("http://wbsapi.withings.net/notify", queryParameters)
+		String subscriptionURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/notify", queryParameters)
 
 		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
 
@@ -200,7 +201,7 @@ class WithingsDataService {
 			if (lastPolled != null && (!refreshAll))
 				queryParameters.put("startdate", lastPolled .toString())
 
-			String dataURL = urlService.makeQueryString("http://wbsapi.withings.net/measure", queryParameters)
+			String dataURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/measure", queryParameters)
 			Response response = oauthService.getWithingsResource(account.tokenInstance, dataURL)
 
 			log.info "Got it! Lets see what we found... Code: [$response.code] & Body: [$response.body]"
