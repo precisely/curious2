@@ -11,11 +11,13 @@ class BootStrap {
 	MailService mailService
 
 	def init = { servletContext ->
+		log.debug "Curious bootstrap started executing.."
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		//withingsDataService.poll()
 		//withingsDataService.refreshSubscriptions()
+		log.debug "Curious bootstrap finished executing."
 	}
 
 	def destroy = {
