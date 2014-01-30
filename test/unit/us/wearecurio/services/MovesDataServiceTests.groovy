@@ -10,16 +10,16 @@ import org.scribe.model.Response
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
-import us.wearecurio.model.FitbitNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.test.common.MockedHttpURLConnection;
+import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 @TestMixin(GrailsUnitTestMixin)
-@Mock([User, OAuthAccount, Entry, Tag, TagStats])
+@Mock([User, OAuthAccount, Entry, Tag, TagStats, TimeZoneId])
 @TestFor(MovesDataService)
 class MovesDataServiceTests {
 
