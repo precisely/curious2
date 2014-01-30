@@ -2,7 +2,10 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 
+import java.text.SimpleDateFormat
+
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
@@ -123,7 +126,7 @@ class WithingsDataService {
 		}
 
 		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
-		
+
 		Map queryParameters = ["action": "revoke"]
 		queryParameters.put("userid", account.accountId)
 		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
@@ -135,7 +138,7 @@ class WithingsDataService {
 
 		log.info "Unsubscribe return with code: [$response.code] & body: [$response.body]"
 		JSONObject parsedResponse = JSON.parse(response.body)
-		
+
 		// 294 status code is for 'no such subscription available to delete'.
 		if (parsedResponse.status in [0, 294]) {
 			account.delete()
@@ -286,11 +289,101 @@ class WithingsDataService {
 				}
 			}
 		}
+		if(account.lastPolled) {
+			getActivityMetricsData(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
+		} else {
+			getActivityMetricsData(account, new Date())
+		}
 
 		if (serverTimestamp > 0) {
 			account.setLastPolled(new Date(serverTimestamp))
 			Utils.save(account, true)
 		}
+	}
+
+	/**
+	 * Used to get & store activity metrics summary for an account.
+	 * @param account Account instance for activity data.
+	 * @param forDay The date for the activity data. Optional if date range is given.
+	 * @return dateRange Date range for to retrieve data against. Optional if forDay param is given
+	 * 
+	 * @see Activity Metrics documentation at http://www.withings.com/en/api
+	 */
+	boolean getActivityMetricsData(OAuthAccount account, Date forDay, Map dateRange = [:]) {
+		BigDecimal value
+
+		String description, units, queryDateFormat = "yyyy-MM-dd"
+
+		Map queryParameters = ["action": "getactivity", userid: account.accountId]
+
+		if (forDay) {
+			queryParameters["date"] = forDay.format(queryDateFormat)
+		} else if (dateRange) {
+			queryParameters["startdateymd"] = dateRange.startDate.format(queryDateFormat)
+			queryParameters["enddateymd"] = dateRange.endDate.format(queryDateFormat)
+		} else {
+			// @see Activity Metrics documentation at http://www.withings.com/en/api
+			log.debug "Either forDay or dateRange parameter required to pull activity data."
+			return false
+		}
+
+		String dataURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/v2/measure", queryParameters)
+
+		Response response = oauthService.getWithingsResource(account.tokenInstance, dataURL)
+		String responseBody = response.body
+
+		JSONObject data = JSON.parse(responseBody)
+
+		if(data.status != 0) {
+			log.error "Something went wrong with withings activity api. [$responseBody]"
+			return false
+		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+
+		JSONArray activities = data["body"]["activities"]
+
+		activities.each { JSONObject activity ->
+			log.debug "Parsing entry for day [$activity.date] with [$activity.steps] steps, [$activity.distance] distance, [$activity.calories] calorie, [$activity.elevation] elevation"
+			Date entryDate = dateFormat.parse(activity["date"])
+
+			if(activity["steps"]) {
+				units = "steps"
+				description = "activity steps"
+				value = activity["steps"].toBigDecimal()
+
+				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
+						units, "(Withings)", WITHINGS_SET_NAME)
+			}
+			if(activity["distance"]) {
+				units = "km"
+				description = "activity distance"
+				value = activity["distance"] / 1000		// Converting to KM
+				value = value.toBigDecimal()
+
+				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
+						units, "(Withings)", WITHINGS_SET_NAME)
+			}
+			if(activity["calories"]) {
+				units = "kcal"
+				description = "activity calories"
+				value = activity["calories"].toBigDecimal()
+
+				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
+						units, "(Withings)", WITHINGS_SET_NAME)
+			}
+			if(activity["elevation"]) {
+				units = "km"
+				description = "activity elevation"
+				value = activity["elevation"] / 1000		// Converting to KM
+				value = value.toBigDecimal()
+
+				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
+						units, "(Withings)", WITHINGS_SET_NAME)
+			}
+		}
+
+		return true
 	}
 
 }
