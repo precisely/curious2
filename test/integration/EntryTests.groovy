@@ -1,21 +1,24 @@
-import java.math.MathContext;
+import static org.junit.Assert.*
+
+import java.math.MathContext
 import java.text.DateFormat
-import java.util.Date
-import java.util.TimeZone
-import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
+
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.model.Entry.TagStatsRecord
 import us.wearecurio.services.DatabaseService
 
-import static org.junit.Assert.*
 import org.joda.time.DateTimeZone
 import org.junit.*
 import grails.test.mixin.*
-
+import us.wearecurio.utility.Utils
 
 class EntryTests extends GroovyTestCase {
 	static transactional = true
@@ -47,6 +50,7 @@ class EntryTests extends GroovyTestCase {
 	
 	@Before
 	void setUp() {
+		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		TimeZoneId.clearCacheForTesting()
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)

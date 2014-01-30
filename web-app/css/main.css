@@ -1144,8 +1144,3 @@ div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-head
 div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;
 }
-body.tags-collapsed div.tags-header-container .red-header {
-	box-shadow: none;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-}
