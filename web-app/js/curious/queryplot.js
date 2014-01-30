@@ -1165,8 +1165,8 @@ function PlotLine(p) {
 	this.isFreqLineFlag = p.isFreqLineFlag ? true : false;
 	this.fillColor = colorToFillColor(p.color,'0.3');
 	this.cycleFillColor = colorToFillColor(p.color,'0.15');
-	this.sumData = p.sumData ? true : false;
-	this.sumNights = p.sumNights ? true : false;
+	this.sumData = p.sumData || p.sumNights ? true : false;
+	this.sumNights = false;
 	this.tag = p.tag == undefined ? null : p.tag;
 	this.tags = p.tags == undefined ? [] : p.tags;
 	this.yaxis = this.id + 1;
@@ -1257,7 +1257,7 @@ function PlotLine(p) {
 		return tags.length;
 	}
 	this.getSavePlotData = function() {
-		var data = {name:this.name,color:this.color,sumData:this.sumData,sumNights:this.sumNights,
+		var data = {name:this.name,color:this.color,sumData:this.sumData,
 				tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
 				isContinuous:this.isContinuous,isFreqLineFlag:this.isFreqLineFlag,showPoints:this.showPoints,fill:this.fill,smoothDataWidth:this.smoothDataWidth,
 				freqDataWidth:this.freqDataWidth,parentLineName:this.parentLine?this.parentLine.name:'',flatten:this.flatten,smoothData:this.smoothLine&&this.smoothDataWidth>0?true:false,
@@ -1446,9 +1446,7 @@ function PlotLine(p) {
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))
 			html += '<input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
-					+ (this.sumData ? 'checked' : '') + '/> days \
-					<input type="checkbox" name="plotlinesumnights' + idSuffix + '" id="plotlinesumnights' + idSuffix + '"'
-					+ (this.sumNights ? 'checked' : '') + '/> nights<br/>';
+					+ (this.sumData ? 'checked' : '') + '/> sum \
 		if (this.isCycle) {
 			html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix
 					+ '"></div><div style="display:inline-block;margin-left:10px;width:50px;display:relative;top:3px;" id="plotlinecyclerange'
@@ -1550,13 +1548,6 @@ function PlotLine(p) {
 				var plotLine = plot.getLine(plotLineId);
 				if (plotLine.sumData) plotLine.sumData = false;
 				else plotLine.sumData = true;
-				plot.loadAllData();
-				plot.refreshPlot();
-			});
-			$("#plotlinesumnights" + idSuffix).change(function(e) {
-				var plotLine = plot.getLine(plotLineId);
-				if (plotLine.sumNights) plotLine.sumNights = false;
-				else plotLine.sumNights = true;
 				plot.loadAllData();
 				plot.refreshPlot();
 			});
@@ -1671,13 +1662,12 @@ function PlotLine(p) {
 		
 		var timeZoneName = jstz.determine().name();
 		
-		var method = (this.sumData || this.sumNights) ? "getSumPlotData" : "getPlotData";
+		var method = this.sumData ? "getSumPlotData" : "getPlotData";
 		var plotLine = this;
 		
 		$.getJSON(makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
-				sumNights:this.sumNights ? "true" : "",
 				timeZoneName:timeZoneName }),
 				function(entries){
 					if (checkData(entries)) {
