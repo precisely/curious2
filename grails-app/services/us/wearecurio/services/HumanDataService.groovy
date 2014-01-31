@@ -13,6 +13,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.User
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
@@ -108,7 +109,8 @@ class HumanDataService {
 
 		Date lastPolled = new Date()
 		String comment, description, setName, source, units
-		TimeZoneId timeZoneId = TimeZoneId.get(1)
+		// TODO: make Time Zone be the last time zone accessed by the user in question
+		TimeZoneId timeZoneId = User.getTimeZoneId(curiousUserId)
 		Token tokenInstance = account.tokenInstance
 
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()

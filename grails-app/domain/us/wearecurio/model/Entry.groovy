@@ -367,6 +367,8 @@ class Entry {
 			entry = generator.updateDurationEntry() // make sure duration entries remain consistent
 
 		entry.createRepeat()
+		
+		User.setTimeZoneId(userId, entry.getTimeZoneId())
 
 		return entry
 	}

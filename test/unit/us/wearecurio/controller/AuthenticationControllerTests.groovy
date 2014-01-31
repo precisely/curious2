@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import grails.test.GrailsMock
 import grails.test.mixin.*
 import grails.test.mixin.support.*
+import us.wearecurio.model.TimeZoneId
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.junit.*
@@ -26,6 +27,8 @@ class AuthenticationControllerTests {
 	GrailsMock twenty3AndMeDataServiceMock
 
 	void setUp() {
+		TimeZoneId.clearCacheForTesting()
+		
 		User userInstance = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
 		assert userInstance.save()

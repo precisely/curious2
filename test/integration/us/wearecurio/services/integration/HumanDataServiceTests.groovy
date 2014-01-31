@@ -12,6 +12,7 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.HumanDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 
@@ -25,6 +26,8 @@ class HumanDataServiceTests {
 
 	@Before
 	void setUp() {
+		TimeZoneId.clearCacheForTesting()
+		
 		Entry.list()*.delete()
 		/**
 		 * Clearing up all existing OAuthAccount records, since grails loaded or

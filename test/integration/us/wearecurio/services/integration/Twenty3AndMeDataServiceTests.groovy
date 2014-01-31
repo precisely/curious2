@@ -11,6 +11,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
@@ -25,6 +26,7 @@ class Twenty3AndMeDataServiceTests {
 
 	@Before
 	void setUp() {
+		TimeZoneId.clearCacheForTesting()
 		Twenty3AndMeData.list()*.delete()
 		OAuthAccount.list()*.delete()
 		Entry.list()*.delete()
