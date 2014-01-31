@@ -102,6 +102,19 @@ class User implements NameEmail {
 
 		return this
 	}
+	
+	public static void setTimeZoneId(Long userId, Integer timeZoneId) {
+		UserTimeZoneId.createOrUpdate(userId, timeZoneId)
+	}
+	
+	public static TimeZoneId getTimeZoneId(Long userId) {
+		UserTimeZoneId userTimeZoneId = UserTimeZoneId.lookup(userId)
+		
+		if (userTimeZoneId == null)
+			return TimeZoneId.look("America/Los_Angeles")
+		
+		return TimeZoneId.get((Long)userTimeZoneId.getTimeZoneId())
+	}
 
 	public updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
