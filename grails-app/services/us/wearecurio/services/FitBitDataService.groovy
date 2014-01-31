@@ -4,6 +4,7 @@ import grails.converters.JSON
 
 import java.text.SimpleDateFormat
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
@@ -18,21 +19,29 @@ import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
 
 class FitBitDataService {
 
-	def grailsApplication
+	private static Log log = LogFactory.getLog(this)
 
-	def oauthService // From OAuth plugin
-	def urlService
+	static final String API_VERSION = "1"
+	static final String BASE_URL = "http://api.fitbit.com/$API_VERSION/user%s"
+	static final String COMMENT = "(FitBit)"
+	static final String SET_NAME = "fitbit import"
 
-	private static def log = LogFactory.getLog(this)
-	private static final String FITBIT_SET_NAME = "fitbit import"
+	static transactional = true
 
 	static debug(str) {
 		log.debug(str)
 	}
 
-	static transactional = true
-
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
+
+	FitBitTagUnitMap fitBitTagUnitMap = new FitBitTagUnitMap()
+
+	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+	SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
+
+	def grailsApplication
+	def oauthService // From OAuth plugin
+	def urlService
 
 	Map authorizeAccount(Token tokenInstance, Long userId) throws AuthenticationRequiredException {
 		if (!tokenInstance || !tokenInstance.token)
@@ -43,8 +52,7 @@ class FitBitDataService {
 	}
 
 	JSONObject getUserInfo(Token accessToken) {
-		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
-		String userInfoURL = "http://api.fitbit.com/${apiVersion}/user/-/profile.json"
+		String userInfoURL = String.format(BASE_URL, "/-/profile.json")
 
 		Response response = oauthService.getFitbitResource(accessToken, userInfoURL)
 
@@ -54,8 +62,7 @@ class FitBitDataService {
 
 	Map subscribe(OAuthAccount account, def subscriptionId) {
 		Token accessToken = account.tokenInstance
-		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
-		String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${subscriptionId}.json"
+		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${subscriptionId}.json")
 
 		Response response = oauthService.postFitbitResource(accessToken, subscriptionURL)
 		debug "Added a subscription returns with code: [$response.code] & body [$response.body]"
@@ -89,8 +96,7 @@ class FitBitDataService {
 			log.info "No subscription found for userId [$userId]"
 			return [success: false, message: "No subscription found"]
 		}
-		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
-		String subscriptionURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions/${userId}.json"
+		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Response response = oauthService.deleteFitbitResource(account.tokenInstance, subscriptionURL)
 		debug "Removed a subscription returns with code: [$response.code] & body [$response.body]"
@@ -104,23 +110,9 @@ class FitBitDataService {
 		//listSubscription(account)	// Test after un-subscribe
 		[success: false]
 	}
-	
-	/**
-	 * Method to list the subscriptions for the current account
-	 * @param account
-	 */
-	def listSubscription(OAuthAccount account) {
-		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
-		String subscriptionListURL = "http://api.fitbit.com/${apiVersion}/user/-/apiSubscriptions.json"
 
-		Response responseSubscriptions = oauthService.postFitbitResource(account.tokenInstance, subscriptionListURL)
-		debug "Listing subscriptions with code: [$responseSubscriptions.code] & body [$responseSubscriptions.body]"
-		return responseSubscriptions
-	}
-
-	def queueNotifications(def notifications) {
+	void queueNotifications(def notifications) {
 		debug "Iterating through notifications"
-		SimpleDateFormat formatter = new SimpleDateFormat('yyyy-MM-dd', Locale.US)
 
 		notifications.each { notification ->
 			debug "Saving " + notification.dump()
@@ -129,15 +121,21 @@ class FitBitDataService {
 		}
 	}
 
-	def poll(def notification) {
+	/**
+	 * Method to list the subscriptions for the current account
+	 * @param account
+	 */
+	def listSubscription(OAuthAccount account) {
+		String subscriptionListURL = String.format(BASE_URL, "/-/apiSubscriptions.json")
+
+		Response responseSubscriptions = oauthService.postFitbitResource(account.tokenInstance, subscriptionListURL)
+		debug "Listing subscriptions with code: [$responseSubscriptions.code] & body [$responseSubscriptions.body]"
+		return responseSubscriptions
+	}
+
+	boolean poll(FitbitNotification notification) {
 		String accountId = notification.ownerId
 		debug "poll() accountId: [$accountId] & notification: [${notification.dump()}"
-
-		def fitBitTagUnitMap = new FitBitTagUnitMap()
-		SimpleDateFormat formatter = new SimpleDateFormat('yyyy-MM-dd', Locale.US)
-		SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-		if (accountId == null)	// TODO This can never be the case. Remove this. FitbitNotification have not null field
-			return false
 
 		long now = new Date().getTime()
 
@@ -149,43 +147,38 @@ class FitBitDataService {
 		}
 
 		lastPollTimestamps.put(accountId, now)
-		
-		String comment = "(FitBit)"
-		String setName = FITBIT_SET_NAME
-		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
-		def accounts = OAuthAccount.findAllByAccountIdAndTypeId(accountId, OAuthAccount.FITBIT_ID)
+
+		String collectionType = notification.collectionType
+		String forDate = formatter.format(notification.date)
+		String requestUrl, setName = SET_NAME + " " + notification.date
+
+		OAuthAccount accounts = OAuthAccount.findAllByAccountIdAndTypeId(accountId, OAuthAccount.FITBIT_ID)
 
 		try {
 			for (OAuthAccount account in accounts) {
-				def collectionType = notification.collectionType
-				def requestUrl
-				Map args = [setName: setName + " " + notification.date, comment: comment]
-				Long userId = account.getUserId()
+				Map args = [setName: setName, comment: COMMENT]
+
+				Long userId = account.userId
 				Integer timeZoneId = User.getTimeZoneId(userId)
 
 				if (collectionType.equals("foods")) {
-					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
-						"/${notification.ownerId}/${collectionType}/log/date/${formatter.format(notification.date)}.json"
+					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
 				} else if (collectionType.equals('body')) {
 					//Getting body measurements
-					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
-						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
-					return false
+					//requestUrl = requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
 
-					//Getting body weight
-					/*requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
-						"/${notification.ownerId}/${collectionType}/log/weight/date/${formatter.format(notification.date)}.json"
-					this.getData(account, requestUrl, false)
+					// Getting body weight
+					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/weight/date/${forDate}.json")
+					//getData(account, requestUrl, false)
 
-					//Getting body fat
-					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
-						"/${notification.ownerId}/${collectionType}/log/fat/date/${formatter.format(notification.date)}.json"
-					this.getData(account, requestUrl, false)*/
+					// Getting body fat
+					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/fat/date/${forDate}.json")
+					//getData(account, requestUrl, false)
 				} else if (collectionType.equals('activities')) {
-					requestUrl = "http://api.fitbit.com/${apiVersion}/user" +
-						"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
+					requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
+
 					def activityData = this.getData(account, requestUrl, false)
-					String oldSetName = formatter.format(notification.date) + "activityfitbit"	// Backward support
+					String oldSetName = forDate + "activityfitbit"	// Backward support
 
 					Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
 						[setNames: [setName, oldSetName], userId: account.userId])
@@ -198,7 +191,7 @@ class FitBitDataService {
 							notification.date, args)
 					}
 
-					if(!activityData.summary || activityData.summary?.fairlyActiveMinutes <= 0) {
+					if (!activityData.summary || activityData.summary?.fairlyActiveMinutes <= 0) {
 						fairlyActiveD = false
 					} else {
 						fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",
@@ -255,12 +248,9 @@ class FitBitDataService {
 							}
 						}
 					}
-
-
 				} else if (collectionType.equals('sleep')) {
-					debug "Fetch sleep data next."
-					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
-					"/${notification.ownerId}/${collectionType}/date/${formatter.format(notification.date)}.json"
+					requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
+
 					def sleepData = this.getData(account, requestUrl, false)
 					sleepData.sleep.each { logEntry ->
 						Date entryDate = inputFormat.parse(logEntry.startTime)
@@ -278,7 +268,6 @@ class FitBitDataService {
 							entryDate, args)
 					}
 				}
-
 			}
 		} catch(Exception e) {
 			e.printStackTrace()

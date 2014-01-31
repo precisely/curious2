@@ -22,3 +22,4 @@ target-eclipse/**
 /grails-app/conf/LocalConfig.groovy
 .metadata/**
 Servers/**
+*DummyController.groovy
