@@ -151,7 +151,7 @@ class FitBitDataService {
 
 		String collectionType = notification.collectionType
 		String forDate = formatter.format(notification.date)
-		String requestUrl, setName = SET_NAME + " " + notification.date
+		String requestUrl, setName = SET_NAME + " " + forDate
 
 		List<OAuthAccount> accounts = OAuthAccount.findAllByAccountIdAndTypeId(accountId, OAuthAccount.FITBIT_ID)
 
@@ -167,19 +167,21 @@ class FitBitDataService {
 					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
 				} else if (collectionType.equals("body")) {
 					// Getting body measurements
-					//requestUrl = requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
+					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
+					//getData(account, requestUrl)
 
 					// Getting body weight
 					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/weight/date/${forDate}.json")
-					//getData(account, requestUrl, false)
+					//getData(account, requestUrl)
 
 					// Getting body fat
 					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/fat/date/${forDate}.json")
-					//getData(account, requestUrl, false)
-				} else if (collectionType.equals('activities')) {
+					//getData(account, requestUrl)
+				} else if (collectionType.equals("activities")) {
 					requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
 
-					def activityData = getData(account, requestUrl, false)
+					JSONObject activityData = getData(account, requestUrl)
+
 					String oldSetName = forDate + "activityfitbit"	// Backward support
 
 					Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
@@ -249,7 +251,8 @@ class FitBitDataService {
 				} else if (collectionType.equals("sleep")) {
 					requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
 
-					def sleepData = getData(account, requestUrl, false)
+					JSONObject sleepData = getData(account, requestUrl)
+
 					sleepData.sleep.each { logEntry ->
 						Date entryDate = inputFormat.parse(logEntry.startTime)
 						String oldSetName = logEntry.logId	// Backward support
@@ -273,7 +276,7 @@ class FitBitDataService {
 		return true
 	}
 
-	def getData(OAuthAccount account, def requestUrl, def refreshAll) {
+	JSONObject getData(OAuthAccount account, String requestUrl) {
 		log.debug "Fetching data from fitbit with request URL: [$requestUrl]"
 		Map requestHeader = ["Accept-Language": "en_US"]
 		Response response = oauthService.getFitbitResource(account.tokenInstance, requestUrl, [:], requestHeader)
