@@ -107,6 +107,7 @@ class FitBitDataService {
 		} else if (response.code == 401) {
 			throw new AuthenticationRequiredException("fitbit")
 		}
+
 		//listSubscription(account)	// Test after un-subscribe
 		[success: false]
 	}
@@ -164,7 +165,7 @@ class FitBitDataService {
 				if (collectionType.equals("foods")) {
 					//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
 				} else if (collectionType.equals('body')) {
-					//Getting body measurements
+					// Getting body measurements
 					//requestUrl = requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/date/${forDate}.json")
 
 					// Getting body weight
@@ -279,8 +280,8 @@ class FitBitDataService {
 
 	def getData(OAuthAccount account, def requestUrl, def refreshAll) {
 		debug "Fetching data from fitbit with request URL: [$requestUrl]"
-		//request.addHeader("Accept-Language","en_US");
-		Response response = oauthService.getFitbitResource(account.tokenInstance, requestUrl)
+		Map requestHeader = ["Accept-Language": "en_US"]
+		Response response = oauthService.getFitbitResource(account.tokenInstance, requestUrl, [:], requestHeader)
 
 		debug "Fetched collectionType data from fitbit with code: [$response.code] & body: [$response.body]"
 		def jsonResponse = JSON.parse(response.getBody())
