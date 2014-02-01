@@ -73,7 +73,7 @@ public abstract class TagUnitMap {
 
 	public abstract Map getTagUnitMappings();
 
-	public Entry buildEntry(def tagName, def amount, def userId, def date = new Date(), def args = [:]) {
+	public Entry buildEntry(def tagName, def amount, def userId, def timeZoneId, def date = new Date(), def args = [:]) {
 		def currentMapping = this.getTagUnitMappings()[tagName]
 		if (!currentMapping) {
 			debug "No mapping found for tag name: " + tagName
@@ -86,9 +86,9 @@ public abstract class TagUnitMap {
 
 		debug "The unit is: " + currentMapping
 		if (args.tagName) {
-			this.createEntry(userId, amount, currentMapping.unit, args.tagName, date, args)
+			this.createEntry(userId, timeZoneId, amount, currentMapping.unit, args.tagName, date, args)
 		} else {
-			this.createEntry(userId, amount, currentMapping.unit, currentMapping.tag, date, args)
+			this.createEntry(userId, timeZoneId, amount, currentMapping.unit, currentMapping.tag, date, args)
 		}
 	}
 
@@ -101,13 +101,13 @@ public abstract class TagUnitMap {
 	 * @param date
 	 * @return
 	 */
-	public Entry createEntry(userId, amount, units, description, date, Map args = [:]) {
+	public Entry createEntry(userId, timeZoneId, amount, units, description, date, Map args = [:]) {
 		if (amount != null) {
 			amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
 		}
 		Map parsedEntry = [userId: userId, date: date,
 			description: description, amount: amount, units: units,
-			comment: args.comment ?: "", timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
+			comment: args.comment ?: "", timeZoneId:timeZoneId, timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
 			repeatType: args.repeatType, setName: args.setName, amountPrecision: args.amountPrecision,
 			datePrecisionSecs: args.datePrecisionSecs
 		]

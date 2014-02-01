@@ -10,6 +10,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.User
 import us.wearecurio.model.FitbitNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -148,7 +149,7 @@ class FitBitDataService {
 		}
 
 		lastPollTimestamps.put(accountId, now)
-
+		
 		String comment = "(FitBit)"
 		String setName = FITBIT_SET_NAME
 		String apiVersion = grailsApplication.config.oauth.providers.fitbit.apiVersion
@@ -159,6 +160,8 @@ class FitBitDataService {
 				def collectionType = notification.collectionType
 				def requestUrl
 				Map args = [setName: setName + " " + notification.date, comment: comment]
+				Long userId = account.getUserId()
+				Integer timeZoneId = User.getTimeZoneId(userId)
 
 				if (collectionType.equals("foods")) {
 					requestUrl = "http://api.fitbit.com/${apiVersion}/user"+
@@ -191,7 +194,7 @@ class FitBitDataService {
 					veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
 
 					if (activityData.summary) {
-						fitBitTagUnitMap.buildEntry("steps",activityData.summary?.steps.toBigDecimal(),account.userId,
+						fitBitTagUnitMap.buildEntry("steps", activityData.summary?.steps.toBigDecimal(), userId, timeZoneId,
 							notification.date, args)
 					}
 
@@ -199,7 +202,7 @@ class FitBitDataService {
 						fairlyActiveD = false
 					} else {
 						fitBitTagUnitMap.buildEntry("fairlyActiveMinutes",
-						activityData.summary.fairlyActiveMinutes.toBigDecimal(),account.userId,
+						activityData.summary.fairlyActiveMinutes.toBigDecimal(), userId, timeZoneId,
 						notification.date, args)
 					}
 
@@ -207,7 +210,7 @@ class FitBitDataService {
 						lightlyActiveD = false
 					} else {
 						fitBitTagUnitMap.buildEntry("lightlyActiveMinutes",
-							activityData.summary.lightlyActiveMinutes.toBigDecimal(),account.userId,
+							activityData.summary.lightlyActiveMinutes.toBigDecimal(), userId, timeZoneId,
 							notification.date, args)
 					}
 
@@ -215,7 +218,7 @@ class FitBitDataService {
 						sedentaryActiveD = false
 					} else {
 						fitBitTagUnitMap.buildEntry("sedentaryMinutes",
-							activityData.summary.sedentaryMinutes.toBigDecimal(),account.userId,
+							activityData.summary.sedentaryMinutes.toBigDecimal(), userId, timeZoneId,
 							notification.date, args)
 					}
 
@@ -223,7 +226,7 @@ class FitBitDataService {
 						veryActiveD = false
 					} else {
 						fitBitTagUnitMap.buildEntry("veryActiveMinutes",
-							activityData.summary.veryActiveMinutes.toBigDecimal(),account.userId,
+							activityData.summary.veryActiveMinutes.toBigDecimal(), userId, timeZoneId,
 							notification.date, args)
 					}
 
@@ -247,7 +250,7 @@ class FitBitDataService {
 								||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
 								println "Discarding activity with 0 time"
 							} else {
-								fitBitTagUnitMap.buildEntry(distance.activity,distance.distance.toBigDecimal(),account.userId,
+								fitBitTagUnitMap.buildEntry(distance.activity, distance.distance.toBigDecimal(), userId, timeZoneId,
 								entryDate, args)
 							}
 						}
@@ -266,12 +269,12 @@ class FitBitDataService {
 						Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
 							[setNames: [setName, oldSetName], userId: account.userId])
 
-						fitBitTagUnitMap.buildEntry("duration",logEntry.duration.toBigDecimal(),account.userId,
+						fitBitTagUnitMap.buildEntry("duration", logEntry.duration.toBigDecimal(), userId, timeZoneId,
 							entryDate, args)
-						fitBitTagUnitMap.buildEntry("awakeningsCount",logEntry.awakeningsCount.toBigDecimal(),account.userId,
+						fitBitTagUnitMap.buildEntry("awakeningsCount", logEntry.awakeningsCount.toBigDecimal(), userId, timeZoneId,
 							entryDate, args)
 						if (logEntry.efficiency > 0 )
-							fitBitTagUnitMap.buildEntry("efficiency",logEntry.efficiency.toBigDecimal(),account.userId,
+							fitBitTagUnitMap.buildEntry("efficiency", logEntry.efficiency.toBigDecimal(), userId, timeZoneId,
 							entryDate, args)
 					}
 				}

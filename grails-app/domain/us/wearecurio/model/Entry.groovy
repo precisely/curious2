@@ -331,12 +331,14 @@ class Entry {
 		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
 
 		Tag tag = Tag.look(m['description'])
+		
+		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
 		Entry entry = new Entry(
 				userId:userId,
 				tweetId:m['tweetId'],
 				date:m['date'],
-				timeZoneId:(Integer)TimeZoneId.look(m['timeZoneName']).getId(),
+				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],

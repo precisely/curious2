@@ -244,4 +244,23 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert modelAndView.model['username'].equals(user.getUsername())
 		assert modelAndView.getViewName().equals("/home/discuss")
 	}
+	
+	@Test
+	void testUnregisterwithings() {
+		HomeController controller = new HomeController()
+		
+		controller.unregisterwithings()
+		assert controller.flash.message == "withings.unsubscribe.success.message"
+		assert response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
+	void testUnregisterfitbit() {
+		HomeController controller = new HomeController()
+		
+		controller.unregisterfitbit()
+		assert controller.flash.message == "fitbit.unsubscribe.success.message"
+		assert response.redirectUrl.contains("home/userpreferences")
+	}
+
 }

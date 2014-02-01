@@ -1,9 +1,11 @@
-package us.wearecurio.services
+package us.wearecurio.services.integration
 
 
 
 import grails.test.mixin.*
 import org.junit.*
+
+import us.wearecurio.services.GCMService;
 
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
