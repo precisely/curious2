@@ -1,3 +1,4 @@
+
 import grails.util.Environment
 
 grails.servlet.version = "2.5" // Change depending on target container compliance (2.5 or 3.0)

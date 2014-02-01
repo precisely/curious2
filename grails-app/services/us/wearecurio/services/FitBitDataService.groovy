@@ -83,7 +83,7 @@ class FitBitDataService {
 		result
 	}
 
-	Map unSubscribe(Long userId) {
+	Map unSubscribe(Long userId) throws AuthenticationRequiredException {
 		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.FITBIT_ID)
 		if (!account) {
 			log.info "No subscription found for userId [$userId]"

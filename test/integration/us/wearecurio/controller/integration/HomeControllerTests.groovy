@@ -15,6 +15,7 @@ import us.wearecurio.utility.Utils
 import grails.util.GrailsWebUtil
 import org.springframework.web.util.WebUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 import static org.junit.Assert.*
 import org.junit.*
@@ -25,7 +26,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 	PlotData plotData
 	Discussion discussion
-
+	def withingsDataServiceMock
+	
 	@Before
 	void setUp() {
 		super.setUp()
@@ -248,19 +250,39 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	@Test
 	void testUnregisterwithings() {
 		HomeController controller = new HomeController()
+		controller.withingsDataService = [
+			unSubscribe: { userId -> return [success:true] }
+		]
+		controller.session.userId = userId
 		
 		controller.unregisterwithings()
-		assert controller.flash.message == "withings.unsubscribe.success.message"
-		assert response.redirectUrl.contains("home/userpreferences")
+		assert controller.flash.message.contains("Successfully un-linked Withings account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
 	@Test
 	void testUnregisterfitbit() {
 		HomeController controller = new HomeController()
+		controller.fitBitDataService = [
+			unSubscribe: { userId -> return [success:true] }
+		]
+		controller.session.userId = userId
 		
 		controller.unregisterfitbit()
-		assert controller.flash.message == "fitbit.unsubscribe.success.message"
-		assert response.redirectUrl.contains("home/userpreferences")
+		assert controller.flash.message.contains("Successfully un-linked Fitbit account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
+	@Test
+	void testUnregistermoves() {
+		HomeController controller = new HomeController()
+		controller.movesDataService = [
+			unSubscribe: { userId -> return [success:true] }
+		]
+		controller.session.userId = userId
+		
+		controller.unregistermoves()
+		assert controller.flash.message.contains("Successfully un-linked Moves account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
 }
