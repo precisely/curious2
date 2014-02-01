@@ -15,10 +15,10 @@ import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
 	
-	TwitterDataService twitterDataService
-	WithingsDataService withingsDataService
-	FitBitDataService fitBitDataService
-	JawboneService jawboneService
+	def twitterDataService
+	def withingsDataService
+	def fitBitDataService
+	def jawboneService
 	def movesDataService
 	def oauthService
 	def twenty3AndMeDataService
@@ -51,7 +51,7 @@ class HomeController extends DataController {
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("withings")]
 
 		Map result = withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
-		if(result.success) {
+		if (result.success) {
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
 			flash.message = g.message(code: "withings.subscribe.failure.message", args: [result.message ?: ""])
@@ -63,7 +63,7 @@ class HomeController extends DataController {
 
 	def unregisterwithings() {
 		Map result = withingsDataService.unSubscribe(sessionUser().id)
-		if(result.success) {
+		if (result.success) {
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
 		} else {
 			flash.message = g.message(code: "withings.unsubscribe.failure.message", args: [result.message ?: ""])
@@ -76,7 +76,7 @@ class HomeController extends DataController {
 
 		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
 		Map result = twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
-		if(result.success) {
+		if (result.success) {
 			flash.message = message(code: "twenty3andme.import.success.message")
 		}
 
@@ -161,7 +161,7 @@ class HomeController extends DataController {
 
 	def unregisterfitbit() {
 		Map result = fitBitDataService.unSubscribe(sessionUser().id)
-		if(result.success) {
+		if (result.success) {
 			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
 		} else {
 			flash.message = g.message(code: "fitbit.unsubscribe.failure.message", args: [result.message ?: ""])
