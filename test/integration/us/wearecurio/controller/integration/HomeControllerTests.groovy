@@ -15,6 +15,9 @@ import us.wearecurio.utility.Utils
 import grails.util.GrailsWebUtil
 import org.springframework.web.util.WebUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import us.wearecurio.services.FitBitDataService
+import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.WithingsDataService
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 import static org.junit.Assert.*
@@ -252,7 +255,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 		controller.withingsDataService = [
 			unSubscribe: { userId -> return [success:true] }
-		]
+		] as WithingsDataService
 		controller.session.userId = userId
 		
 		controller.unregisterwithings()
@@ -265,7 +268,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 		controller.fitBitDataService = [
 			unSubscribe: { userId -> return [success:true] }
-		]
+		] as FitBitDataService
 		controller.session.userId = userId
 		
 		controller.unregisterfitbit()
@@ -278,7 +281,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 		controller.movesDataService = [
 			unSubscribe: { userId -> return [success:true] }
-		]
+		] as MovesDataService
 		controller.session.userId = userId
 		
 		controller.unregistermoves()
