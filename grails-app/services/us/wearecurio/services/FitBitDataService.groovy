@@ -32,14 +32,14 @@ class FitBitDataService {
 
 	static transactional = true
 
-	protected Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
+	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
-	Map authorizeAccount(Token tokenInstance, Long userId) {
+	Map authorizeAccount(Token tokenInstance, Long userId) throws AuthenticationRequiredException {
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("fitbit")
 
 		OAuthAccount fitbitAccount = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.FITBIT_ID)
-		subscribe(fitbitAccount, userId)
+		return subscribe(fitbitAccount, userId)
 	}
 
 	JSONObject getUserInfo(Token accessToken) {

@@ -3,11 +3,14 @@ package us.wearecurio.controller
 import grails.converters.*
 
 import org.scribe.model.Token
+import org.scribe.oauth.OAuthService
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
+import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -15,13 +18,13 @@ import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
 	
-	def twitterDataService
-	def withingsDataService
-	def fitBitDataService
-	def jawboneService
-	def movesDataService
+	TwitterDataService twitterDataService
+	WithingsDataService withingsDataService
+	FitBitDataService fitBitDataService
+	JawboneService jawboneService
+	MovesDataService movesDataService
 	def oauthService
-	def twenty3AndMeDataService
+	Twenty3AndMeDataService twenty3AndMeDataService
 
 	static debug(str) {
 		log.debug(str)
