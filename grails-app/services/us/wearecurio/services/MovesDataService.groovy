@@ -12,6 +12,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.User
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
@@ -31,6 +32,9 @@ class MovesDataService {
 
 	Map poll(OAuthAccount account) {
 		Long userId = account.userId
+		
+		Integer timeZoneId = User.getTimeZoneId(userId)
+		
 		log.info "Polling account with userId [$userId]"
 
 		Date today = new Date()
@@ -81,14 +85,14 @@ class MovesDataService {
 				currentSegment["activities"]?.each { currentActivity ->
 					log.debug "Processing activity for userId [$account.userId] of type [$currentActivity.activity]"
 
-					processActivity(currentActivity, userId, currentActivity.activity, startEndTimeFormat, args)
+					processActivity(currentActivity, userId, timeZoneId, currentActivity.activity, startEndTimeFormat, args)
 				}
 			}
 		}
 		return [success: true]
 	}
 
-	void processActivity(JSONObject currentActivity, Long userId, String activityType, DateFormat timeFormat, Map args) {
+	void processActivity(JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)
@@ -113,15 +117,15 @@ class MovesDataService {
 		}
 		if (baseType) {
 			if (currentActivity.steps) {
-				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps.toBigDecimal(), userId, startTime, args)
+				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps.toBigDecimal(), userId, timeZoneId, startTime, args)
 			}
-			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance.toBigDecimal(), userId, startTime, args)
+			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance.toBigDecimal(), userId, timeZoneId, startTime, args)
 			if (currentActivity.calories) {
-				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, startTime, args)
+				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, timeZoneId, startTime, args)
 			}
 
-			tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, startTime, args.plus([amountPrecision: -1]))
-			tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, endTime, args.plus(amountPrecision: -1))
+			tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, timeZoneId, startTime, args.plus([amountPrecision: -1]))
+			tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, timeZoneId, endTime, args.plus(amountPrecision: -1))
 		}
 	}
 

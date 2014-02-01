@@ -110,7 +110,7 @@ class HumanDataService {
 		Date lastPolled = new Date()
 		String comment, description, setName, source, units
 		// TODO: make Time Zone be the last time zone accessed by the user in question
-		TimeZoneId timeZoneId = User.getTimeZoneId(curiousUserId)
+		TimeZoneId timeZoneId = TimeZoneId.get(User.getTimeZoneId(curiousUserId))
 		Token tokenInstance = account.tokenInstance
 
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
@@ -127,7 +127,7 @@ class HumanDataService {
 			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
-			movesDataService.processActivity(activityData, curiousUserId, activityData.type, startEndTimeFormat, args)
+			movesDataService.processActivity(activityData, curiousUserId, (Integer) timeZoneId.getId(), activityData.type, startEndTimeFormat, args)
 		}
 
 		// Done
