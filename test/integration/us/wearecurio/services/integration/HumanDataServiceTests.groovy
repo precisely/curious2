@@ -22,10 +22,11 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 
 	HumanDataService humanDataService
 	OauthService oauthService
-	User userInstance1
 
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		TimeZoneId.clearCacheForTesting()
 		
 		Entry.list()*.delete()
@@ -36,15 +37,11 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		 */
 		OAuthAccount.findAllByTypeIdNotEqual(TWENTY_3_AND_ME_ID)*.delete()
 
-		userInstance1 = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
-		assert userInstance1.save()
-
 		// Actual access token to test live data.
 		String accessToken = "sii28Ai_Qed-lAoFi_6jHxJDxsU=OTR1oUDu45ee26a8c66ba0fcabef6b40f68cf1a1e0863e0976ec0ce93746152243a0e565ad439d3e084bd37201e76afd3bc1b0bc102391506bd55fbf49dc41a31a621f8310a91584f07b902de1b9703d531aca7a194d032f772982aa84e154c0fd223a49e9545a4348fc6eee29263804256d2f6a3eb9fa4ab6a24d64fedbeae5dd8f0959"
 		// A dummy access token provided by HumanAPI
 		accessToken = "demo"
-		account1 = OAuthAccount.createOrUpdate(HUMAN_ID, userInstance1.id, "529edac229619a013a005434", accessToken, "")
+		account1 = OAuthAccount.createOrUpdate(HUMAN_ID, userId, "529edac229619a013a005434", accessToken, "")
 	}
 
 	@After

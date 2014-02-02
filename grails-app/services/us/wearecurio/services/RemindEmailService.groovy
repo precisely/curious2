@@ -13,8 +13,8 @@ import org.joda.time.*
 class RemindEmailService {
 	
 	def mailService
-	def GCMService
-	def APNSService
+	def googleMessageService
+	def appleNotificationService
 
 	private static def log = LogFactory.getLog(this)
 
@@ -40,7 +40,7 @@ class RemindEmailService {
 			
 		def remindUsers = User.executeQuery("SELECT u.id, u.remindEmail FROM User u")
 		log.debug "Users to remind " + remindUsers.size()
-		//APNSService.sendMessage("This is a test reminder with data",
+		//appleNotificationService.sendMessage("This is a test reminder with data",
 			//["54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"],"Curious", 
 			//['entryId':"5229",'entryDate':dateTimeFormatter.print(new DateTime(now).plusDays(3).getMillis())])
 		for (def user in remindUsers) {
@@ -78,12 +78,12 @@ class RemindEmailService {
 					def notificationMessage = "Reminder to track:" + event.getTag().getDescription() + " " + event.getComment()
 					devices.each { userDevice ->
 						if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
-							GCMService.sendMessage(notificationMessage, [userDevice.token])
+							googleMessageService.sendMessage(notificationMessage, [userDevice.token])
 							log.debug "Notifying Android device for user "+userId
 						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 							//TODO Send APN message for reminder
 							log.debug "Notifying iOS device for user "+userId
-							APNSService.sendMessage(notificationMessage, [userDevice.token],"Curious",
+							appleNotificationService.sendMessage(notificationMessage, [userDevice.token],"Curious",
 								['entryId':event.getId(),'entryDate':dateTimeFormatter.print(event.getDate().getTime())])
 						}
 					}

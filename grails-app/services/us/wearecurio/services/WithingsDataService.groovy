@@ -23,7 +23,7 @@ class WithingsDataService {
 	private static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	private static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	private static final String WITHINGS_SET_NAME = "withings import"
-	protected Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
+	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
 	static transactional = true
 
@@ -31,7 +31,7 @@ class WithingsDataService {
 		log.debug(str)
 	}
 
-	Map authorizeAccount(Token tokenInstance, Long userId, String withingsUserId) {
+	Map authorizeAccount(Token tokenInstance, Long userId, String withingsUserId) throws AuthenticationRequiredException {
 		debug "Authorizing WithingsDataService for user " + userId + " and userId " + withingsUserId
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("withings")

@@ -84,8 +84,6 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testUnSubscribeWithOAuthAccountExists() {
-		def tokenStorage
-		
 		fitBitDataService.oauthService = [
 			deleteFitbitResource: { token, url ->
 				return new Response(new MockedHttpURLConnection(204))

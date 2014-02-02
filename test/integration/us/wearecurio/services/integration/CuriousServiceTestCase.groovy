@@ -31,6 +31,10 @@ public abstract class CuriousServiceTestCase {
 
 	User user
 	Long userId
+	
+	boolean isClose(double a, double b, double range) {
+		return Math.abs(a - b) < range
+	}
 
 	String shouldFail(Class<?> clazz, Closure code) {
 		Throwable th = null

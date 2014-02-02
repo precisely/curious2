@@ -16,7 +16,7 @@ import com.google.android.gcm.server.MulticastResult
 import com.google.android.gcm.server.Sender
 
 
-class GCMService {
+class GoogleMessageService {
 	private static def log = LogFactory.getLog(this)
 	
 	static debug(str) {
@@ -44,11 +44,11 @@ class GCMService {
         // the android target device, if it was offline during earlier message
         // transmissions, will only receive the latest message for that key when
         // it goes back on-line.
-        .collapseKey(collapseKey)
-        .timeToLive(30)
-        .delayWhileIdle(true)
-        .addData("message", messageTxt)
-        .build()
+		        .collapseKey(collapseKey)
+		        .timeToLive(30)
+		        .delayWhileIdle(true)
+		        .addData("message", messageTxt)
+		        .build()
          
         try {
             // use this for multicast messages.  The second parameter
