@@ -2,7 +2,7 @@ package us.wearecurio.services.integration
 
 import us.wearecurio.services.APNSService
 
-class APNSServiceTests {
+class APNSServiceTests extends CuriousServiceTestCase {
 
 	APNSService APNSService
 

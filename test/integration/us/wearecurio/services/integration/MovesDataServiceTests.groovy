@@ -12,7 +12,7 @@ import us.wearecurio.model.User
 import us.wearecurio.services.MovesDataService;
 import us.wearecurio.test.common.MockedHttpURLConnection
 
-class MovesDataServiceTests {
+class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	User userInstance1, userInstance2
 

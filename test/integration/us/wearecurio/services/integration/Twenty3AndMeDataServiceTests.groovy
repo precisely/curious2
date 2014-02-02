@@ -15,7 +15,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
-class Twenty3AndMeDataServiceTests {
+class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 	OauthService oauthService
 	Twenty3AndMeDataService twenty3AndMeDataService

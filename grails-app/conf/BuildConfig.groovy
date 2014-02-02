@@ -49,10 +49,11 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        runtime ":hibernate:$grailsVersion"
-        runtime ":jquery:1.8.3"
-        runtime ":resources:1.2"
-
+        compile ":hibernate:$grailsVersion"
+        compile ":jquery:1.8.3"
+        compile ":resources:1.2"
+		compile ":message-digest:1.1"
+		
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0"
         //runtime ":cached-resources:1.0"
@@ -60,22 +61,21 @@ grails.project.dependency.resolution = {
 
         build ":tomcat:$grailsVersion"
 
-        runtime ":database-migration:1.3.2"
+        compile ":database-migration:1.3.2"
 
         compile ':cache:1.0.1'
 		
-		runtime ":mail:1.0.1"
+		compile ":mail:1.0.1"
 		
-		runtime ":quartz:1.0-RC9"
-		if(Environment.current == Environment.DEVELOPMENT) {
+		compile ":quartz:1.0-RC9"
+		if (Environment.current == Environment.DEVELOPMENT) {
 			compile (":quartz-monitor:0.3-RC3") {
 				excludes "quartz"
 			}
 		}
 
-		runtime ":message-digest:1.1"
 		compile ":oauth:2.1.0"
-		runtime ":csv:0.3.1"
+		compile ":csv:0.3.1"
 		if (Environment.getCurrent() == Environment.DEVELOPMENT) {
 			compile ":quartz-monitor:0.3-RC3"
 		}

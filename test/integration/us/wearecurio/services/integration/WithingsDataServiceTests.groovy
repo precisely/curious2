@@ -1,44 +1,38 @@
 package us.wearecurio.services.integration
 
-import grails.test.GrailsMock
-import grails.test.mixin.*
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.test.mixin.services.ServiceUnitTestMixin
-import groovy.mock.interceptor.MockFor
-
-import org.scribe.model.Response
-import org.scribe.model.Token
-
-import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagStats
-import us.wearecurio.model.TimeZoneId;
 import us.wearecurio.model.User
 
-import us.wearecurio.services.UrlService;
-import us.wearecurio.services.WithingsDataService;
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.junit.*
+import org.scribe.model.Response
+import org.scribe.model.Token
+import grails.test.mixin.*
 
-import us.wearecurio.test.common.MockedHttpURLConnection;
+import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.model.FitbitNotification
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.User
+import us.wearecurio.services.FitBitDataService
+import us.wearecurio.services.OAuthAccountService;
+import us.wearecurio.services.UrlService
+import us.wearecurio.services.WithingsDataService
+import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.utility.Utils
 
-@TestMixin([ServiceUnitTestMixin, DomainClassUnitTestMixin])
-@Mock([User, OAuthAccount, Entry, Tag, TagStats, TimeZoneId])
-@TestFor(WithingsDataService)
-class WithingsDataServiceTests {
 
-	GrailsMock oauthServiceMock
-	GrailsMock urlServiceMock
+class WithingsDataServiceTests extends CuriousServiceTestCase {
+
+	def oauthService
+	def urlServiceMock
+	def withingsDataService
+	def user2
 
 	void setUp() {
-		User userInstance = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
-		assert userInstance.save()
-
-		userInstance = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert userInstance.save()
+		assert user2.save()
 
 		oauthServiceMock = mockFor(OauthService, true)
 		urlServiceMock = mockFor(UrlService, true)
@@ -60,10 +54,10 @@ class WithingsDataServiceTests {
 
 	void testAuthrorizeAccountIfNoToken() {
 		shouldFail(AuthenticationRequiredException) {
-			service.authorizeAccount(null, 1, "dummy-id")
+			withingsDataService.authorizeAccount(null, 1, "dummy-id")
 		}
 		shouldFail(AuthenticationRequiredException) {
-			service.authorizeAccount(new Token("", ""), 1, "dummy-id")
+			withingsDataService.authorizeAccount(new Token("", ""), 1, "dummy-id")
 		}
 	}
 
@@ -83,8 +77,8 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
 		}
-		service.oauthService = oauthServiceMock.createMock()
-		service.subscribe(OAuthAccount.get(1))
+		withingsDataService.oauthService = oauthServiceMock.createMock()
+		withingsDataService.subscribe(OAuthAccount.get(1))
 		assert OAuthAccount.get(1).lastSubscribed
 	}
 
@@ -92,8 +86,8 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection("""{"status": 2554}"""))
 		}
-		service.oauthService = oauthServiceMock.createMock()
-		service.subscribe(OAuthAccount.get(1))
+		withingsDataService.oauthService = oauthServiceMock.createMock()
+		withingsDataService.subscribe(OAuthAccount.get(1))
 		assert OAuthAccount.count() == 0
 	}
 
@@ -107,7 +101,7 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
 		}
-		service.oauthService = oauthServiceMock.createMock()
+		withingsDataService.oauthService = oauthServiceMock.createMock()
 
 		assert OAuthAccount.count() == 1
 		Map response = service.unSubscribe(1)
@@ -135,7 +129,7 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection("""{"status": 2555}"""))
 		}
-		service.oauthService = oauthServiceMock.createMock()
+		withingsDataService.oauthService = oauthServiceMock.createMock()
 		boolean result = service.getData(OAuthAccount.get(1), false)
 
 		assertFalse result
@@ -146,7 +140,7 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection("""status = unparsable-response"""))
 		}
-		service.oauthService = oauthServiceMock.createMock()
+		withingsDataService.oauthService = oauthServiceMock.createMock()
 
 		//shouldFail(ConverterException) {}
 		boolean result = service.getData(OAuthAccount.get(1), false)
@@ -157,9 +151,8 @@ class WithingsDataServiceTests {
 		oauthServiceMock.demand.getWithingsResource { token, url ->
 			return new Response(new MockedHttpURLConnection(mockedResponseData))
 		}
-		service.oauthService = oauthServiceMock.createMock()
+		withingsDataService.oauthService = oauthServiceMock.createMock()
 
-		def entryMock = new MockFor(Entry)
 		entryMock.demand.create(10..20) { p1, p2, p3, p4, p5, p6, p7, p8 ,p9 ->
 			return null
 		}
