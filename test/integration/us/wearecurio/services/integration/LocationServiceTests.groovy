@@ -1,7 +1,5 @@
 package us.wearecurio.services.integration
 
-import grails.test.mixin.*
-
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 import org.junit.*
 
@@ -13,8 +11,7 @@ import us.wearecurio.services.LocationService;
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-@TestFor(LocationService)
-class LocationServiceTests {
+class LocationServiceTests extends CuriousServiceTestCase {
 
 	void setUp() {
 		mockCodec(URLCodec)

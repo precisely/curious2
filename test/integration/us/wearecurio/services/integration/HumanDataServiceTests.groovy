@@ -16,7 +16,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.HumanDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 
-class HumanDataServiceTests {
+class HumanDataServiceTests extends CuriousServiceTestCase {
 
 	OAuthAccount account1
 

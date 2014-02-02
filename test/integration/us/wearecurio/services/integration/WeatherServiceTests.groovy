@@ -6,8 +6,9 @@ import groovy.json.JsonOutput;
 /**
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
-@TestFor(WeatherService)
-class WeatherServiceTests {
+class WeatherServiceTests extends CuriousServiceTestCase {
+	
+	def weatherService
 	
 	void setUp() {
 		

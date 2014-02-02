@@ -2,7 +2,6 @@ package us.wearecurio.controller.integration
 
 import static org.junit.Assert.*
 import grails.test.*
-import grails.test.mixin.*
 
 import java.text.DateFormat
 
