@@ -8,7 +8,7 @@ import groovy.json.JsonOutput;
  */
 class WeatherServiceTests extends CuriousServiceTestCase {
 	
-	def weatherService
+	WeatherService weatherService
 	
 	void setUp() {
 		
@@ -19,17 +19,17 @@ class WeatherServiceTests extends CuriousServiceTestCase {
 	}
 	
 	void testFetchConditionsWithNoInput() {
-		def result = service.fetchConditions()
+		def result = weatherService.fetchConditions()
 		assert result.response != null, "Invalid result"
 	}
 	
 	void testFetchConditions() {
-		def result = service.fetchConditions("New_York","NY")
+		def result = weatherService.fetchConditions("New_York","NY")
 		assert result.response != null, "Invalid result"
 	}
 	
 	void testFetchHistoryWithNoInput() {
-		def result = service.fetchHistory()
+		def result = weatherService.fetchHistory()
 		println JsonOutput.prettyPrint(result.toString())
 		assert result.response != null, "Invalid result"
 	}

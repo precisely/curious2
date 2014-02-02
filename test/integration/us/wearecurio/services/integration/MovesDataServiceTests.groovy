@@ -14,23 +14,22 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 
-	User userInstance1, userInstance2
+	User user2
 
 	OauthService oauthService
 	MovesDataService movesDataService
 
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		OAuthAccount.findAllByTypeId(OAuthAccount.MOVES_ID)*.delete()
-		userInstance1 = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
-		assert userInstance1.save()
 
-		userInstance2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert userInstance2.save()
+		assert user2.save()
 
-		OAuthAccount account = new OAuthAccount([typeId: OAuthAccount.MOVES_ID, userId: userInstance1.id, accessToken: "n4TGD4_g40CpwjLB1Jo80F4IBirI6P_83UdXc1UWX5P6sHWpK1S7PDCK9OCVH9oJ",
+		OAuthAccount account = new OAuthAccount([typeId: OAuthAccount.MOVES_ID, userId: userId, accessToken: "n4TGD4_g40CpwjLB1Jo80F4IBirI6P_83UdXc1UWX5P6sHWpK1S7PDCK9OCVH9oJ",
 			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775"]).save()
 		assert account.save()
 
@@ -45,14 +44,14 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	void testUnsubscribe() {
 		// If no OAuthAccount Exists
-		Map response = movesDataService.unSubscribe(userInstance2.id)	// Passing user id, whose OAuthAccount not exists.
+		Map response = movesDataService.unSubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
 		assertFalse response.success
 		assert response.message == "No subscription found"
 
 		assert OAuthAccount.countByTypeId(OAuthAccount.MOVES_ID) == 1
 
 		// If OAuthAccount Exists
-		response = movesDataService.unSubscribe(userInstance1.id)
+		response = movesDataService.unSubscribe(userId)
 		assertTrue response.success
 		assert OAuthAccount.countByTypeId(OAuthAccount.MOVES_ID) == 0
 	}

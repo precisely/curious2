@@ -28,7 +28,7 @@ class Twenty3AndMeDataService {
 		parsedResponse
 	}
 
-	Map storeGenomesData(Token tokenInstance, User userInstance) {
+	Map storeGenomesData(Token tokenInstance, User userInstance) throws AuthenticationRequiredException {
 		if (!tokenInstance || !tokenInstance.token)
 			throw new AuthenticationRequiredException("twenty3andme")
 

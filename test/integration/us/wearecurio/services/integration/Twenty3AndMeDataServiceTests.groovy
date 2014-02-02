@@ -22,25 +22,23 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 	OAuthAccount account
 
-	User userInstance1, userInstance2
+	User user2
 
 	@Before
 	void setUp() {
+		super.setUp()
+
 		TimeZoneId.clearCacheForTesting()
 		Twenty3AndMeData.list()*.delete()
 		OAuthAccount.list()*.delete()
 		Entry.list()*.delete()
-
-		userInstance1 = new User([username: "dummy1", email: "dummy1@curious.test", sex: "M", first: "John", last: "Day",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: false])
-		assert userInstance1.save()
-
-		userInstance2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert userInstance2.save()
+		assert user2.save()
 
 		// This token may expire.
-		account = new OAuthAccount([typeId: OAuthAccount.TWENTY_3_AND_ME_ID, userId: userInstance1.id,
+		account = new OAuthAccount([typeId: OAuthAccount.TWENTY_3_AND_ME_ID, userId: userId,
 			accessToken: "d914a5723ed53e84c58fb376a4cca575", accessSecret: "", accountId: "06b53ee811bf5c9f"]).save()
 		assert account.save()
 	}
@@ -68,15 +66,13 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testStoreGenomesDataWithNoToken() {
-		try {
-			twenty3AndMeDataService.storeGenomesData(null, userInstance1)
-		} catch(e) {
-			assert e.cause instanceof AuthenticationRequiredException
+		shouldFail(AuthenticationRequiredException) {
+			twenty3AndMeDataService.storeGenomesData(null, user)
 		}
 	}
 
 	void testStoreGenomesData() {
-		twenty3AndMeDataService.storeGenomesData(account.tokenInstance, userInstance1)
+		twenty3AndMeDataService.storeGenomesData(account.tokenInstance, user)
 		// Assuming current token returns genomes data large than 1MB
 		assert Twenty3AndMeData.countByAccount(account) > 0
 	}

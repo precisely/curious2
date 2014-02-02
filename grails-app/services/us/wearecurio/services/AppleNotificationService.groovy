@@ -3,7 +3,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.notnoop.apns.*
 
-class APNSService {
+class AppleNotificationService {
 	
 	private static def log = LogFactory.getLog(this)
 	
