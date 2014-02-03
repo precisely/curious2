@@ -166,6 +166,12 @@ a,a:link,a:hover,a:visited {
 /**
  * Styles for graph page starts here.
  */
+body.graph-page #tagListWrapper {
+	min-height: 565px;
+}
+body.graph-page #tagListWrapper ul#tagList {
+	height: 535px;
+}
 body.graph-page .querymain {
 	margin:0px;
 }
@@ -178,6 +184,12 @@ body.graph-page #plotArea canvas {
 }
 body.graph-page .querycontrols {
 	margin:0px;
+}
+body.graph-page div.graphData div#height-balancer {
+	height: 13px;
+}
+body.graph-page div.graphData.has-plot-data div#height-balancer {
+	height: 0px;
 }
 /**
  * Styles for graph page ends here.

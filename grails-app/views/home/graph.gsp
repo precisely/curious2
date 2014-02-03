@@ -108,6 +108,7 @@ $(function(){
 <r:script>
 	$(document).on(beforeLinePlotEvent, function(e, tag) {
 		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
+		$(".graphData").addClass("has-plot-data");
 		$("#plotArea").removeClass("table");
 	})
 	$(document).on(afterLinePlotEvent, function(e, tag) {
@@ -115,8 +116,9 @@ $(function(){
 	})
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		adjustTrackingTagHeaderHeight();
-		if ($("#plotArea").html().trim() == "") {
-			//if(plotInstance.lines.length == 0)
+		if (!plot.plotData || plot.plotData == null) {
+			$("#zoomcontrol1").slider("destroy");
+			$(".graphData").removeClass("has-plot-data");
 			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	})
@@ -127,7 +129,7 @@ $(function(){
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
 		// Checking if any plot line available.
-		if ($("#plotArea").find("#drag-here-msg").length == 0) {
+		if (plot.plotData && plot.plotData.length != 0) {
 			plot.refreshPlot();
 		}
 	}
@@ -180,7 +182,7 @@ $(function(){
 							<div id="plotArea" class="table full-width">
 								<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
 							</div>
-				
+							<div id="height-balancer"></div>
 							<div class="main querycontrols">
 								<div class="calendarRange">
 									<div class="zoomline">
