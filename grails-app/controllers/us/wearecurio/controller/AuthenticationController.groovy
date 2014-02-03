@@ -16,19 +16,19 @@ import us.wearecurio.model.OAuthAccount
  */
 class AuthenticationController extends SessionController {
 
-	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth", "twenty3andmeAuth", "fitbitAuth", "movesAuth", "withingsAuth"]]
-	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
-
-	def fitBitDataService
-	def humanDataService
-	def oauthService	// From OAuth Plugin
-	def oAuthAccountService
-	def twenty3AndMeDataService
-
 	private String provider
 	private Token tokenInstance
 
-	private boolean afterAuthRedirect(model) {
+	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback"]]
+	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback"]]
+
+	def fitBitDataService
+	def humanDataService
+	def OAuthAccountService
+	def oauthService	// From OAuth Plugin
+	def twenty3AndMeDataService
+
+	private boolean afterAuthentication(model) {
 		if (session.returnURIWithToken) {
 			log.debug "Redirecting user to [$session.returnURIWithToken]"
 			redirect uri: session.returnURIWithToken
@@ -37,16 +37,12 @@ class AuthenticationController extends SessionController {
 		}
 	}
 
-	private boolean authRedirect() {
+	private boolean checkAuthentication() {
 		provider = params.provider
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
 
 		if (params.status == "fail" || !tokenInstance) {
-			if (params.status == "fail") {
-				log.info "User denied to authenticate with [$provider]."
-			} else {
-				log.error "No token found after authentication with [$provider]."
-			}
+			log.info "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
 			if (session.deniedURI) {
 				redirect uri: session.deniedURI
 				session.deniedURI = null
@@ -58,6 +54,7 @@ class AuthenticationController extends SessionController {
 
 		return true
 	}
+
 
 	/**
 	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
@@ -75,39 +72,42 @@ class AuthenticationController extends SessionController {
 		return
 	}
 
-	def twenty3andmeAuth() {
-		JSONObject userInfo = twenty3AndMeDataService.getUserProfiles(tokenInstance)
-
-		oAuthAccountService.createOrUpdate(TWENTY_3_AND_ME_ID, userInfo.id, tokenInstance)
-	}
-
 	def fitbitAuth() {
 		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
 		JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
 
-		oAuthAccountService.createOrUpdate(FITBIT_ID, userInfo.user.encodedId, tokenInstance)
+		OAuthAccountService.createOrUpdate(FITBIT_ID, userInfo.user.encodedId, tokenInstance)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 
-		oAuthAccountService.createOrUpdate(HUMAN_ID,  userInfo.userId, tokenInstance.token, "")
+		OAuthAccountService.createOrUpdate(HUMAN_ID,  userInfo.userId, tokenInstance.token, "")
 	}
 
 	def movesAuth() {
 		// Moves sends user_id while getting the access token.
 		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
 
-		oAuthAccountService.createOrUpdate(MOVES_ID, userInfo.user_id.toString(), tokenInstance)
+		OAuthAccountService.createOrUpdate(MOVES_ID, userInfo.user_id.toString(), tokenInstance)
 	}
 
-	def withingsAuth() {
+	def twenty3andmeAuth() {
+		JSONObject userInfo = twenty3AndMeDataService.getUserProfiles(tokenInstance)
+
+		OAuthAccountService.createOrUpdate(TWENTY_3_AND_ME_ID, userInfo.id, tokenInstance)
 	}
 
+	/**
+	 * Special case for Withings callback, since Withings sends user id as request parameter.
+	 */
 	def withingCallback(String userid) {
 		params.provider = "withings"
 		session.withingsUserId = userid
 		redirect(url: toUrl(action: "callback", controller: "oauth", params: params))	// redirecting to oauth plugin controller
+	}
+
+	def withingsAuth() {
 	}
 
 }
