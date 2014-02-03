@@ -1446,7 +1446,7 @@ function PlotLine(p) {
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))
 			html += '<input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
-					+ (this.sumData ? 'checked' : '') + '/> sum \
+					+ (this.sumData ? 'checked' : '') + '/> sum ';
 		if (this.isCycle) {
 			html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix
 					+ '"></div><div style="display:inline-block;margin-left:10px;width:50px;display:relative;top:3px;" id="plotlinecyclerange'

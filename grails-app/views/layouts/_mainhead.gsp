@@ -14,7 +14,7 @@
 <script type="text/javascript" src="/static/js/curious/treeview.js?ver=9"></script>
 <script type="text/javascript" src="/static/js/curious/taglist.js?ver=9"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<link rel="stylesheet" href="${resource(dir:'css', file:'main.css?v=4')}"/>
+<link rel="stylesheet" href="${resource(dir:'css', file:'main.css?v=5')}"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="${resource(dir:'css', file:'mainlhp.css')}"/>
 </g:if>
