@@ -23,6 +23,7 @@ class AuthenticationController extends SessionController {
 	def fitBitDataService
 	def humanDataService
 	def oauthService	// From OAuth Plugin
+	def oAuthAccountService
 	def twenty3AndMeDataService
 
 	private String provider
@@ -77,13 +78,11 @@ class AuthenticationController extends SessionController {
 		User currentUserInstance = sessionUser()
 
 		// This will always update access_token to latest access_token.
-		if (currentUserInstance) {
-			JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
+		JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
 
-			if (parsedResponse.id) {
-				OAuthAccount.createOrUpdate(OAuthAccount.TWENTY_3_AND_ME_ID, currentUserInstance.id, parsedResponse.id,
-						tokenInstance.token, tokenInstance.secret ?: "")
-			}
+		if (parsedResponse.id) {
+			OAuthAccount.createOrUpdate(OAuthAccount.TWENTY_3_AND_ME_ID, currentUserInstance.id, parsedResponse.id,
+					tokenInstance.token, tokenInstance.secret ?: "")
 		}
 	}
 
@@ -91,20 +90,19 @@ class AuthenticationController extends SessionController {
 		User currentUserInstance = sessionUser()
 
 		// This will always update access_token to latest access_token.
-		if (currentUserInstance) {
-			// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
-			JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
+		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
+		JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
 
-			if (userInfo.user) {
-				OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
-						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
-			}
+		if (userInfo.user) {
+			OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
+					userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
 		}
 	}
 
 	def humanAuth() {
 		User currentUserInstance = sessionUser()
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
+
 		if(userInfo.userId) {
 			OAuthAccount.createOrUpdate(HUMAN_ID, currentUserInstance.id, userInfo.userId, tokenInstance.token, "")
 		} else {
@@ -115,18 +113,16 @@ class AuthenticationController extends SessionController {
 	def movesAuth() {
 		User currentUserInstance = sessionUser()
 
-		if (currentUserInstance) {
-			String rawResponse = tokenInstance.rawResponse
-			if (rawResponse) {	// Moves sends user_id while getting the access token.
-				JSONObject parsedResponse = JSON.parse(rawResponse)
+		String rawResponse = tokenInstance.rawResponse
+		if (rawResponse) {	// Moves sends user_id while getting the access token.
+			JSONObject parsedResponse = JSON.parse(rawResponse)
 
-				if (parsedResponse.user_id) {
-					OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
-							parsedResponse.user_id.toString(), tokenInstance.token, tokenInstance.secret ?: "")
-				}
-			} else {
-				log.warn "Unable to create or update oauth account for moves. No raw response found in token."
+			if (parsedResponse.user_id) {
+				OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
+						parsedResponse.user_id.toString(), tokenInstance.token, tokenInstance.secret ?: "")
 			}
+		} else {
+			log.warn "Unable to create or update oauth account for moves. No raw response found in token."
 		}
 	}
 
