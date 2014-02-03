@@ -34,6 +34,7 @@ class EntryTests extends GroovyTestCase {
 	TimeZoneId timeZoneId
 	TimeZoneId timeZoneId2
 	DateTimeZone dateTimeZone
+	Date yesterdayBaseDate
 	Date baseDate
 	Date baseDate2
 	Date tomorrowBaseDate
@@ -67,6 +68,7 @@ class EntryTests extends GroovyTestCase {
 		slightDifferentCurrentTime = dateFormat.parse("July 1, 2010 4:00 pm")
 		lateCurrentTime = dateFormat.parse("July 3, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
+		yesterdayBaseDate = dateFormat.parse("June 30, 2010 12:00 am")
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
 		baseDate2 = dateFormat.parse("July 1, 2010 1:00 am") // switch time zone
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
@@ -331,6 +333,39 @@ class EntryTests extends GroovyTestCase {
 		}
 		
 		return c
+	}
+	
+	@Test
+	void testMixedRepeatPlotData() {
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 3pm repeat", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2 4pm repeat", baseDate, true), null)
+		
+		int c = 0
+		def expected = [ 1, 1, 2, 1, 2 ]
+		
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+			def date = Utils.dateToGMTString(it[0])
+			it = it
+			assert it[1].intValue() == expected[c++]
+			assert it[2] == "bread"
+		} == expected.size()
+	}
+	
+	@Test
+	void testMixedStaticAndRepeatPlotData() {
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 4 1pm", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 3pm repeat", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 4pm repeat", baseDate, true), null)
+		
+		int c = 0
+		def expected = [ 4, 1, 1, 2, 1, 2 ]
+		
+		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+			def date = Utils.dateToGMTString(it[0])
+			it = it
+			assert it[1].intValue() == expected[c++]
+			assert it[2] == "bread"
+		} == expected.size()
 	}
 	
 	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Closure test) {

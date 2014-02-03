@@ -1625,28 +1625,37 @@ class Entry {
 	public static final int MAX_PLOT_REPEAT = 300
 	
 	private static def generateRepeaterEntries(def repeaters, long endTimestamp, def results) {
-		if (repeaters.size() == 0) return
-
-		// sort repeaters by next date time
-		repeaters.sort({ LocalTimeRepeater a, LocalTimeRepeater b ->
+		def repeaterOrder = { LocalTimeRepeater a, LocalTimeRepeater b ->
 			if (a.getCurrentDateTime() == null) return 1 // sort null repeaters to end
 			if (b.getCurrentDateTime() == null) return -1 // sort null repeaters to end
 			return a.getCurrentDateTime().getMillis() <=> b.getCurrentDateTime().getMillis()
-		})
+		}
+		if (repeaters.size() == 0) return
+
+		// sort repeaters by next date time
+		repeaters.sort(repeaterOrder)
 
 		// if current entry time is later than or equal to next repeater timestamp, iterate through repeaters adding new repeat entries
-		for (LocalTimeRepeater repeater in repeaters) {
-			if (!repeater.isActive())
-				return
-			int c = 0
-			while (repeater.getTimestamp() != null && repeater.getTimestamp() <= endTimestamp) {
-				Entry entry = repeater.getPayload()
-				def desc = entry.getJSONShortDesc()
-				desc[SHORT_DESC_DATE] = repeater.getDate()
-				repeater.incrementDate()
-				results.add(desc)
-				if (++c > MAX_PLOT_REPEAT)
-					break
+		LocalTimeRepeater repeater = repeaters[0]
+		Date nextDate = null
+		if (repeaters.size() > 1) {
+			nextDate = repeaters[1].getDate()
+		}
+		int c = 0
+		while (repeater.isActive() && repeater.getDate().getTime() <= endTimestamp) {
+			Entry entry = repeater.getPayload()
+			def desc = entry.getJSONShortDesc()
+			desc[SHORT_DESC_DATE] = repeater.getDate()
+			repeater.incrementDate()
+			results.add(desc)
+			if (++c > MAX_PLOT_REPEAT)
+				break
+			if (nextDate != null && (repeater.getDate() > nextDate || (!repeater.isActive()))) {
+				repeaters.sort(repeaterOrder)
+				repeater = repeaters[0]
+				if (repeaters.size() > 1) {
+					nextDate = repeaters[1].getDate()
+				}
 			}
 		}
 	}
