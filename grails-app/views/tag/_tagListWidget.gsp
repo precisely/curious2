@@ -14,11 +14,11 @@
 			$("body").toggleClass("tags-collapsed", switchClass);
 			$("body").toggleClass("tags-displayed", !switchClass);
 		}
-		$("#toggle-tags").click(function(e, expandByDefault) {
+		$("#toggle-tags").click(function(e) {
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
-            var triangleElement = $(this).find("span.icon-triangle");
-	
+			var triangleElement = $(this).find("span.icon-triangle");
+
 			if (isHidden) {	// Means tags going to be display.
 				toggleClasses(false);
 				triangleElement.removeClass("icon-triangle-right").addClass("icon-triangle-down");
@@ -31,14 +31,12 @@
 				if (!isHidden) {
 					toggleClasses(true);
 				}
-				if (!expandByDefault) {
-					try {
-						plot.refreshPlot();
-					} catch(e) {}	// Okay to catch. Required in track entry page.
+				if (window.afterTagCollapseToggle) {
+					window.afterTagCollapseToggle();
 				}
 			});
 
-		})<g:if test="${expandByDefault }">.trigger("click", [true]);</g:if>
+		})<g:if test="${expandByDefault }">.trigger("click");</g:if>
 		<g:else>
 			toggleClasses(true);
 		</g:else>

@@ -124,6 +124,13 @@ $(function(){
 		var queryTitleHeight = $("#queryTitle").parent().height();
 		$("#toggle-tags").parent().css("height", queryTitleHeight);
 	}
+	// Callback handler after tag collapse animation finished.
+	function afterTagCollapseToggle() {
+		// Checking if any plot line available.
+		if ($("#plotArea").find("#drag-here-msg").length == 0) {
+			plot.refreshPlot();
+		}
+	}
 </r:script>
 </head>
 <body class="graph-page">
