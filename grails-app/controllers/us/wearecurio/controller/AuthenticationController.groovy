@@ -93,7 +93,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def twenty3andmeAuth() {
-		JSONObject userInfo = twenty3AndMeDataService.getUserProfiles(tokenInstance)
+		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
 
 		OAuthAccountService.createOrUpdate(TWENTY_3_AND_ME_ID, userInfo.id, tokenInstance)
 	}

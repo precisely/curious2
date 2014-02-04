@@ -70,8 +70,7 @@ class HomeController extends DataController {
 	def register23andme() {
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 
-		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("twenty3andme")]
-		Map result = twenty3AndMeDataService.storeGenomesData(tokenInstance, sessionUser())
+		Map result = twenty3AndMeDataService.storeGenomesData()
 		if (result.success) {
 			flash.message = message(code: "twenty3andme.import.success.message")
 		}
