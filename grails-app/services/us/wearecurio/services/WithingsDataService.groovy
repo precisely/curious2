@@ -1,7 +1,5 @@
 package us.wearecurio.services
 
-import grails.converters.JSON
-
 import java.text.SimpleDateFormat
 
 import org.apache.commons.logging.Log
@@ -173,15 +171,16 @@ class WithingsDataService extends DataService {
 
 		String dataURL = urlService.makeQueryString(BASE_URL + "/v2/measure", queryParameters)
 
-		Response response = oauthService.getWithingsResource(account.tokenInstance, dataURL)
-		String responseBody = response.body
-
-		JSONObject data = JSON.parse(responseBody)
+		JSONObject data = getResponse(account.tokenInstance, dataURL)
 
 		if(data.status != 0) {
-			log.error "Something went wrong with withings activity api. [$responseBody]"
+			log.error "Something went wrong with withings activity api. [$data]"
 			return false
 		}
+		
+		Long userId = account.userId
+		
+		Integer timeZoneId = User.getTimeZoneId(userId)
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd")
 
@@ -192,12 +191,7 @@ class WithingsDataService extends DataService {
 			Date entryDate = dateFormat.parse(activity["date"])
 
 			if(activity["steps"]) {
-				units = "steps"
-				description = "activity steps"
-				value = activity["steps"].toBigDecimal()
-
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+				tagUnitMap.buildEntry("steps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
 			if(activity["distance"]) {
 				units = "km"
