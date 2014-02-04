@@ -74,7 +74,7 @@ class AuthenticationController extends SessionController {
 
 	def fitbitAuth() {
 		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
-		JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
+		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance)
 
 		OAuthAccountService.createOrUpdate(FITBIT_ID, userInfo.user.encodedId, tokenInstance)
 	}

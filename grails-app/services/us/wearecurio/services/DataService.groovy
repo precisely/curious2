@@ -1,12 +1,14 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import javassist.NotFoundException
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 abstract class DataService {
@@ -25,18 +27,22 @@ abstract class DataService {
 
 	String unsubscribeURL
 
-	abstract Map getData(OAuthAccount account, boolean refreshAll)
-
-	OAuthAccount searchOAuthAccount() {
-		searchOAuthAccount(securityService.currentUser.id)
-	}
-
-	OAuthAccount searchOAuthAccount(Long userId) {
-		OAuthAccount.findByTypeIdAndUserId(typeId, userId)
-	}
-
-	List<OAuthAccount> searchOAuthAccounts(String accountId) {
+	List<OAuthAccount> getAllOAuthAccounts(String accountId) {
 		OAuthAccount.findAllByTypeIdAndAccountId(typeId, accountId)
+	}
+
+	Long getCurrentUserId() {
+		securityService.currentUser.id
+	}
+
+	abstract Map getDataDefault(OAuthAccount account, Date notificationDate, boolean refreshAll)
+
+	OAuthAccount getOAuthAccountInstance() {
+		getOAuthAccountInstance(securityService.currentUser.id)
+	}
+
+	OAuthAccount getOAuthAccountInstance(Long userId) {
+		OAuthAccount.findByTypeIdAndUserId(typeId, userId)
 	}
 
 	JSONObject getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
@@ -53,12 +59,11 @@ abstract class DataService {
 
 		if (response.code == 401) {
 			log.warn "Token expired for provider [$provider]"
-			throw new AuthenticationRequiredException("provider")
-		} else if (![200, 204].contains(response.code)) {
-			log.warn "Got error response for provider: [$provider] with body: [$response.body]"
-			new JSONObject()
+			throw new AuthenticationRequiredException(provider)
 		} else {
-			JSON.parse(response.getBody())
+			def parsedResponse = JSON.parse(response.getBody())
+			parsedResponse.getMetaClass().getCode = { return response.code }
+			parsedResponse
 		}
 	}
 
@@ -66,14 +71,35 @@ abstract class DataService {
 		getResponse(account.tokenInstance, profileURL)
 	}
 
-	void listSubscription() {
-		OAuthAccount account = searchOAuthAccount()
+	JSONObject getUserProfile(Token tokenInstance) {
+		getResponse(tokenInstance, profileURL)
+	}
+
+	JSONObject listSubscription() {
+		listSubscription(listSubscriptionURL, "get", [:])
+	}
+
+	JSONObject listSubscription(String url, String method, Map queryParams) {
+		OAuthAccount account = getOAuthAccountInstance()
 		getResponse(account.tokenInstance, listSubscriptionURL)
 	}
 
-	void poll() {
-		OAuthAccount.findAllByTypeId(typeId).each {
-			getData(it, false)
+	abstract void notificationHandler(String notificationData)
+
+	void notificationProcessor() {
+		List<ThirdPartyNotification> pendingNotifications = ThirdPartyNotification.createCriteria().list() {
+			eq("status", ThirdPartyNotification.Status.UNPROCESSED)
+			eq("typeId", typeId)
+			order ("date", "asc")
+			maxResults(100)
+		}
+
+		pendingNotifications.each {
+			OAuthAccount.findAllByTypeIdAndAccountId(typeId, it.ownerId).each { account ->
+				this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+			}
+			it.status = ThirdPartyNotification.Status.PROCESSED
+			it.save(flush: true)
 		}
 	}
 
@@ -89,28 +115,50 @@ abstract class DataService {
 			return false
 		}
 
-		getData(account, true)
+		getDataDefault(account, false)
 	}
 
-	void poll(String accountId) {
-		searchOAuthAccounts(accountId).each {
+	void pollAll() {
+		OAuthAccount.findAllByTypeId(typeId).each {
+			getDataDefault(it, false)
+		}
+	}
+
+	void pollAll(String accountId) {
+		getAllOAuthAccounts(accountId).each {
 			poll(it)
 		}
 	}
 
 	Map subscribe() throws AuthenticationRequiredException {
-		subscribe(securityService.currentUser.id)
+		subscribe(subscribeURL, "get", [:])
 	}
 
-	Map subscribe(Long userId) throws AuthenticationRequiredException {
+	Map subscribe(String url, String method, Map queryParams) throws AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance()
 
+		if (!account) {
+			throw new AuthenticationRequiredException(provider)
+		}
+
+		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+
+		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
 
-	Map unsubscribe() {
-		unsubscribe(securityService.currentUser.id)
+	Map unsubscribe() throws NotFoundException, AuthenticationRequiredException {
+		unsubscribe(unsubscribeURL, "get", [:])
 	}
 
-	Map unsubscribe(Long userId) {
+	Map unsubscribe(String url, String method, Map queryParams) throws NotFoundException, AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance()
+		if (!account) {
+			throw new NotFoundException("No oauth account found.")
+		}
 
+		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+
+		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
+
 }

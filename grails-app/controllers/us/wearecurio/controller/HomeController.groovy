@@ -142,8 +142,7 @@ class HomeController extends DataController {
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
-		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("fitbit")]
-		Map result = fitBitDataService.authorizeAccount(tokenInstance, user.getId())
+		Map result = fitBitDataService.subscribe()
 
 		if(result.success) {
 			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
@@ -156,7 +155,7 @@ class HomeController extends DataController {
 	}
 
 	def unregisterfitbit() {
-		Map result = fitBitDataService.unSubscribe(sessionUser().id)
+		Map result = fitBitDataService.unsubscribe()
 		if (result.success) {
 			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
 		} else {
@@ -170,12 +169,11 @@ class HomeController extends DataController {
 	 * FitBit Subscriber Endpoint
 	 */
 	def notifyfitbit() {
-		
 		debug "HomeController.notifyfitbit() params:" + params
 		debug "File text as is: " + request.getFile("updates").inputStream.text
+		debug "File text as is: " + request.JSON
 		
-		def notifications = JSON.parse(request.getFile("updates").getInputStream(),"UTF-8")
-		fitBitDataService.queueNotifications(notifications)
+		fitBitDataService.notificationHandler(request.getFile("updates").inputStream.text)
 		render status: 204
 		return
 	}

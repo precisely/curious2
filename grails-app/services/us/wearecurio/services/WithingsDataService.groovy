@@ -34,7 +34,6 @@ class WithingsDataService extends DataService {
 	WithingsDataService() {
 		provider = "withings"
 		typeId = OAuthAccount.WITHINGS_ID
-		profileURL = String.format(BASE_URL, "/-/profile.json")
 	}
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
@@ -44,7 +43,7 @@ class WithingsDataService extends DataService {
 	def urlService
 
 	@Override
-	Map getData(OAuthAccount account, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
 		debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0
@@ -306,6 +305,12 @@ class WithingsDataService extends DataService {
 		}
 		//listSubscription(account)	// Test after unsubscribe
 		[success: false]
+	}
+
+	@Override
+	public void notificationHandler(String notificationData) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
