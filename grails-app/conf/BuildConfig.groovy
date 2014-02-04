@@ -74,7 +74,7 @@ grails.project.dependency.resolution = {
 			}
 		}
 
-		compile ":oauth:2.1.0"
+		compile ":oauth:2.3"
 		compile ":csv:0.3.1"
     }
 }
