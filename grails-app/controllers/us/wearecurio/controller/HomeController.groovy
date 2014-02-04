@@ -81,11 +81,10 @@ class HomeController extends DataController {
 
 	def notifywithings() {
 		debug "HomeController.notifywithings() params:" + params
-		
-		if (params.userid && withingsDataService.poll(params.userid))
-			renderStringGet('success')
-		else
-			renderStringGet('failure')
+
+		withingsDataService.notificationHandler(params.userid?.toString())
+
+		renderStringGet('success')
 	}
 
 	def registermoves() {

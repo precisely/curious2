@@ -2,8 +2,6 @@ package us.wearecurio.services
 
 import java.text.SimpleDateFormat
 
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
@@ -11,6 +9,7 @@ import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -23,33 +22,30 @@ class WithingsDataService extends DataService {
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "withings import"
 
-	static Log log = LogFactory.getLog(this)
-
 	static transactional = true
-
-	static debug(str) {
-		log.debug(str)
-	}
 
 	WithingsDataService() {
 		provider = "withings"
 		typeId = OAuthAccount.WITHINGS_ID
 	}
 
-	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
-
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
 	def urlService
 
 	@Override
-	void notificationHandler(String notificationData) {
+	void notificationHandler(String accountId) {
+		if (!accountId) {	// At time of subscription
+			return
+		}
 
+		new ThirdPartyNotification([collectionType: "default", date: new Date(), ownerId: accountId, subscriptionId: "",
+			ownerType: "user", typeId: typeId]).save()
 	}
 
 	@Override
 	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
-		debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
+		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0
 		boolean more = true
@@ -249,7 +245,7 @@ class WithingsDataService extends DataService {
 	}
 
 	def refreshSubscriptions() {
-		debug "refreshSubscriptions()"
+		log.debug "refreshSubscriptions()"
 		def c = OAuthAccount.createCriteria()
 
 		def now = new Date()
