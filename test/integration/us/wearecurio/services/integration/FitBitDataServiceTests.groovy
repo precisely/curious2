@@ -9,7 +9,7 @@ import org.scribe.model.Token
 import grails.test.mixin.*
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.FitbitNotification
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
@@ -98,14 +98,14 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	void testQueueNotifications() {
 		String notificationString = """[{"collectionType":"foods","date":"2010-03-01","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"foods","date":"2010-03-02","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"activities","date":"2010-03-01","ownerId":"184X36","ownerType":"user","subscriptionId":"2345"}]"""
 		fitBitDataService.queueNotifications(JSON.parse(notificationString))
-		assert FitbitNotification.count() == 3
+		assert ThirdPartyNotification.count() == 3
 	}
 
 	void testPoll() {
-		def fitBit1 = new FitbitNotification([collectionType: "foods", ownerId: "dummy-id", date: new Date(), ownerType: "user", subscriptionId: "1234"]).save()
-		def fitBit2 = new FitbitNotification([collectionType: "activities", ownerId: "184X36", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
-		assert new FitbitNotification([collectionType: "foods", ownerId: "", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
-		assert FitbitNotification.count() == 3
+		def fitBit1 = new ThirdPartyNotification([collectionType: "foods", ownerId: "dummy-id", date: new Date(), ownerType: "user", subscriptionId: "1234"]).save()
+		def fitBit2 = new ThirdPartyNotification([collectionType: "activities", ownerId: "184X36", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
+		assert new ThirdPartyNotification([collectionType: "foods", ownerId: "", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
+		assert ThirdPartyNotification.count() == 3
 
 		// Normal execution
 		boolean result = fitBitDataService.poll(fitBit1)

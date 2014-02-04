@@ -1,30 +1,30 @@
 package us.wearecurio.jobs
 
-import us.wearecurio.model.FitbitNotification;
-import us.wearecurio.services.FitBitDataService;
+import us.wearecurio.model.ThirdPartyNotification
 
 class FitbitNotificationJob extends us.wearecurio.utility.TimerJob {
-    static triggers = {
+
+	static triggers = {
 		simple startDelay: 2 * MINUTE, repeatInterval: 15 * MINUTE
-    }
+	}
 
 	def group = "curious"
-	FitBitDataService fitBitDataService
+	def fitBitDataService
 
 	def execute() {
-		def c = FitbitNotification.createCriteria()
+		def c = ThirdPartyNotification.createCriteria()
 
-		def results = c {
-			eq("status", FitbitNotification.Status.UNPROCESSED)
+		/*List<ThirdPartyNotification> results = ThirdPartyNotification.createCriteria().list() {
+			eq("status", NotificationStatus.UNPROCESSED)
 			maxResults(100)
 			order ("date", "asc")
 		}
 
 		results.each { notification ->
 			if (fitBitDataService.poll(notification)) {
-				notification.status = FitbitNotification.Status.PROCESSED
+				notification.status = NotificationStatus.PROCESSED
 				notification.save()
-			}			
-		}
+			}
+		}*/
 	}
 }

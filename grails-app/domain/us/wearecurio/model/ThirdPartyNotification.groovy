@@ -1,6 +1,6 @@
 package us.wearecurio.model
 
-class FitbitNotification {
+class ThirdPartyNotification {
 
 	String collectionType
 	Date date
@@ -8,6 +8,7 @@ class FitbitNotification {
 	String ownerType
 	String subscriptionId
 	Status status = Status.UNPROCESSED
+	int typeId
 
 	static mapping = {
 		table 'fitbit_notification'
@@ -17,12 +18,12 @@ class FitbitNotification {
 		subscriptionId column:'subscription_id', index:'subscription_id_index'
 		status column:'status', index:'status_index'
 	}
-	
-	public static enum Status {
+
+	static enum Status {
 		UNPROCESSED(0), PROCESSED(1)
-		
+
 		final Integer id
-		
+
 		Status(Integer id) {
 			this.id = id
 		}

@@ -10,7 +10,7 @@ import org.scribe.model.Token
 import grails.test.mixin.*
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.FitbitNotification
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
