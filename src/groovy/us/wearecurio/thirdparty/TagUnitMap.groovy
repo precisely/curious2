@@ -1,7 +1,5 @@
 package us.wearecurio.thirdparty
 
-import java.math.BigDecimal;
-
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry

@@ -171,7 +171,6 @@ class HomeController extends DataController {
 	def notifyfitbit() {
 		debug "HomeController.notifyfitbit() params:" + params
 		debug "File text as is: " + request.getFile("updates").inputStream.text
-		debug "File text as is: " + request.JSON
 		
 		fitBitDataService.notificationHandler(request.getFile("updates").inputStream.text)
 		render status: 204

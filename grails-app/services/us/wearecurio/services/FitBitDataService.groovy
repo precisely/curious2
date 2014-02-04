@@ -191,6 +191,9 @@ class FitBitDataService extends DataService {
 		[success: true]
 	}
 
+	/**
+	 * Overriding default implementation so to send accept-language header for proper units.
+	 */
 	@Override
 	JSONObject getResponse(Token tokenInstance, String requestUrl) {
 		Map requestHeader = ["Accept-Language": "en_US"]
