@@ -92,8 +92,10 @@ abstract class DataService {
 	JSONObject getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
 	throws AuthenticationRequiredException {
 		log.debug "Fetching data for [$provider] with request URL: [$requestURL]"
+		
+		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
 
-		Response response = oauthService."${method}${provider}Resource"(tokenInstance, requestURL, queryParams, requestHeaders)
+		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 
 		if (Environment.current == Environment.DEVELOPMENT) {
 			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$response.body]"
