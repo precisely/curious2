@@ -43,17 +43,10 @@ class HomeController extends DataController {
 
 		User user = sessionUser()
 		
-		if (user == null) {	// TODO Can be remove, since this action is protected
-			debug "auth failure"
-			return
-		}
-		
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
-		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("withings")]
-
-		Map result = withingsDataService.authorizeAccount(tokenInstance, user.getId(), session.withingsUserId)
+		Map result = withingsDataService.subscribe(sessionUser().id)
 		if (result.success) {
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
@@ -65,7 +58,7 @@ class HomeController extends DataController {
 	}
 
 	def unregisterwithings() {
-		Map result = withingsDataService.unSubscribe(sessionUser().id)
+		Map result = withingsDataService.unsubscribe(sessionUser().id)
 		if (result.success) {
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
 		} else {
@@ -89,7 +82,7 @@ class HomeController extends DataController {
 	def notifywithings() {
 		debug "HomeController.notifywithings() params:" + params
 		
-		if (withingsDataService.poll(params.userid))
+		if (params.userid && withingsDataService.poll(params.userid))
 			renderStringGet('success')
 		else
 			renderStringGet('failure')

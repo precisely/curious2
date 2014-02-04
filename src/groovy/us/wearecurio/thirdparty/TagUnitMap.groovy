@@ -1,5 +1,7 @@
 package us.wearecurio.thirdparty
 
+import java.math.BigDecimal;
+
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
@@ -14,6 +16,8 @@ abstract class TagUnitMap {
 	final static String SLEEP = "sleep"
 	// The above constants are used for common string across various tag maps.
 
+	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
+	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	public final static int MINUTES_TO_MS = 60 * 1000
 	public final static float MS_TO_MINUTES = 0.00001667
 	public final static int SECONDS_TO_HOURS = 3600
@@ -31,7 +35,13 @@ abstract class TagUnitMap {
 		commonTagMap = [
 			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
+			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			fatRatio: [tag: "fat ratio", unit: "%"],
+			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			heartRate: [tag: "heart rate", unit: "bpm"],
+			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, type: KG_TO_POUNDS],
 			steps: [tag: "$ACTIVITY steps", unit: ""],
+			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
 		]
 	}
 
@@ -60,6 +70,12 @@ abstract class TagUnitMap {
 				break
 			case this.METER_TO_KM:
 				amount = amount / 1000
+				break
+			case M_TO_FEET:
+				amount = amount * M_TO_FEET
+				break
+			case KG_TO_POUNDS:
+				amount = amount * KG_TO_POUNDS
 				break
 			default:
 			// Else means operation to be performed are on buckets, ex.: merging
@@ -101,6 +117,8 @@ abstract class TagUnitMap {
 		if (currentMapping.convert) {
 			amount = convert(amount, currentMapping)
 		}
+		
+		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
 
 		String description = args["tagName"] ?: currentMapping["tag"]
 		createEntry(userId, timeZoneId, amount, currentMapping["unit"], description, date, comment, setName, args)

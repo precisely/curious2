@@ -4,30 +4,28 @@ import grails.converters.JSON
 
 import java.text.SimpleDateFormat
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
-import org.scribe.model.Token
 import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.utility.Utils
 
-class WithingsDataService {
+class WithingsDataService extends DataService {
 
-	def oauthService
-	def urlService
+	static final String BASE_URL = "http://wbsapi.withings.net"
+	static final String COMMENT = "(Withings)"
+	static final String SET_NAME = "withings import"
 
-	private static def log = LogFactory.getLog(this)
-	private static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
-	private static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
-	private static final String WITHINGS_BASE_URL = "http://wbsapi.withings.net"
-	private static final String WITHINGS_SET_NAME = "withings import"
-	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
+	static Log log = LogFactory.getLog(this)
 
 	static transactional = true
 
@@ -35,154 +33,20 @@ class WithingsDataService {
 		log.debug(str)
 	}
 
-	Map authorizeAccount(Token tokenInstance, Long userId, String withingsUserId) throws AuthenticationRequiredException {
-		debug "Authorizing WithingsDataService for user " + userId + " and userId " + withingsUserId
-		if (!tokenInstance || !tokenInstance.token)
-			throw new AuthenticationRequiredException("withings")
-
-		OAuthAccount withingsAccount = OAuthAccount.createOrUpdate(OAuthAccount.WITHINGS_ID, userId, withingsUserId,
-				tokenInstance.token, tokenInstance.secret)
-
-		Utils.save(withingsAccount, true)
-
-		debug "Created withingsAccount " + withingsAccount
-
-		Map result = subscribe(withingsAccount)
-
-		if(result.success) {
-			poll(withingsUserId)
-		}
-		result
+	WithingsDataService() {
+		provider = "withings"
+		typeId = OAuthAccount.WITHINGS_ID
+		profileURL = String.format(BASE_URL, "/-/profile.json")
 	}
 
-	def poll() {
-		def accounts = OAuthAccount.findAllByTypeId(OAuthAccount.WITHINGS_ID)
+	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
-		for (OAuthAccount account in accounts) {
-			this.getData(account, false)
-		}
-	}
+	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
-	boolean poll(String accountId) {
-		debug "poll() accountId:" + accountId
+	def urlService
 
-		if (accountId == null)
-			return false
-
-		long now = new Date().getTime()
-
-		Long lastPoll = lastPollTimestamps.get(accountId)
-
-		if (lastPoll != null && now - lastPoll < 500) { // don't allow polling faster than once every 500ms
-			log.warn "Polling faster than 500ms for withings accountid: [$accountId]"
-			return false
-		}
-
-		lastPollTimestamps.put(accountId, now)
-
-		def accounts = OAuthAccount.findAllByAccountIdAndTypeId(accountId, OAuthAccount.WITHINGS_ID)
-
-		for (OAuthAccount account in accounts) {
-			this.getData(account, false)
-		}
-
-		return true
-	}
-
-	Map subscribe(OAuthAccount account) {
-		debug "subscribe() account:" + account
-
-		Long userId = account.getUserId()
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
-
-		Map queryParameters = ["action": "subscribe"]
-		queryParameters.put("userid", account.accountId)
-		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
-		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
-
-		String subscriptionURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/notify", queryParameters)
-
-		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
-
-		log.info "Subscribe return with code: [$response.code] & body: [$response.body]"
-		JSONObject parsedResponse = JSON.parse(response.body)
-
-		if (parsedResponse.status == 0) {
-			account.setLastSubscribed(new Date())
-			debug "set last subscribed: " + account.getLastSubscribed()
-			Utils.save(account)
-			return [success: true]
-		}
-		account.delete()	// confirms that subscription is not successful.
-		[success: false]
-	}
-
-	Map unSubscribe(Long userId) {
-		debug "unSubscribe() account:" + userId
-		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, OAuthAccount.WITHINGS_ID)
-		if(!account) {
-			log.info "No subscription found for userId [$userId]"
-			return [success: false, message: "No subscription found"]
-		}
-
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
-
-		Map queryParameters = ["action": "revoke"]
-		queryParameters.put("userid", account.accountId)
-		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
-		//listSubscription(account)	// Test before un-subscribe
-
-		String subscriptionURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/notify", queryParameters)
-
-		Response response = oauthService.getWithingsResource(account.tokenInstance, subscriptionURL)
-
-		log.info "Unsubscribe return with code: [$response.code] & body: [$response.body]"
-		JSONObject parsedResponse = JSON.parse(response.body)
-
-		// 294 status code is for 'no such subscription available to delete'.
-		if (parsedResponse.status in [0, 294]) {
-			account.delete()
-			return [success: true]
-		}
-		//listSubscription(account)	// Test after un-subscribe
-		[success: false]
-	}
-
-	/**
-	 * Method to list the subscriptions for the current account
-	 * @param account
-	 */
-	void listSubscription(OAuthAccount account) {
-		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
-		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
-	}
-
-	def getData(OAuthAccount account) {
-		return getData(account, false)
-	}
-
-	def refreshSubscriptions() {
-		debug "refreshSubscriptions()"
-		def c = OAuthAccount.createCriteria()
-
-		def now = new Date()
-		def weekAgo = new Date(now.getTime() - 7L * 24 * 60 * 60 * 1000)
-
-		def results = c {
-			eq("typeId", OAuthAccount.WITHINGS_ID)
-			lt("lastSubscribed", weekAgo)
-		}
-
-		for (OAuthAccount account in results) {
-			this.subscribe(account)
-		}
-	}
-
-	def getRefreshSubscriptionsTask() {
-		return { refreshSubscriptions() }
-	}
-
-	def getData(OAuthAccount account, boolean refreshAll) {
+	@Override
+	Map getData(OAuthAccount account, boolean refreshAll) {
 		debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0
@@ -192,113 +56,93 @@ class WithingsDataService {
 
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-					[setName: WITHINGS_SET_NAME, userId: userId])
+					[setName: SET_NAME, userId: userId])
+
+		Map queryParameters = ["action": "getmeas"]
+		queryParameters.put("userid", account.getAccountId())
 
 		while (more) {
-			Map queryParameters = ["action": "getmeas"]
-			queryParameters.put("userid", account.getAccountId().toString())
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Long lastPolled = account.getLastPolled() ? account.getLastPolled().getTime() / 1000L : null
-			if (lastPolled != null && (!refreshAll))
-				queryParameters.put("startdate", lastPolled .toString())
+			Long lastPolled = account.lastPolled ? account.lastPolled.time / 1000L : null
+			if (lastPolled && !refreshAll)
+				queryParameters.put("startdate", lastPolled)
 
-			String dataURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/measure", queryParameters)
-			Response response = oauthService.getWithingsResource(account.tokenInstance, dataURL)
+			String subscriptionURL = urlService.makeQueryString(BASE_URL + "/measure", queryParameters)
 
-			log.info "Got it! Lets see what we found... Code: [$response.code] & Body: [$response.body]"
+			JSONObject data = getResponse(account.tokenInstance, subscriptionURL)
 
-			def data
-			try {
-				data = JSON.parse(response.getBody())
-			} catch (Exception e) {
-				debug "WithingsDataService.getData(): Exception while parsing response " + e
-				return false
-			}
 			if (data.status != 0) {
-				return false
+				log.warn "Error status returned from withings. Body: ${data}"
+				return [success: false, status: data.status]
 			}
-			def groups = data.body.measuregrps
+
+			Integer timeZoneId = User.getTimeZoneId(userId)
+
+			JSONArray groups = data.body.measuregrps
 			offset = groups.size()
 			more = data.body.more ? true : false
 			serverTimestamp = data.body.updatetime * 1000L
+
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
-				def measures = group.measures
+				JSONArray measures = group.measures
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
-					System.out.println("type: " + measure.type + " value: " + value)
-					int amountPrecision = 2
-					String description
-					String units
+					log.debug "type: " + measure.type + " value: " + value
+					String tagKey
 
 					switch (measure.type) {
 						case 1: // weight (kg)
-						description = "weight"
-						amountPrecision = 2
-						value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "lbs"
-						break
+							tagKey = "weight"
+							break
 
 						case 4: // height (m)
-						description = "height"
-						amountPrecision = 5
-						value = value.multiply(M_TO_FEET).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "feet"
-						break
+							tagKey = "height"
+							break
 
 						case 5: // fat free mass (kg)
-						description = "fat free mass"
-						amountPrecision = 2
-						value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "lbs"
-						break
+							tagKey = "fatFreeMass"
+							break
 
 						case 6: // fat ratio (%)
-						description = "fat ratio"
-						units = "%"
-						break
+							tagKey = "fatRatio"
+							break
 
 						case 8: // fat mass weight (kg)
-						description = "fat mass weight"
-						amountPrecision = 2
-						value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "lbs"
-						break
+							tagKey = "fatMassWeight"
+							break
 
 						case 9: // blood pressure diastolic (mmHg)
-						description = "blood pressure diastolic"
-						value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "mmHg"
-						break
+							tagKey = "bpDiastolic"
+							break
 
 						case 10: // blood pressure systolic (mmHg)
-						description = "blood pressure systolic"
-						value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "mmHg"
-						break
+							tagKey = "bpSystolic"
+							break
 
 						case 11: // pulse (bpm)
-						description = "heart rate"
-						value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
-						units = "bpm"
-						break
+							tagKey = "heartRate"
+							break
 					}
-					def entry = Entry.create(userId, date, TimeZoneId.look("America/Los_Angeles"), description, value, units, "(Withings)", WITHINGS_SET_NAME, amountPrecision)
+					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, SET_NAME)
 				}
 			}
 		}
+
 		if(account.lastPolled) {
-			getActivityMetricsData(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
+			//getDataForActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
 		} else {
-			getActivityMetricsData(account, new Date())
+			//getDataForActivityMetrics(account, new Date())
 		}
 
 		if (serverTimestamp > 0) {
 			account.setLastPolled(new Date(serverTimestamp))
 			Utils.save(account, true)
 		}
+
+		[success: true]
 	}
 
 	/**
@@ -306,10 +150,10 @@ class WithingsDataService {
 	 * @param account Account instance for activity data.
 	 * @param forDay The date for the activity data. Optional if date range is given.
 	 * @return dateRange Date range for to retrieve data against. Optional if forDay param is given
-	 * 
+	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	boolean getActivityMetricsData(OAuthAccount account, Date forDay, Map dateRange = [:]) {
+	boolean getDataForActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
 		BigDecimal value
 
 		String description, units, queryDateFormat = "yyyy-MM-dd"
@@ -327,7 +171,7 @@ class WithingsDataService {
 			return false
 		}
 
-		String dataURL = urlService.makeQueryString(WITHINGS_BASE_URL + "/v2/measure", queryParameters)
+		String dataURL = urlService.makeQueryString(BASE_URL + "/v2/measure", queryParameters)
 
 		Response response = oauthService.getWithingsResource(account.tokenInstance, dataURL)
 		String responseBody = response.body
@@ -353,7 +197,7 @@ class WithingsDataService {
 				value = activity["steps"].toBigDecimal()
 
 				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", WITHINGS_SET_NAME)
+						units, "(Withings)", SET_NAME)
 			}
 			if(activity["distance"]) {
 				units = "km"
@@ -362,7 +206,7 @@ class WithingsDataService {
 				value = value.toBigDecimal()
 
 				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", WITHINGS_SET_NAME)
+						units, "(Withings)", SET_NAME)
 			}
 			if(activity["calories"]) {
 				units = "kcal"
@@ -370,7 +214,7 @@ class WithingsDataService {
 				value = activity["calories"].toBigDecimal()
 
 				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", WITHINGS_SET_NAME)
+						units, "(Withings)", SET_NAME)
 			}
 			if(activity["elevation"]) {
 				units = "km"
@@ -379,11 +223,95 @@ class WithingsDataService {
 				value = value.toBigDecimal()
 
 				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", WITHINGS_SET_NAME)
+						units, "(Withings)", SET_NAME)
 			}
 		}
 
 		return true
+	}
+
+	def getRefreshSubscriptionsTask() {
+		return { refreshSubscriptions() }
+	}
+
+	void listSubscription(OAuthAccount account) {
+		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
+		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
+	}
+
+	def refreshSubscriptions() {
+		debug "refreshSubscriptions()"
+		def c = OAuthAccount.createCriteria()
+
+		def now = new Date()
+		def weekAgo = new Date(now.getTime() - 7L * 24 * 60 * 60 * 1000)
+
+		def results = c {
+			eq("typeId", OAuthAccount.WITHINGS_ID)
+			lt("lastSubscribed", weekAgo)
+		}
+
+		for (OAuthAccount account in results) {
+			this.subscribe(account)
+		}
+	}
+
+	@Override
+	Map subscribe(Long userId) throws AuthenticationRequiredException {
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(typeId, userId)//getOAuthAccount()
+
+		if (!account) {
+			throw new AuthenticationRequiredException(provider)
+		}
+
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+
+		Map queryParameters = ["action": "subscribe"]
+		queryParameters.put("userid", account.accountId)
+		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
+		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
+
+		String subscriptionURL = urlService.makeQueryString(BASE_URL + "/notify", queryParameters)
+
+		JSONObject parsedResponse = getResponse(account.tokenInstance, subscriptionURL)
+
+		if (parsedResponse.status == 0) {
+			account.lastSubscribed = new Date()
+			account.save()
+			return [success: true]
+		}
+
+		account.delete()	// confirms that subscription is not successful.
+		[success: false]
+	}
+
+	@Override
+	Map unsubscribe(Long userId) {
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(typeId, userId)//getOAuthAccount()
+
+		if (!account) {
+			log.info "No subscription found."
+			return [success: false, message: "No subscription found"]
+		}
+
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+
+		Map queryParameters = ["action": "revoke"]
+		queryParameters.put("userid", account.accountId)
+		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
+
+		String subscriptionURL = urlService.makeQueryString(BASE_URL + "/notify", queryParameters)
+		//listSubscription(account)	// Test before un-subscribe
+
+		JSONObject parsedResponse = getResponse(account.tokenInstance, subscriptionURL)
+
+		// 294 status code is for 'no such subscription available to delete'.
+		if (parsedResponse.status in [0, 294]) {
+			account.delete()
+			return [success: true]
+		}
+		//listSubscription(account)	// Test after unsubscribe
+		[success: false]
 	}
 
 }

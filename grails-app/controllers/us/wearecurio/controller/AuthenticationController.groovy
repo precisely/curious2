@@ -108,6 +108,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def withingsAuth() {
+		OAuthAccountService.createOrUpdate(WITHINGS_ID, session.withingsUserId, tokenInstance)
 	}
 
 }
