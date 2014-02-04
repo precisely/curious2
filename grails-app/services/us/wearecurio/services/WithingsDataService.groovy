@@ -43,6 +43,11 @@ class WithingsDataService extends DataService {
 	def urlService
 
 	@Override
+	void notificationHandler(String notificationData) {
+
+	}
+
+	@Override
 	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
 		debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
@@ -176,9 +181,9 @@ class WithingsDataService extends DataService {
 			log.error "Something went wrong with withings activity api. [$data]"
 			return false
 		}
-		
+
 		Long userId = account.userId
-		
+
 		Integer timeZoneId = User.getTimeZoneId(userId)
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd")
@@ -227,6 +232,17 @@ class WithingsDataService extends DataService {
 		return { refreshSubscriptions() }
 	}
 
+	Map getSubscriptionParameteres(OAuthAccount account, boolean isSubscribing) {
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+
+		Map queryParameters = ["action": isSubscribing ? "subscribe" : "revoke"]
+		queryParameters.put("userid", account.accountId)
+		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
+		queryParameters.put("callbackurl", notifyURL)
+
+		queryParameters
+	}
+
 	void listSubscription(OAuthAccount account) {
 		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
@@ -250,25 +266,16 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
-	Map subscribe(Long userId) throws AuthenticationRequiredException {
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(typeId, userId)//getOAuthAccount()
+	Map subscribe() throws AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance()
 
 		if (!account) {
 			throw new AuthenticationRequiredException(provider)
 		}
 
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+		Map result = super.subscribe(BASE_URL + "/notify", "get", getSubscriptionParameteres(account, true))
 
-		Map queryParameters = ["action": "subscribe"]
-		queryParameters.put("userid", account.accountId)
-		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
-		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
-
-		String subscriptionURL = urlService.makeQueryString(BASE_URL + "/notify", queryParameters)
-
-		JSONObject parsedResponse = getResponse(account.tokenInstance, subscriptionURL)
-
-		if (parsedResponse.status == 0) {
+		if (result["body"].status == 0) {
 			account.lastSubscribed = new Date()
 			account.save()
 			return [success: true]
@@ -279,38 +286,24 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
-	Map unsubscribe(Long userId) {
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(typeId, userId)//getOAuthAccount()
+	Map unsubscribe() {
+		OAuthAccount account = getOAuthAccountInstance()
 
 		if (!account) {
-			log.info "No subscription found."
+			log.info "No OAuthAccount found."
 			return [success: false, message: "No subscription found"]
 		}
 
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
-
-		Map queryParameters = ["action": "revoke"]
-		queryParameters.put("userid", account.accountId)
-		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
-
-		String subscriptionURL = urlService.makeQueryString(BASE_URL + "/notify", queryParameters)
-		//listSubscription(account)	// Test before un-subscribe
-
-		JSONObject parsedResponse = getResponse(account.tokenInstance, subscriptionURL)
+		Map result = super.unsubscribe(BASE_URL + "/notify", "get", getSubscriptionParameteres(account, false))
 
 		// 294 status code is for 'no such subscription available to delete'.
-		if (parsedResponse.status in [0, 294]) {
+		if (result["body"].status in [0, 294]) {
 			account.delete()
 			return [success: true]
 		}
+
 		//listSubscription(account)	// Test after unsubscribe
 		[success: false]
-	}
-
-	@Override
-	public void notificationHandler(String notificationData) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

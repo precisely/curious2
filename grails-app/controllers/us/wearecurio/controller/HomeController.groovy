@@ -46,7 +46,7 @@ class HomeController extends DataController {
 		debug "userId:" + user.getId() + ", withings userid:" + params.userid
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 		
-		Map result = withingsDataService.subscribe(sessionUser().id)
+		Map result = withingsDataService.subscribe()
 		if (result.success) {
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
@@ -58,7 +58,7 @@ class HomeController extends DataController {
 	}
 
 	def unregisterwithings() {
-		Map result = withingsDataService.unsubscribe(sessionUser().id)
+		Map result = withingsDataService.unsubscribe()
 		if (result.success) {
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
 		} else {
