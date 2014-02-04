@@ -89,16 +89,13 @@ class HomeController extends DataController {
 	def registermoves() {
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 
-		Token tokenInstance = session[oauthService.findSessionKeyForAccessToken("moves")]
-		if (!tokenInstance) {
-			throw new AuthenticationRequiredException("moves")
-		}
+		movesDataService.subscribe()
 		flash.message = g.message(code: "moves.subscribe.success.message")
 		redirect(url: session.deniedURI)
 	}
 
 	def unregistermoves() {
-		Map result = movesDataService.unSubscribe(sessionUser().id)
+		Map result = movesDataService.unsubscribe()
 		if (result.success) {
 			session[oauthService.findSessionKeyForAccessToken("moves")] = null
 			flash.message = g.message(code: "moves.unsubscribe.success.message")

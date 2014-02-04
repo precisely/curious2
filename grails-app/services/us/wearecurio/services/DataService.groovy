@@ -235,7 +235,7 @@ abstract class DataService {
 	 */
 	void pollAll() {
 		OAuthAccount.findAllByTypeId(typeId).each {
-			getDataDefault(it, false)
+			getDataDefault(it, it.lastPolled, false)
 		}
 	}
 
