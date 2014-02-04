@@ -34,6 +34,23 @@ abstract class DataService {
 	String unsubscribeURL
 
 	/**
+	 * Used to check if certain instances are not null. And if null
+	 * throw AuthenticationRequiredException for authentication.
+	 * @param instance Can be one of OAuthAccount or Token
+	 * 
+	 * @throws AuthenticationRequiredException
+	 */
+	void checkNotNull(def instance) throws AuthenticationRequiredException {
+		if (!instance) {
+			throw new AuthenticationRequiredException(provider)
+		}
+
+		if ((instance instanceof Token) && !instance.token) {
+			throw new AuthenticationRequiredException(provider)
+		}
+	}
+
+	/**
 	 * Get a list of all OAuthAccount instances based on accountId, since there may
 	 * be multiple instance of OAuthAccount for a same accountId. For example: Withings.
 	 * @param accountId Account Id of respective third party.
@@ -92,7 +109,9 @@ abstract class DataService {
 	JSONObject getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
 	throws AuthenticationRequiredException {
 		log.debug "Fetching data for [$provider] with request URL: [$requestURL]"
-		
+
+		checkNotNull(tokenInstance)
+
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
 
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
@@ -243,10 +262,7 @@ abstract class DataService {
 	 */
 	Map subscribe(String url, String method, Map queryParams) throws AuthenticationRequiredException {
 		OAuthAccount account = getOAuthAccountInstance()
-
-		if (!account) {
-			throw new AuthenticationRequiredException(provider)
-		}
+		checkNotNull(account)
 
 		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
 
