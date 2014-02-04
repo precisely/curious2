@@ -20,14 +20,18 @@ class OAuthAccount {
 	String accountId
 	String accessToken
 	String accessSecret
+	String refreshToken
+	Date expiresOn
 	Date lastPolled
 	Date lastSubscribed
 
 	static constraints = {
 		accessToken maxSize: 1024
+		expiresOn nullable: true
 		userId(unique:['typeId'])
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
+		refreshToken nullable: true
 		typeId inList: [FITBIT_ID, TWENTY_3_AND_ME_ID, WITHINGS_ID, MOVES_ID, HUMAN_ID]
 	}
 

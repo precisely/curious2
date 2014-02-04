@@ -1,9 +1,14 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
+
+import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
+import us.wearecurio.utility.Utils
 
 class OAuthAccountService {
 
@@ -17,14 +22,41 @@ class OAuthAccountService {
 	 * @param accessSeret Access Secret after authorization.
 	 * @return OAuthAccount instance for given parameters.
 	 */
-	OAuthAccount createOrUpdate(int typeId, String accountId, String accessToken, String accessSeret) {
+	OAuthAccount createOrUpdate(int typeId, String accountId, String accessToken, String accessSecret, String refreshToken, Date expiresOn) {
 		User currentUser = securityService.currentUser
 
-		OAuthAccount.createOrUpdate(typeId, currentUser.id, accountId, accessToken, accessSeret ?: "")
+		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, typeId)
+		account.accountId = accountId
+		account.accessToken = accessToken
+		account.accessSecret = accessSecret ?: ""
+		account.refreshToken = refreshToken
+		account.expiresOn = expiresOn
+
+		if (Utils.save(account)) {
+			return account
+		}
+
+		return null
 	}
 
 	OAuthAccount createOrUpdate(int typeId, String accountId, Token tokenInstance) {
-		createOrUpdate(typeId, accountId, tokenInstance.token, tokenInstance.secret)
+		Date expiresOn
+
+		String refreshToken = ""
+
+		if (tokenInstance.rawResponse) {
+			try {
+				JSONObject parsedRawResponse = JSON.parse(tokenInstance.rawResponse)
+				refreshToken = parsedRawResponse["refresh_token"]
+				if (parsedRawResponse["expires_in"]) {
+					Date now = new Date()
+					expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
+				}
+			} catch (ConverterException e) {
+				log.error "Error parsing raw response: [$tokenInstance.rawResponse].", e
+			}
+		}
+		createOrUpdate(typeId, accountId, tokenInstance.token, tokenInstance.secret, refreshToken, expiresOn)
 	}
 
 	boolean isLinked(int typeId) {
