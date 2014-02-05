@@ -80,12 +80,17 @@ class OAuthAccountService {
 		return false
 	}
 
+	/**
+	 * Refresh all tokens which will expire in between from now & next day.
+	 */
 	void refreshAllToken() {
-		OAuthAccount.findAll().each {
+		OAuthAccount.withCriteria {
+			between("expiresOn", new Date(), new Date() + 1)
+		}.each {
 			refreshTokn(it)
 		}
 	}
-
+	
 	/**
 	 * Used to renew access token of a particular OAuthAccount instance.
 	 * @param account Instance of OAuthAccount
