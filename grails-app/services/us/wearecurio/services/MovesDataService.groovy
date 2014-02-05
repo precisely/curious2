@@ -46,7 +46,7 @@ class MovesDataService extends DataService {
 
 		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + forDay.format("yyyy-MM-dd")
 
-		JSONArray parsedResponse = getResponse(tokenInstance, pollURL)
+		def parsedResponse = getResponse(tokenInstance, pollURL)
 
 		if (parsedResponse.getCode() != 200) {
 			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$parsedResponse]"
@@ -138,7 +138,7 @@ class MovesDataService extends DataService {
 		OAuthAccount account = getOAuthAccountInstance()
 
 		if (!account) {
-			log.info "No moves subscription found for userId [$userId]"
+			log.info "No moves subscription found."
 			return [success: false, message: "No subscription found"]
 		}
 
