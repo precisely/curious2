@@ -5,6 +5,7 @@ import grails.util.Environment
 import javassist.NotFoundException
 
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
@@ -103,11 +104,11 @@ abstract class DataService {
 	 * @param queryParams OPTIONAL A map containing key value data as query string parameter.
 	 * @param requestHeader OPTIONAL A map containing key value data for request headers to be send.
 	 * @return Returns the parsed response in JSON format along with an additional dynamic method
-	 * `getCode()` to get status of the API call,
+	 * `getCode()` to get status of the API call. Returned response can be either JSONObject or JSONArray
 	 * 
 	 * @throws AuthenticationRequiredException if any API call returns 401 response code.
 	 */
-	JSONObject getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
+	JSONElement getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
 	throws AuthenticationRequiredException {
 		log.debug "Fetching data for [$provider] with request URL: [$requestURL]"
 

@@ -11,6 +11,7 @@ import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
@@ -23,6 +24,11 @@ class MovesDataService extends DataService {
 	SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
 
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
+	
+	MovesDataService() {
+		provider = "moves"
+		typeId = ThirdParty.MOVES
+	}
 
 	@Override
 	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
@@ -43,7 +49,7 @@ class MovesDataService extends DataService {
 		JSONArray parsedResponse = getResponse(tokenInstance, pollURL)
 
 		if (parsedResponse.getCode() != 200) {
-			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$response.body]"
+			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$parsedResponse]"
 			return [success: false]
 		}
 
@@ -71,6 +77,8 @@ class MovesDataService extends DataService {
 				}
 			}
 		}
+		account.lastPolled = new Date()
+		account.save()
 		return [success: true]
 	}
 
