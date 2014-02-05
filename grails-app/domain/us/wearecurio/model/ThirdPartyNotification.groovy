@@ -11,7 +11,7 @@ class ThirdPartyNotification {
 	String ownerType
 	String subscriptionId
 	Status status = Status.UNPROCESSED
-	int typeId
+	ThirdParty typeId
 
 	static mapping = {
 		table 'fitbit_notification'
