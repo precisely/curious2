@@ -14,6 +14,8 @@ import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
 
+import us.wearecurio.thirdparty.RefreshTokenVerifier
+
 class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 	DefaultApi20 api
@@ -28,8 +30,15 @@ class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 	@Override
 	Token getAccessToken(Token requestToken, Verifier verifier) {
 		Map queryParams = [:]
-		queryParams.put("grant_type", "authorization_code")
-		queryParams.put(OAuthConstants.CODE, verifier.value)
+
+		if (verifier instanceof RefreshTokenVerifier) {
+			queryParams.put(RefreshTokenVerifier.REFRESH_TOKEN, verifier.getValue())
+			queryParams.put("grant_type", RefreshTokenVerifier.REFRESH_TOKEN)
+		} else {
+			queryParams.put(OAuthConstants.CODE, verifier.getValue())
+			queryParams.put("grant_type", "authorization_code")
+		}
+
 		queryParams.put(OAuthConstants.CLIENT_ID, config.apiKey)
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.callback)
 		queryParams.put(OAuthConstants.CLIENT_SECRET, config.apiSecret)
