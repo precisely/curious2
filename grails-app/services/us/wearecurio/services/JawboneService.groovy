@@ -9,7 +9,7 @@ import us.wearecurio.thirdparty.jawbone.JawboneTagUnitMap
 
 class JawboneService {
 
-	static final String COMMENT = "(Jawnbone)"
+	static final String COMMENT = "(Jawbone)"
 	static final String SET_NAME = "jawbone"
 
 	static transactional = true

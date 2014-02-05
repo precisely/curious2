@@ -33,6 +33,17 @@ class ThirdPartyNotification {
 	}
 }
 
+/**
+ * Represents various third party type for various usage.
+ * Each type in this enum represent a third party, holding various data as follows:
+ * 
+ * @param id Unique Integer id for each type
+ * @param providerName String representation of each provider to work with oauth plugin.
+ * @param oauthVersion OauthVersion of each third party they support.
+ * @see https://github.com/aiten/grails-oauth-scribe/blob/master/src/groovy/uk/co/desirableobjects/oauth/scribe/SupportedOauthVersion.groovy?source=c
+ * @author causecode
+ *
+ */
 enum ThirdParty {
 	WITHINGS(1, "withings", ONE),
 	FITBIT(2, "fitbit", ONE),
