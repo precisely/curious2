@@ -35,11 +35,19 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		OAuthRequest request = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint())
 
 		Map queryParams = [:]
+
 		queryParams.put(OAuthConstants.CLIENT_ID, config.getApiKey())
 		queryParams.put(OAuthConstants.CLIENT_SECRET, config.getApiSecret())
-		queryParams.put(OAuthConstants.CODE, verifier.getValue())
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.getCallback())
-		queryParams.put("grant_type", "authorization_code")
+
+		if (verifier instanceof RefreshTokenVerifier) {
+			queryParams.put(RefreshTokenVerifier.REFRESH_TOKEN, verifier.getValue())
+			queryParams.put("grant_type", RefreshTokenVerifier.REFRESH_TOKEN)
+		} else {
+			queryParams.put(OAuthConstants.CODE, verifier.getValue())
+			queryParams.put("grant_type", "authorization_code")
+		}
+
 		if(config.hasScope()) queryParams.put(OAuthConstants.SCOPE, config.getScope())
 
 		request.addPayload(queryParams.collect { key, value -> "$key=$value" }.join("&"))

@@ -5,14 +5,17 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
+import org.scribe.oauth.OAuthService
 
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty;
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.User
+import us.wearecurio.thirdparty.RefreshTokenVerifier
 import us.wearecurio.utility.Utils
 
 class OAuthAccountService {
 
+	def oauthService
 	def securityService
 
 	/**
@@ -67,6 +70,35 @@ class OAuthAccountService {
 			return true
 		}
 		return false
+	}
+
+	void refreshAllToken() {
+		OAuthAccount.findAll().each {
+			refreshTokn(it)
+		}
+	}
+
+	void refreshTokn(OAuthAccount account) {
+		if (!account.typeId.supportsOAuth2()) {
+			log.warn "Can't renew access token for account: [$account] since associated thirdparty doesn't supports OAuth2."
+			return
+		}
+		if (!account.refreshToken) {
+			log.warn "Can't renew access token for account: [$account] since no associated refresh token was found."
+			return
+		}
+
+		RefreshTokenVerifier tokenVerifier = new RefreshTokenVerifier(account.refreshToken)
+
+		OAuthService service = oauthService.findService(account.typeId.providerName)
+
+		Token newTokenInstance = service.getAccessToken(null, tokenVerifier)
+
+		if (newTokenInstance.token) {
+			createOrUpdate(account.typeId, account.accountId, newTokenInstance)
+		} else {
+			log.error "Error refreshing access token for account: [$account]. Response body: $newTokenInstance.rawResponse"
+		}
 	}
 
 }

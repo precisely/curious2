@@ -1,19 +1,12 @@
 package us.wearecurio.services
 
-import java.util.Date;
-import java.util.Map;
-
-import grails.converters.JSON
-import grails.util.Environment
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty;
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.Twenty3AndMeData
-import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class Twenty3AndMeDataService extends DataService {
