@@ -18,12 +18,13 @@ abstract class TagUnitMap {
 	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	public final static int MINUTES_TO_MS = 60 * 1000
 	public final static float MS_TO_MINUTES = 0.00001667
-	public final static int SECONDS_TO_HOURS = 3600
+	public final static int SECONDS_TO_HOURS = 1 / 3600
 	public final static float SCALE_TO_0_10 = 10 / 100
 	public final static int TO_MILLI = 1000
+	public final static float METER_TO_KM = 1 / 1000
 
-	public final static int AVERAGE = 1
-	public final static int METER_TO_KM = 2
+	final static int AVERAGE = 1
+	final static int BUCKET = 2
 
 	static Map commonTagMap = [:]
 
@@ -51,35 +52,14 @@ abstract class TagUnitMap {
 	 */
 	BigDecimal convert(BigDecimal amount, Map currentUnitMapping) {
 		switch(currentUnitMapping.type) {
-			case this.SECONDS_TO_HOURS:
-				amount = amount / this.SECONDS_TO_HOURS
-				break
-			case this.MINUTES_TO_MS:
-				amount = amount * this.MINUTES_TO_MS
-				break
-			case this.MS_TO_MINUTES:
-				amount = amount * this.MS_TO_MINUTES
-				break
-			case this.SCALE_TO_0_10:
-				amount = amount * this.SCALE_TO_0_10
-				break
-			case this.TO_MILLI:
-				amount = amount * this.TO_MILLI
-				break
-			case this.METER_TO_KM:
-				amount = amount / 1000
-				break
-			case M_TO_FEET:
-				amount = amount * M_TO_FEET
-				break
-			case KG_TO_POUNDS:
-				amount = amount * KG_TO_POUNDS
+			// Operation to be performed are on buckets, ex.: merging
+			// Or type provided is a key in bucket[] to hold values
+			case BUCKET:
+				log.debug "Adding to bucket: " + getBuckets()[currentUnitMapping.bucketKey]
+				getBuckets()[currentUnitMapping.bucketKey].values.add(amount)
 				break
 			default:
-			// Else means operation to be performed are on buckets, ex.: merging
-			// Or type provided is a key in bucket[] to hold values
-				log.debug "Adding to bucket: " + getBuckets()[currentUnitMapping.type]?.dump()
-				getBuckets()[currentUnitMapping.type]?.values.add(amount)
+				amount = amount * currentUnitMapping.type
 				break
 		}
 
@@ -115,7 +95,7 @@ abstract class TagUnitMap {
 		if (currentMapping.convert) {
 			amount = convert(amount, currentMapping)
 		}
-		
+
 		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
 
 		String description = args["tagName"] ?: currentMapping["tag"]

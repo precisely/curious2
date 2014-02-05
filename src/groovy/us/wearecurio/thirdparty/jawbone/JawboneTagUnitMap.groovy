@@ -59,8 +59,8 @@ class JawboneTagUnitMap extends TagUnitMap {
 		]
 
 		moodUnitMap = [
-			o_count: [tag: "$MOOD workout", unit: "number", convert: true, type: "mood_average"],
-			o_mood: [tag: "$MOOD count", unit: "number", convert: true, type: "mood_average"]
+			o_count: [tag: "$MOOD workout", unit: "number", convert: true, type: BUCKET, bucketKey: "mood_average"],
+			o_mood: [tag: "$MOOD count", unit: "number", convert: true, type: BUCKET, bucketKey: "mood_average"]
 		]
 
 		columnDetailMap.putAll(estimatedMealUnitMap)
