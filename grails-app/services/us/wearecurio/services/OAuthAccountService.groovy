@@ -19,22 +19,27 @@ class OAuthAccountService {
 	def securityService
 
 	/**
-	 * Used to create OAuthAccount instance for given provider/type for current loggedIn user.
-	 * @param typeId Type of the provider. See constants in OAuthAccount.groovy.
-	 * @param accountId Account Identity for current provider.
-	 * @param accessToken Access Token after authorization.
-	 * @param accessSeret Access Secret after authorization.
-	 * @return OAuthAccount instance for given parameters.
+	 * Accepts instance of OAuthAccount & Token to update account's token & expiry related informations.
+	 * @param account
+	 * @param tokenInstance
+	 * @return Instance of OAuthAccount.
 	 */
-	OAuthAccount createOrUpdate(ThirdParty type, String accountId, String accessToken, String accessSecret, String refreshToken, Date expiresOn) {
-		User currentUser = securityService.currentUser
+	OAuthAccount createOrUpdate(OAuthAccount account, Token tokenInstance) {
+		account.accessToken = tokenInstance.token
+		account.accessSecret = tokenInstance.secret ?: ""
 
-		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, type)
-		account.accountId = accountId
-		account.accessToken = accessToken
-		account.accessSecret = accessSecret ?: ""
-		account.refreshToken = refreshToken
-		account.expiresOn = expiresOn
+		if (tokenInstance.rawResponse) {
+			try {
+				JSONObject parsedRawResponse = JSON.parse(tokenInstance.rawResponse)
+				account.refreshToken = parsedRawResponse["refresh_token"]
+				if (parsedRawResponse["expires_in"]) {
+					Date now = new Date()
+					account.expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
+				}
+			} catch (ConverterException e) {
+				log.error "Error parsing raw response: [$tokenInstance.rawResponse].", e
+			}
+		}
 
 		if (Utils.save(account)) {
 			return account
@@ -43,24 +48,19 @@ class OAuthAccountService {
 		return null
 	}
 
+	/**
+	 * Used to create or update OAuthAccount instance for given provider/type for current loggedIn user.
+	 * @param type Type of the provider. See ThirdParty enum.
+	 * @param accountId Account Identity for current provider.
+	 * @param tokenInstance Instance of scribe token.
+	 * @return OAuthAccount instance for given parameters.
+	 */
 	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance) {
-		Date expiresOn
+		User currentUser = securityService.currentUser
 
-		String refreshToken = ""
-
-		if (tokenInstance.rawResponse) {
-			try {
-				JSONObject parsedRawResponse = JSON.parse(tokenInstance.rawResponse)
-				refreshToken = parsedRawResponse["refresh_token"]
-				if (parsedRawResponse["expires_in"]) {
-					Date now = new Date()
-					expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
-				}
-			} catch (ConverterException e) {
-				log.error "Error parsing raw response: [$tokenInstance.rawResponse].", e
-			}
-		}
-		createOrUpdate(type, accountId, tokenInstance.token, tokenInstance.secret, refreshToken, expiresOn)
+		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, type)
+		account.accountId = accountId
+		createOrUpdate(account, tokenInstance)
 	}
 
 	boolean isLinked(ThirdParty type) {
@@ -78,6 +78,10 @@ class OAuthAccountService {
 		}
 	}
 
+	/**
+	 * Used to renew access token of a particular OAuthAccount instance.
+	 * @param account Instance of OAuthAccount
+	 */
 	void refreshTokn(OAuthAccount account) {
 		if (!account.typeId.supportsOAuth2()) {
 			log.warn "Can't renew access token for account: [$account] since associated thirdparty doesn't supports OAuth2."
@@ -95,7 +99,7 @@ class OAuthAccountService {
 		Token newTokenInstance = service.getAccessToken(null, tokenVerifier)
 
 		if (newTokenInstance.token) {
-			createOrUpdate(account.typeId, account.accountId, newTokenInstance)
+			createOrUpdate(account, newTokenInstance)
 		} else {
 			log.error "Error refreshing access token for account: [$account]. Response body: $newTokenInstance.rawResponse"
 		}
