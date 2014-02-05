@@ -80,7 +80,7 @@ class AuthenticationController extends SessionController {
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(HUMAN,  userInfo.userId, tokenInstance.token, "")
+		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance.token, "")
 	}
 
 	def movesAuth() {
