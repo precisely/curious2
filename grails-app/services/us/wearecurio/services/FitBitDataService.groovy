@@ -94,7 +94,7 @@ class FitBitDataService extends DataService {
 					forDay, COMMENT, setName)
 		}
 
-		activityData.summary.distances.each { distance ->
+		activityData.summary?.distances.each { distance ->
 			Date entryDate = forDay
 			try {
 				activityData.activities.each { activity ->
@@ -150,10 +150,10 @@ class FitBitDataService extends DataService {
 
 		Integer timeZoneId = User.getTimeZoneId(userId)
 
-		getDataActivities(account, forDay)
-		getDataBody(account, forDay)
-		getDataFoods(account, forDay)
-		getDataSleep(account, forDay)
+		getDataActivities(account, forDay, false)
+		getDataBody(account, forDay, false)
+		getDataFoods(account, forDay, false)
+		getDataSleep(account, forDay, false)
 
 		[success: true]
 	}
