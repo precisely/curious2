@@ -1,6 +1,6 @@
 package us.wearecurio.thirdparty.jawbone
 
-import us.wearecurio.thirdparty.TagUnitMap;
+import us.wearecurio.thirdparty.TagUnitMap
 
 class JawboneTagUnitMap extends TagUnitMap {
 	
