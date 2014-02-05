@@ -254,7 +254,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregisterwithings() {
 		HomeController controller = new HomeController()
 		controller.withingsDataService = [
-			unSubscribe: { userId -> return [success:true] }
+			unsubscribe: { -> return [success:true] }
 		] as WithingsDataService
 		controller.session.userId = userId
 		
@@ -267,7 +267,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregisterfitbit() {
 		HomeController controller = new HomeController()
 		controller.fitBitDataService = [
-			unSubscribe: { userId -> return [success:true] }
+			unsubscribe: { -> return [success:true] }
 		] as FitBitDataService
 		controller.session.userId = userId
 		
@@ -280,7 +280,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregistermoves() {
 		HomeController controller = new HomeController()
 		controller.movesDataService = [
-			unSubscribe: { userId -> return [success:true] }
+			unsubscribe: { -> return [success:true] }
 		] as MovesDataService
 		controller.session.userId = userId
 		
