@@ -28,16 +28,24 @@ class OAuthAccountService {
 		account.accessToken = tokenInstance.token
 		account.accessSecret = tokenInstance.secret ?: ""
 
-		if (tokenInstance.rawResponse) {
+		String rawResponse
+
+		try {
+			rawResponse = tokenInstance.rawResponse
+		} catch (IllegalStateException e) {
+			// Okay. Nothing to do. Thrown when there is no rawResponse.
+		}
+
+		if (rawResponse) {
 			try {
-				JSONObject parsedRawResponse = JSON.parse(tokenInstance.rawResponse)
+				JSONObject parsedRawResponse = JSON.parse(rawResponse)
 				account.refreshToken = parsedRawResponse["refresh_token"]
 				if (parsedRawResponse["expires_in"]) {
 					Date now = new Date()
 					account.expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
 				}
 			} catch (ConverterException e) {
-				log.error "Error parsing raw response: [$tokenInstance.rawResponse].", e
+				log.error "Error parsing raw response: [$rawResponse].", e
 			}
 		}
 
