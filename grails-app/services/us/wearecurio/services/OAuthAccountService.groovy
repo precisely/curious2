@@ -60,10 +60,10 @@ class OAuthAccountService {
 		createOrUpdate(type, accountId, tokenInstance.token, tokenInstance.secret, refreshToken, expiresOn)
 	}
 
-	boolean isLinked(int typeId) {
+	boolean isLinked(ThirdParty type) {
 		User currentUser = securityService.currentUser
 
-		if (OAuthAccount.findByTypeIdAndUserId(typeId, currentUser.id)) {
+		if (OAuthAccount.findByTypeIdAndUserId(type, currentUser.id)) {
 			return true
 		}
 		return false

@@ -1,6 +1,6 @@
 package us.wearecurio.taglib
 
-import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
 
 class OAuthAccountTagLib {
 
@@ -16,9 +16,9 @@ class OAuthAccountTagLib {
 	 * @attr typeId REQUIRED Type of oauth account to check
 	 */
 	def isLinked = { attrs, body ->
-		int typeId = OAuthAccount[attrs.typeId]
+		ThirdParty type = ThirdParty[attrs.typeId]
 
-		out << body(OAuthAccountService.isLinked(typeId))
+		out << body(OAuthAccountService.isLinked(type))
 	}
 
 }
