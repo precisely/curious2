@@ -31,6 +31,11 @@ class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 	Token getAccessToken(Token requestToken, Verifier verifier) {
 		Map queryParams = [:]
 
+		/**
+		 * Checking if current request is for getting refresh token or for access token.
+		 * If verifier is an instance of RefreshTokenVerifier then setting grant_type as
+		 * refresh_token.
+		 */
 		if (verifier instanceof RefreshTokenVerifier) {
 			queryParams.put(RefreshTokenVerifier.REFRESH_TOKEN, verifier.getValue())
 			queryParams.put("grant_type", RefreshTokenVerifier.REFRESH_TOKEN)

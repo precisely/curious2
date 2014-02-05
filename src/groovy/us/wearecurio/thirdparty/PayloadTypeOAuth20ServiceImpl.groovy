@@ -40,6 +40,11 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		queryParams.put(OAuthConstants.CLIENT_SECRET, config.getApiSecret())
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.getCallback())
 
+		/**
+		 * Checking if current request is for getting refresh token or for access token.
+		 * If verifier is an instance of RefreshTokenVerifier then setting grant_type as
+		 * refresh_token.
+		 */
 		if (verifier instanceof RefreshTokenVerifier) {
 			queryParams.put(RefreshTokenVerifier.REFRESH_TOKEN, verifier.getValue())
 			queryParams.put("grant_type", RefreshTokenVerifier.REFRESH_TOKEN)
