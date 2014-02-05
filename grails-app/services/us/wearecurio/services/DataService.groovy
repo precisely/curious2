@@ -197,6 +197,8 @@ abstract class DataService {
 	 * accept three parameters for accountInstance, notification date & boolean field.
 	 */
 	void notificationProcessor() {
+		log.info "Processing ${provider}'s notifications."
+
 		List<ThirdPartyNotification> pendingNotifications = ThirdPartyNotification.createCriteria().list() {
 			eq("status", ThirdPartyNotification.Status.UNPROCESSED)
 			eq("typeId", typeId)
@@ -204,13 +206,21 @@ abstract class DataService {
 			maxResults(100)
 		}
 
+		log.debug "Found ${pendingNotifications.size()} pending notifications for $provider."
+
 		pendingNotifications.each {
 			OAuthAccount.findAllByTypeIdAndAccountId(typeId, it.ownerId).each { account ->
-				this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+				try {
+					this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+				} catch (MissingMethodException e) {
+					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
+				}
 			}
 			it.status = ThirdPartyNotification.Status.PROCESSED
 			it.save(flush: true)
 		}
+
+		log.info "Finished processing ${provider}'s notifications."
 	}
 
 	/**
