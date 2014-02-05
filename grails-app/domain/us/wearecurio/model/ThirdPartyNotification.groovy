@@ -1,8 +1,7 @@
 package us.wearecurio.model
 
-import java.util.Map;
-
-import us.wearecurio.model.Entry.RepeatType;
+import static uk.co.desirableobjects.oauth.scribe.SupportedOauthVersion.*
+import uk.co.desirableobjects.oauth.scribe.SupportedOauthVersion
 
 class ThirdPartyNotification {
 
@@ -35,21 +34,23 @@ class ThirdPartyNotification {
 }
 
 enum ThirdParty {
-	WITHINGS(1, "withings"),
-	FITBIT(2, "fitbit"),
-	TWENTY_THREE_AND_ME(3, "twenty3andme"),
-	MOVES(4, "moves"),
-	IHEALTH(5, "ihealth"),
-	HUMAN(6, "human"),
-	TWITTER(7, "twitter"),
+	WITHINGS(1, "withings", ONE),
+	FITBIT(2, "fitbit", ONE),
+	TWENTY_THREE_AND_ME(3, "twenty3andme", TWO),
+	MOVES(4, "moves", TWO),
+	IHEALTH(5, "ihealth", TWO),
+	HUMAN(6, "human", TWO),
+	TWITTER(7, "twitter", ONE),
 	//JAWBONE(8, )
 
 	final int id
 	final String providerName
+	final SupportedOauthVersion oauthVersion
 
-	ThirdParty(int id, String providerName) {
+	ThirdParty(int id, String providerName, SupportedOauthVersion oauthVersion) {
 		this.id = id
 		this.providerName = providerName
+		this.oauthVersion = oauthVersion
 	}
 
 	private static final Map<Integer, ThirdParty> map = new HashMap<Integer, ThirdParty>()
@@ -62,5 +63,9 @@ enum ThirdParty {
 
 	static ThirdParty get(Integer id) {
 		map.get(id)
+	}
+
+	boolean supportsOAuth2() {
+		oauthVersion == SupportedOauthVersion.TWO
 	}
 }

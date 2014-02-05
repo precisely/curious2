@@ -10,6 +10,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
@@ -29,7 +30,7 @@ abstract class DataService {
 	 * Integer field to represent the third party type. Used to query OAuthAccount
 	 * instances for respective services.
 	 */
-	int typeId
+	ThirdParty typeId
 
 	String unsubscribeURL
 
