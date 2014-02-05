@@ -9,6 +9,7 @@ import org.scribe.model.Token
 import grails.test.mixin.*
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
@@ -28,7 +29,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	void setUp() {
 		super.setUp()
 		
-		account = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, userId, "dummy-id", "dummy-id", "Dummy-secret")
+		account = OAuthAccount.createOrUpdate(ThirdParty.FITBIT, userId, "dummy-id", "dummy-id", "Dummy-secret")
 		
 		Utils.save(account, true)
 	}

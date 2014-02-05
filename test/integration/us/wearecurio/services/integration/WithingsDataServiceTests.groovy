@@ -10,6 +10,7 @@ import org.scribe.model.Token
 import grails.test.mixin.*
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
@@ -36,7 +37,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
 
-		account = new OAuthAccount([typeId: OAuthAccount.WITHINGS_ID, userId: userId, accessToken: "Dummy-token",
+		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
 			accessSecret: "Dummy-secret", accountId: "dummy-id"])
 		
 		account.save()

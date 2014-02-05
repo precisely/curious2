@@ -11,6 +11,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -20,7 +21,7 @@ class Twenty3AndMeDataService extends DataService {
 	Twenty3AndMeDataService() {
 		profileURL = "https://api.23andme.com/1/names/"
 		provider = "twenty3andme"
-		typeId = OAuthAccount.TWENTY_3_AND_ME_ID
+		typeId = ThirdParty.TWENTY_THREE_AND_ME
 	}
 
 	/**

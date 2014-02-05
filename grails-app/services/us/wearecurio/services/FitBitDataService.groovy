@@ -12,6 +12,7 @@ import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -35,7 +36,7 @@ class FitBitDataService extends DataService {
 
 	FitBitDataService() {
 		provider = "fitbit"
-		typeId = OAuthAccount.FITBIT_ID
+		typeId = ThirdParty.FITBIT
 		profileURL = String.format(BASE_URL, "/-/profile.json")
 	}
 

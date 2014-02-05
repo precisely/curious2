@@ -9,6 +9,7 @@ import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
@@ -26,7 +27,7 @@ class WithingsDataService extends DataService {
 
 	WithingsDataService() {
 		provider = "withings"
-		typeId = OAuthAccount.WITHINGS_ID
+		typeId = ThirdParty.WITHINGS
 	}
 
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
@@ -252,7 +253,7 @@ class WithingsDataService extends DataService {
 		def weekAgo = new Date(now.getTime() - 7L * 24 * 60 * 60 * 1000)
 
 		def results = c {
-			eq("typeId", OAuthAccount.WITHINGS_ID)
+			eq("typeId", ThirdParty.WITHINGS)
 			lt("lastSubscribed", weekAgo)
 		}
 

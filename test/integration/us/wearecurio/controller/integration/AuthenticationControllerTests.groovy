@@ -1,7 +1,7 @@
 package us.wearecurio.controller.integration
 
 import static org.junit.Assert.*
-import static us.wearecurio.model.OAuthAccount.*
+import static us.wearecurio.model.ThirdParty.*
 
 import org.junit.*
 import org.scribe.model.Token
@@ -77,7 +77,7 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 	void testMovesAuthWithLoggedInUser() {
 		// Deleting old entries fetched by actual database to H2 database.
-		OAuthAccount.findAllByTypeId(MOVES_ID)*.delete()
+		OAuthAccount.findAllByTypeId(MOVES)*.delete()
 
 		controller.params.provider = "moves"
 		controller.session.userId = userInstance.id
@@ -85,14 +85,14 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 		controller.authRedirect()
 		controller.movesAuth()	// No raw response for moves authenticated user
-		assert OAuthAccount.countByTypeId(MOVES_ID) == 0
+		assert OAuthAccount.countByTypeId(MOVES) == 0
 
 		controller.response.reset()
 
 		controller.session["moves:oasAccessToken"] =  new Token("some-token", "some-secret", """{"user_id": 271314}""")
 		controller.authRedirect()
 		controller.movesAuth()	// Available raw response for moves authenticated user in token
-		assert OAuthAccount.countByTypeId(MOVES_ID) == 1
+		assert OAuthAccount.countByTypeId(MOVES) == 1
 	}
 
 	void testFitbitAuthIfNoLoggedInUser() {
@@ -110,7 +110,7 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 	void testFitbitAuthAuthForIfLoggedInUser() {
 		// Deleting old entries fetched by actual database to H2 database.
-		OAuthAccount.findAllByTypeId(FITBIT_ID)*.delete()
+		OAuthAccount.findAllByTypeId(FITBIT)*.delete()
 
 		controller.params.status = "success"
 		controller.params.provider = "fitbit"
@@ -120,7 +120,7 @@ class AuthenticationControllerTests extends GroovyTestCase {
 		controller.session["fitbit:oasAccessToken"] = new Token("expired-token", "salkdjfsajfdlsa")
 		controller.authRedirect()
 		controller.fitbitAuth()
-		assert OAuthAccount.countByTypeId(FITBIT_ID) == 0
+		assert OAuthAccount.countByTypeId(FITBIT) == 0
 
 		controller.response.reset()
 
@@ -129,7 +129,7 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 		controller.authRedirect()
 		controller.fitbitAuth()
-		assert OAuthAccount.countByTypeId(FITBIT_ID) == 1
+		assert OAuthAccount.countByTypeId(FITBIT) == 1
 	}
 
 	void testTwenty3AndMeAuthIfNoLoggedInUser() {
@@ -147,7 +147,7 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 	void testTwenty3AndMeAuthForIfLoggedInUser() {
 		// Deleting old entries fetched by actual database to H2 database.
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(TWENTY_3_AND_ME_ID, userInstance.id)
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(TWENTY_THREE_AND_ME, userInstance.id)
 		Twenty3AndMeData.findAllByAccount(account)*.delete()
 		account?.delete()
 
@@ -159,14 +159,14 @@ class AuthenticationControllerTests extends GroovyTestCase {
 
 		controller.authRedirect()
 		controller.twenty3andmeAuth()	// No there is no information in user profile info
-		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_3_AND_ME_ID, userInstance.id) == 0
+		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_THREE_AND_ME, userInstance.id) == 0
 
 		controller.response.reset()
 
 		controller.session["twenty3andme:oasAccessToken"] =  new Token("d914a5723ed53e84c58fb376a4cca575", "some-secret")
 		controller.authRedirect()
 		controller.twenty3andmeAuth()
-		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_3_AND_ME_ID, userInstance.id) == 1
+		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_THREE_AND_ME, userInstance.id) == 1
 	}
 
 }

@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
@@ -22,10 +23,10 @@ class OAuthAccountService {
 	 * @param accessSeret Access Secret after authorization.
 	 * @return OAuthAccount instance for given parameters.
 	 */
-	OAuthAccount createOrUpdate(int typeId, String accountId, String accessToken, String accessSecret, String refreshToken, Date expiresOn) {
+	OAuthAccount createOrUpdate(ThirdParty type, String accountId, String accessToken, String accessSecret, String refreshToken, Date expiresOn) {
 		User currentUser = securityService.currentUser
 
-		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, typeId)
+		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, type)
 		account.accountId = accountId
 		account.accessToken = accessToken
 		account.accessSecret = accessSecret ?: ""
@@ -39,7 +40,7 @@ class OAuthAccountService {
 		return null
 	}
 
-	OAuthAccount createOrUpdate(int typeId, String accountId, Token tokenInstance) {
+	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance) {
 		Date expiresOn
 
 		String refreshToken = ""
@@ -56,7 +57,7 @@ class OAuthAccountService {
 				log.error "Error parsing raw response: [$tokenInstance.rawResponse].", e
 			}
 		}
-		createOrUpdate(typeId, accountId, tokenInstance.token, tokenInstance.secret, refreshToken, expiresOn)
+		createOrUpdate(type, accountId, tokenInstance.token, tokenInstance.secret, refreshToken, expiresOn)
 	}
 
 	boolean isLinked(int typeId) {

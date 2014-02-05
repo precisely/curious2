@@ -1,12 +1,10 @@
 package us.wearecurio.controller
 
-import static us.wearecurio.model.OAuthAccount.*
+import static us.wearecurio.model.ThirdParty.*
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
-
-import us.wearecurio.model.OAuthAccount
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -76,26 +74,26 @@ class AuthenticationController extends SessionController {
 		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
 		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(FITBIT_ID, userInfo.user.encodedId, tokenInstance)
+		OAuthAccountService.createOrUpdate(FITBIT, userInfo.user.encodedId, tokenInstance)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(HUMAN_ID,  userInfo.userId, tokenInstance.token, "")
+		OAuthAccountService.createOrUpdate(HUMAN,  userInfo.userId, tokenInstance.token, "")
 	}
 
 	def movesAuth() {
 		// Moves sends user_id while getting the access token.
 		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
 
-		OAuthAccountService.createOrUpdate(MOVES_ID, userInfo.user_id.toString(), tokenInstance)
+		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance)
 	}
 
 	def twenty3andmeAuth() {
 		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(TWENTY_3_AND_ME_ID, userInfo.id, tokenInstance)
+		OAuthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance)
 	}
 
 	/**
@@ -108,7 +106,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def withingsAuth() {
-		OAuthAccountService.createOrUpdate(WITHINGS_ID, session.withingsUserId, tokenInstance)
+		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance)
 	}
 
 }

@@ -165,7 +165,7 @@ $(function() {
 										Twitter Account: ${user.twitterAccountName}<br>
 										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
 									</g:else><br>
-									<oauth:isLinked typeId="FITBIT_ID">
+									<oauth:isLinked typeId="FITBIT">
 										<g:if test="${it }">
 											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
 										</g:if>
@@ -173,7 +173,7 @@ $(function() {
 											<g:link action="registerfitbit">Link FitBit Account</g:link><br>
 										</g:else>
 									</oauth:isLinked>
-									<oauth:isLinked typeId="WITHINGS_ID">
+									<oauth:isLinked typeId="WITHINGS">
 										<g:if test="${it }">
 											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
 										</g:if>
@@ -181,7 +181,7 @@ $(function() {
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
 										</g:else>
 									</oauth:isLinked>
-									<oauth:isLinked typeId="MOVES_ID">
+									<oauth:isLinked typeId="MOVES">
 										<g:if test="${it }">
 											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
 										</g:if>
@@ -190,7 +190,7 @@ $(function() {
 										</g:else>
 									</oauth:isLinked>
 									<g:link action="register23andme">
-										<oauth:isLinked typeId="TWENTY_3_AND_ME_ID">
+										<oauth:isLinked typeId="TWENTY_THREE_AND_ME">
 											<g:if test="${it }">
 												Re-import from 23andMe
 											</g:if>
