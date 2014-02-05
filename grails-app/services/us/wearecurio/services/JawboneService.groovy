@@ -41,7 +41,7 @@ class JawboneService {
 			columnList.eachWithIndex { column, index ->
 				tagUnitMap.buildEntry(column, tokens[index], userId, timeZoneId, COMMENT, SET_NAME)
 			}
-			tagUnitMap.buildBucketedEntries(userId)
+			tagUnitMap.buildBucketedEntries(userId, [comment: COMMENT, setName: SET_NAME, timeZoneId: timeZoneId])
 			tagUnitMap.emptyBuckets()
 		}
 	}

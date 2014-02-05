@@ -97,28 +97,16 @@ abstract class TagUnitMap {
 		}
 
 		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
+		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
 
 		String description = args["tagName"] ?: currentMapping["tag"]
-		createEntry(userId, timeZoneId, amount, currentMapping["unit"], description, date, comment, setName, args)
-	}
 
-	/**
-	 * Generic method to create an Entry domain object based on a Map.
-	 * @param userId
-	 * @param amount
-	 * @param units
-	 * @param description
-	 * @param date
-	 * @return
-	 */
-	Entry createEntry(Long userId, Integer timeZoneId, BigDecimal amount, String units, String description, Date date, String comment, String setName, Map args = [:]) {
 		if (amount != null) {
 			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
 		}
 
-		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: units,
-			comment: comment, setName: setName, timeZoneName: args.timeZoneName ?: "America/Los_Angeles",
-			timeZoneId: timeZoneId]
+		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
+			comment: comment, setName: setName, timeZoneId: timeZoneId]
 		parsedEntry.putAll(args)
 
 		Entry.create(userId, parsedEntry, null)
@@ -128,15 +116,17 @@ abstract class TagUnitMap {
 	 * Calculating entry amount based on the bucket operation and creating an entry for each of the buckets.
 	 * @param userId
 	 */
-	void buildBucketedEntries(def userId) {
+	void buildBucketedEntries(Long userId, Map args) {
 		// Iterating through buckets & performing actions.
 		this.getBuckets().each { bucketName, bucket ->
 			if (bucket.operation == this.AVERAGE) {
 				def totalAmount = bucket.values.sum()
 				def averageAmount = totalAmount / bucket.values.size()
-				def units = bucket.unit
-				def description = bucket.tag
-				createEntry(userId, averageAmount, units, description, new Date())
+
+				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
+					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit]
+
+				Entry.create(userId, parsedEntry, null)
 			}
 		}
 	}
