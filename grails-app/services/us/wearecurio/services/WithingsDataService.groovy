@@ -229,10 +229,16 @@ class WithingsDataService extends DataService {
 		return { refreshSubscriptions() }
 	}
 
-	Map getSubscriptionParameteres(OAuthAccount account, boolean isSubscribing) {
+	/**
+	 * Common method to provide common parameters required at the time of subscribe / unsubscribe.
+	 * @param account Instance of OAuthAccount
+	 * @param subscription Boolean field to represent if user is subscribing or unsubscribing.
+	 * @return Returns common parameters as map.
+	 */
+	Map getSubscriptionParameteres(OAuthAccount account, boolean subscription) {
 		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
 
-		Map queryParameters = ["action": isSubscribing ? "subscribe" : "revoke"]
+		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
 		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
 		queryParameters.put("callbackurl", notifyURL)
