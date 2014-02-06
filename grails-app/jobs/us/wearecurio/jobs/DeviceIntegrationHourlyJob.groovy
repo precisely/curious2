@@ -13,7 +13,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 
 	def execute() {
 		humanDataService.poll()
-		movesDataService.poll()
+		movesDataService.pollAll()
 	}
 
 }
