@@ -54,11 +54,11 @@ class OAuthAccount {
 	String toString() {
 		// TODO Fix this. Log statement skips after first line.
 		return "OAuthAccount(id:" + getId() + ", userId:" + userId + ", typeId:" + typeId.id
-		+ ", accessToken:" + (accessToken != null ? 'has token' : 'null')
-		+ ", accessSecret:" + (accessSecret != null ? 'has secret' : 'null' + ",")
-		+ ", lastPolled:" + lastPolled ?: 'null'
-		+ ", lastSubscribed:" + lastSubscribed ?: 'null'
-		+ ")"
+				+ ", accessToken:" + (accessToken != null ? 'has token' : 'null')
+				+ ", accessSecret:" + (accessSecret != null ? 'has secret' : 'null' + ",")
+				+ ", lastPolled:" + lastPolled ?: 'null'
+				+ ", lastSubscribed:" + lastSubscribed ?: 'null'
+				+ ")"
 	}
 
 	Token getTokenInstance() {

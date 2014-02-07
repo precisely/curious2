@@ -72,7 +72,7 @@ class Twenty3AndMeDataService extends DataService {
 
 	String getGenomesDataForProfile(Token tokenInstance, String profileId) throws AuthenticationRequiredException {
 		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/genomes/" + profileId)
-		log.debug "Got response from twent3andme data with code: [$apiResponse.code]. Getting content from stream ..."
+		log.debug "Got response from twenty3andme data with code: [$apiResponse.code]. Getting content from stream ..."
 
 		if (apiResponse.code == 401) {
 			throw new AuthenticationRequiredException(provider)

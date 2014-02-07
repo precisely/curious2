@@ -87,7 +87,7 @@ class OAuthAccountService {
 		OAuthAccount.withCriteria {
 			between("expiresOn", new Date(), new Date() + 1)
 		}.each {
-			refreshTokn(it)
+			refreshToken(it)
 		}
 	}
 	
@@ -95,7 +95,7 @@ class OAuthAccountService {
 	 * Used to renew access token of a particular OAuthAccount instance.
 	 * @param account Instance of OAuthAccount
 	 */
-	void refreshTokn(OAuthAccount account) {
+	void refreshToken(OAuthAccount account) {
 		if (!account.typeId.supportsOAuth2()) {
 			log.warn "Can't renew access token for account: [$account] since associated thirdparty doesn't supports OAuth2."
 			return
