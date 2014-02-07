@@ -6,6 +6,8 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
+import us.wearecurio.model.User
+
 /**
  * A generic controller to handle all authentication made by oauth plugin.
  * Actions of this controller redirects client browser according to given
@@ -26,9 +28,12 @@ class AuthenticationController extends SessionController {
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 
+	User currentUser
+	Long userId
+
 	private boolean afterAuthentication(model) {
 		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			log.debug "Redirecting user with id: [$userId] to [$session.returnURIWithToken]"
 			redirect uri: session.returnURIWithToken
 			session.returnURIWithToken = null
 			return false
@@ -37,7 +42,15 @@ class AuthenticationController extends SessionController {
 
 	private boolean checkAuthentication() {
 		provider = params.provider
+		currentUser = sessionUser()
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
+
+		if (!currentUser) {
+			log.debug "Session expired after callback from $provider's authentication."
+			redirect url: toUrl([controller: "home", action: "login"])
+			return false
+		}
+		userId = currentUser.id
 
 		if (params.status == "fail" || !tokenInstance) {
 			log.info "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
@@ -74,26 +87,26 @@ class AuthenticationController extends SessionController {
 		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
 		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(FITBIT, userInfo.user.encodedId, tokenInstance)
+		OAuthAccountService.createOrUpdate(FITBIT, userInfo.user.encodedId, tokenInstance, userId)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance.token, "")
+		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance.token, userId)
 	}
 
 	def movesAuth() {
 		// Moves sends user_id while getting the access token.
 		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
 
-		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance)
+		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId)
 	}
 
 	def twenty3andmeAuth() {
 		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance)
+		OAuthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
 	}
 
 	/**
@@ -106,7 +119,7 @@ class AuthenticationController extends SessionController {
 	}
 
 	def withingsAuth() {
-		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance)
+		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId)
 	}
 
 }

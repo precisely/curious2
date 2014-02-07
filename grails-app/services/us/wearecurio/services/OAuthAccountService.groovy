@@ -9,7 +9,6 @@ import org.scribe.oauth.OAuthService
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.User
 import us.wearecurio.thirdparty.RefreshTokenVerifier
 import us.wearecurio.utility.Utils
 
@@ -63,18 +62,14 @@ class OAuthAccountService {
 	 * @param tokenInstance Instance of scribe token.
 	 * @return OAuthAccount instance for given parameters.
 	 */
-	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance) {
-		User currentUser = securityService.currentUser
-
-		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(currentUser.id, type)
+	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance, Long userId) {
+		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
 		account.accountId = accountId
 		createOrUpdate(account, tokenInstance)
 	}
 
-	boolean isLinked(ThirdParty type) {
-		User currentUser = securityService.currentUser
-
-		if (OAuthAccount.findByTypeIdAndUserId(type, currentUser.id)) {
+	boolean isLinked(ThirdParty type, Long userId) {
+		if (OAuthAccount.findByTypeIdAndUserId(type, userId)) {
 			return true
 		}
 		return false
