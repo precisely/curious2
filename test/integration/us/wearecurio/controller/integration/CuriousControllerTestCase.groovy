@@ -1,22 +1,15 @@
 package us.wearecurio.controller.integration
 
-import java.util.Map;
-import org.springframework.web.servlet.ModelAndView
-
+import static org.junit.Assert.*
 import grails.test.*
+import grails.test.mixin.*
+
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.junit.*
+import org.springframework.web.util.WebUtils
 
 import us.wearecurio.model.*
-import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils
-import grails.util.GrailsWebUtil
-import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-
-import us.wearecurio.model.User;
-
-import static org.junit.Assert.*
-import org.junit.*
-import grails.test.mixin.*
 
 /**
  * Superclass for controller web tests
@@ -39,10 +32,7 @@ abstract class CuriousControllerTestCase extends GroovyTestCase {
 		
 		setLogger(controller)*/
 
-		def params = [username:'y', sex:'F', \
-            last:'y', email:'y@y.com', birthdate:'01/01/2001', \
-            first:'y', password:'y', action:'doregister', \
-            controller:'home']
+		def params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
 
 		user = User.create(params)
 

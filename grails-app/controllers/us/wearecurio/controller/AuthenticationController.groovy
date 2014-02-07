@@ -1,12 +1,11 @@
 package us.wearecurio.controller
 
-import static us.wearecurio.model.OAuthAccount.*
+import static us.wearecurio.model.ThirdParty.*
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
-import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
 
 /**
@@ -17,36 +16,44 @@ import us.wearecurio.model.User
  */
 class AuthenticationController extends SessionController {
 
-	def afterInterceptor = [action: this.&afterAuthRedirect, only: ["humanAuth", "twenty3andmeAuth", "fitbitAuth", "movesAuth", "withingsAuth"]]
-	def beforeInterceptor = [action: this.&authRedirect, except: ["authenticateProvider", "withingCallback"]]
-
-	def fitBitDataService
-	def humanDataService
-	def oauthService	// From OAuth Plugin
-	def twenty3AndMeDataService
-
 	private String provider
 	private Token tokenInstance
 
-	private boolean afterAuthRedirect(model) {
+	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback"]]
+	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback"]]
+
+	def fitBitDataService
+	def humanDataService
+	def OAuthAccountService
+	def oauthService	// From OAuth Plugin
+	def twenty3AndMeDataService
+
+	User currentUser
+	Long userId
+
+	private boolean afterAuthentication(model) {
 		if (session.returnURIWithToken) {
-			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			log.debug "Redirecting user with id: [$userId] to [$session.returnURIWithToken]"
 			redirect uri: session.returnURIWithToken
 			session.returnURIWithToken = null
 			return false
 		}
 	}
 
-	private boolean authRedirect() {
+	private boolean checkAuthentication() {
 		provider = params.provider
+		currentUser = sessionUser()
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
 
+		if (!currentUser) {
+			log.debug "Session expired after callback from $provider's authentication."
+			redirect url: toUrl([controller: "home", action: "login"])
+			return false
+		}
+		userId = currentUser.id
+
 		if (params.status == "fail" || !tokenInstance) {
-			if (params.status == "fail") {
-				log.info "User denied to authenticate with [$provider]."
-			} else {
-				log.error "No token found after authentication with [$provider]."
-			}
+			log.info "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
 			if (session.deniedURI) {
 				redirect uri: session.deniedURI
 				session.deniedURI = null
@@ -59,6 +66,7 @@ class AuthenticationController extends SessionController {
 		return true
 	}
 
+
 	/**
 	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
 	 */
@@ -68,75 +76,50 @@ class AuthenticationController extends SessionController {
 		if (request.queryString) {
 			returnURI += "?" + request.queryString
 		}
+
 		session.returnURIWithToken = returnURI.substring(1)	// Removing "/" from beginning since serverURL is configured with "/" at last.
-		redirect(url: toUrl(action: "authenticate", controller: "oauth", params: [provider: provider]))	// redirecting to oauth plugin controller
+		// Redirecting to oauth plugin controller
+		redirect(url: toUrl(action: "authenticate", controller: "oauth", params: [provider: provider]))
 		return
 	}
 
-	def twenty3andmeAuth() {
-		User currentUserInstance = sessionUser()
-
-		// This will always update access_token to latest access_token.
-		if (currentUserInstance) {
-			JSONObject parsedResponse = twenty3AndMeDataService.getUserProfiles(tokenInstance)
-
-			if (parsedResponse.id) {
-				OAuthAccount.createOrUpdate(OAuthAccount.TWENTY_3_AND_ME_ID, currentUserInstance.id, parsedResponse.id,
-						tokenInstance.token, tokenInstance.secret ?: "")
-			}
-		}
-	}
-
 	def fitbitAuth() {
-		User currentUserInstance = sessionUser()
+		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
+		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance)
 
-		// This will always update access_token to latest access_token.
-		if (currentUserInstance) {
-			// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
-			JSONObject userInfo =  fitBitDataService.getUserInfo(tokenInstance)
-
-			if (userInfo.user) {
-				OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, currentUserInstance.id,
-						userInfo.user.encodedId, tokenInstance.token, tokenInstance.secret ?: "")
-			}
-		}
+		OAuthAccountService.createOrUpdate(FITBIT, userInfo.user.encodedId, tokenInstance, userId)
 	}
 
 	def humanAuth() {
-		User currentUserInstance = sessionUser()
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
-		if(userInfo.userId) {
-			OAuthAccount.createOrUpdate(HUMAN_ID, currentUserInstance.id, userInfo.userId, tokenInstance.token, "")
-		} else {
-			log.error "userId not found in human api authentication."
-		}
+
+		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance.token, userId)
 	}
 
 	def movesAuth() {
-		User currentUserInstance = sessionUser()
+		// Moves sends user_id while getting the access token.
+		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
 
-		if (currentUserInstance) {
-			String rawResponse = tokenInstance.rawResponse
-			if (rawResponse) {	// Moves sends user_id while getting the access token.
-				JSONObject parsedResponse = JSON.parse(rawResponse)
-
-				if (parsedResponse.user_id) {
-					OAuthAccount.createOrUpdate(OAuthAccount.MOVES_ID, currentUserInstance.id,
-							parsedResponse.user_id.toString(), tokenInstance.token, tokenInstance.secret ?: "")
-				}
-			} else {
-				log.warn "Unable to create or update oauth account for moves. No raw response found in token."
-			}
-		}
+		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId)
 	}
 
-	def withingsAuth() {
+	def twenty3andmeAuth() {
+		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
+
+		OAuthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
 	}
 
+	/**
+	 * Special case for Withings callback, since Withings sends user id as request parameter.
+	 */
 	def withingCallback(String userid) {
 		params.provider = "withings"
 		session.withingsUserId = userid
 		redirect(url: toUrl(action: "callback", controller: "oauth", params: params))	// redirecting to oauth plugin controller
+	}
+
+	def withingsAuth() {
+		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId)
 	}
 
 }

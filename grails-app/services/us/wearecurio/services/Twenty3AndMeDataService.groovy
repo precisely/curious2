@@ -1,66 +1,29 @@
 package us.wearecurio.services
 
-import grails.converters.JSON
-import grails.util.Environment;
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.Twenty3AndMeData
-import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
-class Twenty3AndMeDataService {
+class Twenty3AndMeDataService extends DataService {
 
-	def oauthService	// From oauth plugin
-
-	JSONObject getUserProfiles(Token tokenInstance) {
-		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/names/")
-		if (Environment.current == Environment.DEVELOPMENT) {
-			log.info "Profile response from 23andme API: $apiResponse.body"
-		}
-		JSONObject parsedResponse = JSON.parse(apiResponse.body)
-		if (parsedResponse.error) {
-			log.error "Error getting profile information from 23andme API: $apiResponse.body"
-		}
-		parsedResponse
+	Twenty3AndMeDataService() {
+		profileURL = "https://api.23andme.com/1/names/"
+		provider = "twenty3andme"
+		typeId = ThirdParty.TWENTY_THREE_AND_ME
 	}
 
-	Map storeGenomesData(Token tokenInstance, User userInstance) throws AuthenticationRequiredException {
-		if (!tokenInstance || !tokenInstance.token)
-			throw new AuthenticationRequiredException("twenty3andme")
-
-		JSONObject userProfile = getUserProfiles(tokenInstance)
-
-		OAuthAccount account = OAuthAccount.findByTypeIdAndAccountIdAndUserId(OAuthAccount.TWENTY_3_AND_ME_ID, userProfile.id, userInstance.id)
-
-		userProfile.profiles?.each { profile ->
-			String profileId = profile.id
-			byte[] dataBytes = getGenomesDataForProfile(tokenInstance, profileId).bytes
-			// Splitting bytes into chunks of 1MB to match default packet size of MYSQL Server
-			List dataChunkList = dataBytes.toList().collate(1024 * 1024)
-
-			dataChunkList.eachWithIndex { dataChunk, index ->
-				Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileIdAndSequence(account, profileId, index)
-				twenty3AndMeDataInstance.data = dataChunk as byte[]
-				twenty3AndMeDataInstance.save(flush: true)
-				if (twenty3AndMeDataInstance.hasErrors()) {
-					log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
-				}
-			}
-		}
-		[success: true]
-	}
-
-	String getGenomesDataForProfile(Token tokenInstance, String profileId) {
-		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/genomes/" + profileId)
-		log.debug "Got response from twent3andme data. Getting content from stream ..."
-		apiResponse.body
-	}
-
-	String constructGenomesData(OAuthAccount oauthAccount, String profileId = "") {
+	/**
+	 * Used to return completed geonomes data which are stored as chuncked format.
+	 * @param oauthAccount Instance of OAuthAccount
+	 * @param profileId
+	 * @return
+	 */
+	String constructGenomesData(OAuthAccount oauthAccount, String profileId) {
 		List twenty3AndMeDataByteList = Twenty3AndMeData.withCriteria {
 			projections {
 				property("data")
@@ -82,6 +45,50 @@ class Twenty3AndMeDataService {
 		}
 
 		twenty3AndMeDataByte.toString()
+	}
+
+	@Override
+	Map getDataDefault(OAuthAccount account, Date notificationDate, boolean refreshAll) {
+		Token tokenInstance = account.tokenInstance
+		JSONObject userInfo = getUserProfile(tokenInstance)
+
+		userInfo["profiles"]?.each { profile ->
+			String profileId = profile.id
+			byte[] dataBytes = getGenomesDataForProfile(tokenInstance, profileId).bytes
+			// Splitting bytes into chunks of 1MB to match default packet size of MYSQL Server
+			List dataChunkList = dataBytes.toList().collate(1024 * 1024)
+
+			dataChunkList.eachWithIndex { dataChunk, index ->
+				Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileIdAndSequence(account, profileId, index)
+				twenty3AndMeDataInstance.data = dataChunk as byte[]
+				twenty3AndMeDataInstance.save(flush: true)
+				if (twenty3AndMeDataInstance.hasErrors()) {
+					log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
+				}
+			}
+		}
+		[success: true]
+	}
+
+	String getGenomesDataForProfile(Token tokenInstance, String profileId) throws AuthenticationRequiredException {
+		Response apiResponse = oauthService.getTwenty3AndMeResource(tokenInstance, "https://api.23andme.com/1/genomes/" + profileId)
+		log.debug "Got response from twenty3andme data with code: [$apiResponse.code]. Getting content from stream ..."
+
+		if (apiResponse.code == 401) {
+			throw new AuthenticationRequiredException(provider)
+		}
+		apiResponse.body
+	}
+
+	@Override
+	void notificationHandler(String notificationData) {
+		// Nothing to do. TwentyThreeAndMe API doesn't provide notification feature.
+	}
+
+	Map storeGenomesData(Long userId) throws AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance(userId)
+		checkNotNull(account)
+		getDataDefault(account, null, false)
 	}
 
 }

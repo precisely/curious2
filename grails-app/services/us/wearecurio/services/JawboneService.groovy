@@ -3,27 +3,29 @@ package us.wearecurio.services
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
-import us.wearecurio.model.Entry
 import us.wearecurio.model.User
-import us.wearecurio.thirdparty.TagUnitMap;
-import us.wearecurio.thirdparty.jawbone.JawboneTagUnitMap;
+import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.thirdparty.jawbone.JawboneTagUnitMap
 
 class JawboneService {
 
+	static final String COMMENT = "(Jawbone)"
+	static final String SET_NAME = "jawbone"
+
 	static transactional = true
 
+	DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd z")
+
+	TagUnitMap tagUnitMap = new JawboneTagUnitMap()
+
 	void parseJawboneCSV(InputStream csvIn, Long userId) {
-		String setName
 		def columnList
 		Date currentDate
 		boolean isFirstLine = true
 		Reader reader = new InputStreamReader(csvIn)
-		TagUnitMap jawboneTagUnitMap = new JawboneTagUnitMap()
-		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd z")
 		Integer timeZoneId = User.getTimeZoneId(userId)
 
 		reader.eachCsvLine { tokens ->
-			Map bucket = jawboneTagUnitMap.getBuckets()
 			log.debug "Tokens: $tokens"
 			if (isFirstLine) {
 				isFirstLine = false
@@ -37,13 +39,11 @@ class JawboneService {
 			 * This is necessary, since we are not sure about position of tags.
 			 */
 			columnList.eachWithIndex { column, index ->
-				jawboneTagUnitMap.buildEntry(column, tokens[index].toBigDecimal(), userId, timeZoneId)
+				tagUnitMap.buildEntry(column, tokens[index], userId, timeZoneId, COMMENT, SET_NAME)
 			}
-			jawboneTagUnitMap.buildBucketedEntries(userId)
-			jawboneTagUnitMap.emptyBuckets()
+			tagUnitMap.buildBucketedEntries(userId, [comment: COMMENT, setName: SET_NAME, timeZoneId: timeZoneId])
+			tagUnitMap.emptyBuckets()
 		}
 	}
-
-	
 
 }

@@ -4,63 +4,65 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
 
-public abstract class TagUnitMap {
+abstract class TagUnitMap {
 
-	public final static String MEAL = "meal"
-	public final static String MOVEMENT = "movement"
-	public final static String MOOD = "mood"
-	public final static String SLEEP = "sleep"
-	public final static String NAP = "nap"
+	final static String ACTIVITY = "activity"
+	final static String MEAL = "meal"
+	final static String MOVEMENT = "movement"
+	final static String MOOD = "mood"
+	final static String NAP = "nap"
+	final static String SLEEP = "sleep"
+	// The above constants are used for common string across various tag maps.
 
+	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
+	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	public final static int MINUTES_TO_MS = 60 * 1000
 	public final static float MS_TO_MINUTES = 0.00001667
-	public final static int SECONDS_TO_HOURS = 3600
+	public final static int SECONDS_TO_HOURS = 1 / 3600
 	public final static float SCALE_TO_0_10 = 10 / 100
 	public final static int TO_MILLI = 1000
+	public final static float METER_TO_KM = 1 / 1000
 
-	public final static int AVERAGE = 1
-	public final static int METER_TO_KM = 2
+	final static int AVERAGE = 1
+	final static int BUCKET = 2
+
+	static Map commonTagMap = [:]
 
 	private static def log = LogFactory.getLog(this)
 
-	static debug(str) {
-		log.debug(str)
+	static {
+		commonTagMap = [
+			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
+			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
+			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			fatRatio: [tag: "fat ratio", unit: "%"],
+			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			heartRate: [tag: "heart rate", unit: "bpm"],
+			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, type: KG_TO_POUNDS],
+			steps: [tag: "$ACTIVITY steps", unit: ""],
+			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+		]
 	}
 
 	/**
 	 * Generic method to convert a tag value from one unit to another if needed
-	 * @param amount
-	 * @param currentUnitMap
-	 * @return
+	 * @param amount Value to convert.
+	 * @param currentUnitMap Tag map for conversion.
+	 * @return Returns converted value.
 	 */
-	public BigDecimal convert(BigDecimal amount,def currentUnitMapping) {
+	BigDecimal convert(BigDecimal amount, Map currentUnitMapping) {
 		switch(currentUnitMapping.type) {
-			case this.SECONDS_TO_HOURS:
-				amount = amount / this.SECONDS_TO_HOURS
-				break
-			case this.MINUTES_TO_MS:
-				amount = amount * this.MINUTES_TO_MS
-				break
-			case this.MS_TO_MINUTES:
-				amount = amount * this.MS_TO_MINUTES
-				break
-			case this.SCALE_TO_0_10:
-				amount = amount * this.SCALE_TO_0_10
-				break
-			case this.TO_MILLI:
-				amount = amount * this.TO_MILLI
-				break
-			case this.METER_TO_KM:
-				amount = amount / 1000
+			// Operation to be performed are on buckets, ex.: merging
+			// Or type provided is a key in bucket[] to hold values
+			case BUCKET:
+				log.debug "Adding to bucket: " + getBuckets()[currentUnitMapping.bucketKey]
+				getBuckets()[currentUnitMapping.bucketKey].values.add(amount)
 				break
 			default:
-				// Else means operation to be performed are on buckets, ex.: merging
-				// Or type provided is a key in bucket[] to hold values
-				debug "Adding to bucket: " + this.getBuckets()[currentUnitMapping.type]?.dump()
-				this.getBuckets()[currentUnitMapping.type]?.values.add(amount)
+				amount = amount * currentUnitMapping.type
 				break
 		}
-		
+
 		return amount
 	}
 
@@ -69,72 +71,67 @@ public abstract class TagUnitMap {
 	 * importer
 	 * @return
 	 */
-	public abstract Map getBuckets();
-
-	public abstract Map getTagUnitMappings();
-
-	public Entry buildEntry(def tagName, def amount, def userId, def timeZoneId, def date = new Date(), def args = [:]) {
-		def currentMapping = this.getTagUnitMappings()[tagName]
-		if (!currentMapping) {
-			debug "No mapping found for tag name: " + tagName
-			return
-
-		}
-		if(currentMapping.convert) {
-			amount = this.convert(amount, currentMapping)
-		}
-
-		debug "The unit is: " + currentMapping
-		if (args.tagName) {
-			this.createEntry(userId, timeZoneId, amount, currentMapping.unit, args.tagName, date, args)
-		} else {
-			this.createEntry(userId, timeZoneId, amount, currentMapping.unit, currentMapping.tag, date, args)
-		}
-	}
+	abstract Map getBuckets();
 
 	/**
-	 * Generic method to create an Entry domain object based on a Map
-	 * @param userId
-	 * @param amount
-	 * @param units
-	 * @param description
-	 * @param date
-	 * @return
+	 * @return Returns a map containing tag names as key and their entry description as value.
+	 * Used for creating entries from data coming from third party APIs.
 	 */
-	public Entry createEntry(userId, timeZoneId, amount, units, description, date, Map args = [:]) {
-		if (amount != null) {
-			amount = amount.setScale(args.amountPrecision?:2, BigDecimal.ROUND_HALF_UP)
+	abstract Map getTagUnitMappings();
+
+	Entry buildEntry(String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+		Map currentMapping = getTagUnitMappings()[tagName]
+
+		if (!currentMapping) {
+			log.warn "No mapping found for tag name: [$tagName]"
+			return null
 		}
-		Map parsedEntry = [userId: userId, date: date,
-			description: description, amount: amount, units: units,
-			comment: args.comment ?: "", timeZoneId:timeZoneId, timeZoneOffsetSecs: args.timeZoneOffsetSecs, tweetId: args.tweetId,
-			repeatType: args.repeatType, setName: args.setName, amountPrecision: args.amountPrecision,
-			datePrecisionSecs: args.datePrecisionSecs
-		]
+
+		log.debug "The tag map is: $currentMapping"
+
+		if (amount != null) {
+			amount = amount.toBigDecimal()
+		}
+		if (currentMapping.convert) {
+			amount = convert(amount, currentMapping)
+		}
+
+		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
+		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
+
+		String description = args["tagName"] ?: currentMapping["tag"]
+
+		if (amount != null) {
+			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
+		}
+
+		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
+			comment: comment, setName: setName, timeZoneId: timeZoneId]
 		parsedEntry.putAll(args)
 
-		def entry = Entry.create(userId, parsedEntry, null)
-		return entry
+		Entry.create(userId, parsedEntry, null)
 	}
 
 	/**
 	 * Calculating entry amount based on the bucket operation and creating an entry for each of the buckets.
 	 * @param userId
 	 */
-	public void buildBucketedEntries(def userId) {
+	void buildBucketedEntries(Long userId, Map args) {
 		// Iterating through buckets & performing actions.
 		this.getBuckets().each { bucketName, bucket ->
-			if(bucket.operation == this.AVERAGE) {
+			if (bucket.operation == this.AVERAGE) {
 				def totalAmount = bucket.values.sum()
 				def averageAmount = totalAmount / bucket.values.size()
-				def units = bucket.unit
-				def description = bucket.tag
-				createEntry(userId, averageAmount, units, description, new Date())
+
+				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
+					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit]
+
+				Entry.create(userId, parsedEntry, null)
 			}
 		}
 	}
 
-	public void emptyBuckets() {
+	void emptyBuckets() {
 		this.getBuckets().each { bucketName, bucket ->
 			bucket.values.clear()
 		}

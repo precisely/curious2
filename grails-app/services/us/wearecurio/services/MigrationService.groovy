@@ -1,22 +1,15 @@
 
 package us.wearecurio.services
 
-import java.util.Date;
-
-import org.apache.commons.logging.LogFactory
-import org.hibernate.Query
-import org.hibernate.Session
-import org.hibernate.SessionFactory
-
-import us.wearecurio.server.Migration;
-import us.wearecurio.utility.Utils;
-import us.wearecurio.model.*;
 import grails.util.Environment
 
-import groovy.lang.Closure;
-import groovy.sql.Sql
-
+import org.apache.commons.logging.LogFactory
+import org.hibernate.SessionFactory
 import org.joda.time.*
+
+import us.wearecurio.model.*
+import us.wearecurio.server.Migration
+import us.wearecurio.utility.Utils
 
 class MigrationService {
 
@@ -37,6 +30,7 @@ class MigrationService {
 	public static final long CHANGE_TWENTY3ANDME_DATA_TYPE = 52L
 	public static final long CHANGE_TOKEN_FIELD_LENGTH = 53L
 	public static final long RECOMPUTE_FIRST_POSTS = 55L
+	public static final long CHANGE_NOTIFICATION_TABLE_NAME = 56L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -163,6 +157,10 @@ class MigrationService {
 		}
 		tryMigration(RECOMPUTE_FIRST_POSTS) {
 			sql("update discussion set first_post_id = NULL")
+		}
+		tryMigration(CHANGE_NOTIFICATION_TABLE_NAME) {
+			sql("DROP TABLE third_party_notification")	// Deleting blank table created by mapping.
+			sql("RENAME TABLE fitbit_notification TO third_party_notification")
 		}
 	}
 }

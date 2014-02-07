@@ -1,69 +1,57 @@
 package us.wearecurio.services
 
 import static us.wearecurio.model.OAuthAccount.*
-import grails.converters.JSON
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
-import us.wearecurio.model.User
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty;
+import us.wearecurio.model.User
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
-class MovesDataService {
+class MovesDataService extends DataService {
 
-	static final String MOVES_SET_NAME = "moves import"
+	static final String COMMENT = "(Moves)"
+	static final String SET_NAME = "moves import"
 
-	def oauthService
+	SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
+	SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
 
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
-
-	void poll() {
-		OAuthAccount.findAllByTypeId(MOVES_ID).each {
-			poll(it)
-		}
+	
+	MovesDataService() {
+		provider = "moves"
+		typeId = ThirdParty.MOVES
 	}
 
-	Map poll(OAuthAccount account) {
+	@Override
+	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
 		Long userId = account.userId
-		
+
+		forDay = forDay ?: new Date()
+
 		Integer timeZoneId = User.getTimeZoneId(userId)
-		
+
 		log.info "Polling account with userId [$userId]"
 
-		Date today = new Date()
-
-		Map args = [setName: MOVES_SET_NAME, comment: "(Moves)"]
+		Map args = [setName: SET_NAME, comment: COMMENT]
 
 		Token tokenInstance = account.tokenInstance
 
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
-		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
-		// format.setTimeZone(TimeZone.getTimeZone(""))		// TODO Provide time-zone, if needed
+		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + forDay.format("yyyy-MM-dd")
 
-		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + today.format("yyyy-MM-dd")
+		def parsedResponse = getResponse(tokenInstance, pollURL)
 
-		Response response = oauthService.getMovesResource(tokenInstance, pollURL)
-
-		switch(response.code) {
-			case 200:
-				log.info "Summary of moves data for userId [$account.userId] with code: [$response.code]"
-				break
-			case 401:
-				log.error "Token expired for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
-				return [success: false]
-			default:
-				log.error "Error fetching data from moves api for userId [$account.userId] with code: [$response.code] & body: [$response.body]"
-				return [success: false]
+		if (parsedResponse.getCode() != 200) {
+			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$parsedResponse]"
+			return [success: false]
 		}
-
-		JSONArray parsedResponse = JSON.parse(response.body)
 
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
@@ -77,7 +65,7 @@ class MovesDataService {
 			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
 			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
 			 */
-			Entry.findAllByUserIdAndSetNameAndDateBetween(userId, MOVES_SET_NAME, currentDate, currentDate + 1)*.delete()
+			Entry.findAllByUserIdAndSetNameAndDateBetween(userId, SET_NAME, currentDate, currentDate + 1)*.delete()
 
 			daySummary["segments"]?.each { currentSegment ->
 				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"
@@ -89,7 +77,13 @@ class MovesDataService {
 				}
 			}
 		}
+		account.lastPolled = new Date()
+		account.save()
 		return [success: true]
+	}
+
+	@Override
+	void notificationHandler(String notificationData) {
 	}
 
 	void processActivity(JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
@@ -116,30 +110,39 @@ class MovesDataService {
 				break
 		}
 		if (baseType) {
+			String comment = args.comment
+			String setName = args.setName
 			if (currentActivity.steps) {
-				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps.toBigDecimal(), userId, timeZoneId, startTime, args)
+				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps, userId, timeZoneId, startTime, comment, setName, args)
 			}
-			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance.toBigDecimal(), userId, timeZoneId, startTime, args)
+			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance, userId, timeZoneId, startTime, comment, setName, args)
 			if (currentActivity.calories) {
-				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories.toBigDecimal(), userId, timeZoneId, startTime, args)
+				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories, userId, timeZoneId, startTime, comment, setName, args)
 			}
 
-			tagUnitMap.buildEntry("${baseType}Start", 1 as BigDecimal, userId, timeZoneId, startTime, args.plus([amountPrecision: -1]))
-			tagUnitMap.buildEntry("${baseType}End", 1 as BigDecimal, userId, timeZoneId, endTime, args.plus(amountPrecision: -1))
+			tagUnitMap.buildEntry("${baseType}Start", 1, userId, timeZoneId, startTime, comment, setName, args.plus([amountPrecision: -1]))
+			tagUnitMap.buildEntry("${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus(amountPrecision: -1))
 		}
 	}
 
-	Map unSubscribe(Long userId) {
-		log.debug "unSubscribe() account:" + userId
+	@Override
+	Map subscribe(Long userId) {
+		OAuthAccount account = getOAuthAccountInstance(userId)
+		checkNotNull(account)
 
-		OAuthAccount account = OAuthAccount.findByUserIdAndTypeId(userId, MOVES_ID)
+		[success: true]
+	}
+
+	@Override
+	Map unsubscribe(Long userId) {
+		OAuthAccount account = getOAuthAccountInstance(userId)
+
 		if (!account) {
-			log.info "No moves subscription found for userId [$userId]"
+			log.info "No moves subscription found."
 			return [success: false, message: "No subscription found"]
 		}
 
 		account.delete()
 		[success: true]
 	}
-
 }

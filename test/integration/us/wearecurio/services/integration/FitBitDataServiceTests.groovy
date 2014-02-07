@@ -1,19 +1,12 @@
 package us.wearecurio.services.integration
 
-import grails.converters.JSON
-
-import org.codehaus.groovy.grails.web.json.JSONObject
-import org.junit.*
 import org.scribe.model.Response
-import org.scribe.model.Token
-import grails.test.mixin.*
 
-import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.FitbitNotification
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
-import us.wearecurio.services.OAuthAccountService;
 import us.wearecurio.services.UrlService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -24,119 +17,100 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	UrlService urlService
 	FitBitDataService fitBitDataService
 	OAuthAccount account
+	User user2
 
+	@Override
 	void setUp() {
 		super.setUp()
-		
-		account = OAuthAccount.createOrUpdate(OAuthAccount.FITBIT_ID, userId, "dummy-id", "dummy-id", "Dummy-secret")
-		
+
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+		assert user2.save()
+
+		account = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
+			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+
 		Utils.save(account, true)
 	}
 
+	@Override
 	void tearDown() {
-	}
-
-	void testAuthrorizeAccountIfNoToken() {
-		shouldFail(AuthenticationRequiredException) {
-			fitBitDataService.authorizeAccount(null, userId)
-		}
-		shouldFail(AuthenticationRequiredException) {
-			fitBitDataService.authorizeAccount(new Token("", ""), userId)
-		}
-	}
-
-	void testAuthorizeAccountWithToken() {
-		fitBitDataService.oauthService = [
-			postFitbitResource:{ token, url ->
-				return new Response(new MockedHttpURLConnection())
-			}
-		]
-
-		Map result = fitBitDataService.authorizeAccount(new Token("token-dummy-1", "dummy-secret"), userId)
-		assert result.success
 	}
 
 	void testSubscribeIfSuccess() {
 		fitBitDataService.oauthService = [
-			postFitbitResource:{ token, url ->
-				return new Response(new MockedHttpURLConnection())
+			postfitbitResource: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection("{}"))
 			}
 		]
-		Map result = fitBitDataService.subscribe(account, "dummy-id")
+		Map result = fitBitDataService.subscribe(userId)
 		assert result.success
 	}
 
 	void testSubscribeIfFail() {
 		fitBitDataService.oauthService = [
-			postFitbitResource:{ token, url ->
-				return new Response(new MockedHttpURLConnection(202))
+			postfitbitResource:{ token, url, p, header ->
+				return new Response(new MockedHttpURLConnection("{}", 202))
 			}
 		]
-		Map result = fitBitDataService.subscribe(account, "dummy-id")
+		Map result = fitBitDataService.subscribe(userId)
 		assert !result.success
 		assert OAuthAccount.count() == 0
 	}
 
-	void testUnSubscribeIfNoOAuthAccount() {
-		Map response = fitBitDataService.unSubscribe(3)
-		assert response.success == false
-		assert response.message == "No subscription found"
+	void testSubscribeIfNoAuthAccount() {
+		shouldFail(AuthenticationRequiredException) {
+			fitBitDataService.subscribe(user2.id)
+		}
 	}
 
-	void testUnSubscribeWithOAuthAccountExists() {
+	void testUnsubscribeIfNoOAuthAccount() {
+		Map result = fitBitDataService.unsubscribe(user2.id)
+		assert result.message == "No subscription found"
+	}
+
+	void testUnsubscribeWithOAuthAccountExists() {
 		fitBitDataService.oauthService = [
-			deleteFitbitResource: { token, url ->
-				return new Response(new MockedHttpURLConnection(204))
+			deletefitbitResource: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection("{}", 204))
 			}
 		]
 
 		assert OAuthAccount.count() == 1
-		Map response = fitBitDataService.unSubscribe(userId)
+		fitBitDataService.unsubscribe(userId)
 		assert OAuthAccount.count() == 0
 	}
 
-	void testQueueNotifications() {
+	void testNotificationHandler() {
 		String notificationString = """[{"collectionType":"foods","date":"2010-03-01","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"foods","date":"2010-03-02","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"activities","date":"2010-03-01","ownerId":"184X36","ownerType":"user","subscriptionId":"2345"}]"""
-		fitBitDataService.queueNotifications(JSON.parse(notificationString))
-		assert FitbitNotification.count() == 3
+		fitBitDataService.notificationHandler(notificationString)
+		assert ThirdPartyNotification.count() == 3
+		assert ThirdPartyNotification.first().typeId == ThirdParty.FITBIT
 	}
 
-	void testPoll() {
-		def fitBit1 = new FitbitNotification([collectionType: "foods", ownerId: "dummy-id", date: new Date(), ownerType: "user", subscriptionId: "1234"]).save()
-		def fitBit2 = new FitbitNotification([collectionType: "activities", ownerId: "184X36", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
-		assert new FitbitNotification([collectionType: "foods", ownerId: "", date: new Date(), ownerType: "user", subscriptionId: "2345"]).save()
-		assert FitbitNotification.count() == 3
-
-		// Normal execution
-		boolean result = fitBitDataService.poll(fitBit1)
-		assert fitBitDataService.lastPollTimestamps["dummy-id"]
-		assert result
-
-		result = fitBitDataService.poll(fitBit2)
-		assert result
-	}
-
-	void testGetDataWithFailureStatusCode() {
+	void testGetDataDefaultWithFailureStatusCode() {
 		fitBitDataService.oauthService = [
-			getFitbitResource: { token, url ->
+			getfitbitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(401))
 			}
 		]
 		// When fitbit returns a non-zero response code
-		shouldFail(IllegalArgumentException) {
-			fitBitDataService.getData(account, "http://example.com", false)
+		try {
+			fitBitDataService.getDataDefault(account, new Date(), false)
+		} catch(e) {
+			assert e.cause instanceof AuthenticationRequiredException
 		}
 	}
 
-	void testGetData() {
+	void testGetDataDefault() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		fitBitDataService.oauthService = [
-			getFitbitResource: { token, url ->
+			getfitbitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
 
-		boolean result = fitBitDataService.getData(account, "http://example.com", false)
+		boolean result = fitBitDataService.getDataDefault(account, new Date(), false)
 
 		assert result
 	}

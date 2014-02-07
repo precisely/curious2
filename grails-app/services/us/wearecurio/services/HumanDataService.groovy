@@ -1,6 +1,5 @@
 package us.wearecurio.services
 
-import static us.wearecurio.model.OAuthAccount.*
 import grails.converters.JSON
 import grails.util.Environment
 
@@ -13,9 +12,10 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
-import us.wearecurio.model.User
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
@@ -97,7 +97,7 @@ class HumanDataService {
 	}
 
 	void poll() {
-		OAuthAccount.findAllByTypeId(HUMAN_ID).each {
+		OAuthAccount.findAllByTypeId(ThirdParty.HUMAN).each {
 			poll(it)
 		}
 	}
