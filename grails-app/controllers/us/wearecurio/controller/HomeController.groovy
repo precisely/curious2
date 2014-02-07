@@ -432,8 +432,8 @@ class HomeController extends DataController {
 		
 		if (discussionId) {
 			discussion = Discussion.get(discussionId)
-			debug "DiscussionId not found: " + discussionId
 			if (discussion == null) {
+				debug "DiscussionId not found: " + discussionId
 				flash.message = "That discussion topic no longer exists."
 				redirect(url:toUrl(action:'community'))
 				return

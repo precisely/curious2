@@ -12,7 +12,7 @@ class UrlService {
 	
 	//TODO temporarily, use UrlService as a holder of static methods. When we switch to Grails 2.x, change to instance methods
 
-	static transactional = true
+	static transactional = false
 	
 	def UrlService() {
 	}

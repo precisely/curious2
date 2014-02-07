@@ -36,6 +36,7 @@ class MigrationService {
 	public static final long CHANGE_CONTINUOUS_REPEATS_TO_PINNED_ID = 50L
 	public static final long CHANGE_TWENTY3ANDME_DATA_TYPE = 52L
 	public static final long CHANGE_TOKEN_FIELD_LENGTH = 53L
+	public static final long RECOMPUTE_FIRST_POSTS = 55L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -159,6 +160,9 @@ class MigrationService {
 		}
 		tryMigration(CHANGE_TOKEN_FIELD_LENGTH) {
 			sql("alter table oauth_account change column access_token access_token varchar(1024)")
+		}
+		tryMigration(RECOMPUTE_FIRST_POSTS) {
+			sql("update discussion set first_post_id = NULL")
 		}
 	}
 }

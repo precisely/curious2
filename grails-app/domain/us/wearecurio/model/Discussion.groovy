@@ -38,6 +38,7 @@ class Discussion {
 				eq("plotDataId", plotDataId)
 			}
 			maxResults(1)
+			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
@@ -132,6 +133,7 @@ class Discussion {
 				eq("discussionId", getId())
 			}
 			maxResults(1)
+			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
@@ -160,6 +162,7 @@ class Discussion {
 				eq("discussionId", getId())
 			}
 			maxResults(1)
+			order("plotDataId", "desc")
 			order("created", "desc")
 		}
 
@@ -183,6 +186,7 @@ class Discussion {
 				eq("discussionId", getId())
 			}
 			firstResult(1)
+			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 		
@@ -196,6 +200,7 @@ class Discussion {
 			and {
 				eq("discussionId", getId())
 			}
+			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
