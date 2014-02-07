@@ -35,10 +35,6 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			accessSecret: "Dummy-secret", accountId: "dummy-id"])
 
 		account.save()
-
-		withingsDataService.securityService = [
-			currentUser: user
-		]
 	}
 
 	@Override
@@ -52,7 +48,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		withingsDataService.subscribe()
+		withingsDataService.subscribe(userId)
 		assert account.lastSubscribed
 	}
 
@@ -63,15 +59,12 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		withingsDataService.subscribe()
+		withingsDataService.subscribe(userId)
 		assert OAuthAccount.count() == 0
 	}
 
 	void testUnSubscribeIfNoOAuthAccount() {
-		withingsDataService.securityService = [
-			currentUser: user2
-		]
-		Map response = withingsDataService.unsubscribe()	// Passing user's ID whose oauth account doesn't exist
+		Map response = withingsDataService.unsubscribe(user2.id)	// Passing user's ID whose oauth account doesn't exist
 		assert response.message == "No subscription found"
 	}
 
@@ -83,7 +76,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		]
 
 		assert OAuthAccount.count() == 1
-		Map response = withingsDataService.unsubscribe()
+		Map response = withingsDataService.unsubscribe(userId)
 		assert OAuthAccount.count() == 0
 	}
 

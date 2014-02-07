@@ -1,28 +1,15 @@
 package us.wearecurio.controller.integration
-import java.util.Map;
-import org.springframework.mock.web.MockMultipartFile
-import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.multipart.MultipartHttpServletRequest
 
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import static org.junit.Assert.*
 
-import grails.test.*
+import org.junit.*
 
-import us.wearecurio.controller.HomeController;
+import us.wearecurio.controller.HomeController
 import us.wearecurio.model.*
-import grails.util.GrailsUtil
-import us.wearecurio.utility.Utils
-import grails.util.GrailsWebUtil
-import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.thirdparty.AuthenticationRequiredException
-
-import static org.junit.Assert.*
-import org.junit.*
-import grails.test.mixin.*
+import us.wearecurio.utility.Utils
 
 public class HomeControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -254,7 +241,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregisterwithings() {
 		HomeController controller = new HomeController()
 		controller.withingsDataService = [
-			unsubscribe: { -> return [success:true] }
+			unsubscribe: {userId -> return [success:true] }
 		] as WithingsDataService
 		controller.session.userId = userId
 		
@@ -267,7 +254,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregisterfitbit() {
 		HomeController controller = new HomeController()
 		controller.fitBitDataService = [
-			unsubscribe: { -> return [success:true] }
+			unsubscribe: {userId -> return [success:true] }
 		] as FitBitDataService
 		controller.session.userId = userId
 		
@@ -280,7 +267,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregistermoves() {
 		HomeController controller = new HomeController()
 		controller.movesDataService = [
-			unsubscribe: { -> return [success:true] }
+			unsubscribe: {userId -> return [success:true] }
 		] as MovesDataService
 		controller.session.userId = userId
 		

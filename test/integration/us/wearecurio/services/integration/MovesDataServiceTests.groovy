@@ -13,7 +13,7 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.User
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.AuthenticationRequiredException;
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 
@@ -34,10 +34,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "Z14DRUTWswu66GuptWqQR1b295DikZY77Bfwocqaduku9VKI2t0WTuOJQ7F72DSQ",
 			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775"]).save()
 		assert account.save()
-
-		movesDataService.securityService = [
-			currentUser: user
-		]
 	}
 
 	@After
@@ -48,21 +44,13 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	void testUnsubscribe() {
 		// If no OAuthAccount Exists
-		movesDataService.securityService = [
-			currentUser: user2
-		]
-
-		Map response = movesDataService.unsubscribe()	// Passing user id, whose OAuthAccount not exists.
+		Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
 		assertFalse response.success
 		assert response.message == "No subscription found"
-
-		movesDataService.securityService = [
-			currentUser: user
-		]
 		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
 
 		// If OAuthAccount Exists
-		response = movesDataService.unsubscribe()
+		response = movesDataService.unsubscribe(userId)
 		assertTrue response.success
 		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
 	}

@@ -29,9 +29,6 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 
 		TimeZoneId.clearCacheForTesting()
-		Twenty3AndMeData.list()*.delete()
-		OAuthAccount.list()*.delete()
-		Entry.list()*.delete()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
@@ -41,10 +38,6 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		account = new OAuthAccount([typeId: ThirdParty.TWENTY_THREE_AND_ME, userId: userId,
 			accessToken: "d914a5723ed53e84c58fb376a4cca575", accessSecret: "", accountId: "06b53ee811bf5c9f"]).save()
 		assert account.save()
-
-		twenty3AndMeDataService.securityService = [
-			currentUser: user
-		]
 	}
 
 	@After
@@ -63,7 +56,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 	void testStoreGenomesDataWithNoToken() {
 		shouldFail(AuthenticationRequiredException) {
-			twenty3AndMeDataService.storeGenomesData()
+			twenty3AndMeDataService.storeGenomesData(userId)
 		}
 	}
 

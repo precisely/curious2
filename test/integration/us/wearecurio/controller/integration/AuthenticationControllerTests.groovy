@@ -34,6 +34,15 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 	 * Hence writing test case for beforeInterceptor method.
 	 */
 	void testCheckAuthentication() {
+		// Test when session expired.
+		controller.session.userId = null
+		controller.checkAuthentication()
+		assert controller.response.redirectUrl.contains("home/login")
+
+		controller.response.reset()
+		controller.session.userId = userId
+
+		// Test when user deny to authenticate
 		controller.params.provider = "moves"
 		controller.params.status = "fail"
 		controller.checkAuthentication()
@@ -41,6 +50,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 
+		// Test when user granted access but error creating token
 		controller.params.status = "success"
 		controller.metaClass.tokenInstance = null
 		controller.checkAuthentication()

@@ -225,7 +225,7 @@ class FitBitDataService extends DataService {
 	Map subscribe(Long userId) throws AuthenticationRequiredException {
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
-		Map result = super.subscribe(subscriptionURL, "post", [:])
+		Map result = super.subscribe(userId, subscriptionURL, "post", [:])
 		result.success = true
 
 		switch(result["code"]) {
@@ -238,7 +238,7 @@ class FitBitDataService extends DataService {
 				break;
 			default:
 				result.success = false
-				getOAuthAccountInstance().delete()
+				getOAuthAccountInstance(userId).delete()
 		}
 
 		result

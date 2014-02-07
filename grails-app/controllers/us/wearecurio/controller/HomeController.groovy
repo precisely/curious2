@@ -34,14 +34,14 @@ class HomeController extends DataController {
 		debug "HomeController()"
 	}
 
-	def registerwithings() {	// TODO Backward support. Remove this
-		redirect (url: toUrl(action: "doregisterwithings"))
-	}
-
-	def doregisterwithings() {
+	def registerwithings() {
 		debug "HomeController.doregisterwithings() params:" + params
 
 		User user = sessionUser()
+		if (!user) {
+			debug "auth failure"
+			return
+		}
 		Long userId = user.id
 		
 		debug "userId: $userId"
@@ -127,12 +127,7 @@ class HomeController extends DataController {
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
 
-	
 	def registerfitbit() {
-		redirect (url: toUrl(action: "doregisterfitbit"))
-	}
-	
-	def doregisterfitbit() {
 		debug "HomeController.doregisterfitbit() params:" + params
 		User user = sessionUser()
 		

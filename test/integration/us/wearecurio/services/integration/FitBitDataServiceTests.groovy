@@ -1,8 +1,5 @@
 package us.wearecurio.services.integration
 
-import javassist.NotFoundException;
-import grails.converters.JSON
-
 import org.scribe.model.Response
 
 import us.wearecurio.model.OAuthAccount
@@ -12,7 +9,7 @@ import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.UrlService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.AuthenticationRequiredException;
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
 class FitBitDataServiceTests extends CuriousServiceTestCase {
@@ -34,10 +31,6 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			accessSecret: "Dummy-secret", accountId: "dummy-id"])
 
 		Utils.save(account, true)
-
-		fitBitDataService.securityService = [
-			currentUser: user
-		]
 	}
 
 	@Override
@@ -50,7 +43,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection("{}"))
 			}
 		]
-		Map result = fitBitDataService.subscribe()
+		Map result = fitBitDataService.subscribe(userId)
 		assert result.success
 	}
 
@@ -60,25 +53,19 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection("{}", 202))
 			}
 		]
-		Map result = fitBitDataService.subscribe()
+		Map result = fitBitDataService.subscribe(userId)
 		assert !result.success
 		assert OAuthAccount.count() == 0
 	}
 
 	void testSubscribeIfNoAuthAccount() {
-		fitBitDataService.securityService = [
-			currentUser: user2
-		]
 		shouldFail(AuthenticationRequiredException) {
-			fitBitDataService.subscribe()
+			fitBitDataService.subscribe(user2.id)
 		}
 	}
 
 	void testUnsubscribeIfNoOAuthAccount() {
-		fitBitDataService.securityService = [
-			currentUser: user2
-		]
-		Map result = fitBitDataService.unsubscribe()
+		Map result = fitBitDataService.unsubscribe(user2.id)
 		assert result.message == "No subscription found"
 	}
 
@@ -90,7 +77,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		]
 
 		assert OAuthAccount.count() == 1
-		fitBitDataService.unsubscribe()
+		fitBitDataService.unsubscribe(userId)
 		assert OAuthAccount.count() == 0
 	}
 
