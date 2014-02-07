@@ -14,7 +14,7 @@ class ThirdPartyNotification {
 	ThirdParty typeId
 
 	static mapping = {
-		table 'fitbit_notification'
+		table 'third_party_notification'
 		date column:'log_date'
 		ownerId column:'owner_id', index:'owner_id_index'
 		ownerType column:'owner_type'
