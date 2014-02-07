@@ -203,8 +203,8 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	JSONObject listSubscription() {
-		super.listSubscription(String.format(BASE_URL, "/-/apiSubscriptions.json"), "get", [:])
+	JSONElement listSubscription(Long userId) {
+		super.listSubscription(userId, String.format(BASE_URL, "/-/apiSubscriptions.json"), "get", [:])
 	}
 
 	@Override
@@ -222,8 +222,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	Map subscribe() throws AuthenticationRequiredException {
-		Long userId = securityService.currentUser.id
+	Map subscribe(Long userId) throws AuthenticationRequiredException {
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Map result = super.subscribe(subscriptionURL, "post", [:])
@@ -242,29 +241,27 @@ class FitBitDataService extends DataService {
 				getOAuthAccountInstance().delete()
 		}
 
-		//listSubscription(account) // Test after subscribe
 		result
 	}
 
 	@Override
-	Map unsubscribe() throws NotFoundException, AuthenticationRequiredException {
+	Map unsubscribe(Long userId) throws NotFoundException, AuthenticationRequiredException {
 		Map result
 
-		String unsubscribeURL = String.format(BASE_URL, "/-/apiSubscriptions/${currentUserId}.json")
+		String unsubscribeURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		try {
-			result = super.unsubscribe(unsubscribeURL, "delete", [:])
+			result = super.unsubscribe(userId, unsubscribeURL, "delete", [:])
 		} catch (NotFoundException e) {
-			log.info "No subscription found for userId [$currentUserId]"
+			log.info "No subscription found for userId [$userId]"
 			return [success: false, message: "No subscription found"]
 		}
 
 		if (result["code"] in [204, 404]) {
-			getOAuthAccountInstance().delete()
+			getOAuthAccountInstance(userId).delete()
 			return [success: true]
 		}
 
-		//listSubscription(account)	// Test after un-subscribe
 		[success: false]
 	}
 

@@ -42,11 +42,12 @@ class HomeController extends DataController {
 		debug "HomeController.doregisterwithings() params:" + params
 
 		User user = sessionUser()
+		Long userId = user.id
 		
-		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+		debug "userId: $userId"
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		
-		Map result = withingsDataService.subscribe()
+		Map result = withingsDataService.subscribe(userId)
 		if (result.success) {
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
@@ -58,7 +59,7 @@ class HomeController extends DataController {
 	}
 
 	def unregisterwithings() {
-		Map result = withingsDataService.unsubscribe()
+		Map result = withingsDataService.unsubscribe(userId)
 		if (result.success) {
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
 		} else {
@@ -68,9 +69,11 @@ class HomeController extends DataController {
 	}
 
 	def register23andme() {
-		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+		User user = sessionUser()
+		Long userId = user.id
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 
-		Map result = twenty3AndMeDataService.storeGenomesData()
+		Map result = twenty3AndMeDataService.storeGenomesData(userId)
 		if (result.success) {
 			flash.message = message(code: "twenty3andme.import.success.message")
 		}
@@ -87,15 +90,19 @@ class HomeController extends DataController {
 	}
 
 	def registermoves() {
+		User user = sessionUser()
+		Long userId = user.id
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 
-		movesDataService.subscribe()
+		movesDataService.subscribe(userId)
 		flash.message = g.message(code: "moves.subscribe.success.message")
 		redirect(url: session.deniedURI)
 	}
 
 	def unregistermoves() {
-		Map result = movesDataService.unsubscribe()
+		User user = sessionUser()
+		Long userId = user.id
+		Map result = movesDataService.unsubscribe(userId)
 		if (result.success) {
 			session[oauthService.findSessionKeyForAccessToken("moves")] = null
 			flash.message = g.message(code: "moves.unsubscribe.success.message")
@@ -133,11 +140,12 @@ class HomeController extends DataController {
 			debug "auth failure"
 			return
 		}
+		Long userId = user.id
 		
-		debug "userId:" + user.getId() + ", withings userid:" + params.userid
-		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
+		debug "userId: $userId"
+		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		
-		Map result = fitBitDataService.subscribe()
+		Map result = fitBitDataService.subscribe(userId)
 
 		if(result.success) {
 			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
@@ -150,7 +158,14 @@ class HomeController extends DataController {
 	}
 
 	def unregisterfitbit() {
-		Map result = fitBitDataService.unsubscribe()
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			return
+		}
+		Long userId = user.id
+
+		Map result = fitBitDataService.unsubscribe(userId)
 		if (result.success) {
 			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
 		} else {

@@ -18,7 +18,6 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 abstract class DataService {
 
 	def oauthService
-	def securityService
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
@@ -63,14 +62,6 @@ abstract class DataService {
 	}
 
 	/**
-	 * Used to get id of current loggedIn User
-	 * @return
-	 */
-	Long getCurrentUserId() {
-		securityService.currentUser.id
-	}
-
-	/**
 	 * Used to process actual data which may depends on service to service for different
 	 * third party. Needs to be implemented on each services.
 	 * @param account Instance of OAuthAccount
@@ -79,13 +70,6 @@ abstract class DataService {
 	 * @return	Returns a map with required data.
 	 */
 	abstract Map getDataDefault(OAuthAccount account, Date notificationDate, boolean refreshAll)
-
-	/**
-	 * Returns the OAuthAccount instance for current logged in user & type id.
-	 */
-	OAuthAccount getOAuthAccountInstance() {
-		getOAuthAccountInstance(securityService.currentUser.id)
-	}
 
 	/**
 	 * Returns the OAuthAccount instance for given userId.
@@ -164,8 +148,8 @@ abstract class DataService {
 	 * Used to list all subscriptions of current user based on configured subscription URL.
 	 * @return
 	 */
-	JSONObject listSubscription() {
-		listSubscription(listSubscriptionURL, "get", [:])
+	JSONElement listSubscription(Long userId) {
+		listSubscription(userId, listSubscriptionURL, "get", [:])
 	}
 
 	/**
@@ -177,8 +161,8 @@ abstract class DataService {
 	 * @param queryParams
 	 * @return
 	 */
-	JSONObject listSubscription(String url, String method, Map queryParams) {
-		OAuthAccount account = getOAuthAccountInstance()
+	JSONElement listSubscription(Long userId, String url, String method, Map queryParams) {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 		getResponse(account.tokenInstance, listSubscriptionURL)
 	}
 
@@ -253,11 +237,12 @@ abstract class DataService {
 
 	/**
 	 * Used to subscribe to third party end points for notification based on configured URL.
+	 * @param userId User identity to process against.
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
-	Map subscribe() throws AuthenticationRequiredException {
-		subscribe(subscribeURL, "get", [:])
+	Map subscribe(Long userId) throws AuthenticationRequiredException {
+		subscribe(userId, subscribeURL, "get", [:])
 	}
 
 	/**
@@ -266,14 +251,15 @@ abstract class DataService {
 	 * method may differ.
 	 * 
 	 * @Example Withings & FitBit
+	 * @param userId User identity to process against.
 	 * @param url Subscription URL.
 	 * @param method Resource HTTP method to call.
 	 * @param queryParams OPTIONAL query parameters to pass on.
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
-	Map subscribe(String url, String method, Map queryParams) throws AuthenticationRequiredException {
-		OAuthAccount account = getOAuthAccountInstance()
+	Map subscribe(Long userId, String url, String method, Map queryParams) throws AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
 		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
@@ -283,17 +269,19 @@ abstract class DataService {
 
 	/**
 	 * Used to unsubscribe a user from third party end points for notification based on configured URL.
+	 * @param userId User identity to process against.
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws NotFoundException
 	 * @throws AuthenticationRequiredException
 	 */
-	Map unsubscribe() throws NotFoundException, AuthenticationRequiredException {
-		unsubscribe(unsubscribeURL, "get", [:])
+	Map unsubscribe(Long userId) throws NotFoundException, AuthenticationRequiredException {
+		unsubscribe(userId, unsubscribeURL, "get", [:])
 	}
 
 	/**
 	 * Overloaded method to unsubscribe a user from third party notification based on given
 	 * url & method. Useful where unsubscribe url differs with user to user.
+	 * @param userId User identity to process against.
 	 * @param url Unsubscribe URL end point.
 	 * @param method HTTP method to call with.
 	 * @param queryParams OPTIONAL query string parameters.
@@ -301,8 +289,8 @@ abstract class DataService {
 	 * @throws NotFoundException if instance of OAuthAccount not found.
 	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
-	Map unsubscribe(String url, String method, Map queryParams) throws NotFoundException, AuthenticationRequiredException {
-		OAuthAccount account = getOAuthAccountInstance()
+	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws NotFoundException, AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 		if (!account) {
 			throw new NotFoundException("No oauth account found.")
 		}

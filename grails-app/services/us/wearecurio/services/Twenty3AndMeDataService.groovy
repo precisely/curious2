@@ -85,8 +85,8 @@ class Twenty3AndMeDataService extends DataService {
 		// Nothing to do. TwentyThreeAndMe API doesn't provide notification feature.
 	}
 
-	Map storeGenomesData() throws AuthenticationRequiredException {
-		OAuthAccount account = getOAuthAccountInstance()
+	Map storeGenomesData(Long userId) throws AuthenticationRequiredException {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 		getDataDefault(account, null, false)
 	}

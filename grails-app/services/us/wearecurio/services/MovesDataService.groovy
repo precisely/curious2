@@ -126,16 +126,16 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
-	Map subscribe() {
-		OAuthAccount account = getOAuthAccountInstance()
+	Map subscribe(Long userId) {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
 		[success: true]
 	}
 
 	@Override
-	Map unsubscribe() {
-		OAuthAccount account = getOAuthAccountInstance()
+	Map unsubscribe(Long userId) {
+		OAuthAccount account = getOAuthAccountInstance(userId)
 
 		if (!account) {
 			log.info "No moves subscription found."
