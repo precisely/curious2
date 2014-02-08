@@ -31,6 +31,7 @@ class MigrationService {
 	public static final long CHANGE_TOKEN_FIELD_LENGTH = 53L
 	public static final long RECOMPUTE_FIRST_POSTS = 55L
 	public static final long CHANGE_NOTIFICATION_TABLE_NAME = 56L
+	public static final long ADD_TYPE_ID_FIELD_TO_NOTIFICATION_TABLE = 57L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -161,6 +162,9 @@ class MigrationService {
 		tryMigration(CHANGE_NOTIFICATION_TABLE_NAME) {
 			sql("DROP TABLE third_party_notification")	// Deleting blank table created by mapping.
 			sql("RENAME TABLE fitbit_notification TO third_party_notification")
+		}
+		tryMigration(ADD_TYPE_ID_FIELD_TO_NOTIFICATION_TABLE) {
+			sql("ALTER TABLE third_party_notification ADD COLUMN type_id int(11) NOT NULL DEFAULT 2")
 		}
 	}
 }
