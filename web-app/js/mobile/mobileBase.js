@@ -441,6 +441,16 @@ $(document).ready(function() {
 	$("#loginlogo").show();
 	$("body").on("swiperight", function() {
 		console.log("Swipe event right");
+		$($(".trackDay")[0]).clone().appendTo("#trackPage");
+		$($(".trackDay")[0]).animate(
+				{
+					width: '-100%'
+				},
+				4000,
+				function () {
+					originalTrackPage.remove();
+				}
+		);
 		changeDate(-1);
 	}).on("swipeleft", function() {
 		console.log("Swipe event left");
@@ -489,16 +499,6 @@ function refreshPage(callback) {
 	if (cachedObj != null) {
 		console.log("refresh entries from cache");
 		refreshEntries(cachedObj, false);
-<<<<<<< HEAD
-	}
-
-	var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
-		date : cachedDateUTC,
-		userId : currentUserId,
-		timeZoneName : timeZoneName
-	});
-	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
-=======
 	} else {
 		var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
 			date : cachedDateUTC,
@@ -506,24 +506,17 @@ function refreshPage(callback) {
 			timeZoneName : timeZoneName
 		});
 		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
->>>>>>> Fix: Call to reloadPage should be after page elements are loaded to prevent datepicker from failing
 			function(data) {
 				if (checkData(data)) {
 					console.log("refresh entries from get list");
 					refreshEntries(data, true);
 					dataReady = true;
-<<<<<<< HEAD
 					if (typeof callback != 'undefined') {
 						callback();
 					}
 				}
 			});
-=======
-				}
-			}
-		);
 	}
->>>>>>> Fix: Call to reloadPage should be after page elements are loaded to prevent datepicker from failing
 	
 	argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
 		date : [cachedDateYesterday.toUTCString(), cachedDateTomorrow.toUTCString()],

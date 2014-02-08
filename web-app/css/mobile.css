@@ -64,9 +64,6 @@ table {
    padding:0px;
 }
 #content {
-   position:absolute;
-   top:85px;
-   bottom:0;
    width:100%;
    padding:0px;
    padding-bottom:20px;   /* Height of the footer */
@@ -80,4 +77,20 @@ table {
 }
 #body {
    height:100%;
+}
+
+#trackPage {
+	width: 100%;
+	position: absolute;
+	height: 100%;
+}
+
+.trackDay {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	-moz-box-shadow:    3px 3px 5px 6px #ccc;
+  	-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+  	box-shadow:         3px 3px 5px 6px #ccc;
+  	float:left;
 }
