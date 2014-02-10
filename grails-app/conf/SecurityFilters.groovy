@@ -106,7 +106,7 @@ class SecurityFilters {
 				}
 			}
 		}
-		trialCheck(controller:'*', action:'*') {
+		trialCheck(controller:'trial', action:'*') {
 			before = {
 				if (params.controller == null) {
 					flash.precontroller = UrlService.template(request).equals("lhp") ? 'home' : 'trial'

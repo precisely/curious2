@@ -550,4 +550,8 @@ class HomeController extends DataController {
 		}
 	}
 	
+	def lgmd2iproject() {
+			def model = []
+			render(view:"/home/lgmd2iproject", model:model)
+	}
 }
