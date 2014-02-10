@@ -8,9 +8,6 @@
 .ui-accordion-header {
 	overflow:hidden;
 }
-#discussTitleInput {
-	width:800px;
-}
 </style>
 <script type="text/javascript">
 // list of users to plot
@@ -157,7 +154,7 @@ $(function(){
 });
 </script>
 </head>
-<body>
+<body class="discuss-page">
 <!-- SHARE PAGE -->
 <div id="container" class="sharePage" style="position:relative">
 	<g:if test="${flash.message}">

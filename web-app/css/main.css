@@ -178,7 +178,7 @@ body.graph-page .querymain {
 body.graph-page .querymain #plotArea {
 	height:500px;
 }
-body.graph-page #plotArea canvas {
+body.graph-page #plotArea canvas, body.discuss-page #plotDiscussArea canvas {
 	width: 100%;
 	height: 100%;
 }
@@ -194,12 +194,28 @@ body.graph-page div.graphData.has-plot-data div#height-balancer {
 /**
  * Styles for graph page ends here.
  */
+
+/**
+ * Styles for discuss page starts here.
+ */
+body.discuss-page input#discussTitleInput {
+	width: 800px;
+}
+@media (max-width: 970px) {
+	body.discuss-page input#discussTitleInput {
+		width: 100%;
+	}
+}
 .discussmain .cycleTagInput {
 	margin-left:58px;
 }
 .discussmain .discussPlotArea {
 	height:550px;
 }
+/**
+ * Styles for discuss page ends here.
+ */
+
 #dashmain {
 	width:800px;
 }
