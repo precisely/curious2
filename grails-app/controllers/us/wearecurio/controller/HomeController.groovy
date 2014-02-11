@@ -59,6 +59,8 @@ class HomeController extends DataController {
 	}
 
 	def unregisterwithings() {
+		User user = sessionUser()
+		Long userId = user.id
 		Map result = withingsDataService.unsubscribe(userId)
 		if (result.success) {
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
@@ -215,6 +217,22 @@ class HomeController extends DataController {
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
+	
+	static processPrefs(prefs) {
+		def p = [:]
+		
+		for (param in prefs) {
+			def k = param.key
+			def v = param.value
+			
+			if (k.endsWith("_profile"))
+				p[k.substring(0, k.length() - 8)] = v
+			else
+				p[k] = v
+		}
+			
+		return p
+	}
 
 	def userpreferences() {
 		//FitbitNotificationJob.schedule(1000 * 10l, 1)	// Trigger a job for testing while development.
@@ -244,11 +262,24 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'upload'))
 			return
 		}
+		
+		def p = processPrefs(params)
 
-		if (params.twitterDefaultToNow != 'on')
-			params.twitterDefaultToNow = 'off';
+		if (p.twitterDefaultToNow != 'on')
+			p.twitterDefaultToNow = 'off';
+			
+		if (p.password != null && p.password.length() > 0) {
+			if (!user.checkPassword(p.oldPassword)) {
+				flash.message = "Error updating user preferences: old password does not match"
+				log.warn "Error updating user preferences: old password does not match"
+				render(view:"/home/userpreferences",
+						model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+							prefs:user.getPreferences(), templateVer:urlService.template(request)])
+				return
+			}
+		}
 
-		user.setParameters(params)
+		user.setParameters(p)
 
 		Utils.save(user)
 		
@@ -260,7 +291,7 @@ class HomeController extends DataController {
 						prefs:user.getPreferences(), templateVer:urlService.template(request)])
 		} else {
 			flash.message = "User preferences updated"
-			redirect(url:toUrl(controller:params.controller, action:params.preaction))
+			redirect(url:toUrl(controller:p.controller, action:p.preaction))
 		}
 	}
 

@@ -235,7 +235,7 @@ class WithingsDataService extends DataService {
 	 * @param subscription Boolean field to represent if user is subscribing or unsubscribing.
 	 * @return Returns common parameters as map.
 	 */
-	Map getSubscriptionParameteres(OAuthAccount account, boolean subscription) {
+	Map getSubscriptionParameters(OAuthAccount account, boolean subscription) {
 		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
 
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
@@ -276,7 +276,7 @@ class WithingsDataService extends DataService {
 			throw new AuthenticationRequiredException(provider)
 		}
 
-		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameteres(account, true))
+		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
 
 		if (result["body"].status == 0) {
 			account.lastSubscribed = new Date()
@@ -284,7 +284,7 @@ class WithingsDataService extends DataService {
 			return [success: true]
 		}
 
-		account.delete()	// confirms that subscription is not successful.
+		OAuthAccount.delete(account)	// confirms that subscription is not successful.
 		[success: false]
 	}
 
@@ -297,11 +297,13 @@ class WithingsDataService extends DataService {
 			return [success: false, message: "No subscription found"]
 		}
 
-		Map result = super.unsubscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameteres(account, false))
+		Map result = super.unsubscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, false))
 
+		// always delete account regardless of success/failure message"
+		OAuthAccount.delete(account)
+		
 		// 294 status code is for 'no such subscription available to delete'.
 		if (result["body"].status in [0, 294]) {
-			account.delete()
 			return [success: true]
 		}
 

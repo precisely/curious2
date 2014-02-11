@@ -238,7 +238,7 @@ class FitBitDataService extends DataService {
 				break;
 			default:
 				result.success = false
-				getOAuthAccountInstance(userId).delete()
+				OAuthAccount.delete(getOAuthAccountInstance(userId))
 		}
 
 		result
@@ -258,7 +258,7 @@ class FitBitDataService extends DataService {
 		}
 
 		if (result["code"] in [204, 404]) {
-			getOAuthAccountInstance(userId).delete()
+			OAuthAccount.delete(getOAuthAccountInstance(userId))
 			return [success: true]
 		}
 

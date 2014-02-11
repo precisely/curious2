@@ -296,7 +296,9 @@ abstract class DataService {
 		}
 
 		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
-
+		
+		// regardless of the response, delete account so user can re-link it if needed
+		
 		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
 

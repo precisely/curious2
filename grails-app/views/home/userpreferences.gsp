@@ -36,11 +36,17 @@ $(function() {
 	$("#updateUserPreferences").submit(function(e) {
 		e.preventDefault();
 		var form = this;
-		var newUsername = $("#username").val();
+		var newUsername = $("#username_profile").val();
+		var newPw = $("#password_profile").val();
 		if (origUsername != newUsername) {
-			var newPw = $("#password").val();
 			if (newPw.length == 0) {
 				alert("If you change the username, you must set the password as well");
+				return;
+			}
+		}
+		if (newPw.length > 0) {
+			if (newPw != $("#verify_password_profile").val()) {
+				alert("New password and verification do not match");
 				return;
 			}
 		}
@@ -97,17 +103,22 @@ $(function() {
 						<tbody>
 							<tr>
 								<td><label for="Username">Username</label></td>
-								<td><g:textField name="username" value="${user.username}" autofocus="" required="" /></td>
+								<td><g:textField name="username_profile" value="${user.username}" autofocus="" required="" /></td>
 							</tr>
 
 							<tr>
 								<td><label for="oldPassword">Old password</label></td>
-								<td><g:passwordField name="oldPassword" value="" /></td>
+								<td><g:passwordField name="oldPassword_profile" value="" /></td>
 							</tr>
 
 							<tr>
 								<td><label for="Password">New password</label></td>
-								<td><g:passwordField name="password" value="" /></td>
+								<td><g:passwordField name="password_profile" value="" /></td>
+							</tr>
+
+							<tr>
+								<td><label for="Verify Password">Verify password</label></td>
+								<td><g:passwordField name="verify_password_profile" value="" /></td>
 							</tr>
 
 							<tr>
@@ -163,7 +174,7 @@ $(function() {
 									</g:if>
 									<g:else>
 										Twitter Account: ${user.twitterAccountName}<br>
-										<small><g:link action="registertwitter">Link Other Twitter Account</g:link></small>
+										<g:link action="registertwitter">Link Other Twitter Account</g:link>
 									</g:else><br>
 									<oauth:isLinked userId="${user.id}" typeId="FITBIT">
 										<g:if test="${it }">

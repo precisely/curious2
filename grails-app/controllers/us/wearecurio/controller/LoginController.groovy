@@ -293,37 +293,48 @@ class LoginController extends SessionController {
 	}
 	protected static final int REGISTER_ERROR_USER_ALREADY_EXISTS = 1
 	protected static final int REGISTER_MISSING_FIELDS = 2
-	protected static final int REGISTER_DUPLICATE_FIELDS = 3
-	protected static final int REGISTER_DUPLICATE_EMAIL = 4
+	protected static final int REGISTER_DUPLICATE_EMAIL = 3
 	
 	protected def execRegister(params) {
 		def retVal = [:]
 		
-		params.username = params.username?.toLowerCase()
-		if (params.username == null) {
+		def p = [:]
+		
+		for (param in params) {
+			def k = param.key
+			def v = param.value
+			
+			if (k.endsWith("_profile"))
+				p[k.substring(0, k.length() - 8)] = v
+			else
+				p[k] = v
+		}
+		
+		p.username = p.username?.toLowerCase()
+		if (p.username == null) {
 			retVal['errorCode'] = REGISTER_MISSING_FIELDS
 			retVal['validateErrors'] = 'Missing username'
 			debug "Error creating user: " + retVal['validateErrors']
 			return retVal
 		}
 		
-		if (User.findByUsername(params.username) != null) {
+		if (User.findByUsername(p.username) != null) {
 			retVal['errorCode'] = REGISTER_ERROR_USER_ALREADY_EXISTS
 			return retVal
 		}
 		
-		if (User.findByEmail(params.email) != null) {
+		if (User.findByEmail(p.email) != null) {
 			retVal['errorCode'] = REGISTER_DUPLICATE_EMAIL
 			return retVal
 		}
 
-		debug "Creating user with params: " + params
+		debug "Creating user with params: " + p
 		
-		if (!params.sex) {
-			params.sex = 'N'
+		if (!p.sex) {
+			p.sex = 'N'
 		}
 
-		def user = User.create(params)
+		def user = User.create(p)
 		
 		retVal['user'] = user
 		if (!user.validate()) {
@@ -340,8 +351,8 @@ class LoginController extends SessionController {
 			
 			def groups
 			
-			if (params.groups) {
-				groups = JSON.parse(params.groups)
+			if (p.groups) {
+				groups = JSON.parse(p.groups)
 	
 				for (groupName in groups) {
 					def group = UserGroup.lookup(groupName)
@@ -350,14 +361,14 @@ class LoginController extends SessionController {
 				}
 			}
 					
-			if (params.metaTagName1 && params.metaTagValue1) {
-				user.addMetaTag(params.metaTagName1, params.metaTagValue1)
+			if (p.metaTagName1 && p.metaTagValue1) {
+				user.addMetaTag(p.metaTagName1, p.metaTagValue1)
 			}
-			if (params.metaTagName2 && params.metaTagValue2) {
-				user.addMetaTag(params.metaTagName2, params.metaTagValue2)
+			if (p.metaTagName2 && p.metaTagValue2) {
+				user.addMetaTag(p.metaTagName2, p.metaTagValue2)
 			}
-			if (params.metaTagName3 && params.metaTagValue3) {
-				user.addMetaTag(params.metaTagName3, params.metaTagValue3)
+			if (p.metaTagName3 && p.metaTagValue3) {
+				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
 			}
 			setLoginUser(user)
 			retVal['success'] = true
@@ -381,7 +392,15 @@ class LoginController extends SessionController {
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 			return
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {
-			flash.message = "Error registering user - highlighted fields required or email address already registered"
+			flash.message = "Error registering user - highlighted fields required"
+			flash.user = retVal['user']
+			redirect(url:toUrl(action:"register"))
+		} else if (retVal['errorCode'] == REGISTER_DUPLICATE_EMAIL) {
+			flash.message = "Error registering user - email address already registered"
+			flash.user = retVal['user']
+			redirect(url:toUrl(action:"register"))
+		} else {
+			flash.message = "Error registering user - try different values"
 			flash.user = retVal['user']
 			redirect(url:toUrl(action:"register"))
 		}
@@ -397,6 +416,10 @@ class LoginController extends SessionController {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {
 			renderJSONPost([success:false, message:"All fields are required."])
+		} else if (retVal['errorCode'] == REGISTER_DUPLICATE_EMAIL) {
+			renderJSONPost([success:false, message:"Email '" + params.email + "' already in use"])
+		} else {
+			renderJSONPost([success:false, message:"Error registering user. Try different values."])
 		}
 	}
 	def logout() {
