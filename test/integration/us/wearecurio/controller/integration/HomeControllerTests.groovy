@@ -246,7 +246,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 		
 		controller.unregisterwithings()
-		assert controller.flash.message.contains("Successfully un-linked Withings account")
+		assert controller.flash.message.contains("Successfully unlinked Withings account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -259,7 +259,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 		
 		controller.unregisterfitbit()
-		assert controller.flash.message.contains("Successfully un-linked Fitbit account")
+		assert controller.flash.message.contains("Successfully unlinked Fitbit account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -272,7 +272,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 		
 		controller.unregistermoves()
-		assert controller.flash.message.contains("Successfully un-linked Moves account")
+		assert controller.flash.message.contains("Successfully unlinked Moves account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 }
