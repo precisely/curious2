@@ -299,6 +299,8 @@ abstract class DataService {
 		
 		// regardless of the response, delete account so user can re-link it if needed
 		
+		OAuthAccount.delete(account)
+		
 		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
 

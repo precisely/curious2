@@ -142,7 +142,8 @@ class MovesDataService extends DataService {
 			return [success: false, message: "No subscription found"]
 		}
 
-		account.delete()
+		// always remove account whether success or failure reported, so user can re-link
+		OAuthAccount.delete(account)
 		[success: true]
 	}
 }

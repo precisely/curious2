@@ -299,9 +299,6 @@ class WithingsDataService extends DataService {
 
 		Map result = super.unsubscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, false))
 
-		// always delete account regardless of success/failure message"
-		OAuthAccount.delete(account)
-		
 		// 294 status code is for 'no such subscription available to delete'.
 		if (result["body"].status in [0, 294]) {
 			return [success: true]

@@ -258,7 +258,6 @@ class FitBitDataService extends DataService {
 		}
 
 		if (result["code"] in [204, 404]) {
-			OAuthAccount.delete(getOAuthAccountInstance(userId))
 			return [success: true]
 		}
 
