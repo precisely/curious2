@@ -26,6 +26,7 @@ abstract class DataService {
 	}
 	
 	def oauthService
+	def urlService
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
@@ -107,8 +108,12 @@ abstract class DataService {
 		checkNotNull(tokenInstance)
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
-
-		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
+		
+		if (queryParams) {
+			requestURL = urlService.makeQueryString(requestURL, queryParams)
+		}
+		
+		Response response = oauthService."${method}${provider.capitalize()}Resource"(tokenInstance, requestURL)
 
 		if (Environment.current == Environment.DEVELOPMENT) {
 			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$response.body]"

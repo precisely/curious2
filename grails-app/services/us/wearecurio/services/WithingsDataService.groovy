@@ -236,7 +236,7 @@ class WithingsDataService extends DataService {
 	 * @return Returns common parameters as map.
 	 */
 	Map getSubscriptionParameters(OAuthAccount account, boolean subscription) {
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, false)
 
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
