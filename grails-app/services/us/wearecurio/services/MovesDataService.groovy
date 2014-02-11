@@ -14,6 +14,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty;
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class MovesDataService extends DataService {
 
@@ -128,7 +129,13 @@ class MovesDataService extends DataService {
 	@Override
 	Map subscribe(Long userId) {
 		OAuthAccount account = getOAuthAccountInstance(userId)
-		checkNotNull(account)
+		try {
+			checkNotNull(account)
+		} catch (AuthenticationRequiredException e) {
+			e.printStackTrace()
+			debug "failed to subscribe to moves"
+			return [success: false]
+		}
 
 		[success: true]
 	}

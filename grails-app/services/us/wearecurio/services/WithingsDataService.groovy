@@ -270,26 +270,32 @@ class WithingsDataService extends DataService {
 
 	@Override
 	Map subscribe(Long userId) throws AuthenticationRequiredException {
+		debug "WithingsDataService.subscribe():" + userId
 		OAuthAccount account = getOAuthAccountInstance(userId)
 
 		if (!account) {
+			debug "Authentication required exception"
 			throw new AuthenticationRequiredException(provider)
 		}
 
 		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
 
 		if (result["body"].status == 0) {
+			debug "Successful subscription"
 			account.lastSubscribed = new Date()
 			account.save()
 			return [success: true]
 		}
 
+		debug "Subscription failed, status: " + result["body"].status
+		
 		OAuthAccount.delete(account)	// confirms that subscription is not successful.
 		[success: false]
 	}
 
 	@Override
 	Map unsubscribe(Long userId) {
+		debug "WithingsDataService.unsubscribe():" + userId
 		OAuthAccount account = getOAuthAccountInstance(userId)
 
 		if (!account) {
@@ -301,9 +307,11 @@ class WithingsDataService extends DataService {
 
 		// 294 status code is for 'no such subscription available to delete'.
 		if (result["body"].status in [0, 294]) {
+			debug "Unsubscribe succeeded, status: " + result["body"].status
 			return [success: true]
 		}
 
+		debug "Unsubscribe failed, status: " + result["body"].status
 		[success: false]
 	}
 

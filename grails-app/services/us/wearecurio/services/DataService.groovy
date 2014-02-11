@@ -4,6 +4,8 @@ import grails.converters.JSON
 import grails.util.Environment
 import javassist.NotFoundException
 
+import org.apache.commons.logging.LogFactory
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -17,6 +19,12 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 abstract class DataService {
 
+	private static def log = LogFactory.getLog(this)
+	
+	static debug(str) {
+		log.debug(str)
+	}
+	
 	def oauthService
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
@@ -119,6 +127,7 @@ abstract class DataService {
 				log.error "Error parsing response data.", e
 				parsedResponse = new JSONObject()
 			}
+			debug "Response code:" + response.code
 			parsedResponse.getMetaClass().getCode = { return response.code }
 			parsedResponse
 		}
@@ -259,6 +268,7 @@ abstract class DataService {
 	 * @throws AuthenticationRequiredException
 	 */
 	Map subscribe(Long userId, String url, String method, Map queryParams) throws AuthenticationRequiredException {
+		debug "DataService.subscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
@@ -290,6 +300,7 @@ abstract class DataService {
 	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
 	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws NotFoundException, AuthenticationRequiredException {
+		debug "DataService.unsubscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		if (!account) {
 			throw new NotFoundException("No oauth account found.")
@@ -299,6 +310,7 @@ abstract class DataService {
 		
 		// regardless of the response, delete account so user can re-link it if needed
 		
+		debug "OAuthAccount deleted regardless of response code: " + parsedResponse.getCode()
 		OAuthAccount.delete(account)
 		
 		[code: parsedResponse.getCode(), body: parsedResponse]
