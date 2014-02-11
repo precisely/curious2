@@ -241,7 +241,7 @@ class WithingsDataService extends DataService {
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
 		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
-		queryParameters.put("callbackurl", notifyURL)
+		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
 
 		queryParameters
 	}
