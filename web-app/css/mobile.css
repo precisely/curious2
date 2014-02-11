@@ -81,16 +81,18 @@ table {
 
 #trackPage {
 	width: 100%;
-	position: absolute;
+	position: relative;
 	height: 100%;
 }
 
 .trackDay {
-	position: relative;
+	position: absolute;
+	left: 0px;
+	top: 0px;
 	height: 100%;
 	width: 100%;
 	-moz-box-shadow:    3px 3px 5px 6px #ccc;
   	-webkit-box-shadow: 3px 3px 5px 6px #ccc;
   	box-shadow:         3px 3px 5px 6px #ccc;
-  	float:left;
+  	z-index: 1;
 }

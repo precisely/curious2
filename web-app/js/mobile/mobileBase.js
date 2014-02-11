@@ -438,25 +438,32 @@ $(document).ready(function() {
 		$("#loginlogo").attr("src", "../images/logo_mobile_lhp.gif");
 	}
 
-	$("#loginlogo").show();
-	$("body").on("swiperight", function() {
-		console.log("Swipe event right");
-		$($(".trackDay")[0]).clone().appendTo("#trackPage");
-		$($(".trackDay")[0]).animate(
-				{
-					width: '-100%'
-				},
-				4000,
-				function () {
-					originalTrackPage.remove();
-				}
-		);
-		changeDate(-1);
+	$('#loginlogo').show();
+	$('body').on('swiperight', function() {
+		console.log('Swipe event right');
+		swipeTrackPage("");
 	}).on("swipeleft", function() {
-		console.log("Swipe event left");
-		changeDate(1);
+		console.log("Swipe event left");		
+		swipeTrackPage("-");
 	});
 });
+
+function swipeTrackPage (left) {
+	$($('.trackDay')[0]).clone().appendTo('#trackPage');
+	$($('.trackDay')[1]).zIndex(2);
+	changeDate(-parseInt(left+1));
+	$($('.trackDay')[1]).animate(
+			{
+				left: left + $(window).width() + 'px'
+				//left: "-300px"
+			},
+			900,
+			function () {
+				$($('.trackDay')[1]).remove();
+				//initDatepicker(cachedDate);
+			}
+	);
+} 
 
 function cacheDate() {
 	cachedDate = $datepickerField.datepicker('getDate');
@@ -1147,6 +1154,19 @@ function setPeopleData(data) {
 				this['id'], this['sex']);
 		setUserId(this['id']);
 		return true;
+	});
+}
+
+var initDatepicker = function (date) {
+	var $datepicker = $("#datepicker");
+	
+	$datepicker.datepicker({
+		defaultDate : date,
+		dateFormat : 'DD MM dd, yy',
+		showButtonPanel : true
+	}).val($.datepicker.formatDate('DD MM dd, yy', date)).datepicker("hide")
+			.change(function() {
+				refreshPage();
 	});
 }
 
