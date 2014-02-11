@@ -32,8 +32,6 @@ class WithingsDataService extends DataService {
 
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
-	def urlService
-
 	@Override
 	void notificationHandler(String accountId) {
 		if (!accountId) {	// At time of subscription
