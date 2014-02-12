@@ -5,12 +5,12 @@ import grails.util.Environment
 import javassist.NotFoundException
 
 import org.apache.commons.logging.LogFactory
-
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
+import org.scribe.utils.OAuthEncoder;
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -113,6 +113,7 @@ abstract class DataService {
 		
 		if (queryParams) {
 			requestURL = urlService.makeQueryString(requestURL, queryParams)
+			requestURL = OAuthEncoder.encode(requestURL)
 		}
 		
 		Response response = oauthService."${method}${provider.capitalize()}Resource"(tokenInstance, requestURL)
