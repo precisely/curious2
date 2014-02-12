@@ -61,7 +61,8 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Long lastPolled = account.lastPolled ? account.lastPolled.time / 1000L : null
+			Date logDate = forDay ?: account.lastPolled
+			Long lastPolled = logDate ? logDate.time / 1000L : null
 			if (lastPolled && !refreshAll)
 				queryParameters.put("startdate", lastPolled)
 
@@ -282,6 +283,14 @@ class WithingsDataService extends DataService {
 			debug "Successful subscription"
 			account.lastSubscribed = new Date()
 			account.save()
+			/**
+			 * Fetch & store previous data.
+			 * @TODO Needs to be done either by events or by grails async processing,
+			 * because this will keep user redirect blocked for longer time if there
+			 * are greater number of entries in previous data.
+			 */
+			log.info "Getting user's previous data."
+			getDataDefault(account, null, false)
 			return [success: true]
 		}
 
