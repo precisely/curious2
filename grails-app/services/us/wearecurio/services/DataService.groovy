@@ -111,9 +111,16 @@ abstract class DataService {
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
 
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
+		String responseBody = ""
+
+		try {
+			responseBody = response.body
+		} catch (IllegalArgumentException e) {
+			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
+		}
 
 		if (Environment.current == Environment.DEVELOPMENT) {
-			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$response.body]"
+			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
 		} else {
 			log.debug "Fetched data for [$provider] with response code: [$response.code]."
 		}
@@ -122,14 +129,16 @@ abstract class DataService {
 			log.warn "Token expired for provider [$provider]"
 			throw new AuthenticationRequiredException(provider)
 		} else {
-			def parsedResponse
+			JSONElement parsedResponse
 			try {
-				parsedResponse = JSON.parse(response.getBody())
+				parsedResponse = JSON.parse(responseBody)
 			} catch (ConverterException e) {
 				log.error "Error parsing response data.", e
 				parsedResponse = new JSONObject()
 			}
+			// Helper dynamic methods.
 			parsedResponse.getMetaClass().getCode = { return response.code }
+			parsedResponse.getMetaClass().getRawBody = { return responseBody }
 			parsedResponse
 		}
 	}

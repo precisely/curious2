@@ -23,6 +23,8 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	User user2
 	OAuthAccount account
 
+	def grailsApplication
+
 	@Override
 	void setUp() {
 		super.setUp()
@@ -115,6 +117,15 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		withingsDataService.getDataDefault(account, new Date(), false)
 		assert Entry.count() > 0
+	}
+
+	void testSubscriptionParamsForHTTP() {
+		Map result = withingsDataService.getSubscriptionParameters(account, false)
+		assert result.callbackurl.contains("http://") == true
+
+		grailsApplication.config.grails.serverURL = "https://dev.wearecurio.us/"
+		result = withingsDataService.getSubscriptionParameters(account, false)
+		assert result.callbackurl.contains("http://") == true
 	}
 
 }
