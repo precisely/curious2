@@ -504,8 +504,9 @@ function refreshPage(callback) {
 	cacheNow();
 
 	var cachedObj = getEntryCache(cachedDate);
-	var cachedObjYesterday = getEntryCache(cachedDateYesterday);
-	var cachedObjTomorrow = getEntryCache(cachedDateTomorrow);
+	var cacheForYesterdayAndTomorrow = {};
+	cacheForYesterdayAndTomorrow[cachedDateYesterday.toUTCString()] = getEntryCache(cachedDateYesterday);
+	cacheForYesterdayAndTomorrow[cachedDateTomorrow.toUTCString()] = getEntryCache(cachedDateTomorrow);
 
 	if (cachedObj != null) {
 		console.log("refresh entries from cache");
@@ -529,20 +530,31 @@ function refreshPage(callback) {
 			});
 	}
 	
-	argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
-		date : [cachedDateYesterday.toUTCString(), cachedDateTomorrow.toUTCString()],
-		userId : currentUserId,
-		timeZoneName : timeZoneName
-	});
-	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
-		function(data) {
-			if (checkData(data)) {
-				for (var entryDate in data) {
-					setEntryCache(entryDate, data[entryDate]);
+	var otherDatesToFetch = [];
+	
+	for (var entryDate in cacheForYesterdayAndTomorrow) {
+		if (cacheForYesterdayAndTomorrow[entryDate] == null) {
+			console.log("");
+			otherDatesToFetch.push(entryDate);
+		}
+	}
+	
+	if (otherDatesToFetch.length > 0) {
+		argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
+			date : otherDatesToFetch,
+			userId : currentUserId,
+			timeZoneName : timeZoneName
+		});
+		$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
+			function(data) {
+				if (checkData(data)) {
+					for (var entryDate in data) {
+						setEntryCache(entryDate, data[entryDate]);
+					}
 				}
 			}
-		}
-	);
+		);
+	}
 }
 
 var currentEntryId = undefined;
