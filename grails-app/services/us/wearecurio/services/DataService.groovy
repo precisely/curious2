@@ -24,6 +24,7 @@ abstract class DataService {
 		log.debug(str)
 	}
 
+	def grailsApplication
 	def oauthService
 	def urlService
 

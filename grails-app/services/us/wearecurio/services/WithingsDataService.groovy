@@ -234,6 +234,7 @@ class WithingsDataService extends DataService {
 	 */
 	Map getSubscriptionParameters(OAuthAccount account, boolean subscription) {
 		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+		notifyURL = notifyURL.replace("https://", "http://")	// Providing Non SSL url to work with withings callback.
 
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
