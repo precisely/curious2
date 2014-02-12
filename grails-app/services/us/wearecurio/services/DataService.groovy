@@ -10,7 +10,6 @@ import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
-import org.scribe.utils.OAuthEncoder;
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -20,11 +19,11 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 abstract class DataService {
 
 	private static def log = LogFactory.getLog(this)
-	
+
 	static debug(str) {
 		log.debug(str)
 	}
-	
+
 	def oauthService
 	def urlService
 
@@ -95,6 +94,7 @@ abstract class DataService {
 	 * @param requestURL REQUIRED URL of the API resource.
 	 * @param method OPTIONAL HTTP method for API resource. Default "get". Can be: "post", "delete" etc.
 	 * @param queryParams OPTIONAL A map containing key value data as query string parameter.
+	 * 		  queryParams must not be url encoded. Since OAuth plugin do this.
 	 * @param requestHeader OPTIONAL A map containing key value data for request headers to be send.
 	 * @return Returns the parsed response in JSON format along with an additional dynamic method
 	 * `getCode()` to get status of the API call. Returned response can be either JSONObject or JSONArray
@@ -108,13 +108,8 @@ abstract class DataService {
 		checkNotNull(tokenInstance)
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
-		
-		if (queryParams) {
-			requestURL = urlService.makeQueryString(requestURL, queryParams)
-			requestURL = OAuthEncoder.encode(requestURL)
-		}
-		
-		Response response = oauthService."${method}${provider.capitalize()}Resource"(tokenInstance, requestURL)
+
+		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 
 		if (Environment.current == Environment.DEVELOPMENT) {
 			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$response.body]"
@@ -133,7 +128,6 @@ abstract class DataService {
 				log.error "Error parsing response data.", e
 				parsedResponse = new JSONObject()
 			}
-			debug "Response code:" + response.code
 			parsedResponse.getMetaClass().getCode = { return response.code }
 			parsedResponse
 		}
@@ -313,12 +307,12 @@ abstract class DataService {
 		}
 
 		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
-		
+
 		// regardless of the response, delete account so user can re-link it if needed
-		
+
 		debug "OAuthAccount deleted regardless of response code: " + parsedResponse.getCode()
 		OAuthAccount.delete(account)
-		
+
 		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
 
