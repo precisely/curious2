@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
-import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
@@ -62,7 +61,8 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Long lastPolled = account.lastPolled ? account.lastPolled.time / 1000L : null
+			Date logDate = forDay ?: account.lastPolled
+			Long lastPolled = logDate ? logDate.time / 1000L : null
 			if (lastPolled && !refreshAll)
 				queryParameters.put("startdate", lastPolled)
 
@@ -234,12 +234,13 @@ class WithingsDataService extends DataService {
 	 * @return Returns common parameters as map.
 	 */
 	Map getSubscriptionParameters(OAuthAccount account, boolean subscription) {
-		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, false)
+		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
+		notifyURL = notifyURL.replace("https://", "http://")	// Providing Non SSL url to work with withings callback.
 
 		Map queryParameters = ["action": subscription ? "subscribe" : "revoke"]
 		queryParameters.put("userid", account.accountId)
-		queryParameters.put("comment", OAuthEncoder.encode("Notify Curious app of new data"))
-		queryParameters.put("callbackurl", OAuthEncoder.encode(notifyURL))
+		queryParameters.put("comment", "Notify Curious app of new data")
+		queryParameters.put("callbackurl", notifyURL)	// Not encoding url since, OAuth plugin do it.
 
 		queryParameters
 	}
@@ -282,11 +283,19 @@ class WithingsDataService extends DataService {
 			debug "Successful subscription"
 			account.lastSubscribed = new Date()
 			account.save()
+			/**
+			 * Fetch & store previous data.
+			 * @TODO Needs to be done either by events or by grails async processing,
+			 * because this will keep user redirect blocked for longer time if there
+			 * are greater number of entries in previous data.
+			 */
+			log.info "Getting user's previous data."
+			getDataDefault(account, null, false)
 			return [success: true]
 		}
 
 		debug "Subscription failed, status: " + result["body"].status
-		
+
 		OAuthAccount.delete(account)	// confirms that subscription is not successful.
 		[success: false]
 	}
