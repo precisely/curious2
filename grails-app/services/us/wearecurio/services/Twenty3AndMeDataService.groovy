@@ -55,8 +55,8 @@ class Twenty3AndMeDataService extends DataService {
 		userInfo["profiles"]?.each { profile ->
 			String profileId = profile.id
 			byte[] dataBytes = getGenomesDataForProfile(tokenInstance, profileId).bytes
-			// Splitting bytes into chunks of 1MB to match default packet size of MYSQL Server
-			List dataChunkList = dataBytes.toList().collate(1024 * 1024)
+			// Splitting bytes into chunks of a bit less than 1MB to make sure it is less than the default packet size of MYSQL Server
+			List dataChunkList = dataBytes.toList().collate(1000 * 1024)
 
 			dataChunkList.eachWithIndex { dataChunk, index ->
 				Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileIdAndSequence(account, profileId, index)
