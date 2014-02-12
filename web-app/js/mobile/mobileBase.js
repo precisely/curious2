@@ -448,6 +448,11 @@ $(document).ready(function() {
 	});
 });
 
+/**
+ * Adding another dummy track page and then simulating a slide.
+ * Eventually removing the dummy trackpage that was added.
+ * @param left accepting sign +/- as a param to animate left or right
+ */
 function swipeTrackPage (left) {
 	$($('.trackDay')[0]).clone().appendTo('#trackPage');
 	$($('.trackDay')[1]).zIndex(2);
@@ -460,7 +465,6 @@ function swipeTrackPage (left) {
 			900,
 			function () {
 				$($('.trackDay')[1]).remove();
-				//initDatepicker(cachedDate);
 			}
 	);
 } 
@@ -1154,19 +1158,6 @@ function setPeopleData(data) {
 				this['id'], this['sex']);
 		setUserId(this['id']);
 		return true;
-	});
-}
-
-var initDatepicker = function (date) {
-	var $datepicker = $("#datepicker");
-	
-	$datepicker.datepicker({
-		defaultDate : date,
-		dateFormat : 'DD MM dd, yy',
-		showButtonPanel : true
-	}).val($.datepicker.formatDate('DD MM dd, yy', date)).datepicker("hide")
-			.change(function() {
-				refreshPage();
 	});
 }
 
