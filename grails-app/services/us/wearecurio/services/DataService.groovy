@@ -52,10 +52,12 @@ abstract class DataService {
 	 */
 	void checkNotNull(def instance) throws AuthenticationRequiredException {
 		if (!instance) {
+			debug "authentication required"
 			throw new AuthenticationRequiredException(provider)
 		}
 
 		if ((instance instanceof Token) && !instance.token) {
+			debug "authentication required"
 			throw new AuthenticationRequiredException(provider)
 		}
 	}

@@ -129,13 +129,7 @@ class MovesDataService extends DataService {
 	@Override
 	Map subscribe(Long userId) {
 		OAuthAccount account = getOAuthAccountInstance(userId)
-		try {
-			checkNotNull(account)
-		} catch (AuthenticationRequiredException e) {
-			e.printStackTrace()
-			debug "failed to subscribe to moves"
-			return [success: false]
-		}
+		checkNotNull(account)
 
 		[success: true]
 	}
