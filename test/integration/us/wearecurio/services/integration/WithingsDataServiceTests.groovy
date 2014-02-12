@@ -47,6 +47,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		withingsDataService.oauthService = [
 			getwithingsResourceWithQuerystringParams: { token, url, p, headers ->
 				return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
+			},
+			getwithingsResource: { token, url, body, header ->
+				return new Response(new MockedHttpURLConnection("""{"status":0,"body":{"updatetime":1385535542,"measuregrps":[]}}"""))
 			}
 		]
 
