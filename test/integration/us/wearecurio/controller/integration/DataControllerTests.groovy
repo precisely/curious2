@@ -71,7 +71,7 @@ class DataControllerTests extends CuriousControllerTestCase {
     }
 
 	@Test
-	void testGetListData() {
+	void testGetListDataSingleDate() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
@@ -91,6 +91,33 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
     }
+	
+	@Test
+	void testGetListDataMultipleDate() {
+		DataController controller = new DataController()
+		
+		controller.session.userId = userId
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+		
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+
+		controller.params['callback'] = 'callback'
+		controller.params['userId'] = userId.toString()
+		controller.params['timeZoneName'] = 'America/Los_Angeles'
+		controller.params['date'][0] = 'Wed, 1 Jul 2010 00:00:00 -0000'
+		controller.params['date'][1] = 'Thu, 2 Jul 2010 00:00:00 -0000'
+		controller.params['currentTime'] = 'Wed, 1 Jul 2010 10:00:00 -0000'
+		
+		controller.getListData()
+		println controller.response.contentAsString
+		assert controller.response.contentAsString.startsWith('callback([[{"id":')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
+	}
 
 	@Test
 	void testPlotData() {
