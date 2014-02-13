@@ -22,6 +22,7 @@ class Twenty3AndMeData {
 	}
 
 	static mapping = {
+		profileId column:'profile_id', index:'profile_id_index'
 	}
 
 	@Override

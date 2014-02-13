@@ -27,7 +27,7 @@ class MovesDataService extends DataService {
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 	
 	MovesDataService() {
-		provider = "moves"
+		provider = "Moves"
 		typeId = ThirdParty.MOVES
 	}
 

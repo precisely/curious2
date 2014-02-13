@@ -32,6 +32,7 @@ class MigrationService {
 	public static final long RECOMPUTE_FIRST_POSTS = 55L
 	public static final long CHANGE_NOTIFICATION_TABLE_NAME = 56L
 	public static final long ADD_TYPE_ID_FIELD_TO_NOTIFICATION_TABLE = 57L
+	public static final long REMOVE_23ANDME_UNIQUE_CONSTRAINT = 59L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -165,6 +166,9 @@ class MigrationService {
 		}
 		tryMigration(ADD_TYPE_ID_FIELD_TO_NOTIFICATION_TABLE) {
 			sql("ALTER TABLE third_party_notification ADD COLUMN type_id int(11) NOT NULL DEFAULT 2")
+		}
+		tryMigration(REMOVE_23ANDME_UNIQUE_CONSTRAINT) {
+			sql("DROP INDEX profile_id ON twenty3and_me_data")
 		}
 	}
 }

@@ -112,6 +112,7 @@ abstract class DataService {
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
 
+		def xyz = "${method}${provider}${methodSuffix}"
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 		String responseBody = ""
 

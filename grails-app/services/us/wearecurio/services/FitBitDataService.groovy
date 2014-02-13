@@ -36,7 +36,7 @@ class FitBitDataService extends DataService {
 	def urlService
 
 	FitBitDataService() {
-		provider = "fitbit"
+		provider = "FitBit"
 		typeId = ThirdParty.FITBIT
 		profileURL = String.format(BASE_URL, "/-/profile.json")
 	}

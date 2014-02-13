@@ -25,7 +25,7 @@ class WithingsDataService extends DataService {
 	static transactional = true
 
 	WithingsDataService() {
-		provider = "withings"
+		provider = "Withings"
 		typeId = ThirdParty.WITHINGS
 	}
 

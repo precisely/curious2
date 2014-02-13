@@ -4,6 +4,7 @@ import static org.junit.Assert.*
 
 import org.junit.*
 import org.scribe.model.Token
+import org.scribe.model.Response
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
@@ -13,6 +14,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.services.Twenty3AndMeDataService
+import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
@@ -60,4 +62,29 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	void testGetDataDefaultForValidData() {
+		/**
+		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
+		 * Out of 4 valid entries, three of them having calories & others not. So according to code, 6 entries for each
+		 * activity having calories & 5 entry for activity not having calories will be created. Total 23 entries will be created.
+		 * 
+		 * @see this in http://jsoneditoronline.org/index.html
+		 */
+
+		String profileResponse = """[{"profiles":[{"id":1}]}]"""
+		byte[] bytes = new byte[1100 * 1024]
+		for (int i = 0; i < bytes.length; ++i) {
+			bytes[i] = 32
+		}
+		String genomeResponse = new String(bytes, "UTF-8")
+		
+		twenty3AndMeDataService.oauthService = [getTwenty3AndMeResource: {token, url, param = [:], header = [:]->
+				return new Response(new MockedHttpURLConnection(url.startsWith(Twenty3AndMeDataService.GENOME_URL) ? genomeResponse : profileResponse))
+			}]
+
+		Map response = twenty3AndMeDataService.getDataDefault(account, new Date(), false)
+		assert response.success == true
+		
+		assert Twenty3AndMeData.countByAccountAndProfileId(account, 1) == 2
+	}
 }
