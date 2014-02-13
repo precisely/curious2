@@ -45,10 +45,10 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testSubscribeIfSuccess() {
 		withingsDataService.oauthService = [
-			getwithingsResourceWithQuerystringParams: { token, url, p, headers ->
+			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
 				return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
 			},
-			getwithingsResource: { token, url, body, header ->
+			getWithingsResource: { token, url, body, header ->
 				return new Response(new MockedHttpURLConnection("""{"status":0,"body":{"updatetime":1385535542,"measuregrps":[]}}"""))
 			}
 		]
@@ -59,7 +59,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testSubscribeIfFail() {
 		withingsDataService.oauthService = [
-			getwithingsResourceWithQuerystringParams: { token, url, p, headers ->
+			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
 				return new Response(new MockedHttpURLConnection("""{"status": 2554}"""))
 			}
 		]
@@ -75,7 +75,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testUnsubscribeWithOAuthAccountExists() {
 		withingsDataService.oauthService = [
-			getwithingsResourceWithQuerystringParams: { token, url, p, headers ->
+			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
 				return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
 			}
 		]
@@ -88,7 +88,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void testGetDataDefaultWithFailureStatusCode() {
 		// When withings returns a non-zero status code
 		withingsDataService.oauthService = [
-			getwithingsResource: { token, url, body, header ->
+			getWithingsResource: { token, url, body, header ->
 				return new Response(new MockedHttpURLConnection("""{"status": 2555}"""))
 			}
 		]
@@ -101,7 +101,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void testGetDataDefaultWithUnparsableResponse() {
 		// When un-parsable string returned
 		withingsDataService.oauthService = [
-			getwithingsResource: { token, url, body, header ->
+			getWithingsResource: { token, url, body, header ->
 				return new Response(new MockedHttpURLConnection("""status = unparsable-response"""))
 			}
 		]
@@ -113,7 +113,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void testGetDataDefault() {
 		String mockedResponseData = """{"status":0,"body":{"updatetime":1385535542,"measuregrps":[{"grpid":162026288,"attrib":2,"date":1385386484,"category":1,"comment":"Hello","measures":[{"value":6500,"type":1,"unit":-2}]},{"grpid":162028086,"attrib":2,"date":1385300615,"category":1,"comment":"Nothing to comment","measures":[{"value":114,"type":9,"unit":0},{"value":113,"type":10,"unit":0},{"value":74,"type":11,"unit":0}]},{"grpid":129575271,"attrib":2,"date":1372931328,"category":1,"comment":"sa","measures":[{"value":170,"type":4,"unit":-2}]},{"grpid":129575311,"attrib":2,"date":1372844945,"category":1,"measures":[{"value":17700,"type":1,"unit":-2}]},{"grpid":129575122,"attrib":2,"date":1372844830,"category":1,"comment":"sa","measures":[{"value":6300,"type":1,"unit":-2}]},{"grpid":128995279,"attrib":0,"date":1372706279,"category":1,"measures":[{"value":84,"type":9,"unit":0},{"value":138,"type":10,"unit":0},{"value":77,"type":11,"unit":0}]},{"grpid":128995003,"attrib":0,"date":1372706125,"category":1,"measures":[{"value":65861,"type":1,"unit":-3}]}]}}"""
 		withingsDataService.oauthService = [
-			getwithingsResource: { token, url, body, header ->
+			getWithingsResource: { token, url, body, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]

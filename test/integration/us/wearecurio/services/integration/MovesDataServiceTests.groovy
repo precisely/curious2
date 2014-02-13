@@ -66,7 +66,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617Z","endTime":"20121212T100051Z","activities":[{"activity":"wlk","startTime":"20121212T074804Z","endTime":"20121212T075234Z","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051Z","endTime":"20121212T100715Z","activities":[{"activity":"wlk","startTime":"20121212T100051Z","endTime":"20121212T100715Z","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638Z","endTime":"20121212T160744Z","activities":[{"activity":"trp","startTime":"20121212T153638Z","endTime":"20121212T155321Z","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322Z","endTime":"20121212T160744Z","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
 
-		movesDataService.oauthService = [getmovesResource: {token, url, param, header ->
+		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
@@ -84,7 +84,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 	void testPollIfNullDataInSegments() {
 		String parsedResponse = """[{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
 
-		movesDataService.oauthService = [getmovesResource: {token, url, params, header ->
+		movesDataService.oauthService = [getMovesResource: {token, url, params, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
@@ -100,7 +100,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	void testPollWithMovesAPIForAuthFail() {
 		// Testing with mock
-		movesDataService.oauthService = [getmovesResource: {token, url, p, header ->
+		movesDataService.oauthService = [getMovesResource: {token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("""{"error": "expired_access_token"}""", 201))
 			}]
 

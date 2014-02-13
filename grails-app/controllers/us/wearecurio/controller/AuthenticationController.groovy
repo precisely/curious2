@@ -79,7 +79,7 @@ class AuthenticationController extends SessionController {
 
 		session.returnURIWithToken = returnURI.substring(1)	// Removing "/" from beginning since serverURL is configured with "/" at last.
 		// Redirecting to oauth plugin controller
-		redirect(url: toUrl(action: "authenticate", controller: "oauth", params: [provider: provider]))
+		redirect(url: toUrl(action: "authenticate", controller: "oauth", params: [provider: provider.toLowerCase()]))
 		return
 	}
 

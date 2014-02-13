@@ -39,7 +39,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	void testSubscribeIfSuccess() {
 		fitBitDataService.oauthService = [
-			postfitbitResource: { token, url, p, header ->
+			postFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}"))
 			}
 		]
@@ -49,7 +49,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	void testSubscribeIfFail() {
 		fitBitDataService.oauthService = [
-			postfitbitResource:{ token, url, p, header ->
+			postFitBitResource:{ token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}", 202))
 			}
 		]
@@ -71,7 +71,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	void testUnsubscribeWithOAuthAccountExists() {
 		fitBitDataService.oauthService = [
-			deletefitbitResource: { token, url, p, header ->
+			deleteFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection("{}", 204))
 			}
 		]
@@ -90,7 +90,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	void testGetDataDefaultWithFailureStatusCode() {
 		fitBitDataService.oauthService = [
-			getfitbitResource: { token, url, p, header ->
+			getFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(401))
 			}
 		]
@@ -105,7 +105,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	void testGetDataDefault() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		fitBitDataService.oauthService = [
-			getfitbitResource: { token, url, p, header ->
+			getFitBitResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
