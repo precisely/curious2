@@ -51,6 +51,9 @@ class HomeController extends DataController {
 		Map result = withingsDataService.subscribe(userId)
 		if (result.success) {
 			debug "Succeeded in subscribing"
+			task { // poll withings offline
+				withingsDataService.poll(userId)
+			}
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
@@ -111,6 +114,9 @@ class HomeController extends DataController {
 
 		Map result = movesDataService.subscribe(userId)
 		if (result.success) {
+			task { // poll withings offline
+				movesDataService.poll(userId)
+			}
 			debug "Succeeded in subscribing"
 			flash.message = message(code: "moves.subscribe.success.message")
 		} else {
@@ -167,6 +173,9 @@ class HomeController extends DataController {
 		Map result = fitBitDataService.subscribe(userId)
 
 		if(result.success) {
+			task { // poll withings offline
+				fitBitDataService.poll(userId)
+			}
 			debug "Succeeded in subscribing"
 			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
 		} else {

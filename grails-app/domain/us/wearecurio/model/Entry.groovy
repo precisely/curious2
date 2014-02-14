@@ -339,7 +339,7 @@ class Entry {
 				tweetId:m['tweetId'],
 				date:m['date'],
 				timeZoneId:timeZoneId,
-				datePrecisionSecs:m['datePrecisionSecs'],
+				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
 				units:m['units']==null?'':m['units'],

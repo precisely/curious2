@@ -130,7 +130,6 @@ abstract class DataService {
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
 
-		def xyz = "${method}${provider}${methodSuffix}"
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 		String responseBody = ""
 
@@ -258,6 +257,18 @@ abstract class DataService {
 			DataService dataService = account.getDataService()
 			
 			dataService.poll(account)
+		}
+	}
+
+	/**
+	 * @param account
+	 * @return
+	 */
+	boolean poll(Long userId) {
+		def accounts = OAuthAccount.findAllByUserIdAndTypeId(userId, typeId)
+		
+		for (OAuthAccount account in accounts) {
+			this.poll(account)
 		}
 	}
 

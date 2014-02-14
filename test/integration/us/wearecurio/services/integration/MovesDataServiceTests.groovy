@@ -70,12 +70,18 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
-		Map response = movesDataService.getDataDefault(account, new Date(), false)
+		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
+		def entries = Entry.findAllByUserId(user.getId())
+		for (def entry in entries) {
+			if (entry.getAmount().intValue() == 1353) {
+				assert entry.toString().endsWith("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:run, amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null)")
+			}
+		}
 		assert Entry.count() == 23
 
 		// Ensuring entries of the same day will be replaced with new entries.
-		response = movesDataService.getDataDefault(account, new Date(), false)
+		response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 		assert Entry.count() == 23
 
@@ -88,13 +94,13 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection(parsedResponse))
 			}]
 
-		Map response = movesDataService.getDataDefault(account, new Date(), false)
+		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 		assert Entry.count() == 0
 	}
 
 	void testPollWithMovesAPIDirectly() {
-		Map response = movesDataService.getDataDefault(account, new Date(), false)
+		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 	}
 
@@ -104,7 +110,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				return new Response(new MockedHttpURLConnection("""{"error": "expired_access_token"}""", 201))
 			}]
 
-		Map response = movesDataService.getDataDefault(account, new Date(), false)
+		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == false
 
 		// Testing live after token expires
@@ -113,7 +119,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 		movesDataService.oauthService = oauthService
 		try {
-			movesDataService.getDataDefault(account, new Date(), false)
+			movesDataService.getDataDefault(account, null, false)
 		} catch (e) {
 			assert e.cause instanceof AuthenticationRequiredException
 		}

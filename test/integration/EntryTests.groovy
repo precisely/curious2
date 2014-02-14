@@ -714,7 +714,7 @@ class EntryTests extends GroovyTestCase {
 		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
 		
 		assert breadResult == 9519
-		assert circusResult == 62217
+		assert circusResult == 63215
 	}
 	
 	@Test
@@ -743,7 +743,7 @@ class EntryTests extends GroovyTestCase {
 		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
 		
 		assert breadResult == 11968
-		assert circusResult == 57105
+		assert circusResult == 58651
 	}
 	
 	@Test

@@ -106,7 +106,7 @@ abstract class TagUnitMap {
 		}
 
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
-			comment: comment, setName: setName, timeZoneId: timeZoneId]
+			comment: comment, setName: setName, timeZoneId: timeZoneId, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 		parsedEntry.putAll(args)
 
 		Entry.create(userId, parsedEntry, null)
