@@ -265,7 +265,7 @@ function getAppCacheData(key) {
 		try {
 			return JSON.parse(localStorage[key]);
 		} catch(err) {
-			console.log("Unable to fetch data from cache. Error: "+err);
+			console.log('Unable to fetch data from cache. Error: '+err);
 			return null;
 		}
 	}
@@ -274,7 +274,7 @@ function getAppCacheData(key) {
 function setAppCacheData(key,value) {
 	if (supportsLocalStorage()) {
 		try {
-			if (typeof value == "object") {
+			if (typeof value == 'object') {
 				localStorage[key] = JSON.stringify(value);
 			} else {
 				localStorage[key] = value;
@@ -282,27 +282,101 @@ function setAppCacheData(key,value) {
 			
 			return true;
 		} catch(err) {
-			console.log("Unable to save data to cache. Error: "+err);
+			console.log('Unable to save data to cache. Error: '+err);
 			return false;
 		}
 	}
 }
 
+/**
+ * Returning the dates for which the entries are cached
+ * 
+ * @returns {Array}
+ */
+function getEntryBucket() {
+	var entryBucketKey = 'appCache.entryCacheBucket';
+	var entryBucket = getAppCacheData(entryBucketKey); 
+	if (entryBucket == null) {
+		entryBucket = [];
+		// Fallback, recreating bucket from localStorage
+		// for installations that already have cached data
+		// but no buckets
+		for (var prop in localStorage) {
+			if (prop.indexOf('appCache.entryCache.') > -1) {
+				//Pushing just the date part
+				entryBucket.push(prop.substring(20));
+			}
+		}
+		setEntryBucket(entryBucket);
+	}
+	return entryBucket;
+}
+
+function setEntryBucket(entryBucket) {
+	var entryBucketKey = 'appCache.entryCacheBucket';
+	setAppCacheData(entryBucketKey, entryBucket);
+}
+
+/**
+ * Helper method to confirm if an entry already exists
+ * in the bucket.
+ * @param dateStr mm/dd/yyyy date for which the check needs to be made
+ * @returns {Boolean} returns true if the cache exists
+ */
+function isEntryCached(dateStr) {
+	var entryBucket = getEntryBucket();
+	for (var i=0; i<entryBucket.length; i++) {
+        if (entryBucket[i] === dateStr) {
+            return true;
+        }
+    }
+	return false;
+}
+
+/**
+ * Helper method, fetches the cached entries for a given date
+ * @param date
+ * @returns List of entries
+ */
 function getEntryCache(date) {
-	var dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
-	return getAppCacheData("appCache.entryCache."+dateStr);
+	var dateStr = (date.getMonth()+1) + '/' + date.getDate() + '/' + (date.getYear() + 1900);
+	return getAppCacheData('appCache.entryCache.'+dateStr);
 	
 }
 
+/**
+ * Storing the entries for a given day in a local entry cache.
+ * The entry cache has an upper limit of 10. Only the last 10
+ * days that were fetched get cached 
+ * @param date 
+ * @param entries Entries for the above date
+ * @returns {Boolean}
+ */
 function setEntryCache(date,entries) {
 	var dateStr;
-	if (typeof date == "object") {
-		dateStr = (date.getMonth()+1) + "/" + date.getDate() + "/" + (date.getYear() + 1900);
+	var entryBucket = getEntryBucket();
+	
+	if (typeof date == 'object') {
+		var month = ("0" + (date.getMonth() + 1)).slice(-2);
+		var day = ("0" + date.getDate()).slice(-2);
+		dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
 	} else {
 		dateStr = date;
 	}
-
-	return setAppCacheData("appCache.entryCache."+dateStr,entries);
+	
+	if (setAppCacheData('appCache.entryCache.'+dateStr,entries)) {
+		if (!isEntryCached(dateStr)) {
+			entryBucket.push(dateStr);
+			if (entryBucket.length > 10) {
+				localStorage.removeItem('appCache.entryCache.'+entryBucket[0]);
+				entryBucket.shift();
+			}
+			setEntryBucket(entryBucket);
+		}
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function clearEntryCache() {
@@ -464,10 +538,10 @@ function swipeTrackPage (left) {
 	if(left) {
 		$originalPage.css({left: width+'px'});
 		dummyPageDirection = '-';
-		changeDate(-1);
+		changeDate(1);
 	} else {
 		$originalPage.css({left: '-'+width+'px'});
-		changeDate(1);
+		changeDate(+1);
 	}
 	$dummyTrackPage.animate(
 			{
@@ -541,6 +615,7 @@ function refreshPage(callback) {
 					console.log("refresh entries from get list");
 					refreshEntries(data, true);
 					dataReady = true;
+					setEntryCache(cachedDate, data);
 					if (typeof callback != 'undefined') {
 						callback();
 					}
