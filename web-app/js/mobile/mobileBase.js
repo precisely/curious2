@@ -439,12 +439,13 @@ $(document).ready(function() {
 	}
 
 	$('#loginlogo').show();
+	
 	$('body').on('swiperight', function() {
 		console.log('Swipe event right');
-		swipeTrackPage("");
+		swipeTrackPage(false);
 	}).on("swipeleft", function() {
 		console.log("Swipe event left");		
-		swipeTrackPage("-");
+		swipeTrackPage(true);
 	});
 });
 
@@ -454,18 +455,35 @@ $(document).ready(function() {
  * @param left accepting sign +/- as a param to animate left or right
  */
 function swipeTrackPage (left) {
-	$($('.trackDay')[0]).clone().appendTo('#trackPage');
-	$($('.trackDay')[1]).zIndex(2);
-	changeDate(-parseInt(left+1));
-	$($('.trackDay')[1]).animate(
+	var $originalPage = $($('.trackDay')[0]); 
+	var width = $originalPage.width();
+	$originalPage.clone().appendTo('#trackPage');
+	var $dummyTrackPage = $($('.trackDay')[1]);
+	$dummyTrackPage.css({left: '0px'});
+	var dummyPageDirection = "";
+	if(left) {
+		$originalPage.css({left: width+'px'});
+		dummyPageDirection = '-';
+		changeDate(-1);
+	} else {
+		$originalPage.css({left: '-'+width+'px'});
+		changeDate(1);
+	}
+	$dummyTrackPage.animate(
 			{
-				left: left + $(window).width() + 'px'
-				//left: "-300px"
+				left: dummyPageDirection+width+'px'
 			},
 			900,
 			function () {
-				$($('.trackDay')[1]).remove();
+				$dummyTrackPage.remove();
 			}
+	);
+	
+	$originalPage.animate(
+		{
+			left: '0px'
+		},
+		900
 	);
 } 
 
