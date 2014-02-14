@@ -32,10 +32,10 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
 		Long userId = account.userId
 
-		forDay = forDay ?: new Date()
+		startDate = startDate ?: new Date() ?: earlyStartDate
 
 		Integer timeZoneId = User.getTimeZoneId(userId)
 
@@ -45,7 +45,7 @@ class MovesDataService extends DataService {
 
 		Token tokenInstance = account.tokenInstance
 
-		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + forDay.format("yyyy-MM-dd")
+		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + startDate.format("yyyy-MM-dd")
 
 		def parsedResponse = getResponse(tokenInstance, pollURL)
 

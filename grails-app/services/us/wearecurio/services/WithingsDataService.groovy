@@ -42,13 +42,14 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
 		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0
 		boolean more = true
 		long serverTimestamp = 0
 		Long userId = account.getUserId()
+		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
@@ -61,7 +62,7 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Date logDate = forDay ?: account.lastPolled
+			Date logDate = startDate ?: account.lastPolled
 			Long lastPolled = logDate ? logDate.time / 1000L : null
 			if (lastPolled && !refreshAll)
 				queryParameters.put("startdate", lastPolled)

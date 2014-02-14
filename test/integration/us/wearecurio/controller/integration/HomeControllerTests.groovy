@@ -17,7 +17,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	PlotData plotData
 	Discussion discussion
 	def withingsDataServiceMock
-	
+
 	@Before
 	void setUp() {
 		super.setUp()
@@ -235,6 +235,31 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert modelAndView.model['discussionId'].toString().equals(discussion.getId().toString())
 		assert modelAndView.model['username'].equals(user.getUsername())
 		assert modelAndView.getViewName().equals("/home/discuss")
+	}
+	
+	@Test
+	void testPollDevices() {
+		def account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
+			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+
+		Utils.save(account, true)
+		
+		def account2 = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
+			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+
+		Utils.save(account2, true)
+		
+		HomeController controller = new HomeController()
+		
+		controller.session.userId = user.getId()
+		
+		controller.polldevices()
+
+		def modelAndView = controller.modelAndView
+		
+		def rU = controller.response.redirectedUrl
+		
+		assert rU.endsWith("/home/index")
 	}
 	
 	@Test

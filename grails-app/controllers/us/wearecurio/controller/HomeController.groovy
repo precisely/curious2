@@ -7,6 +7,7 @@ import org.scribe.oauth.OAuthService
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
+import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
@@ -145,7 +146,7 @@ class HomeController extends DataController {
 			return
 		}
 
-		withingsDataService.poll(user.getId())
+		DataService.pollAllForUserId(user.getId())
 		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}

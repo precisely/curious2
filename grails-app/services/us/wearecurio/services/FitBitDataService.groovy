@@ -139,9 +139,10 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
 		String accountId = account.accountId
-		String forDate = formatter.format(forDay)
+		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
+		String forDate = formatter.format(startDate)
 		String setName = SET_NAME + " " + forDate
 
 		Map args = [setName: setName, comment: COMMENT]
@@ -150,10 +151,10 @@ class FitBitDataService extends DataService {
 
 		Integer timeZoneId = User.getTimeZoneId(userId)
 
-		getDataActivities(account, forDay, false)
-		getDataBody(account, forDay, false)
-		getDataFoods(account, forDay, false)
-		getDataSleep(account, forDay, false)
+		getDataActivities(account, startDate, false)
+		getDataBody(account, startDate, false)
+		getDataFoods(account, startDate, false)
+		getDataSleep(account, startDate, false)
 
 		[success: true]
 	}

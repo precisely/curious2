@@ -48,9 +48,10 @@ class Twenty3AndMeDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date notificationDate, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
 		Token tokenInstance = account.tokenInstance
 		JSONObject userInfo = getUserProfile(tokenInstance)
+		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 
 		userInfo["profiles"]?.each { profile ->
 			String profileId = profile.id

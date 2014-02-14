@@ -1,5 +1,8 @@
 package us.wearecurio.services
 
+import java.util.Map
+import javax.annotation.PostConstruct
+
 import grails.converters.JSON
 import grails.util.Environment
 import javassist.NotFoundException
@@ -43,6 +46,21 @@ abstract class DataService {
 
 	String unsubscribeURL
 
+	private static Map<ThirdParty, DataService> dataServiceMap = [:]
+	
+	// very early start date
+	static final Date earlyStartDate = new Date(-5364658800L)
+
+	// register data service for lookup	
+	@PostConstruct
+	void registerDataService() {
+		dataServiceMap[typeId] = this
+	}
+	
+	static getDataServiceForTypeId(ThirdParty typeId) {
+		return dataServiceMap[typeId]
+	}
+
 	/**
 	 * Used to check if certain instances are not null. And if null
 	 * throw AuthenticationRequiredException for authentication.
@@ -76,11 +94,11 @@ abstract class DataService {
 	 * Used to process actual data which may depends on service to service for different
 	 * third party. Needs to be implemented on each services.
 	 * @param account Instance of OAuthAccount
-	 * @param notificationDate	Date for which data needs to be polled.
+	 * @param startDate  Start date for polling or null to get all new records
 	 * @param refreshAll Boolean field used to clear all existing records.
 	 * @return	Returns a map with required data.
 	 */
-	abstract Map getDataDefault(OAuthAccount account, Date notificationDate, boolean refreshAll)
+	abstract Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll)
 
 	/**
 	 * Returns the OAuthAccount instance for given userId.
@@ -233,19 +251,33 @@ abstract class DataService {
 	 * @param account
 	 * @return
 	 */
+	static boolean pollAllForUserId(Long userId) {
+		def accounts = OAuthAccount.findAllByUserId(userId)
+		
+		for (OAuthAccount account in accounts) {
+			DataService dataService = account.getDataService()
+			
+			dataService.poll(account)
+		}
+	}
+
+	/**
+	 * @param account
+	 * @return
+	 */
 	boolean poll(OAuthAccount account) {
 		String accountId = account.accountId
 
-		Long now = new Date().getTime()
+		Long nowTime = new Date().getTime()
 
 		Long lastPoll = lastPollTimestamps.get(accountId)
 
-		if (lastPoll && now - lastPoll < 500) { // don't allow polling faster than once every 500ms
+		if (lastPoll && nowTime - lastPoll < 500) { // don't allow polling faster than once every 500ms
 			log.warn "Polling faster than 500ms for $provider with accountId: [$accountId]"
 			return false
 		}
 
-		getDataDefault(account, false)
+		getDataDefault(account, null, false)
 	}
 
 	/**
@@ -253,7 +285,7 @@ abstract class DataService {
 	 */
 	void pollAll() {
 		OAuthAccount.findAllByTypeId(typeId).each {
-			getDataDefault(it, it.lastPolled, false)
+			getDataDefault(it, null, false)
 		}
 	}
 

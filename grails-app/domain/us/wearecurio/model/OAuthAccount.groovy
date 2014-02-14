@@ -2,8 +2,11 @@ package us.wearecurio.model
 
 import static us.wearecurio.model.ThirdParty.*
 
+import java.util.Map
+
 import org.scribe.model.Token
 
+import us.wearecurio.services.DataService
 import us.wearecurio.utility.Utils
 
 class OAuthAccount {
@@ -27,7 +30,7 @@ class OAuthAccount {
 		refreshToken nullable: true
 		//typeId inList: []
 	}
-
+	
 	static def createOrUpdate(ThirdParty type, Long userId, String accountId, String accessToken, String accessSecret) {
 		int c = 0
 
@@ -48,6 +51,10 @@ class OAuthAccount {
 
 	static def delete(OAuthAccount account) {
 		account.delete()
+	}
+	
+	DataService getDataService() {
+		return DataService.getDataServiceForTypeId(typeId)
 	}
 
 	@Override
