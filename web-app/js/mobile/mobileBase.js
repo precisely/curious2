@@ -538,10 +538,10 @@ function swipeTrackPage (left) {
 	if(left) {
 		$originalPage.css({left: width+'px'});
 		dummyPageDirection = '-';
-		changeDate(1);
+		changeDate(+1);
 	} else {
 		$originalPage.css({left: '-'+width+'px'});
-		changeDate(+1);
+		changeDate(-1);
 	}
 	$dummyTrackPage.animate(
 			{
