@@ -355,9 +355,24 @@ class DataController extends LoginController {
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(params.date) : params.timeZoneName
 		
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
-
-		def entries = Entry.fetchListData(user, timeZoneName, parseDate(params.date), currentTime)
 		
+		def entries
+		
+		def dateList = params.list("date[]")
+		dateList = dateList.size()>0?dateList:params.list("date")
+		debug "DatatController.getListData() "+dateList.dump()
+		if (dateList.size() <= 1) {
+			entries = Entry.fetchListData(user, timeZoneName, parseDate(params.date), currentTime)
+		} else {
+			entries = [:]
+			dateList.each { date ->
+				date = parseDate(date)
+				def data = Entry.fetchListData(user, timeZoneName, date, currentTime)
+				entries = entries << ["${date.format('MM/dd/yyyy')}":data]
+			}
+		}
+
+		debug "DatatController.getListData() Returning entries "+entries.dump()
 		// skip continuous repeat entries with entries within the usage threshold
 
 		renderJSONGet(entries)
