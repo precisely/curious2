@@ -1717,7 +1717,7 @@ class Entry {
 			averageAngle = ((averageAngle % twoPi) + twoPi) % twoPi
 		}
 		
-		return (int) Math.round((averageAngle / twoPi) * 86400.0d)
+		return (int) (Math.round((averageAngle / twoPi) * 86400.0d)) % 86400
 	}	
 	
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
