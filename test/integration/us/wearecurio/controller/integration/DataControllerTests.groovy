@@ -28,6 +28,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Date endTime
 	String timeZone // simulated server time zone
 	Date baseDate
+	Date tomorrowBaseDate
+	Date tomorrowCurrentTime
 	Date winterCurrentTime
 	Date winterBaseDate
 
@@ -46,6 +48,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
+		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
+		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 3:30 pm")
 		winterCurrentTime = dateFormat.parse("December 1, 2010 3:30 pm")
 		winterBaseDate = dateFormat.parse("December 1, 2010 12:00 am")
 	}
@@ -71,7 +75,7 @@ class DataControllerTests extends CuriousControllerTestCase {
     }
 
 	@Test
-	void testGetListData() {
+	void testGetListDataSingleDate() {
 		DataController controller = new DataController()
 		
 		controller.session.userId = userId
@@ -91,6 +95,37 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
     }
+	
+	@Test
+	void testGetListDataMultipleDate() {
+		DataController controller = new DataController()
+		
+		controller.session.userId = userId
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+		
+		entry = Entry.create(userId, Entry.parse(tomorrowCurrentTime, timeZone, "bread 7", tomorrowBaseDate, true), null)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null)")
+
+		controller.params['callback'] = 'callback'
+		controller.params['userId'] = userId.toString()
+		controller.params['timeZoneName'] = 'America/Los_Angeles'
+		controller.params['date'] = []
+		controller.params['date'][0] = 'Wed, 1 Jul 2010 00:00:00 -0000'
+		controller.params['date'][1] = 'Thu, 2 Jul 2010 00:00:00 -0000'
+		controller.params['currentTime'] = 'Wed, 1 Jul 2010 10:00:00 -0000'
+		
+		controller.getListData()
+		println controller.response.contentAsString
+		def x = controller.response.contentAsString
+		assert controller.response.contentAsString.startsWith('callback({"06/30/2010":[{"')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')
+		assert controller.response.contentAsString.contains('"07/01/2010":[{"')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')
+	}
 
 	@Test
 	void testPlotData() {
