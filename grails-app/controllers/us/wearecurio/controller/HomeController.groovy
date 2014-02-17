@@ -263,8 +263,10 @@ class HomeController extends DataController {
 			def k = param.key
 			def v = param.value
 			
-			if (k.endsWith("_profile"))
-				p[k.substring(0, k.length() - 8)] = v
+			int i = k.indexOf("_profile_")
+			
+			if (i > 0)
+				p[k.substring(0, i)] = v
 			else
 				p[k] = v
 		}

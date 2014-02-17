@@ -33,11 +33,16 @@ $(function() {
             return true;
         });
     });
+    // defeat the damn browser autofill
+    $("#username").val("${user.username}");
+    $("#oldPassword").val("");
+    $("#password").val("");
+    $("#verify_password").val("");
 	$("#updateUserPreferences").submit(function(e) {
 		e.preventDefault();
 		var form = this;
-		var newUsername = $("#username_profile").val();
-		var newPw = $("#password_profile").val();
+		var newUsername = $("#username").val();
+		var newPw = $("#password").val();
 		if (origUsername != newUsername) {
 			if (newPw.length == 0) {
 				alert("If you change the username, you must set the password as well");
@@ -45,7 +50,7 @@ $(function() {
 			}
 		}
 		if (newPw.length > 0) {
-			if (newPw != $("#verify_password_profile").val()) {
+			if (newPw != $("#verify_password").val()) {
 				alert("New password and verification do not match");
 				return;
 			}
@@ -54,6 +59,8 @@ $(function() {
 	});
 });
 </r:script>
+
+<% randTag = "" + ((java.lang.System.currentTimeMillis() * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1)) %>
 
 <style type="text/css">
 	input.savebutton {
@@ -95,7 +102,7 @@ $(function() {
 		</div>
 		<div class="span9 profile-container">
 			<div id="addData">
-				<g:form name="updateUserPreferences" action="doupdateuserpreferences">
+				<form action="/home/doupdateuserpreferences" method="post" name="updateUserPreferences" id="updateUserPreferences" autocomplete="off" >
 					<g:hiddenField name="precontroller" value="${precontroller}" />
 					<g:hiddenField name="preaction" value="${preaction}" />
 					<g:hiddenField name="userId" value="${user.id}" />
@@ -103,22 +110,22 @@ $(function() {
 						<tbody>
 							<tr>
 								<td><label for="Username">Username</label></td>
-								<td><g:textField name="username_profile" value="${user.username}" autofocus="" required="" /></td>
+								<td><g:textField name="username" value="${user.username}" autofocus="" required="" autocomplete="off" /></td>
 							</tr>
 
 							<tr>
 								<td><label for="oldPassword">Old password</label></td>
-								<td><g:passwordField name="oldPassword_profile" value="" /></td>
+								<td><g:passwordField name="oldPassword" value="z" autocomplete="off"/></td>
 							</tr>
 
 							<tr>
 								<td><label for="Password">New password</label></td>
-								<td><g:passwordField name="password_profile" value="" /></td>
+								<td><g:passwordField name="password" value="z" autocomplete="off" /></td>
 							</tr>
 
 							<tr>
 								<td><label for="Verify Password">Verify password</label></td>
-								<td><g:passwordField name="verify_password_profile" value="" /></td>
+								<td><g:passwordField name="verify_password" value="" /></td>
 							</tr>
 
 							<tr>
@@ -224,7 +231,7 @@ $(function() {
 							</tr>
 						</tbody>
 					</table>
-				</g:form>
+				</form>
 			</div>
 		</div> <!-- .span9 ends -->
 	</div>
