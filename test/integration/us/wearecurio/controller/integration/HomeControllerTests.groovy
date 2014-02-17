@@ -271,6 +271,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 		
 		controller.registerwithings()
+		
 		assert controller.flash.message.contains("Successfully linked Withings account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}

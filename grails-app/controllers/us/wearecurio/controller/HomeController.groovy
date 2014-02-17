@@ -56,10 +56,8 @@ class HomeController extends DataController {
 			debug "Failed to subscribe: " + (result.message ?: "")
 			flash.message = g.message(code: "withings.subscribe.failure.message", args: [result.message ?: ""])
 		}
-
-		// TODO Needs to be redirect instead of render, since this will keep user's url to /home/registerwithings after subscription.
-		render(view:"/home/userpreferences",
-				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
+		
+		redirect(url: session.deniedURI)
 	}
 
 	def unregisterwithings() {
@@ -173,9 +171,7 @@ class HomeController extends DataController {
 			debug "Failure in unsubscribing:" + result.message
 			flash.message = g.message(code: "fitbit.subscribe.failure.message", args: [result.message ?: ""])
 		}
-
-		render(view:"/home/userpreferences",
-				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user])
+		redirect(url: session.deniedURI)
 	}
 
 	def unregisterfitbit() {
