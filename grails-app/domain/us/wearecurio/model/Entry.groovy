@@ -434,26 +434,29 @@ class Entry {
 	}
 
 	private Entry createRepeatOnBaseDate(Date baseDate, Map m, TagStatsRecord record, int addDays) {
+		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
+			return null
+		}
+		
 		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
 		LocalTime mLocalTime = new DateTime(m['date'], dateTimeZone).toLocalTime()
 		LocalDate baseLocalDate = new DateTime(baseDate, dateTimeZone).toLocalDate()
 		DateTime repeatEndDateTime = new DateTime(this.repeatEnd, dateTimeZone)
 		LocalTime repeatEndLocalTime = repeatEndDateTime.toLocalTime()
 		LocalDate repeatEndLocalDate = repeatEndDateTime.toLocalDate()
-		Date tomorrowRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime).toDate()
+		Date tomorrowRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime, dateTimeZone).toDate()
 
 		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
 
-		DateTime newDateTime = baseLocalDate.toDateTime(mLocalTime, dateTimeZone)
-		DateTime prevDateTime = baseLocalDate.minusDays(1).toDateTime(mLocalTime, dateTimeZone)
+		Date newDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
+		Date prevDate = baseLocalDate.minusDays(1).toDateTime(mLocalTime, dateTimeZone).toDate()
 		
-		if (this.repeatEnd == null || newDateTime.getMillis() <= tomorrowRepeatEnd.getTime()) {
-			m['date'] = newDateTime.toDate()
+		if (this.repeatEnd == null || newDate < tomorrowRepeatEnd) {
+			m['date'] = newDate
+			m['repeatEnd'] = this.repeatEnd
 
 			def newEntry = create(this.userId, m, record)
 
-			Date prevDate = prevDateTime.toDate()
-			
 			this.setRepeatEnd(prevDate)
 
 			Utils.save(this, true)
@@ -533,6 +536,10 @@ class Entry {
 			updateDurationEntry.updateDurationEntry()
 		}
 	}
+	
+	public boolean isDeleted() {
+		return userId == 0L
+	}
 
 	/**
 	 * Delete a ghost entry on a given baseDate and for a current date
@@ -544,8 +551,7 @@ class Entry {
 		long entryTime = entry.getDate().getTime()
 		long baseTime = baseDate.getTime()
 		Date repeatEndDate = entry.getRepeatEnd()
-		Long repeatEndTime = repeatEndDate?.getTime()
-		boolean endAfterToday = repeatEndTime == null ? true : repeatEndTime >= entry.getDate().getTime() + DAYTICKS - HOURTICKS;
+		boolean endAfterToday = repeatEndDate == null ? true : repeatEndDate.getTime() >= (entry.getDate().getTime() + DAYTICKS - HOURTICKS)
 
 		if (allFuture) {
 			if (entryTime >= baseTime && entryTime - baseTime < DAYTICKS) { // entry is in today's data
@@ -560,12 +566,12 @@ class Entry {
 		} else {
 			if (entryTime >= baseTime && entryTime - baseTime < DAYTICKS) { // entry is in today's date, change to next day
 				if (endAfterToday) {
-					DateTime newDateTime = TimeZoneId.nextDaySameTime(entry.fetchDateTime())
+					Date newDate = TimeZoneId.nextDaySameTime(entry.fetchDateTime()).toDate()
 
-					if (repeatEndTime != null && repeatEndTime < newDateTime.getMillis()) {
+					if (repeatEndDate != null && repeatEndDate < newDate) {
 						Entry.delete(entry, null)
 					} else {
-						entry.setDate(newDateTime.toDate())
+						entry.setDate(newDate)
 
 						Utils.save(entry, true)
 					}
@@ -586,7 +592,7 @@ class Entry {
 
 					Date newDate = newDateTime.toDate()
 					
-					if (repeatEndTime == null || repeatEndTime >= newDate.getTime()) {
+					if (repeatEndDate == null || repeatEndDate >= newDate) {
 						def m = [:]
 						m['description'] = entry.getTag().getDescription()
 						m['date'] = newDateTime.toDate()
@@ -1243,59 +1249,60 @@ class Entry {
 	private createRepeat() {
 		if (this.repeatType == null) return
 
-			if (this.repeatType.isContinuous()) {
-				Date previousDate = this.fetchPreviousDate()
-				
-				String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+		if (this.repeatType.isContinuous()) {
+			Date previousDate = this.fetchPreviousDate()
+			
+			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
 
-				def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
 
-				def v = entries[0]
+			def v = entries[0]
 
-				if (v != null) {
-					Entry e = Entry.get(v['id'])
-					if (e != null) {
-						if (previousDate < e.getDate()) {
-							e.setRepeatEnd(e.getDate())
-						} else
-							e.setRepeatEnd(previousDate)
-						Utils.save(e, true)
-					}
-				}
-				queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date > :entryDate order by entry.date asc limit 1"
-
-				entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
-
-				v = entries[0]
-
-				if (v != null) {
-					Entry e = Entry.get(v['id'])
-
-					if (e != null) {
-						Date yesterday = e.fetchPreviousDate()
-						if (yesterday < this.date) {
-							repeatEnd = this.date
-						} else
-							repeatEnd = yesterday
-					}
-				}
-			} else {
-				Entry e = findPreviousRepeatEntry()
-
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
 				if (e != null) {
-					if (e.getRepeatEnd() == null || e.getRepeatEnd().getTime() > this.date.getTime()) { // only reset repeatEnd if it is later
-						e.setRepeatEnd(this.fetchPreviousDate())
-						Utils.save(e, true)
-					}
+					if (previousDate < e.getDate()) {
+						e.setRepeatEnd(e.getDate())
+					} else
+						e.setRepeatEnd(previousDate)
+					Utils.save(e, true)
 				}
-
-				e = findNextRepeatEntry()
-
-				if (e != null) {
-					repeatEnd = e.fetchPreviousDate()
-				} else
-					repeatEnd = null
 			}
+			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date > :entryDate order by entry.date asc limit 1"
+
+			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
+
+			v = entries[0]
+
+			if (v != null) {
+				Entry e = Entry.get(v['id'])
+
+				if (e != null) {
+					Date yesterday = e.fetchPreviousDate()
+					if (yesterday < this.date) {
+						repeatEnd = this.date
+					} else
+						repeatEnd = yesterday
+				}
+			}
+		} else {
+			Entry e = findPreviousRepeatEntry()
+
+			if (e != null) {
+				if (e.getRepeatEnd() == null || e.getRepeatEnd() > this.date) { // only reset repeatEnd if it is later
+					e.setRepeatEnd(this.fetchPreviousDate())
+					Utils.save(e, true)
+				}
+			}
+
+			e = findNextRepeatEntry()
+			
+			if (e != null) {
+				Date newPrevious = e.fetchPreviousDate()
+				if (repeatEnd == null || newPrevious < repeatEnd)
+					repeatEnd = newPrevious
+			}
+		}
 	}
 
 	def unGhost() {

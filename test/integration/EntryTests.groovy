@@ -934,6 +934,135 @@ class EntryTests extends GroovyTestCase {
 	}
 	
 	@Test
+	void testUpdateRepeatJustTodayDeleteUpdate() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm repeat", earlyBaseDate, true), null)
+		
+		def updated = Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 8 at 2pm repeat", baseDate, true, true), null, baseDate, false)
+		
+		assert updated != entry && updated != null
+
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 8
+		} == 1
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify new event with old amount after baseDate
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+	
+		def newEntryId
+
+		// verify new event with old amount after baseDate
+		assert testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			newEntryId = it['id']
+			assert it['amount'].intValue() == 5
+		} == 1
+	
+		def futureEntry = Entry.get(newEntryId)
+
+		Entry.deleteGhost(futureEntry, tomorrowBaseDate, true)
+		
+		assert futureEntry.isDeleted()
+		
+		assert updated.getRepeatEnd() == updated.getDate()
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 8
+		} == 1
+		
+		assert testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
+		} == 0
+	
+		def updated2 = Entry.update(updated, Entry.parse(currentTime, timeZone, "bread 7 at 2pm repeat", baseDate, true, true), null, baseDate, false)
+		
+		assert updated2 == updated
+
+		// verify event edited on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == updated.getId()
+			assert it['amount'].intValue() == 7
+		} == 1
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify tomorrow has no entries
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+		} == 0
+	}
+	
+	@Test
+	void testDeleteRepeatThenUpdate() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm repeat", earlyBaseDate, true), null)
+		
+		Entry.deleteGhost(entry, lateBaseDate, true)
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify old event still at tomorrowBaseDate
+		assert testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify old event not at lateBaseDate
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+		} == 0
+
+		// update event at baseDate		
+		def updated = Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 7 2pm repeat", baseDate, true, true), null, baseDate, false)
+		
+		assert updated != entry
+		
+		// verify event edited on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == updated.getId()
+			assert it['amount'].intValue() == 7
+		} == 1
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify old event still at tomorrowBaseDate with new id
+		assert testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify old event still not at lateBaseDate
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+		} == 0
+	}
+	
+	@Test
 	void testUpdateRepeatNotGhostJustOnce() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm repeat daily", earlyBaseDate, true), null)
 		
