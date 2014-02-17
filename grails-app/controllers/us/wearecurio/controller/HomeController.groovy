@@ -114,9 +114,6 @@ class HomeController extends DataController {
 
 		Map result = movesDataService.subscribe(userId)
 		if (result.success) {
-			task { // poll withings offline
-				movesDataService.poll(userId)
-			}
 			debug "Succeeded in subscribing"
 			flash.message = message(code: "moves.subscribe.success.message")
 		} else {
