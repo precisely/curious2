@@ -263,10 +263,23 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 	
 	@Test
+	void testRegisterwithings() {
+		HomeController controller = new HomeController()
+		controller.withingsDataService = [
+			subscribe: { Long userId -> return [success:true] }
+		] as WithingsDataService
+		controller.session.userId = userId
+		
+		controller.registerwithings()
+		assert controller.flash.message.contains("Successfully linked Withings account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
 	void testUnregisterwithings() {
 		HomeController controller = new HomeController()
 		controller.withingsDataService = [
-			unsubscribe: {userId -> return [success:true] }
+			unsubscribe: { Long userId -> return [success:true] }
 		] as WithingsDataService
 		controller.session.userId = userId
 		
@@ -274,17 +287,43 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.flash.message.contains("Successfully unlinked Withings account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
+	
+	@Test
+	void testRegisterfitbit() {
+		HomeController controller = new HomeController()
+		controller.fitBitDataService = [
+			subscribe: { Long userId -> return [success:true] }
+		] as FitBitDataService
+		controller.session.userId = userId
+		
+		controller.registerfitbit()
+		assert controller.flash.message.contains("Successfully linked FitBit account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
 
 	@Test
 	void testUnregisterfitbit() {
 		HomeController controller = new HomeController()
 		controller.fitBitDataService = [
-			unsubscribe: {userId -> return [success:true] }
+			unsubscribe: { Long userId -> return [success:true] }
 		] as FitBitDataService
 		controller.session.userId = userId
 		
 		controller.unregisterfitbit()
-		assert controller.flash.message.contains("Successfully unlinked Fitbit account")
+		assert controller.flash.message.contains("Successfully unlinked FitBit account")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+	
+	@Test
+	void testRegistermoves() {
+		HomeController controller = new HomeController()
+		controller.movesDataService = [
+			subscribe: { Long userId -> return [success:true] }
+		] as MovesDataService
+		controller.session.userId = userId
+		
+		controller.registermoves()
+		assert controller.flash.message.contains("Successfully linked Moves account")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -292,7 +331,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testUnregistermoves() {
 		HomeController controller = new HomeController()
 		controller.movesDataService = [
-			unsubscribe: {userId -> return [success:true] }
+			unsubscribe: { Long userId -> return [success:true] }
 		] as MovesDataService
 		controller.session.userId = userId
 		
