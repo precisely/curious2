@@ -361,7 +361,7 @@ class DataController extends LoginController {
 		def dateList = params.list("date[]")
 		dateList = dateList.size()>0?dateList:params.list("date")
 		debug "DataController.getListData() "+dateList.dump()
-		if (dateList.size() <= 1) {
+		if (dateList.size() < 1) {
 			entries = Entry.fetchListData(user, timeZoneName, parseDate(params.date), currentTime)
 		} else {
 			entries = [:]
