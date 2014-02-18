@@ -34,6 +34,7 @@ class MigrationService {
 	public static final long ADD_TYPE_ID_FIELD_TO_NOTIFICATION_TABLE = 57L
 	public static final long REMOVE_23ANDME_UNIQUE_CONSTRAINT = 59L
 	public static final long FIX_DATEPRECISION = 60L
+	public static final long FIX_DATEPRECISION2 = 61L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -172,6 +173,9 @@ class MigrationService {
 			sql("DROP INDEX profile_id ON twenty3and_me_data")
 		}
 		tryMigration(FIX_DATEPRECISION) {
+			sql("UPDATE entry SET date_precision_secs = " + Entry.DEFAULT_DATEPRECISION_SECS + " WHERE date_precision_secs IS NULL")
+		}
+		tryMigration(FIX_DATEPRECISION2) {
 			sql("UPDATE entry SET date_precision_secs = " + Entry.DEFAULT_DATEPRECISION_SECS + " WHERE date_precision_secs IS NULL")
 		}
 	}

@@ -124,7 +124,7 @@ abstract class TagUnitMap {
 				def averageAmount = totalAmount / bucket.values.size()
 
 				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
-					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit]
+					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
 				Entry.create(userId, parsedEntry, null)
 			}
