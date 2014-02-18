@@ -1235,6 +1235,7 @@ function processInput(forceAdd) {
 	if (text == "")
 		return; // no entry data
 	$field.val("");
+	$field.blur();
 	if ((!forceAdd) && (currentEntryId != undefined))
 		updateEntry(currentEntryId, text, defaultToNow);
 	else {
