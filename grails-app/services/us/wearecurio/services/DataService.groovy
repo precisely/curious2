@@ -256,7 +256,14 @@ abstract class DataService {
 		for (OAuthAccount account in accounts) {
 			DataService dataService = account.getDataService()
 			
-			dataService.poll(account)
+			try {
+				dataService.poll(account)
+			} catch (AuthenticationRequiredException e) {
+				// TODO: Warn user they need to relink account
+				log.debug "OAuth account not authenticated, removing account"
+				e.printStackTrace()
+				OAuthAccount.delete(account)
+			}
 		}
 	}
 
