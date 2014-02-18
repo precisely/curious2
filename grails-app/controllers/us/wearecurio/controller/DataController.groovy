@@ -372,7 +372,7 @@ class DataController extends LoginController {
 			}
 		}
 
-		debug "DatatController.getListData() Returning entries "+entries.dump()
+		debug "DataController.getListData() Returning entries "+entries.dump()
 		// skip continuous repeat entries with entries within the usage threshold
 
 		renderJSONGet(entries)
