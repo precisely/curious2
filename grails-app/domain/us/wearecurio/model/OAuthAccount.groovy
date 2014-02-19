@@ -72,4 +72,8 @@ class OAuthAccount {
 		new Token(accessToken, accessSecret)
 	}
 
+	// Used to set accessToken with blank value to represent expired accessToken & not-linked account case.
+	void removeAccessToken() {
+		this.accessToken = ""
+	}
 }

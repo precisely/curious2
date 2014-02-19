@@ -227,6 +227,7 @@ class FitBitDataService extends DataService {
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Map result = super.subscribe(userId, subscriptionURL, "post", [:])
+		OAuthAccount account = result.account
 		result.success = true
 
 		switch(result["code"]) {
@@ -239,7 +240,8 @@ class FitBitDataService extends DataService {
 				break;
 			default:
 				result.success = false
-				OAuthAccount.delete(getOAuthAccountInstance(userId))
+				account.removeAccessToken()			// confirms that subscription is not successful.
+				account.save()
 		}
 
 		result

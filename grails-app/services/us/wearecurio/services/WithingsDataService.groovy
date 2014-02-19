@@ -260,17 +260,22 @@ class WithingsDataService extends DataService {
 
 		def results = c {
 			eq("typeId", ThirdParty.WITHINGS)
+			ne("accessToken", "")
 			lt("lastSubscribed", weekAgo)
 		}
 
 		for (OAuthAccount account in results) {
-			this.subscribe(account)
+			try {
+				subscribe(account)
+			} catch (AuthenticationRequiredException e) {
+				// Nothing to do.
+			}
 		}
 	}
 
 	@Override
 	Map subscribe(Long userId) throws AuthenticationRequiredException {
-		debug "WithingsDataService.subscribe():" + userId
+		log.debug "WithingsDataService.subscribe(): For userId: [$userId]"
 		OAuthAccount account = getOAuthAccountInstance(userId)
 
 		if (!account) {
@@ -278,10 +283,16 @@ class WithingsDataService extends DataService {
 			throw new AuthenticationRequiredException(provider)
 		}
 
+		subscribe(account)
+	}
+
+	// Overloaded method.
+	Map subscribe(OAuthAccount account) {
+		Long userId = account.userId
 		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
 
 		if (result["body"].status == 0) {
-			debug "Successful subscription"
+			log.debug "Subscription successfull for account: $account"
 			account.lastSubscribed = new Date()
 			account.save()
 			/**
@@ -290,14 +301,15 @@ class WithingsDataService extends DataService {
 			 * because this will keep user redirect blocked for longer time if there
 			 * are greater number of entries in previous data.
 			 */
-			log.info "Getting user's previous data."
+			log.info "Getting user's previous data for account: $account"
 			getDataDefault(account, null, false)
 			return [success: true]
 		}
 
-		debug "Subscription failed, status: " + result["body"].status
+		log.warn "Subscription failed for account: $account with status: " + result["body"].status
 
-		OAuthAccount.delete(account)	// confirms that subscription is not successful.
+		account.removeAccessToken()		// confirms that subscription is not successful.
+		account.save()
 		[success: false]
 	}
 

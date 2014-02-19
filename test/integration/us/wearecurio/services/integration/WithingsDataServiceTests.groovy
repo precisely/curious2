@@ -43,6 +43,24 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void tearDown() {
 	}
 
+	void testRefreshSubscription() {
+		Date now = new Date()
+		account.lastSubscribed = new Date(now.getTime() - 10L * 24 * 60 * 60 * 1000)
+		account.save()
+
+		withingsDataService.oauthService = [
+			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
+				return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
+			},
+			getWithingsResource: { token, url, body, header ->
+				return new Response(new MockedHttpURLConnection("""{"status":0,"body":{"updatetime":1385535542,"measuregrps":[]}}"""))
+			}
+		]
+
+		withingsDataService.refreshSubscriptions()
+		assert account.lastSubscribed > now.clearTime()
+	}
+
 	void testSubscribeIfSuccess() {
 		withingsDataService.oauthService = [
 			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
@@ -65,7 +83,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		]
 
 		withingsDataService.subscribe(userId)
-		assert OAuthAccount.count() == 0
+		assert OAuthAccount.findByUserId(userId).accessToken == ""
 	}
 
 	void testUnSubscribeIfNoOAuthAccount() {

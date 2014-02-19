@@ -69,7 +69,8 @@ class OAuthAccountService {
 	}
 
 	boolean isLinked(ThirdParty type, Long userId) {
-		if (OAuthAccount.findByTypeIdAndUserId(type, userId)) {
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(type, userId)
+		if (account?.accessToken) {	// Checking for account instance and non-blank accessToken.
 			return true
 		}
 		return false
