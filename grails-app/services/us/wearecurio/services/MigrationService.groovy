@@ -35,7 +35,6 @@ class MigrationService {
 	public static final long REMOVE_23ANDME_UNIQUE_CONSTRAINT = 59L
 	public static final long FIX_DATEPRECISION = 60L
 	public static final long FIX_DATEPRECISION2 = 61L
-	public static final long REMOVE_DUPLICATE_IMPORTS = 62L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -179,7 +178,7 @@ class MigrationService {
 		tryMigration(FIX_DATEPRECISION2) {
 			sql("UPDATE entry SET date_precision_secs = " + Entry.DEFAULT_DATEPRECISION_SECS + " WHERE date_precision_secs IS NULL")
 		}
-		tryMigration(REMOVE_DUPLICATE_IMPORTS) {
+		/*tryMigration(REMOVE_DUPLICATE_IMPORTS) {
 			boolean hasRows = true
 			
 			while (hasRows) {
@@ -195,6 +194,6 @@ class MigrationService {
 					Entry.delete(entry, null)
 				}
 			}
-		}
+		}*/
 	}
 }
