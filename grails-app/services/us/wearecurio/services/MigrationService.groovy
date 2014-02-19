@@ -178,7 +178,7 @@ class MigrationService {
 		tryMigration(FIX_DATEPRECISION2) {
 			sql("UPDATE entry SET date_precision_secs = " + Entry.DEFAULT_DATEPRECISION_SECS + " WHERE date_precision_secs IS NULL")
 		}
-		/*tryMigration(REMOVE_DUPLICATE_IMPORTS) {
+		tryMigration(REMOVE_DUPLICATE_IMPORTS) {
 			boolean hasRows = true
 			
 			while (hasRows) {
@@ -194,6 +194,6 @@ class MigrationService {
 					Entry.delete(entry, null)
 				}
 			}
-		}*/
+		}
 	}
 }
