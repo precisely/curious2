@@ -3,6 +3,7 @@ package us.wearecurio.thirdparty
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Tag
 
 abstract class TagUnitMap {
 
@@ -78,7 +79,7 @@ abstract class TagUnitMap {
 	 * Used for creating entries from data coming from third party APIs.
 	 */
 	abstract Map getTagUnitMappings();
-
+	
 	Entry buildEntry(String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 		Map currentMapping = getTagUnitMappings()[tagName]
 
@@ -107,6 +108,7 @@ abstract class TagUnitMap {
 
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
 			comment: comment, setName: setName, timeZoneId: timeZoneId, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
+		
 		parsedEntry.putAll(args)
 
 		Entry.create(userId, parsedEntry, null)

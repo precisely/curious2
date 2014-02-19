@@ -358,12 +358,12 @@ class DataController extends LoginController {
 		
 		def entries
 		
-		def dateList = params.list("date[]")
-		debug "DataController.getListData() "+dateList.dump()
-		if (dateList.size() < 1) {
+		if (params.date != null && params.date instanceof String) {
+			debug "DataController.getListData() '" + params.date + "'"
 			entries = Entry.fetchListData(user, timeZoneName, parseDate(params.date), currentTime)
 		} else {
-			dateList = dateList.size()>0?dateList:params.list("date")
+			def dateList = params.list("date[]")
+			debug "DataController.getListData() " + dateList.dump()
 			entries = [:]
 			dateList.each { date ->
 				date = parseDate(date)

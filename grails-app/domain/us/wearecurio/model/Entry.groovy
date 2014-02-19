@@ -9,6 +9,7 @@ import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 
+import java.util.Map;
 import java.util.regex.Pattern
 import java.math.MathContext
 import java.text.DateFormat
@@ -318,7 +319,18 @@ class Entry {
 		],
 		null)
 	}
-
+	
+	// Prevent duplicates for imported entries
+	static boolean hasDuplicate(Long userId, Map m) {
+		if (m.setName == null)
+			return false
+			
+		Tag tag = Tag.look(m.description)
+		
+		return Entry.findByUserIdAndDateAndDatePrecisionSecsAndTagAndAmountAndAmountPrecisionAndUnitsAndCommentAndSetName(userId, m.date, m.datePrecisionSecs,
+				tag, m.amount, m.amountPrecision, m.units, m.comment, m.setName) != null
+	}
+	
 	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
 		log.debug "Entry.create() userId:" + userId + ", m:" + m
 
@@ -327,6 +339,9 @@ class Entry {
 		if (m['description'] == null) return null
 
 		m['description'] = m['description'].toLowerCase()
+		
+		if (hasDuplicate(userId, m))
+			return null
 
 		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
 

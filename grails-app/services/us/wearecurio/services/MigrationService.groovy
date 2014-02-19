@@ -35,6 +35,7 @@ class MigrationService {
 	public static final long REMOVE_23ANDME_UNIQUE_CONSTRAINT = 59L
 	public static final long FIX_DATEPRECISION = 60L
 	public static final long FIX_DATEPRECISION2 = 61L
+	public static final long REMOVE_DUPLICATE_IMPORTS = 62L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -177,6 +178,23 @@ class MigrationService {
 		}
 		tryMigration(FIX_DATEPRECISION2) {
 			sql("UPDATE entry SET date_precision_secs = " + Entry.DEFAULT_DATEPRECISION_SECS + " WHERE date_precision_secs IS NULL")
+		}
+		tryMigration(REMOVE_DUPLICATE_IMPORTS) {
+			boolean hasRows = true
+			
+			while (hasRows) {
+				hasRows = false
+				def rows = sqlRows("select _user.username, entry.id, date, tag.description, set_name, count(entry.id) as c from entry, tag, _user where _user.id = entry.user_id and set_name IS NOT NULL and user_id > 0 and entry.tag_id = tag.id group by user_id, date, tag_id, amount, units, comment, set_name having c > 1 order by date")
+				for (row in rows) {
+					hasRows = true
+					
+					log.debug "Deleting duplicate entry " + row.username + ", " + row.date + ", " + row.id + ", " + row.description + ", " + row.set_name
+					
+					Entry entry = Entry.get(row['id'])
+					
+					Entry.delete(entry, null)
+				}
+			}
 		}
 	}
 }

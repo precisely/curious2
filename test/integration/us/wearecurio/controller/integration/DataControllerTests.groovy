@@ -113,9 +113,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
 		controller.params['timeZoneName'] = 'America/Los_Angeles'
-		controller.params['date'] = []
-		controller.params['date'][0] = 'Wed, 1 Jul 2010 00:00:00 -0000'
-		controller.params['date'][1] = 'Thu, 2 Jul 2010 00:00:00 -0000'
+		controller.params['date[]'] = []
+		controller.params['date[]'][0] = 'Wed, 1 Jul 2010 00:00:00 -0000'
+		controller.params['date[]'][1] = 'Thu, 2 Jul 2010 00:00:00 -0000'
 		controller.params['currentTime'] = 'Wed, 1 Jul 2010 10:00:00 -0000'
 		
 		controller.getListData()
@@ -599,8 +599,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,180,"America/Los_Angeles"' \
-			+ "\n" + '"2010-07-01 23:30:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,-1,180,"America/Los_Angeles"' \
-			+ "\n" + '"2010-07-01 23:30:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,null,"America/Los_Angeles"' \
+			+ "\n" + '"2010-07-01 23:31:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,-1,180,"America/Los_Angeles"' \
+			+ "\n" + '"2010-07-01 23:32:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1,3,null,"America/Los_Angeles"' \
 			+ "\n"
 
 		def input = new ByteArrayInputStream(outString.getBytes())
@@ -612,8 +612,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def testStr = "Entry(date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null)" \
 				+ "Entry(date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null)" \
 				+ "Entry(date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1)" \
-				+ "Entry(date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:-1, comment:repeat daily, repeatType:1)" \
-				+ "Entry(date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1)"
+				+ "Entry(date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:-1, comment:repeat daily, repeatType:1)" \
+				+ "Entry(date:2010-07-01T23:32:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1)"
 
 		def c = 0;
 				
