@@ -340,8 +340,10 @@ class Entry {
 
 		m['description'] = m['description'].toLowerCase()
 		
-		if (hasDuplicate(userId, m))
+		if (hasDuplicate(userId, m)) {
+			log.debug "Entry map is a duplicate, do not add: " + m
 			return null
+		}
 
 		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
 
