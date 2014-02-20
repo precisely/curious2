@@ -51,7 +51,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 			}]
 		humanDataService.poll(account1)
 
-		assert Entry.count() == 14
+		assert Entry.count() == 16
 	}
 
 	void testPollForBloodGlucose() {

@@ -1236,7 +1236,7 @@ class EntryTests extends GroovyTestCase {
 		
 		Entry.deleteGhost(entry, tomorrowBaseDate, true)
 		
-		assert entry.getRepeatEnd().equals(tomorrowBaseDate)
+		assert entry.isDeleted()
 		
 		testEntries(user, timeZone, tomorrowBaseDate, this.tomorrowCurrentTime) {
 			assert it.identity != entry.getId()
