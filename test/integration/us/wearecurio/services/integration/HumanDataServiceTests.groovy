@@ -45,7 +45,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
 				if(url.contains("activities")) {
-					data = """[{"id":"1","startTime":"2013-06-23T02:18:14.596Z","endTime":"2013-06-23T02:18:14.596Z","type":"walking","duration":696,"distance":756,"steps":977,"calories":0},{"id":"2","startTime":"2013-06-23T02:18:15.000Z","endTime":"2013-06-23T02:18:15.000Z","type":"cycling","duration":613,"distance":2605,"steps":0,"calories":0},{"id":"3","startTime":"2013-06-23T02:18:16.000Z","endTime":"2013-06-23T02:18:16.000Z","type":"walking","duration":696,"distance":756,"steps":977,"calories":0},{"id":"4","startTime":"2013-06-23T02:18:17.000Z","endTime":"2013-06-23T02:18:17.000Z","type":"cycling","duration":613,"distance":2605,"steps":0,"calories":0}]"""
+					data = """[{"id":"1","startTime":"2013-06-23T02:18:01.000Z","endTime":"2013-06-23T02:18:01.000Z","type":"walking","duration":696,"distance":756,"steps":977,"calories":0},{"id":"2","startTime":"2013-06-23T02:19:15.000Z","endTime":"2013-06-23T02:19:15.000Z","type":"cycling","duration":613,"distance":2605,"steps":0,"calories":0},{"id":"3","startTime":"2013-06-23T02:20:16.000Z","endTime":"2013-06-23T02:20:16.000Z","type":"walking","duration":696,"distance":756,"steps":977,"calories":0},{"id":"4","startTime":"2013-06-23T02:21:17.000Z","endTime":"2013-06-23T02:21:17.000Z","type":"cycling","duration":613,"distance":2605,"steps":0,"calories":0}]"""
 				}
 				return new Response(new MockedHttpURLConnection(data))
 			}]

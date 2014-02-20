@@ -563,6 +563,12 @@ class Entry {
 	 * @return
 	 */
 	public static deleteGhost(Entry entry, Date baseDate, boolean allFuture) {
+		if (entry.getRepeatType().isContinuous()) {
+			Entry.delete(entry, null)
+			
+			return
+		}
+		
 		long entryTime = entry.getDate().getTime()
 		long baseTime = baseDate.getTime()
 		Date repeatEndDate = entry.getRepeatEnd()
@@ -1265,39 +1271,16 @@ class Entry {
 		if (this.repeatType == null) return
 
 		if (this.repeatType.isContinuous()) {
-			Date previousDate = this.fetchPreviousDate()
-			
-			String queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date < :entryDate and entry.repeat_type in (:repeatIds) order by entry.date desc limit 1"
+			// search for matching continuous tag
+			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.repeat_type in (:repeatIds)"
 
-			def entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, repeatIds:CONTINUOUS_IDS])
 
-			def v = entries[0]
-
-			if (v != null) {
-				Entry e = Entry.get(v['id'])
-				if (e != null) {
-					if (previousDate < e.getDate()) {
-						e.setRepeatEnd(e.getDate())
-					} else
-						e.setRepeatEnd(previousDate)
+			for (def v in entries) {
+				if (v != null) {
+					Entry e = Entry.get(v['id'])
+					Entry.delete(e, null) // delete matching entries, to avoid duplicates
 					Utils.save(e, true)
-				}
-			}
-			queryStr = "select entry.id from entry entry, tag tag where entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.date > :entryDate order by entry.date asc limit 1"
-
-			entries = DatabaseService.get().sqlRows(queryStr, [desc:this.tag.description, entryDate:this.date, userId:this.userId])
-
-			v = entries[0]
-
-			if (v != null) {
-				Entry e = Entry.get(v['id'])
-
-				if (e != null) {
-					Date yesterday = e.fetchPreviousDate()
-					if (yesterday < this.date) {
-						repeatEnd = this.date
-					} else
-						repeatEnd = yesterday
 				}
 			}
 		} else {
@@ -1513,9 +1496,9 @@ class Entry {
 	 * Fetch methods - for getting different subsets of entries
 	 */
 	public static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
-		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.date < :entryDate and entry.repeatEnd is null or entry.repeatEnd >= :entryDate and (not entry.repeatType is null) and entry.repeatType.id in (:repeatIds)"
+		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeatType is null) and entry.repeatType.id in (:repeatIds)"
 
-		def entries = Entry.executeQuery(continuousQuery, [userId:userId, entryDate:now, repeatIds:CONTINUOUS_IDS])
+		def entries = Entry.executeQuery(continuousQuery, [userId:userId, repeatIds:CONTINUOUS_IDS])
 
 		return entries
 	}
@@ -1590,13 +1573,13 @@ class Entry {
 		}
 
 		// get continuous repeating elements
-		String continuousQueryStr = "select distinct entry.id, timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) as dateTime " \
+		String continuousQueryStr = "select distinct entry.id as id, tag.description " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "(entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds))) " \
+				+ "entry.repeat_end is null and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds)) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
 
-		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, queryMap)
+		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), continuousIds:CONTINUOUS_IDS])
 
 		def results = []
 
@@ -1605,7 +1588,7 @@ class Entry {
 			Entry entry = Entry.get(result['id'])
 			if (!resultTagIds.contains(entry.getTag().getId())) {
 				def desc = entry.getJSONDesc()
-				desc['date'] = result['dateTime']
+				desc['date'] = baseDate
 				desc['repeatType'] = entry.repeatType?.id
 				desc['timeZoneName'] = timeZoneName
 				results.add(desc)
@@ -2371,32 +2354,6 @@ class Entry {
 
 		if (retVal['repeatType'] != null) {
 			if (!retVal['repeatType'].isReminder()) {
-				// removed logic for determining continuous vs daily repeats via amount/time specification
-				// instead use "pinned" vs "repeat"
-				/* if (retVal['repeatType'].isDaily()) {
-				 if (foundAmount) {
-				 if (foundTime) {
-				 retVal['repeatType'] = RepeatType.DAILY
-				 } else {
-				 if (forUpdate)
-				 retVal['repeatType'] = RepeatType.DAILY
-				 else
-				 retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
-				 }
-				 } else {
-				 if (foundTime || forUpdate) {
-				 retVal['repeatType'] = RepeatType.DAILY
-				 } else {
-				 retVal['repeatType'] = RepeatType.CONTINUOUSGHOST
-				 }
-				 }
-				 } else if (retVal['repeatType'].isWeekly()) {
-				 if (foundAmount) {
-				 retVal['repeatType'] = RepeatType.WEEKLY
-				 } else {
-				 retVal['repeatType'] = RepeatType.WEEKLYGHOST
-				 }
-				 } */
 				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;

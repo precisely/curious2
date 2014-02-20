@@ -35,6 +35,8 @@ class MigrationService {
 	public static final long REMOVE_23ANDME_UNIQUE_CONSTRAINT = 59L
 	public static final long FIX_DATEPRECISION = 60L
 	public static final long FIX_DATEPRECISION2 = 61L
+	public static final long REMOVE_DUPLICATE_IMPORTS = 65L
+	public static final long REMOVE_OBSOLETE_PINNED = 71L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -194,6 +196,10 @@ class MigrationService {
 					Entry.delete(entry, null)
 				}
 			}
+		}
+		tryMigration(REMOVE_OBSOLETE_PINNED) {
+			sql("update entry set user_id = 0 where entry.user_id is not null and entry.user_id > 0 and entry.repeat_end is not null and entry.repeat_type in (?)",
+					[Entry.CONTINUOUS_IDS])
 		}
 	}
 }
