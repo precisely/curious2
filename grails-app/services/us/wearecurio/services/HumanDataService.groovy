@@ -130,7 +130,7 @@ class HumanDataService {
 			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
-			movesDataService.processActivity(activityData, curiousUserId, timeZoneIdInstance, activityData.type, startEndTimeFormat, args)
+			movesDataService.processActivity(activityData, curiousUserId, timeZoneId, activityData.type, startEndTimeFormat, args)
 		}
 
 		// Done
