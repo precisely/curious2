@@ -53,7 +53,7 @@ class FitBitDataService extends DataService {
 
 		Long userId = account.userId
 
-		Integer timeZoneId = User.getTimeZoneId(userId)
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
 
 		JSONObject activityData = getResponse(account.tokenInstance, requestUrl)
 

@@ -75,7 +75,7 @@ class WithingsDataService extends DataService {
 				return [success: false, status: data.status]
 			}
 
-			Integer timeZoneId = User.getTimeZoneId(userId)
+			Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
 
 			JSONArray groups = data.body.measuregrps
 			offset = groups.size()

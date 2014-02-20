@@ -60,11 +60,14 @@ class OAuthAccountService {
 	 * @param type Type of the provider. See ThirdParty enum.
 	 * @param accountId Account Identity for current provider.
 	 * @param tokenInstance Instance of scribe token.
+	 * @param userId Identity of curious user.
+	 * @param timeZoneId Identity of TimeZoneId domain. Default Null.
 	 * @return OAuthAccount instance for given parameters.
 	 */
-	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance, Long userId) {
+	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance, Long userId, Integer timeZoneId = null) {
 		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
 		account.accountId = accountId
+		account.timeZoneId = timeZoneId
 		createOrUpdate(account, tokenInstance)
 	}
 

@@ -20,7 +20,7 @@ import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
 
-	static final String BASE_URL = "http://api.humanapi.co/v1/human/%s"
+	static final String BASE_URL = "https://api.humanapi.co/v1/human/%s"
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal MM_TO_FEET = new BigDecimal(328084, 8)
 	static final String COMMENT = "(Human-%s)"

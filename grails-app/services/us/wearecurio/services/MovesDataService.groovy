@@ -18,6 +18,7 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class MovesDataService extends DataService {
 
+	static final String BASE_URL = "https://api.moves-app.com/api/1.1"
 	static final String COMMENT = "(Moves)"
 	static final String SET_NAME = "moves import"
 
@@ -29,6 +30,7 @@ class MovesDataService extends DataService {
 	MovesDataService() {
 		provider = "Moves"
 		typeId = ThirdParty.MOVES
+		profileURL = String.format(BASE_URL, "/user/profile")
 	}
 
 	@Override

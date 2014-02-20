@@ -1,11 +1,11 @@
 package us.wearecurio.controller
 
 import static us.wearecurio.model.ThirdParty.*
-import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 
 /**
@@ -24,6 +24,7 @@ class AuthenticationController extends SessionController {
 
 	def fitBitDataService
 	def humanDataService
+	def movesDataService
 	def OAuthAccountService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
@@ -85,22 +86,24 @@ class AuthenticationController extends SessionController {
 
 	def fitbitAuth() {
 		// Since FitBit doesn't return user info in response to an authentication we explicitly ask for it
-		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance)
+		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance).user
+		Integer timeZoneId = TimeZoneId.look(userInfo.timezone).id
 
-		OAuthAccountService.createOrUpdate(FITBIT, userInfo.user.encodedId, tokenInstance, userId)
+		OAuthAccountService.createOrUpdate(FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
+		Integer timeZoneId = TimeZoneId.look(userInfo.defaultTimeZone.name).id
 
-		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance.token, userId)
+		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
 	}
 
 	def movesAuth() {
-		// Moves sends user_id while getting the access token.
-		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
+		JSONObject userInfo = movesDataService.getUserProfile(tokenInstance)
+		Integer timeZoneId = TimeZoneId.look(userInfo.profile.currentTimeZone.id).id
 
-		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId)
+		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
 	}
 
 	def twenty3andmeAuth() {

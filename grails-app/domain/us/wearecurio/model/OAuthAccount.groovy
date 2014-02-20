@@ -20,6 +20,7 @@ class OAuthAccount {
 	Date expiresOn
 	Date lastPolled
 	Date lastSubscribed
+	Integer timeZoneId
 
 	static constraints = {
 		accessToken maxSize: 1024
@@ -28,6 +29,7 @@ class OAuthAccount {
 		lastPolled(nullable:true)
 		lastSubscribed(nullable:true)
 		refreshToken nullable: true
+		timeZoneId nullable: true
 		//typeId inList: []
 	}
 	
