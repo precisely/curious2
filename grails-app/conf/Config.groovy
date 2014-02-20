@@ -267,6 +267,8 @@ log4j = {
 		   'org.springframework',
 		   'org.hibernate'
 
+	error  'org.springframework.aop.framework.Cglib2AopProxy'
+
 	warn   'org.mortbay.log'
 			
 }

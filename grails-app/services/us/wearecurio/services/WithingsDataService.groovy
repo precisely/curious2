@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
+
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -32,12 +34,14 @@ class WithingsDataService extends DataService {
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
 	@Override
-	void notificationHandler(String accountId) {
-		if (!accountId) {	// At time of subscription
+	void notificationHandler(String notificationData) {
+		JSONObject notification = JSON.parse(notificationData)
+		if (!notification.userid) {	// At time of subscription
 			return
 		}
+		Date notificationDate = notification.startdate ? new Date(notification.startdate.toLong() * 1000L) : new Date()
 
-		new ThirdPartyNotification([collectionType: "default", date: new Date(), ownerId: accountId, subscriptionId: "",
+		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: notification.userid, subscriptionId: "",
 			ownerType: "user", typeId: typeId]).save()
 	}
 
@@ -129,9 +133,9 @@ class WithingsDataService extends DataService {
 		}
 
 		if(account.lastPolled) {
-			//getDataForActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
+			getDataActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
 		} else {
-			//getDataForActivityMetrics(account, new Date())
+			getDataActivityMetrics(account, startDate, [:])
 		}
 
 		if (serverTimestamp > 0) {
@@ -144,13 +148,13 @@ class WithingsDataService extends DataService {
 
 	/**
 	 * Used to get & store activity metrics summary for an account.
-	 * @param account Account instance for activity data.
+	 * @param account REQUIRED Account instance for activity data.
 	 * @param forDay The date for the activity data. Optional if date range is given.
 	 * @return dateRange Date range for to retrieve data against. Optional if forDay param is given
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	boolean getDataForActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
+	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
 		BigDecimal value
 
 		String description, units, queryDateFormat = "yyyy-MM-dd"
@@ -165,62 +169,43 @@ class WithingsDataService extends DataService {
 		} else {
 			// @see Activity Metrics documentation at http://www.withings.com/en/api
 			log.debug "Either forDay or dateRange parameter required to pull activity data."
-			return false
+			return [success: false]
 		}
 
-		String dataURL = urlService.makeQueryString(BASE_URL + "/v2/measure", queryParameters)
-
-		JSONObject data = getResponse(account.tokenInstance, dataURL)
+		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 
 		if(data.status != 0) {
-			log.error "Something went wrong with withings activity api. [$data]"
+			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
 			return false
 		}
 
 		Long userId = account.userId
 
-		Integer timeZoneId = User.getTimeZoneId(userId)
-
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+		SimpleDateFormat dateFormat = new SimpleDateFormat(queryDateFormat)
 
 		JSONArray activities = data["body"]["activities"]
 
 		activities.each { JSONObject activity ->
-			log.debug "Parsing entry for day [$activity.date] with [$activity.steps] steps, [$activity.distance] distance, [$activity.calories] calorie, [$activity.elevation] elevation"
+			log.debug "Parsing entry with data: $activity"
 			Date entryDate = dateFormat.parse(activity["date"])
 
-			if(activity["steps"]) {
-				tagUnitMap.buildEntry("steps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
-			}
-			if(activity["distance"]) {
-				units = "km"
-				description = "activity distance"
-				value = activity["distance"] / 1000		// Converting to KM
-				value = value.toBigDecimal()
+			Integer timeZoneId = TimeZoneId.look(activity["timezone"]).id
 
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["steps"]) {
+				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
-			if(activity["calories"]) {
-				units = "kcal"
-				description = "activity calories"
-				value = activity["calories"].toBigDecimal()
-
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["distance"]) {
+				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
-			if(activity["elevation"]) {
-				units = "km"
-				description = "activity elevation"
-				value = activity["elevation"] / 1000		// Converting to KM
-				value = value.toBigDecimal()
-
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["calories"]) {
+				tagUnitMap.buildEntry("activitySteps", activity["calories"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+			}
+			if (activity["elevation"]) {
+				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
 		}
 
-		return true
+		[success: false]
 	}
 
 	def getRefreshSubscriptionsTask() {

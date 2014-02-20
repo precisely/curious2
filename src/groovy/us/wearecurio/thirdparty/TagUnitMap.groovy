@@ -22,6 +22,7 @@ abstract class TagUnitMap {
 	public final static float SCALE_TO_0_10 = 10 / 100
 	public final static int TO_MILLI = 1000
 	public final static float METER_TO_KM = 1 / 1000
+	public final static float METER_TO_MILE = 1 / 1609.34
 
 	final static int AVERAGE = 1
 	final static int BUCKET = 2
@@ -32,6 +33,11 @@ abstract class TagUnitMap {
 
 	static {
 		commonTagMap = [
+			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal", convert: true, type: METER_TO_MILE],
+			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
+			activityElevation: [tag: "$ACTIVITY elevation", unit: "miles"],
+			activitySteps: [tag: "$ACTIVITY steps", unit: ""],
+
 			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
 			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
@@ -39,7 +45,7 @@ abstract class TagUnitMap {
 			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
 			heartRate: [tag: "heart rate", unit: "bpm"],
 			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, type: KG_TO_POUNDS],
-			steps: [tag: "$ACTIVITY steps", unit: ""],
+			steps: [tag: "$ACTIVITY steps", unit: ""],	// @Deprecated. Use `activitySteps` instead.
 			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
 		]
 	}
