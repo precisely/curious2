@@ -62,9 +62,8 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Date logDate = startDate ?: account.lastPolled
-			Long lastPolled = logDate ? logDate.time / 1000L : null
-			if (lastPolled && !refreshAll)
+			Long lastPolled = startDate.time / 1000L
+			if (!refreshAll)
 				queryParameters.put("startdate", lastPolled)
 
 			String subscriptionURL = urlService.makeQueryString(BASE_URL + "/measure", queryParameters)

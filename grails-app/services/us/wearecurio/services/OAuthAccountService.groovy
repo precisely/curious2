@@ -68,14 +68,6 @@ class OAuthAccountService {
 		createOrUpdate(account, tokenInstance)
 	}
 
-	boolean isLinked(ThirdParty type, Long userId) {
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(type, userId)
-		if (account?.accessToken) {	// Checking for account instance and non-blank accessToken.
-			return true
-		}
-		return false
-	}
-
 	/**
 	 * Refresh all tokens which will expire in between from now & next day.
 	 */
@@ -86,7 +78,7 @@ class OAuthAccountService {
 			refreshToken(it)
 		}
 	}
-	
+
 	/**
 	 * Used to renew access token of a particular OAuthAccount instance.
 	 * @param account Instance of OAuthAccount

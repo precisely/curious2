@@ -1089,6 +1089,9 @@ div.plotLine:hover span {
 .pointer {
 	cursor: pointer;
 }
+.text-danger, a.text-danger, a.text-dager:link {
+	color: #a94442;
+}
 .text-center {
 	text-align: center;
 }

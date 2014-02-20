@@ -18,6 +18,7 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
+import us.wearecurio.utility.Utils
 
 class FitBitDataService extends DataService {
 
@@ -201,6 +202,15 @@ class FitBitDataService extends DataService {
 	JSONElement getResponse(Token tokenInstance, String requestUrl) {
 		Map requestHeader = ["Accept-Language": "en_US"]
 		super.getResponse(tokenInstance, requestUrl, "get", [:], requestHeader)
+	}
+
+	TimeZone getUserTimeZone(OAuthAccount account) {
+		JSONObject parsedResponse = getUserProfile(account)
+		String usersTimeZone = parsedResponse.timezone
+		int offset = parsedResponse.offsetFromUTCMillis.toLong() / 1000
+		println offset
+		println usersTimeZone
+		TimeZone timezone = Utils.createTimeZone(offset, usersTimeZone, null)
 	}
 
 	@Override
