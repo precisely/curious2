@@ -15,6 +15,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
@@ -44,16 +45,19 @@ class FitBitDataService extends DataService {
 
 	Map getDataActivities(OAuthAccount account, Date forDay, boolean refreshAll) {
 		String accountId = account.accountId
+		Long userId = account.userId
+
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
+
 		String forDate = formatter.format(forDay)
 		String oldSetName = forDate + "activityfitbit"	// Backward support
 		String setName = SET_NAME + " " + forDate
 		String requestUrl = String.format(BASE_URL, "/${accountId}/activities/date/${forDate}.json")
 
 		Map args = [setName: setName, comment: COMMENT]
-
-		Long userId = account.userId
-
-		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
 
 		JSONObject activityData = getResponse(account.tokenInstance, requestUrl)
 
@@ -166,16 +170,19 @@ class FitBitDataService extends DataService {
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
+		Long userId = account.userId
+
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
+
 		String accountId = account.accountId
 		String forDate = formatter.format(forDay)
 		String setName = SET_NAME + " " + forDate
 		String requestUrl = String.format(BASE_URL, "/${accountId}/sleep/date/${forDate}.json")
 
 		Map args = [setName: setName, comment: COMMENT]
-
-		Long userId = account.userId
-
-		Integer timeZoneId = User.getTimeZoneId(userId)
 
 		JSONObject sleepData = getResponse(account.tokenInstance, requestUrl)
 
@@ -202,15 +209,6 @@ class FitBitDataService extends DataService {
 	JSONElement getResponse(Token tokenInstance, String requestUrl) {
 		Map requestHeader = ["Accept-Language": "en_US"]
 		super.getResponse(tokenInstance, requestUrl, "get", [:], requestHeader)
-	}
-
-	TimeZone getUserTimeZone(OAuthAccount account) {
-		JSONObject parsedResponse = getUserProfile(account)
-		String usersTimeZone = parsedResponse.timezone
-		int offset = parsedResponse.offsetFromUTCMillis.toLong() / 1000
-		println offset
-		println usersTimeZone
-		TimeZone timezone = Utils.createTimeZone(offset, usersTimeZone, null)
 	}
 
 	@Override

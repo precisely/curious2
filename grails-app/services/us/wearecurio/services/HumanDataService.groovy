@@ -109,13 +109,15 @@ class HumanDataService {
 
 		Date lastPolled = new Date()
 		String comment, description, setName, source, units
-		// TODO: make Time Zone be the last time zone accessed by the user in question
-		TimeZoneId timeZoneId = TimeZoneId.get(User.getTimeZoneId(curiousUserId))
+
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+
 		Token tokenInstance = account.tokenInstance
 
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 		DateFormat startEndTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+		startEndTimeFormat.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->

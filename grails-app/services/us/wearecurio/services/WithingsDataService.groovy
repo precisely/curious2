@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
+import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
@@ -174,7 +175,7 @@ class WithingsDataService extends DataService {
 
 		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 
-		if(data.status != 0) {
+		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
 			return false
 		}
@@ -228,6 +229,37 @@ class WithingsDataService extends DataService {
 		queryParameters.put("callbackurl", notifyURL)	// Not encoding url since, OAuth plugin do it.
 
 		queryParameters
+	}
+
+	String getUsersTimeZone(Token tokenInstance, String accountId) {
+		log.debug "Getting timezone for accoundId [$accountId] from last day activity data."
+		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date())	// Getting data for last day
+		if (data.status != 0) {
+			log.error "Error status [$data.status] returned while getting timezone using activity data. [$data]"
+			return null
+		}
+
+		if (data["body"]["activities"].size()) {
+			return data["body"]["activities"][0].timezone
+		}
+
+		log.debug "Getting timezone for accoundId [$accountId] from last 3 months activity data."
+		data = fetchActivityData(tokenInstance, accountId, new Date() - 90, new Date())		// Getting data for last 3 months
+		if (data["body"]["activities"].size()) {
+			return data["body"]["activities"][0].timezone
+		}
+
+		log.debug "No timezone found for accountId [$accountId] from activity data."
+		return null
+	}
+
+	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate) {
+		String queryDateFormat = "yyyy-MM-dd"
+		Map queryParameters = ["action": "getactivity", userid: accountId]
+		queryParameters["startdateymd"] = startDate.format(queryDateFormat)
+		queryParameters["enddateymd"] = endDate.format(queryDateFormat)
+
+		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 	}
 
 	void listSubscription(OAuthAccount account) {

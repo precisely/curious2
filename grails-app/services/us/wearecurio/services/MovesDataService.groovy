@@ -5,16 +5,15 @@ import static us.wearecurio.model.OAuthAccount.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
-import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty;
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
-import us.wearecurio.thirdparty.AuthenticationRequiredException
 
 class MovesDataService extends DataService {
 
@@ -22,11 +21,8 @@ class MovesDataService extends DataService {
 	static final String COMMENT = "(Moves)"
 	static final String SET_NAME = "moves import"
 
-	SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
-	SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
-
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
-	
+
 	MovesDataService() {
 		provider = "Moves"
 		typeId = ThirdParty.MOVES
@@ -39,7 +35,17 @@ class MovesDataService extends DataService {
 
 		startDate = startDate ?: new Date() ?: earlyStartDate
 
-		Integer timeZoneId = User.getTimeZoneId(userId)
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+
+		TimeZone timeZoneInstance = TimeZoneId.getTimeZoneInstance(timeZoneId)
+
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
+
+		format.setTimeZone(timeZoneInstance)
+		formatter.setTimeZone(timeZoneInstance)
+		startEndTimeFormat.setTimeZone(timeZoneInstance)
 
 		log.info "Polling account with userId [$userId]"
 
@@ -47,7 +53,7 @@ class MovesDataService extends DataService {
 
 		Token tokenInstance = account.tokenInstance
 
-		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + startDate.format("yyyy-MM-dd")
+		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + formatter.format(startDate)
 
 		def parsedResponse = getResponse(tokenInstance, pollURL)
 

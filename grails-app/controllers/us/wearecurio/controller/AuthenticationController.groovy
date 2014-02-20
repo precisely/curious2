@@ -28,6 +28,7 @@ class AuthenticationController extends SessionController {
 	def OAuthAccountService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
+	def withingsDataService
 
 	User currentUser
 	Long userId
@@ -122,7 +123,9 @@ class AuthenticationController extends SessionController {
 	}
 
 	def withingsAuth() {
-		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId)
+		String timezoneFromActivityData = withingsDataService.getUsersTimeZone(tokenInstance, session.withingsUserId)
+		Integer timeZoneId = TimeZoneId.look(timezoneFromActivityData).id
+		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
 }
