@@ -20,7 +20,7 @@ import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
 
-	static final String BASE_URL = "http://api.humanapi.co/v1/human/%s"
+	static final String BASE_URL = "https://api.humanapi.co/v1/human/%s"
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal MM_TO_FEET = new BigDecimal(328084, 8)
 	static final String COMMENT = "(Human-%s)"
@@ -109,13 +109,16 @@ class HumanDataService {
 
 		Date lastPolled = new Date()
 		String comment, description, setName, source, units
-		// TODO: make Time Zone be the last time zone accessed by the user in question
-		TimeZoneId timeZoneId = TimeZoneId.get(User.getTimeZoneId(curiousUserId))
+
+		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(curiousUserId)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneId)
+
 		Token tokenInstance = account.tokenInstance
 
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 		DateFormat startEndTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+		startEndTimeFormat.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
@@ -127,7 +130,7 @@ class HumanDataService {
 			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
-			movesDataService.processActivity(activityData, curiousUserId, (Integer) timeZoneId.getId(), activityData.type, startEndTimeFormat, args)
+			movesDataService.processActivity(activityData, curiousUserId, timeZoneId, activityData.type, startEndTimeFormat, args)
 		}
 
 		// Done
@@ -145,7 +148,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bgData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -163,13 +166,13 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bpData.value.diastolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 
 			description = "blood pressure systolic"
 			value = new BigDecimal(bpData.value.systolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -187,7 +190,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(fatData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -205,7 +208,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bmiData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -223,7 +226,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(heartRateData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -241,7 +244,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(heartData.value)
 			value = value.multiply(MM_TO_FEET).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		JSONArray sleepsDataList = getDataForSleeps(account)
@@ -256,7 +259,7 @@ class HumanDataService {
 			Date entryDate = startEndTimeFormat.parse(sleepData.startTime)
 			BigDecimal value = new BigDecimal(sleepData.timeAsleep + sleepData.timeAwake)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 
 			units = ""
 			description = "sleep interruptions"
@@ -264,7 +267,7 @@ class HumanDataService {
 			comment = String.format(COMMENT, source?.capitalize())
 			value = new BigDecimal(sleepData.timeAwake)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -282,7 +285,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(weightData.value)
 			value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneId, description, value, units, comment, setName, amountPrecision)
+			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
 		}
 
 		account.lastPolled = lastPolled

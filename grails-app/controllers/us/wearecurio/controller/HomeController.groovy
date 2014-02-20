@@ -2,8 +2,7 @@ package us.wearecurio.controller
 
 import grails.converters.*
 
-import org.scribe.model.Token
-import org.scribe.oauth.OAuthService
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
@@ -14,7 +13,6 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -94,9 +92,9 @@ class HomeController extends DataController {
 	}
 
 	def notifywithings() {
-		debug "HomeController.notifywithings() params:" + params
+		debug "HomeController.notifywithings() from IP: [$request.remoteAddr] with params:" + params
 
-		withingsDataService.notificationHandler(params.userid?.toString())
+		withingsDataService.notificationHandler(new JSONObject(params).toString())
 
 		renderStringGet('success')
 	}

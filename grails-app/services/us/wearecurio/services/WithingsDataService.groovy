@@ -1,10 +1,13 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
+
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
+import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
@@ -32,12 +35,14 @@ class WithingsDataService extends DataService {
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
 	@Override
-	void notificationHandler(String accountId) {
-		if (!accountId) {	// At time of subscription
+	void notificationHandler(String notificationData) {
+		JSONObject notification = JSON.parse(notificationData)
+		if (!notification.userid) {	// At time of subscription
 			return
 		}
+		Date notificationDate = notification.startdate ? new Date(notification.startdate.toLong() * 1000L) : new Date()
 
-		new ThirdPartyNotification([collectionType: "default", date: new Date(), ownerId: accountId, subscriptionId: "",
+		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: notification.userid, subscriptionId: "",
 			ownerType: "user", typeId: typeId]).save()
 	}
 
@@ -54,6 +59,10 @@ class WithingsDataService extends DataService {
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 					[setName: SET_NAME, userId: userId])
+		else {
+			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
+					[setName: SET_NAME, userId: userId, entryDate: startDate])
+		}
 
 		Map queryParameters = ["action": "getmeas"]
 		queryParameters.put("userid", account.getAccountId())
@@ -62,9 +71,8 @@ class WithingsDataService extends DataService {
 			if (offset > 0)
 				queryParameters.put("offset", offset.toString())
 
-			Date logDate = startDate ?: account.lastPolled
-			Long lastPolled = logDate ? logDate.time / 1000L : null
-			if (lastPolled && !refreshAll)
+			Long lastPolled = startDate.time / 1000L
+			if (!refreshAll)
 				queryParameters.put("startdate", lastPolled)
 
 			String subscriptionURL = urlService.makeQueryString(BASE_URL + "/measure", queryParameters)
@@ -76,7 +84,7 @@ class WithingsDataService extends DataService {
 				return [success: false, status: data.status]
 			}
 
-			Integer timeZoneId = User.getTimeZoneId(userId)
+			Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
 
 			JSONArray groups = data.body.measuregrps
 			offset = groups.size()
@@ -130,9 +138,9 @@ class WithingsDataService extends DataService {
 		}
 
 		if(account.lastPolled) {
-			//getDataForActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
+			getDataActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
 		} else {
-			//getDataForActivityMetrics(account, new Date())
+			getDataActivityMetrics(account, startDate, [:])
 		}
 
 		if (serverTimestamp > 0) {
@@ -145,13 +153,13 @@ class WithingsDataService extends DataService {
 
 	/**
 	 * Used to get & store activity metrics summary for an account.
-	 * @param account Account instance for activity data.
+	 * @param account REQUIRED Account instance for activity data.
 	 * @param forDay The date for the activity data. Optional if date range is given.
 	 * @return dateRange Date range for to retrieve data against. Optional if forDay param is given
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	boolean getDataForActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
+	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
 		BigDecimal value
 
 		String description, units, queryDateFormat = "yyyy-MM-dd"
@@ -166,62 +174,43 @@ class WithingsDataService extends DataService {
 		} else {
 			// @see Activity Metrics documentation at http://www.withings.com/en/api
 			log.debug "Either forDay or dateRange parameter required to pull activity data."
-			return false
+			return [success: false]
 		}
 
-		String dataURL = urlService.makeQueryString(BASE_URL + "/v2/measure", queryParameters)
+		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 
-		JSONObject data = getResponse(account.tokenInstance, dataURL)
-
-		if(data.status != 0) {
-			log.error "Something went wrong with withings activity api. [$data]"
-			return false
+		if (data.status != 0) {
+			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
+			return [success: false]
 		}
 
 		Long userId = account.userId
 
-		Integer timeZoneId = User.getTimeZoneId(userId)
-
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+		SimpleDateFormat dateFormat = new SimpleDateFormat(queryDateFormat)
 
 		JSONArray activities = data["body"]["activities"]
 
 		activities.each { JSONObject activity ->
-			log.debug "Parsing entry for day [$activity.date] with [$activity.steps] steps, [$activity.distance] distance, [$activity.calories] calorie, [$activity.elevation] elevation"
+			log.debug "Parsing entry with data: $activity"
 			Date entryDate = dateFormat.parse(activity["date"])
 
-			if(activity["steps"]) {
-				tagUnitMap.buildEntry("steps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
-			}
-			if(activity["distance"]) {
-				units = "km"
-				description = "activity distance"
-				value = activity["distance"] / 1000		// Converting to KM
-				value = value.toBigDecimal()
+			Integer timeZoneId = TimeZoneId.look(activity["timezone"]).id
 
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["steps"]) {
+				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
-			if(activity["calories"]) {
-				units = "kcal"
-				description = "activity calories"
-				value = activity["calories"].toBigDecimal()
-
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["distance"]) {
+				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
-			if(activity["elevation"]) {
-				units = "km"
-				description = "activity elevation"
-				value = activity["elevation"] / 1000		// Converting to KM
-				value = value.toBigDecimal()
-
-				Entry.create(account.userId, entryDate, TimeZoneId.look(activity["timezone"]), description, value,
-						units, "(Withings)", SET_NAME)
+			if (activity["calories"]) {
+				tagUnitMap.buildEntry("activitySteps", activity["calories"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+			}
+			if (activity["elevation"]) {
+				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
 		}
 
-		return true
+		[success: false]
 	}
 
 	def getRefreshSubscriptionsTask() {
@@ -246,6 +235,43 @@ class WithingsDataService extends DataService {
 		queryParameters
 	}
 
+	/**
+	 * Hack of withings data srevice for getting users timezone.
+	 * @param tokenInstance
+	 * @param accountId
+	 * @return
+	 */
+	String getUsersTimeZone(Token tokenInstance, String accountId) {
+		log.debug "Getting timezone for accoundId [$accountId] from last day activity data."
+		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date())	// Getting data for last day
+		if (data.status != 0) {
+			log.error "Error status [$data.status] returned while getting timezone using activity data. [$data]"
+			return null
+		}
+
+		if (data["body"]["activities"].size()) {
+			return data["body"]["activities"][0].timezone
+		}
+
+		log.debug "Getting timezone for accoundId [$accountId] from last 3 months activity data."
+		data = fetchActivityData(tokenInstance, accountId, new Date() - 90, new Date())		// Getting data for last 3 months
+		if (data["body"]["activities"].size()) {
+			return data["body"]["activities"][0].timezone
+		}
+
+		log.debug "No timezone found for accountId [$accountId] from activity data."
+		return null
+	}
+
+	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate) {
+		String queryDateFormat = "yyyy-MM-dd"
+		Map queryParameters = ["action": "getactivity", userid: accountId]
+		queryParameters["startdateymd"] = startDate.format(queryDateFormat)
+		queryParameters["enddateymd"] = endDate.format(queryDateFormat)
+
+		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
+	}
+
 	void listSubscription(OAuthAccount account) {
 		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
@@ -260,17 +286,22 @@ class WithingsDataService extends DataService {
 
 		def results = c {
 			eq("typeId", ThirdParty.WITHINGS)
+			ne("accessToken", "")
 			lt("lastSubscribed", weekAgo)
 		}
 
 		for (OAuthAccount account in results) {
-			this.subscribe(account)
+			try {
+				subscribe(account)
+			} catch (AuthenticationRequiredException e) {
+				// Nothing to do.
+			}
 		}
 	}
 
 	@Override
 	Map subscribe(Long userId) throws AuthenticationRequiredException {
-		debug "WithingsDataService.subscribe():" + userId
+		log.debug "WithingsDataService.subscribe(): For userId: [$userId]"
 		OAuthAccount account = getOAuthAccountInstance(userId)
 
 		if (!account) {
@@ -278,10 +309,16 @@ class WithingsDataService extends DataService {
 			throw new AuthenticationRequiredException(provider)
 		}
 
+		subscribe(account)
+	}
+
+	// Overloaded method.
+	Map subscribe(OAuthAccount account) {
+		Long userId = account.userId
 		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
 
 		if (result["body"].status == 0) {
-			debug "Successful subscription"
+			log.debug "Subscription successfull for account: $account"
 			account.lastSubscribed = new Date()
 			account.save()
 			/**
@@ -290,14 +327,15 @@ class WithingsDataService extends DataService {
 			 * because this will keep user redirect blocked for longer time if there
 			 * are greater number of entries in previous data.
 			 */
-			log.info "Getting user's previous data."
+			log.info "Getting user's previous data for account: $account"
 			getDataDefault(account, null, false)
 			return [success: true]
 		}
 
-		debug "Subscription failed, status: " + result["body"].status
+		log.warn "Subscription failed for account: $account with status: " + result["body"].status
 
-		OAuthAccount.delete(account)	// confirms that subscription is not successful.
+		account.removeAccessToken()		// confirms that subscription is not successful.
+		account.save()
 		[success: false]
 	}
 

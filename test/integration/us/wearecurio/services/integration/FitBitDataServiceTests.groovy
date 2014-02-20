@@ -55,7 +55,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		]
 		Map result = fitBitDataService.subscribe(userId)
 		assert !result.success
-		assert OAuthAccount.count() == 0
+		assert OAuthAccount.findByUserId(userId).accessToken == ""
 	}
 
 	void testSubscribeIfNoAuthAccount() {

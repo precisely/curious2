@@ -53,6 +53,10 @@ class TimeZoneId {
 		
 		return timeZoneId
 	}
+
+	static TimeZone getTimeZoneInstance(Integer timeZoneId) {
+		fromId(timeZoneId).toDateTimeZone().toTimeZone()
+	}
 	
 	static TimeZoneId look(String name) {
 		if (name == null) name = "Etc/UTC"

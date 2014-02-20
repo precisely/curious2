@@ -11,6 +11,6 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
     }
 
     def execute() {
-		withingsDataService.poll()
+		withingsDataService.pollAll()
     }
 }
