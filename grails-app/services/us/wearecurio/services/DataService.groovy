@@ -139,11 +139,7 @@ abstract class DataService {
 			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
 		}
 
-		if (Environment.current == Environment.DEVELOPMENT) {
-			log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
-		} else {
-			log.debug "Fetched data for [$provider] with response code: [$response.code]."
-		}
+		log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
 
 		if (response.code == 401) {
 			log.warn "Token expired for provider [$provider]"
