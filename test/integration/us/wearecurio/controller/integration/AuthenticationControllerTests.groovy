@@ -71,9 +71,14 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 	}
 
 	void testMovesAuth() {
+		controller.movesDataService = [
+			getUserProfile: { token->
+				return new JSONObject("""{"userId":1314,"profile":{"firstDate":"20121211","currentTimeZone":{"id":"Europe/Helsinki","offset":10800}}}""")
+			}
+		]
 		controller.params.provider = "moves"
 
-		controller.session["moves:oasAccessToken"] =  new Token("some-token", "some-secret", """{"user_id": "1314"}""")
+		controller.session["moves:oasAccessToken"] =  new Token("some-token", "some-secret")
 		controller.checkAuthentication()
 		controller.movesAuth()	// Available raw response for moves authenticated user in token
 		assert OAuthAccount.countByTypeId(MOVES) == 1

@@ -59,6 +59,10 @@ class WithingsDataService extends DataService {
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 					[setName: SET_NAME, userId: userId])
+		else {
+			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
+					[setName: SET_NAME, userId: userId, entryDate: startDate])
+		}
 
 		Map queryParameters = ["action": "getmeas"]
 		queryParameters.put("userid", account.getAccountId())
@@ -177,7 +181,7 @@ class WithingsDataService extends DataService {
 
 		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
-			return false
+			return [success: false]
 		}
 
 		Long userId = account.userId
@@ -231,6 +235,12 @@ class WithingsDataService extends DataService {
 		queryParameters
 	}
 
+	/**
+	 * Hack of withings data srevice for getting users timezone.
+	 * @param tokenInstance
+	 * @param accountId
+	 * @return
+	 */
 	String getUsersTimeZone(Token tokenInstance, String accountId) {
 		log.debug "Getting timezone for accoundId [$accountId] from last day activity data."
 		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date())	// Getting data for last day
