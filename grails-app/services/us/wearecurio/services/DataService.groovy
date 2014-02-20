@@ -151,7 +151,9 @@ abstract class DataService {
 		} else {
 			JSONElement parsedResponse
 			try {
-				parsedResponse = JSON.parse(responseBody)
+				if (responseBody) {
+					parsedResponse = JSON.parse(responseBody)
+				}
 			} catch (ConverterException e) {
 				log.error "Error parsing response data.", e
 				parsedResponse = new JSONObject()
@@ -337,7 +339,7 @@ abstract class DataService {
 
 		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
 
-		[code: parsedResponse.getCode(), body: parsedResponse]
+		[code: parsedResponse.getCode(), body: parsedResponse, account: account]
 	}
 
 	/**

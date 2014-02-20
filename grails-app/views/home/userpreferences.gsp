@@ -183,39 +183,48 @@ $(function() {
 										Twitter Account: ${user.twitterAccountName}<br>
 										<g:link action="registertwitter">Link Other Twitter Account</g:link>
 									</g:else><br>
-									<oauth:isLinked userId="${user.id}" typeId="FITBIT">
-										<g:if test="${it }">
+									<oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
+										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it && !it.accessToken }">
+											<g:link action="registerfitbit" class="text-danger">Re-link FitBit Account</g:link><br>
+										</g:elseif>
 										<g:else>
 											<g:link action="registerfitbit">Link FitBit Account</g:link><br>
 										</g:else>
-									</oauth:isLinked>
-									<oauth:isLinked userId="${user.id}" typeId="WITHINGS">
-										<g:if test="${it }">
+									</oauth:checkSubscription>
+									<oauth:checkSubscription userId="${user.id}" typeId="WITHINGS">
+										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it && !it.accessToken }">
+											<g:link action="registerwithings" class="text-danger">Re-link Withings Account</g:link><br>
+										</g:elseif>
 										<g:else>
 											<g:link action="registerwithings">Link Withings Account</g:link><br>
 										</g:else>
-									</oauth:isLinked>
-									<oauth:isLinked userId="${user.id}" typeId="MOVES">
-										<g:if test="${it }">
+									</oauth:checkSubscription>
+									<oauth:checkSubscription userId="${user.id}" typeId="MOVES">
+										<g:if test="${it?.accessToken }">
 											<g:link action="unregistermoves">Unlink Moves Account</g:link><br>
 										</g:if>
+										<g:elseif test="${it && !it.accessToken }">
+											<g:link action="registermoves" class="text-danger">Re-link Moves Account</g:link><br>
+										</g:elseif>
 										<g:else>
 											<g:link action="registermoves">Link Moves Account</g:link><br>
 										</g:else>
-									</oauth:isLinked>
+									</oauth:checkSubscription>
 									<g:link action="register23andme">
-										<oauth:isLinked userId="${user.id}" typeId="TWENTY_THREE_AND_ME">
+										<oauth:checkSubscription userId="${user.id}" typeId="TWENTY_THREE_AND_ME">
 											<g:if test="${it }">
 												Re-import from 23andMe
 											</g:if>
 											<g:else>
 												Import from 23andme
 											</g:else>
-										</oauth:isLinked>
+										</oauth:checkSubscription>
 									</g:link>
 								</td>
 							</tr>
