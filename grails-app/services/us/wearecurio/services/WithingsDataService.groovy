@@ -99,7 +99,7 @@ class WithingsDataService extends DataService {
 				return [success: false, status: data.status]
 			}
 
-			Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+			Integer timeZoneId = getTimeZoneId(account)
 
 			JSONArray groups = data.body.measuregrps
 			offset = groups.size()
@@ -251,6 +251,10 @@ class WithingsDataService extends DataService {
 		queryParameters.put("callbackurl", notifyURL)	// Not encoding url since, OAuth plugin do it.
 
 		queryParameters
+	}
+
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		getUsersTimeZone(account.tokenInstance, account.accountId)
 	}
 
 	/**
