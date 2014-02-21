@@ -16,6 +16,8 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.utility.Utils
 
@@ -42,8 +44,16 @@ class WithingsDataService extends DataService {
 		}
 		Date notificationDate = notification.startdate ? new Date(notification.startdate.toLong() * 1000L) : new Date()
 
-		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: notification.userid, subscriptionId: "",
+		saveNotification(notificationDate, notification.userid)
+	}
+
+	void saveNotification(Date notificationDate, String accountId) {
+		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: accountId, subscriptionId: "",
 			ownerType: "user", typeId: typeId]).save()
+	}
+
+	void saveNotificationForPreviousData(OAuthAccount account) {
+		saveNotification(earlyStartDate, account.accountId)
 	}
 
 	@Override
@@ -81,6 +91,9 @@ class WithingsDataService extends DataService {
 
 			if (data.status != 0) {
 				log.warn "Error status returned from withings. Body: ${data}"
+				if (data.status == 342) {	// Token expired or invalid
+					throw new InvalidAccessTokenException("Withings")
+				}
 				return [success: false, status: data.status]
 			}
 
@@ -159,7 +172,7 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) {
+	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) throws InvalidAccessTokenException {
 		BigDecimal value
 
 		String description, units, queryDateFormat = "yyyy-MM-dd"
@@ -181,6 +194,9 @@ class WithingsDataService extends DataService {
 
 		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
+			if (data.status == 342) {	// Token expired or invalid
+				throw new InvalidAccessTokenException("Withings")
+			}
 			return [success: false]
 		}
 
@@ -293,50 +309,47 @@ class WithingsDataService extends DataService {
 		for (OAuthAccount account in results) {
 			try {
 				subscribe(account)
-			} catch (AuthenticationRequiredException e) {
-				// Nothing to do.
+			} catch (InvalidAccessTokenException e) {
+				// Nothing to do
 			}
 		}
 	}
 
 	@Override
-	Map subscribe(Long userId) throws AuthenticationRequiredException {
+	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug "WithingsDataService.subscribe(): For userId: [$userId]"
 		OAuthAccount account = getOAuthAccountInstance(userId)
-
-		if (!account) {
-			debug "Authentication required exception"
-			throw new AuthenticationRequiredException(provider)
-		}
 
 		subscribe(account)
 	}
 
 	// Overloaded method.
-	Map subscribe(OAuthAccount account) {
+	Map subscribe(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		checkNotNull(account)
 		Long userId = account.userId
-		Map result = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
+		Map response = super.subscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, true))
 
-		if (result["body"].status == 0) {
+		int withingsResponseStatus = response["body"].status
+
+		if (withingsResponseStatus == 0) {
 			log.debug "Subscription successfull for account: $account"
 			account.lastSubscribed = new Date()
 			account.save()
-			/**
-			 * Fetch & store previous data.
-			 * @TODO Needs to be done either by events or by grails async processing,
-			 * because this will keep user redirect blocked for longer time if there
-			 * are greater number of entries in previous data.
-			 */
-			log.info "Getting user's previous data for account: $account"
-			getDataDefault(account, null, false)
-			return [success: true]
+			return [success: true, account: account]
 		}
+		log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
+		Map result = [success: false, status: withingsResponseStatus, account: account]
 
-		log.warn "Subscription failed for account: $account with status: " + result["body"].status
+		switch (withingsResponseStatus) {
+			case 293:	// Notification URL is not responding.
+			case 2555:	// Notification URL not found.
+				result.message = "Please try again."
+				break
+		}
 
 		account.removeAccessToken()		// confirms that subscription is not successful.
 		account.save()
-		[success: false]
+		result
 	}
 
 	@Override

@@ -51,16 +51,16 @@ abstract class DataService {
 	String unsubscribeURL
 
 	private static Map<ThirdParty, DataService> dataServiceMap = [:]
-	
+
 	// very early start date
 	static final Date earlyStartDate = new Date(-5364658800L)
 
-	// register data service for lookup	
+	// register data service for lookup
 	@PostConstruct
 	void registerDataService() {
 		dataServiceMap[typeId] = this
 	}
-	
+
 	static getDataServiceForTypeId(ThirdParty typeId) {
 		return dataServiceMap[typeId]
 	}
@@ -74,12 +74,12 @@ abstract class DataService {
 	 */
 	void checkNotNull(def instance) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		if (!instance) {
-			debug "authentication required"
+			log.debug "Authentication required. Null instance received"
 			throw new MissingOAuthAccountException(provider)
 		}
 
 		if ((instance instanceof Token) && !instance.token) {
-			debug "authentication required"
+			log.debug "Authentication required. Either null or blank token received."
 			throw new InvalidAccessTokenException()
 		}
 	}
@@ -148,21 +148,25 @@ abstract class DataService {
 		if (response.code == 401) {
 			log.warn "Token expired for provider [$provider]"
 			throw new InvalidAccessTokenException(provider)
-		} else {
-			JSONElement parsedResponse
-			try {
-				if (responseBody) {
-					parsedResponse = JSON.parse(responseBody)
-				}
-			} catch (ConverterException e) {
-				log.error "Error parsing response data.", e
+		}
+
+		JSONElement parsedResponse
+		try {
+			if (responseBody) {
+				parsedResponse = JSON.parse(responseBody)
+			}
+		} catch (ConverterException e) {
+			log.error "Error parsing response data.", e
+		} finally {
+			if (!parsedResponse) {
 				parsedResponse = new JSONObject()
 			}
-			// Helper dynamic methods.
-			parsedResponse.getMetaClass().getCode = { return response.code }
-			parsedResponse.getMetaClass().getRawBody = { return responseBody }
-			parsedResponse
 		}
+
+		// Helper dynamic methods.
+		parsedResponse.getMetaClass().getCode = { return response.code }
+		parsedResponse.getMetaClass().getRawBody = { return responseBody }
+		parsedResponse
 	}
 
 	/**
@@ -237,47 +241,34 @@ abstract class DataService {
 			OAuthAccount.findAllByTypeIdAndAccountId(typeId, it.ownerId).each { account ->
 				try {
 					this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+					it.status = ThirdPartyNotification.Status.PROCESSED
+					it.save(flush: true)
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
+				} catch (InvalidAccessTokenException e) {
+					log.warn "Token expired while processing notification of type: [$it.collectionType] for $provider."
+					it.removeAccessToken()
+					it.save(flush: true)
 				}
 			}
-			it.status = ThirdPartyNotification.Status.PROCESSED
-			it.save(flush: true)
 		}
 
 		log.info "Finished processing ${provider}'s notifications."
 	}
 
 	/**
-	 * @param account
+	 * Used to poll all connected account of a given user Id.
+	 * @param userId Curious user id.
 	 * @return
 	 */
-	static boolean pollAllForUserId(Long userId) {
+	boolean pollAllForUserId(Long userId) {
+		log.debug "Polling all devices for userId: [$userId]"
 		def accounts = OAuthAccount.findAllByUserId(userId)
-		
+
 		for (OAuthAccount account in accounts) {
 			DataService dataService = account.getDataService()
-			
-			try {
-				dataService.poll(account)
-			} catch (AuthenticationRequiredException e) {
-				// TODO: Warn user they need to relink account
-				log.debug "OAuth account not authenticated, removing account"
-				e.printStackTrace()
-				OAuthAccount.delete(account)
-			}
-		}
-	}
 
-	/**
-	 * @param account
-	 * @return
-	 */
-	boolean poll(Long userId) {
-		def accounts = OAuthAccount.findAllByUserIdAndTypeId(userId, typeId)
-		
-		for (OAuthAccount account in accounts) {
-			this.poll(account)
+			dataService.poll(account)
 		}
 	}
 
@@ -297,15 +288,28 @@ abstract class DataService {
 			return false
 		}
 
-		getDataDefault(account, null, false)
+		try {
+			getDataDefault(account, null, false)
+		} catch (InvalidAccessTokenException e) {
+			log.warn "Token expired while polling for & account: [$account]"
+			account.removeAccessToken()
+			account.save()
+		}
 	}
 
 	/**
 	 * Used to poll all accounts data for respective API's.
+	 * Must be called from API data services.
 	 */
 	void pollAll() {
 		OAuthAccount.findAllByTypeId(typeId).each {
-			getDataDefault(it, null, false)
+			try {
+				getDataDefault(it, null, false)
+			} catch (InvalidAccessTokenException e) {
+				log.warn "Token expired while polling all account: [$it] for $typeId."
+				it.removeAccessToken()
+				it.save()
+			}
 		}
 	}
 
@@ -315,7 +319,7 @@ abstract class DataService {
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
-	Map subscribe(Long userId) throws AuthenticationRequiredException {
+	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		subscribe(userId, subscribeURL, "get", [:])
 	}
 
@@ -332,21 +336,12 @@ abstract class DataService {
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
-	Map subscribe(Long userId, String url, String method, Map queryParams) throws AuthenticationRequiredException {
+	Map subscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "DataService.subscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
-		OAuthAccount account = getOAuthAccountInstance(userId)
-		def parsedResponse
-		try {
-			checkNotNull(account)
-			parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
-		} catch (MissingOAuthAccountException e) {
-			throw new AuthenticationException()
-		} catch (InvalidAccessTokenException e) {
-			OAuthAccount.delete(account)
-			throw new AuthenticationRequiredException(provider)
-		}
 
-		
+		OAuthAccount account = getOAuthAccountInstance(userId)
+		checkNotNull(account)
+		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
 
 		[code: parsedResponse.getCode(), body: parsedResponse, account: account]
 	}
@@ -382,7 +377,7 @@ abstract class DataService {
 		}
 
 		def parsedResponse
-		
+
 		try {
 			parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
 		} catch (InvalidAccessTokenException e) {
