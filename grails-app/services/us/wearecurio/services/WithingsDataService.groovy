@@ -71,10 +71,8 @@ class WithingsDataService extends DataService {
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 					[setName: SET_NAME, userId: userId])
-		else {
-			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
-					[setName: SET_NAME, userId: userId, entryDate: startDate])
-		}
+
+		Integer timeZoneId = getTimeZoneId(account)
 
 		Map queryParameters = ["action": "getmeas"]
 		queryParameters.put("userid", account.getAccountId())
@@ -99,8 +97,6 @@ class WithingsDataService extends DataService {
 				return [success: false, status: data.status]
 			}
 
-			Integer timeZoneId = getTimeZoneId(account)
-
 			JSONArray groups = data.body.measuregrps
 			offset = groups.size()
 			more = data.body.more ? true : false
@@ -109,6 +105,12 @@ class WithingsDataService extends DataService {
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
 				JSONArray measures = group.measures
+
+				if (!refreshAll) {
+					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
+							[setName: SET_NAME, userId: userId, entryDate: date])
+				}
+
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
 					log.debug "type: " + measure.type + " value: " + value

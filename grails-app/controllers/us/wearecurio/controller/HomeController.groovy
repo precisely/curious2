@@ -166,7 +166,7 @@ class HomeController extends DataController {
 		Map result = [:]
 
 		try {
-			movesDataService.unsubscribe(userId)
+			result = movesDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
 			throw new AuthenticationRequiredException("moves")
 		} catch (MissingOAuthAccountException e) {
@@ -214,7 +214,7 @@ class HomeController extends DataController {
 		Map result = [:]
 
 		try {
-			fitBitDataService.subscribe(userId)
+			result = fitBitDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
 			throw new AuthenticationRequiredException("fitbit")
 		} catch (InvalidAccessTokenException e) {

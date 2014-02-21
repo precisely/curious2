@@ -1,9 +1,6 @@
 package us.wearecurio.services.integration
 
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
-
 import grails.test.mixin.*
 
 import org.junit.*
@@ -12,12 +9,13 @@ import org.scribe.model.Response
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
-import us.wearecurio.services.UrlService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.utility.Utils
 
 class DataServiceTests extends CuriousServiceTestCase {
 
@@ -33,12 +31,12 @@ class DataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 
 		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
 
 		Utils.save(account, true)
 
 		account2 = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
 
 		Utils.save(account2, true)
 	}
