@@ -49,7 +49,7 @@ class FitBitDataService extends DataService {
 		String accountId = account.accountId
 		Long userId = account.userId
 
-		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+		Integer timeZoneId = getTimeZoneId(account)
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
 		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
@@ -156,8 +156,6 @@ class FitBitDataService extends DataService {
 
 		Long userId = account.userId
 
-		Integer timeZoneId = User.getTimeZoneId(userId)
-
 		getDataActivities(account, startDate, false)
 		getDataBody(account, startDate, false)
 		getDataFoods(account, startDate, false)
@@ -174,7 +172,7 @@ class FitBitDataService extends DataService {
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		Long userId = account.userId
 
-		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+		Integer timeZoneId = getTimeZoneId(account)
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
 		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
@@ -211,6 +209,10 @@ class FitBitDataService extends DataService {
 	JSONElement getResponse(Token tokenInstance, String requestUrl) {
 		Map requestHeader = ["Accept-Language": "en_US"]
 		super.getResponse(tokenInstance, requestUrl, "get", [:], requestHeader)
+	}
+
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		getUserProfile(account).user.timezone
 	}
 
 	@Override

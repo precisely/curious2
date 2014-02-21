@@ -1,12 +1,8 @@
 package us.wearecurio.services
 
-import java.util.Map
+import grails.converters.JSON
 
 import javax.annotation.PostConstruct
-
-import grails.converters.JSON
-import grails.util.Environment
-import javassist.NotFoundException
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
@@ -15,13 +11,13 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
-import us.wearecurio.exceptions.AuthenticationException;
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
-import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.thirdparty.InvalidAccessTokenException
-import us.wearecurio.thirdparty.MissingOAuthAccountException;
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 abstract class DataService {
 
@@ -128,7 +124,9 @@ abstract class DataService {
 	 */
 	JSONElement getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
 	throws InvalidAccessTokenException {
-		log.debug "Fetching data for [$provider] with request URL: [$requestURL]"
+		long currentTime = System.currentTimeMillis()
+
+		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL]"
 
 		checkNotNull(tokenInstance)
 
@@ -143,7 +141,7 @@ abstract class DataService {
 			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
 		}
 
-		log.debug "Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
+		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
 
 		if (response.code == 401) {
 			log.warn "Token expired for provider [$provider]"
@@ -168,6 +166,46 @@ abstract class DataService {
 		parsedResponse.getMetaClass().getRawBody = { return responseBody }
 		parsedResponse
 	}
+
+	/**
+	 * Used to get timezone instance id for current account. First check in account instance
+	 * itself for timezone otherwise get from userProfileData.
+	 * @param account
+	 * @return
+	 * @throws MissingOAuthAccountException
+	 * @throws InvalidAccessTokenException
+	 */
+	Integer getTimeZoneId(OAuthAccount account) {
+		log.debug "Get timeZoneId for Account: [$account]"
+		checkNotNull(account)
+		if (!account.timeZoneId) {	// Checking if timezoneId already exists.
+			Integer timeZoneId
+			String timeZoneName
+			log.debug "TimeZoneId not found for account: [$account]. Try getting from user profile information."
+
+			try {
+				timeZoneName = getTimeZoneName(account)	// Getting timezone name from userInfo.
+			} catch (InvalidAccessTokenException e) {
+				log.warn "Token expired while getting timezone for [$account]"
+			}
+
+			if (!timeZoneName) {	// Using user's last accessed timezone if timezone name not found from userInfo.
+				log.debug "TimeZone Name not found for account: [$account] from user information. Using last accessed timezone."
+				timeZoneId = User.getTimeZoneId(account.userId)
+			} else {
+				log.debug "Found timezone name [$timeZoneName] for account: [$account]."
+				timeZoneId = TimeZoneId.look(timeZoneName).id
+			}
+			account.timeZoneId = timeZoneId
+			account.save(flush: true)
+		} else {
+			log.debug "Found timeZoneId in account itself for account [$account]"
+		}
+
+		account.timeZoneId
+	}
+
+	abstract String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException
 
 	/**
 	 * Returns the parsed response of user profile data based on configured profileURL

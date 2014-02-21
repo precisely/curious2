@@ -72,6 +72,8 @@ class Twenty3AndMeDataService extends DataService {
 		}
 		[success: true]
 	}
+
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {}
 	
 	public static final String GENOME_URL = "https://api.23andme.com/1/genomes/"
 

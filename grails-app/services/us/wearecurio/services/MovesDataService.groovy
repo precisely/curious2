@@ -12,9 +12,8 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
-import us.wearecurio.thirdparty.MissingOAuthAccountException;
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class MovesDataService extends DataService {
@@ -37,7 +36,7 @@ class MovesDataService extends DataService {
 
 		startDate = startDate ?: new Date() ?: earlyStartDate
 
-		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
+		Integer timeZoneId = getTimeZoneId(account)
 
 		TimeZone timeZoneInstance = TimeZoneId.getTimeZoneInstance(timeZoneId)
 
@@ -91,6 +90,10 @@ class MovesDataService extends DataService {
 		account.lastPolled = new Date()
 		account.save()
 		return [success: true]
+	}
+
+	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		getUserProfile(account).profile.currentTimeZone.id
 	}
 
 	@Override
