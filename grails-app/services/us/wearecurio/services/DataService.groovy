@@ -102,7 +102,7 @@ abstract class DataService {
 	 * @param refreshAll Boolean field used to clear all existing records.
 	 * @return	Returns a map with required data.
 	 */
-	abstract Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll)
+	abstract Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException
 
 	/**
 	 * Returns the OAuthAccount instance for given userId.
@@ -247,8 +247,8 @@ abstract class DataService {
 					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$it.collectionType] for $provider."
-					it.removeAccessToken()
-					it.save(flush: true)
+					account.removeAccessToken()
+					account.save(flush: true)
 				}
 			}
 		}
@@ -353,7 +353,7 @@ abstract class DataService {
 	 * @throws NotFoundException
 	 * @throws AuthenticationRequiredException
 	 */
-	Map unsubscribe(Long userId) throws NotFoundException, AuthenticationRequiredException {
+	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		unsubscribe(userId, unsubscribeURL, "get", [:])
 	}
 
@@ -368,7 +368,7 @@ abstract class DataService {
 	 * @throws MissingOAuthAccountException if instance of OAuthAccount not found.
 	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
-	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException {
+	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "DataService.unsubscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		if (!account) {
@@ -376,13 +376,7 @@ abstract class DataService {
 			throw new MissingOAuthAccountException()
 		}
 
-		def parsedResponse
-
-		try {
-			parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
-		} catch (InvalidAccessTokenException e) {
-			throw new AuthenticationRequiredException(provider)
-		}
+		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
 
 		// regardless of the response, delete account so user can re-link it if needed
 
