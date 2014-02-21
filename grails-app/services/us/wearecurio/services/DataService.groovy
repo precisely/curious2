@@ -299,7 +299,7 @@ abstract class DataService {
 	 * @param userId Curious user id.
 	 * @return
 	 */
-	boolean pollAllForUserId(Long userId) {
+	static boolean pollAllForUserId(Long userId) {
 		log.debug "Polling all devices for userId: [$userId]"
 		def accounts = OAuthAccount.findAllByUserId(userId)
 

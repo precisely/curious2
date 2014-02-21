@@ -11,10 +11,12 @@ import org.scribe.model.Response
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.UrlService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.thirdparty.MissingOAuthAccountException;
 
 class WithingsDataServiceTests extends CuriousServiceTestCase {
 
@@ -34,7 +36,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		assert user2.save()
 
 		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
 
 		account.save()
 	}
@@ -87,8 +89,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testUnSubscribeIfNoOAuthAccount() {
-		Map response = withingsDataService.unsubscribe(user2.id)	// Passing user's ID whose oauth account doesn't exist
-		assert response.message == "No subscription found"
+		shouldFail(MissingOAuthAccountException) {
+			withingsDataService.unsubscribe(user2.id)	// Passing user's ID whose oauth account doesn't exist
+		}
 	}
 
 	void testUnsubscribeWithOAuthAccountExists() {
