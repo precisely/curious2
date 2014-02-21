@@ -533,6 +533,9 @@ var cachedDate, cachedDateUTC;
 var $datepickerField;
 
 $(document).ready(function() {
+	$.event.special.swipe.horizontalDistanceThreshold = 50;
+	$.event.special.swipe.verticalDistanceThreshold = 60;
+	
 	$datepickerField = $("input#datepicker");
 	if (window.location.href.indexOf("lamhealth") > -1) {
 		$("#loginlogo").attr("src", "../images/logo_mobile_lhp.gif");
