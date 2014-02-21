@@ -13,6 +13,9 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -46,9 +49,22 @@ class HomeController extends DataController {
 		debug "userId: $userId"
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		
-		Map result = withingsDataService.subscribe(userId)
+		Map result = [:]
+		
+		try {
+			result = withingsDataService.subscribe(userId)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("withings")
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("withings")
+		}
+
 		if (result.success) {
-			debug "Succeeded in subscribing"
+			OAuthAccount account = result.account
+			if (!account.lastPolled) {
+				log.info "Setting notification to get previous data for account: $account"
+				withingsDataService.saveNotificationForPreviousData(account)
+			}
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
