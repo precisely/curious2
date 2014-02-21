@@ -4,6 +4,8 @@ import grails.converters.JSON
 
 import java.text.SimpleDateFormat
 
+import javax.annotation.PostConstruct;
+
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
@@ -57,7 +59,7 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
 		Integer offset = 0
@@ -353,24 +355,25 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
-	Map unsubscribe(Long userId) {
+	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "WithingsDataService.unsubscribe():" + userId
 		OAuthAccount account = getOAuthAccountInstance(userId)
-
-		if (!account) {
-			log.info "No OAuthAccount found."
-			return [success: false, message: "No subscription found"]
-		}
+		checkNotNull(account)
 
 		Map result = super.unsubscribe(userId, BASE_URL + "/notify", "get", getSubscriptionParameters(account, false))
 
+		int withingsResponseCode = result["body"].status
+
 		// 294 status code is for 'no such subscription available to delete'.
-		if (result["body"].status in [0, 294]) {
+		if (withingsResponseCode in [0, 294]) {
 			debug "Unsubscribe succeeded, status: " + result["body"].status
 			return [success: true]
 		}
+		if (withingsResponseCode == 342) {
+			throw new InvalidAccessTokenException("Withings")
+		}
 
-		debug "Unsubscribe failed, status: " + result["body"].status
+		log.warn "Unsubscribe failed, status: $withingsResponseCode"
 		[success: false]
 	}
 

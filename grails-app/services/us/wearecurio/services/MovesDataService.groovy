@@ -13,11 +13,13 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.MissingOAuthAccountException;
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class MovesDataService extends DataService {
 
-	static final String BASE_URL = "https://api.moves-app.com/api/1.1"
+	static final String BASE_URL = "https://api.moves-app.com/api/1.1%s"
 	static final String COMMENT = "(Moves)"
 	static final String SET_NAME = "moves import"
 
@@ -30,7 +32,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		Long userId = account.userId
 
 		startDate = startDate ?: new Date() ?: earlyStartDate
@@ -135,7 +137,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
-	Map subscribe(Long userId) {
+	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
@@ -143,13 +145,9 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
-	Map unsubscribe(Long userId) {
+	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		OAuthAccount account = getOAuthAccountInstance(userId)
-
-		if (!account) {
-			log.info "No moves subscription found."
-			return [success: false, message: "No subscription found"]
-		}
+		checkNotNull(account)
 
 		// always remove account whether success or failure reported, so user can re-link
 		OAuthAccount.delete(account)

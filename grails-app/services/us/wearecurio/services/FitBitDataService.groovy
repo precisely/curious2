@@ -18,6 +18,8 @@ import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.MissingOAuthAccountException;
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
 import us.wearecurio.utility.Utils
 
@@ -144,7 +146,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) {
+	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		String forDate = formatter.format(startDate)
@@ -169,7 +171,7 @@ class FitBitDataService extends DataService {
 		[success: true]
 	}
 
-	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		Long userId = account.userId
 
 		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(userId)
@@ -231,7 +233,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	Map subscribe(Long userId) throws AuthenticationRequiredException {
+	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Map result = super.subscribe(userId, subscriptionURL, "post", [:])
@@ -256,17 +258,10 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	Map unsubscribe(Long userId) throws NotFoundException, AuthenticationRequiredException {
-		Map result
-
+	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		String unsubscribeURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
-		try {
-			result = super.unsubscribe(userId, unsubscribeURL, "delete", [:])
-		} catch (NotFoundException e) {
-			log.info "No subscription found for userId [$userId]"
-			return [success: false, message: "No subscription found"]
-		}
+		Map result = super.unsubscribe(userId, unsubscribeURL, "delete", [:])
 
 		if (result["code"] in [204, 404]) {
 			return [success: true]
