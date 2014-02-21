@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import java.util.Map
+
 import javax.annotation.PostConstruct
 
 import grails.converters.JSON
@@ -14,10 +15,13 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
+import us.wearecurio.exceptions.AuthenticationException;
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException;
 
 abstract class DataService {
 
@@ -63,20 +67,20 @@ abstract class DataService {
 
 	/**
 	 * Used to check if certain instances are not null. And if null
-	 * throw AuthenticationRequiredException for authentication.
+	 * throw appropriate exception.
 	 * @param instance Can be one of OAuthAccount or Token
 	 * 
-	 * @throws AuthenticationRequiredException
+	 * @throws MissingOAuthAccountException, InvalidAccessTokenException
 	 */
-	void checkNotNull(def instance) throws AuthenticationRequiredException {
+	void checkNotNull(def instance) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		if (!instance) {
 			debug "authentication required"
-			throw new AuthenticationRequiredException(provider)
+			throw new MissingOAuthAccountException(provider)
 		}
 
 		if ((instance instanceof Token) && !instance.token) {
 			debug "authentication required"
-			throw new AuthenticationRequiredException(provider)
+			throw new InvalidAccessTokenException()
 		}
 	}
 
@@ -120,10 +124,10 @@ abstract class DataService {
 	 * @return Returns the parsed response in JSON format along with an additional dynamic method
 	 * `getCode()` to get status of the API call. Returned response can be either JSONObject or JSONArray
 	 * 
-	 * @throws AuthenticationRequiredException if any API call returns 401 response code.
+	 * @throws InvalidAccessTokenException if any API call returns 401 response code.
 	 */
 	JSONElement getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
-	throws AuthenticationRequiredException {
+	throws InvalidAccessTokenException {
 		log.debug "Fetching data for [$provider] with request URL: [$requestURL]"
 
 		checkNotNull(tokenInstance)
@@ -143,7 +147,7 @@ abstract class DataService {
 
 		if (response.code == 401) {
 			log.warn "Token expired for provider [$provider]"
-			throw new AuthenticationRequiredException(provider)
+			throw new InvalidAccessTokenException(provider)
 		} else {
 			JSONElement parsedResponse
 			try {
@@ -331,9 +335,18 @@ abstract class DataService {
 	Map subscribe(Long userId, String url, String method, Map queryParams) throws AuthenticationRequiredException {
 		debug "DataService.subscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
-		checkNotNull(account)
+		def parsedResponse
+		try {
+			checkNotNull(account)
+			parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationException()
+		} catch (InvalidAccessTokenException e) {
+			OAuthAccount.delete(account)
+			throw new AuthenticationRequiredException(provider)
+		}
 
-		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+		
 
 		[code: parsedResponse.getCode(), body: parsedResponse, account: account]
 	}
@@ -357,17 +370,24 @@ abstract class DataService {
 	 * @param method HTTP method to call with.
 	 * @param queryParams OPTIONAL query string parameters.
 	 * @return
-	 * @throws NotFoundException if instance of OAuthAccount not found.
+	 * @throws MissingOAuthAccountException if instance of OAuthAccount not found.
 	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
-	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws NotFoundException, AuthenticationRequiredException {
+	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException {
 		debug "DataService.unsubscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		if (!account) {
-			throw new NotFoundException("No oauth account found.")
+			//Sanity check. This should never ever happen
+			throw new MissingOAuthAccountException()
 		}
 
-		def parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+		def parsedResponse
+		
+		try {
+			parsedResponse = getResponse(account.tokenInstance, url, method, queryParams)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException(provider)
+		}
 
 		// regardless of the response, delete account so user can re-link it if needed
 
