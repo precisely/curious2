@@ -85,8 +85,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
-		assert Entry.count() == 23
-
 	}
 
 	void testPollIfNullDataInSegments() {
