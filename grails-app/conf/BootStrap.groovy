@@ -12,6 +12,7 @@ class BootStrap {
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing.."
+		TimeZone.setDefault(TimeZone.getTimeZone("ETC"))
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()

@@ -14,7 +14,7 @@ import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 

@@ -4,8 +4,6 @@ import grails.converters.JSON
 
 import java.text.SimpleDateFormat
 
-import javax.annotation.PostConstruct;
-
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
@@ -16,9 +14,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
+import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.utility.Utils
@@ -92,7 +88,7 @@ class WithingsDataService extends DataService {
 			if (data.status != 0) {
 				log.warn "Error status returned from withings. Body: ${data}"
 				if (data.status == 342) {	// Token expired or invalid
-					throw new InvalidAccessTokenException("Withings")
+					throw new InvalidAccessTokenException("Withings", account)
 				}
 				return [success: false, status: data.status]
 			}
@@ -199,7 +195,7 @@ class WithingsDataService extends DataService {
 		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting withings activity data. [$data]"
 			if (data.status == 342) {	// Token expired or invalid
-				throw new InvalidAccessTokenException("Withings")
+				throw new InvalidAccessTokenException("Withings", account)
 			}
 			return [success: false]
 		}
@@ -260,7 +256,7 @@ class WithingsDataService extends DataService {
 	}
 
 	/**
-	 * Hack of withings data srevice for getting users timezone.
+	 * Hack of Withings API for getting users timezone.
 	 * @param tokenInstance
 	 * @param accountId
 	 * @return
@@ -351,10 +347,10 @@ class WithingsDataService extends DataService {
 		switch (withingsResponseStatus) {
 			case 293:	// Notification URL is not responding.
 			case 2555:	// Notification URL not found.
-				result.message = "Please try again."
+				result.message = "Please try again after some time"
 				break
 			case 342:
-				throw new InvalidAccessTokenException("withings")
+				throw new InvalidAccessTokenException("withings", account)
 				break
 		}
 
@@ -379,7 +375,7 @@ class WithingsDataService extends DataService {
 			return [success: true]
 		}
 		if (withingsResponseCode == 342) {
-			throw new InvalidAccessTokenException("Withings")
+			throw new InvalidAccessTokenException("Withings", account)
 		}
 
 		log.warn "Unsubscribe failed, status: $withingsResponseCode"
