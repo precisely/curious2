@@ -13,6 +13,9 @@ grails.project.source.level = 1.6
 //grails.project.fork = [
 //   run: [maxMemory:1024, minMemory:64, debug:false, maxPerm:256]
 //]
+if (Environment.current == Environment.DEVELOPMENT) {
+	grails.project.plugins.dir="./plugins"
+}
 
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
