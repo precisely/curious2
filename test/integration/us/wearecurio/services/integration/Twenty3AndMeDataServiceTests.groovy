@@ -3,11 +3,10 @@ package us.wearecurio.services.integration
 import static org.junit.Assert.*
 
 import org.junit.*
-import org.scribe.model.Token
 import org.scribe.model.Response
+import org.scribe.model.Token
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
@@ -15,7 +14,7 @@ import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.model.User
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException
 
 class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
@@ -52,12 +51,12 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		try {
 			twenty3AndMeDataService.getUserProfile(tokenInstance)
 		} catch (e) {
-			assert e.cause instanceof AuthenticationRequiredException
+			assert e.cause instanceof InvalidAccessTokenException
 		}
 	}
 
 	void testStoreGenomesDataWithNoToken() {
-		shouldFail(AuthenticationRequiredException) {
+		shouldFail(InvalidAccessTokenException) {
 			twenty3AndMeDataService.storeGenomesData(userId)
 		}
 	}

@@ -15,6 +15,7 @@
 .project
 .settings/**
 target/**
+plugins/**
 target-eclipse/**
 /.link_to_grails_plugins
 /target

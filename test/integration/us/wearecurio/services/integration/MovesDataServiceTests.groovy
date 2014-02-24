@@ -10,10 +10,12 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException;
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 
@@ -32,7 +34,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert user2.save()
 
 		account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "Z14DRUTWswu66GuptWqQR1b295DikZY77Bfwocqaduku9VKI2t0WTuOJQ7F72DSQ",
-			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775"]).save()
+			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
 		assert account.save()
 	}
 
@@ -44,13 +46,13 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 	void testUnsubscribe() {
 		// If no OAuthAccount Exists
-		Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
-		assertFalse response.success
-		assert response.message == "No subscription found"
+		shouldFail(MissingOAuthAccountException) {
+			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
+		}
 		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
 
 		// If OAuthAccount Exists
-		response = movesDataService.unsubscribe(userId)
+		Map response = movesDataService.unsubscribe(userId)
 		assertTrue response.success
 		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
 	}
@@ -83,8 +85,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
-		assert Entry.count() == 23
-
 	}
 
 	void testPollIfNullDataInSegments() {
@@ -121,7 +121,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		try {
 			movesDataService.getDataDefault(account, null, false)
 		} catch (e) {
-			assert e.cause instanceof AuthenticationRequiredException
+			assert e instanceof InvalidAccessTokenException
 		}
 	}
 

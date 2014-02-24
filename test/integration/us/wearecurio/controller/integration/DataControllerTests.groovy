@@ -121,7 +121,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getListData()
 		println controller.response.contentAsString
 		def x = controller.response.contentAsString
-		assert controller.response.contentAsString.startsWith('callback({"06/30/2010":[{"')
+		assert controller.response.contentAsString.startsWith('callback({"07/01/2010":[{"')
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')
 		assert controller.response.contentAsString.contains('"07/01/2010":[{"')
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')

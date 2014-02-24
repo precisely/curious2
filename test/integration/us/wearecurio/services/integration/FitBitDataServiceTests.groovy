@@ -5,11 +5,13 @@ import org.scribe.model.Response
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
+import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.UrlService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class FitBitDataServiceTests extends CuriousServiceTestCase {
@@ -28,7 +30,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		assert user2.save()
 
 		account = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id"])
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
 
 		Utils.save(account, true)
 	}
@@ -59,14 +61,15 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testSubscribeIfNoAuthAccount() {
-		shouldFail(AuthenticationRequiredException) {
+		shouldFail(MissingOAuthAccountException) {
 			fitBitDataService.subscribe(user2.id)
 		}
 	}
 
 	void testUnsubscribeIfNoOAuthAccount() {
-		Map result = fitBitDataService.unsubscribe(user2.id)
-		assert result.message == "No subscription found"
+		shouldFail(MissingOAuthAccountException) {
+			fitBitDataService.unsubscribe(user2.id)
+		}
 	}
 
 	void testUnsubscribeWithOAuthAccountExists() {
@@ -98,7 +101,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		try {
 			fitBitDataService.getDataDefault(account, new Date(), false)
 		} catch(e) {
-			assert e.cause instanceof AuthenticationRequiredException
+			assert e instanceof InvalidAccessTokenException
 		}
 	}
 

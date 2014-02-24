@@ -13,6 +13,9 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.thirdparty.AuthenticationRequiredException
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
@@ -46,9 +49,22 @@ class HomeController extends DataController {
 		debug "userId: $userId"
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		
-		Map result = withingsDataService.subscribe(userId)
+		Map result = [:]
+		
+		try {
+			result = withingsDataService.subscribe(userId)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("withings")
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("withings")
+		}
+
 		if (result.success) {
-			debug "Succeeded in subscribing"
+			OAuthAccount account = result.account
+			if (!account.lastPolled) {	// Check to see if first time subscription.
+				log.info "Setting notification to get previous data for account: $account"
+				withingsDataService.saveNotificationForPreviousData(account)
+			}
 			flash.message = g.message(code: "withings.subscribe.success.message")
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
@@ -62,7 +78,16 @@ class HomeController extends DataController {
 		debug "HomeController.unregisterwithings() params:" + params
 		User user = sessionUser()
 		Long userId = user.id
-		Map result = withingsDataService.unsubscribe(userId)
+		Map result = [:]
+
+		try {
+			result = withingsDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("withings")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
 			flash.message = g.message(code: "withings.unsubscribe.success.message")
@@ -79,7 +104,16 @@ class HomeController extends DataController {
 		Long userId = user.id
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 
-		Map result = twenty3AndMeDataService.storeGenomesData(userId)
+		Map result = [:]
+
+		try {
+			result = twenty3AndMeDataService.storeGenomesData(userId)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("Twenty3AndMe")
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("Twenty3AndMe")
+		}
+
 		if (result.success) {
 			debug "Succeeded in importing"
 			flash.message = message(code: "twenty3andme.import.success.message")
@@ -105,7 +139,16 @@ class HomeController extends DataController {
 		Long userId = user.id
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
 
-		Map result = movesDataService.subscribe(userId)
+		Map result = [:]
+
+		try {
+			result = movesDataService.subscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("moves")
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("moves")
+		}
+
 		if (result.success) {
 			debug "Succeeded in subscribing"
 			flash.message = message(code: "moves.subscribe.success.message")
@@ -120,10 +163,18 @@ class HomeController extends DataController {
 		debug "HomeController.unregistermoves() params:" + params
 		User user = sessionUser()
 		Long userId = user.id
-		Map result = movesDataService.unsubscribe(userId)
+		Map result = [:]
+
+		try {
+			result = movesDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("moves")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			session[oauthService.findSessionKeyForAccessToken("moves")] = null
 			flash.message = g.message(code: "moves.unsubscribe.success.message")
 		} else {
 			debug "Failure while unsubscribing" + result.message
@@ -160,7 +211,15 @@ class HomeController extends DataController {
 		debug "userId: $userId"
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		
-		Map result = fitBitDataService.subscribe(userId)
+		Map result = [:]
+
+		try {
+			result = fitBitDataService.subscribe(userId)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("fitbit")
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("fitbit")
+		}
 
 		if(result.success) {
 			debug "Succeeded in subscribing"
@@ -181,7 +240,16 @@ class HomeController extends DataController {
 		}
 		Long userId = user.id
 
-		Map result = fitBitDataService.unsubscribe(userId)
+		Map result = [:]
+
+		try {
+			result = fitBitDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("fitbit")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
 			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
