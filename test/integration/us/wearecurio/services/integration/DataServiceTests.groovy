@@ -15,6 +15,7 @@ import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.Utils
 
 class DataServiceTests extends CuriousServiceTestCase {
@@ -43,6 +44,42 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	@Override
 	void tearDown() {
+	}
+
+	void testExpiredToken() {
+		// Testing expired token for fitbit.
+		fitBitDataService.oauthService = [
+			getFitBitResource: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection(401))
+			}
+		]
+
+		try {
+			fitBitDataService.getUserProfile(account)
+		} catch(e) {
+			assert e.cause instanceof InvalidAccessTokenException
+			assert e.cause.provider.toLowerCase() == "fitbit"
+		}
+	}
+
+	void testExpiredTokenWithAPI() {
+		try {
+			// Testing directly with API.
+			fitBitDataService.getUserProfile(account)
+		} catch(e) {
+			assert e.cause instanceof InvalidAccessTokenException
+		}
+
+		account.accessToken = ""
+		account.accessSecret = ""
+		account.save()	// Will mimic new Token("", "")
+
+		try {
+			// Testing directly with API with no token.
+			fitBitDataService.getUserProfile(account)
+		} catch(e) {
+			assert e.cause instanceof InvalidAccessTokenException
+		}
 	}
 
 	void testPollForUser() {

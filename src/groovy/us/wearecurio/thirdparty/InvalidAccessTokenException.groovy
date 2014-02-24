@@ -7,12 +7,15 @@ package us.wearecurio.thirdparty
  */
 class InvalidAccessTokenException extends Exception {
 
+	String provider
+
 	InvalidAccessTokenException() {
 		super("Missing a valid access token");
 	}
 
 	InvalidAccessTokenException(String provider) {
 		super("Missing a valid access token for [$provider].");
+		this.provider = provider
 	}
 
 }

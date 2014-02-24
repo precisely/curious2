@@ -230,7 +230,7 @@ class WithingsDataService extends DataService {
 			}
 		}
 
-		[success: false]
+		[success: true]
 	}
 
 	def getRefreshSubscriptionsTask() {
@@ -352,6 +352,9 @@ class WithingsDataService extends DataService {
 			case 293:	// Notification URL is not responding.
 			case 2555:	// Notification URL not found.
 				result.message = "Please try again."
+				break
+			case 342:
+				throw new InvalidAccessTokenException("withings")
 				break
 		}
 
