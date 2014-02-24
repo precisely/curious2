@@ -304,6 +304,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		}
 
 		controller.response.reset()
+		account.accessToken = "some-token"
+		account.save()
 
 		withingsDataService.oauthService = [
 			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
@@ -312,7 +314,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 		controller.registerwithings()
 		assert account.accessToken == ""
-		assert controller.flash.message.contains("Unable to link Withings account. Please try again.")
+		assert controller.flash.message.contains("Unable to link Withings account. Please try again")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		account.accessToken = "some-token"

@@ -102,21 +102,8 @@ class MovesDataService extends DataService {
 	void processActivity(JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
-		Date startTimeWithNoTimeZone = timeFormat.parse(currentActivity.startTime)
-		Date endTimeWithNoTimeZone = timeFormat.parse(currentActivity.endTime)
-
-		TimeZone timeZoneInstance = TimeZoneId.getTimeZoneInstance(timeZoneId)
-
-		DateFormat formatterWithTimeZone = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z")
-		DateFormat formatterWithoutTimeZone = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z")
-
-		formatterWithTimeZone.setTimeZone(timeZoneInstance)
-
-		String startTimeWithTimeZone = formatterWithTimeZone.format(startTimeWithNoTimeZone)
-		String endTimeWithTimeZone = formatterWithTimeZone.format(endTimeWithNoTimeZone)
-
-		Date startTime = formatterWithoutTimeZone.parse(startTimeWithTimeZone)
-		Date endTime = formatterWithoutTimeZone.parse(endTimeWithTimeZone)
+		Date startTime = timeFormat.parse(currentActivity.startTime)
+		Date endTime = timeFormat.parse(currentActivity.endTime)
 
 		switch(activityType) {
 			case "cycling":		// Support type for HumanAPI
