@@ -3,30 +3,44 @@ package us.wearecurio.controller.integration
 import static org.junit.Assert.*
 
 import org.junit.*
+import org.scribe.model.Response
 
 import us.wearecurio.controller.HomeController
 import us.wearecurio.model.*
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.test.common.MockedHttpURLConnection
+import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
 public class HomeControllerTests extends CuriousControllerTestCase {
-	static transactional = true
 
 	PlotData plotData
 	Discussion discussion
 	def withingsDataServiceMock
 
+	HomeController controller
+	FitBitDataService fitBitDataService
+	WithingsDataService withingsDataService
+
+	User user2
+
 	@Before
 	void setUp() {
 		super.setUp()
+
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+		assert user2.save()
 
 		plotData = PlotData.create(user, "Plot", "{}", true)
 		Utils.save(plotData, true)
 		discussion = Discussion.create(user, "Discussion name")
 		discussion.createPost(DiscussionAuthor.create(user), plotData.getId(), "comment")
 		Utils.save(discussion, true)
+
+		controller = new HomeController()
 	}
 
 	@After
@@ -267,16 +281,53 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
 		account.save()
+		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.WITHINGS)
 
-		HomeController controller = new HomeController()
-		controller.withingsDataService = [
-			subscribe: { Long userId -> return [success:true, account: account] }
-		] as WithingsDataService
+		controller.session.userId = user2.id
+
+		shouldFail(AuthenticationRequiredException) {
+			// When no OAuthAccount exist.
+			controller.registerwithings()
+		}
+		controller.response.reset()
+
 		controller.session.userId = userId
+		withingsDataService.oauthService = [
+			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
+				return new Response(new MockedHttpURLConnection("""{"status": 342}"""))
+			}
+		]
+
+		shouldFail(AuthenticationRequiredException) {
+			// When token expired & re-subscribing.
+			controller.registerwithings()
+		}
+
+		controller.response.reset()
+
+		withingsDataService.oauthService = [
+			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
+				return new Response(new MockedHttpURLConnection("""{"status": 293}"""))
+			}
+		]
+		controller.registerwithings()
+		assert account.accessToken == ""
+		assert controller.flash.message.contains("Unable to link Withings account. Please try again.")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+
+		account.accessToken = "some-token"
+		account.save()
+
+		controller.response.reset()
+
+		withingsDataService.oauthService = [
+			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
+				return new Response(new MockedHttpURLConnection("""{"status": 0}"""))
+			}
+		]
 
 		controller.registerwithings()
-
-		assert controller.flash.message.contains("Successfully linked Withings account")
+		assert controller.flash.message.contains("Successfully linked Withings account.")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -295,14 +346,57 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testRegisterfitbit() {
-		HomeController controller = new HomeController()
-		controller.fitBitDataService = [
-			subscribe: { Long userId -> return [success:true] }
-		] as FitBitDataService
+		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "token",
+			accessSecret: "secret", accountId: "id"])
+		account.save()
+		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.FITBIT)
+
+		controller.session.userId = user2.id
+
+		shouldFail(AuthenticationRequiredException) {
+			// When no OAuthAccount exist.
+			controller.registerfitbit()
+		}
+		controller.response.reset()
+
 		controller.session.userId = userId
+		fitBitDataService.oauthService = [
+			postFitBitResource: { token, url, p, h ->
+				return new Response(new MockedHttpURLConnection(401))
+			}
+		]
+
+		shouldFail(AuthenticationRequiredException) {
+			// When token expired & re-subscribing.
+			controller.registerfitbit()
+		}
+
+		controller.response.reset()
+		account.accessToken = "some-token"
+		account.save()
+
+		fitBitDataService.oauthService = [
+			postFitBitResource: { token, url, p, h ->
+				return new Response(new MockedHttpURLConnection(409))
+			}
+		]
+		controller.registerfitbit()
+		assert controller.flash.message.contains("already been subscribed.")
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+
+		controller.response.reset()
+
+		account.accessToken = "some-token"
+		account.save()
+
+		fitBitDataService.oauthService = [
+			postFitBitResource: { token, url, p, h ->
+				return new Response(new MockedHttpURLConnection("""{}"""))
+			}
+		]
 
 		controller.registerfitbit()
-		assert controller.flash.message.contains("Successfully linked FitBit account")
+		assert controller.flash.message.contains("Successfully linked FitBit account.")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -321,14 +415,23 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testRegistermoves() {
-		HomeController controller = new HomeController()
-		controller.movesDataService = [
-			subscribe: { Long userId -> return [success:true] }
-		] as MovesDataService
+		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "token",
+			accessSecret: "secret", accountId: "id"])
+		account.save()
+		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.MOVES)
+
+		controller.session.userId = user2.id
+
+		shouldFail(AuthenticationRequiredException) {
+			// When no OAuthAccount exist.
+			controller.registermoves()
+		}
+
 		controller.session.userId = userId
+		controller.response.reset()
 
 		controller.registermoves()
-		assert controller.flash.message.contains("Successfully linked Moves account")
+		assert controller.flash.message.contains("Successfully linked Moves account.")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 

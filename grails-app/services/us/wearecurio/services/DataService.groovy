@@ -131,6 +131,7 @@ abstract class DataService {
 		checkNotNull(tokenInstance)
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
+		println "${method}${provider}${methodSuffix}"
 
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 		String responseBody = ""
@@ -205,6 +206,13 @@ abstract class DataService {
 		account.timeZoneId
 	}
 
+	/**
+	 * Used to retrieve timezone name for given account.
+	 * @param account
+	 * @return Returns timezone name of null if not found.
+	 * @throws MissingOAuthAccountException	If OAuthAccount instance is null.
+	 * @throws InvalidAccessTokenException	If stored access token expired.
+	 */
 	abstract String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException
 
 	/**
