@@ -108,6 +108,15 @@ abstract class DataService {
 		OAuthAccount.findByTypeIdAndUserId(typeId, userId)
 	}
 
+	JSONElement getResponse(OAuthAccount account, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
+	throws InvalidAccessTokenException {
+		try {
+			return getResponse(account.tokenInstance, requestURL, method, queryParams, requestHeaders)
+		} catch (InvalidAccessTokenException e) {
+			throw new InvalidAccessTokenException(e.provider, account)
+		}
+	}
+
 	/**
 	 * Generic method to hit ThirdParty API resources & returns parsed API response along with
 	 * an `getCode()` method to represent the status of the API call.
@@ -131,7 +140,6 @@ abstract class DataService {
 		checkNotNull(tokenInstance)
 
 		String methodSuffix = queryParams ? "ResourceWithQuerystringParams" : "Resource"
-		println "${method}${provider}${methodSuffix}"
 
 		Response response = oauthService."${method}${provider}${methodSuffix}"(tokenInstance, requestURL, queryParams, requestHeaders)
 		String responseBody = ""
@@ -145,7 +153,6 @@ abstract class DataService {
 		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
 
 		if (response.code == 401) {
-			log.warn "Token expired for provider [$provider]"
 			throw new InvalidAccessTokenException(provider)
 		}
 
@@ -172,9 +179,7 @@ abstract class DataService {
 	 * Used to get timezone instance id for current account. First check in account instance
 	 * itself for timezone otherwise get from userProfileData.
 	 * @param account
-	 * @return
-	 * @throws MissingOAuthAccountException
-	 * @throws InvalidAccessTokenException
+	 * @return Returns identity of TimeZone for given account.
 	 */
 	Integer getTimeZoneId(OAuthAccount account) {
 		log.debug "Get timeZoneId for Account: [$account]"
@@ -187,7 +192,7 @@ abstract class DataService {
 			try {
 				timeZoneName = getTimeZoneName(account)	// Getting timezone name from userInfo.
 			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while getting timezone for [$account]"
+				log.warn "Found expired token while getting timezone for [$account]"
 			}
 
 			if (!timeZoneName) {	// Using user's last accessed timezone if timezone name not found from userInfo.
@@ -222,7 +227,7 @@ abstract class DataService {
 	 * @return Returns parsed user profile data.
 	 */
 	JSONObject getUserProfile(OAuthAccount account) {
-		getResponse(account.tokenInstance, profileURL)
+		getResponse(account, profileURL)
 	}
 
 	/**
@@ -254,7 +259,7 @@ abstract class DataService {
 	 */
 	JSONElement listSubscription(Long userId, String url, String method, Map queryParams) {
 		OAuthAccount account = getOAuthAccountInstance(userId)
-		getResponse(account.tokenInstance, listSubscriptionURL)
+		getResponse(account, listSubscriptionURL)
 	}
 
 	/**
@@ -293,8 +298,6 @@ abstract class DataService {
 					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$it.collectionType] for $provider."
-					account.removeAccessToken()
-					account.save(flush: true)
 				}
 			}
 		}
@@ -338,8 +341,6 @@ abstract class DataService {
 			getDataDefault(account, null, false)
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for & account: [$account]"
-			account.removeAccessToken()
-			account.save()
 		}
 	}
 
@@ -352,9 +353,7 @@ abstract class DataService {
 			try {
 				getDataDefault(it, null, false)
 			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while polling all account: [$it] for $typeId."
-				it.removeAccessToken()
-				it.save()
+				log.warn "Token expired while polling account: [$it] for $typeId."
 			}
 		}
 	}

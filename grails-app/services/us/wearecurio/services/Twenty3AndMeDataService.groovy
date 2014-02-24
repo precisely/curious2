@@ -7,9 +7,8 @@ import org.scribe.model.Token
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.Twenty3AndMeData
-import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
-import us.wearecurio.thirdparty.MissingOAuthAccountException;
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 class Twenty3AndMeDataService extends DataService {
 

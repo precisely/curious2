@@ -4,8 +4,6 @@ import grails.converters.JSON
 
 import java.text.SimpleDateFormat
 
-import javassist.NotFoundException
-
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -16,12 +14,9 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.thirdparty.AuthenticationRequiredException
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
-import us.wearecurio.thirdparty.MissingOAuthAccountException;
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
-import us.wearecurio.utility.Utils
 
 class FitBitDataService extends DataService {
 
