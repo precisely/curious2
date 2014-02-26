@@ -176,10 +176,15 @@ environments {
 					key = "96de99b2227025cacb6807e28df20367"
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
 				}
+				// temporary fix to use development app key
 				withings {
+					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+				}
+				/* withings {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
-				}
+				}*/
 			}
 		}
 		
