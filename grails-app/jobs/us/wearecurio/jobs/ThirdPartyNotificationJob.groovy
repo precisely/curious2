@@ -5,7 +5,7 @@ import us.wearecurio.model.ThirdPartyNotification
 class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 
 	static triggers = {
-		simple startDelay: 2 * MINUTE, repeatInterval: 2 * MINUTE
+		simple startDelay: 2 * MINUTE, repeatInterval: 5 * MINUTE
 	}
 
 	def group = "curious"
