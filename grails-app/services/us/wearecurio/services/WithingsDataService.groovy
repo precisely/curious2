@@ -173,6 +173,8 @@ class WithingsDataService extends DataService {
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
 	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) throws InvalidAccessTokenException {
+		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " forDay: " + forDay
+		
 		BigDecimal value
 
 		String description, units, queryDateFormat = "yyyy-MM-dd"
@@ -284,6 +286,8 @@ class WithingsDataService extends DataService {
 	}
 
 	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate) {
+		log.debug "WithingsDataService.fetchActivityData() accountId:" + accountId + " startDate: " + startDate + " endDate: " + endDate
+		
 		String queryDateFormat = "yyyy-MM-dd"
 		Map queryParameters = ["action": "getactivity", userid: accountId]
 		queryParameters["startdateymd"] = startDate.format(queryDateFormat)
