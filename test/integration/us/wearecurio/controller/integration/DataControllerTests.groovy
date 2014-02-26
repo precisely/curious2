@@ -114,9 +114,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['userId'] = userId.toString()
 		controller.params['timeZoneName'] = 'America/Los_Angeles'
 		controller.params['date[]'] = []
-		controller.params['date[]'][0] = 'Wed, 1 Jul 2010 00:00:00 -0000'
-		controller.params['date[]'][1] = 'Thu, 2 Jul 2010 00:00:00 -0000'
-		controller.params['currentTime'] = 'Wed, 1 Jul 2010 10:00:00 -0000'
+		controller.params['date[]'][0] = 'Wed, 1 Jul 2010 00:00:00 -0800'
+		controller.params['date[]'][1] = 'Thu, 2 Jul 2010 00:00:00 -0800'
+		controller.params['currentTime'] = 'Wed, 1 Jul 2010 10:00:00 -0800'
 		
 		controller.getListData()
 		println controller.response.contentAsString
