@@ -1,4 +1,3 @@
-
 package us.wearecurio.services
 
 import grails.util.Environment
@@ -38,7 +37,7 @@ class MigrationService {
 	public static final long REMOVE_DUPLICATE_IMPORTS = 65L
 	public static final long REMOVE_OBSOLETE_PINNED = 71L
 	public static final long RESET_WITHINGS_ACCOUNTS = 72L
-	public static final long REMOVE_DUPLICATE_IMPORTSB = 73L
+	public static final long REMOVE_DUPLICATE_IMPORTSB = 74L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
