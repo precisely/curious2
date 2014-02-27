@@ -37,7 +37,7 @@ abstract class TagUnitMap {
 			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal", convert: true, type: METER_TO_MILE],
 			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
 			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
-			activitySteps: [tag: "$ACTIVITY steps", unit: ""],
+			activitySteps: [tag: "$ACTIVITY move", unit: "steps"],
 
 			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
