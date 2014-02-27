@@ -38,6 +38,7 @@ class MigrationService {
 	public static final long REMOVE_DUPLICATE_IMPORTS = 65L
 	public static final long REMOVE_OBSOLETE_PINNED = 71L
 	public static final long RESET_WITHINGS_ACCOUNTS = 72L
+	public static final long REMOVE_DUPLICATE_IMPORTSB = 73L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -204,6 +205,23 @@ class MigrationService {
 		}
 		tryMigration(RESET_WITHINGS_ACCOUNTS) {
 			sql("delete from oauth_account where type_id = 1")
+		}
+		tryMigration(REMOVE_DUPLICATE_IMPORTSB) {
+			boolean hasRows = true
+			
+			while (hasRows) {
+				hasRows = false
+				def rows = sqlRows("select _user.username, entry.id, date, tag.description, set_name, count(entry.id) as c from entry, tag, _user where _user.id = entry.user_id and set_name IS NOT NULL and user_id > 0 and entry.tag_id = tag.id group by user_id, date, tag_id, amount, units, comment, set_name having c > 1 order by date")
+				for (row in rows) {
+					hasRows = true
+					
+					log.debug "Deleting duplicate entry " + row.username + ", " + row.date + ", " + row.id + ", " + row.description + ", " + row.set_name
+					
+					Entry entry = Entry.get(row['id'])
+					
+					Entry.delete(entry, null)
+				}
+			}
 		}
 	}
 }
