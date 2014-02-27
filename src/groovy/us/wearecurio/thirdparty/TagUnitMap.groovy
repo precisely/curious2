@@ -36,7 +36,7 @@ abstract class TagUnitMap {
 		commonTagMap = [
 			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal", convert: true, type: METER_TO_MILE],
 			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
-			activityElevation: [tag: "$ACTIVITY elevation", unit: "miles"],
+			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
 			activitySteps: [tag: "$ACTIVITY steps", unit: ""],
 
 			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],

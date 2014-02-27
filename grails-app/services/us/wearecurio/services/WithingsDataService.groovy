@@ -221,7 +221,7 @@ class WithingsDataService extends DataService {
 				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry("activitySteps", activity["calories"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
 			}
 			if (activity["elevation"]) {
 				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
