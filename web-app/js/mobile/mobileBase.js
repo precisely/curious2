@@ -560,7 +560,8 @@ $(document).ready(function() {
 		console.log('Move Start Y on move: ' + window.moveStartY);
 		console.log('pageY on move: ' + event.pageY);
 		console.log('Move Direction: ' + moveVerticalDirection);
-		if (moveVerticalDirection < 0 && -moveVerticalDirection > 40) {
+		
+		if (moveVerticalDirection < 0 && -moveVerticalDirection > 40 && $('#recordList').scrollTop() <= 0) {
 			$('#fetchingData').show();
 			fetchEntries(cachedDateUTC, function (entries) {
 				refreshEntries(entries, true);
@@ -675,7 +676,7 @@ function refreshPage(callback) {
 	if (otherDatesToFetch.length > 0) {
 		fetchEntries(otherDatesToFetch, function(entriesList) {
 			for (var entryDate in entriesList) {
-				setEntryCache(entryDate, data[entryDate]);
+				setEntryCache(entryDate, entriesList[entryDate]);
 			}
 		});
 	}
