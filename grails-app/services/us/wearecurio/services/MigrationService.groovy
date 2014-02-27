@@ -17,7 +17,7 @@ class MigrationService {
 
 	static transactional = true
 	
-	public static final long TEST_MIGRATION_ID = 30L
+	public static final long SKIP_INITIAL_MIGRATIONS_ID = 30L
 	public static final long MIGRATE_REPEATS_ID = 31L
 	public static final long FIX_OAUTH_UNIQUE_CONSTRAINT_ID = 32L
 	public static final long REPEAT_END_NULLABLE_ID = 36L
@@ -42,6 +42,8 @@ class MigrationService {
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
+	
+	boolean skipMigrations = false
 	
 	public def sql(String statement, args = []) {
 		return databaseService.sqlNoRollback(statement, args)
@@ -75,7 +77,10 @@ class MigrationService {
 		migration = shouldDoMigration(code)
 		
 		if (migration) {
-			def retVal = closure()
+			def retVal = true
+			
+			if (!skipMigrations)
+				retVal = closure()
 
 			didMigration(migration)
 				
@@ -88,9 +93,10 @@ class MigrationService {
 	def doMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
-			
-		tryMigration(TEST_MIGRATION_ID) {
-			sql('ALTER TABLE entry CHANGE COLUMN comment comment TEXT')
+		
+		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
+			// if this is running on a brand new instance, skip initial migrations
+			skipMigrations = true
 		}
 		tryMigration(MIGRATE_REPEATS_ID) {
 			sql('UPDATE entry SET repeat_type = 5 WHERE repeat_type = 3')
