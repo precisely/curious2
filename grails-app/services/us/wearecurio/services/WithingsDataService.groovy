@@ -102,10 +102,10 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				JSONArray measures = group.measures
 
-				if (!refreshAll) {
+				/*if (!refreshAll) {
 					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
 							[setName: SET_NAME, userId: userId, entryDate: date])
-				}
+				}*/
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
