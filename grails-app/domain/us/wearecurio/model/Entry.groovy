@@ -327,6 +327,8 @@ class Entry {
 		if (m.setName == null)
 			return false
 			
+		log.debug "Trying to find duplicate for " + userId + " for " + m
+			
 		Tag tag = Tag.look(m.description)
 		
 		BigDecimal amount = m.amount
@@ -350,9 +352,46 @@ class Entry {
 		}
 		
 		for (r in results) {
+			log.debug ("Found duplicate " + r)
 			return true
 		}
 		
+		c = Entry.createCriteria()
+		results = c {
+			and {
+				eq("userId", userId)
+				eq("date", m.date)
+				eq("tag", tag)
+				eq("amount", amount)
+				eq("units", m.units)
+				eq("comment", m.comment)
+				eq("setName", m.setName)
+			}
+		}
+		
+		for (r in results) {
+			log.debug ("Found duplicate eased " + r)
+			return true
+		}
+		
+		c = Entry.createCriteria()
+		results = c {
+			and {
+				eq("userId", userId)
+				eq("date", m.date)
+				eq("tag", tag)
+				eq("amount", amount)
+				eq("setName", m.setName)
+			}
+		}
+		
+		for (r in results) {
+			log.debug ("Found duplicate eased 2 " + r)
+			return true
+		}
+
+		log.debug "No duplicate found"
+				
 		return false
 	}
 	
