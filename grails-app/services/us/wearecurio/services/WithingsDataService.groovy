@@ -153,7 +153,7 @@ class WithingsDataService extends DataService {
 		if(account.lastPolled) {
 			getDataActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
 		} else {
-			getDataActivityMetrics(account, startDate, [:])
+			getDataActivityMetrics(account, null, [startDate: startDate, endDate: new Date()])
 		}
 
 		if (serverTimestamp > 0) {
@@ -173,7 +173,7 @@ class WithingsDataService extends DataService {
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
 	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) throws InvalidAccessTokenException {
-		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " forDay: " + forDay
+		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " forDay: " + forDay + " dateRange:" + dateRange.startDate + ":" + dateRange.endDate
 		
 		BigDecimal value
 

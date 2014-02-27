@@ -319,6 +319,8 @@ class Entry {
 		],
 		null)
 	}
+			
+	static final BigDecimal smallDifference = new BigDecimal("0.01")
 	
 	// Prevent duplicates for imported entries
 	static boolean hasDuplicate(Long userId, Map m) {
@@ -327,8 +329,31 @@ class Entry {
 			
 		Tag tag = Tag.look(m.description)
 		
-		return Entry.findByUserIdAndDateAndDatePrecisionSecsAndTagAndAmountAndAmountPrecisionAndUnitsAndCommentAndSetName(userId, m.date, m.datePrecisionSecs,
-				tag, m.amount, m.amountPrecision, m.units, m.comment, m.setName) != null
+		BigDecimal amount = m.amount
+		BigDecimal lowAmount = amount.subtract(smallDifference)
+		BigDecimal highAmount = amount.add(smallDifference)
+		
+		def c = Entry.createCriteria()
+		def results = c {
+			and {
+				eq("userId", userId)
+				eq("date", m.date)
+				eq("datePrecisionSecs", m.datePrecisionSecs)
+				eq("tag", tag)
+				gt("amount", lowAmount)
+				lt("amount", highAmount)
+				eq("amountPrecision", m.amountPrecision)
+				eq("units", m.units)
+				eq("comment", m.comment)
+				eq("setName", m.setName)
+			}
+		}
+		
+		for (r in results) {
+			return true
+		}
+		
+		return false
 	}
 	
 	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
