@@ -331,20 +331,15 @@ class Entry {
 			
 		Tag tag = Tag.look(m.description)
 		
-		BigDecimal amount = m.amount
-		BigDecimal lowAmount = amount.subtract(smallDifference)
-		BigDecimal highAmount = amount.add(smallDifference)
-		
 		def c = Entry.createCriteria()
 		def results = c {
 			and {
 				eq("userId", userId)
 				eq("date", m.date)
-				eq("datePrecisionSecs", m.datePrecisionSecs)
 				eq("tag", tag)
-				gt("amount", lowAmount)
-				lt("amount", highAmount)
-				eq("amountPrecision", m.amountPrecision)
+				eq("datePrecisionSecs", m.datePrecisionSecs == null ? DEFAULT_DATEPRECISION_SECS : m.datePrecisionSecs)
+				eq("amount", m.amount)
+				eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
 				eq("units", m.units)
 				eq("comment", m.comment)
 				eq("setName", m.setName)
@@ -356,40 +351,6 @@ class Entry {
 			return true
 		}
 		
-		c = Entry.createCriteria()
-		results = c {
-			and {
-				eq("userId", userId)
-				eq("date", m.date)
-				eq("tag", tag)
-				eq("amount", amount)
-				eq("units", m.units)
-				eq("comment", m.comment)
-				eq("setName", m.setName)
-			}
-		}
-		
-		for (r in results) {
-			log.debug ("Found duplicate eased " + r)
-			return true
-		}
-		
-		c = Entry.createCriteria()
-		results = c {
-			and {
-				eq("userId", userId)
-				eq("date", m.date)
-				eq("tag", tag)
-				eq("amount", amount)
-				eq("setName", m.setName)
-			}
-		}
-		
-		for (r in results) {
-			log.debug ("Found duplicate eased 2 " + r)
-			return true
-		}
-
 		log.debug "No duplicate found"
 				
 		return false
