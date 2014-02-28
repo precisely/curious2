@@ -39,6 +39,7 @@ class MigrationService {
 	public static final long REMOVE_OBSOLETE_PINNED = 71L
 	public static final long RESET_WITHINGS_ACCOUNTS = 72L
 	public static final long REMOVE_DUPLICATE_IMPORTSB = 74L
+	public static final long RESET_WITHINGS_ACCOUNTSB = 75L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -228,6 +229,10 @@ class MigrationService {
 					Entry.delete(entry, null)
 				}
 			}
+		}
+		tryMigration(RESET_WITHINGS_ACCOUNTSB) {
+			sql("delete from oauth_account where type_id = 1")
+			sql("delete from entry where set_name = 'withings import'")
 		}
 	}
 }
