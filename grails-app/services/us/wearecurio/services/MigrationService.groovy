@@ -16,7 +16,8 @@ class MigrationService {
 
 	static transactional = true
 	
-	public static final long SKIP_INITIAL_MIGRATIONS_ID = 30L
+	public static final long TEST_MIGRATION_ID = 30L
+	public static final long SKIP_INITIAL_MIGRATIONS_ID = 31L
 	public static final long MIGRATE_REPEATS_ID = 31L
 	public static final long FIX_OAUTH_UNIQUE_CONSTRAINT_ID = 32L
 	public static final long REPEAT_END_NULLABLE_ID = 36L
@@ -38,6 +39,7 @@ class MigrationService {
 	public static final long REMOVE_OBSOLETE_PINNED = 71L
 	public static final long RESET_WITHINGS_ACCOUNTS = 72L
 	public static final long REMOVE_DUPLICATE_IMPORTSB = 74L
+	public static final long RESET_WITHINGS_ACCOUNTSB = 73L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -227,6 +229,10 @@ class MigrationService {
 					Entry.delete(entry, null)
 				}
 			}
+		}
+		tryMigration(RESET_WITHINGS_ACCOUNTSB) {
+			sql("delete from oauth_account where type_id = 1")
+			sql("delete from entry where set_name = 'withings import'")
 		}
 	}
 }

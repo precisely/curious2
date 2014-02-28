@@ -250,7 +250,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def entry = Entry.create(userId, [
 					userId:userId.toString(),
 					tweetId:"",
-					date:'Fri, 21 Jan 2011 21:46:20 GMT',
+					date:currentTime,
 					datePrecisionSecs:180,
 					timeZoneName:"America/New_York",
 					description:'updatetest',

@@ -41,6 +41,7 @@ class FitBitDataService extends DataService {
 	}
 
 	Map getDataActivities(OAuthAccount account, Date forDay, boolean refreshAll) {
+		log.debug("FitBitDataServices.getDataActivities(): account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -51,15 +52,12 @@ class FitBitDataService extends DataService {
 
 		String forDate = formatter.format(forDay)
 		String oldSetName = forDate + "activityfitbit"	// Backward support
-		String setName = SET_NAME + " " + forDate
+		String setName = SET_NAME
 		String requestUrl = String.format(BASE_URL, "/${accountId}/activities/date/${forDate}.json")
 
 		Map args = [setName: setName, comment: COMMENT]
 
 		JSONObject activityData = getResponse(account.tokenInstance, requestUrl)
-
-		Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
-				[setNames: [setName, oldSetName], userId: userId])
 
 		boolean veryActiveD, moderatelyActiveD, lightlyActiveD, sedentaryActiveD, fairlyActiveD
 		veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
@@ -142,6 +140,7 @@ class FitBitDataService extends DataService {
 
 	@Override
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		String forDate = formatter.format(startDate)
@@ -160,11 +159,14 @@ class FitBitDataService extends DataService {
 	}
 
 	Map getDataFoods(OAuthAccount account, Date forDay, boolean refreshAll) {
+		log.debug("FitBitDataService.getDataFoods() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
+		log.debug("This method is stubbed out, not doing anything at present")
 		[success: true]
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug("FitBitDataService.getDataSleep() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		Long userId = account.userId
 
 		Integer timeZoneId = getTimeZoneId(account)
@@ -231,6 +233,8 @@ class FitBitDataService extends DataService {
 
 	@Override
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		log.debug("FitBitDataService.subscribe() userId " + userId)
+		
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Map result = super.subscribe(userId, subscriptionURL, "post", [:])
@@ -240,12 +244,16 @@ class FitBitDataService extends DataService {
 		switch(result["code"]) {
 			case 200:
 			case 409:
+				log.debug("Already subscribed.")
+				// TODO: Shouldn't this be internationalized, for consistency?
 				result.message = "You've already been subscribed."
 				break;
 			case 201:
+				log.debug("Successfully subscribed.")
 				result.message = "" // Successfully subscribed.
 				break;
 			default:
+				log.debug("Subscription failed.")
 				result.success = false
 				account.removeAccessToken()			// confirms that subscription is not successful.
 				account.save()

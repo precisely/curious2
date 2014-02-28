@@ -32,6 +32,8 @@ class MovesDataService extends DataService {
 
 	@Override
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
+		log.debug("MovesDataService.getDataDefault(): account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
+		
 		Long userId = account.userId
 
 		startDate = startDate ?: new Date() ?: earlyStartDate
@@ -140,6 +142,8 @@ class MovesDataService extends DataService {
 
 	@Override
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		log.debug("MovesDataService.subscribe() userId: " + userId)
+		
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 
@@ -148,6 +152,8 @@ class MovesDataService extends DataService {
 
 	@Override
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		log.debug("MovesDataService.unsubscribe() userId: " + userId)
+			
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		checkNotNull(account)
 

@@ -9,6 +9,7 @@ import us.wearecurio.model.Discussion;
 import us.wearecurio.model.Entry.RepeatType;
 import us.wearecurio.model.Entry.TagStatsRecord
 
+import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -114,6 +115,8 @@ class DataController extends LoginController {
 		return Entry.fetchListData(user, timeZoneName, baseDate, new Date())
 	}
 	
+	MathContext mc = new MathContext(9)
+	
 	protected def doParseCSVDown(InputStream csvIn, Long userId) {
 		debug "DataController.doParseCSVDown() userId:" + userId
 		
@@ -153,13 +156,13 @@ class DataController extends LoginController {
 						date:currentDate, \
 						timeZoneName:tokens[8], \
 						description:tokens[1], \
-						amount:tokens[2], \
+						amount:new BigDecimal(tokens[2], mc), \
 						units:tokens[3], \
 						comment:tokens[4], \
 						repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get(repeatTypeId) : null, \
 						setName:setName, \
-						amountPrecision:Long.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
-						datePrecisionSecs:(tokens[7].equals("null") ? '180':tokens[7]), \
+						amountPrecision:Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
+						datePrecisionSecs:Integer.valueOf(tokens[7].equals("null") ? '180':tokens[7]), \
 					]
 					def entry = Entry.create(userId, parsedEntry, null)
 

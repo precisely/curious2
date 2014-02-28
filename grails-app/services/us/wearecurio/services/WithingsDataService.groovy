@@ -151,9 +151,9 @@ class WithingsDataService extends DataService {
 		}
 
 		if(account.lastPolled) {
-			getDataActivityMetrics(account, null, [startDate: account.lastPolled + 1, endDate: new Date()])
+			getDataActivityMetrics(account, null, [startDate: account.lastPolled - 1, endDate: new Date() + 1])
 		} else {
-			getDataActivityMetrics(account, null, [startDate: startDate, endDate: new Date()])
+			getDataActivityMetrics(account, null, [startDate: startDate - 1, endDate: new Date() + 1])
 		}
 
 		if (serverTimestamp > 0) {
@@ -163,6 +163,8 @@ class WithingsDataService extends DataService {
 
 		[success: true]
 	}
+	
+	protected static final String QUERYDATEFORMAT = "yyyy-MM-dd"
 
 	/**
 	 * Used to get & store activity metrics summary for an account.
@@ -177,15 +179,15 @@ class WithingsDataService extends DataService {
 		
 		BigDecimal value
 
-		String description, units, queryDateFormat = "yyyy-MM-dd"
+		String description, units
 
 		Map queryParameters = ["action": "getactivity", userid: account.accountId]
 
 		if (forDay) {
-			queryParameters["date"] = forDay.format(queryDateFormat)
+			queryParameters["date"] = forDay.format(QUERYDATEFORMAT)
 		} else if (dateRange) {
-			queryParameters["startdateymd"] = dateRange.startDate.format(queryDateFormat)
-			queryParameters["enddateymd"] = dateRange.endDate.format(queryDateFormat)
+			queryParameters["startdateymd"] = dateRange.startDate.format(QUERYDATEFORMAT)
+			queryParameters["enddateymd"] = dateRange.endDate.format(QUERYDATEFORMAT)
 		} else {
 			// @see Activity Metrics documentation at http://www.withings.com/en/api
 			log.debug "Either forDay or dateRange parameter required to pull activity data."
@@ -204,27 +206,32 @@ class WithingsDataService extends DataService {
 
 		Long userId = account.userId
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat(queryDateFormat)
+		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERYDATEFORMAT)
 
 		JSONArray activities = data["body"]["activities"]
 
 		activities.each { JSONObject activity ->
 			log.debug "Parsing entry with data: $activity"
+			
+			TimeZoneId timeZoneId = TimeZoneId.look(activity["timezone"])
+			Integer timeZoneIdNumber = timeZoneId.getId()
+			TimeZone timeZone = timeZoneId.toTimeZone()
+			
+			dateFormat.setTimeZone(timeZone)
+			
 			Date entryDate = dateFormat.parse(activity["date"])
 
-			Integer timeZoneId = TimeZoneId.look(activity["timezone"]).id
-
 			if (activity["steps"]) {
-				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
 			}
 			if (activity["distance"]) {
-				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
 			}
 			if (activity["elevation"]) {
-				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneId, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
 			}
 		}
 

@@ -8,12 +8,8 @@ import org.joda.time.*
 
 class TimeZoneId {
 
-	static transients = {
-		"dateTimeZone"
-	}
     static constraints = {
 		name(maxSize:100, unique:true)
-		dateTimeZone(nullable:true)
     }
 	static mapping = {
 		name column:'name', index:'name_idx'
@@ -24,7 +20,12 @@ class TimeZoneId {
 	}
 
 	String name
+
+	static transients = [
+		"dateTimeZone", "timeZone"
+	]
 	transient DateTimeZone dateTimeZone
+	transient TimeZone timeZone
 	
 	static Map<String, TimeZoneId> nameToTimeZoneId = new HashMap<String, TimeZoneId>()
 	static Map<Integer, TimeZoneId> idToTimeZoneId = new HashMap<Integer, TimeZoneId>()
@@ -38,7 +39,20 @@ class TimeZoneId {
 		if (dateTimeZone != null)
 			return dateTimeZone
 		
-		return dateTimeZone = DateTimeZone.forID(name)
+		dateTimeZone = DateTimeZone.forID(name)
+		timeZone = dateTimeZone.toTimeZone()
+		
+		return dateTimeZone
+	}
+	
+	TimeZone toTimeZone() {
+		if (timeZone != null)
+			return timeZone
+			
+		dateTimeZone = DateTimeZone.forID(name)
+		timeZone = dateTimeZone.toTimeZone()
+		
+		return timeZone
 	}
 	
 	static TimeZoneId fromId(Integer id) {

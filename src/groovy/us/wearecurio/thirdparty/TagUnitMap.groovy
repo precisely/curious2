@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.model.TimeZoneId
 
 abstract class TagUnitMap {
 
@@ -34,7 +35,7 @@ abstract class TagUnitMap {
 
 	static {
 		commonTagMap = [
-			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal", convert: true, type: METER_TO_MILE],
+			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal"],
 			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
 			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
 			activitySteps: [tag: "$ACTIVITY move", unit: "steps"],
