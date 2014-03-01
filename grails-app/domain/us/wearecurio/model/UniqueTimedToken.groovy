@@ -25,13 +25,7 @@ class UniqueTimedToken {
 	}
 	
 	public boolean trySave() {
-		try {
-			Utils.save(this, true)
-			return true
-		} catch (org.hibernate.exception.ConstraintViolationException e) {
-			log.debug "Failed to save token " + e
-			return false
-		}
+		return Utils.save(this, true)
 	}
 	
 	public static delete(UniqueTimedToken token) {
