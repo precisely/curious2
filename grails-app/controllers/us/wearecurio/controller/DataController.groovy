@@ -306,18 +306,22 @@ class DataController extends LoginController {
 		Entry entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 		
-		Date baseDate = params.date == null ? null : parseDate(params.date)
-		Date currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
-		String timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
-
-		if (entry.getUserId() != sessionUser().getId()) {
-			renderStringGet('You do not have permission to activate this entry.')
+		if (!UniqueTimedToken.acquire("activateGhost:" + userId + ":" + params.entryId + ":" + params.date, new Date(), 5000)) {
+			renderStringGet("Duplicate request")
+		} else {
+			Date baseDate = params.date == null ? null : parseDate(params.date)
+			Date currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
+			String timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+	
+			if (entry.getUserId() != sessionUser().getId()) {
+				renderStringGet('You do not have permission to activate this entry.')
+			}
+			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
+			if (newEntry != null) {
+				renderJSONGet(newEntry.getJSONDesc())
+			} else
+				renderStringGet("Failed to activate entry due to internal server error.")
 		}
-		Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
-		if (newEntry != null) {
-			renderJSONGet(newEntry.getJSONDesc())
-		} else
-			renderStringGet("Failed to activate entry due to internal server error.")
 	}
 
 	def deleteGhostEntryData() {

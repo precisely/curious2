@@ -1,6 +1,7 @@
 package us.wearecurio.jobs
 
 import us.wearecurio.utility.TimerJob
+import us.wearecurio.model.UniqueTimedToken
 
 class DeviceIntegrationDailyJob extends TimerJob {
 
@@ -15,6 +16,7 @@ class DeviceIntegrationDailyJob extends TimerJob {
 		log.debug "Started executing Daily basis job.."
 		OAuthAccountService.refreshAllToken()
 		withingsDataService.refreshSubscriptions()
+		UniqueTimedToken.clearExpiredTokens()
 		log.debug "Finished executing Daily basis job.."
 	}
 
