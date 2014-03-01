@@ -306,7 +306,7 @@ class DataController extends LoginController {
 		Entry entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 		
-		if (!UniqueTimedToken.acquire("activateGhost:" + userId + ":" + params.entryId + ":" + params.date, new Date(), 3000)) {
+		if (!UniqueTimedToken.acquire("activateGhost:" + userId + ":" + params.entryId + ":" + params.date, new Date(), 1500)) {
 			renderStringGet("error") // silently fail
 		} else {
 			Date baseDate = params.date == null ? null : parseDate(params.date)
