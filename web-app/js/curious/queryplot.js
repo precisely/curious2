@@ -488,14 +488,16 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 		} 
 		
-		if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
-			if (save.tag.type.indexOf("Group") !== -1) {
-				save.tag = this.restoreTagGroup(save.tag);
+		if (save.tag != null) {
+			if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
+				if (save.tag.type.indexOf("Group") !== -1) {
+					save.tag = this.restoreTagGroup(save.tag);
+				} else {
+					save.tag = this.restoreTag(save.tag);
+				}
 			} else {
-				save.tag = this.restoreTag(save.tag);
+				save.tag = tagList.store.getTagByName(save.tag.description);
 			}
-		} else {
-			save.tag = tagList.store.getTagByName(save.tag.description);
 		}
 
 		if (!isSnapshot && save.tag instanceof TagGroup && save.tag.children.length == 0) {
