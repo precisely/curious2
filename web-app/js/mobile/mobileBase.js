@@ -70,9 +70,10 @@ var activateEntryId = -1;
 
 function doLogout() {
 	console.log("Logging out...");
+	clearEntries();
 	callLogoutCallbacks();
-	localStorage['mobileSessionId'] = null;
-	localStorage['appCache'] = null;
+	localStorage.clear();
+	currentUserId = undefined;
 	localStorage['lastPage'] = 'login';
 	startLogin(0);
 	$(document).trigger("ask-logout");
@@ -250,40 +251,44 @@ function makePlainUrl(url) {
 	return url;
 }
 
-function initAppCache() {
+function clearAppCache() {
 	if (supportsLocalStorage()) {
-		if (localStorage['appCache'] == null) {
-			localStorage['appCache'] = {};
-			localStorage['lastPage'] = null;
-			return;
+		for (var key in localStorage) {
+			if (key.indexOf("appCache.entryCache") == 0) {
+				localStorage.removeItem(key);
+			}
 		}
 	}
+	
+	localStorage['lastPage'] = null;
 }
 
 function getAppCacheData(key) {
+	var aKey = 'appCache.' + key;
 	if (supportsLocalStorage()) {
 		try {
-			return JSON.parse(localStorage[key]);
+			return JSON.parse(localStorage[aKey]);
 		} catch(err) {
-			console.log('Unable to fetch or parse data from cache. Key: '+key);
-			console.log('Cache value at '+key+': '+localStorage[key]);
+			console.log('Unable to fetch or parse data from cache. Key: '+aKey);
+			console.log('Cache value at ' + aKey + ': ' + localStorage[aKey]);
 			return null;
 		}
 	}
 }
 
 function setAppCacheData(key,value) {
+	var aKey = 'appCache.' + key;
 	if (supportsLocalStorage()) {
 		try {
 			if (typeof value == 'object') {
-				localStorage[key] = JSON.stringify(value);
+				localStorage[aKey] = JSON.stringify(value);
 			} else {
-				localStorage[key] = value;
+				localStorage[aKey] = value;
 			}
 			
 			return true;
 		} catch(err) {
-			console.log('Unable to save data to cache. Error: '+err);
+			console.log('Unable to save data to cache. Error: ' + err);
 			return false;
 		}
 	}
@@ -303,7 +308,7 @@ function getEntryBucket() {
 		// for installations that already have cached data
 		// but no buckets
 		for (var prop in localStorage) {
-			if (prop.indexOf('appCache.entryCache.') > -1) {
+			if (prop.indexOf('appCache.entryCache.') == 0) {
 				//Pushing just the date part
 				entryBucket.push(prop.substring(20));
 			}
@@ -343,7 +348,7 @@ function getEntryCache(date) {
 	var month = ("0" + (date.getMonth() + 1)).slice(-2);
 	var day = ("0" + date.getDate()).slice(-2);
 	var dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
-	return getAppCacheData('appCache.entryCache.'+dateStr);
+	return getAppCacheData('appCache.entryCache.' + dateStr);
 	
 }
 
@@ -367,11 +372,11 @@ function setEntryCache(date,entries) {
 		dateStr = date;
 	}
 	
-	if (setAppCacheData('appCache.entryCache.'+dateStr,entries)) {
+	if (setAppCacheData('entryCache.'+dateStr,entries)) {
 		if (!isEntryCached(dateStr)) {
 			entryBucket.push(dateStr);
 			if (entryBucket.length > 10) {
-				localStorage.removeItem('appCache.entryCache.'+entryBucket[0]);
+				localStorage.removeItem('entryCache.'+entryBucket[0]);
 				entryBucket.shift();
 			}
 			setEntryBucket(entryBucket);
@@ -384,7 +389,7 @@ function setEntryCache(date,entries) {
 
 function clearEntryCache() {
 	for (var key in localStorage) {
-		if (key.indexOf("appCache.entryCache")>-1) {
+		if (key.indexOf("appCache.entryCache") == 0) {
 			localStorage.removeItem(key);
 		}
 	}
