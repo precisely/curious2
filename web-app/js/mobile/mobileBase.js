@@ -306,7 +306,7 @@ function setAppCacheData(key,value) {
  * @returns {Array}
  */
 function getEntryBucket() {
-	var entryBucketKey = 'appCache.entryCacheBucket';
+	var entryBucketKey = 'entryCacheBucket';
 	var entryBucket = getAppCacheData(entryBucketKey); 
 	if (entryBucket == null) {
 		entryBucket = [];
@@ -325,7 +325,7 @@ function getEntryBucket() {
 }
 
 function setEntryBucket(entryBucket) {
-	var entryBucketKey = 'appCache.entryCacheBucket';
+	var entryBucketKey = 'entryCacheBucket';
 	setAppCacheData(entryBucketKey, entryBucket);
 }
 
@@ -354,7 +354,7 @@ function getEntryCache(date) {
 	var month = ("0" + (date.getMonth() + 1)).slice(-2);
 	var day = ("0" + date.getDate()).slice(-2);
 	var dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
-	return getAppCacheData('appCache.entryCache.' + dateStr);
+	return getAppCacheData('entryCache.' + dateStr);
 	
 }
 
