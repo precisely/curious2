@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.LocalDateTime
+import org.joda.time.LocalTime
 import org.scribe.model.Response
 
 import us.wearecurio.model.Entry
@@ -147,20 +149,20 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		}
 
-		Integer timeZoneIdNumber = account.timeZoneId
-		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
-		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(account.timeZoneId)
+		DateTimeZone userDateTimeZone = timeZoneIdInstance.toDateTimeZone()
 
 		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
-		Date receivedDate = dateTimeParser.parse(startTime)
+		def receivedLocalDateTime = new LocalDateTime(dateTimeParser.parse(startTime))
 
 		// Converting received date-time in respect with user's timezone.
 		// Assumption is that, this will be equal to the date of the entry.
-		Date savedDate = new DateTime(receivedDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
-
+		println receivedLocalDateTime
+		LocalDateTime savedLocalDateTime = new DateTime(entryInstance.date.time).withZone(userDateTimeZone).toLocalDateTime()
+		println savedLocalDateTime
 		assert entryInstance != null
 		// Checking if received local date-time got saved in System TimeZone.
-		assert entryInstance.date == savedDate
+		assert  savedLocalDateTime.equals(receivedLocalDateTime)
 	}
 
 }
