@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
@@ -45,10 +47,11 @@ class FitBitDataService extends DataService {
 		String accountId = account.accountId
 		Long userId = account.userId
 
-		Integer timeZoneId = getTimeZoneId(account)
+		Integer timeZoneIdNumber = getTimeZoneId(account)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
 
 		String forDate = formatter.format(forDay)
 		String oldSetName = forDate + "activityfitbit"	// Backward support
@@ -62,51 +65,42 @@ class FitBitDataService extends DataService {
 		boolean veryActiveD, moderatelyActiveD, lightlyActiveD, sedentaryActiveD, fairlyActiveD
 		veryActiveD = moderatelyActiveD = lightlyActiveD = sedentaryActiveD = fairlyActiveD = true
 
+		forDay = new DateTime(forDay.time, dateTimeZoneInstance).withTime(23, 59, 0, 0).toDate()
+		log.debug "Entry Date for Fitbit activity set to: [$forDay]"
+
 		if (activityData.summary) {
-			fitBitTagUnitMap.buildEntry("steps", activityData.summary.steps, userId, timeZoneId, forDay, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry("steps", activityData.summary.steps, userId, timeZoneIdNumber, forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.fairlyActiveMinutes <= 0) {
 			fairlyActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("fairlyActiveMinutes", activityData.summary.fairlyActiveMinutes, userId, timeZoneId,
+			fitBitTagUnitMap.buildEntry("fairlyActiveMinutes", activityData.summary.fairlyActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
 			lightlyActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("lightlyActiveMinutes", activityData.summary.lightlyActiveMinutes, userId, timeZoneId,
+			fitBitTagUnitMap.buildEntry("lightlyActiveMinutes", activityData.summary.lightlyActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
 			sedentaryActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("sedentaryMinutes", activityData.summary.sedentaryMinutes, userId, timeZoneId,
+			fitBitTagUnitMap.buildEntry("sedentaryMinutes", activityData.summary.sedentaryMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
 			veryActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("veryActiveMinutes", activityData.summary.veryActiveMinutes, userId, timeZoneId,
+			fitBitTagUnitMap.buildEntry("veryActiveMinutes", activityData.summary.veryActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		activityData.summary?.distances.each { distance ->
-			Date entryDate = forDay
-			try {
-				activityData.activities.each { activity ->
-					if (activity.name.equals(distance.activity) && activity.hasStartTime) {
-						entryDate = inputFormat.parse(formatter.format(entryDate) + "T" + activity.startTime + ":00.000")
-						throw new Exception("return from closure")
-					}
-				}
-			} catch(Exception e) {
-				//do nothing
-			}
-
 			if (!distance.activity.equals('loggedActivities')) { //Skipping loggedActivities
 				log.debug "Importing activity: " + distance.activity
 
@@ -116,7 +110,7 @@ class FitBitDataService extends DataService {
 				||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
 					log.debug "Discarding activity with 0 time"
 				} else {
-					fitBitTagUnitMap.buildEntry(distance.activity, distance.distance, userId, timeZoneId, entryDate, COMMENT, setName)
+					fitBitTagUnitMap.buildEntry(distance.activity, distance.distance, userId, timeZoneIdNumber, forDay, COMMENT, setName)
 				}
 			}
 		}
@@ -169,10 +163,12 @@ class FitBitDataService extends DataService {
 		log.debug("FitBitDataService.getDataSleep() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		Long userId = account.userId
 
-		Integer timeZoneId = getTimeZoneId(account)
+		Integer timeZoneIdNumber = getTimeZoneId(account)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
+		SimpleDateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
 		String accountId = account.accountId
 		String forDate = formatter.format(forDay)
@@ -184,17 +180,19 @@ class FitBitDataService extends DataService {
 		JSONObject sleepData = getResponse(account.tokenInstance, requestUrl)
 
 		sleepData.sleep.each { logEntry ->
-			Date entryDate = inputFormat.parse(logEntry.startTime)
+			Date entryDate = dateTimeParser.parse(logEntry.startTime)
+			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
+
 			String oldSetName = logEntry.logId	// Backward support
 
 			Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
 					[setNames: [setName, oldSetName], userId: account.userId])
 
-			fitBitTagUnitMap.buildEntry("duration", logEntry.duration, userId, timeZoneId, entryDate, COMMENT, setName)
-			fitBitTagUnitMap.buildEntry("awakeningsCount", logEntry.awakeningsCount, userId, timeZoneId, entryDate, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry("duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry("awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 
 			if (logEntry.efficiency > 0 )
-				fitBitTagUnitMap.buildEntry("efficiency", logEntry.efficiency, userId, timeZoneId, entryDate, COMMENT, setName)
+				fitBitTagUnitMap.buildEntry("efficiency", logEntry.efficiency, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 		}
 		[success: true]
 	}
@@ -234,7 +232,7 @@ class FitBitDataService extends DataService {
 	@Override
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug("FitBitDataService.subscribe() userId " + userId)
-		
+
 		String subscriptionURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 
 		Map result = super.subscribe(userId, subscriptionURL, "post", [:])
