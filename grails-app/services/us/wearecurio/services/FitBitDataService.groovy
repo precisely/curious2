@@ -181,6 +181,12 @@ class FitBitDataService extends DataService {
 
 		sleepData.sleep.each { logEntry ->
 			Date entryDate = dateTimeParser.parse(logEntry.startTime)
+			/**
+			 * Converting received user's local date-time to actual date-time in user's timezone.
+			 * Since Java's Date is independent on Timezone & incoming date-time is in user's local
+			 * time hence using Joda's DateTime$withZoneRetainFields method which converts only timezone
+			 * keeping fields same.
+			 */
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
 			String oldSetName = logEntry.logId	// Backward support

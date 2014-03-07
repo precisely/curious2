@@ -1,7 +1,10 @@
 package us.wearecurio.services.integration
 
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.scribe.model.Response
 
+import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
@@ -113,9 +116,42 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		boolean result = fitBitDataService.getDataDefault(account, new Date(), false)
+		Map result = fitBitDataService.getDataDefault(account, new Date(), false)
 
-		assert result
+		assert result.success == true
+	}
+
+	void testGetDataSleep() {
+		Date now = new Date()
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+
+		String mockedResponseData = """{"sleep":[{"isMainSleep":true,"logId":29767,"efficiency":98,"startTime":"${now.format("yyyy-MM-dd'T'HH:mm:ss.SSS")}","duration":6000000,"minutesToFallAsleep":0,"minutesAsleep":47,"minutesAwake":24,"awakeningsCount":10,"timeInBed":100}]}"""
+		fitBitDataService.oauthService = [
+			getFitBitResource: { token, url, p, header ->
+				assert url == "http://api.fitbit.com/1/user/${account.accountId}/sleep/date/${now.format('yyyy-MM-dd')}.json"
+				return new Response(new MockedHttpURLConnection(mockedResponseData))
+			}
+		]
+
+		Map result = fitBitDataService.getDataSleep(account, now, false)
+		assert result.success == true
+
+		// Fetch entry with tag 'sleep'
+		Entry entryInstance = Entry.withCriteria(uniqueResult: true) {
+			tag {
+				eq("description", "sleep")
+			}
+		}
+
+		Integer timeZoneIdNumber = account.timeZoneId
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+
+		Date savedDate = new DateTime(now.time).withZone(DateTimeZone.UTC).toDate()
+
+		assert entryInstance != null
+		// Checking if received local date-time got saved in UTC.
+		assert entryInstance.date == savedDate
 	}
 
 }
