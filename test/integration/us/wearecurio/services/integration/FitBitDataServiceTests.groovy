@@ -123,7 +123,6 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	void testGetDataSleep() {
 		Date now = new Date()
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
 		String mockedResponseData = """{"sleep":[{"isMainSleep":true,"logId":29767,"efficiency":98,"startTime":"${now.format("yyyy-MM-dd'T'HH:mm:ss.SSS")}","duration":6000000,"minutesToFallAsleep":0,"minutesAsleep":47,"minutesAwake":24,"awakeningsCount":10,"timeInBed":100}]}"""
 		fitBitDataService.oauthService = [
@@ -147,7 +146,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 
-		Date savedDate = new DateTime(now.time).withZone(DateTimeZone.UTC).toDate()
+		Date savedDate = new DateTime(now.time).withZoneRetainFields(DateTimeZone.getDefault()).toDate()
 
 		assert entryInstance != null
 		// Checking if received local date-time got saved in UTC.
