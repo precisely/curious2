@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.scribe.model.Response
 import org.scribe.model.Token
 
@@ -110,15 +112,14 @@ class HumanDataService {
 		Date lastPolled = new Date()
 		String comment, description, setName, source, units
 
-		Integer timeZoneId = account.timeZoneId ?: User.getTimeZoneId(curiousUserId)
-		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneId)
+		Integer timeZoneIdNumber = account.timeZoneId ?: User.getTimeZoneId(curiousUserId)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
 
 		Token tokenInstance = account.tokenInstance
 
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
-		DateFormat startEndTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-		startEndTimeFormat.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneId))
+		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
@@ -130,7 +131,7 @@ class HumanDataService {
 			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
-			movesDataService.processActivity(activityData, curiousUserId, timeZoneId, activityData.type, startEndTimeFormat, args)
+			movesDataService.processActivity(activityData, curiousUserId, timeZoneIdNumber, activityData.type, dateTimeParser, args)
 		}
 
 		// Done
@@ -144,7 +145,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(bgData.timestamp)
+			Date entryDate = dateTimeParser.parse(bgData.timestamp)
 			BigDecimal value = new BigDecimal(bgData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -162,7 +163,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(bpData.timestamp)
+			Date entryDate = dateTimeParser.parse(bpData.timestamp)
 			BigDecimal value = new BigDecimal(bpData.value.diastolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -186,7 +187,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(fatData.timestamp)
+			Date entryDate = dateTimeParser.parse(fatData.timestamp)
 			BigDecimal value = new BigDecimal(fatData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -204,7 +205,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(bmiData.timestamp)
+			Date entryDate = dateTimeParser.parse(bmiData.timestamp)
 			BigDecimal value = new BigDecimal(bmiData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -222,7 +223,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(heartRateData.timestamp)
+			Date entryDate = dateTimeParser.parse(heartRateData.timestamp)
 			BigDecimal value = new BigDecimal(heartRateData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -240,7 +241,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(heartData.timestamp)
+			Date entryDate = dateTimeParser.parse(heartData.timestamp)
 			BigDecimal value = new BigDecimal(heartData.value)
 			value = value.multiply(MM_TO_FEET).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
@@ -256,7 +257,7 @@ class HumanDataService {
 			description = "sleep"
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
-			Date entryDate = startEndTimeFormat.parse(sleepData.startTime)
+			Date entryDate = dateTimeParser.parse(sleepData.startTime)
 			BigDecimal value = new BigDecimal(sleepData.timeAsleep + sleepData.timeAwake)
 
 			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
@@ -281,7 +282,7 @@ class HumanDataService {
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
-			Date entryDate = startEndTimeFormat.parse(weightData.timestamp)
+			Date entryDate = dateTimeParser.parse(weightData.timestamp)
 			BigDecimal value = new BigDecimal(weightData.value)
 			value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
