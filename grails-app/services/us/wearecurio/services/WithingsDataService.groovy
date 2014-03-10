@@ -164,7 +164,7 @@ class WithingsDataService extends DataService {
 		[success: true]
 	}
 	
-	protected static final String QUERYDATEFORMAT = "yyyy-MM-dd"
+	protected static final String QUERY_DATE_FORMAT = "yyyy-MM-dd"
 
 	/**
 	 * Used to get & store activity metrics summary for an account.
@@ -184,10 +184,10 @@ class WithingsDataService extends DataService {
 		Map queryParameters = ["action": "getactivity", userid: account.accountId]
 
 		if (forDay) {
-			queryParameters["date"] = forDay.format(QUERYDATEFORMAT)
+			queryParameters["date"] = forDay.format(QUERY_DATE_FORMAT)
 		} else if (dateRange) {
-			queryParameters["startdateymd"] = dateRange.startDate.format(QUERYDATEFORMAT)
-			queryParameters["enddateymd"] = dateRange.endDate.format(QUERYDATEFORMAT)
+			queryParameters["startdateymd"] = dateRange.startDate.format(QUERY_DATE_FORMAT)
+			queryParameters["enddateymd"] = dateRange.endDate.format(QUERY_DATE_FORMAT)
 		} else {
 			// @see Activity Metrics documentation at http://www.withings.com/en/api
 			log.debug "Either forDay or dateRange parameter required to pull activity data."
@@ -206,7 +206,7 @@ class WithingsDataService extends DataService {
 
 		Long userId = account.userId
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERYDATEFORMAT)
+		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERY_DATE_FORMAT)
 
 		JSONArray activities = data["body"]["activities"]
 
@@ -296,10 +296,10 @@ class WithingsDataService extends DataService {
 	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate) {
 		log.debug "WithingsDataService.fetchActivityData() accountId:" + accountId + " startDate: " + startDate + " endDate: " + endDate
 		
-		String queryDateFormat = "yyyy-MM-dd"
+		String QUERY_DATE_FORMAT = "yyyy-MM-dd"
 		Map queryParameters = ["action": "getactivity", userid: accountId]
-		queryParameters["startdateymd"] = startDate.format(queryDateFormat)
-		queryParameters["enddateymd"] = endDate.format(queryDateFormat)
+		queryParameters["startdateymd"] = startDate.format(QUERY_DATE_FORMAT)
+		queryParameters["enddateymd"] = endDate.format(QUERY_DATE_FORMAT)
 
 		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 	}
