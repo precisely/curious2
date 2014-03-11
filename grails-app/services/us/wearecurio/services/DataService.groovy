@@ -178,6 +178,11 @@ abstract class DataService {
 				parsedResponse = new JSONObject()
 			}
 		}
+		
+		if (Environment.current == Environment.DEVELOPMENT) {
+			log.debug "DataService.getResponse() Response data:"
+			log.debug parsedResponse
+		}
 
 		// Helper dynamic methods.
 		parsedResponse.getMetaClass().getCode = { return response.code }
