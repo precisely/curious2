@@ -363,6 +363,7 @@ class Entry {
 				eq("tag", tag)
 				eq("comment", m.comment)
 				eq("setName", m.setName)
+				eq("timeZoneId", m.timeZoneId)
 				between("date", startOfDay.toDate(), endOfDay.toDate())
 			}
 		}
