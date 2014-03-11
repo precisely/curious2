@@ -345,10 +345,10 @@ class Entry {
 		// Getting 00:10 instant in UTC for the user timezone
 		LocalDateTime userLocalDateTime = userDateTime.toLocalDateTime()
 		DateTime userMidnightInUTC = 
-			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone).withTime(0, 10, 0, 0).withZone(DateTimeZone.UTC)
+			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone).withTime(0, 01, 0, 0).withZone(DateTimeZone.UTC)
 		LocalDateTime startOfDay = 
 				userMidnightInUTC.toLocalDateTime()
-		LocalDateTime endOfDay = startOfDay.plusHours(23)
+		LocalDateTime endOfDay = startOfDay.plusHours(24)
 		log.debug("Entry.lookForPartialEntry: m.date " + m.date)
 		log.debug("Entry.lookForPartialEntry: userTimezone " + userTimezone)
 		log.debug("Entry.lookForPartialEntry: userLocalDateTime  " + userLocalDateTime)

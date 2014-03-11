@@ -23,7 +23,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 
 	def execute() {
 		//humanDataService.poll()
-		//movesDataService.pollAll()
+		movesDataService.pollAll()
 		def c = OAuthAccount.createCriteria()
 		def results = c.list {
 			projections {
