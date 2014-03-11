@@ -1,4 +1,5 @@
 import grails.plugin.mail.MailService
+import grails.util.Environment;
 
 import org.joda.time.DateTimeZone
 
@@ -14,9 +15,15 @@ class BootStrap {
 	MailService mailService
 
 	def init = { servletContext ->
-		log.debug "Curious bootstrap started executing.."
-		log.info "Default TimeZone: " + TimeZone.getDefault().getID()
-		log.info "Default JodaTimeZone (DateTimeZone): " + DateTimeZone.getDefault()
+		environments {
+			development {
+				TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
+				log.debug "Curious bootstrap started executing.."
+				log.info "Default TimeZone: " + TimeZone.getDefault().getID()
+				log.info "Default JodaTimeZone (DateTimeZone): " + DateTimeZone.getDefault()
+			}
+		}
+		
 
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)

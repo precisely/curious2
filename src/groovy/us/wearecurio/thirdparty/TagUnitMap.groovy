@@ -118,7 +118,7 @@ abstract class TagUnitMap {
 		
 		parsedEntry.putAll(args)
 
-		Entry.create(userId, parsedEntry, null)
+		Entry.updatePartialOrCreate(userId, parsedEntry, null)
 	}
 
 	/**
@@ -135,7 +135,7 @@ abstract class TagUnitMap {
 				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
 					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
-				Entry.create(userId, parsedEntry, null)
+				Entry.updatePartialOrCreate(userId, parsedEntry, null)
 			}
 		}
 	}

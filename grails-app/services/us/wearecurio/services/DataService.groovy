@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import grails.util.Environment;
 
 import javax.annotation.PostConstruct
 
@@ -49,7 +50,16 @@ abstract class DataService {
 	private static Map<ThirdParty, DataService> dataServiceMap = [:]
 
 	// very early start date
-	static final Date earlyStartDate = new Date(-5364658800L)
+	static final Date earlyStartDate
+	
+	static {
+		if (Environment.current == Environment.DEVELOPMENT) {
+			earlyStartDate = new Date() - 60
+		} else {
+			earlyStartDate = new Date(-5364658800L)
+		}
+	}
+	
 
 	// register data service for lookup
 	@PostConstruct

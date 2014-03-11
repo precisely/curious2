@@ -144,7 +144,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testGetDataActivityMetrics() {
-		Map result = withingsDataService.getDataActivityMetrics(account, null, [:])
+		Map result = withingsDataService.getDataActivityMetrics(account, null, null)
 
 		assert result.success == false
 
@@ -152,7 +152,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
 
 		try {
-			withingsDataService.getDataActivityMetrics(account, null, [:])
+			withingsDataService.getDataActivityMetrics(account, null, null)
 		} catch(e) {
 			assert e.cause instanceof InvalidAccessTokenException
 			assert e.cause.provider.toLowerCase() == "withings"
@@ -160,14 +160,14 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		mockedActivityResponse = """{"status":0,"body":{"activities":[]}}"""
 		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
-		result = withingsDataService.getDataActivityMetrics(account, new Date(), [:])
+		result = withingsDataService.getDataActivityMetrics(account, new Date(), new Date())
 
 		assertTrue result.success
 		assert Entry.count() == 0	// No entries to process.
 
 		mockedActivityResponse = """{"status":0,"body":{"activities":[{"date":"2014-02-05","steps":17897,"distance":16190.69,"calories":770.51,"elevation":425.03,"timezone":"America/Los_Angeles"},{"date":"2014-02-06","steps":12069,"distance":10300.22,"calories":552.4,"elevation":416.94,"timezone":"America/Los_Angeles"},{"date":"2014-02-07","steps":5182,"distance":4442.82,"calories":186.58,"elevation":99.81,"timezone":"America/Los_Angeles"},{"date":"2014-02-08","steps":13877,"distance":11466.84,"calories":573.63,"elevation":364.43,"timezone":"America/Los_Angeles"},{"date":"2014-02-09","steps":681,"distance":567.73,"calories":25.89,"elevation":14.9,"timezone":"America/Los_Angeles"},{"date":"2014-02-10","steps":13120,"distance":15563.38,"calories":999.1,"elevation":477.41,"timezone":"America/Los_Angeles"},{"date":"2014-02-11","steps":7115,"distance":7068.46,"calories":352.85,"elevation":191.14,"timezone":"America/Los_Angeles"},{"date":"2014-02-12","steps":7,"distance":7.58,"calories":0,"elevation":0,"timezone":"America/Los_Angeles"},{"date":"2014-02-16","steps":2775,"distance":2176.92,"calories":213.64,"elevation":311.58,"timezone":"America/Los_Angeles"},{"date":"2014-02-17","steps":17187,"distance":19381.9,"calories":1138.82,"elevation":427.05,"timezone":"America/Los_Angeles"},{"date":"2014-02-18","steps":5188,"distance":4691.28,"calories":212.18,"elevation":119.42,"timezone":"America/Los_Angeles"},{"date":"2014-02-19","steps":10066,"distance":9490.86,"calories":476.63,"elevation":313.55,"timezone":"America/Los_Angeles"},{"date":"2014-01-17","steps":1198,"distance":1044.62,"calories":42.48,"elevation":16.6,"timezone":"America/Los_Angeles"}]}}"""
 		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
-		result = withingsDataService.getDataActivityMetrics(account, null, [startDate: new Date(), endDate: new Date() + 1])
+		result = withingsDataService.getDataActivityMetrics(account, startDate: new Date(), endDate: new Date() + 1)
 		assert result.success == true
 		assert Entry.count() > 0
 

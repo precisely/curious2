@@ -22,6 +22,7 @@ target-eclipse/**
 /target
 /stacktrace.log
 /grails-app/conf/LocalConfig.groovy
+/grails-app/conf/QuartzConfig.groovy
 .metadata/**
 Servers/**
 *DummyController.groovy
