@@ -1636,6 +1636,19 @@ class EntryTests extends GroovyTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1025)")
 	}
+	
+	@Test
+	void testUpdatePartialOrCreate() {
+		def m = Entry.parse(currentTime, timeZone2, "bread summary 1", baseDate, true)
+		m.put('comment','(Withings)')
+		m.put('set name','withings import')
+		def entry = Entry.updatePartialOrCreate(userId, m , null)
+		println entry.valueString()
+		assert Entry.count() == 1
+		entry = Entry.updatePartialOrCreate(userId, m , null)
+		println Entry.list()
+		assert Entry.count() == 1
+	}
 
 	@Test
 	void testUpdateDate() {
