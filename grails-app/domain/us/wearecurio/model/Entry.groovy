@@ -337,6 +337,15 @@ class Entry {
 	}
 			
 	static List lookForPartialEntry(userId, Map m) {
+		/**
+		 * Making sure it is a summary entry. Non summary entries will
+		 * not have partial entries
+		 */
+		
+		if (!(m.description.contains("Summary") || m.description.contains("summary"))) {
+			return []
+		}
+		
 		Tag tag = Tag.look(m.description)
 		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
 		LocalDateTime entryDateTime = new LocalDateTime(m.date.getTime())

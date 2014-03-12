@@ -108,6 +108,10 @@ abstract class TagUnitMap {
 		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
 
 		String description = args["tagName"] ?: currentMapping["tag"]
+		
+		if (args["isSummary"]) {
+			description += " summary" 
+		}
 
 		if (amount != null) {
 			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)

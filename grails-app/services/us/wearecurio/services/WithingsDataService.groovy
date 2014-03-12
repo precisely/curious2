@@ -215,17 +215,22 @@ class WithingsDataService extends DataService {
 			Date entryDate = dateFormat.parse(activity["date"])
 			entryDate = new Date(entryDate.getTime() - 60000L) // move activity time one minute earlier to make midnight data appear on previous day
 
+			def args = ['isSummary':true] // Indicating that these entries are summary entries
 			if (activity["steps"]) {
-				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["distance"]) {
-				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["elevation"]) {
-				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 		}
 
