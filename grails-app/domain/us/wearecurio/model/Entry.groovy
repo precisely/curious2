@@ -320,6 +320,66 @@ class Entry {
 		null)
 	}
 			
+	static Entry updatePartialOrCreate(Long userId, Map m, TagStatsRecord tagStatsRecord) {
+		log.debug("Entry.updatePartialOrCreate: Trying to find a partial entry to update")
+		def partialEntry = lookForPartialEntry(userId, m)
+		log.debug("Entry.updatePartialOrCreate: " + partialEntry.size() +" partial entries found")
+		if (partialEntry.size() < 1) {
+			return Entry.create(userId, m, tagStatsRecord)
+		}
+		
+		for (entry in partialEntry) {
+			log.debug ("Updating partial entry " + entry)
+			entry.amount = m.amount
+			Utils.save(entry, true)
+			return entry
+		}
+	}
+			
+	static List lookForPartialEntry(userId, Map m) {
+		/**
+		 * Making sure it is a summary entry. Non summary entries will
+		 * not have partial entries
+		 */
+		
+		if (!(m.description.contains("Summary") || m.description.contains("summary"))) {
+			return []
+		}
+		
+		Tag tag = Tag.look(m.description)
+		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
+		LocalDateTime entryDateTime = new LocalDateTime(m.date.getTime())
+		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
+		
+		// Getting 00:10 instant in UTC for the user timezone
+		LocalDateTime userLocalDateTime = userDateTime.toLocalDateTime()
+		DateTime userMidnightInUTC = 
+			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone).withTime(0, 01, 0, 0).withZone(DateTimeZone.UTC)
+		LocalDateTime startOfDay = 
+				userMidnightInUTC.toLocalDateTime()
+		LocalDateTime endOfDay = startOfDay.plusHours(24)
+		log.debug("Entry.lookForPartialEntry: m.date " + m.date)
+		log.debug("Entry.lookForPartialEntry: userTimezone " + userTimezone)
+		log.debug("Entry.lookForPartialEntry: userLocalDateTime  " + userLocalDateTime)
+		log.debug("Entry.lookForPartialEntry: userMidnightInUTC " + userMidnightInUTC)
+		log.debug("Entry.lookForPartialEntry: start date " + startOfDay)
+		log.debug("Entry.lookForPartialEntry: start " + endOfDay)
+		
+		def c = Entry.createCriteria()
+		def results = c {
+			and {
+				eq("userId", userId)
+				eq("tag", tag)
+				eq("comment", m.comment)
+				eq("setName", m.setName)
+				eq("timeZoneId", m.timeZoneId)
+				between("date", startOfDay.toDate(), endOfDay.toDate())
+			}
+		}
+		
+		return results
+	}
+			
 	static final BigDecimal smallDifference = new BigDecimal("0.01")
 	
 	// Prevent duplicates for imported entries

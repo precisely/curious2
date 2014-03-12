@@ -63,7 +63,7 @@ class WithingsDataService extends DataService {
 		long serverTimestamp = 0
 		Long userId = account.getUserId()
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
-
+		log.debug "WithingsDataService.getData() start date:" + startDate
 		if (refreshAll)
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 					[setName: SET_NAME, userId: userId])
@@ -151,9 +151,9 @@ class WithingsDataService extends DataService {
 		}
 
 		if(account.lastPolled) {
-			getDataActivityMetrics(account, null, [startDate: account.lastPolled - 1, endDate: new Date() + 1])
-		} else {
-			getDataActivityMetrics(account, null, [startDate: startDate - 1, endDate: new Date() + 1])
+			getDataActivityMetrics(account, account.lastPolled - 1, new Date() + 1)
+		} else {			
+			getDataActivityMetrics(account, startDate - 1, new Date() + 1)
 		}
 
 		if (serverTimestamp > 0) {
@@ -164,7 +164,7 @@ class WithingsDataService extends DataService {
 		[success: true]
 	}
 	
-	protected static final String QUERYDATEFORMAT = "yyyy-MM-dd"
+	protected static final String QUERY_DATE_FORMAT = "yyyy-MM-dd"
 
 	/**
 	 * Used to get & store activity metrics summary for an account.
@@ -174,25 +174,18 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	Map getDataActivityMetrics(OAuthAccount account, Date forDay, Map dateRange) throws InvalidAccessTokenException {
-		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " forDay: " + forDay + " dateRange:" + dateRange.startDate + ":" + dateRange.endDate
+	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
+		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
 		
 		BigDecimal value
 
 		String description, units
-
-		Map queryParameters = ["action": "getactivity", userid: account.accountId]
-
-		if (forDay) {
-			queryParameters["date"] = forDay.format(QUERYDATEFORMAT)
-		} else if (dateRange) {
-			queryParameters["startdateymd"] = dateRange.startDate.format(QUERYDATEFORMAT)
-			queryParameters["enddateymd"] = dateRange.endDate.format(QUERYDATEFORMAT)
-		} else {
-			// @see Activity Metrics documentation at http://www.withings.com/en/api
-			log.debug "Either forDay or dateRange parameter required to pull activity data."
+		
+		if (startDate == null || endDate == null) {
 			return [success: false]
 		}
+
+		Map queryParameters = getActivityDataParameters(account.accountId, startDate, endDate, false)
 
 		JSONObject data = getResponse(account.tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 
@@ -206,7 +199,7 @@ class WithingsDataService extends DataService {
 
 		Long userId = account.userId
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERYDATEFORMAT)
+		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERY_DATE_FORMAT)
 
 		JSONArray activities = data["body"]["activities"]
 
@@ -222,17 +215,22 @@ class WithingsDataService extends DataService {
 			Date entryDate = dateFormat.parse(activity["date"])
 			entryDate = new Date(entryDate.getTime() - 60000L) // move activity time one minute earlier to make midnight data appear on previous day
 
+			def args = ['isSummary':true] // Indicating that these entries are summary entries
 			if (activity["steps"]) {
-				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["distance"]) {
-				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 			if (activity["elevation"]) {
-				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, timeZoneIdNumber, entryDate, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
 		}
 
@@ -260,6 +258,28 @@ class WithingsDataService extends DataService {
 
 		queryParameters
 	}
+	
+	Map getActivityDataParameters(String accountId, Date startDate, Date endDate, boolean intraDay) {
+		log.debug "WithingsDataService.getActivityDataParameters() accountId:" + 
+			accountId + " startDate: " + startDate + " endDate: " + endDate
+		
+		Map queryParameters
+		
+		if (intraDay) {
+			queryParameters = ["action": "getintradayactivity", userid: accountId]
+			queryParameters["startdate"] = startDate.getTime().toString()
+			queryParameters["enddate"] = endDate.getTime().toString()
+		} else {
+			queryParameters = ["action": "getactivity", userid: accountId]
+			if (endDate) {
+				queryParameters["startdateymd"] = startDate.format(QUERY_DATE_FORMAT)
+				queryParameters["enddateymd"] = endDate.format(QUERY_DATE_FORMAT)
+			} else {
+				queryParameters["date"] = startDate.format(QUERY_DATE_FORMAT)
+			}
+		}
+		return queryParameters
+	}
 
 	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		getUsersTimeZone(account.tokenInstance, account.accountId)
@@ -273,7 +293,7 @@ class WithingsDataService extends DataService {
 	 */
 	String getUsersTimeZone(Token tokenInstance, String accountId) {
 		log.debug "Getting timezone for accoundId [$accountId] from last day activity data."
-		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date())	// Getting data for last day
+		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date(), false)	// Getting data for last day
 		if (data.status != 0) {
 			log.error "Error status [$data.status] returned while getting timezone using activity data. [$data]"
 			return null
@@ -284,7 +304,7 @@ class WithingsDataService extends DataService {
 		}
 
 		log.debug "Getting timezone for accoundId [$accountId] from last 3 months activity data."
-		data = fetchActivityData(tokenInstance, accountId, new Date() - 90, new Date())		// Getting data for last 3 months
+		data = fetchActivityData(tokenInstance, accountId, new Date() - 90, new Date(), false)		// Getting data for last 3 months
 		if (data["body"]["activities"].size()) {
 			return data["body"]["activities"][0].timezone
 		}
@@ -293,15 +313,16 @@ class WithingsDataService extends DataService {
 		return null
 	}
 
-	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate) {
+	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.fetchActivityData() accountId:" + accountId + " startDate: " + startDate + " endDate: " + endDate
 		
-		String queryDateFormat = "yyyy-MM-dd"
-		Map queryParameters = ["action": "getactivity", userid: accountId]
-		queryParameters["startdateymd"] = startDate.format(queryDateFormat)
-		queryParameters["enddateymd"] = endDate.format(queryDateFormat)
+		Map queryParameters = getActivityDataParameters(accountId, startDate, endDate, intraDay)
 
 		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
+	}
+	
+	JSONObject fetchActivityData(OAuthAccount account, String accountId, Date startDate, Date endDate, boolean intraDay) {
+		fetchActivityData(account.tokenInstance, accountId, startDate, endDate, intraDay)
 	}
 
 	void listSubscription(OAuthAccount account) {

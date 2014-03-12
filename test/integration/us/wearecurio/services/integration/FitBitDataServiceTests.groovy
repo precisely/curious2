@@ -1,7 +1,15 @@
 package us.wearecurio.services.integration
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDateTime
+import org.joda.time.LocalTime
 import org.scribe.model.Response
 
+import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
@@ -20,11 +28,13 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	FitBitDataService fitBitDataService
 	OAuthAccount account
 	User user2
-
+	TimeZone serverTimezone
+	TimeZone defaultTimezone
 	@Override
 	void setUp() {
 		super.setUp()
-
+		serverTimezone = TimeZone.getDefault()
+		
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
@@ -37,6 +47,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	@Override
 	void tearDown() {
+		TimeZone.setDefault(serverTimezone)
 	}
 
 	void testSubscribeIfSuccess() {
@@ -113,9 +124,57 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 			}
 		]
 
-		boolean result = fitBitDataService.getDataDefault(account, new Date(), false)
+		Map result = fitBitDataService.getDataDefault(account, new Date(), false)
 
-		assert result
+		assert result.success == true
+	}
+
+	private Map helperSleepData (String startTime) {
+		Date forDay = new Date()
+		//
+		String mockedResponseData = """{"sleep":[{"isMainSleep":true,"logId":29767,"efficiency":98,"startTime":"${startTime}","duration":6000000,"minutesToFallAsleep":0,"minutesAsleep":47,"minutesAwake":24,"awakeningsCount":10,"timeInBed":100}]}"""
+		fitBitDataService.oauthService = [
+			getFitBitResource: { token, url, p, header ->
+				assert url == "http://api.fitbit.com/1/user/${account.accountId}/sleep/date/${forDay.format('yyyy-MM-dd')}.json"
+				return new Response(new MockedHttpURLConnection(mockedResponseData))
+			}
+		]
+		Map result = fitBitDataService.getDataSleep(account, forDay, false)
+		assert result.success == true
+
+		// Fetch entry with tag 'sleep'
+		Entry entryInstance = Entry.withCriteria(uniqueResult: true) {
+			tag { eq("description", "sleep") }
+		}
+
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(account.timeZoneId)
+		DateTimeZone userDateTimeZone = timeZoneIdInstance.toDateTimeZone()
+
+		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
+		def receivedLocalDateTime = new LocalDateTime(dateTimeParser.parse(startTime))
+
+		// Converting received date-time in respect with user's timezone.
+		// Assumption is that, this will be equal to the date of the entry.
+		println receivedLocalDateTime
+		LocalDateTime savedLocalDateTime = new DateTime(entryInstance.date.time).withZone(userDateTimeZone).toLocalDateTime()
+		println savedLocalDateTime
+		assert entryInstance != null
+		// Checking if received local date-time got saved in System TimeZone.
+		assert  savedLocalDateTime.equals(receivedLocalDateTime)
+		return result
+
+	}
+
+	void testGetDataSleepWithDifferentUserTimezone() {
+		TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
+		Map result = helperSleepData("2014-03-07T11:00:00.031")
+		assert result.success == true
+	}
+	
+	void testGetDataSleepWithSameUserTimezone() {
+		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
+		Map result = helperSleepData("2014-03-07T11:00:00.031")
+		assert result.success == true
 	}
 
 }
