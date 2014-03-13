@@ -371,7 +371,9 @@ class Entry {
 				eq("userId", userId)
 				eq("tag", tag)
 				eq("comment", m.comment)
-				eq("setName", m.setName)
+				if (m.setName) {
+					eq("setName", m.setName)
+				}
 				eq("timeZoneId", m.timeZoneId)
 				between("date", startOfDay.toDate(), endOfDay.toDate())
 			}
@@ -2115,6 +2117,7 @@ class Entry {
 			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 
 		retVal['timeZoneName'] = timeZoneName
+		retVal['timeZoneId'] = (Integer) TimeZoneId.look(timeZoneName).getId()
 		retVal['today'] = today
 		entryStr = preprocessEntry(retVal, entryStr)
 
