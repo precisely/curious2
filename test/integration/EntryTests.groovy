@@ -1642,6 +1642,8 @@ class EntryTests extends GroovyTestCase {
 		def m = Entry.parse(currentTime, timeZone2, "bread summary 1", baseDate, true)
 		m.put('comment','(Withings)')
 		m.put('setName','withings import')
+		def timezone = (Integer) TimeZoneId.look(timeZone2).getId()
+		m.put('timeZoneId', timezone)
 		def entry = Entry.updatePartialOrCreate(userId, m , null)
 		println entry.valueString()
 		assert Entry.count() == 1

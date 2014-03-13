@@ -2117,7 +2117,6 @@ class Entry {
 			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
 
 		retVal['timeZoneName'] = timeZoneName
-		retVal['timeZoneId'] = (Integer) TimeZoneId.look(timeZoneName).getId()
 		retVal['today'] = today
 		entryStr = preprocessEntry(retVal, entryStr)
 
