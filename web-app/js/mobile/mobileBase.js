@@ -385,7 +385,7 @@ function getEntryCache(date) {
  */
 
 function fetchEntries(dates, callback) {
-	if (typeof callback != 'undefined') {
+	if (typeof callback == 'undefined') {
 		console.log('fetchEntries: Missing a callback');
 	}
 	
@@ -394,10 +394,11 @@ function fetchEntries(dates, callback) {
 		userId : currentUserId,
 		timeZoneName : timeZoneName
 	});
+	console.log('Fetching entries from the server for dates: ' + dates);
 	queueJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 		function(data) {
 			if (checkData(data)) {
-				console.log("fetching entries from the server");
+				console.log('Data from the server: ' + data);
 					callback(data);
 			}
 		});
@@ -598,7 +599,7 @@ $(document).ready(function() {
 		if (moveVerticalDirection < 0 && -moveVerticalDirection > 55 && $('#recordList').scrollTop() <= 0) {
 			$('#fetchingData').show();
 			fetchEntries(cachedDateUTC, function (entries) {
-				refreshEntries(entries, true);
+				refreshEntries(entries, false, true);
 				dataReady = true;
 				$('#fetchingData').hide();
 				console.log('Data refreshed from the server');
@@ -649,6 +650,7 @@ function swipeTrackPage (left) {
 
 function cacheDate() {
 	cachedDate = $datepickerField.datepicker('getDate');
+	console.log('Current selected date:' + cachedDate);
 	cachedDateUTC = cachedDate.toUTCString();
 	cachedDateYesterday = new Date(cachedDate);
 	cachedDateYesterday.setDate(cachedDate.getDate()-1);
@@ -692,7 +694,7 @@ function refreshPage(callback) {
 		dataReady = true;
 	} else {
 		fetchEntries(cachedDateUTC, function (entries) {
-			refreshEntries(entries, true);
+			refreshEntries(entries, false, true);
 			dataReady = true;
 			if (typeof callback != 'undefined') {
 				callback();
