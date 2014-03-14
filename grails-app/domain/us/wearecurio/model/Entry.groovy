@@ -342,7 +342,7 @@ class Entry {
 		 * not have partial entries
 		 */
 		
-		if (!(m.description.contains("Summary") || m.description.contains("summary"))) {
+		if (!m.description.endsWith(" summary")) {
 			return []
 		}
 		
@@ -351,10 +351,11 @@ class Entry {
 		LocalDateTime entryDateTime = new LocalDateTime(m.date.getTime())
 		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
 		
-		// Getting 00:10 instant in UTC for the user timezone
+		// Getting 11:59 (the day before the summary date) instant in UTC for the user timezone
 		LocalDateTime userLocalDateTime = userDateTime.toLocalDateTime()
 		DateTime userMidnightInUTC = 
-			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone).withTime(0, 01, 0, 0).withZone(DateTimeZone.UTC)
+			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone)
+				.withTime(0, 0, 0, 0).minusMinutes(1).withZone(DateTimeZone.UTC)
 		LocalDateTime startOfDay = 
 				userMidnightInUTC.toLocalDateTime()
 		LocalDateTime endOfDay = startOfDay.plusHours(24)
