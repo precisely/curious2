@@ -52,7 +52,7 @@ class FitBitDataService extends DataService {
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-
+		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
 		String forDate = formatter.format(forDay)
 		String oldSetName = forDate + "activityfitbit"	// Backward support
 		String setName = SET_NAME
@@ -168,6 +168,7 @@ class FitBitDataService extends DataService {
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
 		SimpleDateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
 		String accountId = account.accountId
