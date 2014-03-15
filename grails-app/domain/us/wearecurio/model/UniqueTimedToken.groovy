@@ -38,31 +38,42 @@ class UniqueTimedToken {
 			[nowTime: new Date()])
 	}
 	
+	public updateExpiration(Date now, long timeout) {
+		this.date = now
+		this.expires = new Date(date.getTime() + timeout)
+	}
+	
 	// acquire lock on token
 	public static boolean acquire(String token, Date now, long timeout = 120000) {
 		log.debug "Attempt to acquire token " + token + " at " + now
 		
-		def already = UniqueTimedToken.findByToken(token)
+		UniqueTimedToken already = UniqueTimedToken.findByToken(token, [lock:true])
 		
 		if (already) {
 			if (now.getTime() - already.getDate().getTime() < timeout) {
 				log.debug "Failed to acquire token, existing token still fresh"
 				return false
-			} else {
-				log.debug "Found expired token, deleting"
-				delete(already)
 			}
-		}
-		
-		log.debug "Attempting to acquire token"
+			log.debug "Found expired token, updating"
+			
+			already.updateExpiration(now, timeout)
+			
+			boolean retVal = already.trySave()
+			
+			log.debug "Success of token update: " + retVal
+			
+			return retVal
+		} else {
+			log.debug "Attempting to acquire token"
 
-		UniqueTimedToken newToken = new UniqueTimedToken(token, now, timeout)
-		
-		boolean retVal = newToken.trySave()
-		
-		log.debug "Success of token acquisition: " + retVal
-		
-		return retVal
+			UniqueTimedToken newToken = new UniqueTimedToken(token, now, timeout)
+			
+			boolean retVal = newToken.trySave()
+			
+			log.debug "Success of token acquisition: " + retVal
+			
+			return retVal
+		}
 	}
 	
 	public String toString() {
