@@ -120,6 +120,7 @@ class HumanDataService {
 		MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+		dateTimeParser.setTimeZone(TimeZone.getTimeZone("UTC"))
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
