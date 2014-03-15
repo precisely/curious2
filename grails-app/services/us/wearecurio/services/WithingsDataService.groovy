@@ -40,7 +40,7 @@ class WithingsDataService extends DataService {
 		if (!notification.userid) {	// At time of subscription
 			return
 		}
-		Date notificationDate = notification.startdate instanceof Date ?: new Date(notification.startdate.toLong())
+		Date notificationDate = notification.startdate ? new Date(notification.startdate.toLong() * 1000L) : new Date()
 
 		saveNotification(notificationDate, notification.userid)
 	}
