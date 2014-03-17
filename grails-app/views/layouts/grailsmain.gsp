@@ -34,15 +34,19 @@ $.fn.isUnderEvent = function(e) {
 			&& e.pageY >= pos.top && e.pageY < pos.top + height;
 }
 
+function showAlert(text) {
+	alert(text);
+}
+
 function checkData(data, status, errorMessage, successMessage) {
 	if (data == 'error') {
 		if (errorMessage && status != 'cached')
-			alert(errorMessage);
+			showAlert(errorMessage);
 		return false;
 	}
 	if (data == 'login') {
 		if (status != 'cached') {
-			alert("Session timed out.");
+			showAlert("Session timed out.");
 			doLogout();
 			location.reload(true);
 		}
@@ -50,12 +54,12 @@ function checkData(data, status, errorMessage, successMessage) {
 	}
 	if (data == 'success') {
 		if (successMessage && status != 'cached')
-			alert(successMessage);
+			showAlert(successMessage);
 		return true;
 	}
 	if (typeof(data) == 'string') {
 		if (status != 'cached') {
-			alert(data);
+			showAlert(data);
 			location.reload(true);
 		}
 		return false;

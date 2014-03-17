@@ -96,7 +96,7 @@ $(function(){
 								discussTitleArea.on('mouseup', discussTitle.data('rename'));
 								if (closure) closure();
 							} else {
-								alert('Failed to set name');
+								showAlert('Failed to set name');
 							}
 						});
 					} else if (closure && (!preventCommentSubmit))

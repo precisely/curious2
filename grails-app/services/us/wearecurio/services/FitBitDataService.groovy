@@ -3,6 +3,7 @@ package us.wearecurio.services
 import grails.converters.JSON
 
 import java.text.SimpleDateFormat
+import java.util.List;
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONElement
@@ -30,9 +31,6 @@ class FitBitDataService extends DataService {
 	static transactional = true
 
 	FitBitTagUnitMap fitBitTagUnitMap = new FitBitTagUnitMap()
-
-	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-	SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
 	def urlService
 
@@ -137,6 +135,9 @@ class FitBitDataService extends DataService {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
+		
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(getTimeZoneId(account)))
 		String forDate = formatter.format(startDate)
 		String setName = SET_NAME + " " + forDate
 
@@ -166,11 +167,13 @@ class FitBitDataService extends DataService {
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+		TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		formatter.setTimeZone(TimeZoneId.getTimeZoneInstance(timeZoneIdNumber))
+		formatter.setTimeZone(timeZone)
 		SimpleDateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
-
+		dateTimeParser.setTimeZone(timeZone)
+		
 		String accountId = account.accountId
 		String forDate = formatter.format(forDay)
 		String setName = SET_NAME + " " + forDate
@@ -231,6 +234,18 @@ class FitBitDataService extends DataService {
 		notifications.each { notification ->
 			log.debug "Saving " + notification.dump()
 			notification.typeId = typeId
+			List<OAuthAccount> accounts = getAllOAuthAccounts(notification.accountId)
+			TimeZone timeZone = null
+			for (OAuthAccount account in accounts) {
+				timeZone = getTimeZone(account)
+				if (timeZone != null) break
+			}
+			if (timeZone == null) {
+				log.debug "No time zone found for fitbit accountId " + notification.accountId
+				timeZone = TimeZone.getTimeZone("UTC")
+			}
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
+			formatter.setTimeZone(timeZone)
 			notification.date = formatter.parse(notification.date)
 			new ThirdPartyNotification(notification).save(failOnError: true)
 		}

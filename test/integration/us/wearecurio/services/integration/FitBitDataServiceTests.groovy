@@ -131,11 +131,12 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	private Map helperSleepData (String startTime) {
 		Date forDay = new Date()
-		//
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
+		formatter.setTimeZone(TimeZone.getTimeZone("America/New_York"))
 		String mockedResponseData = """{"sleep":[{"isMainSleep":true,"logId":29767,"efficiency":98,"startTime":"${startTime}","duration":6000000,"minutesToFallAsleep":0,"minutesAsleep":47,"minutesAwake":24,"awakeningsCount":10,"timeInBed":100}]}"""
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
-				assert url == "http://api.fitbit.com/1/user/${account.accountId}/sleep/date/${forDay.format('yyyy-MM-dd')}.json"
+				assert url == "http://api.fitbit.com/1/user/${account.accountId}/sleep/date/${formatter.format(forDay)}.json"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
@@ -151,6 +152,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		DateTimeZone userDateTimeZone = timeZoneIdInstance.toDateTimeZone()
 
 		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
+		dateTimeParser.setTimeZone(userDateTimeZone.toTimeZone())
 		def receivedLocalDateTime = new LocalDateTime(dateTimeParser.parse(startTime))
 
 		// Converting received date-time in respect with user's timezone.
@@ -160,7 +162,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		println savedLocalDateTime
 		assert entryInstance != null
 		// Checking if received local date-time got saved in System TimeZone.
-		assert  savedLocalDateTime.equals(receivedLocalDateTime)
+		assert savedLocalDateTime.equals(receivedLocalDateTime)
 		return result
 
 	}

@@ -10,7 +10,7 @@
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF" />
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF, pingDataCSRF" />
 
 <r:script>
 
@@ -283,7 +283,7 @@ function deleteEntryId(entryId) {
 	cacheNow();
 	
 	if (entryId == undefined) {
-		alert("Please select entry you wish to delete");
+		showAlert("Please select entry you wish to delete");
 		return false;
 	}
 	var $entryToDelete = getEntryElement(entryId);
@@ -369,7 +369,7 @@ function addEntry(userId, text, defaultToNow) {
 			function(entries){
 				if (checkData(entries, 'success', "Error adding entry")) {
 					if (entries[1] != null) {
-						alert(entries[1]);
+						showAlert(entries[1]);
 					}
 					tagList.load();
 					refreshEntries(entries[0]);

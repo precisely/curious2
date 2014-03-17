@@ -173,7 +173,7 @@ function updateAutocomplete(term, amount, amountPrecision, units) {
 
 // clear any cached state on logoff
 registerLogoutCallback(function() {
-	$.clearJSON(makeGetUrl("autocompleteData"), makeGetArgs({all:'info'}));
+	$.clearJSON(makeGetUrl("autocompleteData"), getCSRFPreventionObject(makeGetArgs({all:'info'})));
 });
 
 var initAutocomplete = function() {

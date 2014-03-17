@@ -47,7 +47,7 @@ class MobiledataController extends DataController {
 
 		return user
 	}
-
+	
 	def dologinData() {
 		debug "MobiledataController.dologinData()"
 		

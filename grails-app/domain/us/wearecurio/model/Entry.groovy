@@ -1593,8 +1593,6 @@ class Entry {
 		return entries
 	}
 
-	static SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
 	static def fetchReminders(User user, Date startDate, long intervalSecs) {
 		Date endDate = new Date(startDate.getTime() + intervalSecs * 1000L)
 
@@ -2510,13 +2508,6 @@ class Entry {
 		gmtFormat.setTimeZone(Utils.createTimeZone(0, "GMT", false))
 		GMTMIDNIGHTSECS = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000
 	}
-
-	/* static long baseDateToGMTOffsetSecs(Date date) {
-	 Date d = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT")
-	 long secs = date.getTime() / 1000
-	 long offset = ((secs - GMTMIDNIGHTSECS) % (24 * 60 * 60) + (24 * 60 * 60)) % (24 * 60 * 60)
-	 return -offset
-	 }*/
 
 	def String exportString() {
 		return description + " " + (amount == null ? "none " : amountPrecision == 0 ? (amount ? "yes " : "no ") : (amountPrecision > 0 ? amount + " " : '')) + (units ? units + ' ' : '') + (datePrecisionSecs < 40000 ? (date ? gmtFormat.format(date) : '') + ' ' : '') + comment

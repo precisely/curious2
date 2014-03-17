@@ -45,13 +45,13 @@ $(function() {
 		var newPw = $("#password").val();
 		if (origUsername != newUsername) {
 			if (newPw.length == 0) {
-				alert("If you change the username, you must set the password as well");
+				showAlert("If you change the username, you must set the password as well");
 				return;
 			}
 		}
 		if (newPw.length > 0) {
 			if (newPw != $("#verify_password").val()) {
-				alert("New password and verification do not match");
+				showAlert("New password and verification do not match");
 				return;
 			}
 		}

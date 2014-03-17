@@ -7,6 +7,10 @@
 <script type="text/javascript">
 //assumes propertyClosure has the following methods:
 //get/set: name, startDate. endDate, centered
+function showAlert(text) {
+	alert(text);
+}
+
 function PlotProperties(divIdArray) {
 	// assumes divArray has the following properties:
 	// startDate, endDate

@@ -225,6 +225,11 @@ abstract class DataService {
 
 		account.timeZoneId
 	}
+	
+	TimeZone getTimeZone(OAuthAccount account) {
+		Long timeZoneId = getTimeZoneId(account)
+		return timeZoneId == null ? null : TimeZoneId.getTimeZoneInstance(timeZoneId)
+	}
 
 	/**
 	 * Used to retrieve timezone name for given account.

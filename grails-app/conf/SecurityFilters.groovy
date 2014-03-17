@@ -49,6 +49,18 @@ class SecurityFilters {
 					return true
 				}
 				if(!session.userId && !noauthActions.contains(actionName)) {
+					if (params.mobileSessionId != null) {
+						User user = Session.lookupSessionUser(params.mobileSessionId)
+						if (user != null) {
+							println "Opening mobile session with user " + user
+							session.userId = user.getId()
+							return true
+						} else {
+							println "Failed to find mobile session with id " + params.mobileSessionId
+						}
+					} else {
+						println "No mobile session id"
+					}
 					if (actionName.endsWith('Data')) {
 						println "No session for data action " + actionName
 						render "${params.callback}('login')"

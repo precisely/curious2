@@ -95,6 +95,10 @@ function getCSRFPreventionURIMobile(key) {
 }
 
 function getCSRFPreventionObjectMobile(key, data) {
+	return getCSRFPreventionObjectMobile(key, data);
+}
+
+function getCSRFPreventionObjectMobile(key, data) {
 	var CSRFPreventionObject = new Object();
 	if (localStorage['mobileSessionId']) {
 		CSRFPreventionObject['mobileSessionId'] = localStorage['mobileSessionId'];
@@ -143,6 +147,7 @@ function submitForm() {
 								$("#passwordField").blur();
 								launchTrack();
 								$(document).trigger("login-success");
+								callDataReadyCallbacks();
 							} else {
 								showAlert('Username or password not correct, please try again');
 								startLogin(0);
@@ -177,6 +182,7 @@ function submitForm() {
 					localStorage['mobileSessionId'] = data['mobileSessionId'];
 					dataReady = true;
 					launchTrack();
+					callDataReadyCallbacks();
 				} else {
 					showAlert(data['message']
 						+ ' Please try again or hit Cancel to return to the login screen.');
@@ -220,6 +226,27 @@ function askLogout() {
 
 // flag to determine whether the system is ready to submit data
 var dataReady = false;
+
+var dataReadyCallbacks = [];
+
+function addDataReadyCallback(closure) {
+	console.log("Adding dataReady callback");
+	dataReadyCallbacks.push(closure);
+}
+
+function callDataReadyCallbacks() {
+	console.log("Calling dataReadyCallbacks");
+	for (var i in dataReadyCallbacks) {
+		console.log("Calling dataReadyCallback " + i);
+		dataReadyCallbacks[i]();
+	}
+	
+	dataReadyCallbacks = [];
+}
+
+function clearDataReadyCallbacks() {
+	dataReadyCallbacks = [];
+}
 
 if (!localStorage['mobileSessionId']
 		|| localStorage['mobileSessionId'] == undefined) {
@@ -442,6 +469,7 @@ function startLogin(mode) {
 			localStorage['mobileSessionId'] = null;
 			localStorage['lastPage'] = 'login';
 		}
+		clearDataReadyCallbacks();
 		$('#trackPage').hide();
 
 		resetDefaultText($("#emailField"), 'url(../images/email.png)');
@@ -579,6 +607,7 @@ $(document).ready(function() {
 				dataReady = true;
 				$('#fetchingData').hide();
 				console.log('Data refreshed from the server');
+				callDataReadyCallbacks();
 			});
 			
 		}
@@ -672,6 +701,7 @@ function refreshPage(callback) {
 			if (typeof callback != 'undefined') {
 				callback();
 			}
+			callDataReadyCallbacks();
 		});
 	}
 	
@@ -1069,10 +1099,14 @@ function deleteGhost($entryToDelete, entryId, allFuture) {
 }
 
 function deleteEntryId(entryId) {
+	console.log("Trying to delete " + entryId);
 	cacheNow();
 	if (!dataReady) {
-		// alert("Please wait until syncing is done before deleting entries");
-		startLogin(0);
+		console.log("dataReady is false, pinging people data");
+		addDataReadyCallback(function() {
+			deleteEntryId(entryId);
+		});
+		pingPeopleData(); // make sure dataReady gets set eventually
 		return;
 	}
 	if (!isOnline()) {
@@ -1199,9 +1233,13 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 }
 
 function updateEntry(entryId, text, defaultToNow) {
+	console.log("Trying to update " + entryId + ":" + text);
 	if (!dataReady) {
-		// alert("Please wait until syncing is done before editing entries");
-		startLogin(0);
+		console.log("dataReady false");
+		addDataReadyCallback(function() {
+			updateEntry(entryId, text, defaultToNow);
+		});
+		pingPeopleData();
 		return;
 	}
 	if (!isOnline()) {
@@ -1224,11 +1262,15 @@ function updateEntry(entryId, text, defaultToNow) {
 }
 
 function addEntry(userId, text, defaultToNow) {
+	console.log("Trying to add entry " + text);
 	cacheNow();
 
 	if (!dataReady) {
-		// alert("Please wait until syncing is done before adding entries");
-		startLogin(0);
+		console.log("dataReady false");
+		addDataReadyCallback(function() {
+			addEntry(entryId, text, defaultToNow);
+		});
+		pingPeopleData();
 		return;
 	}
 	if (!isOnline()) {
@@ -1314,6 +1356,41 @@ function setPeopleData(data) {
 	});
 }
 
+function getPeopleData() {
+	if (isOnline())
+		$.getJSON(
+			makeGetUrl("getPeopleData"),
+			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
+			function(data) {
+				if (!checkData(data))
+					return;
+				dataReady = true;
+				setAppCacheData("users", data);
+				setPeopleData(data);
+				// wait to init autocomplete until after login
+				initAutocomplete();
+				refreshPage();
+				callDataReadyCallbacks();
+			}
+		);
+}
+
+function pingPeopleData() {
+	if (isOnline())
+		$.getJSON(
+			makeGetUrl("getPeopleData"),
+			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
+			function(data) {
+				if (!checkData(data))
+					return;
+				dataReady = true;
+				setAppCacheData("users", data);
+				setPeopleData(data);
+				callDataReadyCallbacks();
+			}
+		);
+}
+
 var initTrackPage = function() {
 	localStorage['lastPage'] = 'track';
 
@@ -1387,20 +1464,7 @@ var initTrackPage = function() {
 		return;
 	}
 
-	if (isOnline())
-		$.getJSON(
-			makeGetUrl("getPeopleData"),
-			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
-			function(data) {
-				if (!checkData(data))
-					return;				
-				setAppCacheData("users", data);
-				setPeopleData(data);
-				// wait to init autocomplete until after login
-				initAutocomplete();
-				refreshPage();
-			}
-		);
+	getPeopleData();
 }
 
 // Overriding autocomplete from autocomplete.js

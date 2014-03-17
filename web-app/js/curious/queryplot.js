@@ -360,7 +360,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var first = true;
 		var plotDataStr = this.store();
 		if (plotDataStr == null) {
-			alert("No plotted data to save");
+			showAlert("No plotted data to save");
 			return;
 		}
 		
@@ -399,7 +399,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var first = true;
 		var plotDataStr = this.storeSnapshot();
 		if (plotDataStr == null) {
-			alert("No plotted data to save");
+			showAlert("No plotted data to save");
 			return;
 		}
 		var plot = this;
@@ -632,7 +632,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (checkData(plotData)) {
 				plot.load(plotData);
 			} else
-				alert("Error while loading");
+				showAlert("Error while loading");
 		});
 	}
 	this.loadSnapshotId = function(id) {
@@ -641,7 +641,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (checkData(plotData)) {
 				plot.loadSnapshot(plotData);
 			} else {
-				alert("Error while loading");
+				showAlert("Error while loading");
 				window.location = '/home/index';
 			}
 		});
