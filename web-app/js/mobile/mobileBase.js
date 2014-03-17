@@ -351,9 +351,7 @@ function isEntryCached(dateStr) {
  * @returns List of entries
  */
 function getEntryCache(date) {
-	var month = ("0" + (date.getMonth() + 1)).slice(-2);
-	var day = ("0" + date.getDate()).slice(-2);
-	var dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
+	var dateStr = getDateKey(date);
 	return getAppCacheData('entryCache.'+dateStr);
 	
 }
@@ -391,16 +389,8 @@ function fetchEntries(dates, callback) {
  * @returns {Boolean}
  */
 function setEntryCache(date,entries) {
-	var dateStr;
+	var dateStr = getDateKey(date);
 	var entryBucket = getEntryBucket();
-	
-	if (typeof date == 'object') {
-		var month = ("0" + (date.getMonth() + 1)).slice(-2);
-		var day = ("0" + date.getDate()).slice(-2);
-		dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
-	} else {
-		dateStr = date;
-	}
 	
 	if (setAppCacheData('entryCache.'+dateStr, entries)) {
 		if (!isEntryCached(dateStr)) {
@@ -415,6 +405,35 @@ function setEntryCache(date,entries) {
 	} else {
 		return false;
 	}
+}
+
+function removeEntryFromCache(date) {
+	var dateStr = getDateKey(date);
+	if (isEntryCached()) {
+		var entryBucket = getEntryBucket();
+		for (var i=0; i<entryBucket.length; i++) {
+	        if (entryBucket[i] === dateStr) {
+	        	console.log('Removing entry for date ' + dateStr +' from cache');
+	        	localStorage.removeItem('appCache.entryCache.' + entryBucket[i]);
+	        	entryBucket.splice(i,1);
+	        	setEntryBucket(entryBucket);
+	            return true;
+	        }
+	    }
+		return false;
+	}
+}
+
+function getDateKey(date) {
+	var dateStr;
+	if (typeof date == 'object') {
+		var month = ("0" + (date.getMonth() + 1)).slice(-2);
+		var day = ("0" + date.getDate()).slice(-2);
+		dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
+	} else {
+		dateStr = date;
+	}
+	return dateStr;
 }
 
 function clearEntryCache() {
@@ -1001,6 +1020,7 @@ function refreshEntries(entries, activateGhost, cache) {
 	cache = typeof cache !== 'undefined' ? cache : true;
 	
 	if (cache) {
+		console.log('Refreshing the cache for:' + cachedDate);
 		setEntryCache(cachedDate, entries);
 	}
 
@@ -1064,8 +1084,12 @@ function deleteGhost($entryToDelete, entryId, allFuture) {
 						all : (allFuture ? "true" : "false"),
 						date : cachedDateUTC
 					})), function(ret) {
+				console.log('deleteGhost: Response received' + checkData(ret, 'success', "Error deleting entry"));
 				if (checkData(ret, 'success', "Error deleting entry")) {
+					console.log('deleteGhost: Removing entry from cache as well');
 					$entryToDelete.remove();
+					removeEntryFromCache(cachedDate);
+					refreshPage();
 				}
 			});
 }
@@ -1109,7 +1133,7 @@ function deleteEntryId(entryId) {
 			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 					function(entries) {
 						if (checkData(entries)) {
-							refreshEntries(entries[0], false);
+							refreshEntries(entries[0], false, true);
 							updateAutocomplete(entries[1][0], entries[1][1],
 									entries[1][2], entries[1][3]);
 							if (entries[2] != null)
@@ -1187,7 +1211,7 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 							entry.glow = true;
 						}
 					})
-					refreshEntries(entries[0]);
+					refreshEntries(entries[0], false, true);
 					
 					updateAutocomplete(entries[1][0], entries[1][1],
 							entries[1][2], entries[1][3]);
@@ -1258,7 +1282,7 @@ function addEntry(userId, text, defaultToNow) {
 					entry.glow = true;
 				}
 			})
-			refreshEntries(entries[0], false);
+			refreshEntries(entries[0], false, true);
 			updateAutocomplete(entries[2][0], entries[2][1], entries[2][2],
 					entries[2][3]);
 		} else {
