@@ -26,3 +26,4 @@ target-eclipse/**
 .metadata/**
 Servers/**
 *DummyController.groovy
+tags
