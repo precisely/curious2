@@ -348,21 +348,12 @@ class Entry {
 		
 		Tag tag = Tag.look(m.description)
 		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
-		LocalDateTime entryDateTime = new LocalDateTime(m.date.getTime())
 		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
 		
-		// Getting 11:59 (the day before the summary date) instant in UTC for the user timezone
-		LocalDateTime userLocalDateTime = userDateTime.toLocalDateTime()
-		DateTime userMidnightInUTC = 
-			new DateTime(userLocalDateTime.toDate().getTime(),userTimezone)
-				.withTime(0, 0, 0, 0).minusMinutes(1).withZone(DateTimeZone.UTC)
-		LocalDateTime startOfDay = 
-				userMidnightInUTC.toLocalDateTime()
-		LocalDateTime endOfDay = startOfDay.plusHours(24)
+		DateTime startOfDay = userDateTime.withTime(0, 0, 0, 0).minusMinutes(1)
+		DateTime endOfDay = startOfDay.plusHours(24)
 		log.debug("Entry.lookForPartialEntry: m.date " + m.date)
 		log.debug("Entry.lookForPartialEntry: userTimezone " + userTimezone)
-		log.debug("Entry.lookForPartialEntry: userLocalDateTime  " + userLocalDateTime)
-		log.debug("Entry.lookForPartialEntry: userMidnightInUTC " + userMidnightInUTC)
 		log.debug("Entry.lookForPartialEntry: start date " + startOfDay)
 		log.debug("Entry.lookForPartialEntry: start " + endOfDay)
 		
