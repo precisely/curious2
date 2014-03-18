@@ -141,6 +141,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 			nextCall();
 		}
 		if (delay > 1000000) { // stop retrying after delay too large
+			showAlert("Server down... giving up");
 			return;
 		}
 		if (!(delay > 0))
@@ -157,7 +158,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 				dataType: "json",
 				url: url,
 				data: args,
-				timeout: 2000
+				timeout: 5000
 			})
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
@@ -171,7 +172,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 			dataType: "json",
 			url: url,
 			data: args,
-			timeout: 2000
+			timeout: 5000
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
