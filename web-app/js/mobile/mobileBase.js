@@ -1357,7 +1357,7 @@ function setPeopleData(data) {
 	});
 }
 
-function getPeopleData(boolean full) {
+function getPeopleData(full) {
 	if (isOnline())
 		$.getJSON(
 			makeGetUrl("getPeopleData"),
