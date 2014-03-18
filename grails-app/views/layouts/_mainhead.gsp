@@ -8,13 +8,13 @@
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.offline.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=9"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=9"></script>
-<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=9"></script>
-<script type="text/javascript" src="/static/js/curious/treeview.js?ver=9"></script>
-<script type="text/javascript" src="/static/js/curious/taglist.js?ver=9"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=14"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=14"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=14"></script>
+<script type="text/javascript" src="/static/js/curious/treeview.js?ver=14"></script>
+<script type="text/javascript" src="/static/js/curious/taglist.js?ver=14"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<link rel="stylesheet" href="${resource(dir:'css', file:'main.css?v=5')}"/>
+<link rel="stylesheet" href="${resource(dir:'css', file:'main.css?ver=5')}"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="${resource(dir:'css', file:'mainlhp.css')}"/>
 </g:if>
