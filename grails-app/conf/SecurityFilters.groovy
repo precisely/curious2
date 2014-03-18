@@ -40,6 +40,7 @@ class SecurityFilters {
 	def filters = {
 		loginCheck(controller:'home', action:'*') {
 			before = {
+				println "login security filter: " + actionName
 				def a = actionName
 				if (params.controller == null) {
 					flash.precontroller = 'home'
@@ -79,6 +80,7 @@ class SecurityFilters {
 		}
 		mobileCheck(controller:'mobile', action:'*') {
 			before = {
+				println "mobile security filter: " + actionName
 				if (params.controller == null && (!params.action.equals('index'))) {
 					flash.precontroller = 'mobile'
 					flash.preaction = 'index'
@@ -91,6 +93,7 @@ class SecurityFilters {
 		}
 		mobiledataCheck(controller:'mobiledata', action:'*') {
 			before = {
+				println "mobiledata security filter: " + actionName
 				if(!session.userId && !noauthActions.contains(actionName)) {
 					if (params.mobileSessionId != null) {
 						User user = Session.lookupSessionUser(params.mobileSessionId)

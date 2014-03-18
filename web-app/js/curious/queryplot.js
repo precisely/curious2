@@ -364,7 +364,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			return;
 		}
 		
-		$.postJSON(makePostUrl("savePlotData"), { name: this.getName(), plotData: plotDataStr },
+		queuePostJSON(makePostUrl("savePlotData"), { name: this.getName(), plotData: plotDataStr },
 				function(data) {
 					checkData(data[0], '', "Error while saving live graph", "Live graph saved");
 				});
@@ -404,7 +404,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		var plot = this;
 		
-		$.postJSON(makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
+		queuePostJSON(makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
 				function(data) {
 					if (checkData(data, '', "Error while saving snapshot")) {
 						window.location = makePlainUrl('discuss?plotIdMessage=' + data['plotDataId']);
@@ -628,7 +628,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.loadId = function(id) {
 		var plot = this;
-		$.getJSON(makeGetUrl("loadPlotDataId"), makeGetArgs({ id:id }), function(plotData) {
+		queueJSON(makeGetUrl("loadPlotDataId"), makeGetArgs({ id:id }), function(plotData) {
 			if (checkData(plotData)) {
 				plot.load(plotData);
 			} else
@@ -637,7 +637,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.loadSnapshotId = function(id) {
 		var plot = this;
-		$.getJSON(makeGetUrl("loadSnapshotDataId"), makeGetArgs({ id:id }), function(plotData) {
+		queueJSON(makeGetUrl("loadSnapshotDataId"), makeGetArgs({ id:id }), function(plotData) {
 			if (checkData(plotData)) {
 				plot.loadSnapshot(plotData);
 			} else {
@@ -1378,7 +1378,7 @@ function PlotLine(p) {
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
-			$.getJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+			queueJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
 					{ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
 					function(result){
 						if (checkData(result)) {
@@ -1391,7 +1391,7 @@ function PlotLine(p) {
 		if (this.showPoints != val) {
 			this.showPoints = val;
 			var plotLine = this;
-			$.getJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+			queueJSON(makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
 					{ tags:$.toJSON(this.getTags()), showPoints:val ? 'true' : 'false' }),
 					function(result){
 						if (checkData(result)) {
@@ -1667,7 +1667,7 @@ function PlotLine(p) {
 		var method = this.sumData ? "getSumPlotData" : "getPlotData";
 		var plotLine = this;
 		
-		$.getJSON(makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
+		queueJSON(makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				timeZoneName:timeZoneName }),

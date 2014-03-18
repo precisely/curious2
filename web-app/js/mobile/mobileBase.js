@@ -85,7 +85,7 @@ function doLogout() {
 	$(document).trigger("ask-logout");
 }
 
-function getCSRFPreventionURIMobile(key) {
+function getCSRFPreventionURI(key) {
 	if (localStorage['mobileSessionId'] == undefined
 			|| localStorage['mobileSessionId'] == null) {
 		console.error("Missing mobileSessionId for CSRF protection");
@@ -95,10 +95,6 @@ function getCSRFPreventionURIMobile(key) {
 }
 
 function getCSRFPreventionObject(key, data) {
-	return getCSRFPreventionObjectMobile(key, data);
-}
-
-function getCSRFPreventionObjectMobile(key, data) {
 	var CSRFPreventionObject = new Object();
 	if (localStorage['mobileSessionId']) {
 		CSRFPreventionObject['mobileSessionId'] = localStorage['mobileSessionId'];
@@ -133,28 +129,27 @@ function submitForm() {
 	var password = $("#passwordField").val();
 
 	if (loginMode == 0) { // login
-		$
-				.getJSON(
-						makeGetUrl('dologinData'),
-						makeGetArgs({
-							username : username,
-							password : password
-						}),
-						function(data) {
-							if (data['success']) {
-								localStorage['mobileSessionId'] = data['mobileSessionId'];
-								dataReady = true;
-								$("#passwordField").blur();
-								launchTrack();
-								$(document).trigger("login-success");
-								callDataReadyCallbacks();
-							} else {
-								showAlert('Username or password not correct, please try again');
-								startLogin(0);
-							}
-						});
+		queueJSON(
+			makeGetUrl('dologinData'),
+			makeGetArgs({
+				username : username,
+				password : password
+			}),
+			function(data) {
+				if (data['success']) {
+					localStorage['mobileSessionId'] = data['mobileSessionId'];
+					dataReady = true;
+					$("#passwordField").blur();
+					launchTrack();
+					$(document).trigger("login-success");
+					callDataReadyCallbacks();
+				} else {
+					showAlert('Username or password not correct, please try again');
+					startLogin(0);
+				}
+			});
 	} else if (loginMode == 10) { // forgot password
-		$.getJSON(
+		queueJSON(
 			makeGetUrl('doforgotData'),
 			makeGetArgs({
 				username : username
@@ -169,7 +164,7 @@ function submitForm() {
 				}
 			});
 	} else if (loginMode == 20) { // create an account
-		$.postJSON(
+		queuePostJSON(
 			makePostUrl('doregisterData'),
 			makePostArgs({
 				email : email,
@@ -394,12 +389,12 @@ function fetchEntries(dates, callback) {
 		console.log('fetchEntries: Missing a callback');
 	}
 	
-	var argsToSend = getCSRFPreventionObjectMobile('getListDataCSRF', {
+	var argsToSend = getCSRFPreventionObject('getListDataCSRF', {
 		date : dates,
 		userId : currentUserId,
 		timeZoneName : timeZoneName
 	});
-	$.getJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
+	queueJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 		function(data) {
 			if (checkData(data)) {
 				console.log("fetching entries from the server");
@@ -831,40 +826,39 @@ function activateEntry($entry, doNotSelectEntry) {
 		return;
 	}
 	cacheNow();
-	$
-			.getJSON(
-					makeGetUrl("activateGhostEntry"),
-					makeGetArgs(getCSRFPreventionObjectMobile(
-							"activateGhostEntryCSRF", {
-								entryId : entryId,
-								date : cachedDateUTC,
-								currentTime : currentTimeUTC,
-								timeZoneName : timeZoneName
-							})),
-					function(newEntry) {
-						if (checkData(newEntry)) {
-							// newEntry.glow = true;
-							var newEntryId = newEntry.id;
-							if (isContinuous) {
-								var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
-								displayEntry(
-										newEntry,
-										false,
-										{
-											appendAfterEntry : $lastContinuousGhostEntry
-										});
-							} else {
-								activateEntryId = newEntry.id;
-								displayEntry(newEntry, false, {
-									replaceEntry : gEntry
-								});
-							}
-							var $newEntry = $("li#entryid" + newEntryId);
-							if (!doNotSelectEntry) {
-								selected($newEntry, true);
-							}
-						}
+	queueJSON(
+		makeGetUrl("activateGhostEntry"),
+		makeGetArgs(getCSRFPreventionObject(
+				"activateGhostEntryCSRF", {
+					entryId : entryId,
+					date : cachedDateUTC,
+					currentTime : currentTimeUTC,
+					timeZoneName : timeZoneName
+				})),
+		function(newEntry) {
+			if (checkData(newEntry)) {
+				// newEntry.glow = true;
+				var newEntryId = newEntry.id;
+				if (isContinuous) {
+					var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
+					displayEntry(
+							newEntry,
+							false,
+							{
+								appendAfterEntry : $lastContinuousGhostEntry
+							});
+				} else {
+					activateEntryId = newEntry.id;
+					displayEntry(newEntry, false, {
+						replaceEntry : gEntry
 					});
+				}
+				var $newEntry = $("li#entryid" + newEntryId);
+				if (!doNotSelectEntry) {
+					selected($newEntry, true);
+				}
+			}
+		});
 }
 
 var dayDuration = 86400000;
@@ -1086,8 +1080,8 @@ function modifyInput(suffix) {
 }
 
 function deleteGhost($entryToDelete, entryId, allFuture) {
-	$.getJSON(makeGetUrl("deleteGhostEntryData"),
-			makeGetArgs(getCSRFPreventionObjectMobile(
+	queueJSON(makeGetUrl("deleteGhostEntryData"),
+			makeGetArgs(getCSRFPreventionObject(
 					"deleteGhostEntryDataCSRF", {
 						entryId : entryId,
 						all : (allFuture ? "true" : "false"),
@@ -1130,7 +1124,7 @@ function deleteEntryId(entryId) {
 						});
 			}
 		} else {
-			var argsToSend = getCSRFPreventionObjectMobile(
+			var argsToSend = getCSRFPreventionObject(
 					"deleteEntryDataCSRF", {
 						entryId : entryId,
 						currentTime : currentTimeUTC,
@@ -1139,7 +1133,7 @@ function deleteEntryId(entryId) {
 						displayDate : cachedDateUTC
 					});
 
-			$.getJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
+			queueJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 					function(entries) {
 						if (checkData(entries)) {
 							refreshEntries(entries[0], false);
@@ -1197,7 +1191,7 @@ function getEntryElement(entryId) {
 function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 	cacheNow();
 
-	var argsToSend = getCSRFPreventionObjectMobile("updateEntrySDataCSRF", {
+	var argsToSend = getCSRFPreventionObject("updateEntrySDataCSRF", {
 		entryId : entryId,
 		currentTime : currentTimeUTC,
 		text : text,
@@ -1207,7 +1201,7 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 		allFuture : allFuture ? '1' : '0'
 	});
 
-	$.getJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
+	queueJSON(makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 			function(entries) {
 				if (entries == "") {
 					return;
@@ -1278,7 +1272,7 @@ function addEntry(userId, text, defaultToNow) {
 		showAlert("Please wait until online to add an entry");
 		return;
 	}
-	var argsToSend = getCSRFPreventionObjectMobile("addEntryCSRF", {
+	var argsToSend = getCSRFPreventionObject("addEntryCSRF", {
 		currentTime : currentTimeUTC,
 		userId : userId,
 		text : text,
@@ -1287,7 +1281,7 @@ function addEntry(userId, text, defaultToNow) {
 		defaultToNow : defaultToNow ? '1' : '0'
 	})
 
-	$.getJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend), function(
+	queueJSON(makeGetUrl("addEntrySData"), makeGetArgs(argsToSend), function(
 			entries) {
 		if (checkData(entries)) {
 			if (entries[1] != null) {
@@ -1359,9 +1353,9 @@ function setPeopleData(data) {
 
 function getPeopleData(full) {
 	if (isOnline())
-		$.getJSON(
+		queueJSON(
 			makeGetUrl("getPeopleData"),
-			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
+			makeGetArgs(getCSRFPreventionObject("getPeopleDataCSRF")),
 			function(data) {
 				if (!checkData(data))
 					return;
@@ -1458,7 +1452,7 @@ var initTrackPage = function() {
 
 initAutocomplete = function() {
 	$.retrieveJSON(makeGetUrl("autocompleteData"),
-			getCSRFPreventionObjectMobile("autocompleteDataCSRF", {
+			getCSRFPreventionObject("autocompleteDataCSRF", {
 				all : 'info'
 			}), function(data, status) {
 				if (checkData(data, status)) {
