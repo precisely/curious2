@@ -655,7 +655,14 @@ function swipeTrackPage (left) {
 			},
 			250,
 			function () {
-				$dummyTrackPage.remove();
+				$('.trackDay').each(function(index, element) 
+					{
+						if (index == 0 ) 
+							return;
+						else
+							$(element).remove();
+					}
+				);
 			}
 	);
 	
