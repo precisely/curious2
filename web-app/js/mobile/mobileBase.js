@@ -1107,7 +1107,7 @@ function deleteEntryId(entryId) {
 		addDataReadyCallback(function() {
 			deleteEntryId(entryId);
 		});
-		pingPeopleData(); // make sure dataReady gets set eventually
+		getPeopleData(false); // make sure dataReady gets set eventually
 		return;
 	}
 	if (!isOnline()) {
@@ -1357,7 +1357,7 @@ function setPeopleData(data) {
 	});
 }
 
-function getPeopleData() {
+function getPeopleData(boolean full) {
 	if (isOnline())
 		$.getJSON(
 			makeGetUrl("getPeopleData"),
@@ -1369,24 +1369,10 @@ function getPeopleData() {
 				setAppCacheData("users", data);
 				setPeopleData(data);
 				// wait to init autocomplete until after login
-				initAutocomplete();
-				refreshPage();
-				callDataReadyCallbacks();
-			}
-		);
-}
-
-function pingPeopleData() {
-	if (isOnline())
-		$.getJSON(
-			makeGetUrl("getPeopleData"),
-			makeGetArgs(getCSRFPreventionObjectMobile("getPeopleDataCSRF")),
-			function(data) {
-				if (!checkData(data))
-					return;
-				dataReady = true;
-				setAppCacheData("users", data);
-				setPeopleData(data);
+				if (full) {
+					initAutocomplete();
+					refreshPage();
+				}
 				callDataReadyCallbacks();
 			}
 		);
@@ -1465,7 +1451,7 @@ var initTrackPage = function() {
 		return;
 	}
 
-	getPeopleData();
+	getPeopleData(true);
 }
 
 // Overriding autocomplete from autocomplete.js
