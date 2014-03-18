@@ -28,6 +28,7 @@ function callLogoutCallbacks() {
 	for (var i in logoutCallbacks) {
 		logoutCallbacks[i]();
 	}
+	clearJSONQueue();
 }
 
 /*

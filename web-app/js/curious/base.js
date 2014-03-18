@@ -125,6 +125,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 		if (successCallback)
 			successCallback(data);
 		--numJSONCalls;
+		if (numJSONCalls < 0) numJSONCalls = 0
 		if (pendingJSONCalls.length > 0) {
 			var nextCall = pendingJSONCalls.shift();
 			nextCall();
@@ -134,6 +135,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 		if (failCallback)
 			failCallback(data);
 		--numJSONCalls;
+		if (numJSONCalls < 0) numJSONCalls = 0
 		if (pendingJSONCalls.length > 0) {
 			var nextCall = pendingJSONCalls.shift();
 			nextCall();
@@ -180,8 +182,6 @@ function clearJSONQueue() {
 	numJSONCalls = 0;
 	pendingJSONCalls = [];
 }
-
-registerLogoutCallback(function() { clearJSONQueue(); });
 
 var App = {};
 App.CSRF = {};
