@@ -373,9 +373,7 @@ function isEntryCached(dateStr) {
  * @returns List of entries
  */
 function getEntryCache(date) {
-	var month = ("0" + (date.getMonth() + 1)).slice(-2);
-	var day = ("0" + date.getDate()).slice(-2);
-	var dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
+	var dateStr = getDateKey(date);
 	return getAppCacheData('entryCache.'+dateStr);
 	
 }
@@ -385,7 +383,7 @@ function getEntryCache(date) {
  */
 
 function fetchEntries(dates, callback) {
-	if (typeof callback != 'undefined') {
+	if (typeof callback == 'undefined') {
 		console.log('fetchEntries: Missing a callback');
 	}
 	
@@ -394,10 +392,11 @@ function fetchEntries(dates, callback) {
 		userId : currentUserId,
 		timeZoneName : timeZoneName
 	});
+	console.log('Fetching entries from the server for dates: ' + dates);
 	queueJSON(makeGetUrl("getListData"), makeGetArgs(argsToSend),
 		function(data) {
 			if (checkData(data)) {
-				console.log("fetching entries from the server");
+				console.log('Data from the server: ' + data);
 					callback(data);
 			}
 		});
@@ -412,16 +411,8 @@ function fetchEntries(dates, callback) {
  * @returns {Boolean}
  */
 function setEntryCache(date,entries) {
-	var dateStr;
+	var dateStr = getDateKey(date);
 	var entryBucket = getEntryBucket();
-	
-	if (typeof date == 'object') {
-		var month = ("0" + (date.getMonth() + 1)).slice(-2);
-		var day = ("0" + date.getDate()).slice(-2);
-		dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
-	} else {
-		dateStr = date;
-	}
 	
 	if (setAppCacheData('entryCache.'+dateStr, entries)) {
 		if (!isEntryCached(dateStr)) {
@@ -436,6 +427,35 @@ function setEntryCache(date,entries) {
 	} else {
 		return false;
 	}
+}
+
+function removeEntryFromCache(date) {
+	var dateStr = getDateKey(date);
+	if (isEntryCached()) {
+		var entryBucket = getEntryBucket();
+		for (var i=0; i<entryBucket.length; i++) {
+	        if (entryBucket[i] === dateStr) {
+	        	console.log('Removing entry for date ' + dateStr +' from cache');
+	        	localStorage.removeItem('appCache.entryCache.' + entryBucket[i]);
+	        	entryBucket.splice(i,1);
+	        	setEntryBucket(entryBucket);
+	            return true;
+	        }
+	    }
+		return false;
+	}
+}
+
+function getDateKey(date) {
+	var dateStr;
+	if (typeof date == 'object') {
+		var month = ("0" + (date.getMonth() + 1)).slice(-2);
+		var day = ("0" + date.getDate()).slice(-2);
+		dateStr = month + '/' + day + '/' + (date.getYear() + 1900);
+	} else {
+		dateStr = date;
+	}
+	return dateStr;
 }
 
 function clearEntryCache() {
@@ -598,7 +618,7 @@ $(document).ready(function() {
 		if (moveVerticalDirection < 0 && -moveVerticalDirection > 55 && $('#recordList').scrollTop() <= 0) {
 			$('#fetchingData').show();
 			fetchEntries(cachedDateUTC, function (entries) {
-				refreshEntries(entries, true);
+				refreshEntries(entries, false, true);
 				dataReady = true;
 				$('#fetchingData').hide();
 				console.log('Data refreshed from the server');
@@ -635,7 +655,14 @@ function swipeTrackPage (left) {
 			},
 			250,
 			function () {
-				$dummyTrackPage.remove();
+				$('.trackDay').each(function(index, element) 
+					{
+						if (index == 0 ) 
+							return;
+						else
+							$(element).remove();
+					}
+				);
 			}
 	);
 	
@@ -649,6 +676,7 @@ function swipeTrackPage (left) {
 
 function cacheDate() {
 	cachedDate = $datepickerField.datepicker('getDate');
+	console.log('Current selected date:' + cachedDate);
 	cachedDateUTC = cachedDate.toUTCString();
 	cachedDateYesterday = new Date(cachedDate);
 	cachedDateYesterday.setDate(cachedDate.getDate()-1);
@@ -674,6 +702,7 @@ function changeDate(amount) {
 	var currentDate = $datepicker.datepicker('getDate');
 	$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount
 			* 86400000));
+
 	cachedDate = currentDate;
 	refreshPage();
 }
@@ -692,7 +721,7 @@ function refreshPage(callback) {
 		dataReady = true;
 	} else {
 		fetchEntries(cachedDateUTC, function (entries) {
-			refreshEntries(entries, true);
+			refreshEntries(entries, false, true);
 			dataReady = true;
 			if (typeof callback != 'undefined') {
 				callback();
@@ -1024,6 +1053,7 @@ function refreshEntries(entries, activateGhost, cache) {
 	cache = typeof cache !== 'undefined' ? cache : true;
 	
 	if (cache) {
+		console.log('Refreshing the cache for:' + cachedDate);
 		setEntryCache(cachedDate, entries);
 	}
 
@@ -1087,8 +1117,12 @@ function deleteGhost($entryToDelete, entryId, allFuture) {
 						all : (allFuture ? "true" : "false"),
 						date : cachedDateUTC
 					})), function(ret) {
+				console.log('deleteGhost: Response received' + checkData(ret, 'success', "Error deleting entry"));
 				if (checkData(ret, 'success', "Error deleting entry")) {
+					console.log('deleteGhost: Removing entry from cache as well');
 					$entryToDelete.remove();
+					removeEntryFromCache(cachedDate);
+					refreshPage();
 				}
 			});
 }
@@ -1136,7 +1170,7 @@ function deleteEntryId(entryId) {
 			queueJSON(makeGetUrl("deleteEntrySData"), makeGetArgs(argsToSend),
 					function(entries) {
 						if (checkData(entries)) {
-							refreshEntries(entries[0], false);
+							refreshEntries(entries[0], false, true);
 							updateAutocomplete(entries[1][0], entries[1][1],
 									entries[1][2], entries[1][3]);
 							if (entries[2] != null)
@@ -1214,7 +1248,7 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 							entry.glow = true;
 						}
 					})
-					refreshEntries(entries[0]);
+					refreshEntries(entries[0], false, true);
 					
 					updateAutocomplete(entries[1][0], entries[1][1],
 							entries[1][2], entries[1][3]);
@@ -1293,7 +1327,7 @@ function addEntry(userId, text, defaultToNow) {
 					entry.glow = true;
 				}
 			})
-			refreshEntries(entries[0], false);
+			refreshEntries(entries[0], false, true);
 			updateAutocomplete(entries[2][0], entries[2][1], entries[2][2],
 					entries[2][3]);
 		} else {
@@ -1386,6 +1420,10 @@ var initTrackPage = function() {
 				refreshPage();
 			});
 
+	$datepicker.click( function() {
+		$('button.ui-datepicker-current').removeClass('ui-priority-secondary').addClass('ui-priority-primary');
+		console.log('Highlighting today button');
+	});
 	$(document).on(
 			"click",
 			".ui-datepicker-buttonpane button.ui-datepicker-current",

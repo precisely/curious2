@@ -360,6 +360,7 @@ class DataController extends LoginController {
 		}
 		
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(params.date) : params.timeZoneName
+		DateTimeZone userTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
 		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 		
@@ -374,8 +375,10 @@ class DataController extends LoginController {
 			entries = [:]
 			dateList.each { date ->
 				date = parseDate(date)
+				LocalDate localDate = new DateTime(date.time).withZone(userTimeZone).toLocalDate()
 				def data = Entry.fetchListData(user, timeZoneName, date, currentTime)
-				entries = entries << ["${date.format('MM/dd/yyyy')}":data]
+				debug "DataController.getListData(): " + date + " data: " + data
+				entries = entries << ["${localDate.toDate().format('MM/dd/yyyy')}":data]
 			}
 		}
 
