@@ -94,7 +94,7 @@ function getCSRFPreventionURIMobile(key) {
 	return preventionURI;
 }
 
-function getCSRFPreventionObjectMobile(key, data) {
+function getCSRFPreventionObject(key, data) {
 	return getCSRFPreventionObjectMobile(key, data);
 }
 
@@ -691,9 +691,10 @@ function refreshPage(callback) {
 	cacheForYesterdayAndTomorrow[cachedDateYesterday.toUTCString()] = getEntryCache(cachedDateYesterday);
 	cacheForYesterdayAndTomorrow[cachedDateTomorrow.toUTCString()] = getEntryCache(cachedDateTomorrow);
 
-	if (cachedObj != null) {
+	if (cachedObj != null && (!isOnline())) {
 		console.log("refresh entries from cache");
 		refreshEntries(cachedObj, false, false);
+		dataReady = true;
 	} else {
 		fetchEntries(cachedDateUTC, function (entries) {
 			refreshEntries(entries, true);
