@@ -547,7 +547,7 @@ $(function(){
 	
 	var currentDate;
 
-	if (supportsLocalStorage() && localStorage['stateStored'] == "2") {
+ 	if (supportsLocalStorage() && localStorage['stateStored'] == "2") {
 		currentDate = $.evalJSON(localStorage['currentDate']);
 	} else {
 		currentDate = new Date();
@@ -576,8 +576,11 @@ $(function(){
 			refreshPage();
 			localStorage['stateStored'] = "2";
 			localStorage['currentDate'] = $.toJSON($datepicker.datepicker('getDate'));
+		})
+		.click(function() {
+			$('button.ui-datepicker-current').removeClass('ui-priority-secondary').addClass('ui-priority-primary');
 		});
-
+		 
 	$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
 		$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
 	})
