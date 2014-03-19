@@ -161,7 +161,7 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 #trackmain {
-	height:610px;
+	height:633px;
 }
 /**
  * Styles for graph page starts here.
@@ -222,7 +222,7 @@ body.discuss-page input#discussTitleInput {
 #recordList {
 	padding: 4px;
 	overflow: auto;
-	height: 509px;
+	height: 583px;
 }
 /**
  * @Deprecated. Use `.red-header` instead.
