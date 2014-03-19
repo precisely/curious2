@@ -43,7 +43,7 @@ class LocalTimeRepeater {
 	}
 	
 	def isActive() {
-		return currentDateTime != null && currentDateTime.getMillis() < endDateTimeTicks
+		return currentDateTime != null && currentDateTime.getMillis() <= endDateTimeTicks
 	}
 	
 	Long getTimestamp() {

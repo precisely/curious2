@@ -1725,6 +1725,8 @@ class Entry {
 		if (repeaters.size() > 1) {
 			nextDate = repeaters[1].getDate()
 		}
+		Date d = repeater.getDate()
+		long currentRepeaterTime = d.getTime()
 		int c = 0
 		while (repeater.isActive() && repeater.getDate().getTime() <= endTimestamp) {
 			Entry entry = repeater.getPayload()
