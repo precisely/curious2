@@ -15,16 +15,6 @@ class BootStrap {
 	MailService mailService
 
 	def init = { servletContext ->
-		environments {
-			development {
-				TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
-				log.debug "Curious bootstrap started executing.."
-				log.info "Default TimeZone: " + TimeZone.getDefault().getID()
-				log.info "Default JodaTimeZone (DateTimeZone): " + DateTimeZone.getDefault()
-			}
-		}
-		
-
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
