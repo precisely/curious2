@@ -158,7 +158,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 				dataType: "json",
 				url: url,
 				data: args,
-				timeout: 5000
+				timeout: 10000
 			})
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
@@ -172,7 +172,7 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 			dataType: "json",
 			url: url,
 			data: args,
-			timeout: 5000
+			timeout: 10000
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
