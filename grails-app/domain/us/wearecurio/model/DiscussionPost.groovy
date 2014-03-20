@@ -19,7 +19,7 @@ class DiscussionPost {
 	String message
 	
 	public static final int MAXMESSAGELEN = 50000
-
+	
 	static constraints = {
 		message(maxSize:50000)
 		plotDataId(nullable:true)
@@ -28,6 +28,11 @@ class DiscussionPost {
 	static embedded = [ 'author' ]
 	
 	static mapping = {
+		// Without specifying message type: 'text', discussion_posts.message was being mapped to a varchar(50000).
+		// This was causing a MySQL warning, which prevented the discussion_post table from being created, which
+		//   caused discussion_post related tests to fail.
+		message type: 'text'
+		
 		discussionId column:'discussion_id', index:'discussion_id_index'
 	}
 	
