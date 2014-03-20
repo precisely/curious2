@@ -3,7 +3,7 @@
 <meta name="layout" content="plot" />
 <title>Curious</title>
 
-<c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCRSF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+<c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF" />
 
@@ -115,6 +115,7 @@ $(function(){
 		adjustTrackingTagHeaderHeight();
 	})
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
+		if (!plot) return;
 		adjustTrackingTagHeaderHeight();
 		if (!plot.plotData || plot.plotData == null) {
 			$("#zoomcontrol1").slider("destroy");
@@ -128,6 +129,7 @@ $(function(){
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
+		if (!plot) return;
 		// Checking if any plot line available.
 		if (plot.plotData && plot.plotData.length != 0) {
 			plot.refreshPlot();

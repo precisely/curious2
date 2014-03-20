@@ -116,11 +116,11 @@ DateUtil.prototype.getDateRangeForToday = function() {
 var numJSONCalls = 0;
 var pendingJSONCalls = [];
 
-function queuePostJSON(url, args, successCallback, failCallback, delay) {
-	queueJSON(url, args, successCallback, failCallback, delay, true);
+function queuePostJSON(description, url, args, successCallback, failCallback, delay) {
+	queueJSON(description, url, args, successCallback, failCallback, delay, true);
 }
 
-function queueJSON(url, args, successCallback, failCallback, delay, post) {
+function queueJSON(description, url, args, successCallback, failCallback, delay, post) {
 	var wrapSuccessCallback = function(data) {
 		if (successCallback)
 			successCallback(data);
@@ -145,11 +145,11 @@ function queueJSON(url, args, successCallback, failCallback, delay, post) {
 			return;
 		}
 		if (!(delay > 0))
-			showAlert("Server not responding... retrying");
+			showAlert("Server not responding... retrying " + description);
 		delay = (delay > 0 ? delay * 2 : 1000);
-		$.delay(delay, function() {
-			queueJSON(url, args, successCallback, failCallback, delay);
-		});
+		window.setTimeout(function() {
+			queueJSON(description, url, args, successCallback, failCallback, delay);
+		}, delay);
 	}
 	if (numJSONCalls > 0) { // json call in progress
 		var jsonCall = function() {
