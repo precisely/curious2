@@ -110,10 +110,10 @@ $(function(){
 		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
 		$(".graphData").addClass("has-plot-data");
 		$("#plotArea").removeClass("table");
-	})
+	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
 		adjustTrackingTagHeaderHeight();
-	})
+	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
 		adjustTrackingTagHeaderHeight();
@@ -122,7 +122,7 @@ $(function(){
 			$(".graphData").removeClass("has-plot-data");
 			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
-	})
+	});
 	function adjustTrackingTagHeaderHeight() {
 		var queryTitleHeight = $("#queryTitle").parent().height();
 		$("#toggle-tags").parent().css("height", queryTitleHeight);
@@ -135,26 +135,20 @@ $(function(){
 			plot.refreshPlot();
 		}
 	}
+
 </r:script>
 </head>
 <body class="graph-page">
 
 	<div class="row row-custom">
-		<div class="col-xs-2">
-			<!-- LEFT NAV -->
-			<div class="leftNav">
-				<div id="plotLeftNav">
-					<div id="plotLinesplotArea"></div>
-				</div>
-			</div>
-			<!-- /LEFT NAV -->
+	    <div class="tagSearch">
+
+		    <g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
+		    <g:render template="/tag/tagListWidget" />
 		</div>
-		<div class="col-xs-10">
+		<div class="col-xs-12">
 			<div class="row">
-				<!-- RIGHT NAV HEADER -->
-				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
-				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column graph-header-container">
+				<div class="col-xs-10  graph-header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
@@ -162,11 +156,13 @@ $(function(){
 							<div id="debug"></div>
 						</h1>
 					</div>
+					<div id="plotLeftNav">
+						<div id="plotLinesplotArea"></div>
+					</div>
 				</div>
 			</div>
 			<div class="row">
 				<!-- RIGHT NAV BODY -->
-				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->
 				<div class="col-xs-9 floating-column graph-container">
 					<!-- MAIN -->
@@ -225,6 +221,15 @@ $(function(){
 	<!-- PRE-FOOTER -->
 	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
+<r:script>
+	$(window).load(function(){
+		$(document).on('click','.plotGroup', function(e) {
+			var $droppableElement = $(e.target).closest('.ui-droppable');
+			$('.plotlineinfo', $droppableElement).toggle();
+		});
+	});
+
+</r:script>
 
 </body>
 </html>

@@ -166,8 +166,19 @@ a,a:link,a:hover,a:visited {
 /**
  * Styles for graph page starts here.
  */
+body.graph-page .body1 {
+	position: relative;
+}
 body.graph-page #tagListWrapper {
 	min-height: 565px;
+	background: #fff;
+	border: 1px solid #ccc;
+}
+body.graph-page .tagSearch {
+	position: absolute;
+	width: 300px;
+	right: 0px;
+	z-index: 999;
 }
 body.graph-page #tagListWrapper ul#tagList {
 	height: 535px;
@@ -177,6 +188,9 @@ body.graph-page .querymain {
 }
 body.graph-page .querymain #plotArea {
 	height:500px;
+}
+body.graph-page .querymain #plotArea canvas {
+	z-index: 2;
 }
 body.graph-page #plotArea canvas, body.discuss-page #plotDiscussArea canvas {
 	width: 100%;
@@ -476,12 +490,16 @@ ul#tagList {
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
 }
-#plotLeftNav {
-	height:600px;
+#plotNav {
+	height:60px;
 }
 #plotLinesplotArea {
-	height:600px;
-	overflow:auto;
+	height:auto;
+}
+#plotLinesplotArea .ui-droppable {
+	float: left;
+	position: relative;
+	cursor: pointer;
 }
 .discussPlotLines {
 	height:600px;
@@ -504,44 +522,50 @@ ul#tagList {
 .plotGroup {
 	color: #FFFFFF;
 }
+.plotGroup:hover {
+	color: #000;
+}
+#plotLinesplotArea .ui-droppable h3:hover {
+	background-color: #fff;
+}
 
-.orange h3.ui-accordion-header {
+.orange h3 {
 	background-color: #ff6633;
 }
 
-.eggplant h3.ui-accordion-header {
+.eggplant h3 {
 	background-color: #990066;
 }
 
-.malibu h3.ui-accordion-header {
+.malibu h3 {
 	background-color: #5BCDFC;
 }
 
-.bostonBlue h3.ui-accordion-header {
+.bostonBlue h3 {
 	background-color: #449BAF;
 }
 
-.chardonnay h3.ui-accordion-header {
+.chardonnay h3 {
 	background-color: #fccb88;
 }
 
-.roseBud h3.ui-accordion-header {
+.roseBud h3 {
 	background-color: #f8aeac;
 }
 
-.vanilla h3.ui-accordion-header {
+.vanilla h3 {
 	background-color: #cdb9aa;
 }
 
-.burntSienna h3.ui-accordion-header {
+.burntSienna h3 {
 	background-color: #e8835d;
 }
 
-.vistaBlue h3.ui-accordion-header {
+.vistaBlue h3 {
 	background-color: #9AD3AE;
 }
 
-.chenin h3.ui-accordion-header {
+.chenin h3 {
 	background-color: #D5D879;
 }
 
@@ -591,7 +615,6 @@ ul#tagList {
 	border-radius: 0;			
 }
 
-.ui-accordion-header.ui-state-default .ui-icon { display:none; }
 
 h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 .ui-accordion .ui-accordion-header { margin-top:0;}
@@ -656,6 +679,20 @@ a.calendar {
 
 .plotlineinfo {
 	font-size:.8em;
+	background: #EBEBEB;
+	border: 1px solid #ccc;
+	padding: 10px;
+	position: absolute;
+	z-index:3;
+}
+.plotlineinfo h4, .plotlineinfo .form-group {
+	margin-bottom: 7px;
+}
+.plotlineinfo ul.tags {
+	margin-top: 15px;
+}
+.plotlineinfo .ui-icon {
+	display: none;
 }
 .graphData #actions {
 	padding:0px 10px;
@@ -692,16 +729,12 @@ a.calendar {
 	color:#000000;
 }
 div.plotGroup {
+	padding: 2px;
 }
 
 span.plotGroup {
-	float:right;
-	padding-left:10px;
-        padding-top:6px;
-	display:none;
 }
 div.plotGroup:hover span {
-	display:inline;
 }
 div.plotLine {
 	padding:2px 5px;
@@ -1173,6 +1206,9 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
  */
 div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
+}
+div.tags-header-container {
+	height: 
 }
 div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;

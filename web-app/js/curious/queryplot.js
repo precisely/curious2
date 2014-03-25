@@ -1440,15 +1440,12 @@ function PlotLine(p) {
 		if (!this.isContinuous) this.isContinuous = false;
 		if (!this.showPoints) this.showPoints = false;
 		var html = '<div id="plotline' + idSuffix + '" class="'+plotColorClass[this.color]+'">\
-		  <h3><a href="#"><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
+		  <h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 		  + escapehtml(this.name) + '</span> <span class="plotGroup">'
 		  + (this.snapshot ? '' : '<img style="padding-right:2px" onclick="renamePlotLine(\'' + this.plot.id
 			  + "','" + this.id + '\')" src="/images/edit.gif"/><img onclick="removePlotLine(\'' + this.plot.id + "','" + this.id + '\')" height="12" width="12" src="/images/x.gif"/>')
-		  + '</span></div></a></h3><div class="plotlineinfo" style="position:relative"><div id="editplotline'
+		  + '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
-		if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))
-			html += '<input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
-					+ (this.sumData ? 'checked' : '') + '/> sum ';
 		if (this.isCycle) {
 			html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix
 					+ '"></div><div style="display:inline-block;margin-left:10px;width:50px;display:relative;top:3px;" id="plotlinecyclerange'
@@ -1456,19 +1453,19 @@ function PlotLine(p) {
 					+ '"></div></div>';
 		}
 		if (!this.isCycle)
-			html += '<input type="checkbox" name="plotlineflatten' + idSuffix + '" id="plotlineflatten' + idSuffix + '"'
-				+ (this.flatten ? 'checked' : '') + '/> flatten \
-				<input type="checkbox" name="plotlinehide' + idSuffix + '" id="plotlinehide' + idSuffix + '" '
-				+ (this.hidden ? 'checked' : '') + '/> hide <br/>\
-				<input type="checkbox" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
-				+ (this.isContinuous ? 'checked' : '') + '/> continuous \
-				<input type="checkbox" name="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
-				+ (this.showPoints ? 'checked' : '') + '/> points ';
+			html += '<h4>DATA TYPE</h4><div class="form-group"><input type="radio" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
+				+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label> </div> \
+				<div class="form-group"><input type="radio" name="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
+				+ (this.showPoints ? 'checked' : '') + '/> <label> POINTS</label></div> ';
 		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
 				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/
+
+		if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))
+			html += '<h4 style="margin-top:15px">OPERATIONS</h4> <div class="form-group"><input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
+					+ (this.sumData ? 'checked' : '') + '/> <label>SUM</label></div> ';
 		if (!this.isCycle) {
-			html += '<div style="display:inline-block;">smooth <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div></div>';
+			html += '<div style="display:inline-block;margin-left:10px;width:90%;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div>';
 			//html += '<div style="display:inline-block;">frequency <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinefreqwidth' + idSuffix + '"></div></div>';
 		}
 		html += '<ul class="tags" id="plotline' + idSuffix + 'list"></ul></div></div>';
@@ -1600,8 +1597,7 @@ function PlotLine(p) {
 			plot.refreshPlot();
 		});
 		var div = $('#plotline' + idSuffix);
-		div.accordion({ active: makeActive, collapsible: true, clearStyle: true });
-
+//		div.accordion({ active: makeActive, collapsible: true, clearStyle: true });
 		div.click(function() {
 			var plotLine = this;
 			var plot = this.plot;
@@ -1621,6 +1617,10 @@ function PlotLine(p) {
 			}
 			
 		}.bind(this));
+
+		$('.plotlineinfo', div).mouseleave(function(e) {
+			$(e.target).toggle();
+		});
 		
 		var plotLine = this;
 		

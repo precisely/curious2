@@ -1,5 +1,5 @@
 <g:if test="${header }">
-	<div class="col-xs-3 pull-right fixed-column tags-header-container">
+	<div class="tags-header-container">
 		<div class="red-header pointer" id="toggle-tags">
 			<h1>
 				<span class="icon-triangle icon-triangle-right"></span>
@@ -43,7 +43,7 @@
 	</r:script>
 </g:if>
 <g:else>
-	<div class="col-xs-3 pull-right fixed-column hide tags-container" id="tagNav">
+	<div class="hide tags-container" id="tagNav">
 		<div id="tagListWrapper">
 			<div id="searchTags">
 				<input type="text" value="Search tags for..." class="textInput" id="tagSearch" />
