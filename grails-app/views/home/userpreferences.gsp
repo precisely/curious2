@@ -17,7 +17,7 @@ var origUsername = "${user.username}";
 $(function() {
     initTemplate();
 
-    $.getJSON("/home/getPeopleData?callback=?", function(data) {
+    queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) {
         if (!checkData(data))
             return;
 

@@ -35,7 +35,7 @@ abstract class TagUnitMap {
 
 	static {
 		commonTagMap = [
-			activityCalorie: [tag: "$ACTIVITY calories", unit: "kcal"],
+			activityCalorie: [tag: "$ACTIVITY calories", unit: "cal"],
 			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
 			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
 			activitySteps: [tag: "$ACTIVITY move", unit: "steps"],
@@ -111,14 +111,16 @@ abstract class TagUnitMap {
 		
 		if (args["isSummary"]) {
 			description += " summary" 
-		}
+			args['datePrecisionSecs'] = Entry.VAGUE_DATE_PRECISION_SECS
+		} else
+			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
 
 		if (amount != null) {
 			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
 		}
 
 		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
-			comment: comment, setName: setName, timeZoneId: timeZoneId, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
+			comment: comment, setName: setName, timeZoneId: timeZoneId]
 		
 		parsedEntry.putAll(args)
 

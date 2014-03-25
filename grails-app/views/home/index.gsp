@@ -38,11 +38,14 @@ $.datepicker._gotoToday = function(id) {
 var defaultToNow = true;
 var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:else>false</g:else>;
 
+var isTodayOrLater;
 var cachedDate, cachedDateUTC;
 var timeZoneName;
 
 function cacheDate() {
+	var now = new Date();
 	cachedDate = $("input#datepicker").datepicker('getDate');
+	isTodayOrLater = now.getTime() - (24 * 60 * 60000) < cachedDate.getTime();
 	cachedDateUTC = cachedDate.toUTCString();
 	timeZoneName = jstz.determine().name();
 }
@@ -65,7 +68,7 @@ function changeDate(amount) {
 function refreshPage() {
 	cacheNow();
 	
-	$.getJSON("/home/getListData?date="+ cachedDateUTC + "&currentTime=" + currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + timeZoneName + "&callback=?",
+	queueJSON("getting entries", "/home/getListData?date="+ cachedDateUTC + "&currentTime=" + currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + timeZoneName + "&callback=?",
 		getCSRFPreventionObject("getListDataCSRF"),
 		function(entries){
 			if (checkData(entries))
@@ -270,7 +273,7 @@ function modifyInput(suffix) {
 }
 
 function deleteGhost($entryToDelete, entryId, allFuture) {
-	$.getJSON(makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
+	queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 			all:(allFuture ? "true" : "false"), date:cachedDateUTC})),
 		function(ret) {
 			if (checkData(ret, 'success', "Error deleting entry")) {
@@ -288,7 +291,7 @@ function deleteEntryId(entryId) {
 	}
 	var $entryToDelete = getEntryElement(entryId);
 	if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
-		if ($entryToDelete.data("isContinuous")) {
+		if ($entryToDelete.data("isContinuous") || isTodayOrLater) {
 			deleteGhost($entryToDelete, entryId, true);
 		} else {
 			showAB("Delete just this one event or also future events?", "One", "Future", function() {
@@ -299,7 +302,7 @@ function deleteEntryId(entryId) {
 		}
 	} else {
 		cacheNow();
-		$.getJSON("/home/deleteEntrySData?entryId=" + entryId
+		queueJSON("deleting entry", "/home/deleteEntrySData?entryId=" + entryId
 				+ "&currentTime=" + currentTimeUTC + "&baseDate=" + cachedDateUTC
 				+ "&timeZoneName=" + timeZoneName + "&displayDate=" + cachedDateUTC + "&"
 				+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
@@ -321,7 +324,7 @@ function deleteCurrentEntry() {
 
 function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 	cacheNow();
-	$.getJSON("/home/updateEntrySData?entryId=" + entryId
+	queueJSON("updating entry", "/home/updateEntrySData?entryId=" + entryId
 			+ "&currentTime=" + currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 			+ cachedDateUTC + "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 			+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
@@ -349,7 +352,7 @@ function updateEntry(entryId, text, defaultToNow) {
 	var $oldEntry = getEntryElement(entryId);
 	$(".content-wrapper", $oldEntry).html(text);
 
-	if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) {
+	if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) && (!isTodayOrLater)) {
 		showAB("Update just this one event or also future events?", "One", "Future", function() {
 				doUpdateEntry(entryId, text, defaultToNow, false);
 			}, function() {
@@ -362,7 +365,7 @@ function updateEntry(entryId, text, defaultToNow) {
 function addEntry(userId, text, defaultToNow) {
 	cacheNow();
 	
-	$.getJSON("/home/addEntrySData?currentTime=" + currentTimeUTC
+	queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + currentTimeUTC
 			+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + cachedDateUTC
 			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
@@ -641,7 +644,7 @@ $(function(){
 		var $ghostEntry = $(this);
 		var entryId = $ghostEntry.data("entry-id");
 		var isContinuous = $ghostEntry.data("isContinuous");
-		$.getJSON("/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&"
+		queueJSON("creating entry", "/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&"
 				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
 				function(newEntry) {
 					if (checkData(newEntry)) {
@@ -674,7 +677,7 @@ $(function(){
 
 	initTemplate();
 
-	$.getJSON("/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
+	queueJSON("getting login info", "/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data){
 			if (!checkData(data))
 				return;

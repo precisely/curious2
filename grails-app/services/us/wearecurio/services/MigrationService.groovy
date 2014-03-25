@@ -40,6 +40,7 @@ class MigrationService {
 	public static final long RESET_WITHINGS_ACCOUNTS = 72L
 	public static final long REMOVE_DUPLICATE_IMPORTSB = 74L
 	public static final long RESET_WITHINGS_ACCOUNTSB = 75L
+	public static final long FIX_WITHINGS_SUMMARIES = 76L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -233,6 +234,10 @@ class MigrationService {
 		tryMigration(RESET_WITHINGS_ACCOUNTSB) {
 			sql("delete from oauth_account where type_id = 1")
 			sql("delete from entry where set_name = 'withings import'")
+		}
+		tryMigration(FIX_WITHINGS_SUMMARIES) {
+			sql("update entry e inner join tag t on e.tag_id = t.id set date = date_add(date, interval 721 minute), date_precision_secs = 86400 where right(t.description, 8) = ' summary' and comment = '(Withings)'")
+			sql("update entry e set units = 'cal' where e.units = 'kcal' and e.comment = '(Withings)'")
 		}
 	}
 }

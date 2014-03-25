@@ -43,7 +43,7 @@ function minLinkName(name) {
 function deleteDiscussionId(id) {
 	if (!confirm("Are you sure you want to delete the saved discussion?"))
 		return;
-	$.getJSON("/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
+	queueJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
 			function(entries) {
 				if (checkData(entries))
 					location.reload(true);
@@ -60,7 +60,7 @@ function refreshPage() {
 $(function(){
 	initTemplate();
 	
-	$.getJSON("/home/getPeopleData?callback=?",
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
 			function(data){
 				if (!checkData(data))
@@ -80,7 +80,7 @@ $(function(){
 			});
 		});
 	
-	$.getJSON("/home/listDiscussionData?callback=?",
+	queueJSON("getting comments", "/home/listDiscussionData?callback=?",
 		function(data){
 			if (!checkData(data))
 				return;

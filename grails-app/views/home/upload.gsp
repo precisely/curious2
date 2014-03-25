@@ -22,7 +22,7 @@ function doLogout() {
 $(function(){
 	initTemplate();
 	
-	$.getJSON("/home/getPeopleData?callback=?",
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		function(data){
 			if (!checkData(data))
 				return;

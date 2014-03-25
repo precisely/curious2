@@ -213,9 +213,10 @@ class WithingsDataService extends DataService {
 			dateFormat.setTimeZone(timeZone)
 			
 			Date entryDate = dateFormat.parse(activity["date"])
-			entryDate = new Date(entryDate.getTime() - 60000L) // move activity time one minute earlier to make midnight data appear on previous day
+			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 
 			def args = ['isSummary':true] // Indicating that these entries are summary entries
+			
 			if (activity["steps"]) {
 				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)

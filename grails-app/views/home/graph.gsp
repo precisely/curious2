@@ -24,7 +24,7 @@ $(function(){
 	initTemplate();
 	initTagListWidget();
 	
-	$.getJSON("/home/getPeopleData?callback=?",
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		getCSRFPreventionObject("getPeopleDataCSRF"),
 		function(data) {
 			if (!checkData(data))

@@ -675,7 +675,9 @@ function swipeTrackPage (left) {
 } 
 
 function cacheDate() {
+	var now = new Date();
 	cachedDate = $datepickerField.datepicker('getDate');
+	isTodayOrLater = now.getTime() - (24 * 60 * 60000) < cachedDate.getTime();
 	console.log('Current selected date:' + cachedDate);
 	cachedDateUTC = cachedDate.toUTCString();
 	cachedDateYesterday = new Date(cachedDate);
@@ -685,6 +687,7 @@ function cacheDate() {
 	
 }
 
+var isTodayOrLater;
 var currentTimeUTC;
 var timeZoneName;
 var cachedDateTomorrow;
@@ -1152,7 +1155,7 @@ function deleteEntryId(entryId) {
 	} else {
 		var $entryToDelete = getEntryElement(entryId);
 		if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
-			if ($entryToDelete.data("isContinuous")) {
+			if ($entryToDelete.data("isContinuous") || isTodayOrLater) {
 				deleteGhost($entryToDelete, entryId, true);
 			} else {
 				showAB("Delete just this one event or also future events?",
@@ -1283,8 +1286,8 @@ function updateEntry(entryId, text, defaultToNow) {
 	var $oldEntry = getEntryElement(entryId);
 	$oldEntry.addClass("glow");
 	$(".content-wrapper", $oldEntry).html(text);
-	if (($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind")))
-			|| $oldEntry.data("isGhost")) {
+	if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind")))
+			|| $oldEntry.data("isGhost")) && (!isTodayOrLater)) {
 		showAB("Update just this one event or also future events?", "One",
 				"Future", function() {
 					doUpdateEntry(entryId, text, defaultToNow, false);

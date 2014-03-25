@@ -39,7 +39,7 @@ $(function(){
 	initTemplate();
 	initTagListOnly();
 	
-	$.getJSON("/home/getPeopleData?callback=?",
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		function(data) {
 			if (data == 'login') {
 				data = [{id:-1,first:'',last:'',username:'(anonymous)',sex:''}];
@@ -87,7 +87,7 @@ $(function(){
 					if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
 						alreadySentName = newName;
 						preventCommentSubmit = true; // for some reason, comment submission happening twice?
-						$.getJSON(makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionId:${discussionId}, name:newName }), function(data) {
+						queueJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionId:${discussionId}, name:newName }), function(data) {
 							if (checkData(data)) {
 								preventCommentSubmit = false;
 								discussionTitle = newName;
