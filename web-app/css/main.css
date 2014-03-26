@@ -684,6 +684,7 @@ a.calendar {
 	padding: 10px;
 	position: absolute;
 	z-index:3;
+	min-width: 155px;
 }
 .plotlineinfo h4, .plotlineinfo .form-group {
 	margin-bottom: 7px;

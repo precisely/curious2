@@ -1453,9 +1453,9 @@ function PlotLine(p) {
 					+ '"></div></div>';
 		}
 		if (!this.isCycle)
-			html += '<h4>DATA TYPE</h4><div class="form-group"><input type="radio" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
+			html += '<h4>DATA TYPE</h4><div class="form-group"><input type="radio" name="data-type" value="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
 				+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label> </div> \
-				<div class="form-group"><input type="radio" name="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
+				<div class="form-group"><input type="radio" name="data-type" value="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
 				+ (this.showPoints ? 'checked' : '') + '/> <label> POINTS</label></div> ';
 		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
@@ -1602,18 +1602,13 @@ function PlotLine(p) {
 			var plotLine = this;
 			var plot = this.plot;
 			
-			if($("h3", this.getDiv()).hasClass("ui-state-active")) {
-				plot.deactivateActivatedLine(plotLine);
-				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
-					plot.activeLineId = plotLine.smoothLine.id;
-					plotLine.smoothLine.activate();
-				} else {
-					plot.activeLineId = plotLine.id;
-					plotLine.activate();
-				}
+			plot.deactivateActivatedLine(plotLine);
+			if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+				plot.activeLineId = plotLine.smoothLine.id;
+				plotLine.smoothLine.activate();
 			} else {
-				// When accordion is collpsed.
-				this.deactivate();
+				plot.activeLineId = plotLine.id;
+				plotLine.activate();
 			}
 			
 		}.bind(this));
