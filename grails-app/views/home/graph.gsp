@@ -112,11 +112,11 @@ $(function(){
 		$("#plotArea").removeClass("table");
 	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
-		adjustTrackingTagHeaderHeight();
+		//adjustTrackingTagHeaderHeight();
 	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
-		adjustTrackingTagHeaderHeight();
+		//adjustTrackingTagHeaderHeight();
 		if (!plot.plotData || plot.plotData == null) {
 			$("#zoomcontrol1").slider("destroy");
 			$(".graphData").removeClass("has-plot-data");
@@ -124,7 +124,7 @@ $(function(){
 		}
 	});
 	function adjustTrackingTagHeaderHeight() {
-		var queryTitleHeight = $("#queryTitle").parent().height();
+		var queryTitleHeight = $("#queryTitle").closest('.red-header').outerHeight();
 		$("#toggle-tags").parent().css("height", queryTitleHeight);
 	}
 	// Callback handler after tag collapse animation finished.
@@ -143,12 +143,12 @@ $(function(){
 	<div class="row row-custom">
 	    <div class="tagSearch">
 
-		    <g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
-		    <g:render template="/tag/tagListWidget" />
+		    <g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true, floatingColumn: true]" />
+		    <g:render template="/tag/tagListWidget" model="[floatingColumn: true]"/>
 		</div>
 		<div class="col-xs-12">
 			<div class="row">
-				<div class="col-xs-10  graph-header-container">
+				<div class="col-xs-9  graph-header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
