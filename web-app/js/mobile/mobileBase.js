@@ -700,17 +700,17 @@ function cacheNow() {
 	timeZoneName = jstz.determine().name();
 }
 
-function changeDate(amount) {
+function changeDate(amount, loadFromCache) {
 	var $datepicker = $("#datepicker");
 	var currentDate = $datepicker.datepicker('getDate');
 	$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount
 			* 86400000));
 
 	cachedDate = currentDate;
-	refreshPage();
+	refreshPage(loadFromCache); // force cache load when swiping
 }
 
-function refreshPage(callback) {
+function refreshPage(loadFromCache) {
 	cacheNow();
 
 	var cachedObj = getEntryCache(cachedDate);
@@ -718,17 +718,20 @@ function refreshPage(callback) {
 	cacheForYesterdayAndTomorrow[cachedDateYesterday.toUTCString()] = getEntryCache(cachedDateYesterday);
 	cacheForYesterdayAndTomorrow[cachedDateTomorrow.toUTCString()] = getEntryCache(cachedDateTomorrow);
 
-	if (cachedObj != null && (!isOnline())) {
+	// load first from cache if not online or loadFromCache is specified
+	if (cachedObj != null && ((!isOnline()) || loadFromCache)) {
 		console.log("refresh entries from cache");
 		refreshEntries(cachedObj, false, false);
 		dataReady = true;
-	} else {
+	}
+	// refresh from server ASAP
+	if (isOnline()) {
 		fetchEntries(cachedDateUTC, function (entries) {
 			refreshEntries(entries, false, true);
 			dataReady = true;
-			if (typeof callback != 'undefined') {
-				callback();
-			}
+			//if (typeof callback != 'undefined') {
+			//	callback();
+			//}
 			callDataReadyCallbacks();
 		});
 	}
