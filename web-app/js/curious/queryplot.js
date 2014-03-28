@@ -328,6 +328,16 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			plotLine.loadPlotData();
 		}
 	}
+	this.clearGraphs = function () {
+	    if (confirm("Are you sure you want to clear the graph and start over?")) {
+			for (var i in this.lines) {
+				var line = this.lines[i];
+				console.log('Plot ID: ' + this.id);
+				console.log('Line ID: ' + line.id);
+				removePlotLine(this.id, line.id);
+			}
+		}
+	}
 	this.store = function() {
 		var plotData = [];
 		localStorage['plotUserId' + this.id] = this.userId;
