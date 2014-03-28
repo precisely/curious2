@@ -1638,7 +1638,7 @@ function PlotLine(p) {
 		}.bind(this));
 
 		$('.plotlineinfo', div).mouseleave(function(e) {
-			$(e.target).toggle();
+			$(e.target).closest('.plotlineinfo').toggle();
 		});
 		
 		var plotLine = this;

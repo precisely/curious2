@@ -1026,7 +1026,7 @@ div.plotLine:hover span {
 	z-index: 999;
 	border: 4px solid #d4d8d8;
 	position: absolute;
-	top: 20px;
+	top: 30px;
 	display: none;
 }
 .red-header #actions ul li {
