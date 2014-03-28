@@ -181,7 +181,7 @@ body.graph-page .tagSearch {
 	z-index: 999;
 }
 body.graph-page #tagListWrapper ul#tagList {
-	height: 535px;
+	height: 641px;
 }
 body.graph-page .querymain {
 	margin:0px;
@@ -500,6 +500,8 @@ ul#tagList {
 	float: left;
 	position: relative;
 	cursor: pointer;
+	margin-right: 4px;
+	margin-bottom: 4px;
 }
 .discussPlotLines {
 	height:600px;
@@ -520,94 +522,49 @@ ul#tagList {
 }
 
 .plotGroup {
-	color: #FFFFFF;
-}
-.plotGroup:hover {
-	color: #000;
-}
-#plotLinesplotArea .ui-droppable h3:hover {
-	background-color: #fff;
+	background-color: #f1f1f1;
 }
 
 .orange h3 {
-	background-color: #ff6633;
+	color: #ff6633;
 }
 
 .eggplant h3 {
-	background-color: #990066;
+	color: #990066;
 }
 
 .malibu h3 {
-	background-color: #5BCDFC;
+	color: #5BCDFC;
 }
 
 .bostonBlue h3 {
-	background-color: #449BAF;
+	color: #449BAF;
 }
 
 .chardonnay h3 {
-	background-color: #fccb88;
+	color: #fccb88;
 }
 
 .roseBud h3 {
-	background-color: #f8aeac;
+	color: #f8aeac;
 }
 
 .vanilla h3 {
-	background-color: #cdb9aa;
+	color: #cdb9aa;
 }
 
 .burntSienna h3 {
-	background-color: #e8835d;
+	color: #e8835d;
 }
 
 .vistaBlue h3 {
-	background-color: #9AD3AE;
+	color: #9AD3AE;
 }
 
 .chenin h3 {
-	background-color: #D5D879;
+	color: #D5D879;
 }
 
-.orange.ui-accordion {
-	border: 2px solid #ff6633;
-}
-
-.eggplant.ui-accordion {
-	border: 2px solid #990066;
-}
-
-.malibu.ui-accordion {
-	border: 2px solid #5BCDFC;
-}
-
-.bostonBlue.ui-accordion {
-	border: 2px solid #449BAF;
-}
-
-.chardonnay.ui-accordion {
-	border: 2px solid  #fccb88;
-}
-
-.roseBud.ui-accordion {
-	border: 2px solid  #f8aeac;
-}
-
-.vanilla.ui-accordion {
-	border: 2px solid  #cdb9aa;
-}
-
-.burntSienna.ui-accordion {
-	border: 2px solid  #e8835d;
-}
-
-.vistaBlue.ui-accordion {
-	border: 2px solid #9AD3AE;
-}
-
-.chenin.ui-accordion {
-	border: 2px solid #D5D879;
-}
 
 .ui-accordion-header {
 	border:none;
@@ -695,19 +652,6 @@ a.calendar {
 .plotlineinfo .ui-icon {
 	display: none;
 }
-.graphData #actions {
-	padding:0px 10px;
-}
-.graphData #actions ul {
-	display:block;
-	border:1px dotted #cccccc;
-	border-width:1px 0px;
-}
-.graphData #actions li {
-	display:inline;
-	font-size:.8em;
-	padding:2px 15px 2px 0px;
-}
 .calendarRange {
 	background-color:#EBEBEB;
 	padding-left:0px;
@@ -726,16 +670,30 @@ a.calendar {
 	color:#ffffff;
 	background-color:#ffffff;
 }
-#actions a {
-	color:#000000;
-}
 div.plotGroup {
-	padding: 2px;
+	padding: 5px;
 }
 
-span.plotGroup {
+div.plotGroup .delete {
+	display: inline-block;
+    width: 14px;
+	height: 14px;
+	line-height: 11px;
+	color: #f1f1f1;
+	border-radius: 50%;
+	text-align:center;
+	text-decoration:none;
+	background: #d0d6d6;
+	font-weight:bold;
+	font-size: 15px;
 }
-div.plotGroup:hover span {
+
+div.plotGroup .edit {
+	padding-right: 2px;
+	display: none;
+}
+div.plotGroup:hover .edit {
+	display: inline-block;
 }
 div.plotLine {
 	padding:2px 5px;
