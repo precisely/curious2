@@ -41,13 +41,13 @@ function minLinkName(name) {
 }
 
 function deleteDiscussionId(id) {
-	if (!confirm("Are you sure you want to delete the saved discussion?"))
-		return;
-	queueJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
-			function(entries) {
-				if (checkData(entries))
-					location.reload(true);
+	showYesNo("Are you sure you want to delete the saved discussion?", function() {
+			queueJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
+				function(entries) {
+					if (checkData(entries))
+						location.reload(true);
 			});
+	});
 }
 
 function doLogout() {

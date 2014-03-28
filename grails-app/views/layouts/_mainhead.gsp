@@ -9,6 +9,7 @@
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript" src="/static/js/curious/base.js?ver=15"></script>
+<script type="text/javascript" src="/static/js/curious/webBase.js?ver=15"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=15"></script>
 <script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=15"></script>
 <script type="text/javascript" src="/static/js/curious/treeview.js?ver=15"></script>

@@ -5,6 +5,7 @@
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.offline.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
 <script type="text/javascript" src="${resource(dir:'js/curious', file:'base.js?ver=14')}"></script>
+<script type="text/javascript" src="${resource(dir:'js/curious', file:'webBase.js?ver=14')}"></script>
 <link rel="stylesheet" href="${resource(dir:'css', file:'login.css')}"/>
 <g:layoutHead />
 <script type="text/javascript">

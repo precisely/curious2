@@ -27,13 +27,13 @@
 <script type="text/javascript">
 
 function deletePlotId(id) {
-	if (!confirm("Are you sure you want to delete the saved graph?"))
-		return;
-	queueJSON("deleting saved graph", "/home/deletePlotDataId?id=" + escape(id) + "&callback=?",
-			function(entries) {
-			if (checkData(entries))
-				location.reload(true);
-			});
+	showYesNo("Are you sure you want to delete the saved graph?", function() {
+			queueJSON("deleting saved graph", "/home/deletePlotDataId?id=" + escape(id) + "&callback=?",
+				function(entries) {
+					if (checkData(entries))
+						location.reload(true);
+				});
+	});
 }
 
 function doLogout() {

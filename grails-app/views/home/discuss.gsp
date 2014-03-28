@@ -26,13 +26,15 @@ function doLogout() {
 }
 
 function clearPostMessage(postId) {
-	if (confirm("Are you sure you want to delete this comment?"))
-		window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
+	showYesNo("Are you sure you want to delete this comment?", function() {
+			window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
+	});
 }
 
 function deletePost(postId) {
-	if (confirm("Are you sure you want to delete this post?"))
-		window.location = "/home/discuss?discussionId=${discussionId}&deletePostId=" + postId;
+	showYesNo("Are you sure you want to delete this post?", function() {
+			window.location = "/home/discuss?discussionId=${discussionId}&deletePostId=" + postId;
+	});
 }
 
 $(function(){

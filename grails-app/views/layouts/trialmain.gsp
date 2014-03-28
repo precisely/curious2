@@ -37,10 +37,6 @@
             && e.pageY >= pos.top && e.pageY < pos.top + height;
         }
 
-        function showAlert(text) {
-        	alert(text);
-        }
-
         function checkData(data, status, errorMessage, successMessage) {
         	if (data == 'error') {
         		if (errorMessage && status != 'cached')
