@@ -49,7 +49,7 @@
 </g:if>
 <g:else>
 	<g:if test="${!floatingColumn}">
-    	<div class="col-xs-3 pull-right fixed-column hide tags-container" id="tagNav">
+		<div class="col-xs-3 pull-right fixed-column hide tags-container" id="tagNav">
 	</g:if>
 	<g:else>
 		<div class="hide tags-container" id="tagNav">
