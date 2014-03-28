@@ -1012,6 +1012,36 @@ div.plotLine:hover span {
 	font-size: .8em;
 	line-height: 20px;
 }
+.red-header #actions {
+	position: relative;
+	height: 15px;
+	float: left;
+	width: 20px;
+}
+.red-header #actions ul {
+	background: #fff;
+	display: block;
+	width: 272px;
+	padding: 10px;
+	z-index: 999;
+	border: 4px solid #d4d8d8;
+	position: absolute;
+	top: 20px;
+	display: none;
+}
+.red-header #actions ul li {
+	cursor: pointer;
+}
+.red-header #actions ul li:hover {
+	background: #f1f1f1;
+}
+.red-header #actions ul li a {
+	color: #879293;
+	font-weight: bold;
+}
+.red-header #actions img {
+	height: 15px;
+}
 .icon-triangle {
 	border-style: solid;
 	border-width: 7px;

@@ -151,6 +151,17 @@ $(function(){
 				<div class="col-xs-9  graph-header-container">
 					<div class="red-header">
 						<h1 class="clearfix">
+							<div id="actions">
+								<img src="/images/menu.png">
+								<ul>
+									<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
+									<li><a href="#" onclick="plot.save()">Save</a></li>
+									<li><g:link action="load">Load</g:link></li>
+									<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
+										<img src="/images/eye.png">	
+									</a></li>
+								</ul>
+							</div>
 							<span id="queryTitle"></span>
 							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 							<div id="debug"></div>
@@ -169,13 +180,6 @@ $(function(){
 					<div class="main querymain">
 						<div id="dialogDivplotArea" class="hide"></div>
 						<div class="graphData">
-							<div id="actions">
-								<ul>
-									<li><a href="#" onclick="plot.save()">Save</a></li>
-									<li><g:link action="load">Load</g:link></li>
-									<li><a href="#" onclick="plot.saveSnapshot()">Share</a></li>
-								</ul>
-							</div>
 				
 							<div id="plotArea" class="table full-width">
 								<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
@@ -226,6 +230,12 @@ $(function(){
 		$(document).on('click','.plotGroup', function(e) {
 			var $droppableElement = $(e.target).closest('.ui-droppable');
 			$('.plotlineinfo', $droppableElement).toggle();
+		});
+		$('.red-header #actions img').click(function(e) {
+			$('ul', $(e.target).parent()).toggle();
+		});
+		$('.red-header #actions ul').mouseleave(function(e) {
+			$(e.target).closest('ul').toggle();
 		});
 	});
 
