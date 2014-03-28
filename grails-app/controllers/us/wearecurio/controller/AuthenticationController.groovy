@@ -25,7 +25,7 @@ class AuthenticationController extends SessionController {
 	def fitBitDataService
 	def humanDataService
 	def movesDataService
-	def OAuthAccountService
+	def oauthAccountService
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 	def withingsDataService
@@ -90,27 +90,27 @@ class AuthenticationController extends SessionController {
 		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance).user
 		Integer timeZoneId = TimeZoneId.look(userInfo.timezone).id
 
-		OAuthAccountService.createOrUpdate(FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(userInfo.defaultTimeZone.name).id
 
-		OAuthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
 	}
 
 	def movesAuth() {
 		JSONObject userInfo = movesDataService.getUserProfile(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(userInfo.profile.currentTimeZone.id).id
 
-		OAuthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
 	}
 
 	def twenty3andmeAuth() {
 		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
 
-		OAuthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
+		oauthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
 	}
 
 	/**
@@ -125,7 +125,7 @@ class AuthenticationController extends SessionController {
 	def withingsAuth() {
 		String timezoneFromActivityData = withingsDataService.getUsersTimeZone(tokenInstance, session.withingsUserId)
 		Integer timeZoneId = TimeZoneId.look(timezoneFromActivityData).id
-		OAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
+		oAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
 }

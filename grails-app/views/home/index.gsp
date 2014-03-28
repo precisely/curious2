@@ -231,27 +231,40 @@ function toggleSuffix($control, suffix) {
 		text = text.substr(0, text.length - 7);
 		$control.val(text);
 		
-		if (suffix == "repeat")
+		if (suffix == "repeat") {
+			$control.selectRange(text.length, text.length);
+			$control.focus();
 			return text.length > 0;
+		}
 	}
 	if (text.endsWith(" remind")) {
 		text = text.substr(0, text.length - 7);
 		$control.val(text);
 		
-		if (suffix == "remind")
+		if (suffix == "remind") {
+			$control.selectRange(text.length, text.length);
+			$control.focus();
 			return text.length > 0;
+		}
 	}
 	if (text.endsWith(" pinned")) {
 		text = text.substr(0, text.length - 7);
 		$control.val(text);
 		
-		if (suffix == "pinned")
+		if (suffix == "pinned") {
+			$control.selectRange(text.length, text.length);
+			$control.focus();
 			return text.length > 0;
+		}
 	}
+
+	var retVal = text.length > 0;	
+	text = text + " " + suffix;
+	$control.val(text);
+	$control.selectRange(text.length, text.length);
+	$control.focus();
 	
-	$control.val(text + " " + suffix);
-	
-	return text.length > 0;
+	return retVal;
 }
 
 function modifyEdit(suffix) {

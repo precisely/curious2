@@ -12,7 +12,7 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.thirdparty.RefreshTokenVerifier
 import us.wearecurio.utility.Utils
 
-class OAuthAccountService {
+class OauthAccountService {
 
 	def oauthService
 	def securityService
