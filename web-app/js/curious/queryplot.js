@@ -1369,10 +1369,18 @@ function PlotLine(p) {
 		$("#plotlinehide" + this.getIdSuffix()).attr('checked', val);
 	}
 	this.setContinuousCheckbox = function(val) {
-		$("#plotlinecontinuous" + this.getIdSuffix()).attr('checked', val);
+		$("input[name='plotlinecontinuous" + this.getIdSuffix() + "']").each(function(index, radio) {
+			if ($(radio).val() == 'continuous') {
+				$(radio).prop('checked', val);
+			}
+		});
 	}
 	this.setShowPointsCheckbox = function(val) {
-		$("#plotlinepoints" + this.getIdSuffix()).attr('checked', val);
+		$("input[name='plotlinepoints" + this.getIdSuffix() + "']").each(function(index, radio) {
+			if ($(radio).val() == 'points') {
+				$(radio).prop('checked', val);
+			}
+		});
 	}
 	this.setIsContinuous = function(val) {
 		if (this.isContinuous != val) {
@@ -1442,8 +1450,9 @@ function PlotLine(p) {
 		var html = '<div id="plotline' + idSuffix + '" class="'+plotColorClass[this.color]+'">\
 		  <h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 		  + escapehtml(this.name) + '</span> <span class="plotGroup">'
-		  + (this.snapshot ? '' : '<img style="padding-right:2px" onclick="renamePlotLine(\'' + this.plot.id
-			  + "','" + this.id + '\')" src="/images/edit.gif"/><img onclick="removePlotLine(\'' + this.plot.id + "','" + this.id + '\')" height="12" width="12" src="/images/x.gif"/>')
+		  + (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
+			  + "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
+			  this.plot.id + "','" + this.id + '\')" >x</span>')
 		  + '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if (this.isCycle) {
@@ -1453,10 +1462,14 @@ function PlotLine(p) {
 					+ '"></div></div>';
 		}
 		if (!this.isCycle)
-			html += '<h4>DATA TYPE</h4><div class="form-group"><input type="radio" name="data-type" value="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
-				+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label> </div> \
-				<div class="form-group"><input type="radio" name="data-type" value="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
-				+ (this.showPoints ? 'checked' : '') + '/> <label> POINTS</label></div> ';
+		    html += '<h4>GRAPH AS</h4><div class="form-group"><input type="radio" name="plotlinepoints' + idSuffix + '" id="plotlinepoints' + idSuffix + '"'
+				+ 'value="points"' + (this.showPoints ? 'checked' : '') + '/> <label> PLOT</label></div> \
+				<div class="form-group"><input type="radio" name="plotlinepoints' + idSuffix + '" id="plotlineline' + idSuffix + '"'
+				+  'value="line"' + (this.showPoints ? '' :'checked') + '/> <label> LINE</label></div> ';
+			html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><input type="radio" value="continuous" name="plotlinecontinuous' + idSuffix 
+			+ '" id="plotlinecontinuous' + idSuffix + '"' + (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label> </div> \
+			<div class="form-group"><input type="radio" value="event" name="plotlinecontinuous' + idSuffix
+			 + '" id="plotlinecontinuous' + idSuffix + '"' + (this.isContinuous ? '' : 'checked') + '/> <label>EVENT</label> </div>';
 		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
 				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/
@@ -1551,9 +1564,19 @@ function PlotLine(p) {
 				plot.refreshPlot();
 			});
 		}
-		$("#plotlinecontinuous" + idSuffix).change(function(e) {
+		$("input[name='plotlinecontinuous" + idSuffix + "']").change(function(e) {
 			var plotLine = plot.getLine(plotLineId);
-			if (plotLine.isContinuous) {
+			if ($(e.target).val() == 'continuous') {
+				plotLine.setIsContinuous(true);
+				if (plotLine.parentLine) {
+					plotLine.parentLine.setIsContinuous(true);
+					plotLine.parentLine.setContinuousCheckbox(true);
+				} else if (plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothDataWidth > 0) {
+					plotLine.smoothLine.setIsContinuous(true);
+				}
+				plot.prepAllLines();
+				plot.refreshPlot();
+			} else {
 				plotLine.setIsContinuous(false);
 				if (plotLine.parentLine) {
 					plotLine.parentLine.setIsContinuous(false);
@@ -1564,27 +1587,18 @@ function PlotLine(p) {
 				plot.prepAllLines();
 				plot.refreshPlot();
 			}
-			else {
-				plotLine.setIsContinuous(true);
-				if (plotLine.parentLine) {
-					plotLine.parentLine.setIsContinuous(true);
-					plotLine.parentLine.setContinuousCheckbox(true);
-				} else if (plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothDataWidth > 0) {
-					plotLine.smoothLine.setIsContinuous(true);
-				}
-				plot.prepAllLines();
-				plot.refreshPlot();
-			}
 		});
-		$("#plotlinepoints" + idSuffix).change(function(e) {
+		$("input[name='plotlinepoints" + idSuffix + "']").change(function(e) {
 			var plotLine = plot.getLine(plotLineId);
-			if (plotLine.showPoints) {
-				plotLine.setShowPoints(false);
+			if ($(e.target).val() == 'points') {
+				console.log('setShowPoints - true');
+				plotLine.setShowPoints(true);
 				plot.prepAllLines();
 				plot.refreshPlot();
 			}
 			else {
-				plotLine.setShowPoints(true);
+				console.log('setShowPoints - false');
+				plotLine.setShowPoints(false);
 				plot.prepAllLines();
 				plot.refreshPlot();
 			}
