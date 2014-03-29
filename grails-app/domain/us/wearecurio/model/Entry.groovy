@@ -60,6 +60,10 @@ class Entry {
 		durationType column:'duration_type', index:'duration_type_index'
 	}
 
+	
+	// NOTE: Unghosted repeat entries are repeated in an unghosted manner all the way until their repeatEnd
+	// but unghosted remind entries are only unghosted on their start date, and not on subsequent dates
+	
 	public static enum RepeatType { // IMPORTANT: there must be ghost entries for all non-ghost entries and vice-versa
 		// if you add more remind types, please edit the sql in RemindEmailService
 		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
@@ -214,10 +218,13 @@ class Entry {
 
 	public static def DAILY_UNGHOSTED_IDS = [
 		RepeatType.DAILY.getId(),
-		RepeatType.REMINDDAILY.getId(),
 		RepeatType.DAILYCONCRETEGHOST.getId(),
 	]
-
+	
+	public static def UNGHOSTED_SINGULAR_IDS = [
+		RepeatType.REMINDDAILY.getId(),
+	]
+	
 	public static enum DurationType {
 		NONE(0), START(1), END(2)
 
@@ -1763,10 +1770,10 @@ class Entry {
 		
 		// fetch sum of non-repeat entries
 		queryStr = "select count(*) as c, sum(sin((time_to_sec(entry.date) / 43200.0) * pi())) as y, sum(cos((time_to_sec(entry.date) / 43200.0) * pi())) as x " \
-				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and entry.repeat_end is null " \
+				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_type in (:unghostedSingularIds)) " \
 				+ "and entry.tag_id in (:tagIds) and entry.date >= :startDate and entry.date < :endDate"
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS]
 
 		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
 
@@ -1851,10 +1858,10 @@ class Entry {
 		// get regular results
 
 		queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.date >= :startDate and entry.date < :endDate and entry.repeat_type is null " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds]
 
 		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
@@ -2599,6 +2606,7 @@ class Entry {
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
 				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatEnd:" + repeatEnd \
 				+ ")"
 	}
 
