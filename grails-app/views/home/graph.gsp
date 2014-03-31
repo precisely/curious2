@@ -124,11 +124,10 @@ $(function(){
 		}
 	});
 	function adjustTrackingTagHeaderHeight() {
-		var queryTitleHeight = $("#queryTitle").closest('.red-header').height();
-		var padding = 7;
+		var queryTitleHeight = $('.red-header').height();
+		var padding = (queryTitleHeight - 20)/2;
 		console.log('Adjusting height to: ' + queryTitleHeight);
-		$("#toggle-tags").height((queryTitleHeight + 2 * padding) + 'px');
-		$('.tags-header-container').height((queryTitleHeight + padding) + 'px');
+		$('.tags-header-container').css('padding', padding + 'px 0');
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
@@ -145,13 +144,11 @@ $(function(){
 
 	<div class="row row-custom">
 		<div class="col-xs-12">
-			<div class="row">
+			<div class="row custom-row">
 				<!-- RIGHT NAV HEADER -->
-				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
-				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column graph-header-container" style="overflow:visible;width: calc(100% - 223px);">
+				<div class="col-xs-12 floating-column graph-header-container" style="overflow:visible;">
 					<div class="red-header">
-						<h1 class="clearfix">
+						<h1 class="clearfix right" style="width: calc(100% - 227px);float:left;" >
 							<div id="actions">
 								<img src="/images/menu.png">
 								<ul>
@@ -167,10 +164,11 @@ $(function(){
 							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 							<div id="debug"></div>
 						</h1>
+						<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 					</div>
 				</div>
 			</div>
-			<div class="row">
+			<div class="row custom-row">
 				<!-- RIGHT NAV BODY -->
 				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->

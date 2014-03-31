@@ -1,11 +1,11 @@
 <g:if test="${header }">
 	<g:if test="${!floatingColumn}">
-		<div class="col-xs-3 pull-right fixed-column tags-header-container">
+		<div class="pull-right fixed-column tags-header-container">
 	</g:if>
 	<g:else>
 		<div class="tags-header-container">
 	</g:else>
-		<div class="red-header pointer" id="toggle-tags">
+		<div class="pointer" id="toggle-tags">
 			<h1>
 				<span class="icon-triangle icon-triangle-right"></span>
 				&nbsp;

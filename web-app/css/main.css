@@ -986,20 +986,31 @@ div.plotLine:hover span {
 	cursor:pointer;
 }
 .custom-row {
-	margin-left: -10px;
-	margin-right: -10px;
+	padding-right: 10px;
 }
-
+.entry-container {
+	padding-right: 0px;
+}
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
 	background-color: #EF4B3A;
-	padding: 7px 10px;
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: uppercase;
 	min-height: 34px;
+	float: left;
+	width: 100%;
+}
+.red-header .right {
+	padding: 9px 10px;
+	border-right: 2px solid #fff;
+}
+#tagNav {
+	width: 227px;
+	padding: 0px;
+	margin-left: 3px;
 }
 .red-header h1 {
 	font-weight: normal;
@@ -1190,6 +1201,10 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
 }
+.track-page .tags-header-container {
+	padding: 7px;
+}
+
 div.graph-header-container .red-header {
 	-webkit-box-shadow: none;
 	box-shadow: none;
