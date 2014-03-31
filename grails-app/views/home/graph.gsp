@@ -110,10 +110,10 @@ $(function(){
 		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
 		$(".graphData").addClass("has-plot-data");
 		$("#plotArea").removeClass("table");
-	})
+	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
 		adjustTrackingTagHeaderHeight();
-	})
+	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
 		adjustTrackingTagHeaderHeight();
@@ -122,10 +122,13 @@ $(function(){
 			$(".graphData").removeClass("has-plot-data");
 			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
-	})
+	});
 	function adjustTrackingTagHeaderHeight() {
-		var queryTitleHeight = $("#queryTitle").parent().height();
-		$("#toggle-tags").parent().css("height", queryTitleHeight);
+		var queryTitleHeight = $("#queryTitle").closest('.red-header').height();
+		var padding = 7;
+		console.log('Adjusting height to: ' + queryTitleHeight);
+		$("#toggle-tags").height((queryTitleHeight + 2 * padding) + 'px');
+		$('.tags-header-container').height((queryTitleHeight + padding) + 'px');
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
@@ -135,28 +138,31 @@ $(function(){
 			plot.refreshPlot();
 		}
 	}
+
 </r:script>
 </head>
 <body class="graph-page">
 
 	<div class="row row-custom">
-		<div class="col-xs-2">
-			<!-- LEFT NAV -->
-			<div class="leftNav">
-				<div id="plotLeftNav">
-					<div id="plotLinesplotArea"></div>
-				</div>
-			</div>
-			<!-- /LEFT NAV -->
-		</div>
-		<div class="col-xs-10">
+		<div class="col-xs-12">
 			<div class="row">
 				<!-- RIGHT NAV HEADER -->
 				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 				<!-- RIGHT NAV HEADER -->
-				<div class="col-xs-9 floating-column graph-header-container">
+				<div class="col-xs-9 floating-column graph-header-container" style="overflow:visible;width: calc(100% - 223px);">
 					<div class="red-header">
 						<h1 class="clearfix">
+							<div id="actions">
+								<img src="/images/menu.png">
+								<ul>
+									<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
+									<li><a href="#" onclick="plot.save()">Save</a></li>
+									<li><g:link action="load">Load</g:link></li>
+									<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
+										<img src="/images/eye.png">	
+									</a></li>
+								</ul>
+							</div>
 							<span id="queryTitle"></span>
 							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 							<div id="debug"></div>
@@ -169,17 +175,13 @@ $(function(){
 				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->
 				<div class="col-xs-9 floating-column graph-container">
+					<div id="plotLeftNav">
+						<div id="plotLinesplotArea" class="plotlines"></div>
+					</div>
 					<!-- MAIN -->
 					<div class="main querymain">
 						<div id="dialogDivplotArea" class="hide"></div>
 						<div class="graphData">
-							<div id="actions">
-								<ul>
-									<li><a href="#" onclick="plot.save()">Save</a></li>
-									<li><g:link action="load">Load</g:link></li>
-									<li><a href="#" onclick="plot.saveSnapshot()">Share</a></li>
-								</ul>
-							</div>
 				
 							<div id="plotArea" class="table full-width">
 								<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>
@@ -225,6 +227,17 @@ $(function(){
 	<!-- PRE-FOOTER -->
 	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
+<r:script>
+	$(window).load(function(){
+		$('.red-header #actions img').click(function(e) {
+			$('ul', $(e.target).parent()).toggle();
+		});
+		$('.red-header #actions ul').mouseleave(function(e) {
+			$(e.target).closest('ul').toggle();
+		});
+	});
+
+</r:script>
 
 </body>
 </html>
