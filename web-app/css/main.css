@@ -476,6 +476,9 @@ li.treeItemView.highlight {
 ul.tags li.ui-draggable {
     cursor: pointer;
 }
+.draggable-helper {
+	z-index: 99999;
+}
 ul.tags li.tagGroup ul.tags, .wildcardTagGroup ul {
 	margin-left:10px;
 }
