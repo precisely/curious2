@@ -170,21 +170,17 @@ $(function(){
 		<span class="date bittext" id="discussDate"></span>
 		</div>
 		</h1>
+
+		<div id="plotLeftNav">
+			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
+		</div>
+
 	</div>
 
 <!-- MAIN -->
 <g:if test="${firstPost?.getPlotDataId() != null}">
 <div class="row row-custom">
-<!-- LEFT NAV-->
-<div class="col-xs-2">
-<div class="leftNav">
-	<div id="plotLeftNav" style="height:500px">
-		<div class="discussPlotLines" id="plotLinesplotDiscussArea"></div>
-	</div>
-
-</div>
-</div>
-<div class="col-xs-10">
+<div class="col-xs-12">
 <!-- /LEFT NAV-->
 <div class="main discussmain" style="margin:0px">
 	<div id="dialogDivplotDiscussArea" class="display:none;">

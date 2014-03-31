@@ -1451,9 +1451,6 @@ function PlotLine(p) {
 	this.appendHTML = function() {
 		if (this.isSmoothLine() || this.isFreqLine()) return; // don't show controls for smooth line
 		var makeActive = false;
-		if (this.getDiv().accordion('option','active') === 0) {
-			makeActive = 0;
-		}
 		var idSuffix = this.getIdSuffix();
 		if (!this.isContinuous) this.isContinuous = false;
 		if (!this.showPoints) this.showPoints = false;
@@ -1639,6 +1636,10 @@ function PlotLine(p) {
 
 		$('.plotlineinfo', div).mouseleave(function(e) {
 			$(e.target).closest('.plotlineinfo').toggle();
+		});
+		$('.plotGroup', div).click(function(e) {
+			var $droppableElement = $(e.target).closest('.ui-droppable');
+			$('.plotlineinfo', $droppableElement).toggle();
 		});
 		
 		var plotLine = this;
