@@ -2167,3 +2167,8 @@ function PlotLine(p) {
 	if (this.entries)
 		this.normalizeEntries();
 }
+
+$(window).resize(function() {
+	console.log('Refreshing graph on window resize');
+	plot.refreshAll();
+});
