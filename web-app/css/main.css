@@ -174,17 +174,18 @@ body.graph-page #tagListWrapper {
 	background: #fff;
 	border: 1px solid #ccc;
 }
-body.graph-page .tagSearch {
-	position: absolute;
-	width: 300px;
-	right: 0px;
-	z-index: 999;
-}
 body.graph-page #tagListWrapper ul#tagList {
 	height: 641px;
 }
 body.graph-page .querymain {
 	margin:0px;
+	float: left;
+	width: 100%;
+}
+#plotLeftNav {
+	float: left;
+	width: 100%;
+	margin-top: 4px;
 }
 body.graph-page .querymain #plotArea {
 	height:500px;
@@ -493,19 +494,15 @@ ul#tagList {
 #plotNav {
 	height:60px;
 }
-#plotLinesplotArea {
+.plotlines {
 	height:auto;
 }
-#plotLinesplotArea .ui-droppable {
+.plotlines .ui-droppable {
 	float: left;
 	position: relative;
 	cursor: pointer;
 	margin-right: 4px;
 	margin-bottom: 4px;
-}
-.discussPlotLines {
-	height:600px;
-	overflow:auto;
 }
 
 /* JQUERY UI MODS */
@@ -741,9 +738,6 @@ div.plotLine:hover span {
 }
 .fixed-column {
 	width: 225px;
-	-webkit-box-sizing: content-box;
-	-moz-box-sizing: content-box;
-	box-sizing: content-box;
 }
 .floating-column {
 	overflow: hidden;
@@ -1001,9 +995,6 @@ div.plotLine:hover span {
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	-moz-box-shadow: 3px 3px 3px #dddddd;
-	-webkit-box-shadow: 3px 3px 3px #dddddd;
-	box-shadow: 3px 3px 3px #dddddd;
 	background-color: #EF4B3A;
 	padding: 7px 10px;
 	vertical-align: middle;
@@ -1194,8 +1185,9 @@ body.track-page ol#entry0 li.entry.ghost a.entryDelete {
 div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
 }
-div.tags-header-container {
-	height: 
+div.graph-header-container .red-header {
+	-webkit-box-shadow: none;
+	box-shadow: none;
 }
 div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;

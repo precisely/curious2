@@ -112,11 +112,11 @@ $(function(){
 		$("#plotArea").removeClass("table");
 	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
-		//adjustTrackingTagHeaderHeight();
+		adjustTrackingTagHeaderHeight();
 	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
-		//adjustTrackingTagHeaderHeight();
+		adjustTrackingTagHeaderHeight();
 		if (!plot.plotData || plot.plotData == null) {
 			$("#zoomcontrol1").slider("destroy");
 			$(".graphData").removeClass("has-plot-data");
@@ -124,8 +124,11 @@ $(function(){
 		}
 	});
 	function adjustTrackingTagHeaderHeight() {
-		var queryTitleHeight = $("#queryTitle").closest('.red-header').outerHeight();
-		$("#toggle-tags").parent().css("height", queryTitleHeight);
+		var queryTitleHeight = $("#queryTitle").closest('.red-header').height();
+		var padding = 7;
+		console.log('Adjusting height to: ' + queryTitleHeight);
+		$("#toggle-tags").height((queryTitleHeight + 2 * padding) + 'px');
+		$('.tags-header-container').height((queryTitleHeight + padding) + 'px');
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
@@ -141,14 +144,12 @@ $(function(){
 <body class="graph-page">
 
 	<div class="row row-custom">
-	    <div class="tagSearch">
-
-		    <g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true, floatingColumn: true]" />
-		    <g:render template="/tag/tagListWidget" model="[floatingColumn: true]"/>
-		</div>
 		<div class="col-xs-12">
 			<div class="row">
-				<div class="col-xs-9  graph-header-container">
+				<!-- RIGHT NAV HEADER -->
+				<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
+				<!-- RIGHT NAV HEADER -->
+				<div class="col-xs-9 floating-column graph-header-container" style="overflow:visible;width: calc(100% - 223px);">
 					<div class="red-header">
 						<h1 class="clearfix">
 							<div id="actions">
@@ -167,15 +168,16 @@ $(function(){
 							<div id="debug"></div>
 						</h1>
 					</div>
-					<div id="plotLeftNav">
-						<div id="plotLinesplotArea"></div>
-					</div>
 				</div>
 			</div>
 			<div class="row">
 				<!-- RIGHT NAV BODY -->
+				<g:render template="/tag/tagListWidget" />
 				<!-- /RIGHT NAV BODY -->
 				<div class="col-xs-9 floating-column graph-container">
+					<div id="plotLeftNav">
+						<div id="plotLinesplotArea" class="plotlines"></div>
+					</div>
 					<!-- MAIN -->
 					<div class="main querymain">
 						<div id="dialogDivplotArea" class="hide"></div>
@@ -227,10 +229,6 @@ $(function(){
 	<!-- /PRE-FOOTER -->
 <r:script>
 	$(window).load(function(){
-		$(document).on('click','.plotGroup', function(e) {
-			var $droppableElement = $(e.target).closest('.ui-droppable');
-			$('.plotlineinfo', $droppableElement).toggle();
-		});
 		$('.red-header #actions img').click(function(e) {
 			$('ul', $(e.target).parent()).toggle();
 		});
