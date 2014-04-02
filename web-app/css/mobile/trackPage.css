@@ -372,6 +372,18 @@ a:link.indicator,a:hover.indicator,a:focus.indicator,a:visited.indicator,a:activ
 	padding-bottom: 16px;
 }
 
+#entry0 li.entry.ghost:not(.remind) a.entryDelete {
+	display: inline;
+}
+
+#entry0 li.entry.continuous a.entryDelete {
+	display: none !important;
+}
+
+#entry0 li.entry.ui-selected a.entryDelete {
+	display: inline !important;
+}
+
 #entry0 li.entry.glow {
 	background-color: #413535;
 	color: white;

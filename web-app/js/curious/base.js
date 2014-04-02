@@ -230,3 +230,32 @@ function getCSRFPreventionObject(key, data) {
 
 	return $.extend(CSRFPreventionObject, data);
 }
+
+// Singleton Class function.
+var RepeatType = new function() {
+	this.CONTINUOUS_BIT = 0x100;
+	this.GHOST_BIT = 0x200;
+	this.CONCRETEGHOST_BIT = 0x400;
+	this.TIMED_BIT = 0x1 | 0x2 | 0x4;
+	this.REPEAT_BIT = 0x1 | 0x2;
+	this.REMIND_BIT = 0x4;
+
+	this.isConcreteGhost = function(repeatType) {
+		return (repeatType & this.CONCRETEGHOST_BIT) != 0;
+	}
+	this.isContinuous = function(repeatType) {
+		return (repeatType & this.CONTINUOUS_BIT) != 0;
+	}
+	this.isGhost = function(repeatType) {
+		return (repeatType & this.GHOST_BIT) != 0;
+	}
+	this.isRemind = function(repeatType) {
+		return (repeatType & this.REMIND_BIT) != 0;
+	}
+	this.isRepeat = function(repeatType) {
+		return (repeatType & this.REPEAT_BIT) != 0;
+	}
+	this.isTimed = function(repeatType) {
+		return (repeatType & this.TIMED_BIT) != 0;
+	}
+}

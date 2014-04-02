@@ -107,12 +107,6 @@ $(document).mouseup(function(e) {
 var dayDuration = 86400000;
 
 var entrySelectData;
-var CONTINUOUS_BIT = 0x100;
-var GHOST_BIT = 0x200;
-var CONCRETEGHOST_BIT = 0x400;
-var TIMED_BIT = 0x1 | 0x2 | 0x4;
-var REPEAT_BIT = 0x1 | 0x2;
-var REMIND_BIT = 0x4;
 
 function displayEntry(entry, isUpdating, args) {
 	var id = entry.id,
@@ -137,29 +131,32 @@ function displayEntry(entry, isUpdating, args) {
 
 	var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
 	if (entry.repeatType) {
-		if ((entry.repeatType & GHOST_BIT) != 0) {
+		var repeatType = entry.repeatType;
+		if (RepeatType.isGhost(repeatType)) {
 			isGhost = true;
 			isAnyGhost = true;
 			classes += " ghost anyghost";
 		}
-		if ((entry.repeatType & CONCRETEGHOST_BIT) != 0) {
+		if (RepeatType.isConcreteGhost(repeatType)) {
 			isConcreteGhost = true;
 			isAnyGhost = true;
 			classes += " concreteghost anyghost";
 		}
-		if ((entry.repeatType & CONTINUOUS_BIT) != 0) {
+		if (RepeatType.isContinuous(repeatType)) {
 			isContinuous = true;
 			classes += " continuous"
 		}
-		if ((entry.repeatType & TIMED_BIT) != 0) {
+		if (RepeatType.isTimed(repeatType)) {
 			isTimed = true;
 			classes += " timedrepeat"
 		}
-		if ((entry.repeatType & REPEAT_BIT) != 0) {
+		if (RepeatType.isRepeat(repeatType)) {
 			isRepeat = true;
+			classes += " repeat"
 		}
-		if ((entry.repeatType & REMIND_BIT) != 0) {
+		if (RepeatType.isRemind(repeatType)) {
 			isRemind = true;
+			classes += " remind"
 		}
 	}
 
@@ -517,9 +514,9 @@ function selected($selectee, forceUpdate) {
 		
 		$("#tagTextInput").on("keyup", function(e) {
 			var $selectee = $(this).parents("li");
-			var isAnyGhost = $selectee.hasClass('ghost');
-			if ([13, 27].indexOf(e.keyCode)) {
-				if (isAnyGhost) {
+			var entryData = $selectee.data();
+			if ([13, 27].indexOf(e.keyCode) > -1) {
+				if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
 					activateEntry($selectee, true);
 				}
 			}
@@ -684,7 +681,13 @@ $(function(){
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
 		}
-		//activateEntry($(this), doNotSelectEntry);
+		var $entry = $(this);
+		var entryData = $entry.data();
+		if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
+			// Handled by selected event, i.e. selected() method is called.
+		} else {
+			activateEntry($entry, doNotSelectEntry);
+		}
 	});
 
 	/*
