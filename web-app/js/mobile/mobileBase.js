@@ -858,6 +858,12 @@ function selected($selectee, forceUpdate) {
 		
 		$textInput.keyup(function(e) {
 			var $selectee = $(this).parents("li");
+			var isAnyGhost = $selectee.hasClass('ghost');
+			if ([13, 27].indexOf(e.keyCode)) {
+				if (isAnyGhost) {
+					activateEntry($selectee, true);
+				}
+			}
 			if (e.keyCode == 13) { // Enter pressed
 				unselecting($selectee);
 			} else if (e.keyCode == 27) { // Esc pressed
@@ -880,6 +886,7 @@ function activateEntry($entry, doNotSelectEntry) {
 	var entryId = $entry.data("entry-id");
 	var isContinuous = $entry.data("isContinuous");
 	var isGhost = $entry.data("isGhost");
+	var text = $entry.find('input#tagTextInput').val();
 
 	if (!isGhost) {
 		selected($entry, false);
@@ -893,7 +900,8 @@ function activateEntry($entry, doNotSelectEntry) {
 					entryId : entryId,
 					date : cachedDateUTC,
 					currentTime : currentTimeUTC,
-					timeZoneName : timeZoneName
+					timeZoneName : timeZoneName,
+					text: text
 				})),
 		function(newEntry) {
 			if (checkData(newEntry)) {
@@ -1482,7 +1490,7 @@ var initTrackPage = function() {
 
 	var $entryArea = $("#entry0");
 	$entryArea.listable({
-		cancel : 'a, input, li.entry.ghost'
+		cancel : 'a, input'
 	});
 	$entryArea.off("listableselected");
 	/*$entryArea.off("listableunselecting");
@@ -1502,7 +1510,7 @@ var initTrackPage = function() {
 			// in selectable.
 			return false;
 		}
-		activateEntry($(this));
+		//activateEntry($(this));
 	})
 
 	var cache = getAppCacheData('users');

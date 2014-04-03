@@ -517,6 +517,12 @@ function selected($selectee, forceUpdate) {
 		
 		$("#tagTextInput").on("keyup", function(e) {
 			var $selectee = $(this).parents("li");
+			var isAnyGhost = $selectee.hasClass('ghost');
+			if ([13, 27].indexOf(e.keyCode)) {
+				if (isAnyGhost) {
+					activateEntry($selectee, true);
+				}
+			}
 			if (e.keyCode == 13) {	// Enter pressed
 				unselecting($selectee);
 			} else if(e.keyCode == 27) {	// Esc pressed
@@ -525,7 +531,7 @@ function selected($selectee, forceUpdate) {
 		});
 		$("#tagTextInput").val(entryText).focus();
 		$("#tagTextInput").data('entryTextSet', true);
-		if(selectRange) {
+		if (selectRange) {
 			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 		}
 	}
@@ -554,6 +560,31 @@ function checkAndUpdateEntry($unselectee) {
 	}
 	
 	$("#tagTextEdit").remove();
+}
+
+function activateEntry($ghostEntry, doNotSelectEntry) {
+	cacheNow();
+	var entryId = $ghostEntry.data("entry-id");
+	var isContinuous = $ghostEntry.data("isContinuous");
+	var text = $ghostEntry.find('input#tagTextInput').val();
+	queueJSON("creating entry", "/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&text=" + text + "&"
+			+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
+			function(newEntry) {
+				if (checkData(newEntry)) {
+					var newEntryId = newEntry.id;
+					if (isContinuous) {
+						var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
+						displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
+					} else {
+						displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
+					}
+					var $newEntry = $("li#entryid" + newEntryId);
+					if (!doNotSelectEntry) {
+						selected($newEntry, true);
+					}
+					tagList.load();
+				}
+			});
 }
 
 $(function(){
@@ -611,7 +642,7 @@ $(function(){
 			processInput();
 		}
 	});
-	$("#entry0").listable({cancel: 'a,input,li.entry.ghost'});
+	$("#entry0").listable({cancel: 'a,input'});
 	$("#entry0").off("listableselected");
 	/*
 	$("#entry0").off("listableunselecting");
@@ -653,29 +684,8 @@ $(function(){
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
 		}
-		cacheNow();
-		var $ghostEntry = $(this);
-		var entryId = $ghostEntry.data("entry-id");
-		var isContinuous = $ghostEntry.data("isContinuous");
-		queueJSON("creating entry", "/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&"
-				+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
-				function(newEntry) {
-					if (checkData(newEntry)) {
-						var newEntryId = newEntry.id;
-						if (isContinuous) {
-							var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
-							displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
-						} else {
-							displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
-						}
-						var $newEntry = $("li#entryid" + newEntryId);
-						if (!doNotSelectEntry) {
-							selected($newEntry, true);
-						}
-						tagList.load();
-					}
-				});
-	})
+		//activateEntry($(this), doNotSelectEntry);
+	});
 
 	/*
 	$("#entry0").off("selectableselected");
