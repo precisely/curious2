@@ -3,6 +3,8 @@ import java.io.IOException
 import java.util.ArrayList
 import java.util.List
 
+import org.springframework.transaction.annotation.Transactional
+
 import javax.servlet.ServletException
 import javax.servlet.annotation.WebServlet
 import javax.servlet.http.HttpServlet

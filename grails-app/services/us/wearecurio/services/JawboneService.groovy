@@ -3,6 +3,8 @@ package us.wearecurio.services
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
+import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.model.User
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.jawbone.JawboneTagUnitMap

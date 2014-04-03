@@ -3,6 +3,8 @@ package us.wearecurio.services
 import grails.converters.JSON
 import grails.util.Environment
 
+import org.springframework.transaction.annotation.Transactional
+
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 

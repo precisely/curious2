@@ -12,6 +12,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException;
 import us.wearecurio.utility.TimerJob
 
 class DeviceIntegrationHourlyJob extends TimerJob {
+	static transactional = false
 
 	def humanDataService
 	def movesDataService

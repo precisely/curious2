@@ -466,13 +466,13 @@ class Entry {
 			tagStatsRecord.setOldTagStats(tagStats)
 		}
 
+		entry.createRepeat()
+		
 		Entry generator = entry.fetchGeneratorEntry()
 
 		if (generator != null)
-			entry = generator.updateDurationEntry() // make sure duration entries remain consistent
+			generator.updateDurationEntry() // make sure duration entries remain consistent
 
-		entry.createRepeat()
-		
 		User.setTimeZoneId(userId, entry.getTimeZoneId())
 
 		return entry
@@ -552,7 +552,14 @@ class Entry {
 		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
 
 		Date newDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
-		Date prevDate = baseLocalDate.minusDays(1).toDateTime(mLocalTime, dateTimeZone).toDate()
+		
+		// compute previous repeatEnd time by keeping original local time but subtracting a day
+		DateTime currentDateTime = fetchDateTime()
+		LocalTime currentLocalTime = currentDateTime.toLocalTime()
+		DateTimeZone currentDateTimeZone = fetchDateTimeZone()
+		Date prevDate = baseLocalDate.minusDays(2).toDateTime(currentLocalTime, currentDateTimeZone).toDate()
+		while (newDate.getTime() - prevDate.getTime() > DAYTICKS)
+			prevDate = prevDate + 1
 		
 		if (this.repeatEnd == null || newDate < tomorrowRepeatEnd) {
 			m['date'] = newDate
@@ -560,8 +567,13 @@ class Entry {
 
 			def newEntry = create(this.userId, m, record)
 
-			this.setRepeatEnd(prevDate)
-
+			// set the repeat end of this entry to the day before the current date
+			
+			if (prevDate >= this.date) 
+				this.setRepeatEnd(prevDate)
+			else
+				this.setRepeatEnd(this.date)
+			
 			Utils.save(this, true)
 
 			return newEntry
@@ -584,7 +596,10 @@ class Entry {
 			} else {
 				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), record, 1)
 
-				m['repeatEnd'] = entry.getRepeatEnd()
+				if (entry.getRepeatEnd() == entry.getDate()) {
+					m['repeatEnd'] = m['date']
+				} else
+					m['repeatEnd'] = entry.getRepeatEnd()
 
 				entry.doUpdate(m, record)
 				
@@ -1858,7 +1873,7 @@ class Entry {
 		// get regular results
 
 		queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds]

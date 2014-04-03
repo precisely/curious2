@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import grails.util.Environment
 
+import org.springframework.transaction.annotation.Transactional
+
 import org.apache.commons.logging.LogFactory
 import org.hibernate.SessionFactory
 import org.joda.time.*
@@ -41,6 +43,7 @@ class MigrationService {
 	public static final long REMOVE_DUPLICATE_IMPORTSB = 74L
 	public static final long RESET_WITHINGS_ACCOUNTSB = 75L
 	public static final long FIX_WITHINGS_SUMMARIES = 76L
+	public static final long FIX_REPEAT_END = 77L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -238,6 +241,9 @@ class MigrationService {
 		tryMigration(FIX_WITHINGS_SUMMARIES) {
 			sql("update entry e inner join tag t on e.tag_id = t.id set date = date_add(date, interval 721 minute), date_precision_secs = 86400 where right(t.description, 8) = ' summary' and comment = '(Withings)'")
 			sql("update entry e set units = 'cal' where e.units = 'kcal' and e.comment = '(Withings)'")
+		}
+		tryMigration(FIX_REPEAT_END) {
+			sql("update entry e set repeat_end = date where repeat_end < date")
 		}
 	}
 }

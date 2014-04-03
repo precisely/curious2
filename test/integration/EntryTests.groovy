@@ -27,6 +27,7 @@ class EntryTests extends GroovyTestCase {
 	Date earlyBaseDate
 	Date earlyBaseDate2
 	Date currentTime
+	Date currentTime2
 	Date slightDifferentCurrentTime
 	Date endTime
 	String timeZone // simulated server time zone
@@ -36,6 +37,7 @@ class EntryTests extends GroovyTestCase {
 	DateTimeZone dateTimeZone
 	Date yesterdayBaseDate
 	Date baseDate
+	Date baseDateShifted
 	Date baseDate2
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
@@ -65,11 +67,13 @@ class EntryTests extends GroovyTestCase {
 		earlyBaseDate = dateFormat.parse("June 25, 2010 12:00 am")
 		earlyBaseDate2 = dateFormat.parse("June 24, 2010 11:00 pm")
 		currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
+		currentTime2 = dateFormat.parse("July 1, 2010 5:00 pm")
 		slightDifferentCurrentTime = dateFormat.parse("July 1, 2010 4:00 pm")
 		lateCurrentTime = dateFormat.parse("July 3, 2010 3:30 pm")
 		endTime = dateFormat.parse("July 1, 2010 5:00 pm")
 		yesterdayBaseDate = dateFormat.parse("June 30, 2010 12:00 am")
 		baseDate = dateFormat.parse("July 1, 2010 12:00 am")
+		baseDateShifted = dateFormat.parse("June 30, 2010 11:00 pm")
 		baseDate2 = dateFormat.parse("July 1, 2010 1:00 am") // switch time zone
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
 		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 2:15 pm")
@@ -799,12 +803,12 @@ class EntryTests extends GroovyTestCase {
 			def date = Utils.dateToGMTString(it[0])
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
-		} == 8
+		} == 1
 	}
 	
 	@Test
 	void testRepeatNullValuePlotData() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread - 3pm remind", earlyBaseDate, true), null)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread _ 3pm remind", earlyBaseDate, true), null)
 	
 		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
@@ -817,7 +821,7 @@ class EntryTests extends GroovyTestCase {
 		def updated = Entry.update(activated, Entry.parse(currentTime, timeZone, "bread 6 3pm remind", earlyBaseDate, true, true), null, earlyBaseDate, true)
 		
 		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
-		} == 8
+		} == 1
 	}
 		
 	void testUpdateNonRepeatToRepeat() {
@@ -868,6 +872,37 @@ class EntryTests extends GroovyTestCase {
 		// verify new event created on baseDate
 		assert testEntries(user, timeZone, baseDate, currentTime) {
 			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 8
+		} == 1
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify new event with old amount after baseDate
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+			assert it['id'] != entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+	}
+	
+	@Test
+	void testUpdateRepeatVagueChangeTimeZone() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 repeat", earlyBaseDate, true), null)
+		
+		def v = entry.toString()
+	
+		def updated = Entry.update(entry, Entry.parse(currentTime2, timeZone, "bread 8 repeat", baseDateShifted, true, true), null, baseDateShifted, false)
+		
+		assert entry.toString().endsWith("amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:Tue Jun 29 15:00:00 EDT 2010)")
+		
+		assert updated != entry && updated != null
+
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] != entry.getsId()
 			assert it['amount'].intValue() == 8
 		} == 1
 		

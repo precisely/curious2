@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import org.springframework.transaction.annotation.Transactional
+
 class LocationService {
 
 	static transactional = false    // Required, if the geocodeAddress method is called from beforeUpdate event

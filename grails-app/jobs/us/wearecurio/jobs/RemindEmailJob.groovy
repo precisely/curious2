@@ -4,6 +4,7 @@ import us.wearecurio.services.*
 
 
 class RemindEmailJob extends us.wearecurio.utility.TimerJob {
+	static transactional = false
 	RemindEmailService remindEmailService
 	
     static triggers = {

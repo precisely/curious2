@@ -1,6 +1,8 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.transaction.annotation.Transactional
+
 import com.notnoop.apns.*
 
 class AppleNotificationService {

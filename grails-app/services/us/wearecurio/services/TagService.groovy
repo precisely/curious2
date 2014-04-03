@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.model.Tag
 import us.wearecurio.model.Entry
 import us.wearecurio.model.TagGroup

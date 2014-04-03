@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import org.apache.commons.logging.LogFactory
 
+import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.server.DateRecord
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.*
@@ -11,16 +13,47 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.*
 
 class RemindEmailService {
-	
 	def mailService
 	def googleMessageService
 	def appleNotificationService
 
 	private static def log = LogFactory.getLog(this)
 
-	static transactional = true
-	
 	static Tag lhpMemberTag
+	
+	@Transactional(readOnly = true)
+	def sendReminderForEvent(long userId, String email, def entryId, def devices) {
+		def event = Entry.get()
+		if (event != null) {
+			if (email != null && email.length() > 1) {
+				try {
+					log.debug "Trying to send reminder email " + event + " to " + email
+					def messageBody = url + "?entryId=" + event.getId()
+					def messageSubject = "Reminder to track:" + event.getTag().getDescription()
+					mailService.sendMail {
+						to email
+						from "contact@wearecurio.us"
+						subject messageSubject
+						body messageBody
+					}
+				} catch (Throwable t) {
+					log.debug "Error while sending email: " + t
+				}
+			}
+			def notificationMessage = "Reminder to track:" + event.getTag().getDescription() + " " + event.getComment()
+			devices.each { userDevice ->
+				if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
+					googleMessageService.sendMessage(notificationMessage, [userDevice.token])
+					log.debug "Notifying Android device for user "+userId
+				} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
+					//TODO Send APN message for reminder
+					log.debug "Notifying iOS device for user "+userId
+					appleNotificationService.sendMessage(notificationMessage, [userDevice.token],"Curious",
+						['entryId':event.getId(),'entryDate':dateTimeFormatter.print(event.getDate().getTime())])
+				}
+			}
+		}
+	}
 	
 	def sendReminders() {
 		log.debug "RemindEmailService.sendReminders()"
@@ -58,36 +91,7 @@ class RemindEmailService {
 			
 			log.debug "Number of remind events found "+remindEvents.size()
 			for (def eventIdRecord in remindEvents) {
-				def event = Entry.get(eventIdRecord['id'])
-				if (event != null) {
-					if (email != null && email.length() > 1) {
-						try {
-							log.debug "Trying to send reminder email " + event + " to " + email
-							def messageBody = url + "?entryId=" + event.getId()
-							def messageSubject = "Reminder to track:" + event.getTag().getDescription()
-							mailService.sendMail {
-								to email
-								from "contact@wearecurio.us"
-								subject messageSubject
-								body messageBody
-							}
-						} catch (Throwable t) {
-							log.debug "Error while sending email: " + t
-						}
-					}
-					def notificationMessage = "Reminder to track:" + event.getTag().getDescription() + " " + event.getComment()
-					devices.each { userDevice ->
-						if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
-							googleMessageService.sendMessage(notificationMessage, [userDevice.token])
-							log.debug "Notifying Android device for user "+userId
-						} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
-							//TODO Send APN message for reminder
-							log.debug "Notifying iOS device for user "+userId
-							appleNotificationService.sendMessage(notificationMessage, [userDevice.token],"Curious",
-								['entryId':event.getId(),'entryDate':dateTimeFormatter.print(event.getDate().getTime())])
-						}
-					}
-				}
+				sendReminderForEvent(userId, email, eventIdRecord['id'], devices)
 			}
 			
 		}

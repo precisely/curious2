@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import org.apache.commons.logging.LogFactory
 
+import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.model.GenericTagGroup;
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.Tag

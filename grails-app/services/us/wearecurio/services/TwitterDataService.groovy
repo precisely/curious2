@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import org.apache.commons.logging.LogFactory
 
+import org.springframework.transaction.annotation.Transactional
+
 import twitter4j.Twitter
 import twitter4j.TwitterException
 import twitter4j.TwitterFactory

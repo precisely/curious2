@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import org.springframework.transaction.annotation.Transactional
+
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method

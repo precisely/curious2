@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import javax.servlet.http.HttpServletRequest
 
+import org.springframework.transaction.annotation.Transactional
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder

@@ -77,7 +77,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		def entries = Entry.findAllByUserId(user.getId())
 		for (def entry in entries) {
 			if (entry.getAmount().intValue() == 1353) {
-				assert entry.toString().endsWith("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:run, amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null)")
+				assert entry.toString().endsWith("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:run, amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null, repeatEnd:null)")
 			}
 		}
 		assert Entry.count() == 23

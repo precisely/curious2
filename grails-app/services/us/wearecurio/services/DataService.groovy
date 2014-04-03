@@ -3,6 +3,8 @@ package us.wearecurio.services
 import grails.converters.JSON
 import grails.util.Environment;
 
+import org.springframework.transaction.annotation.Transactional
+
 import javax.annotation.PostConstruct
 
 import org.apache.commons.logging.LogFactory

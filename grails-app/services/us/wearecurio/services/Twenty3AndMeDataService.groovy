@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import org.springframework.transaction.annotation.Transactional
+
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token

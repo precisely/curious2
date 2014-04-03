@@ -3,7 +3,6 @@ package us.wearecurio.controller
 import grails.converters.*
 import us.wearecurio.model.*
 import us.wearecurio.exceptions.*
-import us.wearecurio.services.CorrelationService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Discussion;
 import us.wearecurio.model.Entry.RepeatType;
@@ -24,8 +23,6 @@ import org.joda.time.*
 class DataController extends LoginController {
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-	CorrelationService correlationService
-	
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime

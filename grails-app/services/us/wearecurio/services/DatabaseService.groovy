@@ -3,6 +3,8 @@ package us.wearecurio.services
 import java.util.Date;
 import javax.persistence.TemporalType
 
+import org.springframework.transaction.annotation.Transactional
+
 import org.apache.commons.logging.LogFactory
 import org.hibernate.Query
 import org.hibernate.Session

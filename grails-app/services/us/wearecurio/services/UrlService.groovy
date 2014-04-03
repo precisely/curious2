@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import org.springframework.transaction.annotation.Transactional
+
 import grails.util.Environment;
 
 import org.apache.commons.logging.LogFactory

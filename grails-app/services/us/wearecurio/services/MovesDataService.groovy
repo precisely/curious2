@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import static us.wearecurio.model.OAuthAccount.*
 
+import org.springframework.transaction.annotation.Transactional
+
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 

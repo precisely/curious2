@@ -4,6 +4,7 @@ import us.wearecurio.utility.TimerJob
 import us.wearecurio.model.UniqueTimedToken
 
 class DeviceIntegrationDailyJob extends TimerJob {
+	static transactional = false
 
 	def OAuthAccountService
 	def withingsDataService

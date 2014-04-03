@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 
+import org.springframework.transaction.annotation.Transactional
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
@@ -11,6 +13,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.thirdparty.RefreshTokenVerifier
 import us.wearecurio.utility.Utils
+
 
 class OauthAccountService {
 
@@ -23,6 +26,7 @@ class OauthAccountService {
 	 * @param tokenInstance
 	 * @return Instance of OAuthAccount.
 	 */
+	@Transactional
 	OAuthAccount createOrUpdate(OAuthAccount account, Token tokenInstance) {
 		account.accessToken = tokenInstance.token
 		account.accessSecret = tokenInstance.secret ?: ""

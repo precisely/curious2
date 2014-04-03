@@ -1,4 +1,7 @@
 package us.wearecurio.services
+
+import org.springframework.transaction.annotation.Transactional
+
 import java.text.SimpleDateFormat;
 
 import grails.converters.JSON;
