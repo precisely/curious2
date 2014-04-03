@@ -175,7 +175,7 @@ body.graph-page #tagListWrapper {
 	border: 1px solid #ccc;
 }
 body.graph-page #tagListWrapper ul#tagList {
-	height: 641px;
+	height: 583px;
 }
 body.graph-page .querymain {
 	margin:0px;
@@ -635,8 +635,9 @@ a.calendar {
 /* GRAPH PAGE */
 
 .plotlineinfo {
+	width: 195px;
 	font-size:.8em;
-	background: #EBEBEB;
+	background: #f9f9f9;
 	border: 1px solid #ccc;
 	padding: 10px;
 	position: absolute;
@@ -645,12 +646,34 @@ a.calendar {
 }
 .plotlineinfo h4, .plotlineinfo .form-group {
 	margin-bottom: 7px;
+	float: left;
+	clear: left;
 }
 .plotlineinfo ul.tags {
 	margin-top: 15px;
 }
 .plotlineinfo .ui-icon {
 	display: none;
+}
+.plotlineinfo .form-group {
+	clear: left;	
+	width: 100%;
+}
+.plotlineinfo .graph-icon {
+	float: right;
+	width: 60px;
+	margin-left: 10px;
+}
+.plotlineinfo input {
+	float: left;
+	margin-right: 5px;
+}
+.plotlineinfo label {
+	float: left;
+}
+.plotlineinfo .widget {
+	float: left;
+	padding: 17px 0;
 }
 .calendarRange {
 	background-color:#EBEBEB;
