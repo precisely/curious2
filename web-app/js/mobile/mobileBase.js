@@ -865,6 +865,9 @@ function selected($selectee, forceUpdate) {
 			}
 		});
 
+		if ($selectee.data('isContinuous'))
+			toggleSuffix($("#tagTextInput"), 'pinned');
+		
 		if (selectRange) {
 			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 		}
@@ -1226,7 +1229,7 @@ function deleteCurrentEntry() {
 }
 
 /**
- * Sees to check if text is different from original text. IF different than call
+ * Checks if text is different from original text. IF different than call
  * updateEntry() method to notify server and update in UI.
  */
 function checkAndUpdateEntry($unselectee) {
@@ -1235,7 +1238,19 @@ function checkAndUpdateEntry($unselectee) {
 	var newText = $("input#tagTextInput").val();
 	var $oldEntry = getEntryElement(currentEntryId);
 	$oldEntry.addClass("glow");
-	if (($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate'))) {
+	
+	var doNotUpdate = false;
+	
+	if ($oldEntry.data('isContinuous') && (!doNotUpdate)) {
+		var $contentWrapper = $oldEntry.find(".content-wrapper");
+		$contentWrapper.html($oldEntry.data('contentHTML'));
+		$contentWrapper.show();
+		addEntry(currentUserId, newText, defaultToNow);
+		//updateEntry(currentEntryId, newText, defaultToNow);
+		doNotUpdate = true;
+	}
+	if ((!$oldEntry.data('isRemind')) &&
+			(doNotUpdate || ($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate')))) {
 		setTimeout(function() {
 			$oldEntry.removeClass("glow");
 		}, 500)

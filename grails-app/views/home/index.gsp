@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <g:setProvider library="jquery" />
 <html>
@@ -440,14 +441,10 @@ function doLogout() {
 function unselecting($unselectee, doNotUpdate) {
 	if ($unselectee.data('entryIsSelected') == 1) {
 		var $textInput = $("#tagTextInput");
-		/*if ($textInput.data('cancelBlur')) {
-			$textInput.data('cancelBlur', false);
-			return;
-		}*/
 		$unselectee.removeClass('ui-selected');
 		$unselectee.data('entryIsSelected', 0);
 		$("a.entryDelete", $unselectee).hide();
-		checkAndUpdateEntry($unselectee);
+		checkAndUpdateEntry($unselectee, doNotUpdate);
 		currentEntryId = null;
 	}
 }
@@ -515,11 +512,6 @@ function selected($selectee, forceUpdate) {
 		$("#tagTextInput").on("keyup", function(e) {
 			var $selectee = $(this).parents("li");
 			var entryData = $selectee.data();
-			if ([13, 27].indexOf(e.keyCode) > -1) {
-				if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
-					activateEntry($selectee, true);
-				}
-			}
 			if (e.keyCode == 13) {	// Enter pressed
 				unselecting($selectee);
 			} else if(e.keyCode == 27) {	// Esc pressed
@@ -528,23 +520,34 @@ function selected($selectee, forceUpdate) {
 		});
 		$("#tagTextInput").val(entryText).focus();
 		$("#tagTextInput").data('entryTextSet', true);
+		if ($selectee.data('isContinuous'))
+			toggleSuffix($("#tagTextInput"), 'pinned');
+		
 		if (selectRange) {
 			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 		}
 	}
 }
 /**
- * Sees to check if text is different from original text.
+ * Checks if text is different from original text.
  * IF different than call updateEntry() method to notify
  * server and update in UI.
  */
-function checkAndUpdateEntry($unselectee) {
+function checkAndUpdateEntry($unselectee, doNotUpdate) {
 	var $contentWrapper = $unselectee.find(".content-wrapper");
 	
 	var newText = $("input#tagTextInput").val();
 	var $oldEntry = getEntryElement(currentEntryId);
 
-	if (($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate'))) {
+	if ($oldEntry.data('isContinuous') && (!doNotUpdate)) {
+		var $contentWrapper = $oldEntry.find(".content-wrapper");
+		$contentWrapper.html($oldEntry.data('contentHTML'));
+		$contentWrapper.show();
+		addEntry(currentUserId, newText, defaultToNow);
+		doNotUpdate = true;
+	}
+	if ((!$oldEntry.data('isRemind')) &&
+			(doNotUpdate || ($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate')))) {
 		var $contentWrapper = $oldEntry.find(".content-wrapper");
 		$contentWrapper.html($oldEntry.data('contentHTML'));
 		$contentWrapper.show();

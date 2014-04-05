@@ -23,6 +23,8 @@ import org.joda.time.*
 class DataController extends LoginController {
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
+	def tokenService
+	
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime
@@ -73,7 +75,14 @@ class DataController extends LoginController {
 				+ ", defaultToNow:" + defaultToNow
 		
 		def entry = Entry.get(Long.parseLong(entryIdStr))
+		
+		def oldEntry = entry
 
+		if (entry.getUserId() == 0L) {
+			debug "Attempting to edit a deleted entry."
+			return [null, 'Attempting to edit a deleted entry.', null, null]
+		}
+			
 		if (entry.getUserId() != sessionUser().getId()) {
 			debug "No permission to edit this entry"
 			return [null, 'You do not have permission to edit this entry.', null, null]
@@ -88,8 +97,19 @@ class DataController extends LoginController {
 		def baseDate = parseDate(baseDateStr)
 		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
 		
-		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
+		// activate repeat entry if it has a repeat type
+		if (entry.getRepeatType() != null && (entry.getRepeatType().isReminder() || entry.getRepeatType().isContinuous())) {
+			debug "Activating ghost entry " + entry
+			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
+			if (newEntry != null) {
+				entry = newEntry
+				debug "New activated entry " + newEntry
+			} else
+				debug "No entry activation"
+		}
 
+		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
+		
 		if (entry != null) {
 			TagStatsRecord record = new TagStatsRecord()
 			entry = Entry.update(entry, m, record, baseDate, allFuture)
@@ -302,7 +322,7 @@ class DataController extends LoginController {
 		Entry entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 		
-		if (!UniqueTimedToken.acquire("activateGhost:" + userId + ":" + params.entryId + ":" + params.date, new Date(), 1500)) {
+		if (!tokenService.acquire(session, "activateGhost:" + userId + ":" + params.entryId + ":" + params.date)) {
 			renderStringGet("error") // silently fail
 		} else {
 			Date baseDate = params.date == null ? null : parseDate(params.date)

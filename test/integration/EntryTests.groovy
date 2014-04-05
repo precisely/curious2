@@ -902,7 +902,7 @@ class EntryTests extends GroovyTestCase {
 
 		// verify new event created on baseDate
 		assert testEntries(user, timeZone, baseDate, currentTime) {
-			assert it['id'] != entry.getsId()
+			assert it['id'] != entry.getId()
 			assert it['amount'].intValue() == 8
 		} == 1
 		

@@ -127,36 +127,45 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 		successCallback = args;
 		args = undefined;
 	}
-	var wrapSuccessCallback = function(data) {
+	if (args == undefined || args == null) {
+		args = {dateToken:new Date().getTime()};
+	} else if (!args['dateToken']) {
+		args['dateToken'] = new Date().getTime();
+	}
+	var wrapSuccessCallback = function(data, msg) {
 		if (successCallback)
 			successCallback(data);
 		--numJSONCalls;
-		if (numJSONCalls < 0) numJSONCalls = 0
+		if (numJSONCalls < 0)
+			numJSONCalls = 0;
 		if (pendingJSONCalls.length > 0) {
 			var nextCall = pendingJSONCalls.shift();
 			nextCall();
 		}
-	}
-	var wrapFailCallback = function(data) {
+	};
+	var wrapFailCallback = function(data, msg) {
 		if (failCallback)
 			failCallback(data);
 		--numJSONCalls;
-		if (numJSONCalls < 0) numJSONCalls = 0
+		if (numJSONCalls < 0)
+			numJSONCalls = 0;
 		if (pendingJSONCalls.length > 0) {
 			var nextCall = pendingJSONCalls.shift();
 			nextCall();
 		}
-		if (delay > 1000000) { // stop retrying after delay too large
-			showAlert("Server down... giving up");
-			return;
+		if (msg == "timeout") {
+			if (delay * 2 > 1000000) { // stop retrying after delay too large
+				showAlert("Server down... giving up");
+				return;
+			}
+			if (!(delay > 0))
+				showAlert("Server not responding... retrying " + description);
+			delay = (delay > 0 ? delay * 2 : 10000);
+			window.setTimeout(function() {
+				queueJSON(description, url, args, successCallback, failCallback, delay);
+			}, delay);
 		}
-		if (!(delay > 0))
-			showAlert("Server not responding... retrying " + description);
-		delay = (delay > 0 ? delay * 2 : 1000);
-		window.setTimeout(function() {
-			queueJSON(description, url, args, successCallback, failCallback, delay);
-		}, delay);
-	}
+	};
 	if (numJSONCalls > 0) { // json call in progress
 		var jsonCall = function() {
 			$.ajax({

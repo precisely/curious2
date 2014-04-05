@@ -17,6 +17,7 @@ import us.wearecurio.controller.HomeController
  */
 class SecurityFilters {
 	UrlService urlService
+	def tokenService
 	
 	static List noauthActions = [
 		'login',
@@ -77,6 +78,31 @@ class SecurityFilters {
 					return false
 				}
 			}
+		}
+		duplicateCheck(controler:'*', action:'*') {
+			before = {
+				println "duplicate filter: " + actionName
+				
+				if (actionName && actionName.endsWith('Data')) {
+					def p = new TreeMap(params)
+					if (params.date || params.dateToken || params.currentTime) {
+						p.remove('_')
+						p.remove('callback')
+						
+						def token = p.toString()
+		
+						if (!tokenService.acquire(session, token)) {
+							println "token not acquired"
+							render "${params.callback}('refresh')"
+							return false
+						} else {
+							println "token acquired"
+							return true
+						}
+					}
+				}
+			}
+
 		}
 		mobileCheck(controller:'mobile', action:'*') {
 			before = {
