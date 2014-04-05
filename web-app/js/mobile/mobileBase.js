@@ -601,8 +601,8 @@ var cachedDate, cachedDateUTC;
 var $datepickerField;
 
 $(document).ready(function() {
-	$.event.special.swipe.horizontalDistanceThreshold = 50;
-	$.event.special.swipe.verticalDistanceThreshold = 60;
+	$.event.special.swipe.horizontalDistanceThreshold = 100;
+	$.event.special.swipe.verticalDistanceThreshold = 50;
 	
 	$datepickerField = $("input#datepicker");
 	if (window.location.href.indexOf("lamhealth") > -1) {
