@@ -160,7 +160,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 			}
 			if (!(delay > 0))
 				showAlert("Server not responding... retrying " + description);
-			delay = (delay > 0 ? delay * 2 : 10000);
+			delay = (delay > 0 ? delay * 2 : 5000);
 			window.setTimeout(function() {
 				queueJSON(description, url, args, successCallback, failCallback, delay);
 			}, delay);
@@ -173,7 +173,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 				dataType: "json",
 				url: url,
 				data: args,
-				timeout: 10000
+				timeout: 15000
 			})
 			.done(wrapSuccessCallback)
 			.fail(wrapFailCallback);
@@ -187,7 +187,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 			dataType: "json",
 			url: url,
 			data: args,
-			timeout: 10000
+			timeout: 15000
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
