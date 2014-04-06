@@ -42,6 +42,7 @@ class FitBitDataService extends DataService {
 		profileURL = String.format(BASE_URL, "/-/profile.json")
 	}
 
+	@Transactional
 	Map getDataActivities(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug("FitBitDataServices.getDataActivities(): account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
@@ -117,6 +118,7 @@ class FitBitDataService extends DataService {
 		[success: true]
 	}
 
+	@Transactional
 	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll) {
 		// Getting body measurements
 		//requestUrl = String.format(BASE_URL, "/${accountId}/body/date/${forDate}.json")
@@ -133,6 +135,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataDefault() account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		String accountId = account.accountId
@@ -155,6 +158,7 @@ class FitBitDataService extends DataService {
 		[success: true]
 	}
 
+	@Transactional
 	Map getDataFoods(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug("FitBitDataService.getDataFoods() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		//requestUrl = String.format(BASE_URL, "/${accountId}/${collectionType}/log/date/${forDate}.json")
@@ -162,6 +166,7 @@ class FitBitDataService extends DataService {
 		[success: true]
 	}
 
+	@Transactional
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug("FitBitDataService.getDataSleep() account " + account.getId() + " forDay: " + forDay + " refreshAll: " + refreshAll)
 		Long userId = account.userId
@@ -213,16 +218,19 @@ class FitBitDataService extends DataService {
 	 * Overriding default implementation so to send accept-language header for proper units.
 	 */
 	@Override
+	@Transactional
 	JSONElement getResponse(Token tokenInstance, String requestUrl) {
 		Map requestHeader = ["Accept-Language": "en_US"]
 		super.getResponse(tokenInstance, requestUrl, "get", [:], requestHeader)
 	}
 
+	@Transactional
 	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		getUserProfile(account).user.timezone
 	}
 
 	@Override
+	@Transactional
 	JSONElement listSubscription(Long userId) {
 		super.listSubscription(userId, String.format(BASE_URL, "/-/apiSubscriptions.json"), "get", [:])
 	}
@@ -249,11 +257,14 @@ class FitBitDataService extends DataService {
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
 			formatter.setTimeZone(timeZone)
 			notification.date = formatter.parse(notification.date)
-			new ThirdPartyNotification(notification).save(failOnError: true)
+			ThirdPartyNotification.withTransaction {
+				new ThirdPartyNotification(notification).save(failOnError: true)
+			}
 		}
 	}
 
 	@Override
+	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug("FitBitDataService.subscribe() userId " + userId)
 
@@ -285,6 +296,7 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		String unsubscribeURL = String.format(BASE_URL, "/-/apiSubscriptions/${userId}.json")
 

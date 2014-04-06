@@ -19,6 +19,8 @@ import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class MovesDataService extends DataService {
+	
+	static transactional = false
 
 	static final String BASE_URL = "https://api.moves-app.com/api/1.1%s"
 	static final String COMMENT = "(Moves)"
@@ -33,6 +35,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug("MovesDataService.getDataDefault(): account " + account.getId() + " startDate: " + startDate + " refreshAll: " + refreshAll)
 		
@@ -95,14 +98,17 @@ class MovesDataService extends DataService {
 		return [success: true]
 	}
 
+	@Transactional
 	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		getUserProfile(account).profile.currentTimeZone.id
 	}
 
 	@Override
+	@Transactional
 	void notificationHandler(String notificationData) {
 	}
 
+	@Transactional
 	void processActivity(JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
@@ -143,6 +149,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug("MovesDataService.subscribe() userId: " + userId)
 		
@@ -153,6 +160,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug("MovesDataService.unsubscribe() userId: " + userId)
 			

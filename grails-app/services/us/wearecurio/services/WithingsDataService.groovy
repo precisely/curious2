@@ -27,7 +27,7 @@ class WithingsDataService extends DataService {
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "withings import"
 
-	static transactional = true
+	static transactional = false
 
 	WithingsDataService() {
 		provider = "Withings"
@@ -37,6 +37,7 @@ class WithingsDataService extends DataService {
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()
 
 	@Override
+	@Transactional
 	void notificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
 		if (!notification.userid) {	// At time of subscription
@@ -47,16 +48,19 @@ class WithingsDataService extends DataService {
 		saveNotification(notificationDate, notification.userid)
 	}
 
+	@Transactional
 	void saveNotification(Date notificationDate, String accountId) {
 		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: accountId, subscriptionId: "",
 			ownerType: "user", typeId: typeId]).save()
 	}
 
+	@Transactional
 	void saveNotificationForPreviousData(OAuthAccount account) {
 		saveNotification(earlyStartDate, account.accountId)
 	}
 
 	@Override
+	@Transactional
 	Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getData() account:" + account + " refreshAll: " + refreshAll
 
@@ -176,6 +180,7 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
+	@Transactional
 	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
 		
@@ -250,6 +255,7 @@ class WithingsDataService extends DataService {
 	 * @param subscription Boolean field to represent if user is subscribing or unsubscribing.
 	 * @return Returns common parameters as map.
 	 */
+	@Transactional
 	Map getSubscriptionParameters(OAuthAccount account, boolean subscription) {
 		String notifyURL = urlService.make([controller: "home", action: "notifywithings"], null, true)
 		notifyURL = notifyURL.replace("https://", "http://")	// Providing Non SSL url to work with withings callback.
@@ -262,6 +268,7 @@ class WithingsDataService extends DataService {
 		queryParameters
 	}
 	
+	@Transactional
 	Map getActivityDataParameters(String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.getActivityDataParameters() accountId:" + 
 			accountId + " startDate: " + startDate + " endDate: " + endDate
@@ -294,6 +301,7 @@ class WithingsDataService extends DataService {
 	 * @param accountId
 	 * @return
 	 */
+	@Transactional
 	String getUsersTimeZone(Token tokenInstance, String accountId) {
 		log.debug "Getting timezone for accoundId [$accountId] from last day activity data."
 		JSONObject data = fetchActivityData(tokenInstance, accountId, new Date() - 1, new Date(), false)	// Getting data for last day
@@ -316,6 +324,7 @@ class WithingsDataService extends DataService {
 		return null
 	}
 
+	@Transactional
 	JSONObject fetchActivityData(Token tokenInstance, String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.fetchActivityData() accountId:" + accountId + " startDate: " + startDate + " endDate: " + endDate
 		
@@ -324,10 +333,12 @@ class WithingsDataService extends DataService {
 		getResponse(tokenInstance, BASE_URL + "/v2/measure", "get", queryParameters)
 	}
 	
+	@Transactional
 	JSONObject fetchActivityData(OAuthAccount account, String accountId, Date startDate, Date endDate, boolean intraDay) {
 		fetchActivityData(account.tokenInstance, accountId, startDate, endDate, intraDay)
 	}
 
+	@Transactional
 	void listSubscription(OAuthAccount account) {
 		Response response = oauthService.getWithingsResource(account.tokenInstance, "http://wbsapi.withings.net/notify?action=list&userid=$account.accountId")
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
@@ -348,7 +359,9 @@ class WithingsDataService extends DataService {
 
 		for (OAuthAccount account in results) {
 			try {
-				subscribe(account)
+				OAuthAccount.withTransaction {
+					subscribe(account)
+				}
 			} catch (InvalidAccessTokenException e) {
 				// Nothing to do
 			}
@@ -356,6 +369,7 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		log.debug "WithingsDataService.subscribe(): For userId: [$userId]"
 		OAuthAccount account = getOAuthAccountInstance(userId)
@@ -364,6 +378,7 @@ class WithingsDataService extends DataService {
 	}
 
 	// Overloaded method.
+	@Transactional
 	Map subscribe(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		checkNotNull(account)
 		Long userId = account.userId
@@ -396,6 +411,7 @@ class WithingsDataService extends DataService {
 	}
 
 	@Override
+	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "WithingsDataService.unsubscribe():" + userId
 		OAuthAccount account = getOAuthAccountInstance(userId)

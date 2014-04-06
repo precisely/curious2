@@ -16,6 +16,7 @@ import us.wearecurio.utility.Utils
 
 
 class OauthAccountService {
+	static transactional = false
 
 	def oauthService
 	def securityService
@@ -68,6 +69,7 @@ class OauthAccountService {
 	 * @param timeZoneId Identity of TimeZoneId domain. Default Null.
 	 * @return OAuthAccount instance for given parameters.
 	 */
+	@Transactional
 	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance, Long userId, Integer timeZoneId = null) {
 		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
 		account.accountId = accountId
@@ -82,7 +84,9 @@ class OauthAccountService {
 		OAuthAccount.withCriteria {
 			between("expiresOn", new Date(), new Date() + 1)
 		}.each {
-			refreshToken(it)
+			OAuthAccount.withTransaction {
+				refreshToken(it)
+			}
 		}
 	}
 
@@ -90,6 +94,7 @@ class OauthAccountService {
 	 * Used to renew access token of a particular OAuthAccount instance.
 	 * @param account Instance of OAuthAccount
 	 */
+	@Transactional
 	void refreshToken(OAuthAccount account) {
 		if (!account.typeId.supportsOAuth2()) {
 			log.warn "Can't renew access token for account: [$account] since associated thirdparty doesn't supports OAuth2."

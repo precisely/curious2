@@ -23,6 +23,8 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 abstract class DataService {
+	
+	static transactional = false
 
 	private static def log = LogFactory.getLog(this)
 
@@ -98,6 +100,7 @@ abstract class DataService {
 	 * @param accountId Account Id of respective third party.
 	 * @return Returns list of OAuthAccount.
 	 */
+	@Transactional
 	List<OAuthAccount> getAllOAuthAccounts(String accountId) {
 		OAuthAccount.findAllByTypeIdAndAccountId(typeId, accountId)
 	}
@@ -110,16 +113,19 @@ abstract class DataService {
 	 * @param refreshAll Boolean field used to clear all existing records.
 	 * @return	Returns a map with required data.
 	 */
+	@Transactional
 	abstract Map getDataDefault(OAuthAccount account, Date startDate, boolean refreshAll) throws InvalidAccessTokenException
 
 	/**
 	 * Returns the OAuthAccount instance for given userId.
 	 * @param userId User id for which instance needs to be fetched.
 	 */
+	@Transactional
 	OAuthAccount getOAuthAccountInstance(Long userId) {
 		OAuthAccount.findByTypeIdAndUserId(typeId, userId)
 	}
 
+	@Transactional
 	JSONElement getResponse(OAuthAccount account, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
 	throws InvalidAccessTokenException {
 		try {
@@ -143,8 +149,9 @@ abstract class DataService {
 	 * 
 	 * @throws InvalidAccessTokenException if any API call returns 401 response code.
 	 */
+	@Transactional
 	JSONElement getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
-	throws InvalidAccessTokenException {
+			throws InvalidAccessTokenException {
 		long currentTime = System.currentTimeMillis()
 
 		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL]"
@@ -198,6 +205,7 @@ abstract class DataService {
 	 * @param account
 	 * @return Returns identity of TimeZone for given account.
 	 */
+	@Transactional
 	Integer getTimeZoneId(OAuthAccount account) {
 		log.debug "Get timeZoneId for Account: [$account]"
 		checkNotNull(account)
@@ -228,6 +236,7 @@ abstract class DataService {
 		account.timeZoneId
 	}
 	
+	@Transactional
 	TimeZone getTimeZone(OAuthAccount account) {
 		Long timeZoneId = getTimeZoneId(account)
 		return timeZoneId == null ? null : TimeZoneId.getTimeZoneInstance(timeZoneId)
@@ -240,6 +249,7 @@ abstract class DataService {
 	 * @throws MissingOAuthAccountException	If OAuthAccount instance is null.
 	 * @throws InvalidAccessTokenException	If stored access token expired.
 	 */
+	@Transactional
 	abstract String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException
 
 	/**
@@ -248,6 +258,7 @@ abstract class DataService {
 	 * @param account Instance of OAuthAccount 
 	 * @return Returns parsed user profile data.
 	 */
+	@Transactional
 	JSONObject getUserProfile(OAuthAccount account) {
 		getResponse(account, profileURL)
 	}
@@ -258,6 +269,7 @@ abstract class DataService {
 	 * @param tokenInstance Instance of a token.
 	 * @return Returns parsed user profile data.
 	 */
+	@Transactional
 	JSONObject getUserProfile(Token tokenInstance) {
 		getResponse(tokenInstance, profileURL)
 	}
@@ -266,6 +278,7 @@ abstract class DataService {
 	 * Used to list all subscriptions of current user based on configured subscription URL.
 	 * @return
 	 */
+	@Transactional
 	JSONElement listSubscription(Long userId) {
 		listSubscription(userId, listSubscriptionURL, "get", [:])
 	}
@@ -279,6 +292,7 @@ abstract class DataService {
 	 * @param queryParams
 	 * @return
 	 */
+	@Transactional
 	JSONElement listSubscription(Long userId, String url, String method, Map queryParams) {
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		getResponse(account, listSubscriptionURL)
@@ -288,6 +302,7 @@ abstract class DataService {
 	 * Used to process notifications data received from third party API.
 	 * @param notificationData String data received.
 	 */
+	@Transactional
 	abstract void notificationHandler(String notificationData)
 
 	/**
@@ -313,9 +328,11 @@ abstract class DataService {
 		pendingNotifications.each {
 			OAuthAccount.findAllByTypeIdAndAccountId(typeId, it.ownerId).each { account ->
 				try {
-					this."getData${it.collectionType.capitalize()}"(account, it.date, false)
-					it.status = ThirdPartyNotification.Status.PROCESSED
-					it.save(flush: true)
+					ThirdPartyNotification.withTransaction {
+						this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+						it.status = ThirdPartyNotification.Status.PROCESSED
+						it.save(flush: true)
+					}
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
 				} catch (InvalidAccessTokenException e) {
@@ -332,6 +349,7 @@ abstract class DataService {
 	 * @param userId Curious user id.
 	 * @return
 	 */
+	@Transactional
 	static boolean pollAllForUserId(Long userId) {
 		log.debug "Polling all devices for userId: [$userId]"
 		def accounts = OAuthAccount.findAllByUserId(userId)
@@ -360,7 +378,9 @@ abstract class DataService {
 		}
 
 		try {
-			getDataDefault(account, null, false)
+			OAuthAccount.withTransaction {
+				getDataDefault(account, null, false)
+			}
 		} catch (InvalidAccessTokenException e) {
 			log.warn "Token expired while polling for & account: [$account]"
 		}
@@ -373,7 +393,9 @@ abstract class DataService {
 	void pollAll() {
 		OAuthAccount.findAllByTypeId(typeId).each {
 			try {
-				getDataDefault(it, null, false)
+				OAuthAccount.withTransaction {
+					getDataDefault(it, null, false)
+				}
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling account: [$it] for $typeId."
 			}
@@ -386,6 +408,7 @@ abstract class DataService {
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
+	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		subscribe(userId, subscribeURL, "get", [:])
 	}
@@ -403,6 +426,7 @@ abstract class DataService {
 	 * @return Returns a map containing response code & parsed response data.
 	 * @throws AuthenticationRequiredException
 	 */
+	@Transactional
 	Map subscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "DataService.subscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 
@@ -420,6 +444,7 @@ abstract class DataService {
 	 * @throws NotFoundException
 	 * @throws AuthenticationRequiredException
 	 */
+	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		unsubscribe(userId, unsubscribeURL, "get", [:])
 	}
@@ -435,6 +460,7 @@ abstract class DataService {
 	 * @throws MissingOAuthAccountException if instance of OAuthAccount not found.
 	 * @throws AuthenticationRequiredException if token expires during unsubsribe to api.
 	 */
+	@Transactional
 	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "DataService.unsubscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
 		OAuthAccount account = getOAuthAccountInstance(userId)
