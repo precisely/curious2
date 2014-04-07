@@ -28,7 +28,7 @@
 
 function deletePlotId(id) {
 	showYesNo("Are you sure you want to delete the saved graph?", function() {
-			queueJSON("deleting saved graph", "/home/deletePlotDataId?id=" + escape(id) + "&callback=?",
+			backgroundJSON("deleting saved graph", "/home/deletePlotDataId?id=" + escape(id) + "&callback=?",
 				function(entries) {
 					if (checkData(entries))
 						location.reload(true);
@@ -43,7 +43,7 @@ function doLogout() {
 $(function(){
 	initTemplate();
 	
-	queueJSON("getting list of saved graphs", "/home/listPlotData?callback=?",
+	backgroundJSON("getting list of saved graphs", "/home/listPlotData?callback=?",
 		function(data){
 			if (!checkData(data))
 				return;

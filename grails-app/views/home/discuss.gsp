@@ -89,7 +89,7 @@ $(function(){
 					if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
 						alreadySentName = newName;
 						preventCommentSubmit = true; // for some reason, comment submission happening twice?
-						queueJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionId:${discussionId}, name:newName }), function(data) {
+						backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionId:${discussionId}, name:newName }), function(data) {
 							if (checkData(data)) {
 								preventCommentSubmit = false;
 								discussionTitle = newName;

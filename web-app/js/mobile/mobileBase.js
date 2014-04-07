@@ -413,7 +413,7 @@ function fetchEntries(dates, callback) {
 		timeZoneName : timeZoneName
 	});
 	console.log('Fetching entries from the server for dates: ' + dates);
-	queueJSON("loading entry list", makeGetUrl("getListData"), makeGetArgs(argsToSend),
+	backgroundJSON("loading entry list", makeGetUrl("getListData"), makeGetArgs(argsToSend),
 		function(data) {
 			if (checkData(data)) {
 				console.log('Data from the server: ' + data);
@@ -1539,7 +1539,7 @@ var initTrackPage = function() {
 // Overriding autocomplete from autocomplete.js
 
 initAutocomplete = function() {
-	queueJSON("getting autocomplete info", makeGetUrl("autocompleteData"),
+	backgroundJSON("getting autocomplete info", makeGetUrl("autocompleteData"),
 			getCSRFPreventionObject("autocompleteDataCSRF", {
 				all : 'info'
 			}), function(data) {

@@ -176,7 +176,7 @@ registerLogoutCallback(function() {
 });
 
 var initAutocomplete = function() {
-	queueJSON("getting autocomplete info", makeGetUrl("autocompleteData"), getCSRFPreventionObject("autocompleteDataCSRF", {all: 'info'}),
+	backgroundJSON("getting autocomplete info", makeGetUrl("autocompleteData"), getCSRFPreventionObject("autocompleteDataCSRF", {all: 'info'}),
 			function(data) {
 		if (checkData(data)) {
 			tagStatsMap.import(data['all']);

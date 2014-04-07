@@ -194,6 +194,59 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 	}
 }
 
+function backgroundJSON(description, url, args, successCallback, failCallback, delay, post) {
+	if (typeof args == "function") {
+		delay = failCallback;
+		failCallback = successCallback
+		successCallback = args;
+		args = undefined;
+	}
+	if (args == undefined || args == null) {
+		args = {dateToken:new Date().getTime()};
+	} else if (!args['dateToken']) {
+		args['dateToken'] = new Date().getTime();
+	}
+	var wrapFailCallback = function(data, msg) {
+		if (failCallback)
+			failCallback(data);
+		if (msg == "timeout") {
+			if (delay * 2 > 1000000) { // stop retrying after delay too large
+				showAlert("Server down... giving up");
+				return;
+			}
+			if (!(delay > 0))
+				showAlert("Server not responding... retrying " + description);
+			delay = (delay > 0 ? delay * 2 : 5000);
+			window.setTimeout(function() {
+				backgroundJSON(description, url, args, successCallback, failCallback, delay);
+			}, delay);
+		}
+	};
+	if (numJSONCalls > 0) { // json call in progress
+		var jsonCall = function() {
+			$.ajax({
+				type: (post ? "post" : "get"),
+				dataType: "json",
+				url: url,
+				data: args,
+				timeout: 20000 + (delay > 0 ? delay : 0)
+			})
+			.done(successCallback)
+			.fail(wrapFailCallback);
+		};
+	} else { // first call
+		$.ajax({
+			type: (post ? "post" : "get"),
+			dataType: "json",
+			url: url,
+			data: args,
+			timeout: 20000 + (delay > 0 ? delay : 0)
+		})
+		.done(wrapSuccessCallback)
+		.fail(wrapFailCallback);
+	}
+}
+
 function clearJSONQueue() {
 	numJSONCalls = 0;
 	pendingJSONCalls = [];

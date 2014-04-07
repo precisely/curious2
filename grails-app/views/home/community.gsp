@@ -42,7 +42,7 @@ function minLinkName(name) {
 
 function deleteDiscussionId(id) {
 	showYesNo("Are you sure you want to delete the saved discussion?", function() {
-			queueJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
+			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
 				function(entries) {
 					if (checkData(entries))
 						location.reload(true);
@@ -80,7 +80,7 @@ $(function(){
 			});
 		});
 	
-	queueJSON("getting comments", "/home/listDiscussionData?callback=?",
+	backgroundJSON("getting comments", "/home/listDiscussionData?callback=?",
 		function(data){
 			if (!checkData(data))
 				return;
