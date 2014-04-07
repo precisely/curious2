@@ -884,7 +884,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				plot.ignoreClick = false;
 				return;
 			}
-			if (plot.activeLineId) {
+			if (typeof plot.activeLineId != 'undefined' && plot.activeLineId != null) {
 				var activeLine = plot.getLine(plot.activeLineId);
 				if (activeLine) {
 					activeLine.deactivate();
@@ -913,20 +913,27 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
         		plot.lastItemClickTime = now;
 				var dialogDiv = plot.getDialogDiv(); 
 				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
-				// if this has a loaded smooth line which isn't active, then deactivate the other active line
-				plot.deactivateActivatedLine(plotLine);
 				plot.ignoreClick = true;
-				if (!plotLine.smoothLine) {	// If current line clicked is a smooth line (child line)
+				plot.deactivateActivatedLine(plotLine);
+				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+					plot.activeLineId = plotLine.smoothLine.id;
+					plotLine.smoothLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
+				} else {
 					plot.activeLineId = plotLine.id;
 					plotLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
 				}
 				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
+					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
 					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
 					dialogDiv.dialog({ position: [pos.pageX + 10, pos.pageY], width: 140, height: 42});
 				}
-	        }
+	        } else {
+				console.log('plotclick: Item not found');
+			}
 	    });
 		
 		this.store();
@@ -950,8 +957,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		var activeLine = plot.getLine(plot.activeLineId);
 		if (activeLine) {
+			console.log('plot.deactivateActivatedLine: Deactivating line id: ' + plot.activeLineId);
 			activeLine.deactivate();
 			plot.getDialogDiv().dialog("close");
+		} else {
+			console.log('plot.deactivateActivatedLine: No active line to deactivate');
 		}
 	}
 	this.removePendingLoad = function() {
@@ -1623,21 +1633,6 @@ function PlotLine(p) {
 			plot.refreshPlot();
 		});
 		var div = $('#plotline' + idSuffix);
-//		div.accordion({ active: makeActive, collapsible: true, clearStyle: true });
-		div.click(function() {
-			var plotLine = this;
-			var plot = this.plot;
-			
-			plot.deactivateActivatedLine(plotLine);
-			if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
-				plot.activeLineId = plotLine.smoothLine.id;
-				plotLine.smoothLine.activate();
-			} else {
-				plot.activeLineId = plotLine.id;
-				plotLine.activate();
-			}
-			
-		}.bind(this));
 
 		$('.plotlineinfo', div).mouseleave(function(e) {
 			$(e.target).closest('.plotlineinfo').toggle();
