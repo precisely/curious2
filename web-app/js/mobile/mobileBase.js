@@ -1539,11 +1539,11 @@ var initTrackPage = function() {
 // Overriding autocomplete from autocomplete.js
 
 initAutocomplete = function() {
-	$.retrieveJSON(makeGetUrl("autocompleteData"),
+	queueJSON("getting autocomplete info", makeGetUrl("autocompleteData"),
 			getCSRFPreventionObject("autocompleteDataCSRF", {
 				all : 'info'
-			}), function(data, status) {
-				if (checkData(data, status)) {
+			}), function(data) {
+				if (checkData(data)) {
 					tagStatsMap.import(data['all']);
 					algTagList = data['alg'];
 					freqTagList = data['freq'];

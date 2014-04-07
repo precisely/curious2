@@ -1,12 +1,11 @@
 CACHE MANIFEST
-# rev 524
+# rev 525
 
 CACHE:
 #/mobile/index
 https://dev.wearecurio.us/js/jquery/jquery-1.7.2.min.js
 https://dev.wearecurio.us/js/jquery/jquery.json-2.2.js
 https://dev.wearecurio.us/js/jquery/jquery-ui-1.8.18.custom.js
-https://dev.wearecurio.us/js/jquery/jquery.offline.js
 https://dev.wearecurio.us/js/jquery/jquery.selectable.custom.js?ver=21
 https://dev.wearecurio.us/js/curious/base.js?ver=21
 https://dev.wearecurio.us/js/curious/curious.js?ver=21
