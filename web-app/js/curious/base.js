@@ -242,7 +242,7 @@ function backgroundJSON(description, url, args, successCallback, failCallback, d
 			data: args,
 			timeout: 20000 + (delay > 0 ? delay : 0)
 		})
-		.done(wrapSuccessCallback)
+		.done(successCallback)
 		.fail(wrapFailCallback);
 	}
 }
