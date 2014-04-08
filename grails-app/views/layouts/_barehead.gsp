@@ -1,11 +1,12 @@
 <title><g:layoutTitle default="Curious" /></title>
-<link type="text/css" href="${resource(dir:'css/custom-theme', file:'jquery-ui-1.8.18.custom.css')}" rel= "stylesheet">
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.7.2.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'base.js?ver=16')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'webBase.js?ver=16')}"></script>
-<link rel="stylesheet" href="${resource(dir:'css', file:'login.css')}"/>
+<link type="text/css" href="/static/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
+<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+
+<script type="text/javascript" src="/static/js/curious/base.js?ver=19"></script>
+<script type="text/javascript" src="/static/js/curious/webBase.js?ver=19"></script>
+<link type="text/css" href="/static/css/login.css" rel= "stylesheet">
 <g:layoutHead />
 <script type="text/javascript">
 function makeGetUrl(url) {

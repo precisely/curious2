@@ -1,22 +1,22 @@
 <title><g:layoutTitle default="Curious" /></title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link type="text/css" href="${resource(dir:'css/bootstrap', file:'bootstrap.min.css')}" rel= "stylesheet">
-<link type="text/css" href="${resource(dir:'css/custom-theme', file:'jquery-ui-1.8.18.custom.css')}" rel= "stylesheet">
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.7.2.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/bootstrap', file:'bootstrap.min.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.18.custom.js')}"></script>
+<link type="text/css" href="/static/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
+<link type="text/css" href="/static/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
+<script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
+<script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=16"></script>
-<script type="text/javascript" src="/static/js/curious/webBase.js?ver=16"></script>
-<script type="text/javascript" src="/static/js/curious/curious.js?ver=16"></script>
-<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=16"></script>
-<script type="text/javascript" src="/static/js/curious/treeview.js?ver=16"></script>
-<script type="text/javascript" src="/static/js/curious/taglist.js?ver=16"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/webBase.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/curious.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/autocomplete.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/treeview.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/taglist.js?ver=18"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<link rel="stylesheet" href="${resource(dir:'css', file:'main.css?ver=16')}"/>
+<link rel="stylesheet" href="/static/css/main.css?ver=18"/>
 <g:if test="${templateVer == 'lhp'}">
-<link rel="stylesheet" href="${resource(dir:'css', file:'mainlhp.css')}"/>
+<link rel="stylesheet" href="/static/css/mainlhp.css"/>
 </g:if>
 <g:layoutHead />
 <r:layoutResources/>

@@ -222,29 +222,15 @@ function backgroundJSON(description, url, args, successCallback, failCallback, d
 			}, delay);
 		}
 	};
-	if (numJSONCalls > 0) { // json call in progress
-		var jsonCall = function() {
-			$.ajax({
-				type: (post ? "post" : "get"),
-				dataType: "json",
-				url: url,
-				data: args,
-				timeout: 20000 + (delay > 0 ? delay : 0)
-			})
-			.done(successCallback)
-			.fail(wrapFailCallback);
-		};
-	} else { // first call
-		$.ajax({
-			type: (post ? "post" : "get"),
-			dataType: "json",
-			url: url,
-			data: args,
-			timeout: 20000 + (delay > 0 ? delay : 0)
-		})
-		.done(successCallback)
-		.fail(wrapFailCallback);
-	}
+	$.ajax({
+		type: (post ? "post" : "get"),
+		dataType: "json",
+		url: url,
+		data: args,
+		timeout: 20000 + (delay > 0 ? delay : 0)
+	})
+	.done(successCallback)
+	.fail(wrapFailCallback);
 }
 
 function clearJSONQueue() {
