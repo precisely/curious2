@@ -7,7 +7,7 @@
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 
-<r:require module="selectable"/>
+<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
