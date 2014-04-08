@@ -9,7 +9,13 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class Tag {
-	
+
+  // TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
+  //  This will allow us to iterate on both TagGroups and Tags.
+	def tags() {
+    [this]
+  }
+
 	private static def log = LogFactory.getLog(this)
 
 	public static final int MAXLENGTH = 100

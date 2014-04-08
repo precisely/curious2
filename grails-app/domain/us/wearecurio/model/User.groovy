@@ -10,7 +10,6 @@ import us.wearecurio.utility.Utils
 class User implements NameEmail {
 
 	private static def log = LogFactory.getLog(this)
-
 	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:50, unique:true)
