@@ -47,7 +47,7 @@ p {
 	border: 1px solid black;
 }
 #headerlogolgmd {
-	background:url(../images/logo_lgmd2i.png) no-repeat;
+	background:url(/static/images/logo_lgmd2i.png) no-repeat;
 	width: 650px;
 	height:70px;
 	display:inline-block;

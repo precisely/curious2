@@ -47,7 +47,7 @@ a,a:link,a:hover,a:visited {
 }
 .bugs a {	
 	display:block;
-	background:url(../images/bugs.gif) no-repeat;
+	background:url(/static/images/bugs.gif) no-repeat;
 	width:19px;
 	height:20px;
 	position:absolute;
@@ -103,7 +103,7 @@ a,a:link,a:hover,a:visited {
 	padding:0px 0px 1em 0px;
 }
 #headerbutton {
-	background:url(../images/lhpdonate.gif) no-repeat;
+	background:url(/static/images/lhpdonate.gif) no-repeat;
 	width:135px;
 	height:50px;
 	display:inline-block;

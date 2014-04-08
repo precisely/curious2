@@ -121,6 +121,7 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 }
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post) {
+	var pending = true;
 	if (typeof args == "function") {
 		delay = failCallback;
 		failCallback = successCallback

@@ -555,7 +555,7 @@ function checkAndUpdateEntry($unselectee, doNotUpdate) {
 		$contentWrapper.show();
 		$unselectee.data('forceUpdate', 0);
 		$contentWrapper
-				.append("&nbsp;&nbsp;<img src='../images/spinner.gif' />");
+				.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
 		updateEntry(currentEntryId, newText, defaultToNow);
 	}
 	
