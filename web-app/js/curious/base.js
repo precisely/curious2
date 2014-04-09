@@ -157,6 +157,14 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
+	var stillRunning = true;
+	var alertShown = false;
+	window.setTimeout(function() {
+		if (stillRunning) {
+			alertShown = true;
+			showAlert(description + ": in progress");
+		}
+	}, 3000);
 	if (typeof args == "function") {
 		delay = failCallback;
 		failCallback = successCallback
@@ -169,6 +177,9 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 		args['dateToken'] = new Date().getTime();
 	}
 	var wrapSuccessCallback = function(data, msg) {
+		stillRunning = false;
+		if (alertShown)
+			closeAlert();
 		if (currentLoginSession != _loginSessionNumber)
 			return; // if current login session is over, cancel callbacks
 		if (successCallback)
@@ -184,6 +195,9 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 		}
 	};
 	var wrapFailCallback = function(data, msg) {
+		stillRunning = false;
+		if (alertShown)
+			closeAlert();
 		if (currentLoginSession != _loginSessionNumber)
 			return; // if current login session is over, cancel callbacks
 		if (failCallback)

@@ -7,8 +7,8 @@
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/static/js/jstz-1.0.4.min.js"></script>
-<script type="text/javascript" src="/static/js/curious/base.js?ver=18"></script>
-<script type="text/javascript" src="/static/js/curious/webBase.js?ver=18"></script>
+<script type="text/javascript" src="/static/js/curious/base.js?ver=20"></script>
+<script type="text/javascript" src="/static/js/curious/webBase.js?ver=20"></script>
 <script type="text/javascript" src="/static/js/curious/curious.js?ver=18"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/static/css/main.css?ver=18"/>
