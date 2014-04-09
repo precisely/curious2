@@ -129,7 +129,7 @@ function checkData(data, status, errorMessage, successMessage) {
 	}
 	if (data == 'refresh') {
 		showAlert("Server timeout, refreshing page.")
-		location.reload(true);
+		refreshPage();
 		return false;
 	}
 	if (typeof(data) == 'string') {
