@@ -5,7 +5,7 @@ import us.wearecurio.utility.TimerJob
 class DeviceIntegrationDailyJob extends TimerJob {
 	static transactional = false
 
-	def OAuthAccountService
+	def oauthAccountService
 	def withingsDataService
 
 	static triggers = {
@@ -14,7 +14,7 @@ class DeviceIntegrationDailyJob extends TimerJob {
 
 	def execute() {
 		log.debug "Started executing Daily basis job.."
-		OAuthAccountService.refreshAllToken()
+		oauthAccountService.refreshAllToken()
 		withingsDataService.refreshSubscriptions()
 		log.debug "Finished executing Daily basis job.."
 	}
