@@ -325,11 +325,11 @@ abstract class DataService {
 
 		log.debug "Found ${pendingNotifications.size()} pending notifications for $provider."
 
-		pendingNotifications.each {
-			OAuthAccount.findAllByTypeIdAndAccountId(typeId, it.ownerId).each { account ->
+		pendingNotifications.each { notification ->
+			OAuthAccount.findAllByTypeIdAndAccountId(typeId, notification.ownerId).each { account ->
 				try {
 					ThirdPartyNotification.withTransaction {
-						this."getData${it.collectionType.capitalize()}"(account, it.date, false)
+						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
 						it.status = ThirdPartyNotification.Status.PROCESSED
 						it.save(flush: true)
 					}
@@ -391,10 +391,10 @@ abstract class DataService {
 	 * Must be called from API data services.
 	 */
 	void pollAll() {
-		OAuthAccount.findAllByTypeId(typeId).each {
+		OAuthAccount.findAllByTypeId(typeId).each { account ->
 			try {
 				OAuthAccount.withTransaction {
-					getDataDefault(it, null, false)
+					getDataDefault(account, null, false)
 				}
 			} catch (InvalidAccessTokenException e) {
 				log.warn "Token expired while polling account: [$it] for $typeId."

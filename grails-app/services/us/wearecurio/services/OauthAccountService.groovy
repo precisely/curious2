@@ -83,9 +83,9 @@ class OauthAccountService {
 	void refreshAllToken() {
 		OAuthAccount.withCriteria {
 			between("expiresOn", new Date(), new Date() + 1)
-		}.each {
+		}.each { account ->
 			OAuthAccount.withTransaction {
-				refreshToken(it)
+				refreshToken(account)
 			}
 		}
 	}
