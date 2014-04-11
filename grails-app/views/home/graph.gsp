@@ -158,7 +158,7 @@ $(function(){
 					<div class="red-header">
 						<h1 class="clearfix">
 							<span id="queryTitle"></span>
-							<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
+							<span id="queryTitleEdit"><img src="/static/images/edit.gif"></span>
 							<div id="debug"></div>
 						</h1>
 					</div>
@@ -213,9 +213,9 @@ $(function(){
 					<br>
 					<div class="view-types">
 						view:
-						<img src="/images/scatter.gif" alt="scatter" />
-						<img src="/images/line.gif" alt="line" />
-						<img src="/images/fill.gif" alt="fill" />
+						<img src="/static/images/scatter.gif" alt="scatter" />
+						<img src="/static/images/line.gif" alt="line" />
+						<img src="/static/images/fill.gif" alt="fill" />
 					</div>
 				</div>
 			</div>

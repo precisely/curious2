@@ -92,7 +92,7 @@ $(function(){
 					<div class="date">' + formatShortDate(this['updated']) + '</div> <div class="userName"> ' + this['userName'] + '</div> '
 					+ (this['isAdmin'] ?
 						(this['isPublic'] ? '<span class="visibility">visiblity: public to the world</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&unpublish=true">change</a>' : '<span class="visibility">visible in: ' + ("" + this['groupName']).toLowerCase() + '</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&publish=true">change</a>')
-						+ '<a class="delete" href="#" onclick="deleteDiscussionId(' + this['id'] + ')"><img height="12" width="12" src="/images/x.gif"></a>' : '')
+						+ '<a class="delete" href="#" onclick="deleteDiscussionId(' + this['id'] + ')"><img height="12" width="12" src="/static/images/x.gif"></a>' : '')
 					+ '</div></div>');
 				return true;
 			});

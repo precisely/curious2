@@ -120,10 +120,10 @@ a,a:link,a:hover,a:visited {
 </g:if>
 
 <g:if test="${templateVer == 'lhp'}">
-<img alt="Curious" src="/images/logo_login_lhp.png" />
+<img alt="Curious" src="/static/images/logo_login_lhp.png" />
 </g:if>
 <g:else>
-<img alt="Curious" src="/images/logo_login.png" />
+<img alt="Curious" src="/static/images/logo_login.png" />
 </g:else>
 
 <form method="post" action="/home/dologin">
@@ -135,7 +135,7 @@ a,a:link,a:hover,a:visited {
 <div id="loginfields">
 <input type="text" id="username" name="username" value="" placeholder="username" /><br />
 <input type="password" id="password" name="password" value="" placeholder="password" /><br />
-<button><img src="/images/login.png" width="76" height="24" alt="Login" /></button><br />
+<button><img src="/static/images/login.png" width="76" height="24" alt="Login" /></button><br />
 </div>
 
 <g:link action="forgot" params="${['precontroller':precontroller,'preaction':preaction]}">Forgot your login info?</g:link>

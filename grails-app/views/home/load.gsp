@@ -54,7 +54,7 @@ $(function(){
 					<h2>' + this['name'] + '</h2>\
 					<div class="date">' + this['created'].getMonth() +'/' + this['created'].getDay() + '/' + this['created'].getFullYear() + '</div>\
 					<a class="preview" href="/home/viewgraph?plotDataId=' + this['id'] + '">load</a>\
-					<a href="#" onclick="deletePlotId(' + this['id'] + ')"><img src="/images/x.gif"></a>\
+					<a href="#" onclick="deletePlotId(' + this['id'] + ')"><img src="/static/images/x.gif"></a>\
 					</div>\
 				</div>');
 				return true;

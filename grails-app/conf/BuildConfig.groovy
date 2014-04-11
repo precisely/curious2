@@ -22,6 +22,7 @@ grails.project.dependency.resolution = {
     inherits("global") {
         // specify dependency exclusions here; for example, uncomment this to disable ehcache:
         // excludes 'ehcache'
+		excludes 'dbcp'
     }
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     checksums true // Whether to verify checksums on resolve
@@ -49,12 +50,13 @@ grails.project.dependency.resolution = {
 		compile 'com.ganyo:gcm-server:1.0.2'
 		compile 'com.notnoop.apns:apns:0.1.6'
 		runtime 'mysql:mysql-connector-java:5.1.22'
+		runtime 'commons-dbcp:commons-dbcp:1.4' //or 1.3 if java 1.5
     }
 
     plugins {
         compile ":hibernate:$grailsVersion"
         compile ":jquery:1.8.3"
-        compile ":resources:1.2"
+        compile ":resources:1.2.7"
 		compile ":message-digest:1.1"
 		
         // Uncomment these (or add new ones) to enable additional resources capabilities

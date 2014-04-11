@@ -1287,7 +1287,7 @@ function PlotLine(p) {
 		if (!this.snapshot && typeof tag == 'string') {
 			var div = $("#plotline" + this.plot.id + this.id + 'list').append('<div class="plotLine" style="color:' + this.color + '"/>').children().last()
 			.append('<a href="" style="color:' + this.color + '"/>');
-			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/images/x.gif"/></a></span>');
+			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/static/images/x.gif"/></a></span>');
 		} else {
 			var viewInstance;
 			if (tag instanceof TagGroup) {
@@ -1443,7 +1443,7 @@ function PlotLine(p) {
 		  <h3><a href="#"><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 		  + escapehtml(this.name) + '</span> <span class="plotGroup">'
 		  + (this.snapshot ? '' : '<img style="padding-right:2px" onclick="renamePlotLine(\'' + this.plot.id
-			  + "','" + this.id + '\')" src="/images/edit.gif"/><img onclick="removePlotLine(\'' + this.plot.id + "','" + this.id + '\')" height="12" width="12" src="/images/x.gif"/>')
+			  + "','" + this.id + '\')" src="/static/images/edit.gif"/><img onclick="removePlotLine(\'' + this.plot.id + "','" + this.id + '\')" height="12" width="12" src="/static/images/x.gif"/>')
 		  + '</span></div></a></h3><div class="plotlineinfo" style="position:relative"><div id="editplotline'
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if ((!this.snapshot) && (!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.isCycle))

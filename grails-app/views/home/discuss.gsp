@@ -222,9 +222,9 @@ $(function(){
 
 	<div class="tagNav">
 		view:
-		<img src="/images/scatter.gif" alt="scatter" />
-		<img src="/images/line.gif" alt="line" />
-		<img src="/images/fill.gif" alt="fill" />
+		<img src="/static/images/scatter.gif" alt="scatter" />
+		<img src="/static/images/line.gif" alt="line" />
+		<img src="/static/images/fill.gif" alt="fill" />
 	</div>
 </div>
 
@@ -241,7 +241,7 @@ $(function(){
 		<div class="messageControls">
 			<g:if test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
 				<!--span class="edit"></span-->
-				<span class="delete"><a href="#" onclick="clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
+				<span class="delete"><a href="#" onclick="clearPostMessage(${firstPost.getId()})"><img src="/static/images/x.gif" width="8" height="8"></a></span>
 			</g:if>
 		</div>
 		<!--<g:if test="${firstPost}">
@@ -272,7 +272,7 @@ $(function(){
 				<div class="messageControls">
 					<g:if test="${post.getAuthor().getUserId() == userId || isAdmin}">
 						<!--span class="edit"></span-->
-						<span class="delete"><a href="#" onclick="deletePost(${post.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
+						<span class="delete"><a href="#" onclick="deletePost(${post.getId()})"><img src="/static/images/x.gif" width="8" height="8"></a></span>
 					</g:if>
 				</div>
 				<div style="clear:both"></div>
