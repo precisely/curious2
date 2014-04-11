@@ -799,7 +799,6 @@ function selected($selectee, forceUpdate) {
 		// original HTML
 		// for later
 		currentEntryId = $selectee.data("entry-id");
-		$("#entrydelid" + currentEntryId).css('display', 'inline');
 		var entryText = $selectee.text();
 		var selectRange = entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
@@ -811,7 +810,7 @@ function selected($selectee, forceUpdate) {
 
 		$contentWrapper.hide();
 		$selectee
-				.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 110px);"></input>'
+				.append('<span id="tagTextEdit"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 110px);"></input>'
 						+ '<img class="entryModify entryNoBlur" src="/static/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 						+ '<img class="entryModify entryNoBlur" src="/static/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 						+ '<img class="entryModify entryNoBlur" src="/static/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
