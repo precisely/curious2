@@ -5,6 +5,8 @@ import grails.util.Environment;
 
 import org.springframework.transaction.annotation.Transactional
 
+import org.hibernate.StaleObjectStateException
+
 import javax.annotation.PostConstruct
 
 import org.apache.commons.logging.LogFactory
@@ -35,6 +37,7 @@ abstract class DataService {
 	def grailsApplication
 	def oauthService
 	def urlService
+	def databaseService
 
 	Map lastPollTimestamps = new HashMap<Long,Long>() // prevent DOS attacks
 
@@ -328,7 +331,7 @@ abstract class DataService {
 		pendingNotifications.each { notification ->
 			OAuthAccount.findAllByTypeIdAndAccountId(typeId, notification.ownerId).each { account ->
 				try {
-					ThirdPartyNotification.withTransaction {
+					DatabaseService.retry(notification) {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
 						notification.status = ThirdPartyNotification.Status.PROCESSED
 						notification.save(flush: true)
@@ -337,6 +340,9 @@ abstract class DataService {
 					log.warn "No method implementation found for collection type: [$account.collectionType] for $provider."
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.collectionType] for $provider."
+				} catch (Throwable t) {
+					log.error "Unknown exception thrown during notification processing " + t
+					t.printStackTrace()
 				}
 			}
 		}

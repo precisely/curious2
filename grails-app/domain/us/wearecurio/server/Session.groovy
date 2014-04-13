@@ -1,6 +1,7 @@
 package us.wearecurio.server
 
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.services.DatabaseService
 
 import java.text.SimpleDateFormat
 import java.text.ParseException
@@ -46,16 +47,18 @@ class Session {
 		def nowTime = new Date().getTime()
 
 		if (session != null && (!session.isDisabled())) {
-			log.debug "Session found for user " + user.getId() + " uuid: " + session.getUuid()
-			if (session.getExpires() > nowTime) {
-				if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
-					session.setExpires(nowTime + EXPIRE_TIME) // refresh session
-					Utils.trySave(session)
+			DatabaseService.retry(session) {
+				log.debug "Session found for user " + user.getId() + " uuid: " + session.getUuid()
+				if (session.getExpires() > nowTime) {
+					if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
+						session.setExpires(nowTime + EXPIRE_TIME) // refresh session
+						session.save()
+					}
+					return session
+				} else {
+					log.debug ("Session expired, deleting");
+					delete(session)
 				}
-				return session
-			} else {
-				log.debug ("Session expired, deleting");
-				delete(session)
 			}
 		}
 
@@ -65,8 +68,8 @@ class Session {
 		session.setUuid(newUUIDString())
 		session.setExpires(nowTime + EXPIRE_TIME)
 		session.setUserId(user.getId())
-
-		Utils.save(session, true)
+		
+		session.save()
 
 		return session
 	}

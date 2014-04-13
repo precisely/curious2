@@ -5,6 +5,8 @@ import javax.persistence.TemporalType
 
 import org.springframework.transaction.annotation.Transactional
 
+import org.hibernate.StaleObjectStateException
+
 import org.apache.commons.logging.LogFactory
 import org.hibernate.Query
 import org.hibernate.Session
@@ -33,6 +35,28 @@ class DatabaseService {
 	public static DatabaseService get() { return service }
 		
 	SessionFactory sessionFactory
+	
+	// must be called from outside a transaction
+	public static retry(Object o, Closure c) {
+		int retryCount = 0
+		while (retryCount < 100) {
+			if (retryCount > 3) {
+				Thread.sleep(1000) // pause for a second before retrying
+			}
+			try {
+				Model.withTransaction { status ->
+					c(status)
+				}
+				return true
+			} catch (StaleObjectStateException e) {
+				log.warn "Stale exception caught saving " + o
+				o.refresh()
+				++retryCount
+			}
+		}
+		
+		return false
+	}
 	
 	public Query sqlQuery(String statement, def args = []) {
 		Session session = sessionFactory.getCurrentSession()
