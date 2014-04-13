@@ -1236,9 +1236,11 @@ class Entry {
 				m['amountPrecision'] = DEFAULT_AMOUNTPRECISION
 				durationEntry = Entry.create(userId, m, null)
 			} else {
-				durationEntry.setAmount(amount)
+				DatabaseService.retry(durationEntry) {
+					durationEntry.setAmount(amount)
+					durationEntry.save()
+				}
 			}
-			Utils.trySave(durationEntry)
 
 			return durationEntry
 		}
