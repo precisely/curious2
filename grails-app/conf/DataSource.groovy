@@ -11,6 +11,12 @@ dataSource {
 	driverClassName = "com.mysql.jdbc.Driver"
 	username = "curious"
 	password = "734qf7q35"
+	properties {
+		testOnBorrow = true
+		testWhileIdle = true
+		testOnReturn = false
+		validationQuery = "SELECT 1"
+	}
 }
 hibernate {
     cache.use_second_level_cache = true
