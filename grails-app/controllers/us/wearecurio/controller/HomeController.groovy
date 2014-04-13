@@ -36,7 +36,7 @@ class HomeController extends DataController {
 		debug "HomeController()"
 	}
 
-	def registerwithings() {
+	def registerwithings() throws AuthenticationRequiredException {
 		debug "HomeController.registerwithings() params:" + params
 
 		User user = sessionUser()

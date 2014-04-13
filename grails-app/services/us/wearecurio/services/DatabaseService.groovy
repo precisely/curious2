@@ -12,6 +12,7 @@ import org.hibernate.Query
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.transform.AliasToEntityMapResultTransformer
+import java.lang.reflect.UndeclaredThrowableException
 
 import us.wearecurio.server.Migration;
 import us.wearecurio.utility.Utils;
@@ -37,7 +38,8 @@ class DatabaseService {
 	SessionFactory sessionFactory
 	
 	// must be called from outside a transaction
-	public static retry(Object o, Closure c) {
+	public static retry(Object o, Closure c) throws Exception { // this is a general service method that may throw exceptions
+		def retVal
 		int retryCount = 0
 		while (retryCount < 100) {
 			if (retryCount > 3) {
@@ -45,17 +47,20 @@ class DatabaseService {
 			}
 			try {
 				Model.withTransaction { status ->
-					c(status)
+					retVal = c(status)
 				}
-				return true
+				return retVal
 			} catch (StaleObjectStateException e) {
 				log.warn "Stale exception caught saving " + o
 				o.refresh()
 				++retryCount
+			} catch (UndeclaredThrowableException e2) {
+				// rethrow exceptions thrown inside transaction
+				throw e2.getCause()
 			}
 		}
 		
-		return false
+		return null
 	}
 	
 	public Query sqlQuery(String statement, def args = []) {

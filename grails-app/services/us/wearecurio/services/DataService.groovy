@@ -344,6 +344,7 @@ abstract class DataService {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
 				}
+				return notification
 			}
 		}
 
@@ -383,12 +384,12 @@ abstract class DataService {
 			return false
 		}
 
-		try {
-			OAuthAccount.withTransaction {
+		OAuthAccount.withTransaction {
+			try {
 				getDataDefault(account, null, false)
+			} catch (InvalidAccessTokenException e) {
+				log.warn "Token expired while polling for & account: [$account]"
 			}
-		} catch (InvalidAccessTokenException e) {
-			log.warn "Token expired while polling for & account: [$account]"
 		}
 	}
 
@@ -398,12 +399,13 @@ abstract class DataService {
 	 */
 	void pollAll() {
 		OAuthAccount.findAllByTypeId(typeId).each { account ->
-			try {
-				OAuthAccount.withTransaction {
+			DatabaseService.retry(account) {
+				try {
 					getDataDefault(account, null, false)
+				} catch (InvalidAccessTokenException e) {
+					log.warn "Token expired while polling account: [$account] for $typeId."
 				}
-			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while polling account: [$account] for $typeId."
+				return account
 			}
 		}
 	}

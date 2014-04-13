@@ -74,20 +74,6 @@ class Utils {
 	}
 	
 	/**
-	 *
-	 * Save object but ignore stale object exception
-	 *
-	 */
-	static def trySave(obj) {
-		try {
-			return save(obj, true)
-		} catch (org.hibernate.StaleObjectStateException e) {
-			log.debug "Object stale, not saved: " + obj
-			return false
-		}
-	}
-	
-	/**
 	 * Offset is in minutes
 	 */
 	private static def Map<String, TimeZone> timeZones = new HashMap<Integer, TimeZone>()

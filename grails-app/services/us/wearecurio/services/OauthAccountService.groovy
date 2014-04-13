@@ -29,9 +29,6 @@ class OauthAccountService {
 	 */
 	@Transactional
 	OAuthAccount createOrUpdate(OAuthAccount account, Token tokenInstance) {
-		account.accessToken = tokenInstance.token
-		account.accessSecret = tokenInstance.secret ?: ""
-
 		String rawResponse
 
 		try {
@@ -39,25 +36,34 @@ class OauthAccountService {
 		} catch (IllegalStateException e) {
 			// Okay. Nothing to do. Thrown when there is no rawResponse.
 		}
+		
+		def refreshToken
+		def expiresOn
 
 		if (rawResponse) {
 			try {
 				JSONObject parsedRawResponse = JSON.parse(rawResponse)
-				account.refreshToken = parsedRawResponse["refresh_token"]
+				refreshToken = parsedRawResponse["refresh_token"]
 				if (parsedRawResponse["expires_in"]) {
 					Date now = new Date()
-					account.expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
+					expiresOn = new Date(now.time + parsedRawResponse["expires_in"] * 1000)
 				}
 			} catch (ConverterException e) {
 				log.error "Error parsing raw response: [$rawResponse].", e
+				return account
 			}
 		}
 
-		if (Utils.save(account)) {
+		return DatabaseService.retry(account) {
+			account.accessToken = tokenInstance.token
+			account.accessSecret = tokenInstance.secret ?: ""
+			account.refreshToken = refreshToken
+			account.expiresOn = expiresOn
+			
+			account.save()
+			
 			return account
 		}
-
-		return null
 	}
 
 	/**
@@ -69,12 +75,15 @@ class OauthAccountService {
 	 * @param timeZoneId Identity of TimeZoneId domain. Default Null.
 	 * @return OAuthAccount instance for given parameters.
 	 */
-	@Transactional
 	OAuthAccount createOrUpdate(ThirdParty type, String accountId, Token tokenInstance, Long userId, Integer timeZoneId = null) {
 		OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
-		account.accountId = accountId
-		account.timeZoneId = timeZoneId
-		createOrUpdate(account, tokenInstance)
+		DatabaseService.retry(account) {
+			account.accountId = accountId
+			account.timeZoneId = timeZoneId
+			createOrUpdate(account, tokenInstance)
+		}
+		
+		return account
 	}
 
 	/**
@@ -84,9 +93,7 @@ class OauthAccountService {
 		OAuthAccount.withCriteria {
 			between("expiresOn", new Date(), new Date() + 1)
 		}.each { account ->
-			OAuthAccount.withTransaction {
-				refreshToken(account)
-			}
+			refreshToken(account)
 		}
 	}
 

@@ -47,7 +47,7 @@ class Session {
 		def nowTime = new Date().getTime()
 
 		if (session != null && (!session.isDisabled())) {
-			DatabaseService.retry(session) {
+			def result = DatabaseService.retry(session) {
 				log.debug "Session found for user " + user.getId() + " uuid: " + session.getUuid()
 				if (session.getExpires() > nowTime) {
 					if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
@@ -58,8 +58,11 @@ class Session {
 				} else {
 					log.debug ("Session expired, deleting");
 					delete(session)
+					return null
 				}
 			}
+			if (result != null)
+				return result
 		}
 
 		log.debug "Session not found for user " + user.getId()

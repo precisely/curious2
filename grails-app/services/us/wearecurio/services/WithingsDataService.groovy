@@ -358,13 +358,7 @@ class WithingsDataService extends DataService {
 		}
 
 		for (OAuthAccount account in results) {
-			try {
-				OAuthAccount.withTransaction {
-					subscribe(account)
-				}
-			} catch (InvalidAccessTokenException e) {
-				// Nothing to do
-			}
+			subscribe(account)
 		}
 	}
 
@@ -386,28 +380,31 @@ class WithingsDataService extends DataService {
 
 		int withingsResponseStatus = response["body"].status
 
-		if (withingsResponseStatus == 0) {
-			log.debug "Subscription successfull for account: $account"
-			account.lastSubscribed = new Date()
+		return DatabaseService.retry(account) {
+			if (withingsResponseStatus == 0) {
+				log.debug "Subscription successfull for account: $account"
+				account.lastSubscribed = new Date()
+				account.save()
+				return [success: true, account: account]
+			}
+			log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
+			Map result = [success: false, status: withingsResponseStatus, account: account]
+	
+			switch (withingsResponseStatus) {
+				case 293:	// Notification URL is not responding.
+				case 2555:	// Notification URL not found.
+					result.message = "Please try again after some time"
+					break
+				case 342:
+					throw new InvalidAccessTokenException("withings", account)
+					break
+			}
+	
+			account.removeAccessToken()		// confirms that subscription is not successful.
 			account.save()
-			return [success: true, account: account]
+			
+			return result
 		}
-		log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
-		Map result = [success: false, status: withingsResponseStatus, account: account]
-
-		switch (withingsResponseStatus) {
-			case 293:	// Notification URL is not responding.
-			case 2555:	// Notification URL not found.
-				result.message = "Please try again after some time"
-				break
-			case 342:
-				throw new InvalidAccessTokenException("withings", account)
-				break
-		}
-
-		account.removeAccessToken()		// confirms that subscription is not successful.
-		account.save()
-		result
 	}
 
 	@Override

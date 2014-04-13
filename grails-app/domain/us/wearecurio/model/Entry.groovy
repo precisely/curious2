@@ -1239,6 +1239,7 @@ class Entry {
 				DatabaseService.retry(durationEntry) {
 					durationEntry.setAmount(amount)
 					durationEntry.save()
+					return durationEntry
 				}
 			}
 
