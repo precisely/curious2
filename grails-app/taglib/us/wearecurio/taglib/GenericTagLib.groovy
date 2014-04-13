@@ -41,8 +41,8 @@ class GenericTagLib {
 		}
 		out << "\$(function() {$lineSeperator"
 		out << "var App = window.App;$lineSeperator"
-		attrs.keys.tokenize(",").each {
-			String key = it.trim()
+		attrs.keys.tokenize(",").each { token ->
+			String key = token.trim()
 			out << "App.CSRF.${key } = \"${tokensHolder.generateToken(key) }\";$lineSeperator"
 		}
 		out << "});"

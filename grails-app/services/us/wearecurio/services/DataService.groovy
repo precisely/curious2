@@ -330,13 +330,13 @@ abstract class DataService {
 				try {
 					ThirdPartyNotification.withTransaction {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
-						it.status = ThirdPartyNotification.Status.PROCESSED
-						it.save(flush: true)
+						account.status = ThirdPartyNotification.Status.PROCESSED
+						account.save(flush: true)
 					}
 				} catch (MissingMethodException e) {
-					log.warn "No method implementation found for collection type: [$it.collectionType] for $provider."
+					log.warn "No method implementation found for collection type: [$account.collectionType] for $provider."
 				} catch (InvalidAccessTokenException e) {
-					log.warn "Token expired while processing notification of type: [$it.collectionType] for $provider."
+					log.warn "Token expired while processing notification of type: [$account.collectionType] for $provider."
 				}
 			}
 		}

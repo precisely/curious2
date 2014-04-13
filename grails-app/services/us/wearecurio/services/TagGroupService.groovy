@@ -67,8 +67,8 @@ class TagGroupService {
 	 * @return
 	 */
 	def addTags(TagGroup tagGroupInstance, String tagIds) {
-		tagIds.tokenize(",").each {
-			addTag(tagGroupInstance, Tag.get(it.trim()))
+		tagIds.tokenize(",").each { tagId ->
+			addTag(tagGroupInstance, Tag.get(tagId.trim()))
 		}
 		tagGroupInstance.save()
 		tagGroupInstance

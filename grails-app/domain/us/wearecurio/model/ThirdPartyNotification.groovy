@@ -67,8 +67,8 @@ enum ThirdParty {
 	private static final Map<Integer, ThirdParty> map = new HashMap<Integer, ThirdParty>()
 
 	static {
-		ThirdParty.each {
-			map.put(it.id, it)
+		ThirdParty.each { thirdParty ->
+			map.put(thirdParty.id, thirdParty)
 		}
 	}
 
