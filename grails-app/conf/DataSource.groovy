@@ -16,6 +16,8 @@ dataSource {
 		testWhileIdle = true
 		testOnReturn = false
 		validationQuery = "SELECT 1"
+		minEvictableIdleTimeMillis = 60000 * 10
+		timeBetweenEvictionRunsMillis = 60000 * 10
 	}
 }
 hibernate {
