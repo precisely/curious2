@@ -330,8 +330,8 @@ abstract class DataService {
 				try {
 					ThirdPartyNotification.withTransaction {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
-						account.status = ThirdPartyNotification.Status.PROCESSED
-						account.save(flush: true)
+						notification.status = ThirdPartyNotification.Status.PROCESSED
+						notification.save(flush: true)
 					}
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$account.collectionType] for $provider."
