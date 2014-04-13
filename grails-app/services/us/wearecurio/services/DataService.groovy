@@ -397,7 +397,7 @@ abstract class DataService {
 					getDataDefault(account, null, false)
 				}
 			} catch (InvalidAccessTokenException e) {
-				log.warn "Token expired while polling account: [$it] for $typeId."
+				log.warn "Token expired while polling account: [$account] for $typeId."
 			}
 		}
 	}
