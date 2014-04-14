@@ -1238,7 +1238,7 @@ class Entry {
 			} else {
 				DatabaseService.retry(durationEntry) {
 					durationEntry.setAmount(amount)
-					durationEntry.save()
+					durationEntry.save(flush:true)
 					return durationEntry
 				}
 			}

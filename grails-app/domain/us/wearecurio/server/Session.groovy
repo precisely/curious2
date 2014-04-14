@@ -52,7 +52,7 @@ class Session {
 				if (session.getExpires() > nowTime) {
 					if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
 						session.setExpires(nowTime + EXPIRE_TIME) // refresh session
-						session.save()
+						session.save(flush:true)
 					}
 					return session
 				} else {
