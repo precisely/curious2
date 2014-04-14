@@ -6,13 +6,14 @@ import javax.persistence.TemporalType
 import org.springframework.transaction.annotation.Transactional
 
 import org.hibernate.StaleObjectStateException
+import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import java.lang.reflect.UndeclaredThrowableException
 
 import org.apache.commons.logging.LogFactory
 import org.hibernate.Query
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.transform.AliasToEntityMapResultTransformer
-import java.lang.reflect.UndeclaredThrowableException
 
 import us.wearecurio.server.Migration;
 import us.wearecurio.utility.Utils;
@@ -51,6 +52,10 @@ class DatabaseService {
 				}
 				return retVal
 			} catch (StaleObjectStateException e) {
+				log.warn "Stale exception caught saving " + o
+				o.refresh()
+				++retryCount
+			} catch (HibernateOptimisticLockingFailureException e2) {
 				log.warn "Stale exception caught saving " + o
 				o.refresh()
 				++retryCount
