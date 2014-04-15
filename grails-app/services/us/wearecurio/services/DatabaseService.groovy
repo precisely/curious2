@@ -43,9 +43,6 @@ class DatabaseService {
 		def retVal
 		int retryCount = 0
 		while (retryCount < 100) {
-			if (retryCount > 3) {
-				Thread.sleep(1000) // pause for a second before retrying
-			}
 			try {
 				Model.withTransaction { status ->
 					retVal = c(status)
@@ -53,12 +50,16 @@ class DatabaseService {
 				return retVal
 			} catch (StaleObjectStateException e) {
 				log.warn "Stale exception caught saving " + o
+				if (++retryCount >= 3) { // if retry has failed three times, pause before reloading
+					Thread.sleep(1000)
+				}
 				o.refresh()
-				++retryCount
 			} catch (HibernateOptimisticLockingFailureException e2) {
 				log.warn "Stale exception caught saving " + o
+				if (++retryCount >= 3) { // if retry has failed three times, pause before reloading
+					Thread.sleep(1000)
+				}
 				o.refresh()
-				++retryCount
 			} catch (UndeclaredThrowableException e2) {
 				// rethrow exceptions thrown inside transaction
 				throw e2.getCause()

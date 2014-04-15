@@ -125,7 +125,7 @@ class AuthenticationController extends SessionController {
 	def withingsAuth() {
 		String timezoneFromActivityData = withingsDataService.getUsersTimeZone(tokenInstance, session.withingsUserId)
 		Integer timeZoneId = TimeZoneId.look(timezoneFromActivityData).id
-		oAuthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
 }
