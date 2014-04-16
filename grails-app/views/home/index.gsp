@@ -737,10 +737,9 @@ $(function(){
 	</div>
 
 	<div class="row custom-row">
-		<g:render template="/tag/tagListWidget" model="[header: true]" />
 		<div class="col-xs-9 floating-column entry-header-container">
 			<div class="red-header date-controls">
-				<h1 class="clearfix">
+				<h1 class="clearfix right" style="width: calc(100% - 227px);float:left;">
 					<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
 						<span class="hide">back</span>
 					</a>
@@ -749,6 +748,7 @@ $(function(){
 						<span class="hide">next</span>
 					</a>
 				</h1>
+				<g:render template="/tag/tagListWidget" model="[header: true]" />
 			</div>
 		</div>
 	</div>

@@ -166,17 +166,32 @@ a,a:link,a:hover,a:visited {
 /**
  * Styles for graph page starts here.
  */
+body.graph-page .body1 {
+	position: relative;
+}
 body.graph-page #tagListWrapper {
 	min-height: 565px;
+	background: #fff;
+	border: 1px solid #ccc;
 }
 body.graph-page #tagListWrapper ul#tagList {
-	height: 535px;
+	height: 583px;
 }
 body.graph-page .querymain {
 	margin:0px;
+	float: left;
+	width: 100%;
+}
+#plotLeftNav {
+	float: left;
+	width: 100%;
+	margin-top: 4px;
 }
 body.graph-page .querymain #plotArea {
 	height:500px;
+}
+body.graph-page .querymain #plotArea canvas {
+	z-index: 2;
 }
 body.graph-page #plotArea canvas, body.discuss-page #plotDiscussArea canvas {
 	width: 100%;
@@ -461,6 +476,9 @@ li.treeItemView.highlight {
 ul.tags li.ui-draggable {
     cursor: pointer;
 }
+.draggable-helper {
+	z-index: 99999;
+}
 ul.tags li.tagGroup ul.tags, .wildcardTagGroup ul {
 	margin-left:10px;
 }
@@ -476,16 +494,18 @@ ul#tagList {
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
 }
-#plotLeftNav {
-	height:600px;
+#plotNav {
+	height:60px;
 }
-#plotLinesplotArea {
-	height:600px;
-	overflow:auto;
+.plotlines {
+	height:auto;
 }
-.discussPlotLines {
-	height:600px;
-	overflow:auto;
+.plotlines .ui-droppable {
+	float: left;
+	position: relative;
+	cursor: pointer;
+	margin-right: 4px;
+	margin-bottom: 4px;
 }
 
 /* JQUERY UI MODS */
@@ -502,87 +522,47 @@ ul#tagList {
 }
 
 .plotGroup {
-	color: #FFFFFF;
+	background-color: #f1f1f1;
 }
 
-.orange h3.ui-accordion-header {
-	background-color: #ff6633;
+.orange h3 {
+	color: #ff6633;
 }
 
-.eggplant h3.ui-accordion-header {
-	background-color: #990066;
+.eggplant h3 {
+	color: #990066;
 }
 
-.malibu h3.ui-accordion-header {
-	background-color: #5BCDFC;
+.malibu h3 {
+	color: #5BCDFC;
 }
 
-.bostonBlue h3.ui-accordion-header {
-	background-color: #449BAF;
+.bostonBlue h3 {
+	color: #449BAF;
 }
 
-.chardonnay h3.ui-accordion-header {
-	background-color: #fccb88;
+.chardonnay h3 {
+	color: #fccb88;
 }
 
-.roseBud h3.ui-accordion-header {
-	background-color: #f8aeac;
+.roseBud h3 {
+	color: #f8aeac;
 }
 
-.vanilla h3.ui-accordion-header {
-	background-color: #cdb9aa;
+.vanilla h3 {
+	color: #cdb9aa;
 }
 
-.burntSienna h3.ui-accordion-header {
-	background-color: #e8835d;
+.burntSienna h3 {
+	color: #e8835d;
 }
 
-.vistaBlue h3.ui-accordion-header {
-	background-color: #9AD3AE;
+.vistaBlue h3 {
+	color: #9AD3AE;
 }
 
-.chenin h3.ui-accordion-header {
-	background-color: #D5D879;
-}
-
-.orange.ui-accordion {
-	border: 2px solid #ff6633;
-}
-
-.eggplant.ui-accordion {
-	border: 2px solid #990066;
-}
-
-.malibu.ui-accordion {
-	border: 2px solid #5BCDFC;
-}
-
-.bostonBlue.ui-accordion {
-	border: 2px solid #449BAF;
-}
-
-.chardonnay.ui-accordion {
-	border: 2px solid  #fccb88;
-}
-
-.roseBud.ui-accordion {
-	border: 2px solid  #f8aeac;
-}
-
-.vanilla.ui-accordion {
-	border: 2px solid  #cdb9aa;
-}
-
-.burntSienna.ui-accordion {
-	border: 2px solid  #e8835d;
-}
-
-.vistaBlue.ui-accordion {
-	border: 2px solid #9AD3AE;
-}
-
-.chenin.ui-accordion {
-	border: 2px solid #D5D879;
+.chenin h3 {
+	color: #D5D879;
 }
 
 .ui-accordion-header {
@@ -591,7 +571,6 @@ ul#tagList {
 	border-radius: 0;			
 }
 
-.ui-accordion-header.ui-state-default .ui-icon { display:none; }
 
 h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 .ui-accordion .ui-accordion-header { margin-top:0;}
@@ -655,20 +634,45 @@ a.calendar {
 /* GRAPH PAGE */
 
 .plotlineinfo {
+	width: 195px;
 	font-size:.8em;
+	background: #f9f9f9;
+	border: 1px solid #ccc;
+	padding: 10px;
+	position: absolute;
+	z-index:3;
+	min-width: 155px;
 }
-.graphData #actions {
-	padding:0px 10px;
+.plotlineinfo h4, .plotlineinfo .form-group {
+	margin-bottom: 7px;
+	float: left;
+	clear: left;
 }
-.graphData #actions ul {
-	display:block;
-	border:1px dotted #cccccc;
-	border-width:1px 0px;
+.plotlineinfo ul.tags {
+	margin-top: 15px;
 }
-.graphData #actions li {
-	display:inline;
-	font-size:.8em;
-	padding:2px 15px 2px 0px;
+.plotlineinfo .ui-icon {
+	display: none;
+}
+.plotlineinfo .form-group {
+	clear: left;	
+	width: 100%;
+}
+.plotlineinfo .graph-icon {
+	float: right;
+	width: 60px;
+	margin-left: 10px;
+}
+.plotlineinfo input {
+	float: left;
+	margin-right: 5px;
+}
+.plotlineinfo label {
+	float: left;
+}
+.plotlineinfo .widget {
+	float: left;
+	padding: 17px 0;
 }
 .calendarRange {
 	background-color:#EBEBEB;
@@ -688,20 +692,30 @@ a.calendar {
 	color:#ffffff;
 	background-color:#ffffff;
 }
-#actions a {
-	color:#000000;
-}
 div.plotGroup {
+	padding: 5px;
 }
 
-span.plotGroup {
-	float:right;
-	padding-left:10px;
-        padding-top:6px;
-	display:none;
+div.plotGroup .delete {
+	display: inline-block;
+    width: 14px;
+	height: 14px;
+	line-height: 11px;
+	color: #f1f1f1;
+	border-radius: 50%;
+	text-align:center;
+	text-decoration:none;
+	background: #d0d6d6;
+	font-weight:bold;
+	font-size: 15px;
 }
-div.plotGroup:hover span {
-	display:inline;
+
+div.plotGroup .edit {
+	padding-right: 2px;
+	display: none;
+}
+div.plotGroup:hover .edit {
+	display: inline-block;
 }
 div.plotLine {
 	padding:2px 5px;
@@ -749,9 +763,6 @@ div.plotLine:hover span {
 }
 .fixed-column {
 	width: 225px;
-	-webkit-box-sizing: content-box;
-	-moz-box-sizing: content-box;
-	box-sizing: content-box;
 }
 .floating-column {
 	overflow: hidden;
@@ -997,28 +1008,66 @@ div.plotLine:hover span {
 	cursor:pointer;
 }
 .custom-row {
-	margin-left: -10px;
-	margin-right: -10px;
+	padding-right: 10px;
 }
-
+.entry-container {
+	padding-right: 0px;
+}
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	-moz-box-shadow: 3px 3px 3px #dddddd;
-	-webkit-box-shadow: 3px 3px 3px #dddddd;
-	box-shadow: 3px 3px 3px #dddddd;
 	background-color: #EF4B3A;
-	padding: 7px 10px;
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: uppercase;
 	min-height: 34px;
+	float: left;
+	width: 100%;
+}
+.red-header .right {
+	padding: 9px 10px;
+	border-right: 2px solid #fff;
+}
+#tagNav {
+	width: 227px;
+	padding: 0px;
+	margin-left: 3px;
 }
 .red-header h1 {
 	font-weight: normal;
 	font-size: .8em;
 	line-height: 20px;
+}
+.red-header #actions {
+	position: relative;
+	height: 15px;
+	float: left;
+	width: 20px;
+}
+.red-header #actions ul {
+	background: #fff;
+	display: block;
+	width: 272px;
+	padding: 10px;
+	z-index: 999;
+	border: 4px solid #d4d8d8;
+	position: absolute;
+	top: 30px;
+	display: none;
+}
+.red-header #actions ul li {
+	cursor: pointer;
+}
+.red-header #actions ul li:hover {
+	background: #f1f1f1;
+}
+.red-header #actions ul li a {
+	color: #879293;
+	font-weight: bold;
+}
+.red-header #actions img {
+	height: 15px;
 }
 .icon-triangle {
 	border-style: solid;
@@ -1173,6 +1222,14 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
  */
 div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
 	padding-left: 2px;
+}
+.track-page .tags-header-container {
+	padding: 7px;
+}
+
+div.graph-header-container .red-header {
+	-webkit-box-shadow: none;
+	box-shadow: none;
 }
 div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;
