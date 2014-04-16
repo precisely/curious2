@@ -4,15 +4,15 @@
 
 <!-- HEADER -->
 <div class="header">
+	
+	<a href="/home/index" class="logo-container"><span id="headerlogo" class="content-size"></span></a>
+<g:if test="${templateVer == 'lhp'}">
+	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
+</g:if>
 	<ul class="signin pull-right">
 		<li><span id="displayUser"></span></li>
 		<li><a href="/home/logout" id="logoutLink">sign out</a></li>
 	</ul>
-	
-	<a href="/home/index"><span id="headerlogo" class="content-size"></span></a>
-<g:if test="${templateVer == 'lhp'}">
-	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
-</g:if>
 	<span id="headerlinks">
 	<ul class="mainLinks">
 		<li><g:link controller='home' action="index">Track</g:link></li>
