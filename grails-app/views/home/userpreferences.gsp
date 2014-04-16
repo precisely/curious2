@@ -93,14 +93,14 @@ $(function() {
 	}
 </style>
 </head>
-<body>
+<body class="user-preference">
 	<div class="red-strip"></div>
     <g:render template="/layouts/alertMessage" />
 	<div class="row">
-		<div class="span3 text-center">
+		<div class="col-sm-3 text-center">
 			<div class="logo"></div>
 		</div>
-		<div class="span9 profile-container">
+		<div class="col-sm-9 profile-container">
 			<div id="addData">
 				<form action="/home/doupdateuserpreferences" method="post" name="updateUserPreferences" id="updateUserPreferences" autocomplete="off" >
 					<g:hiddenField name="precontroller" value="${precontroller}" />

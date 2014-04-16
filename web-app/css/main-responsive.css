@@ -1,8 +1,33 @@
 @media (max-width: 768px) {
+	.container {
+		padding: 0;
+		margin-left: 10px;
+		margin-right: 10px;
+	}
 	.row [class*="col-"] {
 		width: 100%;
 		margin-bottom: 2px;
 		float: none !important;
+	}
+	.header {
+		text-align: center;
+	}
+	.header .signin {
+		float: none !important;
+		padding: 10px 0;
+	}
+	.header a.logo-container {
+		display: block;
+	}
+	.header a.logo-container #headerlogo {
+		padding-bottom: 0;
+	}
+	.footer ul {
+		width: 25%;
+		text-align: center;
+	}
+	.red-header, .main {
+		box-shadow: none;
 	}
 	div.tags-header-container, div.tags-container {
 		height: auto !important;
@@ -47,5 +72,29 @@
 	}
 	div.leftNav, div#plotLeftNav, div#plotLinesplotArea {
 		height: auto;
+	}
+	body.user-preference .row .col-sm-3 {
+		display: none;
+	}
+	body.user-preference .profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]), .profile-container text-area {
+		min-width: 0;
+		width: 100%;
+	}
+	body.user-preference .profile-container table tr td:first-child {
+		width: auto;
+	}
+	#dashmain {
+		width: 100%;
+	}
+	#graphlist .summary {
+		padding: 12px 15px;
+	}
+	#graphList .summary h2 {
+		width: auto !important;
+		padding-left: 0;
+	}
+	#graphList .summary .userName, #graphList .summary .visibility, #graphList .summary .publishButton, #graphList .summary .date {
+		width: auto;
+		padding-bottom: 4px;
 	}
 }
