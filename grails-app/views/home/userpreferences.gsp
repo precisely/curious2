@@ -103,72 +103,72 @@ $(function() {
 					<g:hiddenField name="preaction" value="${preaction}" />
 					<g:hiddenField name="userId" value="${user.id}" />
 					<div class="form-group">
-						<label class="control-label col-md-4" for="Username">Username</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="Username">Username</label>
+						<div class="col-sm-5">
 							<g:textField name="username" value="${user.username}" autofocus="" required="" autocomplete="off" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="oldPassword">Old password</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="oldPassword">Old password</label>
+						<div class="col-sm-5">
 							<g:passwordField name="oldPassword" value="z" autocomplete="off" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="Password">New password</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="Password">New password</label>
+						<div class="col-sm-5">
 							<g:passwordField name="password" value="z" autocomplete="off" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="Verify Password">Verify password</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="Verify Password">Verify password</label>
+						<div class="col-sm-5">
 							<g:passwordField name="verify_password" value="" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="Email">Email</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="Email">Email</label>
+						<div class="col-sm-5">
 							<g:field type="email" required="" name="email" value="${user.email}" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="first">First Name</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="first">First Name</label>
+						<div class="col-sm-5">
 							<g:textField name="first" value="${user.first.encodeAsHTML()}" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="last">Last Name</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="last">Last Name</label>
+						<div class="col-sm-5">
 							<g:textField name="last" value="${user.last.encodeAsHTML()}" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="birthdate">Birthdate (MM/DD/YYYY)</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="birthdate">Birthdate (MM/DD/YYYY)</label>
+						<div class="col-sm-5">
 							<g:textField name="birthdate"
 								value="${user.birthdate ? new java.text.SimpleDateFormat("MM/dd/yyyy").format(user.birthdate) : ''}" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="Notify Email">Email to send reminders to</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="Notify Email">Email to send reminders to</label>
+						<div class="col-sm-5">
 							<g:textField name="remindEmail" value="${user.remindEmail ? user.remindEmail.encodeAsHTML() : ""}" />
 						</div>
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="first">Email Notifications</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="first">Email Notifications</label>
+						<div class="col-sm-5">
 							<g:radio name="notifyOnComments" value="off" checked="${!user.getNotifyOnComments()}" />
 							No emails on comments<br>
 							<g:radio name="notifyOnComments" value="on" checked="${user.getNotifyOnComments()}" />
@@ -177,8 +177,8 @@ $(function() {
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="sex">Gender</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="sex">Gender</label>
+						<div class="col-sm-5">
 							<g:radio name="sex" value="F" checked="${user.sex == 'F' }" />
 							Female<br>
 							<g:radio name="sex" value="M" checked="${user.sex == 'M' }" />
@@ -187,8 +187,8 @@ $(function() {
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4">Other Accounts</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3">Other Accounts</label>
+						<div class="col-sm-5">
 							<g:if test="${!user.twitterAccountName}">
 								<g:link action="registertwitter">Link Twitter Account</g:link>
 							</g:if>
@@ -243,14 +243,14 @@ $(function() {
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-md-4" for="first">Default Twitter to Now</label>
-						<div class="col-md-5">
+						<label class="control-label col-sm-3" for="first">Default Twitter to Now</label>
+						<div class="col-sm-5">
 							<input type="checkbox" name="twitterDefaultToNow" style="border: none; width: 20px;"
 								<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>> Default Twitter timestamp to now
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-md-12 text-right">
+						<div class="col-sm-12 text-right">
 							<g:submitButton class="savebutton" name="Update" />
 						</div>
 					</div>

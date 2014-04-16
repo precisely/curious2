@@ -47,5 +47,5 @@ This customization ID sets:
 2. @container-lg width to 1000px,
 3. @grid-gutter-width to 20px.
 
-Out of this customization, after downloading resources, remove **!important** in **.hide** class CSS from bootstrap.css & bootstrap.min.css    
+After downloading the customized files, remove **!important** in **.hide** class CSS from bootstrap.min.css    
 This is required because, we're using **hide** class in most portions & jQuery's **show()** method can't display element due to important mark in css.
