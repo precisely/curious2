@@ -9,6 +9,8 @@ import org.scribe.model.Token
 
 import us.wearecurio.controller.AuthenticationController
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.WithingsDataService
 
 class AuthenticationControllerTests extends CuriousControllerTestCase {
 
@@ -113,6 +115,60 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		controller.checkAuthentication()
 		controller.twenty3andmeAuth()
 		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_THREE_AND_ME, userId) == 1
+	}
+
+	void testWithingsAuth() {
+		controller.session.withingsUserId = "dummy1234"
+		controller.withingsDataService = [
+			getUserProfile: { token->
+				return new JSONObject("""{"id": "dummy1234"}""")
+			},
+			fetchActivityData: {token, account, startdate, enddate, intraday ->
+				return new JSONObject([status: 0, body: [activities: [[timezone: "Europe/Helsinki"]]]])
+			}
+		] as WithingsDataService
+
+		controller.params.status = "success"
+		controller.params.provider = "withings"
+
+		controller.session["withings:oasAccessToken"] =  new Token("some-token", "some-secret", "")
+		controller.checkAuthentication()
+		controller.withingsAuth()
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(WITHINGS, userId)
+		assert account != null
+		assert account.timeZoneId != null
+		assert account.accountId == "dummy1234"
+
+		TimeZoneId timeZoneIdInstance = TimeZoneId.get(account.timeZoneId)
+		assert timeZoneIdInstance.name == "Europe/Helsinki"
+	}
+
+	void testWithingsAuthIfNoTimezone() {
+		controller.session.withingsUserId = "dummy1234"
+		controller.withingsDataService = [
+			getUserProfile: { token->
+				return new JSONObject("""{"id": "dummy1234"}""")
+			},
+			fetchActivityData: {token, account, startdate, enddate, intraday ->
+				//returning non 0 status code
+				return new JSONObject([status: 500, body: []])
+			}
+		] as WithingsDataService
+
+		controller.params.status = "success"
+		controller.params.provider = "withings"
+
+		controller.session["withings:oasAccessToken"] =  new Token("some-token", "some-secret", "")
+		controller.checkAuthentication()
+		controller.withingsAuth()
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(WITHINGS, userId)
+		assert account != null
+		assert account.timeZoneId != null
+
+		TimeZoneId timeZoneIdInstance = TimeZoneId.get(account.timeZoneId)
+		// Will save default timezone
+		assert timeZoneIdInstance.name == "Etc/UTC"
+		assert account.accountId == "dummy1234"
 	}
 
 }
