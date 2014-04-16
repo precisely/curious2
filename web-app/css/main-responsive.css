@@ -1,0 +1,99 @@
+@media (max-width: 768px) {
+	.container {
+		padding: 0;
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+	.row [class*="col-"] {
+		width: 100%;
+		margin-bottom: 2px;
+	}
+	.header {
+		text-align: center;
+	}
+	.header .signin {
+		float: none !important;
+		padding: 10px 0;
+	}
+	.header a.logo-container {
+		display: block;
+	}
+	.header a.logo-container #headerlogo {
+		padding-bottom: 0;
+	}
+	.footer ul {
+		width: 25%;
+		text-align: center;
+	}
+	.red-header, .main {
+		box-shadow: none;
+	}
+	div.tags-header-container, div.tags-container {
+		height: auto !important;
+		padding-left: 10px !important;
+		float: none !important;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+	div.entry-header-container, div.graph-header-container {
+		padding-right: 10px;
+	}
+	div.entry-header-container .red-header.date-controls {
+		padding-left: 2px;
+	}
+	div.entry-header-container .red-header.date-controls input#datepicker {
+		width: auto;
+		font-size: 13px;
+		padding-top: 2px;
+	}
+	body.tags-displayed div.tags-header-container, body.tags-displayed div.tags-container {
+		margin-bottom: 0;
+	}
+	body.tags-displayed div.entry-header-container, body.tags-displayed div.graph-header-container, body.tags-displayed div.entry-container,
+		body.tags-displayed div.graph-container {
+		display: none;
+	}
+	body.graph-page div.row.top-row div.leftNav {
+		border: 0;
+		box-shadow: none;
+	}
+	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
+		display: block;
+		float: none;
+	}
+	.dateline {
+		text-align: center;
+	}
+	.startdatepicker, .enddatepicker {
+		width: 100%;
+		text-align: center;
+	}
+	div.leftNav, div#plotLeftNav, div#plotLinesplotArea {
+		height: auto;
+	}
+	body.user-preference .row .col-sm-3 {
+		display: none;
+	}
+	body.user-preference .profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]), .profile-container text-area {
+		min-width: 0;
+		width: 100%;
+	}
+	body.user-preference .profile-container div.form-group {
+		margin-bottom: 10px !important;
+	}
+	#dashmain {
+		width: 100%;
+	}
+	#graphlist .summary {
+		padding: 12px 15px;
+	}
+	#graphList .summary h2 {
+		width: auto !important;
+		padding-left: 0;
+	}
+	#graphList .summary .userName, #graphList .summary .visibility, #graphList .summary .publishButton, #graphList .summary .date {
+		width: auto;
+		padding-bottom: 4px;
+	}
+}

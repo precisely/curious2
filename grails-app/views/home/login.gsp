@@ -112,7 +112,7 @@ a,a:link,a:hover,a:visited {
 }
 </style>
 </head>
-<body>
+<body class="login">
 <div id="login" class="loginbody1">
 <div class="loginbody2">
 <g:if test="${flash.message}">

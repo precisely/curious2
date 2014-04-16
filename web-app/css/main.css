@@ -3,6 +3,9 @@
 	margin-right: 40px;
 	width: auto;
 }
+ul {
+	margin-bottom: 0;
+}
 /* FRAME */
 
 .content-size, .content-size:after, .content-size:before {
@@ -92,7 +95,7 @@ a,a:link,a:hover,a:visited {
 	padding:10px 0px 10px 0px;
 }
 #headerlogo {
-	background:url(/static/images/logo_alpha.png) no-repeat;
+	background:url('/images/logo_alpha.png') no-repeat;
 	width: 420px;
 	height:30px;
 	display:inline-block;
@@ -254,6 +257,8 @@ body.discuss-page input#discussTitleInput {
 }
 .footer h2 {
 	padding-bottom:.7em;
+	font-size: 100%;
+	margin: 0;
 }
 .footer ul {
 	display:block;
@@ -302,9 +307,6 @@ input.textInput {
 }
 .endDate {
 	display:inline-block;
-	float:right;
-}
-.endDate {
 	float:right;
 }
 .endDate a.calendar {
@@ -391,7 +393,7 @@ ul.ui-autocomplete {
 .unstyled {
     list-style: none;
 }
-.hide {
+.hide, .hid {
     display: none;
 }
 ul.tags {
@@ -1113,22 +1115,6 @@ div.plotLine:hover span {
 	text-align: center;
 	vertical-align: middle;
 }
-[class*="span"] {
-	position: relative;
-	min-height: 1px;
-	padding-left: 15px;
-	padding-right: 15px;
-	float: left;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-}
-.span3 {
-	width: 25%;
-}
-.span9 {
-	width: 75%;
-}
 
 /**
  * Generic & common stuff, useful for every where. Ends here.
@@ -1176,4 +1162,138 @@ div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-head
 }
 div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
 	padding-right: 0px;
+}
+
+/**
+ * Style for community & load page.
+ */
+#graphList #graphItem {
+	clear:both;
+}
+#graphList .summary {
+	padding-top:12px;
+	padding-bottom:12px;
+}
+#graphList .summary .date {
+	font-size: 80%;
+	display: inline-block;
+	width: 9em;
+	color: #666666;
+}
+#graphList .summary h2 {
+	width: 265px;
+	background: url(images/pointer_right.png) no-repeat center left;
+	padding-left: 25px;
+	font-weight: bold;
+	font-size: 100%;
+	display: inline-block;
+	margin: 0;
+}
+#graphList .summary .userName {
+	width: .6em;
+	font-size: 80%;
+	color: #666666;
+	display: inline-block;
+}
+#graphList .summary .preview {
+	width: 50px;
+	font-size: 80%;
+	padding-bottom: 5px;
+	display: inline-block;
+}
+#graphList .summary .unpublishButton {
+	width: 250px;
+	margin-left: 2px;
+	margin-right: 4px;
+	padding-top: 4px;
+	padding-right: 4px;
+	background-color: #08BBF1;
+	color: #FFFFFF;
+	padding-left: 4px;
+	padding-bottom: 4px;
+	font-size: 16px;
+}
+#graphList .summary .publishButton {
+	width: 250px;
+	margin-left: 2px;
+	margin-right: 4px;
+	padding-top: 4px;
+	padding-right: 4px;
+	background-color: #08BBF1;
+	color: #FFFFFF;
+	padding-left: 4px;
+	padding-bottom: 4px;
+	font-size: 16px;
+}
+#graphList .summary .update {
+	font-size: 80%;
+	display: inline-block;
+	width: 0px;
+	height: 21px;
+	text-align: center;
+	line-height: 21px;
+	color: #ffffff ! important;
+	text-transform: uppercase;
+	background: url(images/preview_btn.gif) no-repeat
+}
+#graphList .summary .close {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	padding-left: 5px;
+	background: url(images/x.gif) no-repeat center center;
+}
+#graphList .summary .visibility {
+	color: #AAAAAA;
+	width: 280px;
+	display: inline-block;
+	text-align: right;
+}
+#graphList .summary .close span {
+	display: none
+}
+#graphList .content {
+	padding-top: 25px;
+	font-size: 80%;
+	color: #666666;
+}
+#graphList .sidebar h2 {
+	padding-top: 20px
+}
+#graphList .sidebar ul {
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+#graphList .sidebar li a {
+	color: #666666 ! important
+}
+#graphList .notes {
+	margin-left: 25px;
+	float: left;
+	width: 600px
+}
+#graphList .notes p {
+	line-height: 1.5em;
+	padding-top: 20px
+}
+.communityMessage {
+	padding-bottom: 1em;
+}
+.discussHeader {
+	padding-top: 12px;
+	margin-left: 15px;
+}
+
+body.load-graph #graphList .summary h2 {
+	width: 485px
+}
+body.load-graph #graphList .summary .preview {
+	width: 60px;
+}
+body.load-graph #graphList .summary .update {
+	width: 68px;
+}
+body.load-graph #graphList .summary .close {
+	width: 21px;
 }
