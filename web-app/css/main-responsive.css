@@ -1,0 +1,51 @@
+@media (max-width: 768px) {
+	.row [class*="col-"] {
+		width: 100%;
+		margin-bottom: 2px;
+		float: none !important;
+	}
+	div.tags-header-container, div.tags-container {
+		height: auto !important;
+		padding-left: 10px !important;
+		float: none !important;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+	div.entry-header-container, div.graph-header-container {
+		padding-right: 10px;
+	}
+	div.entry-header-container .red-header.date-controls {
+		padding-left: 2px;
+	}
+	div.entry-header-container .red-header.date-controls input#datepicker {
+		width: auto;
+		font-size: 13px;
+		padding-top: 2px;
+	}
+	body.tags-displayed div.tags-header-container, body.tags-displayed div.tags-container {
+		margin-bottom: 0;
+	}
+	body.tags-displayed div.entry-header-container, body.tags-displayed div.graph-header-container, body.tags-displayed div.entry-container,
+		body.tags-displayed div.graph-container {
+		display: none;
+	}
+	body.graph-page div.row.top-row div.leftNav {
+		border: 0;
+		box-shadow: none;
+	}
+	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
+		display: block;
+		float: none;
+	}
+	.dateline {
+		text-align: center;
+	}
+	.startdatepicker, .enddatepicker {
+		width: 100%;
+		text-align: center;
+	}
+	div.leftNav, div#plotLeftNav, div#plotLinesplotArea {
+		height: auto;
+	}
+}

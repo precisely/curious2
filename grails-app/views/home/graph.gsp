@@ -135,11 +135,19 @@ $(function(){
 			plot.refreshPlot();
 		}
 	}
+	var resizeTimeout;
+	$(window).resize(function() {
+		clearTimeout(resizeTimeout);
+		// Adding 1 second buffer for refreshing graph on fast window resize;
+		setTimeout(function() {
+			afterTagCollapseToggle();
+		}, 1000);
+	});
 </r:script>
 </head>
 <body class="graph-page">
 
-	<div class="row row-custom">
+	<div class="row row-custom top-row">
 		<div class="col-xs-2">
 			<!-- LEFT NAV -->
 			<div class="leftNav">
