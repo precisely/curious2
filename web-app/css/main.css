@@ -3,6 +3,9 @@
 	margin-right: 40px;
 	width: auto;
 }
+ul {
+	margin-bottom: 0;
+}
 /* FRAME */
 
 .content-size, .content-size:after, .content-size:before {
@@ -254,6 +257,8 @@ body.discuss-page input#discussTitleInput {
 }
 .footer h2 {
 	padding-bottom:.7em;
+	font-size: 100%;
+	margin: 0;
 }
 .footer ul {
 	display:block;
@@ -388,7 +393,7 @@ ul.ui-autocomplete {
 .unstyled {
     list-style: none;
 }
-.hide {
+.hide, .hid {
     display: none;
 }
 ul.tags {
@@ -1182,6 +1187,7 @@ div.entry-header-container, div.graph-header-container, body.tags-displayed div.
 	font-weight: bold;
 	font-size: 100%;
 	display: inline-block;
+	margin: 0;
 }
 #graphList .summary .userName {
 	width: .6em;

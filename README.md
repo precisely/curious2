@@ -40,9 +40,12 @@ Following feature needs to tested after development:
 
 Following are some bootstrap customization which needs to be made before downloading new bootstrap resources:
 
-1. Uncheck all Less Components except **Grid system, Basic utilities, Responsive utilities, Component animations**,
-2. Set @container-lg width to 1000px,
-3. Set @grid-gutter-width to 20px.
+Bootstrap customization ID: 10834603
+
+This customization ID sets: 
+1. Uncheck all Less Components except **Grid system, form, typography, Basic utilities, Responsive utilities**,
+2. @container-lg width to 1000px,
+3. @grid-gutter-width to 20px.
 
 Out of this customization, after downloading resources, remove **!important** in **.hide** class CSS from bootstrap.css & bootstrap.min.css    
 This is required because, we're using **hide** class in most portions & jQuery's **show()** method can't display element due to important mark in css.
