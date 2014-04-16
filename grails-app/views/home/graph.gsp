@@ -137,7 +137,6 @@ $(function(){
 			plot.refreshPlot();
 		}
 	}
-
 </r:script>
 </head>
 <body class="graph-page">
@@ -234,7 +233,14 @@ $(function(){
 			$(e.target).closest('ul').toggle();
 		});
 	});
-
+	var resizeTimeout;
+	$(window).resize(function() {
+		clearTimeout(resizeTimeout);
+		// Adding 1 second buffer for refreshing graph on fast window resize;
+		setTimeout(function() {
+			afterTagCollapseToggle();
+		}, 1000);
+	});
 </r:script>
 
 </body>

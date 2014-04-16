@@ -92,7 +92,7 @@ a,a:link,a:hover,a:visited {
 	padding:10px 0px 10px 0px;
 }
 #headerlogo {
-	background:url(/static/images/logo_alpha.png) no-repeat;
+	background:url('/images/logo_alpha.png') no-repeat;
 	width: 420px;
 	height:30px;
 	display:inline-block;
@@ -317,9 +317,6 @@ input.textInput {
 }
 .endDate {
 	display:inline-block;
-	float:right;
-}
-.endDate {
 	float:right;
 }
 .endDate a.calendar {
