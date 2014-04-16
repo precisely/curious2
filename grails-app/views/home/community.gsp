@@ -84,7 +84,7 @@ $(function(){
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<a href="/home/discuss?createTopic=true">+ New question or comment</a><p/>
+	<a href="/home/discuss?createTopic=true">+ New question or comment</a>
 	</div>
 	<div id="graphList">
 	</div>

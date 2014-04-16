@@ -7,7 +7,6 @@
 	.row [class*="col-"] {
 		width: 100%;
 		margin-bottom: 2px;
-		float: none !important;
 	}
 	.header {
 		text-align: center;
@@ -80,8 +79,8 @@
 		min-width: 0;
 		width: 100%;
 	}
-	body.user-preference .profile-container table tr td:first-child {
-		width: auto;
+	body.user-preference .profile-container div.form-group {
+		margin-bottom: 10px !important;
 	}
 	#dashmain {
 		width: 100%;
