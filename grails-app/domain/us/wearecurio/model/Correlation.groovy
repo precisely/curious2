@@ -46,5 +46,4 @@ class Correlation {
 		updated = new Date()
 	}
 
-	def createOrUpdate
 }

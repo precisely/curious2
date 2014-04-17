@@ -80,6 +80,7 @@ class CorrelationService {
 	}
 
 	def updateAllUserCorrelations() {
+		new File("CorrelationService.out").delete()
 		User.findAll().each { user ->
 			updateUserCorrelations(user)
 		}
@@ -92,7 +93,10 @@ class CorrelationService {
 	}
 
 	def saveMipss(CuriousSeries series1, CuriousSeries series2) {
-		def score = new Correlation(series1, series2)
+    def score = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
+    if (score == null) {
+		  score = new Correlation(series1, series2)
+    }
 		def result = CuriousSeries.mipss(series1, series2)
 
 		if (result) {
@@ -113,7 +117,6 @@ class CorrelationService {
 	}
 
 	def updateUserCorrelations(def user, startTime=null, stopTime=null) {
-		new File("CorrelationService.out").delete()
 		startTime = startTime ?: entryService.userStartTime(user.id)
 		stopTime = stopTime ?: entryService.userStopTime(user.id)
 		def tags = Entry.findAllWhere('userId': user.id.toLong()).collect { it.tag }.unique()
@@ -168,7 +171,7 @@ class CorrelationService {
 					all_series << new_series
 				}
 			} catch(e) {
-				log("ERROR ${e.class}\n ${e.getMessage()}\n ${e.getStackTrace()}:\n Tag Details: ${tag.id} - ${tag.description}\n")
+				log("ERROR ${e.class}\n ${e.getMessage()}\n ${e.getStackTrace().join("\n")}:\n Tag Details: ${tag.id} - ${tag.description}\n")
 			}
 		}
 		all_series

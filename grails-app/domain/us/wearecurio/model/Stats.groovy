@@ -6,8 +6,8 @@ class Stats {
 	public static mean(def x) {
 		List <Double> values = x.clone()
 		values.removeAll([null])
-		if (x.size() < 2) {
-			return x.first()
+		if (values.size() < 2) {
+			return values.first()
 		}
 		values.sum()/values.size()
 	}
