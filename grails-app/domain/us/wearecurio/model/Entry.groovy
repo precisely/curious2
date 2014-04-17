@@ -438,6 +438,8 @@ class Entry {
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
+		def tagUnitStats = TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units']) 
+
 		Entry entry = new Entry(
 				userId:userId,
 				tweetId:m['tweetId'],
@@ -467,7 +469,6 @@ class Entry {
 			tagStatsRecord.setOldTagStats(tagStats)
 		}
 
-		TagUnitStats.createOrUpdate(userId, entry.getTag().getId(), m['units'] == null?'':m['units']) 
 
 		entry.createRepeat()
 

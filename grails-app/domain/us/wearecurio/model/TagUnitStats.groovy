@@ -20,12 +20,11 @@ class TagUnitStats {
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 	}
-	
+
 
 	@Transactional
 	public static def createOrUpdate(Long userId, Long tagId, String unit) {
-		def unitGroup
-		// Find if the user has used this for any tag
+		// Verify if the user has used this unit for this tag in the past
 		def tagUnitStats = TagUnitStats.withCriteria {
 			and {
 				like ('unit', unit)
@@ -34,21 +33,42 @@ class TagUnitStats {
 			}
 		}
 
-		if (tagUnitStats.size() < 1) {
+		// If yes then update then we have the correct record to update
+		if (tagUnitStats.size() > 0) {
+			log.debug ("TagUnitStats.createOrUpdate(): ${tagUnitStats.size()} unit stats found for user "+
+			userId + " tag" + tagId + " and unit " + unit)
+			tagUnitStats = tagUnitStats[0]
+		} else {
+			// If this unit is being used for the first time for this tag
+			def unitGroupMap = UnitGroupMap.groupForUnit(unit)
+			if (!unitGroupMap) {
+				//If we can't find it in our map we use the most used unit
+				//for this tag
+				tagUnitStats = TagUnitStats.withCriteria {
+					and {
+						eq ('tagId', tagId)
+						eq ('userId', userId)
+					}
+					order ('timesUsed', desc)
+				}
+
+				if (tagUnitStats.size() < 1) {
+					//This unit is not in the map and this is the first entry for this tag
+					//i.e. we don't have the most used unit for this tag
+					tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
+					 unit: unit)
+				} else {
+					tagUnitStats = tagUnitStats[0]
+				}
+			}
 			log.debug ("TagUnitStats.createOrUpdate(): 0 unit stats found for user "+
 			userId + " tag" + tagId + " and unit " + unit)
-			def unitGroupMap = UnitGroupMap.groupForUnit(unit)
-			unitGroup = unit == ''?:unitGroupMap.group
-			tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
-				unitGroup: unitGroup, unit: unit, timesUsed: 1)
-		} else {
-			log.debug ("TagUnitStats.createOrUpdate(): ${tagUnitStats.size()} unit stats found for user "+
-				userId + " tag" + tagId + " and unit " + unit)
-			tagUnitStats = tagUnitStats[0]
-			tagUnitStats.timesUsed+=1
 		}
+
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
+		tagUnitStats.timesUsed+=1
 		tagUnitStats.save()
+		return tagUnitStats
 	}
 }
 

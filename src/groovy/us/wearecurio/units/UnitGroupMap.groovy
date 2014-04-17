@@ -37,7 +37,10 @@ class UnitGroupMap {
 	*
 	*/
 	public static groupForUnit(String unit) {
-		def result
+		def result = null
+
+		if (unit == '') return result
+
 		groups.each { group, unitMeta ->
 			if (unitMeta.containsKey(unit)) {
 				def ratioAndAffinity = unitMeta.get(unit)
