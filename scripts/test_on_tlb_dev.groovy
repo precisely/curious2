@@ -1,7 +1,7 @@
 import us.wearecurio.model.*
 import us.wearecurio.services.*
 
-time_file = "start_times.out"
+time_file = "progress.out"
 new File(time_file).delete()
 logfile = new File(time_file)
 log = {
@@ -10,16 +10,17 @@ log = {
 	})
 }
 
-start = new Date()
-log("START: ${start}")
-
-new File("test.out").delete()
-u = User.first()
-//u = User.findAll()
+users = User.findAll()
 cs = new CorrelationService()
-cs.updateUserCorrelationsDebug(u)
+
+count = 0
+for (user in users) {
+	start = new Date()
+	cs.updateUserCorrelations(user)
+	stop_time = new Date()
+	total_time = (stop_time.getTime() - start.getTime())/1000.0/60.0
+	log("#${count} ${total_time} minutes, User: ${user.id}")
+	count += 1
+}
 
 
-stop_time = new Date()
-log("STOP: ${stop_time}")
-log("TOTAL TIME: ${(stop_time.getTime() - start.getTime())/1000.0/60.0} minutes")
