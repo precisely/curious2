@@ -172,11 +172,6 @@ a,a:link,a:hover,a:visited {
 body.graph-page .body1 {
 	position: relative;
 }
-body.graph-page #tagListWrapper {
-	min-height: 565px;
-	background: #fff;
-	border: 1px solid #ccc;
-}
 body.graph-page #tagListWrapper ul#tagList {
 	height: 583px;
 }
@@ -413,7 +408,9 @@ ul.ui-autocomplete {
 }
 ul.tags {
     list-style: none;
-    clear:both;
+    border: 1px solid #ccc;
+	border-top: 0;
+	border-bottom: 0;
 }
 ul.tags li {
     margin-bottom: 4px;
@@ -485,7 +482,7 @@ ul.tags li.tagGroup ul.tags, .wildcardTagGroup ul {
 	margin-left:10px;
 }
 ul#tagList {
-	height: 545px;
+	height: 603px;
 	overflow-y: scroll;
 }
 .leftNav {
@@ -508,6 +505,10 @@ ul#tagList {
 	cursor: pointer;
 	margin-right: 4px;
 	margin-bottom: 4px;
+}
+.plotlines .ui-droppable h3 {
+	margin: 0;
+	font-size: 100%;
 }
 
 /* JQUERY UI MODS */
@@ -597,8 +598,6 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
-	margin-bottom: 5px;
-	min-height: 608px;
 }
 
 /* FIRST PAGE */
@@ -764,12 +763,11 @@ div.plotLine:hover span {
 	box-shadow: 3px 3px 3px #ffffff;
 }
 .fixed-column {
-	width: 225px;
+	width: 227px;
+	float: right;
 }
 .floating-column {
 	overflow: hidden;
-	float: none;
-	width: auto;
 }
 #preFooter .tagNav img {
 	vertical-align:middle;
@@ -1013,7 +1011,6 @@ div.plotLine:hover span {
 	padding-right: 10px;
 }
 .entry-container {
-	padding-right: 0px;
 }
 /**
  * Generic & common stuff, useful for every where. Starts here.
@@ -1028,13 +1025,13 @@ div.plotLine:hover span {
 	width: 100%;
 }
 .red-header .right {
+	float: left;
 	padding: 9px 10px;
+	width: calc(100% - 227px);
 	border-right: 2px solid #fff;
 }
-#tagNav {
-	width: 227px;
-	padding: 0px;
-	margin-left: 3px;
+.tags-container {
+	margin-left: 2px;
 }
 .red-header h1 {
 	font-weight: normal;
@@ -1206,19 +1203,13 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 /**
  * Styles for track page for web application. Ends here.
  */
-div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
-	padding-left: 2px;
-}
-.track-page .tags-header-container {
+.tags-header-container {
 	padding: 7px;
 }
 
 div.graph-header-container .red-header {
 	-webkit-box-shadow: none;
 	box-shadow: none;
-}
-div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
-	padding-right: 0px;
 }
 
 /**

@@ -25,32 +25,52 @@
 		width: 25%;
 		text-align: center;
 	}
-	.red-header, .main {
-		box-shadow: none;
-	}
 	div.tags-header-container, div.tags-container {
-		height: auto !important;
-		padding-left: 10px !important;
+		width: 100%;
 		float: none !important;
-		-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
-		box-sizing: border-box;
+		border-bottom: 2px solid #fff;
 	}
-	div.entry-header-container, div.graph-header-container {
-		padding-right: 10px;
+	div.red-header h1.right {
+		float: none;
+		width: 100%;
+		padding-left: 0;
+		padding-right: 0;
+		border-right: 0;
 	}
-	div.entry-header-container .red-header.date-controls {
-		padding-left: 2px;
+	div.entry-container #trackmain {
+		height: calc(100% - 240px);
 	}
-	div.entry-header-container .red-header.date-controls input#datepicker {
+	div.entry-container #trackmain #area0 #recordList {
+		height: 100%;
+	}
+	div.entry-container #trackmain #recordList {
+		height: 100%;
+	}
+	div.entry-container #trackmain #recordList #entry0 {
+		height: 100%;
+		overflow-y: auto;
+	}
+	div.red-header.date-controls input#datepicker {
 		width: auto;
 		font-size: 13px;
 		padding-top: 2px;
 	}
-	body.tags-displayed div.tags-header-container, body.tags-displayed div.tags-container {
-		margin-bottom: 0;
+	body.tags-displayed div.tags-header-container {
+		border-bottom: 0;
 	}
-	body.tags-displayed div.entry-header-container, body.tags-displayed div.graph-header-container, body.tags-displayed div.entry-container,
+	body.tags-displayed div.tags-container {
+		margin-left: 0;
+	}
+	div.tags-container div#tagListWrapper {
+		min-height: 0;
+		overflow: hidden;
+		height: calc(100% - 240px);
+	}
+	div.tags-container div#tagListWrapper ul#tagList {
+		height: 100%;
+		overflow-y: auto;
+	}
+	body.tags-displayed div.red-header h1.right, body.tags-displayed div.entry-container,
 		body.tags-displayed div.graph-container {
 		display: none;
 	}
@@ -60,6 +80,15 @@
 	}
 	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
 		display: block;
+		float: none;
+	}
+	body.graph-page div.red-header h1.right {
+		padding: 10px;
+	}
+	body.graph-page .querymain #plotArea {
+		height: calc(100% - 300px);
+	}
+	.plotlines .ui-droppable {
 		float: none;
 	}
 	.dateline {

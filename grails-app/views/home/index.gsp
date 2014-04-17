@@ -736,54 +736,44 @@ $(function(){
 		<div id="alert-message-text"></div>
 	</div>
 
-	<div class="row custom-row">
-		<div class="col-xs-9 floating-column entry-header-container">
-			<div class="red-header date-controls">
-				<h1 class="clearfix right" style="width: calc(100% - 227px);float:left;">
-					<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
-						<span class="hide">back</span>
-					</a>
-					<span class="date"><input id="datepicker" type="text" value="" /></span>
-					<a class="next  icon-triangle icon-triangle-right" href="#" onclick="changeDate(1);">
-						<span class="hide">next</span>
-					</a>
-				</h1>
-				<g:render template="/tag/tagListWidget" model="[header: true]" />
+	<div class="red-header date-controls">
+		<g:render template="/tag/tagListWidget" model="[header: true]" />
+		<h1 class="clearfix right">
+			<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
+				<span class="hide">back</span>
+			</a>
+			<span class="date"><input id="datepicker" type="text" value="" /></span>
+			<a class="next  icon-triangle icon-triangle-right" href="#" onclick="changeDate(1);">
+				<span class="hide">next</span>
+			</a>
+		</h1>
+	</div>
+
+	<!-- MAIN -->
+	<div class="clearfix">
+		<!-- RIGHT NAV -->
+		<g:render template="/tag/tagListWidget" />
+		<!-- /RIGHT NAV -->
+		<div class="floating-column entry-container">
+			<div class="main" id="trackmain">
+				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
+				<div id="area0">
+					<div id="addData" class="panel-wrapper">
+						<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
+							value="Enter a tag.  For example: nap at 2pm" class="textInput" />
+						<a href="#" onclick="modifyInput('repeat')"><img src="/static/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<a href="#" onclick="modifyInput('remind')"><img src="/static/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<a href="#" onclick="modifyInput('pinned')"><img src="/static/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<div style="clear: both"></div>
+					</div>
+			
+					<div id="recordList">
+						<ol id="entry0"></ol>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
-
-<!-- MAIN -->
-<div class="row custom-row">
-	<!-- RIGHT NAV -->
-	<g:render template="/tag/tagListWidget" />
-	<!-- /RIGHT NAV -->
-<div class="col-xs-9 floating-column entry-container">
-<div class="main" id="trackmain">
-
-	<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
-	<div id="area0">
-
-		<div id="addData" class="panel-wrapper">
-			<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
-				value="Enter a tag.  For example: nap at 2pm" class="textInput" />
-			<a href="#" onclick="modifyInput('repeat')"><img src="/static/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
-			<a href="#" onclick="modifyInput('remind')"><img src="/static/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
-			<a href="#" onclick="modifyInput('pinned')"><img src="/static/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
-			<div style="clear: both"></div>
-		</div>
-		<div class="border-separator"></div>
-
-		<div id="recordList">
-			<ol id="entry0">
-			</ol>
-		</div>
-	</div>
-</div>
-</div>
-<!-- /MAIN -->
-
-</div>
-
+	<!-- /MAIN -->
 </body>
 </html>
