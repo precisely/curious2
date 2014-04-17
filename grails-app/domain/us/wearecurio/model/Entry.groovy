@@ -2624,7 +2624,7 @@ class Entry {
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
 				+ ", repeatType:" + repeatType?.getId() \
-				+ ", repeatEnd:" + repeatEnd \
+				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
 
@@ -2639,6 +2639,7 @@ class Entry {
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
 				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
 
@@ -2652,6 +2653,7 @@ class Entry {
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
 				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
 
