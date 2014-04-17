@@ -60,17 +60,17 @@ class Entry {
 		durationType column:'duration_type', index:'duration_type_index'
 	}
 
-	
+
 	// NOTE: Unghosted repeat entries are repeated in an unghosted manner all the way until their repeatEnd
 	// but unghosted remind entries are only unghosted on their start date, and not on subsequent dates
-	
+
 	public static enum RepeatType { // IMPORTANT: there must be ghost entries for all non-ghost entries and vice-versa
 		// if you add more remind types, please edit the sql in RemindEmailService
 		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
 		DAILYGHOST(DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), WEEKLYGHOST(WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
 		REMINDDAILY(REMIND_BIT | DAILY_BIT, 24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
 		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-		
+
 		CONTINUOUS(CONTINUOUS_BIT, 1),
 		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
 
@@ -78,7 +78,7 @@ class Entry {
 		DAILYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
 		WEEKLYCONCRETEGHOST(CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
 		WEEKLYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-		
+
 		GHOST(GHOST_BIT, 0),
 		NOTHING(0, 0)
 
@@ -87,7 +87,8 @@ class Entry {
 		public static final int REMIND_BIT = 4
 		public static final int CONTINUOUS_BIT = 0x0100
 		public static final int GHOST_BIT = 0x0200
-		public static final int CONCRETEGHOST_BIT = 0x0400 // like a ghost, but it appears in plot data, it is just a repetition of a prior
+		public static final int CONCRETEGHOST_BIT = 0x0400
+		// like a ghost, but it appears in plot data, it is just a repetition of a prior
 		// entry, must be activated to edit
 
 		final Long id
@@ -144,7 +145,7 @@ class Entry {
 		def isTimed() {
 			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
 		}
-		
+
 		def isRepeat() {
 			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
 		}
@@ -220,11 +221,11 @@ class Entry {
 		RepeatType.DAILY.getId(),
 		RepeatType.DAILYCONCRETEGHOST.getId(),
 	]
-	
+
 	public static def UNGHOSTED_SINGULAR_IDS = [
 		RepeatType.REMINDDAILY.getId(),
 	]
-	
+
 	public static enum DurationType {
 		NONE(0), START(1), END(2)
 
@@ -326,7 +327,7 @@ class Entry {
 		],
 		null)
 	}
-			
+
 	static Entry updatePartialOrCreate(Long userId, Map m, TagStatsRecord tagStatsRecord) {
 		log.debug("Entry.updatePartialOrCreate: Trying to find a partial entry to update")
 		def partialEntry = lookForPartialEntry(userId, m)
@@ -334,7 +335,7 @@ class Entry {
 		if (partialEntry.size() < 1) {
 			return Entry.create(userId, m, tagStatsRecord)
 		}
-		
+
 		for (entry in partialEntry) {
 			log.debug ("Updating partial entry " + entry)
 			entry.amount = m.amount
@@ -342,28 +343,28 @@ class Entry {
 			return entry
 		}
 	}
-			
+
 	static List lookForPartialEntry(userId, Map m) {
 		/**
 		 * Making sure it is a summary entry. Non summary entries will
 		 * not have partial entries
 		 */
-		
+
 		if (!m.description.endsWith(" summary")) {
 			return []
 		}
-		
+
 		Tag tag = Tag.look(m.description)
 		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
 		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
-		
+
 		DateTime startOfDay = userDateTime.withTime(0, 0, 0, 0).minusMinutes(1)
 		DateTime endOfDay = startOfDay.plusHours(24)
 		log.debug("Entry.lookForPartialEntry: m.date " + m.date)
 		log.debug("Entry.lookForPartialEntry: userTimezone " + userTimezone)
 		log.debug("Entry.lookForPartialEntry: start date " + startOfDay)
 		log.debug("Entry.lookForPartialEntry: start " + endOfDay)
-		
+
 		def c = Entry.createCriteria()
 		def results = c {
 			and {
@@ -377,21 +378,21 @@ class Entry {
 				between("date", startOfDay.toDate(), endOfDay.toDate())
 			}
 		}
-		
+
 		return results
 	}
-			
+
 	static final BigDecimal smallDifference = new BigDecimal("0.01")
-	
+
 	// Prevent duplicates for imported entries
 	static boolean hasDuplicate(Long userId, Map m) {
 		if (m.setName == null)
 			return false
-			
+
 		log.debug "Trying to find duplicate for " + userId + " for " + m
-			
+
 		Tag tag = Tag.look(m.description)
-		
+
 		def c = Entry.createCriteria()
 		def results = c {
 			and {
@@ -406,17 +407,17 @@ class Entry {
 				eq("setName", m.setName)
 			}
 		}
-		
+
 		for (r in results) {
 			log.debug ("Found duplicate " + r)
 			return true
 		}
-		
+
 		log.debug "No duplicate found"
-				
+
 		return false
 	}
-	
+
 	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
 		log.debug "Entry.create() userId:" + userId + ", m:" + m
 
@@ -425,7 +426,7 @@ class Entry {
 		if (m['description'] == null) return null
 
 		m['description'] = m['description'].toLowerCase()
-		
+
 		if (hasDuplicate(userId, m)) {
 			log.debug "Entry map is a duplicate, do not add: " + m
 			return null
@@ -434,7 +435,7 @@ class Entry {
 		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
 
 		Tag tag = Tag.look(m['description'])
-		
+
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
 		Entry entry = new Entry(
@@ -467,7 +468,7 @@ class Entry {
 		}
 
 		entry.createRepeat()
-		
+
 		Entry generator = entry.fetchGeneratorEntry()
 
 		if (generator != null)
@@ -477,7 +478,7 @@ class Entry {
 
 		return entry
 	}
-	
+
 	Date fetchPreviousDate(int minusDays = 1) {
 		DateTime dateTime = fetchDateTime()
 		DateTimeZone dateTimeZone = dateTime.getZone()
@@ -540,7 +541,7 @@ class Entry {
 		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
 			return null
 		}
-		
+
 		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
 		LocalTime mLocalTime = new DateTime(m['date'], dateTimeZone).toLocalTime()
 		LocalDate baseLocalDate = new DateTime(baseDate, dateTimeZone).toLocalDate()
@@ -552,7 +553,7 @@ class Entry {
 		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
 
 		Date newDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
-		
+
 		// compute previous repeatEnd time by keeping original local time but subtracting a day
 		DateTime currentDateTime = fetchDateTime()
 		LocalTime currentLocalTime = currentDateTime.toLocalTime()
@@ -560,7 +561,7 @@ class Entry {
 		Date prevDate = baseLocalDate.minusDays(2).toDateTime(currentLocalTime, currentDateTimeZone).toDate()
 		while (newDate.getTime() - prevDate.getTime() > DAYTICKS)
 			prevDate = prevDate + 1
-		
+
 		if (this.repeatEnd == null || newDate < tomorrowRepeatEnd) {
 			m['date'] = newDate
 			m['repeatEnd'] = this.repeatEnd
@@ -568,17 +569,17 @@ class Entry {
 			def newEntry = create(this.userId, m, record)
 
 			// set the repeat end of this entry to the day before the current date
-			
-			if (prevDate >= this.date) 
+
+			if (prevDate >= this.date)
 				this.setRepeatEnd(prevDate)
 			else
 				this.setRepeatEnd(this.date)
-			
+
 			Utils.save(this, true)
 
 			return newEntry
 		}
-		
+
 		return null
 	}
 
@@ -602,7 +603,7 @@ class Entry {
 					m['repeatEnd'] = entry.getRepeatEnd()
 
 				entry.doUpdate(m, record)
-				
+
 				return entry
 			}
 		} else {
@@ -654,7 +655,7 @@ class Entry {
 			updateDurationEntry.updateDurationEntry()
 		}
 	}
-	
+
 	public boolean isDeleted() {
 		return userId == 0L
 	}
@@ -668,10 +669,10 @@ class Entry {
 	public static deleteGhost(Entry entry, Date baseDate, boolean allFuture) {
 		if (entry.getRepeatType().isContinuous()) {
 			Entry.delete(entry, null)
-			
+
 			return
 		}
-		
+
 		long entryTime = entry.getDate().getTime()
 		long baseTime = baseDate.getTime()
 		Date repeatEndDate = entry.getRepeatEnd()
@@ -715,7 +716,7 @@ class Entry {
 					DateTime newDateTime = TimeZoneId.nextDayFromDateSameTime(baseDate, entry.fetchDateTime())
 
 					Date newDate = newDateTime.toDate()
-					
+
 					if (repeatEndDate == null || repeatEndDate >= newDate) {
 						def m = [:]
 						m['description'] = entry.getTag().getDescription()
@@ -723,9 +724,9 @@ class Entry {
 
 						def repeatId = entry.getRepeatType().getId()
 						def toggleType = entry.getRepeatType().toggleGhost()
-						
+
 						def repeatTypes
-						
+
 						if (toggleType != null)
 							repeatTypes = [
 								repeatId,
@@ -882,7 +883,7 @@ class Entry {
 
 	/**
 	 * fetchDateTimeZone()
-	 * 
+	 *
 	 * Returns Joda time zone for this entry
 	 */
 	DateTimeZone fetchDateTimeZone() {
@@ -893,7 +894,7 @@ class Entry {
 
 	/**
 	 * fetchLocalTimeInZone()
-	 * 
+	 *
 	 * Returns Joda time zone for this entry
 	 */
 	DateTime fetchDateTimeInZone(DateTimeZone dateTimeZone) {
@@ -902,7 +903,7 @@ class Entry {
 
 	/**
 	 * fetchLocalTimeInZone()
-	 * 
+	 *
 	 * Returns Joda date time in current time zone
 	 */
 	DateTime fetchDateTime() {
@@ -917,7 +918,7 @@ class Entry {
 
 	/**
 	 * fetchIsGenerated()
-	 * 
+	 *
 	 * Returns true if this entry is dynamically generated, not manually entered. This method is used to prevent user
 	 * editing of generated entries
 	 */
@@ -927,7 +928,7 @@ class Entry {
 
 	/**
 	 * fetchGeneratorEntry()
-	 * 
+	 *
 	 * Returns end entry corresponding to this generated entry if it is a generated entry
 	 */
 	Entry fetchGeneratorEntry() {
@@ -952,7 +953,7 @@ class Entry {
 
 	/**
 	 * fetchIsEnd()
-	 * 
+	 *
 	 * Returns true if this entry is the end of a duration pair
 	 */
 	boolean fetchIsEnd() {
@@ -961,7 +962,7 @@ class Entry {
 
 	/**
 	 * fetchIsStart()
-	 * 
+	 *
 	 * Returns true if this entry is the start of a duration pair
 	 */
 	boolean fetchIsStart() {
@@ -970,7 +971,7 @@ class Entry {
 
 	/**
 	 * retrieveDurationEntry()
-	 * 
+	 *
 	 * If this is an end entry, returns corresponding duration entry
 	 * @return
 	 */
@@ -1029,7 +1030,7 @@ class Entry {
 
 	/**
 	 * findDurationEntry()
-	 * 
+	 *
 	 * Look for duration entries within 5 minutes of end entry time
 	 * @return
 	 */
@@ -1099,7 +1100,7 @@ class Entry {
 
 	/**
 	 * calculateDuration()
-	 * 
+	 *
 	 * Returns duration width for this end entry in milliseconds
 	 */
 	protected Long calculateDuration() {
@@ -1162,7 +1163,7 @@ class Entry {
 
 	/**
 	 * Used only in batch jobs to renormalize all entries
-	 * 
+	 *
 	 * @return
 	 */
 	def initializeDurations() {
@@ -1278,7 +1279,7 @@ class Entry {
 
 	/**
 	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
-	 * If the passed-in tag is a start tag, calculates the base tag 
+	 * If the passed-in tag is a start tag, calculates the base tag
 	 */
 	protected static def getDurationInfo(Tag tag, String units, RepeatType repeatType) {
 		return getDurationInfoFromStrings(tag.getDescription(), units, repeatType)
@@ -1286,7 +1287,7 @@ class Entry {
 
 	/**
 	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
-	 * If the passed-in tag is a start tag, calculates the base tag 
+	 * If the passed-in tag is a start tag, calculates the base tag
 	 */
 	protected static def getDurationInfoFromStrings(String description, String units, RepeatType repeatType) {
 		log.debug "Entry.getDurationInfoFromStrings() description:" + description + ", units:" + units
@@ -1397,7 +1398,7 @@ class Entry {
 			}
 
 			e = findNextRepeatEntry()
-			
+
 			if (e != null) {
 				Date newPrevious = e.fetchPreviousDate()
 				if (repeatEnd == null || newPrevious < repeatEnd)
@@ -1422,10 +1423,10 @@ class Entry {
 
 	/**
 	 * Calculates corresponding DateTime for this entry if it were to have happened on baseDate in the specified time zone
-	 * 
+	 *
 	 * For example if this entry were at "2pm" in the original time zone, figure out what would be 2pm on a day close to the
 	 * baseDate in the original time zone, adjusting for daylight savings time. Then translate to the new time zone.
-	 * 
+	 *
 	 * @param baseDate
 	 * @param currentTimeZone
 	 * @return translated dateTime corresponding to new date and new time zone
@@ -1635,7 +1636,7 @@ class Entry {
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 
 		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousIds:CONTINUOUS_IDS]
-		
+
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []
@@ -1729,7 +1730,7 @@ class Entry {
 
 	// limit repeat generation to 300 entries, for now
 	public static final int MAX_PLOT_REPEAT = 300
-	
+
 	private static def generateRepeaterEntries(def repeaters, long endTimestamp, def results) {
 		def repeaterOrder = { LocalTimeRepeater a, LocalTimeRepeater b ->
 			if (a.getCurrentDateTime() == null) return 1 // sort null repeaters to end
@@ -1765,9 +1766,9 @@ class Entry {
 			}
 		}
 	}
-	
+
 	static final double twoPi = 2.0d * Math.PI
-	
+
 	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime, DateTimeZone currentTimeZone) {
 		DateTime startDateTime = new DateTime((Date)(startDate ?: currentTime), currentTimeZone) // calculate midnight relative to current time
 		// set time to zero
@@ -1775,14 +1776,14 @@ class Entry {
 
 		// figure out the angle of the startDate
 		String queryStr = "select (time_to_sec(:dateMidnight) / 43200.0) * pi() as angle"
-		
+
 		def queryMap = [dateMidnight:dateMidnight]
-		
+
 		double startDateAngle = DatabaseService.get().sqlRows(queryStr, queryMap)[0]['angle']
-		
+
 		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
 		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
-		
+
 		// fetch sum of non-repeat entries
 		queryStr = "select count(*) as c, sum(sin((time_to_sec(entry.date) / 43200.0) * pi())) as y, sum(cos((time_to_sec(entry.date) / 43200.0) * pi())) as x " \
 				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_type in (:unghostedSingularIds)) " \
@@ -1802,19 +1803,19 @@ class Entry {
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
 
 		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
-		
+
 		int c = (nonRepeatSum['c'] ?: 0) + (repeatSum['c'] ?: 0)
 		if (c == 0)
 			return HALFDAYSECS
-			
+
 		double x = ((nonRepeatSum['x'] ?: 0.0) + (repeatSum['x'] ?: 0.0)) / c
 		double y = ((nonRepeatSum['y'] ?: 0.0) + (repeatSum['y'] ?: 0.0)) / c
-		
+
 		double averageAngle
-		
+
 		if (Math.abs(x) < 1E-8d) x = 0.0d
 		if (Math.abs(y) < 1E-8d) y = 0.0d
-		
+
 		if ((x == 0.0d) && (y == 0.0d))
 			averageAngle = Math.PI
 		else {
@@ -1822,10 +1823,10 @@ class Entry {
 			averageAngle -= startDateAngle
 			averageAngle = ((averageAngle % twoPi) + twoPi) % twoPi
 		}
-		
+
 		return (int) (Math.round((averageAngle / twoPi) * 86400.0d)) % 86400
-	}	
-	
+	}
+
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
@@ -1905,19 +1906,19 @@ class Entry {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
 		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
-		
+
 		int averageSecs = fetchAverageTime(user, tagIds, startDate, endDate, currentDate, currentTimeZone)
-		
+
 		if (averageSecs > HALFDAYSECS + HOURSECS * 9) { // if the average time is after 9pm, do a "night sum"
 			averageSecs -= DAYSECS
 		}
-		
+
 		long offset = (averageSecs * 1000L) - HALFDAYTICKS
 		if (startDate != null)
 			startDate = new Date(startDate.getTime() + offset)
 		else if (endDate != null)
 			endDate = new Date(endDate.getTime() + offset)
-		
+
 		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
 
 		Long startTime = startDate?.getTime()
@@ -2072,15 +2073,15 @@ class Entry {
 
 	/**
 	 * If baseDate is null, do not store a date in the entry. This means it is a pure metadata entry
-	 * 
+	 *
 	 * Parsing using the following subpatterns:
-	 *  
+	 *
 	 *		[time] [tag] <[amount] <[units]>> <[comment]>
-	 *		
+	 *
 	 *		OR
-	 *		
+	 *
 	 *		[tag] <[amount] <[units]>> <[time]> <[comment]>
-	 * 
+	 *
 	 */
 
 	static Pattern timePattern = ~/(?i)^((@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)($|[^A-Za-z0-9])|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?($|[^A-Za-z0-9])|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)($|[^A-Za-z0-9]))/
