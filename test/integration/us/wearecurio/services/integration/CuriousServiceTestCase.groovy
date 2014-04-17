@@ -60,5 +60,6 @@ abstract class CuriousServiceTestCase {
 
 	@After
 	void tearDown() {
+		User.executeUpdate("delete User u")
 	}
 }

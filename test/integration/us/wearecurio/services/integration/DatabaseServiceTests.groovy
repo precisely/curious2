@@ -71,6 +71,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 
 	@Override
 	void tearDown() {
+		super.tearDown()
 	}
 	
 	void testOptimisticLocking() {
