@@ -95,7 +95,9 @@ class CorrelationService {
 		def score = new Correlation(series1, series2)
 		def result = CuriousSeries.mipss(series1, series2)
 
-    log("MIPSS: ${result['value']} (N=${result['N']}): (${series1.sourceId})${series1.sourceDescription} X (${series2.sourceId})${series2.sourceDescription}\n")
+		if (result) {
+			log("MIPSS: ${result['value']} (N=${result['N']}): (${series1.sourceId})${series1.sourceDescription} X (${series2.sourceId})${series2.sourceDescription}\n")
+		}
 		def mipss = null
 		def N = null
 		if (result && result['N'] && result['N'] > 0) {
@@ -122,25 +124,6 @@ class CorrelationService {
 		for (series1 in all_series) {
 			for (series2 in all_series) {
 				if (series1 != null && series2 != null && seriesOverlap(series1, series2)) {
-					saveMipss(series1, series2)
-				} // if series overlap
-			} // for
-		} // for
-	} // updateUserCorrelationsDebug
-
-	def updateUserCorrelationsDebug(def user, startTime=null, stopTime=null) {
-		new File("CorrelationService.out").delete()
-		startTime = startTime ?: entryService.userStartTime(user.id)
-		stopTime = stopTime ?: entryService.userStopTime(user.id)
-		def tags = Entry.findAllWhere('userId': user.id.toLong()).collect { it.tag }.unique()
-		def all_series = tagsToSeries(tags, user)
-		def score = null
-		def N= null
-		def mipss = null
-		for (series1 in all_series) {
-			for (series2 in all_series) {
-				if (series1 != null && series2 != null && seriesOverlap(series1, series2)) {
-					//saveMipss(series1, series2)
 					saveMipssWithLogging(series1, series2)
 				} // if series overlap
 			} // for

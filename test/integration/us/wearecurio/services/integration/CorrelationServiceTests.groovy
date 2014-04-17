@@ -71,11 +71,11 @@ class CorrelationServiceTests extends CuriousServiceTestCase {
 			assert Tag.count() == 5
 			assert Entry.count() == 18
 			def user_a = User.findWhere(username: 'a')
-			correlationService.updateUserCorrelationsDebug(user_a)
+			correlationService.updateUserCorrelations(user_a)
 			assert Correlation.count() == 4
 
 			def user_b = User.findWhere(username: 'b')
-			correlationService.updateUserCorrelationsDebug(user_b)
+			correlationService.updateUserCorrelations(user_b)
 			assert Correlation.count() == 4 + 9
 
 			def correlations = Correlation.findAll().collect { it.corValue }
