@@ -369,7 +369,9 @@ ul.ui-autocomplete {
 	display:inline-block;
 }
 #searchTags {
-	font-size:.9em;	
+	font-size:.9em;
+	margin-left: -1px;
+	margin-right: -1px;
 }
 #searchTags .grid {
 	float:right;
@@ -408,9 +410,6 @@ ul.ui-autocomplete {
 }
 ul.tags {
     list-style: none;
-    border: 1px solid #ccc;
-	border-top: 0;
-	border-bottom: 0;
 }
 ul.tags li {
     margin-bottom: 4px;
@@ -598,6 +597,8 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
+	border: 1px solid #ccc;
+	border-top: 0;
 }
 
 /* FIRST PAGE */

@@ -37,17 +37,11 @@
 		padding-right: 0;
 		border-right: 0;
 	}
-	div.entry-container #trackmain {
-		height: calc(100% - 240px);
-	}
-	div.entry-container #trackmain #area0 #recordList {
-		height: 100%;
-	}
-	div.entry-container #trackmain #recordList {
-		height: 100%;
+	div.entry-container #trackmain, div.entry-container #trackmain #area0, div.entry-container #trackmain #recordList {
+		height: auto;
 	}
 	div.entry-container #trackmain #recordList #entry0 {
-		height: 100%;
+		height: calc(100% - 240px);
 		overflow-y: auto;
 	}
 	div.red-header.date-controls input#datepicker {
@@ -61,13 +55,8 @@
 	body.tags-displayed div.tags-container {
 		margin-left: 0;
 	}
-	div.tags-container div#tagListWrapper {
-		min-height: 0;
-		overflow: hidden;
-		height: calc(100% - 240px);
-	}
 	div.tags-container div#tagListWrapper ul#tagList {
-		height: 100%;
+		height: calc(100% - 240px);
 		overflow-y: auto;
 	}
 	body.tags-displayed div.red-header h1.right, body.tags-displayed div.entry-container,
