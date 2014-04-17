@@ -467,6 +467,8 @@ class Entry {
 			tagStatsRecord.setOldTagStats(tagStats)
 		}
 
+		TagUnitStats.createOrUpdate(userId, entry.getTag().getId(), m['units'] == null?'':m['units']) 
+
 		entry.createRepeat()
 
 		Entry generator = entry.fetchGeneratorEntry()
