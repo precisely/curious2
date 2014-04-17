@@ -6,10 +6,13 @@ class Stats {
 	public static mean(def x) {
 		List <Double> values = x.clone()
 		values.removeAll([null])
-		if (values.size() < 2) {
+    def size = values.size()
+    if (size == 0) {
+      return null
+    } else if (size == 1) {
 			return values.first()
 		}
-		values.sum()/values.size()
+		values.sum() / size
 	}
 
 	// Sample standard deviation
