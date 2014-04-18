@@ -75,7 +75,7 @@ a,a:link,a:hover,a:visited {
 }
 .bugs a {	
 	display:block;
-	background:url(/static/images/bugs.gif) no-repeat;
+	background:url(/images/bugs.gif) no-repeat;
 	width:19px;
 	height:20px;
 	position:absolute;
@@ -94,24 +94,15 @@ a,a:link,a:hover,a:visited {
 .header {
 	padding:10px 0px 10px 0px;
 }
-#headerlogo {
-	background:url('/images/logo_alpha.png') no-repeat;
-	width: 420px;
-	height:30px;
-	display:inline-block;
-	padding:0px 0px 15px 0px;
-	vertical-align:middle;
+.header a.logo-link {
+	margin-bottom: 15px;
+	display: inline-block;
 }
-@media (max-width: 992px) {
-	#headerlogo {
-		width: 180px;
-	}
+.header #headerbutton {
+	display: inline-block;
 }
-#headerbutton {
-	background:url(/static/images/lhpdonate.gif) no-repeat;
-	width:180px;
-	height:60px;
-	display:inline-block;
+.header #headerbutton img {
+	width: 100px;
 }
 .mainLinks {
 	display:inline-block;
@@ -123,6 +114,9 @@ a,a:link,a:hover,a:visited {
 	text-transform:uppercase;
 	font-size:.8em;
 	color:#999999;
+}
+.mainLinks li:first-child {
+	padding-left: 0;
 }
 .mainLinks li.active {
 	font-weight: bold;
@@ -146,15 +140,6 @@ a,a:link,a:hover,a:visited {
 .signin li a {
 	padding-left:10px;
 	text-decoration:none;
-}
-@media (max-width: 768px) {
-	.mainLinks {
-		padding: 0;
-		display: block;
-	}
-	.mainLinks li:first-child {
-		padding-left: 0;
-	}
 }
 #datepicker {
 	width:250px;

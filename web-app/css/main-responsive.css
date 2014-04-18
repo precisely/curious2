@@ -8,6 +8,9 @@
 		width: 100%;
 		margin-bottom: 2px;
 	}
+	.bugs a {
+		right: -10px;
+	}
 	.header {
 		text-align: center;
 	}
@@ -15,11 +18,14 @@
 		float: none !important;
 		padding: 10px 0;
 	}
-	.header a.logo-container {
-		display: block;
+	.header .logo-container {
+		float: none !important;
 	}
-	.header a.logo-container #headerlogo {
-		padding-bottom: 0;
+	.header .logo-container .logo-link {
+		margin-bottom: 1px;
+	}
+	.header .mainLinks {
+		padding-top: 0;
 	}
 	.footer ul {
 		width: 25%;
@@ -79,6 +85,7 @@
 	}
 	.plotlines .ui-droppable {
 		float: none;
+		margin-right: 0;
 	}
 	.dateline {
 		text-align: center;
