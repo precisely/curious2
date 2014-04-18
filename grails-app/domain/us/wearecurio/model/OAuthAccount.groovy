@@ -37,14 +37,16 @@ class OAuthAccount {
 		int c = 0
 
 		while (++c < 4) {
-			OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
-
-			account.accountId = accountId
-			account.accessToken = accessToken
-			account.accessSecret = accessSecret
-
-			if (Utils.save(account, true)) {
-				return account
+			OAuthAccount.withTransaction {
+				OAuthAccount account = OAuthAccount.findOrCreateByUserIdAndTypeId(userId, type)
+	
+				account.accountId = accountId
+				account.accessToken = accessToken
+				account.accessSecret = accessSecret
+	
+				if (Utils.save(account, true)) {
+					return account
+				}
 			}
 		}
 

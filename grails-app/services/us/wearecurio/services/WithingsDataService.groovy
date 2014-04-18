@@ -163,8 +163,11 @@ class WithingsDataService extends DataService {
 		}
 
 		if (serverTimestamp > 0) {
-			account.setLastPolled(new Date(serverTimestamp))
-			Utils.save(account, true)
+			DatabaseService.retry(account) {
+				account.setLastPolled(new Date(serverTimestamp))
+				account.merge()
+				account.save()
+			}
 		}
 
 		[success: true]
