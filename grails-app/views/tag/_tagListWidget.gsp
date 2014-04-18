@@ -1,10 +1,5 @@
 <g:if test="${header }">
-	<g:if test="${!floatingColumn}">
-		<div class="pull-right fixed-column tags-header-container">
-	</g:if>
-	<g:else>
-		<div class="tags-header-container">
-	</g:else>
+	<div class="fixed-column tags-header-container">
 		<div class="pointer" id="toggle-tags">
 			<h1>
 				<span class="icon-triangle icon-triangle-right"></span>
@@ -48,12 +43,7 @@
 	</r:script>
 </g:if>
 <g:else>
-	<g:if test="${!floatingColumn}">
-		<div class="col-xs-3 pull-right fixed-column hide tags-container" id="tagNav">
-	</g:if>
-	<g:else>
-		<div class="hide tags-container" id="tagNav">
-	</g:else>
+	<div class="fixed-column hide tags-container" id="tagNav">
 		<div id="tagListWrapper">
 			<div id="searchTags">
 				<input type="text" value="Search tags for..." class="textInput" id="tagSearch" />

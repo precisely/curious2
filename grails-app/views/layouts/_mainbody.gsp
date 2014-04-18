@@ -3,23 +3,28 @@
 <div class="bugs"><a href="#"><span>Bugs</span></a></div>
 
 <!-- HEADER -->
-<div class="header">
+<div class="header clearfix">
+	<div class="pull-left logo-container">
+		<a href="/home/index" class="logo-link">
+			<r:img dir="images" file="logo_alpha.png" />
+		</a>
+		<g:if test="${templateVer == 'lhp'}">
+			<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton">
+				<r:img dir="images" file="lhpdonate.gif" />
+			</a>
+		</g:if>
+	</div>
 	<ul class="signin pull-right">
 		<li><span id="displayUser"></span></li>
 		<li><a href="/home/logout" id="logoutLink">sign out</a></li>
 	</ul>
-	
-	<a href="/home/index"><span id="headerlogo" class="content-size"></span></a>
-<g:if test="${templateVer == 'lhp'}">
-	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
-</g:if>
-	<span id="headerlinks">
-	<ul class="mainLinks">
-		<li><g:link controller='home' action="index">Track</g:link></li>
-		<li><g:link controller='home' action="graph">Graph</g:link></li>
-		<li><g:link controller='home' action="community">Community</g:link></li>
-	</ul>
-	</span>
+	<div class="text-center clearfix">
+		<ul class="mainLinks">
+			<li><g:link controller='home' action="index">Track</g:link></li>
+			<li><g:link controller='home' action="graph">Graph</g:link></li>
+			<li><g:link controller='home' action="community">Community</g:link></li>
+		</ul>
+	</div>
 </div>
 <script>
 	$(window).load(function () {

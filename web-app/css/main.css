@@ -3,6 +3,9 @@
 	margin-right: 40px;
 	width: auto;
 }
+ul {
+	margin-bottom: 0;
+}
 /* FRAME */
 
 .content-size, .content-size:after, .content-size:before {
@@ -72,7 +75,7 @@ a,a:link,a:hover,a:visited {
 }
 .bugs a {	
 	display:block;
-	background:url(/static/images/bugs.gif) no-repeat;
+	background:url(/images/bugs.gif) no-repeat;
 	width:19px;
 	height:20px;
 	position:absolute;
@@ -91,24 +94,15 @@ a,a:link,a:hover,a:visited {
 .header {
 	padding:10px 0px 10px 0px;
 }
-#headerlogo {
-	background:url(/static/images/logo_alpha.png) no-repeat;
-	width: 420px;
-	height:30px;
-	display:inline-block;
-	padding:0px 0px 15px 0px;
-	vertical-align:middle;
+.header a.logo-link {
+	margin-bottom: 15px;
+	display: inline-block;
 }
-@media (max-width: 992px) {
-	#headerlogo {
-		width: 180px;
-	}
+.header #headerbutton {
+	display: inline-block;
 }
-#headerbutton {
-	background:url(/static/images/lhpdonate.gif) no-repeat;
-	width:180px;
-	height:60px;
-	display:inline-block;
+.header #headerbutton img {
+	width: 100px;
 }
 .mainLinks {
 	display:inline-block;
@@ -120,6 +114,9 @@ a,a:link,a:hover,a:visited {
 	text-transform:uppercase;
 	font-size:.8em;
 	color:#999999;
+}
+.mainLinks li:first-child {
+	padding-left: 0;
 }
 .mainLinks li.active {
 	font-weight: bold;
@@ -144,15 +141,6 @@ a,a:link,a:hover,a:visited {
 	padding-left:10px;
 	text-decoration:none;
 }
-@media (max-width: 768px) {
-	.mainLinks {
-		padding: 0;
-		display: block;
-	}
-	.mainLinks li:first-child {
-		padding-left: 0;
-	}
-}
 #datepicker {
 	width:250px;
 	font-size:15px;
@@ -168,11 +156,6 @@ a,a:link,a:hover,a:visited {
  */
 body.graph-page .body1 {
 	position: relative;
-}
-body.graph-page #tagListWrapper {
-	min-height: 565px;
-	background: #fff;
-	border: 1px solid #ccc;
 }
 body.graph-page #tagListWrapper ul#tagList {
 	height: 583px;
@@ -269,6 +252,8 @@ body.discuss-page input#discussTitleInput {
 }
 .footer h2 {
 	padding-bottom:.7em;
+	font-size: 100%;
+	margin: 0;
 }
 .footer ul {
 	display:block;
@@ -317,9 +302,6 @@ input.textInput {
 }
 .endDate {
 	display:inline-block;
-	float:right;
-}
-.endDate {
 	float:right;
 }
 .endDate a.calendar {
@@ -372,7 +354,9 @@ ul.ui-autocomplete {
 	display:inline-block;
 }
 #searchTags {
-	font-size:.9em;	
+	font-size:.9em;
+	margin-left: -1px;
+	margin-right: -1px;
 }
 #searchTags .grid {
 	float:right;
@@ -406,12 +390,11 @@ ul.ui-autocomplete {
 .unstyled {
     list-style: none;
 }
-.hide {
+.hide, .hid {
     display: none;
 }
 ul.tags {
     list-style: none;
-    clear:both;
 }
 ul.tags li {
     margin-bottom: 4px;
@@ -483,7 +466,7 @@ ul.tags li.tagGroup ul.tags, .wildcardTagGroup ul {
 	margin-left:10px;
 }
 ul#tagList {
-	height: 545px;
+	height: 603px;
 	overflow-y: scroll;
 }
 .leftNav {
@@ -506,6 +489,10 @@ ul#tagList {
 	cursor: pointer;
 	margin-right: 4px;
 	margin-bottom: 4px;
+}
+.plotlines .ui-droppable h3 {
+	margin: 0;
+	font-size: 100%;
 }
 
 /* JQUERY UI MODS */
@@ -595,8 +582,8 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
 	box-shadow: 3px 3px 3px #dddddd;
-	margin-bottom: 5px;
-	min-height: 608px;
+	border: 1px solid #ccc;
+	border-top: 0;
 }
 
 /* FIRST PAGE */
@@ -762,12 +749,11 @@ div.plotLine:hover span {
 	box-shadow: 3px 3px 3px #ffffff;
 }
 .fixed-column {
-	width: 225px;
+	width: 227px;
+	float: right;
 }
 .floating-column {
 	overflow: hidden;
-	float: none;
-	width: auto;
 }
 #preFooter .tagNav img {
 	vertical-align:middle;
@@ -1011,7 +997,6 @@ div.plotLine:hover span {
 	padding-right: 10px;
 }
 .entry-container {
-	padding-right: 0px;
 }
 /**
  * Generic & common stuff, useful for every where. Starts here.
@@ -1026,13 +1011,13 @@ div.plotLine:hover span {
 	width: 100%;
 }
 .red-header .right {
+	float: left;
 	padding: 9px 10px;
+	width: calc(100% - 227px);
 	border-right: 2px solid #fff;
 }
-#tagNav {
-	width: 227px;
-	padding: 0px;
-	margin-left: 3px;
+.tags-container {
+	margin-left: 2px;
 }
 .red-header h1 {
 	font-weight: normal;
@@ -1162,22 +1147,6 @@ div.plotLine:hover span {
 	text-align: center;
 	vertical-align: middle;
 }
-[class*="span"] {
-	position: relative;
-	min-height: 1px;
-	padding-left: 15px;
-	padding-right: 15px;
-	float: left;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-}
-.span3 {
-	width: 25%;
-}
-.span9 {
-	width: 75%;
-}
 
 /**
  * Generic & common stuff, useful for every where. Ends here.
@@ -1220,10 +1189,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 /**
  * Styles for track page for web application. Ends here.
  */
-div.tags-header-container, div.tags-container, body.tags-collapsed div.tags-header-container, body.tags-collapsed div.tags-container {
-	padding-left: 2px;
-}
-.track-page .tags-header-container {
+.tags-header-container {
 	padding: 7px;
 }
 
@@ -1231,6 +1197,137 @@ div.graph-header-container .red-header {
 	-webkit-box-shadow: none;
 	box-shadow: none;
 }
-div.entry-header-container, div.graph-header-container, body.tags-displayed div.entry-container, body.tags-displayed div.graph-container {
-	padding-right: 0px;
+
+/**
+ * Style for community & load page.
+ */
+#graphList #graphItem {
+	clear:both;
+}
+#graphList .summary {
+	padding-top:12px;
+	padding-bottom:12px;
+}
+#graphList .summary .date {
+	font-size: 80%;
+	display: inline-block;
+	width: 9em;
+	color: #666666;
+}
+#graphList .summary h2 {
+	width: 265px;
+	background: url(images/pointer_right.png) no-repeat center left;
+	padding-left: 25px;
+	font-weight: bold;
+	font-size: 100%;
+	display: inline-block;
+	margin: 0;
+}
+#graphList .summary .userName {
+	width: .6em;
+	font-size: 80%;
+	color: #666666;
+	display: inline-block;
+}
+#graphList .summary .preview {
+	width: 50px;
+	font-size: 80%;
+	padding-bottom: 5px;
+	display: inline-block;
+}
+#graphList .summary .unpublishButton {
+	width: 250px;
+	margin-left: 2px;
+	margin-right: 4px;
+	padding-top: 4px;
+	padding-right: 4px;
+	background-color: #08BBF1;
+	color: #FFFFFF;
+	padding-left: 4px;
+	padding-bottom: 4px;
+	font-size: 16px;
+}
+#graphList .summary .publishButton {
+	width: 250px;
+	margin-left: 2px;
+	margin-right: 4px;
+	padding-top: 4px;
+	padding-right: 4px;
+	background-color: #08BBF1;
+	color: #FFFFFF;
+	padding-left: 4px;
+	padding-bottom: 4px;
+	font-size: 16px;
+}
+#graphList .summary .update {
+	font-size: 80%;
+	display: inline-block;
+	width: 0px;
+	height: 21px;
+	text-align: center;
+	line-height: 21px;
+	color: #ffffff ! important;
+	text-transform: uppercase;
+	background: url(images/preview_btn.gif) no-repeat
+}
+#graphList .summary .close {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	padding-left: 5px;
+	background: url(images/x.gif) no-repeat center center;
+}
+#graphList .summary .visibility {
+	color: #AAAAAA;
+	width: 280px;
+	display: inline-block;
+	text-align: right;
+}
+#graphList .summary .close span {
+	display: none
+}
+#graphList .content {
+	padding-top: 25px;
+	font-size: 80%;
+	color: #666666;
+}
+#graphList .sidebar h2 {
+	padding-top: 20px
+}
+#graphList .sidebar ul {
+	list-style-type: none;
+	padding: 0px;
+	margin: 0px;
+}
+#graphList .sidebar li a {
+	color: #666666 ! important
+}
+#graphList .notes {
+	margin-left: 25px;
+	float: left;
+	width: 600px
+}
+#graphList .notes p {
+	line-height: 1.5em;
+	padding-top: 20px
+}
+.communityMessage {
+	padding-bottom: 1em;
+}
+.discussHeader {
+	padding-top: 12px;
+	margin-left: 15px;
+}
+
+body.load-graph #graphList .summary h2 {
+	width: 485px
+}
+body.load-graph #graphList .summary .preview {
+	width: 60px;
+}
+body.load-graph #graphList .summary .update {
+	width: 68px;
+}
+body.load-graph #graphList .summary .close {
+	width: 21px;
 }

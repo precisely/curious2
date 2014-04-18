@@ -15,6 +15,7 @@
 <script type="text/javascript" src="/static/js/curious/taglist.js?ver=18"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/static/css/main.css?ver=18"/>
+<link rel="stylesheet" href="/static/css/main-responsive.css?ver=18"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/static/css/mainlhp.css"/>
 </g:if>

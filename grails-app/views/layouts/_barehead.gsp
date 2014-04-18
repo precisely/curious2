@@ -1,4 +1,5 @@
 <title><g:layoutTitle default="Curious" /></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link type="text/css" href="/static/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
 <script type="text/javascript" src="/static/js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/static/js/jquery/jquery.json-2.2.js"></script>

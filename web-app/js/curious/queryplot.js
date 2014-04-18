@@ -877,6 +877,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var plot = this;
 		this.lastItemClicked = null;
 		this.lastItemClickTime = null;
+		if (plotArea.is(":hidden")) {
+			// Preventing flot.js exception of 0 height or width. (Hiding an element returns width & height as 0)
+			console.warn("Plotarea is hidden. Not drawing the graph.");
+			return false;
+		}
 		$.plot(plotArea, this.plotData, this.plotOptions);
 		plotArea.off("click");
 		plotArea.on("click", function(event) {
@@ -2169,6 +2174,8 @@ function PlotLine(p) {
 }
 
 $(window).resize(function() {
-	console.log('Refreshing graph on window resize');
-	plot.refreshAll();
+	if (plot && plot.plotData && plot.plotData.length != 0 && !plot.plotArea.is(":hidden")) {
+		console.log('Refreshing graph on window resize');
+		plot.refreshAll();
+	}
 });
