@@ -139,7 +139,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert account.timeZoneId != null
 		assert account.accountId == "dummy1234"
 
-		TimeZoneId timeZoneIdInstance = TimeZoneId.get(account.timeZoneId)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(account.timeZoneId)
 		assert timeZoneIdInstance.name == "Europe/Helsinki"
 	}
 
@@ -165,7 +165,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert account != null
 		assert account.timeZoneId != null
 
-		TimeZoneId timeZoneIdInstance = TimeZoneId.get(account.timeZoneId)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(account.timeZoneId)
 		// Will save default timezone
 		assert timeZoneIdInstance.name == "Etc/UTC"
 		assert account.accountId == "dummy1234"
