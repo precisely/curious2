@@ -35,7 +35,13 @@ class HomeController extends DataController {
 	def HomeController() {
 		debug "HomeController()"
 	}
-
+	
+	def causeexception() throws AuthenticationRequiredException {
+		debug "HomeController.causeexception() params:" + params
+		
+		throw new AuthenticationRequiredException("test only please ignore")
+	}
+		
 	def registerwithings() throws AuthenticationRequiredException {
 		debug "HomeController.registerwithings() params:" + params
 
