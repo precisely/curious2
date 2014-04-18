@@ -464,7 +464,6 @@ function selected($selectee, forceUpdate) {
 		currentEntryId = $selectee.data("entry-id");
 		$selectee.data('entryIsSelected', 1);
 		$selectee.addClass('ui-selected');
-		$("#entrydelid" + currentEntryId).css('display', 'inline');
 
 		var entryText = $selectee.text();
 		var selectRange = entrySelectData[currentEntryId];
@@ -475,7 +474,7 @@ function selected($selectee, forceUpdate) {
 		}
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="tagTextEdit" style="display:inline"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
+		$selectee.append('<span id="tagTextEdit"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
 				+ '<img class="entryModify entryNoBlur" src="/static/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 				+ '<img class="entryModify entryNoBlur" src="/static/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
 				+ '<img class="entryModify entryNoBlur" src="/static/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
