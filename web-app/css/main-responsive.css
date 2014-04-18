@@ -1,0 +1,124 @@
+@media (max-width: 768px) {
+	.container {
+		padding: 0;
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+	.row [class*="col-"] {
+		width: 100%;
+		margin-bottom: 2px;
+	}
+	.bugs a {
+		right: -10px;
+	}
+	.header {
+		text-align: center;
+	}
+	.header .signin {
+		float: none !important;
+		padding: 10px 0;
+	}
+	.header .logo-container {
+		float: none !important;
+	}
+	.header .logo-container .logo-link {
+		margin-bottom: 1px;
+	}
+	.header .mainLinks {
+		padding-top: 0;
+	}
+	.footer ul {
+		width: 25%;
+		text-align: center;
+	}
+	div.tags-header-container, div.tags-container {
+		width: 100%;
+		float: none !important;
+		border-bottom: 2px solid #fff;
+	}
+	div.red-header h1.right {
+		float: none;
+		width: 100%;
+		padding-left: 0;
+		padding-right: 0;
+		border-right: 0;
+	}
+	div.entry-container #trackmain, div.entry-container #trackmain #area0, div.entry-container #trackmain #recordList {
+		height: auto;
+	}
+	div.entry-container #trackmain #recordList #entry0 {
+		height: calc(100% - 240px);
+		overflow-y: auto;
+	}
+	div.red-header.date-controls input#datepicker {
+		width: auto;
+		font-size: 13px;
+		padding-top: 2px;
+	}
+	body.tags-displayed div.tags-header-container {
+		border-bottom: 0;
+	}
+	body.tags-displayed div.tags-container {
+		margin-left: 0;
+	}
+	div.tags-container div#tagListWrapper ul#tagList {
+		height: calc(100% - 240px);
+		overflow-y: auto;
+	}
+	body.tags-displayed div.red-header h1.right, body.tags-displayed div.entry-container,
+		body.tags-displayed div.graph-container {
+		display: none;
+	}
+	body.graph-page div.row.top-row div.leftNav {
+		border: 0;
+		box-shadow: none;
+	}
+	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
+		display: block;
+		float: none;
+	}
+	body.graph-page div.red-header h1.right {
+		padding: 10px;
+	}
+	body.graph-page .querymain #plotArea {
+		height: calc(100% - 300px);
+	}
+	.plotlines .ui-droppable {
+		float: none;
+		margin-right: 0;
+	}
+	.dateline {
+		text-align: center;
+	}
+	.startdatepicker, .enddatepicker {
+		width: 100%;
+		text-align: center;
+	}
+	div.leftNav, div#plotLeftNav, div#plotLinesplotArea {
+		height: auto;
+	}
+	body.user-preference .row .col-sm-3 {
+		display: none;
+	}
+	body.user-preference .profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]), .profile-container text-area {
+		min-width: 0;
+		width: 100%;
+	}
+	body.user-preference .profile-container div.form-group {
+		margin-bottom: 10px !important;
+	}
+	#dashmain {
+		width: 100%;
+	}
+	#graphlist .summary {
+		padding: 12px 15px;
+	}
+	#graphList .summary h2 {
+		width: auto !important;
+		padding-left: 0;
+	}
+	#graphList .summary .userName, #graphList .summary .visibility, #graphList .summary .publishButton, #graphList .summary .date {
+		width: auto;
+		padding-bottom: 4px;
+	}
+}

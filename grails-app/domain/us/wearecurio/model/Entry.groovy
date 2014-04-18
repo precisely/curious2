@@ -460,7 +460,7 @@ class Entry {
 
 		entry.processAndSave()
 
-		def TagStats tagStats = TagStats.createOrUpdate(userId, entry.getTag().getId())
+		TagStats tagStats = TagStats.createOrUpdate(userId, entry.getTag().getId())
 
 		if (tagStatsRecord != null) {
 			tagStatsRecord.setOldTagStats(tagStats)

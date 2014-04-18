@@ -5,25 +5,6 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
-<style type="text/css">
-#graphList #graphItem {clear:both}
-#graphList .summary {padding-top:50px}
-#graphList .summary h2 {background:url(images/pointer_right.png) no-repeat center left;padding-left:25px;font-weight:bold;font-size:100%;display:inline-block;width:485px}
-#graphList .summary .date {font-size:80%;display:inline-block;width:100px;color:#666666}
-#graphList .summary .preview {font-size:80%;display:inline-block;width:60px;}
-#graphList .summary .update {font-size:80%;display:inline-block;width:68px;height:21px;text-align:center;line-height:21px;color:#ffffff ! important;text-transform:uppercase;background:url(images/preview_btn.gif) no-repeat}
-#graphList .summary .close {display:inline-block;width:21px;height:10px;padding-left:5px;background:url(images/x.gif) no-repeat center center;}
-#graphList .summary .close span {display:none}
-#graphList .content {padding-top:25px;font-size:80%;color:#666666;}
-#graphList .content h2 {color:#000000;font-weight:bold}
-#graphList .sidebar {margin-left:25px;width:200px;float:left;}
-#graphList .sidebar h2 {padding-top:20px}
-#graphList .sidebar ul {list-style-type: none;padding: 0px;margin: 0px;}
-#graphList .sidebar li {list-item:none;padding-top:20px;}
-#graphList .sidebar li a {color:#666666 ! important}
-#graphList .notes {margin-left:25px;float:left;width:600px}
-#graphList .notes p {line-height:1.5em;padding-top:20px}
-</style>
 <script type="text/javascript">
 
 function deletePlotId(id) {
@@ -54,7 +35,7 @@ $(function(){
 					<h2>' + this['name'] + '</h2>\
 					<div class="date">' + this['created'].getMonth() +'/' + this['created'].getDay() + '/' + this['created'].getFullYear() + '</div>\
 					<a class="preview" href="/home/viewgraph?plotDataId=' + this['id'] + '">load</a>\
-					<a href="#" onclick="deletePlotId(' + this['id'] + ')"><img src="/static/images/x.gif"></a>\
+					<a href="#" onclick="deletePlotId(' + this['id'] + ')"><img height="12" width="12" src="/static/images/x.gif"></a>\
 					</div>\
 				</div>');
 				return true;
@@ -65,7 +46,7 @@ $(function(){
 });
 </script>
 </head>
-<body>
+<body class="load-graph">
 <!-- MAIN -->
 <div class="main">
 
