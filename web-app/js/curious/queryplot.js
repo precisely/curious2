@@ -1486,17 +1486,17 @@ function PlotLine(p) {
 		if (!this.isCycle)
 		    html += '<h4>GRAPH AS</h4><div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
 			+ idSuffix + '" id="plotlinepoints' + idSuffix + '"' + 'value="points"' + (this.showPoints ? 'checked' : '') 
-			+ '/> <label> PLOT</label></div><img src="/images/gf-plot.png" class="graph-icon" /></div> \
+			+ '/> <label> PLOT</label></div><img src="/static/images/gf-plot.png" class="graph-icon" /></div> \
 				<div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
 				+ idSuffix + '" id="plotlineline' + idSuffix + '"' +  'value="line"' + (this.showPoints ? '' :'checked') 
-				+ '/> <label> LINE</label></div><img src="/images/gf-line.png" class="graph-icon" /></div> ';
+				+ '/> <label> LINE</label></div><img src="/static/images/gf-line.png" class="graph-icon" /></div> ';
 			html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
 			+ 'value="continuous" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"' 
 			+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label></div> \
-			<img src="/images/gf-continuous.png" class="graph-icon" /> </div> \
+			<img src="/static/images/gf-continuous.png" class="graph-icon" /> </div> \
 			<div class="form-group"><div class="widget"><input type="radio" value="event" name="plotlinecontinuous' + idSuffix
 			 + '" id="plotlinecontinuous' + idSuffix + '"' + (this.isContinuous ? '' : 'checked') 
-			 + '/> <label>EVENT</label></div><img src="/images/gf-event.png" class="graph-icon" /> </div>';
+			 + '/> <label>EVENT</label></div><img src="/static/images/gf-event.png" class="graph-icon" /> </div>';
 		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
 				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/

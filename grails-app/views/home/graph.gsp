@@ -144,13 +144,13 @@ $(function(){
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<h1 class="clearfix right">
 			<div id="actions">
-				<img src="/images/menu.png">
+				<img src="/static/images/menu.png">
 				<ul>
 					<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
 					<li><a href="#" onclick="plot.save()">Save</a></li>
 					<li><g:link action="load">Load</g:link></li>
 					<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
-						<img src="/images/eye.png">	
+						<img src="/static/images/eye.png">	
 					</a></li>
 				</ul>
 			</div>

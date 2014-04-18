@@ -75,7 +75,7 @@ a,a:link,a:hover,a:visited {
 }
 .bugs a {	
 	display:block;
-	background:url(/images/bugs.gif) no-repeat;
+	background:url(/static/images/bugs.gif) no-repeat;
 	width:19px;
 	height:20px;
 	position:absolute;
@@ -1216,7 +1216,7 @@ div.graph-header-container .red-header {
 }
 #graphList .summary h2 {
 	width: 265px;
-	background: url(images/pointer_right.png) no-repeat center left;
+	background: url(/static/images/pointer_right.png) no-repeat center left;
 	padding-left: 25px;
 	font-weight: bold;
 	font-size: 100%;
@@ -1268,14 +1268,14 @@ div.graph-header-container .red-header {
 	line-height: 21px;
 	color: #ffffff ! important;
 	text-transform: uppercase;
-	background: url(images/preview_btn.gif) no-repeat
+	background: url(/static/images/preview_btn.gif) no-repeat
 }
 #graphList .summary .close {
 	display: inline-block;
 	width: 10px;
 	height: 10px;
 	padding-left: 5px;
-	background: url(images/x.gif) no-repeat center center;
+	background: url(/static/images/x.gif) no-repeat center center;
 }
 #graphList .summary .visibility {
 	color: #AAAAAA;
