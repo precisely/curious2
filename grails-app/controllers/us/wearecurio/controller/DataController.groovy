@@ -486,7 +486,7 @@ class DataController extends LoginController {
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
 		}
-
+		
 		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
 				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
