@@ -44,6 +44,7 @@ class MigrationService {
 	public static final long RESET_WITHINGS_ACCOUNTSB = 75L
 	public static final long FIX_WITHINGS_SUMMARIES = 76L
 	public static final long FIX_REPEAT_END = 77L
+	public static final long ELIMINATE_AT_UNITS_AND_REPEAT_UNITS = 78L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -84,8 +85,13 @@ class MigrationService {
 		if (migration) {
 			def retVal = true
 			
-			if (!skipMigrations)
-				retVal = closure()
+			try {
+				if (!skipMigrations)
+					retVal = closure()
+			} catch (Exception e) {
+				System.err0.println("EXCEPTION DURING MIGRATION " + code)
+				e.printStackTrace()
+			}
 
 			didMigration(migration)
 				
@@ -244,6 +250,21 @@ class MigrationService {
 		}
 		tryMigration(FIX_REPEAT_END) {
 			sql("update entry e set repeat_end = date where repeat_end < date")
+		}
+		tryMigration(ELIMINATE_AT_UNITS_AND_REPEAT_UNITS) {
+			sql("update entry e set units = '' where units = 'at'")
+			def entries = Entry.findAllByUnits("repeat")
+			for (e in entries) {
+				def map = e.entryMap()
+				def (remain, comment, repeatType) = Entry.matchRepeatStr(map['units'])
+				if (repeatType != null) {
+					map['units'] = remain
+					map['repeatType'] = repeatType
+					Entry.appendComment(map, comment)
+				}
+
+				e.doUpdate(map, null)
+			}
 		}
 	}
 }

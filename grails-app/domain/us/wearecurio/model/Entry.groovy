@@ -1983,6 +1983,13 @@ class Entry {
 			]
 		}
 
+		if (str.startsWith(match)) {
+			return [
+				str.substring(match.length()).trim(),
+				match,
+				repeatType
+			]
+		}
 		return null
 	}
 
@@ -2068,6 +2075,16 @@ class Entry {
 			retVal['comment'] = str + ' ' + retVal['comment']
 		else {
 			retVal['comment'] = (str ?: '') + (retVal['comment'] ?: '')
+			if (retVal['comment'].length() == 0)
+				retVal['comment'] = null
+		}
+	}
+
+	private static appendComment(retVal, str) {
+		if (str != null && str.length() > 0 && retVal['comment'] != null && retVal['comment'].length() > 0)
+			retVal['comment'] = retVal['comment'] + ' ' + str
+		else {
+			retVal['comment'] = (retVal['comment'] ?: '') + (str ?: '')
 			if (retVal['comment'].length() == 0)
 				retVal['comment'] = null
 		}
@@ -2392,7 +2409,18 @@ class Entry {
 
 			if (repeatType != null) {
 				retVal['repeatType'] = repeatType
+			} else {
+				(remain, comment, repeatType) = matchRepeatStr(retVal['units'])
+				if (repeatType != null) {
+					retVal['units'] = remain
+					retVal['repeatType'] = repeatType
+					appendComment(retVal, comment)
+				}
 			}
+		}
+		
+		if (retVal['units'].equals('at')) {
+			retVal['units'] = ''
 		}
 
 		// if comment is duration modifier, append to tag name

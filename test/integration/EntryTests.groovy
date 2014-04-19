@@ -102,6 +102,23 @@ class EntryTests extends GroovyTestCase {
 	}
 
 	@Test
+	void testUpdateRepeatVagueDate() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 repeat", baseDate, true), null)
+		
+ 		def v = entry.valueString()
+		
+		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
+
+		def updated = Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 8 repeat ", baseDate, true, true), null, baseDate, true)
+
+ 		v = entry.valueString()
+		
+		assert v.endsWith("date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:8.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
+
+		assert true
+	}
+	
+	@Test
 	void testParse() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
