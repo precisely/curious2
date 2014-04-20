@@ -138,8 +138,8 @@ class CuriousSeriesTests {
 		us.wearecurio.model.CuriousSeries series2 = CuriousSeriesFactory.makeShifted(3, { it }, 0)
 
 		def correct =  -0.21841
-		def ε = 0.00001
-		assert us.wearecurio.model.CuriousSeries.cor(series1, series2) - ε < correct && us.wearecurio.model.CuriousSeries.cor(series1, series2) + ε > correct
+		def amu = 0.00001
+		assert us.wearecurio.model.CuriousSeries.cor(series1, series2) - amu < correct && us.wearecurio.model.CuriousSeries.cor(series1, series2) + amu > correct
 	}
 
 	@Test
