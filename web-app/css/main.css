@@ -164,12 +164,10 @@ body.graph-page #tagListWrapper ul#tagList {
 	height: 583px;
 }
 body.graph-page .querymain {
-	margin:0px;
-	float: left;
+	margin: 0px;
 	width: 100%;
 }
 #plotLeftNav {
-	float: left;
 	width: 100%;
 	margin-top: 4px;
 }
@@ -758,6 +756,12 @@ div.plotLine:hover span {
 .floating-column {
 	overflow: hidden;
 }
+body.tags-collapsed .floating-column {
+	width: 100%;
+}
+body.tags-displayed .floating-column {
+	width: calc(100% - 229px);
+}
 #preFooter .tagNav img {
 	vertical-align:middle;
 	margin-left:3px;
@@ -999,8 +1003,6 @@ div.plotLine:hover span {
 .custom-row {
 	padding-right: 10px;
 }
-.entry-container {
-}
 /**
  * Generic & common stuff, useful for every where. Starts here.
  */
@@ -1010,7 +1012,6 @@ div.plotLine:hover span {
 	color: #ffffff;
 	text-transform: uppercase;
 	min-height: 34px;
-	float: left;
 	width: 100%;
 }
 .red-header .right {

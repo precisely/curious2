@@ -36,6 +36,9 @@
 		float: none !important;
 		border-bottom: 2px solid #fff;
 	}
+	div.tags-header-container {
+		padding: 7px !important;
+	}
 	div.red-header h1.right {
 		float: none;
 		width: 100%;
@@ -55,6 +58,9 @@
 		font-size: 13px;
 		padding-top: 2px;
 	}
+	.floating-column {
+		overflow: visible;
+	}
 	body.tags-displayed div.tags-header-container {
 		border-bottom: 0;
 	}
@@ -69,10 +75,6 @@
 		body.tags-displayed div.graph-container {
 		display: none;
 	}
-	body.graph-page div.row.top-row div.leftNav {
-		border: 0;
-		box-shadow: none;
-	}
 	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
 		display: block;
 		float: none;
@@ -80,9 +82,9 @@
 	body.graph-page div.red-header h1.right {
 		padding: 10px;
 	}
-	body.graph-page .querymain #plotArea {
+	/* body.graph-page .querymain #plotArea {
 		height: calc(100% - 300px);
-	}
+	} */
 	.plotlines .ui-droppable {
 		float: none;
 		margin-right: 0;

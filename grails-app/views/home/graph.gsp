@@ -124,6 +124,10 @@ $(function(){
 		}
 	});
 	function adjustTrackingTagHeaderHeight() {
+		if ($(window).width() < 768) {
+			// Do not adjust height if columns are vertically collapsed.
+			return false;
+		}
 		var queryTitleHeight = $('.red-header').height();
 		var padding = (queryTitleHeight - 20)/2;
 		console.log('Adjusting height to: ' + queryTitleHeight);
@@ -140,7 +144,7 @@ $(function(){
 </script>
 </head>
 <body class="graph-page">
-	<div class="red-header graph-header-container" style="overflow:visible;">
+	<div class="red-header graph-header-container clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<h1 class="clearfix right">
 			<div id="actions">
@@ -166,7 +170,7 @@ $(function(){
 		<!-- /RIGHT NAV BODY -->
 		<div class="floating-column graph-container">
 			<div id="plotLeftNav">
-				<div id="plotLinesplotArea" class="plotlines"></div>
+				<div id="plotLinesplotArea" class="plotlines clearfix"></div>
 			</div>
 			<!-- MAIN -->
 			<div class="main querymain">
@@ -230,6 +234,10 @@ $(function(){
 			// Adding 1 second buffer for refreshing graph on fast window resize;
 			setTimeout(function() {
 				afterTagCollapseToggle();
+				if ($(window).width() >= 768) {
+					// Only adjust height when columns are horizontally stacked.
+					adjustTrackingTagHeaderHeight();
+				}
 			}, 1000);
 		});
 	</script>

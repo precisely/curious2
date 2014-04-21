@@ -10,6 +10,7 @@
 	</div>
 	
 	<script>
+	$(document).ready(function() {
 		function toggleClasses(switchClass) {
 			$("body").toggleClass("tags-collapsed", switchClass);
 			$("body").toggleClass("tags-displayed", !switchClass);
@@ -27,7 +28,6 @@
 			}
 
 			elementToCollapse.slideToggle(200, function() {
-				elementToCollapse.css("overflow", "visible");	// For dragging tag to plot graph area.
 				if (!isHidden) {
 					toggleClasses(true);
 				}
@@ -40,6 +40,7 @@
 		<g:else>
 			toggleClasses(true);
 		</g:else>
+	});
 	</script>
 </g:if>
 <g:else>

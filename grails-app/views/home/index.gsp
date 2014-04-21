@@ -734,7 +734,7 @@ $(function(){
 		<div id="alert-message-text"></div>
 	</div>
 
-	<div class="red-header date-controls">
+	<div class="red-header date-controls clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true]" />
 		<h1 class="clearfix right">
 			<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
