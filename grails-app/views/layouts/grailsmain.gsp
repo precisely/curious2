@@ -1,9 +1,9 @@
 <html>
 <head>
 <title><g:layoutTitle default="Curious" /></title>
-<link type="text/css" href="${resource(dir:'theme', file:'ui.all.css')}" rel= "stylesheet">
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.4.4.js')}"></script>
-<script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
+<link type="text/css" href="/theme/ui.all.css" rel= "stylesheet">
+<script type="text/javascript" src="/js/jquery/jquery-1.4.4.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
 <script type="text/javascript">
 var MAX_DUMP_DEPTH = 10;
 
@@ -100,9 +100,8 @@ function dumpInternalObj(obj, name, indent, depth) {
 }
 
 </script>
-<link type="text/css" href="${resource(dir:'theme', file:'demos.css')}" rel= "stylesheet">
-<link type="text/css" href="${resource(dir:'flot', file:'layout.css')}" rel= "stylesheet">
-<!--link type="text/css" href="/flot/layout.css" rel= "stylesheet"-->
+<link type="text/css" href="/theme/demos.css" rel= "stylesheet">
+<link type="text/css" href="/flot/layout.css" rel= "stylesheet">
 <style type="text/css">
 body {
 	font-size: 62.5%;
@@ -133,19 +132,19 @@ body {
 	color: #888888;
 }
 </style>
-<link rel="stylesheet" href="${resource(dir:'css', file:'grailsmain.css')}"/>
+<link rel="stylesheet" href="/css/grailsmain.css"/>
 <g:if test="${templateVer == 'lhp'}">
-<link rel="stylesheet" href="${resource(dir:'css', file:'grailsmainlhp.css')}"/>
+<link rel="stylesheet" href="/css/grailsmainlhp.css"/>
 </g:if>
-<link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon" />
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
 <g:layoutHead />
 </head>
 <body>
 <g:if test="${templateVer == 'lhp'}">
-	<div id="grailsLogo" class="logo"><a href="index"><img src="${resource(dir:'images',file:'logo_sm_lhp.png')}" alt="Curious" border="0" /></a></div>
+	<div id="grailsLogo" class="logo"><a href="index"><img src="/images/logo_sm_lhp.png" alt="Curious" border="0" /></a></div>
 </g:if>
 <g:else>
-	<div id="grailsLogo" class="logo"><a href="index"><img src="${resource(dir:'images',file:'logo_sm.png')}" alt="Curious" border="0" /></a></div>
+	<div id="grailsLogo" class="logo"><a href="index"><img src="/images/logo_sm.png" alt="Curious" border="0" /></a></div>
 </g:else>
 	<g:layoutBody />
 </body>

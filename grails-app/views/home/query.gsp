@@ -121,7 +121,7 @@ $(function(){
 
 			<h1>
 				<span id="queryTitle"></span> <span id="queryTitleEdit"><img
-					src="/static/images/edit.gif"></span>
+					src="/images/edit.gif"></span>
 				<div id="debug"></div>
 			</h1>
 
@@ -166,8 +166,8 @@ $(function(){
 	<div id="preFooter">
 
 		<div class="tagNav">
-			view: <img src="/static/images/scatter.gif" alt="scatter" /> <img
-				src="/static/images/line.gif" alt="line" /> <img src="/static/images/fill.gif"
+			view: <img src="/images/scatter.gif" alt="scatter" /> <img
+				src="/images/line.gif" alt="line" /> <img src="/images/fill.gif"
 				alt="fill" />
 		</div>
 	</div>

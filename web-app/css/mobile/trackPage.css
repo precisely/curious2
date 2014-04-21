@@ -113,21 +113,21 @@ button {
 }
 
 #emailField {
-	background-image: url('/static/images/email.png');
+	background-image: url('/images/email.png');
 	background-size: 50px 20px;
 	background-repeat: no-repeat;
 	padding-left: 3px;
 }
 
 #usernameField {
-	background-image: url('/static/images/username.png');
+	background-image: url('/images/username.png');
 	background-size: 70px 20px;
 	background-repeat: no-repeat;
 	padding-left: 3px;
 }
 
 #passwordField {
-	background-image: url('/static/images/password.png');
+	background-image: url('/images/password.png');
 	background-size: 70px 20px;
 	background-repeat: no-repeat;
 	padding-left: 3px;

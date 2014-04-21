@@ -6,7 +6,7 @@
 <meta name="layout" content="main" />
 <meta name="description" content="A platform for health hackers" />
 
-<r:script>
+<script>
 function refreshPage() {
 }
 function doLogout() {
@@ -58,7 +58,7 @@ $(function() {
 		form.submit();
 	});
 });
-</r:script>
+</script>
 
 <% randTag = "" + ((java.lang.System.currentTimeMillis() * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1)) %>
 

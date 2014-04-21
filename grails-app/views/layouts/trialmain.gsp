@@ -1,12 +1,12 @@
 <html>
     <head>
         <title><g:layoutTitle default="Curious" /></title>
-        <link type="text/css" href="${resource(dir:'theme', file:'ui.all.css')}" rel= "stylesheet">
-        <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-1.4.4.js')}"></script>
-        <script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery.json-2.2.js')}"></script>
-        <!--script type="text/javascript" src="${resource(dir:'js/jquery', file:'jquery-ui-1.8.9.custom.min.js')}"></script-->
+        <link type="text/css" href="/theme/ui.all.css" rel= "stylesheet">
+        <script type="text/javascript" src="/js/jquery/jquery-1.4.4.js"></script>
+        <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
+        <!--script type="text/javascript" src="/js/jquery/jquery-ui-1.8.9.custom.min.js"></script-->
         <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-        <!--script type="text/javascript" src="${resource(dir:'js/flot', file:'jquery.flot.js')}"></script-->
+        <!--script type="text/javascript" src="/js/flot/jquery.flot.js"></script-->
         <script type="text/javascript">
         var MAX_DUMP_DEPTH = 10;
 
@@ -129,9 +129,8 @@
         }
 
         </script>
-        <link type="text/css" href="${resource(dir:'theme', file:'demos.css')}" rel= "stylesheet">
-        <link type="text/css" href="${resource(dir:'flot', file:'layout.css')}" rel= "stylesheet">
-        <!--link type="text/css" href="/flot/layout.css" rel= "stylesheet"-->
+        <link type="text/css" href="/theme/demos.css" rel= "stylesheet">
+        <link type="text/css" href="/flot/layout.css" rel= "stylesheet">
         <style type="text/css">
           body {
             font-size: 62.5%;
@@ -162,8 +161,8 @@
               color: #888888;
           }
         </style>
-        <link rel="stylesheet" href="${resource(dir:'css', file:'trialmain.css')}"/>
-        <link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon" />
+        <link rel="stylesheet" href="/css/trialmain.css"/>
+        <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
         <g:layoutHead />
         <g:javascript library="application" />
     </head>

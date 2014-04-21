@@ -79,7 +79,7 @@ input:focus, select:focus, textarea:focus {
 /* NAVIGATION MENU */
 
 .nav {
-    background: #fff url(/static/images/skin/shadow.jpg) bottom repeat-x;
+    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
     border: 1px solid #ccc;
     border-style: solid none solid none;
     margin-top: 5px;
@@ -95,17 +95,17 @@ input:focus, select:focus, textarea:focus {
     padding: 4px 6px;
 }
 .menuButton a.home {
-    background: url(/static/images/skin/house.png) center left no-repeat;
+    background: url(/images/skin/house.png) center left no-repeat;
     color: #333;
     padding-left: 25px;
 }
 .menuButton a.list {
-    background: url(/static/images/skin/database_table.png) center left no-repeat;
+    background: url(/images/skin/database_table.png) center left no-repeat;
     color: #333;
     padding-left: 25px;
 }
 .menuButton a.create {
-    background: url(/static/images/skin/database_add.png) center left no-repeat;
+    background: url(/images/skin/database_add.png) center left no-repeat;
     color: #333;
     padding-left: 25px;
 }
@@ -113,7 +113,7 @@ input:focus, select:focus, textarea:focus {
 /* MESSAGES AND ERRORS */
 
 .registermessage {
-    background: #f3f8fc url(/static/images/skin/information.png) 8px 50% no-repeat;
+    background: #f3f8fc url(/images/skin/information.png) 8px 50% no-repeat;
     border: 1px solid #08f;
 	color: #006dba;
     margin: 10px 0 5px 0;
@@ -121,7 +121,7 @@ input:focus, select:focus, textarea:focus {
     width: 336px;
 }
 .loginmessage {
-    background: #f3f8fc url(/static/images/skin/information.png) 8px 50% no-repeat;
+    background: #f3f8fc url(/images/skin/information.png) 8px 50% no-repeat;
     border: 1px solid #08f;
 	color: #006dba;
     margin: 10px 0 5px 0;
@@ -141,7 +141,7 @@ div.errors ul {
     padding: 0;
 }
 div.errors li {
-	background: url(/static/images/skin/exclamation.png) 8px 0% no-repeat;
+	background: url(/images/skin/exclamation.png) 8px 0% no-repeat;
     line-height: 16px;
     padding-left: 30px;
 }
@@ -170,7 +170,7 @@ td, th {
     vertical-align: top;
 }
 th {
-    background: #fff url(/static/images/skin/shadow.jpg);
+    background: #fff url(/images/skin/shadow.jpg);
     color: #666;
     font-size: 11px;
     font-weight: bold;
@@ -189,10 +189,10 @@ th.asc a, th.desc a {
     background-repeat: no-repeat;
 }
 th.asc a {
-    background-image: url(/static/images/skin/sorted_asc.gif);
+    background-image: url(/images/skin/sorted_asc.gif);
 }
 th.desc a {
-    background-image: url(/static/images/skin/sorted_desc.gif);
+    background-image: url(/images/skin/sorted_desc.gif);
 }
 
 .odd {
@@ -217,7 +217,7 @@ th.desc a {
 /* PAGINATION */
 
 .paginateButtons {
-    background: #fff url(/static/images/skin/shadow.jpg) bottom repeat-x;
+    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
     border: 1px solid #ccc;
     border-top: 0;
     color: #666;
@@ -246,7 +246,7 @@ th.desc a {
 }
 
 .registerdialog .button {
-    background: #fff url(/static/images/skin/shadow.jpg) bottom repeat-x;
+    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
     border: 1px solid #ccc;
     color: #666;
     font-size: 10px;
@@ -259,7 +259,7 @@ th.desc a {
 }
 
 .logindialog .loginbuttons {
-    background: #fff url(/static/images/skin/shadow.jpg) bottom repeat-x;
+    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
     border: 1px solid #ccc;
     color: #666;
     font-size: 10px;
@@ -372,11 +372,11 @@ font-family: helvetica, sans-serif;
     padding: 2px 6px;
 }
 .loginbuttons input.delete {
-    background: transparent url(/static/images/skin/database_delete.png) 5px 50% no-repeat;
+    background: transparent url(/images/skin/database_delete.png) 5px 50% no-repeat;
     padding-left: 28px;
 }
 .loginbuttons input.edit {
-    background: transparent url(/static/images/skin/database_edit.png) 5px 50% no-repeat;
+    background: transparent url(/images/skin/database_edit.png) 5px 50% no-repeat;
     padding-left: 28px;
 }
 .loginbuttons input.save {

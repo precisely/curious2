@@ -12,9 +12,9 @@
 </div>
 
 <g:if test="${flash.message && (!flash.timeout || (flash.timeout && flash.timeout != 'clear')) }">
-	<r:script>
+	<script>
 		setTimeout(function() {
 			$('div#alert-message').fadeOut();
 		}, ${flash.timeout ?: '10000' });
-	</r:script>
+	</script>
 </g:if>

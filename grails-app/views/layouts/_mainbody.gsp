@@ -6,11 +6,11 @@
 <div class="header clearfix">
 	<div class="pull-left logo-container">
 		<a href="/home/index" class="logo-link">
-			<r:img dir="images" file="logo_alpha.png" />
+			<img src ="/images/logo_alpha.png" />
 		</a>
 		<g:if test="${templateVer == 'lhp'}">
 			<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton">
-				<r:img dir="images" file="lhpdonate.gif" />
+				<img src="/images/lhpdonate.gif" />
 			</a>
 		</g:if>
 	</div>
@@ -92,4 +92,3 @@
 <div style="clear:both;"></div>
 </div>
 </div>
-<r:layoutResources/>

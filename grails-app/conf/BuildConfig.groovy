@@ -56,7 +56,6 @@ grails.project.dependency.resolution = {
     plugins {
         compile ":hibernate:$grailsVersion"
         compile ":jquery:1.8.3"
-        compile ":resources:1.2.7"
 		compile ":message-digest:1.1"
 		
         // Uncomment these (or add new ones) to enable additional resources capabilities

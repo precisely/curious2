@@ -55,7 +55,7 @@ $(function(){
 		<div>First row: import set name in first column, time zone (PDT, EST, etc.) in second, time zone offset in seconds in third</div>
 		<g:form action="doUpload" method="post" enctype="multipart/form-data">
 		  <input type="file" name="csvFile" style="float:left;" />
-		  <input type="image" src="/static/images/add_data.gif" value="Add Data" class="buttonInput" />
+		  <input type="image" src="/images/add_data.gif" value="Add Data" class="buttonInput" />
 		  <div style="clear:both"></div>
 		  <input type="radio" name="csvtype" value="dateDown" checked>Curious Data Format<br>
           <g:radio name="csvtype" value="jawbone"/><label for="csvtype">Jawbone Up</label><br>

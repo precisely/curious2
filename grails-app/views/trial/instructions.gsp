@@ -5,7 +5,7 @@
   </head>
   <body>
     <div class="body"><div class="innerbody">
-      <div id="logo" class="logoalone"><a href="index"><img src="${resource(dir:'images',file:'logo_alone_sm.gif')}" alt="Curious" border="0" /></a></div>
+      <div id="logo" class="logoalone"><a href="index"><img src="/images/logo_alone_sm.gif" alt="Curious" border="0" /></a></div>
 	  <div class="textbody">
       <g:if test="${flash.message}">
         <div class="message">${flash.message.encodeAsHTML()}</div>

@@ -1312,7 +1312,7 @@ function PlotLine(p) {
 		if (!this.snapshot && typeof tag == 'string') {
 			var div = $("#plotline" + this.plot.id + this.id + 'list').append('<div class="plotLine" style="color:' + this.color + '"/>').children().last()
 			.append('<a href="" style="color:' + this.color + '"/>');
-			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/static/images/x.gif"/></a></span>');
+			div.append(escapehtml(tag)).append('<span class="plotLine"><a href="#" style="padding-left:8px;color:#999999" onclick="removeTagNameFromLine(\'' + this.plot.id + "','" + this.id + '\', \'' + addslashes(tagName) + '\')"><img height="12" width="12" src="/images/x.gif"/></a></span>');
 		} else {
 			var viewInstance;
 			if (tag instanceof TagGroup) {
@@ -1473,7 +1473,7 @@ function PlotLine(p) {
 		  <h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 		  + escapehtml(this.name) + '</span> <span class="plotGroup">'
 		  + (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
-			  + "','" + this.id + '\')" src="/static/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
+			  + "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
 			  this.plot.id + "','" + this.id + '\')" >x</span>')
 		  + '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
 		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
@@ -1486,17 +1486,17 @@ function PlotLine(p) {
 		if (!this.isCycle)
 		    html += '<h4>GRAPH AS</h4><div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
 			+ idSuffix + '" id="plotlinepoints' + idSuffix + '"' + 'value="points"' + (this.showPoints ? 'checked' : '') 
-			+ '/> <label> PLOT</label></div><img src="/static/images/gf-plot.png" class="graph-icon" /></div> \
+			+ '/> <label> PLOT</label></div><img src="/images/gf-plot.png" class="graph-icon" /></div> \
 				<div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
 				+ idSuffix + '" id="plotlineline' + idSuffix + '"' +  'value="line"' + (this.showPoints ? '' :'checked') 
-				+ '/> <label> LINE</label></div><img src="/static/images/gf-line.png" class="graph-icon" /></div> ';
+				+ '/> <label> LINE</label></div><img src="/images/gf-line.png" class="graph-icon" /></div> ';
 			html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
 			+ 'value="continuous" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"' 
 			+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label></div> \
-			<img src="/static/images/gf-continuous.png" class="graph-icon" /> </div> \
+			<img src="/images/gf-continuous.png" class="graph-icon" /> </div> \
 			<div class="form-group"><div class="widget"><input type="radio" value="event" name="plotlinecontinuous' + idSuffix
 			 + '" id="plotlinecontinuous' + idSuffix + '"' + (this.isContinuous ? '' : 'checked') 
-			 + '/> <label>EVENT</label></div><img src="/static/images/gf-event.png" class="graph-icon" /> </div>';
+			 + '/> <label>EVENT</label></div><img src="/images/gf-event.png" class="graph-icon" /> </div>';
 		/*if ((!this.isCycle) && (!this.isSmoothLine()) && (!this.isFreqLine()))
 			html += '<input type="checkbox" name="plotlineshow' + idSuffix + '" id="plotlineshow' + idSuffix + '" '
 				+ (this.showYAxis ? 'checked' : '') + '/> yaxis ';*/

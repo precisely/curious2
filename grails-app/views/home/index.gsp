@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <g:setProvider library="jquery" />
 <html>
@@ -7,13 +6,13 @@
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 
-<script type="text/javascript" src="/static/js/jquery/jquery.selectable.custom.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery.selectable.custom.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryCSRF, pingDataCSRF" />
 
-<r:script>
+<script>
 
 $.datepicker._gotoToday = function(id) {
     var target = $(id);
@@ -186,7 +185,7 @@ function displayEntry(entry, isUpdating, args) {
 			+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 			+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/static/images/x.gif"></a>';
+			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
 	if(isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
@@ -475,9 +474,9 @@ function selected($selectee, forceUpdate) {
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 		$selectee.append('<span id="tagTextEdit"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify entryNoBlur" src="/static/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img class="entryModify entryNoBlur" src="/static/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img class="entryModify entryNoBlur" src="/static/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
+				+ '<img class="entryModify entryNoBlur" src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img class="entryModify entryNoBlur" src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
+				+ '<img class="entryModify entryNoBlur" src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
 
 		$("#tagEditRepeat").off("mousedown");
 		$("#tagEditRemind").off("mousedown");
@@ -554,7 +553,7 @@ function checkAndUpdateEntry($unselectee, doNotUpdate) {
 		$contentWrapper.show();
 		$unselectee.data('forceUpdate', 0);
 		$contentWrapper
-				.append("&nbsp;&nbsp;<img src='/static/images/spinner.gif' />");
+				.append("&nbsp;&nbsp;<img src='/images/spinner.gif' />");
 		updateEntry(currentEntryId, newText, defaultToNow);
 	}
 	
@@ -726,7 +725,7 @@ $(function(){
 		refreshPage();
 	});
 });
-</r:script>
+</script>
 </head>
 <body class="track-page">
 
@@ -760,9 +759,9 @@ $(function(){
 					<div id="addData" class="panel-wrapper">
 						<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
 							value="Enter a tag.  For example: nap at 2pm" class="textInput" />
-						<a href="#" onclick="modifyInput('repeat')"><img src="/static/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
-						<a href="#" onclick="modifyInput('remind')"><img src="/static/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
-						<a href="#" onclick="modifyInput('pinned')"><img src="/static/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
+						<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
 						<div style="clear: both"></div>
 					</div>
 			

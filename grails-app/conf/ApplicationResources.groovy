@@ -1,5 +1,4 @@
-modules = {
-	/*
+/*modules = {
 	bootstrap {
 		resource url: [dir: "css/bootstrap", file: "bootstrap.min.css"]
 		resource url: [dir: "js/bootstrap", file: "bootstrap.min.js"]
@@ -15,5 +14,6 @@ modules = {
 	}
 	mobileTrackPage {
 		resource url: [dir: "css/mobile", file: "trackPage.css"]
-	}*/
+	}
 }
+*/

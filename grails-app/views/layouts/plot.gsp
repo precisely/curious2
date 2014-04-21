@@ -1,10 +1,11 @@
 <html>
 <head>
 <g:render template="/layouts/mainhead" model="['templateVer':templateVer]" />
-<script type="text/javascript" src="${resource(dir:'js/flot', file:'jquery.flot.js')}"></script>
+<script type="text/javascript" src="/js/flot/jquery.flot.js"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<script type="text/javascript" src="${resource(dir:'js/curious', file:'queryplot.js')}"></script>
+<script type="text/javascript" src="/js/curious/queryplot.js"></script>
 <script type="text/javascript">
+
 //assumes propertyClosure has the following methods:
 //get/set: name, startDate. endDate, centered
 function PlotProperties(divIdArray) {
@@ -113,6 +114,9 @@ function PlotProperties(divIdArray) {
 	}
 }
 </script>
+
+<g:layoutHead />
+
 </head>
 <body class="${pageProperty(name: 'body.class')}">
 <g:render template="/layouts/mainbody" model="['templateVer':templateVer]" />

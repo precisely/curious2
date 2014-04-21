@@ -8,7 +8,7 @@
       <g:if test="${flash.message}">
         <div class="message">${flash.message.encodeAsHTML()}<br/></div>
       </g:if>
-      <div id="logo" class="logoalone"><a href="index"><img src="${resource(dir:'images',file:'logo_alone_sm.gif')}" alt="Curious" border="0" /></a></div>
+      <div id="logo" class="logoalone"><a href="index"><img src="/images/logo_alone_sm.gif" alt="Curious" border="0" /></a></div>
 	  <div class="textbody">
 	  <h2>Now, authorize Curious to receive your private, direct messages via Twitter.</h2>
 

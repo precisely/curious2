@@ -47,7 +47,7 @@ p {
 	border: 1px solid black;
 }
 #headerlogolgmd {
-	background:url(/static/images/logo_lgmd2i.png) no-repeat;
+	background:url(/images/logo_lgmd2i.png) no-repeat;
 	width: 650px;
 	height:70px;
 	display:inline-block;
@@ -110,7 +110,7 @@ $(function(){
 <p id = "what_is_the_project">
 As a research participant, you will be interacting with an early version of the platform. You may be asked to track health-related issues (e.g. sleep or rest), exercise habits, or health-related events. We will refer to these health-related issues as "tags" in the instructions. In addition, you will be urged to use the platform’s data visualization features, such as the graphing tool.  During interviews with our researcher, you will be encouraged to give candid feedback about features, screens, and basic functionality. </p>
 
-<img  src="/static/images/lgmd2i/ScreenShot1.jpg" width="758	" height="219" border="0" alt="Screen Shot">
+<img  src="/images/lgmd2i/ScreenShot1.jpg" width="758	" height="219" border="0" alt="Screen Shot">
 
 
 <p id = "thank_you">

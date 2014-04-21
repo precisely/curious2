@@ -10,7 +10,7 @@
   </head>
   <body>
     <div class="body">
-      <div id="grailsLogo" class="logo"><a href="index"><img src="${resource(dir:'images',file:'logomedium.png')}" alt="Curious" border="0" /></a></div>
+      <div id="grailsLogo" class="logo"><a href="index"><img src="/images/logomedium.png" alt="Curious" border="0" /></a></div>
       <g:if test="${flash.message}">
         <div class="message">${flash.message.encodeAsHTML()}<br/></div>
       </g:if>

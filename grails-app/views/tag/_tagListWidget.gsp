@@ -9,7 +9,7 @@
 		</div>
 	</div>
 	
-	<r:script>
+	<script>
 		function toggleClasses(switchClass) {
 			$("body").toggleClass("tags-collapsed", switchClass);
 			$("body").toggleClass("tags-displayed", !switchClass);
@@ -40,7 +40,7 @@
 		<g:else>
 			toggleClasses(true);
 		</g:else>
-	</r:script>
+	</script>
 </g:if>
 <g:else>
 	<div class="fixed-column hide tags-container" id="tagNav">

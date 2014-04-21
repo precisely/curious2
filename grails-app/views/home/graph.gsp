@@ -105,7 +105,7 @@ $(function(){
 		});
 });
 </script>
-<r:script>
+<script>
 	$(document).on(beforeLinePlotEvent, function(e, tag) {
 		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
 		$(".graphData").addClass("has-plot-data");
@@ -137,25 +137,25 @@ $(function(){
 			plot.refreshPlot();
 		}
 	}
-</r:script>
+</script>
 </head>
 <body class="graph-page">
 	<div class="red-header graph-header-container" style="overflow:visible;">
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<h1 class="clearfix right">
 			<div id="actions">
-				<img src="/static/images/menu.png">
+				<img src="/images/menu.png">
 				<ul>
 					<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
 					<li><a href="#" onclick="plot.save()">Save</a></li>
 					<li><g:link action="load">Load</g:link></li>
 					<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
-						<img src="/static/images/eye.png">	
+						<img src="/images/eye.png">	
 					</a></li>
 				</ul>
 			</div>
 			<span id="queryTitle">PLOT</span>
-			<span id="queryTitleEdit"><img src="/static/images/edit.gif"></span>
+			<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 			<div id="debug"></div>
 		</h1>
 	</div>
@@ -205,9 +205,9 @@ $(function(){
 			<br>
 			<div class="view-types">
 				view:
-				<img src="/static/images/scatter.gif" alt="scatter" />
-				<img src="/static/images/line.gif" alt="line" />
-				<img src="/static/images/fill.gif" alt="fill" />
+				<img src="/images/scatter.gif" alt="scatter" />
+				<img src="/images/line.gif" alt="line" />
+				<img src="/images/fill.gif" alt="fill" />
 			</div>
 		</div>
 	</div>
@@ -215,7 +215,7 @@ $(function(){
 	<!-- PRE-FOOTER -->
 	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
-	<r:script>
+	<script>
 		$(window).load(function(){
 			$('.red-header #actions img').click(function(e) {
 				$('ul', $(e.target).parent()).toggle();
@@ -232,6 +232,6 @@ $(function(){
 				afterTagCollapseToggle();
 			}, 1000);
 		});
-	</r:script>
+	</script>
 </body>
 </html>
