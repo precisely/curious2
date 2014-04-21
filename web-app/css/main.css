@@ -1,3 +1,6 @@
+input, optgroup, select, textarea {
+	color: black;
+}
 .container {
 	margin-left: 40px;
 	margin-right: 40px;
