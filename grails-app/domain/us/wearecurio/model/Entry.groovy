@@ -8,6 +8,7 @@ import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
+import us.wearecurio.units.UnitGroupMap
 
 import java.util.Map;
 import java.util.regex.Pattern
@@ -439,6 +440,8 @@ class Entry {
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
 		def tagUnitStats = TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units']) 
+		//Using the most used unit in case the unit is unknown
+		m['units'] = tagUnitStats?.unit
 
 		Entry entry = new Entry(
 				userId:userId,
@@ -448,7 +451,7 @@ class Entry {
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
-				units:m['units']==null?'':m['units'],
+				units:m['units'],
 				comment:m['comment']==null?'':m['comment'],
 				repeatType: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
@@ -1891,10 +1894,16 @@ class Entry {
 
 		for (result in rawResults) {
 			Entry entry = Entry.get(result['id'])
-			def desc = entry.getJSONShortDesc()
+			def entryJSON = entry.getJSONShortDesc()
+			log.debug("Entry.fetchPlotData: Attempting to normalize entry " +entryJSON[2] + " for plots")
+			def normalizedData = UnitGroupMap.convertToMostUsedUnit(entry.getTag().getId(), entry.userId,
+				entry.amount, entry.units)
+			if (normalizedData) {
+				entryJSON[1] = normalizedData.amount
+			}
 			long entryTimestamp = entry.getDate().getTime()
 			generateRepeaterEntries(repeaters, entryTimestamp, results)
-			results.add(desc)
+			results.add(entryJSON)
 		}
 
 		// keep generating remaining repeaters until endDate

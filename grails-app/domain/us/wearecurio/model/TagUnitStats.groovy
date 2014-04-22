@@ -12,7 +12,7 @@ class TagUnitStats {
 	UnitGroup unitGroup
 	Long tagId
 	Long userId
-	Long timesUsed 
+	Long timesUsed = 0l
 
 	static mapping = {
 		version false
@@ -36,33 +36,28 @@ class TagUnitStats {
 		// If yes then update then we have the correct record to update
 		if (tagUnitStats.size() > 0) {
 			log.debug ("TagUnitStats.createOrUpdate(): ${tagUnitStats.size()} unit stats found for user "+
-			userId + " tag" + tagId + " and unit " + unit)
+			userId + " tag" + tagId)
+			log.debug ("TagUnitStats.createOrUpdate(): ${unit} used in the past ")
 			tagUnitStats = tagUnitStats[0]
 		} else {
 			// If this unit is being used for the first time for this tag
-			def unitGroupMap = UnitGroupMap.groupForUnit(unit)
+			def unitGroupMap = UnitGroupMap.groupMapForUnit(unit)
 			if (!unitGroupMap) {
+				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
 				//If we can't find it in our map we use the most used unit
 				//for this tag
-				tagUnitStats = TagUnitStats.withCriteria {
-					and {
-						eq ('tagId', tagId)
-						eq ('userId', userId)
-					}
-					order ('timesUsed', desc)
-				}
-
-				if (tagUnitStats.size() < 1) {
+				tagUnitStats = mostUsedTagUnitStats(tagId, userId) 
+				if (!tagUnitStats) {
 					//This unit is not in the map and this is the first entry for this tag
 					//i.e. we don't have the most used unit for this tag
 					tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
-					 unit: unit)
-				} else {
-					tagUnitStats = tagUnitStats[0]
-				}
+					unit: unit)
+				} 
+			} else {
+				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
+				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
+				unit: unitGroupMap.unit, unitGroup: unitGroupMap.group)
 			}
-			log.debug ("TagUnitStats.createOrUpdate(): 0 unit stats found for user "+
-			userId + " tag" + tagId + " and unit " + unit)
 		}
 
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
@@ -70,6 +65,18 @@ class TagUnitStats {
 		tagUnitStats.save()
 		return tagUnitStats
 	}
+
+	public static def mostUsedTagUnitStats(Long tagId, Long userId) {
+		def tagUnitStats = TagUnitStats.withCriteria {
+			and {
+				eq ('tagId', tagId)
+				eq ('userId', userId)
+			}
+			order ('timesUsed', 'desc')
+		}
+		return tagUnitStats.size()>1 ? tagUnitStats[0] : null
+	}
+	
 }
 
 enum UnitGroup {
