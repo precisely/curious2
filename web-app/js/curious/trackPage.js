@@ -1,3 +1,8 @@
+var isTodayOrLater, cachedDate, cachedDateUTC, timeZoneName, currentTimeUTC, tagList, currentDrag, currentDragTag,
+entrySelectData, freqTagList, dateTagList,
+currentEntryId = undefined,
+dayDuration = 86400000,
+defaultToNow = true;
 
 $.datepicker._gotoToday = function(id) {
 	var target = $(id);
@@ -20,12 +25,6 @@ $.datepicker._gotoToday = function(id) {
 	this._adjustDate(target);
 }
 
-var defaultToNow = true;
-
-var isTodayOrLater;
-var cachedDate, cachedDateUTC;
-var timeZoneName;
-
 function cacheDate() {
 	var now = new Date();
 	cachedDate = $("input#datepicker").datepicker('getDate');
@@ -33,8 +32,6 @@ function cacheDate() {
 	cachedDateUTC = cachedDate.toUTCString();
 	timeZoneName = jstz.determine().name();
 }
-
-var currentTimeUTC;
 
 function cacheNow() {
 	cacheDate();
@@ -60,16 +57,11 @@ function refreshPage() {
 	});
 	tagList.load();
 }
-var tagList;
-var currentEntryId = undefined;
 
 function clearEntries() {
 	currentEntryId = undefined;
 	$("#entry0").html('');
 }
-
-var currentDrag;
-var currentDragTag;
 
 $(document).mousemove(function(e) {
 	if (currentDrag != null)
@@ -87,10 +79,6 @@ $(document).mouseup(function(e) {
 	}
 	currentDragTag = null;
 });
-
-var dayDuration = 86400000;
-
-var entrySelectData;
 
 function displayEntry(entry, isUpdating, args) {
 	var id = entry.id,
@@ -406,20 +394,17 @@ function setEntryText(text, startSelect, endSelect) {
 }
 
 //dynamic autocomplete
-//var autoCache = {}, lastAutoXhr;
+//var lastAutoXhr;
 
 //static autocomplete
 //changes to the autocomplete code should also get put into the index.gsp for the mobile app
 var autoCache = {};
-var freqTagList, dateTagList;
-
-String.prototype.startsWith = function(str) {return (this.match("^"+str)==str)}
 
 function doLogout() {
 	callLogoutCallbacks();
 }
 
-/*
+/**
  * Used to unselect an entry, or called when entry is
  * being unselected.
  */
@@ -434,8 +419,9 @@ function unselecting($unselectee, doNotUpdate) {
 	}
 }
 
-/*
- * Gets called on selection of the entry, or used to select an entry. If forceUpdate true, always send update whether text changed or not.
+/**
+ * Gets called on selection of the entry, or used to select an entry. If forceUpdate true,
+ * always send update whether text changed or not.
  */
 function selected($selectee, forceUpdate) {
 	var state = $selectee.data('entryIsSelected');
@@ -663,6 +649,7 @@ $(function(){
 		}
 		return false;
 	});
+
 	$(document).on("click", "li.entry.ghost", function(e, doNotSelectEntry) {
 		if (e.target.nodeName && $(e.target).closest("a,img").length) {
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
@@ -692,8 +679,9 @@ $(function(){
 
 	queueJSON("getting login info", "/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
 			function(data){
-		if (!checkData(data))
+		if (!checkData(data)) {
 			return;
+		}
 
 		var found = false;
 
