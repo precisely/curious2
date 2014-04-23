@@ -1231,9 +1231,17 @@ function deleteCurrentEntry() {
  * updateEntry() method to notify server and update in UI.
  */
 function checkAndUpdateEntry($unselectee) {
+	if ($unselectee == undefined) {
+		console.log("Error: undefined unselectee");
+		return;
+	}
 	var $contentWrapper = $unselectee.find(".content-wrapper");
 	
 	var newText = $("input#tagTextInput").val();
+	if (newText == undefined) {
+		console.log("Error: undefined new text");
+		return;
+	}
 	var $oldEntry = getEntryElement(currentEntryId);
 	$oldEntry.addClass("glow");
 	
