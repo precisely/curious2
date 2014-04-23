@@ -10,7 +10,7 @@ class CorrelationJob extends us.wearecurio.utility.TimerJob {
 		}
 
 		def execute() {
-			 log.debug "Running CorrelationService.updateAllUserCorrelations()"
-			 correlationService.updateAllUserCorrelations()
+			 //log.debug "Running CorrelationService.updateAllUserCorrelations()"
+			 //correlationService.updateAllUserCorrelations()
 		}
 }
