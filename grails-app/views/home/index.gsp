@@ -1,5 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<g:setProvider library="jquery" />
 <html>
 <head>
 <meta name="layout" content="main" />
@@ -57,6 +55,12 @@ removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroup
 		</div>
 	</div>
 	<!-- /MAIN -->
+	<script type="text/javascript">
+		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
+		var currentDate = new Date();
+		if (${showTime} > 0)
+			currentDate = new Date(${showTime});
+	</script>
 	<script type="text/javascript" src="/js/curious/trackPage.js"></script>
 	<script type="text/javascript" src="/js/jquery/jquery.selectable.custom.js"></script>
 </body>

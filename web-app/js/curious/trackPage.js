@@ -21,7 +21,6 @@ $.datepicker._gotoToday = function(id) {
 }
 
 var defaultToNow = true;
-var timeAfterTag = <g:if test="${prefs['displayTimeAfterTag']}">true</g:if><g:else>false</g:else>;
 
 var isTodayOrLater;
 var cachedDate, cachedDateUTC;
@@ -45,8 +44,8 @@ function cacheNow() {
 
 function changeDate(amount) {
 	var $datepicker = $("#datepicker");
-	var currentDate = $datepicker.datepicker('getDate');
-	$datepicker.datepicker('setDate', new Date(currentDate.getTime() + amount * 86400000));
+	var currentDay = $datepicker.datepicker('getDate');
+	$datepicker.datepicker('setDate', new Date(currentDay.getTime() + amount * 86400000));
 	refreshPage();
 }
 
@@ -577,8 +576,9 @@ $(function(){
 	initAutocomplete();
 	initTagListWidget();
 
-	var currentDate;
-
+	/*
+	 * Commenting whole section, because date evaluated from here
+	 * will be overwritten on next lines.
 	if (supportsLocalStorage() && localStorage['stateStored'] == "2") {
 		currentDate = $.evalJSON(localStorage['currentDate']);
 	} else {
@@ -586,6 +586,9 @@ $(function(){
 		localStorage['currentDate'] = $.toJSON(currentDate);
 		localStorage['stateStored'] = "2";
 	}
+	 *
+	 */
+
 	$("#input0").val('Enter a tag.  For example: nap at 2pm');
 	$("#input0").droppable({
 		drop : function(event, ui) {
@@ -595,10 +598,6 @@ $(function(){
 	});
 
 	var $datepicker = $("#datepicker");
-
-	currentDate = new Date();
-	if (${showTime} > 0)
-		currentDate = new Date(${showTime});
 
 	$datepicker
 	.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true})
