@@ -185,7 +185,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 				assert e.valueString().contains("date:2014-02-06T20:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:activity distance summary, amount:6.400000000, units:miles, amountPrecision:3, comment:(Withings), repeatType:null")
 			} else if (e.getDescription().equals("activity elevation summary") && e.getAmount().intValue() == 425) {
 				log.debug e.valueString()
-				assert e.valueString().contains("date:2014-02-05T20:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:activity elevation summary, amount:425.030000000, units:meters, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("date:2014-02-05T20:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:activity elevation summary, amount:425.030000000, units:meter, amountPrecision:3, comment:(Withings), repeatType:null")
 				e = e
 			} else if (e.getDescription().equals("activity move summary") && e.getAmount().intValue() == 17897) {
 				log.debug e.valueString()

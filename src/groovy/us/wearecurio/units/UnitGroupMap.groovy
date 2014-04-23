@@ -90,6 +90,8 @@ class UnitGroupMap {
 
 	public static String unitListContainsUnit(String unit, def unitList) {
 		String unitKey = null 
+		if (unit == null || unit == '')
+			return null
 		def singularUnit = unit.minus(Pattern.compile("s\$"))
 		log.debug("UnitGroupMap.unitListContainsUnit(): checking for unit " + unit +
 		" in list " + unitList.dump())
