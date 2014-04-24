@@ -45,7 +45,6 @@ class MigrationService {
 	public static final long FIX_WITHINGS_SUMMARIES = 76L
 	public static final long FIX_REPEAT_END = 77L
 	public static final long ELIMINATE_AT_UNITS_AND_REPEAT_UNITS = 78L
-	public static final long SKIP_REMOVE_VERSION = 79L
 	public static final long REMOVE_VERSION = 80L
 	
 	SessionFactory sessionFactory
@@ -268,50 +267,44 @@ class MigrationService {
 				e.doUpdate(map, null)
 			}
 		}
-		boolean skipRemoveVersion = false
-		tryMigration(SKIP_REMOVE_VERSION) {
-			skipRemoveVersion = true
-		}
-		if (!skipRemoveVersion) {
-			tryMigration(REMOVE_VERSION) {
-				sql ("alter table _user drop column version")
-				sql ("alter table anonymous_author drop column version")
-				sql ("alter table correlation drop column version")
-				sql ("alter table curious_series drop column version")
-				sql ("alter table date_record drop column version")
-				sql ("alter table discussion drop column version")
-				sql ("alter table discussion_author drop column version")
-				sql ("alter table discussion_post drop column version")
-				sql ("alter table entry drop column version")
-				sql ("alter table entry_tag drop column version")
-				sql ("alter table group_member_admin drop column version")
-				sql ("alter table group_member_default_for drop column version")
-				sql ("alter table group_member_discussion drop column version")
-				sql ("alter table group_member_notified drop column version")
-				sql ("alter table group_member_notified_major drop column version")
-				sql ("alter table group_member_reader drop column version")
-				sql ("alter table group_member_writer drop column version")
-				sql ("alter table migration drop column version")
-				sql ("alter table model drop column version")
-				sql ("alter table oauth_account drop column version")
-				sql ("alter table password_recovery drop column version")
-				sql ("alter table plot_data drop column version")
-				sql ("alter table push_notification_device drop column version")
-				sql ("alter table session drop column version")
-				sql ("alter table stats drop column version")
-				sql ("alter table tag drop column version")
-				sql ("alter table tag_group drop column version")
-				sql ("alter table tag_group_properties drop column version")
-				sql ("alter table tag_group_tag drop column version")
-				sql ("alter table tag_properties drop column version")
-				sql ("alter table tag_stats drop column version")
-				sql ("alter table third_party_notification drop column version")
-				sql ("alter table time_zone_id drop column version")
-				sql ("alter table twenty3and_me_data drop column version")
-				sql ("alter table twitter_data drop column version")
-				sql ("alter table user_group drop column version")
-				sql ("alter table user_time_zone drop column version")
-			}
+		tryMigration(REMOVE_VERSION) {
+			sql ("alter table _user drop column version")
+			sql ("alter table anonymous_author drop column version")
+			sql ("alter table correlation drop column version")
+			sql ("alter table curious_series drop column version")
+			sql ("alter table date_record drop column version")
+			sql ("alter table discussion drop column version")
+			sql ("alter table discussion_author drop column version")
+			sql ("alter table discussion_post drop column version")
+			sql ("alter table entry drop column version")
+			sql ("alter table entry_tag drop column version")
+			sql ("alter table group_member_admin drop column version")
+			sql ("alter table group_member_default_for drop column version")
+			sql ("alter table group_member_discussion drop column version")
+			sql ("alter table group_member_notified drop column version")
+			sql ("alter table group_member_notified_major drop column version")
+			sql ("alter table group_member_reader drop column version")
+			sql ("alter table group_member_writer drop column version")
+			sql ("alter table migration drop column version")
+			sql ("alter table model drop column version")
+			sql ("alter table oauth_account drop column version")
+			sql ("alter table password_recovery drop column version")
+			sql ("alter table plot_data drop column version")
+			sql ("alter table push_notification_device drop column version")
+			sql ("alter table session drop column version")
+			sql ("alter table stats drop column version")
+			sql ("alter table tag drop column version")
+			sql ("alter table tag_group drop column version")
+			sql ("alter table tag_group_properties drop column version")
+			sql ("alter table tag_group_tag drop column version")
+			sql ("alter table tag_properties drop column version")
+			sql ("alter table tag_stats drop column version")
+			sql ("alter table third_party_notification drop column version")
+			sql ("alter table time_zone_id drop column version")
+			sql ("alter table twenty3and_me_data drop column version")
+			sql ("alter table twitter_data drop column version")
+			sql ("alter table user_group drop column version")
+			sql ("alter table user_time_zone drop column version")
 		}
 	}
 }
