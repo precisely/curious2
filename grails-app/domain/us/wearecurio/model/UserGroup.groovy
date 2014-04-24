@@ -21,6 +21,7 @@ class UserGroup {
 	}
 	
 	static mapping = {
+		version false
 		table 'user_group'
 	}
 	

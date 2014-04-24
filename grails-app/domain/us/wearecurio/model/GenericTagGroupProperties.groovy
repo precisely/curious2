@@ -18,6 +18,7 @@ class GenericTagGroupProperties {
 		showPoints(nullable:true)
 	}
 	static mapping = {
+		version false
 		table 'tag_group_properties'
 		userId column:'user_id', index:'user_id_index'
 		tagGroupId column:'tag_group_id', index:'tag_group_id_index'

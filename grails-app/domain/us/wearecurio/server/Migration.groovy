@@ -9,6 +9,10 @@ class Migration {
 	static constraints = {
 		code(unique:true)
 	}
+	
+	static mapping = {
+		version false
+	}
 
 	Long code
 	boolean hasRun

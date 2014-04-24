@@ -13,6 +13,10 @@ import us.wearecurio.utility.Utils
 class UserTimeZone {
 
 	private static def log = LogFactory.getLog(this)
+	
+	static mapping = {
+		version false
+	}
 
 	Long userId
 	Integer timeZoneId

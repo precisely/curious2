@@ -33,6 +33,7 @@ class User implements NameEmail {
 		notifyOnComments(nullable:true)
 	}
 	static mapping = {
+		version false
 		table '_user'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 	}

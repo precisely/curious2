@@ -12,6 +12,7 @@ class TimeZoneId {
 		name(maxSize:100, unique:true)
     }
 	static mapping = {
+		version false
 		name column:'name', index:'name_idx'
 	}
 	

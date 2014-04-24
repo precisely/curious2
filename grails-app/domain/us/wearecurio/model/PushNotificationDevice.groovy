@@ -20,6 +20,7 @@ class PushNotificationDevice {
     }
 	
 	static mapping = {
+		version false
 		table 'push_notification_device'
 		token type: 'text'
 		userId column:'user_id', index:'user_id_index'

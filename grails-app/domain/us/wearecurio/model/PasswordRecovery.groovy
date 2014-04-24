@@ -19,6 +19,7 @@ class PasswordRecovery {
 		code(maxSize:50)
 	}
 	static mapping = {
+		version false
 		table 'password_recovery'
 		start column:'start', index:'start_index'
 		userId column:'user_id', index:'user_id_index'

@@ -13,6 +13,10 @@ class CuriousSeries {
 	//	single series in a reasonable way.
 	private static def entryService = new EntryService()
 
+	static mapping = {
+		version false
+	}
+	
 	ArrayList<Entry> entries
 	def values
 	def times

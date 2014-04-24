@@ -13,8 +13,8 @@ class Tag {
   // TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
   //  This will allow us to iterate on both TagGroups and Tags.
 	def tags() {
-    [this]
-  }
+		[this]
+	}
 
 	private static def log = LogFactory.getLog(this)
 
@@ -23,6 +23,7 @@ class Tag {
 	static constraints = { description(maxSize:MAXLENGTH) }
 
 	static mapping = {
+		version false
 		table 'tag'
 		description column:'description', index:'description_idx'
 	}

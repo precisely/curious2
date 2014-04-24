@@ -19,6 +19,9 @@ class Correlation {
 		overlapN nullable: true
 		mipssValue nullable: true
 	}
+	static mapping = {
+		version false
+	}
 
 	public Correlation(CuriousSeries series1, CuriousSeries series2) {
 		userId = series1.userId

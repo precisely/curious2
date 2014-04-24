@@ -18,6 +18,7 @@ class AnonymousAuthor implements NameEmail {
 	}
 	static transients = ['username']
 	static mapping = {
+		version false
 		table 'anonymous_author'
 		email column:'email', index:'email_index'
 	}

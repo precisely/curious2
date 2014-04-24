@@ -22,6 +22,7 @@ class Twenty3AndMeData {
 	}
 
 	static mapping = {
+		version false
 		profileId column:'profile_id', index:'profile_id_index'
 	}
 

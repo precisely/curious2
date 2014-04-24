@@ -10,4 +10,8 @@ class Model {
 
 	static constraints = {
 	}
+	
+	static mapping = {
+		version false
+	}
 }

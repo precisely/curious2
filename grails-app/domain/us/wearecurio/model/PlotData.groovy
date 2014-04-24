@@ -25,6 +25,7 @@ class PlotData {
 	}
 	
 	static mapping = {
+		version false
 		table 'plot_data'
 		userId column: 'user_id', index:'user_id_index'
 		name column:'name', index:'name_index'

@@ -7,6 +7,9 @@ class TwitterData {
 	private static def log = LogFactory.getLog(this)
 
 	static constraints = { lastEntryId(nullable:true) }
+	static mapping = {
+		version false
+	}
 
 	Long lastEntryId;
 

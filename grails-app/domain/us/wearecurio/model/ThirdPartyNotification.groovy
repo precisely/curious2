@@ -14,6 +14,7 @@ class ThirdPartyNotification {
 	ThirdParty typeId
 
 	static mapping = {
+		version false
 		table 'third_party_notification'
 		date column:'log_date'
 		ownerId column:'owner_id', index:'owner_id_index'

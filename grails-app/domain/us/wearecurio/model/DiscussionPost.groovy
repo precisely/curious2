@@ -31,6 +31,8 @@ class DiscussionPost {
 		// Without specifying message type: 'text', discussion_posts.message was being mapped to a varchar(50000).
 		// This was causing a MySQL warning, which prevented the discussion_post table from being created, which
 		//   caused discussion_post related tests to fail.
+		version false
+		
 		message type: 'text'
 		
 		discussionId column:'discussion_id', index:'discussion_id_index'

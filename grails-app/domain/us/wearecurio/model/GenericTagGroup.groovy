@@ -9,6 +9,7 @@ class GenericTagGroup {
 	static constraints = { description(maxSize:MAXLENGTH) }
 	
 	static mapping = {
+		version false
 		table 'tag_group'
 		description column:'description', index:'description_idx'
 	}

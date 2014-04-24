@@ -24,6 +24,7 @@ class GroupMemberWriter {
 	}
 	
 	static mapping = {
+		version false
  		groupId column: 'group_id', index:'group_id_index'
 		memberId column: 'member_id', index:'member_id_index'
 	}

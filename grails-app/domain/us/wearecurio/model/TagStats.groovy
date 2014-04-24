@@ -32,6 +32,7 @@ class TagStats {
 		lastUnits(nullable:true)
 	}
 	static mapping = {
+		version false
 		table 'tag_stats'
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'

@@ -1,6 +1,10 @@
 package us.wearecurio.model
 
 class Stats {
+	
+	static mapping = {
+		version false
+	}
 
 	// Sample mean
 	public static mean(def x) {

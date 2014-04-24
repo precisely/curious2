@@ -50,6 +50,7 @@ class Entry {
 	}
 
 	static mapping = {
+		version false
 		table 'entry'
 		userId column:'user_id', index:'user_id_index'
 		tweetId column:'tweet_id', index:'tweet_id_index'

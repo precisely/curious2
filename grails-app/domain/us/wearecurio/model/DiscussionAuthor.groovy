@@ -16,7 +16,10 @@ class DiscussionAuthor {
 		userId(nullable:true)
 		authorId(nullable:true)
 	}
-
+	static mapping = {
+		version false
+	}
+	
 	static transients = ['cache']
 	
 	public static def create(Long userId) {

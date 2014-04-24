@@ -17,7 +17,9 @@ class TagProperties {
 		isContinuous(nullable:true)
 		showPoints(nullable:true)
 	}
+	
 	static mapping = {
+		version false
 		table 'tag_properties'
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'

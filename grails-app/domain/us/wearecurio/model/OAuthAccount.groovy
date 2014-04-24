@@ -33,6 +33,10 @@ class OAuthAccount {
 		//typeId inList: []
 	}
 	
+	static mapping = {
+		version false
+	}
+	
 	static def createOrUpdate(ThirdParty type, Long userId, String accountId, String accessToken, String accessSecret) {
 		int c = 0
 

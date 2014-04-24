@@ -26,6 +26,7 @@ class Discussion {
 	}
 	
 	static mapping = {
+		version false
 		table 'discussion'
 		firstPostId column: 'first_post_id', index:'first_post_id_index'
 	}
