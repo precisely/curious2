@@ -811,7 +811,7 @@ function selected($selectee, forceUpdate) {
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
 				var $target = $(e.target);
-				var cancelElements = 'a.deleteEntry,img,input#tagTextEdit,.entryNoBlur,.entryModify';
+				var cancelElements = 'a.deleteEntry,img,input#tagTextInput,#tagTextEdit,.entryNoBlur,.entryModify';
 				if ($target.closest(cancelElements).length > 0) {
 					return;
 				}

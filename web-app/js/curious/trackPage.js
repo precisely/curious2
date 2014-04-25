@@ -453,9 +453,11 @@ function selected($selectee, forceUpdate) {
 
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
+				console.log('mousedown')
 				var $target = $(e.target);
-				var cancelElements = 'a.deleteEntry,img,input#tagTextEdit,.entryNoBlur,.entryModify';
+				var cancelElements = 'a.deleteEntry,img,input#tagTextInput,#tagTextEdit,.entryNoBlur,.entryModify';
 				if ($target.closest(cancelElements).length > 0) {
+					console.log('if mousedown close')
 					return;
 				}
 				var isClickedOnOtherEntry = $target.closest('li.entry').length > 0;
@@ -516,10 +518,13 @@ function checkAndUpdateEntry($unselectee, doNotUpdate, doNotUnselectEntry) {
 
 	if ((!$oldEntry.data('isRemind')) &&
 			(doNotUpdate || ($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate')))) {
-		if (!doNotUnselectEntry) {
-			unselecting($oldEntry, true);
-		} else {
+		console.log('not remoind')
+		if (doNotUnselectEntry) {
+			console.log('nr if')
 			showEntryContent($oldEntry);
+		} else {
+			console.log('nr else')
+			unselecting($oldEntry, true);
 		}
 	} else {
 		$contentWrapper.show();
@@ -650,6 +655,7 @@ $(function(){
 	});
 
 	$(document).on("click", "li.entry", function(e, doNotSelectEntry) {
+		console.log('sa')
 		if (e.target.nodeName && $(e.target).closest("a,img,input,.entryNoBlur").length) {
 			console.debug('Entry clicked. (Doing nothing)');
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
