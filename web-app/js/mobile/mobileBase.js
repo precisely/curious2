@@ -787,9 +787,9 @@ function selectEntry($selectee, forceUpdate) {
 		$contentWrapper.hide();
 		$selectee
 				.append('<span id="tagTextEdit"><input type="text" class="entryNoBlur" id="tagTextInput" style="margin: 2px; width: calc(100% - 110px);"></input>'
-						+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-						+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-						+ '<img class="entryModify" data-suffix="pinnded" src="/images/pin.png" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
+						+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png">'
+						+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png">'
+						+ '<img class="entryModify" data-suffix="pinnded" src="/images/pin.png"></span>');
 		
 		var $textInput = $("#tagTextInput").val(entryText).focus();
 		
@@ -1046,9 +1046,9 @@ function modifyEdit(suffix) {
 
 function modifyInput(suffix) {
 	initInput();
-	// toggleSuffix($('#input0'), suffix);
-	if (toggleSuffix($('#input0'), suffix))
+	if (toggleSuffix($('#input0'), suffix)) {
 		processInput();
+	}
 }
 
 function deleteGhost($entryToDelete, entryId, allFuture) {
@@ -1397,7 +1397,6 @@ $(document).on("mousedown", function(e) {
 		selectEntry($(selectee), false);
 		return false;
 	}
-	return false;
 });
 
 var initTrackPage = function() {

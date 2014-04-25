@@ -221,9 +221,6 @@ function modifyEdit(suffix) {
 function modifyInput(suffix) {
 	initInput();
 	toggleSuffix($('#input0'), suffix);
-	if (toggleSuffix($('#input0'), suffix)) {
-		processInput();
-	}
 }
 
 function deleteGhost($entryToDelete, entryId, allFuture) {
@@ -515,7 +512,6 @@ $(document).on("mousedown", function(e) {
 		selectEntry($(selectee), false);
 		return false;
 	}
-	return false;
 });
 
 $(function() {
