@@ -1,7 +1,6 @@
 var isTodayOrLater, cachedDate, cachedDateUTC, timeZoneName, currentTimeUTC, tagList, currentDrag, currentDragTag,
 entrySelectData, freqTagList, dateTagList,
 dayDuration = 86400000,
-entryEventStack = [],
 defaultToNow = true;
 
 function cacheDate() {
@@ -135,7 +134,7 @@ function displayEntry(entry, isUpdating, args) {
 	+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
 	+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
+			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="return deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
 	if (isUpdating) {
 		$("#entry0 li#entryid" + id).html(innerHTMLContent);
@@ -215,7 +214,7 @@ function toggleSuffix($control, suffix) {
 }
 
 function modifyEdit(suffix) {
-	var $control = $('#tagTextInput');
+	var $control = $('input#tagTextInput');
 	toggleSuffix($control, suffix);
 }
 
@@ -272,6 +271,8 @@ function deleteEntryId(entryId) {
 			}
 		});
 	}
+
+	return false;
 }
 
 function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
@@ -366,7 +367,7 @@ function doLogout() {
  * & displays the original content back.
  */
 function unselectEntry($unselectee, displayNewText, displaySpinner) {
-	console.log('Unselect Entry', $unselectee.attr('id'));
+	console.log('Unselect Entry:', $unselectee.attr('id'));
 
 	var $contentWrapper = $unselectee.find(".content-wrapper");
 	var displayText = $unselectee.data('contentHTML');
@@ -389,83 +390,50 @@ function unselectEntry($unselectee, displayNewText, displaySpinner) {
 }
 
 /**
- * Gets called on selection of the entry, or used to select an entry. If forceUpdate true,
- * always send update whether text changed or not.
+ * Used to select an entry.
  */
-function selectEntry($selectee, forceUpdate) {
-	console.debug('Entry selected.');
+function selectEntry($selectee) {
+	console.debug('Select Entry:', $selectee.attr("id"));
 
-	$selectee.data('forceUpdate', forceUpdate);
 	$selectee.siblings().removeClass("ui-selected");
 	var $contentWrapper = $selectee.find(".content-wrapper");
 
-	// TODO Remove if condition. Not removing because to view git diff properly.
-	if (true) {
-		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
-		var currentEntryId = $selectee.data("entry-id");
-		$selectee.addClass('ui-selected');
+	$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
+	var currentEntryId = $selectee.data("entry-id");
+	$selectee.addClass('ui-selected');
 
-		var entryText = $selectee.text();
-		var selectRange = entrySelectData[currentEntryId];
-		if (selectRange != undefined) {
-			if (selectRange[2]) { // insert space at selectRange[0]
-				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
-			}
+	var entryText = $selectee.text();
+
+	var selectRange = entrySelectData[currentEntryId];
+	if (selectRange != undefined) {
+		if (selectRange[2]) { // insert space at selectRange[0]
+			entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
 		}
-		$selectee.data('originalText', entryText); // store entry text for comparison
-		$contentWrapper.hide();
-		$selectee.append('<span id="tagTextEdit"><input type="text" id="tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify entryNoBlur" src="/images/repeat.png" id="tagEditRepeat" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img class="entryModify entryNoBlur" src="/images/remind.png" id="tagEditRemind" style="width:14px;height:14px;padding-left:1px;padding-top:2px;">'
-				+ '<img class="entryModify entryNoBlur" src="/images/pin.png" id="tagEditPinned" style="width:14px;height:14px;padding-left:1px;padding-top:2px;"></span>');
+	}
+	$selectee.data('originalText', entryText); // store entry text for comparison
+	$contentWrapper.hide();
+	$selectee.append('<span id="tagTextEdit"><input type="text" class="entryNoBlur" id="tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
+			+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png">'
+			+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png">'
+			+ '<img class="entryModify" data-suffix="pinned" src="/images/pin.png"></span>');
 
-		$("#tagEditRepeat").off("mousedown");
-		$("#tagEditRemind").off("mousedown");
-		$("#tagEditPinned").off("mousedown");
-
-		$("#tagEditRepeat").on("mousedown", function(e) {
-			modifyEdit('repeat');
-		});
-		$("#tagEditRemind").on("mousedown", function(e) {
-			modifyEdit('remind');
-		});
-		$("#tagEditPinned").on("mousedown", function(e) {
-			modifyEdit('pinned');
-		});
-
-		$("#tagTextInput").bind('focus', function() {
-			$(document).bind('mousedown', function(e) {
-				var $target = $(e.target);
-				var cancelElements = 'a.deleteEntry,img,input#tagTextInput,#tagTextEdit,.entryNoBlur,.entryModify';
-				if ($target.closest(cancelElements).length > 0) {
-					return;
-				}
-				entryEventStack.push({name: 'blur', target: $target});
-
-				// Will force above callback to call only once. (Unregister previous binding)
-				$(document).unbind('mousedown', arguments.callee);
-				checkAndUpdateEntry($selectee);
-			});
-		});
-
-		$("#tagTextInput").on("keyup", function(e) {
-			var $selectee = $(this).parents("li");
-			var entryData = $selectee.data();
-			if (e.keyCode == 13) {	// Enter pressed
-				checkAndUpdateEntry($selectee);
-			} else if (e.keyCode == 27) {	// Esc pressed
-				unselectEntry($selectee);
-			}
-		});
-
-		$("#tagTextInput").val(entryText).focus();
-		$("#tagTextInput").data('entryTextSet', true);
-		if ($selectee.data('isContinuous'))
-			toggleSuffix($("#tagTextInput"), 'pinned');
-
-		if (selectRange) {
-			$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
+	$("#tagTextInput")
+	.val(entryText).focus()
+	.data('entryTextSet', true)
+	.on("keyup", function(e) {
+		var entryData = $selectee.data();
+		if (e.keyCode == 13) {	// Enter pressed
+			checkAndUpdateEntry($selectee);
+		} else if (e.keyCode == 27) {	// Esc pressed
+			unselectEntry($selectee);
 		}
+	});
+
+	if ($selectee.data('isContinuous'))
+		toggleSuffix($("#tagTextInput"), 'pinned');
+
+	if (selectRange) {
+		$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
 	}
 }
 /**
@@ -501,40 +469,53 @@ function checkAndUpdateEntry($unselectee) {
 	}
 }
 
-$(document).on("click", "li.entry:not(.ui-selected)", function(e, doNotSelectEntry) {
-	var latestEvent = entryEventStack.pop();
-
-	/**
-	 * Checking if this click events if when an entry is selected & active edit entry is blurred.
-	 * (Since blur event triggeres before click event or mousedown event triggers before blur event).
-	 */
-	if (latestEvent && latestEvent.name === "blur") {
-		if (latestEvent.target.closest('li.entry.ui-selected')) {
-			console.info('Entry clicked. (Doing nothing, another entry already selected)');
-			return false;
-		}
+/**
+ * Global mousedown handler for entry & data.
+ */
+$(document).on("mousedown", function(e) {
+	// Only handle for left mouse click.
+	if (event.which != 1) {
+		return;
 	}
 
-	// Useless. Making sure to do not activate a new entry if one is selected or being unselected.
-	if ($('li.entry.ui-selected').length > 0) {
-		console.warn('Entry clicked. (Doing nothing, another entry already selected)');
-		unselectEntry($('li.entry.ui-selected'), true);
+	var $target = $(e.target);
+	var $alreadySelectedEntry = $("li.entry.ui-selected");
+
+	// Checking if any entry is already selected when mousedown event triggered.
+	var isAnyEntrySelected = $alreadySelectedEntry.length > 0;
+
+	// When clicked on any entry element i.e. li.entry
+	var isClickedOnEntry = $target.closest("li.entry").length > 0;
+
+	// If such elements are clicked, where we not have to do anything. (Like deleteEntry)
+	var isEventToCancel = $target.closest(".entryNoBlur").length > 0;
+
+	// If any of the 3 image buttons (besides edit entry text field) are clicked.
+	var isEntryModify = $target.closest("img.entryModify").length > 0;
+
+	if (isEventToCancel) {
+		return;
+	}
+
+	if (isAnyEntrySelected) {
+		if (isEntryModify) {
+			var suffix = $target.data('suffix');
+			modifyEdit(suffix);
+			return;
+		}
+		console.debug('Mousedown: There is a selcted entry. Will now unselect.')
+		checkAndUpdateEntry($("li.entry.ui-selected"));
 		return false;
 	}
-	console.debug('Entry clicked.');
 
-	var $selectee = $(this);
-	selectEntry($selectee, false);
-});
-
-/**
- * Global click handler to popup event stack if clicked other than on entry.
- * 
- * @Note Must be defined after above click handler (entry click handler) to
- * call that handler before this handler.
- */
-$(document).on("click", function(e) {
-	entryEventStack.pop();
+	if (isClickedOnEntry) {
+		// parents() method returns all anscestors as list. So element at 0th position will be li.entry
+		var selectee = $target.parents("li.entry").andSelf()[0];
+		console.debug('Mousedown: Clicked on an entry. Will now select.');
+		selectEntry($(selectee), false);
+		return false;
+	}
+	return false;
 });
 
 $(function() {
@@ -593,12 +574,11 @@ $(function() {
 		var $selectee;
 		if (e.keyCode == 40) { 
 			$selectee = $unselectee.next();
-		}
-		if (e.keyCode == 38) { 
+		} else if (e.keyCode == 38) { 
 			$selectee = $unselectee.prev();
 		}
 		if ($selectee) {
-			unselectEntry($unselectee);
+			checkAndUpdateEntry($unselectee);
 			selectEntry($selectee, false);
 		}
 		return false;
