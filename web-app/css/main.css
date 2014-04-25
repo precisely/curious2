@@ -998,7 +998,11 @@ body.tags-displayed .floating-column {
 	color:#999999;
 }
 .entryModify {
-	cursor:pointer;
+	cursor: pointer;
+	width: 14px;
+	height: 14px;
+	padding-left: 1px;
+	padding-top: 2px;
 }
 .custom-row {
 	padding-right: 10px;
