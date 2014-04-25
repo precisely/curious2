@@ -502,7 +502,7 @@ $(document).on("mousedown", function(e) {
 		}
 		console.debug('Mousedown: There is a selcted entry. Will now unselect.')
 		checkAndUpdateEntry($("li.entry.ui-selected"));
-		return false;
+		return;
 	}
 
 	if (isClickedOnEntry) {
