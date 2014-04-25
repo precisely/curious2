@@ -325,8 +325,9 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 				}
 			}) */
 			updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
-			if (entries[2] != null)
+			if (entries[2] != null) {
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+			}
 		}
 	});
 }
@@ -409,14 +410,21 @@ function doLogout() {
  * being unselected.
  */
 function unselecting($unselectee, doNotUpdate) {
-	if ($unselectee.data('entryIsSelected') == 1) {
-		var $textInput = $("#tagTextInput");
-		$unselectee.removeClass('ui-selected');
-		$unselectee.data('entryIsSelected', 0);
-		$("a.entryDelete", $unselectee).hide();
+	console.log('Unselecting entry.');
+	if (doNotUpdate) {
+		showEntryContent($unselectee);
+		$("#tagTextEdit").remove();
+	} else {
 		checkAndUpdateEntry($unselectee, doNotUpdate);
-		currentEntryId = null;
 	}
+	$unselectee.removeClass('ui-selected');
+	currentEntryId = null;
+}
+
+function showEntryContent($entry) {
+	var $contentWrapper = $entry.find(".content-wrapper");
+	$contentWrapper.html($entry.data('contentHTML'));
+	$contentWrapper.show();
 }
 
 /**
@@ -424,16 +432,16 @@ function unselecting($unselectee, doNotUpdate) {
  * always send update whether text changed or not.
  */
 function selected($selectee, forceUpdate) {
-	var state = $selectee.data('entryIsSelected');
-	$selectee.data('forceUpdate', forceUpdate);
-	var $contentWrapper = $selectee.find(".content-wrapper");
-	if ($("#tagTextInput").size() == 1) return;
-	$selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
+	console.debug('Entry selected.');
 
-	if (state == undefined || state == 0) {
+	$selectee.data('forceUpdate', forceUpdate);
+	$selectee.siblings().removeClass("ui-selected");
+	var $contentWrapper = $selectee.find(".content-wrapper");
+
+	// TODO Remove this if condition.
+	if (true) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		currentEntryId = $selectee.data("entry-id");
-		$selectee.data('entryIsSelected', 1);
 		$selectee.addClass('ui-selected');
 
 		var entryText = $selectee.text();
@@ -464,19 +472,20 @@ function selected($selectee, forceUpdate) {
 			modifyEdit('pinned');
 		});
 
-		// Adding logic to prevent blur from activating when clicking on certain controls
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
 				var $target = $(e.target);
-				if ($target.closest('#tagTextEdit').length) return;
-				if (! $target.closest('.entryNoBlur').length) {
-					$selectee.data('entryIsSelected', 0);
-					var $unselectee = $target.parents("li");
-					checkAndUpdateEntry($unselectee);
+				var cancelElements = 'a.deleteEntry,img,input#tagTextEdit,.entryNoBlur,.entryModify';
+				if ($target.closest(cancelElements).length > 0) {
+					return;
 				}
-				if (! $target.closest('.entryModify').length)
-					$(document).unbind('mousedown', arguments.callee);
-			})
+				var isClickedOnOtherEntry = $target.closest('li.entry').length > 0;
+
+				// Will force above callback to call only once.
+				$(document).unbind('mousedown', arguments.callee);
+				var $unselectee = $('li.entry.ui-selected');
+				checkAndUpdateEntry($unselectee, false, isClickedOnOtherEntry);
+			});
 		});
 
 		$("#tagTextInput").on("keyup", function(e) {
@@ -488,6 +497,7 @@ function selected($selectee, forceUpdate) {
 				unselecting($selectee, true);
 			}
 		});
+
 		$("#tagTextInput").val(entryText).focus();
 		$("#tagTextInput").data('entryTextSet', true);
 		if ($selectee.data('isContinuous'))
@@ -503,10 +513,18 @@ function selected($selectee, forceUpdate) {
  * IF different than call updateEntry() method to notify
  * server and update in UI.
  */
-function checkAndUpdateEntry($unselectee, doNotUpdate) {
+function checkAndUpdateEntry($unselectee, doNotUpdate, doNotUnselectEntry) {
+	if ($unselectee == undefined) {
+		console.warn("Undefined unselectee.");
+		return;
+	}
 	var $contentWrapper = $unselectee.find(".content-wrapper");
 
 	var newText = $("input#tagTextInput").val();
+	if (newText == undefined) {
+		console.warn("Undefined new text");
+		return;
+	}
 	var $oldEntry = getEntryElement(currentEntryId);
 
 	if ($oldEntry.data('isContinuous') && (!doNotUpdate)) {
@@ -516,16 +534,18 @@ function checkAndUpdateEntry($unselectee, doNotUpdate) {
 		addEntry(currentUserId, newText, defaultToNow);
 		doNotUpdate = true;
 	}
+
 	if ((!$oldEntry.data('isRemind')) &&
 			(doNotUpdate || ($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate')))) {
-		var $contentWrapper = $oldEntry.find(".content-wrapper");
-		$contentWrapper.html($oldEntry.data('contentHTML'));
-		$contentWrapper.show();
+		if (!doNotUnselectEntry) {
+			unselecting($oldEntry, true);
+		} else {
+			showEntryContent($oldEntry);
+		}
 	} else {
 		$contentWrapper.show();
 		$unselectee.data('forceUpdate', 0);
-		$contentWrapper
-		.append("&nbsp;&nbsp;<img src='/images/spinner.gif' />");
+		$contentWrapper.append("&nbsp;&nbsp;<img src='/images/spinner.gif' />");
 		updateEntry(currentEntryId, newText, defaultToNow);
 	}
 
@@ -533,6 +553,7 @@ function checkAndUpdateEntry($unselectee, doNotUpdate) {
 }
 
 function activateEntry($ghostEntry, doNotSelectEntry) {
+	console.debug('Activate entry');
 	cacheNow();
 	var entryId = $ghostEntry.data("entry-id");
 	var isContinuous = $ghostEntry.data("isContinuous");
@@ -612,18 +633,17 @@ $(function(){
 			processInput();
 		}
 	});
-	$("#entry0").listable({cancel: 'a,input'});
+	/*$("#entry0").listable({cancel: 'a,input,.entryNoBlur'});
 	$("#entry0").off("listableselected");
-	/*
 	$("#entry0").off("listableunselecting");
 	$("#entry0").on("listableunselecting", function(e, ui) {
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
-	});*/
+	});
 	$("#entry0").on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
 		selected($selectee, false);
-	});
+	});*/
 
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down
@@ -650,18 +670,28 @@ $(function(){
 		return false;
 	});
 
-	$(document).on("click", "li.entry.ghost", function(e, doNotSelectEntry) {
-		if (e.target.nodeName && $(e.target).closest("a,img").length) {
+	$(document).on("click", "li.entry", function(e, doNotSelectEntry) {
+		if (e.target.nodeName && $(e.target).closest("a,img,input,.entryNoBlur").length) {
+			console.debug('Entry clicked. (Doing nothing)');
 			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
 		}
-		var $entry = $(this);
-		var entryData = $entry.data();
+
+		if ($('li.entry.ui-selected').length > 0) {
+			console.info('Entry clicked. (Doing nothing, another entry already selected)');
+			unselecting($('li.entry.ui-selected'), true);
+			return false;
+		}
+		console.debug('Entry clicked.');
+
+		var $selectee = $(this);
+		/*var entryData = $entry.data();
 		if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
 			// Handled by selected event, i.e. selected() method is called.
 		} else {
 			activateEntry($entry, doNotSelectEntry);
-		}
+		}*/
+		selected($selectee, false);
 	});
 
 	/*

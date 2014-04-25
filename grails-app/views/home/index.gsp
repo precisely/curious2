@@ -61,7 +61,6 @@ removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroup
 		if (${showTime} > 0)
 			currentDate = new Date(${showTime});
 	</script>
-	<script type="text/javascript" src="/js/jquery/jquery.selectable.custom.js"></script>
 	<script type="text/javascript" src="/js/curious/trackPage.js"></script>
 </body>
 </html>
