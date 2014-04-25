@@ -75,26 +75,6 @@ if (!localStorageSupported()) {
 	console.log("HTML5 local storage error");
 }
 
-$.datepicker._gotoToday = function(id) {
-	var target = $(id);
-	var inst = this._getInst(target[0]);
-	if (this._get(inst, 'gotoCurrent') && inst.currentDay) {
-		inst.selectedDay = inst.currentDay;
-		inst.drawMonth = inst.selectedMonth = inst.currentMonth;
-		inst.drawYear = inst.selectedYear = inst.currentYear;
-	} else {
-		var date = new Date();
-		inst.selectedDay = date.getDate();
-		inst.drawMonth = inst.selectedMonth = date.getMonth();
-		inst.drawYear = inst.selectedYear = date.getFullYear();
-		// the below two lines are new
-		this._setDateDatepicker(target, date);
-		this._selectDate(id, this._getDateDatepicker(target));
-	}
-	this._notifyChange(inst);
-	this._adjustDate(target);
-}
-
 var activateEntryId = -1;
 
 function doLogout() {
@@ -785,16 +765,15 @@ function clearEntries() {
 
 var mouseDownOnDeleteEntry = false; // Used to track mousedown during blur even
 function selected($selectee, forceUpdate) {
-	var state = $selectee.data('entryIsSelected');
-	$selectee.data('forceUpdate', forceUpdate);
-	var $contentWrapper = $selectee.find(".content-wrapper");
-	if ($("#tagTextInput").size() == 1)
-		return;
-	$selectee.siblings().removeClass("ui-selected").data('entryIsSelected', 0);
+	console.debug('Entry selected.');
 
-	if (state == undefined || state == 0) {
+	$selectee.data('forceUpdate', forceUpdate);
+	$selectee.siblings().removeClass("ui-selected");
+	var $contentWrapper = $selectee.find(".content-wrapper");
+
+	// TODO Remove if condition. Not removing because to view git diff properly.
+	if (true) {
 		$selectee.addClass('ui-selected');
-		$selectee.data('entryIsSelected', 1);
 		$selectee.data('contentHTML', $contentWrapper.html()); // store
 		// original HTML
 		// for later
@@ -829,25 +808,19 @@ function selected($selectee, forceUpdate) {
 			modifyEdit('pinned');
 		});
 
-		// Adding logic to prevent blur from activating when clicking on certain controls
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
 				var $target = $(e.target);
-				if ($target.closest('#tagTextEdit').length) return;
-				if (! $target.closest('.entryNoBlur').length) {
-					//if ($target.data('cancelBlur')) return;
-					$selectee.data('entryIsSelected', 0);
-					var $unselectee = $target.parents("li");
-					if ($target.closest('#input0').length) {
-						$unselectee = $selectee;
-					}
-					checkAndUpdateEntry($unselectee);
-					console.log('Unselecting entry: ' + $unselectee);
-					console.log('Target for click: ' + $unselectee);
-					$unselectee.data('entryIsSelected', 1);
-					unselecting($unselectee);
+				var cancelElements = 'a.deleteEntry,img,input#tagTextEdit,.entryNoBlur,.entryModify';
+				if ($target.closest(cancelElements).length > 0) {
+					return;
 				}
+				var isClickedOnOtherEntry = $target.closest('li.entry').length > 0;
+
+				// Will force above callback to call only once.
 				$(document).unbind('mousedown', arguments.callee);
+				var $unselectee = $('li.entry.ui-selected');
+				checkAndUpdateEntry($unselectee, false, isClickedOnOtherEntry);
 			});
 		});
 		
@@ -927,15 +900,22 @@ function activateEntry($entry, doNotSelectEntry) {
 var dayDuration = 86400000;
 var entrySelectData;
 
-function unselecting($unselectee) {
-	if ($unselectee.data('entryIsSelected') == 1) {
-		var $textInput = $("#tagTextInput");
-		$unselectee.data('entryIsSelected', 0);
-		$unselectee.removeClass('ui-selected');
-		$("a.entryDelete", $unselectee).hide();
-		checkAndUpdateEntry($unselectee);
-		currentEntryId = null;
+function unselecting($unselectee, doNotUpdate) {
+	console.log('Unselecting entry.');
+	if (doNotUpdate) {
+		showEntryContent($unselectee);
+		$("#tagTextEdit").remove();
+	} else {
+		checkAndUpdateEntry($unselectee, doNotUpdate);
 	}
+	$unselectee.removeClass('ui-selected');
+	currentEntryId = null;
+}
+
+function showEntryContent($entry) {
+	var $contentWrapper = $entry.find(".content-wrapper");
+	$contentWrapper.html($entry.data('contentHTML'));
+	$contentWrapper.show();
 }
 
 function glow(entryId) {
@@ -1230,22 +1210,22 @@ function deleteCurrentEntry() {
  * Checks if text is different from original text. IF different than call
  * updateEntry() method to notify server and update in UI.
  */
-function checkAndUpdateEntry($unselectee) {
+function checkAndUpdateEntry($unselectee, doNotUpdate, doNotUnselectEntry) {
 	if ($unselectee == undefined) {
-		console.log("Error: undefined unselectee");
+		console.warn("Undefined unselectee.");
 		return;
 	}
 	var $contentWrapper = $unselectee.find(".content-wrapper");
 	
 	var newText = $("input#tagTextInput").val();
 	if (newText == undefined) {
-		console.log("Error: undefined new text");
+		console.warn("Undefined new text.");
 		return;
 	}
 	var $oldEntry = getEntryElement(currentEntryId);
 	$oldEntry.addClass("glow");
 	
-	var doNotUpdate = false;
+	doNotUpdate = false;
 	
 	if ($oldEntry.data('isContinuous') && (!doNotUpdate)) {
 		var $contentWrapper = $oldEntry.find(".content-wrapper");
@@ -1260,9 +1240,11 @@ function checkAndUpdateEntry($unselectee) {
 		setTimeout(function() {
 			$oldEntry.removeClass("glow");
 		}, 500)
-		var $contentWrapper = $oldEntry.find(".content-wrapper");
-		$contentWrapper.html($oldEntry.data('contentHTML'));
-		$contentWrapper.show();
+		if (!doNotUnselectEntry) {
+			unselecting($oldEntry, true);
+		} else {
+			showEntryContent($oldEntry);
+		}
 	} else {
 		$contentWrapper.show();
 		$unselectee.addClass("glow");
@@ -1505,34 +1487,43 @@ var initTrackPage = function() {
 	});
 
 	var $entryArea = $("#entry0");
-	$entryArea.listable({
+	/*$entryArea.listable({
 		cancel : 'a, input'
 	});
 	$entryArea.off("listableselected");
-	/*$entryArea.off("listableunselecting");
+	$entryArea.off("listableunselecting");
 	$entryArea.on("listableunselecting", function(e, ui) {
 		var $unselectee = $("#" + ui.unselecting.id);
 		unselecting($unselectee);
-	});*/
+	});
 	$entryArea.on("listableselected", function(e, ui) {
 		var $selectee = $("#" + ui.selected.id);
 		console.log("Select event triggered");
 		selected($selectee, false);
-	});
+	});*/
 
-	$(document).on("click", "li.entry.ghost", function(e) {
-		if (e.target.nodeName && $(e.target).closest("a,img").length) {
-			// Not doing anything when delete icon clicked like 'cancel' option
-			// in selectable.
+	$(document).on("click", "li.entry", function(e) {
+		if (e.target.nodeName && $(e.target).closest("a,img,input,.entryNoBlur").length) {
+			console.debug('Entry clicked. (Doing nothing)');
+			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
 			return false;
 		}
-		var $entry = $(this);
-		var entryData = $entry.data();
+
+		if ($('li.entry.ui-selected').length > 0) {
+			console.info('Entry clicked. (Doing nothing, another entry already selected)');
+			unselecting($('li.entry.ui-selected'), true);
+			return false;
+		}
+		console.debug('Entry clicked.');
+
+		var $selectee = $(this);
+		/*var entryData = $entry.data();
 		if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
 			// Handled by selected event, i.e. selected() method is called.
 		} else {
 			activateEntry($entry, doNotSelectEntry);
-		}
+		}*/
+		selected($selectee, false);
 	})
 
 	var cache = getAppCacheData('users');

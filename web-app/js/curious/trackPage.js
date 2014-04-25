@@ -4,27 +4,6 @@ currentEntryId = undefined,
 dayDuration = 86400000,
 defaultToNow = true;
 
-$.datepicker._gotoToday = function(id) {
-	var target = $(id);
-	var inst = this._getInst(target[0]);
-	if (this._get(inst, 'gotoCurrent') && inst.currentDay) {
-		inst.selectedDay = inst.currentDay;
-		inst.drawMonth = inst.selectedMonth = inst.currentMonth;
-		inst.drawYear = inst.selectedYear = inst.currentYear;
-	}
-	else {
-		var date = new Date();
-		inst.selectedDay = date.getDate();
-		inst.drawMonth = inst.selectedMonth = date.getMonth();
-		inst.drawYear = inst.selectedYear = date.getFullYear();
-		// the below two lines are new
-		this._setDateDatepicker(target, date);
-		this._selectDate(id, this._getDateDatepicker(target));
-	}
-	this._notifyChange(inst);
-	this._adjustDate(target);
-}
-
 function cacheDate() {
 	var now = new Date();
 	cachedDate = $("input#datepicker").datepicker('getDate');
@@ -438,7 +417,7 @@ function selected($selectee, forceUpdate) {
 	$selectee.siblings().removeClass("ui-selected");
 	var $contentWrapper = $selectee.find(".content-wrapper");
 
-	// TODO Remove this if condition.
+	// TODO Remove if condition. Not removing because to view git diff properly.
 	if (true) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		currentEntryId = $selectee.data("entry-id");
