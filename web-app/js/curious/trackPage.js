@@ -540,10 +540,6 @@ $(function() {
 		$('button.ui-datepicker-current').removeClass('ui-priority-secondary').addClass('ui-priority-primary');
 	});
 
-	$(document).on("click", ".ui-datepicker-buttonpane button.ui-datepicker-current", function() {
-		$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
-	})
-
 	$("#input0")
 	.on("click", function(e) {
 		if (!$("#input0").data('entryTextSet')) {
