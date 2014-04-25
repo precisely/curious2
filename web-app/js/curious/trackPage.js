@@ -1,7 +1,7 @@
 var isTodayOrLater, cachedDate, cachedDateUTC, timeZoneName, currentTimeUTC, tagList, currentDrag, currentDragTag,
 entrySelectData, freqTagList, dateTagList,
-currentEntryId = undefined,
 dayDuration = 86400000,
+entryEventStack = [],
 defaultToNow = true;
 
 function cacheDate() {
@@ -38,13 +38,13 @@ function refreshPage() {
 }
 
 function clearEntries() {
-	currentEntryId = undefined;
 	$("#entry0").html('');
 }
 
 $(document).mousemove(function(e) {
-	if (currentDrag != null)
+	if (currentDrag != null) {
 		currentDrag.setAbsolute({ x: e.pageX - 6, y: e.pageY - 6 });
+	}
 });
 
 $(document).mouseup(function(e) {
@@ -216,13 +216,7 @@ function toggleSuffix($control, suffix) {
 
 function modifyEdit(suffix) {
 	var $control = $('#tagTextInput');
-	//$control.data('cancelBlur', true);
 	toggleSuffix($control, suffix);
-	/*if (toggleSuffix($control, suffix)) {
-		var $selectee = $control.parents("li");
-		unselecting($selectee);
-		selected($selectee, false);
-	}*/
 }
 
 function modifyInput(suffix) {
@@ -280,10 +274,6 @@ function deleteEntryId(entryId) {
 	}
 }
 
-function deleteCurrentEntry() {
-	deleteEntryId(currentEntryId);
-}
-
 function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 	cacheNow();
 	queueJSON("updating entry", "/home/updateEntrySData?entryId=" + entryId
@@ -294,15 +284,6 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 		if (checkData(entries, 'success', "Error updating entry")) {
 			tagList.load();
 			refreshEntries(entries[0]);
-			//$.each(entries[0], function(index, entry) {
-			/**
-			 * Finding only that entry which is recently updated, and
-			 * refreshing only that entry in UI.
-			 */
-			/*	if (entry.id == entryId) {
-					displayEntry(entry, true);
-				}
-			}) */
 			updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 			if (entries[2] != null) {
 				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
@@ -313,7 +294,6 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 
 function updateEntry(entryId, text, defaultToNow) {
 	var $oldEntry = getEntryElement(entryId);
-	$(".content-wrapper", $oldEntry).html(text);
 
 	if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) && (!isTodayOrLater)) {
 		showAB("Update just this one event or also future events?", "One", "Future", function() {
@@ -373,9 +353,6 @@ function setEntryText(text, startSelect, endSelect) {
 	$inp.data("entryTextSet", true);
 }
 
-//dynamic autocomplete
-//var lastAutoXhr;
-
 //static autocomplete
 //changes to the autocomplete code should also get put into the index.gsp for the mobile app
 var autoCache = {};
@@ -385,32 +362,37 @@ function doLogout() {
 }
 
 /**
- * Used to unselect an entry, or called when entry is
- * being unselected.
+ * Used to un-select and entry. Removes the entry edit text field
+ * & displays the original content back.
  */
-function unselecting($unselectee, doNotUpdate) {
-	console.log('Unselecting entry.');
-	if (doNotUpdate) {
-		showEntryContent($unselectee);
-		$("#tagTextEdit").remove();
-	} else {
-		checkAndUpdateEntry($unselectee, doNotUpdate);
-	}
-	$unselectee.removeClass('ui-selected');
-	currentEntryId = null;
-}
+function unselectEntry($unselectee, displayNewText, displaySpinner) {
+	console.log('Unselect Entry', $unselectee.attr('id'));
 
-function showEntryContent($entry) {
-	var $contentWrapper = $entry.find(".content-wrapper");
-	$contentWrapper.html($entry.data('contentHTML'));
+	var $contentWrapper = $unselectee.find(".content-wrapper");
+	var displayText = $unselectee.data('contentHTML');
+
+	if (displayNewText) {
+		var newText = $("input#tagTextInput").val();
+		if (newText) {
+			displayText = newText;
+		}
+	}
+
+	$contentWrapper.html(displayText);
 	$contentWrapper.show();
+	if (displaySpinner) {
+		$contentWrapper.append(" &nbsp;<img src='/images/spinner.gif' />");
+	}
+
+	$("#tagTextEdit").remove();
+	$unselectee.removeClass('ui-selected');
 }
 
 /**
  * Gets called on selection of the entry, or used to select an entry. If forceUpdate true,
  * always send update whether text changed or not.
  */
-function selected($selectee, forceUpdate) {
+function selectEntry($selectee, forceUpdate) {
 	console.debug('Entry selected.');
 
 	$selectee.data('forceUpdate', forceUpdate);
@@ -420,7 +402,7 @@ function selected($selectee, forceUpdate) {
 	// TODO Remove if condition. Not removing because to view git diff properly.
 	if (true) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
-		currentEntryId = $selectee.data("entry-id");
+		var currentEntryId = $selectee.data("entry-id");
 		$selectee.addClass('ui-selected');
 
 		var entryText = $selectee.text();
@@ -453,19 +435,16 @@ function selected($selectee, forceUpdate) {
 
 		$("#tagTextInput").bind('focus', function() {
 			$(document).bind('mousedown', function(e) {
-				console.log('mousedown')
 				var $target = $(e.target);
 				var cancelElements = 'a.deleteEntry,img,input#tagTextInput,#tagTextEdit,.entryNoBlur,.entryModify';
 				if ($target.closest(cancelElements).length > 0) {
-					console.log('if mousedown close')
 					return;
 				}
-				var isClickedOnOtherEntry = $target.closest('li.entry').length > 0;
+				entryEventStack.push({name: 'blur', target: $target});
 
-				// Will force above callback to call only once.
+				// Will force above callback to call only once. (Unregister previous binding)
 				$(document).unbind('mousedown', arguments.callee);
-				var $unselectee = $('li.entry.ui-selected');
-				checkAndUpdateEntry($unselectee, false, isClickedOnOtherEntry);
+				checkAndUpdateEntry($selectee);
 			});
 		});
 
@@ -473,9 +452,9 @@ function selected($selectee, forceUpdate) {
 			var $selectee = $(this).parents("li");
 			var entryData = $selectee.data();
 			if (e.keyCode == 13) {	// Enter pressed
-				unselecting($selectee);
+				checkAndUpdateEntry($selectee);
 			} else if (e.keyCode == 27) {	// Esc pressed
-				unselecting($selectee, true);
+				unselectEntry($selectee);
 			}
 		});
 
@@ -494,91 +473,74 @@ function selected($selectee, forceUpdate) {
  * IF different than call updateEntry() method to notify
  * server and update in UI.
  */
-function checkAndUpdateEntry($unselectee, doNotUpdate, doNotUnselectEntry) {
+function checkAndUpdateEntry($unselectee) {
 	if ($unselectee == undefined) {
 		console.warn("Undefined unselectee.");
 		return;
 	}
-	var $contentWrapper = $unselectee.find(".content-wrapper");
+	console.debug('Check and update entry:', $unselectee.attr('id'));
 
 	var newText = $("input#tagTextInput").val();
 	if (newText == undefined) {
 		console.warn("Undefined new text");
 		return;
 	}
-	var $oldEntry = getEntryElement(currentEntryId);
+	var currentEntryId = $unselectee.data("entry-id");
 
-	if ($oldEntry.data('isContinuous') && (!doNotUpdate)) {
-		var $contentWrapper = $oldEntry.find(".content-wrapper");
-		$contentWrapper.html($oldEntry.data('contentHTML'));
-		$contentWrapper.show();
+	if ($unselectee.data('isContinuous')) {
+		console.debug('Is a continuous entry:', $unselectee.attr('id'));
 		addEntry(currentUserId, newText, defaultToNow);
-		doNotUpdate = true;
-	}
-
-	if ((!$oldEntry.data('isRemind')) &&
-			(doNotUpdate || ($oldEntry.data('originalText') == newText) && (!$unselectee.data('forceUpdate')))) {
-		console.log('not remoind')
-		if (doNotUnselectEntry) {
-			console.log('nr if')
-			showEntryContent($oldEntry);
-		} else {
-			console.log('nr else')
-			unselecting($oldEntry, true);
-		}
+		unselectEntry($unselectee, false, true);
+	} else if (!$unselectee.data('isRemind') && $unselectee.data('originalText') == newText) {
+		console.debug('Is not remind & no change in entry.');
+		unselectEntry($unselectee);
 	} else {
-		$contentWrapper.show();
-		$unselectee.data('forceUpdate', 0);
-		$contentWrapper.append("&nbsp;&nbsp;<img src='/images/spinner.gif' />");
+		console.log('Either remind or change in entry.');
+		unselectEntry($unselectee, true, true);
 		updateEntry(currentEntryId, newText, defaultToNow);
 	}
-
-	$("#tagTextEdit").remove();
 }
 
-function activateEntry($ghostEntry, doNotSelectEntry) {
-	console.debug('Activate entry');
-	cacheNow();
-	var entryId = $ghostEntry.data("entry-id");
-	var isContinuous = $ghostEntry.data("isContinuous");
-	var text = $ghostEntry.find('input#tagTextInput').val();
-	queueJSON("creating entry", "/home/activateGhostEntry?entryId=" + entryId + "&date=" + cachedDateUTC + "&currentTime=" + currentTimeUTC + "&timeZoneName=" + timeZoneName + "&text=" + text + "&"
-			+ getCSRFPreventionURI("activateGhostEntryCSRF") + "&callback=?",
-			function(newEntry) {
-		if (checkData(newEntry)) {
-			var newEntryId = newEntry.id;
-			if (isContinuous) {
-				var $lastContinuousGhostEntry = $("#entry0 li.entry.ghost.continuous:last");
-				displayEntry(newEntry, false, {appendAfterEntry: $lastContinuousGhostEntry});
-			} else {
-				displayEntry(newEntry, false, {replaceEntry: $ghostEntry});
-			}
-			var $newEntry = $("li#entryid" + newEntryId);
-			if (!doNotSelectEntry) {
-				selected($newEntry, true);
-			}
-			tagList.load();
+$(document).on("click", "li.entry:not(.ui-selected)", function(e, doNotSelectEntry) {
+	var latestEvent = entryEventStack.pop();
+
+	/**
+	 * Checking if this click events if when an entry is selected & active edit entry is blurred.
+	 * (Since blur event triggeres before click event or mousedown event triggers before blur event).
+	 */
+	if (latestEvent && latestEvent.name === "blur") {
+		if (latestEvent.target.closest('li.entry.ui-selected')) {
+			console.info('Entry clicked. (Doing nothing, another entry already selected)');
+			return false;
 		}
-	});
-}
+	}
 
-$(function(){
+	// Useless. Making sure to do not activate a new entry if one is selected or being unselected.
+	if ($('li.entry.ui-selected').length > 0) {
+		console.warn('Entry clicked. (Doing nothing, another entry already selected)');
+		unselectEntry($('li.entry.ui-selected'), true);
+		return false;
+	}
+	console.debug('Entry clicked.');
+
+	var $selectee = $(this);
+	selectEntry($selectee, false);
+});
+
+/**
+ * Global click handler to popup event stack if clicked other than on entry.
+ * 
+ * @Note Must be defined after above click handler (entry click handler) to
+ * call that handler before this handler.
+ */
+$(document).on("click", function(e) {
+	entryEventStack.pop();
+});
+
+$(function() {
 	initTemplate();
 	initAutocomplete();
 	initTagListWidget();
-
-	/*
-	 * Commenting whole section, because date evaluated from here
-	 * will be overwritten on next lines.
-	if (supportsLocalStorage() && localStorage['stateStored'] == "2") {
-		currentDate = $.evalJSON(localStorage['currentDate']);
-	} else {
-		currentDate = new Date();
-		localStorage['currentDate'] = $.toJSON(currentDate);
-		localStorage['stateStored'] = "2";
-	}
-	 *
-	 */
 
 	$("#input0").val('Enter a tag.  For example: nap at 2pm');
 	$("#input0").droppable({
@@ -596,8 +558,6 @@ $(function(){
 	.datepicker("hide")
 	.change(function () {
 		refreshPage();
-		localStorage['stateStored'] = "2";
-		localStorage['currentDate'] = $.toJSON($datepicker.datepicker('getDate'));
 	})
 	.click(function() {
 		$('button.ui-datepicker-current').removeClass('ui-priority-secondary').addClass('ui-priority-primary');
@@ -607,27 +567,17 @@ $(function(){
 		$datepickerField.datepicker("setDate", new Date()).datepicker("hide").trigger("change").blur();
 	})
 
-	$("#input0").off("click");
-	$("#input0").on("click", function(e) {
-		if (!$("#input0").data('entryTextSet'))
+	$("#input0")
+	.on("click", function(e) {
+		if (!$("#input0").data('entryTextSet')) {
 			setEntryText('');
-	});
-	$("#input0").keyup(function(e) {
-		if (e.keyCode == 13) {
+		}
+	})
+	.keyup(function(e) {
+		if (e.keyCode == 13) {	// Enter pressed.
 			processInput();
 		}
 	});
-	/*$("#entry0").listable({cancel: 'a,input,.entryNoBlur'});
-	$("#entry0").off("listableselected");
-	$("#entry0").off("listableunselecting");
-	$("#entry0").on("listableunselecting", function(e, ui) {
-		var $unselectee = $("#" + ui.unselecting.id);
-		unselecting($unselectee);
-	});
-	$("#entry0").on("listableselected", function(e, ui) {
-		var $selectee = $("#" + ui.selected.id);
-		selected($selectee, false);
-	});*/
 
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down
@@ -648,47 +598,11 @@ $(function(){
 			$selectee = $unselectee.prev();
 		}
 		if ($selectee) {
-			unselecting($unselectee);
-			selected($selectee, false);
+			unselectEntry($unselectee);
+			selectEntry($selectee, false);
 		}
 		return false;
 	});
-
-	$(document).on("click", "li.entry", function(e, doNotSelectEntry) {
-		console.log('sa')
-		if (e.target.nodeName && $(e.target).closest("a,img,input,.entryNoBlur").length) {
-			console.debug('Entry clicked. (Doing nothing)');
-			// Not doing anything when delete icon clicked like 'cancel' option in selectable.
-			return false;
-		}
-
-		if ($('li.entry.ui-selected').length > 0) {
-			console.info('Entry clicked. (Doing nothing, another entry already selected)');
-			unselecting($('li.entry.ui-selected'), true);
-			return false;
-		}
-		console.debug('Entry clicked.');
-
-		var $selectee = $(this);
-		/*var entryData = $entry.data();
-		if (entryData.isContinuous || (entryData.isGhost && entryData.isRemind)) {
-			// Handled by selected event, i.e. selected() method is called.
-		} else {
-			activateEntry($entry, doNotSelectEntry);
-		}*/
-		selected($selectee, false);
-	});
-
-	/*
-	$("#entry0").off("selectableselected");
-	$("#entry0").on("selectableselected", function(e, ui) {
-		currentEntryId = ui.selected.id.substring(7);
-		var selectRange = entrySelectData[currentEntryId];
-		if (selectRange)
-			setEntryText(ui.selected.textContent, selectRange[0], selectRange[1]);
-		else
-			setEntryText(ui.selected.textContent);
-	});*/
 
 	initTemplate();
 
