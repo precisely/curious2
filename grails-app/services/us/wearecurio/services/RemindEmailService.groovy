@@ -81,15 +81,17 @@ class RemindEmailService {
 			def userId = user[0]
 			def email = user[1]
 			def u = User.get(userId)
-			log.debug "Reminder for user " + userId + " " + u?.username
 			def devices = PushNotificationDevice.findAllByUserId(userId)
-			log.debug "User devices registered for notification " + devices.size()
 			def lhp = u.hasMetaTag(lhpMemberTag)
 			def url = lhp ? "https://lamhealth.wearecurio.us/mobile/index" : "https://dev.wearecurio.us/mobile/index"
 
 			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
-			log.debug "Number of remind events found "+remindEvents.size()
+			if (remindEvents.size() > 0) {
+				log.debug "Reminder for user " + userId + " " + u?.username
+				log.debug "User devices registered for notification " + devices.size()
+				log.debug "Number of remind events found "+remindEvents.size()
+			}
 			for (def eventIdRecord in remindEvents) {
 				sendReminderForEvent(userId, email, eventIdRecord['id'], devices)
 			}
