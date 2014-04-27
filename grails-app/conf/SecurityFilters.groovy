@@ -38,6 +38,23 @@ class SecurityFilters {
 		'termsofservice',
 		'notifyfitbit'
 	]
+	// list of actions that do not need to be duplicate checked
+	static List idempotentActions = [
+		'getPeopleData',
+		'getEntriesData',
+		'getListData',
+		'getPlotData',
+		'getSumPlotData',
+		'getTagsData',
+		'setTagPropertiesData',
+		'autocompleteData',
+		'listPlotData',
+		'loadPlotDataId',
+		'listSnapshotData',
+		'listDiscussionData',
+		'loadSnapshotDataId',
+		
+	]
 	def filters = {
 		loginCheck(controller:'home', action:'*') {
 			before = {
@@ -63,7 +80,7 @@ class SecurityFilters {
 					} else {
 						println "No mobile session id"
 					}
-					if (actionName.endsWith('Data')) {
+					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
 						println "No session for data action " + actionName
 						render "${params.callback}('login')"
 					} else {
@@ -79,11 +96,11 @@ class SecurityFilters {
 				}
 			}
 		}
-		duplicateCheck(controler:'*', action:'*') {
+		duplicateCheck(controller:'*', action:'*') {
 			before = {
 				println "duplicate filter: " + actionName
 				
-				if (actionName && actionName.endsWith('Data')) {
+				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId')) && !idempotentActions.contains(actionName)) {
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime) {
 						p.remove('_')
@@ -133,7 +150,7 @@ class SecurityFilters {
 					} else {
 						println "No mobile session id"
 					}
-					if (actionName.endsWith('Data')) {
+					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
 						println "Attempting to call " + actionName + " from mobile controller, fail"
 						render "${params.callback}('login')"
 					} else {

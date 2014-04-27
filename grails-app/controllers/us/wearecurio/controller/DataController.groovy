@@ -443,34 +443,6 @@ class DataController extends LoginController {
 		renderDataGet(new JSON(results))
 	}
 
-	/*
-	def correlateData() {
-		debug("DataController.correlateData()")
-
-		if (params.tags1 == null) {
-			renderDataGet('Need to specify at least one set of tags to correlate with')
-			return
-		}
-		
-		def tags1 = params.tags1 == null ? [] : JSON.parse(params.tags1)
-
-		def tags2 = params.tags2 == null ? [] : JSON.parseDate(params.tags2)
-		
-		if (tags1.length() == 0) {
-			renderDataGet('Need to specify at least one set of tags to correlate with')
-			return
-		}
-		
-		def startDateStr = params.startDate
-		def endDateStr = params.endDate
-
-		debug "DataController.getSumData() params: " + params
-
-		def data1 = findEntriesStartEnd(sessionUser(), tags1, startDateStr, endDateStr)
-		
-		def data2 = findEntriesStartEnd(sessionUser(), tags2, startDateStr, endDateStr)
-	}*/
-
 	def getTagsData() {
 		debug("DataController.getTagsData() order:" + params.sort)
 		

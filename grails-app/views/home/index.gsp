@@ -320,7 +320,8 @@ function deleteEntryId(entryId) {
 					if (checkData(entries, 'success', "Error deleting entry")) {
 						tagList.load();
 						refreshEntries(entries[0]);
-						updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+						if (entries[1] != null)
+							updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 						if (entries[2] != null)
 							updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 					}
@@ -351,7 +352,8 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 						displayEntry(entry, true);
 					}
 				}) */
-				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+				if (entries[1] != null)
+					updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null)
 					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			}
@@ -386,7 +388,8 @@ function addEntry(userId, text, defaultToNow) {
 					}
 					tagList.load();
 					refreshEntries(entries[0]);
-					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					if (entries[2] != null)
+						updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 				}
 			});
 }
