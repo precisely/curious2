@@ -90,7 +90,7 @@ class MigrationService {
 				if (!skipMigrations)
 					retVal = closure()
 			} catch (Exception e) {
-				System.err0.println("EXCEPTION DURING MIGRATION " + code)
+				System.err.println("EXCEPTION DURING MIGRATION " + code)
 				e.printStackTrace()
 			}
 
