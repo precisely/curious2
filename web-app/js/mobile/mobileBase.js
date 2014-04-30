@@ -1275,8 +1275,9 @@ function addEntry(userId, text, defaultToNow) {
 				}
 			})
 			refreshEntries(entries[0], true);
-			updateAutocomplete(entries[2][0], entries[2][1], entries[2][2],
-					entries[2][3]);
+			if (entries[2] != null)
+				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2],
+						entries[2][3]);
 		} else {
 			showAlert("Error adding entry");
 		}
