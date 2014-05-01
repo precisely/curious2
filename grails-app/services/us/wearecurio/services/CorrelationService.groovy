@@ -1,15 +1,18 @@
 package us.wearecurio.services
 
+import groovy.time.*
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Correlation
 import us.wearecurio.model.CuriousSeries
+import us.wearecurio.model.AnalyticsTimeSeries
 import us.wearecurio.model.Stats
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
+import us.wearecurio.model.Tag
 
 class CorrelationService {
 
-	private static def LOG = new File("CorrelationService.out")
+	private static def LOG = new File("/tmp/CorrelationService.out")
 	def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->
 			writer.write( "CorrelationService: ${text}\n")
@@ -93,10 +96,10 @@ class CorrelationService {
 	}
 
 	def saveMipss(CuriousSeries series1, CuriousSeries series2) {
-    def score = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
-    if (score == null) {
-		  score = new Correlation(series1, series2)
-    }
+		def score = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
+		if (score == null) {
+			score = new Correlation(series1, series2)
+		}
 		def result = CuriousSeries.mipss(series1, series2)
 
 		if (result) {
@@ -203,4 +206,56 @@ class CorrelationService {
 		}
 		iterateOverTagPairs(user, series_cb)
 	}
+
+	def updateTimeSeries() {
+		String time_zone = "America/New_York"
+		def data_points = null
+		def timer_start = new Date()
+		def timer_stop = null
+		log("updateTimeSeries timer: start at: ${timer_start}")
+		User.findAll().each { user ->
+			Date now = new Date();
+
+			def tags = Entry.createCriteria().list{
+				projections {
+					distinct('tag')
+				}
+				eq('userId', user.id)
+			}
+			tags.each { tag ->
+				// Delete the old values of the series to avoid
+				//	duplicates.
+				AnalyticsTimeSeries.createCriteria().list{
+					and {
+						eq('tagId', tag.id)
+						eq('userId', user.id)
+					}
+				}.each { old_value ->
+					old_value.delete()
+				}
+
+				try {
+					data_points = Entry.fetchPlotData(user, tag, null, null, now, time_zone)
+				} catch(err) {
+					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
+				}
+
+				data_points.each { point ->
+					def init = [
+						tagId: tag.id,
+						userId: user.id,
+						date: point[0],
+						amount: point[1],
+						description: point[2]
+					]
+					def ts = new AnalyticsTimeSeries(init)
+					ts.save()
+				} // data_points.each
+			} // tags.each
+		} // User.findAll
+		timer_stop = new Date()
+		log("updateTimeSeries timer: stop at: ${timer_stop}")
+		log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
+	}
+
 }

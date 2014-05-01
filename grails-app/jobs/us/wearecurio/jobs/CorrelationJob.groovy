@@ -6,11 +6,12 @@ class CorrelationJob extends us.wearecurio.utility.TimerJob {
 		def correlationService
 
 		static triggers = {
-			simple startDelay: 2 * MINUTE, repeatInterval: DAY
+			//simple startDelay: 0 * MINUTE, repeatInterval: DAY
+			simple startDelay: 1 * MINUTE, repeatInterval: DAY
 		}
 
 		def execute() {
-			 //log.debug "Running CorrelationService.updateAllUserCorrelations()"
 			 //correlationService.updateAllUserCorrelations()
+			 correlationService.updateTimeSeries()
 		}
 }
