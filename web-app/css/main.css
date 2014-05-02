@@ -684,7 +684,7 @@ div.plotGroup {
 	padding: 5px;
 }
 
-div.plotGroup .delete {
+span.delete {
 	display: inline-block;
     width: 14px;
 	height: 14px;
@@ -1209,6 +1209,36 @@ div.graph-header-container .red-header {
 /**
  * Style for community & load page.
  */
+.community .red-header h1 {
+	width: 100%;
+	margin-bottom: 15px;
+	border: 0;
+}
+.community {
+	color: #879293;
+}
+.community .col-md-12 {
+	padding: 0;
+}
+.community .subscriptions {
+	list-style: none;
+}
+.new-post {
+	padding: 10px;
+	border: 1px solid #879293;
+	text-align: right;
+}
+.community .media {
+	padding: 10px;
+	border: 1px solid #879293;
+}
+.new-post input, .new-post textarea {
+	border: 1px solid #879293;
+	padding: 3px;
+}
+.new-post textarea {
+	height: 50px;
+}
 #graphList #graphItem {
 	clear:both;
 }

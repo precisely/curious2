@@ -73,7 +73,6 @@ function formatShortDate(d) {
 	var minute = d.getMinutes();
 	if (minute < 10) minute = "0" + minute;
 	
-	return '' + (d.getMonth() + 1) +'/' + d.getDate() + '/' + ('' + d.getFullYear()).slice(-2) + ' '
-			+ hour + ':' + minute + ampm;
+	return '' + (d.getMonth() + 1) +'/' + d.getDate() + '/' + ('' + d.getFullYear()).slice(-2);
 }
 </script>
