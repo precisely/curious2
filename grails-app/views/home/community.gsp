@@ -61,13 +61,39 @@ $(function(){
 				return;
 		
 			jQuery.each(data, function() {
-				$("#graphList").append('<div class="graphItem">\
-					<div class="summary">\
-					<a href="/home/discuss?discussionId=' + this['id'] + '"><h2 class="content-size">' + minLinkName(this['name']) + '</h2></a>\
-					<div class="date">' + formatShortDate(this['updated']) + '</div> <div class="userName"> ' + this['userName'] + '</div> '
-					+ (this['isAdmin'] ?
-						(this['isPublic'] ? '<span class="visibility">visiblity: public to the world</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&unpublish=true">change</a>' : '<span class="visibility">visible in: ' + ("" + this['groupName']).toLowerCase() + '</span> <a class="publishButton" href="/home/community?discussionId=' + this['id'] + '&publish=true">change</a>')
-						+ '<a class="delete" href="#" onclick="deleteDiscussionId(' + this['id'] + ')"><img height="12" width="12" src="/images/x.gif"></a>' : '')
+				$("#graphList").append('<div class="graphItem media">\
+					<a class="pull-left" href="#">\
+						<img class="media-object" src="..." alt="...">\
+					</a>\
+					<div class="media-body">\
+						<div class="row">\
+							<div class="col-md-4">\
+								<span class="uppercase">\
+									'+'POSTED BY'+'\
+									' + this['userName'] + '\
+								</span>\
+								<span>\
+									ON ' + formatShortDate(this['updated']) + '\
+								</span>\
+							</div>\
+							<div class="col-md-4">\
+								<span>\
+									'+'LAST COMMENT ON '+'\
+								' + formatShortDate(this['updated']) + '\
+								</span>\
+							</div>\
+							<div class="col-md-2">\
+								<span>\
+									'+'SAVE '+'\
+								</span>\
+								<span class="delete" onclick="deleteDiscussionId(' + this['id'] + ')">x</span>\
+							</div>\
+						</div>\
+						<h4 class="media-heading">\
+							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
+						</h4>\
+						' + this['plotDataId'] +
+					+ '</div>'
 					+ '</div></div>');
 				return true;
 			});
@@ -77,16 +103,48 @@ $(function(){
 </head>
 <body class="community">
 <!-- MAIN -->
-<div class="main" id="dashmain">
-
-	<div class="discussHeader" style="padding-bottom:10px">
+<div class="main container-fluid" >
 	<g:if test="${flash.message}">
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
-
-	<a href="/home/discuss?createTopic=true">+ New question or comment</a>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="red-header"	>
+				<h1 class="clearfix">
+					<div id="actions">
+						<img src="/images/menu.png">
+						<ul>
+							<li><a Ref="/home/discuss?createTopic=true" >Home Feed</a></li>
+							<li><a href="#" onclick="plot.save()">Save</a></li>
+							<li><g:link action="load">Load</g:link></li>
+							<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
+								<img src="/images/eye.png">	
+							</a></li>
+						</ul>
+					</div>
+					<span id="queryTitle">HOME FEED</span>
+				</h1>
+			</div>
+		</div>
 	</div>
-	<div id="graphList">
+	<div class="row">
+		<div class="col-md-2">
+			<ul class="subscriptions">
+				<li>Subscription1</li>
+				<li>Subscription2</li>
+				<li>Subscription3</li>
+			</ul>
+		</div>
+		<div id="graphList" class="col-md-10">
+			<div class="new-post">
+				<form action="discussion/create" >
+					<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" />
+					<textarea class="full-width"  name="discussionPost"></textarea>
+					<input type="submit" name="POST" value="POST"  />
+				</form>
+			</div>
+		</div>
+
 	</div>
 
 </div>

@@ -220,14 +220,6 @@ $(function(){
 	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
 	<script>
-		$(window).load(function(){
-			$('.red-header #actions img').click(function(e) {
-				$('ul', $(e.target).parent()).toggle();
-			});
-			$('.red-header #actions ul').mouseleave(function(e) {
-				$(e.target).closest('ul').toggle();
-			});
-		});
 		var resizeTimeout;
 		$(window).resize(function() {
 			clearTimeout(resizeTimeout);
