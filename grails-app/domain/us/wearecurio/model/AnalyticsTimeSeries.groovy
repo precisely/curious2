@@ -11,6 +11,7 @@ class AnalyticsTimeSeries {
 
 	static mapping = {
 		table 'analytics_time_series'
+		version false
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 	}
