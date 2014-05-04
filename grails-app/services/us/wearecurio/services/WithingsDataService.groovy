@@ -67,12 +67,13 @@ class WithingsDataService extends DataService {
 		Integer offset = 0
 		boolean more = true
 		long serverTimestamp = 0
+		def setName = SET_NAME
 		Long userId = account.getUserId()
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
 		if (refreshAll)
-			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-					[setName: SET_NAME, userId: userId])
+			Entry.executeUpdate("delete Entry e where e.setName like :setName and e.userId = :userId",
+					[setName: SET_NAME + "%", userId: userId]) // Using like for backward compatibility
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -106,6 +107,7 @@ class WithingsDataService extends DataService {
 
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
+				setName = SET_NAME + date
 				JSONArray measures = group.measures
 
 				/*if (!refreshAll) {
@@ -151,15 +153,17 @@ class WithingsDataService extends DataService {
 							tagKey = "heartRate"
 							break
 					}
-					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, SET_NAME)
+					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, setName)
 				}
 			}
 		}
 
 		if(account.lastPolled) {
 			getDataActivityMetrics(account, account.lastPolled - 1, new Date() + 1)
+			getDataIntraDayActivity(account, account.lastPolled - 1, new Date() + 1)
 		} else {			
 			getDataActivityMetrics(account, startDate - 1, new Date() + 1)
+			getDataIntraDayActivity(account, startDate - 1, new Date() + 1)
 		}
 
 		if (serverTimestamp > 0) {
@@ -243,6 +247,46 @@ class WithingsDataService extends DataService {
 				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
 			}
+		}
+
+		[success: true]
+	}
+
+
+	@Transactional
+	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
+		def intraDayData = fetchActivityData(account, account.accountId, startDate, endDate, true)
+		def userId = account.userId
+		def entryDate
+		def setName
+		Integer timeZoneIdNumber = account.timeZoneId
+		intraDayData.body.series.each {  timestamp, data ->
+			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
+			entryDate = new Date(Long.parseLong(timestamp) * 1000L)
+			setName = SET_NAME + " " + timestamp
+			data.each { metric, amount ->
+				if (metric.equals("steps")) {
+					tagUnitMap.buildEntry("activitySteps", amount, userId, 
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+				}
+				if (metric.equals("distance")) {
+					tagUnitMap.buildEntry("activityDistance", amount, userId, 
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+				}
+				if (metric.equals("calories")) {
+					tagUnitMap.buildEntry("activityCalorie", amount, userId, 
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+				}
+				if (metric.equals("elevation")) {
+					tagUnitMap.buildEntry("activityElevation", amount, userId, 
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+				}
+				if (metric.equals("duration")) {
+					tagUnitMap.buildEntry("activityDuration", amount, userId, 
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+				}
+			}
+		
 		}
 
 		[success: true]

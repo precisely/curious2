@@ -20,11 +20,12 @@ abstract class TagUnitMap {
 	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	public final static int MINUTES_TO_MS = 60 * 1000
 	public final static float MS_TO_MINUTES = 0.00001667
-	public final static int SECONDS_TO_HOURS = 1 / 3600
+	public final static float SECONDS_TO_MINUTES = 1 / 60
+	public final static float SECONDS_TO_HOURS = 1 / 3600
 	public final static float SCALE_TO_0_10 = 10 / 100
 	public final static int TO_MILLI = 1000
 	public final static float METER_TO_KM = 1 / 1000
-	public final static float METER_TO_MILE = 1 / 1609.34
+	public final static float METER_TO_MILE = 0.000621371
 
 	final static int AVERAGE = 1
 	final static int BUCKET = 2
@@ -39,6 +40,7 @@ abstract class TagUnitMap {
 			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
 			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
 			activitySteps: [tag: "$ACTIVITY move", unit: "steps"],
+			activityDuration: [tag: "$ACTIVITY duration", unit: "min", convert: true, type: SECONDS_TO_MINUTES],
 
 			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
@@ -123,7 +125,6 @@ abstract class TagUnitMap {
 			comment: comment, setName: setName, timeZoneId: timeZoneId]
 		
 		parsedEntry.putAll(args)
-
 		Entry.updatePartialOrCreate(userId, parsedEntry, null)
 	}
 
