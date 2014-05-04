@@ -195,6 +195,38 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	void testIntraDayActivity() { 
+		String mockedActivityResponse = """{"status":0,"body":{"series":{"1368141046":{"calories":0,"duration":120},"1368141657":{"calories":0.87,"duration":60,"steps":18,"elevation":0.03,"distance":3218.69},"1368141717":{"calories":1.2,"duration":60,"steps":56,"elevation":2.4,"distance":1000}}}}"""	
+		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
+		def result = withingsDataService.getDataIntraDayActivity(account, new Date(), new Date() + 1)
+		assert result.success == true
+		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
+		log.debug("Result size: " + entries.size())
+		for (e in entries) {
+			log.debug (e.valueString())
+			if (e.getDescription().equals("activity calories") && e.getAmount().intValue() == 1) {
+				log.debug e.valueString()
+				assert e.valueString().contains("ate:2013-05-09T23:21:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity calories, amount:1.200000000, units:cal, amountPrecision:3, comment:(Withings), repeatType:null")
+				e = e
+			} else if (e.getDescription().equals("activity distance") && e.getAmount().intValue() == 2) {
+				log.debug e.valueString()
+				assert e.valueString().contains("date:2013-05-09T23:20:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity distance, amount:2.000000000, units:miles, amountPrecision:3, comment:(Withings), repeatType:null")
+			} else if (e.getDescription().equals("activity elevation") && e.getAmount().intValue() == 2) {
+				log.debug e.valueString()
+				assert e.valueString().contains("date:2013-05-09T23:21:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity elevation, amount:2.400000000, units:meters, amountPrecision:3, comment:(Withings), repeatType:null")
+				e = e
+			} else if (e.getDescription().equals("activity move") && e.getAmount().intValue() == 18) {
+				log.debug e.valueString()
+				assert e.valueString().contains("date:2013-05-09T23:20:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity move, amount:18.000000000, units:steps, amountPrecision:3, comment:(Withings), repeatType:null")
+				e = e
+			} else if (e.getDescription().equals("activity duration") && e.getAmount().intValue() == 2) {
+				log.debug e.valueString()
+				assert e.valueString().contains("date:2013-05-09T23:10:46, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity duration, amount:2.000000000, units:min, amountPrecision:3, comment:(Withings), repeatType:null")
+				e = e
+			}
+		}
+	}
+
 	void testSubscriptionParamsForHTTP() {
 		Map result = withingsDataService.getSubscriptionParameters(account, false)
 		assert result.callbackurl.contains("http://") == true
