@@ -103,7 +103,11 @@ class DataServiceTests extends CuriousServiceTestCase {
 			},
 			getWithingsResourceWithQuerystringParams: { token, url, body, header ->
 				String mockedActivityResponse = """{"status":0,"body":{"activities":[]}}"""
-				return new Response(new MockedHttpURLConnection(mockedResponseData))
+				log.debug("xxxxxx " + body.dump())
+				if (body['action']?.contains("getintradayactivity"))
+					mockedActivityResponse = """{"status":0,"body":{"series":{"1368141046":{"calories":0,"duration":120},"1368141657":{"calories":0.87,"duration":60,"steps":18,"elevation":0.03,"distance":3218.69},"1368141717":{"calories":1.2,"duration":60,"steps":56,"elevation":2.4,"distance":1000}}}}"""	
+
+				return new Response(new MockedHttpURLConnection(mockedActivityResponse))
 			}
 		]
 

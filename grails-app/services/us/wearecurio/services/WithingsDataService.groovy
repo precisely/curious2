@@ -264,6 +264,8 @@ class WithingsDataService extends DataService {
 			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 			entryDate = new Date(Long.parseLong(timestamp) * 1000L)
 			setName = SET_NAME + " " + timestamp
+			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+					[setName: setName , userId: userId]) // Using like for backward compatibility
 			data.each { metric, amount ->
 				if (metric.equals("steps")) {
 					tagUnitMap.buildEntry("activitySteps", amount, userId, 
