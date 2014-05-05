@@ -43,6 +43,13 @@ environments {
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
 		}
 	}
+	qa {
+		dataSource {
+			dbCreate = "update" // one of 'create', 'create-drop','update'
+			url = "jdbc:mysql://localhost/tlb"
+			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
+		}
+	}
 	production {
 		dataSource {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
