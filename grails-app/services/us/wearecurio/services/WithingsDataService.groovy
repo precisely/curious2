@@ -260,6 +260,7 @@ class WithingsDataService extends DataService {
 		def entryDate
 		def setName
 		Integer timeZoneIdNumber = account.timeZoneId
+		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " + intraDayData.boody.series.size())
 		intraDayData.body.series.each {  timestamp, data ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 			entryDate = new Date(Long.parseLong(timestamp) * 1000L)
@@ -320,7 +321,7 @@ class WithingsDataService extends DataService {
 	@Transactional
 	Map getActivityDataParameters(String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.getActivityDataParameters() accountId:" + 
-			accountId + " startDate: " + startDate + " endDate: " + endDate
+			accountId + " startDate: " + startDate + " endDate: " + endDate + " intraDay " + intraDay
 		
 		Map queryParameters
 		
