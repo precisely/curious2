@@ -14,14 +14,23 @@ class CuriousExceptionResolver extends GrailsExceptionResolver {
 	
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
-	   ByteArrayOutputStream os = new ByteArrayOutputStream()
-	   e.printStackTrace(new PrintStream(os))
-	   String output = os.toString("UTF8");
+		Throwable t = e
+		
+		while (t != null) {
+			if (t instanceof us.wearecurio.thirdparty.AuthenticationRequiredException)
+				// don't notify on this exception, should be handled by Grails
+				return super.resolveException(request, response, handler, e);
+			t = t.getCause()
+		}
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream()
+		e.printStackTrace(new PrintStream(os))
+		String output = os.toString("UTF8");
+		   
+		log.error("INTERCEPTED EXCEPTION")
+		log.error(output)
 	   
-	   log.error("INTERCEPTED EXCEPTION")
-	   log.error(output)
-	   
-		def messageBody = "Error while executing Curious app:\n" + output
+	   	def messageBody = "Error while executing Curious app:\n" + output
 		def messageSubject = "CURIOUS SERVER ERROR"
 		Utils.getMailService().sendMail {
 			to "server@wearecurio.us"
@@ -29,6 +38,7 @@ class CuriousExceptionResolver extends GrailsExceptionResolver {
 			subject messageSubject
 			body messageBody
 		}
-	   return super.resolveException(request, response, handler, e);
+		
+		return super.resolveException(request, response, handler, e);
 	}
 }
