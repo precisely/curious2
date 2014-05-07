@@ -72,7 +72,7 @@ grails.project.dependency.resolution = {
 		compile ":mail:1.0.1"
 		
 		compile ":quartz:1.0-RC9"
-		if (Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			compile (":quartz-monitor:0.3-RC3") {
 				excludes "quartz"
 			}
