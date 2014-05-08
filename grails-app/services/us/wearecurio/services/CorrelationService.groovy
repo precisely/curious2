@@ -10,8 +10,11 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.User
 import us.wearecurio.model.Tag
 
-class CorrelationService {
+import grails.util.Environment
+import us.wearecurio.analytics.Interop
 
+class CorrelationService {
+	private static def DEBUG=false
 	private static def LOG = new File("/tmp/CorrelationService.out")
 	def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->
@@ -207,12 +210,14 @@ class CorrelationService {
 		iterateOverTagPairs(user, series_cb)
 	}
 
-	def updateTimeSeries() {
+	def refreshSeriesCache() {
 		String time_zone = "America/New_York"
 		def data_points = null
-		def timer_start = new Date()
-		def timer_stop = null
-		log("updateTimeSeries timer: start at: ${timer_start}")
+		if (DEBUG) {
+			def timer_start = new Date()
+			def timer_stop = null
+			log("updateTimeSeries timer: start at: ${timer_start}")
+		}
 		User.findAll().each { user ->
 			Date now = new Date();
 
@@ -253,9 +258,17 @@ class CorrelationService {
 				} // data_points.each
 			} // tags.each
 		} // User.findAll
-		timer_stop = new Date()
-		log("updateTimeSeries timer: stop at: ${timer_stop}")
-		log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
+		if (DEBUG) {
+			timer_stop = new Date()
+			log("updateTimeSeries timer: stop at: ${timer_stop}")
+			log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
+		}
+	}
+
+	def recalculateMipss() {
+		refreshSeriesCache()
+		String environment = Environment.getCurrent().toString()
+		Interop.updateAllUsers(environment)
 	}
 
 }
