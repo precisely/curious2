@@ -211,7 +211,7 @@ class CorrelationService {
 	}
 
 	def refreshSeriesCache() {
-		String time_zone = "America/New_York"
+		String time_zone = "Etc/UTC"
 		def data_points = null
 		if (DEBUG) {
 			def timer_start = new Date()
