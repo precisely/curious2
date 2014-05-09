@@ -700,10 +700,10 @@ div.plotGroup .delete {
 
 div.plotGroup .edit {
 	padding-right: 2px;
-	display: none;
+	visibility: hidden;
 }
 div.plotGroup:hover .edit {
-	display: inline-block;
+	visibility: visible;
 }
 div.plotLine {
 	padding:2px 5px;
