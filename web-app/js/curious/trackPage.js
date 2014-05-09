@@ -474,7 +474,7 @@ function checkAndUpdateEntry($unselectee) {
  */
 $(document).on("mousedown", function(e) {
 	// Only handle for left mouse click.
-	if (event.which != 1) {
+	if (e.which != 1) {
 		return;
 	}
 
