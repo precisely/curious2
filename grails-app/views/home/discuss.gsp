@@ -158,7 +158,7 @@ $(function(){
 </head>
 <body class="discuss-page">
 <!-- SHARE PAGE -->
-<div id="container" class="sharePage" style="position:relative">
+<div id="container" class="sharePage" >
 	<g:if test="${flash.message}">
 		<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
@@ -216,12 +216,6 @@ $(function(){
 <!-- PRE-FOOTER -->
 <div id="preFooter">
 
-	<div class="tagNav">
-		view:
-		<img src="/images/scatter.gif" alt="scatter" />
-		<img src="/images/line.gif" alt="line" />
-		<img src="/images/fill.gif" alt="fill" />
-	</div>
 </div>
 
 <!-- /PRE-FOOTER -->
