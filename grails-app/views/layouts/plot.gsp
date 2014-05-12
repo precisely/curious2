@@ -38,8 +38,9 @@ function PlotProperties(divIdArray) {
 	this.initEndDate();
 
 	this.getName = function() {
-		if (this.nameField)
-			return this.nameField.text();
+		if (this.nameField) {
+			return this.nameField.data('originalText') || this.nameField.text();
+		}
 		return '';
 	}
 	this.setName = function(name) {

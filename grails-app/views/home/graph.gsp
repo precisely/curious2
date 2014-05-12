@@ -113,18 +113,18 @@ $(function(){
 		$("#plotArea").removeClass("table");
 	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
-		adjustTrackingTagHeaderHeight();
+		adjustTrackingTagHeaderHeight(true);
 	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
-		adjustTrackingTagHeaderHeight();
+		adjustTrackingTagHeaderHeight(true);
 		if (!plot.plotData || plot.plotData == null) {
 			$("#zoomcontrol1").slider("destroy");
 			$(".graphData").removeClass("has-plot-data");
 			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	});
-	function adjustTrackingTagHeaderHeight() {
+	function adjustTrackingTagHeaderHeight(addOrRemoveLine) {
 		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
 		var queryTitleHeight = $('.red-header').height();
 		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {		// Checking if header's height is greater 20px as default plus 18px as padding.
@@ -141,11 +141,19 @@ $(function(){
 				plot.redrawPlot();
 			}
 		}
-		if ($(window).width() <= 480) {
-			var text = $('#queryTitle').text();
-			text = text.substring(0, 25) + '...';
-			$('#queryTitle').html(text);
+
+		var $queryTitle = $('#queryTitle');
+		var text = $queryTitle.text();
+		if (addOrRemoveLine) {
+			$queryTitle.data('originalText', text);
+		} else {
+			text = $queryTitle.data('originalText') || '';
 		}
+
+		if ($(window).width() <= 480) {
+			text = text.substring(0, 25) + '...';
+		}
+		$queryTitle.html(text);
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {

@@ -2177,5 +2177,6 @@ $(window).resize(function() {
 	if (plot && plot.plotData && plot.plotData.length != 0 && !plot.plotArea.is(":hidden")) {
 		console.log('Refreshing graph on window resize');
 		plot.refreshAll();
+		adjustTrackingTagHeaderHeight();
 	}
 });
