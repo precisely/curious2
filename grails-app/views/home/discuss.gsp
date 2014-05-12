@@ -192,13 +192,13 @@ $(function(){
 			<div class="calendarRange">
 				<div class="zoomline"><div id="zoomcontrol1"></div></div>
 				<div class="dateline row">
-					<div class="col-sm-4">
+					<div class="col-xs-4">
 					<span class="startDate"><input id="startdatepicker1" type="text" value="" class="startdatepicker cycleInput"/></span>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-xs-4">
 					<span class="cycleTag" id="cycleTag1"><input type="text" class="cycleTagInput" name="cycletag" value="" class="cycleInput" /></span>
 					</div>
-					<div class="col-sm-4">
+					<div class="col-xs-4">
 					<span class="endDate"><input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput"/></span>
 					</div>
 				</div>

@@ -206,7 +206,7 @@ body.discuss-page input#discussTitleInput {
 	}
 }
 .discussmain .cycleTagInput {
-	margin-left:58px;
+    width: 100%;
 }
 .discussmain .discussPlotArea {
 	height:500px;

@@ -125,14 +125,14 @@ $(function(){
 		}
 	});
 	function adjustTrackingTagHeaderHeight() {
-		if ($(window).width() < 768) {
-			// Do not adjust height if columns are vertically collapsed.
-			return false;
+		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
+		var queryTitleHeight = $('.red-header').height();
+		if (queryTitleHeight > (20 + 18)) {		// Checking if header's height is greater 20px as default plus 18px as padding.
+			var padding = (queryTitleHeight - 20)/2;
+			console.log('Adjusting height to: ' + queryTitleHeight);
+			$('.tags-header-container').css('padding', padding + 'px 7px');
 		}
-		var queryTitleHeight = $('.red-header h1').height();
-		var padding = (queryTitleHeight - 20)/2;
-		console.log('Adjusting height to: ' + queryTitleHeight);
-		$('.tags-header-container').css('padding', padding + 'px 7px');
+
 		//Also need to adjust graph height so it does not  move
 		var graphAdjustedHeight = 530 - $('#plotLeftNav').height();
 		if (graphAdjustedHeight > 300) {
@@ -196,15 +196,15 @@ $(function(){
 								<div id="zoomcontrol1"></div>
 							</div>
 							<div class="dateline row">
-								<div class="col-sm-4">
+								<div class="col-xs-4">
 									<div class="startDate">
 										<input id="startdatepicker1" type="text" value="" class="startdatepicker cycleInput" />
 									</div>
 								</div>
-								<div class="col-sm-4">
+								<div class="col-xs-4">
 									<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
 								</div>
-								<div class="col-sm-4">
+								<div class="col-xs-4">
 									<div class="endDate">
 										<input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput" />
 									</div>

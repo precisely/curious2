@@ -15,7 +15,7 @@
 			$("body").toggleClass("tags-collapsed", switchClass);
 			$("body").toggleClass("tags-displayed", !switchClass);
 		}
-		$("#toggle-tags").click(function(e) {
+		var toggleTagsElement = $("#toggle-tags").click(function(e) {
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
 			var triangleElement = $(this).find("span.icon-triangle");
@@ -36,7 +36,13 @@
 				}
 			});
 
-		})<g:if test="${expandByDefault }">.trigger("click");</g:if>
+		});
+		<g:if test="${expandByDefault }">
+			if ($(window).width() >= 768) {
+				// Do not automatically show tags on mobile device.
+				toggleTagsElement.trigger("click");
+			}
+		</g:if>
 		<g:else>
 			toggleClasses(true);
 		</g:else>
