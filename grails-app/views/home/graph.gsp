@@ -127,7 +127,7 @@ $(function(){
 	function adjustTrackingTagHeaderHeight() {
 		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
 		var queryTitleHeight = $('.red-header').height();
-		if (queryTitleHeight > (20 + 18)) {		// Checking if header's height is greater 20px as default plus 18px as padding.
+		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {		// Checking if header's height is greater 20px as default plus 18px as padding.
 			var padding = (queryTitleHeight - 20)/2;
 			console.log('Adjusting height to: ' + queryTitleHeight);
 			$('.tags-header-container').css('padding', padding + 'px 7px');
@@ -140,6 +140,12 @@ $(function(){
 			if ($(".graphData").hasClass("has-plot-data")) {
 				plot.redrawPlot();
 			}
+		}
+		if ($(window).width() <= 480) {
+			var text = $('#queryTitle').text();
+			text = text.substring(0, 25) + '...';
+			$('#queryTitle').html(text);
+			adjustTrackingTagHeaderHeight();
 		}
 	}
 	// Callback handler after tag collapse animation finished.

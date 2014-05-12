@@ -17,9 +17,6 @@
 		padding: 10px;
 		word-wrap: break-word;
 	}
-	#querytitle, #queryTitleEdit {
-		display: none;
-	}
 	.dateline {
 		text-align: center;
 	}
