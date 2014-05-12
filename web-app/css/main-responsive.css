@@ -1,24 +1,4 @@
-@media (max-width: 767px) {
-	.header {
-		text-align: center;
-	}
-	.header .signin {
-		float: none !important;
-		padding: 10px 0;
-	}
-	.header .logo-container {
-		float: none !important;
-	}
-	.header .logo-container .logo-link {
-		margin-bottom: 1px;
-	}
-	.header .mainLinks {
-		padding-top: 0;
-	}
-	.footer ul {
-		width: 25%;
-		text-align: center;
-	}
+@media (max-width: 480px) {
 	div.red-header.date-controls input#datepicker {
 		width: auto;
 		font-size: 13px;
@@ -36,6 +16,9 @@
 	body.graph-page div.red-header h1.right {
 		padding: 10px;
 		word-wrap: break-word;
+	}
+	#querytitle, #queryTitleEdit {
+		display: none;
 	}
 	.dateline {
 		text-align: center;
@@ -73,6 +56,29 @@
 	}
 }
 
+@media (max-width: 767px) {
+	.header {
+		text-align: center;
+	}
+	.header .signin {
+		float: none !important;
+		padding: 10px 0;
+	}
+	.header .logo-container {
+		float: none !important;
+	}
+	.header .logo-container .logo-link {
+		margin-bottom: 1px;
+	}
+	.header .mainLinks {
+		padding-top: 0;
+	}
+	.footer ul {
+		width: 25%;
+		text-align: center;
+	}
+}
+
 @media (max-width: 992px) {
     .container {
         padding: 0;
@@ -82,9 +88,6 @@
     .bugs a {
         right: -10px;
     }
-}
-
-@media (min-width: 767px) and (max-width: 992px) {
     .fixed-column {
         width: 33%;
     }
