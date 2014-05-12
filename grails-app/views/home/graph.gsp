@@ -145,7 +145,6 @@ $(function(){
 			var text = $('#queryTitle').text();
 			text = text.substring(0, 25) + '...';
 			$('#queryTitle').html(text);
-			adjustTrackingTagHeaderHeight();
 		}
 	}
 	// Callback handler after tag collapse animation finished.
