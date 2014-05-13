@@ -141,19 +141,26 @@ class TagProperties {
 
 		if (!props) { // return default settings, don't create new TagProperties
 			return [userId:userId,
-				tagId:tagId,
-				isContinuous:false,
-				showPoints:false]
+				tagId: tagId,
+				isContinuous: false,
+				showPoints: false]
 		}
-
 		return props.getJSONDesc()
 	}
 
+
+
 	// note: changes here should also be made to lookupJSONDesc()
 	def getJSONDesc() {
+	  def continuous = false
+	  if (isContinuous == ContinuousType.UNSPECIFIED || isContinuous == null || isContinuous == ContinuousType.EVENT) {
+		  continuous = false
+		} else (isContinuous == ContinuousType.CONTINUOUS) {
+		  continuous = true
+		}
 		return [userId:userId,
 			tagId:tagId,
-			isContinuous:isContinuous,
+			isContinuous: continuous,
 			showPoints:showPoints]
 	}
 
