@@ -165,31 +165,32 @@ class UserGroup {
 		if (owned) map['id'] = user.getId()
 		
 		def results = Discussion.executeQuery(
-				"select distinct d, dItem.groupId as groupId, dp.plotDataId as plotDataId, user.username from Discussion d, "+
+				"select distinct d, dItem.groupId as groupId, count(dp.plotDataId) as hasPlotData, user.username from Discussion d, "+
 				+ "User user, GroupMemberDiscussion dItem, DiscussionPost dp where d.id = dItem.memberId "
 				+ "and dp.discussionId = d.id and "
 				+ (groupIds.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
 				+ "and d.userId = user.id order by d.updated desc", map)
 		
 		if (owned) {
-			results.addAll(Discussion.executeQuery("select distinct d, dp.plotDataId as plotDataId, -1 as groupId, user.username from Discussion d, DiscussionPost dp where d.userId = :id AND d.id = dp.discussionId", [id:user.getId()]))
+			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
 		}
 		
 		return addAdminPermissions(user, results)
 	}
 	
 	private static def DISCUSSIONS_QUERY =\
-			"select distinct d, dItem.groupId as groupId, user.username, user.id as userIDD from Discussion d, "\
-			+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user  "\
+			"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "\
+			+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
 			+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
 			+ "and d.userId = user.id order by d.updated desc"
 	
 	public static def getDiscussionsInfoForUser(User user, boolean owned) {
 		def results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id:user.getId()])
-		log.debug "UserGroup.getDiscussionsInfoForUser()" 
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries" 
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username , dp.plotDataId as plotDataId from Discussion d, User user, DiscussionPost dp where d.userId = :id and user.id = d.userId and dp.discussionId = d.id", [id:user.getId()]))
+			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username , count(dp.plotDataId) "
+			+ "as hasPlotData from Discussion d, User user, DiscussionPost dp where d.userId = :id and user.id = d.userId "
+			+ "and dp.discussionId = d.id", [id:user.getId()]))
 		}
 			
 		addAdminPermissions(user, results)
