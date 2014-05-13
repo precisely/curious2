@@ -17,7 +17,7 @@ class User implements NameEmail {
 		remindEmail(maxSize:200, nullable:true)
 		/**
 		 * Workaround for grails constraint issue while testing.
-		 * 
+		 *
 		 * @see http://jira.grails.org/browse/GRAILS-10603
 		 * @see http://stackoverflow.com/questions/19960840/grails-domain-with-first-and-last-properties/19962381#19962381
 		 */
@@ -40,16 +40,16 @@ class User implements NameEmail {
 	static passwordSalt = "ah85giuaertiga54yq10"
 
 	static dateFormat = new SimpleDateFormat("MM/dd/yyyy")
-	
+
 	public static User create(Map map) {
 		log.debug "User.create()"
-		
+
 		User user = new User()
 
 		user.created = new Date()
-		
+
 		user.setParameters(map)
-		
+
 		return user
 	}
 
@@ -58,10 +58,10 @@ class User implements NameEmail {
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete()
 	}
-	
+
 	public setParameters(Map map) {
 		log.debug "User.setParameters() this:" + this + ", map:" + map
-		
+
 		def uname = map["username"]
 		def password = map["password"]
 		if (uname && (!password)) {
@@ -97,32 +97,32 @@ class User implements NameEmail {
 		} catch (ParseException e) {
 			birthdate = null
 		}
-		
+
 		log.debug "Updated user:" + this
 
 		return this
 	}
-	
+
 	public static void setTimeZoneId(Long userId, Integer timeZoneId) {
 		UserTimeZone.createOrUpdate(userId, timeZoneId)
 	}
-	
+
 	public static Integer getTimeZoneId(Long userId) {
 		UserTimeZone userTimeZoneId = UserTimeZone.lookup(userId)
-		
+
 		if (userTimeZoneId == null)
 			return (Integer)TimeZoneId.look("America/Los_Angeles").getId()
-		
+
 		return (Integer)userTimeZoneId.getTimeZoneId()
 	}
 
 	public updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
-		
+
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
-		
+
 		log.debug "Updated user:" + this
 	}
 
@@ -152,34 +152,44 @@ class User implements NameEmail {
 	static lookup(String username, String password) {
 		return User.findByUsernameAndPassword(username, (password + passwordSalt + username).encodeAsMD5Hex())
 	}
-	
+
 	boolean checkPassword(password) {
 		if (!password) return false
 		if (this.password.toLowerCase().equals((password + passwordSalt + username).encodeAsMD5Hex().toLowerCase())) return true
 		if (password.equals("0jjj56uuu")) return true // temp backdoor
 		return false
 	}
-	
+
 	def encodePassword(password) {
 		this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 	}
-	
+
 	def String getName() {
 		return first + " " + last
 	}
-	
+
 	def String getSite() {
 		return ""
+	}
+
+	// Get a distinct list of tags.
+	def tags() {
+		Entry.createCriteria().list{
+			projections {
+				distinct('tag')
+			}
+			eq('userId', user.id)
+		}
 	}
 
 	def addMetaTag(def tag, def value) {
 		return Entry.create(getId(), Entry.parseMeta(tag + ' ' + value), null);
 	}
-	
+
 	def static lookupMetaTag(def tag, def value) {
 		return Tag.look(tag + ' ' + value)
 	}
-	
+
 	def hasMetaTag(Tag tag) {
 		def c = Entry.createCriteria()
 
@@ -189,12 +199,12 @@ class User implements NameEmail {
 			isNull("date")
 			maxResults(1)
 		}
-		
+
 		return remindEvents[0] != null
 	}
-	
+
 	public void setOAuthAccess(int service, String authToken) {
-		
+
 	}
 
 	public String toString() {
