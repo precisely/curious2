@@ -6,6 +6,7 @@ var beforeLinePlotEvent = "curious.before.line.plot";
 var afterLinePlotEvent = "curious.after.line.plot";
 var beforeLineRemoveEvent = "curious.before.line.remove";
 var afterLineRemoveEvent = "curious.after.line.remove";
+var afterQueryTitleChangeEvent = "curious.after.title.change";
 
 var plotLineColorSequence =      [ '#FF6633', '#990066', '#5BCDFC', '#449BAF', '#9AD3AE', '#D5D879' ];
 var plotColorClass =  {'#FF6633':'orange', '#990066':'eggplant', '#5BCDFC':'malibu', 
@@ -88,6 +89,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				plot.setManualName(true);
 				plot.setName(newName);
 				plot.store();
+				$(document).trigger(afterQueryTitleChangeEvent);
 			}
 		};
 		nameField.off('mouseup');
@@ -2177,5 +2179,6 @@ $(window).resize(function() {
 	if (plot && plot.plotData && plot.plotData.length != 0 && !plot.plotArea.is(":hidden")) {
 		console.log('Refreshing graph on window resize');
 		plot.refreshAll();
+		adjustTrackingTagHeaderHeight();
 	}
 });
