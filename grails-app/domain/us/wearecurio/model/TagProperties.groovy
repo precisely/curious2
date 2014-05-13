@@ -23,6 +23,8 @@ class TagProperties {
 	ContinuousType isContinuousManuallySet
 	ContinuousType isContinuous
 	Boolean showPoints
+	Long tagId
+	Long userId
 
 	static constraints = {
 		isContinuousManuallySet(nullable:true)
@@ -39,14 +41,17 @@ class TagProperties {
 		isContinuous defaultValue: ContinuousType.UNSPECIFIED
 	}
 
-	public static EVENT_PATTERNS = ["ache", "pain", "ate", "eat", "exercise", "jog", "sleep"]
+	public static EVENT_PATTERNS = ["ache", "pain", "\\bate", "\\beat", "exercise", "\\bjog", "sleep"]
 
-	public static CONTINUOUS_PATTERNS = ["heart rate", "pulse", "cholesterol"]
+	public static CONTINUOUS_PATTERNS = ["\\brate", "pulse", "cholesterol"]
 
 	public TagProperties() {
+			// Default values.
+			isContinuousManuallySet = ContinuousType.UNSPECIFIED
+			isContinuous = ContinuousType.UNSPECIFIED
 	}
 
-	static public def createOrLookup(long userId, long tagId) {
+	public static def createOrLookup(long userId, long tagId) {
 		log.debug "TagProperties.createOrLookup() userId:" + userId + ", tag:" + Tag.get(tagId)
 
 		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
@@ -69,20 +74,21 @@ class TagProperties {
 	}
 
 	public static def match(patterns, description) {
-		patterns.collect{ ~it }.each { pattern ->
-			if (pattern.matcher(description).find()) {
-				return true
+		def result = false
+		patterns.each { pattern ->
+			if ((~pattern).matcher(description).find()) {
+				result = true
 			}
 		}
-		return false
+		return result
 	}
 
 	public static def isEventWord(description) {
-		match(TagProperties.match(EVENT_PATTERNS, description))
+		match(EVENT_PATTERNS, description)
 	}
 
 	public static def isContinuousWord(description) {
-		match(TagProperties.match(CONTINUOUS_PATTERNS, description))
+		match(CONTINUOUS_PATTERNS, description)
 	}
 
 	// A simple algorithm to determine if the tag is event-like
@@ -97,7 +103,7 @@ class TagProperties {
 			return this
 		}
 
-		// If a significant of the entries don't have values,
+		// If a significant portion of the entries don't have values,
 		//	then it should be treated as an event.
 		def p = percentEntriesWithoutValues()
 		if (p && p > 0.10) {
@@ -105,10 +111,12 @@ class TagProperties {
 			return this
 		}
 
+		def description = Tag.get(tagId).description
+
 		// If a tag description matches the list of continuous patterns,
 		//	then classify it as continuous.
 		if (TagProperties.isContinuousWord(description)) {
-			isContinous = ContinuousType.CONTINUOUS
+			isContinuous = ContinuousType.CONTINUOUS
 			return this
 		}
 
@@ -124,8 +132,8 @@ class TagProperties {
 		return this
 	}
 
-	static public def lookup(long userId, long tagId) {
-		return TagProperties.findByTagIdAndUserId(tagId, userId)
+	public static def lookup(uid, tid) {
+		return TagProperties.findWhere(tagId:tid, userId:uid)
 	}
 
 	static public def lookupJSONDesc(long userId, long tagId) {

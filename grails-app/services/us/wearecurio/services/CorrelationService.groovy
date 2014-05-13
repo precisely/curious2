@@ -24,7 +24,6 @@ class CorrelationService {
 
 	static transactional = false
 	def entryService = new EntryService()
-	def tagService = new TagService()
 
 	// NB: CuriousSeries x and y can be generated from single tags or TagGroup
 	//			 instances.  See the CuriousSeries contstructors for details.
@@ -191,7 +190,6 @@ class CorrelationService {
 
 	def iterateOverTagPairs(user, f) {
 		def tags = Entry.findAllWhere('userId': user.id.toLong()).collect { it.tag }.unique()
-		//tag_groups = tagService.getTagGroupsByUser(user.id)
 		def accum = []
 		for (tag1 in tags) {
 			for (tag2 in tags) {
@@ -271,7 +269,7 @@ class CorrelationService {
 	def classifyAsEventLike() {
 		User.findAll().each { user ->
 			user.getTags().each { tag ->
-				def property = Tag.createOrLookup(user.id, tag.id)
+				def property = TagProperties.createOrLookup(user.id, tag.id)
 				// Set the is_event value of the user-tag property.
 				// This will save the property.
 				property.classifyAsEvent().save()
