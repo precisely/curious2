@@ -517,6 +517,20 @@ $(document).on("mousedown", function(e) {
 	}
 });
 
+function adjustDatePicker() {
+	var datepickerFormat;
+	var $datepicker = $("#datepicker");
+
+	// If not a mobile sized device
+	if ($(window).width() > 480) {
+		datepickerFormat = 'DD MM dd, yy';
+	} else {
+		datepickerFormat = 'D MM dd, yy';
+	}
+	$datepicker
+		.val($.datepicker.formatDate(datepickerFormat, currentDate));
+}
+
 $(function() {
 	initTemplate();
 	initAutocomplete();
@@ -542,6 +556,11 @@ $(function() {
 	.click(function() {
 		$('button.ui-datepicker-current').removeClass('ui-priority-secondary').addClass('ui-priority-primary');
 	});
+
+	$(window).resize(function(e) {
+		adjustDatePicker();
+	});
+	adjustDatePicker();
 
 	$("#input0")
 	.on("click", function(e) {

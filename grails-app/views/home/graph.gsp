@@ -157,6 +157,9 @@ $(function(){
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
+		if ($(window).width() <= 480) {
+			adjustTrackingTagHeaderHeight();
+		}
 		if (!plot) return;
 		// Checking if any plot line available.
 		if (plot.plotData && plot.plotData.length != 0) {

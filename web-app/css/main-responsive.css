@@ -1,8 +1,11 @@
 @media (max-width: 480px) {
 	div.red-header.date-controls input#datepicker {
-		width: auto;
+		width: 120px;
 		font-size: 13px;
 		padding-top: 2px;
+	}
+	body.track-page .date-controls h1 span.date {
+		padding: 0 3px;
 	}
 	body.tags-displayed div.tags-header-container {
 		border-bottom: 0;
