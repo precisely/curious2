@@ -16,12 +16,12 @@ import org.joda.time.*
  * @author mitsu
  */
 class Utils {
-	
+
 	public static final long THIRTY_SECONDS = 30000L;
 	public static final long FIVE_MINUTES = 5 * 60000L;
 	public static final long HOUR = 60 * 60000L;
 	public static final long DAY = 24 * 60 * 60000L;
-	
+
 	private static def log = LogFactory.getLog(this)
 
 	static def listJSONDesc(list) {
@@ -44,7 +44,7 @@ class Utils {
 
 		return retVal;
 	}
-	
+
 	static def save(obj) {
 		return save(obj, false)
 	}
@@ -72,7 +72,7 @@ class Utils {
 		if (a == b) return true
 		return a.equals(b)
 	}
-	
+
 	/**
 	 * Offset is in minutes
 	 */
@@ -100,7 +100,7 @@ class Utils {
 
 		return tz
 	}
-	
+
 	static DateFormat gmtDateFormat
 
 	static {
@@ -112,11 +112,11 @@ class Utils {
 	static String dateToGMTString(Date date) {
 		return date == null ? "null" : gmtDateFormat.format(date)
 	}
-	
+
 	static MailService mailService
-	
+
 	public static setMailService(MailService service) { mailService = service }
-	
+
 	public static MailService getMailService() { return mailService }
 
 }
