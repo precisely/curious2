@@ -245,13 +245,16 @@ class CorrelationService {
 					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
 				}
 
+				def prop = Tag.createOrLookup(user.id, tag.id)
+
 				data_points.each { point ->
 					def init = [
 						tagId: tag.id,
 						userId: user.id,
 						date: point[0],
 						amount: point[1],
-						description: point[2]
+						description: point[2],
+						isEvent: prop.isContinuous == TagProperties.ContinuousType.EVENT
 					]
 					def ts = new AnalyticsTimeSeries(init)
 					ts.save()
@@ -265,7 +268,19 @@ class CorrelationService {
 		}
 	}
 
+	def classifyAsEventLike() {
+		User.findAll().each { user ->
+			user.getTags().each { tag ->
+				def property = Tag.createOrLookup(user.id, tag.id)
+				// Set the is_event value of the user-tag property.
+				// This will save the property.
+				property.classifyAsEvent().save()
+			}
+		}
+	}
+
 	def recalculateMipss() {
+		classifyAsEventLike()
 		refreshSeriesCache()
 		String environment = Environment.getCurrent().toString()
 		Interop.updateAllUsers(environment)
