@@ -38,7 +38,7 @@ class TagProperties {
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 		isContinuousManuallySet defaultValue: ContinuousType.UNSPECIFIED
-		isContinuous defaultValue: ContinuousType.UNSPECIFIED
+		isContinuous defaultValue:  ContinuousType.UNSPECIFIED
 	}
 
 	public static EVENT_PATTERNS = ["ache", "pain", "\\bate", "\\beat", "exercise", "\\bjog", "sleep"]
