@@ -39,7 +39,7 @@ function PlotProperties(divIdArray) {
 
 	this.getName = function() {
 		if (this.nameField) {
-			return this.nameField.data('originalText') || this.nameField.text();
+			return this.nameField.text();
 		}
 		return '';
 	}

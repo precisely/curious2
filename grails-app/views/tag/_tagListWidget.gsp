@@ -38,7 +38,7 @@
 
 		});
 		<g:if test="${expandByDefault }">
-			if ($(window).width() >= 768) {
+			if ($(window).width() > 480) {
 				// Do not automatically show tags on mobile device.
 				toggleTagsElement.trigger("click");
 			}

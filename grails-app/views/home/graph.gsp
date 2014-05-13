@@ -113,23 +113,26 @@ $(function(){
 		$("#plotArea").removeClass("table");
 	});
 	$(document).on(afterLinePlotEvent, function(e, tag) {
-		adjustTrackingTagHeaderHeight(true);
+		adjustTrackingTagHeaderHeight();
+	});
+	$(document).on(afterQueryTitleChangeEvent, function(e, tag) {
+		adjustTrackingTagHeaderHeight();
 	});
 	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
 		if (!plot) return;
-		adjustTrackingTagHeaderHeight(true);
+		adjustTrackingTagHeaderHeight();
 		if (!plot.plotData || plot.plotData == null) {
 			$("#zoomcontrol1").slider("destroy");
 			$(".graphData").removeClass("has-plot-data");
 			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
 		}
 	});
-	function adjustTrackingTagHeaderHeight(addOrRemoveLine) {
+	function adjustTrackingTagHeaderHeight() {
 		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
 		var queryTitleHeight = $('.red-header').height();
-		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {		// Checking if header's height is greater 20px as default plus 18px as padding.
+		console.log('Height is', queryTitleHeight);
+		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {	// Checking if header's height is greater 20px as default plus 18px as padding.
 			var padding = (queryTitleHeight - 20)/2;
-			console.log('Adjusting height to: ' + queryTitleHeight);
 			$('.tags-header-container').css('padding', padding + 'px 7px');
 		}
 
@@ -137,23 +140,20 @@ $(function(){
 		var graphAdjustedHeight = 530 - $('#plotLeftNav').height();
 		if (graphAdjustedHeight > 300) {
 			$('#plotArea').css('height', graphAdjustedHeight + 'px');
-			if ($(".graphData").hasClass("has-plot-data")) {
+			if ($(".graphData").hasClass("has-plot-data") && plot && plot.plotData && plot.plotData.length != 0) {
 				plot.redrawPlot();
 			}
 		}
 
-		var $queryTitle = $('#queryTitle');
-		var text = $queryTitle.text();
-		if (addOrRemoveLine) {
-			$queryTitle.data('originalText', text);
-		} else {
-			text = $queryTitle.data('originalText') || '';
-		}
-
 		if ($(window).width() <= 480) {
-			text = text.substring(0, 25) + '...';
+			var $queryTitle = $('#queryTitle');
+			var $mobileQueryTitle = $('#mobileQueryTitle');
+			var text = $queryTitle.text();
+			if (text && text.length > 25) {
+				text = text.substring(0, 25) + '...';
+			}
+			$mobileQueryTitle.html(text);
 		}
-		$queryTitle.html(text);
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
@@ -181,6 +181,7 @@ $(function(){
 				</ul>
 			</div>
 			<span id="queryTitle">PLOT</span>
+			<span id="mobileQueryTitle" class="hid">PLOT</span>
 			<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 			<div id="debug"></div>
 		</h1>

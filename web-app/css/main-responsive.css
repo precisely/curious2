@@ -17,6 +17,12 @@
 		padding: 10px;
 		word-wrap: break-word;
 	}
+	#queryTitle {
+		display: none;
+	}
+	#mobileQueryTitle {
+		display: inline;
+	}
 	.dateline {
 		text-align: center;
 	}
