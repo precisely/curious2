@@ -10,8 +10,8 @@ import java.util.TimeZone
 
 class Tag {
 
-  // TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
-  //  This will allow us to iterate on both TagGroups and Tags.
+	// TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
+	//	This will allow us to iterate on both TagGroups and Tags.
 	def tags() {
 		[this]
 	}
@@ -27,7 +27,7 @@ class Tag {
 		table 'tag'
 		description column:'description', index:'description_idx'
 	}
-	
+
 	static def create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
@@ -45,7 +45,7 @@ class Tag {
 
 		return Tag.create(d)
 	}
-	
+
 	def getPropertiesForUser(Long userId) {
 		return TagProperties.lookup(userId, getId())
 	}
