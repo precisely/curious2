@@ -5,6 +5,7 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Correlation
 import us.wearecurio.model.CuriousSeries
 import us.wearecurio.model.AnalyticsTimeSeries
+import us.wearecurio.model.TagProperties
 import us.wearecurio.model.Stats
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
@@ -216,9 +217,13 @@ class CorrelationService {
 			def timer_stop = null
 			log("updateTimeSeries timer: start at: ${timer_start}")
 		}
+
+		// Delete the whole caching table to avoid duplicates and orphaned
+		//  series of tags that have been completely deleted.
+		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
+
 		User.findAll().each { user ->
 			Date now = new Date();
-
 			def tags = Entry.createCriteria().list{
 				projections {
 					distinct('tag')
@@ -226,24 +231,13 @@ class CorrelationService {
 				eq('userId', user.id)
 			}
 			tags.each { tag ->
-				// Delete the old values of the series to avoid
-				//	duplicates.
-				AnalyticsTimeSeries.createCriteria().list{
-					and {
-						eq('tagId', tag.id)
-						eq('userId', user.id)
-					}
-				}.each { old_value ->
-					old_value.delete()
-				}
-
 				try {
 					data_points = Entry.fetchPlotData(user, tag, null, null, now, time_zone)
 				} catch(err) {
 					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
 				}
 
-				def prop = Tag.createOrLookup(user.id, tag.id)
+				def prop = TagProperties.createOrLookup(user.id, tag.id)
 
 				data_points.each { point ->
 					def init = [
@@ -252,13 +246,14 @@ class CorrelationService {
 						date: point[0],
 						amount: point[1],
 						description: point[2],
-						isEvent: prop.isContinuous == TagProperties.ContinuousType.EVENT
+						isEvent: (prop.isContinuous == TagProperties.ContinuousType.EVENT ? true : false)
 					]
 					def ts = new AnalyticsTimeSeries(init)
 					ts.save()
 				} // data_points.each
 			} // tags.each
 		} // User.findAll
+
 		if (DEBUG) {
 			timer_stop = new Date()
 			log("updateTimeSeries timer: stop at: ${timer_stop}")
@@ -268,7 +263,7 @@ class CorrelationService {
 
 	def classifyAsEventLike() {
 		User.findAll().each { user ->
-			user.getTags().each { tag ->
+			user.tags().each { tag ->
 				def property = TagProperties.createOrLookup(user.id, tag.id)
 				// Set the is_event value of the user-tag property.
 				// This will save the property.
@@ -279,7 +274,9 @@ class CorrelationService {
 
 	def recalculateMipss() {
 		classifyAsEventLike()
+
 		refreshSeriesCache()
+
 		String environment = Environment.getCurrent().toString()
 		Interop.updateAllUsers(environment)
 	}

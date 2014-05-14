@@ -178,7 +178,7 @@ class User implements NameEmail {
 			projections {
 				distinct('tag')
 			}
-			eq('userId', user.id)
+			eq('userId', getId())
 		}
 	}
 
