@@ -859,6 +859,7 @@ class DataController extends LoginController {
 		}
 
 		def groupNameList = params.userGroupNames ? JSON.parse(params.userGroupNames) : null
+		debug "DataController.listDiscussionData() number of group names:" + groupNameList?.size()
 		
 		debug "Trying to load list of discussions for " + user.getId() + " and list:" + params.userGroupNames
 

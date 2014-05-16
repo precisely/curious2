@@ -1233,14 +1233,35 @@ div.graph-header-container .red-header {
 	border: 1px solid #879293;
 }
 .new-post input, .new-post textarea {
-	border: 1px solid #879293;
+	border: 3px solid #f1f1f1;
 	padding: 3px;
+}
+.new-post input[type='submit'] {
+	background-color: #869293;
+	color: #ffffff;
+	border: 0;
+	font-size: 14px;
+	margin-top: 5px;
+	width: 90px;
 }
 .new-post textarea {
 	height: 50px;
 }
+.subscription-list {
+	font-size: 14px;
+}
 #graphList #graphItem {
 	clear:both;
+}
+
+#graphList .graphItem .media-object {
+	float: left;
+}
+#graphList .graphItem .media-body {
+	margin-left: 70px;
+}
+#graphList .graphItem .media-heading {
+	margin-top: -20px;
 }
 #graphList .summary {
 	padding-top:12px;
