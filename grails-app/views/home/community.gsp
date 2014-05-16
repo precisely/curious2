@@ -100,7 +100,7 @@ $(function(){
 						</div>\
 						<h4 class="media-heading">\
 							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
-						</h4>\
+						</h4>'
 					+ '</div>'
 					+ '</div></div>');
 				return true;
@@ -149,6 +149,7 @@ $(function(){
 				<form action="/discussion/create" method="post">
 					<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" />
 					<textarea class="full-width"  name="discussionPost"></textarea>
+					<input type="hidden" name="group" value="${groupName}" />
 					<input type="submit" name="POST" value="POST"  />
 				</form>
 			</div>
