@@ -190,7 +190,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def c = controller.response.contentAsString
 
-		assert controller.response.contentAsString.equals('callback([{"id":' + entry.getTag().getId() + ',"iscontinuous":null,"c":2,"description":"bread","showpoints":null}])')
+		assert controller.response.contentAsString.equals('callback([{"id":' + entry.getTag().getId() + ',"datatype":null,"c":2,"description":"bread","showpoints":null}])')
     }
 
 	@Test
@@ -211,7 +211,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def c = controller.response.contentAsString
 
-		assert Tag.look('bread').getPropertiesForUser(userId).getIsContinuous()
+		assert Tag.look('bread').getPropertiesForUser(userId).fetchDataType()
 
 		assert controller.response.contentAsString.equals("callback('success')")
     }

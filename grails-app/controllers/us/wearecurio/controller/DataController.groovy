@@ -567,13 +567,10 @@ class DataController extends LoginController {
 			Tag tag = Tag.look(tagStr)
 			if (tag) {
 				TagProperties tagProperties = TagProperties.createOrLookup(user.getId(), tag.getId())
-				if (params.isContinuous != null) {
-					tagProperties.isContinuousManuallySet = params.isContinuous.equals('true') ? TagProperties.ContinuousType.CONTINUOUS : TagProperties.ContinuousType.EVENT
-				} else {
-					tagProperties.isContinuous = TagProperties.ContinuousType.UNSPECIFIED
-				}
+				tagProperties.setDataType(params.isContinuous)
 				if (params.showPoints != null)
 					tagProperties.setShowPoints(params.showPoints.equals('true'))
+				tagProperties.save()
 			}
 		}
 

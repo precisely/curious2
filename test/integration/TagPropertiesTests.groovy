@@ -48,8 +48,8 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.fetchDataType() == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 	}
 
 	@Test
@@ -115,16 +115,17 @@ class TagPropertiesTests extends CuriousTestCase {
 	@Test
 	void testMatch() {
 		def patterns = ["head.?ache", "pain", "heart", "high bp"]
-		assert TagProperties.match(patterns, "not in list") == false
-		assert TagProperties.match(patterns, "pain") == true
-		assert TagProperties.match(patterns, "head ache") == true
-		assert TagProperties.match(patterns, "headache") == true
-		assert TagProperties.match(patterns, "head-ache") == true
-		assert TagProperties.match(patterns, "good bp") == false
-		assert TagProperties.match(patterns, "high") == false
-		assert TagProperties.match(patterns, "bp") == false
-		assert TagProperties.match(patterns, "high bp") == true
-		assert TagProperties.match(patterns, "high bp in the morning") == true
+		def not_patterns = ["foobar", "headCache", "/h bp in/"]
+		assert TagProperties.match(patterns, not_patterns, "not in list") == false
+		assert TagProperties.match(patterns, not_patterns, "pain") == true
+		assert TagProperties.match(patterns, not_patterns, "head ache") == true
+		assert TagProperties.match(patterns, not_patterns, "headache") == true
+		assert TagProperties.match(patterns, not_patterns, "headCache") == false
+		assert TagProperties.match(patterns, not_patterns, "good bp") == false
+		assert TagProperties.match(patterns, not_patterns, "high") == false
+		assert TagProperties.match(patterns, not_patterns, "bp") == false
+		assert TagProperties.match(patterns, not_patterns, "high bp") == true
+		assert TagProperties.match(patterns, not_patterns, "high bp in the morning") == false
 	}
 
 	@Test
@@ -139,10 +140,10 @@ class TagPropertiesTests extends CuriousTestCase {
 
 	@Test
 	void testIsContinuousWord() {
-		assert TagProperties.isContinuousWord("not in list") == false
-		assert TagProperties.isContinuousWord("heart rate") == true
-		assert TagProperties.isContinuousWord("headache") == false
-		assert TagProperties.isContinuousWord("cholesterol") == true
+		assert TagProperties.dataTypeComputedWord("not in list") == false
+		assert TagProperties.dataTypeComputedWord("heart rate") == true
+		assert TagProperties.dataTypeComputedWord("headache") == false
+		assert TagProperties.dataTypeComputedWord("cholesterol") == true
 	}
 
 	@Test
@@ -158,12 +159,12 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
-		property.isContinuousManuallySet = TagProperties.ContinuousType.CONTINUOUS
+		property.dataTypeManual = TagProperties.CONTINUOUS
 		property.classifyAsEvent()
-		assert property.isContinuous == TagProperties.ContinuousType.CONTINUOUS
+		assert property.dataTypeComputed == TagProperties.CONTINUOUS
 	}
 
 	@Test
@@ -179,11 +180,11 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
-		assert property.isContinuous == TagProperties.ContinuousType.EVENT
+		assert property.dataTypeComputed == TagProperties.EVENT
 	}
 
 	@Test
@@ -199,11 +200,11 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
-		assert property.isContinuous == TagProperties.ContinuousType.EVENT
+		assert property.dataTypeComputed == TagProperties.EVENT
 	}
 
 	@Test
@@ -219,17 +220,44 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
-		assert property.isContinuous == TagProperties.ContinuousType.CONTINUOUS
+		assert property.dataTypeComputed == TagProperties.CONTINUOUS
+	}
+
+	@Test
+	void testSetContinuous() {
+		def parsedEntry1 = Entry.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
+		def parsedEntry2 = Entry.parse(time2, timeZone, "heart rate 42", baseDate, true)
+		def parsedEntry3 = Entry.parse(time3, timeZone, "heart rate 500", baseDate, true)
+		def entry1 = Entry.create(userId, parsedEntry1, null)
+		def entry2 = Entry.create(userId, parsedEntry2, null)
+		def entry3 = Entry.create(userId, parsedEntry3, null)
+		def tag = entry1.getTag()
+		def entries = Entry.findAllWhere(userId: userId, tag: tag)
+		assert entries.size == 3
+		def property = TagProperties.createOrLookup(userId, tag.id)
+		assert TagProperties.count() == 1
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
+
+		property.setDataType(TagProperties.EVENT)
+		assert property.dataTypeComputed == TagProperties.EVENT
+		property.setDataType(TagProperties.UNSPECIFIED)
+		assert property.dataTypeComputed == TagProperties.CONTINUOUS
+		property.setDataType(TagProperties.EVENT)
+		assert property.dataTypeComputed == TagProperties.EVENT
+		property.setDataType(TagProperties.CONTINUOUS)
+		assert property.dataTypeComputed == TagProperties.CONTINUOUS
+		assert property.fetchDataType() == TagProperties.CONTINUOUS
 	}
 
 	@Test
 	void testClassifyAsEventDeterminedByDefaultValue() {
-	  // Series that have values and not in the list of word patterns are
-		//  classified as CONTINUOUS by default.
+		// Series that have values and not in the list of word patterns are
+		//	classified as CONTINUOUS by default.
 		def parsedEntry1 = Entry.parse(time1, timeZone, "foobar 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "foobar 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "foobar 500", baseDate, true)
@@ -241,10 +269,10 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
-		assert property.isContinuousManuallySet == TagProperties.ContinuousType.UNSPECIFIED
-		assert property.isContinuous == TagProperties.ContinuousType.UNSPECIFIED
+		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
-		assert property.isContinuous == TagProperties.ContinuousType.CONTINUOUS
+		assert property.dataTypeComputed == TagProperties.CONTINUOUS
 	}
 }

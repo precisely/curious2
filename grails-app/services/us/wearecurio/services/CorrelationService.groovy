@@ -246,7 +246,7 @@ class CorrelationService {
 						date: point[0],
 						amount: point[1],
 						description: point[2],
-						isEvent: (prop.isContinuous == TagProperties.ContinuousType.EVENT ? true : false)
+						dataType: prop.fetchDataType()
 					]
 					def ts = new AnalyticsTimeSeries(init)
 					ts.save()
