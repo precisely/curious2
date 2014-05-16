@@ -9,9 +9,8 @@ class DiscussionController extends LoginController {
 	static allowedMethods = [create: "POST", update: "POST", delete: "POST"]
 
 
-	private def loadGroup(def params) {
+	private def loadGroup(def params, User user) {
 		debug "DiscussionController.loadGroup()"
-		def user = sessionUser()
 		def p = params
 
 		UserGroup group = p.group ? UserGroup.lookup(p.group) : UserGroup.getDefaultGroupForUser(user)
@@ -32,18 +31,9 @@ class DiscussionController extends LoginController {
 		return discussion
 	}
 
-	def index() {
-		redirect(action: "list", params: params)
-	}
-
-	def list(Integer max) {
-		params.max = Math.min(max ?: 10, 100)
-		[discussionInstanceList: Discussion.list(params), discussionInstanceTotal: Discussion.count()]
-	}
-
 	def create() {
 		def user = sessionUser()
-		def group = loadGroup(params)
+		def group = loadGroup(params, user)
 		def p = params
 		debug "DiscussionController.create to group: " + group?.dump()
 		if (!group) {
@@ -64,42 +54,4 @@ class DiscussionController extends LoginController {
 		return
 	}
 
-
-	def show(Long id) {
-		def discussionInstance = Discussion.get(id)
-		if (!discussionInstance) {
-			flash.message = message(code: 'default.not.found.message', args: [message(code: 'discussion.label', default: 'Discussion'), id])
-			redirect(action: "list")
-			return
-		}
-
-		[discussionInstance: discussionInstance]
-	}
-
-	def updateData(Long id) {
-		def discussionInstance = Discussion.get(id)
-		// TODO update a discussion
-		if (p.id) {
-			discussion = Discussion.get(p.id)
-			discussion ?: (message = "That discussion topic no longer exists.")
-		} else if (plotDataId) {
-			discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
-			debug "Discussion for plotDataId not found: " + plotDataId
-			discussion ?: (message = "That shared graph discussion no longer exists.")
-		}
-	}
-
-	def deleteData(Long id) {
-		def discussionInstance = Discussion.get(id)
-
-		try {
-			discussionInstance.delete(flush: true)
-			renderJSONPost(['success', [message: message]])
-			return
-		}
-		catch (DataIntegrityViolationException e) {
-			renderJSONPost(['error', [message: message]])
-			return
-		}
-	}
 }
