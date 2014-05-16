@@ -122,12 +122,7 @@ $(function(){
 					<div id="actions">
 						<img src="/images/menu.png">
 						<ul>
-							<li><a Ref="/home/discuss?createTopic=true" >Home Feed</a></li>
-							<li><a href="#" onclick="plot.save()">Save</a></li>
-							<li><g:link action="load">Load</g:link></li>
-							<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)  
-								<img src="/images/eye.png">	
-							</a></li>
+							<li><a Ref="/home/community" >Home Feed</a></li>
 						</ul>
 					</div>
 					<span id="queryTitle">${feedName}</span>
