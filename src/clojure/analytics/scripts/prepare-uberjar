@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "* Removing old ubjerjars."
+rm target/analytics-*-standalone.jar ../../../lib/analytics-*-standalone.jar
+echo "* Compiling uberjar."
+lein uberjar
+echo "* Copying new uberjar to Grails project's lib directory."
+cp -f target/analytics-*-standalone.jar ../../../lib
+echo "Done."
