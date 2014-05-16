@@ -2,10 +2,11 @@ package us.wearecurio.controller
 
 import org.springframework.dao.DataIntegrityViolationException
 import us.wearecurio.model.*
+import us.wearecurio.utility.*
 
 class DiscussionController extends LoginController {
 
-	static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
+	static allowedMethods = [create: "POST", update: "POST", delete: "POST"]
 
 
 	private def loadGroup(def params) {
@@ -43,6 +44,7 @@ class DiscussionController extends LoginController {
 	def create() {
 		def user = sessionUser()
 		def group = loadGroup(params)
+		def p = params
 		debug "DiscussionController.create to group: " + group?.dump()
 		if (!group) {
 			flash.message = "Failed to create new discussion topic: can't post to this group"

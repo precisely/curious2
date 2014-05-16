@@ -56,15 +56,24 @@ $(function(){
 		});
 	
 	backgroundJSON("getting comments", "/home/listDiscussionData?callback=?",
+		<g:if test="${params.userGroupNames}" >
+			{userGroupNames:JSON.stringify(['${params.userGroupNames}'])},
+		</g:if>
 		function(data){
 			if (!checkData(data))
 				return;
 		
 			jQuery.each(data, function() {
+			    var iconImage='comment-icon.png';
+
+				if (this.isPlot) {
+					iconImage='graph-icon.png';
+				}
+
 				$("#graphList").append('<div class="graphItem media">\
-					<a class="pull-left" href="#">\
-						<img class="media-object" src="..." alt="...">\
-					</a>\
+					<div class="media-object" href="#">\
+						<img src="/images/'+ iconImage +'" alt="...">\
+					</div>\
 					<div class="media-body">\
 						<div class="row">\
 							<div class="col-md-4">\
@@ -92,7 +101,6 @@ $(function(){
 						<h4 class="media-heading">\
 							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
 						</h4>\
-						' + this['plotDataId'] +
 					+ '</div>'
 					+ '</div></div>');
 				return true;
@@ -122,22 +130,28 @@ $(function(){
 							</a></li>
 						</ul>
 					</div>
-					<span id="queryTitle">HOME FEED</span>
+					<span id="queryTitle">${feedName}</span>
 				</h1>
 			</div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-md-2">
+			<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
 			<ul class="subscriptions">
-				<li>Subscription1</li>
-				<li>Subscription2</li>
-				<li>Subscription3</li>
+				<li>
+					<a href = "/home/community"> Home Feed </a>
+				</li>
+				<g:each var="membership" in="${groupMemberships}">
+					<li>
+						<a href = "/home/community?userGroupNames=${membership[0].name}"> ${membership[0].fullName} </a>
+					</li>
+				</g:each>
 			</ul>
 		</div>
 		<div id="graphList" class="col-md-10">
 			<div class="new-post">
-				<form action="discussion/create" >
+				<form action="/discussion/create" method="post">
 					<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" />
 					<textarea class="full-width"  name="discussionPost"></textarea>
 					<input type="submit" name="POST" value="POST"  />
