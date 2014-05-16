@@ -21,9 +21,9 @@
 					 :user		 "curious"
 					 :password "734qf7q35"}
 				:else
-				  ; Environment variables are lower-cased then dasherized into Clojure
+					; Environment variables are lower-cased then dasherized into Clojure
 					;  keywords.
-				  ; E.g. the shell environment will change DB_NAME to :db-name.
+					; E.g. the shell environment will change DB_NAME to :db-name.
 					{:db			 (e/env :db-name)
 					 :user		 (e/env :db-user)
 					 :password (e/env :db-pass)}))
@@ -32,7 +32,7 @@
 	"Connect to the database using Korma's defdb."
 	; Call with no arguments to get connection params from the shell environment
 	;  (most likely when using Leiningen but not necessarily).
-	([]       (connect (connection-params nil)))
+	([]				(connect (connection-params nil)))
 	([params] (kd/defdb mydb (kd/mysql params))))
 
 ; Input
@@ -44,21 +44,29 @@
 ; **********************
 ; Series CRUD operations
 ; **********************
-(defn series-list
+(defn series-list*
 	"List all elements of the series."
 	([]
-		(kc/select analytics_time_series))
+		(kc/select* analytics_time_series))
 	([user-id]
-		(kc/select analytics_time_series
-			(kc/where {:user_id user-id})))
+		(kc/where (series-list*) {:user_id user-id}))
 	([user-id tag-id]
-		(kc/select analytics_time_series
-			(kc/where {:user_id user-id
-							:tag_id tag-id}))))
+		(kc/where (series-list* user-id) {:tag_id tag-id})))
+
+(defn series-list [& args]
+	"List all elements of the series."
+	(kc/select (apply series-list* args)))
+
+(defn model-count [base]
+		(-> base
+				(kc/fields ["count(*)" :count])
+				(kc/select)
+				first
+				:count))
 
 (defn series-count [& args]
 	"Count the number of elements in the series."
-	(count (apply series-list args)))
+	(model-count (apply series-list* args)))
 
 (defn series-create [user-id tag-id amount date description]
 	"Insert one element into the time series.  Specific to one user and one tag.	For testing purposes mainly."
@@ -70,7 +78,7 @@
 							:description description})))
 
 (defn series-delete [user-id tag-id]
-	"Delete all elemetns of the time series.	Specific to one user and one tag.  For testing purposes mainly."
+	"Delete all elements of the time series.	Specific to one user and one tag.  For testing purposes mainly."
 	(kc/delete analytics_time_series
 		(kc/where {:user_id user-id
 						:tag_id tag-id})))
@@ -145,22 +153,24 @@
 						:series1type	tag1-type
 						:series2type	tag2-type})))
 
-(defn score-count
-	([] (let [query (kc/select correlation
-										 (kc/fields ["count(*)" :count]))]
-				(-> query first :count)))
+(defn score-list*
+	"List all elements of the score."
+	([]
+		(kc/select* correlation))
 	([user-id]
-			(let [query (kc/select correlation
-										 (kc/fields ["count(*)" :count])
-										 (kc/where {:user_id user-id}))]
-				(-> query first :count)))
+		(kc/where (score-list*) {:user_id user-id}))
 	([user-id tag1-id tag2-id]
-			(let [query (kc/select correlation
-									 (kc/fields ["count(*)" :count])
-									 (kc/where {:user_id user-id
-															:series1id tag1-id
-															:series2id tag2-id}))]
-				(-> query first :count))))
+		(kc/where (score-list* user-id)
+							{:series1id tag1-id
+							 :series2id tag2-id})))
+
+(defn score-list [& args]
+	"List all elements of the score."
+	(kc/select (apply score-list* args)))
+
+(defn score-count [& args]
+	"Count the number of elements in the score."
+	(model-count (apply score-list* args)))
 
 ; **********************
 ; Update or create Score
@@ -187,13 +197,13 @@
 					t2 (list-tag-ids user-id)]
 		(f t1 t2)))
 
-(defn for-all-users-and-tags [f] 
+(defn for-all-users-and-tags [f]
 	"Iterate over and call a function f(user-id, tag-id) on all (user-id, tag-id) permutations."
 	(doseq [uid (list-user-ids)
 					tid (list-tag-ids uid)]
 		(f uid tid)))
 
-(defn for-all-users-and-tag-pairs [f] 
+(defn for-all-users-and-tag-pairs [f]
 	"Iterate over and call a function f(user-id, tag1-id, tag2-id) on all (user-id, tag1-id, tag2-id) permutations)."
 	(doseq [uid (list-user-ids)
 					t1	(list-tag-ids uid)
