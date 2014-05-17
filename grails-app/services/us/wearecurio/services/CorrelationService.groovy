@@ -1,15 +1,22 @@
 package us.wearecurio.services
 
+import groovy.time.*
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Correlation
 import us.wearecurio.model.CuriousSeries
+import us.wearecurio.model.AnalyticsTimeSeries
+import us.wearecurio.model.TagProperties
 import us.wearecurio.model.Stats
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
+import us.wearecurio.model.Tag
+
+import grails.util.Environment
+import us.wearecurio.analytics.Interop
 
 class CorrelationService {
-
-	private static def LOG = new File("CorrelationService.out")
+	private static def DEBUG=false
+	private static def LOG = new File("/tmp/CorrelationService.out")
 	def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->
 			writer.write( "CorrelationService: ${text}\n")
@@ -18,7 +25,6 @@ class CorrelationService {
 
 	static transactional = false
 	def entryService = new EntryService()
-	def tagService = new TagService()
 
 	// NB: CuriousSeries x and y can be generated from single tags or TagGroup
 	//			 instances.  See the CuriousSeries contstructors for details.
@@ -93,10 +99,10 @@ class CorrelationService {
 	}
 
 	def saveMipss(CuriousSeries series1, CuriousSeries series2) {
-    def score = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
-    if (score == null) {
-		  score = new Correlation(series1, series2)
-    }
+		def score = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
+		if (score == null) {
+			score = new Correlation(series1, series2)
+		}
 		def result = CuriousSeries.mipss(series1, series2)
 
 		if (result) {
@@ -185,7 +191,6 @@ class CorrelationService {
 
 	def iterateOverTagPairs(user, f) {
 		def tags = Entry.findAllWhere('userId': user.id.toLong()).collect { it.tag }.unique()
-		//tag_groups = tagService.getTagGroupsByUser(user.id)
 		def accum = []
 		for (tag1 in tags) {
 			for (tag2 in tags) {
@@ -203,4 +208,77 @@ class CorrelationService {
 		}
 		iterateOverTagPairs(user, series_cb)
 	}
+
+	def refreshSeriesCache() {
+		String time_zone = "Etc/UTC"
+		def data_points = null
+		if (DEBUG) {
+			def timer_start = new Date()
+			def timer_stop = null
+			log("updateTimeSeries timer: start at: ${timer_start}")
+		}
+
+		// Delete the whole caching table to avoid duplicates and orphaned
+		//  series of tags that have been completely deleted.
+		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
+
+		User.findAll().each { user ->
+			Date now = new Date();
+			def tags = Entry.createCriteria().list{
+				projections {
+					distinct('tag')
+				}
+				eq('userId', user.id)
+			}
+			tags.each { tag ->
+				try {
+					data_points = Entry.fetchPlotData(user, tag, null, null, now, time_zone)
+				} catch(err) {
+					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
+				}
+
+				def prop = TagProperties.createOrLookup(user.id, tag.id)
+
+				data_points.each { point ->
+					def init = [
+						tagId: tag.id,
+						userId: user.id,
+						date: point[0],
+						amount: point[1],
+						description: point[2],
+						dataType: prop.fetchDataType()
+					]
+					def ts = new AnalyticsTimeSeries(init)
+					ts.save()
+				} // data_points.each
+			} // tags.each
+		} // User.findAll
+
+		if (DEBUG) {
+			timer_stop = new Date()
+			log("updateTimeSeries timer: stop at: ${timer_stop}")
+			log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
+		}
+	}
+
+	def classifyAsEventLike() {
+		User.findAll().each { user ->
+			user.tags().each { tag ->
+				def property = TagProperties.createOrLookup(user.id, tag.id)
+				// Set the is_event value of the user-tag property.
+				// This will save the property.
+				property.classifyAsEvent().save()
+			}
+		}
+	}
+
+	def recalculateMipss() {
+		classifyAsEventLike()
+
+		refreshSeriesCache()
+
+		String environment = Environment.getCurrent().toString()
+		Interop.updateAllUsers(environment)
+	}
+
 }
