@@ -55,7 +55,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     }
 
     @Test
-    void testCreateWithGroupName() {
+    void testCreateWithGroupNameWithWritePermission() {
+		//Adds a new discussion to the specified group
 		controller = new DiscussionController()
 		params.group = 'testgroup'
 		controller.params.putAll(params)
@@ -65,7 +66,21 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     }
 
     @Test
+    void testCreateWithGroupNameWithNoWritePermission() {
+		//Trying to add a new discussion to the specified group
+		// with no write permission
+		def noWritePermissionGroup = UserGroup.create("nowrite", "Test discussions", "Discussion topics for testing users",
+				[isReadOnly:false, defaultNotify:false])
+		controller = new DiscussionController()
+		params.group = 'nowrite'
+		controller.params.putAll(params)
+		controller.session.userId = user2.getId()
+		def retVal = controller.create()
+		assert Discussion.count() == 0
+    }
+    @Test
     void testCreateWithNoGroup() {
+		//Adds a new discussion to the default group
 		controller = new DiscussionController()
 		params.remove('group') 
 		controller.params.putAll(params)
