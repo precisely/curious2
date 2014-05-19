@@ -64,21 +64,12 @@ class UserGroupTests extends GroovyTestCase {
 		UserGroup announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
 				[isReadOnly:true, defaultNotify:true])
 
-		curious.addMember(user)
-		
-		assert curious.hasReader(user)
-		assert curious.hasWriter(user)
-		assert !curious.hasNotified(user)
-		assert !curious.hasAdmin(user)
-		assert UserGroup.getDefaultGroupForUser(user) == null
-		
-		curious.addDefaultFor(user)
-		
-		assert curious.hasReader(user)
-		assert curious.hasWriter(user)
-		assert !curious.hasNotified(user)
-		assert !curious.hasAdmin(user)
+		//Default UserGroup for a User if no default group present is curious
 		assert UserGroup.getDefaultGroupForUser(user) == curious
+		assert curious.hasReader(user)
+		assert curious.hasWriter(user)
+		assert !curious.hasNotified(user)
+		assert !curious.hasAdmin(user)
 		
 		announce.addMember(user)
 		
