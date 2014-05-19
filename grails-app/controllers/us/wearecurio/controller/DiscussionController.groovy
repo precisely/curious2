@@ -10,41 +10,54 @@ class DiscussionController extends LoginController {
 
 
 	private def loadGroup(def params, User user) {
-		debug "DiscussionController.loadGroup()"
 		def p = params
 
 		UserGroup group = p.group ? UserGroup.lookup(p.group) : UserGroup.getDefaultGroupForUser(user)
+		debug "DiscussionController.loadGroup() " + group?.dump()
 		if (group && !group.hasWriter(user)) {
 			return false
 		}
 		return group
 	}
 
-	private def loadDiscussion(def params) {
+	private def loadDiscussion(def p, def user) {
 		def discussion
-		if (params.id) {
-			discussion = Discussion.get(params.id)
-		} else if (params.plotDataId) {
-			discussion = Discussion.getDiscussionForPlotDataId(params.plotDataId)
-			debug "Discussion for plotDataId not found: " + params.plotDataId
+		if (p.id) {
+			discussion = Discussion.get(p.id)
+		} else if (p.plotDataId) {
+			discussion = Discussion.getDiscussionForPlotDataId(p.plotDataId)
+			debug "Discussion for plotDataId not found: " + p.plotDataId
+		} 
+
+		
+		return discussion
+	}
+
+	private def createDiscussion(def p, def group, def user) {
+		def discussion
+		if (group.hasWriter(user)) {
+			discussion = Discussion.create(user, p.name)
+			group.addDiscussion(discussion)
 		}
 		return discussion
 	}
 
+
 	def create() {
-		def user = sessionUser()
-		def group = loadGroup(params, user)
 		def p = params
+		def user = sessionUser()
+		def group = loadGroup(p, user)
 		debug "DiscussionController.create to group: " + group?.dump()
 		if (!group) {
 			flash.message = "Failed to create new discussion topic: can't post to this group"
 		} else {
-			Discussion discussion = Discussion.create(user, p.name)
-			if (discussion != null)
+			def discussion = loadDiscussion(p, user)
+			discussion = discussion ?: createDiscussion(p, group, user)
+			if (discussion != null) {
 				Utils.save(discussion, true)
 				flash.message = "Created new discussion: " + params.name
-				if (group) group.addDiscussion(discussion)
-			else {
+				discussion.createPost(user, p.discussionPost)
+			} else {
 				debug "DiscussionId not found: " + discussionId
 				flash.message = "Failed to create new discussion topic: internal error"
 			}

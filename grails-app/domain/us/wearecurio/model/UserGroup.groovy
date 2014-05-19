@@ -149,6 +149,7 @@ class UserGroup {
 	public static def getDiscussionsInfoForGroupNameList(User user, def groupNameList) {
 		boolean owned = false
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump() 
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump() 
 		def groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
@@ -407,6 +408,9 @@ class UserGroup {
 			defaultGroup = curious
 			defaultGroup.addMember(user)
 			defaultGroup.addDefaultFor(user)
+		}
+		if (!defaultGroup.hasWriter(user)) {
+			defaultGroup.addWriter(user)
 		}
 		return defaultGroup
 	}

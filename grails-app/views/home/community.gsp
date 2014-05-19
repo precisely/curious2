@@ -92,10 +92,6 @@ $(function(){
 								</span>\
 							</div>\
 							<div class="col-md-2">\
-								<span>\
-									'+'SAVE '+'\
-								</span>\
-								<span class="delete" onclick="deleteDiscussionId(' + this['id'] + ')">x</span>\
 							</div>\
 						</div>\
 						<h4 class="media-heading">\
@@ -125,7 +121,7 @@ $(function(){
 							<li><a Ref="/home/community" >Home Feed</a></li>
 						</ul>
 					</div>
-					<span id="queryTitle">${feedName}</span>
+					<span id="queryTitle">${groupFullname}</span>
 				</h1>
 			</div>
 		</div>

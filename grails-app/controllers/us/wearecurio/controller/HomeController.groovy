@@ -521,8 +521,8 @@ class HomeController extends DataController {
 			}
 		}
 		def groupMemberships = UserGroup.getGroupsForReader(user)
-		def groupName = "Home Feed"
-		def groupFullname
+		def groupName
+		def groupFullname = "HOME FEED"
 
 		groupMemberships.each { group ->
 			if (group[0]?.name.equals(params.userGroupNames)) {
