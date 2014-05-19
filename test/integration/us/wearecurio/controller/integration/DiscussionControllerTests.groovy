@@ -29,7 +29,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
-
+		testGroup.addWriter(user2)
 		params.clear()
 		params.putAll([
 			group:'testReadOnlyGroup',
@@ -57,9 +57,19 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     @Test
     void testCreateWithGroupName() {
 		controller = new DiscussionController()
+		params.group = 'testgroup'
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		controller.params['group'] = 'curious'
+		def retVal = controller.create()
+		assert Discussion.count() == 1
+    }
+
+    @Test
+    void testCreateWithNoGroup() {
+		controller = new DiscussionController()
+		params.remove('group') 
+		controller.params.putAll(params)
+		controller.session.userId = user2.getId()
 		def retVal = controller.create()
 		assert Discussion.count() == 1
     }

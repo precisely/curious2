@@ -29,7 +29,7 @@ class DiscussionController extends LoginController {
 			debug "Discussion for plotDataId not found: " + p.plotDataId
 		} 
 
-		
+		debug "Discussion found: " + discussion?.dump()
 		return discussion
 	}
 
