@@ -9,26 +9,41 @@ import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.runtime.InvokerInvocationException
 import org.springframework.web.servlet.ModelAndView
 
+import grails.util.GrailsUtil
+
 class CuriousExceptionResolver extends GrailsExceptionResolver {
 	private static def log = LogFactory.getLog(this)
 	
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
-	   ByteArrayOutputStream os = new ByteArrayOutputStream()
-	   e.printStackTrace(new PrintStream(os))
-	   String output = os.toString("UTF8");
+		if (GrailsUtil.environment.equals('development'))
+			return super.resolveException(request, response, handler, e)
+		
+		Throwable t = e
+		
+		while (t != null) {
+			if (t instanceof us.wearecurio.thirdparty.AuthenticationRequiredException)
+				// don't notify on this exception, should be handled by Grails
+				return super.resolveException(request, response, handler, e)
+			t = t.getCause()
+		}
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream()
+		e.printStackTrace(new PrintStream(os))
+		String output = os.toString("UTF8");
+		   
+		log.error("INTERCEPTED EXCEPTION")
+		log.error(output)
 	   
-	   log.error("INTERCEPTED EXCEPTION")
-	   log.error(output)
-	   
-		def messageBody = "Error while executing Curious app:\n" + output
-		def messageSubject = "CURIOUS SERVER ERROR"
+	   	def messageBody = "Error while executing Curious app:\n" + output
+		def messageSubject = "CURIOUS SERVER ERROR: " + GrailsUtil.environment
 		Utils.getMailService().sendMail {
 			to "server@wearecurio.us"
 			from "server@wearecurio.us"
 			subject messageSubject
 			body messageBody
 		}
-	   return super.resolveException(request, response, handler, e);
+		
+		return super.resolveException(request, response, handler, e)
 	}
 }

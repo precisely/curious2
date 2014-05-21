@@ -38,8 +38,8 @@ class LocationServiceTests extends CuriousServiceTestCase {
 
 		result = locationService.geocodeAddress("Bilaspur, Chhattisgarh")
 		if(result.latitude) {
-			assert isClose(22.08, result.latitude, 0.01)
-			assert isClose(82.15, result.longitude, 0.01)
+			assert isClose(22.01, result.latitude, 0.01)
+			assert isClose(82.09, result.longitude, 0.01)
 		}
 	}
 

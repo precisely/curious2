@@ -53,7 +53,7 @@ class SecurityFilters {
 		'listSnapshotData',
 		'listDiscussionData',
 		'loadSnapshotDataId',
-		
+		'getTagProperties'
 	]
 	def filters = {
 		loginCheck(controller:'home', action:'*') {
@@ -98,9 +98,8 @@ class SecurityFilters {
 		}
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
-				println "duplicate filter: " + actionName
-				
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId')) && !idempotentActions.contains(actionName)) {
+					println "duplicate filter: " + actionName
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime) {
 						p.remove('_')
@@ -117,7 +116,8 @@ class SecurityFilters {
 							return true
 						}
 					}
-				}
+				} else
+					return true
 			}
 
 		}

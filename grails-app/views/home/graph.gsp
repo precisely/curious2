@@ -128,10 +128,18 @@ $(function(){
 			// Do not adjust height if columns are vertically collapsed.
 			return false;
 		}
-		var queryTitleHeight = $('.red-header').height();
+		var queryTitleHeight = $('.red-header h1').height();
 		var padding = (queryTitleHeight - 20)/2;
 		console.log('Adjusting height to: ' + queryTitleHeight);
 		$('.tags-header-container').css('padding', padding + 'px 7px');
+		//Also need to adjust graph height so it does not  move
+		var graphAdjustedHeight = 530 - $('#plotLeftNav').height();
+		if (graphAdjustedHeight > 300) {
+			$('#plotArea').css('height', graphAdjustedHeight + 'px');
+			if ($(".graphData").hasClass("has-plot-data")) {
+				plot.redrawPlot();
+			}
+		}
 	}
 	// Callback handler after tag collapse animation finished.
 	function afterTagCollapseToggle() {
@@ -206,13 +214,6 @@ $(function(){
 				</div>
 			</div>
 			<!-- /MAIN -->
-			<br>
-			<div class="view-types">
-				view:
-				<img src="/images/scatter.gif" alt="scatter" />
-				<img src="/images/line.gif" alt="line" />
-				<img src="/images/fill.gif" alt="fill" />
-			</div>
 		</div>
 	</div>
 
