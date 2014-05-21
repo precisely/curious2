@@ -1,65 +1,11 @@
-@media (max-width: 768px) {
-	.container {
-		padding: 0;
-		margin-left: 10px;
-		margin-right: 10px;
-	}
-	.row [class*="col-"] {
-		width: 100%;
-		margin-bottom: 2px;
-	}
-	.bugs a {
-		right: -10px;
-	}
-	.header {
-		text-align: center;
-	}
-	.header .signin {
-		float: none !important;
-		padding: 10px 0;
-	}
-	.header .logo-container {
-		float: none !important;
-	}
-	.header .logo-container .logo-link {
-		margin-bottom: 1px;
-	}
-	.header .mainLinks {
-		padding-top: 0;
-	}
-	.footer ul {
-		width: 25%;
-		text-align: center;
-	}
-	div.tags-header-container, div.tags-container {
-		width: 100%;
-		float: none !important;
-		border-bottom: 2px solid #fff;
-	}
-	div.tags-header-container {
-		padding: 7px !important;
-	}
-	div.red-header h1.right {
-		float: none;
-		width: 100%;
-		padding-left: 0;
-		padding-right: 0;
-		border-right: 0;
-	}
-	div.entry-container #trackmain, div.entry-container #trackmain #area0, div.entry-container #trackmain #recordList {
-		height: auto;
-	}
-	div.entry-container #trackmain #recordList #entry0 {
-		height: calc(100% - 240px);
-		overflow-y: auto;
-	}
+@media (max-width: 480px) {
 	div.red-header.date-controls input#datepicker {
-		width: auto;
+		width: 120px;
 		font-size: 13px;
 		padding-top: 2px;
 	}
-	.floating-column {
-		overflow: visible;
+	body.track-page .date-controls h1 span.date {
+		padding: 0 3px;
 	}
 	body.tags-displayed div.tags-header-container {
 		border-bottom: 0;
@@ -68,26 +14,17 @@
 		margin-left: 0;
 	}
 	div.tags-container div#tagListWrapper ul#tagList {
-		height: calc(100% - 240px);
 		overflow-y: auto;
-	}
-	body.tags-displayed div.red-header h1.right, body.tags-displayed div.entry-container,
-		body.tags-displayed div.graph-container {
-		display: none;
-	}
-	body.graph-page .querycontrols .startDate, body.graph-page .querycontrols .endDate {
-		display: block;
-		float: none;
 	}
 	body.graph-page div.red-header h1.right {
 		padding: 10px;
+		word-wrap: break-word;
 	}
-	/* body.graph-page .querymain #plotArea {
-		height: calc(100% - 300px);
-	} */
-	.plotlines .ui-droppable {
-		float: none;
-		margin-right: 0;
+	#queryTitle {
+		display: none;
+	}
+	#mobileQueryTitle {
+		display: inline;
 	}
 	.dateline {
 		text-align: center;
@@ -117,10 +54,53 @@
 	}
 	#graphList .summary h2 {
 		width: auto !important;
-		padding-left: 0;
+		padding-left: 14px;
 	}
 	#graphList .summary .userName, #graphList .summary .visibility, #graphList .summary .publishButton, #graphList .summary .date {
 		width: auto;
 		padding-bottom: 4px;
 	}
+}
+
+@media (max-width: 767px) {
+	.header {
+		text-align: center;
+	}
+	.header .signin {
+		float: none !important;
+		padding: 10px 0;
+	}
+	.header .logo-container {
+		float: none !important;
+	}
+	.header .logo-container .logo-link {
+		margin-bottom: 1px;
+	}
+	.header .mainLinks {
+		padding-top: 0;
+	}
+	.footer ul {
+		width: 25%;
+		text-align: center;
+	}
+}
+
+@media (max-width: 992px) {
+    .container {
+        padding: 0;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .bugs a {
+        right: -10px;
+    }
+    .fixed-column {
+        width: 33%;
+    }
+    .red-header .right {
+        width: 67%;
+    }
+    body.tags-displayed .floating-column {
+        width: calc(67% - 2px);
+    }
 }
