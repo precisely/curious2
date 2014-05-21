@@ -3,6 +3,7 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
+<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
