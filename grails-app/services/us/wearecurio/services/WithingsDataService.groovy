@@ -260,8 +260,8 @@ class WithingsDataService extends DataService {
 		def entryDate
 		def setName
 		Integer timeZoneIdNumber = account.timeZoneId
-		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " + intraDayData.boody.series.size())
-		intraDayData.body?.body?.series.each {  timestamp, data ->
+		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " + intraDayData.body.series.size())
+		intraDayData.body?.series.each {  timestamp, data ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 			entryDate = new Date(Long.parseLong(timestamp) * 1000L)
 			setName = SET_NAME + " " + timestamp
