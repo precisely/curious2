@@ -7,7 +7,7 @@ class CorrelationJob extends us.wearecurio.utility.TimerJob {
 
 		static triggers = {
 			//simple startDelay: 1 * MINUTE, repeatInterval: 1 * MINUTE
-			simple startDelay: 1 * SECOND, repeatInterval: DAY
+			simple startDelay: 60 * SECOND, repeatInterval: DAY
 		}
 
 		def execute() {

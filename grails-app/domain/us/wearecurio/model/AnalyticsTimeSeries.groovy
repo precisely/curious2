@@ -1,6 +1,7 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 class AnalyticsTimeSeries {
+
 	static constraints = {
 		amount(scale:9, nullable:true)
 		date(nullable:true)
@@ -24,4 +25,5 @@ class AnalyticsTimeSeries {
 	String dataType
 	Long userId
 	Long tagId
+
 }

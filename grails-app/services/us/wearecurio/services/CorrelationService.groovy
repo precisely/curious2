@@ -15,8 +15,8 @@ import grails.util.Environment
 import us.wearecurio.analytics.Interop
 
 class CorrelationService {
-	private static def DEBUG=false
-	private static def LOG = new File("/tmp/CorrelationService.out")
+	private static def DEBUG=true
+	private static def LOG = new File("debug.out")
 	def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->
 			writer.write( "CorrelationService: ${text}\n")
@@ -211,33 +211,30 @@ class CorrelationService {
 
 	def refreshSeriesCache() {
 		String time_zone = "Etc/UTC"
+
 		def data_points = null
+		def timer_start = new Date()
+		def timer_stop = null
 		if (DEBUG) {
-			def timer_start = new Date()
-			def timer_stop = null
+			timer_start = new Date()
+			timer_stop = null
 			log("updateTimeSeries timer: start at: ${timer_start}")
 		}
 
 		// Delete the whole caching table to avoid duplicates and orphaned
-		//  series of tags that have been completely deleted.
+		//	series of tags that have been completely deleted.
 		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
 
 		User.findAll().each { user ->
 			Date now = new Date();
-			def tags = Entry.createCriteria().list{
-				projections {
-					distinct('tag')
-				}
-				eq('userId', user.id)
-			}
-			tags.each { tag ->
+			user.tags().each { tag ->
 				try {
 					data_points = Entry.fetchPlotData(user, tag, null, null, now, time_zone)
 				} catch(err) {
 					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
 				}
 
-				def prop = TagProperties.createOrLookup(user.id, tag.id)
+				def prop = TagProperties.lookup(user.id, tag.id)
 
 				data_points.each { point ->
 					def init = [
@@ -246,10 +243,10 @@ class CorrelationService {
 						date: point[0],
 						amount: point[1],
 						description: point[2],
-						dataType: prop.fetchDataType()
+						dataType: prop.fetchDataType().toString()
 					]
 					def ts = new AnalyticsTimeSeries(init)
-					ts.save()
+					ts.save(flush:true)
 				} // data_points.each
 			} // tags.each
 		} // User.findAll
@@ -274,9 +271,7 @@ class CorrelationService {
 
 	def recalculateMipss() {
 		classifyAsEventLike()
-
 		refreshSeriesCache()
-
 		String environment = Environment.getCurrent().toString()
 		Interop.updateAllUsers(environment)
 	}

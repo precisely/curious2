@@ -33,6 +33,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Date winterCurrentTime
 	Date winterBaseDate
 
+	private static def LOG = new File("debug.out")
+	public static def log(text) {
+		LOG.withWriterAppend("UTF-8", { writer ->
+			writer.write( "TagPropertiesTests: ${text}\n")
+		})
+	}
+
 	@Before
 	void setUp() {
 		super.setUp()
@@ -72,7 +79,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.startsWith('callback([{"class":"us.wearecurio.model.User","id":' + userId + ',"birthdate"')
 		assert controller.response.contentAsString.contains('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","last":"y","location":null,"notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","webDefaultToNow":true')
-    }
+		}
 
 	@Test
 	void testGetListDataSingleDate() {
@@ -94,7 +101,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
-    }
+		}
 
 	@Test
 	void testGetListDataMultipleDate() {
@@ -147,7 +154,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.startsWith('callback([[')
 		assert controller.response.contentAsString.endsWith(',1,"bread"]])')
-    }
+		}
 
 	@Test
 	void testGetSumPlotData() {
@@ -171,7 +178,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.startsWith('callback([[')
 		assert controller.response.contentAsString.endsWith(',2,"bread"]])')
-    }
+		}
 
 	@Test
 	void testGetTagsData() {
@@ -183,15 +190,16 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
 
+		controller.params['isContinuous'] = null
 		controller.params['callback'] = 'callback'
 		controller.params['sort'] = 'alpha'
-
+log("controller.params: ${controller.params}")
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
 
-		assert controller.response.contentAsString.equals('callback([{"id":' + entry.getTag().getId() + ',"datatype":null,"c":2,"description":"bread","showpoints":null}])')
-    }
+		assert controller.response.contentAsString.equals('callback([{"id":' + entry.getTag().getId() + ',"iscontinuous":0,"c":2,"description":"bread","showpoints":null}])')
+		}
 
 	@Test
 	void testSetTagPropertiesData() {
@@ -211,10 +219,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def c = controller.response.contentAsString
 
-		assert Tag.look('bread').getPropertiesForUser(userId).fetchDataType()
+		assert Tag.look('bread').getPropertiesForUser(userId).isContinuous
 
 		assert controller.response.contentAsString.equals("callback('success')")
-    }
+		}
 
 	@Test
 	void testAddEntrySData() {
@@ -237,7 +245,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
 			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
-    }
+		}
 
 	@Test
 	void testUpdateEntrySData() {
@@ -328,7 +336,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def content = controller.response.contentAsString
 
 		assert content.startsWith('callback([[]')
-    }
+		}
 
 	@Test
 	void testSetPreferencesData() {

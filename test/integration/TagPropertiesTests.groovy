@@ -48,8 +48,9 @@ class TagPropertiesTests extends CuriousTestCase {
 		assert entries.size == 3
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
+
 		assert property.fetchDataType() == TagProperties.UNSPECIFIED
-		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
+		assert !property.isContinuous
 	}
 
 	@Test
@@ -140,10 +141,10 @@ class TagPropertiesTests extends CuriousTestCase {
 
 	@Test
 	void testIsContinuousWord() {
-		assert TagProperties.dataTypeComputedWord("not in list") == false
-		assert TagProperties.dataTypeComputedWord("heart rate") == true
-		assert TagProperties.dataTypeComputedWord("headache") == false
-		assert TagProperties.dataTypeComputedWord("cholesterol") == true
+		assert TagProperties.isContinuousWord("not in list") == false
+		assert TagProperties.isContinuousWord("heart rate") == true
+		assert TagProperties.isContinuousWord("headache") == false
+		assert TagProperties.isContinuousWord("cholesterol") == true
 	}
 
 	@Test
@@ -160,7 +161,6 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
-		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.dataTypeManual = TagProperties.CONTINUOUS
 		property.classifyAsEvent()
@@ -181,6 +181,7 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+
 		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
@@ -201,6 +202,7 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+
 		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
@@ -221,6 +223,7 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
+
 		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
@@ -241,7 +244,6 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
-		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.setDataType(TagProperties.EVENT)
 		assert property.dataTypeComputed == TagProperties.EVENT
@@ -270,7 +272,6 @@ class TagPropertiesTests extends CuriousTestCase {
 		def property = TagProperties.createOrLookup(userId, tag.id)
 		assert TagProperties.count() == 1
 		assert property.dataTypeManual == TagProperties.UNSPECIFIED
-		assert property.dataTypeComputed == TagProperties.UNSPECIFIED
 
 		property.classifyAsEvent()
 		assert property.dataTypeComputed == TagProperties.CONTINUOUS

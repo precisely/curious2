@@ -1,23 +1,20 @@
 package us.wearecurio.model;
 
-import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.utility.Utils
 
 class TagProperties {
 
-	private static def log = LogFactory.getLog(this)
-
 	public static enum DataType {
-		UNSPECIFIED("U"), CONTINUOUS("C"), EVENT("E")
+		UNSPECIFIED("UNSPECIFIED"), CONTINUOUS("CONTINUOUS"), EVENT("EVENT")
 		final String value
 		DataType(String val) { this.value = val }
 		String toString() { value }
 		String getKey() { name() }
 		String getValue() { value }
 	}
-	public static CONTINUOUS  = DataType.CONTINUOUS
-	public static EVENT       = DataType.EVENT
+	public static CONTINUOUS	= DataType.CONTINUOUS
+	public static EVENT				= DataType.EVENT
 	public static UNSPECIFIED = DataType.UNSPECIFIED
 
 	// The user specified something.
@@ -37,6 +34,7 @@ class TagProperties {
 		dataTypeManual(nullable:true)
 		dataTypeComputed(nullable:true)
 		showPoints(nullable:true)
+		tagId unique: 'userId'
 	}
 
 	static mapping = {
@@ -51,7 +49,7 @@ class TagProperties {
 	// Put reg. expressions  here so that we don't have to keep recompiling them.
 	public static REG_PATTERN = ~/^\/(.*)\/$/
 
-	public static EVENT_PATTERNS = ["/ache/", "pain", "ate", "eat", "/exercise/", "jogging", "sleep"]
+	public static EVENT_PATTERNS = ["/ache/", "bread", "pain", "ate", "eat", "/exercise/", "jogging", "sleep"]
 	public static EVENT_EXCLUSION_PATTERNS = ["constant .* pain"]
 
 	public static CONTINUOUS_PATTERNS = ["weight", "rate", "pulse", "cholesterol"]
@@ -64,8 +62,6 @@ class TagProperties {
 	}
 
 	public static def createOrLookup(long userId, long tagId) {
-		log.debug "TagProperties.createOrLookup() userId:" + userId + ", tag:" + Tag.get(tagId)
-
 		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
 
 		if (!props) {
@@ -82,7 +78,11 @@ class TagProperties {
 		def tag = Tag.get(tagId)
 		def numEntriesWithNoValue = Entry.findAllWhere(userId: userId, tag: tag, amountPrecision: -1).size
 		def totalEntriesInSeries = Entry.findAllWhere(userId: userId, tag: tag).size
-		1.0 * numEntriesWithNoValue / totalEntriesInSeries
+		if (totalEntriesInSeries > 0) {
+			return 1.0 * numEntriesWithNoValue / totalEntriesInSeries
+		} else {
+			return null
+		}
 	}
 
 	public static def toReg(String s) {
@@ -122,7 +122,7 @@ class TagProperties {
 		match(EVENT_PATTERNS, EVENT_EXCLUSION_PATTERNS, description)
 	}
 
-	public static def dataTypeComputedWord(description) {
+	public static def isContinuousWord(description) {
 		match(CONTINUOUS_PATTERNS, CONTINUOUS_EXCLUSION_PATTERNS, description)
 	}
 
@@ -130,6 +130,7 @@ class TagProperties {
 	//	(ie. happens in pulses, where the base value is 0) or
 	//	continuous (most likely hovers around some non-zero mean
 	//	value).
+
 	public def classifyAsEvent() {
 		// If user specified something, use what the user specified.
 		//	The user-specified value is dataTypeComputed.
@@ -141,23 +142,27 @@ class TagProperties {
 		// If a significant portion of the entries don't have values,
 		//	then it should be treated as an event.
 		def p = percentEntriesWithoutValues()
+
 		if (p && p > 0.10) {
 			dataTypeComputed = EVENT
 			return this
 		}
 
-		def description = Tag.get(tagId).description
+		def the_tag = Tag.get(tagId)
+		def description = null
+		if (the_tag) {
+			description = the_tag.description
+		}
 
 		// If a tag description matches the list of continuous patterns,
 		//	then classify it as continuous.
-		if (TagProperties.dataTypeComputedWord(description)) {
+		if (description && TagProperties.isContinuousWord(description)) {
 			dataTypeComputed = CONTINUOUS
 			return this
 		}
-
 		// If the tag description matches a list of event words,
 		//	then classify it as an event.
-		if (TagProperties.isEventWord(description)) {
+		if (description && TagProperties.isEventWord(description)) {
 			dataTypeComputed = EVENT
 			return this
 		}
@@ -184,19 +189,27 @@ class TagProperties {
 		}
 
 		// This is an expensive operation, but it's probably not
-		//   invoked frequently and it will keep dataTypeComputed up-to-date.
+		//	 invoked frequently and it will keep dataTypeComputed up-to-date.
 		classifyAsEvent()
 	}
 
 	def fetchDataType() {
-	  dataTypeComputed
+		dataTypeComputed
+	}
+
+	public def setIsContinuous(x) {
+		setDataType(x)
+	}
+
+	public def getIsContinuous() {
+		dataTypeComputed == CONTINUOUS
 	}
 
 	// Note: Changes here should also be made to lookupJSONDesc()
 	def getJSONDesc() {
 		return [userId: userId,
 			tagId: tagId,
-			dataType: fetchDataType(),
+			isContinuous: isContinuous,
 			showPoints: showPoints]
 	}
 
@@ -206,7 +219,7 @@ class TagProperties {
 		if (!props) { // return default settings, don't create new TagProperties
 			return [userId: userId,
 				tagId: tagId,
-				dataType: false,
+				isContinuous: false,
 				showPoints: false]
 		}
 		return props.getJSONDesc()
