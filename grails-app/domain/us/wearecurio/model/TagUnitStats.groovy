@@ -27,7 +27,7 @@ class TagUnitStats {
 		// Verify if the user has used this unit for this tag in the past
 		def tagUnitStats = TagUnitStats.withCriteria {
 			and {
-				like ('unit', unit)
+				eq ('unit', unit)
 				eq ('tagId', tagId)
 				eq ('userId', userId)
 			}
@@ -51,12 +51,12 @@ class TagUnitStats {
 					//This unit is not in the map and this is the first entry for this tag
 					//i.e. we don't have the most used unit for this tag
 					tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
-					unit: unit)
+						unit: unit)
 				} 
 			} else {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
 				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId, 
-				unit: unitGroupMap.unit, unitGroup: unitGroupMap.group)
+					unit: unitGroupMap.unit, unitGroup: unitGroupMap.group)
 			}
 		}
 

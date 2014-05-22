@@ -41,25 +41,22 @@ class UnitGroupMap {
 	//		[ unitName: [relativeRatio, affinityVal], 
 	//]
 	static Map groups = [
-	(UnitGroup.DURATION): ['m':[MINUTE,0.2], 'min':[MINUTE,0.2], 'mins':[MINUTE,0.2], 'minute':[MINUTE,0.2], 
-	'minutes':[MINUTE,0.2], 'h':[HOUR,0.2], 'hours':[HOUR,0.2], 'hrs':[HOUR,0.2], 'hour':[HOUR,0.2], 
-	'day':[DAY,0.2], 'days':[DAY,0.2], 'd':[DAY,0.2], 'week':[WEEK,0.2],
-	'weeks':[WEEK,0.2], 'wks':[WEEK,0.2], 'wk':[WEEK,0.2], 
-	'month':[MONTH,0.2], 'months':[MONTH,0.2], 'mnths':[MONTH,0.2], 'year':[YEAR,0.2], 
-	'years':[YEAR,0.2], 'y':[YEAR,0.2], 'century':[YEAR,0.2], 'centuries':[CENTURY,0.2], 
-	'ms':[MILLISECOND,0.2],'sec':[SECOND,0.2], 'secs':[SECOND,0.2], 'seconds': [SECOND,0.2],
-	'seccond':[SECOND,0.2], 'millisecond':[1,0.2], 'milliseconds':[1,0.2], 'microsecond':[MICROSECOND,0.2],
-	'microseconds':[MICROSECOND,0.2], 'picosecond':[PICOSECOND,0.2], 'picoseconds':[PICOSECOND,0.2]
-	],
-	(UnitGroup.DISTANCE): [
-	'm':[METER,0.2], 'meter':[METER,0.222], 'foot':[FOOT,0.2], 'feet':[FOOT,0.2], 'ft':[FOOT,0.2], 
-	'yard':[YARD,0.2], 'yards':[YARD,0.2], 'miles':[MILE,0.2], 'km':[KILOMETER,0.2], 'kilometers':[KILOMETER,0.2],
-	'kilometers':[KILOMETER,0.2], 'kilometer':[KILOMETER,0.2],'kilometre':[KILOMETER,0.2], 'kilometres':[KILOMETER,0.2]
-	],
-	(UnitGroup.WEIGHT): [
-	'g':[GRAM,0.2], 'grams':[GRAM,0.2], 'pound':[POUND,0.2], 'pounds':[POUND,0.2], 'lbs':[POUND,0.2], 
-	'kg':[KILOGRAM,0.2], 'kilograms':[KILOGRAM,0.2], 'kilogram':[KILOGRAM,0.2],
-	]
+		(UnitGroup.DURATION): ['m':[MINUTE,0.2], 'min':[MINUTE,0.2], 'mins':[MINUTE,0.2], 'minute':[MINUTE,0.2], 
+			'minutes':[MINUTE,0.2], 'h':[HOUR,0.2], 'hours':[HOUR,0.2], 'hrs':[HOUR,0.2], 'hour':[HOUR,0.2], 
+			'day':[DAY,0.2], 'days':[DAY,0.2], 'd':[DAY,0.2], 'week':[WEEK,0.2],
+			'weeks':[WEEK,0.2], 'wks':[WEEK,0.2], 'wk':[WEEK,0.2], 
+			'month':[MONTH,0.2], 'months':[MONTH,0.2], 'mnths':[MONTH,0.2], 'year':[YEAR,0.2], 
+			'years':[YEAR,0.2], 'y':[YEAR,0.2], 'century':[YEAR,0.2], 'centuries':[CENTURY,0.2], 
+			'ms':[MILLISECOND,0.2],'sec':[SECOND,0.2], 'secs':[SECOND,0.2], 'seconds': [SECOND,0.2],
+			'seccond':[SECOND,0.2], 'millisecond':[1,0.2], 'milliseconds':[1,0.2], 'microsecond':[MICROSECOND,0.2],
+			'microseconds':[MICROSECOND,0.2], 'picosecond':[PICOSECOND,0.2], 'picoseconds':[PICOSECOND,0.2]],
+		(UnitGroup.DISTANCE): [
+			'm':[METER,0.2], 'meter':[METER,0.222], 'foot':[FOOT,0.2], 'feet':[FOOT,0.2], 'ft':[FOOT,0.2], 
+			'yard':[YARD,0.2], 'yards':[YARD,0.2], 'miles':[MILE,0.2], 'km':[KILOMETER,0.2], 'kilometers':[KILOMETER,0.2],
+			'kilometers':[KILOMETER,0.2], 'kilometer':[KILOMETER,0.2],'kilometre':[KILOMETER,0.2], 'kilometres':[KILOMETER,0.2]],
+		(UnitGroup.WEIGHT): [
+			'g':[GRAM,0.2], 'grams':[GRAM,0.2], 'pound':[POUND,0.2], 'pounds':[POUND,0.2], 'lbs':[POUND,0.2], 
+			'kg':[KILOGRAM,0.2], 'kilograms':[KILOGRAM,0.2], 'kilogram':[KILOGRAM,0.2]]
 	];
 
 	/**
