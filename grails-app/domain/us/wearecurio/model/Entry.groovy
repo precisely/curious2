@@ -1,5 +1,6 @@
 package us.wearecurio.model;
 
+import groovy.time.*
 import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
@@ -8,6 +9,7 @@ import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Tag
 
 import java.util.Map;
 import java.util.regex.Pattern
@@ -310,8 +312,8 @@ class Entry {
 	public static final int DEFAULT_AMOUNTPRECISION = 3
 
 	/**
-	 * Create and save new entry
-	 */
+	* Create and save new entry
+	*/
 	static Entry create(Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
 			String comment, String setName, int amountPrecision = DEFAULT_AMOUNTPRECISION) {
 		return create(userId,
@@ -347,9 +349,9 @@ class Entry {
 
 	static List lookForPartialEntry(userId, Map m) {
 		/**
-		 * Making sure it is a summary entry. Non summary entries will
-		 * not have partial entries
-		 */
+		* Making sure it is a summary entry. Non summary entries will
+		* not have partial entries
+		*/
 
 		if (!m.description.endsWith(" summary")) {
 			return []
@@ -791,13 +793,43 @@ class Entry {
 	}
 
 	/**
-	 * Retrieve tags by user
-	 */
+	* Retrieve tags by user
+	*/
 	public static final int BYALPHA = 0
 	public static final int BYCOUNT = 1
 	public static final int BYRECENT = 2
 	public static final int ONLYIDS = 3
 	public static final int BYCOUNTONLYDESCRIPTION = 4
+
+	public static def countSeries(userId, tagId, amountPrecision) {
+		def c = Entry.createCriteria()
+		def tag = Tag.get(tagId)
+		def results = []
+		// Can we compose/add onto criteria to avoid repeated code?
+		if (amountPrecision != null) {
+			results = c {
+				projections {
+					count('id')
+				}
+				and {
+					eq("userId", userId)
+					eq("tag", tag)
+					eq("amountPrecision", amountPrecision)
+				}
+			}
+		} else {
+			results = c {
+				projections {
+					count('id')
+				}
+				and {
+					eq("userId", userId)
+					eq("tag", tag)
+				}
+			}
+		}
+		results[0]
+	}
 
 	static def getTags(User user, type = BYALPHA) {
 		log.debug "Entry.getTags() userID:" + user.getId() + ", type:" + type
@@ -1847,7 +1879,6 @@ class Entry {
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
 		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
-
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []
@@ -1874,7 +1905,6 @@ class Entry {
 				repeaters.add(repeater)
 			}
 		}
-
 		// get regular results
 
 		queryStr = "select distinct entry.id " \
@@ -1884,7 +1914,6 @@ class Entry {
 		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds]
 
 		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
-
 		def results = []
 
 		for (result in rawResults) {
@@ -1894,10 +1923,8 @@ class Entry {
 			generateRepeaterEntries(repeaters, entryTimestamp, results)
 			results.add(desc)
 		}
-
 		// keep generating remaining repeaters until endDate
 		generateRepeaterEntries(repeaters, endDate.getTime(), results)
-
 		return results
 	}
 
@@ -2420,7 +2447,7 @@ class Entry {
 				}
 			}
 		}
-		
+
 		if (retVal['units'].equals('at')) {
 			retVal['units'] = ''
 		}

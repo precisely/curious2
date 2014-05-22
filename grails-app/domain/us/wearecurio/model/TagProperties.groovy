@@ -75,9 +75,8 @@ class TagProperties {
 	}
 
 	public def percentEntriesWithoutValues() {
-		def tag = Tag.get(tagId)
-		def numEntriesWithNoValue = Entry.findAllWhere(userId: userId, tag: tag, amountPrecision: -1).size
-		def totalEntriesInSeries = Entry.findAllWhere(userId: userId, tag: tag).size
+		def numEntriesWithNoValue = Entry.countSeries(userId, tagId, -1)
+		def totalEntriesInSeries = Entry.countSeries(userId, tagId, null)
 		if (totalEntriesInSeries > 0) {
 			return 1.0 * numEntriesWithNoValue / totalEntriesInSeries
 		} else {
