@@ -216,16 +216,23 @@ class UserGroup {
 	}
 	
 	static def canWriteDiscussion(User user, Discussion discussion) {
-		if (!user)
+		if (!user) {
+			log.debug "UserGroup.canWriteDiscussion(): No user passed, looking to see if the group is public"
 			return discussion.getIsPublic()
-		if (discussion.getUserId() == user.getId())
+		}
+		if (discussion.getUserId() == user.getId()) {
+			log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} is the author of the discussion ${discussion}, can write"
 			return true
+		}
 		def groups = getGroupsForDiscussion(discussion)
 		for (UserGroup group in groups) {
-			if (group.hasWriter(user))
+			if (group.hasWriter(user)) {
+				log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} has write permission on one of the groups, can write"
 				return true
+			}
 		}
 		
+		log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} has NO write permission"
 		return false
 	}
 	
@@ -408,8 +415,6 @@ class UserGroup {
 			defaultGroup = curious
 			defaultGroup.addMember(user)
 			defaultGroup.addDefaultFor(user)
-		}
-		if (!defaultGroup.hasWriter(user)) {
 			defaultGroup.addWriter(user)
 		}
 		return defaultGroup

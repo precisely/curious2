@@ -18,6 +18,8 @@ class UserGroupTests extends GroovyTestCase {
 	User admin2
 	User anon
 	User schmoe
+	UserGroup curious
+	UserGroup announce
 	
 	static def createUser(name, email) {
 		def params = [username:name, sex:'F', \
@@ -40,6 +42,10 @@ class UserGroupTests extends GroovyTestCase {
 		anon = createUser('anon', 'anon@user.com')
 		schmoe = createUser('schmoe', 'schmoe@user.com')
 		
+		curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+				[isReadOnly:false, defaultNotify:false])
+		announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
+				[isReadOnly:true, defaultNotify:true])
 		Utils.setMailService(mailService)
 	}
 
@@ -58,18 +64,19 @@ class UserGroupTests extends GroovyTestCase {
 	}
 
 	@Test
-	void testUserGroups() {
-		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
-				[isReadOnly:false, defaultNotify:false])
-		UserGroup announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
-				[isReadOnly:true, defaultNotify:true])
-
+	void testDefaultUserGroup() {
+	
 		//Default UserGroup for a User if no default group present is curious
 		assert UserGroup.getDefaultGroupForUser(user) == curious
 		assert curious.hasReader(user)
 		assert curious.hasWriter(user)
 		assert !curious.hasNotified(user)
 		assert !curious.hasAdmin(user)
+	}
+
+	@Test
+	void testUserGroups() {
+
 		
 		announce.addMember(user)
 		
