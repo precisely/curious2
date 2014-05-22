@@ -29,3 +29,6 @@ target-eclipse/**
 Servers/**
 *DummyController.groovy
 tags
+.vimrc
+JavaImp
+grails-console

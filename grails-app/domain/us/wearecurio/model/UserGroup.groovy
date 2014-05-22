@@ -126,6 +126,9 @@ class UserGroup {
 			retVal['groupId'] = groupId
 			retVal['groupName'] = group ? group.getFullName() : 'Private'
 			retVal['userName'] = info[2]
+			// Adding a flag to indicate if this discussion was started with a plot
+			def firstPost = Discussion.get(discussionId).fetchFirstPost()
+			retVal['isPlot'] = firstPost?.plotDataId ? true : false
 			discussionMap[discussionId] = retVal
 			retVals.add(retVal)
 		}
@@ -145,6 +148,8 @@ class UserGroup {
 	
 	public static def getDiscussionsInfoForGroupNameList(User user, def groupNameList) {
 		boolean owned = false
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump() 
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump() 
 		def groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
@@ -158,6 +163,7 @@ class UserGroup {
 				}
 			}
 		}
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): groupId list: " + groupIds?.dump() 
 		def map = [:]
 		
 		if (groupIds.size() > 0) map['groupIds'] = groupIds
@@ -165,9 +171,10 @@ class UserGroup {
 		if (owned) map['id'] = user.getId()
 		
 		def results = Discussion.executeQuery(
-				"select distinct d, dItem.groupId as groupId, user.username from Discussion d, User user, GroupMemberDiscussion dItem where d.id = dItem.memberId "
-				+ (groupIds.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
-				+ "and d.userId = user.id order by d.updated desc", map)
+				"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "
+					+ "User user, GroupMemberDiscussion dItem where d.id = dItem.memberId "
+					+ (groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
+					+ "and d.userId = user.id order by d.updated desc", map)
 		
 		if (owned) {
 			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
@@ -178,14 +185,17 @@ class UserGroup {
 	
 	private static def DISCUSSIONS_QUERY =\
 			"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "\
-			+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
-			+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
-			+ "and d.userId = user.id order by d.updated desc"
+				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
+				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
+				+ "and d.userId = user.id order by d.updated desc"
 	
 	public static def getDiscussionsInfoForUser(User user, boolean owned) {
 		def results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id:user.getId()])
 		if (owned) {
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d, User user where d.userId = :id and user.id = d.userId", [id:user.getId()]))
+			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries" 
+			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username "
+				+ "from Discussion d, User user where d.userId = :id and user.id = d.userId "
+				, [id:user.getId()]))
 		}
 			
 		addAdminPermissions(user, results)
@@ -206,16 +216,23 @@ class UserGroup {
 	}
 	
 	static def canWriteDiscussion(User user, Discussion discussion) {
-		if (!user)
+		if (!user) {
+			log.debug "UserGroup.canWriteDiscussion(): No user passed, looking to see if the group is public"
 			return discussion.getIsPublic()
-		if (discussion.getUserId() == user.getId())
+		}
+		if (discussion.getUserId() == user.getId()) {
+			log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} is the author of the discussion ${discussion}, can write"
 			return true
+		}
 		def groups = getGroupsForDiscussion(discussion)
 		for (UserGroup group in groups) {
-			if (group.hasWriter(user))
+			if (group.hasWriter(user)) {
+				log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} has write permission on one of the groups, can write"
 				return true
+			}
 		}
 		
+		log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} has NO write permission"
 		return false
 	}
 	
@@ -388,7 +405,19 @@ class UserGroup {
 	}
 	
 	static UserGroup getDefaultGroupForUser(User user) {
-		return GroupMemberDefaultFor.lookupGroup(user)
+		def defaultGroup = GroupMemberDefaultFor.lookupGroup(user)
+		if (!defaultGroup) {
+			UserGroup curious = UserGroup.findByName("curious")
+			if (!curious) {
+				curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+					[isReadOnly:false, defaultNotify:false])
+			}
+			defaultGroup = curious
+			defaultGroup.addMember(user)
+			defaultGroup.addDefaultFor(user)
+			defaultGroup.addWriter(user)
+		}
+		return defaultGroup
 	}
 
 	def addDiscussion(Discussion discussion) {

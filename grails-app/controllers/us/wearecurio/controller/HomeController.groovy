@@ -520,7 +520,19 @@ class HomeController extends DataController {
 				}
 			}
 		}
-		[prefs:user.getPreferences(), userId:user.getId(), templateVer:urlService.template(request)]
+		def groupMemberships = UserGroup.getGroupsForReader(user)
+		def groupName
+		def groupFullname = "HOME FEED"
+
+		groupMemberships.each { group ->
+			if (group[0]?.name.equals(params.userGroupNames)) {
+				groupFullname = group[0].fullName ?: group[0].name
+				groupName = group[0].name
+			}
+		}
+		log.debug("HomeController.community: User has read memberships for :" + groupMemberships.dump())
+		[prefs:user.getPreferences(), userId:user.getId(), templateVer:urlService.template(request),
+			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname]
 	}
 
 	def discuss() {
