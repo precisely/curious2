@@ -9,6 +9,7 @@ dataSource {
 	//driverClassName = "org.hsqldb.jdbcDriver"
 	//driverClassName = "org.postgresql.Driver"
 	driverClassName = "com.mysql.jdbc.Driver"
+	// IMPORTANT: If you edit these credentials, you must also edit src/clojure/analytics/profiles.clj
 	username = "curious"
 	password = "734qf7q35"
 	properties {

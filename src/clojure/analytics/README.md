@@ -7,6 +7,7 @@
 
 2.	Copy the sample profile to profiles.clj.
 	```
+		cd [grails directory]/src/clojure/analytics
 		cp profiles-sample.clj profiles.clj
 	```
 
@@ -19,6 +20,13 @@
 	```
 	lein with-profile test midje
 	```
+## Install Counterclockwise Clojure plugin
+
+	http://doc.ccw-ide.org/documentation.html#install-as-plugin
+	
+## Convert STS project to a Leiningen project
+
+	Open the contextual menu of your project, select Configure ▸ Convert to Leiningen Project
 
 ## Where's the data?
 
@@ -39,9 +47,11 @@ lein with-profile test midje :autotest
 
 Clojure will produce a class called us.wearecurio.analytics.Interop with a static method called updateAllUsers(String environment).
 
-1. Run the script:
+1. Run the script from the src/clojure/analytics folder of the Curious project:
 
 	scripts/prepare-uberjar
+
+2. Go to Eclipse, click on the root of the project in the project folder, refresh (F5), then Project->Clean to rebuild.
 
 2. Use the function in Grails:
 
