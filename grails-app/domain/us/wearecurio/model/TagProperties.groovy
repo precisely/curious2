@@ -6,12 +6,11 @@ import us.wearecurio.utility.Utils
 class TagProperties {
 
 	public static enum DataType {
-		UNSPECIFIED("UNSPECIFIED"), CONTINUOUS("CONTINUOUS"), EVENT("EVENT")
-		final String value
-		DataType(String val) { this.value = val }
-		String toString() { value }
-		String getKey() { name() }
-		String getValue() { value }
+		UNSPECIFIED(0), CONTINUOUS(1), EVENT(2)
+		final Integer id
+		DataType(Integer val) { this.id = val }
+		String toString() { name() }
+		Integer getValue() { id }
 	}
 	public static CONTINUOUS	= DataType.CONTINUOUS
 	public static EVENT				= DataType.EVENT
