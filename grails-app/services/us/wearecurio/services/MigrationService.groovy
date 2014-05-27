@@ -310,7 +310,7 @@ class MigrationService {
 		}
 		tryMigration(HISTORICAL_INTRA_DAY) {
 			sql("update oauth_account set last_polled = null where type_id = 1")
-			WithingsDataService.pollAll(true)
+			withingsDataService.pollAll(true)
 		}
 	}
 }
