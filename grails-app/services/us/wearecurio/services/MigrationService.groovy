@@ -50,7 +50,7 @@ class MigrationService {
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
-	WithingsService withingsService
+	WithingsDataService withingsDataService
 	
 	boolean skipMigrations = false
 	
@@ -310,7 +310,7 @@ class MigrationService {
 		}
 		tryMigration(HISTORICAL_INTRA_DAY) {
 			sql("update oauth_account set last_polled = null where type_id = 1")
-			withingsService.pollAll(true)
+			WithingsDataService.pollAll(true)
 		}
 	}
 }
