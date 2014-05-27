@@ -58,6 +58,10 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			},
 			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
 				mockedGeneratedURLWithParams = url
+				if (url.contains("intra")) {
+					def data = """{"status":0,"body":{"series":[]}}"""
+					mockedConnectionWithParams = new MockedHttpURLConnection(data)
+				}
 				return new Response(mockedConnectionWithParams)
 			}
 		]
