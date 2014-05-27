@@ -46,9 +46,11 @@ class MigrationService {
 	public static final long FIX_REPEAT_END = 77L
 	public static final long ELIMINATE_AT_UNITS_AND_REPEAT_UNITS = 78L
 	public static final long REMOVE_VERSION = 80L
+	public static final long HISTORICAL_INTRA_DAY = 82L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
+	WithingsService withingsService
 	
 	boolean skipMigrations = false
 	
@@ -305,6 +307,10 @@ class MigrationService {
 			sql ("alter table twitter_data drop column version")
 			sql ("alter table user_group drop column version")
 			sql ("alter table user_time_zone drop column version")
+		}
+		tryMigration(HISTORICAL_INTRA_DAY) {
+			sql("update oauth_account set last_polled = null where type_id = 1")
+			withingsService.pollAll(true)
 		}
 	}
 }
