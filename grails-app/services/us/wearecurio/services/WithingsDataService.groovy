@@ -27,6 +27,7 @@ class WithingsDataService extends DataService {
 	static final String BASE_URL = "http://wbsapi.withings.net"
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "withings import"
+	static Date intraDayOverQueryRateTimestamp = null
 
 	static transactional = false
 
@@ -108,13 +109,10 @@ class WithingsDataService extends DataService {
 
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
-				setName = SET_NAME + date
+				setName = SET_NAME + " measure " + date
 				JSONArray measures = group.measures
-
-				/*if (!refreshAll) {
-					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
-							[setName: SET_NAME, userId: userId, entryDate: date])
-				}*/
+				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+					[setName: setName , userId: userId]) 
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -254,7 +252,10 @@ class WithingsDataService extends DataService {
 			}
 		}
 		
-		getIntraDayDataForListedDates(account, datesWithSummaryData)
+		if (datesWithSummaryData.size() > 0) {
+			log.debug "getIntraDayData event triggered"
+			event('getIntraDayData', [account: account, dates: datesWithSummaryData])
+		}
 		[success: true]
 	}
 
@@ -307,6 +308,15 @@ class WithingsDataService extends DataService {
 			}
 
 			[success: true]
+	}
+
+	@grails.events.Listener(topic = 'getIntraDayData')
+	def intraDayEventHandler(org.grails.plugin.platform.events.EventMessage eventMessage) {
+		log.debug "getIntraDayDataForListedDates executing event"
+		def data = eventMessage.data
+		def account = data.account
+		def dates = data.dates
+		getIntraDayDataForListedDates(account, dates)
 	}
 
 	def getIntraDayDataForListedDates(OAuthAccount account, def dates) {

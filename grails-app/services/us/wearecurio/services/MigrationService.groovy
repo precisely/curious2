@@ -94,6 +94,7 @@ class MigrationService {
 			} catch (Exception e) {
 				System.err.println("EXCEPTION DURING MIGRATION " + code)
 				e.printStackTrace()
+				return false
 			}
 
 			didMigration(migration)
@@ -309,8 +310,8 @@ class MigrationService {
 			sql ("alter table user_time_zone drop column version")
 		}
 		tryMigration(HISTORICAL_INTRA_DAY) {
+			sql("delete from entry where set_name like 'withings import'")
 			sql("update oauth_account set last_polled = null where type_id = 1")
-			withingsDataService.pollAll(true)
 		}
 	}
 }
