@@ -310,7 +310,7 @@ class MigrationService {
 			sql ("alter table user_time_zone drop column version")
 		}
 		tryMigration(HISTORICAL_INTRA_DAY) {
-			sql("delete from entry where set_name like 'withings import'")
+			sql("delete from entry where set_name like 'withings import%'")
 			sql("update oauth_account set last_polled = null where type_id = 1")
 		}
 	}
