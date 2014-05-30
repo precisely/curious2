@@ -290,36 +290,58 @@ class WithingsDataService extends DataService {
 				setName = SET_NAME + " intra " + timestamp
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName , userId: userId]) 
-				if (data.size() == 1 || data['duration'] == 60) {
+				if (data.size() == 1) {
 					return
 				}
-					
+
+				def minutesToAdd = 10
+				def minutesAdded = 0
+				def aggregatedData = resetAggregatedData()
 				data.each { metric, amount ->
-					if (metric.equals("steps")) {
-						tagUnitMap.buildEntry("activitySteps", amount, userId, 
-							timeZoneIdNumber, entryDate, COMMENT, setName)
+					if (minutesAdded < minutesToAdd) {
+						aggregatedData[metric] += amount
+						minutesAdded++
 					}
-					if (metric.equals("distance")) {
-						tagUnitMap.buildEntry("activityDistance", amount, userId, 
-							timeZoneIdNumber, entryDate, COMMENT, setName)
-					}
-					if (metric.equals("calories")) {
-						tagUnitMap.buildEntry("activityCalorie", amount, userId, 
-							timeZoneIdNumber, entryDate, COMMENT, setName)
-					}
-					if (metric.equals("elevation")) {
-						tagUnitMap.buildEntry("activityElevation", amount, userId, 
-							timeZoneIdNumber, entryDate, COMMENT, setName)
-					}
-					if (metric.equals("duration")) {
-						tagUnitMap.buildEntry("activityDuration", amount, userId, 
-							timeZoneIdNumber, entryDate, COMMENT, setName)
+
+					if (data['duration'] > 60) {
+						mapToEntries(aggregatedData)
+						minutesAdded = 0
+						aggregatedData = resetAggregatedData()
 					}
 				}
 			
 			}
 
 			[success: true]
+	}
+
+	def resetAggregatedData() {
+		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
+	}
+	
+	def mapToEntries(def data) {
+		data.each { metric, amount ->
+			if (metric.equals("steps")) {
+				tagUnitMap.buildEntry("activitySteps", aggregatedData[metric], userId, 
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (metric.equals("distance")) {
+				tagUnitMap.buildEntry("activityDistance", amount, userId, 
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (metric.equals("calories")) {
+				tagUnitMap.buildEntry("activityCalorie", amount, userId, 
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (metric.equals("elevation")) {
+				tagUnitMap.buildEntry("activityElevation", amount, userId, 
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (metric.equals("duration")) {
+				tagUnitMap.buildEntry("activityDuration", amount, userId, 
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+		}
 	}
 
 	def populateIntraDayQueue() {

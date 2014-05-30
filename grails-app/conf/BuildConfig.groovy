@@ -58,7 +58,6 @@ grails.project.dependency.resolution = {
         compile ":jquery:1.8.3"
 		compile ":message-digest:1.1"
 		
-		compile ":platform-core:1.0.0"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0"
         //runtime ":cached-resources:1.0"
