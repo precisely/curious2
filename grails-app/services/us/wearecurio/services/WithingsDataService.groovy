@@ -23,7 +23,7 @@ class WithingsDataService extends DataService {
 
 	static final String BASE_URL = "http://wbsapi.withings.net"
 	static final String COMMENT = "(Withings)"
-	static final String SET_NAME = "withings import"
+	static final String SET_NAME = "WI"
 	static Date intraDayOverQueryRateTimestamp = null
 	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
 	static transactional = false
@@ -106,7 +106,7 @@ class WithingsDataService extends DataService {
 
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
-				setName = SET_NAME + " measure " + date
+				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 					[setName: setName , userId: userId]) 
@@ -226,7 +226,7 @@ class WithingsDataService extends DataService {
 			Date entryDate = dateFormat.parse(activity["date"])
 			datesWithSummaryData.push(entryDate)
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
-			setName = SET_NAME + " activity " + entryDate.getTime()
+			setName = SET_NAME + "a" + entryDate.getTime()/1000
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 				[setName: setName , userId: userId]) 
 			def args = ['isSummary':true] // Indicating that these entries are summary entries
@@ -287,7 +287,7 @@ class WithingsDataService extends DataService {
 			intraDayResponse.body?.series.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				entryDate = new Date(Long.parseLong(timestamp) * 1000L)
-				setName = SET_NAME + " intra " + timestamp
+				setName = SET_NAME + "i" + timestamp
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName , userId: userId]) 
 				log.debug("WithingsDataService.getDataIntraDayActivity: Number of metrics returned for ${timestamp} ${data.size()}")
@@ -307,7 +307,7 @@ class WithingsDataService extends DataService {
 						minutesAdded++
 					}
 
-					if (data['duration'] > 60) {
+					if (data['duration'] > 60 || minutesAdded > = minutesToAdd) {
 						log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
 						mapToEntries(aggregatedData)
 						minutesAdded = 0
