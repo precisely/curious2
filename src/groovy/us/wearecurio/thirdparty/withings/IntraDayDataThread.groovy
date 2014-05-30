@@ -28,7 +28,7 @@ class IntraDayDataThread extends Thread {
 					lastRequestFailed = false
 				}
 				account = OAuthAccount.get(queueItem.id)
-				withingsDataService.getDataIntraDayActivity(account, queryDate, queryDate + 1)
+				withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1)
 				queueItem.delete()
 			} catch (TooManyRequestsException te) {
 				log.debug "IntraDayDataThread: TooManyRequestsException - Exceeded query rate"
