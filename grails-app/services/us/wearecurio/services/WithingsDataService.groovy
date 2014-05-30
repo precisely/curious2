@@ -252,7 +252,7 @@ class WithingsDataService extends DataService {
 		if (datesWithSummaryData.size() > 0) {
 			log.debug "WithingsDataService: Adding items to the intra day queue"
 			datesWithSummaryData.each { summaryDate ->
-				def intraDayQueueItem = new IntraDayQueueItem(oauthAccountId: account.id, queryDate: date)
+				def intraDayQueueItem = new IntraDayQueueItem(oauthAccountId: account.id, queryDate: summaryDate)
 				Utils.save(intraDayQueueItem, true)
 				try {
 					intraDayQueue.add(intraDayQueueItem)
