@@ -42,7 +42,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 	void testIndexLoggedIn() {
 		MobiledataController controller = new MobiledataController()
 		
-		def result = filterNotLoggedIn(controller, [mobileSessionId:mobileSession.fetchUuid()], "mobiledata", "index")
+		def result = filterNotLoggedIn(controller, [persistentSessionId:mobileSession.fetchUuid()], "mobiledata", "index")
 
 		assert controller.session.userId == user.getId()
 		

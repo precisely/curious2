@@ -94,7 +94,7 @@ function getCSRFPreventionURI(key) {
 			|| localStorage['mobileSessionId'] == null) {
 		console.error("Missing mobileSessionId for CSRF protection");
 	}
-	var preventionURI = "mobileSessionId=" + localStorage['mobileSessionId'];
+	var preventionURI = "persistentSessionId=" + localStorage['mobileSessionId'];
 	return preventionURI;
 }
 
@@ -141,7 +141,7 @@ function submitForm() {
 			}),
 			function(data) {
 				if (data['success']) {
-					localStorage['mobileSessionId'] = data['mobileSessionId'];
+					localStorage['mobileSessionId'] = data['persistentSessionId'];
 					dataReady = true;
 					$("#passwordField").blur();
 					launchTrack();
@@ -262,7 +262,7 @@ function makeGetUrl(url) {
 }
 
 function makeGetArgs(args) {
-	args['mobileSessionId'] = localStorage['mobileSessionId'];
+	args['persistentSessionId'] = localStorage['mobileSessionId'];
 
 	return args;
 }
@@ -272,7 +272,7 @@ function makePostUrl(url) {
 }
 
 function makePostArgs(args) {
-	args['mobileSessionId'] = localStorage['mobileSessionId'];
+	args['persistentSessionId'] = localStorage['mobileSessionId'];
 
 	return args;
 }
