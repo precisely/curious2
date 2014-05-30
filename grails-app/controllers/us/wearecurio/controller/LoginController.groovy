@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import grails.converters.JSON
 import grails.util.Environment
 import us.wearecurio.model.PasswordRecovery
+import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
@@ -16,20 +17,6 @@ class LoginController extends SessionController {
 
 	def HTTPBuilderService
 
-	def beforeInterceptor = [action: this.&validateToken, only: [/*"getPeopleData", */"addEntrySData", "listTagsAndTagGroups",
-		"autocompleteData", "getListData", "getEntriesData", "getTagProperties", "getPlotData", "getSumPlotData", "createTagGroup", "addTagGroupToTagGroup",
-		"addTagToTagGroup", "removeTagGroupFromTagGroup", "removeTagFromTagGroup", "showTagGroup", "deleteTagGroup",
-		"setTagPropertiesData", "updateEntrySData", "deleteEntrySData", "activateGhostEntry", "deleteGhostEntry",
-		"registerForPushNotification"]]
-
-	private boolean validateToken() {
-		if (!securityService.isTokenValid(request, params, session, sessionUser())) {
-			response.sendError 401
-			return false
-		}
-		return true
-	}
-
 	static debug(str) {
 		log.debug(str)
 	}
@@ -40,15 +27,19 @@ class LoginController extends SessionController {
 	protected def forgotView() {
 		return "/" + name() + "/forgot"
 	}
+	
 	protected def registerView() {
 		return "/" + name() + "/register"
 	}
+	
 	protected def loginView() {
 		return "/" + name() + "/login"
 	}
+	
 	protected def name() {
 		return name;
 	}
+	
 	protected User execLogin() {
 		debug "LoginController.execLogin()"
 		
@@ -77,24 +68,30 @@ class LoginController extends SessionController {
 			return null
 		}
 	}
+	
 	protected def renderJSONPost(data) {
 		render "${new JSON(data)}"
 	}
+	
 	protected def renderJSONGet(data) {
 		//debug "${params.callback}(${new JSON(data)})"
 		render "${params.callback}(${new JSON(data)})"
 	}
+	
 	protected def renderDataGet(data) {
 		render "${params.callback}(${data})"
 	}
+	
 	protected def renderStringGet(str) {
 		def repl = str.replaceAll("'", "\\\\'")
 		render "${params.callback}('${repl}')"
 	}
+	
 	protected def renderStringPost(str) {
 		def repl = str.replaceAll("'", "\\\\'")
 		render "'${repl}'"
 	}
+	
 	def login() {
 		debug "LoginController.login()"
 		
@@ -114,6 +111,7 @@ class LoginController extends SessionController {
 		render(view:loginView(),
 				model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
 	}
+	
 	def dologin() {
 		debug "LoginController.dologin()"
 		
@@ -132,26 +130,29 @@ class LoginController extends SessionController {
 			return
 		}
 	}
+	
 	def dologinData() {
 		debug "LoginController.dologinData()"
 		
 		def user = execLogin()
 		if (user) {
-			debug "auth success user:" + user
-			renderJSONGet([user:user,success:true])
-			return
+			def uuid = session.persistentSession.fetchUuid()
+			debug "Logged in, persistent session ID " + uuid
+			// TODO: mobileSessionId is deprecated, will be removed eventually
+			renderJSONGet([user:user, success:true, persistentSessionId:uuid, mobileSessionId:uuid])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
-			return
 		}
 	}
+	
 	def forgot() {
 		debug "LoginController.forgot()"
 
 		render(view:forgotView(),
 				model:[precontroller:params.precontroller, preaction:params.preaction])
 	}
+	
 	protected static final int FORGOT_SUCCESS = 0
 	protected static final int FORGOT_ERROR_EMAIL_NOT_RECOGNIZED = 1
 
@@ -183,6 +184,7 @@ class LoginController extends SessionController {
 		}
 		return execForgot(user)
 	}
+	
 	protected def execForgotUsername(String username) {
 		username = username?.toLowerCase()
 		def user = User.findByUsername(username)
@@ -192,6 +194,7 @@ class LoginController extends SessionController {
 		}
 		return execForgot(user)
 	}
+	
 	def doforgot() {
 		debug "LoginController.doforgot()"
 		
@@ -214,6 +217,7 @@ class LoginController extends SessionController {
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		}
 	}
+	
 	def doforgotData() {
 		debug "LoginController.doForgotData()"
 		
@@ -225,6 +229,7 @@ class LoginController extends SessionController {
 			renderJSONGet([message:"We don't recognize that user.",success:false])
 		}
 	}
+	
 	def recover() {
 		debug "LoginController.recover()"
 		
@@ -243,6 +248,7 @@ class LoginController extends SessionController {
 		render(view:"/" + name() + "/recover",
 				model:[precontroller:params.precontroller, preaction:params.preaction, code:params.code, templateVer:urlService.template(request)])
 	}
+	
 	def dorecover() {
 		debug "LoginController.dorecover()"
 		
@@ -285,12 +291,14 @@ class LoginController extends SessionController {
 		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
+	
 	def register() {
 		debug "LoginController.register()"
 
 		render(view:registerView(),
 				model:[precontroller:params.precontroller, preaction:params.preaction, templateVer:urlService.template(request)])
 	}
+	
 	protected static final int REGISTER_ERROR_USER_ALREADY_EXISTS = 1
 	protected static final int REGISTER_MISSING_FIELDS = 2
 	protected static final int REGISTER_DUPLICATE_EMAIL = 3
@@ -375,6 +383,7 @@ class LoginController extends SessionController {
 			return retVal
 		}
 	}
+	
 	def doregister() {
 		debug "LoginController.doregister()"
 		
@@ -405,13 +414,22 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(action:"register"))
 		}
 	}
+	
 	def doregisterData() {
 		debug "LoginController.doregisterData()"
+		
+		def p = params
+		
+		p.first = p.first ?: ''
+		p.last = p.last ?: ''
+		p.sex = p.sex ?: 'N'
+		p.birthdate = p.birthdate ?: '1/1/1901'
 		
 		def retVal = execRegister(params)
 		
 		if (retVal['success']) {
-			renderJSONPost([success:true])
+			def uuid = session.persistentSession.fetchUuid()
+			renderJSONPost([success:true, persistentSessionId:uuid, mobileSessionId:uuid])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			renderJSONPost([success:false, message:"User " + params.username + " already exists"])
 		} else if (retVal['errorCode'] == REGISTER_MISSING_FIELDS) {
@@ -422,6 +440,62 @@ class LoginController extends SessionController {
 			renderJSONPost([success:false, message:"Error registering user. Try different values."])
 		}
 	}
+	
+	// TODO: registerForPushNotfication is deprecated
+	def registerForPushNotification() {
+		registerForPushNotificationData()
+	}
+	
+	def registerForPushNotificationData() {
+		def user = sessionUser()
+		debug "LoginController.registerForPushNotificationData()"
+		PushNotificationDevice pushNotificationDeviceInstance = 
+			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
+		if (!pushNotificationDeviceInstance) {
+			pushNotificationDeviceInstance = new PushNotificationDevice()
+			pushNotificationDeviceInstance.token = params.token
+			pushNotificationDeviceInstance.deviceType = params.int('deviceType')
+			pushNotificationDeviceInstance.userId = user.id
+			if (pushNotificationDeviceInstance.validate()) {
+				pushNotificationDeviceInstance.save()
+				debug "Registering device for push notification"
+			}
+			else {
+				pushNotificationDeviceInstance.errors.allErrors.each {
+					println it
+				}
+			}
+		} else {
+			debug "Device already registered to be notified."
+		}
+			
+		debug params.dump()
+		
+		renderJSONGet([success:true])
+	}
+	
+	// TODO: unregisterPushNotification is deprecated
+	def unregisterPushNotification() {
+		unregisterPushNotificationData()
+	}
+	
+	def unregisterPushNotificationData() {
+		def user = sessionUser()
+		debug "LoginController.unregisterPushNotificationData"
+		PushNotificationDevice pushNotificationDeviceInstance =
+			PushNotificationDevice.findByUserIdAndToken(user.id,params.token)
+		if (!pushNotificationDeviceInstance) {
+			debug "Unable to unregister no push notification found."
+		} else {
+			debug "Unregistering the current device push notification"
+			pushNotificationDeviceInstance.delete()
+		}
+			
+		debug params.dump()
+		
+		renderJSONGet([success:true])
+	}
+	
 	def logout() {
 		debug "LoginController.logout()"
 		

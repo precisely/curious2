@@ -34,17 +34,22 @@ class SessionController {
 		debug "SessionController.execLogout()"
 		
 		setLoginUser(null)
-		if (session.mobileSession != null && !session.mobileSession.isDisabled()) {
-			session.mobileSession.setDisabled(true)
-			Session.delete(session.mobileSession)
+		if (session.persistentSession != null && !session.persistentSession.isDisabled()) {
+			session.persistentSession.setDisabled(true)
+			Session.delete(session.persistentSession)
 		}
-		session.mobileSession = null
+		session.persistentSession = null
 		session.sessionCache = null
 	}
 
 	protected def setLoginUser(user) {
 		debug "SessionController.setLoginUser()"
 
+		if (user != null) {
+			Session persistentSession = Session.createOrGetSession(user)
+			debug "Login: persistent session " + persistentSession.fetchUuid()
+			session.persistentSession = persistentSession
+		}
 		session.tags = null
 		if (user == null) {
 			debug "Logoff: login user cleared"

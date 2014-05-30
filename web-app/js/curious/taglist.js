@@ -33,7 +33,7 @@ function Tag(args) {
 	//Wrapping all init statements that we want to override in a method
 	this.init = function() {
 		$(this).on("updateEvent",function(){
-			backgroundJSON("saving tag information", "/tag/update?callback=?", {id:this.id, description:this.description, type:this.type} , function(data) {
+			backgroundJSON("saving tag information", "/tag/updateData?callback=?", {id:this.id, description:this.description, type:this.type} , function(data) {
 				console.log(data);
 			});
 		});
@@ -50,7 +50,7 @@ function Tag(args) {
 	}
 	
 	this.getTagProperties = function(callback) {
-		backgroundJSON("loading tag information", "/tag/getTagProperties?callback=?",
+		backgroundJSON("loading tag information", "/tag/getTagPropertiesData?callback=?",
 		getCSRFPreventionObject("getTagPropertiesCSRF", {id : this.id}),
 		function(data) {
 			this.isContinuous = data.isContinuous;
@@ -118,7 +118,7 @@ function TagGroup(args) {
 			}.bind(this));
 			callback(this);
 		} else {
-			backgroundJSON("loading tag group", "/tag/showTagGroup?callback=?", getCSRFPreventionObject("showTagGroupCSRF", {
+			backgroundJSON("loading tag group", "/tag/showTagGroupData?callback=?", getCSRFPreventionObject("showTagGroupDataCSRF", {
 				id : this.id,
 				description: this.getDescription()
 			}), function(data) {
@@ -217,11 +217,11 @@ function TagGroup(args) {
 	}
 	
 	this.removeChildAtBackend = function(childItem, callback) {
-		var csrfKey = "removeTagFromTagGroupCSRF"
-		var url = "/tag/removeTagFromTagGroup?callback=?";
+		var csrfKey = "removeTagFromTagGroupDataCSRF"
+		var url = "/tag/removeTagFromTagGroupData?callback=?";
 		if(childItem.type.indexOf("Group")!==-1) {
-			csrfKey = "removeTagGroupFromTagGroupCSRF"
-			url = "/tag/removeTagGroupFromTagGroup?callback=?";
+			csrfKey = "removeTagGroupFromTagGroupDataCSRF"
+			url = "/tag/removeTagGroupFromTagGroupData?callback=?";
 		}
 		backgroundJSON("deleting tag from group", url, getCSRFPreventionObject(csrfKey, {
 			tagGroupId : this.id,
@@ -233,7 +233,7 @@ function TagGroup(args) {
 	}
 
 	this.remove = function() {
-		backgroundJSON("deleting tag group", "/tag/deleteTagGroup?callback=?", getCSRFPreventionObject("deleteTagGroupCSRF", {
+		backgroundJSON("deleting tag group", "/tag/deleteTagGroupData?callback=?", getCSRFPreventionObject("deleteTagGroupDataCSRF", {
 			id : this.id
 		}), function(data) {
 			this.removed();
@@ -436,7 +436,7 @@ function TagList(args) {
 	}
 	
 	this.createTagGroupFromTags = function(targetTag, sourceTag, callback) {
-		backgroundJSON("creating tag group", "/tag/createTagGroup?callback=?", getCSRFPreventionObject("createTagGroupCSRF", {
+		backgroundJSON("creating tag group", "/tag/createTagGroupData?callback=?", getCSRFPreventionObject("createTagGroupDataCSRF", {
 			tagGroupName : this.generateUniqueTagName(targetTag.description
 					+ " group"),
 			tagIds : [ sourceTag.id, targetTag.id ].toString()
@@ -451,7 +451,7 @@ function TagList(args) {
 	
 	this.addTagGroupToTagGroup = function(targetTagGroup, sourceTagGroup) {
 		console.log("addTagGroupToTagGroup");
-		backgroundJSON("adding tag group", "/tag/addTagGroupToTagGroup?callback=?", getCSRFPreventionObject("addTagGroupToTagGroupCSRF", {
+		backgroundJSON("adding tag group", "/tag/addTagGroupToTagGroupData?callback=?", getCSRFPreventionObject("addTagGroupToTagGroupDataCSRF", {
 			parentTagGroupId : targetTagGroup.id,
 			childTagGroupId : sourceTagGroup.id
 		}), function(data) {
@@ -462,7 +462,7 @@ function TagList(args) {
 	
 	this.addTagToTagGroup = function(tagGroup, tag) {
 		console.log("addTagToTagGroup");
-		backgroundJSON("adding tag to group", "/tag/addTagToTagGroup?callback=?", getCSRFPreventionObject("addTagToTagGroupCSRF", {
+		backgroundJSON("adding tag to group", "/tag/addTagToTagGroupData?callback=?", getCSRFPreventionObject("addTagToTagGroupDataCSRF", {
 			tagGroupId : tagGroup.id,
 			id : tag.id
 		}), function(data) {
@@ -676,7 +676,7 @@ function TagListWidget(args) {
 		var sourceItem = $source.data(DATA_KEY_FOR_ITEM_VIEW).getData();
 		if ((sourceItem instanceof TagGroup)
 				&& sourceItem.isWildcard) {
-			backgroundJSON("adding wildcard group", "/tag/addWildcardTagGroup?callback=?", {
+			backgroundJSON("adding wildcard group", "/tag/addWildcardTagGroupData?callback=?", {
 				description : sourceItem.description,
 			}, function(data) {
 				data.type = "wildcardTagGroup";

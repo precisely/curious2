@@ -124,7 +124,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		assert !announce.hasWriter(q)
 		assert announce.hasReader(q)
 		
-		assert controller.response.contentAsString.startsWith('{"success":true,"mobileSessionId":')
+		assert controller.response.contentAsString.startsWith('{"success":true,"persistentSessionId":')
 	}
 
 	@Test
@@ -172,7 +172,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 			deviceType:'1',
 		])
 		
-		controller.registerForPushNotification()
+		controller.registerForPushNotificationData()
 		
 		assert controller.response.contentAsString.startsWith('null({"success":true')
 	}

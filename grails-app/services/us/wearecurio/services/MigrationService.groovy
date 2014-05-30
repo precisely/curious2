@@ -46,7 +46,8 @@ class MigrationService {
 	public static final long FIX_REPEAT_END = 77L
 	public static final long ELIMINATE_AT_UNITS_AND_REPEAT_UNITS = 78L
 	public static final long REMOVE_VERSION = 80L
-	public static final long FIX_TAG_PROPERTIES = 82L
+	public static final long ADD_TAG_UNIT_STATS = 81L
+	public static final long FIX_TAG_PROPERTIES = 84L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -306,6 +307,14 @@ class MigrationService {
 			sql ("alter table twitter_data drop column version")
 			sql ("alter table user_group drop column version")
 			sql ("alter table user_time_zone drop column version")
+		}
+		tryMigration(ADD_TAG_UNIT_STATS) {
+			def entries = Entry.list()
+			for (e in entries) {
+				log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
+				def tagUnitStats = 
+					TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units) 
+			}
 		}
 		tryMigration(FIX_TAG_PROPERTIES) {
 			sql ("ALTER TABLE `tag_properties` CHANGE COLUMN `data_type_computed` `data_type_computed` INT NULL DEFAULT NULL  , CHANGE COLUMN `data_type_manual` `data_type_manual` INT NULL DEFAULT NULL")

@@ -307,9 +307,14 @@ class DataController extends LoginController {
 
 		renderJSONGet(entries)
 	}
-
+	
+	// legacy support for obsolete call
 	def activateGhostEntry() {
-		debug "DataController.activateGhostEntry()"
+		activateGhostEntryData()
+	}
+
+	def activateGhostEntryData() {
+		debug "DataController.activateGhostEntryData()"
 
 		def user = sessionUser()
 
@@ -340,6 +345,11 @@ class DataController extends LoginController {
 		}
 	}
 
+	// legacy support for obsolete call
+	def deleteGhostEntry() {
+		deleteGhostEntryData()
+	}
+	
 	def deleteGhostEntryData() {
 		debug "DataController.deleteGhostEntryData() params:" + params
 

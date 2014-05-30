@@ -25,14 +25,14 @@ class TagController extends LoginController {
 		log.debug(str)
 	}
 	
-	def wildcard() {
+	def wildcardData() {
 		log.debug("Fetching tags for a WildCardTagGroup for graph: ${params.description}")
 		def tagList = tagService.getTagsByDescription(session.userId, params.description)
 		println(tagList.dump())
 		renderJSONGet(tagList)
 	}
 
-	def listTagsAndTagGroups() {
+	def listTagsAndTagGroupsData() {
 		log.debug("Fetching tags and tag groups: " + params)
 		def tagAndTagGroupList = tagService.getTagsByUser(session.userId);
 		tagAndTagGroupList.addAll(tagService.getTagGroupsByUser(session.userId))
@@ -43,7 +43,7 @@ class TagController extends LoginController {
 		renderJSONGet(tagAndTagGroupList)
 	}
 	
-	def createTagGroup() {
+	def createTagGroupData() {
 		log.debug("Creating tag group: " + params)
 		def tagGroupInstance = tagGroupService.createTagGroup(params.tagGroupName, session.userId)
 		if(params.tagIds) {
@@ -52,19 +52,19 @@ class TagController extends LoginController {
 		renderJSONGet(tagGroupInstance)
 	}
 	
-	def addWildcardTagGroup() {
+	def addWildcardTagGroupData() {
 		log.debug("Adding wildcard tag group: " + params)
 		def wildcardTagGroupInstance = tagGroupService.createOrLookupTagGroup(params.description, session.userId, WildcardTagGroup.class)
 		renderJSONGet(wildcardTagGroupInstance)
 	}
 
-	def addTagToTagGroup() {
+	def addTagToTagGroupData() {
 		log.debug("Adding tag to tag group: " + params)
 		tagGroupService.addTags(params.tagGroupId.toLong(), Long.parseLong(params.id))
 		renderStringGet("success")
 	}
 	
-	def addTagGroupToTagGroup() {
+	def addTagGroupToTagGroupData() {
 		log.debug("Adding tag group to tag group: " + params)
 		def parentTagGroupInstance = TagGroup.get(params.parentTagGroupId)
 		def childTagGroupInstance = GenericTagGroup.get(params.childTagGroupId)
@@ -73,7 +73,7 @@ class TagController extends LoginController {
 		renderJSONGet(["dummy"])
 	}
 	
-	def showTagGroup() {
+	def showTagGroupData() {
 		log.debug("Showing tag group: " + params)
 		def tagGroupInstance = TagGroup.get(params.id.toLong())
 		def tagAndTagGroupList = []
@@ -85,7 +85,7 @@ class TagController extends LoginController {
 		renderJSONGet(tagAndTagGroupList)
 	}
 	
-	def deleteTagGroup() {
+	def deleteTagGroupData() {
 		log.debug("Deleting tag group: " + params)
 		def tagGroupInstance = GenericTagGroup.get(params.id)
 		if(tagGroupInstance instanceof TagGroup && tagGroupInstance.tags) {
@@ -96,7 +96,7 @@ class TagController extends LoginController {
 		renderJSONGet([success: true])
 	}
 	
-	def removeTagGroupFromTagGroup() {
+	def removeTagGroupFromTagGroupData() {
 		log.debug("Removing tag group from tag group: " + params)
 		GenericTagGroup tagGroupInstance = GenericTagGroup.get(params.id)
 		tagGroupInstance.parentTagGroup = null;
@@ -104,7 +104,7 @@ class TagController extends LoginController {
 		renderJSONGet([success: true])
 	}
 
-	def removeTagFromTagGroup() {
+	def removeTagFromTagGroupData() {
 		log.debug("Removing tag from tag group: " + params)
 		def tagGroupInstance = TagGroup.get(params.tagGroupId)
 		def tagInstance = Tag.get(params.id)
@@ -113,7 +113,7 @@ class TagController extends LoginController {
 		renderJSONGet([success: true])
 	}
 	
-	def update() {
+	def updateData() {
 		log.debug("Updating tag group: " + params)
 		if(params.type.equals("tagGroup")) {
 			println params.dump()
@@ -124,7 +124,7 @@ class TagController extends LoginController {
 		renderJSONGet([success: true])
 	}
     
-    def getTagProperties() {
+    def getTagPropertiesData() {
 		log.debug("Getting tag properties: " + params)
 		User user = sessionUser()
 		

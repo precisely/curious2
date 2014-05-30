@@ -18,28 +18,10 @@ import us.wearecurio.controller.HomeController
 class SecurityFilters {
 	UrlService urlService
 	def tokenService
+	def securityService
 	
-	static List noauthActions = [
-		'login',
-		'authenticateProvider',
-		'dologin',
-		'register',
-		'doregister',
-		'forgot',
-		'doforgot',
-		'doforgotData',
-		'dologinData',
-		'doregisterData',
-		'discuss',
-		'loadSnapshotDataId',
-		'recover',
-		'dorecover',
-		'notifywithings',
-		'termsofservice',
-		'notifyfitbit'
-	]
 	// list of actions that do not need to be duplicate checked
-	static List idempotentActions = [
+	static def idempotentActions = [
 		'getPeopleData',
 		'getEntriesData',
 		'getListData',
@@ -54,11 +36,11 @@ class SecurityFilters {
 		'listDiscussionData',
 		'loadSnapshotDataId',
 		'getTagProperties'
-	]
+	] as Set
+
 	def filters = {
-		loginCheck(controller:'home', action:'*') {
+		preCheck(controller:'(home|tag|discussion|mobiledata|data)', action:'*') {
 			before = {
-				println "login security filter: " + actionName
 				def a = actionName
 				if (params.controller == null) {
 					flash.precontroller = 'home'
@@ -67,21 +49,9 @@ class SecurityFilters {
 					redirect(url:urlService.base(request) + 'home/login')
 					return true
 				}
-				if(!session.userId && !noauthActions.contains(actionName)) {
-					if (params.mobileSessionId != null) {
-						User user = Session.lookupSessionUser(params.mobileSessionId)
-						if (user != null) {
-							println "Opening mobile session with user " + user
-							session.userId = user.getId()
-							return true
-						} else {
-							println "Failed to find mobile session with id " + params.mobileSessionId
-						}
-					} else {
-						println "No mobile session id"
-					}
+				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
-						println "No session for data action " + actionName
+						println "Unauthorized data action " + actionName
 						render "${params.callback}('login')"
 					} else {
 						def parm = params.clone()
@@ -94,6 +64,7 @@ class SecurityFilters {
 					}
 					return false
 				}
+				return true
 			}
 		}
 		duplicateCheck(controller:'*', action:'*') {
@@ -119,7 +90,6 @@ class SecurityFilters {
 				} else
 					return true
 			}
-
 		}
 		mobileCheck(controller:'mobile', action:'*') {
 			before = {
@@ -134,37 +104,7 @@ class SecurityFilters {
 				}
 			}
 		}
-		mobiledataCheck(controller:'mobiledata', action:'*') {
-			before = {
-				println "mobiledata security filter: " + actionName
-				if(!session.userId && !noauthActions.contains(actionName)) {
-					if (params.mobileSessionId != null) {
-						User user = Session.lookupSessionUser(params.mobileSessionId)
-						if (user != null) {
-							println "Opening mobile session with user " + user
-							session.userId = user.getId()
-							return true
-						} else {
-							println "Failed to find mobile session with id " + params.mobileSessionId
-						}
-					} else {
-						println "No mobile session id"
-					}
-					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
-						println "Attempting to call " + actionName + " from mobile controller, fail"
-						render "${params.callback}('login')"
-					} else {
-						flash.precontroller = params.controller
-						flash.preaction = actionName
-						flash.parm = new JSON(params).toString()
-						println "Attempting to redirect to login page"
-						redirect(url:urlService.base(request) + params.controller + '/login')
-					}
-					return false
-				}
-			}
-		}
-		trialCheck(controller:'trial', action:'*') {
+		/* trialCheck(controller:'trial', action:'*') {
 			before = {
 				if (params.controller == null) {
 					flash.precontroller = UrlService.template(request).equals("lhp") ? 'home' : 'trial'
@@ -188,6 +128,6 @@ class SecurityFilters {
 					return false
 				}
 			}
-		}
+		} */
 	}
 }

@@ -96,6 +96,12 @@ class EntryTests extends GroovyTestCase {
 		
 		userId = user.getId()
 	}
+	
+	static within(long a, long b, long d) {
+		long diff = a - b
+		diff = diff < 0 ? -diff : diff
+		return diff <= d
+	}
 
 	@After
 	void tearDown() {
@@ -388,7 +394,21 @@ class EntryTests extends GroovyTestCase {
 			assert it[2] == "bread"
 		} == expected.size()
 	}
+
+	@Test
+	void testMostUsedUnitNormalization() {
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 2000 meter 1pm", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
+		
+		int c = 0
+		
+		testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+			assert it[0][1] == 2
+		}
+	}
 	
+
 	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Closure test) {
 		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
 		
@@ -2100,51 +2120,51 @@ class EntryTests extends GroovyTestCase {
 		def nineMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 9 * 30)
 		def twoYearsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 24 * 30)
 		
-		def entry = Entry.create(userId, Entry.parse(now, timeZone, "fooxyz 3 tablet", now, true), null)
+		def entry = Entry.create(userId, Entry.parse(now, timeZone, "abcdef 3 tablet", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "fooxyz 1 toblet", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "abcdef 1 toblet", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "fooxyz 1 tablet", twoMonthsAgo, true), null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "abcdef 1 tablet", twoMonthsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(nineMonthsAgo, timeZone, "fooxyz 1 tablet", nineMonthsAgo, true), null)
+		entry = Entry.create(userId, Entry.parse(nineMonthsAgo, timeZone, "abcdef 1 tablet", nineMonthsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoYearsAgo, timeZone, "fooxyz 1 tablet", twoYearsAgo, true), null)
+		entry = Entry.create(userId, Entry.parse(twoYearsAgo, timeZone, "abcdef 1 tablet", twoYearsAgo, true), null)
 
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "foamfoam 1 mg", now, true), null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "qwerty 1 mg", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "foamfoam 1.5 mg", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "qwerty 1.5 mg", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "foamfoam 1 mg", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "qwerty 1 mg", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "blee 1 mg", now, true), null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "sando 1 mg", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "blee 1.5 mg", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "sando 1.5 mg", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "blee 3 mg", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "sando 3 mg", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(now, timeZone, "whaa 24", now, true), null)
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "whaat 24", now, true), null)
 
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whaa 14", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whaat 14", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "whaa 11", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "whaat 11", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gorby", yesterday, true), null)
 
-		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "gor", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "gorby", yesterday, true), null)
 		
-		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gor 12", yesterday, true), null)
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "gorby 12", yesterday, true), null)
 
 		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "whoa 1 gee repeat daily", yesterday, true), null)
 
-		def tag = Tag.look("fooxyz")
+		def tag = Tag.look("abcdef")
 		
 		TagStats result = TagStats.createOrUpdate(userId, tag.getId())
 		
-		println "Usage of fooxyz: " + result.getMostRecentUsage()
+		println "Usage of abcdef: " + result.getMostRecentUsage()
 
-		assert (result.getMostRecentUsage().getTime() / 1000L).longValue() == (now.getTime() / 1000L).longValue()
+		assert within((result.getMostRecentUsage().getTime() / 1000L).longValue(), (now.getTime() / 1000L).longValue(), 2)
 		
-		assert (result.getThirdMostRecentUsage().getTime() / 1000L).longValue() == (twoMonthsAgo.getTime() / 1000L).longValue()
+		assert within((result.getThirdMostRecentUsage().getTime() / 1000L).longValue(), (twoMonthsAgo.getTime() / 1000L).longValue(), 2)
 		
 		assert result.getCountLastThreeMonths() == 3
 		
@@ -2158,11 +2178,11 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result.getLastUnits().equals("tablet")
 		
-		def tag2 = Tag.look("foamfoam")
+		def tag2 = Tag.look("qwerty")
 		
 		TagStats result2 = TagStats.createOrUpdate(userId, tag2.getId())
 		
-		println "Usage of foamfoam: " + result2.getMostRecentUsage()
+		println "Usage of qwerty: " + result2.getMostRecentUsage()
 
 		assert result2.getLastAmount().intValue() == 1
 		
@@ -2170,11 +2190,11 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result2.getLastUnits().equals("mg")
 		
-		def tag3 = Tag.look("blee")
+		def tag3 = Tag.look("sando")
 		
 		TagStats result3 = TagStats.createOrUpdate(userId, tag3.getId())
 		
-		println "Usage of blee: " + result2.getMostRecentUsage()
+		println "Usage of sando: " + result2.getMostRecentUsage()
 
 		assert result3.getLastAmount() == null
 		
@@ -2182,11 +2202,11 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result3.getLastUnits().equals("mg")
 		
-		def tag4 = Tag.look("whaa")
+		def tag4 = Tag.look("whaat")
 		
 		TagStats result4 = TagStats.createOrUpdate(userId, tag4.getId())
 		
-		println "Usage of whaa: " + result2.getMostRecentUsage()
+		println "Usage of whaat: " + result2.getMostRecentUsage()
 
 		assert result4.getLastAmount() == null
 		
@@ -2194,11 +2214,11 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result4.getLastUnits().equals("")
 		
-		tag4 = Tag.look("gor")
+		tag4 = Tag.look("gorby")
 		
 		result4 = TagStats.createOrUpdate(userId, tag4.getId())
 		
-		println "Usage of gor: " + result2.getMostRecentUsage()
+		println "Usage of gorby: " + result2.getMostRecentUsage()
 
 		assert result4.getLastAmount().intValue() == 1
 		
@@ -2228,5 +2248,21 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result.getLastUnits().equals("")
 		
+	}
+
+	@Test
+	void testEntryUnits() {
+		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
+		//No units used when no usage history present
+		assert entry.units == ''
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
+		//Using the most used unit when no unit is present
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), null)
+		assert entry.units == 'km'	
+		//Using the most used unit incase of spelling mistake
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kkk 4pm", baseDate, true), null)
+		assert entry.units == 'km'	
 	}
 }
