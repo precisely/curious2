@@ -307,6 +307,8 @@ class WithingsDataService extends DataService {
 						minutesAdded++
 					}
 
+					log.debug("WithingsDataService.getDataIntraDayActivity: minutesAdded: ${minutesAdded}")
+					log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
 					if (data['duration'] > 60 || minutesAdded >= minutesToAdd) {
 						log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
 						mapToEntries(aggregatedData)
@@ -326,6 +328,7 @@ class WithingsDataService extends DataService {
 	
 	def mapToEntries(def data) {
 		data.each { metric, amount ->
+			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
 			if (metric.equals("steps")) {
 				tagUnitMap.buildEntry("activitySteps", aggregatedData[metric], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName)
