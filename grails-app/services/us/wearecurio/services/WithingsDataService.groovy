@@ -11,16 +11,13 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
-import us.wearecurio.model.Entry
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.ThirdPartyNotification
-import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.*
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TooManyRequestsException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.utility.Utils
+import java.util.concurrent.PriorityBlockingQueue
 
 class WithingsDataService extends DataService {
 
@@ -28,7 +25,7 @@ class WithingsDataService extends DataService {
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "withings import"
 	static Date intraDayOverQueryRateTimestamp = null
-
+	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
 	static transactional = false
 
 	WithingsDataService() {
@@ -253,8 +250,19 @@ class WithingsDataService extends DataService {
 		}
 		
 		if (datesWithSummaryData.size() > 0) {
-			log.debug "getIntraDayData event triggered"
-			event('getIntraDayData', [account: account, dates: datesWithSummaryData])
+			log.debug "WithingsDataService: Adding items to the intra day queue"
+			datesWithSummaryData.each { summaryDate ->
+				def intraDayQueueItem = new IntraDayQueueItem(oauthAccountId: account.id, queryDate: date)
+				Utils.save(intraDayQueueItem, true)
+				try {
+					intraDayQueue.add(intraDayQueueItem)
+				} catch (IllegalStateException queueFullException) {
+					log.debug "WithingsDataService: intraDayQueue is full" 
+				}
+			}
+			synchronized(intraDayQueue) {
+				intraDayQueue.notify()
+			}
 		}
 		[success: true]
 	}
@@ -282,6 +290,10 @@ class WithingsDataService extends DataService {
 				setName = SET_NAME + " intra " + timestamp
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName , userId: userId]) 
+				if (data.size() == 1 || data['duration'] == 60) {
+					return
+				}
+					
 				data.each { metric, amount ->
 					if (metric.equals("steps")) {
 						tagUnitMap.buildEntry("activitySteps", amount, userId, 
@@ -310,25 +322,17 @@ class WithingsDataService extends DataService {
 			[success: true]
 	}
 
-	@grails.events.Listener(topic = 'getIntraDayData')
-	def intraDayEventHandler(org.grails.plugin.platform.events.EventMessage eventMessage) {
-		log.debug "getIntraDayDataForListedDates executing event"
-		def data = eventMessage.data
-		def account = data.account
-		def dates = data.dates
-		getIntraDayDataForListedDates(account, dates)
-	}
+	def populateIntraDayQueue() {
+		def intraDayQueueItems = IntraDayQueueItem.withCriteria([max: 300]) {
+			order("oauthAccountId", "asc")
+		}
 
-	def getIntraDayDataForListedDates(OAuthAccount account, def dates) {
-		def index = 0
-		dates.each { summaryDate -> 
-			try {
-				getDataIntraDayActivity(account, summaryDate, summaryDate + 1)
-				index++
-			} catch (TooManyRequestsException te) {
-				Thread.sleep(61000)
-				getIntraDayDataForListedDates(account, dates[index..dates.size() - 1])
+		try {
+			if (intraDayQueueItems.size() > 0) {
+				intraDayQueue.addAll(intraDayQueueItems as List)
 			}
+		} catch (IllegalStateException queueFullException) {
+			log.debug "WithingsDataService: intraDayQueue is full" 
 		}
 	}
 
