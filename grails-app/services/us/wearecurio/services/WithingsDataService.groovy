@@ -307,7 +307,7 @@ class WithingsDataService extends DataService {
 						minutesAdded++
 					}
 
-					if (data['duration'] > 60 || minutesAdded > = minutesToAdd) {
+					if (data['duration'] > 60 || minutesAdded >= minutesToAdd) {
 						log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
 						mapToEntries(aggregatedData)
 						minutesAdded = 0
