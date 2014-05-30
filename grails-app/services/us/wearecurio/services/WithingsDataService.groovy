@@ -290,20 +290,25 @@ class WithingsDataService extends DataService {
 				setName = SET_NAME + " intra " + timestamp
 				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 						[setName: setName , userId: userId]) 
-				if (data.size() == 1) {
+				log.debug("WithingsDataService.getDataIntraDayActivity: Number of metrics returned for ${timestamp} ${data.size()}")
+				if (data.size() < 2) {
 					return
 				}
 
+				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
 				def minutesToAdd = 10
 				def minutesAdded = 0
 				def aggregatedData = resetAggregatedData()
 				data.each { metric, amount ->
+					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} for ${timestamp}")
 					if (minutesAdded < minutesToAdd) {
+						log.debug("WithingsDataService.getDataIntraDayActivity: Not done aggregating")
 						aggregatedData[metric] += amount
 						minutesAdded++
 					}
 
 					if (data['duration'] > 60) {
+						log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
 						mapToEntries(aggregatedData)
 						minutesAdded = 0
 						aggregatedData = resetAggregatedData()
