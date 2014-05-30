@@ -28,9 +28,9 @@ class IntraDayDataThread extends Thread {
 					lastRequestFailed = false
 				}
 				if (account?.id != queueItem.id) {
-					log.debug "IntraDayDataThread: Getting OAuthAccount with id ${queueItem.id}"
-					account = OAuthAccount.get(queueItem.id)
-					log.debug "IntraDayDataThread: OAuthAccount retrieved ${account.dump()}"
+					log.debug "IntraDayDataThread: Getting OAuthAccount with id ${queueItem.oauthAccountId}"
+					account = OAuthAccount.get(queueItem.oauthAccountId)
+					log.debug "IntraDayDataThread: OAuthAccount retrieved ${account?.dump()}"
 				}
 				log.debug "IntraDayDataThread: Querying intra day data for ${account?.id} and date ${queueItem?.queryDate}"
 				withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1)
