@@ -284,6 +284,10 @@ class WithingsDataService extends DataService {
 			
 			log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
 				+ intraDayResponse.body.series?.size())
+			def minutesToAdd = 10
+			def minutesAdded = 0
+			def aggregatedData = resetAggregatedData()
+			def index = 1
 			intraDayResponse.body?.series.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				entryDate = new Date(Long.parseLong(timestamp) * 1000L)
@@ -296,27 +300,23 @@ class WithingsDataService extends DataService {
 				}
 
 				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
-				def minutesToAdd = 10
-				def minutesAdded = 0
-				def aggregatedData = resetAggregatedData()
 				data.each { metric, amount ->
 					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} for ${timestamp}")
-					if (minutesAdded < minutesToAdd) {
-						log.debug("WithingsDataService.getDataIntraDayActivity: Not done aggregating")
-						aggregatedData[metric] += amount
-						minutesAdded++
-					}
-
-					log.debug("WithingsDataService.getDataIntraDayActivity: minutesAdded: ${minutesAdded}")
-					log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
-					if (data['duration'] > 60 || minutesAdded >= minutesToAdd) {
-						log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-						mapToEntries(aggregatedData)
-						minutesAdded = 0
-						aggregatedData = resetAggregatedData()
-					}
+					aggregatedData[metric] += amount
 				}
-			
+				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
+				if (minutesAdded < minutesToAdd) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Not done aggregating")
+					log.debug("WithingsDataService.getDataIntraDayActivity: minutesAdded: ${minutesAdded}")
+					minutesAdded++
+				}
+				if ( minutesAdded >= minutesToAdd || index == data.size()) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+					mapToEntries(aggregatedData)
+					minutesAdded = 0
+					aggregatedData = resetAggregatedData()
+				}
+				index++
 			}
 
 			[success: true]
