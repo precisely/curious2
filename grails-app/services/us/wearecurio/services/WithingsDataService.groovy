@@ -287,13 +287,20 @@ class WithingsDataService extends DataService {
 			def minutesToAdd = 10
 			def minutesAdded = 0
 			def aggregatedData = resetAggregatedData()
-			def index = 1
 			intraDayResponse.body?.series.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				entryDate = new Date(Long.parseLong(timestamp) * 1000L)
 				setName = SET_NAME + "i" + timestamp
-				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-						[setName: setName , userId: userId]) 
+				try {
+					Entry.withNewSession {
+						Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+							[setName: setName, userId: userId]) 
+					}
+				
+				} catch (org.springframework.dao.CannotAcquireLockException le) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
+					le.printStackTrace()
+				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: Number of metrics returned for ${timestamp} ${data.size()}")
 				if (data.size() < 2) {
 					return
@@ -306,17 +313,15 @@ class WithingsDataService extends DataService {
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
 				if (minutesAdded < minutesToAdd) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Not done aggregating")
+					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 					log.debug("WithingsDataService.getDataIntraDayActivity: minutesAdded: ${minutesAdded}")
 					minutesAdded++
+					return
 				}
-				if ( minutesAdded >= minutesToAdd || index == data.size()) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-					mapToEntries(aggregatedData)
-					minutesAdded = 0
-					aggregatedData = resetAggregatedData()
-				}
-				index++
+				log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+				mapToEntries(aggregatedData)
+				minutesAdded = 0
+				aggregatedData = resetAggregatedData()
 			}
 
 			[success: true]
