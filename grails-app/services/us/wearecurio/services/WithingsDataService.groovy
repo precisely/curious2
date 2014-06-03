@@ -319,7 +319,7 @@ class WithingsDataService extends DataService {
 					return
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-				mapToEntries(aggregatedData)
+				aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 				minutesAdded = 0
 				aggregatedData = resetAggregatedData()
 			}
@@ -331,28 +331,28 @@ class WithingsDataService extends DataService {
 		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
 	}
 	
-	def mapToEntries(def data) {
+	def aggregatedDataToEntries(def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
 		data.each { metric, amount ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
 			if (metric.equals("steps")) {
-				tagUnitMap.buildEntry("activitySteps", aggregatedData[metric], userId, 
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+				tagUnitMap.buildEntry("activitySteps", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("distance")) {
 				tagUnitMap.buildEntry("activityDistance", amount, userId, 
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("calories")) {
 				tagUnitMap.buildEntry("activityCalorie", amount, userId, 
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("elevation")) {
 				tagUnitMap.buildEntry("activityElevation", amount, userId, 
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("duration")) {
 				tagUnitMap.buildEntry("activityDuration", amount, userId, 
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, comment, setName)
 			}
 		}
 	}
