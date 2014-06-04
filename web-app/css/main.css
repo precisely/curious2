@@ -265,6 +265,7 @@ body.discuss-page input#discussTitleInput {
 .footer li {
 	display:block;
 	line-height:1.4em
+	font-size: 15px;
 }
 @media (max-width: 992px) {
 	.footer ul {
@@ -1211,8 +1212,12 @@ div.graph-header-container .red-header {
  */
 .community .red-header h1 {
 	width: 100%;
-	margin-bottom: 15px;
 	border: 0;
+	font-size: 15px;
+	margin-top: 0px;
+}
+.community .red-header #actions {
+	margin-top: 7px;
 }
 .community {
 	color: #879293;
@@ -1240,7 +1245,7 @@ div.graph-header-container .red-header {
 	background-color: #869293;
 	color: #ffffff;
 	border: 0;
-	font-size: 14px;
+	font-size: 15px;
 	margin-top: 5px;
 	width: 90px;
 }
@@ -1248,10 +1253,12 @@ div.graph-header-container .red-header {
 	height: 50px;
 }
 .subscription-list {
-	font-size: 14px;
+	font-size: 15px;
+	font-weight: bold;
 }
 #graphList #graphItem {
 	clear:both;
+	font-weight: bold;
 }
 
 #graphList .graphItem .media-object {
@@ -1259,9 +1266,21 @@ div.graph-header-container .red-header {
 }
 #graphList .graphItem .media-body {
 	margin-left: 70px;
+	font-size: 13px;
 }
 #graphList .graphItem .media-heading {
 	margin-top: -20px;
+}
+#graphList .graphItem .media-heading a {
+	color: #5A6263 !important;
+	font-size: 15px;
+}
+.subscriptions a {
+	font-size: 15px;
+	color: #879293 !important;
+}
+.subscriptions li {
+	margin-bottom: 5px;
 }
 #graphList .summary {
 	padding-top:12px;
