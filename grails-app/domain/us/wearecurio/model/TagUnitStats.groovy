@@ -83,8 +83,16 @@ enum UnitGroup {
 
 	DURATION(1, "duration"),
 	DISTANCE(2, "distance"),
-	WEIGHT(3, "weight")
-
+	WEIGHT(3, "weight"),
+	AREA(4, "area"),
+	VOLUME(5, "volume"),
+	FORCE(6, "force"),
+	POWER(7, "power"),
+	ENERGY(8, "energy"),
+	TORQUE(9, "torque"),
+	LUMINOSITY(10, "luminosity"),
+	PRESSURE(11, "pressure")
+	
 	final int id
 	final String groupName
 
