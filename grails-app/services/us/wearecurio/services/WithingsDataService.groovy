@@ -284,8 +284,6 @@ class WithingsDataService extends DataService {
 			
 			log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
 				+ intraDayResponse.body.series?.size())
-			def minutesToAdd = 10
-			def minutesAdded = 0
 			def aggregatedData = resetAggregatedData()
 			intraDayResponse.body?.series.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
@@ -302,9 +300,6 @@ class WithingsDataService extends DataService {
 					le.printStackTrace()
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: Number of metrics returned for ${timestamp} ${data.size()}")
-				if (data.size() < 2) {
-					return
-				}
 
 				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
 				data.each { metric, amount ->
@@ -312,16 +307,14 @@ class WithingsDataService extends DataService {
 					aggregatedData[metric] += amount
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
-				if (minutesAdded < minutesToAdd) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
-					log.debug("WithingsDataService.getDataIntraDayActivity: minutesAdded: ${minutesAdded}")
-					minutesAdded++
+				if (data.size() < 2 || data['duration'] > 60) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+					aggregatedData = resetAggregatedData()
+					//continuing to the next iteration
 					return
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-				aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-				minutesAdded = 0
-				aggregatedData = resetAggregatedData()
+				log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 			}
 
 			[success: true]
