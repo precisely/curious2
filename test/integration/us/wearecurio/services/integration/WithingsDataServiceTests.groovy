@@ -11,16 +11,13 @@ import grails.test.mixin.*
 import org.junit.*
 import org.scribe.model.Response
 
-import us.wearecurio.model.Entry
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
+import us.wearecurio.model.*
 import us.wearecurio.services.UrlService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import us.wearecurio.utility.Utils
 
 class WithingsDataServiceTests extends CuriousServiceTestCase {
 
@@ -232,6 +229,48 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 				e = e
 			}
 		}
+	}
+	
+	void testIntraDayAdjacentMerge() {
+		String mockedActivityResponse = """{"status":0,"body":{"series":{"1395277577":{"steps":21,"elevation":0,"calories":0.58,"distance":16.8,"duration":60},"1395277637":{"steps":12,"elevation":0,"calories":0.33,"distance":10.12,"duration":60},"1395277697":{"steps":25,"elevation":0,"calories":0.73,"distance":21.21,"duration":60},"1395277757":{"steps":69,"elevation":0,"calories":2.15,"distance":61.13,"duration":60},"1395277817":{"steps":126,"elevation":0,"calories":4.03,"distance":118.96,"duration":60},"1395277877":{"duration":600},"1395277937":{"steps":97,"elevation":11.38,"calories":8.15,"distance":79.51,"duration":60},"1395277997":{"steps":58,"elevation":1.64,"calories":2.47,"distance":49.02,"duration":60},"1395278057":{"duration":5580},"1395283637":{"steps":17,"elevation":0,"calories":0.46,"distance":11.82,"duration":60}}}}"""
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
+		def result = withingsDataService.getDataIntraDayActivity(account, new Date(), new Date() + 1)
+		assert result.success == true
+		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
+		log.debug("Result size: " + entries.size())
+		assert entries.size() == 10
+	}
+	
+	def testIntraDayAdjacentMergeWithLastBlockAsStationary() {
+		//When the last entry is just the duration entry
+		String mockedActivityResponse = """{"status":0,"body":{"series":{"1395277577":{"steps":21,"elevation":0,"calories":0.58,"distance":16.8,"duration":60},"1395277637":{"steps":12,"elevation":0,"calories":0.33,"distance":10.12,"duration":60},"1395277697":{"steps":25,"elevation":0,"calories":0.73,"distance":21.21,"duration":60},"1395277757":{"steps":69,"elevation":0,"calories":2.15,"distance":61.13,"duration":60},"1395277817":{"steps":126,"elevation":0,"calories":4.03,"distance":118.96,"duration":60},"1395277877":{"duration":600}}}}"""
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
+		def result = withingsDataService.getDataIntraDayActivity(account, new Date(), new Date() + 1)
+		assert result.success == true
+		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
+		log.debug("Result size: " + entries.size())
+		assert entries.size() == 5
+	}
+	
+	def testIntraDayAdjacentMergeWithFirstBlockAsStationary() {
+		//When the last entry is just the duration entry
+		String mockedActivityResponse = """{"status":0,"body":{"series":{"1395277577":{"duration":60},"1395277637":{"steps":12,"elevation":0,"calories":0.33,"distance":10.12,"duration":60},"1395277697":{"steps":25,"elevation":0,"calories":0.73,"distance":21.21,"duration":60},"1395277757":{"steps":69,"elevation":0,"calories":2.15,"distance":61.13,"duration":60},"1395277817":{"steps":126,"elevation":0,"calories":4.03,"distance":118.96,"duration":60}}}}"""
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
+		def result = withingsDataService.getDataIntraDayActivity(account, new Date(), new Date() + 1)
+		assert result.success == true
+		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
+		log.debug("Result size: " + entries.size())
+		assert entries.size() == 5
+	}
+
+	void testPopulateIntraDayQueue() {
+		withingsDataService.populateIntraDayQueue()
+		assert WithingsDataService.intraDayQueue.size() == 0
+
+		def intraDayQueueItem = new IntraDayQueueItem(oauthAccountId: 1l, queryDate: new Date())
+		Utils.save(intraDayQueueItem)
+		withingsDataService.populateIntraDayQueue()
+		assert WithingsDataService.intraDayQueue.size() == 1
 	}
 
 	void testSubscriptionParamsForHTTP() {
