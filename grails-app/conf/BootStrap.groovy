@@ -16,14 +16,17 @@ class BootStrap {
 	MailService mailService
 
 	def init = { servletContext ->
+		def current = Environment.current
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		//withingsDataService.refreshSubscriptions()
-		try {
-			new IntraDayDataThread().start()
-		} catch(IllegalStateException ie) {
-			log.debug "Bootstrap: Could not start IntraDayDataThread"
+		if (current == Environment.PRODUCTION) {
+			try {
+				new IntraDayDataThread().start()
+			} catch(IllegalStateException ie) {
+				log.debug "Bootstrap: Could not start IntraDayDataThread"
+			}
 		}
 		log.debug "Curious bootstrap finished executing."
 	}

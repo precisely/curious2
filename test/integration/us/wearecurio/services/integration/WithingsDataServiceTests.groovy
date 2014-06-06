@@ -50,21 +50,24 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
 
 		account.save()
-
 		withingsDataService.oauthService = [
-			getWithingsResource: { token, url, body, header ->
+			getWithingsResource: 0,
+			getWithingsResourceWithQuerystringParams: 0
+		]
+	}
+
+	private void setWithingsResourceRepsone(MockedHttpURLConnection mockedConnection) {
+		withingsDataService.oauthService['getWithingsResource'] =  { token, url, body, header ->
 				mockedGeneratedURL = url
 				return new Response(mockedConnection)
-			},
-			getWithingsResourceWithQuerystringParams: { token, url, p, headers ->
-				mockedGeneratedURLWithParams = url
-				if (url.contains("intra")) {
-					def data = """{"status":0,"body":{"series":[]}}"""
-					mockedConnectionWithParams = new MockedHttpURLConnection(data)
-				}
-				return new Response(mockedConnectionWithParams)
-			}
-		]
+		}
+	}
+
+	private void setWithingsResourceRepsoneWithQS(MockedHttpURLConnection mockedConnection) {
+		withingsDataService.oauthService['getWithingsResourceWithQuerystringParams'] =  { token, url, body, header ->
+				mockedGeneratedURL = url
+				return new Response(mockedConnection)
+		}
 	}
 
 	@Override
@@ -76,15 +79,14 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		account.lastSubscribed = new Date(now.getTime() - 10L * 24 * 60 * 60 * 1000)
 		account.save()
 
-		mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 0, "body": {"activities": []}}""")
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 0, "body": {"activities": []}}"""))
 
 		withingsDataService.refreshSubscriptions()
 		assert account.lastSubscribed > now.clearTime()
 	}
 
 	void testSubscribeIfSuccess() {
-		mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 0}""")
-
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 0}"""))
 		withingsDataService.subscribe(userId)
 		assert account.lastSubscribed
 	}
@@ -97,7 +99,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testSubscribeIfFail() {
 		// Checking for non zero status code.
-		mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 2554}""")
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 2554}"""))
 
 		withingsDataService.subscribe(userId)
 		assert OAuthAccount.findByUserId(userId).accessToken == ""
@@ -110,7 +112,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	void testUnsubscribeWithOAuthAccountExists() {
-		mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 0}""")
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 0}"""))
 
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.WITHINGS)
 		withingsDataService.unsubscribe(userId)
@@ -119,7 +121,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testGetDataDefaultWithFailureStatusCode() {
 		// When withings returns a non-zero status code
-		mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 2555}""")
+		setWithingsResourceRepsone(new MockedHttpURLConnection("""{"status": 2555}"""))
 
 		Map result = withingsDataService.getDataDefault(account, new Date(), false)
 
@@ -127,7 +129,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 		try {
 			// When token expires with code 342
-			mockedConnectionWithParams = new MockedHttpURLConnection("""{"status": 342}""")
+			setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 342}"""))
 			withingsDataService.getDataDefault(account, new Date(), false)
 		} catch(e) {
 			e.cause instanceof InvalidAccessTokenException
@@ -136,7 +138,8 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testGetDataDefaultWithUnparsableResponse() {
 		// When un-parsable string returned
-		mockedConnectionWithParams = new MockedHttpURLConnection("""status = unparsable-response""")
+		def mockedResponseData = """status = unparsable-response"""
+		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
 
 		withingsDataService.getDataDefault(account, new Date(), false)
 		assert Entry.count() == 0
@@ -144,8 +147,8 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testGetDataDefault() {
 		String mockedResponseData = """{"status":0,"body":{"updatetime":1385535542,"measuregrps":[{"grpid":162026288,"attrib":2,"date":1385386484,"category":1,"comment":"Hello","measures":[{"value":6500,"type":1,"unit":-2}]},{"grpid":162028086,"attrib":2,"date":1385300615,"category":1,"comment":"Nothing to comment","measures":[{"value":114,"type":9,"unit":0},{"value":113,"type":10,"unit":0},{"value":74,"type":11,"unit":0}]},{"grpid":129575271,"attrib":2,"date":1372931328,"category":1,"comment":"sa","measures":[{"value":170,"type":4,"unit":-2}]},{"grpid":129575311,"attrib":2,"date":1372844945,"category":1,"measures":[{"value":17700,"type":1,"unit":-2}]},{"grpid":129575122,"attrib":2,"date":1372844830,"category":1,"comment":"sa","measures":[{"value":6300,"type":1,"unit":-2}]},{"grpid":128995279,"attrib":0,"date":1372706279,"category":1,"measures":[{"value":84,"type":9,"unit":0},{"value":138,"type":10,"unit":0},{"value":77,"type":11,"unit":0}]},{"grpid":128995003,"attrib":0,"date":1372706125,"category":1,"measures":[{"value":65861,"type":1,"unit":-3}]}]}}"""
-		mockedConnectionWithParams = new MockedHttpURLConnection(mockedResponseData)
-		mockedConnection = new MockedHttpURLConnection(mockedResponseData)
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedResponseData))
+		setWithingsResourceRepsone(new MockedHttpURLConnection(mockedResponseData))
 
 		withingsDataService.getDataDefault(account, new Date(), false)
 		assert Entry.count() > 0
@@ -157,7 +160,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		assert result.success == false
 
 		String mockedActivityResponse = """{"status":342}"""
-		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
 
 		try {
 			withingsDataService.getDataActivityMetrics(account, null, null)
@@ -167,14 +170,14 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		}
 
 		mockedActivityResponse = """{"status":0,"body":{"activities":[]}}"""
-		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
 		result = withingsDataService.getDataActivityMetrics(account, new Date(), new Date())
 
 		assertTrue result.success
 		assert Entry.count() == 0	// No entries to process.
 
 		mockedActivityResponse = """{"status":0,"body":{"activities":[{"date":"2014-02-05","steps":17897,"distance":16190.69,"calories":770.51,"elevation":425.03,"timezone":"America/Los_Angeles"},{"date":"2014-02-06","steps":12069,"distance":10300.22,"calories":552.4,"elevation":416.94,"timezone":"America/Los_Angeles"},{"date":"2014-02-07","steps":5182,"distance":4442.82,"calories":186.58,"elevation":99.81,"timezone":"America/Los_Angeles"},{"date":"2014-02-08","steps":13877,"distance":11466.84,"calories":573.63,"elevation":364.43,"timezone":"America/Los_Angeles"},{"date":"2014-02-09","steps":681,"distance":567.73,"calories":25.89,"elevation":14.9,"timezone":"America/Los_Angeles"},{"date":"2014-02-10","steps":13120,"distance":15563.38,"calories":999.1,"elevation":477.41,"timezone":"America/Los_Angeles"},{"date":"2014-02-11","steps":7115,"distance":7068.46,"calories":352.85,"elevation":191.14,"timezone":"America/Los_Angeles"},{"date":"2014-02-12","steps":7,"distance":7.58,"calories":0,"elevation":0,"timezone":"America/Los_Angeles"},{"date":"2014-02-16","steps":2775,"distance":2176.92,"calories":213.64,"elevation":311.58,"timezone":"America/Los_Angeles"},{"date":"2014-02-17","steps":17187,"distance":19381.9,"calories":1138.82,"elevation":427.05,"timezone":"America/Los_Angeles"},{"date":"2014-02-18","steps":5188,"distance":4691.28,"calories":212.18,"elevation":119.42,"timezone":"America/Los_Angeles"},{"date":"2014-02-19","steps":10066,"distance":9490.86,"calories":476.63,"elevation":313.55,"timezone":"America/Los_Angeles"},{"date":"2014-01-17","steps":1198,"distance":1044.62,"calories":42.48,"elevation":16.6,"timezone":"America/Los_Angeles"}]}}"""
-		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
 		result = withingsDataService.getDataActivityMetrics(account, new Date(), new Date() + 1)
 		assert result.success == true
 		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
@@ -201,7 +204,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	void testIntraDayActivity() { 
 		String mockedActivityResponse = """{"status":0,"body":{"series":{"1368141046":{"calories":0,"duration":120},"1368141657":{"calories":0.87,"duration":60,"steps":18,"elevation":0.03,"distance":3218.69},"1368141717":{"calories":1.2,"duration":60,"steps":56,"elevation":2.4,"distance":1000}}}}"""	
-		mockedConnectionWithParams = new MockedHttpURLConnection(mockedActivityResponse)
+		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection(mockedActivityResponse))
 		def result = withingsDataService.getDataIntraDayActivity(account, new Date(), new Date() + 1)
 		assert result.success == true
 		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
@@ -214,10 +217,10 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 				e = e
 			} else if (e.getDescription().equals("activity distance") && e.getAmount().intValue() == 2) {
 				log.debug e.valueString()
-				assert e.valueString().contains("date:2013-05-09T23:20:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity distance, amount:2.000000000, units:miles, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("userId:21, date:2013-05-09T23:10:46, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity distance, amount:2.621000000, units:miles")
 			} else if (e.getDescription().equals("activity elevation") && e.getAmount().intValue() == 2) {
 				log.debug e.valueString()
-				assert e.valueString().contains("date:2013-05-09T23:21:57, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity elevation, amount:2.400000000, units:meters, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("userId:21, date:2013-05-09T23:10:46, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity elevation, amount:2.430000000, units:meters, amountPrecision:3")
 				e = e
 			} else if (e.getDescription().equals("activity move") && e.getAmount().intValue() == 18) {
 				log.debug e.valueString()
