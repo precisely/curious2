@@ -285,15 +285,10 @@ class WithingsDataService extends DataService {
 			log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
 				+ intraDayResponse.body.series?.size())
 			def aggregatedData = resetAggregatedData()
-			def index = 0
+			def lastEntryTimestamp = 0
 			intraDayResponse.body?.series.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				def entryTimestamp = Long.parseLong(timestamp)
-				def lastEntryTimestamp = 0
-				if (index != 0) {
-					lastEntryTimestamp = Long.parseLong(intraDayResponse.body.series[index])
-				}
-				index++
 				entryDate = new Date(entryTimestamp * 1000L)
 				setName = SET_NAME + "i" + timestamp
 				try {
@@ -316,12 +311,13 @@ class WithingsDataService extends DataService {
 				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
 				if (lastEntryTimestamp != 0 && (lastEntryTimestamp - entryTimestamp) < 900) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
-					//continuing to the next iteration
-					return
+					//continue aggregating
+				} else {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+					aggregatedData = resetAggregatedData()
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-				aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-				aggregatedData = resetAggregatedData()
+				lastEntryTimestamp = entryTimestamp
 			}
 
 			[success: true]
