@@ -33,7 +33,9 @@ class IntraDayDataThread extends Thread {
 					log.debug "IntraDayDataThread: OAuthAccount retrieved ${account?.dump()}"
 				}
 				log.debug "IntraDayDataThread: Querying intra day data for ${account?.id} and date ${queueItem?.queryDate}"
-				withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1)
+				IntraDayQueueItem.withNewSession { session ->
+					withingsDataService.getDataIntraDayActivity(account, queueItem.queryDate, queueItem.queryDate + 1)
+				}
 				queueItem?.delete()
 			} catch (TooManyRequestsException te) {
 				log.debug "IntraDayDataThread: TooManyRequestsException - Exceeded query rate"

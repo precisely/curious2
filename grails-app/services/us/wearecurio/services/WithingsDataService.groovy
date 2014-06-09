@@ -292,10 +292,8 @@ class WithingsDataService extends DataService {
 				entryDate = new Date(entryTimestamp * 1000L)
 				setName = SET_NAME + "i" + timestamp
 				try {
-					Entry.withNewSession {
-						Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
 							[setName: setName, userId: userId]) 
-					}
 				
 				} catch (org.springframework.dao.CannotAcquireLockException le) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
@@ -308,7 +306,7 @@ class WithingsDataService extends DataService {
 					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} for ${timestamp}")
 					aggregatedData[metric] += amount
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
+				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${lastEntryTimestamp - entryTimestamp}")
 				if (lastEntryTimestamp != 0 && (lastEntryTimestamp - entryTimestamp) < 900) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 					//continue aggregating
