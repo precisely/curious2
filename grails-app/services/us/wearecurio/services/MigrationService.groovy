@@ -48,6 +48,7 @@ class MigrationService {
 	public static final long REMOVE_VERSION = 80L
 	public static final long ADD_TAG_UNIT_STATS = 81L
 	public static final long FIX_TAG_PROPERTIES = 84L
+	public static final long FIX_TAG_PROPERTIES2 = 85L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -316,8 +317,9 @@ class MigrationService {
 					TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units) 
 			}
 		}
-		tryMigration(FIX_TAG_PROPERTIES) {
-			sql ("ALTER TABLE `tag_properties` CHANGE COLUMN `data_type_computed` `data_type_computed` INT NULL DEFAULT NULL  , CHANGE COLUMN `data_type_manual` `data_type_manual` INT NULL DEFAULT NULL")
+		tryMigration(FIX_TAG_PROPERTIES2) {
+			sql ("ALTER TABLE `tag_properties` DROP COLUMN `data_type_computed`, DROP COLUMN `data_type_manual`")
+			sql ("ALTER TABLE `tag_properties` ADD COLUMN `data_type_computed` INT NULL DEFAULT NULL  , ADD COLUMN `data_type_manual` INT NULL DEFAULT NULL")
 		}
 	}
 }

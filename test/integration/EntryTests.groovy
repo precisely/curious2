@@ -370,7 +370,7 @@ class EntryTests extends GroovyTestCase {
 		int c = 0
 		def expected = [ 1, 1, 2, 1, 2 ]
 		
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			it = it
 			assert it[1].intValue() == expected[c++]
@@ -387,7 +387,7 @@ class EntryTests extends GroovyTestCase {
 		int c = 0
 		def expected = [ 4, 1, 1, 2, 1, 2 ]
 		
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			it = it
 			assert it[1].intValue() == expected[c++]
@@ -403,7 +403,7 @@ class EntryTests extends GroovyTestCase {
 		
 		int c = 0
 		
-		testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			assert it[0][1] == 2
 		}
 	}
@@ -481,20 +481,20 @@ class EntryTests extends GroovyTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 	
-		assert testPlot(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert date == "2010-07-01T22:30:00"
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
 		} == 1
 		
-		assert testPlot(user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
-		assert testPlot(user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
-		assert testPlot(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 1
 	}
 	
@@ -507,7 +507,7 @@ class EntryTests extends GroovyTestCase {
 		Entry.create(userId, Entry.parse(slightDifferentCurrentTime, timeZone, "bread 3", baseDate, true), null)
 		Entry.create(userId, Entry.parse(lateCurrentTime, timeZone, "bread 2", tomorrowBaseDate, true), null)
 		
-		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		def results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
@@ -525,7 +525,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 2
 		
-		results = Entry.fetchSumPlotData(user, Tag.look("bread"), lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -534,7 +534,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(user, Tag.look("bread"), earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -543,7 +543,7 @@ class EntryTests extends GroovyTestCase {
 		
 		assert c == 0
 		
-		results = Entry.fetchSumPlotData(user, Tag.look("bread"), earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
 		
 		c = 0
 		for (result in results) {
@@ -559,7 +559,7 @@ class EntryTests extends GroovyTestCase {
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 3 2am", baseDate, true), null)
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 2 3am", tomorrowBaseDate, true), null)
 		
-		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		def results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
@@ -585,7 +585,7 @@ class EntryTests extends GroovyTestCase {
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 5am", tomorrowBaseDate, true), null)
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "bread 1 2pm", tomorrowBaseDate, true), null)
 		
-		def results = Entry.fetchSumPlotData(user, Tag.look("bread"), null, null, veryLateBaseDate, "America/Los_Angeles")
+		def results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles")
 		
 		def c = 0
 		for (result in results) {
@@ -820,7 +820,7 @@ class EntryTests extends GroovyTestCase {
 	void testRepeatPlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 3pm repeat", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
@@ -831,12 +831,12 @@ class EntryTests extends GroovyTestCase {
 	void testRemindActivatePlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 3pm remind", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
 		entry.activateGhostEntry(earlyBaseDate, currentTime, "America/Los_Angeles")
 
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			def date = Utils.dateToGMTString(it[0])
 			assert it[1].intValue() == 1
 			assert it[2] == "bread"
@@ -847,17 +847,17 @@ class EntryTests extends GroovyTestCase {
 	void testRepeatNullValuePlotData() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread _ 3pm remind", earlyBaseDate, true), null)
 	
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 		
 		def activated = entry.activateGhostEntry(earlyBaseDate, currentTime, "America/Los_Angeles")
 
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 0
 
 		def updated = Entry.update(activated, Entry.parse(currentTime, timeZone, "bread 6 3pm remind", earlyBaseDate, true, true), null, earlyBaseDate, true)
 		
-		assert testPlot(user, Tag.look("bread"), null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 		} == 1
 	}
 		
@@ -2248,21 +2248,5 @@ class EntryTests extends GroovyTestCase {
 		
 		assert result.getLastUnits().equals("")
 		
-	}
-
-	@Test
-	void testEntryUnits() {
-		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
-		//No units used when no usage history present
-		assert entry.units == ''
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
-		//Using the most used unit when no unit is present
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), null)
-		assert entry.units == 'km'	
-		//Using the most used unit incase of spelling mistake
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kkk 4pm", baseDate, true), null)
-		assert entry.units == 'km'	
 	}
 }

@@ -11,6 +11,7 @@ import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 import java.util.Map;
 import java.util.regex.Pattern
@@ -1912,6 +1913,10 @@ class Entry {
 			}
 		}
 		// get regular results
+		
+		Long userId = user.getId()
+		
+		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.mostUsedUnitRatioForTagIds(tagIds, userId)
 
 		queryStr = "select distinct entry.id " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
@@ -1926,8 +1931,7 @@ class Entry {
 			Entry entry = Entry.get(result['id'])
 			def entryJSON = entry.getJSONShortDesc()
 			log.debug("Entry.fetchPlotData: Attempting to normalize entry " +entryJSON[2] + " for plots")
-			def normalizedData = UnitGroupMap.convertToMostUsedUnit(entry.getTag().getId(), entry.userId,
-				entry.amount, entry.units)
+			def normalizedData = UnitGroupMap.convertToMostUsedUnit(mostUsedUnitRatioForTags, entry.amount, entry.units)
 			if (normalizedData) {
 				entryJSON[1] = normalizedData.amount
 			}
@@ -1970,6 +1974,8 @@ class Entry {
 
 		def currentResult = null
 		def summedResults = []
+		
+		UnitRatio mostUsedUnitRatio = UnitGroupMap.mostUsedUnitRatioForTagIds(tagIds, user.getId())
 
 		for (result in rawResults) {
 			Date resultDate = result[SHORT_DESC_DATE]

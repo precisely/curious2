@@ -121,26 +121,28 @@ class SecurityService {
 				if (user != null) {
 					println "Opening persistent session with user " + user
 					session.userId = user.getId()
-					return true
+					return [true, user]
 				} else {
 					println "Failed to find persistent session with id " + params.persistentSessionId
 				}
 			} else {
 				println "No persistent session id"
 			}
-			return false
+			return [false, null]
 		}
-		return true
+		return [true, null]
 	}
 
 	/**
 	 * checks login and CSRF token
+	 * TODO: Write test for this method
 	 */
 	boolean isAuthorized(actionName, HttpServletRequest request, params, flash, def session) {
-		if (!checkLogin(actionName, request, params, flash, session))
+		def (boolean authorized, User user) = checkLogin(actionName, request, params, flash, session)
+		if (!authorized)
 			return false
 		if (csrfActions.contains(actionName)) {
-			if (!checkCSRF(request, params, session))
+			if (!checkCSRF(request, params, session, user))
 				return false
 		}
 		

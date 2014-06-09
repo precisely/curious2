@@ -181,31 +181,38 @@ class UnitGroupMap {
 			'atm':[ATMOSPHERE,5], 'atmosphere':[ATMOSPHERE,10], 'atmospheres':[ATMOSPHERE,10],
 		]	
 	]
+	
+	public static class UnitRatio {
+		UnitGroup group
+		double ratio
+		def affinity
+		String unit 
+	}
 
 	/**
 	 *	Compute which group a given unit falls under
 	 *
 	 */
-	public static Map groupMapForUnit(String unit, def group = null) {
-		def groupMap = null
+	public static UnitRatio unitRatioForUnit(String unit, def group = null) {
+		def unitRatio = null
 		def unitKey
-		if (unit == '') return groupMap
+		if (unit == '') return unitRatio
 		if (group) {
-			log.debug("UnitGroupMap.groupMapForUnit(): looking up groupMap for unit "
+			log.debug("UnitGroupMap.unitRatioForUnit(): looking up groupMap for unit "
 				+ unit + " in group " + group )
 			unitKey = unitListContainsUnit(unit, groups[group])
-			groupMap = groupMapFromUnitList(unitKey, groups[group], group)
+			unitRatio = unitRatioFromUnitList(unitKey, groups[group], group)
 		} else {
-			log.debug("UnitGroupMap.groupMapForUnit(): looking up groupMap for unit " 
+			log.debug("UnitGroupMap.unitRatioForUnit(): looking up groupMap for unit " 
 				+ unit + " in other groups")
 			groups.each { groupAsKey, unitList ->
 				unitKey = unitListContainsUnit(unit, unitList) 
-				groupMap = groupMapFromUnitList(unitKey, unitList, groupAsKey, groupMap)
-				log.debug("UnitGroupMap.groupMapForUnit(): groupMap " + groupMap?.dump())
+				unitRatio = unitRatioFromUnitList(unitKey, unitList, groupAsKey, unitRatio)
+				log.debug("UnitGroupMap.unitRatioForUnit(): groupMap " + unitRatio?.dump())
 			}
-			log.debug("UnitGroupMap.groupMapForUnit(): unitKey " + unitKey)
+			log.debug("UnitGroupMap.unitRatioForUnit(): unitKey " + unitKey)
 		}
-		return groupMap
+		return unitRatio
 	}
 
 	public static String unitListContainsUnit(String unit, def unitList) {
@@ -230,32 +237,35 @@ class UnitGroupMap {
 		return unitListContainsUnit(unit, groups[group])
 	}
 
-	public static Map groupMapFromUnitList(String unitKey, def unitList, def group, def prevGroupMap= null) {
-		def groupMap = null
+	public static UnitRatio unitRatioFromUnitList(String unitKey, def unitList, def group, def prevUnitRatio = null) {
+		def unitRatio = null
 		if (unitKey == null)
-			return prevGroupMap
+			return prevUnitRatio 
 		def ratioAndAffinity = unitList[unitKey]
-		log.debug("UnitGroupMap.groupMapFromUnitList(): meta " + ratioAndAffinity?.dump())
-		if (prevGroupMap == null || prevGroupMap?.affinity < ratioAndAffinity[AFFINITY]) {
-			log.debug("UnitGroupMap.groupMapFromUnitList(): creating group map for unit " + unitKey)
-			groupMap = [group:group, meta: ratioAndAffinity, unit: unitKey]
+		log.debug("UnitGroupMap.unitRatioFromUnitList(): meta " + ratioAndAffinity?.dump())
+		if (prevUnitRatio  == null || prevUnitRatio ?.affinity < ratioAndAffinity[AFFINITY]) {
+			log.debug("UnitGroupMap.unitRatioFromUnitList(): creating group map for unit " + unitKey)
+			unitRatio = new UnitRatio(group:group, ratio: ratioAndAffinity[RATIO], affinity:ratioAndAffinity[AFFINITY], unit: unitKey)
 		} else {
-			return prevGroupMap
+			return prevUnitRatio 
 		}
-		log.debug("UnitGroupMap.groupMapFromUnitList(): created group map for unit " + unitKey + " " + groupMap.dump())
-		return groupMap
+		log.debug("UnitGroupMap.unitRatioFromUnitList(): created group map for unit " + unitKey + " " + unitRatio.dump())
+		return unitRatio
+	}
+	
+	public static UnitRatio mostUsedUnitRatioForTagIds(def tagIds, Long userId) {
+		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(tagIds, userId)
+		if (mostUsed == null)
+			return null
+		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId)
+		return unitRatio
 	}
 
-	public static Object convertToMostUsedUnit(Long tagId, Long userId, BigDecimal amount, String unit) {
-		def mostUsedTagUnitStats = TagUnitStats.mostUsedTagUnitStats(tagId, userId)	
-		if (unit.equals(mostUsedTagUnitStats?.unit))
-			return null
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): converting unit " + unit)
-		def mostUsedGroupMap = UnitGroupMap.groupMapForUnit(mostUsedTagUnitStats?.unit)
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): most used groupMap " + mostUsedGroupMap?.dump())
-		def unitGroupMap = groupMapForUnit(unit, mostUsedGroupMap?.group)
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): group map for the unit to be converted" + unitGroupMap?.dump())
-		if (!mostUsedGroupMap || !unitGroupMap || mostUsedGroupMap.group != unitGroupMap.group) {
+	public static def convertToMostUsedUnit(UnitRatio mostUsedUnitRatio, BigDecimal amount, String unit) {
+		log.debug("UnitGroupMap.convertToMostUsedUnit(): most used unitRatio " + mostUsedUnitRatio?.dump())
+		UnitRatio unitRatio = unitRatioForUnit(unit, mostUsedUnitRatio?.group)
+		log.debug("UnitGroupMap.convertToMostUsedUnit(): unit ratio for the unit to be converted" + unitRatio?.dump())
+		if (!mostUsedUnitRatio || !unitRatio || mostUsedUnitRatio.group != unitRatio.group) {
 			//No need to normalize as there is no tag + unit usage history
 			//Or the unit used has not been grouped and hence can't be
 			//converted. Or the two units belong to two different groups
@@ -263,11 +273,11 @@ class UnitGroupMap {
 			log.debug("UnitGroupMap.convertToMostUsedUnit(): no normalization needed for unit " + unit)
 			return null
 		}
-		def convertedValue = amount/mostUsedGroupMap.meta[RATIO]
+		def convertedValue = amount/mostUsedUnitRatio.ratio
 		log.debug("UnitGroupMap.convertToMostUsedUnit(): converted value " + convertedValue +
-			' '+ mostUsedGroupMap.unit)
-		return [unit:mostUsedGroupMap.unit, amount: convertedValue,
-			group: mostUsedGroupMap.group]
+			' '+ mostUsedUnitRatio.unit)
+		return [unit:mostUsedUnitRatio.unit, amount: convertedValue,
+			group: mostUsedUnitRatio.group]
 
 	}
 

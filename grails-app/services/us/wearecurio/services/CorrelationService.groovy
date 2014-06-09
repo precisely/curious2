@@ -229,7 +229,7 @@ class CorrelationService {
 			Date now = new Date();
 			user.tags().each { tag ->
 				try {
-					data_points = Entry.fetchPlotData(user, tag, null, null, now, time_zone)
+					data_points = Entry.fetchPlotData(user, [tag.getId()], null, null, now, time_zone)
 				} catch(err) {
 					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
 				}
