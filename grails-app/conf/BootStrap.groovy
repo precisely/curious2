@@ -21,7 +21,7 @@ class BootStrap {
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		//withingsDataService.refreshSubscriptions()
-		if (current == Environment.PRODUCTION) {
+		if (current != Environment.TEST) {
 			try {
 				new IntraDayDataThread().start()
 			} catch(IllegalStateException ie) {
