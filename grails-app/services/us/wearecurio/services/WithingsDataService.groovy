@@ -307,14 +307,14 @@ class WithingsDataService extends DataService {
 					aggregatedData[metric] += amount
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: duration: ${data['duration']}")
-				if (data.size() < 2 || data['duration'] > 60) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
-					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-					aggregatedData = resetAggregatedData()
+				if (data['duration'] < 480) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 					//continuing to the next iteration
 					return
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
+				log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+				aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+				aggregatedData = resetAggregatedData()
 			}
 
 			[success: true]
@@ -327,6 +327,8 @@ class WithingsDataService extends DataService {
 	def aggregatedDataToEntries(def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
 		data.each { metric, amount ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
+			if (amount == 0)
+				return
 			if (metric.equals("steps")) {
 				tagUnitMap.buildEntry("activitySteps", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
