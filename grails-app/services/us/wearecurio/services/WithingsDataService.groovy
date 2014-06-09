@@ -307,7 +307,7 @@ class WithingsDataService extends DataService {
 					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} for ${timestamp}")
 					aggregatedData[metric] += amount
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${lastEntryTimestamp - entryTimestamp}")
+				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${entryTimestamp - lastEntryTimestamp}")
 				if (lastEntryTimestamp != 0 && (entryTimestamp - lastEntryTimestamp) < 900) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 					//continue aggregating
