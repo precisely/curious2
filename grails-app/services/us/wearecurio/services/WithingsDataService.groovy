@@ -286,7 +286,8 @@ class WithingsDataService extends DataService {
 				+ intraDayResponse.body.series?.size())
 			def aggregatedData = resetAggregatedData()
 			def lastEntryTimestamp = 0
-			intraDayResponse.body?.series.each {  timestamp, data ->
+			def intraDayData = intraDayResponse.body?.series.sort()
+			intraDayData.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				def entryTimestamp = Long.parseLong(timestamp)
 				entryDate = new Date(entryTimestamp * 1000L)
@@ -307,7 +308,7 @@ class WithingsDataService extends DataService {
 					aggregatedData[metric] += amount
 				}
 				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${lastEntryTimestamp - entryTimestamp}")
-				if (lastEntryTimestamp != 0 && (lastEntryTimestamp - entryTimestamp) < 900) {
+				if (lastEntryTimestamp != 0 && (entryTimestamp - lastEntryTimestamp) < 900) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
 					//continue aggregating
 				} else {
