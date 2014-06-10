@@ -105,7 +105,7 @@ pushNotification {
 
 environments {
     development {
-        grails.logging.jul.usebridge = true
+        grails.logging.jul.usebridge = false
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
@@ -138,10 +138,15 @@ environments {
 					key = "96de99b2227025cacb6807e28df20367"
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
 				}
+
 				withings {
+					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
+					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
+				}
+				/**withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
-				}
+				} **/
 			}
 			debug = true
 		}
@@ -300,6 +305,14 @@ environments {
 log4j = {
 	appenders {
 		console name:'stdout', layout:pattern(conversionPattern: '%-5p %d %c{2} %x - %m%n%n')
+		environments {
+			development {
+				rollingFile name: 'extraAppender',
+						conversionPattern: '%d{yyyy-MM-dd/HH:mm:ss.SSS} [%t] %x %-5p %c{2} - %m%n',
+						maxFileSize: 2048,
+						file: '/tmp/curious.log'
+			}
+		}
 	}
 
 	debug  'us.wearecurio.model',
@@ -332,6 +345,12 @@ log4j = {
 	error  'org.springframework.aop.framework.Cglib2AopProxy'
 
 	warn   'org.mortbay.log'
+
+	environments {
+		development {
+			debug extraAppender: "us.wearecurio"
+		}
+	}
 			
 }
 
