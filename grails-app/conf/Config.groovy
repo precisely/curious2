@@ -307,10 +307,21 @@ log4j = {
 		console name:'stdout', layout:pattern(conversionPattern: '%-5p %d %c{2} %x - %m%n%n')
 		environments {
 			development {
-				rollingFile name: 'extraAppender',
+				file name: 'extraAppender',
 						conversionPattern: '%d{yyyy-MM-dd/HH:mm:ss.SSS} [%t] %x %-5p %c{2} - %m%n',
-						maxFileSize: 2048,
 						file: '/tmp/curious.log'
+				debug extraAppender: ['us.wearecurio.model',
+					'us.wearecurio.controller',
+					'us.wearecurio.services',
+					'us.wearecurio.server',
+					'us.wearecurio.util',
+					'us.wearecurio.exceptions',
+					'us.wearecurio.utility',
+					'us.wearecurio',
+					'grails.app.conf',
+					'grails.app.controllers',
+					'grails.app.services.us.wearecurio',
+					'grails.app.jobs.us.wearecurio.jobs']
 			}
 		}
 	}
@@ -327,6 +338,7 @@ log4j = {
 		   'grails.app.controllers',
 		   'grails.app.services.us.wearecurio',
 		   'grails.app.jobs.us.wearecurio.jobs'
+	
 
 	warn   'us.wearecurio.parse'
 
@@ -345,13 +357,6 @@ log4j = {
 	error  'org.springframework.aop.framework.Cglib2AopProxy'
 
 	warn   'org.mortbay.log'
-
-	environments {
-		development {
-			debug extraAppender: "us.wearecurio"
-		}
-	}
-			
 }
 
 oauth {

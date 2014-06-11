@@ -224,7 +224,9 @@ class WithingsDataService extends DataService {
 			dateFormat.setTimeZone(timeZone)
 			
 			Date entryDate = dateFormat.parse(activity["date"])
-			datesWithSummaryData.push(entryDate)
+			if (activity['steps'] > 0) {
+				datesWithSummaryData.push(entryDate)
+			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
 			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
@@ -286,8 +288,9 @@ class WithingsDataService extends DataService {
 				+ intraDayResponse.body.series?.size())
 			def aggregatedData = resetAggregatedData()
 			def lastEntryTimestamp = 0
-			def intraDayData = intraDayResponse.body?.series.sort()
-			intraDayData.each {  timestamp, data ->
+			def intraDayData = intraDayResponse.body?.series?.sort()
+			def index = 1
+			intraDayData?.each {  timestamp, data ->
 				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
 				def entryTimestamp = Long.parseLong(timestamp)
 				entryDate = new Date(entryTimestamp * 1000L)
@@ -300,23 +303,30 @@ class WithingsDataService extends DataService {
 					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
 					le.printStackTrace()
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: Number of metrics returned for ${timestamp} ${data.size()}")
-
 				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
-				data.each { metric, amount ->
-					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} for ${timestamp}")
-					aggregatedData[metric] += amount
+				
+				if (data.size() > 1) {
+					data.each { metric, amount ->
+						log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} ${amount} for ${timestamp}")
+						aggregatedData[metric] += amount
+					}
 				}
+
+				log.debug("WithingsDataService.getDataIntraDayActivity: entryTimestamp - ${entryTimestamp}, lastEntryTimestamp -  ${lastEntryTimestamp}")
 				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${entryTimestamp - lastEntryTimestamp}")
-				if (lastEntryTimestamp != 0 && (entryTimestamp - lastEntryTimestamp) < 900) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Continuing to aggregate")
+				if (lastEntryTimestamp == 0) {
+					lastEntryTimestamp = entryTimestamp
+				}
+				if ((entryTimestamp - lastEntryTimestamp) < 61 && index < intraDayData.size()) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Next timestamp is too close continuing to aggregate")
 					//continue aggregating
 				} else {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Done aggregating")
+					log.debug("WithingsDataService.getDataIntraDayActivity: Creating New Chunk ${entryTimestamp}")
 					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 					aggregatedData = resetAggregatedData()
 				}
 				lastEntryTimestamp = entryTimestamp
+				index++
 			}
 
 			[success: true]
