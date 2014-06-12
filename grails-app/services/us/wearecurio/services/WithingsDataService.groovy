@@ -317,7 +317,7 @@ class WithingsDataService extends DataService {
 				if (lastEntryTimestamp == 0) {
 					lastEntryTimestamp = entryTimestamp
 				}
-				if ((entryTimestamp - lastEntryTimestamp) < 61 && index < intraDayData.size()) {
+				if ((entryTimestamp - lastEntryTimestamp) < 301 && index < intraDayData.size()) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: Next timestamp is too close continuing to aggregate")
 					//continue aggregating
 				} else {
