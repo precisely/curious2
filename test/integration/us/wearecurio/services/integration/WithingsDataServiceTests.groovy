@@ -238,7 +238,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		assert result.success == true
 		def entries = Entry.findAllByUserIdAndComment(account.getUserId(), '(Withings)')
 		log.debug("Result size: " + entries.size())
-		assert entries.size() == 134
+		assert entries.size() == 85
 	}
 	
 	def testIntraDayAdjacentMergeWithLastBlockAsStationary() {
