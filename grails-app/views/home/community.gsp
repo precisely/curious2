@@ -111,23 +111,23 @@ $(function(){
 	<g:if test="${flash.message}">
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
-	<div class="row">
-		<div class="col-md-12">
-			<div class="red-header"	>
-				<h1 class="clearfix">
-					<div id="actions">
-						<img src="/images/menu.png">
-						<ul>
-							<li><a Ref="/home/community" >Home Feed</a></li>
-						</ul>
-					</div>
-					<span id="queryTitle">${groupFullname}</span>
-				</h1>
+	<div class="row red-header">
+		<div class="col-md-3">
+			<div id="actions">
+				<img src="/images/menu.png">
+				<ul>
+					<li><a Ref="/home/community" >Home Feed</a></li>
+				</ul>
 			</div>
+		</div>
+		<div class="col-md-9">
+			<h1 class="clearfix">
+				<span id="queryTitle">${groupFullname}</span>
+			</h1>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-2">
+		<div class="col-md-3">
 			<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
 			<ul class="subscriptions">
 				<li>
@@ -140,7 +140,7 @@ $(function(){
 				</g:each>
 			</ul>
 		</div>
-		<div id="graphList" class="col-md-10">
+		<div id="graphList" class="col-md-9">
 			<div class="new-post">
 				<form action="/discussion/create" method="post">
 					<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" />
