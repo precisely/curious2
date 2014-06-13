@@ -100,6 +100,22 @@ class AuthenticationController extends SessionController {
 		oauthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
 	}
 
+	def ihealthAuth() {
+		User currentUserInstance = sessionUser()
+
+		JSONObject userInfo = JSON.parse(tokenInstance.rawResponse)
+
+		if (userInfo.UserID) {
+			OAuthAccount.createOrUpdate(OAuthAccount.IHEALTH_ID, currentUserInstance.id, userInfo.UserID, tokenInstance.token, "")
+		}
+		if (session.returnURIWithToken) {
+			log.debug "Redirecting user to [$session.returnURIWithToken]"
+			redirect uri: session.returnURIWithToken
+			session.returnURIWithToken = null
+		}
+		return
+	}
+
 	def movesAuth() {
 		JSONObject userInfo = movesDataService.getUserProfile(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(userInfo.profile.currentTimeZone.id).id

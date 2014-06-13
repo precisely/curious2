@@ -15,6 +15,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	static transactional = false
 
 	def humanDataService
+	def ihealthDataService
 	def movesDataService
 	def withingsDataService
 
@@ -25,6 +26,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	def execute() {
 		//humanDataService.poll()
 		movesDataService.pollAll()
+		//ihealthDataService.poll()
 		def c = OAuthAccount.createCriteria()
 		def results = c.list {
 			projections {
@@ -54,7 +56,6 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 				}
 			}
 		}
-		
 	}
 
 }

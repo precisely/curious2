@@ -1,6 +1,6 @@
 package us.wearecurio.model
 
-import static us.wearecurio.model.ThirdParty.*
+import org.apache.commons.logging.LogFactory
 
 import java.util.Map
 
@@ -9,9 +9,14 @@ import org.scribe.model.Token
 import us.wearecurio.services.DataService
 import us.wearecurio.utility.Utils
 
+import us.wearecurio.model.ThirdParty
+
 class OAuthAccount {
 
+	private static def log = LogFactory.getLog(this)
+
 	ThirdParty typeId
+
 	Long userId
 	String accountId
 	String accessToken
@@ -30,7 +35,6 @@ class OAuthAccount {
 		lastSubscribed(nullable:true)
 		refreshToken nullable: true
 		timeZoneId nullable: true
-		//typeId inList: []
 	}
 	
 	static mapping = {
