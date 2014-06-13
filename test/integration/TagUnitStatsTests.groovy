@@ -77,7 +77,7 @@ class TagUnitStatsTests extends GroovyTestCase {
 
 	@Test
 	void testEntryUnits() {
-		/*def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
+		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
 		//No units used when no usage history present
 		assert entry.units == ''
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
@@ -86,45 +86,30 @@ class TagUnitStatsTests extends GroovyTestCase {
 		//Using the most used unit when no unit is present
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), null)
 		assert entry.units == 'km'	
-		//Using the most used unit incase of spelling mistake
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kkk 4pm", baseDate, true), null)
-		assert entry.units == 'km'	*/
+		//Don't change an unrecognized unit
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 klkk 4pm", baseDate, true), null)
+		assert entry.units == 'klkk'
 	}
 	
 	@Test
 	void testMultiTagUnits() {
-		def z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
 		//No units used when no usage history present
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), null)
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
 		//Using the most used unit when no unit is present
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 feet 4pm", baseDate, true), null)
 		//Using the most used unit incase of spelling mistake
 		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 minutes 4pm", baseDate, true), null)
 		//Using the most used unit incase of spelling mistake
 		
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 4pm", baseDate, true), null)
 
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
-		z = z
-		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 lbs 4pm", baseDate, true), null)
 
-		z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
+		def z = TagUnitStats.mostUsedTagUnitStatsForTags([Tag.look("jog").getId(), Tag.look("run").getId()], userId)
 		assert z.unit == 'km'
 		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 5pm", baseDate, true), null)

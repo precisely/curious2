@@ -445,7 +445,7 @@ class Entry {
 
 		def tagUnitStats = TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units']) 
 		//Using the most used unit in case the unit is unknown
-		m['units'] = tagUnitStats?.unit
+		m['units'] = m['units'] ?: tagUnitStats?.unit
 
 		Entry entry = new Entry(
 				userId:userId,
@@ -455,7 +455,7 @@ class Entry {
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
-				units:m['units'],
+				units:m['units'] ?: '',
 				comment:m['comment']==null?'':m['comment'],
 				repeatType: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
