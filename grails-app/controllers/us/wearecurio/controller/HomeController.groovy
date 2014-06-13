@@ -62,6 +62,7 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			throw new AuthenticationRequiredException("withings")
 		} catch (InvalidAccessTokenException e) {
+			e = e
 			throw new AuthenticationRequiredException("withings")
 		}
 

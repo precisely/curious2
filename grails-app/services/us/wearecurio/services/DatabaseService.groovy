@@ -60,12 +60,20 @@ class DatabaseService {
 					Thread.sleep(1000)
 				}
 				o.refresh()
-			} catch (UndeclaredThrowableException e2) {
+			} catch (UndeclaredThrowableException e3) {
+				def e = e3
 				// rethrow exceptions thrown inside transaction
-				while (e2.getCause() instanceof UndeclaredThrowableException) {
-					e2 = e2.getCause()
+				while (e instanceof UndeclaredThrowableException) {
+					if (e.getCause() != null) {
+						e = e.getCause()
+					} else if (e.getUndeclaredThrowable() != null) {
+						e = e.getUndeclaredThrowable()
+					} else
+						break
 				}
-				throw e2
+				if (e != null) {
+					throw e
+				}
 			}
 		}
 		
