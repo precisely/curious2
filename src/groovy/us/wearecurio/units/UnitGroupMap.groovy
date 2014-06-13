@@ -116,13 +116,13 @@ class UnitGroupMap {
 			'cm':[CENTIMETER,5], 'mm':[MILLIMETER,6],
 			'centimeter':[CENTIMETER,10], 'centimetre':[CENTIMETER,10],
 			'millimeter':[MILLIMETER,10], 'millimetre':[MILLIMETER,10],
-			'm':[METER,2], 'meter':[METER,10], 'metre':[METER,10], 'foot':[FOOT,10], 'feet':[FOOT,10], 'ft':[FOOT,5], 
+			'm':[METER,2], 'meters':[METER,11], 'meter':[METER,10], 'metre':[METER,10], 'metres':[METER,10], 'foot':[FOOT,10], 'feet':[FOOT,10], 'ft':[FOOT,5], 
 			'yard':[YARD,10], 'yards':[YARD,10], 'miles':[MILE,10], 'km':[KILOMETER,8], 'kilometers':[KILOMETER,10],
 			'kilometers':[KILOMETER,10], 'kilometer':[KILOMETER,10],'kilometre':[KILOMETER,10], 'kilometres':[KILOMETER,10],
 		],
 		(UnitGroup.WEIGHT): [
 			'g':[GRAM,2], 'grams':[GRAM,10], 'pound':[POUND,10], 'lb':[POUND,5], 'pounds':[POUND,10], 'lbs':[POUND,10], 
-			'kg':[KILOGRAM,8], 'kilograms':[KILOGRAM,10], 'kilogram':[KILOGRAM,10], 'ounce':[OUNCE,10], 'oz':[OUNCE,4],
+			'kg':[KILOGRAM,8], 'kgs':[KILOGRAM,4], 'kilograms':[KILOGRAM,10], 'kilogram':[KILOGRAM,10], 'ounce':[OUNCE,10], 'oz':[OUNCE,4],
 			'ounces':[OUNCE,10],
 			],
 		(UnitGroup.AREA): [
