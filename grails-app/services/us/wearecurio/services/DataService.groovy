@@ -397,11 +397,11 @@ abstract class DataService {
 	 * Used to poll all accounts data for respective API's.
 	 * Must be called from API data services.
 	 */
-	void pollAll() {
+	void pollAll(def refreshAll = false) {
 		OAuthAccount.findAllByTypeId(typeId).each { account ->
 			DatabaseService.retry(account) {
 				try {
-					getDataDefault(account, null, false)
+					getDataDefault(account, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
 				}

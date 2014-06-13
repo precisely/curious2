@@ -49,9 +49,11 @@ class MigrationService {
 	public static final long ADD_TAG_UNIT_STATS = 81L
 	public static final long FIX_TAG_PROPERTIES = 84L
 	public static final long FIX_TAG_PROPERTIES2 = 85L
+	public static final long HISTORICAL_INTRA_DAY = 86L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
+	WithingsDataService withingsDataService
 	
 	boolean skipMigrations = false
 	
@@ -95,6 +97,7 @@ class MigrationService {
 			} catch (Exception e) {
 				System.err.println("EXCEPTION DURING MIGRATION " + code)
 				e.printStackTrace()
+				return false
 			}
 
 			didMigration(migration)
@@ -320,6 +323,10 @@ class MigrationService {
 		tryMigration(FIX_TAG_PROPERTIES2) {
 			sql ("ALTER TABLE `tag_properties` DROP COLUMN `data_type_computed`, DROP COLUMN `data_type_manual`")
 			sql ("ALTER TABLE `tag_properties` ADD COLUMN `data_type_computed` INT NULL DEFAULT NULL  , ADD COLUMN `data_type_manual` INT NULL DEFAULT NULL")
+		}
+		tryMigration(HISTORICAL_INTRA_DAY) {
+			sql("delete from entry where set_name like 'withings import%'")
+			sql("update oauth_account set last_polled = null where type_id = 1")
 		}
 	}
 }

@@ -11,22 +11,21 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
 
-import us.wearecurio.model.Entry
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.ThirdPartyNotification
-import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.*
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import us.wearecurio.thirdparty.TooManyRequestsException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
 import us.wearecurio.utility.Utils
+import java.util.concurrent.PriorityBlockingQueue
 
 class WithingsDataService extends DataService {
 
 	static final String BASE_URL = "http://wbsapi.withings.net"
 	static final String COMMENT = "(Withings)"
-	static final String SET_NAME = "withings import"
-
+	static final String SET_NAME = "WI"
+	static Date intraDayOverQueryRateTimestamp = null
+	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
 	static transactional = false
 
 	WithingsDataService() {
@@ -67,12 +66,13 @@ class WithingsDataService extends DataService {
 		Integer offset = 0
 		boolean more = true
 		long serverTimestamp = 0
+		def setName = SET_NAME
 		Long userId = account.getUserId()
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
 		if (refreshAll)
-			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-					[setName: SET_NAME, userId: userId])
+			Entry.executeUpdate("delete Entry e where e.setName like :setName and e.userId = :userId",
+					[setName: SET_NAME + "%", userId: userId]) // Using like for backward compatibility
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -106,12 +106,10 @@ class WithingsDataService extends DataService {
 
 			for (group in groups) {
 				Date date = new Date(group.date * 1000L)
+				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-
-				/*if (!refreshAll) {
-					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId and date = :entryDate",
-							[setName: SET_NAME, userId: userId, entryDate: date])
-				}*/
+				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+					[setName: setName , userId: userId]) 
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -151,7 +149,7 @@ class WithingsDataService extends DataService {
 							tagKey = "heartRate"
 							break
 					}
-					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, SET_NAME)
+					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, setName)
 				}
 			}
 		}
@@ -213,6 +211,9 @@ class WithingsDataService extends DataService {
 
 		JSONArray activities = data["body"]["activities"]
 
+		def datesWithSummaryData = []
+		def setName = SET_NAME
+
 		activities.each { JSONObject activity ->
 			log.debug "Parsing entry with data: $activity"
 			
@@ -223,29 +224,158 @@ class WithingsDataService extends DataService {
 			dateFormat.setTimeZone(timeZone)
 			
 			Date entryDate = dateFormat.parse(activity["date"])
+			if (activity['steps'] > 0) {
+				datesWithSummaryData.push(entryDate)
+			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
-
+			setName = SET_NAME + "a" + entryDate.getTime()/1000
+			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+				[setName: setName , userId: userId]) 
 			def args = ['isSummary':true] // Indicating that these entries are summary entries
 			
 			if (activity["steps"]) {
 				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, 
-					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["distance"]) {
 				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, 
-					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["calories"]) {
 				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, 
-					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["elevation"]) {
 				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, 
-					timeZoneIdNumber, entryDate, COMMENT, SET_NAME, args)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 		}
-
+		
+		if (datesWithSummaryData.size() > 0) {
+			log.debug "WithingsDataService: Adding items to the intra day queue"
+			datesWithSummaryData.each { summaryDate ->
+				def intraDayQueueItem = new IntraDayQueueItem(oauthAccountId: account.id, queryDate: summaryDate)
+				Utils.save(intraDayQueueItem, true)
+				try {
+					intraDayQueue.add(intraDayQueueItem)
+				} catch (IllegalStateException queueFullException) {
+					log.debug "WithingsDataService: intraDayQueue is full" 
+				}
+			}
+			synchronized(intraDayQueue) {
+				intraDayQueue.notify()
+			}
+		}
 		[success: true]
+	}
+
+
+	@Transactional
+	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate) 
+		throws InvalidAccessTokenException, TooManyRequestsException {
+			def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
+			def userId = account.userId
+			def entryDate
+			def setName
+			Integer timeZoneIdNumber = account.timeZoneId
+
+			if (intraDayResponse.status == 601) {
+				log.debug "WithingsDataService.getDataIntraDayActivity: TooManyRequestsException code 601" 
+				throw new TooManyRequestsException(provider)	
+			}
+			
+			log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
+				+ intraDayResponse.body.series?.size())
+			def aggregatedData = resetAggregatedData()
+			def lastEntryTimestamp = 0
+			def intraDayData = intraDayResponse.body?.series?.sort()
+			def index = 1
+			intraDayData?.each {  timestamp, data ->
+				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
+				def entryTimestamp = Long.parseLong(timestamp)
+				entryDate = new Date(entryTimestamp * 1000L)
+				setName = SET_NAME + "i" + timestamp
+				try {
+					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
+							[setName: setName, userId: userId]) 
+				
+				} catch (org.springframework.dao.CannotAcquireLockException le) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
+					le.printStackTrace()
+				}
+				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
+				
+				if (data.size() > 1) {
+					data.each { metric, amount ->
+						log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} ${amount} for ${timestamp}")
+						aggregatedData[metric] += amount
+					}
+				}
+
+				log.debug("WithingsDataService.getDataIntraDayActivity: entryTimestamp - ${entryTimestamp}, lastEntryTimestamp -  ${lastEntryTimestamp}")
+				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${entryTimestamp - lastEntryTimestamp}")
+				if (lastEntryTimestamp == 0) {
+					lastEntryTimestamp = entryTimestamp
+				}
+				if ((entryTimestamp - lastEntryTimestamp) < 301 && index < intraDayData.size()) {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Next timestamp is too close continuing to aggregate")
+					//continue aggregating
+				} else {
+					log.debug("WithingsDataService.getDataIntraDayActivity: Creating New Chunk ${entryTimestamp}")
+					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+					aggregatedData = resetAggregatedData()
+				}
+				lastEntryTimestamp = entryTimestamp
+				index++
+			}
+
+			[success: true]
+	}
+
+	def resetAggregatedData() {
+		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
+	}
+	
+	def aggregatedDataToEntries(def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
+		data.each { metric, amount ->
+			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
+			if (amount == 0)
+				return
+			if (metric.equals("steps")) {
+				tagUnitMap.buildEntry("activitySteps", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
+			}
+			if (metric.equals("distance")) {
+				tagUnitMap.buildEntry("activityDistance", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
+			}
+			if (metric.equals("calories")) {
+				tagUnitMap.buildEntry("activityCalorie", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
+			}
+			if (metric.equals("elevation")) {
+				tagUnitMap.buildEntry("activityElevation", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
+			}
+			if (metric.equals("duration")) {
+				tagUnitMap.buildEntry("activityDuration", amount, userId, 
+					timeZoneIdNumber, entryDate, comment, setName)
+			}
+		}
+	}
+
+	def populateIntraDayQueue() {
+		def intraDayQueueItems = IntraDayQueueItem.withCriteria([max: 300]) {
+			order("oauthAccountId", "asc")
+		}
+
+		try {
+			if (intraDayQueueItems.size() > 0) {
+				intraDayQueue.addAll(intraDayQueueItems as List)
+			}
+		} catch (IllegalStateException queueFullException) {
+			log.debug "WithingsDataService: intraDayQueue is full" 
+		}
 	}
 
 	def getRefreshSubscriptionsTask() {
@@ -274,14 +404,14 @@ class WithingsDataService extends DataService {
 	@Transactional
 	Map getActivityDataParameters(String accountId, Date startDate, Date endDate, boolean intraDay) {
 		log.debug "WithingsDataService.getActivityDataParameters() accountId:" + 
-			accountId + " startDate: " + startDate + " endDate: " + endDate
+			accountId + " startDate: " + startDate + " endDate: " + endDate + " intraDay " + intraDay
 		
 		Map queryParameters
 		
 		if (intraDay) {
 			queryParameters = ["action": "getintradayactivity", userid: accountId]
-			queryParameters["startdate"] = startDate.getTime().toString()
-			queryParameters["enddate"] = endDate.getTime().toString()
+			queryParameters["startdate"] = (startDate.getTime()/1000).toString()
+			queryParameters["enddate"] = (endDate.getTime()/1000).toString()
 		} else {
 			queryParameters = ["action": "getactivity", userid: accountId]
 			if (endDate) {
