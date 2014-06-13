@@ -515,7 +515,7 @@ class WithingsDataService extends DataService {
 
 		return DatabaseService.retry(account) {
 			if (withingsResponseStatus == 0) {
-				log.debug "Subscription successfull for account: $account"
+				log.debug "Subscription successful for account: $account"
 				account.lastSubscribed = new Date()
 				account.save(flush:true)
 				return [success: true, account: account]

@@ -62,7 +62,10 @@ class DatabaseService {
 				o.refresh()
 			} catch (UndeclaredThrowableException e2) {
 				// rethrow exceptions thrown inside transaction
-				throw e2.getCause()
+				while (e2.getCause() instanceof UndeclaredThrowableException) {
+					e2 = e2.getCause()
+				}
+				throw e2
 			}
 		}
 		
