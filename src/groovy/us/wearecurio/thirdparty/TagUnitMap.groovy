@@ -16,6 +16,17 @@ abstract class TagUnitMap {
 	final static String SLEEP = "sleep"
 	// The above constants are used for common string across various tag maps.
 
+	final static String BLOOD_GLUCOSE = "blood glucose"
+	final static String BLOOD_OXYGEN = "blood oxygen"
+	final static String BLOOD_PRESSURE_DIASTOLIC = "blood pressure diastolic"
+	final static String BLOOD_PRESSURE_SYSTOLIC = "blood pressure systolic"
+
+	public final static String MEAL = "meal"
+	public final static String MOVEMENT = "movement"
+	public final static String MOOD = "mood"
+	public final static String SLEEP = "sleep"
+	public final static String NAP = "nap"
+
 	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
 	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
 	public final static int MINUTES_TO_MS = 60 * 1000
