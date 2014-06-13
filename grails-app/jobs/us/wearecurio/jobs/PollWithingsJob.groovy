@@ -16,7 +16,7 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
     def execute() {
 		def timestamp = System.currentTimeMillis()
 		log.debug "PollWithingsJob: Started at ${timestamp}"
-		withingsDataService.pollAll()
+		//withingsDataService.pollAll()
 		log.debug "PollWithingsJob: Job started at ${timestamp} ended"
     }
 }
