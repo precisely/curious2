@@ -21,13 +21,13 @@ class BootStrap {
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		//withingsDataService.refreshSubscriptions()
-		/*if (current != Environment.TEST) {
+		if (current != Environment.TEST) {
 			try {
 				new IntraDayDataThread().start()
 			} catch(IllegalStateException ie) {
 				log.debug "Bootstrap: Could not start IntraDayDataThread"
 			}
-		}*/
+		}
 		log.debug "Curious bootstrap finished executing."
 	}
 
