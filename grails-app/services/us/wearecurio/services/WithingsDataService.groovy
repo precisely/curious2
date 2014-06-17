@@ -181,7 +181,6 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	@Transactional
 	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
 		

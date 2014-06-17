@@ -11,6 +11,6 @@ class CorrelationJob extends us.wearecurio.utility.TimerJob {
 		}
 
 		def execute() {
-			correlationService.recalculateMipss()
+			//correlationService.recalculateMipss()
 		}
 }
