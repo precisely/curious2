@@ -9,7 +9,7 @@ class DeviceIntegrationDailyJob extends TimerJob {
 	def withingsDataService
 
 	static triggers = {
-		simple repeatInterval: DAY
+		cron name:'cronTrigger', cronExpression: '0 15 2 * * ? *' //2:15 AM 
 	}
 
 	def execute() {

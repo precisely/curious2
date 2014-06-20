@@ -8,7 +8,7 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 	private static def log = LogFactory.getLog(this)
 
     static triggers = {
-		simple repeatInterval: DAY
+		cron name:'cronTrigger', cronExpression: '0 15 2 * * ? *' //2:15 AM 
     }
 
 	WithingsDataService withingsDataService
