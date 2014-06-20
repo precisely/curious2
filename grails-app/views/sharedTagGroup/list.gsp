@@ -22,7 +22,10 @@
 			<tbody>
 			<g:each in="${sharedTagGroupInstanceList}" var="sharedTagGroupInstance">
 				<tr>
-					<td><g:link action="edit" id="${sharedTagGroupInstance.id}">${fieldValue(bean: sharedTagGroupInstance, field: "description")}</g:link></td>
+					<td>
+						<g:link action="edit" id="${sharedTagGroupInstance.id}">${fieldValue(bean: sharedTagGroupInstance, field: "description")}</g:link>
+						[${sharedTagGroupInstance.name}]
+					</td>
 					<td>${fieldValue(bean: sharedTagGroupInstance, field: "editorId")}</td>
 					<td>${fieldValue(bean: sharedTagGroupInstance, field: "parentTagGroup")}</td>
 				</tr>

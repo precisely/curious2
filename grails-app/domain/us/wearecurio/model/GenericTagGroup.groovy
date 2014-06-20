@@ -18,4 +18,5 @@ class GenericTagGroup {
 	static belongsTo = [parentTagGroup:GenericTagGroup]
 	
 	String description
+	String name	// Will be short name
 }

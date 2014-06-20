@@ -24,7 +24,7 @@ class TagService {
 	}
 
 	def getTagGroupsByUser(def userId) {
-		def tagGroups = databaseService.sqlRows("""select tg.id,tg.description, tgp.is_continuous as iscontinuous,
+		def tagGroups = databaseService.sqlRows("""select tg.id,tg.description, tgp.is_continuous as iscontinuous, tg.name as shortName,
 			tgp.show_points as showpoints,class as type from tag_group as tg,tag_group_properties as tgp where tg.id=tgp.tag_group_id and
 			tgp.user_id=""" + new Long(userId))
 		return tagGroups
