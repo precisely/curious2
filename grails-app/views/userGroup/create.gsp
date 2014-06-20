@@ -10,7 +10,7 @@
 		<div class="page-header">
 			<h1><g:message code="default.create.label" args="[entityName]" /></h1>
 		</div>
-		<g:form action="save">
+		<g:form action="createOrUpdate">
 			<fieldset>
 				<div class="row">
 					<div class="col-sm-6">

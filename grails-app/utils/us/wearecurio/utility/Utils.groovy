@@ -49,18 +49,15 @@ class Utils {
 		return save(obj, false)
 	}
 
-	static def save(obj, boolean flush) {
-		if (!obj.save(flush:flush)) {
-			log.debug "Error saving " + obj.toString()
-			obj.errors.each {
-				log.debug it
-			}
-			return false;
+	static boolean save(obj, boolean flush) {
+		if (!obj.save(flush: flush)) {
+			log.debug "Error saving $obj: $obj.errors"
+			return false
 		} else {
-			log.debug "Object saved successfully " + obj.toString()
+			log.debug "Object saved successfully $obj."
 		}
 
-		return true;
+		return true
 	}
 
 	/**

@@ -12,6 +12,7 @@ import us.wearecurio.utility.Utils
 class UserGroup {
 
 	private static def log = LogFactory.getLog(this)
+	static final String SYSTEM_USER_GROUP_NAME = "System"
 
 	static constraints = {
 		name(unique:true)
@@ -19,12 +20,12 @@ class UserGroup {
 		fullName(nullable:true)
 		description(nullable:true)
 	}
-	
+
 	static mapping = {
 		version false
 		table 'user_group'
 	}
-	
+
 	Date created = new Date()
 	Date updated = new Date()
 	boolean isOpen // anyone can join
@@ -34,11 +35,15 @@ class UserGroup {
 	String name
 	String fullName
 	String description
-	
+
 	UserGroup() {
 	}
-	
-	UserGroup(String name, String fullName, String description, def options) {
+
+	UserGroup(String name, String fullName, String description, Map options) {
+		bindData(name, fullName, description, options)
+	}
+
+	void bindData(String name, String fullName, String description, Map options) {
 		this.isOpen = options ? options['isOpen'] : false
 		this.isReadOnly =  options ? options['isReadOnly'] : false
 		this.isModerated =  options ? options['isModerated'] : false
@@ -47,19 +52,35 @@ class UserGroup {
 		this.fullName = fullName
 		this.description = description
 	}
-	
-	public static UserGroup lookup(String name) {
+
+	static UserGroup createOrUpdate(String name, String fullName, String description, def options) {
+		UserGroup userGroupInstance = lookup(name)
+
+		if (!userGroupInstance) {
+			userGroupInstance = new UserGroup()
+		} else if (userGroupInstance.name == SYSTEM_USER_GROUP_NAME) {
+			// Do not allow default system group to change the name.
+			name = SYSTEM_USER_GROUP_NAME
+		}
+
+		userGroupInstance.bindData(name, fullName, description, options)
+		Utils.save(userGroupInstance, true)
+		
+		return userGroupInstance
+	}
+
+	static UserGroup lookup(String name) {
 		return UserGroup.findByName(name)
 	}
-	
-	public static UserGroup create(String name, String fullName, String description, def options) {
+
+	static UserGroup create(String name, String fullName, String description, def options) {
 		UserGroup group = new UserGroup(name, fullName, description, options)
-		
+
 		Utils.save(group, true)
-		
+
 		return group
 	}
-	
+
 	public static void delete(UserGroup group) {
 		Long groupId = group.getId()
 		log.debug "UserGroup.delete() groupId:" + groupId
@@ -72,42 +93,42 @@ class UserGroup {
 		GroupMemberDiscussion.executeUpdate("delete GroupMemberDiscussion item where item.groupId = :id", [id:groupId])
 		group.delete()
 	}
-	
+
 	public static def getGroupsForAdmin(User user) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberAdmin item where item.memberId = :id and item.groupId = userGroup.id",
 				['id':user.getId()])
 	}
-	
+
 	public static def getGroupsForReader(User user) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberReader item where item.memberId = :id and item.groupId = userGroup.id",
 				['id':user.getId()])
 	}
-	
+
 	public static def getGroupsForWriter(User user) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberWriter item where item.memberId = :id and item.groupId = userGroup.id",
 				['id':user.getId()])
 	}
-	
+
 	public static def getGroupsForDiscussion(Discussion discussion) {
 		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id",
 				['id':discussion.getId()])
 	}
-	
+
 	public static def getPrimaryGroupForDiscussionId(Long discussionId) {
 		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id order by userGroup.created asc limit 1",
 				['id':discussionId])
 	}
-	
+
 	private static def addAdminPermissions(User user, def discussionInfos) {
 		def retVals = []
 		def discussionMap = [:]
-		
+
 		for (info in discussionInfos) {
 			def retVal = info[0].getJSONDesc()
 			def discussionId = retVal['id']
 			Long groupId = info[1] > 0 ? info[1] : 0L
 			UserGroup group = groupId ? UserGroup.get(groupId) : null
-			
+
 			// check to see if discussion is already in the list in a different group
 			def oldRetVal = discussionMap[discussionId]
 			if (oldRetVal != null) {
@@ -130,7 +151,7 @@ class UserGroup {
 			discussionMap[discussionId] = retVal
 			retVals.add(retVal)
 		}
-		
+
 		for (retVal in retVals) {
 			if (!retVal['groupId']) {
 				def groups = UserGroup.getPrimaryGroupForDiscussionId(retVal['id'])
@@ -140,14 +161,14 @@ class UserGroup {
 				}
 			}
 		}
-		
+
 		return retVals
 	}
-	
+
 	public static def getDiscussionsInfoForGroupNameList(User user, def groupNameList) {
 		boolean owned = false
-		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump() 
-		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump() 
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump()
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump()
 		def groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
@@ -161,44 +182,44 @@ class UserGroup {
 				}
 			}
 		}
-		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): groupId list: " + groupIds?.dump() 
+		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): groupId list: " + groupIds?.dump()
 		def map = [:]
-		
+
 		if (groupIds.size() > 0) map['groupIds'] = groupIds
 		else if (!owned) return [:] // user has no permissions to read anything
 		if (owned) map['id'] = user.getId()
-		
+
 		def results = Discussion.executeQuery(
 				"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "
 					+ "User user, GroupMemberDiscussion dItem where d.id = dItem.memberId "
 					+ (groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
 					+ "and d.userId = user.id order by d.updated desc", map)
-		
+
 		if (owned) {
 			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
 		}
-		
+
 		return addAdminPermissions(user, results)
 	}
-	
+
 	private static def DISCUSSIONS_QUERY =\
 			"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "\
 				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
 				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
 				+ "and d.userId = user.id order by d.updated desc"
-	
+
 	public static def getDiscussionsInfoForUser(User user, boolean owned) {
 		def results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id:user.getId()])
 		if (owned) {
-			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries" 
+			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
 			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username "
 				+ "from Discussion d, User user where d.userId = :id and user.id = d.userId "
 				, [id:user.getId()]))
 		}
-			
+
 		addAdminPermissions(user, results)
 	}
-	
+
 	static def canReadDiscussion(User user, Discussion discussion) {
 		if (!user)
 			return discussion.getIsPublic()
@@ -209,10 +230,10 @@ class UserGroup {
 			if (group.hasReader(user))
 				return true
 		}
-		
+
 		return false
 	}
-	
+
 	static def canWriteDiscussion(User user, Discussion discussion) {
 		if (!user) {
 			log.debug "UserGroup.canWriteDiscussion(): No user passed, looking to see if the group is public"
@@ -229,11 +250,11 @@ class UserGroup {
 				return true
 			}
 		}
-		
+
 		log.debug "UserGroup.canWriteDiscussion(): User ${user.getId()} has NO write permission"
 		return false
 	}
-	
+
 	static def canAdminDiscussion(User user, Discussion discussion) {
 		if (!user)
 			return false
@@ -246,54 +267,54 @@ class UserGroup {
 			if (group.hasAdmin(user))
 				return true
 		}
-		
+
 		return false
 	}
-	
+
 	def addReader(User user) {
-		if (!user) return
-		
+		if (!user) return;
+
 		GroupMemberReader.create(id, user.getId())
-		
+
 		this.notifyNotifiedMajors("contact@wearecurio.us", "New user '" + user.getUsername() + "' joined group '" + this.description + "'",
 				"New user '" + user.getUsername() + "' (" + user.getFirst() + " "
 				+ user.getLast() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
 	}
-	
+
 	def removeReader(User user) {
 		if (!user) return
-		
+
 		GroupMemberReader.delete(id, user.getId())
-		
+
 		this.notifyNotifiedMajors("contact@wearecurio.us", "User '" + user.getUsername() + "' left group '" + this.description + "'",
 				"User '" + user.getUsername() + "' (" + user.getFirst() + " "
 				+ user.getLast() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
 	}
-	
+
 	def hasReader(User user) {
 		if (!user) return false
 
 		return GroupMemberReader.lookup(id, user.getId()) != null
 	}
-	
+
 	def addWriter(User user) {
 		if (!user) return
-		
+
 		GroupMemberWriter.create(id, user.getId())
 	}
-	
+
 	def removeWriter(User user) {
 		if (!user) return
 
 		GroupMemberReader.delete(id, user.getId())
 	}
-	
+
 	def hasWriter(User user) {
 		if (!user) return false
-		
+
 		return GroupMemberWriter.lookup(id, user.getId()) != null
 	}
-	
+
 	def addAdmin(User user) {
 		if (!user) return
 		addReader(user)
@@ -304,55 +325,55 @@ class UserGroup {
 		}
 		GroupMemberAdmin.create(id, user.getId())
 	}
-	
+
 	def removeAdmin(User user) {
 		if (!user) return
-		
+
 		GroupMemberAdmin.delete(id, user.getId())
 	}
-	
+
 	def hasAdmin(User user) {
 		if (!user) return false
-		
+
 		return GroupMemberAdmin.lookup(id, user.getId()) != null
 	}
-	
+
 	def addNotified(User user) {
 		if (!user) return
 
 		GroupMemberNotified.create(id, user.getId())
 	}
-	
+
 	def removeNotified(User user) {
 		if (!user) return
 
 		GroupMemberNotified.delete(id, user.getId())
 	}
-	
+
 	def hasNotified(User user) {
 		if (!user) return false
-		
+
 		return GroupMemberNotified.lookup(id, user.getId()) != null
 	}
-	
+
 	def addNotifiedMajor(User user) {
 		if (!user) return
 
 		GroupMemberNotifiedMajor.create(id, user.getId())
 	}
-	
+
 	def removeNotifiedMajor(User user) {
 		if (!user) return
-		
+
 		GroupMemberNotified.delete(id, user.getId())
 	}
-	
+
 	def hasNotifiedMajor(User user) {
 		if (!user) return false
-		
+
 		return GroupMemberNotifiedMajor.lookup(id, user.getId()) != null
 	}
-	
+
 	/** 
 	 * The add/remove Member methods are used to add a generic user to a group. If the group is
 	 * read-only, only adds read permissions for the user. Use addAdmin() to add a more powerful
@@ -365,16 +386,16 @@ class UserGroup {
 	 */
 	def addMember(User user) {
 		if (!user) return
-		
+
 		addReader(user)
-		
+
 		if (!isReadOnly)
 			addWriter(user)
 	}
-	
+
 	def removeMember(User user) {
 		if (!user) return
-		
+
 		removeReader(user)
 		removeWriter(user)
 		removeAdmin(user)
@@ -382,7 +403,7 @@ class UserGroup {
 		removeNotifiedMajor(user)
 		removeDefaultFor(user)
 	}
-	
+
 	/**
 	 * Methods for handling editing a user's default group
 	 * @param discussion
@@ -390,18 +411,18 @@ class UserGroup {
 	 */
 	def addDefaultFor(User user) {
 		if (!user) return false
-		
+
 		if (!hasReader(user)) return false
-		
+
 		return GroupMemberDefaultFor.create(id, user.getId()) ? true : false
 	}
-	
+
 	def removeDefaultFor(User user) {
 		if (!user) return
-		
+
 		GroupMemberDefaultFor.delete(id, user.getId())
 	}
-	
+
 	static UserGroup getDefaultGroupForUser(User user) {
 		def defaultGroup = GroupMemberDefaultFor.lookupGroup(user)
 		if (!defaultGroup) {
@@ -437,37 +458,37 @@ class UserGroup {
 		if (!discussion) return false
 		return GroupMemberDiscussion.lookup(id, discussion.getId()) != null
 	}
-	
+
 	def getNotifiedUsers() {
 		return User.executeQuery("select user from User user, GroupMemberNotified item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	def getNotifiedMajorUsers() {
 		return User.executeQuery("select user from User user, GroupMemberNotifiedMajor item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	def getAdminUsers() {
 		return User.executeQuery("select user from User user, GroupMemberAdmin item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	def getReaderUsers() {
 		return User.executeQuery("select user from User user, GroupMemberReader item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	def getWriterUsers() {
 		return User.executeQuery("select user from User user, GroupMemberWriter item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	def getDiscussions() {
 		return Discussion.executeQuery("select d from Discussion d, GroupMemberDiscussion item where item.groupId = :id and d.id = item.memberId",
 				['id':getId()])
 	}
-	
+
 	private sendMessages(people, String fromAddress, String subjectString, String message) {
 		for (User p in people) {
 			if (p.getEmail() != null) {
@@ -481,23 +502,23 @@ class UserGroup {
 			}
 		}
 	}
-	
+
 	def notifyAdmins(String from, String subject, String message) {
 		sendMessages(getAdminUsers(), from, subject, message)
 	}
-	
+
 	def notifyNotifieds(String from, String subject, String message) {
 		sendMessages(getNotifiedUsers(), from, subject, message)
 	}
-	
+
 	def notifyNotifiedMajors(String from, String subject, String message) {
 		sendMessages(getNotifiedMajorUsers(), from, subject, message)
 	}
-	
+
 	def notifyReaders(String from, String subject, String message) {
 		sendMessages(getReaderUsers(), from, subject, message)
 	}
-	
+
 	/**
 	 * Get data for the discussion data lists
 	 */
