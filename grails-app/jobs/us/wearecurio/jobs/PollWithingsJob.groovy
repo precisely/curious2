@@ -8,7 +8,7 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 	private static def log = LogFactory.getLog(this)
 
     static triggers = {
-		simple repeatInterval: DAY
+		cron name:'pollWithingsCron', startDelay: 10000, cronExpression: '0 15 2 * * ? *' //2:15 AM 
     }
 
 	WithingsDataService withingsDataService
@@ -16,7 +16,7 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
     def execute() {
 		def timestamp = System.currentTimeMillis()
 		log.debug "PollWithingsJob: Started at ${timestamp}"
-		//withingsDataService.pollAll()
+		withingsDataService.pollAll()
 		log.debug "PollWithingsJob: Job started at ${timestamp} ended"
     }
 }

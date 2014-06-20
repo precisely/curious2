@@ -9,13 +9,13 @@ class DeviceIntegrationDailyJob extends TimerJob {
 	def withingsDataService
 
 	static triggers = {
-		simple repeatInterval: DAY
+		cron name:'deviceIntegrationTrigger', startDelay: 10000, cronExpression: '0 15 2 * * ? *' //2:15 AM 
 	}
 
 	def execute() {
 		log.debug "Started executing Daily basis job.."
 		oauthAccountService.refreshAllToken()
-		//withingsDataService.refreshSubscriptions()
+		withingsDataService.refreshSubscriptions()
 		log.debug "Finished executing Daily basis job.."
 	}
 
