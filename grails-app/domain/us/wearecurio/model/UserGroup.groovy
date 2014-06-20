@@ -25,8 +25,8 @@ class UserGroup {
 		table 'user_group'
 	}
 	
-	Date created
-	Date updated
+	Date created = new Date()
+	Date updated = new Date()
 	boolean isOpen // anyone can join
 	boolean isReadOnly // only admins can post
 	boolean isModerated // all posts are moderated before posting (not yet implemented)
@@ -39,8 +39,6 @@ class UserGroup {
 	}
 	
 	UserGroup(String name, String fullName, String description, def options) {
-		this.created = new Date()
-		this.updated = new Date()
 		this.isOpen = options ? options['isOpen'] : false
 		this.isReadOnly =  options ? options['isReadOnly'] : false
 		this.isModerated =  options ? options['isModerated'] : false
