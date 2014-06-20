@@ -10,7 +10,10 @@
     </div>
     <ul>
         <li>
-            <g:link controller="group" action="list">Manage Groups</g:link>
+            <g:link controller="group" action="list">Groups</g:link>
+        </li>
+        <li>
+            <g:link controller="sharedTagGroup" action="list">Shared Tag Groups</g:link>
         </li>
     </ul>
 </body>
