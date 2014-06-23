@@ -94,9 +94,13 @@ class UserGroup {
 		group.delete()
 	}
 
-	public static def getGroupsForAdmin(User user) {
+	static List getGroupsForAdmin(User user) {
+		getGroupsForAdmin(user.id)
+	}
+
+	static List getGroupsForAdmin(Long userId) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberAdmin item where item.memberId = :id and item.groupId = userGroup.id",
-				['id':user.getId()])
+				[id: userId])
 	}
 
 	public static def getGroupsForReader(User user) {
