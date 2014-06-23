@@ -15,7 +15,6 @@
 			<thead>
 				<tr>
 					<g:sortableColumn property="description" title="${message(code: 'sharedTagGroup.description.label', default: 'Description')}" />
-					<g:sortableColumn property="editorId" title="${message(code: 'sharedTagGroup.editorId.label', default: 'Editor Id')}" />
 					<th><g:message code="sharedTagGroup.parentTagGroup.label" default="Parent Tag Group" /></th>
 				</tr>
 			</thead>
@@ -23,10 +22,9 @@
 			<g:each in="${sharedTagGroupInstanceList}" var="sharedTagGroupInstance">
 				<tr>
 					<td>
-						<g:link action="edit" id="${sharedTagGroupInstance.id}">${fieldValue(bean: sharedTagGroupInstance, field: "description")}</g:link>
+						${fieldValue(bean: sharedTagGroupInstance, field: "description")}
 						[${sharedTagGroupInstance.name}]
 					</td>
-					<td>${fieldValue(bean: sharedTagGroupInstance, field: "editorId")}</td>
 					<td>${fieldValue(bean: sharedTagGroupInstance, field: "parentTagGroup")}</td>
 				</tr>
 			</g:each>

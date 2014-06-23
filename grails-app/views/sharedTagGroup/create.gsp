@@ -7,14 +7,14 @@
 	</head>
 	<body>
 		<h1 class="page-header">Create Shared Tag Group</h1>
-		<g:form action="save" >
+		<g:form action="createOrUpdate">
 			<fieldset class="form">
 				<div class="row">
 					<div class="col-sm-6">
 						<g:render template="form"/>
 					</div>
 				</div>
-				<g:submitButton name="create" class="save" value="${message(code: 'default.button.create.label', default: 'Create')}" />
+				<g:submitButton name="create" class="save" value="${message(code: 'default.button.create.label')}" />
 			</fieldset>
 		</g:form>
 	</body>

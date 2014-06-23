@@ -45,7 +45,7 @@ class TagController extends LoginController {
 	
 	def createTagGroupData() {
 		log.debug("Creating tag group: " + params)
-		def tagGroupInstance = tagGroupService.createTagGroup(params.tagGroupName, session.userId)
+		def tagGroupInstance = tagGroupService.createTagGroup(params.tagGroupName, session.userId, null)
 		if(params.tagIds) {
 			tagGroupService.addTags(tagGroupInstance, params.tagIds)
 		}
@@ -54,7 +54,7 @@ class TagController extends LoginController {
 	
 	def addWildcardTagGroupData() {
 		log.debug("Adding wildcard tag group: " + params)
-		def wildcardTagGroupInstance = tagGroupService.createOrLookupTagGroup(params.description, session.userId, WildcardTagGroup.class)
+		def wildcardTagGroupInstance = tagGroupService.createOrLookupTagGroup(params.description, session.userId, null, WildcardTagGroup.class)
 		renderJSONGet(wildcardTagGroupInstance)
 	}
 

@@ -15,33 +15,37 @@ class TagGroupService {
 
 	static transactional = true
 
-	def createOrLookupTagGroup(String tagGroupName, Long userId,Class type = TagGroup.class) {
+	def createOrLookupTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class, Map args = [:]) {
 		def tagGroupInstance = type.findByDescription(tagGroupName)
-		if(!tagGroupInstance) {
-			tagGroupInstance = this.createTagGroup(tagGroupName,type)
+		if (!tagGroupInstance) {
+			tagGroupInstance = this.createTagGroup(tagGroupName, type)
 		}
-		if(userId && !tagGroupInstance.hasErrors()) {
+
+		tagGroupInstance.name = args["name"] ?: ""
+		tagGroupInstance.save()
+
+		if ((userId || groupId) && !tagGroupInstance.hasErrors()) {
 			//def tagGroupPropertyInstance = GenericTagGroupProperties.findOrSaveByTagGroupIdAndUserId(tagGroupInstance.id, userId)
 			log.debug "Looking up tagGroupInstance"
-			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, tagGroupInstance.id)
+			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance.id)
 		}
 
 		return tagGroupInstance
 	}
 	
-	def createTagGroup(String tagGroupName, Long userId,Class type = TagGroup.class) {
+	def createTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class) {
 		def tagGroupInstance = this.createTagGroup(tagGroupName, type)
 		
-		if(userId && !tagGroupInstance.hasErrors()) {
+		if ((userId || groupId) && !tagGroupInstance.hasErrors()) {
 			//def tagGroupPropertyInstance = GenericTagGroupProperties.findOrSaveByTagGroupIdAndUserId(tagGroupInstance.id, userId)
 			log.debug "Looking up tagGroupInstance"
-			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, tagGroupInstance.id)
+			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance.id)
 		}
 
 		return tagGroupInstance
 	}
 	
-	GenericTagGroup createTagGroup(String tagGroupName,Class type = TagGroup.class) {
+	GenericTagGroup createTagGroup(String tagGroupName, Class type = TagGroup.class) {
 		def tagGroupInstance = type.newInstance()
 		tagGroupInstance.description = tagGroupName
 		tagGroupInstance.save()
