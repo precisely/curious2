@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.utility.Utils
 
 class GenericTagGroupProperties {
-	
+
 	private static def log = LogFactory.getLog(this)
 
 	Long userId
@@ -35,6 +35,15 @@ class GenericTagGroupProperties {
 		tagGroupId column:'tag_group_id', index:'tag_group_id_index'
 	}
 
+	static GenericTagGroupProperties createOrLookup(Long userId, Long groupId, GenericTagGroup tagGroupInstance) {
+		if (tagGroupInstance.hasErrors() || (!userId && !groupId)) {
+			log.warn "Can't create or lookup. $tagGroupInstance.errors, $groupId, $userId"
+			return null
+		}
+
+		createOrLookup(userId, groupId, tagGroupInstance.id)
+	}
+
 	static GenericTagGroupProperties createOrLookup(Long userId, Long groupId, long tagGroupId) {
 		log.debug "GenericTagGroupProperties.createOrLookup() userId: $userId, groupId: $groupId, tag:" + Tag.get(tagGroupId)
 
@@ -45,14 +54,14 @@ class GenericTagGroupProperties {
 
 		if (Utils.save(props, true))
 			return props
-		
+
 		return null
 	}
-	
+
 	static def lookup(long userId, long tagGroupId) {
 		return GenericTagGroupProperties.findByTagGroupIdAndUserId(tagGroupId, userId)
 	}
-			
+
 	String toString() {
 		return "GenericTagGroupProperties(userId:" + userId + ", tagGroupId:" + tagGroupId + ", isContinuous:" \
 				+ isContinuous + ", showPoints:" \

@@ -21,7 +21,7 @@ class SharedTagGroupController {
 			return
 		}
 
-		SharedTagGroup tagGroupInstance = tagGroupService.createOrLookupTagGroup(params.description, userId, groupId, SharedTagGroup.class, params)
+		SharedTagGroup tagGroupInstance = tagGroupService.createOrLookupSharedTagGroup(params.description, userId, groupId, params)
 		if (!tagGroupInstance || tagGroupInstance.hasErrors()) {
 			log.warn "Unable to save shared taggroup instance. ${tagGroupInstance?.errors}"
 			render(view: "create", model: [sharedTagGroupInstance: tagGroupInstance ?: new SharedTagGroup()])

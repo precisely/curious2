@@ -17,7 +17,7 @@
 	<g:textField name="name" class="form-control" value="${sharedTagGroupInstance?.name}" required="" />
 </div>
 
-<div class="form-group">
+<div class="form-group hide">
 	<label for="userId">
 		User (Either user group or user is required)
 	</label>
@@ -27,8 +27,8 @@
 
 <div class="form-group">
 	<label for="groupId">
-		User Group (Either user group or user is required)
+		User Group
 	</label>
 	<g:select name="groupId" from="${UserGroup.list()}" class="form-control" noSelection="['':'Select Group']"
-		optionKey="id" optionValue="fullName" />
+		optionKey="id" optionValue="fullName" required="" />
 </div>

@@ -1,6 +1,6 @@
 package us.wearecurio.model
 
-class SharedTagGroup extends GenericTagGroup {
+class SharedTagGroup extends TagGroup {
 
 	static constraints = {
 	}

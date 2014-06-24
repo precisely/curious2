@@ -1,63 +1,88 @@
 package us.wearecurio.services
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 
-import org.springframework.transaction.annotation.Transactional
-
-import us.wearecurio.model.GenericTagGroup;
+import us.wearecurio.model.GenericTagGroup
 import us.wearecurio.model.GenericTagGroupProperties
+import us.wearecurio.model.SharedTagGroup
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagGroup
+import us.wearecurio.model.UserGroup
 
 class TagGroupService {
 
-	private static def log = LogFactory.getLog(this)
+	private static Log log = LogFactory.getLog(this)
 
 	static transactional = true
 
+	SharedTagGroup createOrLookupSharedTagGroup(String tagGroupName, Long userId, Long groupId, Map args = [:]) {
+		UserGroup userGroupInstance = UserGroup.get(groupId)
+		if (!userGroupInstance) {
+			log.warn "Could not find UserGroup instance with id: [$groupId]"
+			return null
+		}
+
+		SharedTagGroup tagGroupInstance
+
+		List tagGroupInstanceList = lookupSharedTagGroupWithinGroup(tagGroupName, groupId)
+		if (!tagGroupInstanceList) {
+			tagGroupInstance = createTagGroup(tagGroupName, userId, groupId, SharedTagGroup.class, args)
+		} else {
+			tagGroupInstance = tagGroupInstanceList[0]
+		}
+
+		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
+		return tagGroupInstance
+	}
+
+	/**
+	 * Return list of SharedTagGroup instances matching the name within a given UserGroup.
+	 * @param tagGroupName Name of the SharedTagGroup to search
+	 * @param groupId Identity of the UserGroup where SharedTagGroup needs to be searched.
+	 * @return
+	 */
+	List lookupSharedTagGroupWithinGroup(String tagGroupName, Long groupId) {
+		GenericTagGroup.executeQuery("""SELECT tg FROM SharedTagGroup AS tg, GenericTagGroupProperties AS tgp
+				WHERE tgp.tagGroupId = tg.id AND tg.description = :description
+				AND tgp.groupId IS NOT NULL AND tgp.groupId = :groupId""",
+				[description: tagGroupName, groupId: groupId])
+	}
+
 	def createOrLookupTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class, Map args = [:]) {
 		def tagGroupInstance = type.findByDescription(tagGroupName)
+
 		if (!tagGroupInstance) {
-			tagGroupInstance = this.createTagGroup(tagGroupName, type)
+			tagGroupInstance = this.createTagGroup(tagGroupName, type, args)
 		}
 
-		tagGroupInstance.name = args["name"] ?: ""
-		tagGroupInstance.save()
-
-		if ((userId || groupId) && !tagGroupInstance.hasErrors()) {
-			//def tagGroupPropertyInstance = GenericTagGroupProperties.findOrSaveByTagGroupIdAndUserId(tagGroupInstance.id, userId)
-			log.debug "Looking up tagGroupInstance"
-			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance.id)
-		}
+		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
 
 		return tagGroupInstance
 	}
-	
-	def createTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class) {
-		def tagGroupInstance = this.createTagGroup(tagGroupName, type)
-		
-		if ((userId || groupId) && !tagGroupInstance.hasErrors()) {
-			//def tagGroupPropertyInstance = GenericTagGroupProperties.findOrSaveByTagGroupIdAndUserId(tagGroupInstance.id, userId)
-			log.debug "Looking up tagGroupInstance"
-			def tagGroupPropertyInstance = GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance.id)
-		}
+
+	def createTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class, Map args = [:]) {
+		def tagGroupInstance = createTagGroup(tagGroupName, type, args)
+
+		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
 
 		return tagGroupInstance
 	}
-	
-	GenericTagGroup createTagGroup(String tagGroupName, Class type = TagGroup.class) {
+
+	GenericTagGroup createTagGroup(String tagGroupName, Class type = TagGroup.class, Map args = [:]) {
 		def tagGroupInstance = type.newInstance()
 		tagGroupInstance.description = tagGroupName
+		tagGroupInstance.name = args["name"] ?: ""
 		tagGroupInstance.save()
 		return tagGroupInstance
 	}
 
 	TagGroup addTag(TagGroup tagGroupInstance, Tag tagInstance) {
-		if(!tagGroupInstance) log.error "No tagGroupInstance found";
-		if(!tagInstance) log.error "No tag instance found"
+		if (!tagGroupInstance) log.error "No tagGroupInstance found";
+		if (!tagInstance) log.error "No tag instance found"
 
 		List existingTagIds = tagGroupInstance.tags*.id ?: []
-		if(!existingTagIds.contains(tagInstance.id)) {
+		if (!existingTagIds.contains(tagInstance.id)) {
 			log.debug "Adding [$tagInstance] to TagGroup [$tagGroupInstance]"
 			tagGroupInstance.addToTags(tagInstance)
 		}

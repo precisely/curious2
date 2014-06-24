@@ -35,6 +35,7 @@ environments {
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
 			//url = "jdbc:postgresql:tlb"
 			//url = "jdbc:hsqldb:file:devDB;shutdown=true"
+			//loggingSql = true
 		}
 	}
 	test {
