@@ -24,6 +24,13 @@
 
 <div class="checkbox">
 	<label>
+		<g:checkBox name="isSystemGroup" value="${userGroupInstance.isSystemGroup}" />
+		<g:message code="userGroup.isSystemGroup.label" default="Is System Group" />
+	</label>
+</div>
+
+<div class="checkbox">
+	<label>
 		<g:checkBox name="defaultNotify" value="${userGroupInstance.defaultNotify}" />
 		<g:message code="userGroup.defaultNotify.label" default="Default Notify" />
 	</label>

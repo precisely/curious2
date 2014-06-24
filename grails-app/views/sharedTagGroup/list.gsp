@@ -16,6 +16,7 @@
 				<tr>
 					<g:sortableColumn property="description" title="${message(code: 'sharedTagGroup.description.label', default: 'Description')}" />
 					<th><g:message code="sharedTagGroup.parentTagGroup.label" default="Parent Tag Group" /></th>
+					<th>Associated Group</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -26,6 +27,7 @@
 						[${sharedTagGroupInstance.name}]
 					</td>
 					<td>${fieldValue(bean: sharedTagGroupInstance, field: "parentTagGroup")}</td>
+					<td>${sharedTagGroupInstance.associatedGroups*.name.join(', ') }</td>
 				</tr>
 			</g:each>
 			</tbody>

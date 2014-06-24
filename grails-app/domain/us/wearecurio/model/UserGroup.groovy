@@ -32,6 +32,7 @@ class UserGroup {
 	boolean isReadOnly // only admins can post
 	boolean isModerated // all posts are moderated before posting (not yet implemented)
 	boolean defaultNotify // notify admins by default
+	boolean isSystemGroup
 	String name
 	String fullName
 	String description
@@ -48,6 +49,7 @@ class UserGroup {
 		this.isReadOnly =  options ? options['isReadOnly'] : false
 		this.isModerated =  options ? options['isModerated'] : false
 		this.defaultNotify =  options ? options['defaultNotify'] : false
+		this.isSystemGroup =  options ? options['isSystemGroup'] : false
 		this.name = name
 		this.fullName = fullName
 		this.description = description
