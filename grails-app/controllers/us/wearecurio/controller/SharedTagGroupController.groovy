@@ -35,7 +35,7 @@ class SharedTagGroupController {
 	def edit(Long id) {
 		def sharedTagGroupInstance = SharedTagGroup.get(id)
 		if (!sharedTagGroupInstance) {
-			flash.message = message(code: 'default.not.found.message', args: [message(code: 'sharedTagGroup.label', default: 'SharedTagGroup'), id])
+			flash.message = message(code: 'default.not.found.message', args: [message(code: 'sharedTagGroup.label'), id])
 			redirect(action: "list")
 			return
 		}

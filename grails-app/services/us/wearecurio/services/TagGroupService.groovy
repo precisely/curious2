@@ -17,12 +17,6 @@ class TagGroupService {
 	static transactional = true
 
 	SharedTagGroup createOrLookupSharedTagGroup(String tagGroupName, Long userId, Long groupId, Map args = [:]) {
-		UserGroup userGroupInstance = UserGroup.get(groupId)
-		if (!userGroupInstance) {
-			log.warn "Could not find UserGroup instance with id: [$groupId]"
-			return null
-		}
-
 		SharedTagGroup tagGroupInstance
 
 		List tagGroupInstanceList = lookupSharedTagGroupWithinGroup(tagGroupName, groupId)
