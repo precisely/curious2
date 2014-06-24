@@ -105,6 +105,11 @@ inherit(Tag, TreeItem);
 function TagGroup(args) {
 	Tag.call(this, args);
 	TreeItemGroup.call(this, args);
+
+	this.groupId = args.groupId;
+	this.groupName = args.groupName;
+	this.isSystemGroup = args.isSystemGroup;
+
 	if (this.getType().indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
 	}
@@ -294,6 +299,13 @@ function TagStore(args) {
 			treeStore : this,
 			state: args['state']
 		};
+
+		if (typeClass === TagGroup) {
+			initArgs.groupId = args['groupId'];
+			initArgs.groupName = args['groupName'];
+			initArgs.isSystemGroup = args['isSystemGroup'];
+		}
+
 		if (typeof listItem == 'undefined') {
 			if (args instanceof Tag || args instanceof TagGroup) {
 				listItem = args;
@@ -546,8 +558,18 @@ function TagGroupView(args) {
 		
 		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass()+' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
-		+ this.data.description +'</span><span class=" hide ui-icon ui-icon-close"></span>';
-		
+		+ this.data.description;
+
+		if (this.data.type === 'sharedTagGroup' && this.data.groupName) {
+			html += ' [' + this.data.groupName + ']';
+		}
+
+		html += '</span>';
+
+		if (!this.data.isSystemGroup) {		// Do not show delete button if it is a System Group
+			html += '<span class=" hide ui-icon ui-icon-close"></span>';
+		}
+
 		if (!this.data.isWildcard) {
 			html +='<span class=" hide ui-icon ui-icon-pencil"></span>';
 		}

@@ -7,9 +7,20 @@ class TagService {
 
 	static transactional = true
 
-	private static final String COMMON_QUERY = """SELECT tg.id, tg.description, tgp.is_continuous AS is_continuous,
-			tg.name AS shortName, tgp.show_points AS showpoints, class AS type FROM tag_group AS tg,
-			tag_group_properties AS tgp WHERE tg.id = tgp.tag_group_id
+	private static final String COMMON_QUERY = """
+			SELECT	tg.id				AS id,
+					tg.description		AS description,
+					tgp.is_continuous	AS is_continuous,
+					tgp.group_id		AS groupId,
+					tg.name				AS shortName,
+					tgp.show_points		AS showpoints,
+					g.name				AS groupName,
+					class				AS type
+			FROM	tag_group AS tg
+					INNER JOIN tag_group_properties AS tgp 
+							ON tgp.tag_group_id = tg.id 
+					LEFT JOIN user_group AS g 
+							ON g.id = tgp.group_id
 		"""
 
 	def databaseService
@@ -25,6 +36,12 @@ class TagService {
 		return tags
 	}
 
+	List getAllTagGroupsForUser(Long userId) {
+		// First fetch system tag groups so not to remove while check for unique tag groups.
+		List tagGroups = getSystemTagGroups() + getTagGroupsByUser(userId) + getTagGroupsTheUserIsAnAdminOf(userId)
+		return tagGroups.unique { it.description }
+	}
+
 	/**
 	 * Get list of all tag groups owned by the given user.
 	 * This is done by searching all tag groups which has userId property set for current user.
@@ -32,7 +49,7 @@ class TagService {
 	 * @return List of tag groups. (List of maps)
 	 */
 	List getTagGroupsByUser(def userId) {
-		return databaseService.sqlRows("$COMMON_QUERY and tgp.user_id=" + new Long(userId))
+		return databaseService.sqlRows("$COMMON_QUERY where tgp.user_id=" + new Long(userId))
 	}
 
 	/**
@@ -68,7 +85,26 @@ class TagService {
 			return []
 		}
 
-		return databaseService.sqlRows("$COMMON_QUERY and tgp.group_id in (${userGroupIds.join(',')})")
+		return databaseService.sqlRows("$COMMON_QUERY where tgp.group_id in (${userGroupIds.join(',')})")
+	}
+
+	List getSystemTagGroups() {
+		List<Long> systemGroupIds = UserGroup.withCriteria {
+			projections {
+				distinct("id")
+			}
+			or {
+				eq("name", UserGroup.SYSTEM_USER_GROUP_NAME)
+				eq("isSystemGroup", true)
+			}
+		}
+
+		List tagGroups = getTagGroupsForUserGroupIds(systemGroupIds)
+		tagGroups.each { tagGroup ->
+			tagGroup["isSystemGroup"] = true
+		}
+
+		return tagGroups
 	}
 
 }

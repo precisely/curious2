@@ -35,7 +35,7 @@ class TagController extends LoginController {
 	def listTagsAndTagGroupsData() {
 		log.debug("Fetching tags and tag groups: " + params)
 		def tagAndTagGroupList = tagService.getTagsByUser(session.userId);
-		tagAndTagGroupList.addAll(tagService.getTagGroupsByUser(session.userId))
+		tagAndTagGroupList.addAll(tagService.getAllTagGroupsForUser(session.userId))
 		tagAndTagGroupList.sort { a,b ->
 			return a.description.compareTo(b.description)
 		}
@@ -73,7 +73,7 @@ class TagController extends LoginController {
 		renderJSONGet(["dummy"])
 	}
 	
-	def showTagGroupData() {
+	def showTagGroupData(Long id) {
 		log.debug("Showing tag group: " + params)
 		def tagGroupInstance = TagGroup.get(params.id.toLong())
 		def tagAndTagGroupList = []
