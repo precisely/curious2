@@ -108,6 +108,7 @@ function TagGroup(args) {
 
 	this.groupId = args.groupId;
 	this.groupName = args.groupName;
+	this.isReadOnly = args.isReadOnly;
 	this.isSystemGroup = args.isSystemGroup;
 
 	if (this.getType().indexOf('wildcard')!==-1) {
@@ -303,6 +304,7 @@ function TagStore(args) {
 		if (typeClass === TagGroup) {
 			initArgs.groupId = args['groupId'];
 			initArgs.groupName = args['groupName'];
+			initArgs.isReadOnly = args['isReadOnly'];
 			initArgs.isSystemGroup = args['isSystemGroup'];
 		}
 
@@ -555,8 +557,13 @@ function TagGroupView(args) {
 		if (this.pinned) {
 			pinIcon = "ui-icon-pin-s";
 		}
-		
-		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass()+' '+ this.data.type + '" data-type="' + this.data.type + 
+
+		var classes = this.getTreeItemViewCssClass();
+		if (this.data.isReadOnly) {
+			classes += ' no-drop';
+		}
+
+		var html = '<li id="'+this.element+'" class="'+ classes + ' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
 		+ this.data.description;
 
@@ -651,7 +658,18 @@ function TagListWidget(args) {
 			    }
 			});
 			$(this).droppable({
-				drop : tagListWidget.dropTagListItem.bind(tagListWidget)
+				drop : tagListWidget.dropTagListItem.bind(tagListWidget),
+				over: function(e, ui) {
+					var $target = $(e.target);
+					var cursor = 'auto';
+
+					if ($target.hasClass('no-drop')) {
+						cursor = 'no-drop';
+					} else {
+						cursor = 'auto';
+					}
+					$('body').css('cursor', cursor);
+				}
 			});
 		});
 	}
@@ -677,13 +695,16 @@ function TagListWidget(args) {
 		var targetView = $target.data(DATA_KEY_FOR_ITEM_VIEW);
 		var sourceView = $source.data(DATA_KEY_FOR_ITEM_VIEW);
 		targetView.highlight(true);
-		if ((sourceItem instanceof TagGroup)
-				&& (targetItem instanceof TagGroup)) {
+
+		if (targetItem.isReadOnly) {
+			return false;
+		}
+
+		if ((sourceItem instanceof TagGroup) && (targetItem instanceof TagGroup)) {
 			targetView = targetView.getTopMostParentItemView();
 			if(typeof targetView !=='undefined')
 				this.list.addTagGroupToTagGroup(targetItem, sourceItem);
-		} else if ((sourceItem instanceof Tag)
-				&& (targetItem instanceof TagGroup)) {
+		} else if ((sourceItem instanceof Tag) && (targetItem instanceof TagGroup)) {
 			targetView = targetView.getTopMostParentItemView();
 			if(typeof targetView !=='undefined')
 				this.list.addTagToTagGroup(targetView.getData(), sourceItem);

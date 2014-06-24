@@ -338,10 +338,14 @@ class UserGroup {
 		GroupMemberAdmin.delete(id, user.getId())
 	}
 
-	def hasAdmin(User user) {
+	boolean hasAdmin(User user) {
 		if (!user) return false
 
-		return GroupMemberAdmin.lookup(id, user.getId()) != null
+		return hasAdmin(id, user.id)
+	}
+
+	static boolean hasAdmin(Long groupId, Long userId) {
+		return GroupMemberAdmin.lookup(groupId, userId) != null
 	}
 
 	def addNotified(User user) {

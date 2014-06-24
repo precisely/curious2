@@ -6,6 +6,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import us.wearecurio.model.SharedTagGroup
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.TagGroupService
@@ -39,14 +40,16 @@ class TagServiceTests extends CuriousServiceTestCase {
 		curious.addAdmin(admin2)
 
 		announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
-				[isReadOnly: false, defaultNotify: false])
+				[isReadOnly: true, defaultNotify: false])
+
+		announce.addAdmin(admin2)
 
 		userGroup1 = UserGroup.create("UserGroup1", "UserGroup1", "", [isReadOnly: false, defaultNotify: false])
 
 		tagGroup1 = tagGroupService.createOrLookupTagGroup("Tag Group 1", user.id, null)
 		tagGroup2 = tagGroupService.createOrLookupTagGroup("Tag Group 2", user.id, null)
 		tagGroup3 = tagGroupService.createOrLookupTagGroup("Tag Group 3", null, curious.id)
-		tagGroup4 = tagGroupService.createOrLookupTagGroup("Tag Group 4", null, announce.id)
+		tagGroup4 = tagGroupService.createOrLookupTagGroup("Tag Group 4", null, announce.id, SharedTagGroup.class)
 
 		Utils.setMailService(mailService)
 	}
@@ -115,5 +118,23 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList.size() == 2
 		assert tagGroupList[0].id == tagGroup1.id
 		assert tagGroupList[1].id == tagGroup2.id
+	}
+
+	void "test can edit for readonly tag group"() {
+		boolean canEdit = tagService.canEdit(tagGroup4, admin.id)
+
+		assert canEdit == false
+	}
+
+	void "test can edit for readonly tag group for admin"() {
+		boolean canEdit = tagService.canEdit(tagGroup4, admin2.id)
+
+		assert canEdit == true
+	}
+
+	void "test can edit method for non SharedTagGroup"() {
+		shouldFail(MissingMethodException) {
+			tagService.canEdit(tagGroup1, admin2.id)
+		}
 	}
 }

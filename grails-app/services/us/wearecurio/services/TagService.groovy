@@ -1,21 +1,24 @@
 package us.wearecurio.services
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.GenericTagGroupProperties;
+import us.wearecurio.model.SharedTagGroup
 import us.wearecurio.model.UserGroup
 
 class TagService {
 
 	static transactional = true
 
-	private static final String COMMON_QUERY = """
-			SELECT	tg.id				AS id,
-					tg.description		AS description,
-					tgp.is_continuous	AS is_continuous,
-					tgp.group_id		AS groupId,
-					tg.name				AS shortName,
-					tgp.show_points		AS showpoints,
-					g.name				AS groupName,
-					class				AS type
+	private static String COMMON_QUERY = """
+			SELECT	tg.id					AS id,
+					tg.description			AS description,
+					tgp.is_continuous		AS is_continuous,
+					tg.name					AS shortName,
+					tgp.show_points			AS showpoints,
+					g.id					AS groupId,
+					g.name					AS groupName,
+					g.is_read_only			AS isReadOnly,
+					class					AS type
 			FROM	tag_group AS tg
 					INNER JOIN tag_group_properties AS tgp 
 							ON tgp.tag_group_id = tg.id 
@@ -105,6 +108,27 @@ class TagService {
 		}
 
 		return tagGroups
+	}
+
+	boolean isReadOnlyTagGroup(Long tagGroupId) {
+		databaseService.sqlRows("""SELECT COUNT(*) FROM tag_group_properties tgp, user_group g WHERE
+				tgp.group_id = g.id AND g.is_read_only = 1 AND tgp.tag_group_id = $tagGroupId""") ? true : false
+	}
+
+	boolean canEdit(SharedTagGroup tagGroup, Long userId) {
+		// There can be one single SharedTagGroup per group
+		GenericTagGroupProperties tagGroupProperty = GenericTagGroupProperties.findByTagGroupId(tagGroup.id)
+		UserGroup userGroupInstance = tagGroupProperty?.getGroup()
+
+		if (!tagGroupProperty || !userGroupInstance) {
+			return false
+		}
+
+		if (UserGroup.hasAdmin(userGroupInstance.id, userId)) {
+			return true
+		}
+
+		return !userGroupInstance.isReadOnly
 	}
 
 }
