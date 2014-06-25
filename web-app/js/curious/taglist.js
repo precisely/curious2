@@ -109,6 +109,7 @@ function TagGroup(args) {
 	this.groupId = args.groupId;
 	this.groupName = args.groupName;
 	this.isReadOnly = args.isReadOnly;
+	this.excludes = args.excludes || [];
 	this.isSystemGroup = args.isSystemGroup;
 
 	if (this.getType().indexOf('wildcard')!==-1) {
@@ -116,10 +117,26 @@ function TagGroup(args) {
 	}
 	
 	this.isTag = function() { return false; }
-	
+
+	this.excludeChild = function(childItem) {
+		if (typeof childItem == 'undefined') {
+			return;
+		}
+		this.excludeChildAtBackend(childItem, function() {
+			this.excludes.push(childItem.description.trim());
+			var index = this.children.indexOf(childItem);
+			this.children = removeElem(this.children, childItem);
+			this.totalChildren--;
+			$(this).trigger("removeChild",{child: childItem, index: index});
+		}.bind(this));
+	};
+
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
+				if (this.excludes && this.excludes.indexOf(tag.description.trim()) > -1) {
+					return;
+				}
 				this.addChild(tag);
 			}.bind(this));
 			callback(this);
@@ -221,9 +238,23 @@ function TagGroup(args) {
 			return 0;
 		});
 	}
-	
+
+	this.excludeChildAtBackend = function(childItem, callback) {
+		var csrfKey = "excludeFromTagGroupDataCSRF";
+		var url = "/tag/excludeFromTagGroupData?callback=?";
+
+		backgroundJSON("excluding item from group", url, getCSRFPreventionObject(csrfKey, {
+			tagGroupId : this.id,
+			id: childItem.id,
+			description: childItem.description,
+			exclusionType: 'Tag'
+		}), function(data) {
+			callback();
+		}.bind(this));
+	};
+
 	this.removeChildAtBackend = function(childItem, callback) {
-		var csrfKey = "removeTagFromTagGroupDataCSRF"
+		var csrfKey = "removeTagFromTagGroupDataCSRF";
 		var url = "/tag/removeTagFromTagGroupData?callback=?";
 		if(childItem.type.indexOf("Group")!==-1) {
 			csrfKey = "removeTagGroupFromTagGroupDataCSRF"
@@ -303,6 +334,7 @@ function TagStore(args) {
 
 		if (typeClass === TagGroup) {
 			initArgs.groupId = args['groupId'];
+			initArgs.excludes = args['excludes'];
 			initArgs.groupName = args['groupName'];
 			initArgs.isReadOnly = args['isReadOnly'];
 			initArgs.isSystemGroup = args['isSystemGroup'];
@@ -521,9 +553,17 @@ function TagView(args) {
 			pinIcon = "ui-icon-pin-s";
 		}
 		
-		return '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
+		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
 		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>'
-			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class="hide ui-icon ui-icon-close"></span>' : '') + '</li>';
+			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class="hide ui-icon ui-icon-close"></span>' : '');
+
+		var parentGroup = this.parentItemView;
+		if (parentGroup && parentGroup.data.isWildcard) {
+			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
+		}
+
+		html += '</li>';
+		return html;
 	}
 	
 	this.update = function(data) {

@@ -14,6 +14,8 @@ class GenericTagGroupProperties {
 	Boolean isContinuous
 	Boolean showPoints
 
+	Set<String> excludes = []
+
 	// A custom validator to check if both userId & groupId are null
 	static Closure userIdAndGroupIdValidator = { val, obj, errors ->
 		if (!obj.groupId && !obj.userId) {
@@ -28,6 +30,9 @@ class GenericTagGroupProperties {
 		isContinuous(nullable:true)
 		showPoints(nullable:true)
 	}
+
+	static hasMany = [excludes: String]
+
 	static mapping = {
 		version false
 		table 'tag_group_properties'

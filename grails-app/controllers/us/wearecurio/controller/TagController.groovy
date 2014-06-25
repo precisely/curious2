@@ -148,6 +148,30 @@ class TagController extends LoginController {
 		renderJSONGet([success: true])
 	}
 
+	def excludeFromTagGroupData(Long tagGroupId, Long id, String exclusionType) {
+		log.debug("exclude from group: " + params)
+		GenericTagGroup tagGroupInstance = GenericTagGroup.get(tagGroupId)
+		def itemToExclude
+		
+		if (exclusionType == "Tag") {
+			itemToExclude = Tag.get(id)
+		} else {
+			itemToExclude = GenericTagGroup.get(id)
+		}
+
+		def tagGroupProperty = GenericTagGroupProperties.createOrLookup(session.userId, null, tagGroupId)
+		if (itemToExclude instanceof TagGroup) {
+			// This should not be the case. This will be managed by delete affordance
+			tagGroupInstance.removeFromSubTagGroup(itemToExclude)
+		}
+
+		tagGroupProperty.excludes = tagGroupProperty.excludes ?: []
+		tagGroupProperty.excludes << itemToExclude["description"]
+		tagGroupProperty.save()
+
+		renderJSONGet([success: true])
+	}
+
 	def updateData() {
 		log.debug("Updating tag group: " + params)
 		if(params.type.equals("tagGroup")) {

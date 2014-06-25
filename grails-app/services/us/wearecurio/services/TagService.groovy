@@ -11,10 +11,11 @@ class TagService {
 
 	private static String COMMON_QUERY = """
 			SELECT	tg.id					AS id,
+					tg.name					AS shortName,
 					tg.description			AS description,
 					tgp.is_continuous		AS is_continuous,
-					tg.name					AS shortName,
 					tgp.show_points			AS showpoints,
+					tgpe.excludes_string	AS excludes,
 					g.id					AS groupId,
 					g.name					AS groupName,
 					g.is_read_only			AS isReadOnly,
@@ -24,6 +25,8 @@ class TagService {
 							ON tgp.tag_group_id = tg.id 
 					LEFT JOIN user_group AS g 
 							ON g.id = tgp.group_id
+					LEFT JOIN tag_group_properties_excludes as tgpe
+							ON tgpe.generic_tag_group_properties_id = tgp.id
 		"""
 
 	def databaseService

@@ -424,7 +424,8 @@ ul.tags li.tag {
 }
 
 #tagNav li.treeItemView .ui-icon-pin-w, #tagNav li.treeItemView .ui-icon-pin-s,
-li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil {
+li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil,
+li.treeItemView.wildcardTagGroup .ui-icon-minusthick {
 	float: right;
 	display:block;
 }
