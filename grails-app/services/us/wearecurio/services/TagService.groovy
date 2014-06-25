@@ -94,6 +94,7 @@ class TagService {
 		return databaseService.sqlRows("$COMMON_QUERY where tgp.group_id in (${userGroupIds.join(',')})")
 	}
 
+	// Get all Tag Groups which are owned by System UserGroups.
 	List getSystemTagGroups() {
 		List<Long> systemGroupIds = UserGroup.withCriteria {
 			projections {

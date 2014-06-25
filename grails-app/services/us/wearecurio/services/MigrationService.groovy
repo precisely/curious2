@@ -48,7 +48,7 @@ class MigrationService {
 	public static final long FIX_TAG_PROPERTIES = 84L
 	public static final long FIX_TAG_PROPERTIES2 = 85L
 	public static final long HISTORICAL_INTRA_DAY = 86L
-	static final long ADD_SYSTEM_GROUP_USER = 87L
+	static final long SHARED_TAG_GROUP = 87L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -327,9 +327,10 @@ class MigrationService {
 			sql("delete from entry where set_name like 'withings import%'")
 			sql("update oauth_account set last_polled = null where type_id = 1")
 		}
-		tryMigration(ADD_SYSTEM_GROUP_USER) {
+		tryMigration(SHARED_TAG_GROUP) {
 			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
 			systemGroup.addAdmin(User.first())	// Replace User.first() with User.findByEmail("<admin-email">)
+			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
 	}
 }

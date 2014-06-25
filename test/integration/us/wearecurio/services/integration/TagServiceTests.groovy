@@ -7,6 +7,7 @@ import org.junit.Before
 import org.junit.Test
 
 import us.wearecurio.model.SharedTagGroup
+import us.wearecurio.model.TagGroup
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.TagGroupService
@@ -20,7 +21,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 	TagService tagService
 
 	User admin, admin2, anon, schmoe
-	UserGroup curious, announce, userGroup1
+	UserGroup curious, announce, userGroup1, systemGroup
 
 	def tagGroup1, tagGroup2, tagGroup3, tagGroup4
 
@@ -136,5 +137,17 @@ class TagServiceTests extends CuriousServiceTestCase {
 		shouldFail(MissingMethodException) {
 			tagService.canEdit(tagGroup1, admin2.id)
 		}
+	}
+
+	void "test get system tag groups"() {
+		systemGroup = UserGroup.lookupOrCreateSystemGroup()
+		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
+		TagGroup systemTagGroup2 = tagGroupService.createOrLookupTagGroup("System Tag Group 2", null, systemGroup.id)
+
+		List systemTagGroups = tagService.getSystemTagGroups()
+
+		assert systemTagGroups.size() == 2
+		assert systemTagGroups[0].id == systemTagGroup1.id
+		assert systemTagGroups[1].id == systemTagGroup2.id
 	}
 }
