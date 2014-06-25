@@ -55,6 +55,10 @@ class UserGroup {
 		this.description = description
 	}
 
+	static UserGroup lookupOrCreateSystemGroup() {
+		createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
+	}
+
 	static UserGroup createOrUpdate(String name, String fullName, String description, def options) {
 		UserGroup userGroupInstance = lookup(name)
 
@@ -63,6 +67,8 @@ class UserGroup {
 		} else if (userGroupInstance.name == SYSTEM_USER_GROUP_NAME) {
 			// Do not allow default system group to change the name.
 			name = SYSTEM_USER_GROUP_NAME
+			options = options ?: [:]
+			options["isSystemGroup"] = true
 		}
 
 		userGroupInstance.bindData(name, fullName, description, options)
