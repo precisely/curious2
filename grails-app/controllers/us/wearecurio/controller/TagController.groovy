@@ -6,6 +6,7 @@ import us.wearecurio.model.GenericTagGroup
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
 import us.wearecurio.model.Tag
+import us.wearecurio.model.TagExclusion;
 import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.User
@@ -149,10 +150,11 @@ class TagController extends LoginController {
 	}
 
 	def excludeFromTagGroupData(Long tagGroupId, Long id, String exclusionType) {
-		log.debug("exclude from group: " + params)
+		log.debug("Exclude from group: " + params)
+
 		GenericTagGroup tagGroupInstance = GenericTagGroup.get(tagGroupId)
 		def itemToExclude
-		
+
 		if (exclusionType == "Tag") {
 			itemToExclude = Tag.get(id)
 		} else {
@@ -160,14 +162,14 @@ class TagController extends LoginController {
 		}
 
 		def tagGroupProperty = GenericTagGroupProperties.createOrLookup(session.userId, null, tagGroupId)
-		if (itemToExclude instanceof TagGroup) {
-			// This should not be the case. This will be managed by delete affordance
-			tagGroupInstance.removeFromSubTagGroup(itemToExclude)
+
+		// There can not be an exclusion from a general tag group.
+		if (tagGroupInstance instanceof TagGroup && !(tagGroupInstance instanceof SharedTagGroup)) {
+			renderJSONGet([success: true])
+			return false
 		}
 
-		tagGroupProperty.excludes = tagGroupProperty.excludes ?: []
-		tagGroupProperty.excludes << itemToExclude["description"]
-		tagGroupProperty.save()
+		TagExclusion.createOrLookup(itemToExclude, tagGroupProperty)
 
 		renderJSONGet([success: true])
 	}

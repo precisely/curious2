@@ -1,5 +1,7 @@
+import grails.converters.JSON
 import grails.plugin.mail.MailService
 import grails.util.Environment
+import us.wearecurio.marshaller.EnumMarshaller
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.*
 import us.wearecurio.thirdparty.withings.*
@@ -20,6 +22,8 @@ class BootStrap {
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
 		UserGroup.lookupOrCreateSystemGroup()
+
+		JSON.registerObjectMarshaller(new EnumMarshaller())
 
 		//withingsDataService.refreshSubscriptions()
 		/*if (current != Environment.TEST) {

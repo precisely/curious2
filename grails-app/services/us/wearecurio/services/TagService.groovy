@@ -1,8 +1,11 @@
 package us.wearecurio.services
 
+import org.hibernate.criterion.CriteriaSpecification
+
 import us.wearecurio.model.Entry
-import us.wearecurio.model.GenericTagGroupProperties;
+import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
+import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.UserGroup
 
 class TagService {
@@ -13,9 +16,9 @@ class TagService {
 			SELECT	tg.id					AS id,
 					tg.name					AS shortName,
 					tg.description			AS description,
+					tgp.id					AS propertyId,
 					tgp.is_continuous		AS is_continuous,
 					tgp.show_points			AS showpoints,
-					tgpe.excludes_string	AS excludes,
 					g.id					AS groupId,
 					g.name					AS groupName,
 					g.is_read_only			AS isReadOnly,
@@ -25,8 +28,6 @@ class TagService {
 							ON tgp.tag_group_id = tg.id 
 					LEFT JOIN user_group AS g 
 							ON g.id = tgp.group_id
-					LEFT JOIN tag_group_properties_excludes as tgpe
-							ON tgpe.generic_tag_group_properties_id = tgp.id
 		"""
 
 	def databaseService
@@ -45,7 +46,33 @@ class TagService {
 	List getAllTagGroupsForUser(Long userId) {
 		// First fetch system tag groups so not to remove while check for unique tag groups.
 		List tagGroups = getSystemTagGroups() + getTagGroupsByUser(userId) + getTagGroupsTheUserIsAnAdminOf(userId)
-		return tagGroups.unique { it.description }
+		tagGroups = tagGroups.unique { it.description }
+
+		List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
+
+		if (tagGroupPropertyIds) {
+			// Get all exclusion properties for all tag group properties
+
+			//List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyIdInList(tagGroupPropertyIds)*.properties
+			List<TagExclusion> exclusions = TagExclusion.withCriteria {
+				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+				projections {
+					property("type", "type")
+					property("objectId", "objectId")
+					property("tagGroupPropertyId", "tagGroupPropertyId")
+				}
+			}
+
+			// Iterate each tag group data
+			tagGroups.each { tagGroupData ->
+				// Find all matching exclusion data and it to the tag group data
+				tagGroupData["excludes"] = exclusions.findAll {
+					it.tagGroupPropertyId == tagGroupData["propertyId"]
+				}*.subMap(["objectId", "type"])		// Only send objectId and type
+			}
+		}
+
+		return tagGroups
 	}
 
 	/**

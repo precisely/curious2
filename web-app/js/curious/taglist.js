@@ -134,7 +134,20 @@ function TagGroup(args) {
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
-				if (this.excludes && this.excludes.indexOf(tag.description.trim()) > -1) {
+				var isExcluded = false;
+
+				if (this.excludes) {
+					var type = tag.type === 'tag' ? 'TAG' : 'TAG_GROUP';
+
+					for (var i in this.excludes) {
+						if (this.excludes[i].objectId == tag.id && this.excludes[i].type == type) {
+							isExcluded = true;
+							break;
+						}
+					}
+				}
+
+				if (isExcluded) {
 					return;
 				}
 				this.addChild(tag);
