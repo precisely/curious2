@@ -96,59 +96,113 @@ class UnitGroupMap {
 	public static final double INCHHG = 3386.389d
 	public static final double ATMOSPHERE = 98.0665e3d
 	
-	//[groupName: 
-	//		[ unitName: [relativeRatio, affinityVal], 
-	//		[ unitName: [relativeRatio, affinityVal], 
-	//]
-	static Map groups = [
-		(UnitGroup.DURATION): [
-			'm':[MINUTE,1], 'min':[MINUTE,5], 'mins':[MINUTE,6], 'minute':[MINUTE,10], 
-			'minutes':[MINUTE,10], 'h':[HOUR,1], 'hours':[HOUR,10], 'hrs':[HOUR,8], 'hour':[HOUR,10], 
+	public static class UnitMap {
+		UnitGroup group
+		Map<String, UnitRatio> map = [:]
+		
+		UnitMap(UnitGroup group, Map map) {
+			this.group = group
+			
+			for (e in map) {
+				String unit = e.key
+				def val = e.value
+				map.put(e.key, new UnitRatio(
+					unitMap:this,
+					unit: unit,
+					ratio: val[RATIO],
+					affinity:val[AFFINITY]
+				))
+			}
+			this.map = map
+		}
+		
+		public getGroupId() {
+			return group.id
+		}
+		
+		public UnitRatio lookupUnitRatio(String unit, UnitRatio prevUnitRatio = null) {
+			UnitRatio unitRatio = map[unit]
+
+			if (unitRatio == null) return prevUnitRatio
+			
+			return unitRatio.bestRatio(prevUnitRatio)
+		}	
+	}
+	
+	public static class UnitRatio {
+		UnitMap unitMap
+		String unit 
+		double ratio
+		def affinity
+		
+		UnitRatio bestRatio(UnitRatio other) {
+			if (other == null)
+				return this
+			return this.affinity > other.affinity ? this : other
+		}
+		
+		public getGroupId() {
+			return unitMap.getGroupId()
+		}
+		
+		public getGroup() {
+			return unitMap.getGroup()
+		}
+	}
+	
+	Map<UnitGroup, UnitMap> groupToUnitMap = [:]
+	
+	public static final UnitGroupMap theMap = new UnitGroupMap()
+
+	def UnitGroupMap() {
+		addGroup(UnitGroup.DURATION, [
+			'm':[MINUTE,1], 'min':[MINUTE,5], 'mins':[MINUTE,6], 'minute':[MINUTE,10],
+			'minutes':[MINUTE,10], 'h':[HOUR,1], 'hours':[HOUR,10], 'hrs':[HOUR,8], 'hour':[HOUR,10],
 			'day':[DAY,10], 'days':[DAY,10], 'd':[DAY,1], 'week':[WEEK,10],
-			'weeks':[WEEK,10], 'wks':[WEEK,5], 'wk':[WEEK,4], 
-			'month':[MONTH,10], 'months':[MONTH,10], 'mnths':[MONTH,7], 'year':[YEAR,10], 
-			'years':[YEAR,10], 'y':[YEAR,1], 'century':[YEAR,10], 'centuries':[CENTURY,10], 
+			'weeks':[WEEK,10], 'wks':[WEEK,5], 'wk':[WEEK,4],
+			'month':[MONTH,10], 'months':[MONTH,10], 'mnths':[MONTH,7], 'year':[YEAR,10],
+			'years':[YEAR,10], 'y':[YEAR,1], 'century':[YEAR,10], 'centuries':[CENTURY,10],
 			'ms':[MILLISECOND,6],'sec':[SECOND,5], 'secs':[SECOND,7], 'seconds': [SECOND,10],
 			'second':[SECOND,10], 'millisecond':[MILLISECOND,10], 'ms':[MILLISECOND,3], 'milliseconds':[MILLISECOND,10], 'microsecond':[MICROSECOND,10],
 			'microseconds':[MICROSECOND,10], 'picosecond':[PICOSECOND,10], 'picoseconds':[PICOSECOND,10],
-		],
-		(UnitGroup.DISTANCE): [
+		])
+		addGroup(UnitGroup.DISTANCE, [
 			'cm':[CENTIMETER,5], 'mm':[MILLIMETER,6],
 			'centimeter':[CENTIMETER,10], 'centimetre':[CENTIMETER,10],
 			'millimeter':[MILLIMETER,10], 'millimetre':[MILLIMETER,10],
-			'm':[METER,2], 'meters':[METER,11], 'meter':[METER,10], 'metre':[METER,10], 'metres':[METER,10], 'foot':[FOOT,10], 'feet':[FOOT,10], 'ft':[FOOT,5], 
+			'm':[METER,2], 'meters':[METER,11], 'meter':[METER,10], 'metre':[METER,10], 'metres':[METER,10], 'foot':[FOOT,10], 'feet':[FOOT,10], 'ft':[FOOT,5],
 			'yard':[YARD,10], 'yards':[YARD,10], 'miles':[MILE,10], 'km':[KILOMETER,8], 'kilometers':[KILOMETER,10],
 			'kilometers':[KILOMETER,10], 'kilometer':[KILOMETER,10],'kilometre':[KILOMETER,10], 'kilometres':[KILOMETER,10],
-		],
-		(UnitGroup.WEIGHT): [
-			'g':[GRAM,2], 'grams':[GRAM,10], 'pound':[POUND,10], 'lb':[POUND,5], 'pounds':[POUND,10], 'lbs':[POUND,10], 
+		])
+		addGroup(UnitGroup.WEIGHT, [
+			'g':[GRAM,2], 'grams':[GRAM,10], 'pound':[POUND,10], 'lb':[POUND,5], 'pounds':[POUND,10], 'lbs':[POUND,10],
 			'kg':[KILOGRAM,8], 'kgs':[KILOGRAM,4], 'kilograms':[KILOGRAM,10], 'kilogram':[KILOGRAM,10], 'ounce':[OUNCE,10], 'oz':[OUNCE,4],
 			'ounces':[OUNCE,10],
-			],
-		(UnitGroup.AREA): [
+		])
+		addGroup(UnitGroup.AREA, [
 			'sq m':[SQMETER,3], 'sqm':[SQMETER,1], 'square meter':[SQMETER,10], 'square metre':[SQMETER,10], 'sq meter':[SQMETER,7],
 			'sq metre':[SQMETER,7],
 			'hectare':[HECTARE,10], 'ha':[HECTARE,3], 'h':[HECTARE,1], 'hectares':[HECTARE,10],
 			'acre':[ACRE,10], 'acres':[ACRE,10], 'ac':[ACRE,6],
-		],
-		(UnitGroup.VOLUME): [
+		])
+		addGroup(UnitGroup.VOLUME, [
 			'cc':[CC,7], 'cubic centimeter':[CC,10], 'cubic centimeters':[CC,10], 'cubic cm':[CC,10], 'cubic centimetre':[CC,10], 'cubic centimetres':[CC,10],
 			'l':[LITER,2], 'liter':[LITER,10], 'liters':[LITER,10], 'litre':[LITER,10], 'litres':[LITER,10],
 			'gal':[GALLON,7], 'gl':[GALLON,1], 'g':[GALLON,1], 'gallon':[GALLON,10], 'gallons':[GALLON,10],
 			'qt':[QUART,8], 'quart':[QUART,10], 'quarts':[QUART,10],
-		],
-		(UnitGroup.FORCE): [
+		])
+		addGroup(UnitGroup.FORCE, [
 			'n':[NEWTON,3], 'newton':[NEWTON,10], 'newtons':[NEWTON,10],
 			'dyn':[DYNE,7], 'dyne':[DYNE,10],
 			'kip':[KIP,5],
-		],
-		(UnitGroup.POWER): [
+		])
+		addGroup(UnitGroup.POWER, [
 			'w':[WATT,2], 'watt':[WATT,10], 'watts':[WATT,10],
 			'kw':[KILOWATT,5], 'kilowatt':[KILOWATT,10], 'kilowatts':[KILOWATT,10],
 			'mw':[MILLIWATT,3], 'milliwatt':[MILLIWATT,10], 'milliwatts':[MILLIWATT,10],
 			'hp':[HORSEPOWER,7], 'horsepower':[HORSEPOWER,10],
-		],
-		(UnitGroup.ENERGY): [
+		])
+		addGroup(UnitGroup.ENERGY, [
 			'j':[JOULE,3], 'joule':[JOULE,10], 'joules':[JOULE,10],
 			'erg':[ERG,10],
 			'ft-lb':[FOOTPOUND,8], 'foot-pound':[FOOTPOUND,10], 'foot-pounds':[FOOTPOUND,10], 'foot pound':[FOOTPOUND,10], 'foot pounds':[FOOTPOUND,10], 'footpound':[FOOTPOUND,10], 'footpounds':[FOOTPOUND,10],
@@ -158,15 +212,15 @@ class UnitGroupMap {
 			'gj':[GIGAJOULE,3], 'gigajoule':[GIGAJOULE,10], 'gigajoules':[GIGAJOULE,10],
 			'tj':[TERAJOULE,3], 'terajoule':[TERAJOULE,10], 'terajoules':[TERAJOULE,10],
 			'pj':[PETAJOULE,3], 'petajoule':[PETAJOULE,10], 'petajoules':[PETAJOULE,10],
-			'kwh':[KILOWATTHOUR,7], 'kilowatt-hour':[KILOWATTHOUR,10], 'kilowatt-hours':[KILOWATTHOUR,10], 'kilowatt hour':[KILOWATTHOUR,10], 'kilowatt hours':[KILOWATTHOUR,10], 'kilowatthour':[KILOWATTHOUR,10], 'kilowatthours':[KILOWATTHOUR,10], 
+			'kwh':[KILOWATTHOUR,7], 'kilowatt-hour':[KILOWATTHOUR,10], 'kilowatt-hours':[KILOWATTHOUR,10], 'kilowatt hour':[KILOWATTHOUR,10], 'kilowatt hours':[KILOWATTHOUR,10], 'kilowatthour':[KILOWATTHOUR,10], 'kilowatthours':[KILOWATTHOUR,10],
 			'therm':[THERM,10], 'therms':[THERM,10],
 			'cal':[CALORIE,3], 'cals':[CALORIE,2], 'calorie':[CALORIE,10], 'calories':[CALORIE,10],
 			'kcal':[KILOCALORIE,7], 'kcals':[KILOCALORIE,7], 'kcalorie':[KILOCALORIE,10], 'kcalories':[KILOCALORIE,10],
 			'kiloton':[KILOTON,10], 'kilotonne':[KILOTON,10], 'kilotons':[KILOTON,10], 'kilotonnes':[KILOTON,10],
 			'megaton':[MEGATON,10], 'megatons':[MEGATON,10], 'megatonne':[MEGATON,10], 'megatonnes':[MEGATON,10],
 			'ev':[EV,5], 'evs':[EV,2], 'electron-volt':[EV,10], 'electron-volts':[EV,10], 'electron volt':[EV,10], 'electron volts':[EV,10],
-		],
-		(UnitGroup.PRESSURE): [
+		])
+		addGroup(UnitGroup.PRESSURE, [
 			'pa':[PASCAL,2], 'pascal':[PASCAL,10], 'pascals':[PASCAL,10],
 			'ba':[BARYE,3], 'barye':[BARYE,10], 'baryes':[BARYE,10],
 			'psi':[PSI,8],
@@ -179,93 +233,48 @@ class UnitGroupMap {
 			'mmHg':[MMHG,7],
 			'inHg':[INCHHG,6],
 			'atm':[ATMOSPHERE,5], 'atmosphere':[ATMOSPHERE,10], 'atmospheres':[ATMOSPHERE,10],
-		]	
-	]
-	
-	public static class UnitRatio {
-		UnitGroup group
-		double ratio
-		def affinity
-		String unit 
+		])
 	}
-
+	
+	public void addGroup(UnitGroup group, Map map) {
+		groupToUnitMap.put(group, new UnitMap(group, map))
+	}
+	
 	/**
 	 *	Compute which group a given unit falls under
 	 *
 	 */
-	public static UnitRatio unitRatioForUnit(String unit, def group = null) {
-		def unitRatio = null
-		def unitKey
-		if (unit == '') return unitRatio
-		if (group) {
-			log.debug("UnitGroupMap.unitRatioForUnit(): looking up groupMap for unit "
-				+ unit + " in group " + group )
-			unitKey = unitListContainsUnit(unit, groups[group])
-			unitRatio = unitRatioFromUnitList(unitKey, groups[group], group)
-		} else {
-			log.debug("UnitGroupMap.unitRatioForUnit(): looking up groupMap for unit " 
-				+ unit + " in other groups")
-			groups.each { groupAsKey, unitList ->
-				unitKey = unitListContainsUnit(unit, unitList) 
-				unitRatio = unitRatioFromUnitList(unitKey, unitList, groupAsKey, unitRatio)
-				log.debug("UnitGroupMap.unitRatioForUnit(): groupMap " + unitRatio?.dump())
-			}
-			log.debug("UnitGroupMap.unitRatioForUnit(): unitKey " + unitKey)
-		}
-		return unitRatio
-	}
-
-	public static String unitListContainsUnit(String unit, def unitList) {
-		String unitKey = null 
-		if (unit == null || unit == '')
-			return null
-		def singularUnit = unit.minus(Pattern.compile("s\$"))
-		log.debug("UnitGroupMap.unitListContainsUnit(): checking for unit " + unit +
-		" in list " + unitList.dump())
-		if (unitList.containsKey(unit)) {
-			unitKey = unit
-			log.debug("UnitGroupMap.unitListContainsUnit(): unit found " + unitKey)
-		} else if (singularUnit && unitList.containsKey(singularUnit)) {
-			unitKey = singularUnit
-			log.debug("UnitGroupMap.unitListContainsUnit(): singular unit found " + unitKey)
-		}
-		log.debug("UnitGroupMap.unitListContainsUnit(): returning unitKey " + unitKey)
-		return unitKey	
-	}
-
-	public static Object groupContainsUnit(String unit, def group) {
-		return unitListContainsUnit(unit, groups[group])
-	}
-
-	public static UnitRatio unitRatioFromUnitList(String unitKey, def unitList, def group, def prevUnitRatio = null) {
-		def unitRatio = null
-		if (unitKey == null)
-			return prevUnitRatio 
-		def ratioAndAffinity = unitList[unitKey]
-		log.debug("UnitGroupMap.unitRatioFromUnitList(): meta " + ratioAndAffinity?.dump())
-		if (prevUnitRatio  == null || prevUnitRatio ?.affinity < ratioAndAffinity[AFFINITY]) {
-			log.debug("UnitGroupMap.unitRatioFromUnitList(): creating group map for unit " + unitKey)
-			unitRatio = new UnitRatio(group:group, ratio: ratioAndAffinity[RATIO], affinity:ratioAndAffinity[AFFINITY], unit: unitKey)
-		} else {
-			return prevUnitRatio 
-		}
-		log.debug("UnitGroupMap.unitRatioFromUnitList(): created group map for unit " + unitKey + " " + unitRatio.dump())
-		return unitRatio
-	}
 	
-	public static UnitRatio mostUsedUnitRatioForTagIds(def tagIds, Long userId) {
+	public UnitRatio unitRatioForUnit(String unit, UnitMap unitMap = null) {
+		if (!unit) return null
+		
+		if (unitMap) {
+			log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit "
+				+ unit + " in group " + group )
+			return unitMap.lookupUnitRatio(unit)
+		}
+		
+		log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit " 
+			+ unit + " in other groups")
+		def unitRatio = null
+		groupToUnitMap.each { groupKey, unitMapValue ->
+			unitRatio = unitMapValue.lookupUnitRatio(unit, unitRatio)
+		}
+		log.debug("UnitGroupMap.unitRatioForUnit(): unitRatio " + unit + ":" + unitRatio?.dump())
+		return unitRatio
+	}
+
+	public UnitRatio mostUsedUnitRatioForTagIds(def tagIds, Long userId) {
 		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(tagIds, userId)
 		if (mostUsed == null)
 			return null
-		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId)
+		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId ? groupToUnitMap[UnitGroup.get(mostUsed.unitGroupId)] : null)
 		return unitRatio
 	}
 
 	public static def convertToMostUsedUnit(UnitRatio mostUsedUnitRatio, BigDecimal amount, String unit) {
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): most used unitRatio " + mostUsedUnitRatio?.dump())
-		UnitRatio unitRatio = unitRatioForUnit(unit, mostUsedUnitRatio?.group)
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): unit ratio for the unit to be converted" + unitRatio?.dump())
-		if (!mostUsedUnitRatio || !unitRatio || mostUsedUnitRatio.group != unitRatio.group) {
+		log.debug("UnitGroupMap.convertToMostUsedUnit(): most used unitRatio " + mostUsedUnitRatio?.unit)
+		if (!mostUsedUnitRatio) {
 			//No need to normalize as there is no tag + unit usage history
 			//Or the unit used has not been grouped and hence can't be
 			//converted. Or the two units belong to two different groups
@@ -273,11 +282,17 @@ class UnitGroupMap {
 			log.debug("UnitGroupMap.convertToMostUsedUnit(): no normalization needed for unit " + unit)
 			return null
 		}
-		def convertedValue = amount/mostUsedUnitRatio.ratio
+		UnitRatio unitRatio = mostUsedUnitRatio.unitMap.lookupUnitRatio(unit)
+		log.debug("UnitGroupMap.convertToMostUsedUnit(): unit ratio for the unit to be converted" + unitRatio?.unit)
+		if (!unitRatio) {
+			log.debug("UnitGroupMap.convertToMostUsedUnit(): unit not in most used unit map, no conversion " + unit)
+			return null
+		}
+		def convertedValue = (amount * unitRatio.ratio) / mostUsedUnitRatio.ratio
 		log.debug("UnitGroupMap.convertToMostUsedUnit(): converted value " + convertedValue +
-			' '+ mostUsedUnitRatio.unit)
+			' ' + mostUsedUnitRatio.unit)
 		return [unit:mostUsedUnitRatio.unit, amount: convertedValue,
-			group: mostUsedUnitRatio.group]
+			group: mostUsedUnitRatio.getGroup()]
 
 	}
 

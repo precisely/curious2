@@ -189,6 +189,7 @@ class TwitterDataService {
 
 		for (DirectMessage message: responses) {
 			try {
+				TODO: FIX
 				if (Entry.findByTweetid(message.getId()) != null) {
 					log.debug "Tweet " + message.getId() + " already downloaded, skipping"
 					continue

@@ -45,7 +45,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		super.setUp()
 
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
-		TimeZoneId.clearCacheForTesting()
 
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"

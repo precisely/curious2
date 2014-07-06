@@ -1,5 +1,6 @@
 import grails.test.*
 
+import us.wearecurio.integration.CuriousUserTestCase;
 import us.wearecurio.model.PlotData
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
@@ -8,7 +9,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class PlotDataTests extends CuriousTestCase {
+class PlotDataTests extends CuriousUserTestCase {
 	static transactional = true
 
 	@Before

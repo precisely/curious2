@@ -7,6 +7,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
@@ -20,7 +21,7 @@ import org.junit.*
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
 
-class EntryTests extends GroovyTestCase {
+class EntryTests extends CuriousTestCase {
 	static transactional = true
 
 	DateFormat dateFormat
@@ -54,7 +55,7 @@ class EntryTests extends GroovyTestCase {
 	@Before
 	void setUp() {
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
-		TimeZoneId.clearCacheForTesting()
+		Utils.resetForTesting()
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
@@ -933,7 +934,7 @@ class EntryTests extends GroovyTestCase {
 		
 		def v = entry.valueString()
 	
-		assert entry.toString().endsWith("amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:2010-06-29T19:00:00)")
+		assert entry.toString().contains("amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:2010-06-29T19:00:00")
 		
 		assert updated != entry && updated != null
 

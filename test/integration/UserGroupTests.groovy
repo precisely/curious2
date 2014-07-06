@@ -1,6 +1,7 @@
 import grails.plugin.mail.MailService
 import grails.test.*
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 
@@ -8,7 +9,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class UserGroupTests extends GroovyTestCase {
+class UserGroupTests extends CuriousTestCase {
 	static transactional = true
 
 	MailService mailService

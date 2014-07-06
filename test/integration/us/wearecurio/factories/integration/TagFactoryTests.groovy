@@ -5,10 +5,11 @@ import static org.junit.Assert.*
 import org.junit.*
 
 import us.wearecurio.factories.TagFactory
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Tag
 
 
-class TagFactoryTests {
+class TagFactoryTests extends CuriousTestCase {
   @Test
   void testMake() {
 	  def tag = TagFactory.make() 

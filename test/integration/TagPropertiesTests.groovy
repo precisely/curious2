@@ -1,6 +1,8 @@
 import grails.test.*
 
 import java.text.DateFormat
+
+import us.wearecurio.integration.CuriousUserTestCase;
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
@@ -10,7 +12,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class TagPropertiesTests extends CuriousTestCase {
+class TagPropertiesTests extends CuriousUserTestCase {
 	DateFormat dateFormat
 	static transactional = true
 	Date baseDate

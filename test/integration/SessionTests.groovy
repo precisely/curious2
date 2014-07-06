@@ -1,6 +1,7 @@
 import grails.test.*
 
 import us.wearecurio.server.Session
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
@@ -8,7 +9,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class SessionTests extends GroovyTestCase {
+class SessionTests extends CuriousTestCase {
 	static transactional = true
 
 	User user1

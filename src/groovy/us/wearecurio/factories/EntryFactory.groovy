@@ -42,12 +42,13 @@ class EntryFactory {
 			repeatType: repeatType,
 			repeatEnd: entry_params['repeatEnd'] ?: DEFAULT_REPEAT_END,
 			datePrecisionSecs: entry_params['datePrecisionSecs'] ?: Entry.DEFAULT_DATEPRECISION_SECS,
-			timeZoneOffsetSecs: 0,
 			units: units,
-			comment: entry_params['comment'] ?: DEFAULT_COMMENT]
+			comment: entry_params['comment'] ?: DEFAULT_COMMENT,
+			setIdentifier: null
+		]
 		Entry entry = new Entry(init_params)
 		entry.userId = user.getId()
-			entry
+		entry
 	}
 
 	public static def makeSaved(User user, Tag tag, Map entry_params=DEFAULT_ENTRY_PARAMS) {

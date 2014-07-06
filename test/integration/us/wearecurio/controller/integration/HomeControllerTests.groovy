@@ -148,7 +148,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 				eq("tag", Tag.look("raspberry ginger smoothie"))
 				eq("amount", new BigDecimal(2))
 				eq("units", "mg")
-				eq("setName", "Date (GMT) for exporttest")
+				eq("setIdentifier", Identifier.look("Date (GMT) for exporttest"))
 			}
 			maxResults(1)
 		}

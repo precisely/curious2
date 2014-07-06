@@ -36,6 +36,10 @@ class Entry {
 
 	public static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
 	public static final int VAGUE_DATE_PRECISION_SECS = 86400
+	
+	public static enum EntryType {
+		final int id
+	}
 
 	static constraints = {
 		amount(scale:9, nullable:true)
@@ -46,23 +50,22 @@ class Entry {
 		repeatEnd(nullable:true)
 		units(maxSize:MAXUNITSLENGTH)
 		comment(maxSize:MAXCOMMENTLENGTH)
-		setName(maxSize:MAXSETNAMELENGTH, nullable:true)
-		tweetId(nullable:true)
 		baseTag(nullable:true)
 		durationType(nullable:true)
 		timeZoneId(nullable:true)
+		setIdentifier(nullable:true)
 	}
 
 	static mapping = {
 		version false
 		table 'entry'
 		userId column:'user_id', index:'user_id_index'
-		tweetId column:'tweet_id', index:'tweet_id_index'
 		date column:'date', index:'date_index'
 		tag column:'tag_id', index:'tag_id_index'
 		repeatType column:'repeat_type', index:'repeat_type_index'
 		repeatEnd column:'repeat_end', index:'repeat_end_index'
 		durationType column:'duration_type', index:'duration_type_index'
+		setIdentifier column:'set_identifier', index:'set_identifier_index'
 	}
 
 
@@ -242,13 +245,10 @@ class Entry {
 	}
 
 	Long userId
-	Long tweetId
 	Date date
-	Integer timeZoneOffsetSecs
 	Integer timeZoneId
 	Integer datePrecisionSecs
 	Tag tag
-	static hasMany = [hashtags:Tag,commentHashtags:Tag]
 	BigDecimal amount
 	Integer amountPrecision
 	String units
@@ -257,7 +257,7 @@ class Entry {
 	Date repeatEnd
 	Tag baseTag
 	DurationType durationType
-	String setName // used for importing to identify entries as having been imported from a specific file
+	Identifier setIdentifier
 
 	static final def durationSynonyms = [
 		'wake':'sleep end',
@@ -369,6 +369,8 @@ class Entry {
 		log.debug("Entry.lookForPartialEntry: userTimezone " + userTimezone)
 		log.debug("Entry.lookForPartialEntry: start date " + startOfDay)
 		log.debug("Entry.lookForPartialEntry: start " + endOfDay)
+		
+		Identifier setId = Identifier.look(m.setName)
 
 		def c = Entry.createCriteria()
 		def results = c {
@@ -376,8 +378,8 @@ class Entry {
 				eq("userId", userId)
 				eq("tag", tag)
 				eq("comment", m.comment)
-				if (m.setName) {
-					eq("setName", m.setName)
+				if (setId) {
+					eq("setIdentifier", setId)
 				}
 				eq("timeZoneId", m.timeZoneId)
 				between("date", startOfDay.toDate(), endOfDay.toDate())
@@ -397,6 +399,8 @@ class Entry {
 		log.debug "Trying to find duplicate for " + userId + " for " + m
 
 		Tag tag = Tag.look(m.description)
+		
+		Identifier setId = Identifier.look(m.setName)
 
 		def c = Entry.createCriteria()
 		def results = c {
@@ -409,7 +413,7 @@ class Entry {
 				eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
 				eq("units", m.units)
 				eq("comment", m.comment)
-				eq("setName", m.setName)
+				eq("setIdentifier", setId)
 			}
 		}
 
@@ -446,10 +450,9 @@ class Entry {
 		def tagUnitStats = TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units']) 
 		//Using the most used unit in case the unit is unknown
 		m['units'] = m['units'] ?: tagUnitStats?.unit
-
+		
 		Entry entry = new Entry(
 				userId:userId,
-				tweetId:m['tweetId'],
 				date:m['date'],
 				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
@@ -461,9 +464,8 @@ class Entry {
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,
 				durationType:durationType,
-				setName:m['setName']==null?'':m['setName'],
-				amountPrecision:m['amountPrecision']==null?3:m['amountPrecision'],
-				timeZoneOffsetSecs:0
+				setIdentifier:Identifier.look(m['setName']),
+				amountPrecision:m['amountPrecision']==null?3:m['amountPrecision']
 				)
 
 		log.debug "Created entry:" + entry
@@ -530,7 +532,6 @@ class Entry {
 		m['description'] = this.tag.getDescription()
 		m['units'] = this.units
 		m['repeatType'] = this.repeatType
-		m['tweetId'] = this.tweetId
 		m['date'] = this.date
 		m['timeZoneName'] = this.fetchTimeZoneName()
 		m['datePrecisionSecs'] = this.datePrecisionSecs
@@ -539,7 +540,7 @@ class Entry {
 		m['comment'] = this.comment
 		m['repeatEnd'] = this.repeatEnd
 		m['durationType'] = this.durationType
-		m['setName'] = this.setName
+		m['setName'] = this.setIdentifier?.toString()
 		m['amountPrecision'] = this.amountPrecision
 
 		log.debug "Creating entry map:" + m
@@ -1619,7 +1620,7 @@ class Entry {
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
 		setRepeatType(m['repeatType']?.forUpdate())
-		setSetName(m['setName']?:'')
+		setSetIdentifier(Identifier.look(m['setName']))
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
 		setTimeZoneId((Integer)TimeZoneId.look(m['timeZoneName']).getId())
@@ -1713,7 +1714,7 @@ class Entry {
 				 }*/
 			} else
 				desc['repeatType'] = entry.repeatType?.id
-			desc['setName'] = entry.setName
+			desc['setName'] = entry.setIdentifier?.toString()
 			timedResults.add(desc)
 		}
 
@@ -1916,7 +1917,7 @@ class Entry {
 		
 		Long userId = user.getId()
 		
-		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.mostUsedUnitRatioForTagIds(tagIds, userId)
+		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(tagIds, userId)
 
 		queryStr = "select distinct entry.id " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
@@ -1975,7 +1976,7 @@ class Entry {
 		def currentResult = null
 		def summedResults = []
 		
-		UnitRatio mostUsedUnitRatio = UnitGroupMap.mostUsedUnitRatioForTagIds(tagIds, user.getId())
+		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(tagIds, user.getId())
 
 		for (result in rawResults) {
 			Date resultDate = result[SHORT_DESC_DATE]
@@ -2700,6 +2701,7 @@ class Entry {
 				+ ", comment:" + comment \
 				+ ", repeatType:" + repeatType?.getId() \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
+				+ ", setName:" + setIdentifier?.getValue() \
 				+ ")"
 	}
 

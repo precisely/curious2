@@ -69,6 +69,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 
 	@Override
 	void tearDown() {
+		super.tearDown()
 	}
 
 	void testRefreshSubscription() {

@@ -1,3 +1,4 @@
+
 import static org.junit.Assert.*
 
 import java.math.MathContext
@@ -8,6 +9,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
@@ -20,7 +22,7 @@ import org.junit.*
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
 
-class DateTests extends GroovyTestCase {
+class DateTests extends CuriousTestCase {
 	static transactional = true
 
 	DateFormat dateFormatLA

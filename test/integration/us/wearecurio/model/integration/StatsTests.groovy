@@ -1,11 +1,13 @@
 package us.wearecurio.model.integration
 
+
 import org.junit.*
 import static org.junit.Assert.*
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.Stats
 
-class StatsTests {
+class StatsTests extends CuriousTestCase {
 
 	@Test
 	void testMean() {

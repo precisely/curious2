@@ -8,7 +8,7 @@ class RemindEmailJob extends us.wearecurio.utility.TimerJob {
 	RemindEmailService remindEmailService
 	
     static triggers = {
-		simple repeatInterval: 2 * MINUTE
+		simple startDelay: 30 * MINUTE, repeatInterval: 2 * MINUTE
     }
 
     def execute() {

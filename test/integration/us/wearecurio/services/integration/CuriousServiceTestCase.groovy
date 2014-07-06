@@ -48,6 +48,8 @@ abstract class CuriousServiceTestCase {
 
 	@Before
 	void setUp() {
+		Utils.resetForTesting()
+		
 		Map params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
 
 		user = User.create(params)

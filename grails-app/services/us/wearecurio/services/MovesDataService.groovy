@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
@@ -68,6 +69,8 @@ class MovesDataService extends DataService {
 			log.error "Error fetching data from moves api for userId [$account.userId]. Body: [$parsedResponse]"
 			return [success: false]
 		}
+		
+		Identifier setIdentifier = Identifier.look(SET_NAME)
 
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
@@ -81,7 +84,7 @@ class MovesDataService extends DataService {
 			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
 			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
 			 */
-			Entry.findAllByUserIdAndSetNameAndDateBetween(userId, SET_NAME, currentDate, currentDate + 1)*.delete()
+			Entry.findAllByUserIdAndSetIdentifierAndDateBetween(userId, setIdentifier, currentDate, currentDate + 1)*.delete()
 
 			daySummary["segments"]?.each { currentSegment ->
 				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"

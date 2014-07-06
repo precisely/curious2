@@ -140,7 +140,7 @@ class DataController extends LoginController {
 
 		int lineNum = 0
 
-		String setName = "import"
+		String setName
 		String timeZoneName
 		Date currentDate = null
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
@@ -157,8 +157,8 @@ class DataController extends LoginController {
 					return false // format error
 				}
 				// delete previous import of same data set
-				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-						[setName: setName, userId: userId])
+				Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+						[setIdentifier: Identifier.look(setName), userId: userId])
 			} else {
 				if (tokens[0]) {
 					currentDate = dateTimeFormatter.parseDateTime(tokens[0]).toDate()
@@ -168,7 +168,6 @@ class DataController extends LoginController {
 					Long repeatTypeId = Long.valueOf(tokens[5])
 					def parsedEntry = [ \
 						userId:userId, \
-						tweetId:null, \
 						date:currentDate, \
 						timeZoneName:tokens[8], \
 						description:tokens[1], \

@@ -3,10 +3,11 @@ package us.wearecurio.factories.integration
 import static org.junit.Assert.*
 import org.junit.*
 import us.wearecurio.factories.UserFactory
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.User
 
 
-class UserFactoryTests {
+class UserFactoryTests extends CuriousTestCase {
   @Test
   void testMake() {
 	  def user = UserFactory.make()

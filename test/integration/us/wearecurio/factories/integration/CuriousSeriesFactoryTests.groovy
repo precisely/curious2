@@ -7,9 +7,10 @@ import us.wearecurio.model.User
 import us.wearecurio.model.Tag
 import us.wearecurio.factories.CuriousSeriesFactory
 import us.wearecurio.factories.EntryFactory
+import us.wearecurio.integration.CuriousTestCase
 
 
-class CuriousSeriesFactoryTests {
+class CuriousSeriesFactoryTests extends CuriousTestCase {
 
 	@Test
 	void testMake() {

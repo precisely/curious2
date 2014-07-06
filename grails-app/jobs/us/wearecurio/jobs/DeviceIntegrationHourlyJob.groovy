@@ -19,7 +19,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	def withingsDataService
 
 	static triggers = {
-		simple repeatInterval: HOUR
+		simple startDelay: 30 * MINUTE, repeatInterval: HOUR
 	}
 
 	def execute() {

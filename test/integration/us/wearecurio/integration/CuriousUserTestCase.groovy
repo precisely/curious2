@@ -1,14 +1,15 @@
+package us.wearecurio.integration
 import grails.test.*
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
-abstract class CuriousTestCase extends GroovyTestCase {
+abstract class CuriousUserTestCase extends CuriousTestCase {
 	User user
 	Long userId
 	
 	void setUp() {
 		super.setUp()
-
+		
 		User.list()*.delete()	// Deleting existing records temporary to create default user.
 		def users = User.list(max:1)
 		if (users.size() == 0) {

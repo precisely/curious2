@@ -1,4 +1,4 @@
-package us.wearecurio.model.integration
+
 
 import org.junit.*
 import us.wearecurio.model.Tag
@@ -6,11 +6,11 @@ import us.wearecurio.model.User
 import us.wearecurio.model.Correlation
 import us.wearecurio.services.CorrelationService
 import us.wearecurio.factories.CuriousSeriesFactory
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Stats
 
 
-class CorrelationTests {
-
+class CorrelationTests extends CuriousTestCase {
 	@Test
 	void testCreate() {
 		def series1 = CuriousSeriesFactory.make()

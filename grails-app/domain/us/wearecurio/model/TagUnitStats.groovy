@@ -21,11 +21,20 @@ class TagUnitStats {
 		tagId column:'tag_id', index:'tag_id_index'
 	}
 	
-	
+	static constraints = {
+		unitGroupId(nullable:true)
+	}
+
 	@Transactional
 	public static def createOrUpdate(Long userId, Long tagId, String unit) {
+		def tagUnitStats
+		
+		if (unit == null || unit == '') { // if blank unit, return most used tag unit stats
+			return mostUsedTagUnitStats(tagId, userId)
+		}
+		
 		// Verify if the user has used this unit for this tag in the past
-		def tagUnitStats = TagUnitStats.withCriteria {
+		tagUnitStats = TagUnitStats.withCriteria {
 			and {
 				eq ('unit', unit)
 				eq ('tagId', tagId)
@@ -41,8 +50,8 @@ class TagUnitStats {
 			tagUnitStats = tagUnitStats[0]
 		} else {
 			// If this unit is being used for the first time for this tag
-			def unitGroupMap = UnitGroupMap.unitRatioForUnit(unit)
-			if (!unitGroupMap) {
+			def unitRatio = UnitGroupMap.theMap.unitRatioForUnit(unit)
+			if (!unitRatio) {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
 				//If we can't find it in our map we use the most used unit
 				//for this tag
@@ -56,7 +65,7 @@ class TagUnitStats {
 			} else {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
 				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
-						unit: unitGroupMap.unit, unitGroupId: unitGroupMap.group.id)
+						unit: unitRatio.unit, unitGroupId: unitRatio.getGroupId())
 			}
 		}
 		
@@ -126,6 +135,7 @@ enum UnitGroup {
 	}
 	
 	static UnitGroup get(Integer id) {
+		if (id == null) return null
 		map.get(id)
 	}
 }

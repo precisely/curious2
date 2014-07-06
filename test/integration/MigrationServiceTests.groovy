@@ -4,16 +4,18 @@ import grails.test.mixin.*
 
 import org.junit.*
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.server.Migration
 import us.wearecurio.services.MigrationService
 
-class MigrationServiceTests extends GroovyTestCase {
+class MigrationServiceTests extends CuriousTestCase {
 	static transactional = true
 
 	def migrationService
 
 	@Before
 	void setUp() {
+		super.setUp()
 	}
 
 	@After

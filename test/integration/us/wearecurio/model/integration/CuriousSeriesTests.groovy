@@ -1,5 +1,6 @@
 package us.wearecurio.model.integration
 
+
 import org.junit.*
 import static org.junit.Assert.*
 
@@ -10,11 +11,13 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.factories.EntryFactory
 import us.wearecurio.factories.CuriousSeriesFactory
+import us.wearecurio.integration.CuriousTestCase;
+
 import org.apache.commons.logging.LogFactory
 import java.text.SimpleDateFormat
 
 
-class CuriousSeriesTests {
+class CuriousSeriesTests extends CuriousTestCase {
 	private static def LOG = new File("debug.out")
 	public static def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->

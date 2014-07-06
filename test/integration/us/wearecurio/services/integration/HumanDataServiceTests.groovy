@@ -28,8 +28,6 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 	void setUp() {
 		super.setUp()
 
-		TimeZoneId.clearCacheForTesting()
-
 		// Actual access token to test live data.
 		String accessToken = "sii28Ai_Qed-lAoFi_6jHxJDxsU=OTR1oUDu45ee26a8c66ba0fcabef6b40f68cf1a1e0863e0976ec0ce93746152243a0e565ad439d3e084bd37201e76afd3bc1b0bc102391506bd55fbf49dc41a31a621f8310a91584f07b902de1b9703d531aca7a194d032f772982aa84e154c0fd223a49e9545a4348fc6eee29263804256d2f6a3eb9fa4ab6a24d64fedbeae5dd8f0959"
 		// A dummy access token provided by HumanAPI

@@ -16,7 +16,7 @@ class MigrationService {
 
 	private static def log = LogFactory.getLog(this)
 
-	static transactional = true
+	static transactional = false
 	
 	public static final long TEST_MIGRATION_ID = 30L
 	public static final long SKIP_INITIAL_MIGRATIONS_ID = 31L
@@ -50,6 +50,9 @@ class MigrationService {
 	public static final long FIX_TAG_PROPERTIES = 84L
 	public static final long FIX_TAG_PROPERTIES2 = 85L
 	public static final long HISTORICAL_INTRA_DAY = 86L
+	public static final long DROP_EXTRA_TAG_XREF = 87L
+	public static final long REMOVE_OBSOLETE_ENTRY_FIELDS = 88L
+	public static final long ADD_TAG_UNIT_STATS_AGAIN = 89L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -57,18 +60,22 @@ class MigrationService {
 	
 	boolean skipMigrations = false
 	
+	@Transactional
 	public def sql(String statement, args = []) {
 		return databaseService.sqlNoRollback(statement, args)
 	}
 	
+	@Transactional
 	public def sqlRows(String statement, args = []) {
 		return databaseService.sqlRows(statement, args)
 	}
 
+	@Transactional
 	public def eachRow(String statement, Closure c) {
 		databaseService.eachRow(statement, c)
 	}
 	
+	@Transactional
 	public def shouldDoMigration(long code) {
 		def migration = Migration.findByCode(code)
 		if (migration && migration.getHasRun()) {
@@ -78,6 +85,7 @@ class MigrationService {
 		return Migration.create(code)
 	}
 	
+	@Transactional
 	def didMigration(Migration migration) {
 		migration.setHasRun(true)
 		Utils.save(migration, true)
@@ -328,5 +336,46 @@ class MigrationService {
 			sql("delete from entry where set_name like 'withings import%'")
 			sql("update oauth_account set last_polled = null where type_id = 1")
 		}
+		tryMigration(DROP_EXTRA_TAG_XREF) {
+			sql("drop table `tlb_dev`.`entry_tag`")
+		}
+		tryMigration(REMOVE_OBSOLETE_ENTRY_FIELDS) {
+			try {
+				sql ("ALTER TABLE `entry` DROP COLUMN `tweet_id`, DROP COLUMN `time_zone_offset_ticks`")
+			} catch (Throwable t) {
+			}
+			def rows = sqlRows("select entry.id, entry.set_name from entry where set_name IS NOT NULL")
+			for (row in rows) {
+				String setName = row['set_name']
+				Identifier identifier = Identifier.look(setName)
+				sql ("UPDATE entry set entry.set_identifier_id = :id where entry.id = :entryid", [id:identifier?.getId(), entryid:row['id']])
+			}
+			sql ("ALTER TABLE `entry` DROP COLUMN `set_name`")
+		}
+	}
+	
+	def doMigrationJob() {
+		tryMigration(ADD_TAG_UNIT_STATS_AGAIN) {
+			try {
+				sql ("ALTER TABLE `tag_unit_stats` DROP COLUMN `unit_group`")
+			} catch (Throwable t) {
+			}
+			try {
+				sql('ALTER TABLE tag_unit_stats CHANGE COLUMN unit_group_id unit_group_id bigint(20) DEFAULT NULL')
+			} catch (Throwable t) {
+			}
+			sql('DELETE FROM tag_unit_stats') // clear current list of tag unit stats
+			
+			def users = User.list()
+			for (u in users) {
+				def entries = Entry.findAllByUserId(u.getId())
+				for (e in entries) {
+					log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
+					def tagUnitStats =
+						TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units)
+				}
+			}
+		}
+
 	}
 }

@@ -1,5 +1,6 @@
 import grails.test.*
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.*
 import us.wearecurio.services.TwitterDataService
 
@@ -21,7 +22,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class TwitterDataServiceTests extends GroovyTestCase {
+class TwitterDataServiceTests extends CuriousTestCase {
 	static transactional = true
 
 	TwitterDataService twitterDataService

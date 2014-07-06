@@ -29,8 +29,6 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 	void setUp() {
 		super.setUp()
 
-		TimeZoneId.clearCacheForTesting()
-
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
@@ -43,6 +41,8 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
+		
 		twenty3AndMeDataService.oauthService = oauthService
 	}
 

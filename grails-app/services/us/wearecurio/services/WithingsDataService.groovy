@@ -71,8 +71,8 @@ class WithingsDataService extends DataService {
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
 		if (refreshAll)
-			Entry.executeUpdate("delete Entry e where e.setName like :setName and e.userId = :userId",
-					[setName: SET_NAME + "%", userId: userId]) // Using like for backward compatibility
+			Entry.executeUpdate("delete Entry e where e.setIdentifier like :setIdentifier and e.userId = :userId",
+					[setIdentifier: Identifier.look(SET_NAME), userId: userId]) // Using like for backward compatibility
 
 		Integer timeZoneId = getTimeZoneId(account)
 
@@ -108,8 +108,8 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-				Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-					[setName: setName , userId: userId]) 
+				Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+					[setIdentifier: Identifier.look(setName) , userId: userId]) 
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -229,8 +229,8 @@ class WithingsDataService extends DataService {
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
-			Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-				[setName: setName , userId: userId]) 
+			Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+				[setIdentifier: Identifier.look(setName), userId: userId]) 
 			def args = ['isSummary':true] // Indicating that these entries are summary entries
 			
 			if (activity["steps"]) {
@@ -296,8 +296,8 @@ class WithingsDataService extends DataService {
 				entryDate = new Date(entryTimestamp * 1000L)
 				setName = SET_NAME + "i" + timestamp
 				try {
-					Entry.executeUpdate("delete Entry e where e.setName = :setName and e.userId = :userId",
-							[setName: setName, userId: userId]) 
+					Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+							[setIdentifier: Identifier.look(setName), userId: userId]) 
 				
 				} catch (org.springframework.dao.CannotAcquireLockException le) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")

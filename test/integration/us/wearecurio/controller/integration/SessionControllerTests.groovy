@@ -8,10 +8,11 @@ import java.text.DateFormat
 import org.junit.*
 
 import us.wearecurio.controller.SessionController
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.*
 import us.wearecurio.utility.Utils
 
-class SessionControllerTests extends GroovyTestCase {
+class SessionControllerTests extends CuriousTestCase {
 
 	static transactional = true
 

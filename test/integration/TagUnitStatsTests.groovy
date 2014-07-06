@@ -1,5 +1,6 @@
 import static org.junit.Assert.*
 
+import us.wearecurio.integration.CuriousUserTestCase;
 import us.wearecurio.model.TagUnitStats
 
 import java.math.MathContext
@@ -24,7 +25,7 @@ import org.junit.*
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
 
-class TagUnitStatsTests extends GroovyTestCase {
+class TagUnitStatsTests extends CuriousUserTestCase {
 	static transactional = true
 	
 	User user
@@ -43,7 +44,6 @@ class TagUnitStatsTests extends GroovyTestCase {
 	@Before
 	void setUp() {
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
-		TimeZoneId.clearCacheForTesting()
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"

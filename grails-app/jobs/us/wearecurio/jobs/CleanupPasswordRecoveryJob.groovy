@@ -5,7 +5,7 @@ import us.wearecurio.model.PasswordRecovery
 
 class CleanupPasswordRecoveryJob extends us.wearecurio.utility.TimerJob {
     static triggers = {
-		simple repeatInterval: DAY
+		simple startDelay: DAY, repeatInterval: DAY
     }
 
     def execute() {

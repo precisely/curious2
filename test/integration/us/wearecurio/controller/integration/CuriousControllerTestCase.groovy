@@ -8,6 +8,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.*
 import org.springframework.web.util.WebUtils
 
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.*
 import us.wearecurio.utility.Utils
 
@@ -18,7 +19,7 @@ import us.wearecurio.utility.Utils
  * 
  * @author mitsu
  */
-abstract class CuriousControllerTestCase extends GroovyTestCase {
+abstract class CuriousControllerTestCase extends CuriousTestCase {
 	static transactional = true
 
 	User user
@@ -31,6 +32,8 @@ abstract class CuriousControllerTestCase extends GroovyTestCase {
 		/*mockLogging(controller.getClass(), true)
 		
 		setLogger(controller)*/
+		
+		Utils.resetForTesting()
 
 		def params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
 

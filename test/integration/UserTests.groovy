@@ -1,5 +1,6 @@
 import grails.test.*
 
+import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 
@@ -7,7 +8,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class UserTests extends GroovyTestCase {
+class UserTests extends CuriousTestCase {
 	static transactional = true
 
 	@Before

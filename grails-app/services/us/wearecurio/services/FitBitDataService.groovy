@@ -19,6 +19,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.Identifier
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
@@ -202,8 +203,8 @@ class FitBitDataService extends DataService {
 
 			String oldSetName = logEntry.logId	// Backward support
 
-			Entry.executeUpdate("delete Entry e where e.setName in :setNames and e.userId = :userId",
-					[setNames: [setName, oldSetName], userId: account.userId])
+			Entry.executeUpdate("delete Entry e where e.setIdentifier in :setIdentifiers and e.userId = :userId",
+					[setIdentifiers: [Identifier.look(setName), Identifier.look(oldSetName)], userId: account.userId])
 
 			fitBitTagUnitMap.buildEntry("duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 			fitBitTagUnitMap.buildEntry("awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)

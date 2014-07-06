@@ -11,11 +11,11 @@ class WeatherServiceTests extends CuriousServiceTestCase {
 	WeatherService weatherService
 	
 	void setUp() {
-		
+		super.setUp()
 	}
 	
 	void tearDown() {
-		
+		super.tearDown()
 	}
 	
 	void testFetchConditionsWithNoInput() {

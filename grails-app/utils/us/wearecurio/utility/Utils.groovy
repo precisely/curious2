@@ -3,6 +3,8 @@ package us.wearecurio.utility
 import org.apache.commons.logging.LogFactory
 
 import grails.plugin.mail.MailService
+import groovy.lang.Closure;
+
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.TimeZone
@@ -63,6 +65,20 @@ class Utils {
 		return true;
 	}
 
+	static def testResetClosures
+	
+	public static void registerTestReset(Closure c) {
+		if (!testResetClosures)
+			testResetClosures = []
+		testResetClosures.add(c)
+	}
+	
+	public static void resetForTesting() {
+		for (c in testResetClosures) {
+			c()
+		}
+	}
+	
 	/**
 	 * Simple utility method to do equals in a null-safe manner
 	 */
