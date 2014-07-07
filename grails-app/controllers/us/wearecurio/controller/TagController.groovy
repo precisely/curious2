@@ -157,14 +157,15 @@ class TagController extends LoginController {
 
 		if (exclusionType == "Tag") {
 			itemToExclude = Tag.get(id)
-		} else {
-			itemToExclude = GenericTagGroup.get(id)
+		} else if (exclusionType == "WildcardTagGroup") {
+			itemToExclude = WildcardTagGroup.get(id)
 		}
 
 		def tagGroupProperty = GenericTagGroupProperties.createOrLookup(session.userId, null, tagGroupId)
 
 		// There can not be an exclusion from a general tag group.
 		if (tagGroupInstance instanceof TagGroup && !(tagGroupInstance instanceof SharedTagGroup)) {
+			log.debug "Could not exclude an item from a simple TagGroup"
 			renderJSONGet([success: true])
 			return false
 		}

@@ -17,7 +17,7 @@ class TagService {
 					tg.name					AS shortName,
 					tg.description			AS description,
 					tgp.id					AS propertyId,
-					tgp.is_continuous		AS is_continuous,
+					tgp.is_continuous		AS iscontinuous,
 					tgp.show_points			AS showpoints,
 					g.id					AS groupId,
 					g.name					AS groupName,
@@ -44,9 +44,25 @@ class TagService {
 	}
 
 	List getAllTagGroupsForUser(Long userId) {
-		// First fetch system tag groups so not to remove while check for unique tag groups.
-		List tagGroups = getSystemTagGroups() + getTagGroupsByUser(userId) + getTagGroupsTheUserIsAnAdminOf(userId)
-		tagGroups = tagGroups.unique { it.description }
+		List tagGroups = getTagGroupsByUser(userId)
+
+		getSystemTagGroups().each { systemTagGroup ->
+			def existingGroup = tagGroups.find { it.id == systemTagGroup.id && it.type == systemTagGroup.type }
+			if (existingGroup) {
+				existingGroup["isSystemGroup"] = true
+			} else {
+				tagGroups << systemTagGroup
+			}
+		}
+
+		getTagGroupsTheUserIsAnAdminOf(userId).each { adminTagGroup ->
+			def existingGroup = tagGroups.find { it.id == adminTagGroup.id && it.type == adminTagGroup.type }
+			if (existingGroup) {
+				existingGroup["isAdminOfTagGroup"] = true
+			} else {
+				tagGroups << adminTagGroup
+			}
+		}
 
 		List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
 
@@ -95,7 +111,9 @@ class TagService {
 		// Get all UserGroup ids, the user is an Admin of.
 		List<Long> adminUserGroupIds = UserGroup.getGroupsForAdmin(userId)*.getAt(0).id
 
-		return getTagGroupsForUserGroupIds(adminUserGroupIds)
+		List adminTagGroups = getTagGroupsForUserGroupIds(adminUserGroupIds)
+		adminTagGroups*.put("isAdminOfTagGroup", true)
+		adminTagGroups
 	}
 
 	/**
@@ -152,7 +170,7 @@ class TagService {
 		UserGroup userGroupInstance = tagGroupProperty?.getGroup()
 
 		if (!tagGroupProperty || !userGroupInstance) {
-			return false
+			return true
 		}
 
 		if (UserGroup.hasAdmin(userGroupInstance.id, userId)) {

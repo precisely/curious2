@@ -111,6 +111,7 @@ function TagGroup(args) {
 	this.isReadOnly = args.isReadOnly;
 	this.excludes = args.excludes || [];
 	this.isSystemGroup = args.isSystemGroup;
+	this.isAdminOfTagGroup = args.isAdminOfTagGroup;
 
 	if (this.getType().indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
@@ -131,23 +132,28 @@ function TagGroup(args) {
 		}.bind(this));
 	};
 
+	this.isExcluded = function(childItem) {
+		if (!this.excludes) {
+			return false;
+		}
+
+		var isExcluded = false;
+		var type = childItem.type === 'tag' ? 'TAG' : 'TAG_GROUP';
+
+		for (var i in this.excludes) {
+			if (this.excludes[i].objectId == childItem.id && this.excludes[i].type == type) {
+				isExcluded = true;
+				break;
+			}
+		}
+
+		return isExcluded;
+	};
+
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
-				var isExcluded = false;
-
-				if (this.excludes) {
-					var type = tag.type === 'tag' ? 'TAG' : 'TAG_GROUP';
-
-					for (var i in this.excludes) {
-						if (this.excludes[i].objectId == tag.id && this.excludes[i].type == type) {
-							isExcluded = true;
-							break;
-						}
-					}
-				}
-
-				if (isExcluded) {
+				if (this.isExcluded(tag)) {
 					return;
 				}
 				this.addChild(tag);
@@ -160,6 +166,9 @@ function TagGroup(args) {
 			}), function(data) {
 				jQuery.each(data, function(index, tag) {
 					tag.type = tag.class;
+					if (this.isExcluded(tag)) {
+						return;
+					}
 					this.addChild(this.treeStore.createOrUpdate(tag));
 				}.bind(this));
 				callback(this);
@@ -256,11 +265,16 @@ function TagGroup(args) {
 		var csrfKey = "excludeFromTagGroupDataCSRF";
 		var url = "/tag/excludeFromTagGroupData?callback=?";
 
+		var exclusionType = 'Tag';
+		if (childItem.type === 'wildcardTagGroup') {
+			exclusionType = 'WildcardTagGroup';
+		}
+
 		backgroundJSON("excluding item from group", url, getCSRFPreventionObject(csrfKey, {
 			tagGroupId : this.id,
 			id: childItem.id,
 			description: childItem.description,
-			exclusionType: 'Tag'
+			exclusionType: exclusionType
 		}), function(data) {
 			callback();
 		}.bind(this));
@@ -351,6 +365,7 @@ function TagStore(args) {
 			initArgs.groupName = args['groupName'];
 			initArgs.isReadOnly = args['isReadOnly'];
 			initArgs.isSystemGroup = args['isSystemGroup'];
+			initArgs.isAdminOfTagGroup = args['isAdminOfTagGroup'];
 		}
 
 		if (typeof listItem == 'undefined') {
@@ -612,9 +627,18 @@ function TagGroupView(args) {
 		}
 
 		var classes = this.getTreeItemViewCssClass();
-		if (this.data.isReadOnly) {
+		if (this.data.isReadOnly && !this.data.isAdminOfTagGroup) {
 			classes += ' no-drop';
 		}
+
+		var parentTagGroup,
+			parentTagGroupView = this.getParentItemView();
+
+		if (parentTagGroupView) {
+			parentTagGroup = parentTagGroupView.getData();
+		}
+
+		var wildcardGroupHavingParentSharedGroup = parentTagGroup && parentTagGroup.type === 'sharedTagGroup' && this.data.isWildcard;
 
 		var html = '<li id="'+this.element+'" class="'+ classes + ' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
@@ -626,8 +650,17 @@ function TagGroupView(args) {
 
 		html += '</span>';
 
-		if (!this.data.isSystemGroup) {		// Do not show delete button if it is a System Group
+		/*
+		 * Show delete button only if it is not a system group.
+		 * Also do not show the delete button if current tag group is wild card tag group and
+		 * it has a parent shared tag group.
+		 */
+		if (!this.data.isSystemGroup && !wildcardGroupHavingParentSharedGroup) {
 			html += '<span class=" hide ui-icon ui-icon-close"></span>';
+		}
+
+		if (wildcardGroupHavingParentSharedGroup) {
+			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
 		}
 
 		if (!this.data.isWildcard) {
@@ -749,7 +782,7 @@ function TagListWidget(args) {
 		var sourceView = $source.data(DATA_KEY_FOR_ITEM_VIEW);
 		targetView.highlight(true);
 
-		if (targetItem.isReadOnly) {
+		if (targetItem.isReadOnly && !targetItem.isAdminOfTagGroup) {
 			return false;
 		}
 
