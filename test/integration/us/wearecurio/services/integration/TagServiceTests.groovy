@@ -6,7 +6,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import us.wearecurio.model.ExclusionType
+import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.TagGroup
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -52,6 +56,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		tagGroup3 = tagGroupService.createOrLookupTagGroup("Tag Group 3", null, curious.id)
 		tagGroup4 = tagGroupService.createOrLookupTagGroup("Tag Group 4", null, announce.id, SharedTagGroup.class)
 
+		systemGroup = UserGroup.lookupOrCreateSystemGroup()
 		Utils.setMailService(mailService)
 	}
 
@@ -140,7 +145,6 @@ class TagServiceTests extends CuriousServiceTestCase {
 	}
 
 	void "test get system tag groups"() {
-		systemGroup = UserGroup.lookupOrCreateSystemGroup()
 		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
 		TagGroup systemTagGroup2 = tagGroupService.createOrLookupTagGroup("System Tag Group 2", null, systemGroup.id)
 
@@ -149,5 +153,33 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert systemTagGroups.size() == 2
 		assert systemTagGroups[0].id == systemTagGroup1.id
 		assert systemTagGroups[1].id == systemTagGroup2.id
+	}
+
+	void "test the existence of generic property on same name tag groups"() {
+		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("Tag Group 1", null, systemGroup.id)
+		TagGroup systemTagGroup2 = tagGroupService.createOrLookupTagGroup("Tag Group 3", null, systemGroup.id)
+
+		List allTagGroups = tagService.getAllTagGroupsForUser(schmoe.id)
+		assert allTagGroups.size() == 2
+		assert allTagGroups.find { it.description == "Tag Group 3" }.isSystemGroup == true
+	}
+
+	void "test exclusion list data"() {
+		Tag tag = Tag.look("Tag Test 1")
+		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
+
+		def prop = GenericTagGroupProperties.createOrLookup(user.id, null, systemTagGroup1.id)
+		TagExclusion.createOrLookup(tagGroup1, prop)
+		TagExclusion.createOrLookup(tag, prop)
+
+		assert TagExclusion.count() == 2
+		List allTagGroups = tagService.getAllTagGroupsForUser(user.id)
+		assert allTagGroups.size() == 3
+
+		Map tagGroupData = allTagGroups.find { it.description == systemTagGroup1.description }
+		assert tagGroupData.id == systemTagGroup1.id
+		assert tagGroupData["excludes"].size() == 2
+		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG }.objectId == tag.id
+		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG_GROUP }.objectId == tagGroup1.id
 	}
 }
