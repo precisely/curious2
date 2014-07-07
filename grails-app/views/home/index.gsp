@@ -4,6 +4,7 @@
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
@@ -57,6 +58,8 @@ excludeFromTagGroupDataCSRF" />
 		</div>
 	</div>
 	<!-- /MAIN -->
+    <div id="remove-exclusion-dialog" class="hide" title="Add back to the TagGroup">
+    </div>
 	<script type="text/javascript">
 		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
 		var currentDate = new Date();

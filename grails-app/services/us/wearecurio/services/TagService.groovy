@@ -82,6 +82,7 @@ class TagService {
 					property("objectId", "objectId")
 					property("tagGroupPropertyId", "tagGroupPropertyId")
 				}
+				'in'("tagGroupPropertyId", tagGroupPropertyIds)
 			}
 
 			// Iterate each tag group data

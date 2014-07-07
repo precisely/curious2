@@ -1,13 +1,14 @@
 package us.wearecurio.controller
 
 import org.apache.commons.logging.LogFactory
+import org.hibernate.criterion.CriteriaSpecification
 
-import us.wearecurio.model.ExclusionType;
+import us.wearecurio.model.ExclusionType
 import us.wearecurio.model.GenericTagGroup
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
 import us.wearecurio.model.Tag
-import us.wearecurio.model.TagExclusion;
+import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.User
@@ -74,6 +75,21 @@ class TagController extends LoginController {
 		renderStringGet("success")
 	}
 
+	def addBackToTagGroup(Long id, Long itemId, String type) {
+		log.debug "Add back item $params"
+
+		GenericTagGroup tagGroup = GenericTagGroup.get(id)
+		GenericTagGroupProperties prop = GenericTagGroupProperties.lookup(session.userId, id)
+
+		TagExclusion.withCriteria(uniqueResult: true) {
+			eq("objectId", itemId)
+			eq("type", ExclusionType[type])
+			eq("tagGroupPropertyId", prop.id)
+		}?.delete(flush: true)
+
+		renderJSONGet([success: true])
+	}
+
 	def addTagGroupToTagGroupData() {
 		log.debug("Adding tag group to tag group: " + params)
 		def parentTagGroupInstance = TagGroup.get(params.parentTagGroupId)
@@ -89,6 +105,46 @@ class TagController extends LoginController {
 		parentTagGroupInstance.addToSubTagGroups(childTagGroupInstance)
 		parentTagGroupInstance.save()
 		renderJSONGet(["dummy"])
+	}
+
+	def getExclusionData(Long id) {
+		log.debug("Showing exclusion data: " + params)
+		List exclusionData = []
+
+		GenericTagGroupProperties prop = GenericTagGroupProperties.lookup(session.userId, id)
+		if (prop) {
+			List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyId(prop.id)*.properties
+			List<Long> excludedTagIds = exclusions.findAll { it.type == ExclusionType.TAG }*.objectId
+			List<Long> excludedTagGroupIds = exclusions.findAll { it.type == ExclusionType.TAG_GROUP }*.objectId
+
+			if (excludedTagIds) {
+				List allExcludedTags = Tag.withCriteria {
+					'in'("id", excludedTagIds)
+					resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+					projections {
+						property("id", "id")
+						property("description", "description")
+					}
+				}
+				allExcludedTags*.put("type", ExclusionType.TAG)
+				exclusionData.addAll allExcludedTags
+			}
+
+			if (excludedTagGroupIds) {
+				List allExcludedTagGroups = GenericTagGroup.withCriteria {
+					'in'("id", excludedTagGroupIds)
+					resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+					projections {
+						property("id", "id")
+						property("description", "description")
+					}
+				}
+				allExcludedTagGroups*.put("type", ExclusionType.TAG_GROUP)
+				exclusionData.addAll allExcludedTagGroups
+			}
+		}
+
+		renderJSONGet(exclusionData)
 	}
 
 	def showTagGroupData(Long id) {

@@ -694,6 +694,17 @@ function TreeWidget(args) {
 			if (typeof itemView == 'undefined') return;
 			itemView.highlight();
 		}.bind(this));
+
+		$(document).on("click", "a.add-back-item", function() {
+			var $item = $(this);
+			backgroundJSON("add back tag", "/tag/addBackToTagGroup?callback=?", getCSRFPreventionObject("showTagGroupDataCSRF", {
+				id : $item.data('groupId'),
+				itemId: $item.data('itemId'),
+				type: $item.data('itemType')
+			}), function() {
+				$item.parent().remove();
+			}.bind(this));
+		});
 	}
 	
 	this.notifyCreate = function(item, afterIndex) {

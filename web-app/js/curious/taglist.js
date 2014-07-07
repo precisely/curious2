@@ -112,6 +112,8 @@ function TagGroup(args) {
 	this.excludes = args.excludes || [];
 	this.isSystemGroup = args.isSystemGroup;
 	this.isAdminOfTagGroup = args.isAdminOfTagGroup;
+	// A list which holds the excluded item (instance of Tag or TagGroup)
+	this.excludedItems = [];
 
 	if (this.getType().indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
@@ -148,6 +150,14 @@ function TagGroup(args) {
 		}
 
 		return isExcluded;
+	};
+
+	this.fetchExclusionData = function(callback) {
+		backgroundJSON("loading exclusion data", "/tag/getExclusionData?callback=?", getCSRFPreventionObject("showTagGroupDataCSRF", {
+			id : this.id,
+		}), function(data) {
+			callback(data);
+		}.bind(this));
 	};
 
 	this.fetch = function(callback) {
@@ -758,18 +768,20 @@ function TagListWidget(args) {
 		}
 		return itemView
 	}
-	
+
+	// TODO Fix this. Is being called many times.
 	this.makeDraggableAndDroppable = function(element) {
 		if (typeof element == 'undefined') {
 			element = this.element;
 		}
-		$(element).delegate(".treeItemView","mouseenter",function(){
+		$(element).delegate(".treeItemView", "mouseenter", function() {
 			$(this).draggable({
 				revert : 'invalid',
 				helper: function(event) {
 					return $( '<div class="draggable-helper">' + $(event.target).html() + '</div>' );
 			    }
-			});
+			})
+
 			$(this).droppable({
 				drop : tagListWidget.dropTagListItem.bind(tagListWidget),
 				over: function(e, ui) {
@@ -784,6 +796,50 @@ function TagListWidget(args) {
 					$('body').css('cursor', cursor);
 				}
 			});
+		});
+
+		var positionOnTapEvent, positionOnTapHoldEvent;
+
+		$(".treeItemView", element).off("taphold tap mousedown")	// Make sure to remove older same events as this is called sevaral times.
+		.on("tap mousedown", function(e) {
+			positionOnTapEvent = $(this).offset();
+		})
+		.on("taphold", function(e) {
+			var $item = $(this);
+			positionOnTapHoldEvent = $item.offset();
+
+			// Elemenet may have been moved (dragged somewhere else)
+			if (positionOnTapEvent.top != positionOnTapHoldEvent.top || positionOnTapEvent.left != positionOnTapHoldEvent.left) {
+				return;
+			}
+
+			var tagOrTagGroupView = $item.data(DATA_KEY_FOR_ITEM_VIEW);
+			var tagOrTagGroup = tagOrTagGroupView.getData();
+			if (["sharedTagGroup", "wildcardTagGroup"].indexOf(tagOrTagGroup.type) == -1) {
+				console.log('return', tagOrTagGroup.type)
+				return;
+			}
+
+			var tagGroup = tagOrTagGroup;
+			if (!tagGroup.excludes || tagGroup.excludes.length === 0) {
+				console.log('No exclusion found.');
+				return;
+			}
+
+			tagGroup.fetchExclusionData(function(data) {
+				var html = '<ul>';
+				for (i in data) {
+					var excludedItem = data[i];
+					html += '<li>' + excludedItem['description'] + ' <a href="#" class="add-back-item" data-group-id="' +
+						tagGroup.id + '" data-item-id="' + excludedItem.id + '" data-item-type="' + excludedItem.type + '"' +
+						' style="font-size: 14px">+</a></li>';
+				}
+
+				var $dialogElement = $('div#remove-exclusion-dialog');
+				$dialogElement.html(html);
+				$dialogElement.dialog();
+			}.bind(tagGroup));
+
 		});
 	}
 	
