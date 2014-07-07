@@ -43,26 +43,31 @@ class TagService {
 		return tags
 	}
 
+	void processAndAddTagGroups(List existingTagGroups, List newTagGroups) {
+		newTagGroups.each { newTagGroup ->
+			def existingGroup = existingTagGroups.find { it.id == newTagGroup.id && it.type == newTagGroup.type }
+
+			if (existingGroup) {
+				existingGroup["groupName"] = newTagGroup["groupName"]
+				existingGroup["isReadOnly"] = newTagGroup["isReadOnly"]
+				
+				if (!existingGroup["isSystemGroup"]) {	// Only change state if existing tag is not already been marked as system group
+					existingGroup["isSystemGroup"] = newTagGroup["isSystemGroup"]
+				}
+				if (!existingGroup["isAdminOfTagGroup"]) { // Only change state if existing taggroup has not admin permission.
+					existingGroup["isAdminOfTagGroup"] = newTagGroup["isAdminOfTagGroup"]
+				}
+			} else {
+				existingTagGroups << newTagGroup
+			}
+		}
+	}
+
 	List getAllTagGroupsForUser(Long userId) {
 		List tagGroups = getTagGroupsByUser(userId)
 
-		getSystemTagGroups().each { systemTagGroup ->
-			def existingGroup = tagGroups.find { it.id == systemTagGroup.id && it.type == systemTagGroup.type }
-			if (existingGroup) {
-				existingGroup["isSystemGroup"] = true
-			} else {
-				tagGroups << systemTagGroup
-			}
-		}
-
-		getTagGroupsTheUserIsAnAdminOf(userId).each { adminTagGroup ->
-			def existingGroup = tagGroups.find { it.id == adminTagGroup.id && it.type == adminTagGroup.type }
-			if (existingGroup) {
-				existingGroup["isAdminOfTagGroup"] = true
-			} else {
-				tagGroups << adminTagGroup
-			}
-		}
+		processAndAddTagGroups(tagGroups, getSystemTagGroups())
+		processAndAddTagGroups(tagGroups, getTagGroupsTheUserIsAnAdminOf(userId))
 
 		List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
 

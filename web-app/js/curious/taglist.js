@@ -580,13 +580,34 @@ function TagView(args) {
 		if (this.pinned) {
 			pinIcon = "ui-icon-pin-s";
 		}
-		
-		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
-		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>'
-			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class="hide ui-icon ui-icon-close"></span>' : '');
 
-		var parentGroup = this.parentItemView;
-		if (parentGroup && parentGroup.data.isWildcard) {
+		var parentTagGroup,
+			hasParentSharedGroup,
+			isAdminOfParentTagGroup,
+			parentTagGroupView = this.getParentItemView();
+
+		if (parentTagGroupView) {
+			parentTagGroup = parentTagGroupView.getData();
+			hasParentSharedGroup = parentTagGroup.type === 'sharedTagGroup';
+			isAdminOfParentTagGroup = parentTagGroup.isAdminOfTagGroup || false;
+		}
+
+		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
+		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>';
+
+		var deleteHtml = '<span class="hide ui-icon ui-icon-close"></span>';
+
+		if (extraParams && extraParams.showDeleteIcon) {
+			if (hasParentSharedGroup) {
+				if (isAdminOfParentTagGroup) {
+					html += deleteHtml;
+				}
+			} else {
+				html += deleteHtml;
+			}
+		}
+
+		if (parentTagGroup && parentTagGroup.isWildcard) {
 			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
 		}
 
@@ -632,13 +653,18 @@ function TagGroupView(args) {
 		}
 
 		var parentTagGroup,
+			hasParentSharedGroup,
+			tagGroup = this.data,
+			isAdminOfParentTagGroup,
+			isSystemTagGroup = tagGroup.isSystemGroup,
 			parentTagGroupView = this.getParentItemView();
 
 		if (parentTagGroupView) {
 			parentTagGroup = parentTagGroupView.getData();
+			isAdminOfParentTagGroup = parentTagGroup.isAdminOfTagGroup;
+			hasParentSharedGroup = parentTagGroup.type === 'sharedTagGroup';
 		}
 
-		var wildcardGroupHavingParentSharedGroup = parentTagGroup && parentTagGroup.type === 'sharedTagGroup' && this.data.isWildcard;
 
 		var html = '<li id="'+this.element+'" class="'+ classes + ' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
@@ -650,16 +676,17 @@ function TagGroupView(args) {
 
 		html += '</span>';
 
-		/*
-		 * Show delete button only if it is not a system group.
-		 * Also do not show the delete button if current tag group is wild card tag group and
-		 * it has a parent shared tag group.
-		 */
-		if (!this.data.isSystemGroup && !wildcardGroupHavingParentSharedGroup) {
-			html += '<span class=" hide ui-icon ui-icon-close"></span>';
+		var deleteHtml = '<span class=" hide ui-icon ui-icon-close"></span>';
+		
+		if (hasParentSharedGroup) {
+			if (isAdminOfParentTagGroup && !isSystemTagGroup) {
+				html += deleteHtml;
+			}
+		} else if (!isSystemTagGroup) {
+			html += deleteHtml;
 		}
 
-		if (wildcardGroupHavingParentSharedGroup) {
+		if (hasParentSharedGroup && tagGroup.isWildcard) {
 			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
 		}
 
