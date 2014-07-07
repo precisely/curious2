@@ -2,6 +2,7 @@ package us.wearecurio.controller
 
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.model.ExclusionType;
 import us.wearecurio.model.GenericTagGroup
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
@@ -92,13 +93,30 @@ class TagController extends LoginController {
 
 	def showTagGroupData(Long id) {
 		log.debug("Showing tag group: " + params)
-		def tagGroupInstance = TagGroup.get(params.id.toLong())
-		def tagAndTagGroupList = []
+		TagGroup tagGroupInstance = TagGroup.get(id)
+
+		List tagAndTagGroupList = []
 		tagAndTagGroupList.addAll(tagGroupInstance.tags)
 		tagAndTagGroupList.addAll(tagGroupInstance.subTagGroups)
-		tagAndTagGroupList.sort { a,b ->
-			return a.description.compareTo(b.description)
+		tagAndTagGroupList.sort { it.description }
+
+		GenericTagGroupProperties property = GenericTagGroupProperties.lookup(session.userId, id)
+		if (property) {
+			List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyId(property.id)*.properties
+			List temporaryList = tagAndTagGroupList
+			tagAndTagGroupList = []
+
+			// Iterate each tag & tag group item
+			temporaryList.each { item ->
+				ExclusionType type = item instanceof Tag ? ExclusionType.TAG : ExclusionType.TAG_GROUP
+
+				// See if item has not been excluded by current user for current tag group
+				if (!exclusions.find { it.objectId == item.id && it.type == type}) {
+					tagAndTagGroupList << item
+				}
+			}
 		}
+
 		renderJSONGet(tagAndTagGroupList)
 	}
 
