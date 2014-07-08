@@ -116,14 +116,22 @@ class UserGroup {
 				[id: userId])
 	}
 
-	public static def getGroupsForReader(User user) {
-		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberReader item where item.memberId = :id and item.groupId = userGroup.id",
-				['id':user.getId()])
+	static List getGroupsForReader(User user) {
+		getGroupsForReader(user.id)
 	}
 
-	public static def getGroupsForWriter(User user) {
+	static List getGroupsForReader(Long userId) {
+		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberReader item where item.memberId = :id and item.groupId = userGroup.id",
+				[id: userId])
+	}
+
+	static List getGroupsForWriter(User user) {
+		getGroupsForWriter(user.id)
+	}
+
+	static List getGroupsForWriter(Long userId) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberWriter item where item.memberId = :id and item.groupId = userGroup.id",
-				['id':user.getId()])
+				[id: userId])
 	}
 
 	public static def getGroupsForDiscussion(Discussion discussion) {

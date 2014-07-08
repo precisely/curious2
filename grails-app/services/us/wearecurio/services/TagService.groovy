@@ -49,7 +49,7 @@ class TagService {
 			if (existingGroup) {
 				existingGroup["groupName"] = newTagGroup["groupName"]
 				existingGroup["isReadOnly"] = newTagGroup["isReadOnly"]
-				
+
 				if (!existingGroup["isSystemGroup"]) {	// Only change state if existing tag is not already been marked as system group
 					existingGroup["isSystemGroup"] = newTagGroup["isSystemGroup"]
 				}
@@ -66,6 +66,7 @@ class TagService {
 		List tagGroups = getTagGroupsByUser(userId)
 
 		processAndAddTagGroups(tagGroups, getSystemTagGroups())
+		processAndAddTagGroups(tagGroups, getTagGroupsTheUserIsMemberOf(userId))
 		processAndAddTagGroups(tagGroups, getTagGroupsTheUserIsAnAdminOf(userId))
 
 		List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
@@ -119,6 +120,13 @@ class TagService {
 		List adminTagGroups = getTagGroupsForUserGroupIds(adminUserGroupIds)
 		adminTagGroups*.put("isAdminOfTagGroup", true)
 		adminTagGroups
+	}
+
+	List getTagGroupsTheUserIsMemberOf(Long userId) {
+		List<Long> memberUserGroupIds = UserGroup.getGroupsForReader(userId)*.getAt(0).id
+		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.getAt(0).id)
+
+		getTagGroupsForUserGroupIds(memberUserGroupIds.unique())
 	}
 
 	/**
