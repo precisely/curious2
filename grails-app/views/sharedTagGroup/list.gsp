@@ -24,7 +24,6 @@
 				<tr>
 					<td>
 						${fieldValue(bean: sharedTagGroupInstance, field: "description")}
-						[${sharedTagGroupInstance.name}]
 					</td>
 					<td>${fieldValue(bean: sharedTagGroupInstance, field: "parentTagGroup")}</td>
 					<td>${sharedTagGroupInstance.associatedGroups*.name.join(', ') }</td>

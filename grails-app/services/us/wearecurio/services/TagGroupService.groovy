@@ -26,7 +26,8 @@ class TagGroupService {
 			tagGroupInstance = tagGroupInstanceList[0]
 		}
 
-		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
+		String propertyFor = userId ? "UserId" : "GroupId"
+		GenericTagGroupProperties.createOrLookup(userId ?: groupId, propertyFor, tagGroupInstance)
 		return tagGroupInstance
 	}
 
@@ -50,7 +51,8 @@ class TagGroupService {
 			tagGroupInstance = this.createTagGroup(tagGroupName, type, args)
 		}
 
-		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
+		String propertyFor = userId ? "UserId" : "GroupId"
+		GenericTagGroupProperties.createOrLookup(userId ?: groupId, propertyFor, tagGroupInstance)
 
 		return tagGroupInstance
 	}
@@ -58,7 +60,8 @@ class TagGroupService {
 	def createTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class, Map args = [:]) {
 		def tagGroupInstance = createTagGroup(tagGroupName, type, args)
 
-		GenericTagGroupProperties.createOrLookup(userId, groupId, tagGroupInstance)
+		String propertyFor = userId ? "UserId" : "GroupId"
+		GenericTagGroupProperties.createOrLookup(userId ?: groupId, propertyFor, tagGroupInstance)
 
 		return tagGroupInstance
 	}
@@ -66,7 +69,6 @@ class TagGroupService {
 	GenericTagGroup createTagGroup(String tagGroupName, Class type = TagGroup.class, Map args = [:]) {
 		def tagGroupInstance = type.newInstance()
 		tagGroupInstance.description = tagGroupName
-		tagGroupInstance.name = args["name"] ?: ""
 		tagGroupInstance.save()
 		return tagGroupInstance
 	}
