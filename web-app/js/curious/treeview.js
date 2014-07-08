@@ -696,7 +696,7 @@ function TreeWidget(args) {
 
 		$(document).on("click", "a.add-back-item", function() {
 			var $item = $(this);
-			backgroundJSON("add back tag", "/tag/addBackToTagGroup?callback=?", getCSRFPreventionObject("showTagGroupDataCSRF", {
+			backgroundJSON("add back tag", "/tag/addBackToTagGroupData?callback=?", getCSRFPreventionObject("addBackToTagGroupDataCSRF", {
 				id: $item.data('groupId'),
 				itemId: $item.data('itemId'),
 				type: $item.data('itemType')

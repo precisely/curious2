@@ -5,7 +5,8 @@
 
 <c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF" />
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
+addBackToTagGroupDataCSRF, getExclusionDataCSRF" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 
 <script type="text/javascript">
@@ -238,6 +239,7 @@ $(function(){
 	<!-- PRE-FOOTER -->
 	<div id="preFooter"></div>
 	<!-- /PRE-FOOTER -->
+	<div id="remove-exclusion-dialog" class="hide" title="Add back to the TagGroup"></div>
 	<script>
 		var resizeTimeout;
 		$(window).resize(function() {

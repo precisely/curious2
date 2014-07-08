@@ -102,6 +102,11 @@ class UserGroup {
 		group.delete()
 	}
 
+	/**
+	 * List of group a user in an admin of.
+	 * @param user
+	 * @return List of UserGroup instances the user is an admin of.
+	 */
 	static List getGroupsForAdmin(User user) {
 		getGroupsForAdmin(user.id)
 	}

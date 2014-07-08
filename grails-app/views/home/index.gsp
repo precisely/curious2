@@ -9,7 +9,7 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryDataCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getExclusionDataCSRF" />
 
 </head>
 <body class="track-page">
@@ -58,8 +58,7 @@ excludeFromTagGroupDataCSRF" />
 		</div>
 	</div>
 	<!-- /MAIN -->
-    <div id="remove-exclusion-dialog" class="hide" title="Add back to the TagGroup">
-    </div>
+	<div id="remove-exclusion-dialog" class="hide" title="Add back to the Group"></div>
 	<script type="text/javascript">
 		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
 		var currentDate = new Date();

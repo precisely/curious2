@@ -112,8 +112,6 @@ function TagGroup(args) {
 	this.excludes = args.excludes || [];
 	this.isSystemGroup = args.isSystemGroup;
 	this.isAdminOfTagGroup = args.isAdminOfTagGroup;
-	// A list which holds the excluded item (instance of Tag or TagGroup)
-	this.excludedItems = [];
 
 	if (this.getType().indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
@@ -153,7 +151,7 @@ function TagGroup(args) {
 	};
 
 	this.fetchExclusionData = function(callback) {
-		backgroundJSON("loading exclusion data", "/tag/getExclusionData?callback=?", getCSRFPreventionObject("showTagGroupDataCSRF", {
+		backgroundJSON("loading exclusion data", "/tag/getExclusionData?callback=?", getCSRFPreventionObject("getExclusionDataCSRF", {
 			id : this.id,
 		}), function(data) {
 			callback(data);
@@ -863,11 +861,11 @@ function TagListWidget(args) {
 		var targetItem = $target.data(DATA_KEY_FOR_ITEM_VIEW).getData();
 		var targetView = $target.data(DATA_KEY_FOR_ITEM_VIEW);
 		var sourceView = $source.data(DATA_KEY_FOR_ITEM_VIEW);
-		targetView.highlight(true);
 
 		if (targetItem.isReadOnly && !targetItem.isAdminOfTagGroup) {
 			return false;
 		}
+		targetView.highlight(true);
 
 		if ((sourceItem instanceof TagGroup) && (targetItem instanceof TagGroup)) {
 			targetView = targetView.getTopMostParentItemView();

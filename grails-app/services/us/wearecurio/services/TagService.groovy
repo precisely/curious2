@@ -14,7 +14,6 @@ class TagService {
 
 	private static String COMMON_QUERY = """
 			SELECT	tg.id					AS id,
-					tg.name					AS shortName,
 					tg.description			AS description,
 					tgp.id					AS propertyId,
 					tgp.is_continuous		AS iscontinuous,
@@ -175,7 +174,7 @@ class TagService {
 		GenericTagGroupProperties tagGroupProperty = GenericTagGroupProperties.findByTagGroupId(tagGroup.id)
 		UserGroup userGroupInstance = tagGroupProperty?.getGroup()
 
-		if (!tagGroupProperty || !userGroupInstance) {
+		if (!userGroupInstance) {
 			return true
 		}
 

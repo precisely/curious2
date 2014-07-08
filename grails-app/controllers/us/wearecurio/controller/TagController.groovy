@@ -75,7 +75,7 @@ class TagController extends LoginController {
 		renderStringGet("success")
 	}
 
-	def addBackToTagGroup(Long id, Long itemId, String type) {
+	def addBackToTagGroupData(Long id, Long itemId, String type) {
 		log.debug "Add back item $params"
 
 		GenericTagGroup tagGroup = GenericTagGroup.get(id)
@@ -113,7 +113,7 @@ class TagController extends LoginController {
 
 		GenericTagGroupProperties prop = GenericTagGroupProperties.lookup(session.userId, id)
 		if (prop) {
-			List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyId(prop.id)*.properties
+			List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyId(prop.id)
 			List<Long> excludedTagIds = exclusions.findAll { it.type == ExclusionType.TAG }*.objectId
 			List<Long> excludedTagGroupIds = exclusions.findAll { it.type == ExclusionType.TAG_GROUP }*.objectId
 
@@ -239,7 +239,7 @@ class TagController extends LoginController {
 
 		// There can not be an exclusion from a general tag group.
 		if (tagGroupInstance instanceof TagGroup && !(tagGroupInstance instanceof SharedTagGroup)) {
-			log.debug "Could not exclude an item from a simple TagGroup"
+			log.debug "No exclusion operation allowed from $tagGroupInstance"
 			renderJSONGet([success: true])
 			return false
 		}

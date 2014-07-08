@@ -10,13 +10,6 @@
 		autofocus="" required="" />
 </div>
 
-<div class="form-group ${hasErrors(bean: sharedTagGroupInstance, field: 'name', 'has-error')} ">
-	<label for="name">
-		<g:message code="sharedTagGroup.name.label" default="Name" /> (Short Name)
-	</label>
-	<g:textField name="name" class="form-control" value="${sharedTagGroupInstance?.name}" required="" />
-</div>
-
 <div class="form-group hide">
 	<label for="userId">
 		User (Either user group or user is required)
