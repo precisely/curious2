@@ -26,7 +26,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 	
 	def sync = new Object()
 	
-	class ThreadTest extends Runnable {
+	class ThreadTest implements Runnable {
 		Long userId
 		
 		ThreadTest(userId) {

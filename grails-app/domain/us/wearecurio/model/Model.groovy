@@ -1,4 +1,4 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 import grails.converters.*
 

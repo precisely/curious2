@@ -52,7 +52,7 @@ class MigrationService {
 	public static final long HISTORICAL_INTRA_DAY = 86L
 	public static final long DROP_EXTRA_TAG_XREF = 87L
 	public static final long REMOVE_OBSOLETE_ENTRY_FIELDS = 88L
-	public static final long ADD_TAG_UNIT_STATS_AGAIN = 89L
+	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -320,14 +320,6 @@ class MigrationService {
 			sql ("alter table user_group drop column version")
 			sql ("alter table user_time_zone drop column version")
 		}
-		tryMigration(ADD_TAG_UNIT_STATS) {
-			def entries = Entry.list()
-			for (e in entries) {
-				log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
-				def tagUnitStats = 
-					TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units) 
-			}
-		}
 		tryMigration(FIX_TAG_PROPERTIES2) {
 			sql ("ALTER TABLE `tag_properties` DROP COLUMN `data_type_computed`, DROP COLUMN `data_type_manual`")
 			sql ("ALTER TABLE `tag_properties` ADD COLUMN `data_type_computed` INT NULL DEFAULT NULL  , ADD COLUMN `data_type_manual` INT NULL DEFAULT NULL")
@@ -354,7 +346,10 @@ class MigrationService {
 		}
 	}
 	
-	def doMigrationJob() {
+	/**
+	 * Migrations intended to run in a separate thread, to allow server to finish bootstrapping
+	 */
+	def doBackgroundMigrations() {
 		tryMigration(ADD_TAG_UNIT_STATS_AGAIN) {
 			try {
 				sql ("ALTER TABLE `tag_unit_stats` DROP COLUMN `unit_group`")
@@ -368,14 +363,26 @@ class MigrationService {
 			
 			def users = User.list()
 			for (u in users) {
-				def entries = Entry.findAllByUserId(u.getId())
+				def c = Entry.createCriteria()
+				def entries = c {
+					and {
+						eq("userId", u.getId())
+						not {
+							or {
+								isNull("units")
+								eq("units",'')
+							}
+						}
+					}
+				}
 				for (e in entries) {
-					log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
-					def tagUnitStats =
-						TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units)
+					Model.withTransaction {
+						log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
+						def tagUnitStats =
+							TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units)
+					}
 				}
 			}
 		}
-
 	}
 }

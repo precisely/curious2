@@ -96,6 +96,13 @@ class UnitGroupMap {
 	public static final double INCHHG = 3386.389d
 	public static final double ATMOSPHERE = 98.0665e3d
 	
+	//Density
+	public static final double KGPERM3 = 1
+	public static final double MGPERDL = 0.01d
+	public static final double KGPERL = 1000.0d
+	public static final double GPERML = 1000.0d
+	// TODO: Finish adding density units
+	
 	public static class UnitMap {
 		UnitGroup group
 		Map<String, UnitRatio> map = [:]
@@ -234,6 +241,10 @@ class UnitGroupMap {
 			'inHg':[INCHHG,6],
 			'atm':[ATMOSPHERE,5], 'atmosphere':[ATMOSPHERE,10], 'atmospheres':[ATMOSPHERE,10],
 		])
+		addGroup(UnitGroup.DENSITY, [
+			'kg/m3':[KGPERM3,10], 'mg/dL':[MGPERDL,10], 'kg/L':[KGPERL,10], 'g/mL':[GPERML,10],
+			'mg/dl':[MGPERDL,10], 'kg/l':[KGPERL,10], 'g/ml':[GPERML,10],
+		])
 	}
 	
 	public void addGroup(UnitGroup group, Map map) {
@@ -265,7 +276,7 @@ class UnitGroupMap {
 	}
 
 	public UnitRatio mostUsedUnitRatioForTagIds(def tagIds, Long userId) {
-		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(tagIds, userId)
+		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
 		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId ? groupToUnitMap[UnitGroup.get(mostUsed.unitGroupId)] : null)

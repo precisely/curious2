@@ -65,12 +65,11 @@ class TagProperties {
 
 		if (!props) {
 			props = new TagProperties(tagId:tagId, userId:userId)
+			if (!Utils.save(props, true))
+				props = null
 		}
 
-		if (Utils.save(props, true))
-			return props
-
-		return null
+		return props
 	}
 
 	public def percentEntriesWithoutValues() {

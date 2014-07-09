@@ -39,7 +39,7 @@ class Identifier {
 	}
 	
 	static {
-		Utils.registerTestReset() {
+		Utils.registerTestReset {
 			map = new HashMap<String, Identifier>()
 		}
 	}
@@ -52,22 +52,26 @@ class Identifier {
 	static Identifier look(String value) {
 		if (value == null) return null
 		
-		Identifier ident = map.get(value)
-		
-		if (ident != null) return ident
-		
-		while (true) {
-			ident = Identifier.findByValue(value)
+		synchronized (map) {
+			Identifier ident = map.get(value)
 			
-			if (ident) {
-				map.put(value, ident)
-				return ident
+			if (ident != null) return ident
+		
+			while (true) {
+				ident = Identifier.findByValue(value)
+				
+				if (ident) {
+					map.put(value, ident)
+					return ident
+				}
+				
+				ident = new Identifier(value:value)
+				
+				if (Utils.save(ident, true)) {
+					map.put(value, ident)
+					return ident
+				}
 			}
-			
-			ident = new Identifier(value:value)
-			
-			if (Utils.save(ident, true))
-				return ident
 		}
 	}
 	

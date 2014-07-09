@@ -1,8 +1,10 @@
 import grails.plugin.mail.MailService
-import grails.util.Environment;
+import grails.util.Environment
 
 import org.joda.time.DateTimeZone
 import us.wearecurio.thirdparty.withings.*
+
+import us.wearecurio.server.BackgroundTask
 
 import us.wearecurio.services.*
 import us.wearecurio.utility.Utils
@@ -20,6 +22,9 @@ class BootStrap {
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
+		BackgroundTask.launch {
+			migrationService.doBackgroundMigrations()
+		}
 		//withingsDataService.refreshSubscriptions()
 		/*if (current != Environment.TEST) {
 			try {

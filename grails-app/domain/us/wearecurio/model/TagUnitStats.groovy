@@ -29,8 +29,8 @@ class TagUnitStats {
 	public static def createOrUpdate(Long userId, Long tagId, String unit) {
 		def tagUnitStats
 		
-		if (unit == null || unit == '') { // if blank unit, return most used tag unit stats
-			return mostUsedTagUnitStats(tagId, userId)
+		if (unit == null || unit == '') { // if blank unit, return null
+			return null
 		}
 		
 		// Verify if the user has used this unit for this tag in the past
@@ -55,7 +55,7 @@ class TagUnitStats {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
 				//If we can't find it in our map we use the most used unit
 				//for this tag
-				tagUnitStats = mostUsedTagUnitStats(tagId, userId)
+				tagUnitStats = mostUsedTagUnitStats(userId, tagId)
 				if (!tagUnitStats) {
 					//This unit is not in the map and this is the first entry for this tag
 					//i.e. we don't have the most used unit for this tag
@@ -75,7 +75,7 @@ class TagUnitStats {
 		return tagUnitStats
 	}
 	
-	public static def mostUsedTagUnitStats(Long tagId, Long userId) {
+	public static def mostUsedTagUnitStats(Long userId, Long tagId) {
 		def tagUnitStats = TagUnitStats.withCriteria {
 			and {
 				eq ('tagId', tagId)
@@ -86,7 +86,7 @@ class TagUnitStats {
 		return tagUnitStats.size()>1 ? tagUnitStats[0] : null
 	}
 	
-	public static def mostUsedTagUnitStatsForTags(def tagIds, Long userId) {
+	public static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
 		def r = TagUnitStats.executeQuery("select tagStats.unitGroupId, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId group by tagStats.unitGroupId order by s desc",
 				[tagIds: tagIds, userId: userId], [max: 1])
 		if ((!r) || (!r[0]))
@@ -116,7 +116,8 @@ enum UnitGroup {
 	ENERGY(8, "energy"),
 	TORQUE(9, "torque"),
 	LUMINOSITY(10, "luminosity"),
-	PRESSURE(11, "pressure")
+	PRESSURE(11, "pressure"),
+	DENSITY(12, "density")
 	
 	final int id
 	final String groupName

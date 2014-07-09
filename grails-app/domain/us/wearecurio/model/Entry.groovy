@@ -447,9 +447,16 @@ class Entry {
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
-		def tagUnitStats = TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units']) 
-		//Using the most used unit in case the unit is unknown
-		m['units'] = m['units'] ?: tagUnitStats?.unit
+		def tagUnitStats
+		if (!m['units']) {
+			// Using the most used unit in case the unit is unknown
+			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
+			if (tagUnitStats) {
+				m['units'] = tagUnitStats.unit
+			}
+		} else {
+			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units'])
+		}
 		
 		Entry entry = new Entry(
 				userId:userId,
@@ -477,7 +484,6 @@ class Entry {
 		if (tagStatsRecord != null) {
 			tagStatsRecord.setOldTagStats(tagStats)
 		}
-
 
 		entry.createRepeat()
 

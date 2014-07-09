@@ -6,5 +6,6 @@ class TimerJob {
 	public static final long MINUTE = 60 * SECOND
 	public static final long HOUR = 60 * MINUTE
 	public static final long DAY = 24 * HOUR
-
+	public static final long YEAR = 365 * DAY
+	
 }
