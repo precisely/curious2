@@ -122,6 +122,12 @@ class TagService {
 		adminTagGroups
 	}
 
+	/**
+	 * Get list of tag groups the user is an member of. This list doesn't returns
+	 * the list of groups a user is an admin of.
+	 * @param userId identity of the user
+	 * @return
+	 */
 	List getTagGroupsTheUserIsMemberOf(Long userId) {
 		List<Long> memberUserGroupIds = UserGroup.getGroupsForReader(userId)*.getAt(0).id
 		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.getAt(0).id)

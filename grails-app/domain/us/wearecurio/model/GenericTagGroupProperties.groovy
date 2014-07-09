@@ -36,19 +36,19 @@ class GenericTagGroupProperties {
 		tagGroupId column:'tag_group_id', index:'tag_group_id_index'
 	}
 
-	static GenericTagGroupProperties createOrLookup(Long userOrGroupId, String propertyFor, GenericTagGroup tagGroupInstance) {
-		if (tagGroupInstance.hasErrors() || !userOrGroupId) {
-			log.warn "Can't create or lookup. $tagGroupInstance.errors, $userOrGroupId, for $propertyFor"
+	static GenericTagGroupProperties createOrLookup(Long id, String propertyFor, GenericTagGroup tagGroupInstance) {
+		if (tagGroupInstance.hasErrors() || !id) {
+			log.warn "Can't create or lookup. $tagGroupInstance.errors, $id, for $propertyFor"
 			return null
 		}
 
-		createOrLookup(userOrGroupId, propertyFor, tagGroupInstance.id)
+		createOrLookup(id, propertyFor, tagGroupInstance.id)
 	}
 
-	static GenericTagGroupProperties createOrLookup(Long userOrGroupId, String propertyFor, Long tagGroupId) {
-		log.debug "GenericTagGroupProperties.createOrLookup() userId: $userOrGroupId, for $propertyFor $userOrGroupId:" + Tag.get(tagGroupId)
+	static GenericTagGroupProperties createOrLookup(Long id, String propertyFor, Long tagGroupId) {
+		log.debug "GenericTagGroupProperties.createOrLookup() $propertyFor $id:" + Tag.get(tagGroupId)
 
-		def props = GenericTagGroupProperties."findOrCreateByTagGroupIdAnd${propertyFor}"(tagGroupId, userOrGroupId)
+		def props = GenericTagGroupProperties."findOrCreateByTagGroupIdAnd${propertyFor}Id"(tagGroupId, id)
 
 		if (Utils.save(props, true))
 			return props

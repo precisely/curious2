@@ -235,7 +235,7 @@ class TagController extends LoginController {
 			itemToExclude = WildcardTagGroup.get(id)
 		}
 
-		def tagGroupProperty = GenericTagGroupProperties.createOrLookup(session.userId, "UserId", tagGroupId)
+		def tagGroupProperty = GenericTagGroupProperties.createOrLookup(session.userId, "User", tagGroupId)
 
 		// There can not be an exclusion from a general tag group.
 		if (tagGroupInstance instanceof TagGroup && !(tagGroupInstance instanceof SharedTagGroup)) {

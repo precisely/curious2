@@ -616,7 +616,7 @@ function TagView(args) {
 		}
 
 		if (parentTagGroup && parentTagGroup.isWildcard) {
-			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
+			html += ' <span class="ui-icon ui-icon-minusthick ui-icon-red" title="exclude this"></span>';
 		}
 
 		html += '</li>';
@@ -695,7 +695,7 @@ function TagGroupView(args) {
 		}
 
 		if (hasParentSharedGroup && tagGroup.isWildcard) {
-			html += ' <span class="ui-icon ui-icon-minusthick" title="exclude this"></span>';
+			html += ' <span class="ui-icon ui-icon-minusthick ui-icon-red" title="exclude this"></span>';
 		}
 
 		if (!this.data.isWildcard) {

@@ -168,7 +168,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		Tag tag = Tag.look("Tag Test 1")
 		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
 
-		def prop = GenericTagGroupProperties.createOrLookup(user.id, "UserId", systemTagGroup1.id)
+		def prop = GenericTagGroupProperties.createOrLookup(user.id, "User", systemTagGroup1.id)
 		TagExclusion.createOrLookup(tagGroup1, prop)
 		TagExclusion.createOrLookup(tag, prop)
 

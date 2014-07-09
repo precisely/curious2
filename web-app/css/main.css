@@ -24,7 +24,6 @@ input, optgroup, select, textarea {
 
 .btn-default {
 	color: #333333;
-	background-color: #ffffff;
 	border-color: #cccccc;
 }
 
@@ -44,6 +43,22 @@ input, optgroup, select, textarea {
 	color: #ffffff;
 	background-color: #3276b1;
 	border-color: #285e8e;
+}
+
+.btn-danger {
+	color: #ffffff;
+	background-color: #d9534f;
+	border-color: #d43f3a;
+}
+
+.btn-danger:hover,.btn-danger:focus,.btn-danger:active,.btn-danger.active {
+	color: #ffffff;
+	background-color: #d2322d;
+	border-color: #ac2925;
+}
+
+.ui-icon-red {
+	background-image: url(../../theme/images/ui-icons_cd0a0a_256x240.png);
 }
 
 .container {
@@ -1454,4 +1469,8 @@ body.load-graph #graphList .summary .update {
 }
 body.load-graph #graphList .summary .close {
 	width: 21px;
+}
+
+#remove-exclusion-dialog ul li {
+	font-size: 16px;
 }
