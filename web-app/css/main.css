@@ -485,7 +485,7 @@ ul.tags li.tag {
 
 #tagNav li.treeItemView .ui-icon-pin-w, #tagNav li.treeItemView .ui-icon-pin-s,
 li.treeItemGroupView.active .ui-icon-close, li.tagGroup.active .ui-icon-pencil,
-li.treeItemView.wildcardTagGroup .ui-icon-minusthick {
+li.treeItemView .ui-icon-minus.ui-icon-red {
 	float: right;
 	display:block;
 }

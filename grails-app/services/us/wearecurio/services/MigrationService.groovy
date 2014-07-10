@@ -329,7 +329,8 @@ class MigrationService {
 		}
 		tryMigration(SHARED_TAG_GROUP) {
 			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
-			systemGroup.addAdmin(User.first())	// Replace User.first() with User.findByEmail("<admin-email">)
+			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
+			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
 			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
 	}

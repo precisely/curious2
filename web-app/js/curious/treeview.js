@@ -677,7 +677,7 @@ function TreeWidget(args) {
 		}.bind(this));
 
 		// Exclusion
-		$(document).on("click", ".ui-icon-minusthick", function(e) {
+		$(document).on("click", ".ui-icon-minus", function(e) {
 			e.stopPropagation();
 
 			var $target = $(e.target).parent();

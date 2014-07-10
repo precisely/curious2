@@ -161,7 +161,8 @@ function TagGroup(args) {
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
-				if (this.isExcluded(tag)) {
+				// Do not display if the tag is excluded or tag itself is the current wildcard tag group(this).
+				if (this.isExcluded(tag) || (this.id == tag.id && tag.isWildcard)) {
 					return;
 				}
 				this.addChild(tag);
@@ -616,7 +617,7 @@ function TagView(args) {
 		}
 
 		if (parentTagGroup && parentTagGroup.isWildcard) {
-			html += ' <span class="ui-icon ui-icon-minusthick ui-icon-red" title="exclude this"></span>';
+			html += ' <span class="ui-icon ui-icon-minus ui-icon-red" title="exclude this"></span>';
 		}
 
 		html += '</li>';
@@ -694,14 +695,20 @@ function TagGroupView(args) {
 			html += deleteHtml;
 		}
 
-		if (hasParentSharedGroup && tagGroup.isWildcard) {
-			html += ' <span class="ui-icon ui-icon-minusthick ui-icon-red" title="exclude this"></span>';
-		}
-
 		if (!this.data.isWildcard) {
 			html +='<span class=" hide ui-icon ui-icon-pencil"></span>';
 		}
-		html+='<span class="ui-icon '+pinIcon+'"></span><ul class="hide tags"></ul></li>';
+
+		html += '<span class="ui-icon '+pinIcon+'"></span>';
+
+		if (parentTagGroup) {
+			// Only display exclusion icon if parent tag group is either a shared tag group or a wildcard tag group.
+			if (hasParentSharedGroup || parentTagGroup.isWildcard) {
+				html += ' <span class="ui-icon ui-icon-minus ui-icon-red" title="exclude this"></span>';
+			}
+		}
+
+		html += '<ul class="hide tags"></ul></li>';
 		return html;
 	}
 	
@@ -884,8 +891,7 @@ function TagListWidget(args) {
 	this.dropWildcardTagGroup = function(event, ui) {
 		var $source = $(ui.draggable[0]);
 		var sourceItem = $source.data(DATA_KEY_FOR_ITEM_VIEW).getData();
-		if ((sourceItem instanceof TagGroup)
-				&& sourceItem.isWildcard) {
+		if ((sourceItem instanceof TagGroup) && sourceItem.isWildcard) {
 			backgroundJSON("adding wildcard group", "/tag/addWildcardTagGroupData?callback=?", {
 				description : sourceItem.description,
 			}, function(data) {
