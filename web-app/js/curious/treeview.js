@@ -276,7 +276,7 @@ function TreeItemGroup (args) {
 			this.children = removeElem(this.children, childItem);
 			this.totalChildren--;
 			$(this).trigger("removeChild",{child:childItem,index:index});
-		}.bind(this));		
+		}.bind(this));
 	}
 	
 	this.removeChildAtBackend = function(childItem, callback) {
@@ -557,6 +557,7 @@ function TreeItemGroupView(args) {
 	}
 	
 	this.renderChild = function(itemView,index) {
+		itemView.setParentItemView(this);
 		//tagName here is the html tag that is used to render a TreeItem
 		if (index && index > -1 && typeof $("> "+this.tagName,this.getChildrenWrapper())[index] !=='undefined') {
 			$($("> "+this.tagName,this.getChildrenWrapper())[index]).after(itemView.render({
@@ -568,7 +569,6 @@ function TreeItemGroupView(args) {
 			}));
 		}
 		$(itemView.getDOMElement()).data(DATA_KEY_FOR_ITEM_VIEW,itemView);
-		itemView.setParentItemView(this);
 		return itemView;
 	}
 	
@@ -675,12 +675,35 @@ function TreeWidget(args) {
 			}
 			return;
 		}.bind(this));
+
+		// Exclusion
+		$(document).on("click", ".ui-icon-minus", function(e) {
+			e.stopPropagation();
+
+			var $target = $(e.target).parent();
+			var itemView = $target.data(DATA_KEY_FOR_ITEM_VIEW);
+			var itemData = itemView.getData();
+
+			var parentItemGroup = itemView.getParentItemView().getData();
+			parentItemGroup.excludeChild(itemData);
+		}.bind(this));
 		
 		$(document).on("mousedown",TreeItemView.cssClass.join(" "), function(e){
 			var itemView = $(e.target).data(DATA_KEY_FOR_ITEM_VIEW);
 			if (typeof itemView == 'undefined') return;
 			itemView.highlight();
 		}.bind(this));
+
+		$(document).on("click", "a.add-back-item", function() {
+			var $item = $(this);
+			backgroundJSON("add back tag", "/tag/addBackToTagGroupData?callback=?", getCSRFPreventionObject("addBackToTagGroupDataCSRF", {
+				id: $item.data('groupId'),
+				itemId: $item.data('itemId'),
+				type: $item.data('itemType')
+			}), function() {
+				$item.parent().remove();
+			}.bind(this));
+		});
 	}
 	
 	this.notifyCreate = function(item, afterIndex) {

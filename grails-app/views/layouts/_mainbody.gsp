@@ -39,6 +39,7 @@
 </script>
 <!-- /HEADER -->
 
+<g:render template="/layouts/alertMessage" />
 <g:layoutBody />
 
 <!-- FOOTER -->

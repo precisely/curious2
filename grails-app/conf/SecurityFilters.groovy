@@ -1,9 +1,6 @@
 import grails.converters.JSON
-import us.wearecurio.model.User
-import us.wearecurio.server.Session
+import us.wearecurio.model.UserGroup
 import us.wearecurio.services.UrlService
-import org.codehaus.groovy.grails.web.util.WebUtils
-import us.wearecurio.controller.HomeController
 
 /*
  * To change this template, choose Tools | Templates
@@ -101,6 +98,19 @@ class SecurityFilters {
 					println "serverURL:" + UrlService.base(request)
 					redirect(url:urlService.base(request) + 'mobile/index')
 					return true
+				}
+			}
+		}
+		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
+			before = {
+				if (!session.userId) {
+					redirect(url: urlService.base(request) + 'home/login')
+					return false
+				}
+				// User must be admin of default system group.
+				if (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId)) {
+					redirect(url: urlService.base(request) + 'home/login')
+					return false
 				}
 			}
 		}

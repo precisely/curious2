@@ -2,8 +2,6 @@ package us.wearecurio.services
 
 import grails.util.Environment
 
-import org.springframework.transaction.annotation.Transactional
-
 import org.apache.commons.logging.LogFactory
 import org.hibernate.SessionFactory
 import org.joda.time.*
@@ -50,6 +48,7 @@ class MigrationService {
 	public static final long FIX_TAG_PROPERTIES = 84L
 	public static final long FIX_TAG_PROPERTIES2 = 85L
 	public static final long HISTORICAL_INTRA_DAY = 86L
+	static final long SHARED_TAG_GROUP = 87L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -327,6 +326,12 @@ class MigrationService {
 		tryMigration(HISTORICAL_INTRA_DAY) {
 			sql("delete from entry where set_name like 'withings import%'")
 			sql("update oauth_account set last_polled = null where type_id = 1")
+		}
+		tryMigration(SHARED_TAG_GROUP) {
+			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
+			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
+			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
+			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
 	}
 }

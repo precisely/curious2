@@ -105,15 +105,66 @@ inherit(Tag, TreeItem);
 function TagGroup(args) {
 	Tag.call(this, args);
 	TreeItemGroup.call(this, args);
+
+	this.groupId = args.groupId;
+	this.groupName = args.groupName;
+	this.isReadOnly = args.isReadOnly;
+	this.excludes = args.excludes || [];
+	this.isSystemGroup = args.isSystemGroup;
+	this.isAdminOfTagGroup = args.isAdminOfTagGroup;
+
 	if (this.getType().indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
 	}
 	
 	this.isTag = function() { return false; }
-	
+
+	this.excludeChild = function(childItem) {
+		if (typeof childItem == 'undefined') {
+			return;
+		}
+		this.excludeChildAtBackend(childItem, function() {
+			this.excludes.push(childItem.description.trim());
+			var index = this.children.indexOf(childItem);
+			this.children = removeElem(this.children, childItem);
+			this.totalChildren--;
+			$(this).trigger("removeChild",{child: childItem, index: index});
+		}.bind(this));
+	};
+
+	this.isExcluded = function(childItem) {
+		if (!this.excludes) {
+			return false;
+		}
+
+		var isExcluded = false;
+		var type = childItem.type === 'tag' ? 'TAG' : 'TAG_GROUP';
+
+		for (var i in this.excludes) {
+			if (this.excludes[i].objectId == childItem.id && this.excludes[i].type == type) {
+				isExcluded = true;
+				break;
+			}
+		}
+
+		return isExcluded;
+	};
+
+	this.fetchExclusionData = function(callback) {
+		backgroundJSON("loading exclusion data", "/tag/getExclusionData?callback=?", getCSRFPreventionObject("getExclusionDataCSRF", {
+			id : this.id,
+		}), function(data) {
+			callback(data);
+		}.bind(this));
+	};
+
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
+				// Do not display if the tag is excluded or tag itself is the current wildcard tag group(this).
+				if (this.isExcluded(tag) || (this.id == tag.id && tag.isWildcard)) {
+					return;
+				}
 				this.addChild(tag);
 			}.bind(this));
 			callback(this);
@@ -124,6 +175,9 @@ function TagGroup(args) {
 			}), function(data) {
 				jQuery.each(data, function(index, tag) {
 					tag.type = tag.class;
+					if (this.isExcluded(tag)) {
+						return;
+					}
 					this.addChild(this.treeStore.createOrUpdate(tag));
 				}.bind(this));
 				callback(this);
@@ -215,9 +269,28 @@ function TagGroup(args) {
 			return 0;
 		});
 	}
-	
+
+	this.excludeChildAtBackend = function(childItem, callback) {
+		var csrfKey = "excludeFromTagGroupDataCSRF";
+		var url = "/tag/excludeFromTagGroupData?callback=?";
+
+		var exclusionType = 'Tag';
+		if (childItem.type === 'wildcardTagGroup') {
+			exclusionType = 'WildcardTagGroup';
+		}
+
+		backgroundJSON("excluding item from group", url, getCSRFPreventionObject(csrfKey, {
+			tagGroupId : this.id,
+			id: childItem.id,
+			description: childItem.description,
+			exclusionType: exclusionType
+		}), function(data) {
+			callback();
+		}.bind(this));
+	};
+
 	this.removeChildAtBackend = function(childItem, callback) {
-		var csrfKey = "removeTagFromTagGroupDataCSRF"
+		var csrfKey = "removeTagFromTagGroupDataCSRF";
 		var url = "/tag/removeTagFromTagGroupData?callback=?";
 		if(childItem.type.indexOf("Group")!==-1) {
 			csrfKey = "removeTagGroupFromTagGroupDataCSRF"
@@ -294,6 +367,16 @@ function TagStore(args) {
 			treeStore : this,
 			state: args['state']
 		};
+
+		if (typeClass === TagGroup) {
+			initArgs.groupId = args['groupId'];
+			initArgs.excludes = args['excludes'];
+			initArgs.groupName = args['groupName'];
+			initArgs.isReadOnly = args['isReadOnly'];
+			initArgs.isSystemGroup = args['isSystemGroup'];
+			initArgs.isAdminOfTagGroup = args['isAdminOfTagGroup'];
+		}
+
 		if (typeof listItem == 'undefined') {
 			if (args instanceof Tag || args instanceof TagGroup) {
 				listItem = args;
@@ -506,10 +589,39 @@ function TagView(args) {
 		if (this.pinned) {
 			pinIcon = "ui-icon-pin-s";
 		}
-		
-		return '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
-		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>'
-			+ (extraParams != undefined && extraParams.showDeleteIcon ? '<span class="hide ui-icon ui-icon-close"></span>' : '') + '</li>';
+
+		var parentTagGroup,
+			hasParentSharedGroup,
+			isAdminOfParentTagGroup,
+			parentTagGroupView = this.getParentItemView();
+
+		if (parentTagGroupView) {
+			parentTagGroup = parentTagGroupView.getData();
+			hasParentSharedGroup = parentTagGroup.type === 'sharedTagGroup';
+			isAdminOfParentTagGroup = parentTagGroup.isAdminOfTagGroup || false;
+		}
+
+		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass() +' tag" data-type="tag"><span class="description">' 
+		+ this.data.description +'</span><span class="ui-icon '+pinIcon+'"></span>';
+
+		var deleteHtml = '<span class="hide ui-icon ui-icon-close"></span>';
+
+		if (extraParams && extraParams.showDeleteIcon) {
+			if (hasParentSharedGroup) {
+				if (isAdminOfParentTagGroup) {
+					html += deleteHtml;
+				}
+			} else {
+				html += deleteHtml;
+			}
+		}
+
+		if (parentTagGroup && parentTagGroup.isWildcard) {
+			html += ' <span class="ui-icon ui-icon-minus ui-icon-red" title="exclude this"></span>';
+		}
+
+		html += '</li>';
+		return html;
 	}
 	
 	this.update = function(data) {
@@ -543,15 +655,60 @@ function TagGroupView(args) {
 		if (this.pinned) {
 			pinIcon = "ui-icon-pin-s";
 		}
-		
-		var html = '<li id="'+this.element+'" class="'+ this.getTreeItemViewCssClass()+' '+ this.data.type + '" data-type="' + this.data.type + 
+
+		var classes = this.getTreeItemViewCssClass();
+		if (this.data.isReadOnly && !this.data.isAdminOfTagGroup) {
+			classes += ' no-drop';
+		}
+
+		var parentTagGroup,
+			hasParentSharedGroup,
+			tagGroup = this.data,
+			isAdminOfParentTagGroup,
+			isSystemTagGroup = tagGroup.isSystemGroup,
+			parentTagGroupView = this.getParentItemView();
+
+		if (parentTagGroupView) {
+			parentTagGroup = parentTagGroupView.getData();
+			isAdminOfParentTagGroup = parentTagGroup.isAdminOfTagGroup;
+			hasParentSharedGroup = parentTagGroup.type === 'sharedTagGroup';
+		}
+
+
+		var html = '<li id="'+this.element+'" class="'+ classes + ' '+ this.data.type + '" data-type="' + this.data.type + 
 		'"><span class="ui-icon ui-icon-triangle-1-e"></span><span class="description">'
-		+ this.data.description +'</span><span class=" hide ui-icon ui-icon-close"></span>';
+		+ this.data.description;
+
+		if (this.data.type === 'sharedTagGroup' && this.data.groupName) {
+			html += ' [' + this.data.groupName + ']';
+		}
+
+		html += '</span>';
+
+		var deleteHtml = '<span class=" hide ui-icon ui-icon-close"></span>';
 		
+		if (hasParentSharedGroup) {
+			if (isAdminOfParentTagGroup && !isSystemTagGroup) {
+				html += deleteHtml;
+			}
+		} else if (!isSystemTagGroup) {
+			html += deleteHtml;
+		}
+
 		if (!this.data.isWildcard) {
 			html +='<span class=" hide ui-icon ui-icon-pencil"></span>';
 		}
-		html+='<span class="ui-icon '+pinIcon+'"></span><ul class="hide tags"></ul></li>';
+
+		html += '<span class="ui-icon '+pinIcon+'"></span>';
+
+		if (parentTagGroup) {
+			// Only display exclusion icon if parent tag group is either a shared tag group or a wildcard tag group.
+			if (hasParentSharedGroup || parentTagGroup.isWildcard) {
+				html += ' <span class="ui-icon ui-icon-minus ui-icon-red" title="exclude this"></span>';
+			}
+		}
+
+		html += '<ul class="hide tags"></ul></li>';
 		return html;
 	}
 	
@@ -616,21 +773,78 @@ function TagListWidget(args) {
 		}
 		return itemView
 	}
-	
+
+	// TODO Fix this. Is being called many times.
 	this.makeDraggableAndDroppable = function(element) {
 		if (typeof element == 'undefined') {
 			element = this.element;
 		}
-		$(element).delegate(".treeItemView","mouseenter",function(){
+		$(element).delegate(".treeItemView", "mouseenter", function() {
 			$(this).draggable({
 				revert : 'invalid',
 				helper: function(event) {
 					return $( '<div class="draggable-helper">' + $(event.target).html() + '</div>' );
 			    }
-			});
+			})
+
 			$(this).droppable({
-				drop : tagListWidget.dropTagListItem.bind(tagListWidget)
+				drop : tagListWidget.dropTagListItem.bind(tagListWidget),
+				over: function(e, ui) {
+					var $target = $(e.target);
+					var cursor = 'auto';
+
+					if ($target.hasClass('no-drop')) {
+						cursor = 'no-drop';
+					} else {
+						cursor = 'auto';
+					}
+					$('body').css('cursor', cursor);
+				}
 			});
+		});
+
+		var positionOnTapEvent, positionOnTapHoldEvent;
+
+		$(".treeItemView", element).off("taphold tap mousedown")	// Make sure to remove older same events as this is called sevaral times.
+		.on("tap mousedown", function(e) {
+			positionOnTapEvent = $(this).offset();
+		})
+		.on("taphold", function(e) {
+			var $item = $(this);
+			positionOnTapHoldEvent = $item.offset();
+
+			// Elemenet may have been moved (dragged somewhere else)
+			if (positionOnTapEvent.top != positionOnTapHoldEvent.top || positionOnTapEvent.left != positionOnTapHoldEvent.left) {
+				return;
+			}
+
+			var tagOrTagGroupView = $item.data(DATA_KEY_FOR_ITEM_VIEW);
+			var tagOrTagGroup = tagOrTagGroupView.getData();
+			if (["sharedTagGroup", "wildcardTagGroup"].indexOf(tagOrTagGroup.type) == -1) {
+				console.log('return', tagOrTagGroup.type)
+				return;
+			}
+
+			var tagGroup = tagOrTagGroup;
+			if (!tagGroup.excludes || tagGroup.excludes.length === 0) {
+				console.log('No exclusion found.');
+				return;
+			}
+
+			tagGroup.fetchExclusionData(function(data) {
+				var html = '<ul>';
+				for (i in data) {
+					var excludedItem = data[i];
+					html += '<li>' + excludedItem['description'] + ' <a href="#" class="add-back-item" data-group-id="' +
+						tagGroup.id + '" data-item-id="' + excludedItem.id + '" data-item-type="' + excludedItem.type + '"' +
+						' style="font-size: 14px">+</a></li>';
+				}
+
+				var $dialogElement = $('div#remove-exclusion-dialog');
+				$dialogElement.html(html);
+				$dialogElement.dialog();
+			}.bind(tagGroup));
+
 		});
 	}
 	
@@ -654,14 +868,17 @@ function TagListWidget(args) {
 		var targetItem = $target.data(DATA_KEY_FOR_ITEM_VIEW).getData();
 		var targetView = $target.data(DATA_KEY_FOR_ITEM_VIEW);
 		var sourceView = $source.data(DATA_KEY_FOR_ITEM_VIEW);
+
+		if (targetItem.isReadOnly && !targetItem.isAdminOfTagGroup) {
+			return false;
+		}
 		targetView.highlight(true);
-		if ((sourceItem instanceof TagGroup)
-				&& (targetItem instanceof TagGroup)) {
+
+		if ((sourceItem instanceof TagGroup) && (targetItem instanceof TagGroup)) {
 			targetView = targetView.getTopMostParentItemView();
 			if(typeof targetView !=='undefined')
 				this.list.addTagGroupToTagGroup(targetItem, sourceItem);
-		} else if ((sourceItem instanceof Tag)
-				&& (targetItem instanceof TagGroup)) {
+		} else if ((sourceItem instanceof Tag) && (targetItem instanceof TagGroup)) {
 			targetView = targetView.getTopMostParentItemView();
 			if(typeof targetView !=='undefined')
 				this.list.addTagToTagGroup(targetView.getData(), sourceItem);
@@ -674,8 +891,7 @@ function TagListWidget(args) {
 	this.dropWildcardTagGroup = function(event, ui) {
 		var $source = $(ui.draggable[0]);
 		var sourceItem = $source.data(DATA_KEY_FOR_ITEM_VIEW).getData();
-		if ((sourceItem instanceof TagGroup)
-				&& sourceItem.isWildcard) {
+		if ((sourceItem instanceof TagGroup) && sourceItem.isWildcard) {
 			backgroundJSON("adding wildcard group", "/tag/addWildcardTagGroupData?callback=?", {
 				description : sourceItem.description,
 			}, function(data) {
