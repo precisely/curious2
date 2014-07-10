@@ -2016,7 +2016,7 @@ class Entry {
 					result[SHORT_DESC_DATE] = new Date(startDayTime + HALFDAYTICKS)
 					summedResults.add(currentResult)
 				} else {
-					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT].add(result[SHORT_DESC_AMOUNT])
+					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT] + result[SHORT_DESC_AMOUNT]
 				}
 			}
 
