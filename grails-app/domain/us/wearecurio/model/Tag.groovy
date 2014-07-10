@@ -43,8 +43,10 @@ class Tag {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
-		tagCache.put(d, tag)
-		tagIdCache.put(tag.getId(), tag)
+		synchronized(tagCache) {
+			tagCache.put(d, tag)
+			tagIdCache.put(tag.getId(), tag)
+		}
 		return tag
 	}
 	
@@ -64,9 +66,11 @@ class Tag {
 		tag = Tag.findByDescription(d)
 
 		if (tag != null) {
-			tagCache.put(d, tag)
-			tagIdCache.put(tag.id, tag)
-			return tag
+			synchronized(tagCache) {
+				tagCache.put(d, tag)
+				tagIdCache.put(tag.id, tag)
+				return tag
+			}
 		}
 
 		return Tag.create(d)
