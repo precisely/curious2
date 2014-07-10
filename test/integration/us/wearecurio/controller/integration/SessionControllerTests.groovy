@@ -26,6 +26,8 @@ class SessionControllerTests extends CuriousTestCase {
 
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = Utils.createTimeZone(-5 * 60 * 60, "GMTOFFSET5", true)
@@ -40,6 +42,7 @@ class SessionControllerTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

@@ -127,7 +127,11 @@ class UnitGroupMap {
 			return group.id
 		}
 		
-		public UnitRatio lookupUnitRatio(String unit, UnitRatio prevUnitRatio = null) {
+		public UnitRatio lookupUnitRatio(String unit) {
+			return map[unit]
+		}
+		
+		public UnitRatio lookupBestUnitRatio(String unit, UnitRatio prevUnitRatio) {
 			UnitRatio unitRatio = map[unit]
 
 			if (unitRatio == null) return prevUnitRatio
@@ -260,51 +264,26 @@ class UnitGroupMap {
 		if (!unit) return null
 		
 		if (unitMap) {
-			log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit "
-				+ unit + " in group " + group )
+			//log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit "
+			//	+ unit + " in group " + unitMap.group )
 			return unitMap.lookupUnitRatio(unit)
 		}
 		
-		log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit " 
-			+ unit + " in other groups")
+		//log.debug("UnitGroupMap.unitRatioForUnit(): looking up unitRatio for unit " 
+		//	+ unit + " in other groups")
 		def unitRatio = null
 		groupToUnitMap.each { groupKey, unitMapValue ->
-			unitRatio = unitMapValue.lookupUnitRatio(unit, unitRatio)
+			unitRatio = unitMapValue.lookupBestUnitRatio(unit, unitRatio)
 		}
-		log.debug("UnitGroupMap.unitRatioForUnit(): unitRatio " + unit + ":" + unitRatio?.dump())
+		//log.debug("UnitGroupMap.unitRatioForUnit(): unitRatio " + unit + ":" + unitRatio?.dump())
 		return unitRatio
 	}
 
-	public UnitRatio mostUsedUnitRatioForTagIds(def tagIds, Long userId) {
+	public UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
 		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
-		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId ? groupToUnitMap[UnitGroup.get(mostUsed.unitGroupId)] : null)
+		UnitRatio unitRatio = unitRatioForUnit(mostUsed.unit, mostUsed.unitGroupId ? groupToUnitMap[UnitGroup.get((int)mostUsed.unitGroupId)] : null)
 		return unitRatio
 	}
-
-	public static def convertToMostUsedUnit(UnitRatio mostUsedUnitRatio, BigDecimal amount, String unit) {
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): most used unitRatio " + mostUsedUnitRatio?.unit)
-		if (!mostUsedUnitRatio) {
-			//No need to normalize as there is no tag + unit usage history
-			//Or the unit used has not been grouped and hence can't be
-			//converted. Or the two units belong to two different groups
-			// and can't be converted
-			log.debug("UnitGroupMap.convertToMostUsedUnit(): no normalization needed for unit " + unit)
-			return null
-		}
-		UnitRatio unitRatio = mostUsedUnitRatio.unitMap.lookupUnitRatio(unit)
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): unit ratio for the unit to be converted" + unitRatio?.unit)
-		if (!unitRatio) {
-			log.debug("UnitGroupMap.convertToMostUsedUnit(): unit not in most used unit map, no conversion " + unit)
-			return null
-		}
-		def convertedValue = (amount * unitRatio.ratio) / mostUsedUnitRatio.ratio
-		log.debug("UnitGroupMap.convertToMostUsedUnit(): converted value " + convertedValue +
-			' ' + mostUsedUnitRatio.unit)
-		return [unit:mostUsedUnitRatio.unit, amount: convertedValue,
-			group: mostUsedUnitRatio.getGroup()]
-
-	}
-
 }

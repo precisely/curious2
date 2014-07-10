@@ -29,10 +29,12 @@ class TwitterDataServiceTests extends CuriousTestCase {
 
 	@Before
 	void setUp() {
+		super.setUp()
 	}
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

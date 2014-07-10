@@ -29,12 +29,11 @@ abstract class CuriousControllerTestCase extends CuriousTestCase {
 
 	@Before
 	void setUp() {
+		super.setUp()
 		/*mockLogging(controller.getClass(), true)
 		
 		setLogger(controller)*/
 		
-		Utils.resetForTesting()
-
 		def params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
 
 		user = User.create(params)
@@ -47,6 +46,7 @@ abstract class CuriousControllerTestCase extends CuriousTestCase {
 	
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 	
 	/*

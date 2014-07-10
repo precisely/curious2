@@ -3,6 +3,7 @@ package us.wearecurio.model;
 import org.apache.commons.logging.LogFactory
 
 import grails.converters.*
+import us.wearecurio.cache.BoundedCache;
 import us.wearecurio.utility.Utils
 import java.util.Date
 import java.util.Calendar
@@ -20,6 +21,9 @@ class Tag {
 
 	public static final int MAXLENGTH = 100
 
+	public static BoundedCache<String, Tag> tagCache = new BoundedCache<String, Tag>(100000)
+	public static BoundedCache<String, Tag> tagIdCache = new BoundedCache<Long, Tag>(100000)
+	
 	static constraints = { description(maxSize:MAXLENGTH) }
 
 	static mapping = {
@@ -28,18 +32,40 @@ class Tag {
 		description column:'description', index:'description_idx'
 	}
 
+	static {
+		Utils.registerTestReset {
+			tagCache = new BoundedCache<String, Tag>()
+			tagIdCache = new BoundedCache<String, Tag>()
+		}
+	}
+
 	static def create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
+		tagCache.put(d, tag)
+		tagIdCache.put(tag.getId(), tag)
 		return tag
 	}
+	
+	static def fetch(Long id) {
+		def tag = tagIdCache.get(id)
+		
+		if (tag != null) return tag
+		
+		return Tag.get(id)
+	}
 
-	static def look(d) {
+	static def look(String d) {
 		log.debug "Tag.look() description:'" + d + "'"
-		def tag = Tag.findByDescription(d)
+		def tag = tagCache.get(d)
+		if (tag) return tagIdCache.get(tag.id)
+		
+		tag = Tag.findByDescription(d)
 
 		if (tag != null) {
+			tagCache.put(d, tag)
+			tagIdCache.put(tag.id, tag)
 			return tag
 		}
 

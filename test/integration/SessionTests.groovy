@@ -17,6 +17,8 @@ class SessionTests extends CuriousTestCase {
 
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		Map params = new HashMap()
 		params.put("username", "testuser")
 		params.put("email", "test@test.com")
@@ -46,6 +48,7 @@ class SessionTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

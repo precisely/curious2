@@ -20,6 +20,7 @@ class MigrationServiceTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

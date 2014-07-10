@@ -10,6 +10,16 @@ import us.wearecurio.model.User
 
 
 class EntryFactoryTests extends CuriousTestCase {
+	@Before
+	void setUp() {
+		super.setUp()
+	}
+
+	@After
+	void tearDown() {
+		super.tearDown()
+	}
+
 	@Test
 	void testMake() {
 		def entry = EntryFactory.make()

@@ -9,6 +9,7 @@ import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
+import us.wearecurio.cache.BoundedCache
 import us.wearecurio.model.Tag
 
 import java.util.Map;
@@ -26,7 +27,7 @@ class Identifier {
 	
 	public static final int MAXIDENTIFIERLENGTH = 100
 	
-	public static Map<String,Identifier> map = new HashMap<String, Identifier>()
+	public static BoundedCache<String,Identifier> map = new BoundedCache<String, Identifier>(10000)
 	
 	static constraints = {
 		value(maxSize:MAXIDENTIFIERLENGTH, unique:true)
@@ -40,7 +41,7 @@ class Identifier {
 	
 	static {
 		Utils.registerTestReset {
-			map = new HashMap<String, Identifier>()
+			map = new BoundedCache<String, Identifier>()
 		}
 	}
 

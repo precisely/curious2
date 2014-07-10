@@ -93,6 +93,9 @@ class TagUnitStats {
 			return null
 			
 		def unitGroupId = r[0][0]
+		
+		if (unitGroupId == null)
+			return null
 			
 		r = TagUnitStats.executeQuery("select tagStats.unit, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId and tagStats.unitGroupId = :unitGroupId group by tagStats.unit order by s desc",
 				[tagIds: tagIds, userId: userId, unitGroupId: unitGroupId], [max: 1])
@@ -135,7 +138,7 @@ enum UnitGroup {
 		}
 	}
 	
-	static UnitGroup get(Integer id) {
+	static UnitGroup get(int id) {
 		if (id == null) return null
 		map.get(id)
 	}

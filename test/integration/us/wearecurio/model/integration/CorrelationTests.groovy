@@ -1,4 +1,4 @@
-
+package us.wearecurio.model.integration
 
 import org.junit.*
 import us.wearecurio.model.Tag
@@ -11,6 +11,16 @@ import us.wearecurio.model.Stats
 
 
 class CorrelationTests extends CuriousTestCase {
+	@Before
+	void setUp() {
+		super.setUp()
+	}
+	
+	@After
+	void tearDown() {
+		super.tearDown()
+	}
+	
 	@Test
 	void testCreate() {
 		def series1 = CuriousSeriesFactory.make()
@@ -18,12 +28,12 @@ class CorrelationTests extends CuriousTestCase {
 		def corValue = Stats.cor(series1.values, series2.values)
 		def correlation = new Correlation(series1, series2, corValue)
 		correlation.validate()
-	assert correlation.errors.allErrors == []
+		assert correlation.errors.allErrors == []
 		assert Correlation.count() == 0
 		correlation.save()
 		assert Correlation.count() == 1
 	}
-
+	
 	@Test
 	void testCreateWithNanValueShouldFail() {
 		def series1 = CuriousSeriesFactory.make()
@@ -33,10 +43,9 @@ class CorrelationTests extends CuriousTestCase {
 		assert Correlation.count() == 0
 		correlation.save()
 		assert Correlation.count() == 1
-    assert Correlation.first().corValue == null
-
+		assert Correlation.first().corValue == null
 	}
-
+	
 	@Test
 	void testComputingTheCorrelation() {
 		def series1 = CuriousSeriesFactory.make()
@@ -46,50 +55,48 @@ class CorrelationTests extends CuriousTestCase {
 		def corValue = Stats.cor(series1.values, series2.values)
 		assert corValue == 1.0
 	}
-
+	
 	@Test
 	void testCreateByTag() {
 		def series1 = CuriousSeriesFactory.make()
 		def series2 = CuriousSeriesFactory.make()
 		def correlation = new Correlation(series1, series2)
-    correlation.mipssValue = 42.0
-    correlation.overlapN = 1
-    assert correlation.userId == User.first().id
-		correlation.validate()
-	assert correlation.errors.allErrors == []
-		assert Correlation.count() == 0
-		correlation.save()
-		assert Correlation.count() == 1
-    assert Correlation.last().series1Type == 'class us.wearecurio.model.Tag'
-    assert Correlation.last().series2Type == 'class us.wearecurio.model.Tag'
-
-	}
-
-	@Test
-	void testFindBySeries() {
-		def series1 = CuriousSeriesFactory.make()
-		def series2 = CuriousSeriesFactory.make()
-		def correlation = new Correlation(series1, series2)
-    correlation.mipssValue = 42.0
-    correlation.overlapN = 1
-    assert correlation.userId == User.first().id
+		correlation.mipssValue = 42.0
+		correlation.overlapN = 1
+		assert correlation.userId == User.first().id
 		correlation.validate()
 		assert correlation.errors.allErrors == []
 		assert Correlation.count() == 0
 		correlation.save()
 		assert Correlation.count() == 1
-    def existing_correlation = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
-
-    //def c = Correlation.createCriteria()
-    //def results = c {
-    //  eq("userId",User.first().id)
-    //  eq("series1Id", series1.sourceId)
-    //  eq("series2Id", series2.sourceId)
-    //  maxResults(1)
-    //}
-    assert existing_correlation != null
-    assert existing_correlation.mipssValue == 42.0
-
+		assert Correlation.last().series1Type == 'class us.wearecurio.model.Tag'
+		assert Correlation.last().series2Type == 'class us.wearecurio.model.Tag'
 	}
-
+	
+	@Test
+	void testFindBySeries() {
+		def series1 = CuriousSeriesFactory.make()
+		def series2 = CuriousSeriesFactory.make()
+		def correlation = new Correlation(series1, series2)
+		correlation.mipssValue = 42.0
+		correlation.overlapN = 1
+		assert correlation.userId == User.first().id
+		correlation.validate()
+		assert correlation.errors.allErrors == []
+		assert Correlation.count() == 0
+		correlation.save()
+		assert Correlation.count() == 1
+		def existing_correlation = Correlation.findWhere(userId: series1.userId, series1Id: series1.sourceId, series2Id: series2.sourceId)
+		
+		//def c = Correlation.createCriteria()
+		//def results = c {
+		//  eq("userId",User.first().id)
+		//  eq("series1Id", series1.sourceId)
+		//  eq("series2Id", series2.sourceId)
+		//  maxResults(1)
+		//}
+		assert existing_correlation != null
+		assert existing_correlation.mipssValue == 42.0
+		
+	}
 }

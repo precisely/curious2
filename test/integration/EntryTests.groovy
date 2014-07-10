@@ -54,6 +54,8 @@ class EntryTests extends CuriousTestCase {
 	
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		Utils.resetForTesting()
 		
@@ -106,6 +108,7 @@ class EntryTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

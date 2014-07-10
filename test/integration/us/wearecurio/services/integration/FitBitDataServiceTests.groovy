@@ -2,6 +2,7 @@ package us.wearecurio.services.integration
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import org.junit.*
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -30,7 +31,8 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 	User user2
 	TimeZone serverTimezone
 	TimeZone defaultTimezone
-	@Override
+	
+	@Before
 	void setUp() {
 		super.setUp()
 		serverTimezone = TimeZone.getDefault()
@@ -45,8 +47,9 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		Utils.save(account, true)
 	}
 
-	@Override
+	@After
 	void tearDown() {
+		super.tearDown()
 		TimeZone.setDefault(serverTimezone)
 	}
 

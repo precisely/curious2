@@ -28,8 +28,6 @@ import us.wearecurio.utility.Utils
 class TagUnitStatsTests extends CuriousUserTestCase {
 	static transactional = true
 	
-	User user
-	Long userId
 	def dateFormat
 	Date earlyBaseDate
 	Date currentTime
@@ -40,9 +38,11 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 	Date tomorrowBaseDate
 	Date lateBaseDate
 	Date veryLateBaseDate
-
+	
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
@@ -62,19 +62,13 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 			last:'y', email:'y@y.com', birthdate:'01/01/2001', \
 			first:'y', password:'y', action:'doregister', \
 			controller:'home']
-
-		user = User.create(params)
-
-		Utils.save(user, true)
-		println "new user " + user
-		
-		userId = user.getId()
 	}
-
+	
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
-
+	
 	@Test
 	void testEntryUnits() {
 		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
@@ -85,7 +79,7 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
 		//Using the most used unit when no unit is present
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), null)
-		assert entry.units == 'km'	
+		assert entry.units == 'km'
 		//Don't change an unrecognized unit
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 klkk 4pm", baseDate, true), null)
 		assert entry.units == 'klkk'
@@ -106,10 +100,13 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 		//Using the most used unit incase of spelling mistake
 		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 4pm", baseDate, true), null)
-
+		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 lbs 4pm", baseDate, true), null)
-
-		def z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog").getId(), Tag.look("run").getId()])
+		
+		def z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
+			Tag.look("jog").getId(),
+			Tag.look("run").getId()
+		])
 		assert z.unit == 'km'
 		
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 5pm", baseDate, true), null)
@@ -119,11 +116,14 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 1pm", baseDate, true), null)
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 3pm", baseDate, true), null)
 		
-		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog").getId(), Tag.look("run").getId()])
+		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
+			Tag.look("jog").getId(),
+			Tag.look("run").getId()
+		])
 		assert z.unit == 'miles'
-
+		
 		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog").getId()])
 		assert z.unit == 'km'
-
+		
 	}
 }

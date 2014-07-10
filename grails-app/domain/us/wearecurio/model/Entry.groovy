@@ -11,6 +11,7 @@ import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitMap
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 import java.util.Map;
@@ -1923,26 +1924,35 @@ class Entry {
 		
 		Long userId = user.getId()
 		
-		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(tagIds, userId)
+		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
+		
+		queryStr = "select e.date, e.amount, e.tag_id, e.units " \
+				+ "from entry e where e.user_id = :userId " \
+				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type is null or e.repeat_type in (:unghostedSingularIds)) " \
+				+ "and e.tag_id in (:tagIds) order by e.date asc"
 
-		queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and entry.date >= :startDate and entry.date < :endDate and (entry.repeat_type is null or entry.repeat_type in (:unghostedSingularIds))" \
-				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds ]
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds]
-
+		log.debug("Finding plot data for tag ids: " + tagIds)
+		
 		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
+		
+		log.debug("Number of results: " + rawResults.size())
+		
 		def results = []
+		
+		UnitMap mostUsedUnitMap = mostUsedUnitRatioForTags?.unitMap
+		double mostUsedUnitRatio = mostUsedUnitRatioForTags ? mostUsedUnitRatioForTags.ratio : 1.0d
 
 		for (result in rawResults) {
-			Entry entry = Entry.get(result['id'])
-			def entryJSON = entry.getJSONShortDesc()
-			log.debug("Entry.fetchPlotData: Attempting to normalize entry " +entryJSON[2] + " for plots")
-			def normalizedData = UnitGroupMap.convertToMostUsedUnit(mostUsedUnitRatioForTags, entry.amount, entry.units)
-			if (normalizedData) {
-				entryJSON[1] = normalizedData.amount
+			Date date = result['date']
+			BigDecimal amount = result['amount']
+			def entryJSON = [date, amount, Tag.fetch(result['tag_id'].longValue())?.getDescription()]
+			UnitRatio unitRatio = mostUsedUnitMap?.lookupUnitRatio(result['units'])
+			if (unitRatio) {
+				entryJSON[1] = (amount * unitRatio.ratio) / mostUsedUnitRatio
 			}
-			long entryTimestamp = entry.getDate().getTime()
+			long entryTimestamp = date.getTime()
 			generateRepeaterEntries(repeaters, entryTimestamp, results)
 			results.add(entryJSON)
 		}
@@ -1982,7 +1992,7 @@ class Entry {
 		def currentResult = null
 		def summedResults = []
 		
-		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(tagIds, user.getId())
+		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(user.getId(), tagIds)
 
 		for (result in rawResults) {
 			Date resultDate = result[SHORT_DESC_DATE]

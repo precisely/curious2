@@ -34,6 +34,8 @@ class DateTests extends CuriousTestCase {
 	
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		
 		timeZoneName = "America/Los_Angeles"
@@ -51,6 +53,7 @@ class DateTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	@Test

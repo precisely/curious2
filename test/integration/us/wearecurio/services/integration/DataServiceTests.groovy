@@ -27,7 +27,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	def grailsApplication
 
-	@Override
+	@Before
 	void setUp() {
 		super.setUp()
 
@@ -42,7 +42,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		Utils.save(account2, true)
 	}
 
-	@Override
+	@After
 	void tearDown() {
 	}
 

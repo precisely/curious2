@@ -1,4 +1,6 @@
 package us.wearecurio.services.integration
+
+import org.junit.*
 import us.wearecurio.services.WeatherService;
 import grails.test.mixin.*
 import groovy.json.JsonOutput;
@@ -10,10 +12,12 @@ class WeatherServiceTests extends CuriousServiceTestCase {
 	
 	WeatherService weatherService
 	
+	@Before
 	void setUp() {
 		super.setUp()
 	}
 	
+	@After
 	void tearDown() {
 		super.tearDown()
 	}

@@ -37,6 +37,8 @@ class UserGroupTests extends CuriousTestCase {
 	
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		user = createUser('user', 'user@user.com')
 		admin = createUser('admin', 'admin@user.com')
 		admin2 = createUser('admin2', 'admin2@user.com')
@@ -52,6 +54,7 @@ class UserGroupTests extends CuriousTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 	
 	static def discussionsContains(discussionsInfo, discussionId) {

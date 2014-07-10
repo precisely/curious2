@@ -11,6 +11,16 @@ import us.wearecurio.integration.CuriousTestCase
 
 
 class CuriousSeriesFactoryTests extends CuriousTestCase {
+	
+	@Before
+	void setUp() {
+		super.setUp()
+	}
+
+	@After
+	void tearDown() {
+		super.tearDown()
+	}
 
 	@Test
 	void testMake() {
