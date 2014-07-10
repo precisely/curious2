@@ -181,7 +181,6 @@ class WithingsDataService extends DataService {
 	 *
 	 * @see Activity Metrics documentation at http://www.withings.com/en/api
 	 */
-	@Transactional
 	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
 		
@@ -270,7 +269,6 @@ class WithingsDataService extends DataService {
 	}
 
 
-	@Transactional
 	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate) 
 		throws InvalidAccessTokenException, TooManyRequestsException {
 			def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
@@ -296,9 +294,10 @@ class WithingsDataService extends DataService {
 				entryDate = new Date(entryTimestamp * 1000L)
 				setName = SET_NAME + "i" + timestamp
 				try {
-					Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
-							[setIdentifier: Identifier.look(setName), userId: userId]) 
-				
+					DatabaseService.retry(account) {
+						Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+								[setIdentifier: Identifier.look(setName), userId: userId]) 
+					}				
 				} catch (org.springframework.dao.CannotAcquireLockException le) {
 					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
 					le.printStackTrace()

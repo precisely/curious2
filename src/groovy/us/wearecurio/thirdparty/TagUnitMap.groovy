@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.*
 
 abstract class TagUnitMap {
 
@@ -142,7 +143,9 @@ abstract class TagUnitMap {
 				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
 					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
-				Entry.updatePartialOrCreate(userId, parsedEntry, null)
+				DatabaseService.retry(args) {
+					Entry.updatePartialOrCreate(userId, parsedEntry, null)
+				}
 			}
 		}
 	}
