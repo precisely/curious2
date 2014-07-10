@@ -21,7 +21,6 @@ class BootStrap {
 		DatabaseService.set(databaseService)
 		Utils.setMailService(mailService)
 		migrationService.doMigrations()
-		UserGroup.lookupOrCreateSystemGroup()
 
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 

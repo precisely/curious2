@@ -328,6 +328,7 @@ class MigrationService {
 			sql("update oauth_account set last_polled = null where type_id = 1")
 		}
 		tryMigration(SHARED_TAG_GROUP) {
+			UserGroup.lookupOrCreateSystemGroup()
 			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
 			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
 			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
