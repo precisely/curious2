@@ -701,6 +701,10 @@ function TreeWidget(args) {
 				itemId: $item.data('itemId'),
 				type: $item.data('itemType')
 			}), function() {
+				var ulElement = $item.parents('ul');
+				if (ulElement.find('li').length == 1) {	// When last element is about to delete
+					$('div#remove-exclusion-dialog').dialog('close');
+				}
 				$item.parent().remove();
 			}.bind(this));
 		});

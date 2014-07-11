@@ -120,15 +120,14 @@ function TagGroup(args) {
 	this.isTag = function() { return false; }
 
 	this.excludeChild = function(childItem) {
-		if (typeof childItem == 'undefined') {
-			return;
-		}
 		this.excludeChildAtBackend(childItem, function() {
-			this.excludes.push(childItem.description.trim());
 			var index = this.children.indexOf(childItem);
 			this.children = removeElem(this.children, childItem);
 			this.totalChildren--;
 			$(this).trigger("removeChild",{child: childItem, index: index});
+
+			var exclusionType = (childItem instanceof TagGroup) ? 'TAG_GROUP' : 'TAG';
+			this.excludes.push({objectId: childItem.id, type: exclusionType, description: childItem.description});
 		}.bind(this));
 	};
 
