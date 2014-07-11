@@ -103,7 +103,7 @@ class SecurityFilters {
 		}
 		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
 			before = {
-				if (!session.userId) {
+				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					redirect(url: urlService.base(request) + 'home/login')
 					return false
 				}

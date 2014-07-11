@@ -32,6 +32,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 	@Before
 	@Override
 	void setUp() {
+		super.setUp()
 		user = createUser('user', 'user@user.com')
 		anon = createUser('anon', 'anon@user.com')
 		admin = createUser('admin', 'admin@user.com')
@@ -62,6 +63,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	private static User createUser(name, email) {
@@ -179,7 +181,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		Map tagGroupData = allTagGroups.find { it.description == systemTagGroup1.description }
 		assert tagGroupData.id == systemTagGroup1.id
 		assert tagGroupData["excludes"].size() == 2
-		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG }.objectId == tag.id
-		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG_GROUP }.objectId == tagGroup1.id
+		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG.toString() }.objectId == tag.id
+		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG_GROUP.toString() }.objectId == tagGroup1.id
 	}
 }
