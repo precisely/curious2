@@ -150,14 +150,6 @@ function TagGroup(args) {
 		return isExcluded;
 	};
 
-	this.fetchExclusionData = function(callback) {
-		backgroundJSON("loading exclusion data", "/tag/getExclusionData?callback=?", getCSRFPreventionObject("getExclusionDataCSRF", {
-			id : this.id,
-		}), function(data) {
-			callback(data);
-		}.bind(this));
-	};
-
 	this.fetch = function(callback) {
 		if (this.isWildcard) {
 			tagList.eachMatchingTag(this.getDescription(), function(tag) {
@@ -275,8 +267,8 @@ function TagGroup(args) {
 		var url = "/tag/excludeFromTagGroupData?callback=?";
 
 		var exclusionType = 'Tag';
-		if (childItem.type === 'wildcardTagGroup') {
-			exclusionType = 'WildcardTagGroup';
+		if (childItem instanceof TagGroup) {
+			exclusionType = 'TagGroup';
 		}
 
 		backgroundJSON("excluding item from group", url, getCSRFPreventionObject(csrfKey, {
@@ -831,19 +823,17 @@ function TagListWidget(args) {
 				return;
 			}
 
-			tagGroup.fetchExclusionData(function(data) {
-				var html = '<ul>';
-				for (i in data) {
-					var excludedItem = data[i];
-					html += '<li>' + excludedItem['description'] + ' <a href="#" class="add-back-item" data-group-id="' +
-						tagGroup.id + '" data-item-id="' + excludedItem.id + '" data-item-type="' + excludedItem.type + '"' +
-						' style="font-size: 14px">+</a></li>';
-				}
+			var html = '<ul>';
+			for (i in tagGroup.excludes) {
+				var excludedItem = tagGroup.excludes[i];
+				html += '<li>' + excludedItem['description'] + ' <a href="#" class="add-back-item" data-group-id="' +
+					tagGroup.id + '" data-item-id="' + excludedItem.objectId + '" data-item-type="' + excludedItem.type + '"' +
+					' style="font-size: 14px">+</a></li>';
+			}
 
-				var $dialogElement = $('div#remove-exclusion-dialog');
-				$dialogElement.html(html);
-				$dialogElement.dialog();
-			}.bind(tagGroup));
+			var $dialogElement = $('div#remove-exclusion-dialog');
+			$dialogElement.html(html);
+			$dialogElement.dialog();
 
 		});
 	}

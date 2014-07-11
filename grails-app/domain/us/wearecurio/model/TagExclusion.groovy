@@ -17,6 +17,14 @@ class TagExclusion {
 
 	Long tagGroupPropertyId
 
+	static TagExclusion lookup(Long tagGroupPropertyId, ExclusionType type, Long objectId) {
+		TagExclusion.withCriteria(uniqueResult: true) {
+			eq("type", type)
+			eq("objectId", objectId)
+			eq("tagGroupPropertyId", tagGroupPropertyId)
+		}
+	}
+
 	static TagExclusion createOrLookup(def tagOrTagGroupToExclude, GenericTagGroupProperties tagGroupProperty) {
 		ExclusionType type = ExclusionType.TAG
 		Long objectId = tagOrTagGroupToExclude.id

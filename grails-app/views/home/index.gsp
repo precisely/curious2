@@ -9,7 +9,7 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryDataCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getExclusionDataCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 
 </head>
 <body class="track-page">

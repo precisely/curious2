@@ -1,11 +1,9 @@
 package us.wearecurio.services
 
-import org.hibernate.criterion.CriteriaSpecification
-
 import us.wearecurio.model.Entry
+import us.wearecurio.model.ExclusionType
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.SharedTagGroup
-import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.UserGroup
 
 class TagService {
@@ -72,25 +70,21 @@ class TagService {
 		List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
 
 		if (tagGroupPropertyIds) {
-			// Get all exclusion properties for all tag group properties
+			// Get all exclusion properties for all tag group properties including description
 
-			//List<TagExclusion> exclusions = TagExclusion.findAllByTagGroupPropertyIdInList(tagGroupPropertyIds)*.properties
-			List<TagExclusion> exclusions = TagExclusion.withCriteria {
-				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
-				projections {
-					property("type", "type")
-					property("objectId", "objectId")
-					property("tagGroupPropertyId", "tagGroupPropertyId")
-				}
-				'in'("tagGroupPropertyId", tagGroupPropertyIds)
-			}
+			List exclusions = databaseService.sqlRows("""SELECT
+					te.object_id AS objectId, te.tag_group_property_id AS tagGroupPropertyId,
+					CASE te.type WHEN ${ExclusionType.TAG.id} THEN 'TAG' WHEN ${ExclusionType.TAG_GROUP.id} THEN 'TAG_GROUP' ELSE '' END AS type,
+					CASE te.type WHEN ${ExclusionType.TAG.id} THEN t.description WHEN ${ExclusionType.TAG_GROUP.id} THEN tg.description ELSE '' END as description
+					FROM tag_exclusion AS te LEFT JOIN tag AS t ON t.id = te.object_id LEFT JOIN tag_group AS tg
+					ON tg.id = te.object_id WHERE te.tag_group_property_id in (${tagGroupPropertyIds.join(',')})""")
 
 			// Iterate each tag group data
 			tagGroups.each { tagGroupData ->
 				// Find all matching exclusion data and it to the tag group data
 				tagGroupData["excludes"] = exclusions.findAll {
 					it.tagGroupPropertyId == tagGroupData["propertyId"]
-				}*.subMap(["objectId", "type"])		// Only send objectId and type
+				}*.subMap(["objectId", "type", "description"])		// Only send tag or tag group data
 			}
 		}
 
