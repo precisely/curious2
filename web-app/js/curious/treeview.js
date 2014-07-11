@@ -5,6 +5,7 @@
  */
 
 var alphabets = [];
+var doubleClickEventTimeout;
 var DATA_KEY_FOR_ITEM_VIEW = "item-view";
 
 for ( var i = 97; i < 123; i++) {
@@ -719,11 +720,10 @@ function TreeWidget(args) {
 	}
 }
 
-$(document).on("click", TreeItemGroupView.cssClass.join(","),
-	function(e) { // This will bind click event for all future
-						// element.
-		e.stopPropagation(); // Prevents triggering click event
-									// of parent tag group if any.
+//This will bind click event for all future elemenmt.
+$(document).on("click", TreeItemGroupView.cssClass.join(","), function(e) {
+		e.stopPropagation(); // Prevents triggering click event of parent tag group if any.
+
 		var target;
 		if ($(e.target).hasClass('ui-icon-pencil') || $(e.target).hasClass('ui-icon-close')) {
 			return;
@@ -735,10 +735,19 @@ $(document).on("click", TreeItemGroupView.cssClass.join(","),
 		} else {
 			target = e.target;
 		}
-		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
-		itemView.highlight();
-		if (itemView instanceof TreeItemGroupView) {
-			itemView.showTagGroup();
-		}	
+
+		// Do not respond on two continuous clicks.
+		if (e.originalEvent && e.originalEvent.detail === 2) {
+			return false;
+		}
+
+		// Wait for 300 miliseconds to check if this click is a double click or taphold event.
+		doubleClickEventTimeout = setTimeout(function() {
+			var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+			itemView.highlight();
+			if (itemView instanceof TreeItemGroupView) {
+				itemView.showTagGroup();
+			}
+		}, 300);
 	}
 .bind(this));

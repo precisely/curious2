@@ -796,18 +796,21 @@ function TagListWidget(args) {
 
 		var positionOnTapEvent, positionOnTapHoldEvent;
 
-		$(".treeItemView", element).off("taphold tap mousedown")	// Make sure to remove older same events as this is called sevaral times.
+		$(".treeItemView", element).off("taphold tap mousedown dblclick")	// Make sure to remove older same events as this is called sevaral times.
 		.on("tap mousedown", function(e) {
 			positionOnTapEvent = $(this).offset();
 		})
-		.on("taphold", function(e) {
+		.on("taphold dblclick", function(e) {
 			var $item = $(this);
 			positionOnTapHoldEvent = $item.offset();
 
 			// Elemenet may have been moved (dragged somewhere else)
-			if (positionOnTapEvent.top != positionOnTapHoldEvent.top || positionOnTapEvent.left != positionOnTapHoldEvent.left) {
+			if (e.type === 'taphold' && (positionOnTapEvent.top != positionOnTapHoldEvent.top ||
+					positionOnTapEvent.left != positionOnTapHoldEvent.left)) {
 				return;
 			}
+			// Clear this timeout to prevent click event on tag group.
+			clearTimeout(doubleClickEventTimeout);
 
 			var tagOrTagGroupView = $item.data(DATA_KEY_FOR_ITEM_VIEW);
 			var tagOrTagGroup = tagOrTagGroupView.getData();
@@ -833,7 +836,6 @@ function TagListWidget(args) {
 			var $dialogElement = $('div#remove-exclusion-dialog');
 			$dialogElement.html(html);
 			$dialogElement.dialog();
-
 		});
 	}
 	
