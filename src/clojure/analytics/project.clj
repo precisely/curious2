@@ -1,8 +1,6 @@
 (defproject analytics "0.1.0"
 	:description "Analytics for Curious, Inc."
 	:url "http://wearecurio.us"
-	:license {:name "Eclipse Public License"
-						:url "http://www.eclipse.org/legal/epl-v10.html"}
 	:plugins [[lein-environ "0.5.0"]]
 	:aot [us.wearecurio.analytics.Interop]
 
