@@ -144,12 +144,20 @@ class UserGroup {
 				['id':discussionId])
 	}
 
+	/**
+	 * Calculate admin permissions and remove empty discussions not owned by the user
+	 */
 	private static def addAdminPermissions(User user, def discussionInfos) {
 		def retVals = []
 		def discussionMap = [:]
 
 		for (info in discussionInfos) {
-			def retVal = info[0].getJSONDesc()
+			Discussion discussion = info[0]
+			
+			if (discussion.isNew() && discussion.fetchUserId() != user.getId())
+				continue
+			
+			def retVal = discussion.getJSONDesc()
 			def discussionId = retVal['id']
 			Long groupId = info[1] > 0 ? info[1] : 0L
 			UserGroup group = groupId ? UserGroup.get(groupId) : null
@@ -223,7 +231,7 @@ class UserGroup {
 		if (owned) {
 			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
 		}
-
+		
 		return addAdminPermissions(user, results)
 	}
 
@@ -242,7 +250,7 @@ class UserGroup {
 				, [id:user.getId()]))
 		}
 
-		addAdminPermissions(user, results)
+		return addAdminPermissions(user, results)
 	}
 
 	static def canReadDiscussion(User user, Discussion discussion) {

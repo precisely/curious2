@@ -364,6 +364,16 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 		}
+		tryMigration("Null discussion name means skip in discussion list") {
+			try {
+				sql ("ALTER TABLE `discussion` CHANGE COLUMN `name` name varchar(255) DEFAULT NULL")
+			} catch (Throwable t) {
+			}
+			try {
+				sql ("UPDATE `discussion` SET name = NULL where name = 'New question or discussion topic?'")
+			} catch (Throwable t) {
+			}
+		}
 	}
 	
 	/**

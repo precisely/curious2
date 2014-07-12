@@ -92,7 +92,7 @@ class Discussion {
 			
 			def discussionSubject = "User '" + user.getUsername() + "' "
 			
-			if (isNew) {
+			if (!discussion.isModified()) {
 				log.debug "New discussion topic: send notifications if applicable"
 				discussionSubject += "created new discussion topic '" + params.name + "'"
 			} else {
@@ -119,7 +119,11 @@ class Discussion {
 	}
 	
 	def isNew() {
-		return this.created.getTime() == this.updated.getTime()
+		return this.name == null
+	}
+	
+	def isUnmodified() {
+		return this.created.getTime() != this.updated.getTime()
 	}
 	
 	def getNumberOfPosts() {
@@ -332,16 +336,22 @@ class Discussion {
 	def getJSONDesc() {
 		return [
 			id:this.id,
-			name:this.name,
+			name:this.name?:'New question or discussion topic?',
 			userId:this.userId,
 			isPublic:this.isPublic,
 			created:this.created,
 			updated:this.updated
 		]
 	}
+	
+	def getJSONModel() {
+		[discussionId:getId(), discussionTitle:this.name?:'New question or discussion topic?', firstPost:getFirstPost(),
+			posts:(getFirstPost()?.getPlotDataId() != null ? getFollowupPosts() :getPosts()),
+			isNew:isNew()]
+	}
 
 	String toString() {
-		return "Discussion(id:" + getId() + ", userId:" + userId + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
+		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + isPublic + ")"
 	}
 }

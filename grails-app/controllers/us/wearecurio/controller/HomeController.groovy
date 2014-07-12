@@ -683,10 +683,9 @@ class HomeController extends DataController {
 						fragment:'comment' + post.getId()))
 			}
 		} else {
-			def model = [discussionId:discussion.getId(), notLoggedIn:user?false:true, userId:user?.getId(),
-					username:user?user.getUsername():'(anonymous)', discussionTitle:discussion.getName(), firstPost:discussion.getFirstPost(),
-					posts:(discussion.getFirstPost()?.getPlotDataId() != null ? discussion.getFollowupPosts() : discussion.getPosts()),
-					isNew:discussion.isNew(), isAdmin:UserGroup.canAdminDiscussion(user, discussion),
+			def model = discussion.getJSONModel()
+			model = model << [notLoggedIn:user?false:true, userId:user?.getId(),
+					username:user?user.getUsername():'(anonymous)', isAdmin:UserGroup.canAdminDiscussion(user, discussion),
 					templateVer:urlService.template(request)]
 			render(view:"/home/discuss", model:model)
 		}

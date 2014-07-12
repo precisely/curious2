@@ -22,6 +22,7 @@ class PlotData {
 	static constraints = {
 		jsonPlotData(maxSize:MAXPLOTDATALENGTH)
 		isSnapshot(nullable:true)
+		name(nullable:true)
 	}
 	
 	static mapping = {
