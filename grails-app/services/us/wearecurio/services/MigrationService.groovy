@@ -122,6 +122,10 @@ class MigrationService {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
 		
+		try {
+			sql ("ALTER TABLE `migration` CHANGE COLUMN `code` code bigint(20) DEFAULT NULL")
+		} catch (Throwable t) {
+		}
 		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
 			// if this is running on a brand new instance, skip initial migrations
 			skipMigrations = true
@@ -346,7 +350,11 @@ class MigrationService {
 			}
 			sql ("ALTER TABLE `entry` DROP COLUMN `set_name`")
 		}
-		tryMigration(MIGRATION_CODES) {
+		tryMigration("New string migration codes") {
+			try {
+				sql ("ALTER TABLE `migration` CHANGE COLUMN `tag` tag varchar(255) DEFAULT NULL")
+			} catch (Throwable t) {
+			}
 			try {
 				sql ("UPDATE migration SET tag = CAST(code AS char)")
 			} catch (Throwable t) {
@@ -399,7 +407,11 @@ class MigrationService {
 		tryMigration("Shared Tag Group") {
 			UserGroup.lookupOrCreateSystemGroup()
 			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
-			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
+			systemGroup.addAdmin(User.findByUsername("x"))
+			systemGroup.addAdmin(User.findByUsername("heatheranne"))
+			systemGroup.addAdmin(User.findByUsername("linda"))
+			systemGroup.addAdmin(User.findByUsername("kim"))
+			systemGroup.addAdmin(User.findByUsername("kimdavis"))
 			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
 			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}

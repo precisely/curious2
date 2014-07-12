@@ -7,7 +7,7 @@ class Migration {
 	private static def log = LogFactory.getLog(this)
 
 	static constraints = {
-		tag(unique:true)
+		tag(unique:false)
 	}
 	
 	static mapping = {
