@@ -5,18 +5,30 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.utility.Utils
 
 class GenericTagGroupProperties {
-	
+
 	private static def log = LogFactory.getLog(this)
 
 	Long userId
+	Long groupId
 	Long tagGroupId
 	Boolean isContinuous
 	Boolean showPoints
-	
+
+	// A custom validator to check if both userId & groupId are null
+	static Closure userIdAndGroupIdValidator = { val, obj, errors ->
+		if (!obj.groupId && !obj.userId) {
+			errors.rejectValue("userId", "Both userId & groupId can not be null.")
+			errors.rejectValue("groupId", "Both userId & groupId can not be null.")
+		}
+	}
+
 	static constraints = {
+		userId nullable: true, validator: userIdAndGroupIdValidator
+		groupId nullable: true, validator: userIdAndGroupIdValidator
 		isContinuous(nullable:true)
 		showPoints(nullable:true)
 	}
+
 	static mapping = {
 		version false
 		table 'tag_group_properties'
@@ -24,27 +36,35 @@ class GenericTagGroupProperties {
 		tagGroupId column:'tag_group_id', index:'tag_group_id_index'
 	}
 
-	
-	static public def createOrLookup(long userId, long tagGroupId) {
-		log.debug "GenericTagGroupProperties.createOrLookup() userId:" + userId + ", tag:" + Tag.get(tagGroupId)
-		
-		def props = GenericTagGroupProperties.findByTagGroupIdAndUserId(tagGroupId, userId)
-		
-		if (!props) {
-			props = new GenericTagGroupProperties(tagGroupId:tagGroupId, userId:userId)
+	static GenericTagGroupProperties createOrLookup(Long id, String propertyFor, GenericTagGroup tagGroupInstance) {
+		if (tagGroupInstance.hasErrors() || !id) {
+			log.warn "Can't create or lookup. $tagGroupInstance.errors, $id, for $propertyFor"
+			return null
 		}
-		
+
+		createOrLookup(id, propertyFor, tagGroupInstance.id)
+	}
+
+	static GenericTagGroupProperties createOrLookup(Long id, String propertyFor, Long tagGroupId) {
+		log.debug "GenericTagGroupProperties.createOrLookup() $propertyFor $id:" + Tag.get(tagGroupId)
+
+		def props = GenericTagGroupProperties."findOrCreateByTagGroupIdAnd${propertyFor}Id"(tagGroupId, id)
+
 		if (Utils.save(props, true))
 			return props
-		
+
 		return null
 	}
-	
-	static public def lookup(long userId, long tagGroupId) {
+
+	static def lookup(long userId, long tagGroupId) {
 		return GenericTagGroupProperties.findByTagGroupIdAndUserId(tagGroupId, userId)
 	}
-			
-	public String toString() {
+
+	UserGroup getGroup() {
+		UserGroup.get(groupId)
+	}
+
+	String toString() {
 		return "GenericTagGroupProperties(userId:" + userId + ", tagGroupId:" + tagGroupId + ", isContinuous:" \
 				+ isContinuous + ", showPoints:" \
 				+ showPoints + ")"

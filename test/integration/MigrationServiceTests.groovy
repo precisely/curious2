@@ -28,7 +28,7 @@ class MigrationServiceTests extends CuriousTestCase {
 		def didMigration = false
 
 		// Confirm no existance of test migration id.
-		Migration.findByCode(MigrationService.TEST_MIGRATION_ID)?.delete()
+		Migration.findByTag("" + MigrationService.TEST_MIGRATION_ID)?.delete()
 
 		migrationService.tryMigration(MigrationService.TEST_MIGRATION_ID) {
 			didMigration = true

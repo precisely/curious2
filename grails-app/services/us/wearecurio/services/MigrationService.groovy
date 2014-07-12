@@ -2,11 +2,11 @@ package us.wearecurio.services
 
 import grails.util.Environment
 
-import org.springframework.transaction.annotation.Transactional
-
 import org.apache.commons.logging.LogFactory
 import org.hibernate.SessionFactory
 import org.joda.time.*
+
+import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.*
 import us.wearecurio.server.Migration
@@ -50,9 +50,11 @@ class MigrationService {
 	public static final long FIX_TAG_PROPERTIES = 84L
 	public static final long FIX_TAG_PROPERTIES2 = 85L
 	public static final long HISTORICAL_INTRA_DAY = 86L
-	public static final long DROP_EXTRA_TAG_XREF = 87L
-	public static final long REMOVE_OBSOLETE_ENTRY_FIELDS = 88L
+	public static final long DROP_EXTRA_TAG_XREF = 88L
+	public static final long REMOVE_OBSOLETE_ENTRY_FIELDS = 89L
 	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
+	public static final long SHARED_TAG_GROUP = 91L
+	public static final long MIGRATION_CODES = 92L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -76,8 +78,8 @@ class MigrationService {
 	}
 	
 	@Transactional
-	public def shouldDoMigration(long code) {
-		def migration = Migration.findByCode(code)
+	public def shouldDoMigration(def code) {
+		def migration = Migration.findByTag("" + code)
 		if (migration && migration.getHasRun()) {
 			return null
 		}
@@ -344,6 +346,16 @@ class MigrationService {
 			}
 			sql ("ALTER TABLE `entry` DROP COLUMN `set_name`")
 		}
+		tryMigration(MIGRATION_CODES) {
+			try {
+				sql ("UPDATE migration SET tag = CAST(code AS char)")
+			} catch (Throwable t) {
+			}
+			try {
+				sql ("ALTER TABLE `migration` DROP COLUMN `code`")
+			} catch (Throwable t) {
+			}
+		}
 	}
 	
 	/**
@@ -383,6 +395,13 @@ class MigrationService {
 					}
 				}
 			}
+		}
+		tryMigration(SHARED_TAG_GROUP) {
+			UserGroup.lookupOrCreateSystemGroup()
+			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
+			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
+			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
+			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
 	}
 }

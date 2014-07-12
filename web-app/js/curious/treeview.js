@@ -5,6 +5,7 @@
  */
 
 var alphabets = [];
+var doubleClickEventTimeout;
 var DATA_KEY_FOR_ITEM_VIEW = "item-view";
 
 for ( var i = 97; i < 123; i++) {
@@ -276,7 +277,7 @@ function TreeItemGroup (args) {
 			this.children = removeElem(this.children, childItem);
 			this.totalChildren--;
 			$(this).trigger("removeChild",{child:childItem,index:index});
-		}.bind(this));		
+		}.bind(this));
 	}
 	
 	this.removeChildAtBackend = function(childItem, callback) {
@@ -557,6 +558,7 @@ function TreeItemGroupView(args) {
 	}
 	
 	this.renderChild = function(itemView,index) {
+		itemView.setParentItemView(this);
 		//tagName here is the html tag that is used to render a TreeItem
 		if (index && index > -1 && typeof $("> "+this.tagName,this.getChildrenWrapper())[index] !=='undefined') {
 			$($("> "+this.tagName,this.getChildrenWrapper())[index]).after(itemView.render({
@@ -568,7 +570,6 @@ function TreeItemGroupView(args) {
 			}));
 		}
 		$(itemView.getDOMElement()).data(DATA_KEY_FOR_ITEM_VIEW,itemView);
-		itemView.setParentItemView(this);
 		return itemView;
 	}
 	
@@ -675,12 +676,39 @@ function TreeWidget(args) {
 			}
 			return;
 		}.bind(this));
+
+		// Exclusion
+		$(document).on("click", ".ui-icon-minus", function(e) {
+			e.stopPropagation();
+
+			var $target = $(e.target).parent();
+			var itemView = $target.data(DATA_KEY_FOR_ITEM_VIEW);
+			var itemData = itemView.getData();
+
+			var parentItemGroup = itemView.getParentItemView().getData();
+			parentItemGroup.excludeChild(itemData);
+		}.bind(this));
 		
 		$(document).on("mousedown",TreeItemView.cssClass.join(" "), function(e){
 			var itemView = $(e.target).data(DATA_KEY_FOR_ITEM_VIEW);
 			if (typeof itemView == 'undefined') return;
 			itemView.highlight();
 		}.bind(this));
+
+		$(document).on("click", "a.add-back-item", function() {
+			var $item = $(this);
+			backgroundJSON("add back tag", "/tag/addBackToTagGroupData?callback=?", getCSRFPreventionObject("addBackToTagGroupDataCSRF", {
+				id: $item.data('groupId'),
+				itemId: $item.data('itemId'),
+				type: $item.data('itemType')
+			}), function() {
+				var ulElement = $item.parents('ul');
+				if (ulElement.find('li').length == 1) {	// When last element is about to delete
+					$('div#remove-exclusion-dialog').dialog('close');
+				}
+				$item.parent().remove();
+			}.bind(this));
+		});
 	}
 	
 	this.notifyCreate = function(item, afterIndex) {
@@ -692,11 +720,10 @@ function TreeWidget(args) {
 	}
 }
 
-$(document).on("click", TreeItemGroupView.cssClass.join(","),
-	function(e) { // This will bind click event for all future
-						// element.
-		e.stopPropagation(); // Prevents triggering click event
-									// of parent tag group if any.
+//This will bind click event for all future elemenmt.
+$(document).on("click", TreeItemGroupView.cssClass.join(","), function(e) {
+		e.stopPropagation(); // Prevents triggering click event of parent tag group if any.
+
 		var target;
 		if ($(e.target).hasClass('ui-icon-pencil') || $(e.target).hasClass('ui-icon-close')) {
 			return;
@@ -708,10 +735,19 @@ $(document).on("click", TreeItemGroupView.cssClass.join(","),
 		} else {
 			target = e.target;
 		}
-		var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
-		itemView.highlight();
-		if (itemView instanceof TreeItemGroupView) {
-			itemView.showTagGroup();
-		}	
+
+		// Do not respond on two continuous clicks.
+		if (e.originalEvent && e.originalEvent.detail === 2) {
+			return false;
+		}
+
+		// Wait for 300 miliseconds to check if this click is a double click or taphold event.
+		doubleClickEventTimeout = setTimeout(function() {
+			var itemView = $(target).data(DATA_KEY_FOR_ITEM_VIEW);
+			itemView.highlight();
+			if (itemView instanceof TreeItemGroupView) {
+				itemView.showTagGroup();
+			}
+		}, 300);
 	}
 .bind(this));
