@@ -93,7 +93,7 @@ class MigrationService {
 		Utils.save(migration, true)
 	}
 	
-	public def tryMigration(long code, Closure closure) {
+	public def tryMigration(def code, Closure closure) {
 		def migration
 		
 		migration = shouldDoMigration(code)
@@ -396,7 +396,7 @@ class MigrationService {
 				}
 			}
 		}
-		tryMigration(SHARED_TAG_GROUP) {
+		tryMigration("Shared Tag Group") {
 			UserGroup.lookupOrCreateSystemGroup()
 			UserGroup systemGroup = UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME)
 			systemGroup.addAdmin(User.findByUsernameIlike("%mitsu%"))
