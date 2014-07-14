@@ -1322,15 +1322,17 @@ div.graph-header-container .red-header {
 	font-weight: bold;
 }
 
-#graphList .graphItem .media-object {
-	float: left;
+#graphList .graphItem {
+	margin-top: 0;
 }
+
 #graphList .graphItem .media-body {
 	margin-left: 70px;
 	font-size: 13px;
 }
 #graphList .graphItem .media-heading {
-	margin-top: -20px;
+	margin-top: 14px;
+	margin-bottom: 10px;
 }
 #graphList .graphItem .media-heading a {
 	color: #5A6263 !important;

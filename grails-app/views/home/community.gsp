@@ -71,12 +71,12 @@ $(function(){
 				}
 
 				$("#graphList").append('<div class="graphItem media">\
-					<div class="media-object" href="#">\
-						<img src="/images/'+ iconImage +'" alt="...">\
+					<div class="pull-left" href="#">\
+						<img class="media-object" src="/images/'+ iconImage +'" alt="...">\
 					</div>\
 					<div class="media-body">\
 						<div class="row">\
-							<div class="col-md-4">\
+							<div class="col-sm-4">\
 								<span class="uppercase">\
 									'+'POSTED BY'+'\
 									' + this['userName'] + '\
@@ -85,20 +85,18 @@ $(function(){
 									ON ' + formatShortDate(this['updated']) + '\
 								</span>\
 							</div>\
-							<div class="col-md-4">\
+							<div class="col-sm-4">\
 								<span>\
 									'+'LAST COMMENT ON '+'\
 								' + formatShortDate(this['updated']) + '\
 								</span>\
-							</div>\
-							<div class="col-md-2">\
 							</div>\
 						</div>\
 						<h4 class="media-heading">\
 							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
 						</h4>'
 					+ '</div>'
-					+ '</div></div>');
+					+ '</div>');
 				return true;
 			});
 		});
