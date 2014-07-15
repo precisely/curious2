@@ -122,7 +122,7 @@ function PlotProperties(divIdArray) {
 <body class="${pageProperty(name: 'body.class')}">
 <g:render template="/layouts/mainbody" model="['templateVer':templateVer]" />
 
-	<div id="alert-message" class="hide">
+	<div id="alert-message-dialog" class="hide">
 		<p><p>
 		<div id="alert-message-text"></div>
 	</div>

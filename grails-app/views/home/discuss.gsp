@@ -29,12 +29,14 @@ function clearPostMessage(postId) {
 	showYesNo("Are you sure you want to delete this comment?", function() {
 			window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
 	});
+	return false;
 }
 
 function deletePost(postId) {
 	showYesNo("Are you sure you want to delete this post?", function() {
 			window.location = "/home/discuss?discussionId=${discussionId}&deletePostId=" + postId;
 	});
+	return false;
 }
 
 $(function(){
@@ -231,7 +233,7 @@ $(function(){
 		<div class="messageControls">
 			<g:if test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
 				<!--span class="edit"></span-->
-				<span class="delete"><a href="#" onclick="clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
+				<span class="delete"><a href="#" onclick="return clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
 			</g:if>
 		</div>
 		<!--<g:if test="${firstPost}">
@@ -262,7 +264,7 @@ $(function(){
 				<div class="messageControls">
 					<g:if test="${post.getAuthor().getUserId() == userId || isAdmin}">
 						<!--span class="edit"></span-->
-						<span class="delete"><a href="#" onclick="deletePost(${post.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
+						<span class="delete"><a href="#" onclick="return deletePost(${post.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
 					</g:if>
 				</div>
 				<div style="clear:both"></div>

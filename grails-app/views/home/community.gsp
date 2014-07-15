@@ -112,7 +112,7 @@ $(function(){
 	<div class="row red-header">
 		<div class="col-md-3">
 			<div id="actions">
-				<img src="/images/menu.png">
+				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
 					<li><a Ref="/home/community" >Home Feed</a></li>
 				</ul>
