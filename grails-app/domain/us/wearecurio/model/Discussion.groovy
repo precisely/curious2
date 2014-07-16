@@ -182,10 +182,21 @@ class Discussion {
 	}
 
 	List<DiscussionPost> getFollowupPosts(Map args) {
-		if (args["offset"]) {
-			args["offset"] = args["offset"].toInteger() + 1
-		} else {
+		/*
+		 * If no offset or offset is 0, set offset to 1 so that
+		 * first post is not fetched.
+		 */
+		if (!args["offset"]) {
 			args["offset"] = 1
+		}
+
+		/*
+		 * If max is given and offset is set to be current step offset + 1
+		 * then increase current offset by one to support proper pagination
+		 * skipping always the first post.
+		 */
+		if (args["max"] && (args["offset"].toInteger() % args["max"].toInteger()) == 0) {
+			args["offset"] = args["offset"].toInteger() + 1
 		}
 
 		getPosts(args)
