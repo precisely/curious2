@@ -65,7 +65,6 @@ $(function(){
 		
 			jQuery.each(data, function() {
 			    var iconImage='comment-icon.png';
-
 				if (this.isPlot) {
 					iconImage='graph-icon.png';
 				}
@@ -91,6 +90,11 @@ $(function(){
 								' + formatShortDate(this['updated']) + '\
 								</span>\
 							</div>\
+							<div class="col-sm-1 pull-right text-right ' + (this.isAdmin ? '' : 'hide') + '">\
+								<a href="#" class="delete-discussion" data-discussion-id="' + this.id + '">\
+									<img src="/images/x.gif" width="8" height="8">\
+								</a>\
+							</div>\
 						</div>\
 						<h4 class="media-heading">\
 							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
@@ -100,6 +104,30 @@ $(function(){
 				return true;
 			});
 		});
+
+	$(document).on("click", "a.delete-discussion", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var discussionId = $this.data('discussionId');
+			$.ajax({
+				url: '/home/discuss',
+				data: {
+					discussionId: discussionId,
+					deleteDiscussion: true
+				},
+				success: function(data) {
+					showAlert(JSON.parse(data).message, function() {
+						$this.parents('.graphItem').fadeOut();
+					});
+				},
+				error: function(xhr) {
+					var data = JSON.parse(xhr.responseText);
+					showAlert(data.message);
+				}
+			});
+		});
+		return false;
+	});
 });
 </script>
 </head>

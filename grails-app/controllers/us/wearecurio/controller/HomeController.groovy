@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 
+import static org.springframework.http.HttpStatus.*
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -536,7 +537,7 @@ class HomeController extends DataController {
 			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname]
 	}
 
-	def discuss() {
+	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
 		/*
 		 * Old discussion format used plotDataId to identify discussions (maintain compatibility)
 		 * 
@@ -550,13 +551,6 @@ class HomeController extends DataController {
 		
 		def user = sessionUser()
 		
-		def p = params
-		
-		Long plotIdMessage = params.plotIdMessage ? Long.parseLong(params.plotIdMessage) : null
-		Long plotDataId = params.plotDataId ? Long.parseLong(params.plotDataId) : null
-		Long discussionId = params.discussionId ? Long.parseLong(params.discussionId) : null
-		Long deletePostId = params.deletePostId ? Long.parseLong(params.deletePostId) : null
-		Long clearPostId = params.clearPostId ? Long.parseLong(params.clearPostId) : null
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
 		
 		if (plotIdMessage == null && plotDataId==null && discussionId==null && params.createTopic == null) {
@@ -564,7 +558,8 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
+
+		String message
 		Discussion discussion
 		
 		if (discussionId) {
@@ -578,13 +573,24 @@ class HomeController extends DataController {
 			if (params.deleteDiscussion) {
 				if (!UserGroup.canAdminDiscussion(user, discussion)) {
 					debug "Not admin of discussion: " + discussionId
-					flash.message = "You don't have admin rights to delete the discussion."
-					redirect(url: toUrl(action: 'community'))
+					message = "You don't have admin rights to delete the discussion."
+					if (request.xhr) {
+						renderJSONPost([message: message], UNAUTHORIZED)
+					} else {
+						flash.message = message
+						redirect(url: toUrl(action: 'community'))
+					}
 					return
 				}
 				Discussion.delete(discussion)
-				flash.message = "Discussion delete successfully."
-				redirect(url: toUrl(action: 'community'))
+				message = "Discussion delete successfully."
+
+				if (request.xhr) {
+					renderJSONPost([success: true, message: message])
+				} else {
+					flash.message = message
+					redirect(url: toUrl(action: 'community'))
+				}
 				return
 			}
 		} else if (plotDataId) {

@@ -11,7 +11,7 @@ function wrapPagination() {
 	$("span.currentStep", "ul.pagination").wrap('<li class="active"></li>')
 }
 
-function showAlert(alertText) {
+function showAlert(alertText, onAlertClose) {
 	$messageTextDialog.text(alertText);
 	$messageDialog.dialog({
 		dialogClass: "no-close",
@@ -22,7 +22,8 @@ function showAlert(alertText) {
 			Ok: function() {
 				$(this).dialog("close");
 			}
-		}
+		},
+		close: onAlertClose
 	});
 }
 
