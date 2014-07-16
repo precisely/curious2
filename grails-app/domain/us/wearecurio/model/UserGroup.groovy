@@ -235,20 +235,51 @@ class UserGroup {
 		return addAdminPermissions(user, results)
 	}
 
-	private static def DISCUSSIONS_QUERY =\
-			"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "\
+	private static String DISCUSSIONS_QUERY = "select %s from Discussion d, "\
 				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
 				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
 				+ "and d.userId = user.id order by d.updated desc"
 
+	private static String DISCUSSIONS_COUNT_QUERY = String.format(DISCUSSIONS_QUERY, "count(distinct d)")
+	private static String DISCUSSIONS_LIST_QUERY = String.format(DISCUSSIONS_QUERY, "distinct d, dItem.groupId as groupId, user.username")
+
+	private static String OWNED_DISCUSSIONS_QUERY = """SELECT DISTINCT %s FROM Discussion d, User user
+					WHERE d.userId = :id AND user.id = d.userId"""
+
+	private static String OWNED_DISCUSSIONS_COUNT_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "count(distinct d)")
+	private static String OWNED_DISCUSSIONS_LIST_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "d, -1 AS groupId, user.username")
+
 	static List getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
-		List results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id: user.id, max: 5, offset: 0])
+		Long totalCount
+		Map namedParameters = [id: user.id]
+
+		List results = Discussion.executeQuery(DISCUSSIONS_LIST_QUERY, namedParameters, args)
+
+		if (args["max"] && args["offset"] != null) {
+			totalCount = Discussion.executeQuery(DISCUSSIONS_COUNT_QUERY, namedParameters)[0]
+		}
 
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username "
-				+ "from Discussion d, User user where d.userId = :id and user.id = d.userId "
-				, [id:user.getId()]))
+
+			if (args["max"] && args["offset"] != null) {
+				totalCount += Discussion.executeQuery(OWNED_DISCUSSIONS_COUNT_QUERY, namedParameters)[0]
+
+				int max = args["max"].toInteger()
+				int offset = args["offset"].toInteger()
+
+				int currentPage = (offset % max) + 1
+				int existingResultCount = results.size()
+
+				namedParameters["max"] = max - existingResultCount
+				if (existingResultCount == 0) {
+					namedParameters["offset"] = offset ? max * (offset - 1) : 0
+				} else {
+					namedParameters["offset"] = 0
+				}
+			}
+
+			results.addAll(Discussion.executeQuery(OWNED_DISCUSSIONS_LIST_QUERY, namedParameters))
 		}
 
 		return addAdminPermissions(user, results)

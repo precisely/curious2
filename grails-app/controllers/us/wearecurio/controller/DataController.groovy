@@ -867,11 +867,14 @@ class DataController extends LoginController {
 			return
 		}
 
+		params.max = params.max ?: 5
+		params.offset = params.offset ?: 0
+
 		def groupNameList = params.userGroupNames ? JSON.parse(params.userGroupNames) : null
 		debug "Trying to load list of discussions for " + user.getId() + " and list:" + params.userGroupNames
 
 		def entries = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList) : \
-				UserGroup.getDiscussionsInfoForUser(user, true)
+				UserGroup.getDiscussionsInfoForUser(user, true, params)
 
 		for (entry in entries) {
 			debug "Found " + entry

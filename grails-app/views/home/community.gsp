@@ -54,12 +54,16 @@ $(function(){
 				return true;
 			});
 		});
-	
+
+	listDiscussions();
+});
+
+function listDiscussions() {
 	backgroundJSON("getting comments", "/home/listDiscussionData?callback=?",
 		<g:if test="${params.userGroupNames}" >
 			{userGroupNames:JSON.stringify(['${params.userGroupNames}'])},
 		</g:if>
-		function(data){
+		function(data) {
 			if (!checkData(data))
 				return;
 		
@@ -104,7 +108,9 @@ $(function(){
 				return true;
 			});
 		});
+}
 
+$(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
