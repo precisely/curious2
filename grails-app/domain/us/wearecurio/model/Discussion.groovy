@@ -61,7 +61,7 @@ class Discussion {
 		return discussion
 	}
 	
-	public static void delete(Discussion discussion) {
+	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
 		discussion.delete()

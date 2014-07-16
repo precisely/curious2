@@ -241,8 +241,9 @@ class UserGroup {
 				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
 				+ "and d.userId = user.id order by d.updated desc"
 
-	public static def getDiscussionsInfoForUser(User user, boolean owned) {
-		def results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id:user.getId()])
+	static List getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
+		List results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id: user.id, max: 5, offset: 0])
+
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
 			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username "

@@ -575,6 +575,18 @@ class HomeController extends DataController {
 				redirect(url:toUrl(action:'community'))
 				return
 			}
+			if (params.deleteDiscussion) {
+				if (!UserGroup.canAdminDiscussion(user, discussion)) {
+					debug "Not admin of discussion: " + discussionId
+					flash.message = "You don't have admin rights to delete the discussion."
+					redirect(url: toUrl(action: 'community'))
+					return
+				}
+				Discussion.delete(discussion)
+				flash.message = "Discussion delete successfully."
+				redirect(url: toUrl(action: 'community'))
+				return
+			}
 		} else if (plotDataId) {
 			discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
 			debug "Discussion for plotDataId not found: " + plotDataId

@@ -57,6 +57,14 @@ input, optgroup, select, textarea {
 	border-color: #ac2925;
 }
 
+.disabled {
+	pointer-events: none;
+}
+
+a.disabled {
+	cursor: default;
+}
+
 .ui-icon-red {
 	background-image: url(../../theme/images/ui-icons_cd0a0a_256x240.png);
 }
@@ -873,10 +881,11 @@ body.tags-displayed .floating-column {
 	box-shadow: 0px 0px 0px;	
 }
 
-.sharePage h1 {
-	background-color:#EF4B3A;
-	color:#ffffff;
-	font-size:24px;	
+body.discuss-page .red-header {
+	text-transform: none;
+}
+
+body.discuss-page .red-header h1 {
 	padding:10px;
 }
 
@@ -1100,7 +1109,7 @@ body.tags-displayed .floating-column {
 	float: left;
 	width: 20px;
 }
-.red-header #actions ul {
+#actions ul {
 	background: #fff;
 	display: block;
 	width: 272px;

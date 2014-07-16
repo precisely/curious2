@@ -96,8 +96,8 @@ $(function(){
 								preventCommentSubmit = false;
 								discussionTitle = newName;
 								discussTitle.html(newName);
-								discussTitleArea.off('mouseup');
-								discussTitleArea.on('mouseup', discussTitle.data('rename'));
+								discussTitle.off('mouseup');
+								discussTitle.on('mouseup', discussTitle.data('rename'));
 								if (closure) closure();
 							} else {
 								showAlert('Failed to set name');
@@ -130,8 +130,8 @@ $(function(){
 			discussTitle.data('rename', discussTitleRename);
 
 			<g:if test="${!isNew}">
-			discussTitleArea.off('mouseup');
-			discussTitleArea.on('mouseup', discussTitleRename);
+			discussTitle.off('mouseup');
+			discussTitle.on('mouseup', discussTitleRename);
 			$("#postcommentarea").focus();
 			</g:if>
 			<g:else>
@@ -177,18 +177,27 @@ $(function(){
 		<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<div class="discussTitle" id="discussTitleArea">
-		<h1><span id="discussTitleSpan"><g:if test="${!isNew}">${discussionTitle}</g:if></span>
-		<div class="byline">
-		<span class="username bittext" id="discussUsername"></span>
-		<span class="date bittext" id="discussDate"></span>
-		</div>
+	<div class="discussTitle red-header" id="discussTitleArea">
+		<h1>
+			<span id="actions">
+				<span class="icon-triangle icon-triangle-right toggle"></span>
+				<ul>
+					<li><a Ref="/home/community">Share</a></li>
+					<li class="${isAdmin ? '' : 'disabled text-muted' }">
+						<g:link params="[discussionId: params.discussionId, deleteDiscussion: true]"
+							action="discuss">Delete</g:link>
+					</li>
+				</ul>
+			</span>
+			<span id="discussTitleSpan"><g:if test="${!isNew}">${discussionTitle}</g:if></span>
+			<div class="byline">
+				<span class="username bittext" id="discussUsername"></span>
+				<span class="date bittext" id="discussDate"></span>
+			</div>
 		</h1>
-
-		<div id="plotLeftNav">
-			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
-		</div>
-
+	</div>
+	<div id="plotLeftNav">
+		<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
 	</div>
 
 <!-- MAIN -->
