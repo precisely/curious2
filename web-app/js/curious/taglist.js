@@ -1025,17 +1025,29 @@ function initTagListWidget() {
 		});
 	});
 	
-	$("#tagGroupEditDialog").dialog({
+	var $editDialog = $("#tagGroupEditDialog").dialog({
 		autoOpen: false,
 		dialogClass:'tagGroupDialog',
 		buttons: {
-			"Save":function() {
-				var tagGroupItem = $("input","#tagGroupEditDialog").data(DATA_KEY_FOR_TAGLIST_ITEM);
-				var newTagGroupName = $("input","#tagGroupEditDialog").val();
-				tagGroupItem.setDescription(newTagGroupName);
-				$(this).dialog("close");
-			}
+			"Save": renameTagGroup
 		},
 		
+	});
+
+	var $editTagGroupElement = $("input", $editDialog);
+
+	function renameTagGroup() {
+		var tagGroupItem = $editTagGroupElement.data(DATA_KEY_FOR_TAGLIST_ITEM);
+		var newTagGroupName = $editTagGroupElement.val();
+		tagGroupItem.setDescription(newTagGroupName);
+		$editDialog.dialog("close");
+	}
+
+	$(document).on("keypress", $editTagGroupElement, function(e) {
+		var code = e.keyCode || e.which;
+		if (code == 13) {	// On enter
+			renameTagGroup();
+			return false;
+		}
 	});
 }
