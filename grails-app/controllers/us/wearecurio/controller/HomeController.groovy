@@ -683,16 +683,27 @@ class HomeController extends DataController {
 						fragment:'comment' + post.getId()))
 			}
 		} else {
-			def model = discussion.getJSONModel()
-			model = model << [notLoggedIn:user?false:true, userId:user?.getId(),
-					username:user?user.getUsername():'(anonymous)', isAdmin:UserGroup.canAdminDiscussion(user, discussion),
-					templateVer:urlService.template(request)]
-			render(view:"/home/discuss", model:model)
+			params.max = params.max ?: 5
+			params.offset = params.offset ?: 0
+
+			Map model = discussion.getJSONModel(params)
+
+			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
+					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+					templateVer: urlService.template(request)]
+
+			// If used for pagination
+			if (request.xhr) {
+				render (template: "/discussion/posts", model: model)
+				return
+			}
+
+			render(view: "/home/discuss", model: model)
 		}
 	}
 	
 	def lgmd2iproject() {
-			def model = []
-			render(view:"/home/lgmd2iproject", model:model)
+		def model = []
+		render(view:"/home/lgmd2iproject", model:model)
 	}
 }

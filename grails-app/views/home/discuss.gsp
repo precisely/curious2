@@ -155,6 +155,18 @@ $(function(){
 			
 			refreshPage();
 		});
+
+	$(document).on("click", "ul#posts-pagination a", function() {
+		var url = $(this).attr('href');
+		$.ajax({
+			url: url,
+			success: function(data) {
+				$('div#postList').html(data);
+				wrapPagination();
+			}
+		});
+		return false;
+	});
 });
 </script>
 </head>
@@ -250,26 +262,11 @@ $(function(){
 	<div class="commentList">
 		<a name="comments"></a>
 		<g:if test="${firstPost != null && firstPost.getPlotDataId() != null}">
-		<h1>Comments</h1>
+			<h1>Comments</h1>
 		</g:if>
-				
-		<g:each in="${posts}" var="post">
-			<div class="comment">
-				<a name="comment${post.getId()}"></a>
-				<div class="message">${post.getMessage() ? post.getMessage().encodeAsHTML() : "[graph]"}</div>
-				<div class="messageInfo">
-					<g:if test="${post.author.getSite()}"><a href="${post.author.getSite().encodeAsURL()}"></g:if><g:if test="${post.author.getUsername()}">${post.author.getUsername().encodeAsHTML()}</g:if><g:else>${post.author.getName().encodeAsHTML()}</g:else><g:if test="${post.author.getSite()}"></a></g:if>
-					<br/>Last post <g:formatDate date="${post.getUpdated()}" type="datetime" style="SHORT"/>
-				</div>
-				<div class="messageControls">
-					<g:if test="${post.getAuthor().getUserId() == userId || isAdmin}">
-						<!--span class="edit"></span-->
-						<span class="delete"><a href="#" onclick="return deletePost(${post.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
-					</g:if>
-				</div>
-				<div style="clear:both"></div>
-			</div>
-		</g:each>
+		<div id="postList">
+			<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+		</div>
 	</div>
 	<div id="addComment">
 		<g:if test="${firstPost != null && firstPost.getMessage() != null}">

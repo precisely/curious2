@@ -129,11 +129,9 @@ class Discussion {
 	def getNumberOfPosts() {
 		return DiscussionPost.countByDiscussionId(getId())
 	}
-	
-	def fetchFirstPost() {
-		def c = DiscussionPost.createCriteria()
 
-		def posts = c {
+	DiscussionPost fetchFirstPost() {
+		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("discussionId", getId())
 			}
@@ -142,16 +140,16 @@ class Discussion {
 			order("created", "asc")
 		}
 
-		for (post in posts) {
-			firstPostId = post.getId()
-			Utils.save(this)
-			return post
+		if (!post) {
+			return null
 		}
-		
-		return null
+
+		firstPostId = post.id
+		Utils.save(this)
+		return post
 	}
-	
-	def getFirstPost() {
+
+	DiscussionPost getFirstPost() {
 		if (firstPostId == null) {
 			return fetchFirstPost()
 		}
@@ -182,26 +180,19 @@ class Discussion {
 		DiscussionPost post = getFirstPost()
 		return post?.getAuthor()?.getUserId()
 	}
-	
-	def getFollowupPosts() {
-		def c = DiscussionPost.createCriteria()
 
-		def posts = c {
-			and {
-				eq("discussionId", getId())
-			}
-			firstResult(1)
-			order("plotDataId", "desc")
-			order("created", "asc")
+	List<DiscussionPost> getFollowupPosts(Map args) {
+		if (args["offset"]) {
+			args["offset"] = args["offset"].toInteger() + 1
+		} else {
+			args["offset"] = 1
 		}
-		
-		return posts
-	}
-	
-	def getPosts() {
-		def c = DiscussionPost.createCriteria()
 
-		def posts = c {
+		getPosts(args)
+	}
+
+	List<DiscussionPost> getPosts(Map args) {
+		List posts = DiscussionPost.createCriteria().list(args) {
 			and {
 				eq("discussionId", getId())
 			}
@@ -211,7 +202,7 @@ class Discussion {
 
 		return posts
 	}
-	
+
 	def createPost(User user, String message) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'"
 		return createPost(DiscussionAuthor.create(user), message)
@@ -343,11 +334,19 @@ class Discussion {
 			updated:this.updated
 		]
 	}
-	
-	def getJSONModel() {
-		[discussionId:getId(), discussionTitle:this.name?:'New question or discussion topic?', firstPost:getFirstPost(),
-			posts:(getFirstPost()?.getPlotDataId() != null ? getFollowupPosts() :getPosts()),
-			isNew:isNew()]
+
+	Map getJSONModel(Map args) {
+		Long totalPostCount = 0
+		DiscussionPost firstPostInstance = getFirstPost()
+		List postList = firstPostInstance?.getPlotDataId() != null ? getFollowupPosts(args) : getPosts(args)
+		
+		if (args.max && args.offset) {
+			// A total count will be available if pagination parameter is passed
+			totalPostCount = postList.getTotalCount()
+		}
+
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', firstPost: firstPostInstance,
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount]
 	}
 
 	String toString() {

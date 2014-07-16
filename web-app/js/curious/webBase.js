@@ -3,7 +3,13 @@ var $messageDialog, $messageTextDialog;
 $(document).ready(function() {
 	$messageDialog = $("#alert-message-dialog");
 	$messageTextDialog = $("#alert-message-text", $messageDialog);
+	wrapPagination();
 });
+
+function wrapPagination() {
+	$("a, span.step.gap", "ul.pagination").wrap('<li></li>');
+	$("span.currentStep", "ul.pagination").wrap('<li class="active"></li>')
+}
 
 function showAlert(alertText) {
 	$messageTextDialog.text(alertText);
