@@ -8,13 +8,6 @@
 <c:jsCSRFToken keys="getPeopleDataCSRF" />
 <script type="text/javascript">
 
-function minLinkName(name) {
-	if (name == null || name == "") {
-		return "(No Title)";
-	}
-	return name;
-}
-
 function deleteDiscussionId(id) {
 	showYesNo("Are you sure you want to delete the saved discussion?", function() {
 			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
@@ -54,61 +47,7 @@ $(function(){
 				return true;
 			});
 		});
-
-	listDiscussions();
 });
-
-function listDiscussions() {
-	backgroundJSON("getting comments", "/home/listDiscussionData?callback=?",
-		<g:if test="${params.userGroupNames}" >
-			{userGroupNames:JSON.stringify(['${params.userGroupNames}'])},
-		</g:if>
-		function(data) {
-			if (!checkData(data))
-				return;
-		
-			jQuery.each(data, function() {
-			    var iconImage='comment-icon.png';
-				if (this.isPlot) {
-					iconImage='graph-icon.png';
-				}
-
-				$("#graphList").append('<div class="graphItem media">\
-					<div class="pull-left" href="#">\
-						<img class="media-object" src="/images/'+ iconImage +'" alt="...">\
-					</div>\
-					<div class="media-body">\
-						<div class="row">\
-							<div class="col-sm-4">\
-								<span class="uppercase">\
-									'+'POSTED BY'+'\
-									' + this['userName'] + '\
-								</span>\
-								<span>\
-									ON ' + formatShortDate(this['updated']) + '\
-								</span>\
-							</div>\
-							<div class="col-sm-4">\
-								<span>\
-									'+'LAST COMMENT ON '+'\
-								' + formatShortDate(this['updated']) + '\
-								</span>\
-							</div>\
-							<div class="col-sm-1 pull-right text-right ' + (this.isAdmin ? '' : 'hide') + '">\
-								<a href="#" class="delete-discussion" data-discussion-id="' + this.id + '">\
-									<img src="/images/x.gif" width="8" height="8">\
-								</a>\
-							</div>\
-						</div>\
-						<h4 class="media-heading">\
-							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
-						</h4>'
-					+ '</div>'
-					+ '</div>');
-				return true;
-			});
-		});
-}
 
 $(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
@@ -131,6 +70,18 @@ $(document).ready(function() {
 					showAlert(data.message);
 				}
 			});
+		});
+		return false;
+	});
+
+	$(document).on("click", "ul#discussion-pagination a", function() {
+		var url = $(this).attr('href');
+		$.ajax({
+			url: url,
+			success: function(data) {
+				$('div#discussions').html(data);
+				wrapPagination();
+			}
 		});
 		return false;
 	});
@@ -180,6 +131,9 @@ $(document).ready(function() {
 					<input type="hidden" name="group" value="${groupName}" />
 					<input type="submit" name="POST" value="POST"  />
 				</form>
+			</div>
+			<div id="discussions">
+				<g:render template="/community/discussions" />
 			</div>
 		</div>
 

@@ -198,11 +198,12 @@ class UserGroup {
 		return retVals
 	}
 
-	public static def getDiscussionsInfoForGroupNameList(User user, def groupNameList) {
+	static Map getDiscussionsInfoForGroupNameList(User user, def groupNameList, Map args = [:]) {
 		boolean owned = false
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump()
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump()
-		def groupIds = []
+
+		List groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
 				owned = true
@@ -222,17 +223,29 @@ class UserGroup {
 		else if (!owned) return [:] // user has no permissions to read anything
 		if (owned) map['id'] = user.getId()
 
-		def results = Discussion.executeQuery(
-				"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "
-					+ "User user, GroupMemberDiscussion dItem where d.id = dItem.memberId "
-					+ (groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
-					+ "and d.userId = user.id order by d.updated desc", map)
+		String discussionQuery = """select %s from Discussion d,
+					User user, GroupMemberDiscussion dItem where d.id = dItem.memberId
+					${groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " "}
+					and d.userId = user.id order by d.updated desc"""
+
+		String discussionCountQuery = String.format(discussionQuery, "count (distinct d)")
+		String discussionListQuery = String.format(discussionQuery, "distinct d, dItem.groupId as groupId, user.username")
+
+		List hqlDataList = [[query: discussionListQuery, countQuery: discussionCountQuery, namedParameters: map]]
 
 		if (owned) {
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
+			String ownedDiscussionQuery = "select %s from Discussion d where d.userId = :id"
+			String ownedDiscussionCountQuery = String.format(ownedDiscussionQuery, "count(distinct d)")
+			String ownedDiscussionListQuery = String.format(ownedDiscussionQuery, "distinct d, -1 as groupId, user.username")
+
+			hqlDataList << [[query: ownedDiscussionListQuery, countQuery: ownedDiscussionCountQuery, namedParameters: [id: user.id]]]
 		}
-		
-		return addAdminPermissions(user, results)
+
+		Map paginatedData = Utils.paginateHQLs(hqlDataList, args["max"], args["offset"])
+
+		paginatedData["dataList"] = addAdminPermissions(user, paginatedData["dataList"])
+
+		paginatedData
 	}
 
 	private static String DISCUSSIONS_QUERY = "select %s from Discussion d, "\
@@ -249,40 +262,24 @@ class UserGroup {
 	private static String OWNED_DISCUSSIONS_COUNT_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "count(distinct d)")
 	private static String OWNED_DISCUSSIONS_LIST_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "d, -1 AS groupId, user.username")
 
-	static List getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
-		Long totalCount
+	static Map getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
 		Map namedParameters = [id: user.id]
 
-		List results = Discussion.executeQuery(DISCUSSIONS_LIST_QUERY, namedParameters, args)
-
-		if (args["max"] && args["offset"] != null) {
-			totalCount = Discussion.executeQuery(DISCUSSIONS_COUNT_QUERY, namedParameters)[0]
-		}
+		List hqlDataList = [[query: DISCUSSIONS_LIST_QUERY, countQuery: DISCUSSIONS_COUNT_QUERY,
+			namedParameters: namedParameters]]
 
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
 
-			if (args["max"] && args["offset"] != null) {
-				totalCount += Discussion.executeQuery(OWNED_DISCUSSIONS_COUNT_QUERY, namedParameters)[0]
-
-				int max = args["max"].toInteger()
-				int offset = args["offset"].toInteger()
-
-				int currentPage = (offset % max) + 1
-				int existingResultCount = results.size()
-
-				namedParameters["max"] = max - existingResultCount
-				if (existingResultCount == 0) {
-					namedParameters["offset"] = offset ? max * (offset - 1) : 0
-				} else {
-					namedParameters["offset"] = 0
-				}
-			}
-
-			results.addAll(Discussion.executeQuery(OWNED_DISCUSSIONS_LIST_QUERY, namedParameters))
+			hqlDataList << [query: OWNED_DISCUSSIONS_LIST_QUERY, countQuery: OWNED_DISCUSSIONS_COUNT_QUERY,
+				namedParameters: namedParameters]
 		}
 
-		return addAdminPermissions(user, results)
+		Map paginatedData = Utils.paginateHQLs(hqlDataList, args["max"], args["offset"])
+
+		paginatedData["dataList"] = addAdminPermissions(user, paginatedData["dataList"])
+
+		paginatedData
 	}
 
 	static def canReadDiscussion(User user, Discussion discussion) {

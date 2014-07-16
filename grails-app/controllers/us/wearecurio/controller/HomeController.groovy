@@ -487,7 +487,7 @@ class HomeController extends DataController {
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
 
-	def community() {
+	def community(Long discussionId, boolean unpublish, boolean publish) {
 		debug "HomeController.community()"
 		def user = sessionUser()
 
@@ -497,25 +497,23 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
-		Long discussionId = params.discussionId ? Long.parseLong(params.discussionId) : null
 
 		if (discussionId) {
 			Discussion discussion = Discussion.get(discussionId)
 	
-			if (discussion == null) {
+			if (!discussion) {
 				debug "no discussion for discussionId " + discussionId
 				flash.message = "No discussion found"
 				return
 			}
 						
-			if (params.unpublish && params.unpublish.equals("true")) {
+			if (unpublish) {
 				if (UserGroup.canAdminDiscussion(user, discussion)) {
 					discussion.setIsPublic(false)
 					Utils.save(discussion, true)
 				}
 			}
-			if (params.publish && params.publish.equals("true")) {
+			if (publish) {
 				if (UserGroup.canAdminDiscussion(user, discussion)) {
 					discussion.setIsPublic(true)
 					Utils.save(discussion, true)
@@ -532,9 +530,28 @@ class HomeController extends DataController {
 				groupName = group[0].name
 			}
 		}
+
+		params.max = params.max ?: 5
+		params.offset = params.offset ?: 0
+
+		List groupNameList = params.list("userGroupNames")
+		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupNameList
+
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+				UserGroup.getDiscussionsInfoForUser(user, true, params)
+
 		log.debug("HomeController.community: User has read memberships for :" + groupMemberships.dump())
-		[prefs:user.getPreferences(), userId:user.getId(), templateVer:urlService.template(request),
-			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname]
+
+		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname,
+			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
+
+		if (request.xhr) {
+			render template: "/community/discussions", model: model
+			return
+		}
+
+		model
 	}
 
 	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
