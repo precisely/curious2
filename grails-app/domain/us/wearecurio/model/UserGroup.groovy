@@ -149,23 +149,23 @@ class UserGroup {
 	/**
 	 * Calculate admin permissions and remove empty discussions not owned by the user
 	 */
-	private static def addAdminPermissions(User user, def discussionInfos) {
-		def retVals = []
-		def discussionMap = [:]
+	private static List addAdminPermissions(User user, List discussionInfos) {
+		List retVals = []
+		Map discussionMap = [:]
 
 		for (info in discussionInfos) {
-			Discussion discussion = info[0]
+			Discussion discussion = info["discussion"]
 			
 			if (discussion.isNew() && discussion.fetchUserId() != user.getId())
 				continue
 			
-			def retVal = discussion.getJSONDesc()
-			def discussionId = retVal['id']
-			Long groupId = info[1] > 0 ? info[1] : 0L
-			UserGroup group = groupId ? UserGroup.get(groupId) : null
+			Map retVal = discussion.getJSONDesc()
+			Long discussionId = discussion.id
+			Long groupId = info["groupId"] ?: 0
+			UserGroup group = UserGroup.get(groupId)
 
 			// check to see if discussion is already in the list in a different group
-			def oldRetVal = discussionMap[discussionId]
+			Map oldRetVal = discussionMap[discussionId]
 			if (oldRetVal != null) {
 				// check to see if new group gives this author admin permissions on the discussion topic
 				if (!oldRetVal['isAdmin']) {
@@ -179,7 +179,7 @@ class UserGroup {
 			retVal['isAdmin'] = group ? group.hasAdmin(user) : true
 			retVal['groupId'] = groupId
 			retVal['groupName'] = group ? group.getFullName() : 'Private'
-			retVal['userName'] = info[2]
+			retVal['userName'] = info["username"]
 			// Adding a flag to indicate if this discussion was started with a plot
 			def firstPost = Discussion.get(discussionId).fetchFirstPost()
 			retVal['isPlot'] = firstPost?.plotDataId ? true : false
@@ -225,20 +225,19 @@ class UserGroup {
 		else if (!owned) return [:] // user has no permissions to read anything
 		if (owned) map['id'] = user.getId()
 
-		String discussionQuery = """select %s from Discussion d,
-					User user, GroupMemberDiscussion dItem where d.id = dItem.memberId
-					${groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " "}
-					and d.userId = user.id order by d.updated desc"""
+		String discussionQuery = """SELECT %s FROM Discussion d, User user, GroupMemberDiscussion dItem
+					WHERE d.id = dItem.memberId ${groupIds?.size() > 0 ? "AND dItem.groupId IN (:groupIds)) " : " "}
+					AND d.userId = user.id ORDER BY d.updated DESC"""
 
-		String discussionCountQuery = String.format(discussionQuery, "count (distinct d)")
-		String discussionListQuery = String.format(discussionQuery, "distinct d, dItem.groupId as groupId, user.username")
+		String discussionCountQuery = String.format(discussionQuery, "COUNT(DISTINCT d)")
+		String discussionListQuery = String.format(discussionQuery, "DISTINCT new Map(d as discussion, dItem.groupId AS groupId, user.username AS username)")
 
 		List hqlDataList = [[query: discussionListQuery, countQuery: discussionCountQuery, namedParameters: map]]
 
 		if (owned) {
-			String ownedDiscussionQuery = "select %s from Discussion d where d.userId = :id"
-			String ownedDiscussionCountQuery = String.format(ownedDiscussionQuery, "count(distinct d)")
-			String ownedDiscussionListQuery = String.format(ownedDiscussionQuery, "distinct d, -1 as groupId, user.username")
+			String ownedDiscussionQuery = "SELECT %s FROM Discussion d WHERE d.userId = :id"
+			String ownedDiscussionCountQuery = String.format(ownedDiscussionQuery, "COUNT(DISTINCT d)")
+			String ownedDiscussionListQuery = String.format(ownedDiscussionQuery, "DISTINCT new Map(d as discussion, -1 AS groupId, user.username)")
 
 			hqlDataList << [[query: ownedDiscussionListQuery, countQuery: ownedDiscussionCountQuery, namedParameters: [id: user.id]]]
 		}
@@ -250,19 +249,19 @@ class UserGroup {
 		paginatedData
 	}
 
-	private static String DISCUSSIONS_QUERY = "select %s from Discussion d, "\
+	private static String DISCUSSIONS_QUERY = "SELECT %s FROM Discussion d, "\
 				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
-				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
-				+ "and d.userId = user.id order by d.updated desc"
+				+ "WHERE d.id = dItem.memberId AND dItem.groupId = rItem.groupId AND rItem.memberId = :id "\
+				+ "AND d.userId = user.id %s ORDER BY d.updated DESC"
 
-	private static String DISCUSSIONS_COUNT_QUERY = String.format(DISCUSSIONS_QUERY, "count(distinct d)")
-	private static String DISCUSSIONS_LIST_QUERY = String.format(DISCUSSIONS_QUERY, "distinct d, dItem.groupId as groupId, user.username")
+	private static String DISCUSSIONS_COUNT_QUERY = String.format(DISCUSSIONS_QUERY, "COUNT(DISTINCT d)", "")
+	private static String DISCUSSIONS_LIST_QUERY = String.format(DISCUSSIONS_QUERY, "DISTINCT new Map (d AS discussion, dItem.groupId AS groupId, user.username AS username)", "GROUP BY d.id")
 
-	private static String OWNED_DISCUSSIONS_QUERY = """SELECT DISTINCT %s FROM Discussion d, User user
+	private static String OWNED_DISCUSSIONS_QUERY = """SELECT %s FROM Discussion d, User user
 					WHERE d.userId = :id AND user.id = d.userId"""
 
-	private static String OWNED_DISCUSSIONS_COUNT_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "count(distinct d)")
-	private static String OWNED_DISCUSSIONS_LIST_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "d, -1 AS groupId, user.username")
+	private static String OWNED_DISCUSSIONS_COUNT_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "COUNT(DISTINCT d)")
+	private static String OWNED_DISCUSSIONS_LIST_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "DISTINCT new Map (d AS discussion, -1 AS groupId, user.username AS username)")
 
 	static Map getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
 		Map namedParameters = [id: user.id]
