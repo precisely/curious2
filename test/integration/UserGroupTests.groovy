@@ -145,10 +145,10 @@ class UserGroupTests extends CuriousTestCase {
 		
 		assert curious.hasDiscussion(discussion)
 		
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']), discussion.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(user, false), discussion.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true), discussion.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['curious']), discussion.getId())
+		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']).dataList, discussion.getId())
+		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(user, false).dataList, discussion.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true).dataList, discussion.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['curious']).dataList, discussion.getId())
 		
 		assert UserGroup.canReadDiscussion(user, discussion)
 		assert UserGroup.canReadDiscussion(admin, discussion)
@@ -173,12 +173,12 @@ class UserGroupTests extends CuriousTestCase {
 		
 		assert announce.hasDiscussion(announcement)
 		
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['announce']), announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']), announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['announce']), announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true), announcement.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(anon, ['announce']), announcement.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true), announcement.getId())
+		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['announce']).dataList, announcement.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']).dataList, announcement.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['announce']).dataList, announcement.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true).dataList, announcement.getId())
+		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(anon, ['announce']).dataList, announcement.getId())
+		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true).dataList, announcement.getId())
 		
 		assert UserGroup.canReadDiscussion(user, announcement)
 		assert UserGroup.canReadDiscussion(admin, announcement)
@@ -196,6 +196,6 @@ class UserGroupTests extends CuriousTestCase {
 		announce.removeMember(anon)
 		
 		assert !UserGroup.canReadDiscussion(anon, announcement)
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true), announcement.getId())
+		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true).dataList, announcement.getId())
 	}
 }
