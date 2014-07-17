@@ -171,8 +171,10 @@ class Utils {
 
 				// Get next set of results from 
 				params["max"] = max - existingResultCount
+
 				if (existingResultCount == 0) {
-					params["offset"] = offset ? max * (offset - 1) : 0
+					// Calculate offset for curent HQL from current page
+					params["offset"] = offset ? max * (currentPage - 1) : 0
 				} else {
 					params["offset"] = 0
 				}

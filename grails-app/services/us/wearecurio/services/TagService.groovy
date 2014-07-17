@@ -124,7 +124,7 @@ class TagService {
 	 */
 	List getTagGroupsTheUserIsMemberOf(Long userId) {
 		List<Long> memberUserGroupIds = UserGroup.getGroupsForReader(userId)*.getAt(0).id
-		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.getAt(0).id)
+		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.id)
 
 		getTagGroupsForUserGroupIds(memberUserGroupIds.unique())
 	}

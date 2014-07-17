@@ -1119,6 +1119,7 @@ body.discuss-page .red-header h1 {
 	position: absolute;
 	top: 30px;
 	display: none;
+	left: -10px;
 }
 .red-header #actions ul li {
 	cursor: pointer;

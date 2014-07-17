@@ -31,6 +31,6 @@
 </g:each>
 
 <ul class="pagination" id="discussion-pagination">
-	<g:paginate total="${totalDiscussionCount }" action="community"
+	<g:paginate total="${totalDiscussionCount ?: 0 }" action="community"
 		params="[userGroupNames: params.userGroupNames]" />
 </ul>

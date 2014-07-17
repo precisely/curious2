@@ -62,7 +62,7 @@ class SessionController {
 		session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
 	}
 
-	protected def sessionUser() {
+	protected User sessionUser() {
 		debug "SessionController.sessionUser()"
 		return securityService.currentUser
 	}

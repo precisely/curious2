@@ -350,14 +350,14 @@ class Discussion {
 		Long totalPostCount = 0
 		DiscussionPost firstPostInstance = getFirstPost()
 		List postList = firstPostInstance?.getPlotDataId() != null ? getFollowupPosts(args) : getPosts(args)
-		
+
 		if (args.max && args.offset) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
 		}
 
 		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', firstPost: firstPostInstance,
-			posts: postList, isNew: isNew(), totalPostCount: totalPostCount]
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]
 	}
 
 	String toString() {

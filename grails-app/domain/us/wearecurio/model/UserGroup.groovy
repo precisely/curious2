@@ -130,7 +130,9 @@ class UserGroup {
 	}
 
 	static List getGroupsForWriter(Long userId) {
-		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberWriter item where item.memberId = :id and item.groupId = userGroup.id",
+		return UserGroup.executeQuery("""SELECT new Map(ug.id AS id, ug.name AS name, ug.fullName AS fullName,
+				ug.description AS description, ug.created AS created, item.created AS joined)
+				FROM UserGroup ug, GroupMemberWriter item WHERE item.memberId = :id AND item.groupId = ug.id""",
 				[id: userId])
 	}
 
@@ -371,10 +373,20 @@ class UserGroup {
 		GroupMemberReader.delete(id, user.getId())
 	}
 
-	def hasWriter(User user) {
-		if (!user) return false
+	boolean hasWriter(User user) {
+		hasWriter(user?.id)
+	}
 
-		return GroupMemberWriter.lookup(id, user.getId()) != null
+	boolean hasWriter(Long userId) {
+		hasWriter(id, userId)
+	}
+
+	static boolean hasWriter(Long id, Long userId) {
+		if (!id || !userId) {
+			return false
+		}
+
+		GroupMemberWriter.lookup(id, userId) != null
 	}
 
 	def addAdmin(User user) {
@@ -505,24 +517,50 @@ class UserGroup {
 		return defaultGroup
 	}
 
-	def addDiscussion(Discussion discussion) {
-		if (!discussion) return
-		def userId = discussion.getUserId()
+	boolean canAddRemoveDiscussion(Discussion discussion) {
+		if (!discussion) {
+			return false
+		}
+
+		Long userId = discussion.getUserId()
 		if (userId) {
-			if (!hasWriter(User.get(userId))) {
+			if (!hasWriter(userId)) {
 				return false
 			}
-		} else {
-			if (!isOpen)
-				return false
+		} else if (!isOpen) {
+			return false
 		}
+
+		true
+	}
+
+	boolean addDiscussion(Discussion discussion) {
+		if (!canAddRemoveDiscussion(discussion)) {
+			return false
+		}
+
 		GroupMemberDiscussion.create(id, discussion.getId())
 		return true
 	}
 
-	def hasDiscussion(Discussion discussion) {
-		if (!discussion) return false
-		return GroupMemberDiscussion.lookup(id, discussion.getId()) != null
+	boolean removeDiscussion(Discussion discussion) {
+		if (!canAddRemoveDiscussion(discussion)) {
+			return false
+		}
+
+		GroupMemberDiscussion.delete(id, discussion.id)
+		return true
+	}
+
+	boolean hasDiscussion(Discussion discussion) {
+		hasDiscussion(id, discussion?.id)
+	}
+
+	static boolean hasDiscussion(Long id, Long discussionId) {
+		if (!discussionId) {
+			return false
+		}
+		return GroupMemberDiscussion.lookup(id, discussionId) != null
 	}
 
 	def getNotifiedUsers() {

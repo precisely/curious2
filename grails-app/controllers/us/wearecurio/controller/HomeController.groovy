@@ -534,7 +534,7 @@ class HomeController extends DataController {
 		params.max = params.max ?: 5
 		params.offset = params.offset ?: 0
 
-		List groupNameList = params.list("userGroupNames")
+		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupNameList
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
@@ -552,6 +552,52 @@ class HomeController extends DataController {
 		}
 
 		model
+	}
+
+	def changeDiscussShare(Long discussionId) {
+		User currentUserInstance = sessionUser()
+
+		Discussion discussionInstance = Discussion.get(discussionId)
+		if (!discussionInstance) {
+			debug "DiscussionId not found: " + discussionId
+			renderJSONPost([message: "Discussion not found."], NOT_FOUND)
+			return
+		}
+
+		if (!UserGroup.canAdminDiscussion(currentUserInstance, discussionInstance)) {
+			debug "DiscussionId not found: " + discussionId
+			renderJSONPost([message: "You don't have admin rights to delete the discussion."], UNAUTHORIZED)
+			return
+		}
+
+		List shareOptions = params.shareOptions ? params.shareOptions.tokenize(",") : []
+		log.debug "Change sharing option for $discussionInstance by user $currentUserInstance with $shareOptions"
+
+		List associatedGroups = UserGroup.getGroupsForWriter(currentUserInstance)
+
+		boolean isPublic = shareOptions.remove("isPublic")
+		shareOptions = shareOptions*.toLong()
+
+		List alreadySharedGroups = []
+
+		associatedGroups.each { userGroup ->
+			UserGroup userGroupInstance = UserGroup.get(userGroup["id"])
+
+			// If user selected to share to this group
+			if (shareOptions.contains(userGroup["id"])) {
+				// If discussion already not shared to group
+				if (!userGroupInstance.hasDiscussion(discussionInstance)) {
+					userGroupInstance.addDiscussion(discussionInstance)
+				}
+			} else {
+				userGroupInstance.removeDiscussion(discussionInstance)
+			}
+		}
+
+		discussionInstance.isPublic = isPublic
+		Utils.save(discussionInstance, true)
+
+		renderJSONPost([message: "Your share preferences saved successfully."])
 	}
 
 	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
@@ -732,6 +778,20 @@ class HomeController extends DataController {
 				render (template: "/discussion/posts", model: model)
 				return
 			}
+
+			List associatedGroups = UserGroup.getGroupsForWriter(user)
+			List alreadySharedGroups = [], otherGroups = []
+
+			associatedGroups.each { userGroup ->
+				if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
+					alreadySharedGroups << userGroup.plus([shared: true])
+				} else {
+					otherGroups << userGroup
+				}
+			}
+			associatedGroups = alreadySharedGroups.sort { it.name }
+			associatedGroups.addAll(otherGroups.sort { it.name })
+			model.put("associatedGroups", associatedGroups)
 
 			render(view: "/home/discuss", model: model)
 		}

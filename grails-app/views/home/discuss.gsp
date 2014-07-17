@@ -167,6 +167,43 @@ $(function(){
 		});
 		return false;
 	});
+
+	$('li#share-discussion').on('click', function() {
+		$('div#share-dialog').dialog({
+			dialogClass: "no-close",
+			modal: false,
+			resizable: false,
+			title: "Query",
+			buttons: {
+				"Yes ": function() {
+					$(this).dialog("close");
+					modifyShare();
+				},
+				No: function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		return false;
+	});
+
+	function modifyShare() {
+		var $selectElement = $('select#shareOptions');
+		$.ajax({
+			type: 'POST',
+			url: '/home/changeDiscussShare',
+			data: {
+				discussionId: $('input#discussionId').val(),
+				shareOptions: $selectElement.val().join(',')
+			},
+			success: function(data) {
+				showAlert(JSON.parse(data).message);
+			},
+			error: function(xhr) {
+				showAlert(JSON.parse(xhr.responseText).message);
+			}
+		});
+	}
 });
 </script>
 </head>
@@ -182,7 +219,7 @@ $(function(){
 			<span id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
-					<li><a Ref="/home/community">Share</a></li>
+					<li id="share-discussion"><a href="#">Share</a></li>
 					<li class="${isAdmin ? '' : 'disabled text-muted' }">
 						<g:link params="[discussionId: params.discussionId, deleteDiscussion: true]"
 							action="discuss">Delete</g:link>
@@ -307,6 +344,16 @@ $(function(){
 <!-- /TOTAL PAGE -->
 
 <div style="clear:both;"></div>
-	
+
+<g:hiddenField name="discussionId" value="${discussionId }" />
+
+<div id="share-dialog" class="hide" title="Share">
+	<select name="shareOptions" id="shareOptions" multiple="multiple" class="form-control" size="8">
+		<option value="isPublic" ${isPublic ? 'selected="selected"' : '' }>Visible to the world</option>
+		<g:each in="${associatedGroups }" var="userGroup">
+			<option value="${userGroup.id }" ${userGroup.shared ? 'selected="selected"' : '' }>${userGroup.fullName }</option>
+		</g:each>
+	</select>
+</div>
 </body>
 </html>
