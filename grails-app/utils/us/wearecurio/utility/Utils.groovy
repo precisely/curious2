@@ -5,6 +5,7 @@ import grails.plugin.mail.MailService
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.User
@@ -19,7 +20,7 @@ class Utils {
 	public static final long HOUR = 60 * 60000L;
 	public static final long DAY = 24 * 60 * 60000L;
 
-	private static def log = LogFactory.getLog(this)
+	private static Log log = LogFactory.getLog(this)
 
 	static def listJSONDesc(list) {
 		def retVal = []
@@ -185,6 +186,8 @@ class Utils {
 			if (index == 0 || existingResultCount < max) {
 				dataList.addAll User.executeQuery(hqlData["query"], hqlData["namedParameters"], params)
 			}
+
+			log.debug "Paginating HQL for query number [${index + 1}], result count: $existingResultCount, new result count [${dataList.size()}] total: $totalCount with params $params."
 		}
 
 		[dataList: dataList, totalCount: totalCount]

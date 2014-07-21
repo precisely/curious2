@@ -191,7 +191,7 @@ $(function(){
 		var $selectElement = $('select#shareOptions');
 		$.ajax({
 			type: 'POST',
-			url: '/home/changeDiscussShare',
+			url: '/home/shareDiscussion',
 			data: {
 				discussionId: $('input#discussionId').val(),
 				shareOptions: $selectElement.val().join(',')

@@ -1,9 +1,9 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-import grails.converters.*
-import us.wearecurio.abstraction.Callbacks
 import us.wearecurio.utility.Utils
 
 class Discussion {
@@ -32,22 +32,15 @@ class Discussion {
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
-		def c = DiscussionPost.createCriteria()
-
-		def posts = c {
+		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("plotDataId", plotDataId)
 			}
-			maxResults(1)
 			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
-		for (DiscussionPost post in posts) {
-			return Discussion.get(post.getDiscussionId())
-		}
-
-		return null
+		return post?.getDiscussion()
 	}
 	
 	public static Discussion create(User user) {

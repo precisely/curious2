@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.*
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.springframework.http.HttpStatus
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
@@ -554,7 +555,7 @@ class HomeController extends DataController {
 		model
 	}
 
-	def changeDiscussShare(Long discussionId) {
+	def shareDiscussion(Long discussionId) {
 		User currentUserInstance = sessionUser()
 
 		Discussion discussionInstance = Discussion.get(discussionId)
@@ -566,7 +567,7 @@ class HomeController extends DataController {
 
 		if (!UserGroup.canAdminDiscussion(currentUserInstance, discussionInstance)) {
 			debug "DiscussionId not found: " + discussionId
-			renderJSONPost([message: "You don't have admin rights to delete the discussion."], UNAUTHORIZED)
+			renderJSONPost([message: "You don't have admin rights to modify share preference for this discussion"], UNAUTHORIZED)
 			return
 		}
 
@@ -575,6 +576,10 @@ class HomeController extends DataController {
 
 		List associatedGroups = UserGroup.getGroupsForWriter(currentUserInstance)
 
+		/*
+		 *  Share option will contain ids of UserGroup to share discussion to,
+		 *  and "isPublic" value if user wants to make Discussion visible to the world.
+		 */
 		boolean isPublic = shareOptions.remove("isPublic")
 		shareOptions = shareOptions*.toLong()
 
@@ -585,7 +590,7 @@ class HomeController extends DataController {
 
 			// If user selected to share to this group
 			if (shareOptions.contains(userGroup["id"])) {
-				// If discussion already not shared to group
+				// If discussion is not shared to this group, then only share it.
 				if (!userGroupInstance.hasDiscussion(discussionInstance)) {
 					userGroupInstance.addDiscussion(discussionInstance)
 				}
@@ -597,7 +602,7 @@ class HomeController extends DataController {
 		discussionInstance.isPublic = isPublic
 		Utils.save(discussionInstance, true)
 
-		renderJSONPost([message: "Your share preferences saved successfully."])
+		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
 	}
 
 	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
@@ -623,8 +628,9 @@ class HomeController extends DataController {
 		}
 
 		String message
+		HttpStatus status
 		Discussion discussion
-		
+
 		if (discussionId) {
 			discussion = Discussion.get(discussionId)
 			if (discussion == null) {
@@ -635,21 +641,17 @@ class HomeController extends DataController {
 			}
 			if (params.deleteDiscussion) {
 				if (!UserGroup.canAdminDiscussion(user, discussion)) {
+					status = UNAUTHORIZED
 					debug "Not admin of discussion: " + discussionId
 					message = "You don't have admin rights to delete the discussion."
-					if (request.xhr) {
-						renderJSONPost([message: message], UNAUTHORIZED)
-					} else {
-						flash.message = message
-						redirect(url: toUrl(action: 'community'))
-					}
-					return
+				} else {
+					status = OK
+					Discussion.delete(discussion)
+					message = "Discussion delete successfully."
 				}
-				Discussion.delete(discussion)
-				message = "Discussion delete successfully."
 
 				if (request.xhr) {
-					renderJSONPost([success: true, message: message])
+					renderJSONPost([message: message], status)
 				} else {
 					flash.message = message
 					redirect(url: toUrl(action: 'community'))
