@@ -44,4 +44,12 @@ class TagGroup extends GenericTagGroup {
 
 		return tagList
 	}
+
+	boolean containsTag(Tag tag) {
+
+	}
+
+	boolean containsTagString(String tagString) {
+
+	}
 }
