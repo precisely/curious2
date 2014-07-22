@@ -30,8 +30,11 @@ class TagService {
 	def databaseService
 
 	def getTagsByUser(def userId) {
-		def tags = databaseService.sqlRows("select t.id as id, t.description as description, count(e.id) as c, CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END as iscontinuous, prop.show_points as showpoints from entry e inner join tag t on e.tag_id = t.id left join tag_properties prop on prop.user_id = e.user_id and prop.tag_id = t.id where e.user_id = " + new Long(userId) + " and e.date is not null group by t.id order by t.description")
-		return tags
+		databaseService.sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
+				CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END AS iscontinuous,
+				prop.show_points AS showpoints FROM entry e INNER JOIN tag t ON e.tag_id = t.id
+				LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
+				WHERE e.user_id = ${userId.toLong()} AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""")
 	}
 
 	def getTagsByDescription(def userId, def description) {

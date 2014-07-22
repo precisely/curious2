@@ -23,7 +23,7 @@ class TagGroup extends GenericTagGroup {
 
 			List cachedDescriptions = tagCache[tagGroupInstance.id] ?: []
 			cachedDescriptions << tagInstance.description
-			tagCache.put(tagGroupInstance.id, cachedIds)
+			tagCache.put(tagGroupInstance.id, cachedDescriptions)
 		}
 	}
 

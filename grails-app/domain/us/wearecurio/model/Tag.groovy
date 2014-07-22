@@ -62,13 +62,13 @@ class Tag {
 		return Tag.get(id)
 	}
 
-	static List<Tag> fetchAll(Long ids) {
+	static List<Tag> fetchAll(List<Long> ids) {
 		Map cachedTagData = tagIdCache.findAll { id, instance ->
 			id in ids
 		}
 
 		Set<Long> cachedTagIds = cachedTagData.keySet()
-		List<Tag> cachedTagInstances = cachedTagData.values()
+		List<Tag> cachedTagInstances = cachedTagData.values() as List
 
 		List<Long> tagIdsNotInCache = ids - cachedTagIds
 
