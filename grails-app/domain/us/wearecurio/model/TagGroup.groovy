@@ -15,15 +15,57 @@ class TagGroup extends GenericTagGroup {
 	// Cache holder to cache list of tag descriptions for a tag group
 	static BoundedCache<Long, List<String>> tagIdCache = new BoundedCache<Long, List<String>>(100000)
 
-	static addToCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+	/*
+	 * A helper method to cache id and description to cache list.
+	 * This method must be called internally inside a loop which 
+	 * is iterating over all tags of a tag group otherwise there
+	 * will be incomplete caching data for a tag group.
+	 */
+	private static addToCache(Long id, Tag tagInstance) {
 		synchronized(tagCache) {
-			List cachedIds = tagIdCache[tagGroupInstance.id] ?: []
+			List cachedIds = tagIdCache[id] ?: []
 			cachedIds << tagInstance.id
-			tagIdCache.put(tagGroupInstance.id, cachedIds)
+			tagIdCache.put(id, cachedIds)
 
-			List cachedDescriptions = tagCache[tagGroupInstance.id] ?: []
+			List cachedDescriptions = tagCache[id] ?: []
 			cachedDescriptions << tagInstance.description
-			tagCache.put(tagGroupInstance.id, cachedDescriptions)
+			tagCache.put(id, cachedDescriptions)
+		}
+	}
+
+	private static addToCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+		addToCache(tagGroupInstance.id, tagInstance)
+	}
+
+	private static removeFromCache(Long id, Tag tagInstance) {
+		synchronized(tagCache) {
+			List cachedIds = tagIdCache[id] ?: []
+			cachedIds.remove(tagInstance.id)
+			tagIdCache.put(id, cachedIds)
+
+			List cachedDescriptions = tagCache[id] ?: []
+			cachedDescriptions.remove(tagInstance.description)
+			tagCache.put(id, cachedDescriptions)
+		}
+	}
+
+	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+		removeFromCache(tagGroupInstance.id, tagInstance)
+	}
+
+	boolean hasCachedData() {
+		tagIdCache[this.id]
+	}
+
+	void cacheTag(Tag tagInstance) {
+		if (hasCachedData()) {
+			addToCache(this, tagInstance)
+		}
+	}
+
+	void removeTagFromCache(Tag tagInstance) {
+		if (hasCachedData()) {
+			removeFromCache(this, tagInstance)
 		}
 	}
 

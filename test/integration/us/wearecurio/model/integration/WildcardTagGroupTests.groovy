@@ -9,7 +9,6 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagExclusion
-import us.wearecurio.model.TagGroup
 import us.wearecurio.model.WildcardTagGroup
 import us.wearecurio.services.TagGroupService
 

@@ -64,6 +64,10 @@ class GenericTagGroupProperties {
 		UserGroup.get(groupId)
 	}
 
+	UserGroup getTagGroup() {
+		GenericTagGroup.get(tagGroupId)
+	}
+
 	String toString() {
 		return "GenericTagGroupProperties(userId:" + userId + ", tagGroupId:" + tagGroupId + ", isContinuous:" \
 				+ isContinuous + ", showPoints:" \

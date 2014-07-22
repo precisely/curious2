@@ -25,7 +25,12 @@ class TagExclusion {
 		}
 	}
 
+	@Deprecated
 	static TagExclusion createOrLookup(def tagOrTagGroupToExclude, GenericTagGroupProperties tagGroupProperty) {
+		addToExclusion(tagOrTagGroupToExclude, tagGroupProperty)
+	}
+
+	static TagExclusion addToExclusion(def tagOrTagGroupToExclude, GenericTagGroupProperties tagGroupProperty) {
 		ExclusionType type = ExclusionType.TAG
 		Long objectId = tagOrTagGroupToExclude.id
 
@@ -35,8 +40,16 @@ class TagExclusion {
 
 		def exclusion = TagExclusion.findOrCreateByObjectIdAndTypeAndTagGroupPropertyId(objectId, type, tagGroupProperty.id)
 
-		if (Utils.save(exclusion, true))
+		if (Utils.save(exclusion, true)) {
+			if (tagOrTagGroupToExclude instanceof GenericTagGroup) {
+				tagOrTagGroupToExclude.getTags(null).each { tagInstance ->
+					tagGroupProperty.getTagGroup().removeTagFromCache(tagInstance)
+				}
+			} else {
+				tagGroupProperty.getTagGroup().removeTagFromCache(tagOrTagGroupToExclude)
+			}
 			return exclusion
+		}
 
 		return null
 	}
