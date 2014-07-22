@@ -43,19 +43,43 @@ class Tag {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
-		synchronized(tagCache) {
-			tagCache.put(d, tag)
-			tagIdCache.put(tag.getId(), tag)
-		}
+		addToCache(tag)
 		return tag
 	}
-	
+
+	static void addToCache(Tag tagInstance) {
+		synchronized(tagCache) {
+			tagCache.put(tagInstance.description, tagInstance)
+			tagIdCache.put(tagInstance.id, tagInstance)
+		}
+	}
+
 	static def fetch(Long id) {
 		def tag = tagIdCache.get(id)
 		
 		if (tag != null) return tag
 		
 		return Tag.get(id)
+	}
+
+	static List<Tag> fetchAll(Long ids) {
+		Map cachedTagData = tagIdCache.findAll { id, instance ->
+			id in ids
+		}
+
+		Set<Long> cachedTagIds = cachedTagData.keySet()
+		List<Tag> cachedTagInstances = cachedTagData.values()
+
+		List<Long> tagIdsNotInCache = ids - cachedTagIds
+
+		if (tagIdsNotInCache) {
+			Tag.getAll(tagIdsNotInCache).each { tagInstance ->
+				addToCache(tagInstance)
+				cachedTagInstances << tagInstance
+			}
+		}
+
+		cachedTagInstances
 	}
 
 	static def look(String d) {

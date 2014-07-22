@@ -58,6 +58,12 @@ class TagGroupTests extends CuriousTestCase {
 		assert associatedTags.size() == 6
 	}
 
+	void "test get tags with null user id"() {
+		List associatedTags = TagGroup.findByDescription("taggroup1").getTags(null)
+
+		assert associatedTags.size() == 6
+	}
+
 	void "test get tags with tag excluded"() {
 		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
 		TagExclusion.createOrLookup(tag5, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup2))
@@ -78,5 +84,48 @@ class TagGroupTests extends CuriousTestCase {
 
 		assert associatedTags.size() == 2
 		assert associatedTags*.description.sort() == [tag1.description, tag4.description]
+	}
+
+	void "test get tags with exclusion & no user id"() {
+		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
+		TagExclusion.createOrLookup(tagGroup2, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
+
+		// Will not return any tags from tagGroup2 since it is excluded
+		List<Tag> associatedTags = TagGroup.findByDescription("taggroup1").getTags(null)
+
+		assert associatedTags.size() == 6
+	}
+
+	void "test contains tag"() {
+		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
+		// Check for top level sub tag
+		assert tagGroupInstance.containsTag(Tag.look("tag1"), userId) == true
+		// Check for nested sub tag
+		assert tagGroupInstance.containsTag(Tag.look("tag5"), userId) == true
+		assert tagGroupInstance.containsTag(Tag.look("other tag"), userId) == false
+	}
+
+	void "test contains tag after exclusion"() {
+		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
+
+		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
+		TagExclusion.createOrLookup(tagGroup2, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
+
+		// Test after exclusion
+		assert tagGroupInstance.containsTag(Tag.look("tag3"), userId) == false
+		assert tagGroupInstance.containsTag(Tag.look("tag5"), userId) == false
+	}
+
+	void "test contains tag string"() {
+		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
+		// Check for top level sub tag string
+		assert tagGroupInstance.containsTagString("tag1", userId) == true
+		// Check for nested sub tag string
+		assert tagGroupInstance.containsTagString("tag5", userId) == true
+		assert tagGroupInstance.containsTagString("other tag", userId) == false
+		// Check for blank string
+		assert tagGroupInstance.containsTagString("", userId) == false
+		// Test for null tag string
+		assert tagGroupInstance.containsTagString(null, userId) == false
 	}
 }
