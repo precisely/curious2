@@ -1,13 +1,11 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-import grails.converters.*
-import us.wearecurio.cache.BoundedCache;
+import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
-import java.util.Date
-import java.util.Calendar
-import java.util.TimeZone
 
 class Tag {
 
@@ -98,6 +96,15 @@ class Tag {
 		}
 
 		return Tag.create(d)
+	}
+
+	boolean isBelongsToUser(Long userId) {
+		Entry.withCriteria {
+			eq("tag", this)
+			eq("userId", userId)
+			isNotNull("date")
+			maxResults(1)
+		}[0] != null
 	}
 
 	def getPropertiesForUser(Long userId) {

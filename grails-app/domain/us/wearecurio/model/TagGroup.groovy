@@ -53,6 +53,14 @@ class TagGroup extends GenericTagGroup {
 		}
 	}
 
+	void addTagGroupToCache(GenericTagGroup childTagGroupInstance, Long userId) {
+		if (hasCachedData()) {
+			childTagGroupInstance.getTags(userId).each { tagInstance ->
+				addTagToCache(tagInstance)
+			}
+		}
+	}
+
 	void addTagToCache(Tag tagInstance) {
 		if (hasCachedData()) {
 			addToCache(this, tagInstance)
@@ -148,6 +156,14 @@ class TagGroup extends GenericTagGroup {
 	void removeTagFromCache(Tag tagInstance) {
 		if (hasCachedData()) {
 			removeFromCache(this, tagInstance)
+		}
+	}
+
+	void removeTagGroupFromCache(GenericTagGroup subTagGroupInstance, Long userId) {
+		if (hasCachedData()) {
+			subTagGroupInstance.getTags(userId).each { tagInstance ->
+				removeTagFromCache(tagInstance)
+			}
 		}
 	}
 }

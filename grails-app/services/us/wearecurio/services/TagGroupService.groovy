@@ -81,6 +81,7 @@ class TagGroupService {
 		if (!existingTagIds.contains(tagInstance.id)) {
 			log.debug "Adding [$tagInstance] to TagGroup [$tagGroupInstance]"
 			tagGroupInstance.addToTags(tagInstance)
+			tagGroupInstance.addTagToCache(tagInstance)
 		}
 		return tagGroupInstance
 	}

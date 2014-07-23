@@ -237,6 +237,30 @@ class User implements NameEmail {
 		usersTagList
 	}
 
+	static void addToCache(Long userId, Tag tagInstance) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId] << tagInstance.id
+		}
+	}
+
+	static void removeFromCache(Long userId, Tag tagInstance) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId].remove(tagInstance.id)
+		}
+	}
+
+	static void addToCache(Long userId, GenericTagGroup tagInstance) {
+		if (tagGroupIdCache[userId]) {
+			tagGroupIdCache[userId] << tagInstance.id
+		}
+	}
+	
+	static void removeFromCache(Long userId, GenericTagGroup tagInstance) {
+		if (tagGroupIdCache[userId]) {
+			tagGroupIdCache[userId].remove(tagInstance.id)
+		}
+	}
+
 	List<Tag> getTags(boolean recursive = false) {
 		getTags(this.id, recursive)
 	}

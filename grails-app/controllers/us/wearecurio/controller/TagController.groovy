@@ -105,7 +105,9 @@ class TagController extends LoginController {
 				return
 			}
 		}
+
 		parentTagGroupInstance.addToSubTagGroups(childTagGroupInstance)
+		parentTagGroupInstance.addTagGroupToCache(childTagGroupInstance, session.userId)
 		parentTagGroupInstance.save()
 		renderJSONGet(["dummy"])
 	}
@@ -163,6 +165,7 @@ class TagController extends LoginController {
 			}
 		}
 
+		parentTagGroupInstance.removeTagGroupFromCache(tagGroupInstance, session.userId)
 		tagGroupInstance.parentTagGroup = null
 		tagGroupInstance.save()
 		renderJSONGet([success: true])
@@ -182,6 +185,7 @@ class TagController extends LoginController {
 
 		def tagInstance = Tag.get(params.id)
 		tagGroupInstance.removeFromTags(tagInstance)
+		tagGroupInstance.removeTagFromCache(tagInstance)
 		tagGroupInstance.save()
 		renderJSONGet([success: true])
 	}
