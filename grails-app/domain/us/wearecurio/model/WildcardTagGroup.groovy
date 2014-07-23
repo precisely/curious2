@@ -79,6 +79,28 @@ class WildcardTagGroup extends GenericTagGroup {
 		matchingTags as List
 	}
 
+	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+		removeFromCache(tagGroupInstance.id, tagInstance)
+	}
+
+	private static removeFromCache(Long id, Tag tagInstance) {
+		synchronized(tagCache) {
+			List cachedIds = tagIdCache[id] ?: []
+			cachedIds.remove(tagInstance.id)
+			tagIdCache.put(id, cachedIds)
+
+			List cachedDescriptions = tagCache[id] ?: []
+			cachedDescriptions.remove(tagInstance.description)
+			tagCache.put(id, cachedDescriptions)
+		}
+	}
+
+	void addTagToCache(Tag tagInstance) {
+		if (hasCachedData()) {
+			addToCache(this, tagInstance)
+		}
+	}
+
 	boolean containsTag(Tag tag, Long userId) {
 		if (!tag) {
 			return false
@@ -112,5 +134,15 @@ class WildcardTagGroup extends GenericTagGroup {
 
 		// Fetch & cache all sub tags & return ids
 		return getTags(userId)*.id
+	}
+
+	boolean hasCachedData() {
+		tagIdCache[this.id]
+	}
+
+	void removeTagFromCache(Tag tagInstance) {
+		if (hasCachedData()) {
+			removeFromCache(this, tagInstance)
+		}
 	}
 }

@@ -64,7 +64,7 @@ class GenericTagGroupProperties {
 		UserGroup.get(groupId)
 	}
 
-	UserGroup getTagGroup() {
+	GenericTagGroup getTagGroup() {
 		GenericTagGroup.get(tagGroupId)
 	}
 

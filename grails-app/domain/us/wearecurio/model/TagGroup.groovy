@@ -15,6 +15,10 @@ class TagGroup extends GenericTagGroup {
 	// Cache holder to cache list of tag descriptions for a tag group
 	static BoundedCache<Long, List<String>> tagIdCache = new BoundedCache<Long, List<String>>(100000)
 
+	private static addToCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+		addToCache(tagGroupInstance.id, tagInstance)
+	}
+
 	/*
 	 * A helper method to cache id and description to cache list.
 	 * This method must be called internally inside a loop which 
@@ -33,8 +37,8 @@ class TagGroup extends GenericTagGroup {
 		}
 	}
 
-	private static addToCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
-		addToCache(tagGroupInstance.id, tagInstance)
+	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
+		removeFromCache(tagGroupInstance.id, tagInstance)
 	}
 
 	private static removeFromCache(Long id, Tag tagInstance) {
@@ -49,24 +53,21 @@ class TagGroup extends GenericTagGroup {
 		}
 	}
 
-	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
-		removeFromCache(tagGroupInstance.id, tagInstance)
-	}
-
-	boolean hasCachedData() {
-		tagIdCache[this.id]
-	}
-
-	void cacheTag(Tag tagInstance) {
+	void addTagToCache(Tag tagInstance) {
 		if (hasCachedData()) {
 			addToCache(this, tagInstance)
 		}
 	}
 
-	void removeTagFromCache(Tag tagInstance) {
-		if (hasCachedData()) {
-			removeFromCache(this, tagInstance)
+	boolean containsTag(Tag tag, Long userId) {
+		if (!tag) {
+			return false
 		}
+		tag.id in getTagsIds(userId)
+	}
+
+	boolean containsTagString(String tagString, Long userId) {
+		tagString in getTagsDescriptions(userId)
 	}
 
 	/*
@@ -120,16 +121,6 @@ class TagGroup extends GenericTagGroup {
 		return filteredSubTagList
 	}
 
-	List<Long> getTagsIds(Long userId) {
-		// Look for cached sub tag ids.
-		if (tagIdCache[this.id]) {
-			return tagIdCache[this.id]
-		}
-
-		// Fetch & cache all sub tags & return ids
-		return getTags(userId)*.id
-	}
-
 	List<String> getTagsDescriptions(Long userId) {
 		// Look for cached sub tag ids.
 		if (tagCache[this.id]) {
@@ -140,14 +131,23 @@ class TagGroup extends GenericTagGroup {
 		return getTags(userId)*.description
 	}
 
-	boolean containsTag(Tag tag, Long userId) {
-		if (!tag) {
-			return false
+	List<Long> getTagsIds(Long userId) {
+		// Look for cached sub tag ids.
+		if (tagIdCache[this.id]) {
+			return tagIdCache[this.id]
 		}
-		tag.id in getTagsIds(userId)
+
+		// Fetch & cache all sub tags & return ids
+		return getTags(userId)*.id
 	}
 
-	boolean containsTagString(String tagString, Long userId) {
-		tagString in getTagsDescriptions(userId)
+	boolean hasCachedData() {
+		tagIdCache[this.id]
+	}
+
+	void removeTagFromCache(Tag tagInstance) {
+		if (hasCachedData()) {
+			removeFromCache(this, tagInstance)
+		}
 	}
 }
