@@ -37,9 +37,8 @@ class UserFactoryTests extends CuriousTestCase {
 	void testMakeANewUserByPassingInUsername() {
 		UserFactory.make([username: 'a'])
 		UserFactory.make([username: 'b'])
-		assert User.count() == 2
-		assert User.first().username == 'a'
-		assert User.last().username == 'b'
+		assert User.count() == 3
+		assert User.list()*.username == ["y", "a", "b"]
 	}
 	
 	@Test

@@ -15,12 +15,9 @@ import us.wearecurio.model.User
  * @author mitsu
  */
 abstract class CuriousServiceTestCase extends CuriousTestCase {
-	
+
 	static transactional = true
-	
-	User user
-	Long userId
-	
+
 	boolean isClose(double a, double b, double range) {
 		return Math.abs(a - b) < range
 	}
