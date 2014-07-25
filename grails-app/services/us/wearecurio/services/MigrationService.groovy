@@ -374,6 +374,12 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 		}
+		tryMigration("Nullable unit group id") {
+			try {
+				sql ("ALTER TABLE `tag_unit_stats` CHANGE COLUMN `unit_group_id` unit_group_id bigint(20) DEFAULT NULL")
+			} catch (Throwable t) {
+			}
+		}
 	}
 	
 	/**

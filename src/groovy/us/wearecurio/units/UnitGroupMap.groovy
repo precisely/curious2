@@ -103,6 +103,43 @@ class UnitGroupMap {
 	public static final double GPERML = 1000.0d
 	// TODO: Finish adding density units
 	
+	enum UnitGroup {
+		
+		DURATION(1, "duration"),
+		DISTANCE(2, "distance"),
+		WEIGHT(3, "weight"),
+		AREA(4, "area"),
+		VOLUME(5, "volume"),
+		FORCE(6, "force"),
+		POWER(7, "power"),
+		ENERGY(8, "energy"),
+		TORQUE(9, "torque"),
+		LUMINOSITY(10, "luminosity"),
+		PRESSURE(11, "pressure"),
+		DENSITY(12, "density")
+		
+		final int id
+		final String groupName
+		
+		UnitGroup(int id, String groupName) {
+			this.id = id
+			this.groupName= groupName
+		}
+		
+		private static final Map<Integer, UnitGroup> map = new HashMap<Integer, UnitGroup>()
+		
+		static {
+			UnitGroup.each { unitGroup ->
+				map.put(unitGroup.id, unitGroup)
+			}
+		}
+		
+		static UnitGroup get(int id) {
+			if (id == null) return null
+			map.get(id)
+		}
+	}
+	
 	public static class UnitMap {
 		UnitGroup group
 		Map<String, UnitRatio> map = [:]
@@ -159,6 +196,23 @@ class UnitGroupMap {
 		public getGroup() {
 			return unitMap.getGroup()
 		}
+	}
+	
+	public static class UnitSuffix {
+		UnitGroup group
+		String suffix
+	}
+	
+	public UnitSuffix unitToSuffix(String unit) {
+		
+	}
+	
+	public boolean endsWithUnitSuffix(String tag) {
+		
+	}
+	
+	public boolean isSlashValueTag(String tag) {
+		
 	}
 	
 	Map<UnitGroup, UnitMap> groupToUnitMap = [:]

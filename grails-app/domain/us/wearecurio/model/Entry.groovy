@@ -2056,8 +2056,25 @@ class Entry {
 		}
 		return null
 	}
-
-	private static def matchRepeatStr(comment) {
+	
+	static final Map<String, RepeatType> repeatWordMap = [
+		"repeat":[null:RepeatType.DAILYCONCRETEGHOST, "daily":RepeatType.DAILYCONCRETEGHOST, "weekly":RepeatType.WEEKLYCONCRETEGHOST],
+		"pinned":[null:RepeatType.CONTINUOUSGHOST],
+		"remind":[null:RepeatType.REMINDDAILYGHOST, "daily":RepeatType.REMINDDAILYGHOST, "weekly":RepeatType.REMINDWEEKLYGHOST],
+		"reminder":[null:RepeatType.REMINDDAILYGHOST, "daily":RepeatType.REMINDDAILYGHOST, "weekly":RepeatType.REMINDWEEKLYGHOST],
+		"daily":[null:RepeatType.DAILYCONCRETEGHOST, "repeat":RepeatType.DAILYCONCRETEGHOST, "remind":RepeatType.REMINDDAILYGHOST, "reminder":RepeatType.REMINDDAILYGHOST],
+		"weekly":[null:RepeatType.WEEKLYCONCRETEGHOST, "repeat":RepeatType.WEEKLYCONCRETEGHOST, "remind":RepeatType.REMINDWEEKLYGHOST, "reminder":RepeatType.REMINDWEEKLYGHOST],
+	]
+	
+	private static def matchRepeat(LinkedList words) {
+		if (words.size() <= 1) return // need at least two words to match a repeat tag
+		
+		// match from start
+		
+		Map<String, RepeatType> repeatMap = repeatWordMap.get(words.getFirst())
+		
+		if (repeatMap)
+		
 		def retVal
 
 		if (comment != null) {
@@ -2171,13 +2188,11 @@ class Entry {
 	static Pattern timeEndPattern = ~/(?i)^((@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)($|[^A-Za-z0-9])|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?($|[^A-Za-z0-9])|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)($|[^A-Za-z0-9]))$/
 	static Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)/
 	static Pattern commentWordPattern = ~/^([^\s]+)/
-	static Pattern amountPattern = ~/(?i)^(-?\.\d+|-?\d+\.\d+|\d+|_\s|-\s|__\s|___\s)/
+	static Pattern amountPattern = ~/(?i)^(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?/
 	static Pattern endTagPattern = ~/(?i)^(yes|no)/
-	static Pattern unitsPattern = ~/(?i)^([^0-9\(\)@\s\.:][^\(\)@\s:]*)/
+	static Pattern unitsPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*))?)/
 	static Pattern tagAmountSeparatorPattern = ~/(?i)^[:=]\s*/
 
-	static Pattern amountWordEndPattern = ~/(?i)^(.*)\s(zero|one|two|three|four|five|six|seven|eight|nine)$/
-	static Pattern amountWordUnitsEndPattern = ~/(?i)^(.*)\s(zero|one|two|three|four|five|six|seven|eight|nine)\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*)$/
 	static def numberMap = ['zero' : '0', 'one':'1', 'two':'2', 'three':'3', 'four':'4', 'five':'5', 'six':'6', 'seven':'7', 'eight':'8', 'nine':'9']
 
 	static boolean isToday(Date time, Date baseDate) {
@@ -2193,7 +2208,7 @@ class Entry {
 
 		return today
 	}
-
+	
 	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
 		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
@@ -2219,15 +2234,19 @@ class Entry {
 		def matcher;
 		def parts;
 
-		// [time] [tag] <[amount] <[units]>> <[comment]>
+		// [time] [tag] <[amount] <[units]>>... <repeat|remind|pinned> (<[comment]>)
 		//
 		// OR
 		//
-		// [tag] <[amount] <[units]>> <[time]> <[comment]>
+		// [tag] <[amount] <[units]>>... <[time]> <repeat|remind|pinned> (<[comment]>)
+		//
+		// <repeat|remind|pinned> ahead of the above
 
 		PatternScanner scanner = new PatternScanner(entryStr)
 
-		boolean foundAmount = false
+		def amounts = []
+		boolean ghostAmount = false
+		boolean twoDAmount = false
 		boolean foundTime = false
 		boolean foundAMPM = false
 
@@ -2257,18 +2276,29 @@ class Entry {
 		}
 
 		Closure amountClosure = {
-			def amount = scanner.group(1)
-
-			if (amount =~ /-\s/ || amount.startsWith('_')) {
-				retVal['amount'] = null
-				retVal['amountPrecision'] = -1
-			} else {
-				retVal['amount'] = amount
-				retVal['amountPrecision'] = DEFAULT_AMOUNTPRECISION
+			def amountStr, amountStrs = []
+			
+			amountStrs.add(scanner.group(1))
+			amountStr = scanner.group(3)
+			
+			if (amountStr) {
+				amountStrs.add(amountStr)
+				twoDAmount = true
 			}
-
-			foundAmount = true
-
+			
+			for (amount in amountStrs) {
+				if (amount =~ /-\s/ || amount.startsWith('_')) {
+					amounts.add([null, -1])
+					ghostAmount = true
+				} else if (amount.equalsIgnoreCase('yes')) {
+					amounts.add([new BigDecimal(1, mc), 0])
+				} else if (amount.equalsIgnoreCase('no')) {
+					amounts.add([new BigDecimal(0, mc), 0])
+				} else {
+					amounts.add([new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION]) 
+				}
+			}
+			
 			scanner.skipWhite()
 
 			if (!scanner.matchField(timePattern, timeClosure)) {
@@ -2278,56 +2308,19 @@ class Entry {
 			}
 		}
 
-		Closure yesNoClosure = { word ->
-			Integer yesno = word.equalsIgnoreCase('yes') ? 1 : word.equalsIgnoreCase('no') ? 0 : null
-			if (yesno != null) {
-				retVal['amount'] = yesno
-				retVal['amountPrecision'] = 0
-
-				foundAmount = true
-
-				return true
-			}
-
-			if (word.equalsIgnoreCase('none')) {
-				retVal['amount'] = null
-				retVal['amountPrecision'] = -1
-
-				foundAmount = true
-
-				return true
-			}
-
-			return false
-		}
-
 		scanner.skipWhite()
 
 		scanner.matchField(timePattern, timeClosure)
 
-		def descriptionBuf = new StringBuffer()
-
-		String lastWhite = null
-		String lastTagWord
-		int lastAppendLen = 0
+		LinkedList<String> words = new LinkedList<String>()
 
 		boolean endTag = false
 		boolean tagAmountSeparator = false
 
 		while (scanner.match(tagWordPattern)) {
-			if (lastWhite != null) {
-				lastAppendLen = lastWhite.length()
-				descriptionBuf.append(lastWhite)
-			} else
-				lastAppendLen = 0
+			words.add(scanner.group(1))
 
-			lastTagWord = scanner.group(1)
-			lastAppendLen += lastTagWord.length()
-			descriptionBuf.append(scanner.group(1))
-
-			if (scanner.matchWhite()) {
-				lastWhite = scanner.group()
-			}
+			scanner.matchWhite()
 			if (scanner.match(tagAmountSeparatorPattern)) {
 				endTag = true
 				tagAmountSeparator = true
@@ -2348,43 +2341,17 @@ class Entry {
 			if (endTag)
 				break;
 		}
+		
+		
 
-		if ((!foundAmount) && (!tagAmountSeparator) && (lastTagWord != null)) {
-			if (yesNoClosure(lastTagWord)) {
-				int l = descriptionBuf.length()
-				descriptionBuf.delete(l - lastAppendLen, l)
-			}
-		}
-
-		if (descriptionBuf.length() > 0) {
+		if (words.size() > 0) {
 			retVal['description'] = descriptionBuf.toString().trim()
-
-			if (!foundAmount) {
-				def numMatcher = amountWordEndPattern.matcher(retVal['description'])
-
-				if (numMatcher.find()) {
-					retVal['description'] = numMatcher.group(1)
-					retVal['amount'] = numberMap[numMatcher.group(2)]
-					retVal['amountPrecision'] = DEFAULT_AMOUNTPRECISION
-					foundAmount = true
-				} else {
-					def numUnitsMatcher = amountWordUnitsEndPattern.matcher(retVal['description'])
-					if (numUnitsMatcher.find()) {
-						retVal['description'] = numUnitsMatcher.group(1)
-						retVal['amount'] = numberMap[numUnitsMatcher.group(2)]
-						retVal['units'] = numUnitsMatcher.group(3)
-						retVal['amountPrecision'] = DEFAULT_AMOUNTPRECISION
-						foundAmount = true
-					}
-				}
-			}
 
 			log.debug "description " + retVal['description']
 		}
 
-		if (!foundAmount) {
-			retVal['amount'] = '1'
-			retVal['amountPrecision'] = -1;
+		if (amounts.size() == 0) {
+			amounts.add([new BigDecimal(1, mc), -1])
 		}
 
 		if (!foundTime) {
@@ -2401,14 +2368,9 @@ class Entry {
 				commentBuf.append(lastWhite)
 
 			String word = scanner.group(1)
-			if (firstWord && yesNoClosure(word)) {
-				if (scanner.matchWhite())
-					lastWhite = null
-			} else {
-				commentBuf.append(scanner.group(1))
-				if (scanner.matchWhite()) {
-					lastWhite = scanner.group()
-				}
+			commentBuf.append(scanner.group(1))
+			if (scanner.matchWhite()) {
+				lastWhite = scanner.group()
 			}
 
 			firstWord = false
@@ -2544,21 +2506,12 @@ class Entry {
 
 		log.debug("retVal: parse " + retVal)
 
-		def amt = retVal['amount']
-
-		retVal['amount'] = amt == null ? null : new BigDecimal(amt, mc)
-
 		if (retVal['repeatType'] != null) {
 			if (!retVal['repeatType'].isReminder()) {
 				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				}
-			} else {
-				/*if (!foundAmount) {
-				 retVal['amount'] = null
-				 retVal['amountPrecision'] = -1
-				 }*/
 			}
 		}
 
@@ -2586,7 +2539,7 @@ class Entry {
 
 		retVal['date'] = date
 
-		if (retVal['amount'] == null) {
+		if (ghostAmount) {
 			if (retVal['repeatType'] == null)
 				retVal['repeatType'] = RepeatType.GHOST
 			else
@@ -2595,7 +2548,7 @@ class Entry {
 
 		return retVal
 	}
-
+	
 	def Integer fetchDatePrecisionSecs() {
 		return datePrecisionSecs == null ? 60 : datePrecisionSecs;
 	}
