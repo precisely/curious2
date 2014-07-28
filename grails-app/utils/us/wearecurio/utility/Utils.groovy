@@ -156,6 +156,7 @@ class Utils {
 		List dataList = []
 		Long totalCount = 0
 
+		log.debug "Paginate HQLs with max $maxResults & offset $firstResult"
 		int max = maxResults ? maxResults.toInteger() : 10
 		int offset = firstResult ? firstResult.toInteger() : 0
 
@@ -168,26 +169,40 @@ class Utils {
 
 			// Do not calculate pagination parameter for first query data and if results are sufficient.
 			if (index > 0 && existingResultCount < max) {
-				int currentPage = (offset % max) + 1
+				int currentPage = (offset / max) + 1
+				int offsetAdjustment = 0
+				long previousPagesCount = 0
+				int previousPaginatedPagesCount = 0
 
-				// Get next set of results from 
+				((index - 1)..0).each { previousQueryIndex ->
+					previousPagesCount += User.executeQuery(hqlDataList[previousQueryIndex]["countQuery"], hqlDataList[previousQueryIndex]["namedParameters"])[0]
+				}
+				if ((previousPagesCount % max) != 0) {
+					offsetAdjustment = max - (previousPagesCount % max)
+				}
+				previousPaginatedPagesCount = previousPagesCount / max
+
+				// Get next set of results from current query
 				params["max"] = max - existingResultCount
 
 				if (existingResultCount == 0) {
-					// Calculate offset for curent HQL from current page
-					params["offset"] = offset ? max * (currentPage - 1) : 0
+					// Calculate offset for current HQL from current page
+					params["offset"] = (max * (currentPage - previousPaginatedPagesCount - 1)) + offsetAdjustment
 				} else {
 					params["offset"] = 0
 				}
 			}
+			log.debug "Paginating HQL for query number [${index + 1}], returning result count: $existingResultCount, total count: $totalCount with params $params."
 
 			totalCount += User.executeQuery(hqlData["countQuery"], hqlData["namedParameters"])[0]
 
 			if (index == 0 || existingResultCount < max) {
-				dataList.addAll User.executeQuery(hqlData["query"], hqlData["namedParameters"], params)
+				List result = User.executeQuery(hqlData["query"], hqlData["namedParameters"], params)
+				dataList.addAll result
+				log.debug "Paginated HQL for query number [${index + 1}], returning result count: ${dataList.size()}, total count: $totalCount, fetched result count: ${result.size()}."
+			} else {
+				log.debug "Paginated HQL for query number [${index + 1}], returning result count: ${dataList.size()}, total count: $totalCount."
 			}
-
-			log.debug "Paginating HQL for query number [${index + 1}], result count: $existingResultCount, new result count [${dataList.size()}] total: $totalCount with params $params."
 		}
 
 		[dataList: dataList, totalCount: totalCount]
