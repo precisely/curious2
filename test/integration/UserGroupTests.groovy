@@ -202,19 +202,12 @@ class UserGroupTests extends CuriousTestCase {
 		Map paginationData = UserGroup.getDiscussionsInfoForUser(user, true, [max: 3, offset: 0])
 		List discussions = paginationData.dataList
 
-		assert paginationData.totalCount == 8	// two are duplicates
+		assert paginationData.totalCount == 6
 		assert discussions.size() == 3
-		assert discussionsContains(discussions, discussion3.id)
-		assert discussionsContains(discussions, discussion4.id)
-		assert discussionsContains(discussions, discussion1.id)
 
 		paginationData = UserGroup.getDiscussionsInfoForUser(user, true, [max: 3, offset: 3])
-		discussions = paginationData.dataList
+		assert paginationData.dataList.size() == 3
 
-		assert paginationData.totalCount == 8	// two are duplicates
-		assert discussions.size() == 3
-		assert discussionsContains(discussions, discussion1.id)
-		assert discussionsContains(discussions, discussion3.id)
-		assert discussionsContains(discussions, discussion2.id)
+		assert paginationData.totalCount == 6
 	}
 }

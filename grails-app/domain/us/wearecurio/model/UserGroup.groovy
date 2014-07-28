@@ -1,12 +1,10 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-/**
- * Represents a group for the purpose of collecting users together, notifying users, discussions, etc.
- */
-
-import grails.converters.*
+import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 
 class UserGroup {
@@ -154,7 +152,7 @@ class UserGroup {
 		Map discussionMap = [:]
 
 		for (info in discussionInfos) {
-			Discussion discussion = info["discussion"]
+			Discussion discussion = Discussion.get(info["discussionId"])
 			
 			if (discussion.isNew() && discussion.fetchUserId() != user.getId())
 				continue
@@ -164,20 +162,8 @@ class UserGroup {
 			Long groupId = info["groupId"] ?: 0
 			UserGroup group = UserGroup.get(groupId)
 
-			// check to see if discussion is already in the list in a different group
-			Map oldRetVal = discussionMap[discussionId]
-			if (oldRetVal != null) {
-				// check to see if new group gives this author admin permissions on the discussion topic
-				if (!oldRetVal['isAdmin']) {
-					oldRetVal['isAdmin'] = retVal['userId'] == user.getId() || group.hasAdmin(user)
-					oldRetVal['groupId'] = groupId
-					oldRetVal['groupName'] = group ? group.getFullName() : 'Private'
-				} else if (oldRetVal['groupId'])
-					oldRetVal['groupId'] = groupId
-				continue
-			}
-			retVal['isAdmin'] = group ? group.hasAdmin(user) : true
 			retVal['groupId'] = groupId
+			retVal['isAdmin'] = retVal['userId'] == user.id || (group ? group.hasAdmin(user) : true)
 			retVal['groupName'] = group ? group.getFullName() : 'Private'
 			retVal['userName'] = info["username"]
 			// Adding a flag to indicate if this discussion was started with a plot
@@ -205,6 +191,9 @@ class UserGroup {
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump()
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump()
 
+		args.max = args.max ?: 10
+		args.offset = args.offset ?: 0
+
 		List groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
@@ -221,64 +210,76 @@ class UserGroup {
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): groupId list: " + groupIds?.dump()
 		def map = [:]
 
-		if (groupIds.size() > 0) map['groupIds'] = groupIds
-		else if (!owned) return [:] // user has no permissions to read anything
+		if (groupIds.size() == 0 && !owned) {
+			return [:] // user has no permissions to read anything
+		}
 		if (owned) map['id'] = user.getId()
 
-		String discussionQuery = """SELECT %s FROM Discussion d, User user, GroupMemberDiscussion dItem
-					WHERE d.id = dItem.memberId ${groupIds?.size() > 0 ? "AND dItem.groupId IN (:groupIds)) " : " "}
-					AND d.userId = user.id ORDER BY d.updated DESC"""
+		String discussionQuery = """SELECT %s FROM discussion AS d
+					INNER JOIN _user AS user ON d.user_id = user.id
+					LEFT JOIN group_member_discussion AS dItem ON d.id = dItem.member_id
+					WHERE ${groupIds.size() > 0 ? "dItem.group_id IN (${groupIds.join(',')})" : ""} %s
+					ORDER BY d.updated DESC"""
 
-		String discussionCountQuery = String.format(discussionQuery, "COUNT(DISTINCT d)")
-		String discussionListQuery = String.format(discussionQuery, "DISTINCT new Map(d as discussion, dItem.groupId AS groupId, user.username AS username)")
+		String argument1 = "d.id as discussionId, dItem.group_id AS groupId, user.username AS username"
+		String argument2 = ""
 
-		List hqlDataList = [[query: discussionListQuery, countQuery: discussionCountQuery, namedParameters: map]]
+		Map paginatedData = [:]
 
 		if (owned) {
-			String ownedDiscussionQuery = "SELECT %s FROM Discussion d WHERE d.userId = :id"
-			String ownedDiscussionCountQuery = String.format(ownedDiscussionQuery, "COUNT(DISTINCT d)")
-			String ownedDiscussionListQuery = String.format(ownedDiscussionQuery, "DISTINCT new Map(d as discussion, -1 AS groupId, user.username)")
-
-			hqlDataList << [[query: ownedDiscussionListQuery, countQuery: ownedDiscussionCountQuery, namedParameters: [id: user.id]]]
+			argument2 = "${groupIds.size() ? 'OR' : ''} d.user_id = :id"
 		}
 
-		Map paginatedData = Utils.paginateHQLs(hqlDataList, args["max"], args["offset"])
+		DatabaseService databaseService = DatabaseService.get()
 
-		paginatedData["dataList"] = addAdminPermissions(user, paginatedData["dataList"])
+		String countQuery = String.format(discussionQuery, "COUNT(d.id) as count", argument2)
+		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, map)[0]?.count
+		
+		argument2 += " GROUP BY d.id"
+		String listQuery = String.format(discussionQuery, argument1, argument2)
+		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
+
+		List result = databaseService.sqlRows(listQuery, map)
+
+		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
 	}
 
-	private static String DISCUSSIONS_QUERY = "SELECT %s FROM Discussion d, "\
-				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
-				+ "WHERE d.id = dItem.memberId AND dItem.groupId = rItem.groupId AND rItem.memberId = :id "\
-				+ "AND d.userId = user.id %s ORDER BY d.updated DESC"
-
-	private static String DISCUSSIONS_COUNT_QUERY = String.format(DISCUSSIONS_QUERY, "COUNT(DISTINCT d)", "")
-	private static String DISCUSSIONS_LIST_QUERY = String.format(DISCUSSIONS_QUERY, "DISTINCT new Map (d AS discussion, dItem.groupId AS groupId, user.username AS username)", "GROUP BY d.id")
-
-	private static String OWNED_DISCUSSIONS_QUERY = """SELECT %s FROM Discussion d, User user
-					WHERE d.userId = :id AND user.id = d.userId"""
-
-	private static String OWNED_DISCUSSIONS_COUNT_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "COUNT(DISTINCT d)")
-	private static String OWNED_DISCUSSIONS_LIST_QUERY = String.format(OWNED_DISCUSSIONS_QUERY, "DISTINCT new Map (d AS discussion, -1 AS groupId, user.username AS username)")
+	private static String DISCUSSIONS_QUERY = """SELECT %s FROM discussion AS d
+				LEFT JOIN group_member_discussion AS dItem ON d.id = dItem.member_id
+				LEFT JOIN group_member_reader AS rItem ON dItem.group_id = rItem.group_id
+				INNER JOIN _user AS user ON d.user_id = user.id
+				WHERE rItem.member_id = :id %s ORDER BY d.updated DESC"""
 
 	static Map getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
+		Map paginatedData = [:]
 		Map namedParameters = [id: user.id]
 
-		List hqlDataList = [[query: DISCUSSIONS_LIST_QUERY, countQuery: DISCUSSIONS_COUNT_QUERY,
-			namedParameters: namedParameters]]
+		args.max = args.max ?: 5
+		args.offset = args.offset ?: 0
+
+		String argument1 = "d.id AS discussionId, dItem.group_id AS groupId, user.username AS username"
+		String argument2 = ""
 
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
 
-			hqlDataList << [query: OWNED_DISCUSSIONS_LIST_QUERY, countQuery: OWNED_DISCUSSIONS_COUNT_QUERY,
-				namedParameters: namedParameters]
+			argument2 = "OR d.user_id = :id"
 		}
 
-		Map paginatedData = Utils.paginateHQLs(hqlDataList, args["max"], args["offset"])
+		DatabaseService databaseService = DatabaseService.get()
 
-		paginatedData["dataList"] = addAdminPermissions(user, paginatedData["dataList"])
+		String countQuery = String.format(DISCUSSIONS_QUERY, "COUNT(d.id) as count", argument2)
+		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, namedParameters)[0]?.count
+
+		argument2 += " GROUP BY d.id"
+		String listQuery = String.format(DISCUSSIONS_QUERY, argument1, argument2)
+		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
+
+		List result = databaseService.sqlRows(listQuery, namedParameters)
+
+		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
 	}

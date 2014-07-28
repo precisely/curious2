@@ -532,7 +532,7 @@ class HomeController extends DataController {
 			}
 		}
 
-		params.max = params.max ?: 5
+		params.max = params.max ?: 10
 		params.offset = params.offset ?: 0
 
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
