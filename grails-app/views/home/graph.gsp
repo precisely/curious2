@@ -174,7 +174,7 @@ $(function(){
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<h1 class="clearfix right">
 			<div id="actions">
-				<img src="/images/menu.png">
+				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
 					<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
 					<li><a href="#" onclick="plot.save()">Save</a></li>

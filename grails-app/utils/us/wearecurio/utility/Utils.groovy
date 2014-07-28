@@ -1,20 +1,16 @@
 package us.wearecurio.utility
 
-import org.apache.commons.logging.LogFactory
-
 import grails.plugin.mail.MailService
-import groovy.lang.Closure;
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.TimeZone
-import java.util.SimpleTimeZone
-import java.util.Calendar
 
-import org.joda.time.*
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
+
+import us.wearecurio.model.User
 
 /**
- *
  * @author mitsu
  */
 class Utils {
@@ -24,7 +20,7 @@ class Utils {
 	public static final long HOUR = 60 * 60000L;
 	public static final long DAY = 24 * 60 * 60000L;
 
-	private static def log = LogFactory.getLog(this)
+	private static Log log = LogFactory.getLog(this)
 
 	static def listJSONDesc(list) {
 		def retVal = []
@@ -132,4 +128,83 @@ class Utils {
 
 	public static MailService getMailService() { return mailService }
 
+	/**
+	 * A generic utility method to get paginated results from one or more HQL queries.
+	 * The basic function of this method is that, if there are two queries then first,
+	 * it fetches data from first query and if it is not meets the required result count
+	 * then it fetches next set of results from next query. Same looping runs until the
+	 * required number of results fetched (unless records not exists in the db).
+	 * 
+	 * This method also returns the total number of results availble in the system for
+	 * given queries which is used for generating pagination.
+	 * 
+	 * @param hqlDataList REQUIRED It is the list of map which contains three values.
+	 * @param hqlDataList[each].query REQUIRED The HQL query used to fetch the actual results.
+	 * @param hqlDataList[each].countQuery REQUIRED The equivalent HQL query used to fetch the total results count.
+	 * @param hqlDataList[each].namedParameters REQUIRED Any named parameters needed in HQL queries.
+	 * @param hqlDataList[each].params OPTIONAL Any additional parameter needs to pass to the query.
+	 * @param maxResults Maximum results to be fetched. DEFAULT 10
+	 * @param firstResult Specifies the offset for the results. DEFAULT 0
+	 * @return This returns a map containing two values: first is <b>dataList</b> which is
+	 * 			the actual result list for query. And second is <b>totalCount</b> which is
+	 * 			the total count for matching queries existing the database.
+	 * 
+	 * @see http://grails.org/doc/2.2.x/ref/Domain%20Classes/executeQuery.html
+	 * @see <code>getDiscussionsInfoForUser()</code> in <strong>UserGroup.groovy</strong>
+	 */
+	static Map paginateHQLs(List<Map> hqlDataList, def maxResults, def firstResult) {
+		List dataList = []
+		Long totalCount = 0
+
+		log.debug "Paginate HQLs with max $maxResults & offset $firstResult"
+		int max = maxResults ? maxResults.toInteger() : 10
+		int offset = firstResult ? firstResult.toInteger() : 0
+
+		// Iterate through each hql query data.
+		hqlDataList.eachWithIndex { hqlData, index ->
+			Map params = hqlData["params"] ?: [:]
+			params.putAll([max: max, offset: offset])
+
+			int existingResultCount = dataList.size()
+
+			// Do not calculate pagination parameter for first query data and if results are sufficient.
+			if (index > 0 && existingResultCount < max) {
+				int currentPage = (offset / max) + 1
+				int offsetAdjustment = 0
+				long previousPagesCount = 0
+				int previousPaginatedPagesCount = 0
+
+				((index - 1)..0).each { previousQueryIndex ->
+					previousPagesCount += User.executeQuery(hqlDataList[previousQueryIndex]["countQuery"], hqlDataList[previousQueryIndex]["namedParameters"])[0]
+				}
+				if ((previousPagesCount % max) != 0) {
+					offsetAdjustment = max - (previousPagesCount % max)
+				}
+				previousPaginatedPagesCount = previousPagesCount / max
+
+				// Get next set of results from current query
+				params["max"] = max - existingResultCount
+
+				if (existingResultCount == 0) {
+					// Calculate offset for current HQL from current page
+					params["offset"] = (max * (currentPage - previousPaginatedPagesCount - 1)) + offsetAdjustment
+				} else {
+					params["offset"] = 0
+				}
+			}
+			log.debug "Paginating HQL for query number [${index + 1}], returning result count: $existingResultCount, total count: $totalCount with params $params."
+
+			totalCount += User.executeQuery(hqlData["countQuery"], hqlData["namedParameters"])[0]
+
+			if (index == 0 || existingResultCount < max) {
+				List result = User.executeQuery(hqlData["query"], hqlData["namedParameters"], params)
+				dataList.addAll result
+				log.debug "Paginated HQL for query number [${index + 1}], returning result count: ${dataList.size()}, total count: $totalCount, fetched result count: ${result.size()}."
+			} else {
+				log.debug "Paginated HQL for query number [${index + 1}], returning result count: ${dataList.size()}, total count: $totalCount."
+			}
+		}
+
+		[dataList: dataList, totalCount: totalCount]
+	}
 }

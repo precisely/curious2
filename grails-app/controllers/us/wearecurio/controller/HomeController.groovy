@@ -1,8 +1,10 @@
 package us.wearecurio.controller
 
+import static org.springframework.http.HttpStatus.*
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.springframework.http.HttpStatus
 
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
@@ -486,7 +488,7 @@ class HomeController extends DataController {
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
 
-	def community() {
+	def community(Long discussionId, boolean unpublish, boolean publish) {
 		debug "HomeController.community()"
 		def user = sessionUser()
 
@@ -496,25 +498,23 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
-		Long discussionId = params.discussionId ? Long.parseLong(params.discussionId) : null
 
 		if (discussionId) {
 			Discussion discussion = Discussion.get(discussionId)
 	
-			if (discussion == null) {
+			if (!discussion) {
 				debug "no discussion for discussionId " + discussionId
 				flash.message = "No discussion found"
 				return
 			}
 						
-			if (params.unpublish && params.unpublish.equals("true")) {
+			if (unpublish) {
 				if (UserGroup.canAdminDiscussion(user, discussion)) {
 					discussion.setIsPublic(false)
 					Utils.save(discussion, true)
 				}
 			}
-			if (params.publish && params.publish.equals("true")) {
+			if (publish) {
 				if (UserGroup.canAdminDiscussion(user, discussion)) {
 					discussion.setIsPublic(true)
 					Utils.save(discussion, true)
@@ -531,12 +531,81 @@ class HomeController extends DataController {
 				groupName = group[0].name
 			}
 		}
+
+		params.max = params.max ?: 10
+		params.offset = params.offset ?: 0
+
+		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupNameList
+
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+				UserGroup.getDiscussionsInfoForUser(user, true, params)
+
 		log.debug("HomeController.community: User has read memberships for :" + groupMemberships.dump())
-		[prefs:user.getPreferences(), userId:user.getId(), templateVer:urlService.template(request),
-			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname]
+
+		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname,
+			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
+
+		if (request.xhr) {
+			render template: "/community/discussions", model: model
+			return
+		}
+
+		model
 	}
 
-	def discuss() {
+	def shareDiscussion(Long discussionId) {
+		User currentUserInstance = sessionUser()
+
+		Discussion discussionInstance = Discussion.get(discussionId)
+		if (!discussionInstance) {
+			debug "DiscussionId not found: " + discussionId
+			renderJSONPost([message: "Discussion not found."], NOT_FOUND)
+			return
+		}
+
+		if (!UserGroup.canAdminDiscussion(currentUserInstance, discussionInstance)) {
+			debug "DiscussionId not found: " + discussionId
+			renderJSONPost([message: "You don't have admin rights to modify share preference for this discussion"], UNAUTHORIZED)
+			return
+		}
+
+		List shareOptions = params.shareOptions ? params.shareOptions.tokenize(",") : []
+		log.debug "Change sharing option for $discussionInstance by user $currentUserInstance with $shareOptions"
+
+		List associatedGroups = UserGroup.getGroupsForWriter(currentUserInstance)
+
+		/*
+		 *  Share option will contain ids of UserGroup to share discussion to,
+		 *  and "isPublic" value if user wants to make Discussion visible to the world.
+		 */
+		boolean isPublic = shareOptions.remove("isPublic")
+		shareOptions = shareOptions*.toLong()
+
+		List alreadySharedGroups = []
+
+		associatedGroups.each { userGroup ->
+			UserGroup userGroupInstance = UserGroup.get(userGroup["id"])
+
+			// If user selected to share to this group
+			if (shareOptions.contains(userGroup["id"])) {
+				// If discussion is not shared to this group, then only share it.
+				if (!userGroupInstance.hasDiscussion(discussionInstance)) {
+					userGroupInstance.addDiscussion(discussionInstance)
+				}
+			} else {
+				userGroupInstance.removeDiscussion(discussionInstance)
+			}
+		}
+
+		discussionInstance.isPublic = isPublic
+		Utils.save(discussionInstance, true)
+
+		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
+	}
+
+	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
 		/*
 		 * Old discussion format used plotDataId to identify discussions (maintain compatibility)
 		 * 
@@ -550,13 +619,6 @@ class HomeController extends DataController {
 		
 		def user = sessionUser()
 		
-		def p = params
-		
-		Long plotIdMessage = params.plotIdMessage ? Long.parseLong(params.plotIdMessage) : null
-		Long plotDataId = params.plotDataId ? Long.parseLong(params.plotDataId) : null
-		Long discussionId = params.discussionId ? Long.parseLong(params.discussionId) : null
-		Long deletePostId = params.deletePostId ? Long.parseLong(params.deletePostId) : null
-		Long clearPostId = params.clearPostId ? Long.parseLong(params.clearPostId) : null
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
 		
 		if (plotIdMessage == null && plotDataId==null && discussionId==null && params.createTopic == null) {
@@ -564,15 +626,36 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
+
+		String message
+		HttpStatus status
 		Discussion discussion
-		
+
 		if (discussionId) {
 			discussion = Discussion.get(discussionId)
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
 				flash.message = "That discussion topic no longer exists."
 				redirect(url:toUrl(action:'community'))
+				return
+			}
+			if (params.deleteDiscussion) {
+				if (!UserGroup.canAdminDiscussion(user, discussion)) {
+					status = UNAUTHORIZED
+					debug "Not admin of discussion: " + discussionId
+					message = "You don't have admin rights to delete the discussion."
+				} else {
+					status = OK
+					Discussion.delete(discussion)
+					message = "Discussion delete successfully."
+				}
+
+				if (request.xhr) {
+					renderJSONPost([message: message], status)
+				} else {
+					flash.message = message
+					redirect(url: toUrl(action: 'community'))
+				}
 				return
 			}
 		} else if (plotDataId) {
@@ -683,16 +766,41 @@ class HomeController extends DataController {
 						fragment:'comment' + post.getId()))
 			}
 		} else {
-			def model = discussion.getJSONModel()
-			model = model << [notLoggedIn:user?false:true, userId:user?.getId(),
-					username:user?user.getUsername():'(anonymous)', isAdmin:UserGroup.canAdminDiscussion(user, discussion),
-					templateVer:urlService.template(request)]
-			render(view:"/home/discuss", model:model)
+			params.max = params.max ?: 5
+			params.offset = params.offset ?: 0
+
+			Map model = discussion.getJSONModel(params)
+
+			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
+					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+					templateVer: urlService.template(request)]
+
+			// If used for pagination
+			if (request.xhr) {
+				render (template: "/discussion/posts", model: model)
+				return
+			}
+
+			List associatedGroups = UserGroup.getGroupsForWriter(user)
+			List alreadySharedGroups = [], otherGroups = []
+
+			associatedGroups.each { userGroup ->
+				if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
+					alreadySharedGroups << userGroup.plus([shared: true])
+				} else {
+					otherGroups << userGroup
+				}
+			}
+			associatedGroups = alreadySharedGroups.sort { it.name }
+			associatedGroups.addAll(otherGroups.sort { it.name })
+			model.put("associatedGroups", associatedGroups)
+
+			render(view: "/home/discuss", model: model)
 		}
 	}
 	
 	def lgmd2iproject() {
-			def model = []
-			render(view:"/home/lgmd2iproject", model:model)
+		def model = []
+		render(view:"/home/lgmd2iproject", model:model)
 	}
 }

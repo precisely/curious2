@@ -29,12 +29,14 @@ function clearPostMessage(postId) {
 	showYesNo("Are you sure you want to delete this comment?", function() {
 			window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
 	});
+	return false;
 }
 
 function deletePost(postId) {
 	showYesNo("Are you sure you want to delete this post?", function() {
 			window.location = "/home/discuss?discussionId=${discussionId}&deletePostId=" + postId;
 	});
+	return false;
 }
 
 $(function(){
@@ -94,8 +96,8 @@ $(function(){
 								preventCommentSubmit = false;
 								discussionTitle = newName;
 								discussTitle.html(newName);
-								discussTitleArea.off('mouseup');
-								discussTitleArea.on('mouseup', discussTitle.data('rename'));
+								discussTitle.off('mouseup');
+								discussTitle.on('mouseup', discussTitle.data('rename'));
 								if (closure) closure();
 							} else {
 								showAlert('Failed to set name');
@@ -128,8 +130,8 @@ $(function(){
 			discussTitle.data('rename', discussTitleRename);
 
 			<g:if test="${!isNew}">
-			discussTitleArea.off('mouseup');
-			discussTitleArea.on('mouseup', discussTitleRename);
+			discussTitle.off('mouseup');
+			discussTitle.on('mouseup', discussTitleRename);
 			$("#postcommentarea").focus();
 			</g:if>
 			<g:else>
@@ -153,6 +155,55 @@ $(function(){
 			
 			refreshPage();
 		});
+
+	$(document).on("click", "ul#posts-pagination a", function() {
+		var url = $(this).attr('href');
+		$.ajax({
+			url: url,
+			success: function(data) {
+				$('div#postList').html(data);
+				wrapPagination();
+			}
+		});
+		return false;
+	});
+
+	$('li#share-discussion').on('click', function() {
+		$('div#share-dialog').dialog({
+			dialogClass: "no-close",
+			modal: false,
+			resizable: false,
+			title: "Query",
+			buttons: {
+				"Yes ": function() {
+					$(this).dialog("close");
+					modifyShare();
+				},
+				No: function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		return false;
+	});
+
+	function modifyShare() {
+		var $selectElement = $('select#shareOptions');
+		$.ajax({
+			type: 'POST',
+			url: '/home/shareDiscussion',
+			data: {
+				discussionId: $('input#discussionId').val(),
+				shareOptions: $selectElement.val().join(',')
+			},
+			success: function(data) {
+				showAlert(JSON.parse(data).message);
+			},
+			error: function(xhr) {
+				showAlert(JSON.parse(xhr.responseText).message);
+			}
+		});
+	}
 });
 </script>
 </head>
@@ -163,18 +214,27 @@ $(function(){
 		<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<div class="discussTitle" id="discussTitleArea">
-		<h1><span id="discussTitleSpan"><g:if test="${!isNew}">${discussionTitle}</g:if></span>
-		<div class="byline">
-		<span class="username bittext" id="discussUsername"></span>
-		<span class="date bittext" id="discussDate"></span>
-		</div>
+	<div class="discussTitle red-header" id="discussTitleArea">
+		<h1>
+			<span id="actions">
+				<span class="icon-triangle icon-triangle-right toggle"></span>
+				<ul>
+					<li id="share-discussion"><a href="#">Share</a></li>
+					<li class="${isAdmin ? '' : 'disabled text-muted' }">
+						<g:link params="[discussionId: params.discussionId, deleteDiscussion: true]"
+							action="discuss">Delete</g:link>
+					</li>
+				</ul>
+			</span>
+			<span id="discussTitleSpan"><g:if test="${!isNew}">${discussionTitle}</g:if></span>
+			<div class="byline">
+				<span class="username bittext" id="discussUsername"></span>
+				<span class="date bittext" id="discussDate"></span>
+			</div>
 		</h1>
-
-		<div id="plotLeftNav">
-			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
-		</div>
-
+	</div>
+	<div id="plotLeftNav">
+		<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
 	</div>
 
 <!-- MAIN -->
@@ -231,7 +291,7 @@ $(function(){
 		<div class="messageControls">
 			<g:if test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
 				<!--span class="edit"></span-->
-				<span class="delete"><a href="#" onclick="clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
+				<span class="delete"><a href="#" onclick="return clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
 			</g:if>
 		</div>
 		<!--<g:if test="${firstPost}">
@@ -248,26 +308,11 @@ $(function(){
 	<div class="commentList">
 		<a name="comments"></a>
 		<g:if test="${firstPost != null && firstPost.getPlotDataId() != null}">
-		<h1>Comments</h1>
+			<h1>Comments</h1>
 		</g:if>
-				
-		<g:each in="${posts}" var="post">
-			<div class="comment">
-				<a name="comment${post.getId()}"></a>
-				<div class="message">${post.getMessage() ? post.getMessage().encodeAsHTML() : "[graph]"}</div>
-				<div class="messageInfo">
-					<g:if test="${post.author.getSite()}"><a href="${post.author.getSite().encodeAsURL()}"></g:if><g:if test="${post.author.getUsername()}">${post.author.getUsername().encodeAsHTML()}</g:if><g:else>${post.author.getName().encodeAsHTML()}</g:else><g:if test="${post.author.getSite()}"></a></g:if>
-					<br/>Last post <g:formatDate date="${post.getUpdated()}" type="datetime" style="SHORT"/>
-				</div>
-				<div class="messageControls">
-					<g:if test="${post.getAuthor().getUserId() == userId || isAdmin}">
-						<!--span class="edit"></span-->
-						<span class="delete"><a href="#" onclick="deletePost(${post.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
-					</g:if>
-				</div>
-				<div style="clear:both"></div>
-			</div>
-		</g:each>
+		<div id="postList">
+			<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+		</div>
 	</div>
 	<div id="addComment">
 		<g:if test="${firstPost != null && firstPost.getMessage() != null}">
@@ -299,6 +344,16 @@ $(function(){
 <!-- /TOTAL PAGE -->
 
 <div style="clear:both;"></div>
-	
+
+<g:hiddenField name="discussionId" value="${discussionId }" />
+
+<div id="share-dialog" class="hide" title="Share">
+	<select name="shareOptions" id="shareOptions" multiple="multiple" class="form-control" size="8">
+		<option value="isPublic" ${isPublic ? 'selected="selected"' : '' }>Visible to the world</option>
+		<g:each in="${associatedGroups }" var="userGroup">
+			<option value="${userGroup.id }" ${userGroup.shared ? 'selected="selected"' : '' }>${userGroup.fullName }</option>
+		</g:each>
+	</select>
+</div>
 </body>
 </html>

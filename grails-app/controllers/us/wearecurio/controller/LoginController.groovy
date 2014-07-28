@@ -72,6 +72,10 @@ class LoginController extends SessionController {
 	protected def renderJSONPost(data) {
 		render "${new JSON(data)}"
 	}
+
+	protected def renderJSONPost(data, status) {
+		render text: "${new JSON(data)}", status: status
+	}
 	
 	protected def renderJSONGet(data) {
 		//debug "${params.callback}(${new JSON(data)})"

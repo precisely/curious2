@@ -1,26 +1,30 @@
 package us.wearecurio.controller
 
-import grails.converters.*
-import us.wearecurio.model.*
-import us.wearecurio.exceptions.*
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.Discussion;
-import us.wearecurio.model.Entry.RepeatType;
-import us.wearecurio.model.Entry.TagStatsRecord
+import grails.converters.JSON
 
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.SimpleTimeZone
-import java.util.TimeZone
 
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import org.joda.time.*
+
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagProperties
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
+import us.wearecurio.model.Entry.TagStatsRecord
+import us.wearecurio.utility.Utils
 
 class DataController extends LoginController {
+
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 	def tokenService
@@ -854,30 +858,6 @@ class DataController extends LoginController {
 		}
 
 		renderJSONGet(Utils.listJSONDesc(entries))
-	}
-
-	def listDiscussionData() {
-		debug "DataController.listDiscussionData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		def groupNameList = params.userGroupNames ? JSON.parse(params.userGroupNames) : null
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + params.userGroupNames
-
-		def entries = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList) : \
-				UserGroup.getDiscussionsInfoForUser(user, true)
-
-		for (entry in entries) {
-			debug "Found " + entry
-		}
-
-		renderJSONGet(entries)
 	}
 
 	def saveSnapshotData() {

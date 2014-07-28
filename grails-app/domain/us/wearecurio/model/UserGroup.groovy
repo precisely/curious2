@@ -1,12 +1,10 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-/**
- * Represents a group for the purpose of collecting users together, notifying users, discussions, etc.
- */
-
-import grails.converters.*
+import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 
 class UserGroup {
@@ -130,7 +128,9 @@ class UserGroup {
 	}
 
 	static List getGroupsForWriter(Long userId) {
-		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberWriter item where item.memberId = :id and item.groupId = userGroup.id",
+		return UserGroup.executeQuery("""SELECT new Map(ug.id AS id, ug.name AS name, ug.fullName AS fullName,
+				ug.description AS description, ug.created AS created, item.created AS joined)
+				FROM UserGroup ug, GroupMemberWriter item WHERE item.memberId = :id AND item.groupId = ug.id""",
 				[id: userId])
 	}
 
@@ -147,37 +147,25 @@ class UserGroup {
 	/**
 	 * Calculate admin permissions and remove empty discussions not owned by the user
 	 */
-	private static def addAdminPermissions(User user, def discussionInfos) {
-		def retVals = []
-		def discussionMap = [:]
+	private static List addAdminPermissions(User user, List discussionInfos) {
+		List retVals = []
+		Map discussionMap = [:]
 
 		for (info in discussionInfos) {
-			Discussion discussion = info[0]
+			Discussion discussion = Discussion.get(info["discussionId"])
 			
 			if (discussion.isNew() && discussion.fetchUserId() != user.getId())
 				continue
 			
-			def retVal = discussion.getJSONDesc()
-			def discussionId = retVal['id']
-			Long groupId = info[1] > 0 ? info[1] : 0L
-			UserGroup group = groupId ? UserGroup.get(groupId) : null
+			Map retVal = discussion.getJSONDesc()
+			Long discussionId = discussion.id
+			Long groupId = info["groupId"] ?: 0
+			UserGroup group = UserGroup.get(groupId)
 
-			// check to see if discussion is already in the list in a different group
-			def oldRetVal = discussionMap[discussionId]
-			if (oldRetVal != null) {
-				// check to see if new group gives this author admin permissions on the discussion topic
-				if (!oldRetVal['isAdmin']) {
-					oldRetVal['isAdmin'] = retVal['userId'] == user.getId() || group.hasAdmin(user)
-					oldRetVal['groupId'] = groupId
-					oldRetVal['groupName'] = group ? group.getFullName() : 'Private'
-				} else if (oldRetVal['groupId'])
-					oldRetVal['groupId'] = groupId
-				continue
-			}
-			retVal['isAdmin'] = group ? group.hasAdmin(user) : true
 			retVal['groupId'] = groupId
+			retVal['isAdmin'] = retVal['userId'] == user.id || (group ? group.hasAdmin(user) : true)
 			retVal['groupName'] = group ? group.getFullName() : 'Private'
-			retVal['userName'] = info[2]
+			retVal['userName'] = info["username"]
 			// Adding a flag to indicate if this discussion was started with a plot
 			def firstPost = Discussion.get(discussionId).fetchFirstPost()
 			retVal['isPlot'] = firstPost?.plotDataId ? true : false
@@ -198,11 +186,15 @@ class UserGroup {
 		return retVals
 	}
 
-	public static def getDiscussionsInfoForGroupNameList(User user, def groupNameList) {
+	static Map getDiscussionsInfoForGroupNameList(User user, def groupNameList, Map args = [:]) {
 		boolean owned = false
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump()
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): user: " + user?.dump()
-		def groupIds = []
+
+		args.max = args.max ?: 10
+		args.offset = args.offset ?: 0
+
+		List groupIds = []
 		for (name in groupNameList) {
 			if (name.equals('[owned]'))
 				owned = true
@@ -218,39 +210,78 @@ class UserGroup {
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): groupId list: " + groupIds?.dump()
 		def map = [:]
 
-		if (groupIds.size() > 0) map['groupIds'] = groupIds
-		else if (!owned) return [:] // user has no permissions to read anything
+		if (groupIds.size() == 0 && !owned) {
+			return [:] // user has no permissions to read anything
+		}
 		if (owned) map['id'] = user.getId()
 
-		def results = Discussion.executeQuery(
-				"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "
-					+ "User user, GroupMemberDiscussion dItem where d.id = dItem.memberId "
-					+ (groupIds?.size() > 0 ? "and dItem.groupId in (:groupIds)) " : " ")
-					+ "and d.userId = user.id order by d.updated desc", map)
+		String discussionQuery = """SELECT %s FROM discussion AS d
+					INNER JOIN _user AS user ON d.user_id = user.id
+					LEFT JOIN group_member_discussion AS dItem ON d.id = dItem.member_id
+					WHERE ${groupIds.size() > 0 ? "dItem.group_id IN (${groupIds.join(',')})" : ""} %s
+					ORDER BY d.updated DESC"""
+
+		String argument1 = "d.id as discussionId, dItem.group_id AS groupId, user.username AS username"
+		String argument2 = ""
+
+		Map paginatedData = [:]
 
 		if (owned) {
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username from Discussion d where d.userId = :id", [id:user.getId()]))
+			argument2 = "${groupIds.size() ? 'OR' : ''} d.user_id = :id"
 		}
+
+		DatabaseService databaseService = DatabaseService.get()
+
+		String countQuery = String.format(discussionQuery, "COUNT(d.id) as count", argument2)
+		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, map)[0]?.count
 		
-		return addAdminPermissions(user, results)
+		argument2 += " GROUP BY d.id"
+		String listQuery = String.format(discussionQuery, argument1, argument2)
+		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
+
+		List result = databaseService.sqlRows(listQuery, map)
+
+		paginatedData["dataList"] = addAdminPermissions(user, result)
+
+		paginatedData
 	}
 
-	private static def DISCUSSIONS_QUERY =\
-			"select distinct d, dItem.groupId as groupId, user.username from Discussion d, "\
-				+ "GroupMemberDiscussion dItem, GroupMemberReader rItem, User user "\
-				+ "where d.id = dItem.memberId and dItem.groupId = rItem.groupId and rItem.memberId = :id "\
-				+ "and d.userId = user.id order by d.updated desc"
+	private static String DISCUSSIONS_QUERY = """SELECT %s FROM discussion AS d
+				LEFT JOIN group_member_discussion AS dItem ON d.id = dItem.member_id
+				LEFT JOIN group_member_reader AS rItem ON dItem.group_id = rItem.group_id
+				INNER JOIN _user AS user ON d.user_id = user.id
+				WHERE rItem.member_id = :id %s ORDER BY d.updated DESC"""
 
-	public static def getDiscussionsInfoForUser(User user, boolean owned) {
-		def results = Discussion.executeQuery(DISCUSSIONS_QUERY, [id:user.getId()])
+	static Map getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
+		Map paginatedData = [:]
+		Map namedParameters = [id: user.id]
+
+		args.max = args.max ?: 5
+		args.offset = args.offset ?: 0
+
+		String argument1 = "d.id AS discussionId, dItem.group_id AS groupId, user.username AS username"
+		String argument2 = ""
+
 		if (owned) {
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
-			results.addAll(Discussion.executeQuery("select distinct d, -1 as groupId, user.username "
-				+ "from Discussion d, User user where d.userId = :id and user.id = d.userId "
-				, [id:user.getId()]))
+
+			argument2 = "OR d.user_id = :id"
 		}
 
-		return addAdminPermissions(user, results)
+		DatabaseService databaseService = DatabaseService.get()
+
+		String countQuery = String.format(DISCUSSIONS_QUERY, "COUNT(d.id) as count", argument2)
+		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, namedParameters)[0]?.count
+
+		argument2 += " GROUP BY d.id"
+		String listQuery = String.format(DISCUSSIONS_QUERY, argument1, argument2)
+		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
+
+		List result = databaseService.sqlRows(listQuery, namedParameters)
+
+		paginatedData["dataList"] = addAdminPermissions(user, result)
+
+		paginatedData
 	}
 
 	static def canReadDiscussion(User user, Discussion discussion) {
@@ -342,10 +373,20 @@ class UserGroup {
 		GroupMemberReader.delete(id, user.getId())
 	}
 
-	def hasWriter(User user) {
-		if (!user) return false
+	boolean hasWriter(User user) {
+		hasWriter(user?.id)
+	}
 
-		return GroupMemberWriter.lookup(id, user.getId()) != null
+	boolean hasWriter(Long userId) {
+		hasWriter(id, userId)
+	}
+
+	static boolean hasWriter(Long id, Long userId) {
+		if (!id || !userId) {
+			return false
+		}
+
+		GroupMemberWriter.lookup(id, userId) != null
 	}
 
 	def addAdmin(User user) {
@@ -476,24 +517,50 @@ class UserGroup {
 		return defaultGroup
 	}
 
-	def addDiscussion(Discussion discussion) {
-		if (!discussion) return
-		def userId = discussion.getUserId()
+	boolean canAddRemoveDiscussion(Discussion discussion) {
+		if (!discussion) {
+			return false
+		}
+
+		Long userId = discussion.getUserId()
 		if (userId) {
-			if (!hasWriter(User.get(userId))) {
+			if (!hasWriter(userId)) {
 				return false
 			}
-		} else {
-			if (!isOpen)
-				return false
+		} else if (!isOpen) {
+			return false
 		}
+
+		true
+	}
+
+	boolean addDiscussion(Discussion discussion) {
+		if (!canAddRemoveDiscussion(discussion)) {
+			return false
+		}
+
 		GroupMemberDiscussion.create(id, discussion.getId())
 		return true
 	}
 
-	def hasDiscussion(Discussion discussion) {
-		if (!discussion) return false
-		return GroupMemberDiscussion.lookup(id, discussion.getId()) != null
+	boolean removeDiscussion(Discussion discussion) {
+		if (!canAddRemoveDiscussion(discussion)) {
+			return false
+		}
+
+		GroupMemberDiscussion.delete(id, discussion.id)
+		return true
+	}
+
+	boolean hasDiscussion(Discussion discussion) {
+		hasDiscussion(id, discussion?.id)
+	}
+
+	static boolean hasDiscussion(Long id, Long discussionId) {
+		if (!discussionId) {
+			return false
+		}
+		return GroupMemberDiscussion.lookup(id, discussionId) != null
 	}
 
 	def getNotifiedUsers() {

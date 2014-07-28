@@ -82,7 +82,7 @@ class Tag {
 
 	String description
 
-	def String toString() {
+	String toString() {
 		return "Tag(id:" + id + ", description:" + description + ")"
 	}
 }
