@@ -79,7 +79,7 @@ class WildcardTagGroupTests extends CuriousTestCase {
 	}
 
 	void "test contains tag after exclusion"() {
-		TagExclusion.createOrLookup(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
+		TagExclusion.addToExclusion(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
 
 		assert wildcardTagGroupInstance1.containsTag(tag5, userId) == true
 		assert wildcardTagGroupInstance1.containsTag(tag7, userId) == false

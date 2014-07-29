@@ -215,26 +215,23 @@ class User implements NameEmail {
 	 * Server side method used for data manipulation to get list of all
 	 * tags associated with the current user & returns the instances of Tag.
 	 */
-	static List<Tag> getTags(Long userId, boolean recursive = false) {
+	static List<Tag> getTags(Long userId) {
 		if (tagIdCache[userId]) {
 			return Tag.fetchAll(tagIdCache[userId])
 		}
 
 		List<Long> usersTagIds = Utils.getService("tagService").getTagsByUser(userId)*.id
-		tagIdCache[userId] = usersTagIds
 
-		List<Tag> usersTagList = Tag.fetchAll(usersTagIds)
-
-		if (recursive) {
-			getTagGroups(userId).each { tagGroupInstance ->
-				// No need to get tags from wildcard tag group
-				if (!(tagGroupInstance instanceof WildcardTagGroup)) {
-					usersTagList.addAll(tagGroupInstance.getTags(userId))
-				}
+		getTagGroups(userId).each { tagGroupInstance ->
+			// No need to get tags from wildcard tag group
+			if (!(tagGroupInstance instanceof WildcardTagGroup)) {
+				usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
 			}
 		}
 
-		usersTagList
+		tagIdCache[userId] = usersTagIds
+
+		Tag.fetchAll(usersTagIds)
 	}
 
 	static void addToCache(Long userId, Tag tagInstance) {
@@ -261,8 +258,8 @@ class User implements NameEmail {
 		}
 	}
 
-	List<Tag> getTags(boolean recursive = false) {
-		getTags(this.id, recursive)
+	List<Tag> getTags() {
+		getTags(this.id)
 	}
 
 	static List<GenericTagGroup> getTagGroups(Long userId) {

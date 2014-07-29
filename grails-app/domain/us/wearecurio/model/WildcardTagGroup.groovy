@@ -8,32 +8,52 @@ class WildcardTagGroup extends GenericTagGroup {
 		version false
 	}
 
-	// Cache holder to cache list of tag id's for a wildcard tag group
-	static BoundedCache<Long, List<Long>> tagCache = new BoundedCache<Long, List<Long>>(100000)
 	// Cache holder to cache list of tag descriptions for a wildcard tag group
-	static BoundedCache<Long, List<String>> tagIdCache = new BoundedCache<Long, List<String>>(100000)
+	static BoundedCache<Long, List<String>> tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
+	// Cache holder to cache list of tag id's for a wildcard tag group
+	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
 
-	static addToCache(Long id, Tag tagInstance) {
-		synchronized(tagCache) {
-			List cachedIds = tagIdCache[id] ?: []
-			cachedIds << tagInstance.id
-			tagIdCache.put(id, cachedIds)
-
-			List cachedDescriptions = tagCache[id] ?: []
-			cachedDescriptions << tagInstance.description
-			tagCache.put(id, cachedDescriptions)
+	void addToCache(GenericTagGroup childTagGroupInstance, Long userId) {
+		if (hasCachedData()) {
+			childTagGroupInstance.getTags(userId).each { tagInstance ->
+				addToCache(tagInstance)
+			}
 		}
 	}
 
-	static addToCache(WildcardTagGroup tagGroupInstance, Tag tagInstance) {
-		addToCache(tagGroupInstance.id, tagInstance)
+	void addToCache(Tag tagInstance) {
+		if (hasCachedData()) {
+			cache([tagInstance])
+		}
 	}
 
-	static List<Tag> getTags(Long id, Long userId) {
-		WildcardTagGroup.get(id).getTags(userId)
+	void cache(List<Tag> tagInstanceList) {
+		List cachedIds = tagIdCache[id] ?: []
+		List cachedDescriptions = tagDescriptionCache[id] ?: []
+
+		tagInstanceList.each { tagInstance ->
+			synchronized(tagDescriptionCache) {
+				cachedIds << tagInstance.id
+				tagIdCache.put(id, cachedIds)
+
+				cachedDescriptions << tagInstance.description
+				tagDescriptionCache.put(id, cachedDescriptions)
+			}
+		}
 	}
 
-	static List<Tag> getTags(Long id, String wildcardTagGroupName, Long userId) {
+	boolean containsTag(Tag tag, Long userId) {
+		if (!tag) {
+			return false
+		}
+		tag.id in getTagsIds(userId)
+	}
+
+	boolean containsTagString(String tagString, Long userId) {
+		tagString in getTagsDescriptions(userId)
+	}
+
+	List<Tag> getTags(Long userId) {
 		if (tagIdCache[id]) {
 			return Tag.fetchAll(tagIdCache[id])
 		}
@@ -42,6 +62,8 @@ class WildcardTagGroup extends GenericTagGroup {
 		if (!userId) {
 			return []
 		}
+
+		String wildcardTagGroupName = this.description
 
 		List<String> terms = wildcardTagGroupName.tokenize()
 		List<String> spaceTerms = terms.collectAll { " $it" }
@@ -60,7 +82,7 @@ class WildcardTagGroup extends GenericTagGroup {
 			}
 		}
 
-		User.getTags(userId, true).each { Tag tagInstance ->
+		User.getTags(userId).each { Tag tagInstance ->
 			boolean match = true
 			String tagName = tagInstance.description
 
@@ -72,62 +94,18 @@ class WildcardTagGroup extends GenericTagGroup {
 
 			if (match && !exclusions.contains(tagInstance.id)) {
 				matchingTags << tagInstance
-				addToCache(id, tagInstance)
 			}
 		}
+
+		cache(matchingTags as List)
 
 		matchingTags as List
 	}
 
-	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
-		removeFromCache(tagGroupInstance.id, tagInstance)
-	}
-
-	private static removeFromCache(Long id, Tag tagInstance) {
-		synchronized(tagCache) {
-			List cachedIds = tagIdCache[id] ?: []
-			cachedIds.remove(tagInstance.id)
-			tagIdCache.put(id, cachedIds)
-
-			List cachedDescriptions = tagCache[id] ?: []
-			cachedDescriptions.remove(tagInstance.description)
-			tagCache.put(id, cachedDescriptions)
-		}
-	}
-
-	void addTagGroupToCache(GenericTagGroup childTagGroupInstance, Long userId) {
-		if (hasCachedData()) {
-			childTagGroupInstance.getTags(userId).each { tagInstance ->
-				addTagToCache(tagInstance)
-			}
-		}
-	}
-
-	void addTagToCache(Tag tagInstance) {
-		if (hasCachedData()) {
-			addToCache(this, tagInstance)
-		}
-	}
-
-	boolean containsTag(Tag tag, Long userId) {
-		if (!tag) {
-			return false
-		}
-		tag.id in getTagsIds(userId)
-	}
-
-	boolean containsTagString(String tagString, Long userId) {
-		tagString in getTagsDescriptions(userId)
-	}
-
-	List<Tag> getTags(Long userId) {
-		getTags(this.id, this.description, userId)
-	}
-
 	List<String> getTagsDescriptions(Long userId) {
 		// Look for cached tag ids.
-		if (tagCache[this.id]) {
-			return tagCache[this.id]
+		if (tagDescriptionCache[this.id]) {
+			return tagDescriptionCache[this.id] as List
 		}
 
 		// Fetch & cache all sub tags & return descriptions/names
@@ -137,7 +115,7 @@ class WildcardTagGroup extends GenericTagGroup {
 	List<Long> getTagsIds(Long userId) {
 		// Look for cached tag id's.
 		if (tagIdCache[this.id]) {
-			return tagIdCache[this.id]
+			return tagIdCache[this.id] as List
 		}
 
 		// Fetch & cache all sub tags & return ids
@@ -148,17 +126,23 @@ class WildcardTagGroup extends GenericTagGroup {
 		tagIdCache[this.id]
 	}
 
-	void removeTagFromCache(Tag tagInstance) {
+	void removeFromCache(GenericTagGroup subTagGroupInstance, Long userId = null) {
 		if (hasCachedData()) {
-			removeFromCache(this, tagInstance)
+			subTagGroupInstance.getTags(userId).each { tagInstance ->
+				removeFromCache(tagInstance)
+			}
 		}
 	}
 
-	void removeTagGroupFromCache(GenericTagGroup subTagGroupInstance, Long userId) {
-		if (hasCachedData()) {
-			subTagGroupInstance.getTags(userId).each { tagInstance ->
-				removeTagFromCache(tagInstance)
-			}
+	void removeFromCache(Tag tagInstance) {
+		synchronized(tagDescriptionCache) {
+			Set cachedIds = tagIdCache[id] ?: []
+			cachedIds.remove(tagInstance.id)
+			tagIdCache.put(id, cachedIds)
+
+			Set cachedDescriptions = tagDescriptionCache[id] ?: []
+			cachedDescriptions.remove(tagInstance.description)
+			tagDescriptionCache.put(id, cachedDescriptions)
 		}
 	}
 }

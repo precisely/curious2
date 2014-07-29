@@ -10,77 +10,66 @@ class TagGroup extends GenericTagGroup {
 		version false
 	}
 
-	// Cache holder to cache list of tag ids for a tag group
-	static BoundedCache<Long, List<Long>> tagCache = new BoundedCache<Long, List<Long>>(100000)
 	// Cache holder to cache list of tag descriptions for a tag group
-	static BoundedCache<Long, List<String>> tagIdCache = new BoundedCache<Long, List<String>>(100000)
+	static BoundedCache<Long, List<String>> tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
+	// Cache holder to cache list of tag ids for a tag group
+	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
 
-	private static addToCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
-		addToCache(tagGroupInstance.id, tagInstance)
-	}
-
-	/*
-	 * A helper method to cache id and description to cache list.
-	 * This method must be called internally inside a loop which 
-	 * is iterating over all tags of a tag group otherwise there
-	 * will be incomplete caching data for a tag group.
-	 */
-	private static addToCache(Long id, Tag tagInstance) {
-		synchronized(tagCache) {
-			List cachedIds = tagIdCache[id] ?: []
-			cachedIds << tagInstance.id
-			tagIdCache.put(id, cachedIds)
-
-			List cachedDescriptions = tagCache[id] ?: []
-			cachedDescriptions << tagInstance.description
-			tagCache.put(id, cachedDescriptions)
-		}
-	}
-
-	private static removeFromCache(GenericTagGroup tagGroupInstance, Tag tagInstance) {
-		removeFromCache(tagGroupInstance.id, tagInstance)
-	}
-
-	private static removeFromCache(Long id, Tag tagInstance) {
-		synchronized(tagCache) {
-			List cachedIds = tagIdCache[id] ?: []
-			cachedIds.remove(tagInstance.id)
-			tagIdCache.put(id, cachedIds)
-
-			List cachedDescriptions = tagCache[id] ?: []
-			cachedDescriptions.remove(tagInstance.description)
-			tagCache.put(id, cachedDescriptions)
-		}
-	}
-
-	void addTagGroupToCache(GenericTagGroup childTagGroupInstance, Long userId) {
+	void addToCache(GenericTagGroup childTagGroupInstance, Long userId) {
 		if (hasCachedData()) {
 			childTagGroupInstance.getTags(userId).each { tagInstance ->
-				addTagToCache(tagInstance)
+				this.addToCache(tagInstance)
 			}
 		}
 	}
 
-	void addTagToCache(Tag tagInstance) {
+	/*
+	 * Method to add an instance of tag to the cache.
+	 * This method first check if the cache of current tag group is empty or not.
+	 * This method will only cache the tag instance if its cache is not empty.
+	 * This check is needed to prevent returning incomplete data from getTags() method.
+	 */
+	void addToCache(Tag tagInstance) {
 		if (hasCachedData()) {
-			addToCache(this, tagInstance)
+			cache([tagInstance])
 		}
 	}
 
-	boolean containsTag(Tag tag, Long userId) {
+	/*
+	 * A method to cache the list of tags for a given tag group.
+	 */
+	void cache(List<Tag> tagInstanceList) {
+		Set cachedIds = tagIdCache[id] ?: []
+		Set cachedDescriptions = tagDescriptionCache[id] ?: []
+
+		tagInstanceList.each { tagInstance ->
+			synchronized(tagDescriptionCache) {
+				cachedIds << tagInstance.id
+				tagIdCache.put(id, cachedIds)
+
+				cachedDescriptions << tagInstance.description
+				tagDescriptionCache.put(id, cachedDescriptions)
+			}
+		}
+	}
+
+
+	boolean containsTag(Tag tag, Long userId = null) {
 		if (!tag) {
 			return false
 		}
 		tag.id in getTagsIds(userId)
 	}
 
-	boolean containsTagString(String tagString, Long userId) {
+	boolean containsTagString(String tagString, Long userId = null) {
 		tagString in getTagsDescriptions(userId)
 	}
 
 	/*
 	 * Get list of all tag instances associated with this tag group instance.
 	 * This will get all nested tags which are sub tags of any sub tag group.
+	 * 
+	 * Passing user id will exclude the tags & tag groups for the current tag group.
 	 */
 	List<Tag> getTags(Long userId) {
 		if (tagIdCache[this.id]) {
@@ -122,27 +111,27 @@ class TagGroup extends GenericTagGroup {
 			filteredSubTagList.addAll(tagGroupInstance.getTags(userId))
 		}
 
-		filteredSubTagList.each { Tag tagInstance ->
-			addToCache(this, tagInstance)
-		}
+		cache(filteredSubTagList)
 
 		return filteredSubTagList
 	}
 
+	// Helper method to get list of descriptions of all tags.
 	List<String> getTagsDescriptions(Long userId) {
 		// Look for cached sub tag ids.
-		if (tagCache[this.id]) {
-			return tagCache[this.id]
+		if (tagDescriptionCache[this.id]) {
+			return tagDescriptionCache[this.id] as List
 		}
 
 		// Fetch & cache all sub tags & return descriptions/names
 		return getTags(userId)*.description
 	}
 
+	// Helper method to get list of id of all tags.
 	List<Long> getTagsIds(Long userId) {
 		// Look for cached sub tag ids.
 		if (tagIdCache[this.id]) {
-			return tagIdCache[this.id]
+			return tagIdCache[this.id] as List
 		}
 
 		// Fetch & cache all sub tags & return ids
@@ -153,17 +142,23 @@ class TagGroup extends GenericTagGroup {
 		tagIdCache[this.id]
 	}
 
-	void removeTagFromCache(Tag tagInstance) {
+	void removeFromCache(GenericTagGroup subTagGroupInstance, Long userId = null) {
 		if (hasCachedData()) {
-			removeFromCache(this, tagInstance)
+			subTagGroupInstance.getTags(userId).each { tagInstance ->
+				removeFromCache(tagInstance)
+			}
 		}
 	}
 
-	void removeTagGroupFromCache(GenericTagGroup subTagGroupInstance, Long userId) {
-		if (hasCachedData()) {
-			subTagGroupInstance.getTags(userId).each { tagInstance ->
-				removeTagFromCache(tagInstance)
-			}
+	void removeFromCache(Tag tagInstance) {
+		synchronized(tagDescriptionCache) {
+			Set cachedIds = tagIdCache[id] ?: []
+			cachedIds.remove(tagInstance.id)
+			tagIdCache.put(id, cachedIds)
+
+			Set cachedDescriptions = tagDescriptionCache[id] ?: []
+			cachedDescriptions.remove(tagInstance.description)
+			tagDescriptionCache.put(id, cachedDescriptions)
 		}
 	}
 }

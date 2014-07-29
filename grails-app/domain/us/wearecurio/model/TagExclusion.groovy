@@ -42,11 +42,9 @@ class TagExclusion {
 
 		if (Utils.save(exclusion, true)) {
 			if (tagOrTagGroupToExclude instanceof GenericTagGroup) {
-				tagOrTagGroupToExclude.getTags(null).each { tagInstance ->
-					tagGroupProperty.getTagGroup().removeTagFromCache(tagInstance)
-				}
+				tagGroupProperty.getTagGroup().removeFromCache(tagOrTagGroupToExclude, tagGroupProperty.userId)
 			} else {
-				tagGroupProperty.getTagGroup().removeTagFromCache(tagOrTagGroupToExclude)
+				tagGroupProperty.getTagGroup().removeFromCache(tagOrTagGroupToExclude)
 			}
 			return exclusion
 		}
@@ -70,11 +68,9 @@ class TagExclusion {
 		exclusion.delete(flush: true)
 
 		if (tagOrTagGroupToAddBack instanceof GenericTagGroup) {
-			tagOrTagGroupToAddBack.getTags(null).each { tagInstance ->
-				tagGroupProperty.getTagGroup().addTagToCache(tagInstance)
-			}
+			tagGroupProperty.getTagGroup().addToCache(tagOrTagGroupToAddBack)
 		} else {
-			tagGroupProperty.getTagGroup().addTagToCache(tagOrTagGroupToAddBack)
+			tagGroupProperty.getTagGroup().addToCache(tagOrTagGroupToAddBack)
 		}
 
 		return exclusion
