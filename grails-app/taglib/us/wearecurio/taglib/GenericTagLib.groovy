@@ -1,12 +1,17 @@
 package us.wearecurio.taglib
 
-import grails.util.Environment;
+import grails.util.Environment
 
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
+
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 
 class GenericTagLib {
 
 	static namespace = "c"
+
+	def securityService
 
 	/**
 	 * A generic tag to prevent CSRF which uses the infrastructure of grails built in
@@ -49,6 +54,19 @@ class GenericTagLib {
 		if(!attrs.noScriptTag) {
 			out << "</script>"
 		}
+	}
+
+	def ifAdmin = { attrs, body ->
+		def (boolean authorized, User user) = securityService.checkLogin(actionName, request, params, flash, session)
+		if (!authorized || !session.userId) {
+			return
+		}
+
+		if (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId)) {
+			return
+		}
+
+		out << body()
 	}
 
 }

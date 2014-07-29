@@ -10,18 +10,10 @@
 		autofocus="" required="" />
 </div>
 
-<div class="form-group hide">
-	<label for="userId">
-		User (Either user group or user is required)
-	</label>
-	<g:select name="userId" from="${User.list()}" optionKey="id" optionValue="name"
-		class="form-control" noSelection="['':'Select User']" />
-</div>
-
 <div class="form-group">
 	<label for="groupId">
 		User Group
 	</label>
 	<g:select name="groupId" from="${UserGroup.list()}" class="form-control" noSelection="['':'Select Group']"
-		optionKey="id" optionValue="fullName" required="" />
+		optionKey="id" optionValue="fullName" required="" value="${sharedTagGroupInstance?.associatedGroup()?.id}" />
 </div>
