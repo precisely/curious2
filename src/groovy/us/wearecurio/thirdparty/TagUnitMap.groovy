@@ -5,7 +5,9 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.Entry.ParseAmount
 import us.wearecurio.services.*
+import us.wearecurio.units.UnitGroupMap
 
 abstract class TagUnitMap {
 
@@ -17,64 +19,43 @@ abstract class TagUnitMap {
 	final static String SLEEP = "sleep"
 	// The above constants are used for common string across various tag maps.
 
-	static final BigDecimal KG_TO_POUNDS = new BigDecimal(220462, 5)
-	static final BigDecimal M_TO_FEET = new BigDecimal(328084, 5)
-	public final static int MINUTES_TO_MS = 60 * 1000
-	public final static float MS_TO_MINUTES = 0.00001667
-	public final static float SECONDS_TO_MINUTES = 1 / 60
-	public final static float SECONDS_TO_HOURS = 1 / 3600
-	public final static float SCALE_TO_0_10 = 10 / 100
-	public final static int TO_MILLI = 1000
-	public final static float METER_TO_KM = 1 / 1000
-	public final static float METER_TO_MILE = 0.000621371
-
 	final static int AVERAGE = 1
-	final static int BUCKET = 2
 
 	static Map commonTagMap = [:]
 
 	private static def log = LogFactory.getLog(this)
+	
+	UnitGroupMap unitGroupMap
+	
+	public TagUnitMap() {
+		unitGroupMap = UnitGroupMap.theMap
+	}
 
 	static {
 		commonTagMap = [
-			activityCalorie: [tag: "$ACTIVITY calories", unit: "cal"],
-			activityDistance: [tag: "$ACTIVITY distance", unit: "miles", convert: true, type: METER_TO_MILE],
-			activityElevation: [tag: "$ACTIVITY elevation", unit: "meters"],
-			activitySteps: [tag: "$ACTIVITY move", unit: "steps"],
-			activityDuration: [tag: "$ACTIVITY duration", unit: "min", convert: true, type: SECONDS_TO_MINUTES],
+			activityCalorie: [tag: "$ACTIVITY", unit: "cal"],
+			activityDistance: [tag: "$ACTIVITY", unit: "miles", convert: true, from:"meters"],
+			activityElevation: [tag: "$ACTIVITY", unit: "meters elevation"],
+			activitySteps: [tag: "$ACTIVITY", unit: "steps"],
+			activityDuration: [tag: "$ACTIVITY", unit: "min", convert: true], from:"seconds",
 
-			bpDiastolic: [tag: "blood pressure diastolic", unit: "mmHg"],
-			bpSystolic: [tag: "blood pressure systolic", unit: "mmHg"],
-			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			bpDiastolic: [tag: "blood pressure", suffix: "diastolic", unit: "mmHg"],
+			bpSystolic: [tag: "blood pressure", suffix: "systolic", unit: "mmHg"],
+			fatFreeMass: [tag: "fat free mass", unit: "lbs", amountPrecision: 2, convert: true, from:"kg"],
 			fatRatio: [tag: "fat ratio", unit: "%"],
-			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			fatMassWeight: [tag: "fat mass weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 			heartRate: [tag: "heart rate", unit: "bpm"],
-			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, type: KG_TO_POUNDS],
-			steps: [tag: "$ACTIVITY steps", unit: ""],	// @Deprecated. Use `activitySteps` instead.
-			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, type: KG_TO_POUNDS],
+			height: [tag: "height", unit: "feet", amountPrecision: 5, convert: true, from: "meters"],
+			steps: [tag: "$ACTIVITY", unit: "steps"],	// @Deprecated. Use `activitySteps` instead.
+			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 		]
 	}
-
-	/**
-	 * Generic method to convert a tag value from one unit to another if needed
-	 * @param amount Value to convert.
-	 * @param currentUnitMap Tag map for conversion.
-	 * @return Returns converted value.
-	 */
-	BigDecimal convert(BigDecimal amount, Map currentUnitMapping) {
-		switch(currentUnitMapping.type) {
-			// Operation to be performed are on buckets, ex.: merging
-			// Or type provided is a key in bucket[] to hold values
-			case BUCKET:
-				log.debug "Adding to bucket: " + getBuckets()[currentUnitMapping.bucketKey]
-				getBuckets()[currentUnitMapping.bucketKey].values.add(amount)
-				break
-			default:
-				amount = amount * currentUnitMapping.type
-				break
+	
+	static calculateUnitConversion(Map map) {
+		for (Map value : map.values()) {
+			if (value['convert'])
+				value['ratio'] = UnitGroupMap.theMap.fetchConversionRatio(value['from'], value['unit'])
 		}
-
-		return amount
 	}
 
 	/**
@@ -104,7 +85,11 @@ abstract class TagUnitMap {
 			amount = amount.toBigDecimal()
 		}
 		if (currentMapping.convert) {
-			amount = convert(amount, currentMapping)
+			amount = amount * currentMapping.ratio
+		}
+		if (currentMapping.bucketKey) {
+			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]
+			getBuckets()[currentMapping.bucketKey].values.add(amount)
 		}
 
 		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
@@ -112,19 +97,37 @@ abstract class TagUnitMap {
 
 		String description = args["tagName"] ?: currentMapping["tag"]
 		
+		Tag baseTag = Tag.look(description)
+		
+		Tag tag
+		
+		if (currentMapping["suffix"]) {
+			tag = Tag.look(description + ' ' + suffix)
+		} else {
+			tag = unitGroupMap.tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
+		}
+		
+		if (amount != null) {
+			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
+		}
+
+		ParseAmount parseAmount = new ParseAmount(amount, args["amountPrecision"])
+		parseAmount.setTagAndBaseTag(tag, baseTag)
+		parseAmount.setUnits(currentMapping["unit"])
+		
+		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
+		
+		amounts.add(parseAmount)
+		
 		if (args["isSummary"]) {
 			description += " summary" 
 			args['datePrecisionSecs'] = Entry.VAGUE_DATE_PRECISION_SECS
 		} else
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
 
-		if (amount != null) {
-			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
-		}
+		Map parsedEntry = [userId: userId, date: date, tag: tag, baseTag: baseTag, description: description, amounts: amounts,
+				comment: comment, setName: setName, timeZoneId: timeZoneId]
 
-		Map parsedEntry = [userId: userId, date: date, description: description, amount: amount, units: currentMapping["unit"],
-			comment: comment, setName: setName, timeZoneId: timeZoneId]
-		
 		parsedEntry.putAll(args)
 		Entry.updatePartialOrCreate(userId, parsedEntry, null)
 	}

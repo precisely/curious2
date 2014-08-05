@@ -5,8 +5,8 @@ import us.wearecurio.model.*
 import us.wearecurio.exceptions.*
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Discussion;
-import us.wearecurio.model.Entry.RepeatType;
-import us.wearecurio.model.Entry.TagStatsRecord
+import us.wearecurio.model.java.EntryJava.RepeatType;
+import us.wearecurio.model.Entry.EntryStats;
 
 import java.math.MathContext
 import java.text.DateFormat
@@ -61,12 +61,13 @@ class DataController extends LoginController {
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
 		def parsedEntry = Entry.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
-		TagStatsRecord record = new TagStatsRecord()
-		def entry = Entry.create(user.getId(), parsedEntry, record)
+		EntryStats stats = new EntryStats()
+		def entry = Entry.create(user.getId(), parsedEntry, stats)
+		def tagStats = stats.finish()
 
 		debug("created " + entry)
 
-		return [entry, parsedEntry['status'], record.getOldTagStats()]
+		return [entry, parsedEntry['status'], tagStats.getFirst()]
 	}
 
 	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow, allFuture) {
@@ -97,10 +98,12 @@ class DataController extends LoginController {
 		def baseDate = parseDate(baseDateStr)
 		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
 
+		EntryStats stats = new EntryStats(entry.getUserId())
+		
 		// activate repeat entry if it has a repeat type
 		if (entry.getRepeatType() != null && (entry.getRepeatType().isReminder() || entry.getRepeatType().isContinuous())) {
 			debug "Activating ghost entry " + entry
-			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
+			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName, stats)
 			if (newEntry != null) {
 				entry = newEntry
 				debug "New activated entry " + newEntry
@@ -111,11 +114,12 @@ class DataController extends LoginController {
 		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
 		if (entry != null) {
-			TagStatsRecord record = new TagStatsRecord()
-			entry = Entry.update(entry, m, record, baseDate, allFuture)
-			return [entry, '', record.getOldTagStats(), record.getNewTagStats()];
+			entry = Entry.update(entry, m, stats, baseDate, allFuture)
+			def tagStats = stats.finish()
+			return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
 		} else {
 			debug "Parse error"
+			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
 		}
 	}
@@ -145,6 +149,8 @@ class DataController extends LoginController {
 		Date currentDate = null
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
 		Date now = new Date()
+		
+		EntryStats stats = new EntryStats()
 
 		reader.eachCsvLine { tokens ->
 			++lineNum
@@ -179,12 +185,14 @@ class DataController extends LoginController {
 						amountPrecision:Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
 						datePrecisionSecs:Integer.valueOf(tokens[7].equals("null") ? '180':tokens[7]), \
 					]
-					def entry = Entry.create(userId, parsedEntry, null)
+					def entry = Entry.create(userId, parsedEntry, stats)
 
 					debug("created " + entry)
 				}
 			}
 		}
+		
+		stats.finish()
 
 		return true
 	}
@@ -336,7 +344,9 @@ class DataController extends LoginController {
 			if (entry.getUserId() != sessionUser().getId()) {
 				renderStringGet('You do not have permission to activate this entry.')
 			}
-			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName)
+			EntryStats stats = new EntryStats(user.getId())
+			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName, stats)
+			stats.finish()
 			if (newEntry != null) {
 				renderJSONGet(newEntry.getJSONDesc())
 			} else
@@ -368,8 +378,11 @@ class DataController extends LoginController {
 
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to delete this entry.')
-		} else
-			Entry.deleteGhost(entry, currentDate, allFuture)
+		} else {
+			EntryStats stats = new EntryStats()
+			Entry.deleteGhost(entry, stats, currentDate, allFuture)
+			stats.finish()
+		}
 
 		renderStringGet("success")
 	}
@@ -496,34 +509,6 @@ class DataController extends LoginController {
 		}
 	}
 
-	def deleteEntryData() { // old API
-		debug "DataController.deleteEntryData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		def entry = Entry.get(params.entryId.toLong());
-		def userId = entry.getUserId();
-
-		def currentTime = params.currentTime == null ? null : parseDate(params.currentTime)
-		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
-
-		if (entry.getUserId() != sessionUser().getId()) {
-			renderStringGet('You do not have permission to delete this entry.')
-		} else if (entry.fetchIsGenerated()) {
-			renderStringGet('Cannot delete generated entries.')
-		} else {
-			TagStatsRecord record = new TagStatsRecord()
-			Entry.delete(entry, record)
-			renderJSONGet(listEntries(sessionUser(), TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate), params.displayDate))
-		}
-	}
-
 	def deleteEntrySData() { // new API
 		debug "DataController.deleteEntrySData() params:" + params
 
@@ -547,11 +532,12 @@ class DataController extends LoginController {
 		} else if (entry.fetchIsGenerated()) {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
-			TagStatsRecord record = new TagStatsRecord()
-			Entry.delete(entry, record)
+			EntryStats stats = new EntryStats()
+			Entry.delete(entry, stats)
+			def tagStats = stats.finish()
 			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.displayDate),
-				record.getOldTagStats()?.getJSONDesc(),
-				record.getNewTagStats()?.getJSONDesc()])
+				tagStats[0].getJSONDesc(),
+				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
 		}
 	}
 

@@ -2,6 +2,10 @@ package us.wearecurio.units
 
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.model.*
+import us.wearecurio.parse.PatternScanner
+
+import java.util.HashSet;
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class UnitGroupMap {
@@ -11,6 +15,7 @@ class UnitGroupMap {
 	public static final int RATIO = 0
 	public static final int AFFINITY = 1
 	public static final int CANONICALUNIT = 2
+	public static final int SUFFIX = 3
 	//Duration
 	public static final long MILLISECOND = 1
 	public static final double PICOSECOND = MILLISECOND * 0.000000001d
@@ -107,6 +112,26 @@ class UnitGroupMap {
 	//Steps
 	public static final double STEPSUNIT = 1
 	
+	//Percentage
+	public static final double PERCENTAGEUNIT = 1
+	
+	//Frequency
+	public static final double PERSECOND = 1.0d
+	public static final double PERMINUTE = 60.0d
+	public static final double PERHOUR = 60.0d * PERMINUTE
+	public static final double PERDAY = 24.0d * PERHOUR
+	public static final double PERWEEK = 7.0d * PERDAY
+	public static final double PERMONTH = 30.4375d * PERDAY
+	public static final double PERYEAR = 365.25d * PERDAY
+	
+	//Scale
+	public static final double SCALEUNITY = 1
+	public static final double SCALETEN = 10
+	public static final double SCALEFIVE = 5
+	public static final double SCALEFOUR = 4
+	public static final double SCALETHREE = 4
+	
+	// other suffixes
 	static Map suffixPriority = ['systolic' : 10, 'diastolic' : 20]
 	
 	enum UnitGroup {
@@ -171,8 +196,8 @@ class UnitGroupMap {
 			'pj':[PETAJOULE,3,'petajoule'], 'petajoule':[PETAJOULE,10,'petajoule'], 'petajoules':[PETAJOULE,10,'petajoule'],
 			'kwh':[KILOWATTHOUR,7,'kilowatt-hour'], 'kilowatt-hour':[KILOWATTHOUR,10,'kilowatt-hour'], 'kilowatt-hours':[KILOWATTHOUR,10,'kilowatt-hour'], 'kilowatt hour':[KILOWATTHOUR,10,'kilowatt-hour'], 'kilowatt hours':[KILOWATTHOUR,10,'kilowatt-hour'], 'kilowatthour':[KILOWATTHOUR,10,'kilowatt-hour'], 'kilowatthours':[KILOWATTHOUR,10,'kilowatt-hour'],
 			'therm':[THERM,10,'therm'], 'therms':[THERM,10,'therm'],
-			'cal':[CALORIE,3,'calorie'], 'cals':[CALORIE,2,'calorie'], 'calorie':[CALORIE,10,'calorie'], 'calories':[CALORIE,10,'calorie'],
-			'kcal':[KILOCALORIE,7,'kilocalorie'], 'kcals':[KILOCALORIE,7,'kilocalorie'], 'kcalorie':[KILOCALORIE,10,'kilocalorie'], 'kcalories':[KILOCALORIE,10,'kilocalorie'],
+			'cal':[CALORIE,3,'calorie','calories'], 'cals':[CALORIE,2,'calorie','calories'], 'calorie':[CALORIE,10,'calorie','calories'], 'calories':[CALORIE,10,'calorie','calories'],
+			'kcal':[KILOCALORIE,7,'kilocalorie','calories'], 'kcals':[KILOCALORIE,7,'kilocalorie','calories'], 'kcalorie':[KILOCALORIE,10,'kilocalorie','calories'], 'kcalories':[KILOCALORIE,10,'kilocalorie','calories'],
 			'kiloton':[KILOTON,10,'kiloton'], 'kilotonne':[KILOTON,10,'kiloton'], 'kilotons':[KILOTON,10,'kiloton'], 'kilotonnes':[KILOTON,10,'kiloton'],
 			'megaton':[MEGATON,10,'megatons'], 'megatons':[MEGATON,10,'megatons'], 'megatonne':[MEGATON,10,'megatons'], 'megatonnes':[MEGATON,10,'megatons'],
 			'ev':[EV,5,'electron-volt'], 'evs':[EV,2,'electron-volt'], 'electron-volt':[EV,10,'electron-volt'], 'electron-volts':[EV,10,'electron-volt'], 'electron volt':[EV,10,'electron-volt'], 'electron volts':[EV,10,'electron-volt'],
@@ -199,8 +224,46 @@ class UnitGroupMap {
 		]),
 		STEPS(13, "steps", 5, [
 			'steps':[STEPSUNIT,10,'steps'],
+		]),
+		PERCENTAGE(13, "percentage", 1000, [
+			'%':[PERCENTAGEUNIT,10,'percent'], 'percent':[PERCENTAGEUNIT,10,'percent'], 'percentage':[PERCENTAGEUNIT,10,'percent'],
+		]),
+		FREQUENCY(13, "frequency", 90, [
+			'per sec':[PERSECOND,10,'per second'], 'per second':[PERSECOND,10,'per second'], 'bps':[PERSECOND,8,'per second'],
+			'/ s':[PERSECOND,5,'per second'], '/ sec':[PERSECOND,9,'per second'],
+			'/s':[PERSECOND,4,'per second'], '/sec':[PERSECOND,10,'per second'],
+			'per min':[PERMINUTE,10,'per minute'], 'per minute':[PERMINUTE,10,'per minute'], 'bpm':[PERMINUTE,8,'per minute'],
+			'/ m':[PERMINUTE,9,'per minute'], '/ min':[PERMINUTE,9,'per minute'],
+			'/m':[PERMINUTE,4,'per minute'], '/min':[PERMINUTE,10,'per minute'],
+			'per hr':[PERHOUR,10,'per hour'], 'per hour':[PERHOUR,10,'per hour'],
+			'/ h':[PERHOUR,8,'per hour'], '/ hr':[PERHOUR,5,'per hour'], '/ hour':[PERHOUR,9,'per hour'],
+			'/h':[PERHOUR,8,'per hour'], '/hr':[PERHOUR,5,'per hour'], '/hour':[PERHOUR,9,'per hour'],
+			'per day':[PERDAY,10,'per day'], 'per d':[PERDAY,10,'per day'],
+			'/ d':[PERDAY,5,'per day'], '/ day':[PERDAY,9,'per day'],
+			'/d':[PERDAY,5,'per day'], '/day':[PERDAY,9,'per day'],
+			'per w':[PERWEEK,10,'per week'], 'per week':[PERWEEK,10,'per week'], 'per wk':[PERWEEK,10,'per week'],
+			'/ week':[PERWEEK,8,'per week'], '/ w':[PERWEEK,5,'per week'], '/ wk':[PERWEEK,9,'per week'],
+			'/week':[PERWEEK,8,'per week'], '/w':[PERWEEK,5,'per week'], '/wk':[PERWEEK,9,'per week'],
+			'per mon':[PERMONTH,10,'per month'], 'per month':[PERMONTH,10,'per month'],
+			'/ month':[PERMONTH,5,'per month'], '/ mnth':[PERMONTH,9,'per month'], '/ mon':[PERMONTH,4,'per month'],
+			'/month':[PERMONTH,5,'per month'], '/mnth':[PERMONTH,9,'per month'], '/mon':[PERMONTH,4,'per month'],
+			'per y':[PERYEAR,10,'per year'], 'per year':[PERYEAR,10,'per year'], 'per yr':[PERYEAR,8,'per year'],
+			'/ y':[PERYEAR,5,'per year'], '/ year':[PERYEAR,9,'per year'], '/ yr':[PERYEAR,5,'per year'],
+			'/y':[PERYEAR,5,'per year'], '/year':[PERYEAR,9,'per year'], '/yr':[PERYEAR,5,'per year'],
+		]),
+		SCALE(13, "scale", 3, [
+			'scale':[SCALETEN,10,'to ten'], '':[SCALETEN,1,'to ten'], 'to ten':[SCALETEN,10,'to ten'],
+			'unity':[SCALEUNITY,10,'to ten'], 'to one':[SCALEUNITY,10,'to one'],
+			'to three':[SCALETHREE,10,'to three'], 'to four':[SCALEFOUR,10,'to four'], 'to five':[SCALEFIVE,10,'to five'],
 		])
-
+		public static final double PERSECOND = 1.0d
+		public static final double PERMINUTE = 60.0d
+		public static final double PERHOUR = 60.0d * PERMINUTE
+		public static final double PERDAY = 24.0d * PERHOUR
+		public static final double PERWEEK = 7.0d * PERDAY
+		public static final double PERMONTH = 30.4375d * PERDAY
+		public static final double PERYEAR = 365.25d * PERDAY
+	
 		final int id
 		final String name
 		final int priority // priority for listing units in a sequence
@@ -217,15 +280,17 @@ class UnitGroupMap {
 			suffixPriority[name] = priority
 			
 			unitGroupNames.add(name)
+			
 			for (e in initMap) {
 				String unit = e.key
 				def val = e.value
+				String suffix = name
+				
+				if (val.size() > SUFFIX)
+					suffix = val[SUFFIX]
+				
 				map.put(unit, new UnitRatio(
-					unitMap:this,
-					unit: unit,
-					ratio: val[RATIO],
-					affinity:val[AFFINITY],
-					canonicalUnit:val[CANONICALUNIT]
+					this, unit, val[RATIO], val[AFFINITY], val[CANONICALUNIT], suffix
 				))
 				units.add(unit)
 			}
@@ -267,6 +332,25 @@ class UnitGroupMap {
 		double ratio
 		def affinity
 		String canonicalUnit
+		String suffix
+		
+		public UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String suffix) {
+			this.unitGroup = unitGroup
+			this.unit = unit
+			this.ratio = ratio
+			this.affinity = affinity
+			this.canonicalUnit = canonicalUnit
+			this.suffix = suffix
+		}
+		
+		public UnitRatio(UnitRatio other, String newSuffix) {
+			this.unitGroup = other.unitGroup
+			this.unit = other.unit
+			this.ratio = other.ratio
+			this.affinity = other.affinity
+			this.canonicalUnit = other.canonicalUnit
+			this.suffix = newSuffix
+		}
 		
 		UnitRatio bestRatio(UnitRatio other) {
 			if (other == null)
@@ -287,12 +371,10 @@ class UnitGroupMap {
 		}
 	}
 	
-	public static class UnitSuffix {
-		UnitGroup group
-		String suffix
-	}
-	
 	public static final UnitGroupMap theMap = new UnitGroupMap()
+	
+	static Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
+	static Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	
 	Map<String, UnitRatio> unitToRatio = new HashMap<String, UnitRatio>()
 
@@ -323,11 +405,44 @@ class UnitGroupMap {
 		return unitRatio
 	}
 	
+	public double fetchConversionRatio(String fromUnits, String toUnits) {
+		UnitRatio fromUnitRatio = unitToRatio.get(fromUnits)
+		UnitRatio toUnitRatio = unitToRatio.get(toUnits)
+		
+		return fromUnitRatio.ratio / toUnitRatio.ratio
+	}
+	
 	/**
 	 * Returns generic closest-matching UnitRatio for the given unit string
 	 */
-	public UnitRatio unitRatioForUnits(String unit) {
-		return unitToRatio.get(unit)
+	public UnitRatio unitRatioForUnits(String units) {
+		UnitRatio ratio = unitToRatio.get(units)
+		
+		if (ratio != null) return ratio
+		
+		Matcher matcher = twoWordUnitPattern.matcher(units)
+		
+		if (matcher.lookingAt()) {
+			String units2 = matcher.group(1)
+			ratio = unitToRatio.get(units2)
+			if (ratio != null) {
+				String suffix = matcher.group(3)
+				return new UnitRatio(ratio, suffix)
+			}
+		}
+		
+		matcher = oneWordUnitPattern.matcher(units)
+		
+		if (matcher.lookingAt()) {
+			String units1 = matcher.group(1)
+			ratio = unitToRatio.get(units1)
+			if (ratio != null) {
+				String suffix = matcher.group(5)
+				return new UnitRatio(ratio, suffix)
+			}
+		}
+		
+		return null
 	}
 
 	/**
@@ -352,11 +467,44 @@ class UnitGroupMap {
 	public String getSuffixForUnits(String tagDescription, String units) {
 		UnitRatio unitRatio = unitRatioForUnits(units)
 		if (unitRatio) {
-			return unitRatio.getUnitGroup().getName()
+			return unitRatio.getSuffix()
 		}
 		return units
 	}
 	
+	static HashSet<Tag> bloodPressureTags = new HashSet<Tag>()
+	
+	static {
+		bloodPressureTags.add(Tag.look("blood pressure"))
+		bloodPressureTags.add(Tag.look("bp"))
+		bloodPressureTags.add(Tag.look("blood"))
+	}
+	
+	/**
+	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
+	 */
+	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
+		if (bloodPressureTags.contains(baseTag)) {
+			if (units) {
+				String suffix = getSuffixForUnits(baseTag.getDescription(), units)
+				if (suffix) {
+					if (suffix.equals("pressure")) {
+						if (index == 0) suffix = "systolic"
+						else suffix = "diastolic"
+					}
+					return Tag.look(baseTag.getDescription() + ' ' + suffix)
+				}
+			}
+		}
+		if (units) {
+			String suffix = UnitGroupMap.theMap.getSuffixForUnits(baseTag.getDescription(), units)
+			if (suffix)
+				return Tag.look(baseTag.getDescription() + ' ' + suffix)
+		}
+		
+		return baseTag
+	}
+
 	/**
 	 * Return set of all suffixes for parsing
 	 */

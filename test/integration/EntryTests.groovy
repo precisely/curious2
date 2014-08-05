@@ -13,7 +13,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.model.Entry.TagStatsRecord
+import us.wearecurio.model.Entry.EntryStats
 import us.wearecurio.services.DatabaseService
 
 import org.joda.time.DateTimeZone
@@ -1518,14 +1518,14 @@ class EntryTests extends CuriousTestCase {
 	
 	@Test
 	void testRemind() {
-		TagStatsRecord record = new TagStatsRecord()
+		EntryStats stats = new EntryStats()
 		
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm remind", baseDate, true), record)
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 2pm remind", baseDate, true), stats)
 		def v = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517, repeatEnd:null)")
 
 		// tag stats for reminders should be "none" value for the amount
-		def tagStats = record.getOldTagStats()
+		def tagStats = stats.finish()[0]
 		assert tagStats.getLastAmount() == null
 		assert tagStats.getLastAmountPrecision() < 0
 		
@@ -2230,11 +2230,11 @@ class EntryTests extends CuriousTestCase {
 		
 		assert result4.getLastUnits().equals("")
 		
-		TagStatsRecord record = new TagStatsRecord()
+		EntryStats stats = new EntryStats()
 		
-		Entry.delete(entry, record)
+		Entry.delete(entry, stats)
 		
-		result = record.getOldTagStats()
+		result = stats.finish()[0]
 		
 		assert result.getMostRecentUsage() == null
 		

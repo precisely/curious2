@@ -35,11 +35,11 @@ class EntryGroup {
 
 	static hasMany = [entries : Entry]
 	
-	def addEntry(Entry e) {
+	def add(Entry e) {
 		entries.add(e)
 	}
 	
-	def removeEntry(Entry e) {
+	def remove(Entry e) {
 		entries.remove(e)
 	}
 }
