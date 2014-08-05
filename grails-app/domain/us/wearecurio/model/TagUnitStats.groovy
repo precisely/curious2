@@ -3,6 +3,7 @@ package us.wearecurio.model
 import org.apache.commons.logging.LogFactory
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 class TagUnitStats {
 	
@@ -17,6 +18,7 @@ class TagUnitStats {
 	static mapping = {
 		version false
 		table 'tag_unit_stats'
+		unit column:'unit', index:'unit_index'
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 	}
@@ -50,7 +52,7 @@ class TagUnitStats {
 			tagUnitStats = tagUnitStats[0]
 		} else {
 			// If this unit is being used for the first time for this tag
-			def unitRatio = UnitGroupMap.theMap.unitRatioForUnit(unit)
+			UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(unit)
 			if (!unitRatio) {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
 				//If we can't find it in our map we use the most used unit
@@ -65,7 +67,7 @@ class TagUnitStats {
 			} else {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
 				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
-						unit: unitRatio.unit, unitGroupId: unitRatio.getGroupId())
+						unit: unitRatio.getUnit(), unitGroupId: unitRatio.getGroupId())
 			}
 		}
 		

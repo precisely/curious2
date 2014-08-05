@@ -380,6 +380,9 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 		}
+		tryMigration("Add unit index to TagUnitStats") {
+			sql("create index unit_index ON tag_unit_stats (unit)")
+		}
 	}
 	
 	/**

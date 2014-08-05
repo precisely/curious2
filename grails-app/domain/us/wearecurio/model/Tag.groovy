@@ -85,4 +85,15 @@ class Tag {
 	def String toString() {
 		return "Tag(id:" + id + ", description:" + description + ")"
 	}
+	
+	public int hashCode() {
+		return (int)getId()
+	}
+	
+	public boolean equals(Object other) {
+		if (!other instanceof Tag)
+			return false
+		
+		return getId() == other.getId()
+	}
 }

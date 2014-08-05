@@ -5,15 +5,19 @@ import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.model.java.EntryJava.RepeatType
+import static us.wearecurio.model.java.EntryJava.*
+import us.wearecurio.parse.ParseUtils
+
 import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.units.UnitGroupMap
-import us.wearecurio.units.UnitGroupMap.UnitMap
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern
 import java.math.MathContext
@@ -23,7 +27,7 @@ import java.text.SimpleDateFormat
 import org.joda.time.*
 import org.junit.Before;
 
-class Entry {
+class Entry implements Comparable {
 
 	private static def log = LogFactory.getLog(this)
 
@@ -38,11 +42,8 @@ class Entry {
 	public static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
 	public static final int VAGUE_DATE_PRECISION_SECS = 86400
 	
-	public static enum EntryType {
-		final int id
-	}
-
 	static constraints = {
+		group(nullable:true)
 		amount(scale:9, nullable:true)
 		date(nullable:true)
 		datePrecisionSecs(nullable:true)
@@ -60,6 +61,7 @@ class Entry {
 	static mapping = {
 		version false
 		table 'entry'
+		group column: 'group_id', index:'group_id_index'
 		userId column:'user_id', index:'user_id_index'
 		date column:'date', index:'date_index'
 		tag column:'tag_id', index:'tag_id_index'
@@ -69,120 +71,6 @@ class Entry {
 		setIdentifier column:'set_identifier', index:'set_identifier_index'
 	}
 
-
-	// NOTE: Unghosted repeat entries are repeated in an unghosted manner all the way until their repeatEnd
-	// but unghosted remind entries are only unghosted on their start date, and not on subsequent dates
-
-	public static enum RepeatType { // IMPORTANT: there must be ghost entries for all non-ghost entries and vice-versa
-		// if you add more remind types, please edit the sql in RemindEmailService
-		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT, 7L * 24L * 60L * 60000),
-		DAILYGHOST(DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), WEEKLYGHOST(WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-		REMINDDAILY(REMIND_BIT | DAILY_BIT, 24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-		REMINDDAILYGHOST(REMIND_BIT | DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-
-		CONTINUOUS(CONTINUOUS_BIT, 1),
-		CONTINUOUSGHOST(CONTINUOUS_BIT | GHOST_BIT, 1),
-
-		DAILYCONCRETEGHOST(CONCRETEGHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
-		DAILYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT, 24L * 60L * 60000),
-		WEEKLYCONCRETEGHOST(CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-		WEEKLYCONCRETEGHOSTGHOST(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000),
-
-		GHOST(GHOST_BIT, 0),
-		NOTHING(0, 0)
-
-		public static final int DAILY_BIT = 1
-		public static final int WEEKLY_BIT = 2
-		public static final int REMIND_BIT = 4
-		public static final int CONTINUOUS_BIT = 0x0100
-		public static final int GHOST_BIT = 0x0200
-		public static final int CONCRETEGHOST_BIT = 0x0400
-		// like a ghost, but it appears in plot data, it is just a repetition of a prior
-		// entry, must be activated to edit
-
-		final Long id
-		final long duration
-		final boolean reminder
-		final boolean continuous
-
-
-		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>();
-
-		static {
-			RepeatType.each {
-				map.put(it.getId(), it)
-			}
-		}
-
-		static RepeatType get(Long id) {
-			return map.get(id)
-		}
-
-		RepeatType(Long id, long duration) {
-			this.id = id
-			this.duration = duration
-		}
-
-		def isGhost() {
-			return (this.id & GHOST_BIT) > 0
-		}
-
-		def isConcreteGhost() {
-			return (this.id & CONCRETEGHOST_BIT) > 0
-		}
-
-		def isAnyGhost() {
-			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
-		}
-
-		def isContinuous() {
-			return (this.id & CONTINUOUS_BIT) > 0
-		}
-
-		def isDaily() {
-			return (this.id & DAILY_BIT) > 0
-		}
-
-		def isWeekly() {
-			return (this.id & WEEKLY_BIT) > 0
-		}
-
-		def isReminder() {
-			return (this.id & REMIND_BIT) > 0
-		}
-
-		def isTimed() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
-		}
-
-		def isRepeat() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
-		}
-
-		def RepeatType unGhost() {
-			return RepeatType.get(this.id & (~GHOST_BIT))
-		}
-
-		def RepeatType toggleGhost() {
-			if (isGhost())
-				return RepeatType.get(this.id & (~GHOST_BIT))
-			return RepeatType.get(this.id | GHOST_BIT)
-		}
-
-		def RepeatType makeGhost() {
-			return RepeatType.get(this.id | GHOST_BIT)
-		}
-
-		def RepeatType makeConcreteGhost() {
-			return RepeatType.get(this.id | CONCRETEGHOST_BIT)
-		}
-
-		def RepeatType forUpdate() {
-			if (isReminder())
-				return RepeatType.get(this.id & (~(GHOST_BIT | CONCRETEGHOST_BIT)))
-			return this
-		}
-	}
 
 	public static def DAILY_IDS = [
 		RepeatType.DAILY.getId(),
@@ -235,17 +123,8 @@ class Entry {
 		RepeatType.REMINDDAILY.getId(),
 	]
 
-	public static enum DurationType {
-		NONE(0), START(1), END(2)
-
-		final Integer id
-
-		DurationType(Integer id) {
-			this.id = id
-		}
-	}
-
 	Long userId
+	EntryGroup group // used to group multidimensional entries together
 	Date date
 	Integer timeZoneId
 	Integer datePrecisionSecs
@@ -259,51 +138,18 @@ class Entry {
 	Tag baseTag
 	DurationType durationType
 	Identifier setIdentifier
+	
+	public String fetchSuffix() {
+		if (baseTag == null || baseTag == tag) {
+			return ""
+		}
+		
+		return tag.getDescription().substring(baseTag.length() + 1)
+	}
 
-	static final def durationSynonyms = [
-		'wake':'sleep end',
-		'wake up':'sleep end',
-		'woke':'sleep end',
-		'awakened':'sleep end',
-		'awoke':'sleep end',
-		'went to sleep':'sleep start',
-		'go to sleep':'sleep start',
-		'sleep':'sleep start',
-	]
-
-	static final def startSynonyms = [
-		'start',
-		'starts',
-		'begin',
-		'begins',
-		'starting',
-		'beginning',
-		'started',
-		'begun',
-		'began'
-	]
-
-	static final def startSynonymsSize = startSynonyms.size()
-
-	static final def endSynonyms = [
-		'end',
-		'ends',
-		'stop',
-		'stops',
-		'finish',
-		'finished',
-		'ended',
-		'stopped',
-		'stopping',
-		'ending',
-		'finishing'
-	]
-
-	static final def endSynonymsSize = endSynonyms.size()
-
-	static final def startOrEndSynonyms = startSynonyms + endSynonyms
-
-	static final def startOrEndSynonymsSize = startOrEndSynonyms.size()
+    int compareTo(obj) {
+        releaseDate.compareTo(obj.releaseDate)
+    }
 
 	static class TagStatsRecord {
 		TagStats oldTagStats
@@ -428,23 +274,62 @@ class Entry {
 		return false
 	}
 
-	static Entry create(Long userId, Map m, TagStatsRecord tagStatsRecord) {
-		log.debug "Entry.create() userId:" + userId + ", m:" + m
+	WORK STOPPED HERE:
+		modify update to handle multidimensional entries
+		modify delete to handle multidimensional entries
+		migrate existing multidimensinal entries
+			find entries matching certain patterns, add baseTag to entry
+			set entry group id to unique number for all matching entries
+		modify list method to combine entry group into single compound entry
+		modify web and mobile app to correctly display multidimensional entry
+		create special elevation units (feet elevation)
+		use entry creation stats to update statistics after creating entries in a batch
+		
+	/*
+	 * Class to return entry creation statistics for later updating of entry and tag statistics
+	 */
+	static class EntryStats {
+		Long userId
+		Set<Long> tagIds = new HashSet<Long>()
+		Integer timeZoneId = null
+		
+		public EntryStats(Long userId) {
+			this.userId = userId
+		}
+	
+		public void addTag(Tag tag) {
+			tags.add(tag.getId())
+		}
+		
+		public def finalize() { // after finalizing all entry creation, call this to update statistics
+			def tagStats = []
+			
+			for (Long tagId: tags) {
+				tagStats.add(TagStats.createOrUpdate(userId, tagId))
+			}
 
-		if (m == null) return null
-
-		if (m['description'] == null) return null
-
-		m['description'] = m['description'].toLowerCase()
+			if (timeZoneId != null)
+				User.setTimeZoneId(userId, timeZoneId)
+				
+			return tagStats
+		}
+	}
+	
+	static protected Entry createSingle(Long userId, Map m, EntryGroup group, EntryStats stats) {
+		log.debug "Entry.createSingle() userId:" + userId + ", m:" + m
 
 		if (hasDuplicate(userId, m)) {
 			log.debug "Entry map is a duplicate, do not add: " + m
 			return null
 		}
 
-		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], m['repeatType'])
-
-		Tag tag = Tag.look(m['description'])
+		Tag baseTag = m['baseTag']
+		DurationType durationType = m['durationType']
+		
+		if (durationType != null && ((RepeatType)m['repeatType'])?.isGhost())
+			durationType = durationType.makeGhost()
+		
+		Tag tag = m['tag']
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
@@ -461,6 +346,7 @@ class Entry {
 		
 		Entry entry = new Entry(
 				userId:userId,
+				group:group,
 				date:m['date'],
 				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
@@ -477,14 +363,10 @@ class Entry {
 				)
 
 		log.debug "Created entry:" + entry
+		
+		group.addEntry(entry)
 
 		entry.processAndSave()
-
-		TagStats tagStats = TagStats.createOrUpdate(userId, entry.getTag().getId())
-
-		if (tagStatsRecord != null) {
-			tagStatsRecord.setOldTagStats(tagStats)
-		}
 
 		entry.createRepeat()
 
@@ -493,9 +375,86 @@ class Entry {
 		if (generator != null)
 			generator.updateDurationEntry() // make sure duration entries remain consistent
 
-		User.setTimeZoneId(userId, entry.getTimeZoneId())
+		stats.addTag(entry.getTag())
+		stats.setTimeZoneId(entry.getTimeZoneId())
 
 		return entry
+	}
+	
+	static Tag tagWithSuffixForUnits(Tag baseTag, String units) {
+		if (unit) {
+			String suffix = UnitGroupMap.theMap.getSuffixForUnit(baseTagDescription, units)
+			if (suffix)
+				return Tag.look(baseTag.getDescription() + ' ' + suffix)
+		}
+		
+		return baseTag
+	}
+
+	/**
+	 * Create Entry
+	 * 
+	 * EntryStats are passed in to handle batch jobs, so entry statistics are updated all at once at the end of
+	 * the entry creation sequence, rather than on each entry creation
+	 */
+	static Entry create(Long userId, Map m, EntryStats stats = null) {
+		log.debug "Entry.create() userId:" + userId + ", m:" + m
+
+		if (m == null) return null
+		
+		boolean singleEntryCreation = false
+		
+		if (stats == null) {
+			// if no passed-in stats, this is a one-time entry creation event
+			singleEntryCreation = true
+			stats = startEntryCreation(userId)
+		}
+
+		if (m['description'] == null) return null
+
+		m['description'] = m['description'].toLowerCase()
+
+		Tag baseTag = Tag.look(m['baseTagDescription'] ?: m['description'])
+		
+		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
+
+		def tagUnitStats
+		if (!m['units']) {
+			// Using the most used unit in case the unit is unknown
+			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
+			if (tagUnitStats) {
+				m['units'] = tagUnitStats.unit
+			}
+		} else {
+			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'] == null?'':m['units'])
+		}
+
+		def amounts = m['amounts']
+		
+		EntryGroup entryGroup = null
+		
+		if (amounts.size() > 1) {
+			entryGroup = new EntryGroup()
+		}
+		
+		Entry firstEntry = null
+		
+		for (ParseAmount amount : amounts) {
+			m['baseTag'] = baseTag
+			m['tag'] = tagWithSuffixForUnits(baseTag, amount.getUnits())
+			Entry e = createSingle(userId, m, entryGroup, stats)
+			if (firstEntry == null) firstEntry = e
+		}
+		
+		if (entryGroup) {
+			Utils.save(entryGroup, true)
+		}
+		
+		if (singleEntryCreation) {
+			finishEntryCreation(stats)
+		}
+
+		return firstEntry
 	}
 
 	Date fetchPreviousDate(int minusDays = 1) {
@@ -532,7 +491,7 @@ class Entry {
 			&& amountPrecision == (m['amountPrecision'] ?: 3)
 
 	}
-
+	
 	private def entryMap() {
 		def m = [:]
 
@@ -601,7 +560,7 @@ class Entry {
 		return null
 	}
 
-	public static Entry updateGhost(Entry entry, Map m, TagStatsRecord record, Date baseDate, boolean allFuture) {
+	protected static Entry updateGhostSingle(Entry entry, Map m, TagStatsRecord record, Date baseDate, boolean allFuture) {
 		boolean isToday = isToday(entry.getDate(), baseDate)
 
 		if (entry.repeatParametersMatch(m))
@@ -634,13 +593,13 @@ class Entry {
 	}
 
 	/**
-	 * Update entry given map of parameters (output of the parse method or manually created)
+	 * Update entry, possibly updating multiple entries, given map of parameters (output of the parse method or manually created)
 	 */
-	public static Entry update(Entry entry, Map m, TagStatsRecord tagStatsRecord, Date baseDate, boolean allFuture = true) {
+	protected static Entry updateSingle(Entry entry, Map m, Date baseDate, boolean allFuture = true) {
 		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		def repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
-			return updateGhost(entry, m, tagStatsRecord, baseDate, allFuture)
+			return updateGhostSingle(entry, m, tagStatsRecord, baseDate, allFuture)
 		} else {
 			entry.doUpdate(m, tagStatsRecord)
 
@@ -1209,26 +1168,6 @@ class Entry {
 		return null
 	}
 
-	/**
-	 * Used only in batch jobs to renormalize all entries
-	 *
-	 * @return
-	 */
-	def initializeDurations() {
-		// fill in durations fields (for legacy entries)
-
-		if (durationType != null) return; // already calculated
-
-		def (calculatedBaseTag, calculatedDurationType) = getDurationInfo(tag, units, repeatType)
-
-		this.baseTag = calculatedBaseTag
-		this.durationType = calculatedDurationType
-
-		if (fetchIsEnd()) updateDurationEntry()
-
-		Utils.save(this, true)
-	}
-
 	protected Entry updateDurationEntry() {
 		if (!fetchIsEnd()) return null
 
@@ -1328,62 +1267,6 @@ class Entry {
 		}
 	}
 
-	/**
-	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
-	 * If the passed-in tag is a start tag, calculates the base tag
-	 */
-	protected static def getDurationInfo(Tag tag, String units, RepeatType repeatType) {
-		return getDurationInfoFromStrings(tag.getDescription(), units, repeatType)
-	}
-
-	/**
-	 * Returns [startBaseTag, endBaseTag, synonym] array if the passed-in tag is a start or end tag
-	 * If the passed-in tag is a start tag, calculates the base tag
-	 */
-	protected static def getDurationInfoFromStrings(String description, String units, RepeatType repeatType) {
-		log.debug "Entry.getDurationInfoFromStrings() description:" + description + ", units:" + units
-
-		if (units.equals('hours') || repeatType?.isGhost())
-			return [
-				Tag.look(description),
-				DurationType.NONE
-			]
-
-		String synonym = durationSynonyms[description] ?: description
-
-		// if this is start tag, try to find matching end tag
-		for (def i = 0; i < startSynonymsSize; ++i) {
-			def startEnd = startSynonyms[i]
-			if (synonym.endsWith(' ' + startEnd)) {
-				def startBaseTag = Tag.look(synonym.substring(0, synonym.length() - (startEnd.length() + 1)))
-
-				log.debug "Found start tag with suffix '" + startEnd + "', base tag is " + startBaseTag
-
-				return [
-					startBaseTag,
-					DurationType.START
-				]
-			}
-		}
-
-		// if this is start tag, try to find matching end tag
-		for (def i = 0; i < endSynonymsSize; ++i) {
-			def endEnd = endSynonyms[i]
-			if (synonym.endsWith(' ' + endEnd)) {
-				def endBaseTag = Tag.look(synonym.substring(0, synonym.length() - (endEnd.length() + 1)))
-
-				log.debug "Found end tag with suffix '" + endEnd + "', base tag is " + endBaseTag
-
-				return [endBaseTag, DurationType.END]
-			}
-		}
-
-		return [
-			Tag.look(synonym),
-			DurationType.NONE
-		]
-	}
-
 	private findNeighboringDailyRepeatEntry(String queryStr, parms) {
 		parms['entryDate'] = this.date
 		while (true) {
@@ -1462,9 +1345,7 @@ class Entry {
 		if (this.repeatType?.isGhost()) {
 			this.repeatType = this.repeatType.toggleGhost()
 
-			def (baseTag, durationType) = getDurationInfoFromStrings(this.tag.getDescription(), this.units, this.repeatType)
-
-			this.durationType = durationType
+			this.durationType = durationType?.unGhost()
 			this.processAndSave()
 		}
 
@@ -1532,9 +1413,8 @@ class Entry {
 		m['amount'] = this.amount
 		m['amountPrecision'] = this.amountPrecision
 		m['units'] = this.units
-		def (baseTag, durationType) = getDurationInfoFromStrings(m['description'], m['units'], null)
+		m['durationType'] = this.durationType?.unGhost()
 		m['baseTag'] = baseTag
-		m['durationType'] = durationType
 
 		if (this.repeatType.isContinuous()) {
 			// continuous tags create new tags based on the template
@@ -1585,7 +1465,7 @@ class Entry {
 		}
 	}
 
-	private doUpdate(Map m) {
+	private doUpdateSingle(Map m) {
 		log.debug "Entry.doUpdate() this:" + this + ", m:" + m
 
 		if (m == null) return null
@@ -1596,6 +1476,8 @@ class Entry {
 
 		newDescription = newDescription.toLowerCase()
 
+		WORK STOPPED HERE --- finish new update logic
+		
 		def (newBaseTag, newDurationType) = getDurationInfoFromStrings(newDescription, m['units'], m['repeatType'])
 
 		def updateDurationEntry = null
@@ -1909,7 +1791,7 @@ class Entry {
 		for (result in rawResults) {
 			Entry entry = Entry.get(result['id'])
 
-			Entry.RepeatType repeatType = entry.getRepeatType()
+			RepeatType repeatType = entry.getRepeatType()
 			if (repeatType != null) { // generate repeat values for query
 				Date repeatEnd = entry.getRepeatEnd()
 				if (repeatEnd == null)
@@ -1941,14 +1823,13 @@ class Entry {
 		
 		def results = []
 		
-		UnitMap mostUsedUnitMap = mostUsedUnitRatioForTags?.unitMap
 		double mostUsedUnitRatio = mostUsedUnitRatioForTags ? mostUsedUnitRatioForTags.ratio : 1.0d
 
 		for (result in rawResults) {
 			Date date = result['date']
 			BigDecimal amount = result['amount']
 			def entryJSON = [date, amount, Tag.fetch(result['tag_id'].longValue())?.getDescription()]
-			UnitRatio unitRatio = mostUsedUnitMap?.lookupUnitRatio(result['units'])
+			UnitRatio unitRatio = mostUsedUnitRatioForTags?.unitRatioForUnits(result['units'])
 			if (unitRatio) {
 				entryJSON[1] = (amount * unitRatio.ratio) / mostUsedUnitRatio
 			}
@@ -2033,115 +1914,6 @@ class Entry {
 		return parse(null, null, entryStr, null, false)
 	}
 
-	// new end-of-entry repeat indicators:
-	// repeat daily
-	// delete repeat indicator to end repeat sequence
-	// OR: repeat end
-
-	private static def matchEndStr(String str, String match, RepeatType repeatType) {
-		if (str.endsWith(match)) {
-			return [
-				str.substring(0, str.length() - match.length()),
-				match,
-				repeatType
-			]
-		}
-
-		if (str.startsWith(match)) {
-			return [
-				str.substring(match.length()).trim(),
-				match,
-				repeatType
-			]
-		}
-		return null
-	}
-	
-	static final Map<String, RepeatType> repeatWordMap = [
-		"repeat":[null:RepeatType.DAILYCONCRETEGHOST, "daily":RepeatType.DAILYCONCRETEGHOST, "weekly":RepeatType.WEEKLYCONCRETEGHOST],
-		"pinned":[null:RepeatType.CONTINUOUSGHOST],
-		"remind":[null:RepeatType.REMINDDAILYGHOST, "daily":RepeatType.REMINDDAILYGHOST, "weekly":RepeatType.REMINDWEEKLYGHOST],
-		"reminder":[null:RepeatType.REMINDDAILYGHOST, "daily":RepeatType.REMINDDAILYGHOST, "weekly":RepeatType.REMINDWEEKLYGHOST],
-		"daily":[null:RepeatType.DAILYCONCRETEGHOST, "repeat":RepeatType.DAILYCONCRETEGHOST, "remind":RepeatType.REMINDDAILYGHOST, "reminder":RepeatType.REMINDDAILYGHOST],
-		"weekly":[null:RepeatType.WEEKLYCONCRETEGHOST, "repeat":RepeatType.WEEKLYCONCRETEGHOST, "remind":RepeatType.REMINDWEEKLYGHOST, "reminder":RepeatType.REMINDWEEKLYGHOST],
-	]
-	
-	private static def matchRepeat(LinkedList words) {
-		if (words.size() <= 1) return // need at least two words to match a repeat tag
-		
-		// match from start
-		
-		Map<String, RepeatType> repeatMap = repeatWordMap.get(words.getFirst())
-		
-		if (repeatMap)
-		
-		def retVal
-
-		if (comment != null) {
-			if ((retVal = matchEndStr(comment, "repeat weekly", RepeatType.WEEKLYCONCRETEGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "remind weekly", RepeatType.REMINDWEEKLYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "reminder weekly", RepeatType.REMINDWEEKLYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "weekly reminder", RepeatType.REMINDWEEKLYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "repeat daily", RepeatType.DAILYCONCRETEGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "remind daily", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "reminder daily", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "daily remind", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "daily reminder", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "repeat", RepeatType.DAILYCONCRETEGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "pinned", RepeatType.CONTINUOUSGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "remind", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "reminder", RepeatType.REMINDDAILYGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "daily", RepeatType.DAILYCONCRETEGHOST)) != null) {
-				return retVal
-			}
-			if ((retVal = matchEndStr(comment, "weekly", RepeatType.WEEKLYCONCRETEGHOST)) != null) {
-				return retVal
-			}
-		}
-
-		return [comment, "", null]
-	}
-
-	/**
-	 * pre-process entry to see if there are additional tags
-	 *
-	 * currently only looks for repeat type
-	 */
-	private static def preprocessEntry(retVal, String str) {
-		def (remain, comment, repeatType) = matchRepeatStr(str)
-
-		retVal['repeatType'] = repeatType
-		retVal['comment'] = comment
-
-		return remain
-	}
-
 	private static boolean isSameDay(Date time1, Date time2) {
 		def t1 = time1.getTime()
 		def t2 = time2.getTime()
@@ -2209,6 +1981,72 @@ class Entry {
 		return today
 	}
 	
+	// see EntryJava.java for more repeat parsing code
+	public static final Map<ArrayList<String>, ArrayList<Object>> durationSynonyms = [
+		['wake']:['sleep', 'end', DurationType.END],
+		['wake','up']:['sleep', 'end', DurationType.END],
+		['woke']:['sleep', 'end', DurationType.END],
+		['awakened']:['sleep', 'end', DurationType.END],
+		['awoke']:['sleep', 'end', DurationType.END],
+		['went','to','sleep']:['sleep', 'start', DurationType.START],
+		['go','to','sleep']:['sleep', 'start', DurationType.START],
+	]
+
+	public static final Map<ArrayList<String>, ArrayList<Object>> durationSuffixes = [
+		['start']:['start', DurationType.START],
+		['starts']:['start', DurationType.START],
+		['begin']:['start', DurationType.START],
+		['begins']:['start', DurationType.START],
+		['starting']:['start', DurationType.START],
+		['beginning']:['start', DurationType.START],
+		['started']:['start', DurationType.START],
+		['begun']:['start', DurationType.START],
+		['began']:['start', DurationType.START],
+		['end']:['end', DurationType.END],
+		['ends']:['end', DurationType.END],
+		['stop']:['end', DurationType.END],
+		['stops']:['end', DurationType.END],
+		['finish']:['end', DurationType.END],
+		['finished']:['end', DurationType.END],
+		['ended']:['end', DurationType.END],
+		['stopped']:['end', DurationType.END],
+		['stopping']:['end', DurationType.END],
+		['ending']:['end', DurationType.END],
+		['finishing']:['end', DurationType.END],
+	]
+
+	public static final Map<ArrayList<String>, RepeatType> repeatWords = [
+		['repeat']:RepeatType.DAILYCONCRETEGHOST,
+		['repeat','daily']:RepeatType.DAILYCONCRETEGHOST,
+		['repeat','weekly']:RepeatType.WEEKLYCONCRETEGHOST,
+		['pinned']:RepeatType.CONTINUOUSGHOST,
+		['remind']:RepeatType.REMINDDAILYGHOST,
+		['remind','daily']:RepeatType.REMINDDAILYGHOST,
+		['remind','weekly']:RepeatType.REMINDWEEKLYGHOST,
+		['reminder']:RepeatType.REMINDDAILYGHOST,
+		['reminder','daily']:RepeatType.REMINDDAILYGHOST,
+		['reminder','weekly']:RepeatType.REMINDWEEKLYGHOST,
+		['daily']:RepeatType.DAILYCONCRETEGHOST,
+		['daily','repeat']:RepeatType.DAILYCONCRETEGHOST,
+		['daily','remind']:RepeatType.REMINDDAILYGHOST,
+		['daily','reminder']:RepeatType.REMINDDAILYGHOST,
+		['weekly']:RepeatType.WEEKLYCONCRETEGHOST,
+		['weekly','repeat']:RepeatType.WEEKLYCONCRETEGHOST,
+		['weekly','remind']:RepeatType.REMINDWEEKLYGHOST,
+		['weekly','reminder']:RepeatType.REMINDWEEKLYGHOST,
+	]
+	
+	static class ParseAmount {
+		BigDecimal amount
+		int precision
+		String units
+		
+		ParseAmount(BigDecimal amount, int precision) {
+			this.amount = amount
+			this.precision = precision
+		}
+	}
+	
 	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
 		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
@@ -2229,7 +2067,6 @@ class Entry {
 
 		retVal['timeZoneName'] = timeZoneName
 		retVal['today'] = today
-		entryStr = preprocessEntry(retVal, entryStr)
 
 		def matcher;
 		def parts;
@@ -2244,9 +2081,8 @@ class Entry {
 
 		PatternScanner scanner = new PatternScanner(entryStr)
 
-		def amounts = []
+		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
 		boolean ghostAmount = false
-		boolean twoDAmount = false
 		boolean foundTime = false
 		boolean foundAMPM = false
 
@@ -2277,6 +2113,8 @@ class Entry {
 
 		Closure amountClosure = {
 			def amountStr, amountStrs = []
+			int amountIndex = amounts.size()
+			boolean twoDAmount = false
 			
 			amountStrs.add(scanner.group(1))
 			amountStr = scanner.group(3)
@@ -2288,22 +2126,27 @@ class Entry {
 			
 			for (amount in amountStrs) {
 				if (amount =~ /-\s/ || amount.startsWith('_')) {
-					amounts.add([null, -1])
+					amounts.add(new ParseAmount(null, -1))
 					ghostAmount = true
 				} else if (amount.equalsIgnoreCase('yes')) {
-					amounts.add([new BigDecimal(1, mc), 0])
+					amounts.add(new ParseAmount(new BigDecimal(1, mc), 0))
 				} else if (amount.equalsIgnoreCase('no')) {
-					amounts.add([new BigDecimal(0, mc), 0])
+					amounts.add(new ParseAmount(new BigDecimal(0, mc), 0))
 				} else {
-					amounts.add([new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION]) 
+					amounts.add(new ParseAmount(new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION)) 
 				}
 			}
 			
 			scanner.skipWhite()
 
+			boolean foundUnits = false
 			if (!scanner.matchField(timePattern, timeClosure)) {
 				scanner.matchField(unitsPattern) {
-					retVal['units'] = scanner.group(1)
+					String unitsStr = scanner.group(1)
+					((ParseAmount)amounts[amountsIndex++]).setUnits(unitsStr)
+					if (amountsIndex < amounts.size())
+						((ParseAmount)amounts[amountsIndex++]).setUnits(unitsStr)
+					foundUnits = true
 				}
 			}
 		}
@@ -2335,55 +2178,47 @@ class Entry {
 				endTag = true
 			}
 
-			if (scanner.match(amountPattern, amountClosure))
-				break;
+			// allow multiple amounts and units
+			while (scanner.match(amountPattern, amountClosure)) {
+				// if no units, break, otherwise attempt to match another amount/units pair
+				if (((ParseAmount)amounts[amounts.size() - 1]).getUnits() == null)
+					break
+			}
 
 			if (endTag)
 				break;
 		}
 		
+		parseTagSuffix(words, retVal)
 		
-
-		if (words.size() > 0) {
-			retVal['description'] = descriptionBuf.toString().trim()
-
-			log.debug "description " + retVal['description']
-		}
-
+		retVal['description'] = ParseUtils.implode(words)
+		
 		if (amounts.size() == 0) {
-			amounts.add([new BigDecimal(1, mc), -1])
+			amounts.add(new ParseAmount(new BigDecimal(1, mc), -1))
 		}
 
 		if (!foundTime) {
 			scanner.matchField(timePattern, timeClosure)
 		}
 
-		def commentBuf = new StringBuffer()
-
-		lastWhite = null
-		boolean firstWord = true
+		LinkedList<String> commentWords = new LinkedList<String>()
 
 		while (scanner.match(commentWordPattern)) {
-			if (lastWhite != null)
-				commentBuf.append(lastWhite)
-
 			String word = scanner.group(1)
-			commentBuf.append(scanner.group(1))
-			if (scanner.matchWhite()) {
-				lastWhite = scanner.group()
-			}
-
-			firstWord = false
+			commentWords.add(scanner.group(1))
+			scanner.matchWhite()
 
 			if (scanner.match(timeEndPattern, timeClosure))
 				break;
 		}
+		
+		parseSuffix(commentWords, retVal)
 
-		if (commentBuf.length() > 0) {
-			prependComment(retVal, commentBuf.toString().trim())
-
+		if (commentWords.size() > 0) {
+			prependComment(retVal, ParseUtils.implode(commentWords))
+			
 			log.debug "comment " + retVal['comment']
-		}
+		}		
 
 		if (!foundTime) {
 			if (date != null) {
@@ -2422,64 +2257,22 @@ class Entry {
 			date = null;
 		}
 
-		// post-process parsed tag
-
-		def (remain, comment, repeatType) = matchRepeatStr(retVal['description'])
-
-		if (repeatType != null) {
-			retVal['repeatType'] = repeatType
-			retVal['description'] = remain.trim()
-			prependComment(retVal, comment)
-		} else {
-			(remain, comment, repeatType) = matchRepeatStr(retVal['comment'])
-
-			if (repeatType != null) {
-				retVal['repeatType'] = repeatType
-			} else {
-				(remain, comment, repeatType) = matchRepeatStr(retVal['units'])
-				if (repeatType != null) {
-					retVal['units'] = remain
-					retVal['repeatType'] = repeatType
-					appendComment(retVal, comment)
-				}
+		for (int i = 0; i < units.size(); ++i) {
+			if (units[i]?.equals("at"))
+				units[i] = ''
+			if (units[i]?.length > MAXUNITSLENGTH) {
+				units[i] = units[i].substring(0, MAXUNITSLENGTH)
 			}
 		}
-
-		if (retVal['units'].equals('at')) {
-			retVal['units'] = ''
-		}
-
+		
 		// if comment is duration modifier, append to tag name
 		// only do this on exact match, to avoid comments being accidentally interpreted as duration modifiers
-
-		String comm = retVal['comment']
-
-		boolean matchedDuration = false
-
-		for (def i = 0; i < startOrEndSynonymsSize; ++i) {
-			String syn = startOrEndSynonyms[i]
-			if (comm.equals(syn)) {
-				retVal['description'] += ' ' + comm
-				retVal['comment'] = ''
-				matchedDuration = true
-				break
-			} else if (comm.startsWith(syn)) {
-				def rem = comm.substring(syn.length())
-				if (rem.startsWith('(')) {
-					retVal['description'] += ' ' + syn
-					retVal['comment'] = rem
-				} else if (rem.startsWith(' (')) {
-					retVal['description'] += ' ' + syn
-					retVal['comment'] = rem.substring(1)
-				}
-			}
-		}
 
 		if (retVal['description']?.length() > Tag.MAXLENGTH) {
 			def desc = retVal['description']
 			def lastSpace = desc.lastIndexOf(' ', Tag.MAXLENGTH - 1)
 			retVal['description'] = desc.substring(0, lastSpace)
-			comment = retVal['comment']
+			String comment = retVal['comment']
 			if (comment.length() > 0) {
 				if (comment.charAt(0) == '(') {
 					if (comment.charAt(comment.length() - 1) == ')') {
@@ -2494,10 +2287,6 @@ class Entry {
 
 		if (retVal['comment']?.length() > MAXCOMMENTLENGTH) {
 			retVal['comment'] = retVal['comment'].substring(0, MAXCOMMENTLENGTH)
-		}
-
-		if (retVal['units']?.length() > MAXUNITSLENGTH) {
-			retVal['units'] = retVal['units'].substring(0, MAXUNITSLENGTH)
 		}
 
 		if (retVal['setName']?.length() > MAXSETNAMELENGTH) {
@@ -2545,6 +2334,8 @@ class Entry {
 			else
 				retVal['repeatType'] = retVal['repeatType'].makeGhost()
 		}
+		
+		retVal['amounts'] = amounts
 
 		return retVal
 	}
