@@ -494,7 +494,7 @@ class Entry {
 			generator.updateDurationEntry() // make sure duration entries remain consistent
 
 		User.setTimeZoneId(userId, entry.getTimeZoneId())
-		if (tag.isBelongsToUser(userId)) {
+		if (tag.hasEntry(userId)) {
 			User.addToCache(userId, tag)
 		}
 
@@ -676,7 +676,7 @@ class Entry {
 			updateDurationEntry.updateDurationEntry()
 		}
 
-		if (!entry.tag.isBelongsToUser(oldUserId)) {
+		if (!entry.tag.hasEntry(oldUserId)) {
 			User.removeFromCache(oldUserId, entry.tag)
 		}
 	}

@@ -98,7 +98,8 @@ class Tag {
 		return Tag.create(d)
 	}
 
-	boolean isBelongsToUser(Long userId) {
+	// Checks if a user has an entry for this tag.
+	boolean hasEntry(Long userId) {
 		Entry.withCriteria {
 			eq("tag", this)
 			eq("userId", userId)
