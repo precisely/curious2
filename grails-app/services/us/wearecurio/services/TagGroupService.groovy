@@ -16,32 +16,15 @@ class TagGroupService {
 
 	static transactional = true
 
-	SharedTagGroup createOrLookupSharedTagGroup(String tagGroupName, Long userId, Long groupId, Map args = [:]) {
-		SharedTagGroup tagGroupInstance
+	SharedTagGroup createOrLookupSharedTagGroup(String tagGroupName, Long groupId, Map args = [:]) {
+		SharedTagGroup tagGroupInstance = SharedTagGroup.lookupWithinGroup(tagGroupName, groupId)
 
-		List tagGroupInstanceList = lookupSharedTagGroupWithinGroup(tagGroupName, groupId)
-		if (!tagGroupInstanceList) {
-			tagGroupInstance = createTagGroup(tagGroupName, userId, groupId, SharedTagGroup.class, args)
-		} else {
-			tagGroupInstance = tagGroupInstanceList[0]
+		if (!tagGroupInstance) {
+			tagGroupInstance = createTagGroup(tagGroupName, null, groupId, SharedTagGroup.class, args)
 		}
 
-		String propertyFor = userId ? "User" : "Group"
-		GenericTagGroupProperties.createOrLookup(userId ?: groupId, propertyFor, tagGroupInstance)
+		GenericTagGroupProperties.createOrLookup(groupId, "Group", tagGroupInstance)
 		return tagGroupInstance
-	}
-
-	/**
-	 * Return list of SharedTagGroup instances matching the name within a given UserGroup.
-	 * @param tagGroupName Name of the SharedTagGroup to search
-	 * @param groupId Identity of the UserGroup where SharedTagGroup needs to be searched.
-	 * @return
-	 */
-	List lookupSharedTagGroupWithinGroup(String tagGroupName, Long groupId) {
-		GenericTagGroup.executeQuery("""SELECT tg FROM SharedTagGroup AS tg, GenericTagGroupProperties AS tgp
-				WHERE tgp.tagGroupId = tg.id AND tg.description = :description
-				AND tgp.groupId IS NOT NULL AND tgp.groupId = :groupId""",
-				[description: tagGroupName, groupId: groupId])
 	}
 
 	def createOrLookupTagGroup(String tagGroupName, Long userId, Long groupId, Class type = TagGroup.class, Map args = [:]) {
@@ -81,6 +64,7 @@ class TagGroupService {
 		if (!existingTagIds.contains(tagInstance.id)) {
 			log.debug "Adding [$tagInstance] to TagGroup [$tagGroupInstance]"
 			tagGroupInstance.addToTags(tagInstance)
+			tagGroupInstance.addToCache(tagInstance)
 		}
 		return tagGroupInstance
 	}

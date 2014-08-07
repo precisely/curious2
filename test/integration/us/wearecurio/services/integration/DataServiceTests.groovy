@@ -44,6 +44,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 	@After
 	void tearDown() {
+		super.tearDown()
 	}
 
 	void testExpiredToken() {

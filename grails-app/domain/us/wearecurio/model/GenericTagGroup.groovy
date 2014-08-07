@@ -28,4 +28,9 @@ class GenericTagGroup {
 	List getAssociatedGroups() {
 		GenericTagGroupProperties.findAllByTagGroupIdAndGroupIdIsNotNull(this.id)*.group
 	}
+
+	@Override
+	String toString() {
+		"GenericTagGroup [$id][$description]"
+	}
 }

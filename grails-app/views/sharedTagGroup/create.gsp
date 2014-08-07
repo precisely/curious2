@@ -7,7 +7,7 @@
 	</head>
 	<body>
 		<h1 class="page-header">Create Shared Tag Group</h1>
-		<g:form action="createOrUpdate">
+		<g:form action="save">
 			<fieldset class="form">
 				<div class="row">
 					<div class="col-sm-6">

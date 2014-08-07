@@ -98,7 +98,7 @@ class EntryFactoryTests extends CuriousTestCase {
 		assert Entry.count() == 1
 		assert Tag.first().description == 'my tag'
 
-		assert User.count() == 1
+		assert User.count() == 2
 		assert User.last().username == 'a'
 
 		entry = EntryFactory.makeN(3, { it }, ['tag_description': 'tag42', 'username': 'b'])

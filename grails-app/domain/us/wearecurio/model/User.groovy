@@ -1,10 +1,12 @@
 package us.wearecurio.model
 
+import java.text.ParseException
+import java.text.SimpleDateFormat
+
 import org.apache.commons.logging.LogFactory
 
-import java.text.SimpleDateFormat
-import java.text.ParseException
-import us.wearecurio.abstraction.Callbacks
+import us.wearecurio.cache.BoundedCache
+import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
 
 class User implements NameEmail {
@@ -32,11 +34,16 @@ class User implements NameEmail {
 		created(nullable:true)
 		notifyOnComments(nullable:true)
 	}
+
 	static mapping = {
 		version false
 		table '_user'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 	}
+
+	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+	static BoundedCache<Long, List<Long>> tagGroupIdCache = new BoundedCache<Long, List<Long>>(100000)
+
 	static passwordSalt = "ah85giuaertiga54yq10"
 
 	static dateFormat = new SimpleDateFormat("MM/dd/yyyy")
@@ -190,24 +197,87 @@ class User implements NameEmail {
 		return Tag.look(tag + ' ' + value)
 	}
 
-	def hasMetaTag(Tag tag) {
-		def c = Entry.createCriteria()
-
-		def remindEvents = c {
+	boolean hasMetaTag(Tag tag) {
+		def remindEvent = Entry.createCriteria().get {
 			eq("userId", getId())
 			eq("tag", tag)
 			isNull("date")
-			maxResults(1)
 		}
 
-		return remindEvents[0] != null
+		return remindEvent != null
 	}
 
 	public void setOAuthAccess(int service, String authToken) {
 
 	}
 
-	public String toString() {
+	/*
+	 * Server side method used for data manipulation to get list of all
+	 * tags associated with the current user & returns the instances of Tag.
+	 */
+	static List<Tag> getTags(Long userId) {
+		if (tagIdCache[userId]) {
+			return Tag.fetchAll(tagIdCache[userId])
+		}
+
+		List<Long> usersTagIds = Utils.getService("tagService").getTagsByUser(userId)*.id
+
+		getTagGroups(userId).each { tagGroupInstance ->
+			// No need to get tags from wildcard tag group
+			if (!(tagGroupInstance instanceof WildcardTagGroup)) {
+				usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
+			}
+		}
+
+		tagIdCache[userId] = usersTagIds
+
+		Tag.fetchAll(usersTagIds)
+	}
+
+	static void addToCache(Long userId, Tag tagInstance) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId] << tagInstance.id
+		}
+	}
+
+	static void removeFromCache(Long userId, Tag tagInstance) {
+		if (tagIdCache[userId]) {
+			tagIdCache[userId].remove(tagInstance.id)
+		}
+	}
+
+	static void addToCache(Long userId, GenericTagGroup tagInstance) {
+		if (tagGroupIdCache[userId]) {
+			tagGroupIdCache[userId] << tagInstance.id
+		}
+	}
+	
+	static void removeFromCache(Long userId, GenericTagGroup tagInstance) {
+		if (tagGroupIdCache[userId]) {
+			tagGroupIdCache[userId].remove(tagInstance.id)
+		}
+	}
+
+	List<Tag> getTags() {
+		getTags(this.id)
+	}
+
+	static List<GenericTagGroup> getTagGroups(Long userId) {
+		if (tagGroupIdCache[userId]) {
+			return GenericTagGroup.getAll(tagGroupIdCache[userId])
+		}
+
+		List<Long> usersTagGroupIds = Utils.getService("tagService").getAllTagGroupsForUser(userId)*.id
+		tagGroupIdCache[userId] = usersTagGroupIds
+
+		GenericTagGroup.getAll(usersTagGroupIds)
+	}
+
+	List<GenericTagGroup> getTagGroups() {
+		getTagGroups(this.id)
+	}
+
+	String toString() {
 		return "User(id: " + id + " username: " + username + " email: " + email + " remindEmail: " + remindEmail + " password: " + (password ? "set" : "unset") \
 				+ " first: " + first + " last: " + last + " sex: " + sex + " location: " + location \
 				+ " birthdate: " + Utils.dateToGMTString(birthdate) \

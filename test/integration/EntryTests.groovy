@@ -49,8 +49,6 @@ class EntryTests extends CuriousTestCase {
 	Date lateCurrentTime
 	Date microlateCurrentTime
 	Date veryLateBaseDate
-	User user
-	Long userId
 	
 	@Before
 	void setUp() {
@@ -86,18 +84,6 @@ class EntryTests extends CuriousTestCase {
 		timeZone2BaseDate = dateFormat.parse("July 3, 2010 3:00 am")
 		microlateCurrentTime = dateFormat.parse("July 3, 2010 1:58 pm")
 		veryLateBaseDate = dateFormat.parse("July 20, 2010 12:00 am")
-		
-		def params = [username:'y', sex:'F', \
-			last:'y', email:'y@y.com', birthdate:'01/01/2001', \
-			first:'y', password:'y', action:'doregister', \
-			controller:'home']
-
-		user = User.create(params)
-
-		Utils.save(user, true)
-		println "new user " + user
-		
-		userId = user.getId()
 	}
 	
 	static within(long a, long b, long d) {

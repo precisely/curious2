@@ -22,9 +22,6 @@ import us.wearecurio.utility.Utils
 abstract class CuriousControllerTestCase extends CuriousTestCase {
 	static transactional = true
 
-	User user
-	Long userId
-
 	def filterInterceptor
 
 	@Before
@@ -33,15 +30,6 @@ abstract class CuriousControllerTestCase extends CuriousTestCase {
 		/*mockLogging(controller.getClass(), true)
 		
 		setLogger(controller)*/
-		
-		def params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
-
-		user = User.create(params)
-
-		Utils.save(user, true)
-		println "new user " + user
-		
-		userId = user.getId()
 	}
 	
 	@After

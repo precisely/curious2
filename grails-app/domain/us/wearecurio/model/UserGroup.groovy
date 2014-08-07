@@ -60,7 +60,12 @@ class UserGroup {
 	}
 
 	static UserGroup createOrUpdate(String name, String fullName, String description, def options) {
-		UserGroup userGroupInstance = lookup(name)
+		UserGroup userGroupInstance
+		if (options["id"]) {
+			userGroupInstance = UserGroup.get(options["id"])
+		} else {
+			userGroupInstance = lookup(name)
+		}
 
 		if (!userGroupInstance) {
 			userGroupInstance = new UserGroup()

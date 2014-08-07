@@ -56,12 +56,16 @@ class GenericTagGroupProperties {
 		return null
 	}
 
-	static def lookup(long userId, long tagGroupId) {
+	static def lookup(Long userId, Long tagGroupId) {
 		return GenericTagGroupProperties.findByTagGroupIdAndUserId(tagGroupId, userId)
 	}
 
 	UserGroup getGroup() {
 		UserGroup.get(groupId)
+	}
+
+	GenericTagGroup getTagGroup() {
+		GenericTagGroup.get(tagGroupId)
 	}
 
 	String toString() {

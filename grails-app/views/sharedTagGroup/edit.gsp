@@ -8,7 +8,7 @@
 	</head>
 	<body>
 		<h1 class="page-header"><g:message code="default.edit.label" args="[entityName]" /></h1>
-		<g:form method="post">
+		<g:form method="post" action="update">
 			<g:hiddenField name="id" value="${sharedTagGroupInstance?.id}" />
 			<g:hiddenField name="version" value="${sharedTagGroupInstance?.version}" />
 			<fieldset class="form">
@@ -17,8 +17,7 @@
 						<g:render template="form"/>
 					</div>
 				</div>
-				<g:actionSubmit class="btn btn-primary" action="update" value="${message(code: 'default.button.update.label')}" />
-				<g:actionSubmit class="btn btn-danger" action="delete" value="${message(code: 'default.button.delete.label')}" formnovalidate="" onclick="return confirm('${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
+				<g:submitButton class="btn btn-primary" name="Update" />
 			</fieldset>
 		</g:form>
 	</body>

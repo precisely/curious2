@@ -1,13 +1,11 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-import grails.converters.*
-import us.wearecurio.cache.BoundedCache;
+import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
-import java.util.Date
-import java.util.Calendar
-import java.util.TimeZone
 
 class Tag {
 
@@ -43,19 +41,43 @@ class Tag {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
-		synchronized(tagCache) {
-			tagCache.put(d, tag)
-			tagIdCache.put(tag.getId(), tag)
-		}
+		addToCache(tag)
 		return tag
 	}
-	
+
+	static void addToCache(Tag tagInstance) {
+		synchronized(tagCache) {
+			tagCache.put(tagInstance.description, tagInstance)
+			tagIdCache.put(tagInstance.id, tagInstance)
+		}
+	}
+
 	static def fetch(Long id) {
 		def tag = tagIdCache.get(id)
 		
 		if (tag != null) return tag
 		
 		return Tag.get(id)
+	}
+
+	static List<Tag> fetchAll(Collection<Long> ids) {
+		Map cachedTagData = tagIdCache.findAll { id, instance ->
+			id in ids
+		}
+
+		List<Long> cachedTagIds = cachedTagData.keySet() as List
+		List<Tag> cachedTagInstances = cachedTagData.values() as List
+
+		List<Long> tagIdsNotInCache = (ids - cachedTagIds) as List
+
+		if (tagIdsNotInCache) {
+			Tag.getAll(tagIdsNotInCache).each { tagInstance ->
+				addToCache(tagInstance)
+				cachedTagInstances << tagInstance
+			}
+		}
+
+		cachedTagInstances
 	}
 
 	static def look(String d) {
@@ -74,6 +96,16 @@ class Tag {
 		}
 
 		return Tag.create(d)
+	}
+
+	// Checks if a user has an entry for this tag.
+	boolean hasEntry(Long userId) {
+		Entry.withCriteria {
+			eq("tag", this)
+			eq("userId", userId)
+			isNotNull("date")
+			maxResults(1)
+		}[0] != null
 	}
 
 	def getPropertiesForUser(Long userId) {

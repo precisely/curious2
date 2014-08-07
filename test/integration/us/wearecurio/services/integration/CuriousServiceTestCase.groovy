@@ -6,21 +6,18 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.Before
 
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
 
 /**
  * Superclass for service tests
  * 
  * @author mitsu
  */
-abstract class CuriousServiceTestCase {
-	
+abstract class CuriousServiceTestCase extends CuriousTestCase {
+
 	static transactional = true
-	
-	User user
-	Long userId
-	
+
 	boolean isClose(double a, double b, double range) {
 		return Math.abs(a - b) < range
 	}
@@ -48,20 +45,11 @@ abstract class CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
-		Utils.resetForTesting()
-		
-		Map params = [username:'y', sex:'F', last:'y', email:'y@y.com', birthdate:'01/01/2001', first:'y', password:'y']
-		
-		user = User.create(params)
-		
-		Utils.save(user, true)
-		println "new user " + user
-		
-		userId = user.getId()
+		super.setUp()
 	}
 	
 	@After
 	void tearDown() {
-		User.executeUpdate("delete User u")
+		super.tearDown()
 	}
 }

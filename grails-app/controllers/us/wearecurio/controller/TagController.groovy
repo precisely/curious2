@@ -77,13 +77,18 @@ class TagController extends LoginController {
 	def addBackToTagGroupData(Long id, Long itemId, String type) {
 		log.debug "Add back item $params"
 
-		GenericTagGroup tagGroup = GenericTagGroup.get(id)
 		GenericTagGroupProperties prop = GenericTagGroupProperties.lookup(session.userId, id)
 
 		log.debug "Removing [$itemId] of type [$type] for propertyId ${prop?.id}"
 
-		TagExclusion exclusion = TagExclusion.lookup(prop.id, ExclusionType[type], itemId)
-		exclusion?.delete()
+		def tagOrTagGroupToAddBack
+		if (ExclusionType[type] == ExclusionType.TAG) {
+			tagOrTagGroupToAddBack = Tag.get(itemId)
+		} else {
+			tagOrTagGroupToAddBack = GenericTagGroup.get(itemId)
+		}
+
+		TagExclusion.removeFromExclusion(tagOrTagGroupToAddBack, prop)
 
 		renderJSONGet([success: true])
 	}
@@ -100,7 +105,9 @@ class TagController extends LoginController {
 				return
 			}
 		}
+
 		parentTagGroupInstance.addToSubTagGroups(childTagGroupInstance)
+		parentTagGroupInstance.addToCache(childTagGroupInstance, session.userId)
 		parentTagGroupInstance.save()
 		renderJSONGet(["dummy"])
 	}
@@ -158,6 +165,7 @@ class TagController extends LoginController {
 			}
 		}
 
+		parentTagGroupInstance.removeFromCache(tagGroupInstance, session.userId)
 		tagGroupInstance.parentTagGroup = null
 		tagGroupInstance.save()
 		renderJSONGet([success: true])
@@ -177,6 +185,7 @@ class TagController extends LoginController {
 
 		def tagInstance = Tag.get(params.id)
 		tagGroupInstance.removeFromTags(tagInstance)
+		tagGroupInstance.removeFromCache(tagInstance)
 		tagGroupInstance.save()
 		renderJSONGet([success: true])
 	}

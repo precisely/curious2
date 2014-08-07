@@ -13,6 +13,9 @@ import java.util.Calendar
 
 import org.joda.time.*
 
+import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
+
 /**
  *
  * @author mitsu
@@ -128,8 +131,13 @@ class Utils {
 
 	static MailService mailService
 
+	@Deprecated
 	public static setMailService(MailService service) { mailService = service }
 
-	public static MailService getMailService() { return mailService }
+	@Deprecated
+	public static MailService getMailService() { return getService("mailService") }
 
+	static def getService(String serviceName) {
+		SCH.servletContext.getAttribute(GA.APPLICATION_CONTEXT)[serviceName]
+	}
 }
