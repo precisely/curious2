@@ -110,52 +110,186 @@ a,a:link,a:hover,a:visited {
 	vertical-align:middle;
 	margin-left:20px;
 }
+body{
+    overflow-x:hidden;
+}
 </style>
+
+<link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
+<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
+
 </head>
-<body class="login">
-<div id="login" class="loginbody1">
-<div class="loginbody2">
-<g:if test="${flash.message}">
-	<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
-</g:if>
+<body>
+<br>
+<div class="row">
+    <div class="col-md-4 col-md-offset-1 text-left text-cool-grey-medium">
+        <ul class="nav navbar-nav">
+        <li class="active"><a href="#">FEATURES</a></li>
+        <li><a href="#">LEARN</a></li>
+        <li><a href="#">ABOUT</a></li>
+        <li><a href="#">Sign in</a></li>
+      </ul>
+    </div>
+</div>
+<br><br><br>
+<div class="row" style="">
+    <div class="col-md-3 col-md-offset-8">
+        <div class="arrow-step-right text-teal">
+            <img class="img-responsive" src="/images/home/home-logo.jpg" />
+        </div>
+        <div class="df-gutter-top text-center text-cool-grey-medium">
+            <p style="font-family: Tahoma;  font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px">
+                We've got questions.
+            </p>
+            <p style="font-size: 31px; color: #f14a42; text-align: right;"><strong>Do you? </strong></p>
+            <br>
+            <div class="row">
+                <div class="col-md-5 col-md-offset-6">
+            <button type="button" class="btn" style="-webkit-border-radius: 0 !important;-moz-border-radius: 0 !important;
+                  border-radius: 0 !important; background-color: #f14a42; color: white;">
+                  <p style=" margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
+                        Join Curious
+                  </p>
+            </button>
+            </div></div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br>
 
-<g:if test="${templateVer == 'lhp'}">
-<img alt="Curious" src="/images/logo_login_lhp.png" />
-</g:if>
-<g:else>
-<img alt="Curious" src="/images/logo_login.png" />
-</g:else>
-
-<form method="post" action="/home/dologin">
-
-<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}"/>
-<input type="hidden" name ="preaction" value="${preaction.encodeAsHTML()}"/>
-<input type="hidden" name ="parm" value="${parm.encodeAsHTML()}"/>
-
-<div id="loginfields">
-<input type="text" id="username" name="username" value="" placeholder="username" /><br />
-<input type="password" id="password" name="password" value="" placeholder="password" /><br />
-<button><img src="/images/login.png" width="76" height="24" alt="Login" /></button><br />
+<div style="background-color: #F14A42;">
+    <p style="font-size: 24px; color: white; padding-left: 50px; padding-top: 30px;">Features</p>
+    <div class="row">
+        <div class="col-md-2 col-md-offset-1 text-center text-teal">
+            <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-first-icon.png"/>
+            <div class="df-gutter-top text-center text-cool-grey-medium" style="color: white;">
+                <p style="font-size: 26px;">Graph</p>
+                 Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                 totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
+                 vitae dicta sunt, explicabo. 
+            </div>
+        </div>
+        <div class="col-md-2 col-md-offset-1 text-center text-teal">
+            <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-second-icon.png"/>
+            <div class="df-gutter-top text-center text-cool-grey-medium" style="color: white;">
+                <p style="font-size: 26px;">Track</p>
+                Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
+                vitae dicta sunt, explicabo. 
+            </div>
+        </div>
+        <div class="col-md-2 col-md-offset-1 text-center text-teal">
+            <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-third-icon.png"/>
+            <div class="df-gutter-top text-center text-cool-grey-medium" style="color: white;">
+                <p style="font-size: 26px;">Tag</p>
+                Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
+                vitae dicta sunt, explicabo. 
+            </div>
+        </div>
+        <div class="col-md-2 col-md-offset-1 text-center text-teal">
+            <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-third-icon.png"/>
+            <div class="df-gutter-top text-center text-cool-grey-medium" style="color: white;">
+                <p style="font-size: 26px;">Community</p>
+                Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
+                vitae dicta sunt, explicabo.
+            </div>
+        </div>
+    </div>
+    <br><br><br>
 </div>
 
-<g:link action="forgot" params="${['precontroller':precontroller,'preaction':preaction]}">Forgot your login info?</g:link>
-<br/><g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}">Create an account</g:link>
-
-</form>
-
-
+<div>
+    <div class="row">
+        <div class="col-md-1 col-md-offset-1 " style="color: white;">
+            <p style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
+        </div>
+    </div>
+    <br><br><br>
+    <div class="row">
+        <div class="col-md-7 col-md-offset-1 text-left">
+            <ul class="">
+            <li style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); 
+                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                <span style="font-family: Tahoma; font-size: 30px;">The Sleep Study 
+                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
+                </span>
+            </li>
+            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); 
+                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                <span style="font-family: Tahoma; font-size: 30px;">What causes migraines?
+                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
+                </span>
+            </li>
+            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); 
+                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                <span style="font-family: Tahoma; font-size: 30px;">View your most tracked tag
+                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
+                </span>
+            </li>
+            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); 
+                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;
+                opacity:0.3;">
+                <span style="font-family: Tahoma; font-size: 30px;">How do I improve my energy level?
+                </span>
+            </li>
+            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); 
+                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;
+                opacity:0.3;">
+                <span style="font-family: Tahoma; font-size: 30px;">Learn to maintain focus throughtout the day?
+                </span>
+            </li>
+          </ul>
+        </div>
+    </div>
 </div>
+<br><br><br><br>
 
-<g:if test="${templateVer == 'lhp'}">
-<a href="mailto:info@LAMHealthProject.org">Send an email</a> or <a href="https://twitter.com/LAMHlthProject" target="_blank">follow us on Twitter</a> or <a href="https://www.facebook.com/LAMHealthProject" target="_blank">like us on Facebook</a>. 
-</g:if>
-<g:else>
-<a href="mailto:contact@wearecurio.us">Send an email</a> or <a href="http://twitter.com/wearecurious">follow us on Twitter</a> to be included in the next round of alpha invites. Or just say hi. 
-</g:else>
-<g:if test="${templateVer == 'lhp'}">
-	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
-</g:if>
-
+<div style="background-color: #ff935f;">
+    <div class="row">
+        <div class="col-md-1 col-md-offset-1 " style="color: white;">
+            <p style="font-size: 24px; color: white; padding-top: 30px;">ABOUT</p>
+        </div>
+    </div>
+    <br><br>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-1 text-left"  style="color: white;">
+            <p style="font-size: 16px;">
+                Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+                totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
+                vitae dicta sunt, explicabo. 
+             </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2 col-md-offset-9 text-center" style="color: white;">
+            <p style="font-size: 26px;">Say Hi !</p>
+            <a href="https://twitter.com/wearecurious"><img class="" src="/images/home/twitter.png" /></a>
+            <a href="https://facebook.com/wearecurious"><img class="" src="/images/home/facebook.png" /></a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2 col-md-offset-1"  style="color: white;">
+            <p style="font-size: 16px;">
+                GET THE APP 
+            </p>
+        </div>
+        <div class="col-md-1"  style="color: white;">
+            <p style="font-size: 16px;">
+                TUTORIALS
+            </p>
+        </div>
+        <div class="col-md-1"  style="color: white;">
+            <p style="font-size: 16px;">
+                PRIVACY
+             </p>
+        </div>
+        <div class="col-md-1"  style="color: white;">
+            <p style="font-size: 16px;">TERMS</p>
+        </div>
+    </div>
+    <br>
 </div>
 </body>
 </html>
