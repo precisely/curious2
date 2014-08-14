@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.parse.ParseUtils
 import us.wearecurio.parse.WordMatcher
 
-import us.wearecurio.collection.SingleContainer
 import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
 import us.wearecurio.services.DatabaseService
@@ -123,8 +122,8 @@ class Entry implements Comparable {
 		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>();
 		
 		static {
-			RepeatType.each {
-				map.put(it.getId(), it)
+			for (RepeatType t : RepeatType.values()) {
+				map.put(t.getId(), t)
 			}
 		}
 		
@@ -259,10 +258,10 @@ class Entry implements Comparable {
 				GHOSTSTART(DURATIONSTART_BIT | DURATIONGHOST_BIT),
 				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT);
 
-		static int DURATIONSTART_BIT = 1;
-		static int DURATIONEND_BIT = 2;
-		static int DURATIONGHOST_BIT = 16;
-			
+		static final int DURATIONSTART_BIT = 1;
+		static final int DURATIONEND_BIT = 2;
+		static final int DURATIONGHOST_BIT = 16;
+		
 		final Integer id;
 
 		DurationType(Integer id) {
@@ -309,14 +308,14 @@ class Entry implements Comparable {
 			return ""
 		}
 		
-		return tag.getDescription().substring(baseTag.length() + 1)
+		return tag.getDescription().substring(baseTag.getDescription().length() + 1)
 	}
 	
 	public Iterable<Entry> fetchGroupEntries() {
 		if (group != null)
 			return group.getEntries()
 		
-		return new SingleContainer<Entry>(this)
+		return [this]
 	}
 
 	static final MathContext mc = new MathContext(9)
@@ -329,7 +328,7 @@ class Entry implements Comparable {
 	static Entry createArgs(EntryCreationMap creationMap, EntryStats stats, Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
 			String comment, String setName, int amountPrecision = DEFAULT_AMOUNTPRECISION) {
 		
-		def m = [
+		Map<String,Object> m = [
 			'date':date,
 			'timeZoneId':(Integer) timeZoneId.getId(),
 			'datePrecisionSecs':DEFAULT_DATEPRECISION_SECS,
@@ -368,11 +367,11 @@ class Entry implements Comparable {
 		* not have partial entries
 		*/
 
-		if (!m.description.endsWith(" summary")) {
+		if (!m['tag'].getDescription().endsWith(" summary")) {
 			return []
 		}
 
-		Tag tag = Tag.look(m.description)
+		Tag tag = m.tag
 		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
 		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
 
@@ -489,17 +488,17 @@ class Entry implements Comparable {
 		}
 	
 		public void addTag(Tag tag) {
-			tags.add(tag.getId())
+			tagIds.add(tag.getId())
 		}
 		
 		public void addTagId(Long tagId) {
-			tags.add(tagId)
+			tagIds.add(tagId)
 		}
 		
 		public ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
 			ArrayList<TagStats> tagStats = new ArrayList<TagStats>()
 			
-			for (Long tagId: tags) {
+			for (Long tagId: tagIds) {
 				tagStats.add(TagStats.createOrUpdate(userId, tagId))
 			}
 
@@ -596,17 +595,6 @@ class Entry implements Comparable {
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 		
-		def tagUnitStats
-		if (!m['units']) {
-			// Using the most used unit in case the unit is unknown
-			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, m['tag'].getId())
-			if (tagUnitStats) {
-				m['units'] = tagUnitStats.unit
-			}
-		} else {
-			TagUnitStats.createOrUpdate(userId, m['tag'].getId(), m['units'])
-		}
-
 		def amounts = m['amounts']
 		
 		EntryGroup entryGroup = null
@@ -616,16 +604,19 @@ class Entry implements Comparable {
 		}
 		
 		int index = 0
+		
+		Entry e = null
 		for (ParseAmount amount : amounts) {
 			amount.copyToMap(m)
-			Entry e = createSingle(userId, m, entryGroup, stats)
+			e = createSingle(userId, m, entryGroup, stats)
 		}
 		
 		if (entryGroup != null) {
 			Utils.save(entryGroup, false)
+			return entryGroup.getEntries().first() // return first entry in sorted list
 		}
 		
-		return entryGroup.getEntries().getFirst() // return first entry in sorted list
+		return e
 	}
 	
 	protected boolean ifDurationRemoveFromGroup() {
@@ -815,7 +806,8 @@ class Entry implements Comparable {
 	 */
 	public static Entry update(Entry entry, Map m, EntryStats stats, Date baseDate, boolean allFuture = true) {
 		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
-		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>().addAll(m['amounts'])
+		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
+		amounts.addAll(m['amounts'])
 		ArrayList<ParseAmount> unmatchedEntries = new ArrayList<ParseAmount>()
 		
 		EntryGroup newEntryGroup = null
@@ -827,7 +819,7 @@ class Entry implements Comparable {
 		Long userId = entry.getUserId()
 		
 		// first, update entries that match the amounts already specified
-		for (Entry e : fetchGroupEntries()) {
+		for (Entry e : entry.fetchGroupEntries()) {
 			boolean foundMatch = false
 			for (ParseAmount a : amounts) {
 				if (a.matches(e)) {
@@ -852,17 +844,14 @@ class Entry implements Comparable {
 			}
 		}
 		// next, update remaining entries
-		if (unmatchedEntries.size() > 0) {
-			while (true) {
-				Entry e = unmatchedEntries.removeFirst()
-				if (e == null) break
-				if (amounts.size() > 0) {
-					ParseAmount a = amounts.removeFirst()
-					a.copyToMap(m)
-					updateSingle(e, m, creationMap, stats, baseDate, allFuture)
-				} else { // no more amounts, delete remaining entries
-					deleteSingle(e, stats)
-				}
+		while (unmatchedEntries.size() > 0) {
+			Entry e = unmatchedEntries.remove(0)
+			if (amounts.size() > 0) {
+				ParseAmount a = amounts.remove(0)
+				a.copyToMap(m)
+				updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+			} else { // no more amounts, delete remaining entries
+				deleteSingle(e, stats)
 			}
 		}
 		// finally, create new entries in group for remaining amounts
@@ -911,7 +900,7 @@ class Entry implements Comparable {
 	public static delete(Entry entry, EntryStats stats) {
 		log.debug "Entry.delete() entry:" + entry
 
-		for (Entry e : fetchGroupEntries()) {
+		for (Entry e : entry.fetchGroupEntries()) {
 			deleteSingle(e, stats)
 		}
 	}
@@ -929,7 +918,7 @@ class Entry implements Comparable {
 	protected static deleteGhostSingle(Entry entry, EntryCreationMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
 		log.debug "Entry.deleteGhostSingle() entry:" + entry + " baseDate: " + baseDate + " allFuture: " + allFuture
 
-		if (entry.getRepeatType().isContinuous()) {
+		if (entry.getRepeatType()?.isContinuous()) {
 			Entry.deleteSingle(entry, stats)
 
 			return
@@ -983,15 +972,15 @@ class Entry implements Comparable {
 						m['tag'] = entry.getTag()
 						m['date'] = newDateTime.toDate()
 
-						def repeatId = entry.getRepeatType().getId()
-						def toggleType = entry.getRepeatType().toggleGhost()
+						Long repeatId = entry.getRepeatType().getId().longValue()
+						RepeatType toggleType = entry.getRepeatType().toggleGhost()
 
 						def repeatTypes
 
 						if (toggleType != null)
 							repeatTypes = [
 								repeatId,
-								entry.getRepeatType().toggleGhost().getId()
+								entry.getRepeatType().toggleGhost().getId().longValue()
 							]
 						else
 							repeatTypes = [ repeatId ]
@@ -1018,7 +1007,7 @@ class Entry implements Comparable {
 						m['repeatType'] = entry.getRepeatType()
 						m['comment'] = entry.getComment()
 						m['datePrecisionSecs'] = entry.getDatePrecisionSecs()
-						def retVal = Entry.createSingle(entry.getUserId(), m, creationMap, stats)
+						def retVal = Entry.createSingle(entry.getUserId(), m, creationMap.groupForDate(m['date']), stats)
 					}
 				}
 			} else {
@@ -1038,8 +1027,8 @@ class Entry implements Comparable {
 		
 		EntryCreationMap creationMap = new EntryCreationMap()
 		
-		for (Entry e : fetchGroupEntries()) {
-			deleteGhostSingle(entry, creationMap, stats)
+		for (Entry e : entry.fetchGroupEntries()) {
+			deleteGhostSingle(e, creationMap, stats, baseDate, allFuture)
 		}
 	}
 
@@ -1688,7 +1677,7 @@ class Entry implements Comparable {
 		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
 	}
 	
-	protected def activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreationMap creationMap,
+	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreationMap creationMap,
 			EntryStats stats) {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
@@ -1743,15 +1732,22 @@ class Entry implements Comparable {
 		}
 	}
 
-	public void activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
+	public Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
 		if (this.repeatType == null)
 			return null
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
+		EntryCreationMap creationMap = new EntryCreationMap()
+		
+		Entry firstActivated = null
+		
 		for (Entry e : fetchGroupEntries()) {
-			activateGhostEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, stats)
+			Entry activated = e.activateGhostEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats)
+			if (firstActivated == null) firstActivated = activated
 		}
+		
+		return firstActivated
 	}
 
 	/**
@@ -2234,91 +2230,6 @@ class Entry implements Comparable {
 		return summedResults
 	}
 	
-	/**
-	 * Parsing support
-	 */
-
-	protected static final WordMatcher<RepeatType> repeatWordMatcher = new WordMatcher<RepeatType>().addAll(Entry.repeatWords);
-	protected static final WordMatcher<ArrayList<Object>> durationSynonymMatcher = new WordMatcher<ArrayList<Object>>().addAll(Entry.durationSynonyms);
-	protected static final WordMatcher<ArrayList<Object>> durationSuffixMatcher = new WordMatcher<ArrayList<Object>>().addAll(Entry.durationSuffixes);
-	
-	protected static boolean parseSuffix(LinkedList<String> words, Map<String, Object> retVal) {
-		int wordsSize = words.size();
-		
-		if (wordsSize <= 1)
-			return false; // need at least two words to match a tag modifier
-			
-		// try matching repeat words at the beginning
-		RepeatType repeatType = repeatWordMatcher.matchRemove(words, 0);
-		
-		if (repeatType != null) {
-			retVal.put("repeatType", repeatType);
-			return true;
-		}
-		
-		// try matching repeat words at the end
-		if (wordsSize > 2) {
-			repeatType = repeatWordMatcher.matchRemove(words, wordsSize - 2);
-			
-			if (repeatType != null) {
-				retVal.put("repeatType", repeatType);
-				return true;
-			}
-			
-			repeatType = repeatWordMatcher.matchRemove(words, wordsSize - 3);
-			
-			if (repeatType != null) {
-				retVal.put("repeatType", repeatType);
-				return true;
-			}
-		}
-		
-		// try matching duration words at the beginning or end
-		ArrayList<Object> durationSynonym = durationSuffixMatcher.matchRemove(words, 0);
-		
-		if (durationSynonym == null)
-			durationSynonym = durationSuffixMatcher.matchRemove(words, wordsSize - 1);
-		
-		if (durationSynonym != null) { // append canonical duration suffix
-			String baseTagDescription = ParseUtils.implode(words, " ");
-			words.addLast((String)durationSynonym.get(0));
-			retVal.put("durationType", (DurationType)durationSynonym.get(1));
-			retVal.put("baseTagDescription", baseTagDescription);
-			return true;
-		}
-		
-		return false;
-	}
-	
-	protected static boolean parseTagSuffix(LinkedList<String> words, Map<String, Object> retVal) {
-		int wordsSize = words.size();
-		
-		if (wordsSize <= 1)
-			return false; // need at least two words to match a tag modifier
-		
-		if (parseSuffix(words, retVal)) return true;
-		
-		// try matching duration synonyms at the beginning
-		ArrayList<Object> durationValue = durationSynonymMatcher.matchRemove(words, 0);
-		
-		if (durationValue != null) {
-			// replace matched words with synonym
-			words.addFirst((String) durationValue.get(1));
-			words.addFirst((String) durationValue.get(0));
-			retVal.put("durationType", (DurationType) durationValue.get(2));
-			return true;
-		}
-		
-		// try matching unit suffixes at the end of the tag name
-		if (UnitGroupMap.theMap.getSuffixes().contains(words.getLast())) {
-			String baseTagDescription = ParseUtils.implode(words, " ", wordsSize - 1);
-			retVal.put("baseTagDescription", baseTagDescription);
-			return true;
-		}
-		
-		return false;
-	}
-	
 	public static def parseInt(String str) {
 		return str == null ? null : Integer.parseInt(str)
 	}
@@ -2336,26 +2247,6 @@ class Entry implements Comparable {
 		return true
 	}
 
-	protected static prependComment(retVal, str) {
-		if (str != null && str.length() > 0 && retVal['comment'] != null && retVal['comment'].length() > 0)
-			retVal['comment'] = str + ' ' + retVal['comment']
-		else {
-			retVal['comment'] = (str ?: '') + (retVal['comment'] ?: '')
-			if (retVal['comment'].length() == 0)
-				retVal['comment'] = null
-		}
-	}
-
-	protected static appendComment(retVal, str) {
-		if (str != null && str.length() > 0 && retVal['comment'] != null && retVal['comment'].length() > 0)
-			retVal['comment'] = retVal['comment'] + ' ' + str
-		else {
-			retVal['comment'] = (retVal['comment'] ?: '') + (str ?: '')
-			if (retVal['comment'].length() == 0)
-				retVal['comment'] = null
-		}
-	}
-
 	/**
 	 * If baseDate is null, do not store a date in the entry. This means it is a pure metadata entry
 	 *
@@ -2369,16 +2260,103 @@ class Entry implements Comparable {
 	 *
 	 */
 
-	protected static Pattern timePattern = ~/(?i)^((@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)($|[^A-Za-z0-9])|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?($|[^A-Za-z0-9])|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)($|[^A-Za-z0-9]))/
-	protected static Pattern timeEndPattern = ~/(?i)^((@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)($|[^A-Za-z0-9])|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?($|[^A-Za-z0-9])|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)($|[^A-Za-z0-9]))$/
-	protected static Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)/
-	protected static Pattern commentWordPattern = ~/^([^\s]+)/
-	protected static Pattern amountPattern = ~/(?i)^(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?/
-	protected static Pattern endTagPattern = ~/(?i)^(yes|no)/
-	protected static Pattern unitsPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
-	protected static Pattern tagAmountSeparatorPattern = ~/(?i)^[:=]\s*/
-
+	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b/
+	protected static final Pattern timeEndPattern = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b$/
+	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)/
+	protected static final Pattern commentWordPattern = ~/^([^\s]+)/
+	protected static final Pattern amountPattern = ~/(?i)^(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?/
+	protected static final Pattern endTagPattern = ~/(?i)^(yes|no)\b/
+	protected static final Pattern unitsPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)\b/
+	protected static final Pattern tagAmountSeparatorPattern = ~/(?i)^[:=]\s*/
+	
 	protected static def numberMap = ['zero' : '0', 'one':'1', 'two':'2', 'three':'3', 'four':'4', 'five':'5', 'six':'6', 'seven':'7', 'eight':'8', 'nine':'9']
+
+	/**
+	 * Regex pattern to match repeat modifiers
+	 * 
+	 * If you update repeatPattern, you need to update repeatMap
+	 */
+	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|repeat|pinned|favorite|remind|reminder|daily|weekly)\b/
+	
+	protected static final int REPEATMAP_SYNONYM = 0
+	protected static final int REPEATMAP_TYPE = 1
+	
+	protected static Map<String, ArrayList<Object>> repeatMap = [
+		'repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
+		'repeat daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
+		'repeat weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
+		'pinned':['favorite', RepeatType.CONTINUOUSGHOST],
+		'favorite':['favorite', RepeatType.CONTINUOUSGHOST],
+		'remind':['remind', RepeatType.REMINDDAILYGHOST],
+		'remind daily':['remind', RepeatType.REMINDDAILYGHOST],
+		'remind weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+		'reminder':['remind', RepeatType.REMINDDAILYGHOST],
+		'reminder daily':['remind', RepeatType.REMINDDAILYGHOST],
+		'reminder weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+		'daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
+		'daily repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
+		'daily remind':['remind', RepeatType.REMINDDAILYGHOST],
+		'daily reminder':['remind', RepeatType.REMINDDAILYGHOST],
+		'weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
+		'weekly repeat':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
+		'weekly remind':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+		'weekly reminder':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+	]
+
+	/**
+	 * Regex pattern to match duration modifiers
+	 * 
+	 * If you update durationPattern, you need to update durationMap
+	 */
+	protected static final Pattern durationPattern = ~/^(start|starts|begin|begins|starting|beginning|started|begun|began|end|ends|stop|stops|finish|finished|ended|stopped|stopping|ending|finishing)\b/
+	
+	protected static final int DURATIONMAP_SYNONYM = 0
+	protected static final int DURATIONMAP_TYPE = 1
+	
+	protected static final Map<String, ArrayList<Object>> durationMap = [
+		'start':['start', DurationType.START],
+		'starts':['start', DurationType.START],
+		'begin':['start', DurationType.START],
+		'begins':['start', DurationType.START],
+		'starting':['start', DurationType.START],
+		'beginning':['start', DurationType.START],
+		'started':['start', DurationType.START],
+		'begun':['start', DurationType.START],
+		'began':['start', DurationType.START],
+		'end':['end', DurationType.END],
+		'ends':['end', DurationType.END],
+		'stop':['end', DurationType.END],
+		'stops':['end', DurationType.END],
+		'finish':['end', DurationType.END],
+		'finished':['end', DurationType.END],
+		'ended':['end', DurationType.END],
+		'stopped':['end', DurationType.END],
+		'stopping':['end', DurationType.END],
+		'ending':['end', DurationType.END],
+		'finishing':['end', DurationType.END],
+	]
+	
+	/**
+	 * Regex pattern to match duration synonyms
+	 * 
+	 * If you update durationSynonymPattern, you need to update durationSynonymMap
+	 */
+	protected static final Pattern durationSynonymPattern = ~/^(wake up|went to sleep|go to sleep|wake|woke|awakened|awoke|slept)\b/
+	
+	protected static final int DURATIONSYNONYM_TAG = 0
+	protected static final int DURATIONSYNONYM_SUFFIX = 1
+	protected static final int DURATIONSYNONYM_TYPE = 2
+	
+	protected static final Map<String, ArrayList<Object>> durationSynonymMap = [
+		'wake':['sleep', 'end', DurationType.END],
+		'wake up':['sleep', 'end', DurationType.END],
+		'woke':['sleep', 'end', DurationType.END],
+		'awakened':['sleep', 'end', DurationType.END],
+		'awoke':['sleep', 'end', DurationType.END],
+		'went to sleep':['sleep', 'start', DurationType.START],
+		'go to sleep':['sleep', 'start', DurationType.START],
+		'slept':['sleep', 'start', DurationType.START],
+	]
 
 	protected static boolean isToday(Date time, Date baseDate) {
 		boolean today = false
@@ -2393,62 +2371,7 @@ class Entry implements Comparable {
 
 		return today
 	}
-	
-	// see EntryJava.java for more repeat parsing code
-	protected static final Map<ArrayList<String>, ArrayList<Object>> durationSynonyms = [
-		['wake']:['sleep', 'end', DurationType.END],
-		['wake','up']:['sleep', 'end', DurationType.END],
-		['woke']:['sleep', 'end', DurationType.END],
-		['awakened']:['sleep', 'end', DurationType.END],
-		['awoke']:['sleep', 'end', DurationType.END],
-		['went','to','sleep']:['sleep', 'start', DurationType.START],
-		['go','to','sleep']:['sleep', 'start', DurationType.START],
-	]
-
-	protected static final Map<ArrayList<String>, ArrayList<Object>> durationSuffixes = [
-		['start']:['start', DurationType.START],
-		['starts']:['start', DurationType.START],
-		['begin']:['start', DurationType.START],
-		['begins']:['start', DurationType.START],
-		['starting']:['start', DurationType.START],
-		['beginning']:['start', DurationType.START],
-		['started']:['start', DurationType.START],
-		['begun']:['start', DurationType.START],
-		['began']:['start', DurationType.START],
-		['end']:['end', DurationType.END],
-		['ends']:['end', DurationType.END],
-		['stop']:['end', DurationType.END],
-		['stops']:['end', DurationType.END],
-		['finish']:['end', DurationType.END],
-		['finished']:['end', DurationType.END],
-		['ended']:['end', DurationType.END],
-		['stopped']:['end', DurationType.END],
-		['stopping']:['end', DurationType.END],
-		['ending']:['end', DurationType.END],
-		['finishing']:['end', DurationType.END],
-	]
-
-	protected static final Map<ArrayList<String>, RepeatType> repeatWords = [
-		['repeat']:RepeatType.DAILYCONCRETEGHOST,
-		['repeat','daily']:RepeatType.DAILYCONCRETEGHOST,
-		['repeat','weekly']:RepeatType.WEEKLYCONCRETEGHOST,
-		['pinned']:RepeatType.CONTINUOUSGHOST,
-		['remind']:RepeatType.REMINDDAILYGHOST,
-		['remind','daily']:RepeatType.REMINDDAILYGHOST,
-		['remind','weekly']:RepeatType.REMINDWEEKLYGHOST,
-		['reminder']:RepeatType.REMINDDAILYGHOST,
-		['reminder','daily']:RepeatType.REMINDDAILYGHOST,
-		['reminder','weekly']:RepeatType.REMINDWEEKLYGHOST,
-		['daily']:RepeatType.DAILYCONCRETEGHOST,
-		['daily','repeat']:RepeatType.DAILYCONCRETEGHOST,
-		['daily','remind']:RepeatType.REMINDDAILYGHOST,
-		['daily','reminder']:RepeatType.REMINDDAILYGHOST,
-		['weekly']:RepeatType.WEEKLYCONCRETEGHOST,
-		['weekly','repeat']:RepeatType.WEEKLYCONCRETEGHOST,
-		['weekly','remind']:RepeatType.REMINDWEEKLYGHOST,
-		['weekly','reminder']:RepeatType.REMINDWEEKLYGHOST,
-	]
-	
+		
 	public static class ParseAmount {
 		Tag tag // tag including units suffix
 		String suffix
@@ -2465,9 +2388,10 @@ class Entry implements Comparable {
 			this.tag = tag
 			if (baseTag == null || baseTag == tag) {
 				this.suffix = ""
+			} else {
+				this.suffix = tag.getDescription().substring(baseTag.getDescription().length() + 1)
 			}
-		
-			this.suffix = tag.getDescription().substring(baseTag.length() + 1)
+			return this
 		}
 		
 		boolean matches(Entry e) {
@@ -2483,6 +2407,8 @@ class Entry implements Comparable {
 			m['amount'] = amount
 			m['amountPrecision'] = precision
 			m['units'] = units
+			
+			return m
 		}
 	}
 	
@@ -2527,7 +2453,7 @@ class Entry implements Comparable {
 
 		Closure timeClosure = {
 			foundTime = true
-			def noonmid = scanner.group(3)
+			def noonmid = scanner.group(2)
 			if (noonmid != null) {
 				if (noonmid.equals('noon')) {
 					hours = 12
@@ -2539,19 +2465,47 @@ class Entry implements Comparable {
 					return
 				}
 			}
-			hours = parseInt(scanner.group(17) ?: (scanner.group(11) ?: (scanner.group(4) ?: '0')))
+			hours = parseInt(scanner.group(14) ?: (scanner.group(9) ?: (scanner.group(3) ?: '0')))
 			if (hours == 12) hours = 0
-			minutes = parseInt(scanner.group(13) ?: (scanner.group(7) ?: '0'))
-			if (scanner.group(9).equals('p') || scanner.group(15).equals('p') || scanner.group(21).equals('pm')) {
+			minutes = parseInt(scanner.group(11) ?: (scanner.group(6) ?: '0'))
+			if (scanner.group(8).equals('p') || scanner.group(13).equals('p') || scanner.group(18).equals('pm')) {
 				foundAMPM = true
 				hours += 12
-			} else if (scanner.group(9).equals('a') || scanner.group(15).equals('a') || scanner.group(21).equals('am')) {
+			} else if (scanner.group(8).equals('a') || scanner.group(13).equals('a') || scanner.group(18).equals('am')) {
 				foundAMPM = true
 			}
 		}
 
+		LinkedList<String> words = new LinkedList<String>()
+		String suffix = ''
+		String repeatSuffix = ''
+		
+		boolean foundRepeat = false
+		boolean foundDuration = false
+
+		Closure repeatClosure = {
+			foundRepeat = true
+			
+			String modifier = scanner.group(1)
+			
+			ArrayList<Object> info = repeatMap[modifier]
+			retVal['repeatType'] = (RepeatType) info[REPEATMAP_TYPE]
+			repeatSuffix = (String) info[REPEATMAP_SYNONYM]
+		}
+		
+		Closure durationClosure = {
+			foundDuration = true
+			
+			String modifier = scanner.group(1)
+			
+			ArrayList<Object> info = durationMap[modifier]
+			retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
+			suffix =  (String) info[DURATIONMAP_SYNONYM]
+		}
+
 		Closure amountClosure = {
-			def amountStr, amountStrs = []
+			String amountStr
+			ArrayList<String> amountStrs = []
 			int amountIndex = amounts.size()
 			boolean twoDAmount = false
 			
@@ -2577,59 +2531,116 @@ class Entry implements Comparable {
 			}
 			
 			scanner.skipWhite()
-
-			boolean foundUnits = false
-			if (!scanner.matchField(timePattern, timeClosure)) {
-				scanner.matchField(unitsPattern) {
-					String unitsStr = scanner.group(1)
-					((ParseAmount)amounts[amountIndex++]).setUnits(unitsStr)
-					if (amountIndex < amounts.size())
+			
+			if ( !((!foundRepeat) && scanner.matchField(repeatPattern, repeatClosure))
+					|| ((!foundDuration) && scanner.matchField(durationPattern, durationClosure)) ) {
+				boolean foundUnits = false
+				if (!scanner.matchField(timePattern, timeClosure)) {
+					scanner.matchField(unitsPattern) {
+						String unitsStr = scanner.group(1)
 						((ParseAmount)amounts[amountIndex++]).setUnits(unitsStr)
-					foundUnits = true
+						if (amountIndex < amounts.size())
+							((ParseAmount)amounts[amountIndex++]).setUnits(unitsStr)
+						foundUnits = true
+					}
 				}
 			}
+		}
+		
+		Closure durationSynonymClosure = {
+			foundDuration = true
+			
+			String modifier = scanner.group(1)
+			
+			ArrayList<Object> info = durationSynonymMap[modifier]
+			retVal['durationType'] = (DurationType) info[DURATIONSYNONYM_TYPE]
+			suffix = (String) info[DURATIONSYNONYM_SUFFIX]
+			words.add((String) info[DURATIONSYNONYM_TAG])
 		}
 
 		scanner.skipWhite()
 
 		scanner.matchField(timePattern, timeClosure)
 
-		LinkedList<String> words = new LinkedList<String>()
-
 		boolean endTag = false
-		boolean tagAmountSeparator = false
-
-		while (scanner.match(tagWordPattern)) {
-			words.add(scanner.group(1))
-
-			scanner.matchWhite()
-			if (scanner.match(tagAmountSeparatorPattern)) {
-				endTag = true
-				tagAmountSeparator = true
-			}
-
-			// allow time to appear before amount
-			if (scanner.match(timePattern, timeClosure)) {
-				scanner.skipWhite()
-				if (!endTag) { // tag separator can be after time
-					scanner.match(tagAmountSeparatorPattern) { tagAmountSeparator = true }
+		boolean tryStart
+		boolean skipModifiers = false
+		
+		while (true) {
+			boolean tagAmountSeparator = false
+			boolean tryFollowedByTagWord = false
+			boolean tryFollowedByTagEnd = false
+			
+			if (!skipModifiers) {
+				// look for repeat pattern, but only look for these at start
+				if ( ((!foundRepeat) && scanner.tryField(repeatPattern, repeatClosure))
+						|| ((!foundDuration) && scanner.tryField(durationPattern, durationClosure)) ) {
+					if (words.size() == 0) {
+						// conditioned on: followed by tag word
+						tryFollowedByTagWord = true
+					} else {
+						// conditioned on: followed by tag end
+						tryFollowedByTagEnd = true
+					}
 				}
-				endTag = true
+			} else
+				skipModifiers = false
+			
+			// look for duration synonym at start of tag
+			if (words.size() == 0 && (!foundDuration)) {
+				scanner.matchField(durationSynonymPattern, durationSynonymClosure)
 			}
+			// match next word
+			if (scanner.matchField(tagWordPattern)) {
+				if (tryFollowedByTagWord) {
+					// success at this condition
+					scanner.confirmTry()
+				} else if (tryFollowedByTagEnd) {
+					// failed this condition, backtrack try, keep processing words
+					scanner.backtrackTry()
+					skipModifiers = true
+					continue
+				}
+				words.add(scanner.group(1))
+	
+				if (scanner.match(tagAmountSeparatorPattern)) {
+					endTag = true
+					tagAmountSeparator = true
+				}
+				
+				// allow time to appear before amount
+				if ((!foundTime) && scanner.matchField(timePattern, timeClosure)) {
+					if (!endTag) { // tag separator can be after time
+						scanner.match(tagAmountSeparatorPattern) { tagAmountSeparator = true }
+					}
+					endTag = true
+				}
+			} else
+				endTag = true
+			
+			if (endTag) {
+				if (tryFollowedByTagWord) {
+					// failed at this condition
+					scanner.backtrackTry() // start over processing words
+					skipModifiers = true
+					continue
+				} else if (tryFollowedByTagEnd) {
+					// success at this condition
+					scanner.confirmTry()
+				}
+				break
+			}
+		}
 
-			// allow multiple amounts and units
-			while (scanner.match(amountPattern, amountClosure)) {
+		// look for amount after tag		
+		if (words.size() > 0) {
+			while (scanner.matchField(amountPattern, amountClosure)) {
 				// if no units, break, otherwise attempt to match another amount/units pair
 				if (((ParseAmount)amounts[amounts.size() - 1]).getUnits() == null)
 					break
 			}
-
-			if (endTag)
-				break;
 		}
-		
-		parseTagSuffix(words, retVal)
-		
+
 		String description = ParseUtils.implode(words).toLowerCase()
 		
 		if (amounts.size() == 0) {
@@ -2640,31 +2651,69 @@ class Entry implements Comparable {
 			scanner.matchField(timePattern, timeClosure)
 		}
 
-		LinkedList<String> commentWords = new LinkedList<String>()
+		words = new LinkedList<String>()
 
-		while (scanner.match(commentWordPattern)) {
-			String word = scanner.group(1)
-			commentWords.add(scanner.group(1))
-			scanner.matchWhite()
+		skipModifiers = false
+		
+		while (true) {
+			boolean tryFollowedByTagEnd = false
+			
+			if (!skipModifiers) {
+				// look for repeat pattern, but only look for these at start or end
+				if ( ((!foundRepeat) && scanner.tryField(repeatPattern, repeatClosure))
+						|| ((!foundDuration) && scanner.tryField(durationPattern, durationClosure)) ) {
+					if (words.size() > 0) {
+						// conditioned on: followed by tag end
+						tryFollowedByTagEnd = true
+					}
+				}
+			} else
+				skipModifiers = false
+			
+			// match next word
+			if (scanner.matchField(commentWordPattern)) {
+				if (tryFollowedByTagEnd) {
+					// failed this condition, backtrack try, keep processing words
+					scanner.backtrackTry()
+					skipModifiers = true
+					continue
+				}
+				words.add(scanner.group(1))
+				
+				// allow time to appear at end of comment
+				if ((!foundTime) && scanner.matchField(timeEndPattern, timeClosure)) {
+					endTag = true
+				}
+			} else
+				endTag = true
+			
+			if (endTag) {
+				if (tryFollowedByTagEnd) {
+					// success at this condition
+					scanner.confirmTry()
+				}
+				break
+			}
+		}
 
-			if (scanner.match(timeEndPattern, timeClosure))
-				break;
+		String comment = ''
+		if (words.size() > 0) {
+			comment = ParseUtils.implode(words)
 		}
 		
-		parseSuffix(commentWords, retVal)
-
-		if (commentWords.size() > 0) {
-			prependComment(retVal, ParseUtils.implode(commentWords))
-			
-			log.debug "comment " + retVal['comment']
-		}		
-
+		comment = ''
+		
+		if (repeatSuffix)
+			if (comment)
+				comment += ' ' + repeatSuffix
+			else
+				comment = repeatSuffix
+		
 		if (!foundTime) {
 			if (date != null) {
 				date = time;
 				if (!(defaultToNow && today && (!forUpdate))) { // only default to now if entry is for today and not editing
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
-					log.debug "SETTING DATE TO " + Utils.dateToGMTString(date)
 					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else {
 					if (!isSameDay(time, baseDate)) {
@@ -2700,7 +2749,7 @@ class Entry implements Comparable {
 			if (amounts[i].getUnits()?.equals("at"))
 				amounts[i].setUnits('')
 			String units = amounts[i].getUnits()
-			if (units?.length > MAXUNITSLENGTH) {
+			if (units?.length() > MAXUNITSLENGTH) {
 				amounts[i].setUnits(units.substring(0, MAXUNITSLENGTH))
 			}
 		}
@@ -2711,22 +2760,24 @@ class Entry implements Comparable {
 		if (description?.length() > Tag.MAXLENGTH) {
 			def lastSpace = description.lastIndexOf(' ', Tag.MAXLENGTH - 1)
 			description = description.substring(0, lastSpace)
-			String comment = retVal['comment']
+
 			if (comment.length() > 0) {
 				if (comment.charAt(0) == '(') {
 					if (comment.charAt(comment.length() - 1) == ')') {
-						retVal['comment'] = comment.substring(1, comment.length() - 2)
+						comment = comment.substring(1, comment.length() - 2)
 					} else {
-						retVal['comment'] = comment.substring(1)
+						comment = comment.substring(1)
 					}
 				}
 			}
-			retVal['comment'] = '(' + (retVal['comment'] ? retVal['comment'] + ' ' : '') + description.substring(lastSpace + 1) + ')'
+			comment = '(' + (comment ? comment + ' ' : '') + description.substring(lastSpace + 1) + ')'
 		}
 
-		if (retVal['comment']?.length() > MAXCOMMENTLENGTH) {
-			retVal['comment'] = retVal['comment'].substring(0, MAXCOMMENTLENGTH)
+		if (comment?.length() > MAXCOMMENTLENGTH) {
+			comment = comment.substring(0, MAXCOMMENTLENGTH)
 		}
+		
+		retVal['comment'] = comment
 
 		if (retVal['setName']?.length() > MAXSETNAMELENGTH) {
 			retVal['setName'] = retVal['setName'].substring(0, MAXSETNAMELENGTH)
@@ -2774,8 +2825,10 @@ class Entry implements Comparable {
 				retVal['repeatType'] = retVal['repeatType'].makeGhost()
 		}
 
-		retVal['tag'] Tag.look(description)		
-		retVal['baseTag'] = Tag.look(description)
+		retVal['tag'] = Tag.look(description)
+		String baseTagDescription = description
+		if (suffix) baseTagDescription += ' ' + suffix
+		retVal['baseTag'] = Tag.look(baseTagDescription)
 		
 		int index = 0
 		for (ParseAmount amount : amounts)
@@ -2875,8 +2928,11 @@ class Entry implements Comparable {
 		
 		Integer i = 0
 		
+		Map amounts = [:]
+		
 		for (Entry e : fetchGroupEntries()) {
-			def amounts = [i:[amount:e.getAmount(), amountPrecision:e.fetchAmountPrecision(), units:e.getUnits()]]
+			amounts = [i:[amount:e.getAmount(), amountPrecision:e.fetchAmountPrecision(), units:e.getUnits()]]
+			i++
 		}
 		
 		retVal['amounts'] = amounts
@@ -2908,6 +2964,7 @@ class Entry implements Comparable {
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", baseTag:" + getBaseTag().getDescription() \
 				+ ", description:" + getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
@@ -2924,6 +2981,7 @@ class Entry implements Comparable {
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", baseTag:" + getBaseTag().getDescription() \
 				+ ", description:" + getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
@@ -2966,8 +3024,8 @@ class Entry implements Comparable {
 			return 1 // no units always comes first
 		}
 		
-    	int thisPri = UnitGroupMap.theMap.unitRatioForUnits(units).getGroupPriority()
-		int thatPri = UnitGroupMap.theMap.unitRatioForUnits(eUnits).getGroupPriority()
+    	int thisPri = UnitGroupMap.theMap.unitRatioForUnits(units)?.getGroupPriority() ?: -1
+		int thatPri = UnitGroupMap.theMap.unitRatioForUnits(eUnits)?.getGroupPriority() ?: -1
 		
 		return thisPri < thatPri ? -1 : (thisPri > thatPri ? 1 : 0)
 	}

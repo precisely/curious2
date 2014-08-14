@@ -134,6 +134,14 @@ class UnitGroupMap {
 	// other suffixes
 	static Map suffixPriority = ['systolic' : 10, 'diastolic' : 20]
 	
+	static final Set<String> suffixes = new HashSet<String>()
+	
+	static {
+		suffixPriority.each {
+			suffixes.add(it.key)
+		}
+	}
+	
 	enum UnitGroup {
 		
 		DURATION(1, "duration", 100, [
@@ -270,16 +278,14 @@ class UnitGroupMap {
 		Map<String, UnitRatio> map = [:]
 		Set<String> units = new HashSet<String>()
 		
-		public static final Set<String> unitGroupNames = new HashSet<String>()
-		
 		UnitGroup(int id, String name, int priority, def initMap) {
 			this.id = id
 			this.name = name
 			this.priority = priority
 			
-			suffixPriority[name] = priority
+			UnitGroupMap.suffixPriority[name] = priority
 			
-			unitGroupNames.add(name)
+			UnitGroupMap.suffixes.add(name)
 			
 			for (e in initMap) {
 				String unit = e.key
@@ -376,7 +382,7 @@ class UnitGroupMap {
 	static Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	
-	Map<String, UnitRatio> unitToRatio = new HashMap<String, UnitRatio>()
+	Map<String, UnitRatio> unitsToRatio = new HashMap<String, UnitRatio>()
 
 	def UnitGroupMap() {
 		Set<String> allUnits = new HashSet<String>()
@@ -387,7 +393,7 @@ class UnitGroupMap {
 		}
 		
 		for (String units : allUnits) {
-			unitToRatio.put(unit, calculateUnitRatioForUnits(units))
+			unitsToRatio.put(units, calculateUnitRatioForUnits(units))
 		}
 	}
 	
@@ -406,8 +412,8 @@ class UnitGroupMap {
 	}
 	
 	public double fetchConversionRatio(String fromUnits, String toUnits) {
-		UnitRatio fromUnitRatio = unitToRatio.get(fromUnits)
-		UnitRatio toUnitRatio = unitToRatio.get(toUnits)
+		UnitRatio fromUnitRatio = unitsToRatio.get(fromUnits)
+		UnitRatio toUnitRatio = unitsToRatio.get(toUnits)
 		
 		return fromUnitRatio.ratio / toUnitRatio.ratio
 	}
@@ -416,7 +422,7 @@ class UnitGroupMap {
 	 * Returns generic closest-matching UnitRatio for the given unit string
 	 */
 	public UnitRatio unitRatioForUnits(String units) {
-		UnitRatio ratio = unitToRatio.get(units)
+		UnitRatio ratio = unitsToRatio.get(units)
 		
 		if (ratio != null) return ratio
 		
@@ -424,7 +430,7 @@ class UnitGroupMap {
 		
 		if (matcher.lookingAt()) {
 			String units2 = matcher.group(1)
-			ratio = unitToRatio.get(units2)
+			ratio = unitsToRatio.get(units2)
 			if (ratio != null) {
 				String suffix = matcher.group(3)
 				return new UnitRatio(ratio, suffix)
@@ -435,7 +441,7 @@ class UnitGroupMap {
 		
 		if (matcher.lookingAt()) {
 			String units1 = matcher.group(1)
-			ratio = unitToRatio.get(units1)
+			ratio = unitsToRatio.get(units1)
 			if (ratio != null) {
 				String suffix = matcher.group(5)
 				return new UnitRatio(ratio, suffix)
@@ -458,7 +464,7 @@ class UnitGroupMap {
 				return unitGroup.lookupUnitRatio(unit)
 		}
 		// lookup cached unit ratio for the unit
-		return unitToRatio.get(mostUsed.unit)
+		return unitsToRatio.get(mostUsed.unit)
 	}
 	
 	/**
@@ -509,7 +515,7 @@ class UnitGroupMap {
 	 * Return set of all suffixes for parsing
 	 */
 	public static Set<String> getSuffixes() {
-		return UnitGroup.unitGroupNames
+		return suffixes
 	}
 	
 	public static int getSuffixPriority(String suffix) {

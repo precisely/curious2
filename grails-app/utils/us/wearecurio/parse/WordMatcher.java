@@ -30,13 +30,11 @@ public class WordMatcher<T> {
 	}
 	
 	public void add(Iterator<String> words, T value) {
-		String word = words.next();
-		
-		if (word == null) {
-			this.value = value;
-		} else {
+		if (words.hasNext()) {
+			String word = words.next();
 			addWordMatcher(word).add(words, value);
-		}
+		} else
+			this.value = value;
 	}
 	
 	protected WordMatcher<T> addWordMatcher(String word) {
@@ -62,8 +60,7 @@ public class WordMatcher<T> {
 		WordMatcher<T> current = this;
 		
 		while (true) {
-			String word = wordIterator.next();
-			if (word == null) {
+			if (!wordIterator.hasNext()) {
 				// successful match, no more words
 				// remove matching words from input list
 				while (len-- > 0) {
@@ -71,6 +68,8 @@ public class WordMatcher<T> {
 				}
 				return current.getValue();
 			}
+			
+			String word = wordIterator.next();
 			
 			++len;
 			
@@ -94,10 +93,12 @@ public class WordMatcher<T> {
 		WordMatcher<T> current = this;
 		
 		while (true) {
-			String word = wordIterator.next();
-			if (word == null) {
+			if (!wordIterator.hasNext()) {
 				return current.getValue();
 			}
+
+			String word = wordIterator.next();
+
 			WordMatcher<T> next = current.matchWord(word);
 			if (next == null) { // no more matches, return value
 				return current.getValue();

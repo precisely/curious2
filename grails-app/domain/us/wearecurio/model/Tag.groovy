@@ -9,11 +9,11 @@ import java.util.Date
 import java.util.Calendar
 import java.util.TimeZone
 
-class Tag {
+class Tag implements Serializable {
 
 	// TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
 	//	This will allow us to iterate on both TagGroups and Tags.
-	def tags() {
+	Iterable<Tag> tags() {
 		[this]
 	}
 
@@ -39,7 +39,7 @@ class Tag {
 		}
 	}
 
-	static def create(String d) {
+	static Tag create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
@@ -50,7 +50,7 @@ class Tag {
 		return tag
 	}
 	
-	static def fetch(Long id) {
+	static Tag fetch(Long id) {
 		def tag = tagIdCache.get(id)
 		
 		if (tag != null) return tag
@@ -58,7 +58,7 @@ class Tag {
 		return Tag.get(id)
 	}
 
-	static def look(String d) {
+	static Tag look(String d) {
 		log.debug "Tag.look() description:'" + d + "'"
 		def tag = tagCache.get(d)
 		if (tag) return tagIdCache.get(tag.id)
@@ -76,13 +76,13 @@ class Tag {
 		return Tag.create(d)
 	}
 
-	def getPropertiesForUser(Long userId) {
+	TagProperties getPropertiesForUser(Long userId) {
 		return TagProperties.lookup(userId, getId())
 	}
 
 	String description
 
-	def String toString() {
+	String toString() {
 		return "Tag(id:" + id + ", description:" + description + ")"
 	}
 	

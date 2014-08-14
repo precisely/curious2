@@ -4,9 +4,10 @@ import grails.converters.*
 import us.wearecurio.model.*
 import us.wearecurio.exceptions.*
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.Discussion;
-import us.wearecurio.model.java.EntryJava.RepeatType;
-import us.wearecurio.model.Entry.EntryStats;
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.Entry.EntryStats
 
 import java.math.MathContext
 import java.text.DateFormat

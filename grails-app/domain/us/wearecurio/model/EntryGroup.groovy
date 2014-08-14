@@ -1,12 +1,10 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 import groovy.time.*
 import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
 
-import us.wearecurio.model.java.EntryJava.RepeatType
-import static us.wearecurio.model.java.EntryJava.*
 import us.wearecurio.parse.ParseUtils
 
 import us.wearecurio.datetime.LocalTimeRepeater
@@ -31,7 +29,7 @@ class EntryGroup {
 
 	private static def log = LogFactory.getLog(this)
 	
-	SortedSet entries
+	SortedSet entries = new TreeSet<Entry>()
 
 	static hasMany = [entries : Entry]
 	

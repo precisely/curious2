@@ -31,7 +31,8 @@ class EntryFactory {
 		def units = entry_params['units'] ?: DEFAULT_UNITS
 		def repeatType = entry_params['repeatType'] ?: DEFAULT_REPEAT_TYPE
 		def tag_description = entry_params['tag_description'] ?: tag.description
-		def (baseTag, durationType) = Entry.getDurationInfoFromStrings(tag_description, units, repeatType)
+		def baseTag = tag
+		def durationType = Entry.DurationType.NONE
 		def init_params = [
 			tag: tag,
 			baseTag: baseTag,
