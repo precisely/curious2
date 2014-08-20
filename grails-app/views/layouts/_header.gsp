@@ -1,6 +1,5 @@
 <head>
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
-<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <style type="text/css">
 .features-background{ 
     position: absolute;
@@ -12,31 +11,13 @@
     -webkit-transform: rotate(13deg) skew(13deg); 
     transform: rotate(13deg) skew(13deg); 
 }
-.about-background{ 
-    position: absolute;
-    height: 100%;
-    border-top: 330px solid transparent;
-    border-left: 1300px solid #ff935f;
-    border-right: 0px solid transparent;
-    z-index: -1;
-}
 .shape-wrapper{
     position:relative;
 }
-body{
-    overflow-x:hidden;
-}
-.footerLinks li a {
-    color: #b35930;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-}
-.headerLinks li{
-    color: #9d9d9d;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
+.headLinks{
+    margin-left: 60px; 
+    margin-top: 20px; 
+    margin-bottom: 30px;
 }
 .header-button{
     color: #9d9d9d;
@@ -50,16 +31,8 @@ body{
     border-color: #adadad;
     border-top-right-radius: 0;
 }
-.headerLinks li a {
-    text-decoration: none;
-}
 .header-button:hover{
     background-color: #f14a42; 
-}
-.headLinks{
-    margin-left: 60px; 
-    margin-top: 20px; 
-    margin-bottom: 30px;
 }
 </style>
 </head>

@@ -1474,3 +1474,38 @@ body.load-graph #graphList .summary .close {
 #remove-exclusion-dialog ul li {
 	font-size: 16px;
 }
+.about-background{ 
+	position: absolute;
+	height: 100%;
+	border-top: 500px solid transparent;
+	border-left: 2500px solid #ff935f;
+	border-right: 0px solid transparent;
+	z-index: -1;
+}
+.about-wrapper{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+}
+.footerLinks{
+	display: block;
+}
+.footerLinks li a {
+	color: #b35930;
+	text-decoration: none;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.headerLinks li{
+	color: #9d9d9d;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: bold;
+}
+.headerLinks li a {
+    text-decoration: none;
+}
+body{
+    overflow-x:hidden;
+}
