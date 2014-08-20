@@ -64,7 +64,8 @@ class SecurityService {
 		'dorecover',
 		'notifywithings',
 		'termsofservice',
-		'notifyfitbit'
+		'notifyfitbit',
+        'homepage'
 	] as Set
 
 	/**

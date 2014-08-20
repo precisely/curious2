@@ -18,28 +18,22 @@
         </div>
     </div>
     <br><br><br><br>
-    <div class="row" style="color: white" >
-        <div class="col-md-2 col-md-offset-1">
-            <p style="font-size: 16px;">
-                GET THE APP 
-            </p>
+    
+    <div class="row">
+        <div class="col-md-6 col-md-offset-1">
+            <ul class="mainLinks footerLinks">
+                <li style="font-size: 16px;"><a href="#">GET THE APP</a></li>
+                <li style="font-size: 16px;"><a href="#">TUTORIALS</a></li>
+                <li style="font-size: 16px;"><a href="http://www.wearecurio.us/">PRIVACY</a></li>
+                <li style="font-size: 16px;"><g:link controller='home' action="termsofservice">TERMS</g:link></li>
+            </ul>
         </div>
-        <div class="col-md-1">
-            <p style="font-size: 16px;">
-                TUTORIALS
-            </p>
-        </div>
-        <div class="col-md-1" >
-            <p style="font-size: 16px;">
-                PRIVACY
-             </p>
-        </div>
-        <div class="col-md-1">
-            <p style="font-size: 16px;">TERMS</p>
-        </div>
-        <div class="col-md-2 col-md-offset-3 text-center" style="color: white; margin-top: -80px;">
+
+        <div class="col-md-2 pull-right text-center" style="color: white; margin-top: -80px;">
             <p style="font-size: 26px;">Say Hi !</p>
-            <a href="https://twitter.com/wearecurious"><img class="" src="/images/home/twitter.png" /></a>
+            <a href="https://twitter.com/wearecurious">
+                <img class="" src="/images/home/twitter.png" style="padding-right: 15px;"/>
+            </a>
             <a href="https://facebook.com/wearecurious"><img class="" src="/images/home/facebook.png" /></a>
         </div>
     </div>

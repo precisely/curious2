@@ -486,6 +486,10 @@ class HomeController extends DataController {
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
 
+    def homepage() {
+        render(view:"/home/homepage")
+    }
+
 	def community() {
 		debug "HomeController.community()"
 		def user = sessionUser()

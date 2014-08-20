@@ -1,163 +1,161 @@
 <html>
 <head>
 <meta name="layout" content="bare" />
-<title>Home</title>
+<title>Login</title>
+<script type="text/javascript">
+$(function(){
+	$("input:text:visible:first").focus();
+    $('form').each(function() {
+        $('input').keypress(function(e) {
+            // Enter pressed?
+            if(e.which == 10 || e.which == 13) {
+                this.form.submit();
+            }
+        });
+
+        $('input[type=submit]').hide();
+    });
+});
+</script>
 <style type="text/css">
-.features-background{ 
-    position: absolute;
-    height: 100%;
-    width: 105%;
-    background-color: #F14A42; 
-    left: -18px;
-    z-index: -1;
-    -webkit-transform: rotate(13deg) skew(13deg); 
-    transform: rotate(13deg) skew(13deg); 
+/* FRAME */
+
+* {
+	vertical-align: baseline;
+	font-weight: inherit;
+	font-family: arial,helvetica,san-serif;
+	font-style: inherit;
+	font-size: 100%;
+	border: 0 none;
+	outline: 0;
+	padding: 0;
+	margin: 0;
 }
-.about-background{ 
-    position: absolute;
-    height: 100%;
-    border-top: 330px solid transparent;
-    border-left: 1300px solid #ff935f;
-    border-right: 0px solid transparent;
-    z-index: -1;
+h1 {
+	font-weight:bold;
 }
-.shape-wrapper{
-    position:relative;
+body {
+	text-align:left;
 }
-body{
-    overflow-x:hidden;
+a,a:link,a:hover,a:visited {
+	color:#08BBF1;	
+	text-decoration:none;
+}
+
+.bugs {
+	position:relative;
+}
+.bugs a {	
+	display:block;
+	background:url(/images/bugs.gif) no-repeat;
+	width:19px;
+	height:20px;
+	position:absolute;
+	top:26px;
+	right:0px;	
+}
+.bugs a span {	
+	display:none;
+}
+
+/* JQUERY UI MODS */
+.ui-accordion-header {
+	overflow:hidden;
+}
+#login {
+	border:0px;	
+	text-align:center;
+	padding:3em 5em .5em 5em;
+}
+
+#login .loginbody2 {
+
+	border-width:2px 0px;
+	border-color:rgb(239,75,58);
+	border-style: solid;	
+	
+<g:if test="${templateVer == 'lhp'}">
+	padding: 3em 2em 3em 2em;
+	max-width:900px;
+</g:if>
+<g:else>
+	padding: 3em 5em 3em 5em;
+	max-width:800px;
+</g:else>
+	margin:0px auto .5em auto;
+	text-align:right;
+}
+
+#login form {
+	text-align:right;
+	padding-top:7em;
+}
+
+#login form input {
+	display:inline-block;
+	width:225px;
+	clear:right;
+	padding:2px;
+	margin:0px 0px 4px 0px;
+	background-color:#eeeeee;
+}
+#loginfields {
+	padding:0px 0px 1em 0px;
+}
+#headerbutton {
+	background:url(/images/lhpdonate.gif) no-repeat;
+	width:135px;
+	height:50px;
+	display:inline-block;
+	vertical-align:middle;
+	margin-left:20px;
 }
 </style>
 </head>
-<body>
+<body class="login">
+<div id="login" class="loginbody1">
+<div class="loginbody2">
+<g:if test="${flash.message}">
+	<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
+</g:if>
 
-<g:render template="header"/>
-<br><br><br>
-<div class="row">
-    <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
-        <img class="" src="/images/home/home-logo.jpg" />
-        <p style="font-family: Tahoma;  font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px;
-           white-space: nowrap;">
-            We've got questions.
-        </p>
-        <p style="font-size: 31px; color: #f14a42; text-align: right;"><strong>Do you? </strong></p>
-        <br><br>
-        <button type="button" class="btn" style="-webkit-border-radius: 0 !important;-moz-border-radius: 0 !important;
-              border-radius: 0 !important; background-color: #f14a42; color: white;">
-              <p style=" margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
-                    Join Curious
-              </p>
-        </button>
-    </div>
-</div>
-<div class="shape-wrapper">
-    <div class="features-background"></div>
-    <div class="row">
-        <div class="col-sm-1 col-sm-offset-1" style="color: white;">
-            <p style="font-size: 26px;">Features</p>
-        </div>
-    </div>
-    <br><br><br>
-    <div class="row">
-        <div class="col-sm-2 col-sm-offset-1 text-center text-teal">
-            <div class="thumbnail">
-                <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-first-icon.png"/>
-                <div class="caption" style="color: white;">
-                    <p style="font-size: 26px;">Graph</p>
-                     Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
-                     totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
-                     vitae dicta sunt, explicabo. 
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2 col-sm-offset-1 text-center text-teal" style="margin-left: 60px;">
-            <div class="thumbnail">
-                <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-second-icon.png"/>
-                <div class="caption" style="color: white;">
-                    <p style="font-size: 26px;">Track</p>
-                     Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
-                     totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
-                     vitae dicta sunt, explicabo. 
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2 col-sm-offset-1 text-center text-teal" style="margin-left: 60px;">
-            <div class="thumbnail">
-                <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-third-icon.png"/>
-                <div class="caption" style="color: white;">
-                    <p style="font-size: 26px;">Tag</p>
-                     Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
-                     totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
-                     vitae dicta sunt, explicabo. 
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-2 col-sm-offset-1 text-center text-teal" style="margin-left: 60px;">
-            <div class="thumbnail">
-                <img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-fourth-icon.png"/>
-                <div class="caption" style="color: white;">
-                    <p style="font-size: 26px;">Community</p>
-                     Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
-                     totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae 
-                     vitae dicta sunt, explicabo. 
-                </div>
-            </div>
-        </div>
-    </div>
-    <br><br><br><br><br><br><br>
+<g:if test="${templateVer == 'lhp'}">
+<img alt="Curious" src="/images/logo_login_lhp.png" />
+</g:if>
+<g:else>
+<img alt="Curious" src="/images/logo_login.png" />
+</g:else>
+
+<form method="post" action="/home/dologin">
+
+<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}"/>
+<input type="hidden" name ="preaction" value="${preaction.encodeAsHTML()}"/>
+<input type="hidden" name ="parm" value="${parm.encodeAsHTML()}"/>
+
+<div id="loginfields">
+<input type="text" id="username" name="username" value="" placeholder="username" /><br />
+<input type="password" id="password" name="password" value="" placeholder="password" /><br />
+<button><img src="/images/login.png" width="76" height="24" alt="Login" /></button><br />
 </div>
 
-<div>
-    <div class="row">
-        <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-            <p style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
-        </div>
-    </div>
-    <br><br><br>
-    <div class="row">
-        <div class="col-sm-7 col-sm-offset-1 text-left">
-            <ul class="">
-            <li style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); 
-                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                <span style="font-family: Tahoma; font-size: 30px;">The Sleep Study 
-                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
-                </span>
-            </li>
-            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); 
-                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                <span style="font-family: Tahoma; font-size: 30px;">What causes migraines?
-                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
-                </span>
-            </li>
-            <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); 
-                background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                <span style="font-family: Tahoma; font-size: 30px;">View your most tracked tag
-                    <span style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
-                </span>
-            </li>
-            </ul>
-           
-            <div style="position: absolute; z-index: -2;">
-                <ul>
-                    <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); 
-                        background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;
-                        opacity:0.3;">
-                        <span style="font-family: Tahoma; font-size: 30px;">How do I improve my energy level?
-                        </span>
-                    </li>
-                    <li style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); 
-                        background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;
-                        opacity:0.3;">
-                        <span style="font-family: Tahoma; font-size: 30px;">Learn to maintain focus throughtout the day?
-                        </span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-<br>
+<g:link action="forgot" params="${['precontroller':precontroller,'preaction':preaction]}">Forgot your login info?</g:link>
+<br/><g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}">Create an account</g:link>
 
-<g:render template="footer"/>
+</form>
+
+
+</div>
+
+<g:if test="${templateVer == 'lhp'}">
+<a href="mailto:info@LAMHealthProject.org">Send an email</a> or <a href="https://twitter.com/LAMHlthProject" target="_blank">follow us on Twitter</a> or <a href="https://www.facebook.com/LAMHealthProject" target="_blank">like us on Facebook</a>. 
+</g:if>
+<g:else>
+<a href="mailto:contact@wearecurio.us">Send an email</a> or <a href="http://twitter.com/wearecurious">follow us on Twitter</a> to be included in the next round of alpha invites. Or just say hi. 
+</g:else>
+<g:if test="${templateVer == 'lhp'}">
+	<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton"></a>
+</g:if>
+
+</div>
 </body>
 </html>
