@@ -1,6 +1,7 @@
 <div class="body1 container">
 <div class="body2">
 <div class="bugs"><a href="#"><span>Bugs</span></a></div>
+
 <!-- HEADER -->
 <div class="header clearfix">
 	<div class="pull-left logo-container">

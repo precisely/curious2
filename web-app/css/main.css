@@ -124,7 +124,7 @@ a,a:link,a:hover,a:visited {
 }
 .main h1 {
 	padding:7px 10px;
-	background-color:#EF4B3A;
+	background-color:#f14a42;
 	vertical-align:middle;
 	font-weight:bold;
 	line-height:20px;
@@ -1073,7 +1073,7 @@ body.tags-displayed .floating-column {
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	background-color: #EF4B3A;
+	background-color: #f14a42;
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: uppercase;
@@ -1483,9 +1483,9 @@ body.load-graph #graphList .summary .close {
 	z-index: -1;
 }
 .about-wrapper{
-    position:relative;
-    width:100%;
-    overflow:hidden;
+	position:relative;
+	width:100%;
+	overflow:hidden;
 }
 .footerLinks{
 	display: block;
@@ -1504,8 +1504,8 @@ body.load-graph #graphList .summary .close {
 	font-weight: bold;
 }
 .headerLinks li a {
-    text-decoration: none;
+	text-decoration: none;
 }
 body{
-    overflow-x:hidden;
+	overflow-x:hidden;
 }
