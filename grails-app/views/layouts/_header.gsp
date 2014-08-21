@@ -32,6 +32,7 @@
 	font-weight: bold;
 	border-color: #adadad;
 	border-top-right-radius: 0;
+	background-color: white;
 }
 
 .header-button:hover {
@@ -43,7 +44,7 @@
 <div class="headLinks">
 	<ul class="mainLinks headerLinks">
 		<li><a href="#features">FEATURES</a></li>
-		<li><a href="#">LEARN</a></li>
+		<li style="display: none;"><a href="#">LEARN</a></li>
 		<li><a href="http://www.wearecurio.us/">ABOUT</a></li>
 		<li><g:link controller='home' action="login">
 				<button type="button" class="btn btn-default header-button">Sign In</button>

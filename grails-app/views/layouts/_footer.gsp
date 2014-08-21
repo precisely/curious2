@@ -1,11 +1,11 @@
 <div class="about-wrapper">
 	<g:if test="${params.action == 'homepage'}">
 		<div class="about-background" style="border-left: 2000px solid #ff935f;"></div>
+		<br><br><br><br>
 	</g:if>
 	<g:else>
-		<div class="about-background" style="border-left: 6000px solid #ff935f;"></div>
+		<div class="about-background" style="border-left: 600000px solid #ff935f;"></div>
 	</g:else>
-	<br><br><br><br>
 	<div class="row">
 		<div class="col-sm-1 col-sm-offset-1 " style="color: white;">
 			<p style="font-size: 24px; color: white; padding-top: 30px;">ABOUT</p>
@@ -32,13 +32,13 @@
 	<div class="row">
 		<div class="col-md-6 col-md-offset-1">
 			<ul class="mainLinks footerLinks">
-				<div class="col-md-3">
+				<div class="col-md-3" style="display: none;">
 					<li style="font-size: 16px;"><a href="#">GET THE APP</a></li>
 				</div>
-				<div class="col-md-3">
+				<div class="col-md-3" style="display: none;">
 					<li style="font-size: 16px;"><a href="#">TUTORIALS</a></li>
                 </div>
-				<div class="col-md-3">
+				<div class="col-md-3" style="padding-left: 0px;">
 					<li style="font-size: 16px;"><a href="http://www.wearecurio.us/">PRIVACY</a></li>
 				</div>
 				<div class="col-md-3">
