@@ -424,7 +424,74 @@ log("controller.params: ${controller.params}")
 
 		def content = controller.response.contentAsString
 
-		assert controller.response.contentAsString.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+		assert content.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+	}
+
+	private Discussion setUpForCommentPage() {
+		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+			[isReadOnly:false, defaultNotify:false])
+
+		curious.addMember(user)
+	
+		Discussion discussion = Discussion.create(user, "Discussion name")
+		discussion.createPost(DiscussionAuthor.create(user), "comment1")
+		discussion.createPost(DiscussionAuthor.create(user), "comment2")
+		discussion.createPost(DiscussionAuthor.create(user), "comment3")
+		discussion.createPost(DiscussionAuthor.create(user), "comment4")
+		discussion.createPost(DiscussionAuthor.create(user), "comment5")
+		discussion.createPost(DiscussionAuthor.create(user), "comment6")
+		Utils.save(discussion, true)
+	
+		curious.addDiscussion(discussion)
+		return discussion
+	}
+
+	@Test
+	void "test list comment data for no id & for for first page"() {
+		DataController controller = new DataController()
+
+		controller.session.userId = userId
+
+		Discussion discussion = setUpForCommentPage()
+
+		controller.params.callback = 'callback'
+
+		// Test no discussion id
+		controller.listCommentData()
+
+		String contentAsString = controller.response.contentAsString
+		assert contentAsString.contains('Blank discussion call')
+
+		controller.params.discussionId = discussion.id
+
+		// Test pagination with first page
+		controller.listCommentData()
+		contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')
+		assert contentAsString.contains('"message":"comment2"')
+		assert contentAsString.contains('"message":"comment3"')
+		assert !contentAsString.contains('"message":"comment6"')
+	}
+
+	@Test
+	void "test list discussion data for second page in pagination"() {
+		DataController controller = new DataController()
+
+		Discussion discussion = setUpForCommentPage()
+
+		controller.session.userId = userId
+		controller.params.callback = 'callback'
+		controller.params.discussionId = discussion.id
+		controller.params.offset = 5
+
+		// Test pagination with second page
+		controller.listCommentData()
+		contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')		// Will be available as first post
+		assert !contentAsString.contains('"message":"comment5"')
+		assert contentAsString.contains('"message":"comment6"')
 	}
 
 	@Test

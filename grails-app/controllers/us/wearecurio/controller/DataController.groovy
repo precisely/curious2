@@ -872,6 +872,9 @@ class DataController extends LoginController {
 			return
 		}
 
+		params.max = params.max ?: 10
+		params.offset = params.offset ?: 0
+
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
 
@@ -881,6 +884,40 @@ class DataController extends LoginController {
 		debug "Found $discussionData"
 
 		renderJSONGet(discussionData)
+	}
+
+	def listCommentData(Long discussionId, Long plotDataId) {
+		debug "DataController.listCommentData() params: $params"
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		if (!discussionId && !plotDataId) {
+			renderStringGet("Blank discussion call")
+			return
+		}
+		Discussion discussion = discussionId ? Discussion.get(discussionId) : Discussion.getDiscussionForPlotDataId(plotDataId)
+
+		if (!discussion) {
+			debug "Discussion not found for id [$discussionId] or plot data id [$plotDataId]."
+			renderStringGet "That discussion topic no longer exists."
+			return
+		}
+
+		params.max = params.max ?: 5
+		params.offset = params.offset ?: 0
+
+		Map model = discussion.getJSONModel(params)
+		model.putAll([isAdmin: UserGroup.canAdminDiscussion(user, discussion)])
+
+		debug "Found Comment data: $model"
+
+		renderJSONGet(model)
 	}
 
 	def saveSnapshotData() {
