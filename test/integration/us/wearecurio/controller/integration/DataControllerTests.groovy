@@ -22,6 +22,7 @@ import grails.test.mixin.*
 class DataControllerTests extends CuriousControllerTestCase {
 	static transactional = true
 
+	DataController controller
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime
@@ -44,6 +45,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void setUp() {
 		super.setUp()
 
+		controller = new DataController()
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
@@ -67,8 +69,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetPeopleData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 		controller.params['callback'] = 'callback'
 
@@ -82,8 +82,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetListDataSingleDate() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -104,8 +102,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetListDataMultipleDate() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -135,8 +131,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testPlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -157,8 +151,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetSumPlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -181,8 +173,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetTagsData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -192,7 +182,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['isContinuous'] = null
 		controller.params['callback'] = 'callback'
 		controller.params['sort'] = 'alpha'
-log("controller.params: ${controller.params}")
+		log("controller.params: ${controller.params}")
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
@@ -202,8 +192,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testSetTagPropertiesData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
@@ -225,8 +213,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testAddEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
@@ -248,8 +234,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testUpdateEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		println "User ID: " + userId
@@ -289,8 +273,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testUpdateRepeatEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		println "User ID: " + userId
@@ -316,8 +298,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testDeleteEntrySData() {
-		DataController controller = new DataController()
-
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
@@ -339,8 +319,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testSetPreferencesData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -368,8 +346,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testAutocompleteData() {
-		DataController controller = new DataController()
-
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
@@ -387,8 +363,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testSavePlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -403,8 +377,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testListDiscussionData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
@@ -448,8 +420,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void "test list comment data for no id & for for first page"() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		Discussion discussion = setUpForCommentPage()
@@ -476,8 +446,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void "test list discussion data for second page in pagination"() {
-		DataController controller = new DataController()
-
 		Discussion discussion = setUpForCommentPage()
 
 		controller.session.userId = userId
@@ -487,7 +455,7 @@ log("controller.params: ${controller.params}")
 
 		// Test pagination with second page
 		controller.listCommentData()
-		contentAsString = controller.response.contentAsString
+		String contentAsString = controller.response.contentAsString
 
 		assert contentAsString.contains('"message":"comment1"')		// Will be available as first post
 		assert !contentAsString.contains('"message":"comment5"')
@@ -496,8 +464,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testLoadPlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -514,8 +480,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testDeletePlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -532,8 +496,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testDeleteNonPlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -550,8 +512,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testSaveSnapshotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -574,8 +534,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testListSnapshotData() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo,isSnapshot:true}', false)
 
 		Utils.save(plotDataObj, true)
@@ -591,8 +549,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testLoadSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -609,8 +565,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testDeleteSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -627,8 +581,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testDeleteNonSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -645,8 +597,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testExport() {
-		DataController controller = new DataController()
-
 		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1", winterBaseDate, true), null)
 		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1 slice", winterBaseDate, true), null)
 		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), null)
@@ -667,8 +617,6 @@ log("controller.params: ${controller.params}")
 
 	@Test
 	void testImportAnalysisFormat() {
-		DataController controller = new DataController()
-
 		def outString = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"' \
