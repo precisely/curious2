@@ -20,6 +20,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.model.Entry.TagStatsRecord
 import us.wearecurio.utility.Utils
 
@@ -858,6 +859,28 @@ class DataController extends LoginController {
 		}
 
 		renderJSONGet(Utils.listJSONDesc(entries))
+	}
+
+	def listDiscussionData() {
+		debug "DataController.listDiscussionData() params:" + params
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
+
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+				UserGroup.getDiscussionsInfoForUser(user, true, params)
+
+		debug "Found $discussionData"
+
+		renderJSONGet(discussionData)
 	}
 
 	def saveSnapshotData() {

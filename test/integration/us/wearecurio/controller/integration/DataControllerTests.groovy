@@ -402,6 +402,32 @@ log("controller.params: ${controller.params}")
 	}
 
 	@Test
+	void testListDiscussionData() {
+		DataController controller = new DataController()
+
+		controller.session.userId = userId
+
+		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+				[isReadOnly:false, defaultNotify:false])
+
+		curious.addMember(user)
+
+		Discussion discussion = Discussion.create(user, "Discussion name")
+		discussion.createPost(DiscussionAuthor.create(user), null, "comment")
+		Utils.save(discussion, true)
+
+		curious.addDiscussion(discussion)
+
+		controller.params.callback = 'callback'
+
+		def retVal = controller.listDiscussionData()
+
+		def content = controller.response.contentAsString
+
+		assert controller.response.contentAsString.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+	}
+
+	@Test
 	void testLoadPlotDataId() {
 		DataController controller = new DataController()
 
