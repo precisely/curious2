@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.Date
+import us.wearecurio.units.UnitGroupMap
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -17,9 +19,13 @@ import org.scribe.model.Token
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.Tag
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
+import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 
 class HumanDataService {
@@ -106,6 +112,37 @@ class HumanDataService {
 		}
 	}
 
+	Entry create(EntryCreateMap creationMap, EntryStats stats, Long userId, Date date, Integer timeZoneIdNumber, String baseTagDescription, String suffix, BigDecimal amount, String units, String comment, String setName, Integer amountPrecision) {
+		Tag baseTag = Tag.look(baseTagDescription)
+		Tag tag
+		
+		if (suffix)
+			tag = Tag.look(baseTagDescription + ' ' + suffix)
+		else
+			tag = UnitGroupMap.theMap.tagWithSuffixForUnits(baseTag, units, 0)
+		
+		def m = [
+			tag: tag,
+			baseTag: baseTag,
+			units: units,
+			date: date,
+			timeZoneId: timeZoneIdNumber,
+			amount: amount,
+			repeatType: null,
+			repeatEnd: null,
+			durationType: DurationType.NONE,
+			setName: setName,
+			amountPrecision: amountPrecision,
+			comment: comment,
+		]
+		
+		Entry e = Entry.createSingle(userId, m, creationMap.groupForDate(date), stats)
+		
+		creationMap.add(e)
+		
+		return e
+	}
+	
 	Map poll(OAuthAccount account) {
 		boolean success = true
 		int amountPrecision = 2
@@ -123,6 +160,9 @@ class HumanDataService {
 
 		DateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 		dateTimeParser.setTimeZone(TimeZone.getTimeZone("UTC"))
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(curiousUserId)
 
 		JSONArray activitiesDataList = getDataForActivities(account)
 		activitiesDataList.each { activityData ->
@@ -134,7 +174,7 @@ class HumanDataService {
 			Map args = [setName: setName, comment: comment]
 			activityData.distance = activityData.distance * 1000	// Converting to Meters to support MovesTagUnitMap
 
-			movesDataService.processActivity(activityData, curiousUserId, timeZoneIdNumber, activityData.type, dateTimeParser, args)
+			movesDataService.processActivity(creationMap, stats, activityData, curiousUserId, timeZoneIdNumber, activityData.type, dateTimeParser, args)
 		}
 
 		// Done
@@ -152,7 +192,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bgData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -162,7 +202,7 @@ class HumanDataService {
 			log.debug "BP Data: [$source] [$bpData.timestamp] [$bpData.value] [$bpData.unit]"
 
 			units = "mmHg"
-			description = "blood pressure diastolic"
+			description = "blood pressure"
 			setName = String.format(SET_NAME, source)
 			comment = String.format(COMMENT, source?.capitalize())
 
@@ -170,13 +210,13 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bpData.value.diastolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, "diastolic", value, units, comment, setName, amountPrecision)
 
 			description = "blood pressure systolic"
 			value = new BigDecimal(bpData.value.systolic)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, "systolic", value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -194,7 +234,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(fatData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -212,7 +252,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(bmiData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -230,7 +270,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(heartRateData.value)
 			value = value.setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -248,7 +288,7 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(heartData.value)
 			value = value.multiply(MM_TO_FEET).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		JSONArray sleepsDataList = getDataForSleeps(account)
@@ -263,7 +303,7 @@ class HumanDataService {
 			Date entryDate = dateTimeParser.parse(sleepData.startTime)
 			BigDecimal value = new BigDecimal(sleepData.timeAsleep + sleepData.timeAwake)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 
 			units = ""
 			description = "sleep interruptions"
@@ -271,7 +311,7 @@ class HumanDataService {
 			comment = String.format(COMMENT, source?.capitalize())
 			value = new BigDecimal(sleepData.timeAwake)
 
-			entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
 
 		// Done
@@ -289,8 +329,10 @@ class HumanDataService {
 			BigDecimal value = new BigDecimal(weightData.value)
 			value = value.multiply(KG_TO_POUNDS).setScale(amountPrecision, BigDecimal.ROUND_HALF_UP)
 
-			Entry entry = Entry.create(curiousUserId, entryDate, timeZoneIdInstance, description, value, units, comment, setName, amountPrecision)
+			Entry entry = create(creationMap, stats, curiousUserId, entryDate, timeZoneIdNumber, description, null, value, units, comment, setName, amountPrecision)
 		}
+		
+		stats.finish()
 
 		account.lastPolled = lastPolled
 		account.save()

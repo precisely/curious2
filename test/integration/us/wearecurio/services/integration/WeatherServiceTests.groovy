@@ -9,6 +9,7 @@ import groovy.json.JsonOutput;
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 class WeatherServiceTests extends CuriousServiceTestCase {
+	static transactional = true
 	
 	WeatherService weatherService
 	

@@ -19,7 +19,8 @@ import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
 
 class TagServiceTests extends CuriousServiceTestCase {
-
+	static transactional = true
+	
 	MailService mailService
 	TagGroupService tagGroupService
 	TagService tagService

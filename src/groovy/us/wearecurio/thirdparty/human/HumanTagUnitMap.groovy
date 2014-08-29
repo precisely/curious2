@@ -10,14 +10,12 @@ class HumanTagUnitMap extends TagUnitMap {
 		//columnDetailMap.putAll(activityUnitMap)
 	}
 
+	HumanTagUnitMap() {
+		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
+	}
+
 	@Override
 	Map getBuckets() {
 		null
 	}
-
-	@Override
-	Map getTagUnitMappings() {
-		columnDetailMap + commonTagMap
-	}
-
 }

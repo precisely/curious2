@@ -7,7 +7,9 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.model.Entry.EntryStats
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
+import us.wearecurio.model.Entry.ParseAmount
 
 import java.math.MathContext
 import java.text.DateFormat
@@ -64,11 +66,11 @@ class DataController extends LoginController {
 		def parsedEntry = Entry.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
 		EntryStats stats = new EntryStats()
 		def entry = Entry.create(user.getId(), parsedEntry, stats)
-		def tagStats = stats.finish()
+		ArrayList<TagStats> tagStats = stats.finish()
 
 		debug("created " + entry)
 
-		return [entry, parsedEntry['status'], tagStats.getFirst()]
+		return [entry, parsedEntry['status'], tagStats.get(0)]
 	}
 
 	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow, allFuture) {
@@ -151,7 +153,7 @@ class DataController extends LoginController {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z").withZone(DateTimeZone.UTC)
 		Date now = new Date()
 		
-		EntryStats stats = new EntryStats()
+		EntryStats stats = new EntryStats(userId)
 
 		reader.eachCsvLine { tokens ->
 			++lineNum
@@ -164,7 +166,7 @@ class DataController extends LoginController {
 					return false // format error
 				}
 				// delete previous import of same data set
-				Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+				Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
 						[setIdentifier: Identifier.look(setName), userId: userId])
 			} else {
 				if (tokens[0]) {
@@ -177,16 +179,17 @@ class DataController extends LoginController {
 						userId:userId, \
 						date:currentDate, \
 						timeZoneName:tokens[8], \
-						description:tokens[1], \
+						tag:Tag.look(tokens[1]), \
+						baseTag:Tag.look(tokens.length > 9 ? tokens[9] : tokens[1]), \
 						amount:new BigDecimal(tokens[2], mc), \
 						units:tokens[3], \
 						comment:tokens[4], \
-						repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get(repeatTypeId) : null, \
+						repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get((int)repeatTypeId) : null, \
 						setName:setName, \
 						amountPrecision:Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
 						datePrecisionSecs:Integer.valueOf(tokens[7].equals("null") ? '180':tokens[7]), \
 					]
-					def entry = Entry.create(userId, parsedEntry, stats)
+					def entry = Entry.createSingle(userId, parsedEntry, null, stats)
 
 					debug("created " + entry)
 				}
@@ -241,6 +244,8 @@ class DataController extends LoginController {
 		writeCSV(writer,"Date Precision")
 		writer.write(",")
 		writeCSV(writer,"Time Zone")
+		writer.write(",")
+		writeCSV(writer,"Base Tag")
 		writer.write("\n")
 
 		def c = Entry.createCriteria()
@@ -276,6 +281,8 @@ class DataController extends LoginController {
 			writeNumber(writer, entry.getDatePrecisionSecs().toString())
 			writer.write(",")
 			writeCSV(writer, entry.fetchTimeZoneName())
+			writer.write(",")
+			writeCSV(writer, entry.getBaseTag().getDescription())
 			writer.write("\n")
 		}
 

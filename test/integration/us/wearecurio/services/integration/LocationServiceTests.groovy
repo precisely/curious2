@@ -12,6 +12,7 @@ import us.wearecurio.services.LocationService;
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 class LocationServiceTests extends CuriousServiceTestCase {
+	static transactional = true
 	
 	LocationService locationService
 

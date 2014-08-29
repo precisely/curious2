@@ -8,6 +8,7 @@ package us.wearecurio.parse
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.Log
 
+import sun.tools.tree.ThisExpression
 import groovy.transform.TypeChecked
 
 import java.util.regex.Pattern
@@ -21,92 +22,206 @@ import javax.swing.text.Segment
  */
 @TypeChecked
 class PatternScanner {
-
 	char[] text
+	int lastStateCount
+	int stateCount
 	int begin
 	int endMatch
 	Matcher matcher // current matcher
-	LinkedList<ScannerState> stateStack = new LinkedList<ScannerState>()
+	LinkedList<ScannerTry> tryStack = new LinkedList<ScannerTry>() // pending tries
+	LinkedList<ScannerTry> backtrackStack = new LinkedList<ScannerTry>() // failed tries, don't retry
+	Set<Integer> alreadyFired = new HashSet<Integer>()
 	
-	static Pattern whitespacePattern = ~/(?i)^\s*/
+	static final int CONDITION_ANY = -1
+	static final int CONDITION_ATEND = 0
 	
-	static class ScannerState {
+	static class ScannerTry {
+		PatternScanner scanner
+		
+		// this is the condition ID that is fired if this state is matched
+		int conditionId
+		
 		int begin
 		int endMatch
+		boolean fired
 		Matcher matcher
-		Closure closure
+		Closure fireClosure
 		
-		public ScannerState(int begin, int endMatch, Matcher matcher, Closure c) {
+		// nextConditions are the allowed next matching conditions (must match these next condition ids to match this state
+		List<ScannerPattern> nextPatterns
+		
+		ScannerTry(PatternScanner scanner, int conditionId, int begin, int endMatch, Matcher matcher, List<ScannerPattern> nextPatterns, Closure fireClosure) {
+			this.scanner = scanner
+			this.conditionId = conditionId
 			this.begin = begin
 			this.endMatch = endMatch
 			this.matcher = matcher
-			this.closure = c
+			this.fireClosure = fireClosure
+			this.nextPatterns = nextPatterns
+			this.fired = false
 		}
 		
-		public int getBegin() {
+		int getBegin() {
 			begin
 		}
 		
-		public int getEndMatch() {
+		int getEndMatch() {
 			endMatch
 		}
 		
-		public Matcher getMatcher() {
+		Matcher getMatcher() {
 			matcher
 		}
 		
-		public Closure getClosure() {
-			closure
+		Closure getFireClosure() {
+			fireClosure
+		}
+		
+		void fire() {
+			if (fireClosure != null)
+				fireClosure()
+			this.fired = true
+			scanner.setConditionFired(conditionId)
+		}
+		
+		boolean alreadyTried(int conditionId, int begin) {
+			return this.begin == begin && this.conditionId == conditionId
+		}
+		
+		boolean hasPostcondition(int conditionId) {
+			if (conditionId == CONDITION_ANY) {
+				return true
+			}
+			if (nextPatterns == null) { // unconditional try
+				return true
+			}
+			
+			for (ScannerPattern pattern : nextPatterns) {
+				if (pattern.conditionId == conditionId) {
+					return true
+				}
+			}
+			
+			return false
+		}
+		
+		boolean equals(Object o) {
+			return this.is(o)
 		}
 	}
 
-	public PatternScanner(String string) {
+	PatternScanner(String string) {
 		this.text = string.toCharArray()
 		begin = 0
 		endMatch = 0
+		// store match counts to determine whether pattern scanner has modified its state since the last call to ready()
+		this.lastStateCount = -1
+		this.stateCount = 0
 	}
 	
-	protected void pushState(Closure c) {
-		stateStack.addFirst(new ScannerState(begin, endMatch, matcher, c))
-	}
-	
-	protected Closure pullState() {
-		ScannerState state = stateStack.removeLast()
-		this.begin = state.begin
-		this.endMatch = state.endMatch
-		this.matcher = state.matcher
-		return state.closure
-	}
-	
-	/**
-	 * Used to retrieve current scanner state for later reset
-	 * @return
-	 */
-	public ScannerState fetchScannerState() {
-		return new ScannerState(begin, endMatch, matcher, null)
-	}
-	
-	/**
-	 * Used to reset current scanner state and backtrack to a location
-	 * @return
-	 */
-	public void backtrackTo(ScannerState state) {
-		this.begin = state.begin
-		this.endMatch = state.endMatch
-		this.matcher = state.matcher
+	boolean ready() {
+		if (atEnd()) return false
 		
-		stateStack.clear()
+		int lastStateCount = this.lastStateCount
+		this.lastStateCount = this.stateCount
+		
+		return lastStateCount < this.stateCount
+	}
+	
+	boolean resetReady() {
+		if (atEnd()) return false
+		this.lastStateCount = -1
+		
+		return true
+	}
+	
+	protected void setConditionFired(int conditionId) {
+		++stateCount
+		alreadyFired.add(conditionId)
+	}
+	
+	protected boolean backtrackTo(ScannerTry mark) {
+		++this.stateCount
+		
+		while (!tryStack.isEmpty()) {
+			ScannerTry s = tryStack.getFirst()
+			
+			if (s.is(mark)) {
+				tryStack.removeFirst()
+				while (!backtrackStack.isEmpty()) {
+					ScannerTry b = backtrackStack.getFirst()
+					if (b.begin > s.begin) {
+						backtrackStack.removeFirst() // obsolete backtrack state
+					} else
+						break
+				}
+				backtrackStack.addFirst(s)
+				
+				this.begin = s.begin
+				this.endMatch = s.begin
+				this.matcher = null
+				
+				return true
+			} else if (s.begin < mark.begin)
+				return false
+			else
+				tryStack.removeFirst()
+		}
+		
+		return false
+	}
+	
+	protected ScannerTry pushTry(int conditionId, List<ScannerPattern> nextPatterns, Closure c) {
+		++this.stateCount
+			
+		if (!tryStack.isEmpty()) {
+			ScannerTry p = tryStack.getFirst()
+			
+			if (!p.hasPostcondition(conditionId)) {
+				backtrackTo(p) // fail previous condition since this one does not match it
+				return null
+			}
+		}
+		
+		ScannerTry t = new ScannerTry(this, conditionId, begin, endMatch, matcher, nextPatterns, c)
+		tryStack.addFirst(t)
+		
+		return t
+	}
+	
+	public boolean trying(int conditionId) {
+		for (ScannerTry b : tryStack) {
+			if (b.conditionId == conditionId)
+				return true
+		}
+		
+		return false
+	}
+	
+	protected boolean alreadyTried(int conditionId) {
+		for (ScannerTry b : backtrackStack) {
+			if (b.alreadyTried(conditionId, begin))
+				return true
+		}
+		
+		return false
+	}
+	
+	protected Closure fireTry(ScannerTry t) {
+		this.begin = t.begin
+		this.endMatch = t.endMatch
+		this.matcher = t.matcher
+		return t.fire()
 	}
 	
 	protected CharSequence nextString() {
 		if (endMatch >= 0) {
 			begin = endMatch
-			endMatch = -1
 		}
 		return new Segment(text, begin, text.size() - begin)
 	}
 	
-	public String remainder() {
+	String remainder() {
 		int b = this.begin
 		if (endMatch >= 0) {
 			b = endMatch
@@ -114,17 +229,21 @@ class PatternScanner {
 		return new String(text, b, text.size() - b)
 	}
 	
-	public boolean atEnd() {
+	boolean atEnd() {
 		return begin >= text.size() || endMatch >= text.size()
 	}
 	
-	public boolean match(Pattern pattern) {
+	protected boolean match(Pattern pattern) {
 		if (atEnd())
 			return false
 		
-		matcher = pattern.matcher(nextString())
+		String s = nextString()
+			
+		matcher = pattern.matcher(s)
 		boolean retVal = matcher.lookingAt()
 		if (retVal) {
+			++this.stateCount
+			
 			endMatch = begin + matcher.end()
 			return retVal
 		}
@@ -132,57 +251,61 @@ class PatternScanner {
 		return false
 	}
 
-	public boolean skip(Pattern pattern) {
-		if (atEnd())
-			return false
-
-		Matcher matcher = pattern.matcher(nextString())
-		boolean retVal = matcher.lookingAt()
-		if (retVal) {
-			endMatch = begin + matcher.end()
-			return retVal
-		}
-
-		return false
-	}
-
-	public boolean matchField(Pattern pattern) {
-		if (match(pattern)) {
-			skipWhite()
-			return true
-		}
-
-		return false
-	}
-
-	public boolean match(Pattern pattern, Closure c) {
-		if (this.match(pattern)) {
-			c()
-			return true
-		}
-
-		return false
-	}
-	
 	/**
 	 * Start a conditional match --- this pattern matches only if a pattern (or multiple patterns) follow it
 	 * 
-	 * Usage:
-	 * 
-	 * if (scanner.tryMatch(pattern, { ... })) {
-	 * 		if (!scanner.followedBy(nextPattern, { ... }))
-	 * 		if (!scanner.followedBy(nextPattern2, { ... }))
-	 * 		scanner.endTry()
-	 * }
-	 * 
-	 * @param pattern
-	 * @param c
-	 * @return
+	 * unique is true if the condition should only match once
 	 */
-	public boolean tryField(Pattern pattern, Closure c = null) {
-		if (this.match(pattern)) {
-			pushState(c)
-			skipWhite()
+	boolean tryMatch(ScannerPattern pattern, Closure additionalFireClosure = null) {
+		if (pattern.conditionId == CONDITION_ANY) {
+			return tryFiringCondition(pattern, additionalFireClosure)
+		}
+		
+		if (pattern.unique && alreadyFired.contains(pattern.conditionId))
+			return false
+		
+		if (pattern.conditionId == CONDITION_ATEND) {
+			if (atEnd()) {
+				return tryFiringCondition(pattern, additionalFireClosure)
+			}
+			return false
+		}
+		
+		if (alreadyTried(pattern.conditionId))
+			return false
+			
+		if (this.match(pattern.pattern)) {
+			ScannerTry t = pushTry(pattern.conditionId, pattern.nextPatterns,
+					additionalFireClosure == null ? pattern.fireClosure : {
+						pattern.fire()
+						additionalFireClosure()
+					})
+			
+			if (t == null) {
+				// already backtracked
+				
+				return false
+			}
+			
+			if (atEnd()) {
+				if (matchesCondition(CONDITION_ATEND)) {
+					fireTries()
+					
+					return true
+				}
+				return false
+			}
+			
+			for (ScannerPattern nextPattern : pattern.nextPatterns) {
+				if (nextPattern.tryMatch(null))
+					break
+			}
+			
+			if (!t.fired) {
+				backtrackTo(t)
+				
+				return false
+			}
 			
 			return true
 		}
@@ -190,96 +313,106 @@ class PatternScanner {
 		return false
 	}
 	
-	public boolean tryMatch(Pattern pattern, Closure c = null) {
-		if (this.match(pattern)) {
-			pushState(c)
+	protected boolean matchesCondition(int conditionId) {
+		if (tryStack.isEmpty()) return true
+		
+		// check to see if all conditions have been met
+		for (ScannerTry t in tryStack) {
+			if (!t.hasPostcondition(conditionId)) {
+				backtrackTo(t)
+				
+				return false
+			}
+			conditionId = t.conditionId
+		}
+		
+		return true
+	}
+	
+	/**
+	 * fire condition --- do not execute closures until all current try conditions are satisfied
+	 * @param conditionId
+	 */
+	protected boolean fireTries() {
+		// save state
+		int begin = this.begin
+		int endMatch = this.endMatch
+		Matcher matcher = this.matcher
+				
+		// fire all tries
+		while (!tryStack.isEmpty()) {
+			ScannerTry t = tryStack.removeLast()
+			
+			fireTry(t)
+		}
+		
+		// restore state
+		this.matcher = matcher
+		this.begin = begin
+		this.endMatch = endMatch
+		
+		return true
+	}
+	
+	private boolean tryFiringCondition(ScannerPattern pattern, Closure additionalFireClosure) {
+		if (tryStack.isEmpty()) {
+			setConditionFired(pattern.conditionId)
+		
+			pattern.fire()
+			if (additionalFireClosure != null)
+				additionalFireClosure()
 			
 			return true
 		}
 		
-		return false
-	}
-
-	public boolean followedBy(Pattern pattern, Closure c = null) {
-		if (this.match(pattern)) {
-			pushState(c)
-			confirmTry()
+		if (matchesCondition(pattern.conditionId)) {
+			setConditionFired(pattern.conditionId)
+		
+			fireTries()
 			
+			pattern.fire()				
+			if (additionalFireClosure != null)
+				additionalFireClosure()
+				
 			return true
+		} else {
+			// backtracked
+			return false
+		}
+	}
+	
+	boolean match(ScannerPattern pattern, Closure additionalFireClosure = null) {
+		if (pattern.conditionId == CONDITION_ANY) {
+			return tryFiringCondition(pattern, additionalFireClosure)
+		}
+		
+		if (pattern.unique && alreadyFired.contains(pattern.conditionId))
+			return false
+		
+		if (pattern.conditionId == CONDITION_ATEND) {
+			if (atEnd()) {
+				return tryFiringCondition(pattern, additionalFireClosure)
+			}
+			return false
+		}
+		
+		if (this.match(pattern.pattern)) {
+			return tryFiringCondition(pattern, additionalFireClosure)
 		}
 		
 		return false
 	}
 	
-	public boolean followedByField(Pattern pattern, Closure c = null) {
-		if (this.match(pattern)) {
-			pushState(c)
-			confirmTry()
-			skipWhite()
-			
-			return true
-		}
-		
-		return false
-	}
-	
-	public boolean followedByEnd() {
-		if (atEnd()) {
-			confirmTry()
-
-			return true
-		}
-		
-		return false
-	}
-
-	public void confirmTry() {
-		while (!stateStack.isEmpty()) {
-			Closure closure = pullState()
-			if (closure != null)
-				closure()
-		}
-	}
-	
-	public void backtrackTry() {
-		if (stateStack.isEmpty()) return
-		
-		ScannerState state = stateStack.getFirst()
-		
-		this.matcher = null
-		this.begin = state.begin
-		this.endMatch = -1
-		
-		stateStack.clear()
-	}
-
-	public boolean matchField(Pattern pattern, Closure c) {
-		if (this.matchField(pattern)) {
-			c()
-			return true
-		}
-
-		return false
-	}
-
-	public boolean skipWhite() {
-		return skip(whitespacePattern)
-	}
-
-	public boolean matchWhite() {
-		return match(whitespacePattern)
-	}
-
 	// Returns true if there is any remaining string to parse
-	public boolean remaining() {
+	boolean remaining() {
 		return !atEnd()
 	}
 
-	public String group() {
+	String group() {
 		return matcher.group()
 	}
 
-	public String group(int group) {
+	String group(int group) {
 		return matcher.group(group)
 	}
 }

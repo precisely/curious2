@@ -2,6 +2,8 @@ package us.wearecurio.thirdparty.jawbone
 
 import us.wearecurio.thirdparty.TagUnitMap
 
+import us.wearecurio.model.Entry.DurationType
+
 class JawboneTagUnitMap extends TagUnitMap {
 	
 	private static Map estimatedMealUnitMap, measuredMovementUnitMap, sleepUnitMap, napUnitMap, moodUnitMap, 
@@ -12,7 +14,7 @@ class JawboneTagUnitMap extends TagUnitMap {
 	static {
 		estimatedMealUnitMap = [
 			e_calcium: [tag: "$MEAL", unit: "mg calcium"],
-			e_calories: [tag: "$MEAL calories", unit: "kcal"],
+			e_calories: [tag: "$MEAL", unit: "kcal"],
 			e_carbs: [tag: "$MEAL", unit: "g carbs"],
 			e_cholesterol: [tag: "$MEAL", unit: "mg cholesterol"],
 			e_fiber: [tag: "$MEAL", unit: "g fiber"],
@@ -30,16 +32,16 @@ class JawboneTagUnitMap extends TagUnitMap {
 			m_lcat: [tag: "$MOVEMENT", unit: "secs longest active"],
 			m_lcit: [tag: "$MOVEMENT", unit: "secs longest idle"],
 			m_steps: [tag: "$MOVEMENT", unit: "steps"],
-			m_workout_count: [tag: "$MOVEMENT workout count", unit: ""],
-			m_workout_time: [tag: "$MOVEMENT workout duration", unit: "hours", convert: true, from: "secs"]
+			m_workout_count: [tag: "$MOVEMENT workout", suffix: "count", unit: ""],
+			m_workout_time: [tag: "$MOVEMENT workout", suffix: "duration", unit: "hours", convert: true, from: "secs"]
 		]
 
 		sleepUnitMap = [
-			s_asleep_time: [tag: "sleep start", unit: "ms", convert: true, from: "ms"],
+			s_asleep_time: [tag: "$SLEEP", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START],
 			s_awake: [tag: "$SLEEP", unit: "hours awake", convert: true, from: "secs"],
-			s_awake_time: [tag: "sleep end", unit: "ms", convert: true, from: "ms"],
+			s_awake_time: [tag: "$SLEEP", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END],
 			s_awakenings: [tag: "$SLEEP awakenings", unit: ""],
-			s_bedtime: [tag: "$SLEEP mode start", unit: ""],
+			s_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START],
 			s_deep: [tag: "$SLEEP", unit: "hours deep", convert: true, from: "secs"],
 			s_duration: [tag: "$SLEEP", unit: "hours", convert: true, from: "secs"],
 			s_light: [tag: "$SLEEP", unit: "hours light", convert: true, from: "secs"],
@@ -47,11 +49,11 @@ class JawboneTagUnitMap extends TagUnitMap {
 		]
 
 		napUnitMap = [
-			n_asleep_time: [tag: "nap start", unit: "ms", convert: true, from: "ms"],
+			n_asleep_time: [tag: "nap", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START],
 			n_awake: [tag: "$SLEEP", unit: "hours awake", convert: true, from: "secs"],
-			n_awake_time: [tag: "nap end", unit: "ms", convert: true, from: "ms"],
+			n_awake_time: [tag: "nap", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END],
 			n_awakenings: [tag: "$SLEEP awakenings", unit: ""],
-			n_bedtime: [tag: "$SLEEP mode start", unit: ""],
+			n_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START],
 			n_deep: [tag: "$SLEEP", unit: "hours deep", convert: true, from: "secs"],
 			n_duration: [tag: "$SLEEP", unit: "hours", convert: true, from: "secs"],
 			n_light: [tag: "$SLEEP", unit: "hours light", convert: true, from: "secs"],
@@ -75,12 +77,9 @@ class JawboneTagUnitMap extends TagUnitMap {
 			// don't forget to initialize a empty list named `values`.
 			mood_average: [values: [], tag: "$MOOD average", unit: "", operation: AVERAGE],
 		]
+		tagUnitMappings = initializeTagUnitMappings(columnDetailMap)
 	}
 	
-	public Map getTagUnitMappings() {
-		return columnDetailMap
-	}
-
 	/**
 	 * Buckets are used to perform multiple operations on several columns. Note that
 	 * those columns will be not stored in Entry domain, instead the final values from

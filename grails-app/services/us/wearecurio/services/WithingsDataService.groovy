@@ -12,6 +12,8 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.model.*
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TooManyRequestsException
@@ -71,10 +73,13 @@ class WithingsDataService extends DataService {
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
 		if (refreshAll)
-			Entry.executeUpdate("delete Entry e where e.setIdentifier like :setIdentifier and e.userId = :userId",
+			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier like :setIdentifier and e.userId = :userId",
 					[setIdentifier: Identifier.look(SET_NAME), userId: userId]) // Using like for backward compatibility
 
 		Integer timeZoneId = getTimeZoneId(account)
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
 
 		Map queryParameters = ["action": "getmeas"]
 		queryParameters.put("userid", account.getAccountId())
@@ -108,7 +113,7 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-				Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+				Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
 					[setIdentifier: Identifier.look(setName) , userId: userId]) 
 
 				for (measure in measures) {
@@ -149,7 +154,7 @@ class WithingsDataService extends DataService {
 							tagKey = "heartRate"
 							break
 					}
-					tagUnitMap.buildEntry(tagKey, value, userId, timeZoneId, date, COMMENT, setName)
+					tagUnitMap.buildEntry(creationMap, stats, tagKey, value, userId, timeZoneId, date, COMMENT, setName)
 				}
 			}
 		}
@@ -167,6 +172,8 @@ class WithingsDataService extends DataService {
 				account.save()
 			}
 		}
+		
+		stats.finish()
 
 		[success: true]
 	}
@@ -206,6 +213,9 @@ class WithingsDataService extends DataService {
 
 		Long userId = account.userId
 
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
+		
 		SimpleDateFormat dateFormat = new SimpleDateFormat(QUERY_DATE_FORMAT)
 
 		JSONArray activities = data["body"]["activities"]
@@ -228,24 +238,24 @@ class WithingsDataService extends DataService {
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
-			Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
+			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
 				[setIdentifier: Identifier.look(setName), userId: userId]) 
 			def args = ['isSummary':true] // Indicating that these entries are summary entries
 			
 			if (activity["steps"]) {
-				tagUnitMap.buildEntry("activitySteps", activity["steps"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", activity["steps"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["distance"]) {
-				tagUnitMap.buildEntry("activityDistance", activity["distance"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", activity["distance"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["calories"]) {
-				tagUnitMap.buildEntry("activityCalorie", activity["calories"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", activity["calories"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 			if (activity["elevation"]) {
-				tagUnitMap.buildEntry("activityElevation", activity["elevation"], userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", activity["elevation"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 			}
 		}
@@ -265,99 +275,108 @@ class WithingsDataService extends DataService {
 				intraDayQueue.notify()
 			}
 		}
+		
+		stats.finish()
+		
 		[success: true]
 	}
 
 
 	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate) 
-		throws InvalidAccessTokenException, TooManyRequestsException {
-			def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
-			def userId = account.userId
-			def entryDate
-			def setName
-			Integer timeZoneIdNumber = account.timeZoneId
+			throws InvalidAccessTokenException, TooManyRequestsException {
+		def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
+		def userId = account.userId
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
+		
+		def entryDate
+		def setName
+		Integer timeZoneIdNumber = account.timeZoneId
 
-			if (intraDayResponse.status == 601) {
-				log.debug "WithingsDataService.getDataIntraDayActivity: TooManyRequestsException code 601" 
-				throw new TooManyRequestsException(provider)	
+		if (intraDayResponse.status == 601) {
+			log.debug "WithingsDataService.getDataIntraDayActivity: TooManyRequestsException code 601" 
+			throw new TooManyRequestsException(provider)	
+		}
+		
+		log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
+			+ intraDayResponse.body.series?.size())
+		def aggregatedData = resetAggregatedData()
+		def lastEntryTimestamp = 0
+		def intraDayData = intraDayResponse.body?.series?.sort()
+		def index = 1
+		intraDayData?.each {  timestamp, data ->
+			log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
+			def entryTimestamp = Long.parseLong(timestamp)
+			entryDate = new Date(entryTimestamp * 1000L)
+			setName = SET_NAME + "i" + timestamp
+			try {
+				DatabaseService.retry(account) {
+					Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
+							[setIdentifier: Identifier.look(setName), userId: userId]) 
+				}				
+			} catch (org.springframework.dao.CannotAcquireLockException le) {
+				log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
+				le.printStackTrace()
 			}
+			log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
 			
-			log.debug("WithingsDataService.getDataIntraDayActivity: Processing intra day data size " 
-				+ intraDayResponse.body.series?.size())
-			def aggregatedData = resetAggregatedData()
-			def lastEntryTimestamp = 0
-			def intraDayData = intraDayResponse.body?.series?.sort()
-			def index = 1
-			intraDayData?.each {  timestamp, data ->
-				log.debug("WithingsDataService.getDataIntraDayActivity: " + timestamp)
-				def entryTimestamp = Long.parseLong(timestamp)
-				entryDate = new Date(entryTimestamp * 1000L)
-				setName = SET_NAME + "i" + timestamp
-				try {
-					DatabaseService.retry(account) {
-						Entry.executeUpdate("delete Entry e where e.setIdentifier = :setIdentifier and e.userId = :userId",
-								[setIdentifier: Identifier.look(setName), userId: userId]) 
-					}				
-				} catch (org.springframework.dao.CannotAcquireLockException le) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
-					le.printStackTrace()
+			if (data.size() > 1) {
+				data.each { metric, amount ->
+					log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} ${amount} for ${timestamp}")
+					aggregatedData[metric] += amount
 				}
-				log.debug("WithingsDataService.getDataIntraDayActivity: Starting to aggregate data")
-				
-				if (data.size() > 1) {
-					data.each { metric, amount ->
-						log.debug("WithingsDataService.getDataIntraDayActivity: ${metric} ${amount} for ${timestamp}")
-						aggregatedData[metric] += amount
-					}
-				}
-
-				log.debug("WithingsDataService.getDataIntraDayActivity: entryTimestamp - ${entryTimestamp}, lastEntryTimestamp -  ${lastEntryTimestamp}")
-				log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${entryTimestamp - lastEntryTimestamp}")
-				if (lastEntryTimestamp == 0) {
-					lastEntryTimestamp = entryTimestamp
-				}
-				if ((entryTimestamp - lastEntryTimestamp) < 301 && index < intraDayData.size()) {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Next timestamp is too close continuing to aggregate")
-					//continue aggregating
-				} else {
-					log.debug("WithingsDataService.getDataIntraDayActivity: Creating New Chunk ${entryTimestamp}")
-					aggregatedDataToEntries(aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-					aggregatedData = resetAggregatedData()
-				}
-				lastEntryTimestamp = entryTimestamp
-				index++
 			}
 
-			[success: true]
+			log.debug("WithingsDataService.getDataIntraDayActivity: entryTimestamp - ${entryTimestamp}, lastEntryTimestamp -  ${lastEntryTimestamp}")
+			log.debug("WithingsDataService.getDataIntraDayActivity: timestamp difference: ${entryTimestamp - lastEntryTimestamp}")
+			if (lastEntryTimestamp == 0) {
+				lastEntryTimestamp = entryTimestamp
+			}
+			if ((entryTimestamp - lastEntryTimestamp) < 301 && index < intraDayData.size()) {
+				log.debug("WithingsDataService.getDataIntraDayActivity: Next timestamp is too close continuing to aggregate")
+				//continue aggregating
+			} else {
+				log.debug("WithingsDataService.getDataIntraDayActivity: Creating New Chunk ${entryTimestamp}")
+				aggregatedDataToEntries(creationMap, stats, aggregatedData, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+				aggregatedData = resetAggregatedData()
+			}
+			lastEntryTimestamp = entryTimestamp
+			index++
+		}
+		
+		stats.finish()
+
+		[success: true]
 	}
 
 	def resetAggregatedData() {
 		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
 	}
 	
-	def aggregatedDataToEntries(def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
+	def aggregatedDataToEntries(EntryCreateMap creationMap, EntryStats stats, def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
 		data.each { metric, amount ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
 			if (amount == 0)
 				return
 			if (metric.equals("steps")) {
-				tagUnitMap.buildEntry("activitySteps", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("distance")) {
-				tagUnitMap.buildEntry("activityDistance", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDistance", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("calories")) {
-				tagUnitMap.buildEntry("activityCalorie", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityCalorie", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("elevation")) {
-				tagUnitMap.buildEntry("activityElevation", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityElevation", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 			if (metric.equals("duration")) {
-				tagUnitMap.buildEntry("activityDuration", amount, userId, 
+				tagUnitMap.buildEntry(creationMap, stats, "activityDuration", amount, userId, 
 					timeZoneIdNumber, entryDate, comment, setName)
 			}
 		}

@@ -389,6 +389,9 @@ class MigrationService {
 	 * Migrations intended to run in a separate thread, to allow server to finish bootstrapping
 	 */
 	def doBackgroundMigrations() {
+		if (Environment.getCurrent().equals(Environment.TEST))
+			return; // don't run in test environment
+		
 		tryMigration(ADD_TAG_UNIT_STATS_AGAIN) {
 			try {
 				sql ("ALTER TABLE `tag_unit_stats` DROP COLUMN `unit_group`")
@@ -418,7 +421,7 @@ class MigrationService {
 					Model.withTransaction {
 						log.debug "Adding TagUnitStats for user ${e.userId}, tag ${e.tag.description}, ${e.units}"
 						def tagUnitStats =
-							TagUnitStats.createOrUpdate(e.userId, e.tag.getId(), e.units == null?'':e.units)
+							TagUnitStats.createOrUpdate(e.userId, e.baseTag.getId(), e.units == null?'':e.units)
 					}
 				}
 			}

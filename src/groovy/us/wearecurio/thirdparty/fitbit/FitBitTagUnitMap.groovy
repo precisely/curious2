@@ -33,14 +33,13 @@ class FitBitTagUnitMap extends TagUnitMap {
 		columnDetailMap.putAll(sleepUnitMap)
 		columnDetailMap.putAll(activityUnitMap)
 	}
+	
+	FitBitTagUnitMap() {
+		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
+	}
 
 	@Override
 	Map getBuckets() {
 		return null
-	}
-
-	@Override
-	Map getTagUnitMappings() {
-		columnDetailMap + commonTagMap
 	}
 }

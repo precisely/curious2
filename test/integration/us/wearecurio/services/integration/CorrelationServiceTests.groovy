@@ -26,6 +26,8 @@ class CorrelationServiceTests extends CuriousServiceTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+		
+		User.executeUpdate("delete User u")
 	}
 	
 	private static def LOG = new File("debug.out")

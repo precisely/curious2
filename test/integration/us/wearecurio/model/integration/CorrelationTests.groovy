@@ -11,6 +11,8 @@ import us.wearecurio.model.Stats
 
 
 class CorrelationTests extends CuriousTestCase {
+	static transactional = true
+	
 	@Before
 	void setUp() {
 		super.setUp()

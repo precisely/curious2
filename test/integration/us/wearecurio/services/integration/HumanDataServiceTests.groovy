@@ -18,7 +18,8 @@ import us.wearecurio.services.HumanDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 
 class HumanDataServiceTests extends CuriousServiceTestCase {
-
+	static transactional = true
+	
 	OAuthAccount account1
 
 	HumanDataService humanDataService

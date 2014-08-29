@@ -415,7 +415,10 @@ class UnitGroupMap {
 		UnitRatio fromUnitRatio = unitsToRatio.get(fromUnits)
 		UnitRatio toUnitRatio = unitsToRatio.get(toUnits)
 		
-		return fromUnitRatio.ratio / toUnitRatio.ratio
+		double fromRatio = fromUnitRatio == null ? 1.0d : fromUnitRatio.ratio
+		double toRatio = toUnitRatio == null ? 1.0d : toUnitRatio.ratio
+		
+		return fromRatio / toRatio
 	}
 	
 	/**
@@ -461,7 +464,7 @@ class UnitGroupMap {
 		if (mostUsed.unitGroupId) {
 			UnitGroup unitGroup = UnitGroup.get((int)mostUsed.unitGroupId)
 			if (unitGroup)
-				return unitGroup.lookupUnitRatio(unit)
+				return unitGroup.lookupUnitRatio(mostUsed.unit)
 		}
 		// lookup cached unit ratio for the unit
 		return unitsToRatio.get(mostUsed.unit)

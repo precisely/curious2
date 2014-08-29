@@ -8,6 +8,8 @@ import us.wearecurio.model.User
 
 
 class UserFactoryTests extends CuriousTestCase {
+	static transactional = true
+	
 	@Before
 	void setUp() {
 		super.setUp()

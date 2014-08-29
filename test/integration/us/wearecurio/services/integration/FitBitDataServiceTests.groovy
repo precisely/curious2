@@ -24,7 +24,8 @@ import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class FitBitDataServiceTests extends CuriousServiceTestCase {
-
+	static transactional = true
+	
 	UrlService urlService
 	FitBitDataService fitBitDataService
 	OAuthAccount account
@@ -148,7 +149,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 		// Fetch entry with tag 'sleep'
 		Entry entryInstance = Entry.withCriteria(uniqueResult: true) {
-			tag { eq("description", "sleep") }
+			baseTag { eq("description", "sleep") }
 		}
 
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(account.timeZoneId)

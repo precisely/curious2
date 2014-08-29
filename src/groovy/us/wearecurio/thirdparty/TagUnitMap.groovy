@@ -1,10 +1,14 @@
 package us.wearecurio.thirdparty
 
+import java.math.MathContext
+import java.math.RoundingMode
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
 import us.wearecurio.model.Entry.ParseAmount
 import us.wearecurio.services.*
 import us.wearecurio.units.UnitGroupMap
@@ -20,6 +24,12 @@ abstract class TagUnitMap {
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
+	
+	/**
+	 * @return A map containing tag names as key and their entry description as value.
+	 * Used for creating entries from data coming from third party APIs.
+	 */	
+	Map tagUnitMappings = null
 
 	static Map commonTagMap = [:]
 
@@ -37,7 +47,7 @@ abstract class TagUnitMap {
 			activityDistance: [tag: "$ACTIVITY", unit: "miles", convert: true, from:"meters"],
 			activityElevation: [tag: "$ACTIVITY", unit: "meters elevation"],
 			activitySteps: [tag: "$ACTIVITY", unit: "steps"],
-			activityDuration: [tag: "$ACTIVITY", unit: "min", convert: true], from:"seconds",
+			activityDuration: [tag: "$ACTIVITY", unit: "min", convert: true, from:"seconds"],
 
 			bpDiastolic: [tag: "blood pressure", suffix: "diastolic", unit: "mmHg"],
 			bpSystolic: [tag: "blood pressure", suffix: "systolic", unit: "mmHg"],
@@ -51,11 +61,13 @@ abstract class TagUnitMap {
 		]
 	}
 	
-	static calculateUnitConversion(Map map) {
+	static Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
 			if (value['convert'])
 				value['ratio'] = UnitGroupMap.theMap.fetchConversionRatio(value['from'], value['unit'])
 		}
+		
+		return map
 	}
 
 	/**
@@ -65,14 +77,8 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
-	/**
-	 * @return Returns a map containing tag names as key and their entry description as value.
-	 * Used for creating entries from data coming from third party APIs.
-	 */
-	abstract Map getTagUnitMappings();
-	
-	Entry buildEntry(String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
-		Map currentMapping = getTagUnitMappings()[tagName]
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+		Map currentMapping = tagUnitMappings[tagName]
 
 		if (!currentMapping) {
 			log.warn "No mapping found for tag name: [$tagName]"
@@ -80,16 +86,21 @@ abstract class TagUnitMap {
 		}
 
 		log.debug "The tag map is: $currentMapping"
+		
+		int amountPrecision = currentMapping.amountPrecision ?: Entry.DEFAULT_AMOUNTPRECISION
 
 		if (amount != null) {
 			amount = amount.toBigDecimal()
 		}
 		if (currentMapping.convert) {
-			amount = amount * currentMapping.ratio
+			amount = new BigDecimal(amount * currentMapping.ratio, new MathContext(amountPrecision, RoundingMode.HALF_UP))
 		}
 		if (currentMapping.bucketKey) {
 			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]
 			getBuckets()[currentMapping.bucketKey].values.add(amount)
+		}
+		if (currentMapping.durationType) {
+			args["durationType"] = currentMapping.durationType
 		}
 
 		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
@@ -102,22 +113,10 @@ abstract class TagUnitMap {
 		Tag tag
 		
 		if (currentMapping["suffix"]) {
-			tag = Tag.look(description + ' ' + suffix)
+			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
 			tag = unitGroupMap.tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
 		}
-		
-		if (amount != null) {
-			amount = amount.setScale(args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION, BigDecimal.ROUND_HALF_UP)
-		}
-
-		ParseAmount parseAmount = new ParseAmount(amount, args["amountPrecision"])
-		parseAmount.setTagAndBaseTag(tag, baseTag)
-		parseAmount.setUnits(currentMapping["unit"])
-		
-		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
-		
-		amounts.add(parseAmount)
 		
 		if (args["isSummary"]) {
 			description += " summary" 
@@ -125,18 +124,23 @@ abstract class TagUnitMap {
 		} else
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
 
-		Map parsedEntry = [userId: userId, date: date, tag: tag, baseTag: baseTag, description: description, amounts: amounts,
+		Map parsedEntry = [userId: userId, date: date, tag: tag, baseTag: baseTag, description: description, amount: amount,
+				units: currentMapping["unit"], amountPrecision: (args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION),
 				comment: comment, setName: setName, timeZoneId: timeZoneId]
-
+		
 		parsedEntry.putAll(args)
-		Entry.updatePartialOrCreate(userId, parsedEntry, null)
+		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
+		
+		creationMap.add(e)
+		
+		return e
 	}
 
 	/**
 	 * Calculating entry amount based on the bucket operation and creating an entry for each of the buckets.
 	 * @param userId
 	 */
-	void buildBucketedEntries(Long userId, Map args) {
+	void buildBucketedEntries(EntryCreateMap creationMap, EntryStats stats, Long userId, Map args) {
 		// Iterating through buckets & performing actions.
 		this.getBuckets().each { bucketName, bucket ->
 			if (bucket.operation == this.AVERAGE) {
@@ -147,7 +151,8 @@ abstract class TagUnitMap {
 					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
 				DatabaseService.retry(args) {
-					Entry.updatePartialOrCreate(userId, parsedEntry, null)
+					Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
+					creationMap.add(e)
 				}
 			}
 		}

@@ -6,11 +6,14 @@ import grails.converters.*
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.parse.ParseUtils
-import us.wearecurio.parse.WordMatcher
+import us.wearecurio.parse.ScannerPattern
 
 import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
+import static us.wearecurio.parse.PatternScanner.*
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.support.EntryStats
+import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.units.UnitGroupMap
@@ -28,7 +31,7 @@ import java.text.SimpleDateFormat
 import org.joda.time.*
 
 class Entry implements Comparable {
-
+	
 	private static def log = LogFactory.getLog(this)
 
 	protected static final int MAXCOMMENTLENGTH = 100000
@@ -43,7 +46,7 @@ class Entry implements Comparable {
 	protected static final int VAGUE_DATE_PRECISION_SECS = 86400
 	
 	static constraints = {
-		group(nullable:true)
+		groupIds(nullable:true)
 		amount(scale:9, nullable:true)
 		date(nullable:true)
 		datePrecisionSecs(nullable:true)
@@ -61,7 +64,7 @@ class Entry implements Comparable {
 	static mapping = {
 		version false
 		table 'entry'
-		group column: 'group_id', index:'group_id_index'
+		groupIds column: 'group_ids_id', index:'group_ids_id_index'
 		userId column:'user_id', index:'user_id_index'
 		date column:'date', index:'date_index'
 		tag column:'tag_id', index:'tag_id_index'
@@ -85,7 +88,7 @@ class Entry implements Comparable {
 	// prior
 	// entry, must be activated to edit
 	
-	public static enum RepeatType { // IMPORTANT: there must be ghost entries
+	static enum RepeatType { // IMPORTANT: there must be ghost entries
 		// for all non-ghost entries and vice-versa
 		// if you add more remind types, please edit the sql in
 		// RemindEmailService
@@ -136,65 +139,65 @@ class Entry implements Comparable {
 			this.duration = duration;
 		}
 		
-		public int getId() {
+		int getId() {
 			return id;
 		}
 		
-		public boolean isGhost() {
+		boolean isGhost() {
 			return (this.id & GHOST_BIT) > 0;
 		}
 		
-		public boolean isConcreteGhost() {
+		boolean isConcreteGhost() {
 			return (this.id & CONCRETEGHOST_BIT) > 0;
 		}
 		
-		public boolean isAnyGhost() {
+		boolean isAnyGhost() {
 			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0;
 		}
 		
-		public boolean isContinuous() {
+		boolean isContinuous() {
 			return (this.id & CONTINUOUS_BIT) > 0;
 		}
 		
-		public boolean isDaily() {
+		boolean isDaily() {
 			return (this.id & DAILY_BIT) > 0;
 		}
 		
-		public boolean isWeekly() {
+		boolean isWeekly() {
 			return (this.id & WEEKLY_BIT) > 0;
 		}
 		
-		public boolean isReminder() {
+		boolean isReminder() {
 			return (this.id & REMIND_BIT) > 0;
 		}
 		
-		public boolean isTimed() {
+		boolean isTimed() {
 			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0;
 		}
 		
-		public boolean isRepeat() {
+		boolean isRepeat() {
 			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0;
 		}
 		
-		public RepeatType unGhost() {
+		RepeatType unGhost() {
 			return RepeatType.get(this.id & (~GHOST_BIT));
 		}
 		
-		public RepeatType toggleGhost() {
+		RepeatType toggleGhost() {
 			if (isGhost())
 				return RepeatType.get(this.id & (~GHOST_BIT));
 			return RepeatType.get(this.id | GHOST_BIT);
 		}
 		
-		public RepeatType makeGhost() {
+		RepeatType makeGhost() {
 			return RepeatType.get(this.id | GHOST_BIT);
 		}
 		
-		public RepeatType makeConcreteGhost() {
+		RepeatType makeConcreteGhost() {
 			return RepeatType.get(this.id | CONCRETEGHOST_BIT);
 		}
 		
-		public RepeatType forUpdate() {
+		RepeatType forUpdate() {
 			if (isReminder())
 				return RepeatType.get(this.id
 						& (~(GHOST_BIT | CONCRETEGHOST_BIT)));
@@ -253,7 +256,7 @@ class Entry implements Comparable {
 		RepeatType.REMINDDAILY.getId(),
 	]
 
-	public static enum DurationType {
+	static enum DurationType {
 		NONE(0), START(DURATIONSTART_BIT), END(DURATIONEND_BIT),
 				GHOSTSTART(DURATIONSTART_BIT | DURATIONGHOST_BIT),
 				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT);
@@ -268,18 +271,18 @@ class Entry implements Comparable {
 			this.id = id;
 		}
 		
-		public boolean isGhost() {
+		boolean isGhost() {
 			return (this.id & DURATIONGHOST_BIT) != 0;
 		}
 		
-		public DurationType unGhost() {
+		DurationType unGhost() {
 			if (this == GHOSTSTART) return START;
 			else if (this == GHOSTEND) return END;
 			
 			return this;
 		}
 		
-		public DurationType makeGhost() {
+		DurationType makeGhost() {
 			if (this == START) return GHOSTSTART;
 			else if (this == END) return GHOSTEND;
 			
@@ -287,8 +290,10 @@ class Entry implements Comparable {
 		}
 	}
 	
+	static transients = [ 'groupEntries' ]
+	
 	Long userId
-	EntryGroup group // used to group multidimensional entries together
+	EntryIdGroup groupIds // used to group multidimensional entries together
 	Date date
 	Integer timeZoneId
 	Integer datePrecisionSecs
@@ -303,7 +308,7 @@ class Entry implements Comparable {
 	DurationType durationType
 	Identifier setIdentifier
 	
-	public String fetchSuffix() { 
+	String fetchSuffix() { 
 		if (baseTag == null || baseTag == tag) {
 			return ""
 		}
@@ -311,21 +316,21 @@ class Entry implements Comparable {
 		return tag.getDescription().substring(baseTag.getDescription().length() + 1)
 	}
 	
-	public Iterable<Entry> fetchGroupEntries() {
-		if (group != null)
-			return group.getEntries()
+	Iterable<Entry> fetchGroupEntries() {
+		if (groupIds != null)
+			return groupIds.fetchSortedEntries()
 		
 		return [this]
 	}
 
 	static final MathContext mc = new MathContext(9)
 
-	public static final int DEFAULT_AMOUNTPRECISION = 3
+	static final int DEFAULT_AMOUNTPRECISION = 3
 
 	/**
 	* Create and save new entry
 	*/
-	static Entry createArgs(EntryCreationMap creationMap, EntryStats stats, Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
+	static Entry createArgs(EntryCreateMap creationMap, EntryStats stats, Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
 			String comment, String setName, int amountPrecision = DEFAULT_AMOUNTPRECISION) {
 		
 		Map<String,Object> m = [
@@ -342,10 +347,13 @@ class Entry implements Comparable {
 		m['baseTag'] = Tag.look(description.toLowerCase())
 		m['tag'] = UnitGroupMap.theMap.tagWithSuffixForUnits(m['baseTag'], units, 0)
 		
-		return createSingle(userId, m, creationMap.groupForDate(date), stats)
+		Entry e = createSingle(userId, m, creationMap.groupForDate(date), stats)
+		creationMap.add(e)
+		
+		return e
 	}
 
-	static Entry updatePartialOrCreate(Long userId, Map m, EntryGroup group, EntryStats stats) {
+	static Entry updatePartialOrCreate(Long userId, Map m, EntryIdGroup group, EntryStats stats) {
 		log.debug("Entry.updatePartialOrCreate: Trying to find a partial entry to update")
 		def partialEntry = lookForPartialEntry(userId, m)
 		log.debug("Entry.updatePartialOrCreate: " + partialEntry.size() +" partial entries found")
@@ -443,73 +451,7 @@ class Entry implements Comparable {
 		modify web and mobile app to correctly display multidimensional entry
 	 */
 	
-	/*
-	 * Class to return entry creation statistics for later updating of entry and tag statistics
-	 */
-	public static class EntryCreationMap {
-		Map<Date, Entry> entries = new HashMap<Date, Entry>()
-		
-		public EntryCreationMap() {
-		}
-	
-		public EntryGroup groupForDate(Date date) {
-			Entry entry = entries.get(date)
-			
-			if (entry != null) {
-				return entry.createOrFetchGroup()
-			}
-			
-			return null
-		}
-		
-		public void add(Entry entry) {
-			entries.put(entry.getDate(), entry)
-		}
-	}
-	
-	/*
-	 * Class to return entry creation statistics for later updating of entry and tag statistics
-	 */
-	public static class EntryStats {
-		Long userId
-		Set<Long> tagIds = new HashSet<Long>()
-		Integer timeZoneId = null
-		boolean batchCreation = false
-		
-		public EntryStats() {
-		}
-	
-		public EntryStats(boolean batchCreation) {
-			this.batchCreation = true
-		}
-	
-		public EntryStats(Long userId) {
-			this.userId = userId
-		}
-	
-		public void addTag(Tag tag) {
-			tagIds.add(tag.getId())
-		}
-		
-		public void addTagId(Long tagId) {
-			tagIds.add(tagId)
-		}
-		
-		public ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
-			ArrayList<TagStats> tagStats = new ArrayList<TagStats>()
-			
-			for (Long tagId: tagIds) {
-				tagStats.add(TagStats.createOrUpdate(userId, tagId))
-			}
-
-			if (timeZoneId != null)
-				User.setTimeZoneId(userId, timeZoneId)
-				
-			return tagStats
-		}
-	}
-	
-	protected static Entry createSingle(Long userId, Map m, EntryGroup group, EntryStats stats) {
+	protected static Entry createSingle(Long userId, Map m, EntryIdGroup group, EntryStats stats) {
 		log.debug "Entry.createSingle() userId:" + userId + ", m:" + m
 
 		if ((!stats.getBatchCreation()) && hasDuplicate(userId, m)) {
@@ -538,11 +480,12 @@ class Entry implements Comparable {
 			}
 		} else {
 			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'])
+			TagUnitStats.createOrUpdate(userId, baseTag.getId(), m['units'])
 		}
 		
 		Entry entry = new Entry(
 				userId:userId,
-				group:group,
+				groupIds:group,
 				date:m['date'],
 				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
@@ -574,7 +517,7 @@ class Entry implements Comparable {
 		if (generator != null)
 			generator.updateDurationEntry(stats) // make sure duration entries remain consistent
 
-		stats.addTag(entry.getTag())
+		stats.addTag(entry.getBaseTag())
 		stats.setTimeZoneId(entry.getTimeZoneId())
 
 		return entry
@@ -597,10 +540,11 @@ class Entry implements Comparable {
 		
 		def amounts = m['amounts']
 		
-		EntryGroup entryGroup = null
+		EntryIdGroup entryIdGroup = null
 		
 		if (amounts.size() > 1) {
-			entryGroup = new EntryGroup()
+			entryIdGroup = new EntryIdGroup()
+			Utils.save(entryIdGroup, true)
 		}
 		
 		int index = 0
@@ -608,12 +552,11 @@ class Entry implements Comparable {
 		Entry e = null
 		for (ParseAmount amount : amounts) {
 			amount.copyToMap(m)
-			e = createSingle(userId, m, entryGroup, stats)
+			e = createSingle(userId, m, entryIdGroup, stats)
 		}
 		
-		if (entryGroup != null) {
-			Utils.save(entryGroup, false)
-			return entryGroup.getEntries().first() // return first entry in sorted list
+		if (entryIdGroup != null) {
+			return entryIdGroup.fetchSortedEntries()[0] // return first entry in sorted list
 		}
 		
 		return e
@@ -621,11 +564,8 @@ class Entry implements Comparable {
 	
 	protected boolean ifDurationRemoveFromGroup() {
 		if (durationType != null && durationType != DurationType.NONE) {
-			if (group != null) {
-				group = null
-				group.remove(this)
-				Utils.save(this)
-				Utils.save(group, false)
+			if (groupIds != null) {
+				groupIds.remove(this)
 			}
 			return true
 		}
@@ -633,21 +573,17 @@ class Entry implements Comparable {
 		return false
 	}
 	
-	protected EntryGroup createOrFetchGroup() {
+	protected EntryIdGroup createOrFetchGroup() {
 		if (ifDurationRemoveFromGroup()) {
-			return false
+			return null
 		}
 		
-		EntryGroup group
+		if (groupIds != null) return groupIds
 		
-		if (group != null) return group
+		groupIds = new EntryIdGroup()
+		groupIds.add(this)
 		
-		group = new EntryGroup()
-		group.add(this)
-		Utils.save(this, false)
-		Utils.save(group, false)
-		
-		return group
+		return groupIds
 	}
 
 	protected Date fetchPreviousDate(int minusDays = 1) {
@@ -708,7 +644,7 @@ class Entry implements Comparable {
 		return m
 	}
 
-	protected Entry createRepeatOnBaseDate(Date baseDate, Map m, EntryCreationMap creationMap, EntryStats stats, int addDays) {
+	protected Entry createRepeatOnBaseDate(Date baseDate, Map m, EntryCreateMap creationMap, EntryStats stats, int addDays) {
 		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
 			return null
 		}
@@ -738,6 +674,8 @@ class Entry implements Comparable {
 			m['repeatEnd'] = this.repeatEnd
 
 			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newDate), stats)
+			
+			creationMap.add(newEntry)
 
 			// set the repeat end of this entry to the day before the current date
 
@@ -754,7 +692,7 @@ class Entry implements Comparable {
 		return null
 	}
 
-	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreationMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
+	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
 		boolean isToday = isToday(entry.getDate(), baseDate)
 
 		if (entry.repeatParametersMatch(m))
@@ -789,34 +727,45 @@ class Entry implements Comparable {
 	/**
 	 * Update entry, possibly updating multiple entries, given map of parameters (output of the parse method or manually created)
 	 */
-	protected static Entry updateSingle(Entry entry, Map m, EntryCreationMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true) {
+	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true) {
 		log.debug "Entry.updateSingle() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		def repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
-			return updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture)
+			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture)
+			
+			retVal.refreshSort()
+			
+			return retVal
 		} else {
 			entry.doUpdate(m, stats)
+			
+			entry.refreshSort()
 
 			return entry
+		}
+	}
+	
+	void refreshSort() {
+		if (groupIds != null) {
+			groupIds.resort(this)
 		}
 	}
 
 	/**
 	 * Update entry, possibly updating multiple entries, given map of parameters (output of the parse method or manually created)
 	 */
-	public static Entry update(Entry entry, Map m, EntryStats stats, Date baseDate, boolean allFuture = true) {
+	static Entry update(Entry entry, Map m, EntryStats stats, Date baseDate, boolean allFuture = true) {
 		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
 		amounts.addAll(m['amounts'])
 		ArrayList<ParseAmount> unmatchedEntries = new ArrayList<ParseAmount>()
 		
-		EntryGroup newEntryGroup = null
-		EntryCreationMap creationMap = new EntryCreationMap()
-		
-		if (amounts.size() > 1)
-			newEntryGroup = new EntryGroup()
+		EntryCreateMap creationMap = new EntryCreateMap()
 		
 		Long userId = entry.getUserId()
+		
+		Entry retVal = null
+		Entry firstUpdated = null
 		
 		// first, update entries that match the amounts already specified
 		for (Entry e : entry.fetchGroupEntries()) {
@@ -826,7 +775,11 @@ class Entry implements Comparable {
 					foundMatch = true
 					amounts.remove(a)
 					a.copyToMap(m)
-					updateSingle(entry, m, creationMap, stats, baseDate, allFuture)
+					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+					if (e.is(entry))
+						retVal = updated
+					if (firstUpdated == null)
+						firstUpdated = updated
 					break
 				}
 			}			
@@ -835,7 +788,11 @@ class Entry implements Comparable {
 					foundMatch = true
 					amounts.remove(a)
 					a.copyToMap(m)
-					updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+					if (e.is(entry))
+						retVal = updated
+					if (firstUpdated == null)
+						firstUpdated = updated
 					break
 				}
 			}
@@ -849,7 +806,11 @@ class Entry implements Comparable {
 			if (amounts.size() > 0) {
 				ParseAmount a = amounts.remove(0)
 				a.copyToMap(m)
-				updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+				Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
+				if (e.is(entry))
+					retVal = updated
+				if (firstUpdated == null)
+					firstUpdated = updated
 			} else { // no more amounts, delete remaining entries
 				deleteSingle(e, stats)
 			}
@@ -858,9 +819,15 @@ class Entry implements Comparable {
 		if (amounts.size() > 0) {
 			for (ParseAmount a : amounts) {
 				a.copyToMap(m)
-				createSingle(userId, m, creationMap, stats)
+				Entry created = createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+				if (retVal == null)
+					retVal = created
+				if (firstUpdated == null)
+					firstUpdated = created
 			}
 		}
+		
+		return retVal == null ? firstUpdated : retVal
 	}
 
 	/**
@@ -869,7 +836,7 @@ class Entry implements Comparable {
 	protected static deleteSingle(Entry entry, EntryStats stats) {
 		log.debug "Entry.deleteSingle() entry:" + entry
 
-		Entry updateDurationEntry = entry.preDeleteProcessing()
+		Entry updateDurationEntry = entry.preDeleteProcessing(stats)
 
 		// if this was an end entry, delete current duration entry, delete this entry, then recalculate subsequent duration entry
 
@@ -877,8 +844,8 @@ class Entry implements Comparable {
 
 		log.debug "Zeroing the user id of the entry and saving, updating the tag stats"
 		entry.setUserId(0L) // don't delete entry, just zero its user id
-		EntryGroup group = entry.getGroup()
-
+		EntryIdGroup group = entry.getGroupIds()
+		
 		if (group != null) {
 			group.remove(entry)
 			Utils.save(group, false)
@@ -887,7 +854,7 @@ class Entry implements Comparable {
 		
 		stats.setUserId(oldUserId)
 		
-		stats.addTag(entry.getTag())
+		stats.addTag(entry.getBaseTag())
 
 		if (updateDurationEntry != null) {
 			updateDurationEntry.updateDurationEntry(stats)
@@ -897,7 +864,7 @@ class Entry implements Comparable {
 	/**
 	 * Delete actually just hides the entries, rather than deleting them
 	 */
-	public static delete(Entry entry, EntryStats stats) {
+	static delete(Entry entry, EntryStats stats) {
 		log.debug "Entry.delete() entry:" + entry
 
 		for (Entry e : entry.fetchGroupEntries()) {
@@ -905,7 +872,7 @@ class Entry implements Comparable {
 		}
 	}
 
-	public boolean isDeleted() {
+	boolean isDeleted() {
 		return userId == 0L
 	}
 
@@ -915,7 +882,7 @@ class Entry implements Comparable {
 	 * @param currentDate
 	 * @return
 	 */
-	protected static deleteGhostSingle(Entry entry, EntryCreationMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
+	protected static deleteGhostSingle(Entry entry, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
 		log.debug "Entry.deleteGhostSingle() entry:" + entry + " baseDate: " + baseDate + " allFuture: " + allFuture
 
 		if (entry.getRepeatType()?.isContinuous()) {
@@ -1008,6 +975,7 @@ class Entry implements Comparable {
 						m['comment'] = entry.getComment()
 						m['datePrecisionSecs'] = entry.getDatePrecisionSecs()
 						def retVal = Entry.createSingle(entry.getUserId(), m, creationMap.groupForDate(m['date']), stats)
+						creationMap.add(retVal)
 					}
 				}
 			} else {
@@ -1022,10 +990,10 @@ class Entry implements Comparable {
 	 * @param currentDate
 	 * @return
 	 */
-	public static deleteGhost(Entry entry, EntryStats stats, Date baseDate, boolean allFuture) {
+	static deleteGhost(Entry entry, EntryStats stats, Date baseDate, boolean allFuture) {
 		log.debug "Entry.deleteGhost() entry:" + entry + " baseDate: " + baseDate + " allFuture: " + allFuture
 		
-		EntryCreationMap creationMap = new EntryCreationMap()
+		EntryCreateMap creationMap = new EntryCreateMap()
 		
 		for (Entry e : entry.fetchGroupEntries()) {
 			deleteGhostSingle(e, creationMap, stats, baseDate, allFuture)
@@ -1033,7 +1001,7 @@ class Entry implements Comparable {
 	}
 
 	// look for any duration entry that needs to be updated after a delete
-	protected Entry preDeleteProcessing() {
+	protected Entry preDeleteProcessing(EntryStats stats) {
 		// if this is the start entry for a subsequent end entry, find it and queue it for updating
 		if (fetchIsStart()) {
 			def next = fetchNextStartOrEndEntry()
@@ -1045,7 +1013,7 @@ class Entry implements Comparable {
 		// queue it for updating
 		if (fetchIsEnd()) {
 			def duration = findDurationEntry()
-			if (duration != null) delete(duration, null)
+			if (duration != null) delete(duration, stats)
 			def next = fetchNextStartOrEndEntry()
 			if (next != null && next.fetchIsEnd())
 				return next
@@ -1057,11 +1025,11 @@ class Entry implements Comparable {
 	/**
 	* Retrieve tags by user
 	*/
-	public static final int BYALPHA = 0
-	public static final int BYCOUNT = 1
-	public static final int BYRECENT = 2
-	public static final int ONLYIDS = 3
-	public static final int BYCOUNTONLYDESCRIPTION = 4
+	static final int BYALPHA = 0
+	static final int BYCOUNT = 1
+	static final int BYRECENT = 2
+	static final int ONLYIDS = 3
+	static final int BYCOUNTONLYDESCRIPTION = 4
 
 	protected static def countSeries(userId, tagId, amountPrecision) {
 		def c = Entry.createCriteria()
@@ -1093,7 +1061,31 @@ class Entry implements Comparable {
 		results[0]
 	}
 
-	public static def getTags(User user, type = BYALPHA) {
+	static def getBaseTags(User user, type = BYALPHA) {
+		log.debug "Entry.getBaseTags() userID:" + user.getId() + ", type:" + type
+
+		def retVal
+
+		DatabaseService databaseService = DatabaseService.get()
+
+		if (type == BYCOUNT) {
+			retVal = databaseService.sqlRows("select t.id, t.description, count(e.id) as c, CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END as iscontinuous, prop.show_points as showpoints from entry e inner join tag t on e.base_tag_id = t.id left join tag_properties prop on prop.user_id = e.user_id and prop.tag_id = t.id where e.user_id = ? and e.date is not null group by t.id order by count(e.id) desc", [user.getId()])
+		} /*else if (type == BYRECENT) {
+		 retVal = Entry.executeQuery("select entry.tag.description, max(entry.date) as maxdate from Entry as entry left join TagProperties prop on prop.userId = entry.userId and prop.tagId = entry.tag.id where entry.userId = ? and entry.date is not null " + (recentOnly ? "and datediff(now(), entry.date) < 90 " : "") + "group by entry.tag.id order by max(entry.date) desc", [user.getId()])
+		 } */ else if (type == BYALPHA) {
+			retVal = databaseService.sqlRows("select t.id, t.description, count(e.id) as c, CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END as iscontinuous, prop.show_points as showpoints from entry e inner join tag t on e.base_tag_id = t.id left join tag_properties prop on prop.user_id = e.user_id and prop.tag_id = t.id where e.user_id = ? and e.date is not null group by t.id order by t.description", [user.getId()])
+		} else if (type == ONLYIDS) {
+			retVal = Entry.executeQuery("select entry.tag.id from Entry as entry where entry.userId = ? and entry.date is not null group by entry.baseTag.id", [user.getId()])
+		} else if (type == BYCOUNTONLYDESCRIPTION) {
+			retVal = Entry.executeQuery("select entry.tag.description from Entry as entry where entry.userId = ? and entry.date is not null group by entry.baseTag.id order by count(entry.id) desc", [user.getId()])
+		}
+
+		//log.debug "Returned:" + retVal
+
+		return retVal
+	}
+
+	static def getTags(User user, type = BYALPHA) {
 		log.debug "Entry.getTags() userID:" + user.getId() + ", type:" + type
 
 		def retVal
@@ -1117,7 +1109,7 @@ class Entry implements Comparable {
 		return retVal
 	}
 
-	public static def getAutocompleteTags(User user) {
+	static def getAutocompleteTags(User user) {
 		log.debug "Entry.getAutocompleteTags() userID:" + user.getId()
 
 		def tagStats = TagStats.activeForUser(user)
@@ -1141,7 +1133,7 @@ class Entry implements Comparable {
 		return retVal
 	}
 
-	public static def getAutocompleteTagsWithInfo(User user) {
+	static def getAutocompleteTagsWithInfo(User user) {
 		log.debug "Entry.getAutocompleteTagsWithInfo() userID:" + user.getId()
 
 		def tagStats = TagStats.activeForUser(user)
@@ -1181,7 +1173,7 @@ class Entry implements Comparable {
 	 *
 	 * Returns Joda time zone for this entry
 	 */
-	public DateTimeZone fetchDateTimeZone() {
+	DateTimeZone fetchDateTimeZone() {
 		TimeZoneId timeZoneId = TimeZoneId.fromId(timeZoneId)
 
 		return timeZoneId.toDateTimeZone()
@@ -1192,7 +1184,7 @@ class Entry implements Comparable {
 	 *
 	 * Returns Joda time zone for this entry
 	 */
-	public DateTime fetchDateTimeInZone(DateTimeZone dateTimeZone) {
+	DateTime fetchDateTimeInZone(DateTimeZone dateTimeZone) {
 		return new DateTime(this.date, dateTimeZone)
 	}
 
@@ -1201,11 +1193,11 @@ class Entry implements Comparable {
 	 *
 	 * Returns Joda date time in current time zone
 	 */
-	public DateTime fetchDateTime() {
+	DateTime fetchDateTime() {
 		return new DateTime(this.date, this.fetchDateTimeZone())
 	}
 
-	public String fetchTimeZoneName() {
+	String fetchTimeZoneName() {
 		TimeZoneId timeZoneId = TimeZoneId.fromId(timeZoneId)
 
 		return timeZoneId.getName()
@@ -1251,7 +1243,7 @@ class Entry implements Comparable {
 	 *
 	 * Returns true if this entry is the end of a duration pair
 	 */
-	public boolean fetchIsEnd() {
+	boolean fetchIsEnd() {
 		return durationType.equals(DurationType.END)
 	}
 
@@ -1260,7 +1252,7 @@ class Entry implements Comparable {
 	 *
 	 * Returns true if this entry is the start of a duration pair
 	 */
-	public boolean fetchIsStart() {
+	boolean fetchIsStart() {
 		return durationType.equals(DurationType.START)
 	}
 
@@ -1270,7 +1262,7 @@ class Entry implements Comparable {
 	 * If this is an end entry, returns corresponding duration entry
 	 * @return
 	 */
-	public Entry fetchDurationEntry() {
+	Entry fetchDurationEntry() {
 		if (!fetchIsEnd()) return null
 
 		def c = Entry.createCriteria()
@@ -1297,7 +1289,7 @@ class Entry implements Comparable {
 	 * Get the end entry corresponding to this if it is a start entry
 	 * @return
 	 */
-	public Entry fetchEndEntry() {
+	Entry fetchEndEntry() {
 		if (!fetchIsStart()) return null
 
 		Entry next = fetchNextStartOrEndEntry()
@@ -1312,7 +1304,7 @@ class Entry implements Comparable {
 	 * Get the start entry corresponding to this if it is an end entry
 	 * @return
 	 */
-	public Entry fetchStartEntry() {
+	Entry fetchStartEntry() {
 		if (!fetchIsEnd()) return null
 
 		Entry prev = fetchPreviousStartOrEndEntry()
@@ -1329,7 +1321,7 @@ class Entry implements Comparable {
 	 * Look for duration entries within 5 minutes of end entry time
 	 * @return
 	 */
-	public Entry findDurationEntry() {
+	Entry findDurationEntry() {
 		def durationEntry = fetchDurationEntry()
 
 		if (durationEntry != null) return durationEntry
@@ -1543,7 +1535,7 @@ class Entry implements Comparable {
 				Entry subsequentDuration = subsequent.findDurationEntry()
 
 				if (subsequentDuration != null)
-					Entry.delete(subsequentDuration, null)
+					Entry.delete(subsequentDuration, stats)
 			}
 		}
 
@@ -1677,7 +1669,7 @@ class Entry implements Comparable {
 		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
 	}
 	
-	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreationMap creationMap,
+	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
 			EntryStats stats) {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
@@ -1716,6 +1708,8 @@ class Entry implements Comparable {
 				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 			}
 			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+			
+			creationMap.add(retVal)
 
 			Utils.save(retVal, true)
 			return retVal
@@ -1725,6 +1719,8 @@ class Entry implements Comparable {
 			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 			m['datePrecisionSecs'] = this.datePrecisionSecs
 			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+			
+			creationMap.add(retVal)
 
 			retVal.unGhost(stats)
 
@@ -1732,13 +1728,13 @@ class Entry implements Comparable {
 		}
 	}
 
-	public Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
+	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
 		if (this.repeatType == null)
 			return null
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
-		EntryCreationMap creationMap = new EntryCreationMap()
+		EntryCreateMap creationMap = new EntryCreateMap()
 		
 		Entry firstActivated = null
 		
@@ -1754,9 +1750,9 @@ class Entry implements Comparable {
 	 * Update existing entry and save
 	 */
 	protected doUpdate(Map m, EntryStats stats) {
-		long oldTagId = this.tag.getId()
+		long oldTagId = this.baseTag.getId()
 		doUpdateSingle(m, stats)
-		long newTagId = this.tag.getId()
+		long newTagId = this.baseTag.getId()
 		
 		stats.addTagId(oldTagId)
 		stats.addTagId(newTagId)
@@ -1777,7 +1773,7 @@ class Entry implements Comparable {
 		def updateDurationEntry = null
 
 		if (!date.equals(m['date'])) {
-			updateDurationEntry = preDeleteProcessing()
+			updateDurationEntry = preDeleteProcessing(stats)
 		}
 
 		def descriptionChanged = tag.getId() != newTag.getId()
@@ -1827,7 +1823,7 @@ class Entry implements Comparable {
 	/**
 	 * Fetch methods - for getting different subsets of entries
 	 */
-	public static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
+	static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
 		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeatType is null) and entry.repeatType.id in (:repeatIds)"
 
 		def entries = Entry.executeQuery(continuousQuery, [userId:userId, repeatIds:CONTINUOUS_IDS])
@@ -1835,7 +1831,7 @@ class Entry implements Comparable {
 		return entries
 	}
 
-	public static def fetchReminders(User user, Date startDate, long intervalSecs) {
+	static def fetchReminders(User user, Date startDate, long intervalSecs) {
 		Date endDate = new Date(startDate.getTime() + intervalSecs * 1000L)
 
 		String queryStr = "select distinct entry.id " \
@@ -1846,15 +1842,15 @@ class Entry implements Comparable {
 		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), endDate:endDate, startDate:startDate, interval:intervalSecs, remindBit:RepeatType.REMIND_BIT])
 	}
 	
-	public boolean isPrimaryEntry() {
-		if (group == null) {
+	boolean isPrimaryEntry() {
+		if (groupIds == null) {
 			return true
 		}
 		
 		if (durationType == DurationType.START)
 			return true
 
-		Entry firstEntry = group.getEntries().first()
+		Entry firstEntry = groupIds.fetchSortedEntries()[0]
 				
 		if (getId() == firstEntry?.getId()) {
 			return true
@@ -1865,7 +1861,7 @@ class Entry implements Comparable {
 
 	protected static long abs(long x) { return x < 0 ? -x : x }
 
-	public static def fetchListData(User user, String timeZoneName, Date baseDate, Date now) {
+	static def fetchListData(User user, String timeZoneName, Date baseDate, Date now) {
 		long nowTime = now.getTime()
 		long baseTime = baseDate.getTime()
 
@@ -1959,7 +1955,7 @@ class Entry implements Comparable {
 		return results
 	}
 
-	public static def fetchListDataNoRepeats(User user, Date date) {
+	static def fetchListDataNoRepeats(User user, Date date) {
 		def c = Entry.createCriteria()
 
 		def results = []
@@ -2084,7 +2080,7 @@ class Entry implements Comparable {
 		return (int) (Math.round((averageAngle / twoPi) * 86400.0d)) % 86400
 	}
 
-	public static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
 
@@ -2171,7 +2167,7 @@ class Entry implements Comparable {
 	static final int HALFDAYSECS = 12 * 60 * 60
 	static final int HOURSECS = 60 * 60
 
-	public static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
+	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
 		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
@@ -2230,11 +2226,11 @@ class Entry implements Comparable {
 		return summedResults
 	}
 	
-	public static def parseInt(String str) {
+	static def parseInt(String str) {
 		return str == null ? null : Integer.parseInt(str)
 	}
 
-	public static def parseMeta(String entryStr) {
+	static def parseMeta(String entryStr) {
 		return parse(null, null, entryStr, null, false)
 	}
 
@@ -2260,23 +2256,37 @@ class Entry implements Comparable {
 	 *
 	 */
 
-	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b/
-	protected static final Pattern timeEndPattern = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b$/
-	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)/
-	protected static final Pattern commentWordPattern = ~/^([^\s]+)/
-	protected static final Pattern amountPattern = ~/(?i)^(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|\d+|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?/
-	protected static final Pattern endTagPattern = ~/(?i)^(yes|no)\b/
-	protected static final Pattern unitsPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s+([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)\b/
-	protected static final Pattern tagAmountSeparatorPattern = ~/(?i)^[:=]\s*/
+	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b\s*/
+	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)($|\s*)/
+	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
+	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
 	
-	protected static def numberMap = ['zero' : '0', 'one':'1', 'two':'2', 'three':'3', 'four':'4', 'five':'5', 'six':'6', 'seven':'7', 'eight':'8', 'nine':'9']
+	protected static Map<String, BigDecimal> numberMap = [
+		'zero' : [new BigDecimal(0, mc), DEFAULT_AMOUNTPRECISION],
+		'one' : [new BigDecimal(1, mc), DEFAULT_AMOUNTPRECISION],
+		'two' : [new BigDecimal(2, mc), DEFAULT_AMOUNTPRECISION],
+		'three' : [new BigDecimal(3, mc), DEFAULT_AMOUNTPRECISION],
+		'four' : [new BigDecimal(4, mc), DEFAULT_AMOUNTPRECISION],
+		'five' : [new BigDecimal(5, mc), DEFAULT_AMOUNTPRECISION],
+		'six' : [new BigDecimal(6, mc), DEFAULT_AMOUNTPRECISION],
+		'seven' : [new BigDecimal(7, mc), DEFAULT_AMOUNTPRECISION],
+		'eight' : [new BigDecimal(8, mc), DEFAULT_AMOUNTPRECISION],
+		'nine' : [new BigDecimal(9, mc), DEFAULT_AMOUNTPRECISION],
+		'yes' : [new BigDecimal(1, mc), 0],
+		'no' : [new BigDecimal(0, mc), 0],
+		'none' : [ null, -1],
+		'-' : [ null, -1],
+		'_' : [ null, -1],
+		'__' : [ null, -1],
+		'___' : [ null, -1],
+	]
 
 	/**
 	 * Regex pattern to match repeat modifiers
 	 * 
 	 * If you update repeatPattern, you need to update repeatMap
 	 */
-	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|repeat|pinned|favorite|remind|reminder|daily|weekly)\b/
+	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|repeat|pinned|favorite|remind|reminder|daily|weekly)\b\s*/
 	
 	protected static final int REPEATMAP_SYNONYM = 0
 	protected static final int REPEATMAP_TYPE = 1
@@ -2308,7 +2318,7 @@ class Entry implements Comparable {
 	 * 
 	 * If you update durationPattern, you need to update durationMap
 	 */
-	protected static final Pattern durationPattern = ~/^(start|starts|begin|begins|starting|beginning|started|begun|began|end|ends|stop|stops|finish|finished|ended|stopped|stopping|ending|finishing)\b/
+	protected static final Pattern durationPattern = ~/^(start|starts|begin|begins|starting|beginning|started|begun|began|end|ends|stop|stops|finish|finished|ended|stopped|stopping|ending|finishing)\b\s*/
 	
 	protected static final int DURATIONMAP_SYNONYM = 0
 	protected static final int DURATIONMAP_TYPE = 1
@@ -2341,7 +2351,7 @@ class Entry implements Comparable {
 	 * 
 	 * If you update durationSynonymPattern, you need to update durationSynonymMap
 	 */
-	protected static final Pattern durationSynonymPattern = ~/^(wake up|went to sleep|go to sleep|wake|woke|awakened|awoke|slept)\b/
+	protected static final Pattern durationSynonymPattern = ~/^(wake up|went to sleep|go to sleep|wake|woke|awakened|awoke|slept|sleep)\b\s*/
 	
 	protected static final int DURATIONSYNONYM_TAG = 0
 	protected static final int DURATIONSYNONYM_SUFFIX = 1
@@ -2356,6 +2366,7 @@ class Entry implements Comparable {
 		'went to sleep':['sleep', 'start', DurationType.START],
 		'go to sleep':['sleep', 'start', DurationType.START],
 		'slept':['sleep', 'start', DurationType.START],
+		'sleep':['sleep', 'start', DurationType.START],
 	]
 
 	protected static boolean isToday(Date time, Date baseDate) {
@@ -2372,7 +2383,7 @@ class Entry implements Comparable {
 		return today
 	}
 		
-	public static class ParseAmount {
+	static class ParseAmount {
 		Tag tag // tag including units suffix
 		String suffix
 		BigDecimal amount
@@ -2412,7 +2423,17 @@ class Entry implements Comparable {
 		}
 	}
 	
-	public static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
+	static final int CONDITION_TAGWORD = 1
+	static final int CONDITION_TAGSEPARATOR = 2
+	static final int CONDITION_DURATION = 3
+	static final int CONDITION_REPEAT = 4
+	static final int CONDITION_AMOUNT = 5
+	static final int CONDITION_UNITSA = 6
+	static final int CONDITION_UNITSB = 7
+	static final int CONDITION_TIME = 8
+	static final int CONDITION_COMMENT = 9
+	
+	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
 		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
@@ -2446,12 +2467,15 @@ class Entry implements Comparable {
 
 		PatternScanner scanner = new PatternScanner(entryStr)
 
+		ScannerPattern atEndScanPattern = new ScannerPattern(scanner, CONDITION_ATEND)
+		ScannerPattern anyScanPattern = new ScannerPattern(scanner, CONDITION_ANY)		
+
 		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
 		boolean ghostAmount = false
 		boolean foundTime = false
 		boolean foundAMPM = false
 
-		Closure timeClosure = {
+		ScannerPattern timeScanPattern = new ScannerPattern(scanner, CONDITION_TIME, timePattern, true, {
 			foundTime = true
 			def noonmid = scanner.group(2)
 			if (noonmid != null) {
@@ -2474,14 +2498,21 @@ class Entry implements Comparable {
 			} else if (scanner.group(8).equals('a') || scanner.group(13).equals('a') || scanner.group(18).equals('am')) {
 				foundAMPM = true
 			}
-		}
+		})
 
 		LinkedList<String> words = new LinkedList<String>()
+		LinkedList<String> commentWords = new LinkedList<String>()
 		String suffix = ''
 		String repeatSuffix = ''
 		
 		boolean foundRepeat = false
 		boolean foundDuration = false
+		boolean matchTag = true
+		boolean inComment = false
+
+		ScannerPattern tagWordScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, tagWordPattern, false, {
+			words.add(scanner.group(1))
+		})
 
 		Closure repeatClosure = {
 			foundRepeat = true
@@ -2493,6 +2524,9 @@ class Entry implements Comparable {
 			repeatSuffix = (String) info[REPEATMAP_SYNONYM]
 		}
 		
+		ScannerPattern repeatScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, repeatClosure)
+		ScannerPattern repeatStartScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, repeatClosure)
+		
 		Closure durationClosure = {
 			foundDuration = true
 			
@@ -2502,15 +2536,21 @@ class Entry implements Comparable {
 			retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
 			suffix =  (String) info[DURATIONMAP_SYNONYM]
 		}
-
-		Closure amountClosure = {
+		
+		ScannerPattern durationScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, durationClosure)
+		ScannerPattern durationStartScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, durationClosure)
+		
+		int currentAmountIndex = 0
+		String currentUnits = null
+		
+		ScannerPattern amountScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, {
 			String amountStr
 			ArrayList<String> amountStrs = []
-			int amountIndex = amounts.size()
+			currentAmountIndex = amounts.size()
 			boolean twoDAmount = false
 			
-			amountStrs.add(scanner.group(1))
-			amountStr = scanner.group(3)
+			amountStrs.add(scanner.group(2))
+			amountStr = scanner.group(4)
 			
 			if (amountStr) {
 				amountStrs.add(amountStr)
@@ -2518,36 +2558,32 @@ class Entry implements Comparable {
 			}
 			
 			for (String amount in amountStrs) {
-				if (amount =~ /-\s/ || amount.startsWith('_')) {
-					amounts.add(new ParseAmount(null, -1))
-					ghostAmount = true
-				} else if (amount.equalsIgnoreCase('yes')) {
-					amounts.add(new ParseAmount(new BigDecimal(1, mc), 0))
-				} else if (amount.equalsIgnoreCase('no')) {
-					amounts.add(new ParseAmount(new BigDecimal(0, mc), 0))
+				if (numberMap.containsKey(amount)) {
+					ArrayList num = numberMap.get(amount)
+					amounts.add(new ParseAmount(num[0], num[1]))
 				} else {
 					amounts.add(new ParseAmount(new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION)) 
 				}
 			}
-			
-			scanner.skipWhite()
-			
-			if ( !((!foundRepeat) && scanner.matchField(repeatPattern, repeatClosure))
-					|| ((!foundDuration) && scanner.matchField(durationPattern, durationClosure)) ) {
-				boolean foundUnits = false
-				if (!scanner.matchField(timePattern, timeClosure)) {
-					scanner.matchField(unitsPattern) {
-						String unitsStr = scanner.group(1)
-						((ParseAmount)amounts[amountIndex++]).setUnits(unitsStr)
-						if (amountIndex < amounts.size())
-							((ParseAmount)amounts[amountIndex++]).setUnits(unitsStr)
-						foundUnits = true
-					}
-				}
-			}
-		}
+		})
 		
-		Closure durationSynonymClosure = {
+		// first word of units
+		ScannerPattern unitsScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, {
+			currentUnits = scanner.group(1)
+			for (int i = currentAmountIndex; i < amounts.size(); ++i) {
+				((ParseAmount)amounts[i]).setUnits(currentUnits)
+			}
+		})
+		
+		// second word of units
+		ScannerPattern unitsScanPatternB = new ScannerPattern(scanner, CONDITION_UNITSB, tagWordPattern, false, {
+			currentUnits = currentUnits + ' ' + scanner.group(1)
+			for (int i = currentAmountIndex; i < amounts.size(); ++i) {
+				((ParseAmount)amounts[i]).setUnits(currentUnits)
+			}
+		})
+
+		ScannerPattern durationSynonymScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, durationSynonymPattern, false, {
 			foundDuration = true
 			
 			String modifier = scanner.group(1)
@@ -2556,152 +2592,70 @@ class Entry implements Comparable {
 			retVal['durationType'] = (DurationType) info[DURATIONSYNONYM_TYPE]
 			suffix = (String) info[DURATIONSYNONYM_SUFFIX]
 			words.add((String) info[DURATIONSYNONYM_TAG])
-		}
-
-		scanner.skipWhite()
-
-		scanner.matchField(timePattern, timeClosure)
-
-		boolean endTag = false
-		boolean tryStart
-		boolean skipModifiers = false
+		})
 		
-		while (true) {
-			boolean tagAmountSeparator = false
-			boolean tryFollowedByTagWord = false
-			boolean tryFollowedByTagEnd = false
-			
-			if (!skipModifiers) {
-				// look for repeat pattern, but only look for these at start
-				if ( ((!foundRepeat) && scanner.tryField(repeatPattern, repeatClosure))
-						|| ((!foundDuration) && scanner.tryField(durationPattern, durationClosure)) ) {
-					if (words.size() == 0) {
-						// conditioned on: followed by tag word
-						tryFollowedByTagWord = true
-					} else {
-						// conditioned on: followed by tag end
-						tryFollowedByTagEnd = true
-					}
-				}
-			} else
-				skipModifiers = false
-			
-			// look for duration synonym at start of tag
-			if (words.size() == 0 && (!foundDuration)) {
-				scanner.matchField(durationSynonymPattern, durationSynonymClosure)
+		ScannerPattern commentScanPattern = new ScannerPattern(scanner, CONDITION_COMMENT, commentWordPattern, false, {
+			commentWords.add(scanner.group(1))
+			inComment = true
+		}, { (!matchTag) || scanner.trying(CONDITION_AMOUNT) })
+
+		// set up structural rules
+		
+		repeatScanPattern.followedBy([ atEndScanPattern, durationScanPattern, timeScanPattern, commentScanPattern ])
+		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, durationStartScanPattern])
+		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, commentScanPattern ])
+		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, repeatStartScanPattern])
+		
+		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
+		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
+		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+
+		// start parsing!
+		
+		// time can appear at the beginning, and since it is context-free can just run it at the outset
+		timeScanPattern.match()
+		
+		while (scanner.ready()) {
+			if (words.size() == 0) { // try repeat at start
+				repeatStartScanPattern.tryMatch()
+				durationStartScanPattern.tryMatch()
+				durationSynonymScanPattern.match() { matchTag = false }
 			}
-			// match next word
-			if (scanner.matchField(tagWordPattern)) {
-				if (tryFollowedByTagWord) {
-					// success at this condition
-					scanner.confirmTry()
-				} else if (tryFollowedByTagEnd) {
-					// failed this condition, backtrack try, keep processing words
-					scanner.backtrackTry()
-					skipModifiers = true
-					continue
-				}
-				words.add(scanner.group(1))
-	
-				if (scanner.match(tagAmountSeparatorPattern)) {
-					endTag = true
-					tagAmountSeparator = true
-				}
-				
-				// allow time to appear before amount
-				if ((!foundTime) && scanner.matchField(timePattern, timeClosure)) {
-					if (!endTag) { // tag separator can be after time
-						scanner.match(tagAmountSeparatorPattern) { tagAmountSeparator = true }
-					}
-					endTag = true
-				}
-			} else
-				endTag = true
 			
-			if (endTag) {
-				if (tryFollowedByTagWord) {
-					// failed at this condition
-					scanner.backtrackTry() // start over processing words
-					skipModifiers = true
-					continue
-				} else if (tryFollowedByTagEnd) {
-					// success at this condition
-					scanner.confirmTry()
-				}
-				break
+			if (matchTag) tagWordScanPattern.match()
+			repeatScanPattern.tryMatch() { matchTag = false }
+			timeScanPattern.tryMatch() { matchTag = false }
+			durationScanPattern.tryMatch() { matchTag = false }
+			amountScanPattern.tryMatch() { matchTag = false }
+			if (!matchTag) {
+				repeatScanPattern.tryMatch() { matchTag = false }
+				timeScanPattern.tryMatch() { matchTag = false }
+				durationScanPattern.tryMatch() { matchTag = false }
+				commentScanPattern.match() { inComment = true }
 			}
+			if (inComment) break
 		}
 
-		// look for amount after tag		
-		if (words.size() > 0) {
-			while (scanner.matchField(amountPattern, amountClosure)) {
-				// if no units, break, otherwise attempt to match another amount/units pair
-				if (((ParseAmount)amounts[amounts.size() - 1]).getUnits() == null)
-					break
-			}
+		if (scanner.resetReady()) while (scanner.ready()) {
+			commentScanPattern.match()
 		}
-
+		
 		String description = ParseUtils.implode(words).toLowerCase()
 		
 		if (amounts.size() == 0) {
 			amounts.add(new ParseAmount(new BigDecimal(1, mc), -1))
 		}
 
-		if (!foundTime) {
-			scanner.matchField(timePattern, timeClosure)
-		}
-
-		words = new LinkedList<String>()
-
-		skipModifiers = false
-		
-		while (true) {
-			boolean tryFollowedByTagEnd = false
-			
-			if (!skipModifiers) {
-				// look for repeat pattern, but only look for these at start or end
-				if ( ((!foundRepeat) && scanner.tryField(repeatPattern, repeatClosure))
-						|| ((!foundDuration) && scanner.tryField(durationPattern, durationClosure)) ) {
-					if (words.size() > 0) {
-						// conditioned on: followed by tag end
-						tryFollowedByTagEnd = true
-					}
-				}
-			} else
-				skipModifiers = false
-			
-			// match next word
-			if (scanner.matchField(commentWordPattern)) {
-				if (tryFollowedByTagEnd) {
-					// failed this condition, backtrack try, keep processing words
-					scanner.backtrackTry()
-					skipModifiers = true
-					continue
-				}
-				words.add(scanner.group(1))
-				
-				// allow time to appear at end of comment
-				if ((!foundTime) && scanner.matchField(timeEndPattern, timeClosure)) {
-					endTag = true
-				}
-			} else
-				endTag = true
-			
-			if (endTag) {
-				if (tryFollowedByTagEnd) {
-					// success at this condition
-					scanner.confirmTry()
-				}
-				break
-			}
+		// Duration (start/stop) only when amount(s) not specified		
+		if (amounts.size() > 1 || (amounts[0].getPrecision() != -1)) {
+			retVal['durationType'] = DurationType.NONE
+			suffix = ''
 		}
 
 		String comment = ''
-		if (words.size() > 0) {
-			comment = ParseUtils.implode(words)
+		if (commentWords.size() > 0) {
+			comment = ParseUtils.implode(commentWords)
 		}
-		
-		comment = ''
 		
 		if (repeatSuffix)
 			if (comment)
@@ -2825,29 +2779,29 @@ class Entry implements Comparable {
 				retVal['repeatType'] = retVal['repeatType'].makeGhost()
 		}
 
-		retVal['tag'] = Tag.look(description)
-		String baseTagDescription = description
-		if (suffix) baseTagDescription += ' ' + suffix
-		retVal['baseTag'] = Tag.look(baseTagDescription)
+		retVal['baseTag'] = Tag.look(description)
+		String tagDescription = description
+		if (suffix) tagDescription += ' ' + suffix
+		retVal['tag'] = Tag.look(tagDescription)
 		
 		int index = 0
 		for (ParseAmount amount : amounts)
-			amount.setTagAndBaseTag(UnitGroupMap.theMap.tagWithSuffixForUnits(retVal['baseTag'], amount.getUnits(), index++), retVal['baseTag'])
+			amount.setTagAndBaseTag(UnitGroupMap.theMap.tagWithSuffixForUnits(retVal['tag'], amount.getUnits(), index++), retVal['baseTag'])
 		
 		retVal['amounts'] = amounts
 
 		return retVal
 	}
 	
-	public Integer fetchDatePrecisionSecs() {
+	Integer fetchDatePrecisionSecs() {
 		return datePrecisionSecs == null ? 60 : datePrecisionSecs;
 	}
 
-	public Integer fetchAmountPrecision() {
+	Integer fetchAmountPrecision() {
 		return amountPrecision == null ? DEFAULT_AMOUNTPRECISION : amountPrecision;
 	}
 
-	public  getDescription() {
+	String getDescription() {
 		return tag.getDescription()
 	}
 
@@ -2860,7 +2814,7 @@ class Entry implements Comparable {
 		GMTMIDNIGHTSECS = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000
 	}
 
-	public String exportString() {
+	String exportString() {
 		return description + " " + (amount == null ? "none " : amountPrecision == 0 ? (amount ? "yes " : "no ") : (amountPrecision > 0 ? amount + " " : '')) + (units ? units + ' ' : '') + (datePrecisionSecs < 40000 ? (date ? gmtFormat.format(date) : '') + ' ' : '') + comment
 	}
 
@@ -2868,7 +2822,7 @@ class Entry implements Comparable {
 	 * Scan existing entries and create duration entries if they don't exist
 	 * @param user
 	 */
-	public static void updateDurationEntries(User user) {
+	static void updateDurationEntries(User user) {
 		// process start/end tags first
 		log.debug "Entry.updateDurationEntries() this:" + this + ", userId:" + user.getId()
 
@@ -2892,7 +2846,7 @@ class Entry implements Comparable {
 	 * Scan existing entries and create duration entries if they don't exist
 	 * @param user
 	 */
-	public static void initializeDurationEntries(User user) {
+	static void initializeDurationEntries(User user) {
 		// process start/end tags first
 		log.debug "Entry.initializeDurationEntries() this:" + this + ", userId:" + user.getId()
 
@@ -2913,13 +2867,13 @@ class Entry implements Comparable {
 	/**
 	 * Get data for the main entries lists
 	 */
-	public Map getJSONDesc() {
+	Map getJSONDesc() {
 		def retVal = [id:this.id,
 			userId:userId,
 			date:date,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
-			description:(durationType != DurationType.NONE) ? baseTag.getDescription() : tag.getDescription(),
+			description:(durationType != DurationType.NONE) ? tag.getDescription() : baseTag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
@@ -2947,7 +2901,7 @@ class Entry implements Comparable {
 	protected static final int SHORT_DESC_AMOUNT = 1
 	protected static final int SHORT_DESC_DESCRIPTION = 2
 
-	public Map getJSONShortDesc() {
+	def getJSONShortDesc() {
 		return [
 			date,
 			amount,
@@ -2955,11 +2909,11 @@ class Entry implements Comparable {
 		];
 	}
 
-	public String getDateString() {
+	String getDateString() {
 		return Utils.dateToGMTString(date)
 	}
 
-	public String toString() {
+	String toString() {
 		return "Entry(id: ${id ?: 'un-saved'}, userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
@@ -2981,8 +2935,7 @@ class Entry implements Comparable {
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
-				+ ", baseTag:" + getBaseTag().getDescription() \
-				+ ", description:" + getDescription() \
+				+ ", description:" + getBaseTag().getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
@@ -2992,11 +2945,11 @@ class Entry implements Comparable {
 				+ ")"
 	}
 
-	public String contentString() {
+	String contentString() {
 		return "Entry(date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
 				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
-				+ ", description:" + getDescription() \
+				+ ", description:" + getBaseTag().getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
@@ -3006,18 +2959,21 @@ class Entry implements Comparable {
 				+ ")"
 	}
 
-	public int compareTo(Object obj) {
+	int compareTo(Object obj) {
 		if (!obj instanceof Entry) {
 			return -1
 		}
 		
+		if (this.is(obj))
+			return 0
+			
 		Entry e = (Entry) obj
 		String eUnits = e.getUnits()
 		if (!units) {
 			if (eUnits) {
 				return -1 // no units always comes first
 			}
-			return 0 // neither has units, undefined order
+			return this.valueString().compareTo(obj.valueString())
 		}
 		
 		if (!eUnits) {
@@ -3027,12 +2983,15 @@ class Entry implements Comparable {
     	int thisPri = UnitGroupMap.theMap.unitRatioForUnits(units)?.getGroupPriority() ?: -1
 		int thatPri = UnitGroupMap.theMap.unitRatioForUnits(eUnits)?.getGroupPriority() ?: -1
 		
-		return thisPri < thatPri ? -1 : (thisPri > thatPri ? 1 : 0)
+		if (thisPri < thatPri) return -1
+		else if (thisPri > thatPri) return 1
+		
+		return this.valueString().compareTo(obj.valueString())
 	}
 
-	public boolean equals(Object o) {
+	boolean equals(Object o) {
 		if (!o instanceof Entry)
 			return false
-		return ((Entry)o).getId() == id
+		return this.is(o)
 	}
 }

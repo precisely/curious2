@@ -15,6 +15,9 @@ import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.Entry.DurationType;
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
@@ -63,6 +66,9 @@ class MovesDataService extends DataService {
 
 		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + formatter.format(startDate)
 
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
+		
 		def parsedResponse = getResponse(tokenInstance, pollURL)
 
 		if (parsedResponse.getCode() != 200) {
@@ -92,12 +98,15 @@ class MovesDataService extends DataService {
 				currentSegment["activities"]?.each { currentActivity ->
 					log.debug "Processing activity for userId [$account.userId] of type [$currentActivity.activity]"
 
-					processActivity(currentActivity, userId, timeZoneId, currentActivity.activity, startEndTimeFormat, args)
+					processActivity(creationMap, stats, currentActivity, userId, timeZoneId, currentActivity.activity, startEndTimeFormat, args)
 				}
 			}
 		}
 		account.lastPolled = new Date()
 		account.save()
+		
+		stats.finish()
+		
 		return [success: true]
 	}
 
@@ -112,7 +121,7 @@ class MovesDataService extends DataService {
 	}
 
 	@Transactional
-	void processActivity(JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
+	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)
@@ -139,15 +148,17 @@ class MovesDataService extends DataService {
 			String comment = args.comment
 			String setName = args.setName
 			if (currentActivity.steps) {
-				tagUnitMap.buildEntry("${baseType}Step", currentActivity.steps, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId, timeZoneId, startTime, comment, setName, args)
 			}
-			tagUnitMap.buildEntry("${baseType}Distance", currentActivity.distance, userId, timeZoneId, startTime, comment, setName, args)
+			if (currentActivity.distance) {
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId, timeZoneId, startTime, comment, setName, args)
+			}
 			if (currentActivity.calories) {
-				tagUnitMap.buildEntry("${baseType}Calories", currentActivity.calories, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId, timeZoneId, startTime, comment, setName, args)
 			}
 
-			tagUnitMap.buildEntry("${baseType}Start", 1, userId, timeZoneId, startTime, comment, setName, args.plus([amountPrecision: -1]))
-			tagUnitMap.buildEntry("${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus(amountPrecision: -1))
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
 		}
 	}
 

@@ -20,6 +20,8 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.Identifier
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
@@ -61,6 +63,9 @@ class FitBitDataService extends DataService {
 		String requestUrl = String.format(BASE_URL, "/${accountId}/activities/date/${forDate}.json")
 
 		Map args = [setName: setName, comment: COMMENT]
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
 
 		JSONObject activityData = getResponse(account.tokenInstance, requestUrl)
 
@@ -71,34 +76,34 @@ class FitBitDataService extends DataService {
 		log.debug "Entry Date for Fitbit activity set to: [$forDay]"
 
 		if (activityData.summary) {
-			fitBitTagUnitMap.buildEntry("steps", activityData.summary.steps, userId, timeZoneIdNumber, forDay, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "steps", activityData.summary.steps, userId, timeZoneIdNumber, forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.fairlyActiveMinutes <= 0) {
 			fairlyActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("fairlyActiveMinutes", activityData.summary.fairlyActiveMinutes, userId, timeZoneIdNumber,
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "fairlyActiveMinutes", activityData.summary.fairlyActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.lightlyActiveMinutes <= 0) {
 			lightlyActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("lightlyActiveMinutes", activityData.summary.lightlyActiveMinutes, userId, timeZoneIdNumber,
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "lightlyActiveMinutes", activityData.summary.lightlyActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.sedentaryMinutes <= 0) {
 			sedentaryActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("sedentaryMinutes", activityData.summary.sedentaryMinutes, userId, timeZoneIdNumber,
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "sedentaryMinutes", activityData.summary.sedentaryMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
 		if (!activityData.summary || activityData.summary.veryActiveMinutes <= 0) {
 			veryActiveD = false
 		} else {
-			fitBitTagUnitMap.buildEntry("veryActiveMinutes", activityData.summary.veryActiveMinutes, userId, timeZoneIdNumber,
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "veryActiveMinutes", activityData.summary.veryActiveMinutes, userId, timeZoneIdNumber,
 					forDay, COMMENT, setName)
 		}
 
@@ -112,10 +117,13 @@ class FitBitDataService extends DataService {
 				||(!sedentaryActiveD && distance.activity.equals("sedentaryActive"))) {
 					log.debug "Discarding activity with 0 time"
 				} else {
-					fitBitTagUnitMap.buildEntry(distance.activity, distance.distance, userId, timeZoneIdNumber, forDay, COMMENT, setName)
+					fitBitTagUnitMap.buildEntry(creationMap, stats, distance.activity, distance.distance, userId, timeZoneIdNumber, forDay, COMMENT, setName)
 				}
 			}
 		}
+		
+		stats.finish()
+		
 		[success: true]
 	}
 
@@ -188,6 +196,9 @@ class FitBitDataService extends DataService {
 		String requestUrl = String.format(BASE_URL, "/${accountId}/sleep/date/${forDate}.json")
 
 		Map args = [setName: setName, comment: COMMENT]
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
 
 		JSONObject sleepData = getResponse(account.tokenInstance, requestUrl)
 
@@ -203,15 +214,18 @@ class FitBitDataService extends DataService {
 
 			String oldSetName = logEntry.logId	// Backward support
 
-			Entry.executeUpdate("delete Entry e where e.setIdentifier in :setIdentifiers and e.userId = :userId",
+			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier in :setIdentifiers and e.userId = :userId",
 					[setIdentifiers: [Identifier.look(setName), Identifier.look(oldSetName)], userId: account.userId])
 
-			fitBitTagUnitMap.buildEntry("duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
-			fitBitTagUnitMap.buildEntry("awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "duration", logEntry.duration, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+			fitBitTagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", logEntry.awakeningsCount, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 
 			if (logEntry.efficiency > 0 )
-				fitBitTagUnitMap.buildEntry("efficiency", logEntry.efficiency, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
+				fitBitTagUnitMap.buildEntry(creationMap, stats, "efficiency", logEntry.efficiency, userId, timeZoneIdNumber, entryDate, COMMENT, setName)
 		}
+		
+		stats.finish()
+		
 		[success: true]
 	}
 

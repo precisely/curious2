@@ -4,6 +4,8 @@ import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
 
 abstract class CuriousUserTestCase extends CuriousTestCase {
+	static transactional = true
+	
 	User user
 	Long userId
 	
@@ -32,5 +34,7 @@ abstract class CuriousUserTestCase extends CuriousTestCase {
 
 	void tearDown() {
 		super.tearDown()
+		
+		user.delete()
 	}
 }

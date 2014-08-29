@@ -10,6 +10,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 
 class DiscussionControllerTests extends CuriousControllerTestCase {
+	static transactional = true
 
 	DiscussionController controller
 

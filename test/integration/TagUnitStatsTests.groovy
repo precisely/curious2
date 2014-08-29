@@ -18,6 +18,7 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.support.EntryStats
 
 import org.joda.time.DateTimeZone
 import org.junit.*
@@ -70,58 +71,62 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 	
 	@Test
 	void testEntryUnits() {
-		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
+		EntryStats stats = new EntryStats()
+		
+		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), stats)
 		//No units used when no usage history present
 		assert entry.units == ''
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), stats)
 		//Using the most used unit when no unit is present
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 4pm", baseDate, true), stats)
 		assert entry.units == 'km'
 		//Don't change an unrecognized unit
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 klkk 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 klkk 4pm", baseDate, true), stats)
 		assert entry.units == 'klkk'
 	}
 	
 	@Test
 	void testMultiTagUnits() {
-		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), null)
+		EntryStats stats = new EntryStats()
+		
+		def entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 1 1pm", yesterdayBaseDate, true), stats)
 		//No units used when no usage history present
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), null)
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), null)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 km 3pm", yesterdayBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), stats)
 		//Using the most used unit when no unit is present
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 feet 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 feet 4pm", baseDate, true), stats)
 		//Using the most used unit incase of spelling mistake
 		
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 minutes 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 5 minutes 4pm", baseDate, true), stats)
 		//Using the most used unit incase of spelling mistake
 		
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 4pm", baseDate, true), stats)
 		
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 lbs 4pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 lbs 4pm", baseDate, true), stats)
 		
 		def z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
-			Tag.look("jog").getId(),
-			Tag.look("run").getId()
+			Tag.look("jog distance").getId(),
+			Tag.look("run distance").getId()
 		])
 		assert z.unit == 'km'
 		
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 5pm", baseDate, true), null)
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 7pm", baseDate, true), null)
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 8pm", baseDate, true), null)
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 2pm", baseDate, true), null)
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 1pm", baseDate, true), null)
-		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 3pm", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 miles 5pm", baseDate, true), stats)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 7pm", baseDate, true), stats)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 8pm", baseDate, true), stats)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 2pm", baseDate, true), stats)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 1pm", baseDate, true), stats)
+		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 3pm", baseDate, true), stats)
 		
 		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
-			Tag.look("jog").getId(),
-			Tag.look("run").getId()
+			Tag.look("jog distance").getId(),
+			Tag.look("run distance").getId()
 		])
 		assert z.unit == 'miles'
 		
-		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog").getId()])
+		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog distance").getId()])
 		assert z.unit == 'km'
 		
 	}
