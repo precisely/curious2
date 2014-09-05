@@ -25,35 +25,71 @@
 			</div>
 		</div>
 		<br><br><br><br>
+        <div class="row">
+        <div class="col-md-6 col-md-offset-1">
+            <ul class="mainLinks footerLinks">
+                <div class="col-md-3" style="display: none;">
+                    <li style="font-size: 16px;"><a href="#">GET THE APP</a></li>
+                </div>
+                <div class="col-md-3" style="display: none;">
+                    <li style="font-size: 16px;"><a href="#">TUTORIALS</a></li>
+                </div>
+                <div class="col-md-3" style="padding-left: 0px;">
+                    <li style="font-size: 16px;"><a href="http://www.wearecurio.us/">PRIVACY</a></li>
+                </div>
+                <div class="col-md-3">
+                    <li style="font-size: 16px;"><g:link controller='home' action="termsofservice">TERMS</g:link></li>
+                </div>
+            </ul>
+        </div>
+
+        <div class="col-md-2 pull-right text-center" style="color: white; margin-top: -80px;">
+            <p style="font-size: 26px;">Say Hi !</p>
+            <a href="https://twitter.com/wearecurious">
+                <img class="" src="/images/home/twitter.png" style="padding-right: 15px;"/>
+            </a>
+            <a href="https://facebook.com/wearecurious"><img class="" src="/images/home/facebook.png" /></a>
+        </div>
+    </div>
+    <br><br>
+</div>
 	</g:if>
 	<g:else>
-	<%-- don't show about --%>
-	</g:else>
-	<div class="row">
-		<div class="col-md-6 col-md-offset-1">
-			<ul class="mainLinks footerLinks">
-				<div class="col-md-3" style="display: none;">
-					<li style="font-size: 16px;"><a href="#">GET THE APP</a></li>
-				</div>
-				<div class="col-md-3" style="display: none;">
-					<li style="font-size: 16px;"><a href="#">TUTORIALS</a></li>
+	<%-- Inner Pages --%>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-1">
+            <ul class="mainLinks footerLinks">
+                <div class="col-md-3" style="display: none;">
+                    <li style="font-size: 16px;"><a href="#">GET THE APP</a></li>
                 </div>
-				<div class="col-md-3" style="padding-left: 0px;">
-					<li style="font-size: 16px;"><a href="http://www.wearecurio.us/">PRIVACY</a></li>
-				</div>
-				<div class="col-md-3">
-					<li style="font-size: 16px;"><g:link controller='home' action="termsofservice">TERMS</g:link></li>
-				</div>
-			</ul>
-		</div>
-
-		<div class="col-md-2 pull-right text-center" style="color: white; margin-top: -80px;">
-			<p style="font-size: 26px;">Say Hi !</p>
-			<a href="https://twitter.com/wearecurious">
-				<img class="" src="/images/home/twitter.png" style="padding-right: 15px;"/>
-			</a>
-			<a href="https://facebook.com/wearecurious"><img class="" src="/images/home/facebook.png" /></a>
-		</div>
-	</div>
-	<br><br>
+                <div class="col-md-3" style="display: none;">
+                    <li style="font-size: 16px;"><a href="#">TUTORIALS</a></li>
+                </div>
+                <div class="col-md-3" style="padding-left: 0px;">
+                    <li style="font-size: 16px;"><a href="http://www.wearecurio.us/">PRIVACY</a></li>
+                </div>
+                <div class="col-md-3">
+                    <li style="font-size: 16px;"><g:link controller='home' action="termsofservice">TERMS</g:link></li>
+                </div>
+            </ul>
+   	    </div>
+        <div class="col-md-2 pull-right" style="color: white;">
+            <div class="col-md-6">
+                <p style="font-size: 16px; margin-top: 10px;">Say Hi !</p>
+            </div>
+            <div class="col-md-3">
+            <a href="https://twitter.com/wearecurious">
+                <img class="" src="/images/home/twitter.png" style="padding-right: 15px; width:50px; "/>
+            </a>
+            </div>
+            <div class="col-md-3">
+                <a href="https://facebook.com/wearecurious">
+                    <img class="" src="/images/home/facebook.png" style="padding-right: 15px; width:40px;"/>
+                </a>
+            </div>
+        </div>
+    </div>
+    <br><br>
 </div>
+	</g:else>
+	
