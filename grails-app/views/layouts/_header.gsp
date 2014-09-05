@@ -17,8 +17,8 @@
 	position: relative;
 }
 
-.headLinks {
-	margin-left: 60px;
+.headerLinks {
+	margin-left: 40px;
 	margin-top: 20px;
 	margin-bottom: 30px;
 }
@@ -42,13 +42,14 @@
 </head>
 
 <div class="headLinks">
-	<ul class="mainLinks headerLinks">
+	<ul class="nav nav-pills mainLinks headerLinks">
 		<li><a href="#features">FEATURES</a></li>
 		<li style="display: none;"><a href="#">LEARN</a></li>
 		<li><a href="http://www.wearecurio.us/">ABOUT</a></li>
-		<li><g:link controller='home' action="login">
-				<button type="button" class="btn btn-default header-button">Sign In</button>
-			</g:link>
-		</li>
+        <li>
+            <g:form url="[controller:'home',action:'login']">
+                <button type="submit" class="btn btn-default header-button disabled">Sign In</button>
+            </g:form>
+        </li>
 	</ul>
 </div>
