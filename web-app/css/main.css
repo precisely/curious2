@@ -1509,3 +1509,16 @@ body.load-graph #graphList .summary .close {
 body{
 	overflow-x:hidden;
 }
+
+.features{
+	color: #FFFFFF;
+}
+
+.features input[type="text"]{
+	padding: 3px;
+	border-radius: 2px;
+}
+
+.features .btn{
+	color:black;
+}

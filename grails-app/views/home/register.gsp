@@ -1,581 +1,202 @@
 <html>
 <head>
-<meta name="layout" content="grailsmain" />
-<title>Login</title>
-<style type="text/css">
-html * {
-    margin: 0;
-    /*padding: 0; SELECT NOT DISPLAYED CORRECTLY IN FIREFOX */
-}
-
-/* GENERAL */
-
-.spinner {
-    padding: 5px;
-    position: absolute;
-    right: 0;
-}
-
-/*
-body {
-    background: #fff;
-    color: #333;
-    font: 9px verdana, arial, helvetica, sans-serif;
-}*/
-#grailsLogo {
-	padding:20px;
-}
-
-a:link, a:visited, a:hover {
-    font-weight: normal;
-    text-decoration: none;
-}
-
-h1 {
-    color: #48802c;
-    font-weight: normal;
-    font-size: 16px;
-    margin: .8em 0 .3em 0;
-}
-
-ul {
-    padding-left: 15px;
-}
-
-input, textarea {
-    background-color: #fcfcfc;
-    border: 1px solid #ccc;
-    font: 11px verdana, arial, helvetica, sans-serif;
-    margin: 2px 0;
-    padding: 2px 4px;
-}
-select {
-  border: none;
-  margin: 0px 0;
-  padding: 0px 0px 0px 0px;
-  /* margin: 0px 0;
-   padding: 0px 0px 0px 0; */
-}
-textarea {
-	width: 250px;
-	height: 150px;
-	vertical-align: top;
-}
-
-input:focus, select:focus, textarea:focus {
-    border: 1px solid #b2d1ff;
-}
-
-.body {
-    float: center;
-    margin: 0 15px 10px 15px;
-}
-
-.plain {
-    float: left;
-    margin: 5px 5px 5px 5px;
-}
-
-/* NAVIGATION MENU */
-
-.nav {
-    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
-    border: 1px solid #ccc;
-    border-style: solid none solid none;
-    margin-top: 5px;
-    padding: 7px 12px;
-}
-
-.menuButton {
-    font-size: 10px;
-    padding: 0 5px;
-}
-.menuButton a {
-    color: #333;
-    padding: 4px 6px;
-}
-.menuButton a.home {
-    background: url(/images/skin/house.png) center left no-repeat;
-    color: #333;
-    padding-left: 25px;
-}
-.menuButton a.list {
-    background: url(/images/skin/database_table.png) center left no-repeat;
-    color: #333;
-    padding-left: 25px;
-}
-.menuButton a.create {
-    background: url(/images/skin/database_add.png) center left no-repeat;
-    color: #333;
-    padding-left: 25px;
-}
-
-/* MESSAGES AND ERRORS */
-
-.registermessage {
-    background: #f3f8fc url(/images/skin/information.png) 8px 50% no-repeat;
-    border: 1px solid #08f;
-	color: #006dba;
-    margin: 10px 0 5px 0;
-    padding: 5px 5px 5px 30px;
-    width: 336px;
-}
-.loginmessage {
-    background: #f3f8fc url(/images/skin/information.png) 8px 50% no-repeat;
-    border: 1px solid #08f;
-	color: #006dba;
-    margin: 10px 0 5px 0;
-    padding: 5px 5px 5px 30px;
-    width: 236px;
-}
-
-div.errors {
-    background: #fff3f3;
-    border: 1px solid red;
-    color: #cc0000;
-    margin: 10px 0 5px 0;
-    padding: 5px 0 5px 0;
-}
-div.errors ul {
-    list-style: none;
-    padding: 0;
-}
-div.errors li {
-	background: url(/images/skin/exclamation.png) 8px 0% no-repeat;
-    line-height: 16px;
-    padding-left: 30px;
-}
-
-td.errors select {
-    border: 1px solid red;
-}
-td.errors input {
-    border: 1px solid red;
-}
-
-/* TABLES */
-
-table {
-    border: 1px solid #ccc;
-    width: 100%
-}
-tr {
-    border: 0;
-}
-td, th {
-    font: 11px verdana, arial, helvetica, sans-serif;
-    line-height: 12px;
-    padding: 5px 6px;
-    text-align: left;
-    vertical-align: top;
-}
-th {
-    background: #fff url(/images/skin/shadow.jpg);
-    color: #666;
-    font-size: 11px;
-    font-weight: bold;
-    line-height: 17px;
-    padding: 2px 6px;
-}
-th a:link, th a:visited, th a:hover {
-    color: #333;
-    display: block;
-    font-size: 10px;
-    text-decoration: none;
-    width: 100%;
-}
-th.asc a, th.desc a {
-    background-position: right;
-    background-repeat: no-repeat;
-}
-th.asc a {
-    background-image: url(/images/skin/sorted_asc.gif);
-}
-th.desc a {
-    background-image: url(/images/skin/sorted_desc.gif);
-}
-
-.odd {
-    background: #f7f7f7;
-}
-.even {
-    background: #fff;
-}
-
-/* LIST */
-
-.list table {
-    border-collapse: collapse;
-}
-.list th, .list td {
-    border-left: 1px solid #ddd;
-}
-.list th:hover, .list tr:hover {
-    background: #b2d1ff;
-}
-
-/* PAGINATION */
-
-.paginateButtons {
-    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
-    border: 1px solid #ccc;
-    border-top: 0;
-    color: #666;
-    font-size: 10px;
-    overflow: hidden;
-    padding: 10px 3px;
-}
-.paginateButtons a {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-color: #ccc #aaa #aaa #ccc;
-    color: #666;
-    margin: 0 3px;
-    padding: 2px 6px;
-}
-.paginateButtons span {
-    padding: 2px 3px;
-}
-
-/* ACTION BUTTONS */
-
-.registerdialog .buttons {
-    width: 800px;
-    margin-left: 85px;
-    height: 30px;
-}
-
-.registerdialog .button {
-    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
-    border: 1px solid #ccc;
-    color: #666;
-    font-size: 10px;
-    margin-top: 5px;
-    padding: 0;
-    width: 110px;
-    height: 20px;
-    margin-left: 10px;
-    display: inline-block;
-}
-
-.logindialog .loginbuttons {
-    background: #fff url(/images/skin/shadow.jpg) bottom repeat-x;
-    border: 1px solid #ccc;
-    color: #666;
-    font-size: 10px;
-    margin-top: 5px;
-    overflow: hidden;
-    padding: 0;
-    width: 100px;
-    margin-left: 131px;
-}
-
-.buttons input {
-    background: #fff;
-    border: 0;
-    color: #333;
-    cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
-    margin-left: 3px;
-    overflow: visible;
-    padding: 2px 6px;
-}
-.buttons input.save {
-    width: 92px;
-    margin-left: 10px;
-}
-.buttons input.recover {
-    width: 150px;
-    margin-left: 10px;
-}
-
-/* DIALOG */
-
-.registerdialog {
-	width: 850px;
-    padding: 5px 0;
-    text-align: left;
-    padding: 0px;
-}
-.registererror {
-	color: #f00;
-}
-.registerline {
-	height:20px;
-	padding-top:5px;
-}
-.registerlabel {
-	display: inline-block;
-	width: 150px;
-	font-family: helvetica, sans-serif;
-	text-align: right;
-	padding-right: 10px;
-}
-.registerfield {
-	display: inline-block;
-}
-.registerfield input {
-	width: 170px;
-}
-.logindialog {
-	width: 250px;
-    padding: 5px 0;
-    text-align: left;
-    border: 1px solid #000;
-    padding: 10px;
-}
-.loginline {
-	height: 30px;
-}
-.loginlabel {
-	display: inline-block;
-	width: 70px;
-	font-family: helvetica, sans-serif;
-	font-size: 10pt;
-	text-align: right;
-	padding-right: 10px;
-}
-.loginfield {
-	display: inline-block;
-}
-.loginfield input {
-	width: 150px;
-}
-.loginregisterline {
-	padding-top: 10px;
-	padding-left: 3px;
-font-family: helvetica, sans-serif;
-	font-size: 10pt;
-}
-.prop {
-    padding: 5px;
-}
-.prop .name {
-    text-align: left;
-    width: 15%;
-    white-space: nowrap;
-}
-.prop .value {
-    text-align: left;
-    width: 85%;
-}
-.loginbuttons input {
-    background: #fff;
-    border: 0;
-    color: #333;
-    cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
-    margin-left: 3px;
-    overflow: visible;
-    padding: 2px 6px;
-}
-.loginbuttons input.delete {
-    background: transparent url(/images/skin/database_delete.png) 5px 50% no-repeat;
-    padding-left: 28px;
-}
-.loginbuttons input.edit {
-    background: transparent url(/images/skin/database_edit.png) 5px 50% no-repeat;
-    padding-left: 28px;
-}
-.loginbuttons input.save {
-    width: 92px;
-}
-.registersex {
-	width: 120px;
-	display: inline-block;
-}
-.registersex input {
-	width: 25px;
-}
-
-/* TERMS */
-.termsIntro {
-	margin: 0px 0px 0px 0px;
-	font-size: 11pt;
-	font-family: sans-serif;
-}
-.termsIntro p {
-	margin-top: 14pt;
-}
-<g:if test="${templateVer == 'lhp'}">
-.terms {
-	height:100;
-	overflow-y:scroll;
-    border: 5px solid #aaa;
-    background-color:#eee;
-    padding: 10px;
-    margin-bottom: 15px;
-    font-size:10pt;
-    color:#555;
-}
-.terms2 {
-	height:100;
-	overflow-y:scroll;
-    border: 5px solid #aaa;
-    background-color:#eee;
-    padding: 10px;
-    margin-bottom: 15px;
-    font-size:10pt;
-    color:#555;
-}
-</g:if>
-<g:else>
-.terms {
-	height:100;
-	overflow-y:scroll;
-    border: 5px solid #aaa;
-    background-color:#eee;
-    padding: 10px;
-    margin-bottom: 15px;
-    font-size:10pt;
-    color:#555;
-}
-</g:else>
-.terms p {
-	margin-top: 14pt;
-}
-.terms ol {
-	padding-left:20px;
-}
-.terms ul {
-	padding-left:20px;
-}
-</style>
-<script type="text/javascript">
- $(function(){
-$("input:text:visible:first").focus();
- });
-</script>
+<meta name="layout" content="home" />
+<title>Home</title>
+<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
+    rel="stylesheet">
+<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
+</head>
 </head>
 <body>
-<div class="body">
-<g:if test="${flash.message}">
-<div class="registermessage">${flash.message.encodeAsHTML()}</div>
-</g:if>
-<div class="registerdialog">
-<div class="termsintro">
-Our goal at Curious is to provide you ways to ask questions about your health, wellness and your life in general, and discover
-answers on your own or with others. You choose what information and data you upload and how you wish it to be shared.
-Your data belongs to you. We will not share it with any third party without your consent.
-We expect that you have the rights to any content you enter or upload.
-<p>Clicking on the "Register" button means you accept the <a href="/home/termsofservice">Privacy Policy and Terms of Service</a>.
-<br/>&nbsp;
-<g:render template="/home/termsOfService" />
-</div>
-	<div><h1>New User Signup</h1></div>
-	<g:form action="doregister" method="post" >
-		<input type="hidden" name="precontroller" value="${precontroller}"/>
-		<input type="hidden" name="preaction" value="${preaction}"/>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">
-			<label for="username">Username*:</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="username" value="${fieldValue(bean:flash.user,field:'username')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${flash.user?.hasErrors() ? 'registererror':''}">
-			<label for="password">Password*:</label>
-			</div>
-			<div class="registerfield">
-			<input type="password" name="password" value=""/>
-			</div>
-		</div>
 
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'email','registererror')}">
-			<label for="email">Email*:</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="email" value="${fieldValue(bean:flash.user,field:'email')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'first','registererror')}">
-			<label for="first">First Name:</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="first" value="${fieldValue(bean:flash.user,field:'first')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'last','registererror')}">
-			<label for="last">Last Name:</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="last" value="${fieldValue(bean:flash.user,field:'last')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'birthdate','registererror')}">
-			<label for="birthdate">Birthdate (MM/DD/YYYY):</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="birthdate" value="${fieldValue(bean:flash.user,field:'birthdate')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'sex','registererror')}">
-			<label for="sex">Sex:</label>
-			</div>
-			<div class="registerfield registersex">
-			<g:radioGroup name="sex" labels="['Male','Female']" values="['M','F']" value="${fieldValue(bean:flash.user,field:'sex')}" >
-			${it.label} ${it.radio}
-			</g:radioGroup>
-			</div>
-		</div>
-		
-<g:if test="${templateVer == 'lhp'}">
-		<div class="registerline">
-			<div class="registerlabel">
-			<label for="agree">Agree to share de-identified data for LAM research*:</label>
-			</div>
-			<input type="hidden" name="metaTagName1" value="lhpresearchconsent">
-			<input type="hidden" name="metaTagName2" value="lhpmember">
-			<input type="hidden" name="metaTagValue2" value="true">
-			<div class="registerfield registersex">
-			<g:radioGroup name="metaTagValue1" labels="['Y','N']" values="['Y','N']" value="Y" >
-			${it.label} ${it.radio}
-			</g:radioGroup>
-			</div>
-		</div>
-</g:if>
-		
-<g:if test="${templateVer == 'lhp'}">
-		<input type="hidden" name="groups" value="['announce','lhp','lhp announce']">
-</g:if>
-<g:else>
-		<input type="hidden" name="groups" value="['announce','curious','curious announce']">
-</g:else>
-		<br/>
-		
-		<div class="registerline">
-			<div class="registerlabel">
-			</div>
-			<div class="registerfield">
-			*Required
-			</div>
-		</div>
-		
-		<div class="buttons">
-			<div class="button">
-			<input class="save" type="submit" name="cancel" value="Cancel" />
-			</div>
-			<div class="button">
-			<input class="save" type="submit" name="register" value="Register" />
-			</div>
-		</div>
-	</g:form>
-</div>
-</div>
+    <br>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
+            <img class="" src="/images/home/home-logo.jpg" />
+            <p
+                style="font-family: Tahoma; font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+                We've got questions.</p>
+            <p
+                style="font-size: 31px; color: #f14a42; text-align: right;">
+                <strong>Do you? </strong>
+            </p>
+            <br> <br>
+            <g:link action="registerOld"
+                params="${['precontroller':precontroller,'preaction':preaction]}">
+                <button type="button" class="btn"
+                    style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
+                    <p
+                        style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
+                        Join Curious</p>
+                </button>
+            </g:link>
+        </div>
+    </div>
+    <div class="shape-wrapper features">
+        <div class="features-background"></div>
+        <div class="row" id="features">
+            <div class="col-sm-3 col-sm-offset-1" style="color: white;">
+                <p style="font-size: 26px;">New User Signup</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3 col-sm-offset-1 text-teal">
+                <form action="doregister" method="post" role="form">
+                    <input class="form-control" type="hidden" name="precontroller"
+                        value="${precontroller}" /> <input
+                        type="hidden" name="preaction"
+                        value="${preaction}" />
+
+                    <div class="form-group">
+                        <label for="username"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Username*:</label>
+                        <input class="form-control" type="text" name="username"
+                            value="${fieldValue(bean:flash.user,field:'username')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password"
+                            class="registerlabel ${flash.user?.hasErrors() ? 'registererror':''}">Password*:</label>
+                        <input class="form-control"  type="password" name="password" value="" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'email','registererror')}">Email*:</label>
+                        <input class="form-control" type="text" name="email"
+                            value="${fieldValue(bean:flash.user,field:'email')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'first','registererror')}">First
+                            Name:</label> <input class="form-control" type="text" name="first"
+                            value="${fieldValue(bean:flash.user,field:'first')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'last','registererror')}">Last
+                            Name:</label> <input class="form-control" type="text" name="last"
+                            value="${fieldValue(bean:flash.user,field:'last')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthdate"
+                            class="${hasErrors(bean:flash.user,field:'birthdate','registererror')}">Birthdate
+                            (MM/DD/YYYY):</label> <input class="form-control" type="text"
+                            name="birthdate"
+                            value="${fieldValue(bean:flash.user,field:'birthdate')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex"
+                            class="${hasErrors(bean:flash.user,field:'sex','registererror')}">Sex:</label>
+                        <g:radioGroup name="sex"
+                            labels="['Male','Female']"
+                            values="['M','F']"
+                            value="${fieldValue(bean:flash.user,field:'sex')}">
+                            ${it.label}
+                            ${it.radio}
+                        </g:radioGroup>
+                    </div>
+
+                    <g:if test="${templateVer == 'lhp'}">
+                        <div class="form-group">
+                            <label for="agree">Agree to share
+                                de-identified data for LAM research*:</label> <input
+                                type="hidden" name="metaTagName1"
+                                value="lhpresearchconsent"> <input
+                                type="hidden" name="metaTagName2"
+                                value="lhpmember"> <input
+                                type="hidden" name="metaTagValue2"
+                                value="true">
+                            <g:radioGroup name="metaTagValue1" class="form-control" 
+                                labels="['Y','N']" values="['Y','N']"
+                                value="Y">
+                                ${it.label}
+                                ${it.radio}
+                            </g:radioGroup>
+                        </div>
+                    </g:if>
+
+                    <g:if test="${templateVer == 'lhp'}">
+                        <input type="hidden" name="groups" 
+                            value="['announce','lhp','lhp announce']">
+                    </g:if>
+                    <g:else>
+                        <input type="hidden" name="groups"
+                            value="['announce','curious','curious announce']">
+                    </g:else>
+
+                    <input type="submit" name="cancel" class="btn pull-right" 
+                        value="Cancel" /> <input class="btn pull-right" style="margin-right:5px;"
+                        type="submit" name="register" value="Register" />
+                </form>
+            </div>
+
+        </div>
+        <br> <br> <br> <br> <br> <br> <br>
+    </div>
+
+    <div>
+        <div class="row">
+            <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
+                <p
+                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
+            </div>
+        </div>
+        <br> <br> <br>
+        <div class="row">
+            <div class="col-sm-7 col-sm-offset-1 text-left">
+                <ul class="">
+                    <li
+                        style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">The
+                            Sleep Study <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
+                    </span>
+                    </li>
+                    <li
+                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">What
+                            causes migraines? <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
+                    </span>
+                    </li>
+                    <li
+                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">View
+                            your most tracked tag <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
+                    </span>
+                    </li>
+                </ul>
+
+                <div style="position: absolute; z-index: -2;">
+                    <ul>
+                        <li
+                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
+                            <span
+                            style="font-family: Tahoma; font-size: 30px;">How
+                                do I improve my energy level?</span>
+                        </li>
+                        <li
+                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
+                            <span
+                            style="font-family: Tahoma; font-size: 30px;">Learn
+                                to maintain focus throughtout the day? </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

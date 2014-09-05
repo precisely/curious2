@@ -48,6 +48,7 @@
 		<li><a href="http://www.wearecurio.us/">ABOUT</a></li>
         <li>
             <g:form url="[controller:'home',action:'login']">
+                <input type="hidden" name="login" value="login"/>
                 <button type="submit" class="btn btn-default header-button disabled">Sign In</button>
             </g:form>
         </li>

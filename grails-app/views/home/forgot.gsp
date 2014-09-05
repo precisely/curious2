@@ -1,41 +1,135 @@
 <html>
 <head>
-<meta name="layout" content="grailsmain" />
-<title>Login</title>
-<script type="text/javascript">
-$(function(){
-	$("input:text:visible:first").focus();
-});
-</script>
+<meta name="layout" content="home" />
+<title>Home</title>
+<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
+    rel="stylesheet">
+<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 </head>
+<script type="text/javascript">
+    $(function() {
+        $("input:text:visible:first").focus();
+    });
+</script>
 <body>
-<div class="body">
-<h1>Recover Password</h1>
-<g:if test="${flash.message}">
-	<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
-</g:if>
-<g:if test="${message}">
-	<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
-</g:if>
-<div class="logindialog">
-	<g:form action="doforgot" method="post" >
-		<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}"/>
-		<input type="hidden" name ="preaction" value="${preaction.encodeAsHTML()}"/>
-		<div class="loginline">
-			<div style="font-size:10pt">
-			<label for="Username">Please enter your username:</label>
-			</div>
-			<div class="loginfield">
-			<input style="width:250px" "type="username" id="username" name="username"/>
-			</div>
-		</div>
-		<br/>
-		<div class="loginbuttons">
-			<span class="button">
-			<input class="save" type="submit" value="Recover" />
-			</span>
-		</div>
-	</g:form>
-</div>
+
+    <br>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
+            <img class="" src="/images/home/home-logo.jpg" />
+            <p
+                style="font-family: Tahoma; font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+                We've got questions.</p>
+            <p
+                style="font-size: 31px; color: #f14a42; text-align: right;">
+                <strong>Do you? </strong>
+            </p>
+            <br> <br>
+            <g:link action="registerOld"
+                params="${['precontroller':precontroller,'preaction':preaction]}">
+                <button type="button" class="btn"
+                    style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
+                    <p
+                        style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
+                        Join Curious</p>
+                </button>
+            </g:link>
+        </div>
+    </div>
+    <div class="shape-wrapper features">
+        <div class="features-background"></div>
+        <div class="row" id="features">
+            <div class="col-sm-4 col-sm-offset-1" style="color: white;">
+                <p style="font-size: 26px;">Recover Password</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 col-sm-offset-1 text-center text-teal">
+                <div>
+
+                    <form role="form" action="doforgot" method="post">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1"
+                                style="color: white;">Please
+                                enter your username:</label><input
+                                style="width: 250px"  type="username"
+                                id="username" name="username" />
+                        </div>
+                        <input type="hidden" name="preaction"
+                            value="${precontroller.encodeAsHTML()}" />
+                        <input type="hidden" name="preaction"
+                            value="${preaction.encodeAsHTML()}" />
+                        <div class="form-group">
+
+                            <input class="btn pull-left" type="submit"
+                                value="Recover" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <br> <br> <br> <br> <br> <br> <br>
+        <br> <br> <br>
+    </div>
+
+    <div>
+        <div class="row">
+            <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
+                <p
+                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
+            </div>
+        </div>
+        <br> <br> <br>
+        <div class="row">
+            <div class="col-sm-7 col-sm-offset-1 text-left">
+                <ul class="">
+                    <li
+                        style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">The
+                            Sleep Study <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
+                    </span>
+                    </li>
+                    <li
+                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">What
+                            causes migraines? <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
+                    </span>
+                    </li>
+                    <li
+                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
+                        <span
+                        style="font-family: Tahoma; font-size: 30px;">View
+                            your most tracked tag <span
+                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
+                    </span>
+                    </li>
+                </ul>
+
+                <div style="position: absolute; z-index: -2;">
+                    <ul>
+                        <li
+                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
+                            <span
+                            style="font-family: Tahoma; font-size: 30px;">How
+                                do I improve my energy level?</span>
+                        </li>
+                        <li
+                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
+                            <span
+                            style="font-family: Tahoma; font-size: 30px;">Learn
+                                to maintain focus throughtout the day? </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

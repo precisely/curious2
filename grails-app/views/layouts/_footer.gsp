@@ -1,5 +1,5 @@
 <div class="about-wrapper">
-	<g:if test="${params.action == 'homepage'}">
+	<g:if test="${params.action == 'homepage'} || ${params.action == 'login'}">
 		<div class="about-background" ></div>
 		<br><br><br><br>
 	</g:if>
@@ -12,7 +12,7 @@
 		</div>
 	</div>
 	<br><br>
-	<g:if test="${params.action == 'homepage'}">
+	<g:if test="${params.action == 'homepage'} || ${params.action == 'login'}">
 	<%-- show about --%>
 		<div class="row">
 			<div class="col-sm-5 col-sm-offset-1 text-left"  style="color: white;">
