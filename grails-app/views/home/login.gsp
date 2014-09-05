@@ -42,21 +42,21 @@
         </div>
         <div class="row">
             <g:if test="${!params.login}">
-            <br><br><br>
+                <br>
+                <br>
+                <br>
                 <div
                     class="col-sm-2 col-sm-offset-1 text-center text-teal">
                     <div class="thumbnail">
                         <img class="img-responsive"
                             style="margin: 0 auto;"
-                            src="/images/home/home-first-icon.png" />
+                            src="/images/home/home-second-icon.png" />
                         <div class="caption" style="color: white;">
-                            <p style="font-size: 26px;">Graph</p>
-                            Sed ut perspiciatis, unde omnis iste natus
-                            error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam eaque ipsa,
-                            quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt,
-                            explicabo.
+                            <p style="font-size: 26px;">Track</p>
+                            Flexible, tag-based, adaptable Easy-to-use
+                            mobile app Integrated device and app data
+                            (Fitbit, Withings, Jawbone, Moves, and more)
+                            Environment, weather
                         </div>
                     </div>
                 </div>
@@ -66,15 +66,15 @@
                     <div class="thumbnail">
                         <img class="img-responsive"
                             style="margin: 0 auto;"
-                            src="/images/home/home-second-icon.png" />
+                            src="/images/home/home-first-icon.png" />
                         <div class="caption" style="color: white;">
-                            <p style="font-size: 26px;">Track</p>
-                            Sed ut perspiciatis, unde omnis iste natus
-                            error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam eaque ipsa,
-                            quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt,
-                            explicabo.
+                            <p style="font-size: 26px;">Signals</p>
+                            Automated algorithms detect patterns and
+                            correlations, or ‘signals’—you decide what’s
+                            a valid signal and what's noise. Graph it
+                            yourself to explore and map your own
+                            intuitions. Plot, share, explore with
+                            others.
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                             style="margin: 0 auto;"
                             src="/images/home/home-third-icon.png" />
                         <div class="caption" style="color: white;">
-                            <p style="font-size: 26px;">Tag</p>
+                            <p style="font-size: 26px;">Chart</p>
                             Sed ut perspiciatis, unde omnis iste natus
                             error sit voluptatem accusantium doloremque
                             laudantium, totam rem aperiam eaque ipsa,
@@ -105,12 +105,9 @@
                             src="/images/home/home-fourth-icon.png" />
                         <div class="caption" style="color: white;">
                             <p style="font-size: 26px;">Community</p>
-                            Sed ut perspiciatis, unde omnis iste natus
-                            error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam eaque ipsa,
-                            quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt,
-                            explicabo.
+                            Find others who share your questions, tags,
+                            interests. Post your stories, signals, and
+                            graphs. Initiate group tracking studies.
                         </div>
                     </div>
                 </div>
