@@ -42,7 +42,7 @@
                     <li style="font-size: 16px; display: none"><a
                         href="#">TUTORIALS</a></li>
                     <li
-                        style="font-size: 16px; padding-left: 0px; margin-left: -15px"><a
+                        style="font-size: 16px; display:none; padding-left: 0px; margin-left: -15px"><a
                         href="http://www.wearecurio.us/">PRIVACY</a></li>
                     <li style="font-size: 16px;"><g:link
                             controller='home' action="termsofservice">TERMS</g:link></li>
