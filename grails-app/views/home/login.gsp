@@ -63,10 +63,10 @@
                             src="/images/home/home-second-icon.png" />
                         <div class="caption" style="color: white;">
                             <p style="font-size: 26px;">Track</p>
-                            Flexible, tag-based, adaptable Easy-to-use
-                            mobile app Integrated device and app data
-                            (Fitbit, Withings, Jawbone, Moves, and more)
-                            Environment, weather
+                            Flexible, tag-based, adaptable. Easy-to-use
+                            mobile app. Integrated device and app data
+                            (Fitbit, Withings, Jawbone, Moves, and more).
+                            Environment, weather.
                         </div>
                     </div>
                 </div>
@@ -97,9 +97,9 @@
                             src="/images/home/home-first-icon.png" />
                         <div class="caption" style="color: white;">
                             <p style="font-size: 26px;">Chart</p>
-                            Easy graphical data visualization Dynamic
-                            drag and drop interface Quickly overlay
-                            multiple data streams for comparison
+                            Easy graphical data visualization. Dynamic
+                            drag and drop interface. Quickly overlay
+                            multiple data streams for comparison.
                         </div>
                     </div>
                 </div>
