@@ -22,12 +22,18 @@ class CuriousSeriesTests extends CuriousTestCase {
 	
 	@Before
 	void setUp() {
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 		super.setUp()
 	}
 	
 	@After
 	void tearDown() {
 		super.tearDown()
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 	}
 	
 	public static def log(text) {
