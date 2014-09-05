@@ -1,7 +1,6 @@
 <div class="about-wrapper">
 
-    <g:if
-        test="${params.action == 'homepage' || params.action == 'login'}">
+    <g:if test="${params.action == 'login' && !params.login}">
         <div class="about-background"></div>
         <br>
         <br>
@@ -63,37 +62,25 @@
     </g:if>
 
     <g:else>
-        <div class="about-background"
-            style="border-left: 600000px solid #ff935f;"></div>
+         <g:if test="${params.action == 'login' && !params.login}">
+         </g:if>
         <%-- Inner Pages --%>
-        <div class="row">
-            <div class="col-md-6 col-md-offset-1">
-                <ul class="nav nav-pills mainLinks footerLinks">
+        <div class="row ${(params.action == 'register' || params.action =='forgot')?'':'orange'}">
+            <div class="col-md-6">
+                <ul class="nav nav-pills" style="margin-left: 20px">
                     <li
-                        style="font-size: 16px; padding-left: 0px; display: none"><a
+                        style="font-size: 16px; padding-left: 0px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">GET THE APP</a></li>
-                    <li style="font-size: 16px; display: none"><a
+                    <li style="font-size: 16px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">TUTORIALS</a></li>
                     <li
-                        style="font-size: 16px; padding-left: 0px; margin-left: -15px"><a
+                        style="font-size: 16px; padding-left: 0px; margin-left: -15px"><a style="font-weight: bold;color: #999999"
                         href="http://www.wearecurio.us/">PRIVACY</a></li>
                     <li style="font-size: 16px;"><g:link
-                            controller='home' action="termsofservice">TERMS</g:link></li>
+                            controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS</g:link></li>
                 </ul>
             </div>
-            <div class="col-md-2 pull-right"
-                style="color: white; margin-top: 23px;">
-                <p
-                    style="font-size: 16px; padding-right: 30px; float: left;">Say
-                    Hi !</p>
-                <a href="https://twitter.com/wearecurious"> <img
-                    class="" src="/images/home/twitter.png"
-                    style="padding-right: 15px; float: left; width: 38px" />
-                </a> <a href="https://facebook.com/wearecurious"> <img
-                    class="" src="/images/home/facebook.png"
-                    style="float: left; width: 16px" />
-                </a>
-            </div>
+            
         </div>
     </g:else>
 </div>

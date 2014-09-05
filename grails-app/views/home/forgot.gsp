@@ -74,62 +74,7 @@
         <br> <br> <br>
     </div>
 
-    <div>
-        <div class="row">
-            <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-                <p
-                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
-            </div>
-        </div>
-        <br> <br> <br>
-        <div class="row">
-            <div class="col-sm-7 col-sm-offset-1 text-left">
-                <ul class="">
-                    <li
-                        style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                        <span
-                        style="font-family: Tahoma; font-size: 30px;">The
-                            Sleep Study <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
-                    </span>
-                    </li>
-                    <li
-                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                        <span
-                        style="font-family: Tahoma; font-size: 30px;">What
-                            causes migraines? <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
-                    </span>
-                    </li>
-                    <li
-                        style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
-                        <span
-                        style="font-family: Tahoma; font-size: 30px;">View
-                            your most tracked tag <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
-                    </span>
-                    </li>
-                </ul>
-
-                <div style="position: absolute; z-index: -2;">
-                    <ul>
-                        <li
-                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
-                            <span
-                            style="font-family: Tahoma; font-size: 30px;">How
-                                do I improve my energy level?</span>
-                        </li>
-                        <li
-                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
-                            <span
-                            style="font-family: Tahoma; font-size: 30px;">Learn
-                                to maintain focus throughtout the day? </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
 </body>
 </html>

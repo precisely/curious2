@@ -12,14 +12,14 @@
     <br>
     <br>
     <div class="row">
-        <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
+        <div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
             <img class="" src="/images/home/home-logo.jpg" />
             <p
-                style="font-family: Tahoma; font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
-                We've got questions.</p>
+                style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+                Track data, chart experience, find meaning.</p>
             <p
                 style="font-size: 31px; color: #f14a42; text-align: right;">
-                <strong>Do you? </strong>
+                <strong>We’ve got questions. </strong>
             </p>
             <br> <br>
             <g:link action="registerOld"
@@ -36,9 +36,19 @@
     <div class="shape-wrapper features">
         <div class="features-background"></div>
         <div class="row" id="features">
-            <div class="col-sm-1 col-sm-offset-1" style="color: white;">
-                <p style="font-size: 26px;">Login</p>
-            </div>
+            <g:if test="${!params.login}">
+                <div class="col-sm-1 col-sm-offset-1"
+                    style="color: white;">
+                    <p style="font-size: 26px;">Features</p>
+                </div>
+            </g:if>
+            <g:else>
+                <div class="col-sm-1 col-sm-offset-1"
+                    style="color: white;">
+                    <p style="font-size: 26px;">Login</p>
+                </div>
+            </g:else>
+
         </div>
         <div class="row">
             <g:if test="${!params.login}">
@@ -66,7 +76,7 @@
                     <div class="thumbnail">
                         <img class="img-responsive"
                             style="margin: 0 auto;"
-                            src="/images/home/home-first-icon.png" />
+                            src="/images/home/home-third-icon.png" />
                         <div class="caption" style="color: white;">
                             <p style="font-size: 26px;">Signals</p>
                             Automated algorithms detect patterns and
@@ -84,15 +94,12 @@
                     <div class="thumbnail">
                         <img class="img-responsive"
                             style="margin: 0 auto;"
-                            src="/images/home/home-third-icon.png" />
+                            src="/images/home/home-first-icon.png" />
                         <div class="caption" style="color: white;">
                             <p style="font-size: 26px;">Chart</p>
-                            Sed ut perspiciatis, unde omnis iste natus
-                            error sit voluptatem accusantium doloremque
-                            laudantium, totam rem aperiam eaque ipsa,
-                            quae ab illo inventore veritatis et quasi
-                            architecto beatae vitae dicta sunt,
-                            explicabo.
+                            Easy graphical data visualization Dynamic
+                            drag and drop interface Quickly overlay
+                            multiple data streams for comparison
                         </div>
                     </div>
                 </div>
@@ -158,39 +165,38 @@
         <br> <br> <br> <br> <br> <br> <br>
     </div>
 
-    <div>
+    <g:if test="${params.action == 'login' && !params.login}">
         <div class="row">
             <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
                 <p
-                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">LEARN</p>
+                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">NEWS</p>
             </div>
         </div>
-        <br> <br> <br>
+        <br>
+        <br>
+        <br>
         <div class="row">
             <div class="col-sm-7 col-sm-offset-1 text-left">
                 <ul class="">
                     <li
                         style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
                         <span
-                        style="font-family: Tahoma; font-size: 30px;">The
-                            Sleep Study <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+13</span>
+                        style=" font-size: 30px;">The
+                            Sleep Studyd
                     </span>
                     </li>
                     <li
                         style="list-style: none; padding-left: 80px; background-image: url(/images/home/migraines.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
                         <span
-                        style="font-family: Tahoma; font-size: 30px;">What
-                            causes migraines? <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+24</span>
+                        style=" font-size: 30px;">What
+                            causes migraines?
                     </span>
                     </li>
                     <li
                         style="list-style: none; padding-left: 80px; background-image: url(/images/home/tracked-tag.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
                         <span
-                        style="font-family: Tahoma; font-size: 30px;">View
-                            your most tracked tag <span
-                            style="font-family: Tahoma; font-size: 14px; color: #ff935f; margin-left: 10px;">+49</span>
+                        style=" font-size: 30px;">View
+                            your most tracked tag
                     </span>
                     </li>
                 </ul>
@@ -200,20 +206,21 @@
                         <li
                             style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
                             <span
-                            style="font-family: Tahoma; font-size: 30px;">How
+                            style=" font-size: 30px;">How
                                 do I improve my energy level?</span>
                         </li>
                         <li
                             style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
                             <span
-                            style="font-family: Tahoma; font-size: 30px;">Learn
+                            style=" font-size: 30px;">Learn
                                 to maintain focus throughtout the day? </span>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
-    </div>
+    </g:if>
+
 
 </body>
 </html>
