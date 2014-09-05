@@ -13,25 +13,16 @@
     <br>
     <br>
     <div class="row">
-        <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
+        <div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
             <img class="" src="/images/home/home-logo.jpg" />
             <p
-                style="font-family: Tahoma; font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
-                We've got questions.</p>
+                style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+                Track data, chart experience, find meaning.</p>
             <p
                 style="font-size: 31px; color: #f14a42; text-align: right;">
-                <strong>Do you? </strong>
+                <strong>We’ve got questions. </strong>
             </p>
-            <br> <br>
-            <g:link action="registerOld"
-                params="${['precontroller':precontroller,'preaction':preaction]}">
-                <button type="button" class="btn"
-                    style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
-                    <p
-                        style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
-                        Join Curious</p>
-                </button>
-            </g:link>
+            <br> <br>&nbsp;<br/>&nbsp;
         </div>
     </div>
     <div class="shape-wrapper features">

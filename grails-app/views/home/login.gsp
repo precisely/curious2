@@ -22,7 +22,7 @@
                 <strong>We’ve got questions. </strong>
             </p>
             <br> <br>
-            <g:link action="registerOld"
+            <g:link action="register"
                 params="${['precontroller':precontroller,'preaction':preaction]}">
                 <button type="button" class="btn"
                     style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
@@ -182,7 +182,7 @@
                         style="list-style: none; padding-left: 77px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
                         <span
                         style=" font-size: 30px;">The
-                            Sleep Studyd
+                            Sleep Study
                     </span>
                     </li>
                     <li

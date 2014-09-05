@@ -6,7 +6,7 @@
 <div class="header clearfix">
 	<div class="pull-left logo-container">
 		<a href="/home/index" class="logo-link">
-			<img src ="/images/logo_alpha.png" />
+			<img src ="/images/logo.png" />
 		</a>
 		<g:if test="${templateVer == 'lhp'}">
 			<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton">

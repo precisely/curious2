@@ -65,17 +65,14 @@
          <g:if test="${params.action == 'login' && !params.login}">
          </g:if>
         <%-- Inner Pages --%>
-        <div class="row ${(params.action == 'register' || params.action =='forgot')?'':'orange'}">
+        <div class=""> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
             <div class="col-md-6">
-                <ul class="nav nav-pills" style="margin-left: 20px">
+                <ul class="nav nav-pills" style="margin-left: 20px;">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">GET THE APP</a></li>
                     <li style="font-size: 16px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">TUTORIALS</a></li>
-                    <li
-                        style="font-size: 16px; padding-left: 0px; margin-left: -15px"><a style="font-weight: bold;color: #999999"
-                        href="http://www.wearecurio.us/">PRIVACY</a></li>
                     <li style="font-size: 16px;"><g:link
                             controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS</g:link></li>
                 </ul>

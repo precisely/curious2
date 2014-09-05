@@ -27,7 +27,7 @@
                 <strong>Do you? </strong>
             </p>
             <br> <br>
-            <g:link action="registerOld"
+            <g:link action="register"
                 params="${['precontroller':precontroller,'preaction':preaction]}">
                 <button type="button" class="btn"
                     style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">

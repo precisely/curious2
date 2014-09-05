@@ -43,7 +43,7 @@ $(function(){
 	</g:form>
 </div>
 <div class="loginregisterline">
-<div></div><g:link action="registerOld" params="${['precontroller':precontroller,'preaction':preaction]}">Create an account</g:link></div>
+<div></div><g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}">Create an account</g:link></div>
 </div>
 </body>
 </html>

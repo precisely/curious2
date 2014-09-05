@@ -22,7 +22,7 @@ abstract class CuriousServiceTestCase extends CuriousTestCase {
 		return Math.abs(a - b) < range
 	}
 	
-	String shouldFail(Class<?> clazz, Closure code) {
+	/*String shouldFail(Class<?> clazz, Closure code) {
 		Throwable th = null
 		try {
 			code.call()
@@ -41,7 +41,7 @@ abstract class CuriousServiceTestCase extends CuriousTestCase {
 		}
 		
 		return th.message
-	}
+	}*/
 	
 	@Before
 	void setUp() {
