@@ -62,7 +62,7 @@ class GenericTagLib {
 			return
 		}
 
-		if (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId)) {
+		if (!UserGroup.hasAdmin(UserGroup.lookupOrCreateSystemGroup().id, session.userId)) {
 			return
 		}
 
