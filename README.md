@@ -41,7 +41,7 @@ Following feature needs to tested after development:
 Following are some bootstrap customization which needs to be made before downloading new bootstrap resources:
 
 Bootstrap customization ID: 10834603
-New customization ID: acef56cd203e1a67e202
+New customization ID: e199233734b5ca248500
 
 This customization ID sets: 
 1. Uncheck all Less Components except **Grid system, form, typography, Basic utilities, Responsive utilities**,
