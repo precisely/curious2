@@ -164,7 +164,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 			alertShown = true;
 			showAlert(description + ": in progress");
 		}
-	}, 4000);
+	}, 6000);
 	if (typeof args == "function") {
 		delay = failCallback;
 		failCallback = successCallback

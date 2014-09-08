@@ -13,6 +13,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.WithingsDataService
 
 class AuthenticationControllerTests extends CuriousControllerTestCase {
+	static transactional = true
 
 	def securityService
 

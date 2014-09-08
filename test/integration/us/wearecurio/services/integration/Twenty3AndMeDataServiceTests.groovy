@@ -17,7 +17,8 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 
 class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
-
+	static transactional = true
+	
 	OauthService oauthService
 	Twenty3AndMeDataService twenty3AndMeDataService
 

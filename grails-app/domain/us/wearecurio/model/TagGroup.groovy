@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
-import us.wearecurio.cache.BoundedCache;
+import us.wearecurio.cache.BoundedCache
+import us.wearecurio.utility.Utils
 
 class TagGroup extends GenericTagGroup {
 
@@ -14,6 +15,13 @@ class TagGroup extends GenericTagGroup {
 	static BoundedCache<Long, List<String>> tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
 	// Cache holder to cache list of tag ids for a tag group
 	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+
+	static {
+		Utils.registerTestReset {
+			tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
+			tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+		}
+	}
 
 	void addToCache(GenericTagGroup childTagGroupInstance, Long userId) {
 		if (hasCachedData()) {

@@ -15,6 +15,7 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.utility.Utils
 
 public class HomeControllerTests extends CuriousControllerTestCase {
+	static transactional = true
 
 	PlotData plotData
 	Discussion discussion

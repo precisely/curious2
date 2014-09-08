@@ -11,6 +11,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.WildcardTagGroup
 import us.wearecurio.services.TagGroupService
+import us.wearecurio.support.EntryStats
 
 class WildcardTagGroupTests extends CuriousTestCase {
 
@@ -36,14 +37,16 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		tag5 = Tag.create("chicken")
 		tag6 = Tag.create("bike")
 		tag7 = Tag.create("chicken mole poblano")
+		
+		EntryStats stats = new EntryStats(userId)
 
-		entry1 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag1.description, baseDate, true), null)
-		entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag2.description, baseDate, true), null)
-		entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag3.description, baseDate, true), null)
-		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag4.description, baseDate, true), null)
-		entry5 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag5.description, baseDate, true), null)
-		entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag6.description, baseDate, true), null)
-		entry7 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag7.description, baseDate, true), null)
+		entry1 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag1.description, baseDate, true), stats)
+		entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag2.description, baseDate, true), stats)
+		entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag3.description, baseDate, true), stats)
+		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag4.description, baseDate, true), stats)
+		entry5 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag5.description, baseDate, true), stats)
+		entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag6.description, baseDate, true), stats)
+		entry7 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag7.description, baseDate, true), stats)
 
 		wildcardTagGroupInstance1 = tagGroupService.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
 		wildcardTagGroupInstance2 = tagGroupService.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)

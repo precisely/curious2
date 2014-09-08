@@ -19,6 +19,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.Utils
 
 class DataServiceTests extends CuriousServiceTestCase {
+	static transactional = true
 
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
@@ -45,6 +46,9 @@ class DataServiceTests extends CuriousServiceTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+		
+		account.delete()
+		account2.delete()
 	}
 
 	void testExpiredToken() {

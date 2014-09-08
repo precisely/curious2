@@ -169,7 +169,7 @@ class TagProperties {
 		return this
 	}
 
-	public static def lookup(uid, tid) {
+	public static TagProperties lookup(uid, tid) {
 		return TagProperties.findWhere(tagId:tid, userId:uid)
 	}
 

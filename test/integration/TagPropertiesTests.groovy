@@ -7,14 +7,17 @@ import us.wearecurio.model.TagProperties
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
 import us.wearecurio.model.Tag
+import us.wearecurio.support.EntryStats
+import us.wearecurio.support.EntryCreateMap
 
 import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
 class TagPropertiesTests extends CuriousUserTestCase {
-	DateFormat dateFormat
 	static transactional = true
+	
+	DateFormat dateFormat
 	Date baseDate
 	String timeZone
 	Date time1
@@ -42,9 +45,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -60,9 +65,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -75,9 +82,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -90,9 +99,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -105,9 +116,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -154,9 +167,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -174,9 +189,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -195,9 +212,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "head ache 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "head ache 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "head ache 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -216,9 +235,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "heart rate 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "heart rate 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -237,9 +258,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "heart rate 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "heart rate 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3
@@ -265,9 +288,11 @@ class TagPropertiesTests extends CuriousUserTestCase {
 		def parsedEntry1 = Entry.parse(time1, timeZone, "foobar 0.0", baseDate, true)
 		def parsedEntry2 = Entry.parse(time2, timeZone, "foobar 42", baseDate, true)
 		def parsedEntry3 = Entry.parse(time3, timeZone, "foobar 500", baseDate, true)
-		def entry1 = Entry.create(userId, parsedEntry1, null)
-		def entry2 = Entry.create(userId, parsedEntry2, null)
-		def entry3 = Entry.create(userId, parsedEntry3, null)
+		EntryStats stats = new EntryStats(userId)
+		def entry1 = Entry.create(userId, parsedEntry1, stats)
+		def entry2 = Entry.create(userId, parsedEntry2, stats)
+		def entry3 = Entry.create(userId, parsedEntry3, stats)
+		stats.finish()
 		def tag = entry1.getTag()
 		def entries = Entry.findAllWhere(userId: userId, tag: tag)
 		assert entries.size == 3

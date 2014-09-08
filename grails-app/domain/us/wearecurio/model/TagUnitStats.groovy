@@ -3,6 +3,7 @@ package us.wearecurio.model
 import org.apache.commons.logging.LogFactory
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 class TagUnitStats {
 	
@@ -17,6 +18,7 @@ class TagUnitStats {
 	static mapping = {
 		version false
 		table 'tag_unit_stats'
+		unit column:'unit', index:'unit_index'
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 	}
@@ -50,7 +52,7 @@ class TagUnitStats {
 			tagUnitStats = tagUnitStats[0]
 		} else {
 			// If this unit is being used for the first time for this tag
-			def unitRatio = UnitGroupMap.theMap.unitRatioForUnit(unit)
+			UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(unit)
 			if (!unitRatio) {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
 				//If we can't find it in our map we use the most used unit
@@ -65,7 +67,7 @@ class TagUnitStats {
 			} else {
 				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
 				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
-						unit: unitRatio.unit, unitGroupId: unitRatio.getGroupId())
+						unit: unitRatio.getUnit(), unitGroupId: unitRatio.getGroupId())
 			}
 		}
 		
@@ -104,42 +106,5 @@ class TagUnitStats {
 			return null
 		
 		return [unitGroupId: unitGroupId, unit: r[0][0]]
-	}
-}
-
-enum UnitGroup {
-	
-	DURATION(1, "duration"),
-	DISTANCE(2, "distance"),
-	WEIGHT(3, "weight"),
-	AREA(4, "area"),
-	VOLUME(5, "volume"),
-	FORCE(6, "force"),
-	POWER(7, "power"),
-	ENERGY(8, "energy"),
-	TORQUE(9, "torque"),
-	LUMINOSITY(10, "luminosity"),
-	PRESSURE(11, "pressure"),
-	DENSITY(12, "density")
-	
-	final int id
-	final String groupName
-	
-	UnitGroup(int id, String groupName) {
-		this.id = id
-		this.groupName= groupName
-	}
-	
-	private static final Map<Integer, UnitGroup> map = new HashMap<Integer, UnitGroup>()
-	
-	static {
-		UnitGroup.each { unitGroup ->
-			map.put(unitGroup.id, unitGroup)
-		}
-	}
-	
-	static UnitGroup get(int id) {
-		if (id == null) return null
-		map.get(id)
 	}
 }

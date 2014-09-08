@@ -20,12 +20,19 @@ class CorrelationServiceTests extends CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 		super.setUp()
 	}
 	
 	@After
 	void tearDown() {
 		super.tearDown()
+		
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 	}
 	
 	private static def LOG = new File("debug.out")

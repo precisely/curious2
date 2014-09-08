@@ -4,6 +4,7 @@ import org.junit.*
 import us.wearecurio.services.AppleNotificationService
 
 class AppleNotificationServiceTests extends CuriousServiceTestCase {
+	static transactional = true
 	
 	AppleNotificationService appleNotificationService
 	

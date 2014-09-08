@@ -6,23 +6,26 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.Before
 
-import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.User
+import us.wearecurio.model.Entry
+import us.wearecurio.utility.Utils
 
 /**
  * Superclass for service tests
  * 
  * @author mitsu
  */
-abstract class CuriousServiceTestCase extends CuriousTestCase {
-
+abstract class CuriousServiceTestCase {
 	static transactional = true
 
 	boolean isClose(double a, double b, double range) {
 		return Math.abs(a - b) < range
 	}
 	
-	/*String shouldFail(Class<?> clazz, Closure code) {
+	Long userId
+	User user
+		
+	String shouldFail(Class<?> clazz, Closure code) {
 		Throwable th = null
 		try {
 			code.call()
@@ -41,15 +44,35 @@ abstract class CuriousServiceTestCase extends CuriousTestCase {
 		}
 		
 		return th.message
-	}*/
+	}
 	
 	@Before
 	void setUp() {
-		super.setUp()
+		Utils.resetForTesting()
+		
+		User.list()*.delete()	// Deleting existing records temporary to create default user.
+		Entry.list()*.delete()
+		def users = User.list(max:1)
+		if (users.size() == 0) {
+			def params = [username:'y', sex:'F', \
+				last:'y', email:'y@y.com', birthdate:'01/01/2001', \
+				first:'y', password:'y', action:'doregister', \
+				controller:'home']
+
+			user = User.create(params)
+
+			Utils.save(user, true)
+			println "new user " + user
+		} else {
+			user = users.get(0)
+			println "user " + user
+		}
+		
+		userId = user.getId()
 	}
 	
 	@After
 	void tearDown() {
-		super.tearDown()
+		user.delete()
 	}
 }

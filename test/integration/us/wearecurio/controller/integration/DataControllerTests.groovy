@@ -14,6 +14,8 @@ import us.wearecurio.model.User
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.support.EntryStats
+import us.wearecurio.support.EntryCreateMap
 
 import static org.junit.Assert.*
 import org.junit.*
@@ -86,7 +88,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
+		stats.finish()
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
@@ -108,14 +113,18 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		entry = Entry.create(userId, Entry.parse(tomorrowCurrentTime, timeZone, "bread 7", tomorrowBaseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(tomorrowCurrentTime, timeZone, "bread 7", tomorrowBaseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		stats.finish()
+		
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
 		controller.params['timeZoneName'] = 'America/Los_Angeles'
@@ -128,9 +137,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		println controller.response.contentAsString
 		def x = controller.response.contentAsString
 		assert controller.response.contentAsString.startsWith('callback({"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 		assert controller.response.contentAsString.contains('"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7,"amountPrecision":3,"units":"","comment":"","repeatType":null,"setName":null')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 	}
 
 	@Test
@@ -139,10 +148,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		stats.finish()
+		
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
 		controller.params['tags'] = new JSON(['bread']).toString()
@@ -161,9 +174,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
+		
+		stats.finish()
 
 		controller.params['callback'] = 'callback'
 		controller.params['userId'] = userId.toString()
@@ -185,14 +202,17 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
+		
+		stats.finish()
 
 		controller.params['isContinuous'] = null
 		controller.params['callback'] = 'callback'
 		controller.params['sort'] = 'alpha'
-log("controller.params: ${controller.params}")
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
@@ -206,9 +226,13 @@ log("controller.params: ${controller.params}")
 
 		controller.session.userId = userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), null)
+		entry = Entry.create(userId, Entry.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
+		
+		stats.finish()
 
 		controller.params['callback'] = 'callback'
 		controller.params['tags'] = "['bread']"
@@ -221,8 +245,8 @@ log("controller.params: ${controller.params}")
 		assert Tag.look('bread').getPropertiesForUser(userId).isContinuous
 
 		assert controller.response.contentAsString.equals("callback('success')")
-		}
-
+	}
+	
 	@Test
 	void testAddEntrySData() {
 		DataController controller = new DataController()
@@ -230,7 +254,7 @@ log("controller.params: ${controller.params}")
 		controller.session.userId = userId
 
 		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
-		controller.params['text'] = '3:30pm testing 25 units comment'
+		controller.params['text'] = '3:30pm testing 25 units (comment)'
 		controller.params['timeZoneName'] = 'America/Los_Angeles'
 		controller.params['userId'] = userId.toString()
 		controller.params['callback'] = 'jsonp1295646296016'
@@ -242,9 +266,9 @@ log("controller.params: ${controller.params}")
 
 		controller.addEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"comment","repeatType":null') \
-		}
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
+	}
 
 	@Test
 	void testUpdateEntrySData() {
@@ -254,22 +278,10 @@ log("controller.params: ${controller.params}")
 
 		println "User ID: " + userId
 
-		def entry = Entry.create(userId, [
-					userId:userId.toString(),
-					tweetId:"",
-					date:currentTime,
-					datePrecisionSecs:180,
-					timeZoneName:"America/New_York",
-					description:'updatetest',
-					amount:new BigDecimal("2.0"),
-					units:'units',
-					comment:'comment',
-					repeatType:null,
-					setName:'',
-					amountPrecision:3
-				], null)
-
-		Utils.save(entry, true)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "updatetest 2 units (comment)", baseDate, true), stats)
+		stats.finish()
 
 		controller.params['entryId'] = entry.getId().toString()
 		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
@@ -295,9 +307,11 @@ log("controller.params: ${controller.params}")
 
 		println "User ID: " + userId
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), null)
-
-		Utils.save(entry, true)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), stats)
+		
+		stats.finish()
 
 		controller.params['entryId'] = entry.getId().toString()
 		controller.params['currentTime'] = 'Thu, 1 Jul 2010 21:46:20 GMT'
@@ -318,9 +332,13 @@ log("controller.params: ${controller.params}")
 	void testDeleteEntrySData() {
 		DataController controller = new DataController()
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		stats.finish()
+		
 		controller.session.userId = userId
 		controller.params.entryId = entry.getId()
 		controller.params.displayDate = "Sat, 11 Aug 2012 07:00:00 GMT"
@@ -370,10 +388,14 @@ log("controller.params: ${controller.params}")
 	void testAutocompleteData() {
 		DataController controller = new DataController()
 
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		stats.finish()
+		
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -580,9 +602,13 @@ log("controller.params: ${controller.params}")
 	void testExport() {
 		DataController controller = new DataController()
 
-		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1", winterBaseDate, true), null)
-		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1 slice", winterBaseDate, true), null)
-		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), null)
+		EntryStats stats = new EntryStats(userId)
+		
+		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1", winterBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(winterCurrentTime, timeZone, "bread 1 slice", winterBaseDate, true), stats)
+		Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), stats)
+		
+		stats.finish()
 
 		def out = new ByteArrayOutputStream()
 
@@ -590,11 +616,11 @@ log("controller.params: ${controller.params}")
 
 		def outString = out.toString()
 
-		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"\n' \
-				+ '"2010-12-01 20:00:00 GMT","aspirin",1.000000000,"tablet","repeat daily",1025,3,86400,"America/Los_Angeles"\n' \
-				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"\n' \
-				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"\n'
-
+		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone","Base Tag"\n' \
+				+ '"2010-12-01 20:00:00 GMT","aspirin tablet",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
+				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles","bread"\n' \
+				+ '"2010-12-01 23:30:00 GMT","bread slice",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
+		
 		assert outString.equals(compareStr)
 	}
 

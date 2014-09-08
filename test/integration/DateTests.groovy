@@ -14,7 +14,6 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.User
-import us.wearecurio.model.Entry.TagStatsRecord
 import us.wearecurio.services.DatabaseService
 
 import org.joda.time.DateTimeZone

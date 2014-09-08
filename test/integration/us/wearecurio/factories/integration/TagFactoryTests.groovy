@@ -7,17 +7,25 @@ import org.junit.*
 import us.wearecurio.factories.TagFactory
 import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Tag
+import us.wearecurio.model.Entry
+import us.wearecurio.model.User
 
 
 class TagFactoryTests extends CuriousTestCase {
 	@Before
 	void setUp() {
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 		super.setUp()
 	}
 
 	@After
 	void tearDown() {
 		super.tearDown()
+		Entry.executeUpdate("delete Entry")
+		Tag.executeUpdate("delete Tag")
+		User.executeUpdate("delete User")
 	}
 
 	@Test

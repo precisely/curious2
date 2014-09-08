@@ -9,6 +9,8 @@ import us.wearecurio.services.EntryService
 import us.wearecurio.factories.EntryFactory
 
 class EntryServiceTests extends CuriousServiceTestCase {
+	static transactional = true
+	
 	def entryService
 	Entry[] entries
 	

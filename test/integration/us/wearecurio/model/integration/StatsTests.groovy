@@ -8,6 +8,7 @@ import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.Stats
 
 class StatsTests extends CuriousTestCase {
+	static transactional = true
 	
 	@Before
 	void setUp() {

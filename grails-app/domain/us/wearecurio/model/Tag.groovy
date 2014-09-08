@@ -7,11 +7,11 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
 
-class Tag {
+class Tag implements Serializable {
 
 	// TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
 	//	This will allow us to iterate on both TagGroups and Tags.
-	def tags() {
+	Iterable<Tag> tags() {
 		[this]
 	}
 
@@ -37,7 +37,7 @@ class Tag {
 		}
 	}
 
-	static def create(String d) {
+	static Tag create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		Utils.save(tag, true)
@@ -52,7 +52,8 @@ class Tag {
 		}
 	}
 
-	static def fetch(Long id) {
+	
+	static Tag fetch(Long id) {
 		def tag = tagIdCache.get(id)
 		
 		if (tag != null) return tag
@@ -72,15 +73,17 @@ class Tag {
 
 		if (tagIdsNotInCache) {
 			Tag.getAll(tagIdsNotInCache).each { tagInstance ->
-				addToCache(tagInstance)
-				cachedTagInstances << tagInstance
+				if (tagInstance != null) {
+					addToCache(tagInstance)
+					cachedTagInstances << tagInstance
+				}
 			}
 		}
 
 		cachedTagInstances
 	}
 
-	static def look(String d) {
+	static Tag look(String d) {
 		log.debug "Tag.look() description:'" + d + "'"
 		def tag = tagCache.get(d)
 		if (tag) return tagIdCache.get(tag.id)
@@ -108,13 +111,24 @@ class Tag {
 		}[0] != null
 	}
 
-	def getPropertiesForUser(Long userId) {
+	TagProperties getPropertiesForUser(Long userId) {
 		return TagProperties.lookup(userId, getId())
 	}
 
 	String description
 
-	def String toString() {
+	String toString() {
 		return "Tag(id:" + id + ", description:" + description + ")"
+	}
+	
+	public int hashCode() {
+		return (int)getId()
+	}
+	
+	public boolean equals(Object other) {
+		if (!other instanceof Tag)
+			return false
+		
+		return getId() == other.getId()
 	}
 }

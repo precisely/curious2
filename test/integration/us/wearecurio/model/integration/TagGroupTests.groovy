@@ -13,6 +13,7 @@ import us.wearecurio.services.TagGroupService
 import us.wearecurio.utility.Utils
 
 class TagGroupTests extends CuriousTestCase {
+	static transactional = true
 
 	TagGroupService tagGroupService
 
@@ -22,7 +23,7 @@ class TagGroupTests extends CuriousTestCase {
 	@Before
 	void setUp() {
 		super.setUp()
-
+		
 		tag1 = Tag.create("tag1")
 		tag2 = Tag.create("tag2")
 		tag3 = Tag.create("tag3")

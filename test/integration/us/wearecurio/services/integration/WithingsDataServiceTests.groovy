@@ -20,6 +20,7 @@ import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class WithingsDataServiceTests extends CuriousServiceTestCase {
+	static transactional = true
 	
 	private static def log = LogFactory.getLog(this)
 	
@@ -211,22 +212,22 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 			log.debug (e.valueString())
 			if (e.getDescription().equals("activity calories") && e.getAmount().intValue() == 1) {
 				log.debug e.valueString()
-				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity calories, amount:1.200000000, units:cal, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity, amount:1.200000000, units:cal, amountPrecision:3, comment:(Withings), repeatType:null")
 				e = e
 			} else if (e.getDescription().equals("activity distance") && e.getAmount().intValue() == 2) {
 				log.debug e.valueString()
-				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity distance, amount:2.000000000, units:miles")
+				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity, amount:2.000000000, units:miles")
 			} else if (e.getDescription().equals("activity elevation") && e.getAmount().intValue() == 2) {
 				log.debug e.valueString()
-				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity elevation, amount:2.400000000, units:meters, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity, amount:2.400000000, units:meters, amountPrecision:3, comment:(Withings), repeatType:null")
 				e = e
 			} else if (e.getDescription().equals("activity move") && e.getAmount().intValue() == 18) {
 				log.debug e.valueString()
-				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity move, amount:18.000000000, units:steps, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity, amount:18.000000000, units:steps, amountPrecision:3, comment:(Withings), repeatType:null")
 				e = e
 			} else if (e.getDescription().equals("activity duration") && e.getAmount().intValue() == 2) {
 				log.debug e.valueString()
-				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity duration, amount:2.000000000, units:min, amountPrecision:3, comment:(Withings), repeatType:null")
+				assert e.valueString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:activity, amount:2.000000000, units:min, amountPrecision:3, comment:(Withings), repeatType:null")
 				e = e
 			}
 		}
@@ -287,6 +288,5 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		grailsApplication.config.grails.serverURL = "https://dev.wearecurio.us/"
 		result = withingsDataService.getSubscriptionParameters(account, false)
 		assert result.callbackurl.contains("http://") == true
-	}
-	
+	}	
 }

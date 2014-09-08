@@ -2,6 +2,8 @@ package us.wearecurio.thirdparty.moves
 
 import java.util.Map;
 
+import us.wearecurio.model.Entry.DurationType
+
 import us.wearecurio.thirdparty.TagUnitMap
 
 class MovesTagUnitMap extends TagUnitMap {
@@ -15,26 +17,26 @@ class MovesTagUnitMap extends TagUnitMap {
 	static {
 		bikeUnitMap = [
 			bikeStep: [tag: "$BIKE", unit: "steps"],
-			bikeDistance: [tag: "$BIKE distance", unit: "km", convert: true, type: METER_TO_KM],
-			bikeCalories: [tag: "$BIKE calories", unit: "kcal"],
-			bikeStart: [tag: "$BIKE start", unit: ""],
-			bikeEnd: [tag: "$BIKE end", unit: ""],
+			bikeDistance: [tag: "$BIKE", unit: "km", convert: true, from: "meter"],
+			bikeCalories: [tag: "$BIKE", unit: "kcal"],
+			bikeStart: [tag: "$BIKE", suffix: "start", unit: "", durationType: DurationType.START],
+			bikeEnd: [tag: "$BIKE", suffix: "end", unit: "", durationType: DurationType.END],
 		]
 
 		runUnitMap = [
 			runStep: [tag: "$RUN", unit: "steps"],
-			runDistance: [tag: "$RUN distance", unit: "km", convert: true, type: METER_TO_KM],
-			runCalories: [tag: "$RUN calories", unit: "Kcal"],
-			runStart: [tag: "$RUN start", unit: ""],
-			runEnd: [tag: "$RUN end", unit: ""],
+			runDistance: [tag: "$RUN", unit: "km", convert: true, from: "meter"],
+			runCalories: [tag: "$RUN", unit: "kcal"],
+			runStart: [tag: "$RUN", suffix: "start", unit: "", durationType: DurationType.START],
+			runEnd: [tag: "$RUN", suffix: "end", unit: "", durationType: DurationType.END],
 		]
 
 		walkUnitMap = [
 			walkStep: [tag: "$WALK", unit: "steps"],
-			walkDistance: [tag: "$WALK distance", unit: "km", convert: true, type: METER_TO_KM],
-			walkCalories: [tag: "$WALK calories", unit: "kcal"],
-			walkStart: [tag: "$WALK start", unit: ""],
-			walkEnd: [tag: "$WALK end", unit: ""],
+			walkDistance: [tag: "$WALK", unit: "km", convert: true, from: "meter"],
+			walkCalories: [tag: "$WALK", unit: "kcal"],
+			walkStart: [tag: "$WALK", suffix: "start", unit: "", durationType: DurationType.START],
+			walkEnd: [tag: "$WALK", suffix: "end", unit: "", durationType: DurationType.END],
 		]
 
 		columnDetailMap.putAll(bikeUnitMap)
@@ -42,14 +44,12 @@ class MovesTagUnitMap extends TagUnitMap {
 		columnDetailMap.putAll(walkUnitMap)
 	}
 
+	MovesTagUnitMap() {
+		tagUnitMappings = initializeTagUnitMappings(columnDetailMap)
+	}
+
 	@Override
 	Map getBuckets() {
 		[:]
 	}
-
-	@Override
-	Map getTagUnitMappings() {
-		columnDetailMap
-	}
-
 }

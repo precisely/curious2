@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat
 import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.User
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.thirdparty.jawbone.JawboneTagUnitMap
 
@@ -26,6 +28,9 @@ class JawboneService {
 		boolean isFirstLine = true
 		Reader reader = new InputStreamReader(csvIn)
 		Integer timeZoneId = User.getTimeZoneId(userId)
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
 
 		reader.eachCsvLine { tokens ->
 			log.debug "Tokens: $tokens"
@@ -41,11 +46,13 @@ class JawboneService {
 			 * This is necessary, since we are not sure about position of tags.
 			 */
 			columnList.eachWithIndex { column, index ->
-				tagUnitMap.buildEntry(column, tokens[index], userId, timeZoneId, COMMENT, SET_NAME)
+				tagUnitMap.buildEntry(creationMap, stats, column, tokens[index], userId, timeZoneId, COMMENT, SET_NAME)
 			}
-			tagUnitMap.buildBucketedEntries(userId, [comment: COMMENT, setName: SET_NAME, timeZoneId: timeZoneId])
+			tagUnitMap.buildBucketedEntries(creationMap, stats, userId, [comment: COMMENT, setName: SET_NAME, timeZoneId: timeZoneId])
 			tagUnitMap.emptyBuckets()
 		}
+		
+		stats.finish()
 	}
 
 }

@@ -8,6 +8,8 @@ import us.wearecurio.services.GoogleMessageService;
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 class GoogleMessageServiceTests extends CuriousServiceTestCase {
+	static transactional = true
+	
 	def devices
 	def googleMessageService
 	

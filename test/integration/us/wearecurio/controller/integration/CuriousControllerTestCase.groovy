@@ -35,6 +35,8 @@ abstract class CuriousControllerTestCase extends CuriousTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+		
+		user.delete()
 	}
 	
 	/*

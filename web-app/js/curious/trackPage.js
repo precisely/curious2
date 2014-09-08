@@ -63,9 +63,6 @@ function displayEntry(entry, isUpdating, args) {
 	date = entry.date,
 	datePrecisionSecs = entry.datePrecisionSecs,
 	description = entry.description,
-	amount = entry.amount,
-	amountPrecision = entry.amountPrecision,
-	units = entry.units,
 	comment = entry.comment,
 	classes = "entry",
 	$entryToReplace, $appendAfterEntry;
@@ -123,16 +120,36 @@ function displayEntry(entry, isUpdating, args) {
 			dateStr = dateStr + ' ';
 		}
 	}
-
-	// store amount for post-selection highlighting
-	var formattedAmount = formatAmount(amount, amountPrecision);
-	var selectStart = (timeAfterTag ? 0 : dateStr.length) + description.length + 1 + (formattedAmount.length == 0 ? 1 : 0);
-	var selectEnd = selectStart + formattedAmount.length - 1;
-	entrySelectData[id] = [selectStart, selectEnd, amountPrecision < 0 && amount != null]; // if third item is true, insert extra space at cursor
-
+	
 	var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
-	+ escapehtml(description) + '</span>' + '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
-	+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>' + (timeAfterTag ? '<span class="entryTime">'
+	+ escapehtml(description) + '</span>';
+	
+	var amounts = entry.amounts;
+	
+	var selectStart = null;
+	var selectEnd = null;
+	
+	var i = 0, iString;
+	while ((iString = (i++).toString()) in amounts) {
+		var amountEntry = amounts[iString];
+		var amount = amountEntry.amount;
+		var amountPrecision = amountEntry.amountPrecision;
+		var units = amountEntry.units;
+		
+		var formattedAmount = formatAmount(amount, amountPrecision);
+		
+		// store first amount for post-selection highlighting
+		if (selectStart == null) {
+			selectStart = (timeAfterTag ? 0 : dateStr.length) + description.length + 1 + (formattedAmount.length == 0 ? 1 : 0);
+			selectEnd = selectStart + formattedAmount.length - 1;
+			entrySelectData[id] = [selectStart, selectEnd, amountPrecision < 0 && amount != null]; // if third item is true, insert extra space at cursor
+		}
+		
+		innerHTMLContent += '<span class="entryAmount">' + escapehtml(formattedAmount) + '</span>'
+				+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>'
+	}
+	
+	innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
 			+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
 			+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + id + '" onclick="return deleteEntryId(' + id + ')"><img width="12" height="12" src="/images/x.gif"></a>';
 
