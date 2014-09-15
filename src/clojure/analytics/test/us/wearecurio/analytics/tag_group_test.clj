@@ -1,6 +1,5 @@
 (ns us.wearecurio.analytics.tag-group-test
   (:require [clojure.test :refer :all]
-            [us.wearecurio.analytics.music :refer :all]
             [us.wearecurio.analytics.tag-group :as tg]
             [us.wearecurio.analytics.database :as db]
             [us.wearecurio.analytics.test-helpers :as th]

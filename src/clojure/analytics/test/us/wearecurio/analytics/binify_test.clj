@@ -3,7 +3,6 @@
             [us.wearecurio.analytics.test-helpers :as th]
             [us.wearecurio.analytics.binify :as bi]
             [us.wearecurio.analytics.database :as db]
-            [us.wearecurio.analytics.music :as mu]
             [clj-time.coerce :as c]
             [clj-time.core :as t]))
 
@@ -116,14 +115,6 @@
       (is (= (bi/binify-by-avg series bi/HOUR)
             {24 4.000000000M
              30 5.000000000M})))))
-
-; Sequence generating-functions
-(deftest test-making-event-data-sequence
-  (testing "Initial state of tmp-cluster-input should be empty."
-    (is (= 0 (db/cluster-input-count))))
-  (testing "Make sure we can insert a row."
-    (do (db/cluster-input-create 1 1 1)
-        (is (= 1 (db/cluster-input-count))))))
 
 (deftest test-make-an-event-sequence
   (testing "Event-like series: Missing data should be zeroed out."

@@ -54,7 +54,6 @@
   ;(delete-in-reverse "tag_group")
   ;(erase-table "tag_group")
   ;(erase-table "tag")
-  (erase-table "analytics_cluster_input")
   (erase-table "analytics_time_series")
   (erase-table "analytics_cluster_run")
   (erase-table "analytics_tag_cluster")
@@ -131,18 +130,9 @@
   KEY `stop_date_index` (`stop_date`),
   KEY `tag_cluster_id_index` (`analytics_tag_cluster_id`))"))
 
-(defn create-table-cluster-input []
-  (kc/exec-raw "CREATE TABLE IF NOT EXISTS analytics_cluster_input (
-                   `user_id` BIGINT(20),
-                   `group_id` BIGINT(20),
-                   `value` DECIMAL(19,9),
-                    KEY `user_id_index` (`user_id`),
-                    KEY `group_id_index` (`group_id`));"))
-
 (defn create-analytics-tables []
       (create-table-analytics-time-series)
       (create-table-correlation)
-      (create-table-cluster-input)
       (create-table-cluster-run)
       (create-table-tag-cluster)
       (create-table-tag-cluster-tag))

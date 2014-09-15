@@ -3,21 +3,21 @@
 
 (def base-ns "us.wearecurio.analytics")
 
-(def namespaces '(binify core database idioms music tag-group))
+(def namespaces '(binify core database idioms tag-group))
 
-(def my-aliases {'iv 'interval
-                 'bi 'binify
+(def my-aliases {'bi 'binify
                  'co 'core
                  'db 'database
                  'im 'idioms
-                 'mu 'music
+                 'iv 'interval
                  'tg 'tag-group })
 
-(def external-aliases { 'kc  'korma.core
+(def external-aliases { 'cs 'clojure.set
+                        'ic  'incanter.core
+                        'kc  'korma.core
                         'ist 'incanter.stats
                         'tc  'clj-time.core
-                        'tr  'clj-time.coerce
-                        'ic  'incanter.core })
+                        'tr  'clj-time.coerce })
 
 (defn expand-ns [my-ns]
   (symbol (str base-ns "." my-ns)))
@@ -48,10 +48,15 @@
     (reload-test-ns -my-ns)
     (reload-ns (symbol (str base-ns "." my-ns "-test")))))
 
-(defn tes [my-ns]
-  (do (reload-ns my-ns)
+(defn tes
+  ([]
+  (doseq [x (keys my-aliases)]
+    (tes x)))
+  ([my-ns]
+  (do
+    (reload-ns my-ns)
     (let [test-ns (reload-test-ns my-ns)]
-      (ct/run-tests test-ns))))
+      (ct/run-tests test-ns)))))
 
 (defn res []
   (require 'user :reload)
@@ -63,7 +68,6 @@
   (require 'us.wearecurio.analytics.binify-test :reload)
   (require 'us.wearecurio.analytics.core-test :reload)
   (require 'us.wearecurio.analytics.database-test :reload)
-  (require 'us.wearecurio.analytics.music :reload)
   (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 

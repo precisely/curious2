@@ -791,7 +791,6 @@
     (let [N (count data)]
       (println "resampling partitions for each tag.")
       (resample-singletons data state max-iter-new-cluster)
-      (refurbish-clusters data state)
       (println "\n\n\n***** First iteration *****")
       (print-state state data)
       (dotimes [iter max-epoch]

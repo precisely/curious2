@@ -85,15 +85,5 @@
     (iv/initialize-state data state 0 50)
     (set-state-to-known-values state)
     (is (clojure.set/superset? (-> @state keys set)
-                               (set '(:C :λ :start-time :stop-time :phonebook))))
+                               (set '(:C :λ :start-time :stop-time :phonebook))))))
 
-    ; It's okay if this fails sometimes, because this algorithm is stochastic.
-    (println @state))
-  (testing "running the algo on the sample data set"
-    (iv/algorithm-7-Neal-2000 data state MAX-EPOCH alpha 1000)
-    (is (= 2 (count (:C @state))))
-    (let [clusters    (get @state :C)
-          cluster1-id (get (:phonebook @state) 42)
-          cluster2-id (get (:phonebook @state) 100)]
-      (is (and (contains? (set (get-in clusters [cluster1-id :members])) 99)
-               (contains? (set (get-in clusters [cluster2-id :members])) 101))))))
