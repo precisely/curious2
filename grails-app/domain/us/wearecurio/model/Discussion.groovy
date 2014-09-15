@@ -1,10 +1,11 @@
 package us.wearecurio.model;
 
+import grails.converters.*
+
 import org.apache.commons.logging.LogFactory
 
-import grails.converters.*
-import us.wearecurio.abstraction.Callbacks
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.EmailService
 
 class Discussion {
 
@@ -32,22 +33,15 @@ class Discussion {
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
-		def c = DiscussionPost.createCriteria()
-
-		def posts = c {
+		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("plotDataId", plotDataId)
 			}
-			maxResults(1)
 			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
-		for (DiscussionPost post in posts) {
-			return Discussion.get(post.getDiscussionId())
-		}
-
-		return null
+		return post?.getDiscussion()
 	}
 	
 	public static Discussion create(User user) {
@@ -61,7 +55,7 @@ class Discussion {
 		return discussion
 	}
 	
-	public static void delete(Discussion discussion) {
+	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
 		discussion.delete()
@@ -129,11 +123,9 @@ class Discussion {
 	def getNumberOfPosts() {
 		return DiscussionPost.countByDiscussionId(getId())
 	}
-	
-	def fetchFirstPost() {
-		def c = DiscussionPost.createCriteria()
 
-		def posts = c {
+	DiscussionPost fetchFirstPost() {
+		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("discussionId", getId())
 			}
@@ -142,16 +134,16 @@ class Discussion {
 			order("created", "asc")
 		}
 
-		for (post in posts) {
-			firstPostId = post.getId()
-			Utils.save(this)
-			return post
+		if (!post) {
+			return null
 		}
-		
-		return null
+
+		firstPostId = post.id
+		Utils.save(this)
+		return post
 	}
-	
-	def getFirstPost() {
+
+	DiscussionPost getFirstPost() {
 		if (firstPostId == null) {
 			return fetchFirstPost()
 		}
@@ -182,36 +174,40 @@ class Discussion {
 		DiscussionPost post = getFirstPost()
 		return post?.getAuthor()?.getUserId()
 	}
-	
-	def getFollowupPosts() {
-		def c = DiscussionPost.createCriteria()
 
-		def posts = c {
+	List<DiscussionPost> getFollowupPosts(Map args) {
+		/*
+		 * If no offset or offset is 0, set offset to 1 so that
+		 * first post is not fetched.
+		 */
+		if (!args["offset"]) {
+			args["offset"] = 1
+		}
+
+		/*
+		 * If max is given and offset is set to be current step offset + 1
+		 * then increase current offset by one to support proper pagination
+		 * skipping always the first post.
+		 */
+		if (args["max"] && (args["offset"].toInteger() % args["max"].toInteger()) == 0) {
+			args["offset"] = args["offset"].toInteger() + 1
+		}
+
+		getPosts(args)
+	}
+
+	List<DiscussionPost> getPosts(Map args) {
+		List posts = DiscussionPost.createCriteria().list(args) {
 			and {
 				eq("discussionId", getId())
 			}
-			firstResult(1)
-			order("plotDataId", "desc")
-			order("created", "asc")
-		}
-		
-		return posts
-	}
-	
-	def getPosts() {
-		def c = DiscussionPost.createCriteria()
-
-		def posts = c {
-			and {
-				eq("discussionId", getId())
-			}
 			order("plotDataId", "desc")
 			order("created", "asc")
 		}
 
 		return posts
 	}
-	
+
 	def createPost(User user, String message) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'"
 		return createPost(DiscussionAuthor.create(user), message)
@@ -283,7 +279,7 @@ class Discussion {
 	
 	def notifyPost(String participantEmail, String authorUsername, String message) {
 		log.debug("Sending discussion notification about '" + this.getName() + "' to " + participantEmail + " about message written by " + authorUsername)
-		Utils.getMailService().sendMail {
+		EmailService.get().sendMail {
 			to participantEmail
 			from "contact@wearecurio.us"
 			subject "Comment added to discussion " + this.getName()
@@ -343,11 +339,25 @@ class Discussion {
 			updated:this.updated
 		]
 	}
-	
-	def getJSONModel() {
-		[discussionId:getId(), discussionTitle:this.name?:'New question or discussion topic?', firstPost:getFirstPost(),
-			posts:(getFirstPost()?.getPlotDataId() != null ? getFollowupPosts() :getPosts()),
-			isNew:isNew()]
+
+	Map getJSONModel(Map args) {
+		Long totalPostCount = 0
+		DiscussionPost firstPostInstance = getFirstPost()
+		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
+		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
+
+		if (args.max && args.offset) {
+			// A total count will be available if pagination parameter is passed
+			totalPostCount = postList.getTotalCount()
+
+			if (totalPostCount && isFollowUp) {
+				// If first post is available then total count must be one lesser
+				totalPostCount --
+			}
+		}
+
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', firstPost: firstPostInstance,
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]
 	}
 
 	String toString() {

@@ -1,5 +1,4 @@
 import grails.converters.JSON
-import grails.plugin.mail.MailService
 import grails.util.Environment
 
 import org.joda.time.DateTimeZone
@@ -19,13 +18,15 @@ class BootStrap {
 	WithingsDataService withingsDataService
 	RemindEmailService remindEmailService
 	DatabaseService databaseService
-	MailService mailService
+	TagService tagService
+	EmailService emailService
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
 		DatabaseService.set(databaseService)
-		Utils.setMailService(mailService)
+		TagService.set(tagService)
+		EmailService.set(emailService)
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 

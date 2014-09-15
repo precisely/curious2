@@ -220,7 +220,7 @@ class User implements NameEmail {
 			return Tag.fetchAll(tagIdCache[userId])
 		}
 
-		List<Long> usersTagIds = Utils.getService("tagService").getTagsByUser(userId)*.id
+		List<Long> usersTagIds = TagService.get().getTagsByUser(userId)*.id
 
 		getTagGroups(userId).each { tagGroupInstance ->
 			// No need to get tags from wildcard tag group
@@ -267,7 +267,7 @@ class User implements NameEmail {
 			return GenericTagGroup.getAll(tagGroupIdCache[userId])
 		}
 
-		List<Long> usersTagGroupIds = Utils.getService("tagService").getAllTagGroupsForUser(userId)*.id
+		List<Long> usersTagGroupIds = TagService.get().getAllTagGroupsForUser(userId)*.id
 		tagGroupIdCache[userId] = usersTagGroupIds
 
 		GenericTagGroup.getAll(usersTagGroupIds)

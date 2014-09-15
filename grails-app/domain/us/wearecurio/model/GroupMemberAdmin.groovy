@@ -1,16 +1,12 @@
-package us.wearecurio.model;
-
-import java.util.Date;
+package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+
+import us.wearecurio.utility.Utils
 
 /**
  * Represents a group for the purpose of collecting users and 
  */
-
-import grails.converters.*
-import us.wearecurio.utility.Utils
-
 class GroupMemberAdmin {
 
 	private static def log = LogFactory.getLog(this)

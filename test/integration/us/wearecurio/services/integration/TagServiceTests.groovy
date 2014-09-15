@@ -1,7 +1,5 @@
 package us.wearecurio.services.integration
 
-import grails.plugin.mail.MailService
-
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -14,6 +12,7 @@ import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.TagGroup
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.services.EmailService
 import us.wearecurio.services.TagGroupService
 import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
@@ -21,7 +20,7 @@ import us.wearecurio.utility.Utils
 class TagServiceTests extends CuriousServiceTestCase {
 	static transactional = true
 	
-	MailService mailService
+	EmailService emailService
 	TagGroupService tagGroupService
 	TagService tagService
 
@@ -59,7 +58,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		tagGroup4 = tagGroupService.createOrLookupTagGroup("Tag Group 4", null, announce.id, SharedTagGroup.class)
 
 		systemGroup = UserGroup.lookupOrCreateSystemGroup()
-		Utils.setMailService(mailService)
+		EmailService.set(emailService)
 	}
 
 	@After

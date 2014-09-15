@@ -8,13 +8,6 @@
 <c:jsCSRFToken keys="getPeopleDataCSRF" />
 <script type="text/javascript">
 
-function minLinkName(name) {
-	if (name == null || name == "") {
-		return "(No Title)";
-	}
-	return name;
-}
-
 function deleteDiscussionId(id) {
 	showYesNo("Are you sure you want to delete the saved discussion?", function() {
 			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
@@ -54,54 +47,44 @@ $(function(){
 				return true;
 			});
 		});
-	
-	backgroundJSON("getting comments", "/home/listDiscussionData?callback=?",
-		<g:if test="${params.userGroupNames}" >
-			{userGroupNames:JSON.stringify(['${params.userGroupNames}'])},
-		</g:if>
-		function(data){
-			if (!checkData(data))
-				return;
-		
-			jQuery.each(data, function() {
-			    var iconImage='comment-icon.png';
+});
 
-				if (this.isPlot) {
-					iconImage='graph-icon.png';
+$(document).ready(function() {
+	$(document).on("click", "a.delete-discussion", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var discussionId = $this.data('discussionId');
+			$.ajax({
+				url: '/home/discuss',
+				data: {
+					discussionId: discussionId,
+					deleteDiscussion: true
+				},
+				success: function(data) {
+					showAlert(JSON.parse(data).message, function() {
+						$this.parents('.graphItem').fadeOut();
+					});
+				},
+				error: function(xhr) {
+					var data = JSON.parse(xhr.responseText);
+					showAlert(data.message);
 				}
-
-				$("#graphList").append('<div class="graphItem media">\
-					<div class="media-object" href="#">\
-						<img src="/images/'+ iconImage +'" alt="...">\
-					</div>\
-					<div class="media-body">\
-						<div class="row">\
-							<div class="col-md-4">\
-								<span class="uppercase">\
-									'+'POSTED BY'+'\
-									' + this['userName'] + '\
-								</span>\
-								<span>\
-									ON ' + formatShortDate(this['updated']) + '\
-								</span>\
-							</div>\
-							<div class="col-md-4">\
-								<span>\
-									'+'LAST COMMENT ON '+'\
-								' + formatShortDate(this['updated']) + '\
-								</span>\
-							</div>\
-							<div class="col-md-2">\
-							</div>\
-						</div>\
-						<h4 class="media-heading">\
-							<a href="/home/discuss?discussionId=' + this['id'] + '">' + minLinkName(this['name']) + '</a>\
-						</h4>'
-					+ '</div>'
-					+ '</div></div>');
-				return true;
 			});
 		});
+		return false;
+	});
+
+	$(document).on("click", "ul#discussion-pagination a", function() {
+		var url = $(this).attr('href');
+		$.ajax({
+			url: url,
+			success: function(data) {
+				$('div#discussions').html(data);
+				wrapPagination();
+			}
+		});
+		return false;
+	});
 });
 </script>
 </head>
@@ -114,7 +97,7 @@ $(function(){
 	<div class="row red-header">
 		<div class="col-md-3">
 			<div id="actions">
-				<img src="/images/menu.png">
+				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
 					<li><a Ref="/home/community" >Home Feed</a></li>
 				</ul>
@@ -148,6 +131,9 @@ $(function(){
 					<input type="hidden" name="group" value="${groupName}" />
 					<input type="submit" name="POST" value="POST"  />
 				</form>
+			</div>
+			<div id="discussions">
+				<g:render template="/community/discussions" />
 			</div>
 		</div>
 

@@ -24,6 +24,7 @@ import grails.test.mixin.*
 class DataControllerTests extends CuriousControllerTestCase {
 	static transactional = true
 
+	DataController controller
 	DateFormat dateFormat
 	Date earlyBaseDate
 	Date currentTime
@@ -46,6 +47,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void setUp() {
 		super.setUp()
 
+		controller = new DataController()
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
@@ -69,8 +71,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetPeopleData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 		controller.params['callback'] = 'callback'
 
@@ -84,8 +84,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetListDataSingleDate() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -109,8 +107,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetListDataMultipleDate() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -144,8 +140,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testPlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -170,8 +164,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetSumPlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -198,8 +190,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testGetTagsData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -213,6 +203,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['isContinuous'] = null
 		controller.params['callback'] = 'callback'
 		controller.params['sort'] = 'alpha'
+
+		log("controller.params: ${controller.params}")
+
 		controller.getTagsData()
 
 		def c = controller.response.contentAsString
@@ -222,8 +215,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testSetTagPropertiesData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		EntryStats stats = new EntryStats(userId)
@@ -249,8 +240,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 	
 	@Test
 	void testAddEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params['currentTime'] = 'Fri, 21 Jan 2011 21:46:20 GMT'
@@ -272,8 +261,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testUpdateEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		println "User ID: " + userId
@@ -301,8 +288,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testUpdateRepeatEntrySData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		println "User ID: " + userId
@@ -357,8 +342,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testSetPreferencesData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -409,8 +392,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testSavePlotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -425,8 +406,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testListDiscussionData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
@@ -446,13 +425,74 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def content = controller.response.contentAsString
 
-		assert controller.response.contentAsString.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+		assert content.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+	}
+
+	private Discussion setUpForCommentPage() {
+		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+			[isReadOnly:false, defaultNotify:false])
+
+		curious.addMember(user)
+	
+		Discussion discussion = Discussion.create(user, "Discussion name")
+		discussion.createPost(DiscussionAuthor.create(user), "comment1")
+		discussion.createPost(DiscussionAuthor.create(user), "comment2")
+		discussion.createPost(DiscussionAuthor.create(user), "comment3")
+		discussion.createPost(DiscussionAuthor.create(user), "comment4")
+		discussion.createPost(DiscussionAuthor.create(user), "comment5")
+		discussion.createPost(DiscussionAuthor.create(user), "comment6")
+		Utils.save(discussion, true)
+	
+		curious.addDiscussion(discussion)
+		return discussion
+	}
+
+	@Test
+	void "test list comment data for no id & for for first page"() {
+		controller.session.userId = userId
+
+		Discussion discussion = setUpForCommentPage()
+
+		controller.params.callback = 'callback'
+
+		// Test no discussion id
+		controller.listCommentData()
+
+		String contentAsString = controller.response.contentAsString
+		assert contentAsString.contains('Blank discussion call')
+
+		controller.params.discussionId = discussion.id
+
+		// Test pagination with first page
+		controller.listCommentData()
+		contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')
+		assert contentAsString.contains('"message":"comment2"')
+		assert contentAsString.contains('"message":"comment3"')
+		assert !contentAsString.contains('"message":"comment6"')
+	}
+
+	@Test
+	void "test list discussion data for second page in pagination"() {
+		Discussion discussion = setUpForCommentPage()
+
+		controller.session.userId = userId
+		controller.params.callback = 'callback'
+		controller.params.discussionId = discussion.id
+		controller.params.offset = 5
+
+		// Test pagination with second page
+		controller.listCommentData()
+		String contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')		// Will be available as first post
+		assert !contentAsString.contains('"message":"comment5"')
+		assert contentAsString.contains('"message":"comment6"')
 	}
 
 	@Test
 	void testLoadPlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -469,8 +509,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeletePlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -487,8 +525,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteNonPlotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -505,8 +541,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testSaveSnapshotData() {
-		DataController controller = new DataController()
-
 		controller.session.userId = userId
 
 		controller.params.clear()
@@ -529,8 +563,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testListSnapshotData() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo,isSnapshot:true}', false)
 
 		Utils.save(plotDataObj, true)
@@ -546,8 +578,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testLoadSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -564,8 +594,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -582,8 +610,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteNonSnapshotDataId() {
-		DataController controller = new DataController()
-
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
@@ -626,8 +652,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testImportAnalysisFormat() {
-		DataController controller = new DataController()
-
 		def outString = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles"' \
 			+ "\n" + '"2010-07-01 23:30:00 GMT","bread",1.000000000,"slice","",-1,3,180,"America/Los_Angeles"' \

@@ -28,18 +28,18 @@ class DatabaseService {
 
 	static transactional = false
 	
-	public static final long TEST_MIGRATION_ID = 30L
+	static final long TEST_MIGRATION_ID = 30L
 	
 	static def service
 	
-	public static def set(s) { service = s }
+	static def set(s) { service = s }
 
-	public static DatabaseService get() { return service }
+	static DatabaseService get() { return service }
 		
 	SessionFactory sessionFactory
 	
 	// must be called from outside a transaction
-	public static retry(Object o, Closure c) throws Exception { // this is a general service method that may throw exceptions
+	static retry(Object o, Closure c) throws Exception { // this is a general service method that may throw exceptions
 		def retVal
 		int retryCount = 0
 		while (retryCount < 100) {
@@ -80,7 +80,7 @@ class DatabaseService {
 		return null
 	}
 	
-	public Query sqlQuery(String statement, def args = []) {
+	Query sqlQuery(String statement, def args = []) {
 		Session session = sessionFactory.getCurrentSession()
 		Query query = session.createSQLQuery(statement)
 		if (args instanceof Map) {
@@ -103,11 +103,11 @@ class DatabaseService {
 		return query
 	}
 	
-	public def sql(String statement) {
+	def sql(String statement) {
 		sqlQuery(statement).executeUpdate()
 	}
 	
-	public boolean sqlNoRollback(String statement, args = []) {
+	boolean sqlNoRollback(String statement, args = []) {
 		try {
 			sqlQuery(statement, args).executeUpdate()
 		} catch (RuntimeException e) {
@@ -118,11 +118,11 @@ class DatabaseService {
 		return true
 	}
 	
-	public def sqlRows(String statement, args = []) {
+	def sqlRows(String statement, args = []) {
 		return sqlQuery(statement, args).list()
 	}
 
-	public def eachRow(String statement, Closure c) {
+	def eachRow(String statement, Closure c) {
 		sqlQuery(statement).list().each(c)
 	}
 }

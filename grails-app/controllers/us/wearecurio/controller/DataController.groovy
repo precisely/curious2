@@ -1,29 +1,37 @@
 package us.wearecurio.controller
 
-import grails.converters.*
-import us.wearecurio.model.*
-import us.wearecurio.exceptions.*
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.Entry.RepeatType
-import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.support.EntryCreateMap
-import us.wearecurio.support.EntryStats
-import us.wearecurio.model.Entry.ParseAmount
+import grails.converters.JSON
 
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.SimpleTimeZone
-import java.util.TimeZone
 
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import org.joda.time.*
+
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagProperties
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.Entry.ParseAmount
+import us.wearecurio.support.EntryCreateMap
+import us.wearecurio.support.EntryStats
+import us.wearecurio.utility.Utils
 
 class DataController extends LoginController {
+
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 	def tokenService
@@ -861,17 +869,52 @@ class DataController extends LoginController {
 			return
 		}
 
-		def groupNameList = params.userGroupNames ? JSON.parse(params.userGroupNames) : null
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + params.userGroupNames
+		params.max = params.max ?: 10
+		params.offset = params.offset ?: 0
 
-		def entries = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList) : \
-				UserGroup.getDiscussionsInfoForUser(user, true)
+		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
 
-		for (entry in entries) {
-			debug "Found " + entry
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+				UserGroup.getDiscussionsInfoForUser(user, true, params)
+
+		debug "Found $discussionData"
+
+		renderJSONGet(discussionData)
+	}
+
+	def listCommentData(Long discussionId, Long plotDataId) {
+		debug "DataController.listCommentData() params: $params"
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
 		}
 
-		renderJSONGet(entries)
+		if (!discussionId && !plotDataId) {
+			renderStringGet("Blank discussion call")
+			return
+		}
+		Discussion discussion = discussionId ? Discussion.get(discussionId) : Discussion.getDiscussionForPlotDataId(plotDataId)
+
+		if (!discussion) {
+			debug "Discussion not found for id [$discussionId] or plot data id [$plotDataId]."
+			renderStringGet "That discussion topic no longer exists."
+			return
+		}
+
+		params.max = params.max ?: 5
+		params.offset = params.offset ?: 0
+
+		Map model = discussion.getJSONModel(params)
+		model.putAll([isAdmin: UserGroup.canAdminDiscussion(user, discussion)])
+
+		debug "Found Comment data: $model"
+
+		renderJSONGet(model)
 	}
 
 	def saveSnapshotData() {

@@ -1,6 +1,19 @@
-function showAlert(alertText) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
+var $messageDialog, $messageTextDialog;
+
+$(document).ready(function() {
+	$messageDialog = $("#alert-message-dialog");
+	$messageTextDialog = $("#alert-message-text", $messageDialog);
+	wrapPagination();
+});
+
+function wrapPagination() {
+	$("a, span.step.gap", "ul.pagination").wrap('<li></li>');
+	$("span.currentStep", "ul.pagination").wrap('<li class="active"></li>')
+}
+
+function showAlert(alertText, onAlertClose) {
+	$messageTextDialog.text(alertText);
+	$messageDialog.dialog({
 		dialogClass: "no-close",
 		modal: true,
 		resizable: false,
@@ -9,17 +22,18 @@ function showAlert(alertText) {
 			Ok: function() {
 				$(this).dialog("close");
 			}
-		}
+		},
+		close: onAlertClose
 	});
 }
 
 function closeAlert() {
-	$("#alert-message").dialog("close");
+	$messageDialog.dialog("close");
 }
 
 function showYesNo(alertText, onConfirm) {
-	$("#alert-message-text").text(alertText);
-	$("#alert-message").dialog({
+	$messageTextDialog.text(alertText);
+	$messageDialog.dialog({
 		dialogClass: "no-close",
 		modal: false,
 		resizable: false,
@@ -37,7 +51,7 @@ function showYesNo(alertText, onConfirm) {
 }
 
 function showAB(alertText, aText, bText, onA, onB) {
-	$("#alert-message-text").text(alertText);
+	$messageTextDialog.text(alertText);
 	var buttons = {};
 	buttons[aText + " "] = function() {
 		onA();
@@ -47,7 +61,7 @@ function showAB(alertText, aText, bText, onA, onB) {
 		onB();
 		$(this).dialog("close");
 	};
-	$("#alert-message").dialog({
+	$messageDialog.dialog({
 		dialogClass: "no-close",
 		modal: false,
 		resizable: false,
@@ -56,10 +70,19 @@ function showAB(alertText, aText, bText, onA, onB) {
 	});
 }
 $(window).load(function(){
-	$('.red-header #actions img').click(function(e) {
+	$('img, .toggle', '.red-header #actions').click(function(e) {
+		var $this = $(this);
+		if ($this.hasClass('icon-triangle')) {
+			$this.toggleClass('icon-triangle-right icon-triangle-down');
+		}
 		$('ul', $(e.target).parent()).toggle();
 	});
 	$('.red-header #actions ul').mouseleave(function(e) {
+		var $this = $(this);
 		$(e.target).closest('ul').toggle();
+		var $parent = $(this).parent();
+		if ($parent.find('.toggle').hasClass('icon-triangle')) {
+			$parent.find('.toggle').toggleClass('icon-triangle-right icon-triangle-down');
+		}
 	});
 });

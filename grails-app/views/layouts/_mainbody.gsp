@@ -52,3 +52,7 @@
 <div style="clear:both;"></div>
 </div>
 </div>
+<div id="alert-message-dialog" class="hide">
+	<p><p>
+	<div id="alert-message-text"></div>
+</div>

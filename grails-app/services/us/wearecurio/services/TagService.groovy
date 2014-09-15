@@ -29,6 +29,12 @@ class TagService {
 
 	def databaseService
 
+	static def service
+	
+	public static def set(s) { service = s }
+
+	public static TagService get() { return service }
+		
 	def getTagsByUser(def userId) {
 		databaseService.sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
 				CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END AS iscontinuous,
@@ -127,7 +133,7 @@ class TagService {
 	 */
 	List getTagGroupsTheUserIsMemberOf(Long userId) {
 		List<Long> memberUserGroupIds = UserGroup.getGroupsForReader(userId)*.getAt(0).id
-		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.getAt(0).id)
+		memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.id)
 
 		getTagGroupsForUserGroupIds(memberUserGroupIds.unique())
 	}
