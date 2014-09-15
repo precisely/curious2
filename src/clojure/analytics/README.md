@@ -39,9 +39,9 @@ Similarity scores are stored in the table called `correlation`. Row values are t
 	* Compute similarity scores between tags.
 	* TBD: Clustering of tag time-series data.
 
-## Autotest
+## Test
 
-lein with-profile test midje :autotest
+lein with-profile test test
 
 ## Integrating with Grails (specific to this project):
 
