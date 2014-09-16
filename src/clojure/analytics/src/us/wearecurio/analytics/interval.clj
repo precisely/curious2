@@ -68,7 +68,6 @@
 (defn max-gap-for-interval [internal-points-augmented-by-boundaries]
   (apply max (diff-seq internal-points-augmented-by-boundaries)))
 
-
 (defn make-intervals [points]
   (partition 2 1 points))
 
@@ -199,20 +198,23 @@
 (defn get-partition-points-modified [partition-points extra-points op]
   ((get modify-partition-points op) partition-points extra-points))
 
-(defn take-max-of-like-row [like-seq]
-  (->> like-seq (map vals) (map #(apply max %))))
+(defn start-with-seq [start-with]
+  (if (= :in start-with)
+      '(:in :out)
+      '(:out :in)))
 
-(defn take-max-of-like-seqs [like-seqs]
-  (for [like-row like-seqs]
-    (take-max-of-like-row like-row)))
+(defn in-out-seq [n start-with]
+  (->> (start-with-seq start-with) constantly repeatedly (take (/ n 2)) flatten (take n)))
 
-(defn total-like-of-seqs [like-seqs]
-  (reduce + (flatten (take-max-of-like-seqs like-seqs))))
-
-(defn avg-like-of-seqs [like-seqs]
-  (warn-zero (count like-seqs) 'avg-like-of-seqs)
-  (/ (reduce + (flatten (take-max-of-like-seqs like-seqs)))
-     (count like-seqs)))
+(defn take-max-of-like-row
+  ([like-seq start-with]
+    (let [num-like-seq (count like-seq)
+          key-seq (in-out-seq num-like-seq start-with)
+          arg-seq (partition 2 2 (interleave key-seq like-seq))
+          get-val (fn [[k like-pair]] (get like-pair k))]
+      (map get-val arg-seq)))
+  ([like-seq]
+   (->> like-seq (map vals) (map #(apply max %)))))
 
 ;
 ; Likelihood related
@@ -255,38 +257,13 @@
 (defn like-intervals-for-row [row intervals λ-in λ-out & {:keys [log] :or {log true}}]
   (map #(likes-interval row % λ-in λ-out :log log) intervals))
 
-(defn like-for-row [row intervals λ-in λ-out & {:keys [log] :or {log true}}]
-  (reduce + (take-max-of-like-row (like-intervals-for-row row intervals λ-in λ-out :log log))))
-
-(defn like-for-row-in-cluster [data the-state cluster-id tag-id & {:keys [log] :or {log true}}]
-  (let [row     (get data tag-id)
-        rate    (get-rates the-state tag-id)
-        intervals (get-intervals-given-cluster-id the-state cluster-id)]
-    (like-for-row row intervals (:in rate) (:out rate) :log log)))
-
-(defn like-seqs-for-rows
-  ([data intervals tag-ids rates]
-    (letfn [(like-row [tag-id]
-               (let [rate  (get rates tag-id)
-                     row   (get data tag-id)
-                     λ-in  (:in rate)
-                     λ-out (:out rate)]
-                 (like-intervals-for-row row intervals λ-in λ-out)))]
-      (map like-row tag-ids))))
-
-(defn like-seqs-for-cluster [data the-state cluster-id]
-  (let [intervals (get-intervals-given-cluster-id the-state cluster-id)
-        rates     (get the-state :λ)
-        tag-ids   (get-members-of-cluster the-state cluster-id)]
-    (take-max-of-like-seqs (like-seqs-for-rows data intervals tag-ids rates))))
-
-(defn like-for-cluster
-  [data the-state cluster-id]
-  (let [like-seqs            (like-seqs-for-cluster data the-state cluster-id)
-        n                    (count like-seqs)
-        tot                  (reduce + (flatten like-seqs))
-        average-like-per-tag (/ tot n)]
-    average-like-per-tag))
+(defn like-for-row
+  "The 'start-with' parameter is for existing clusters that have already determined whether the first interval is :in or :out."
+  ([row intervals λ-in λ-out]
+   (reduce + (take-max-of-like-row (like-intervals-for-row row intervals λ-in λ-out :log true))))
+  ([row intervals λ-in λ-out start-with]
+   (reduce + (take-max-of-like-row (like-intervals-for-row row intervals λ-in λ-out :log true)
+                                  start-with))))
 
 ; IN/OUT labeling.
 
@@ -410,7 +387,9 @@
 
 (defn init-cluster [start-time stop-time tag-ids]
   (let [tag-list (if (not (seq? tag-ids)) (list tag-ids) tag-ids)]
-    {:members (apply sorted-set tag-list)
+    {:start-with nil
+     :loglike (into {} (map #(hash-map % nil) tag-list))
+     :members (apply sorted-set tag-list)
      :partition-points (sorted-set start-time stop-time)}))
 
 (defn resample-row [row partition-points λ-in λ-out start-time stop-time like-before iter max-iter]
@@ -440,21 +419,32 @@
         rate (get-rates the-state tag-id)
         start-time (get the-state :start-time)
         stop-time (get the-state :stop-time)
-        like-before (like-for-row row (make-intervals partition-points) (:in rate) (:out rate) :log true)]
+        like-before (like-for-row row (make-intervals partition-points) (:in rate) (:out rate))]
     (resample-row row partition-points (:in rate) (:out rate) start-time stop-time like-before 0 MAX-ITER-NEW-CLUSTER)))
 
+(defn get-start-with
+  "Given enough information to compute the first interval's log likelihood, decide whether it is an :in interval or an :out interval.  (This will be used to determine the the other in/out state of the partition by alternating in-out."
+  [row partition-points rate]
+  (let [first-interval (first (make-intervals partition-points))
+        likes-first (likes-interval row first-interval (:in rate) (:out rate) :log true)]
+    (-> (im/sort-map-by-value likes-first) last first)))
+
 (defn resample-singletons [data state max-iter]
-  (let [the-state @state]
-    (doseq [tag-id (get-tag-ids data)]
-      (let [cluster-id        (get-cluster-id the-state tag-id)
-            partition-points  (resample-tag-with-cluster-points data the-state cluster-id tag-id max-iter)
-            rate              (get-rates the-state tag-id)
-            intervals-new     (make-intervals partition-points)
-            row               (get data tag-id)
-            like-new          (like-for-row row intervals-new (:in rate) (:out rate) :log true)
-            new-state         (assoc-in the-state [:C cluster-id :partition-points] partition-points)
-            new-state         (set-loglike the-state cluster-id tag-id like-new)]
-        (reset! state new-state)))))
+  (doseq [tag-id (get-tag-ids data)]
+    (print (str "resample tag#" tag-id))
+    (let [the-state         @state
+          cluster-id        (get-cluster-id the-state tag-id)
+          partition-points  (get (resample-tag-with-cluster-points data the-state cluster-id tag-id max-iter) :partition-points)
+          rate              (get-rates the-state tag-id)
+          intervals-new     (make-intervals partition-points)
+          row               (get data tag-id)
+          like-new          (like-for-row row intervals-new (:in rate) (:out rate))
+          start-with        (get-start-with row partition-points rate)
+          new-state         (assoc-in the-state [:C cluster-id :start-with] start-with)
+          new-state         (assoc-in new-state [:C cluster-id :partition-points] partition-points)
+          new-state         (set-loglike new-state cluster-id tag-id like-new)]
+      (println " " (get-in new-state [:C cluster-id :partition-points]))
+      (reset! state new-state))))
 
 (defn update-rate! [state tag-id in-or-out rate]
   (swap! state #(assoc-in % [:λ tag-id in-or-out] rate)))
@@ -607,11 +597,13 @@
           rate             (get-rates the-state tag-id)
           old-cluster-id   (get-cluster-id the-state tag-id)
           intervals-old    (get-intervals-given-cluster-id the-state old-cluster-id)
-          like-old         (like-for-row row intervals-old (:in rate) (:out rate) :log true)
+          start-with-old   (get-in the-state [:C old-cluster-id :start-with])
+          like-old         (like-for-row row intervals-old (:in rate) (:out rate) start-with-old)
 
           new-cluster-id   (sample-cluster-id-from-clusters-minus the-state tag-id)
           intervals-new    (get-intervals-given-cluster-id the-state new-cluster-id)
-          like-new         (like-for-row row intervals-new (:in rate) (:out rate) :log true)
+          start-with-new   (get-in the-state [:C new-cluster-id :start-with])
+          like-new         (like-for-row row intervals-new (:in rate) (:out rate) start-with-new)
           new-state        (new-state-move-tag the-state new-cluster-id tag-id like-new) ]
       (when (sample-transition-singleton-to-existing-cluster? like-new like-old N alpha)
         new-state))))
@@ -624,60 +616,21 @@
   to the existing state.  We use probabilities since log-likelihoods would cause a lot
   of flopping around "
   [data the-state tag-id N alpha max-iter]
-  (let [old-cluster-id    (get-cluster-id the-state tag-id)
-        old-cluster       (get-cluster the-state old-cluster-id)
-        new-cluster       (resample-tag data the-state tag-id max-iter)
-        rate              (get-rates the-state tag-id)
-        row               (get data tag-id)
-        intervals-old     (get-intervals-given-cluster-id the-state old-cluster-id)
-        intervals-new     (make-intervals (get new-cluster :partition-points))
-        like-old          (like-for-row row intervals-old (:in rate) (:out rate) :log true)
-        like-new          (like-for-row row intervals-new (:in rate) (:out rate) :log true) ]
+  (let [old-cluster-id        (get-cluster-id the-state tag-id)
+        old-cluster           (get-cluster the-state old-cluster-id)
+        new-cluster           (resample-tag data the-state tag-id max-iter)
+        rate                  (get-rates the-state tag-id)
+        row                   (get data tag-id)
+        start-with-old        (get-in the-state [:C old-cluster-id :start-with])
+        intervals-old         (get-intervals-given-cluster-id the-state old-cluster-id)
+        partition-points-new  (get new-cluster :partition-points)
+        intervals-new         (make-intervals partition-points-new)
+        start-with-new        (get-start-with row partition-points-new rate)
+        new-cluster           (assoc new-cluster :start-with start-with-new)
+        like-old              (like-for-row row intervals-old (:in rate) (:out rate) start-with-old)
+        like-new              (like-for-row row intervals-new (:in rate) (:out rate) start-with-new)]
     (when (sample-transition-non-singleton-to-new-cluster? like-new like-old N alpha)
           (new-state-move-non-singleton-to-new-cluster the-state new-cluster tag-id like-new))))
-
-(defn prod-seq [seq1 seq2]
-  (let [interleaved (interleave seq1 seq2)
-        part   (partition 2 2 interleaved)]
-  (map #(apply * %) part)))
-
-(defn get-non-singleton-tag-ids [the-state]
-   (->> (filter #(< 1 (count (get % :members))) (get the-state :C))
-        (map :members)
-        (map #(into '() %))
-        flatten))
-
-(defn non-singleton-to-existing-cluster-map
-  ([data the-state]
-   (let [tag-ids (get-non-singleton-tag-ids the-state)]
-     (into {} (map #(non-singleton-to-existing-cluster-map data the-state %) tag-ids))))
-  ([data the-state tag-id]
-  (when (> (get-num-clusters the-state) 1)
-    (let [clusters-minus              (get-clusters-minus the-state tag-id)
-          cluster-counts-minus        (get-counts-per-cluster clusters-minus)
-          row                         (get data tag-id)
-          rate                        (get-in the-state [:λ tag-id])
-          cluster-ids                 (range (get-num-clusters the-state))
-          intervals-per-cluster       (map #(make-intervals (get % :partition-points)) clusters-minus)
-          likes-for-tag-in-clusters   (map #(like-for-row row % (:in rate) (:out rate) :log true) intervals-per-cluster)
-          dp                          (prod-seq cluster-counts-minus likes-for-tag-in-clusters)
-          weights                     (normalize-counts dp)
-          new-cluster-id              (sample-multinomial weights)]
-        {tag-id new-cluster-id}))))
-
-;(defn move-multiple-tag-ids-to-different-clusters [the-state tag-id-to-cluster-id-map]
-;  (let [[tag-id new-cluster-id] (first tag-id-to-cluster-id-map)
-;        tail                    (rest tag-id-to-cluster-id-map)]
-;    (if (empty? tag-id-to-cluster-id-map)
-;        the-state
-;        (recur (move-tag-to-new-cluster the-state new-cluster-id tag-id) tail))))
-;
-;(defn reshuffle-non-singleton-to-existing-cluster [data the-state]
-;  (let [tag-id-to-cluster-id-map (non-singleton-to-existing-cluster-map data the-state)
-;        new-state                (move-multiple-tag-ids-to-different-clusters the-state tag-id-to-cluster-id-map)
-;        new-state                (update-in new-state [:C] clean-clusters)
-;        new-state                (update-phonebook new-state)]
-;   new-state))
 
 (defn singleton? [data the-state tag-id]
   (let [cluster-id        (get-cluster-id the-state tag-id)
@@ -688,25 +641,31 @@
 (defn pp-num [x]
   (/ (nt/round (* 10 x)) 10.0))
 
-(defn print-cluster [c data rates]
-  (let [points (get c :partition-points)
+(defn sort-clusters-by-num-partition-points [clusters]
+  (sort-by #(+ (count (:partition-points %))
+               (if (= :out (:start-with %)) 0.5 0.0))
+           clusters))
+
+(defn print-cluster [cluster data rates]
+  (let [points (get cluster :partition-points)
         intervals (make-intervals points)]
     (print (map #(pp-num %) points))
     (println "")
-    (doseq [tag-id  (into '() (get c :members))]
+    (doseq [tag-id  (into '() (get cluster :members))]
       (let [row     (get data tag-id)
             rate    (get rates tag-id)
-            like    (like-for-row row intervals (:in rate) (:out rate) :log true)]
+            like    (like-for-row row intervals (:in rate) (:out rate) (:start-with cluster))]
         (println "       like for tag id#" tag-id " : " like)))))
 
 (defn print-state [the-state data]
-  (let [C (get the-state :C)]
+  (let [clusters (get the-state :C)
+        C        (sort-clusters-by-num-partition-points clusters)]
     (println "\n*** CLUSTER SUMMARY *** ")
     (print (map #(into '() (get % :members)) C) "\n")
     (dotimes [i (count C)]
-      (let [c (get C i)]
+      (let [cluster (get C i)]
         (print "    CLUSTER #" i ": ")
-        (print-cluster c data (get-rates the-state))))
+        (print-cluster cluster data (get-rates the-state))))
     (println "")))
 
 (defn all-points-within-epsilon? [epsilon points1 points2]
@@ -715,10 +674,12 @@
 (defn average-partition-points [points1 points2]
   (apply sorted-set (map #(/ (apply + %) 2.0) (partition 2 2 (interleave points1 points2)))))
 
+; Preserve other attributes of cluster 1 while updating :members and :partition-points with
+;   the values of cluster 2.
 (defn union-two-clusters [c1 c2]
-  {:members (clojure.set/union (:members c1) (:members c2))
-   :partition-points (average-partition-points (:partition-points c1)
-                                               (:partition-points c2))})
+  (let [new-cluster (update-in c1 [:members] clojure.set/union (:members c2))
+        new-cluster (update-in new-cluster [:partition-points] average-partition-points (:partition-points c2))]
+    new-cluster))
 
 (defn merge-two-clusters [c1 c2]
   (cond (and (nil? c1) (nil? c2))
@@ -730,8 +691,10 @@
         (nil? c2)
         (list c1)
 
-        (not (= (count (:partition-points c1))
-                (count (:partition-points c2))))
+        (or (not (= (:start-with c1)
+                    (:start-with c2)))
+            (not (= (count (:partition-points c1))
+                    (count (:partition-points c2)))))
         (list c1 c2)
 
         (all-points-within-epsilon? 1.0 (:partition-points c1) (:partition-points c2))
@@ -740,36 +703,45 @@
         :else
         (list c1 c2)))
 
-(defn merge-layer [clusters]
-  (let [merged (flatten (map #(apply merge-two-clusters %) (partition 2 2 clusters)))]
-    (if (= 1 (mod (count clusters) 2))
-        (conj merged (last clusters))
-        merged)))
-
 (defn merge-clusters
-  ([clusters]
-   (let [sorted-clusters (sort-by #(count (:partition-points %)) clusters)]
-     (vec (merge-clusters sorted-clusters (count sorted-clusters)))))
-  ([clusters prev-n]
-  (let [new-clusters (merge-layer clusters)
-        num-clusters (count new-clusters)]
-    (if (= num-clusters prev-n)
-      new-clusters
-      (merge-clusters new-clusters num-clusters)))))
+  ([merged-clusters unmerged-clusters]
+
+   (cond (= 0 (count merged-clusters))
+         (recur (vec (list (first unmerged-clusters)))
+                (rest unmerged-clusters))
+
+         (= 0 (count unmerged-clusters))
+         (vec (flatten merged-clusters))
+
+         :else
+         (let [next-cluster (merge-two-clusters (last merged-clusters) (first unmerged-clusters))]
+           (cond (= 1 (count next-cluster))
+                 (recur (assoc (vec merged-clusters) (dec (count merged-clusters)) (first next-cluster))
+                        (rest unmerged-clusters))
+
+                 (= 2 (count next-cluster))
+                 (recur (conj (vec merged-clusters) (first unmerged-clusters))
+                        (rest unmerged-clusters))
+
+                 :else
+                 (recur merged-clusters '()))))))
 
 (defn merge-redundant-clusters [state]
   (let [the-state @state
-        new-state (update-in the-state [:C] merge-clusters)
+        sorted-clusters  (sort-clusters-by-num-partition-points (:C the-state))
+        merged-clusters (merge-clusters '() sorted-clusters)
+        new-state (assoc-in the-state [:C] merged-clusters)
         new-state (update-phonebook new-state)]
     (reset! state new-state)))
 
 (defn loglike-for-cluster [cluster data rates]
-  (let [members (get cluster :members)
+  (let [start-with (get cluster :start-with)
+        members (get cluster :members)
         intervals (make-intervals (get cluster :partition-points))]
     (into {} (map (fn [tag-id]
                     (let [row (get data tag-id)
                           rate (get rates tag-id)
-                          like-new (like-for-row row intervals (:in rate) (:out rate))]
+                          like-new (like-for-row row intervals (:in rate) (:out rate) start-with)]
                       (hash-map tag-id like-new)))
                   members))))
 
@@ -791,8 +763,11 @@
     (let [N (count data)]
       (println "resampling partitions for each tag.")
       (resample-singletons data state max-iter-new-cluster)
+      (println "After resample-singletons" (get @state :C))
+
       (println "\n\n\n***** First iteration *****")
-      (print-state state data)
+      (refurbish-clusters data state)
+      (pp @state)
       (dotimes [iter max-epoch]
         (println "\n\n------------------- START Iteration #" iter)
         (doseq [tag-id (get-tag-ids data)]
@@ -800,8 +775,8 @@
             (if (singleton? data @state tag-id)
               (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N alpha)]
                 (do (reset! state new-state)
+                    ;(refurbish-clusters data state)
                     (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
-                    (refurbish-clusters data state)
                     (swap! state assoc-in [:best-clusters] (get @state :C))))
 
               (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N alpha max-iter-new-cluster)]
@@ -873,7 +848,7 @@
           start-time db/BIG-BANG
           stop-time (db/sql-now)
           alpha 1
-          max-iter-new-cluster 1000]
+          max-iter-new-cluster 10]
       (save-intervals-for-user user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
   ([user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
     (let [cluster-run-id (db/cluster-run-create user-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms)]

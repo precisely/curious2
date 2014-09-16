@@ -71,18 +71,10 @@
   (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 
-(defn re []
-  (res)
-  (ret))
-
-(defn rt []
-  (re)
-  (tes))
-
 (defn init []
-  (re)
-  (make-aliases)
-  (in-ns (full 'iv)))
+  (res)
+  (make-aliases))
+  ;(in-ns (full 'iv)))
 
 ; http://stackoverflow.com/questions/3636364/can-i-clean-the-repl
 ; Answered by Peter Tillemans, Sep 2010
