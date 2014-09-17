@@ -6,7 +6,7 @@
 	position: absolute;
 	height: 100%;
 	width: 105%;
-	background-color: #F14A42;
+	background-color: #c04f7f;
 	left: -18px;
 	z-index: -1;
 	-webkit-transform: rotate(13deg) skew(13deg);

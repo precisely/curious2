@@ -169,7 +169,7 @@
         <div class="row">
             <div class="col-sm-1 col-sm-offset-1 " style="color: white;">
                 <p
-                    style="font-size: 24px; color: #c04f7f; padding-top: 30px;">NEWS</p>
+                    style="font-size: 24px; color: #f14a42; padding-top: 30px;">NEWS</p>
             </div>
         </div>
         <br>
@@ -204,7 +204,7 @@
                 <div style="position: absolute; z-index: -2;">
                     <ul>
                         <li
-                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
+                            style="list-style: none; padding-left: 80px; background-image: url(/images/home/energy.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px;">
                             <span
                             style=" font-size: 30px;">How
                                 do I improve my energy level?</span>
