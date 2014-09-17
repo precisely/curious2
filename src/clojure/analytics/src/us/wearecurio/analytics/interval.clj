@@ -839,6 +839,38 @@
         (swap! state assoc-in [:C] best-clusters))
       state)))
 
+; *** Saving to database ***
+
+(defn descale-time [x interval-size-in-ms]
+  (tr/to-sql-time (tr/from-long (long (* x interval-size-in-ms)))))
+
+(defn cluster-interval-save-many [tag-cluster-id intervals start-with interval-size-ms]
+  (let [in-out-list (in-out-seq (count intervals) start-with)]
+    (doseq [args (partition 2 2 (interleave in-out-list intervals))]
+      (let [in-out (first args)
+            interval (last args)
+            iv-start-date (descale-time (first interval) interval-size-ms)
+            iv-stop-date (descale-time (last interval) interval-size-ms)]
+        (when (= :in in-out)
+          (db/cluster-interval-create tag-cluster-id iv-start-date iv-stop-date))))))
+
+(defn tag-cluster-add-tags [tag-cluster-id members loglikes]
+  (doseq [tag-id members]
+    (db/tag-cluster-add-tag tag-cluster-id tag-id (get loglikes tag-id))))
+
+(defn tag-cluster-save-substructure [cluster-run-id state-cluster interval-size-ms make-intervals]
+  (let [members           (get state-cluster :members)
+        intervals         (make-intervals (get state-cluster :partition-points))
+        start-with        (get state-cluster :start-with)
+        tag-cluster-id    (db/tag-cluster-create cluster-run-id)
+        loglikes          (get state-cluster :loglike)]
+    (tag-cluster-add-tags tag-cluster-id members loglikes)
+    (cluster-interval-save-many tag-cluster-id intervals start-with interval-size-ms)))
+
+(defn save-clusters [cluster-run-id state interval-size-ms make-intervals]
+  (doseq [state-cluster (get @state :C)]
+    (tag-cluster-save-substructure cluster-run-id state-cluster interval-size-ms make-intervals)))
+
 (defn save-intervals-for-user
   ([user-id]
     (let [max-epoch 10
@@ -853,7 +885,7 @@
   ([user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
     (let [cluster-run-id (db/cluster-run-create user-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms)]
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
-      (db/save-clusters cluster-run-id state interval-size-ms make-intervals)
+      (save-clusters cluster-run-id state interval-size-ms make-intervals)
       (db/cluster-run-update-finished cluster-run-id)
       (db/cluster-run-delete-old cluster-run-id)
       state)))

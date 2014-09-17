@@ -323,23 +323,6 @@
                     :analytics_tag_cluster_id tag-cluster-id
                     :loglike loglike-safe})))))
 
-(defn tag-cluster-add-tags [tag-cluster-id members loglikes]
-  (doseq [tag-id members]
-    (tag-cluster-add-tag tag-cluster-id tag-id (get loglikes tag-id))))
-
-(declare cluster-interval-save-many)
-(defn tag-cluster-save-substructure [cluster-run-id state-cluster interval-size-ms make-intervals]
-  (let [members           (get state-cluster :members)
-        intervals         (make-intervals (get state-cluster :partition-points))
-        tag-cluster-id    (tag-cluster-create cluster-run-id)
-        loglikes          (get state-cluster :loglike)]
-    (tag-cluster-add-tags tag-cluster-id members loglikes)
-    (cluster-interval-save-many tag-cluster-id intervals interval-size-ms)))
-
-(defn save-clusters [cluster-run-id state interval-size-ms make-intervals]
-  (doseq [state-cluster (get @state :C)]
-    (tag-cluster-save-substructure cluster-run-id state-cluster interval-size-ms make-intervals)))
-
 ; Delete
 (defn tag-cluster-tag-delete [tag-cluster-id]
   (kc/delete analytics_tag_cluster_tag
@@ -353,9 +336,6 @@
     ; Delete intervals in this tag-cluster.
     (cluster-interval-delete-by-tag-cluster-id (get tag-cluster :id)))
   (kc/delete analytics_tag_cluster (kc/where {:analytics_cluster_run_id cluster-run-id})))
-
-(defn descale-time [x interval-size-in-ms]
-  (tr/to-sql-time (tr/from-long (long (* x interval-size-in-ms)))))
 
 
 
@@ -382,12 +362,6 @@
                     :analytics_tag_cluster_id tag-cluster-id
                     :start_date start-date
                     :stop_date stop-date})))))
-
-(defn cluster-interval-save-many [tag-cluster-id intervals interval-size-ms]
-  (doseq [interval intervals]
-    (let [iv-start-date (descale-time (first interval) interval-size-ms)
-          iv-stop-date (descale-time (last interval) interval-size-ms)]
-      (cluster-interval-create tag-cluster-id iv-start-date iv-stop-date))))
 
 ; Delete a specific cluster-interval.
 (defn cluster-interval-delete [id]
