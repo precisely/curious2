@@ -1519,6 +1519,10 @@ body.load-graph #graphList .summary .close {
 .headerLinks li a {
 	text-decoration: none;
 }
+
+.nav-pills li {
+	list-style: none; 
+}
 body{
 	overflow-x:hidden;
 }
