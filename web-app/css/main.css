@@ -185,6 +185,7 @@ a,a:link,a:hover,a:visited {
 	text-transform:uppercase;
 	font-size:.8em;
 	color:#999999;
+	float: left;
 }
 .mainLinks li:first-child {
 	padding-left: 0;
@@ -1518,6 +1519,10 @@ body.load-graph #graphList .summary .close {
 .headerLinks li a {
 	text-decoration: none;
 }
+
+.nav-pills li {
+	list-style: none; 
+}
 body{
 	overflow-x:hidden;
 }
@@ -1526,7 +1531,7 @@ body{
 	color: #FFFFFF;
 }
 
-.features input[type="text"]{
+.features input[type="text"], .features input[type="password"]{
 	padding: 3px;
 	border-radius: 2px;
 }
