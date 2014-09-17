@@ -29,7 +29,7 @@
         <div class="features-background"></div>
         <div class="row" id="features">
             <div class="col-sm-3 col-sm-offset-1" style="color: white;">
-                <p style="font-size: 26px;">New User Signup</p>
+                <p style="font-size: 26px; text-transform: uppercase;">New User Signup</p>
             </div>
         </div>
         <div class="row">
