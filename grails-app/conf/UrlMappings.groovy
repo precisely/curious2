@@ -3,7 +3,7 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 class UrlMappings {
 
 	static mappings = {
-		"/$controller/$action?/$id?"{
+        "/$controller/$action?/$id?(.$format)?"{
 			constraints {
 				// apply constraints here
 			}
