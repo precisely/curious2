@@ -33,6 +33,7 @@
 	border-color: #adadad;
 	border-top-right-radius: 0;
 	background-color: white;
+	margin-top: -8px;
 }
 
 .header-button:hover {
@@ -49,7 +50,7 @@
         <li>
             <g:form url="[controller:'home',action:'login']">
                 <input type="hidden" name="login" value="login"/>
-                <button type="submit" class="btn btn-default header-button disabled">Sign In</button>
+                <button type="submit" class="btn btn-default header-button">Sign In</button>
             </g:form>
         </li>
 	</ul>
