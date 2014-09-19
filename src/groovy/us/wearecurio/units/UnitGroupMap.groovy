@@ -485,19 +485,19 @@ class UnitGroupMap {
 		return units
 	}
 	
-	static HashSet<Tag> bloodPressureTags = new HashSet<Tag>()
+	static HashSet<String> bloodPressureTags = new HashSet<String>()
 	
 	static {
-		bloodPressureTags.add(Tag.look("blood pressure"))
-		bloodPressureTags.add(Tag.look("bp"))
-		bloodPressureTags.add(Tag.look("blood"))
+		bloodPressureTags.add("blood pressure")
+		bloodPressureTags.add("bp")
+		bloodPressureTags.add("blood")
 	}
 	
 	/**
 	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
 	 */
 	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
-		if (bloodPressureTags.contains(baseTag)) {
+		if (bloodPressureTags.contains(baseTag.getDescription())) {
 			if (units) {
 				String suffix = getSuffixForUnits(baseTag.getDescription(), units)
 				if (suffix) {

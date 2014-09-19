@@ -84,6 +84,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList.size() == 0
 	}
 
+	@Test
 	void "test get All TagGroups The User Is An Admin Of"() {
 		List tagGroupList = tagService.getTagGroupsTheUserIsAnAdminOf(admin.id)
 
@@ -92,6 +93,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList[0].description == tagGroup3.description
 	}
 
+	@Test
 	void "test get All TagGroups owned by given user groups with no owning tag group"() {
 		// userGroup1 doesn't have any owned tag group.
 		List tagGroupList = tagService.getTagGroupsForUserGroups([userGroup1])
@@ -99,6 +101,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList.size() == 0
 	}
 
+	@Test
 	void "test get All TagGroups owned by given user groups"() {
 		// userGroup1 doesn't have any owned tag group.
 		List tagGroupList = tagService.getTagGroupsForUserGroups([curious, announce])
@@ -110,6 +113,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList[1].description == tagGroup4.description
 	}
 
+	@Test
 	void "test get all TagGroups owned by the user with no owning tag groups"() {
 		// user is not owner of any tag groups
 		List tagGroupList = tagService.getTagGroupsByUser(anon.id)
@@ -120,6 +124,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		tagGroupList = tagService.getTagGroupsByUser(admin.id)
 	}
 
+	@Test
 	void "test get all TagGroups owned by the user"() {
 		List tagGroupList = tagService.getTagGroupsByUser(user.id)
 
@@ -128,24 +133,28 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert tagGroupList[1].id == tagGroup2.id
 	}
 
+	@Test
 	void "test can edit for readonly tag group"() {
 		boolean canEdit = tagService.canEdit(tagGroup4, admin.id)
 
 		assert canEdit == false
 	}
 
+	@Test
 	void "test can edit for readonly tag group for admin"() {
 		boolean canEdit = tagService.canEdit(tagGroup4, admin2.id)
 
 		assert canEdit == true
 	}
 
+	@Test
 	void "test can edit method for non SharedTagGroup"() {
 		shouldFail(MissingMethodException) {
 			tagService.canEdit(tagGroup1, admin2.id)
 		}
 	}
 
+	@Test
 	void "test get system tag groups"() {
 		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
 		TagGroup systemTagGroup2 = tagGroupService.createOrLookupTagGroup("System Tag Group 2", null, systemGroup.id)
@@ -157,6 +166,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert systemTagGroups[1].id == systemTagGroup2.id
 	}
 
+	@Test
 	void "test the existence of generic property on same name tag groups"() {
 		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("Tag Group 1", null, systemGroup.id)
 		TagGroup systemTagGroup2 = tagGroupService.createOrLookupTagGroup("Tag Group 3", null, systemGroup.id)
@@ -166,6 +176,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 		assert allTagGroups.find { it.description == "Tag Group 3" }.isSystemGroup == true
 	}
 
+	@Test
 	void "test exclusion list data"() {
 		Tag tag = Tag.look("Tag Test 1")
 		TagGroup systemTagGroup1 = tagGroupService.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)

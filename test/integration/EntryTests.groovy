@@ -1,7 +1,6 @@
 
 import static org.junit.Assert.*
 
-
 import java.math.MathContext
 import java.text.DateFormat
 
@@ -27,6 +26,10 @@ import org.junit.*
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
 
+import grails.test.mixin.TestMixin
+import grails.test.mixin.integration.IntegrationTestMixin
+
+@TestMixin(IntegrationTestMixin)
 class EntryTests extends CuriousTestCase {
 	static transactional = true
 

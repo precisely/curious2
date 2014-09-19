@@ -36,6 +36,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 	 * Integration test by default doesn't call the filters or interceptors.
 	 * Hence writing test case for beforeInterceptor method.
 	 */
+	@Test
 	void testCheckAuthentication() {
 		// Test when session expired.
 		controller.session.userId = null
@@ -73,6 +74,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert controller.checkAuthentication() == true
 	}
 
+	@Test
 	void testMovesAuth() {
 		controller.movesDataService = [
 			getUserProfile: { token->
@@ -87,6 +89,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert OAuthAccount.countByTypeId(MOVES) == 1
 	}
 
+	@Test
 	void testFitbitAuth() {
 		controller.fitBitDataService = [
 			getUserProfile: { token->
@@ -103,6 +106,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert OAuthAccount.countByTypeId(FITBIT) == 1
 	}
 
+	@Test
 	void testTwenty3AndMeAuth() {
 		controller.twenty3AndMeDataService = [
 			getUserProfile: { token->
@@ -118,6 +122,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_THREE_AND_ME, userId) == 1
 	}
 
+	@Test
 	void testWithingsAuth() {
 		controller.session.withingsUserId = "dummy1234"
 		controller.withingsDataService = [
@@ -144,6 +149,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert timeZoneIdInstance.name == "Europe/Helsinki"
 	}
 
+	@Test
 	void testWithingsAuthIfNoTimezone() {
 		controller.session.withingsUserId = "dummy1234"
 		controller.withingsDataService = [
@@ -171,5 +177,4 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		assert timeZoneIdInstance.name == "Etc/UTC"
 		assert account.accountId == "dummy1234"
 	}
-
 }

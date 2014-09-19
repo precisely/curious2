@@ -1,6 +1,7 @@
 package us.wearecurio.services.integration
 
 import org.junit.*
+
 import us.wearecurio.services.AppleNotificationService
 
 class AppleNotificationServiceTests extends CuriousServiceTestCase {
@@ -23,11 +24,13 @@ class AppleNotificationServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 	
+	@Test
 	void testValidSendMessage() {
 		def messageTxt = "Testing APNS"
 		assert appleNotificationService.sendMessage(messageTxt, devices) == true
 	}
 	
+	@Test
 	void testForNoDeviceIDs() {
 		def messageTxt = "Testing APNS"
 		devices = []

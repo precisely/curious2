@@ -24,11 +24,13 @@ class GoogleMessageServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 
+	@Test
     void testValidSendMessage() {
 		def messageTxt = "Testing GCM"
         assert googleMessageService.sendMessage(messageTxt, devices) == true
     }
 	
+	@Test
 	void testForNoDeviceIDs() {
 		def messageTxt = "Testing GCM"
 		devices = []

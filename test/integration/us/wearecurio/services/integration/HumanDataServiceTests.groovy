@@ -43,6 +43,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void testPollForActivity() {
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
@@ -56,6 +57,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() > 0
 	}
 
+	@Test
 	void testPollForBloodGlucose() {
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
@@ -69,6 +71,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() == 2
 	}
 
+	@Test
 	void testPollForBodyFat() {
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"
@@ -82,6 +85,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() == 2
 	}
 
+	@Test
 	void testPollForSleeps() {
 		humanDataService.oauthService = [getHumanResource: {token, url ->
 				String data = "[]"

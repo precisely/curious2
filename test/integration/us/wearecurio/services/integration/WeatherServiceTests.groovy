@@ -1,6 +1,7 @@
 package us.wearecurio.services.integration
 
 import org.junit.*
+
 import us.wearecurio.services.WeatherService;
 import grails.test.mixin.*
 import groovy.json.JsonOutput;
@@ -23,16 +24,19 @@ class WeatherServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 	
+	@Test
 	void testFetchConditionsWithNoInput() {
 		def result = weatherService.fetchConditions()
 		assert result.response != null, "Invalid result"
 	}
 	
+	@Test
 	void testFetchConditions() {
 		def result = weatherService.fetchConditions("New_York","NY")
 		assert result.response != null, "Invalid result"
 	}
 	
+	@Test
 	void testFetchHistoryWithNoInput() {
 		def result = weatherService.fetchHistory()
 		println JsonOutput.prettyPrint(result.toString())

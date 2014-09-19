@@ -47,6 +47,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		twenty3AndMeDataService.oauthService = oauthService
 	}
 
+	@Test
 	void testGetUserProfiles() {
 		Token tokenInstance = account.tokenInstance
 		try {
@@ -56,12 +57,14 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	@Test
 	void testStoreGenomesDataWithNoToken() {
 		shouldFail(InvalidAccessTokenException) {
 			twenty3AndMeDataService.storeGenomesData(userId)
 		}
 	}
 
+	@Test
 	void testGetDataDefaultForValidData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).

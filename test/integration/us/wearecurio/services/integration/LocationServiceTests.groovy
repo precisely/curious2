@@ -26,6 +26,7 @@ class LocationServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void testQueryString() {
 		def result = locationService.geocodeAddress("Pune, Maharashtra, India")
 		assert result instanceof Map
@@ -47,6 +48,7 @@ class LocationServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	@Test
 	void testOnlyPostalCode() {
 		def result = locationService.geocodeAddress("", [postalCode: 411045])
 		assert result instanceof Map
@@ -54,6 +56,7 @@ class LocationServiceTests extends CuriousServiceTestCase {
 		assert null == result.longitude
 	}
 
+	@Test
 	void testPostalCodeWithCountryCode() {
 		def result = locationService.geocodeAddress("", [postalCode: 411045, country: "IN"])
 		assert result instanceof Map
@@ -62,5 +65,4 @@ class LocationServiceTests extends CuriousServiceTestCase {
 			assert isClose(79.45, result.longitude, 0.01)
 		}
 	}
-
 }

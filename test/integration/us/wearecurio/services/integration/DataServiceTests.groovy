@@ -51,6 +51,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		account2.delete()
 	}
 
+	@Test
 	void testExpiredToken() {
 		// Testing expired token for fitbit.
 		fitBitDataService.oauthService = [
@@ -67,6 +68,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	@Test
 	void testExpiredTokenWithAPI() {
 		try {
 			// Testing directly with API.
@@ -87,6 +89,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	@Test
 	void testPollForUser() {
 		boolean polledFitBit = false
 

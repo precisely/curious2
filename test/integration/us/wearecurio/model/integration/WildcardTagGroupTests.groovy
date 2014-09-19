@@ -57,6 +57,7 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void "test get tags"() {
 		assert wildcardTagGroupInstance1.getTags(userId).size() == 2
 		assert wildcardTagGroupInstance1.getTags(userId)*.description.contains("chicken")
@@ -64,10 +65,12 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		assert wildcardTagGroupInstance2.getTags(userId).size() == 0
 	}
 
+	@Test
 	void "test get tags with no user id"() {
 		assert wildcardTagGroupInstance1.getTags(null).size() == 0
 	}
 
+	@Test
 	void "test get tags with tag excluded"() {
 		TagExclusion.createOrLookup(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
 
@@ -75,12 +78,14 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		assert wildcardTagGroupInstance1.getTags(userId)*.description.contains("chicken")
 	}
 
+	@Test
 	void "test contains tag"() {
 		assert wildcardTagGroupInstance1.containsTag(tag1, userId) == false
 		assert wildcardTagGroupInstance1.containsTag(tag5, userId) == true
 		assert wildcardTagGroupInstance1.containsTag(tag7, userId) == true
 	}
 
+	@Test
 	void "test contains tag after exclusion"() {
 		TagExclusion.addToExclusion(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
 
@@ -88,6 +93,7 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		assert wildcardTagGroupInstance1.containsTag(tag7, userId) == false
 	}
 
+	@Test
 	void "test contains tag string"() {
 		assert wildcardTagGroupInstance1.containsTagString(tag5.description, userId) == true
 		assert wildcardTagGroupInstance1.containsTagString(tag1.description, userId) == false

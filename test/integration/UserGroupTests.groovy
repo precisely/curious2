@@ -186,6 +186,7 @@ class UserGroupTests extends CuriousTestCase {
 		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true).dataList, announcement.getId())
 	}
 
+	@Test
 	void testDiscussPagination() {
 		curious.addMember(user)
 

@@ -4,6 +4,7 @@ import static org.junit.Assert.*
 
 import org.junit.After
 import org.junit.Before
+import org.junit.Test;
 import org.scribe.model.Response
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
@@ -44,6 +45,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void testUnsubscribe() {
 		// If no OAuthAccount Exists
 		shouldFail(MissingOAuthAccountException) {
@@ -57,6 +59,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
 	}
 
+	@Test
 	void testGetDataDefaultForValidData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
@@ -91,6 +94,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		//assert Entry.count() == 23
 	}
 
+	@Test
 	void testPollIfNullDataInSegments() {
 		String parsedResponse = """[{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
 
@@ -103,11 +107,13 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert Entry.count() == 0
 	}
 
+	@Test
 	void testPollWithMovesAPIDirectly() {
 		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 	}
 
+	@Test
 	void testPollWithMovesAPIForAuthFail() {
 		// Testing with mock
 		movesDataService.oauthService = [getMovesResource: {token, url, p, header ->

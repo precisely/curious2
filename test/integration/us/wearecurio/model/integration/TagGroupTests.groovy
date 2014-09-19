@@ -53,18 +53,21 @@ class TagGroupTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void "test get tags"() {
 		List associatedTags = TagGroup.findByDescription("taggroup1").getTags(userId)
 
 		assert associatedTags.size() == 6
 	}
 
+	@Test
 	void "test get tags with null user id"() {
 		List associatedTags = TagGroup.findByDescription("taggroup1").getTags(null)
 
 		assert associatedTags.size() == 6
 	}
 
+	@Test
 	void "test get tags with tag excluded"() {
 		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
 		TagExclusion.createOrLookup(tag5, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup2))
@@ -76,6 +79,7 @@ class TagGroupTests extends CuriousTestCase {
 		assert associatedTags*.description.sort() == [tag1.description, tag2.description, tag4.description]
 	}
 
+	@Test
 	void "test get tags with tag & tag group excluded"() {
 		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
 		TagExclusion.createOrLookup(tagGroup2, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
@@ -87,6 +91,7 @@ class TagGroupTests extends CuriousTestCase {
 		assert associatedTags*.description.sort() == [tag1.description, tag4.description]
 	}
 
+	@Test
 	void "test get tags with exclusion & no user id"() {
 		TagExclusion.createOrLookup(tag3, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
 		TagExclusion.createOrLookup(tagGroup2, GenericTagGroupProperties.createOrLookup(userId, "User", tagGroup1))
@@ -97,6 +102,7 @@ class TagGroupTests extends CuriousTestCase {
 		assert associatedTags.size() == 6
 	}
 
+	@Test
 	void "test contains tag"() {
 		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
 		// Check for top level sub tag
@@ -106,6 +112,7 @@ class TagGroupTests extends CuriousTestCase {
 		assert tagGroupInstance.containsTag(Tag.look("other tag"), userId) == false
 	}
 
+	@Test
 	void "test contains tag after exclusion"() {
 		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
 
@@ -117,6 +124,7 @@ class TagGroupTests extends CuriousTestCase {
 		assert tagGroupInstance.containsTag(Tag.look("tag5"), userId) == false
 	}
 
+	@Test
 	void "test contains tag string"() {
 		TagGroup tagGroupInstance = TagGroup.findByDescription("taggroup1")
 		// Check for top level sub tag string

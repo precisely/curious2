@@ -4,7 +4,9 @@ import static org.junit.Assert.*
 
 import org.junit.After
 import org.junit.Before
+import org.junit.Test;
 import org.scribe.model.Response
+
 import us.wearecurio.integration.CuriousTestCase
 
 class TokenServiceTests extends CuriousTestCase {
@@ -25,6 +27,7 @@ class TokenServiceTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
+	@Test
 	void testAcquire() {
 		assert tokenService.acquire(simulatedSession, "foofoo")
 		assert !tokenService.acquire(simulatedSession, "foofoo")

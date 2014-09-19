@@ -2,6 +2,8 @@ package us.wearecurio.services.integration
 
 import junit.framework.AssertionFailedError
 
+import org.apache.commons.logging.LogFactory
+
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.Before
@@ -17,6 +19,8 @@ import us.wearecurio.utility.Utils
  */
 abstract class CuriousServiceTestCase {
 	static transactional = true
+
+	protected static def log = LogFactory.getLog(this)
 
 	boolean isClose(double a, double b, double range) {
 		return Math.abs(a - b) < range

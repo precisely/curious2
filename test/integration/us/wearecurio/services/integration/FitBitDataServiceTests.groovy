@@ -2,8 +2,8 @@ package us.wearecurio.services.integration
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import org.junit.*
 
+import org.junit.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDateTime
@@ -54,6 +54,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		TimeZone.setDefault(serverTimezone)
 	}
 
+	@Test
 	void testSubscribeIfSuccess() {
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, header ->
@@ -64,6 +65,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		assert result.success
 	}
 
+	@Test
 	void testSubscribeIfFail() {
 		fitBitDataService.oauthService = [
 			postFitBitResource:{ token, url, p, header ->
@@ -75,18 +77,21 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		assert OAuthAccount.findByUserId(userId).accessToken == ""
 	}
 
+	@Test
 	void testSubscribeIfNoAuthAccount() {
 		shouldFail(MissingOAuthAccountException) {
 			fitBitDataService.subscribe(user2.id)
 		}
 	}
 
+	@Test
 	void testUnsubscribeIfNoOAuthAccount() {
 		shouldFail(MissingOAuthAccountException) {
 			fitBitDataService.unsubscribe(user2.id)
 		}
 	}
 
+	@Test
 	void testUnsubscribeWithOAuthAccountExists() {
 		fitBitDataService.oauthService = [
 			deleteFitBitResource: { token, url, p, header ->
@@ -99,6 +104,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		assert OAuthAccount.count() == 0
 	}
 
+	@Test
 	void testNotificationHandler() {
 		String notificationString = """[{"collectionType":"foods","date":"2010-03-01","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"foods","date":"2010-03-02","ownerId":"228S74","ownerType":"user","subscriptionId":"1234"},{"collectionType":"activities","date":"2010-03-01","ownerId":"184X36","ownerType":"user","subscriptionId":"2345"}]"""
 		fitBitDataService.notificationHandler(notificationString)
@@ -106,6 +112,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		assert ThirdPartyNotification.first().typeId == ThirdParty.FITBIT
 	}
 
+	@Test
 	void testGetDataDefaultWithFailureStatusCode() {
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
@@ -120,6 +127,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
+	@Test
 	void testGetDataDefault() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		fitBitDataService.oauthService = [
@@ -171,12 +179,14 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 
 	}
 
+	@Test
 	void testGetDataSleepWithDifferentUserTimezone() {
 		TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"))
 		Map result = helperSleepData("2014-03-07T11:00:00.031")
 		assert result.success == true
 	}
 	
+	@Test
 	void testGetDataSleepWithSameUserTimezone() {
 		TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
 		Map result = helperSleepData("2014-03-07T11:00:00.031")

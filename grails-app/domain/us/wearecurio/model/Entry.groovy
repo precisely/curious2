@@ -486,6 +486,9 @@ class Entry implements Comparable {
 			TagUnitStats.createOrUpdate(userId, baseTag.getId(), m['units'])
 		}
 		
+		if (!m['units'])
+			m['units'] = ''
+		
 		Entry entry = new Entry(
 				userId:userId,
 				group:group,
@@ -494,8 +497,6 @@ class Entry implements Comparable {
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
-				units:m['units'] ?: '',
-				comment:m['comment']==null?'':m['comment'],
 				repeatType: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,
@@ -503,6 +504,9 @@ class Entry implements Comparable {
 				setIdentifier:Identifier.look(m['setName']),
 				amountPrecision:m['amountPrecision']==null?3:m['amountPrecision']
 				)
+		
+		entry.setUnits(m['units']?:'')
+		entry.setComment(m['comment']?:'')
 
 		log.debug "Created entry:" + entry
 		
@@ -2438,6 +2442,10 @@ class Entry implements Comparable {
 			m['units'] = units
 			
 			return m
+		}
+		
+		String toString() {
+			return "Tag: " + tag.getDescription() + " amount: " + amount + " units: " + units
 		}
 	}
 	

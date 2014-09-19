@@ -8,10 +8,10 @@ package us.wearecurio.parse
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.Log
 
-import groovy.lang.Closure;
+import groovy.lang.Closure
 import groovy.transform.TypeChecked
 
-import java.util.List;
+import java.util.List
 import java.util.regex.Pattern
 import java.util.regex.Matcher
 

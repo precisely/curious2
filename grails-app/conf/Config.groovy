@@ -42,6 +42,9 @@ grails.mime.types = [ // the first one is the default format
 // URL Mapping Cache Max Size, defaults to 5000
 //grails.urlmapping.cache.maxsize = 1000
 
+// Switch back stupid Grails default
+grails.databinding.convertEmptyStringsToNull = true
+
 // Grails default layout
 grails.sitemesh.default.layout = 'nodefaultlayout'
 

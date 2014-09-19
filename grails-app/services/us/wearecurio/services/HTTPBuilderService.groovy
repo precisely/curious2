@@ -21,7 +21,6 @@ class HTTPBuilderService {
 	 * @return Returns the raw response with an addition method stating
 	 *         that request is successful or not.
 	 */
-	@Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.5.2' )
 	def performRestRequest(String requestURL, String method = "POST", Map args = [:]) {
 		def result = ""
 		boolean success = true

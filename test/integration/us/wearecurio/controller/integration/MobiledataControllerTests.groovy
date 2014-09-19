@@ -177,6 +177,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('null({"success":true')
 	}
 	
+	@Test
 	void testunregisterNotification() {
 		MobiledataController controller = new MobiledataController()
 		controller.session.userId = userId

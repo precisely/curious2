@@ -27,6 +27,10 @@ import org.junit.*
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
 
+import grails.test.mixin.TestMixin
+import grails.test.mixin.integration.IntegrationTestMixin
+
+@TestMixin(IntegrationTestMixin)
 class EntryGroupTests extends CuriousTestCase {
 	static transactional = false
 

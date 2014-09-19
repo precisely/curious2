@@ -12,6 +12,8 @@ import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.*
 import us.wearecurio.utility.Utils
 
+import grails.test.mixin.integration.IntegrationTestMixin
+
 /**
  * Superclass for controller web tests
  * 
@@ -19,6 +21,8 @@ import us.wearecurio.utility.Utils
  * 
  * @author mitsu
  */
+
+@TestMixin(IntegrationTestMixin)
 abstract class CuriousControllerTestCase extends CuriousTestCase {
 	static transactional = true
 
