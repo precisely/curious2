@@ -1540,6 +1540,24 @@ body{
 	color:black;
 }
 
+.features .caption {
+	margin-top: 10px;
+}
+
 .orange{
 	background-color: #ff935f;
+}
+
+.news .col-sm-2 {
+	width: 12.666667%;
+}
+
+.news li {
+	list-style: none;
+	padding-bottom: 30px;
+}
+
+.news .col-sm-10 {
+	font-size: 30px;
+	padding-top: 10px;
 }

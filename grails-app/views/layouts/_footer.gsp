@@ -33,8 +33,8 @@
         <br>
         <br>
         <br>
-        <div class="row">
-            <div class="col-md-6 col-md-offset-1">
+        <div class="row" style="height: 100px">
+            <div class="col-md-9 col-md-offset-1">
                 <ul class="nav nav-pills mainLinks footerLinks">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a
@@ -49,14 +49,13 @@
                 </ul>
             </div>
 
-            <div class="col-md-2 pull-right text-center"
-                style="color: white; margin-top: -80px;">
-                <p style="font-size: 26px;">Say Hi !</p>
+            <div class="col-md-2 text-center"
+                style="color: white;">
                 <a href="https://twitter.com/wearecurious"> <img
                     class="" src="/images/home/twitter.png"
-                    style="padding-right: 15px;" />
+                    style="padding-right: 15px; height: 30px" />
                 </a> <a href="https://facebook.com/wearecurious"><img
-                    src="/images/home/facebook.png" /></a>
+                    src="/images/home/facebook.png" style="height: 30px" /></a>
             </div>
         </div>
     </g:if>
