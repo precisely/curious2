@@ -375,6 +375,10 @@ class UnitGroupMap {
 		public int getGroupPriority() {
 			return unitGroup.getPriority()
 		}
+		
+		public UnitRatio lookupUnitRatio(String unit) {
+			return unitGroup.map[unit]
+		}
 	}
 	
 	public static final UnitGroupMap theMap = new UnitGroupMap()

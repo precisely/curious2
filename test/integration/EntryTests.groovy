@@ -405,14 +405,17 @@ class EntryTests extends CuriousTestCase {
 	@Test
 	void testMostUsedUnitNormalization() {
 		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 2000 meter 1pm", yesterdayBaseDate, true), new EntryStats())
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 3 km 3pm", yesterdayBaseDate, true), new EntryStats())
-		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 4 kilometer 4pm", baseDate, true), new EntryStats())
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 2 km 3pm", yesterdayBaseDate, true), new EntryStats())
+		Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "jog 2 kilometer 4pm", baseDate, true), new EntryStats())
 		
 		int c = 0
 		
-		testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
-			assert it[0][1] == 2
+		testPlot(user, [Tag.look("jog distance").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+			++c
+			assert it[1].intValue() == 2
 		}
+		
+		assert c == 3
 	}
 	
 	@Test
@@ -2243,6 +2246,5 @@ class EntryTests extends CuriousTestCase {
 		assert result.getLastAmountPrecision() == -1
 		
 		assert result.getLastUnits().equals("")
-		
 	}
 }

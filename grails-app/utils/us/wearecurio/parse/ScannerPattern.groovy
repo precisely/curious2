@@ -8,7 +8,6 @@ package us.wearecurio.parse
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.Log
 
-import sun.tools.tree.ThisExpression;
 import groovy.lang.Closure;
 import groovy.transform.TypeChecked
 
