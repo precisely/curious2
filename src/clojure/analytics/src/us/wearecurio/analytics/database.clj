@@ -18,7 +18,7 @@
 (defn sql-now []
   (tr/to-sql-time (t/now)))
 
-(def BIG-BANG (sql-time 1970 1 1 0 0))
+(def BIG-BANG (sql-time 2010 6 1 0 0))
 
 (defn connection-params [environment]
   "Get the database connection parameters.  Pass in \"PRODUCTION\" \"TEST\" or \"DEVELOPMENT\" to set the database to the Grails environment's database.  Otherwise, the connection params will assume you're in a Clojure-based development environment and come from the shell's environment variables \"db_name\", \"db_user\" and \"db_password\".  These varibles are picked up by environ/env which is configured for Leiningen \"dev\" and \"test\" profiles."
@@ -295,6 +295,13 @@
     (kc/with analytics_cluster_interval)
     (kc/with analytics_tag_cluster_tag)
     (kc/where {:id tag-cluster-id})))
+
+(defn tag-clusters-from-cluster-id [cluster-run-id]
+  (kc/select db/analytics_tag_cluster
+    (kc/where {:analytics_cluster_run_id cluster-run-id})
+             (kc/with db/analytics_tag_cluster_tag)
+             (kc/with db/analytics_cluster_interval)
+             (kc/with db/analytics_cluster_run)))
 
 ; List tag-ids in tag-cluster
 (defn tag-cluster-list-tag-ids [tag-cluster-id]

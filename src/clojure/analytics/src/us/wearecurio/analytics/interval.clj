@@ -548,14 +548,14 @@
 
 (defn pr-transition-non-singleton-to-new [p-new p-old N alpha]
   (warn-zero p-old 'pr-transition-non-singleton-to-new)
-  (cond (== 0 p-new) 0
-        (== 0 p-old) 1
+  (cond (== 0 p-old) 1
+        (== 0 p-new) 0
         :else (min 1 (* (/ alpha (dec N)) (/ p-new p-old)))))
 
 (defn pr-transition-singleton-to-existing [p-new p-old N alpha]
   (warn-zero p-old 'pr-transition-singleton-to-existing)
-  (cond (== 0 p-new) 0
-        (== 0 p-old) 1
+  (cond (== 0 p-old) 1
+        (== 0 p-new) 0
         :else (min 1 (* (/ (dec N) alpha) (/ p-new p-old)))))
 
 (defn sample-transition-non-singleton-to-new-cluster? [like-new like-old N alpha]
