@@ -32,7 +32,8 @@ class SecurityFilters {
 		'listSnapshotData',
 		'listDiscussionData',
 		'loadSnapshotDataId',
-		'getTagProperties'
+		'getTagProperties',
+		'createData'
 	] as Set
 
 	def filters = {
