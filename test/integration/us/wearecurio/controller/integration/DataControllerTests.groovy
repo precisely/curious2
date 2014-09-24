@@ -682,4 +682,15 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert c == 5
 	}
+	
+	@Test
+	void testCreateDiscussion() {
+		controller.session.userId = user.getId()
+		controller.params['name'] = 'dummyDiscussion'
+		controller.params['discussionPost'] = 'dummyPost'
+
+		controller.createDiscussion()
+//		assert controller.response.contentAsString ('success')
+		assert Discussion.count() == 1
+	}
 }

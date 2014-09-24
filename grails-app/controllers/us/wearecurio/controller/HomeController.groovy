@@ -737,9 +737,17 @@ class HomeController extends DataController {
 			Utils.save(discussion, true)
 		}
 		if (clearPostId) {
-
-			debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
-			int result = DiscussionPost.deleteComment(clearPostId, user, discussion)
+			boolean result = DiscussionPost.deleteComment(clearPostId, user, discussion)
+			if (result == false) {
+				flash.message = "Can't delete that post"
+			}
+		}
+		if (params.message || plotIdMessage) {
+			
+			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
+			DiscussionPost post = discussion.getFirstPost()
+			int result = DiscussionPost.createComment(params.message, user, discussion, post, 
+				plotIdMessage, params)
 			switch (result) {
 				case 1:
 					flash.message = "You don't have permission to add a comment to this discussion"
@@ -750,38 +758,9 @@ class HomeController extends DataController {
 					redirect(url:toUrl(action:'index'))
 					break
 				case 3:
-				redirect(url:toUrl(action:'discuss', params:[discussionId:discussion.getId()],
-						fragment:'comment' + post.getId()))
-			}
-		}
-
-		if (params.message || plotIdMessage) {
-
-//			DiscussionPost.createComment(params.message, user, discussion, plotIdMessage, params)
-
-			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
-			if (!UserGroup.canWriteDiscussion(user, discussion)) {
-				flash.message = "You don't have permission to add a comment to this discussion"
-				redirect(url:toUrl(action:'index'))
-				return
-			}
-			DiscussionPost post = discussion.getFirstPost()
-			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.getPlotDataId() != null && post.getMessage() == null) {
-				// first comment added to a discussion with a plot data at the top is assumed to be a caption on the plot data
-				post.setMessage(params.message)
-				Utils.save(post)
-			} else if (user) {
-				post = discussion.createPost(user, plotIdMessage, params.message)
-			} else if (params.postname && params.postemail){
-				post = discussion.createPost(params.postname, params.postemail, params.postsite, plotIdMessage, params.message)
-			}
-			if (post == null) {
-				flash.message = "Cannot add comment"
-				redirect(url:toUrl(action:'index'))
-				return
-			} else {
-				redirect(url:toUrl(action:'discuss', params:[discussionId:discussion.getId()],
-						fragment:'comment' + post.getId()))
+					redirect(url:toUrl(action:'discuss', 
+					  params:[discussionId:discussion.getId()],
+					  fragment:'comment' + post.getId()))
 			}
 			
 		} else {
