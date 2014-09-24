@@ -23,6 +23,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Entry.ParseAmount
@@ -1070,5 +1071,27 @@ class DataController extends LoginController {
 		}
 
 		render createDiscussion : "success"
+	}
+	
+	def deleteComment(Long discussionId, Long clearPostId) {
+		def user = sessionUser()
+		Discussion discussion
+		if (discussionId && clearPostId) {
+			discussion = Discussion.get(discussionId)
+			DiscussionPost.deleteComment(clearPostId, user, discussion)
+		}
+		render deleteComment : "success"
+	}
+	
+	def createComment(Long discussionId, String message) {
+		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
+		Discussion discussion = Discussion.get(discussionId)
+		def user = sessionUser()
+		int result = DiscussionPost.createComment(message, user, discussion, null, params)
+		if (result == 0) {
+			render createComment : "success"
+		} else {
+			render createComment : "failed"
+		}
 	}
 }

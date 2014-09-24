@@ -1,6 +1,9 @@
 package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
+
+import java.util.Map;
+
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -740,17 +743,28 @@ class HomeController extends DataController {
 			Utils.save(discussion, true)
 		}
 		if (clearPostId) {
-			debug "Attemtping to clear post id " + clearPostId
-			DiscussionPost post = DiscussionPost.get(clearPostId)
-			if (post != null && (user == null || post.getUserId() != user.getId())) {
-				flash.message = "Can't delete that post"
-			} else {
-				post.setMessage(null)
-				discussion.setUpdated(new Date())
+
+			debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
+			int result = DiscussionPost.deleteComment(clearPostId, user, discussion)
+			switch (result) {
+				case 1:
+					flash.message = "You don't have permission to add a comment to this discussion"
+					redirect(url:toUrl(action:'index'))
+					break
+				case 2:
+					flash.message = "Cannot add comment"
+					redirect(url:toUrl(action:'index'))
+					break
+				case 3:
+				redirect(url:toUrl(action:'discuss', params:[discussionId:discussion.getId()],
+						fragment:'comment' + post.getId()))
 			}
-			Utils.save(post, true)
 		}
+
 		if (params.message || plotIdMessage) {
+
+//			DiscussionPost.createComment(params.message, user, discussion, plotIdMessage, params)
+
 			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
 				flash.message = "You don't have permission to add a comment to this discussion"
@@ -775,6 +789,7 @@ class HomeController extends DataController {
 				redirect(url:toUrl(action:'discuss', params:[discussionId:discussion.getId()],
 						fragment:'comment' + post.getId()))
 			}
+			
 		} else {
 			params.max = params.max ?: 5
 			params.offset = params.offset ?: 0

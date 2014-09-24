@@ -101,6 +101,41 @@ class DiscussionPost {
 		post.delete()
 	}
 	
+	static def deleteComment(Long clearPostId, User user, Discussion discussion) {
+		
+		DiscussionPost post = DiscussionPost.get(clearPostId)
+		if (post != null && (user == null || post.getUserId() != user.getId())) {
+//			flash.message = "Can't delete that post"
+		} else {
+			post.setMessage(null)
+			discussion.setUpdated(new Date())
+		}
+		Utils.save(post, true)
+	}
+	
+	static def int createComment(String message, User user, Discussion discussion, String plotIdMessage, Map params) {
+
+			if (!UserGroup.canWriteDiscussion(user, discussion)) {
+				return 1
+			}
+			DiscussionPost post = discussion.getFirstPost()
+			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.getPlotDataId() != null && post.getMessage() == null) {
+				// first comment added to a discussion with a plot data at the top is assumed to be a caption on the plot data
+				post.setMessage(message)
+				Utils.save(post)
+			} else if (user) {
+				post = discussion.createPost(user, plotIdMessage, message)
+			} else if (params.postname && params.postemail){
+				post = discussion.createPost(params.postname, params.postemail, params.postsite, plotIdMessage, message)
+			}
+			if (post == null) {
+				return 2
+			} else {
+				return 3
+			}
+			return 0
+	}
+
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId
 				+ ", message:'" + message + "')"
