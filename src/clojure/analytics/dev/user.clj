@@ -1,11 +1,13 @@
 (ns user
-  (require [clojure.test :as ct]))
+  (require [clojure.test :as ct])
+  (require [us.wearecurio.analytics.database :as db]))
 
 (def base-ns "us.wearecurio.analytics")
 
 (def namespaces '(binify core database idioms tag-group))
 
-(def my-aliases {'bi 'binify
+(def my-aliases {'re 'rest
+                 'bi 'binify
                  'co 'core
                  'db 'database
                  'im 'idioms
@@ -73,8 +75,10 @@
 
 (defn init []
   (res)
-  (make-aliases))
-  ;(in-ns (full 'iv)))
+  (make-aliases)
+  (db/connect)
+  (in-ns (full 're)))
+
 
 ; http://stackoverflow.com/questions/3636364/can-i-clean-the-repl
 ; Answered by Peter Tillemans, Sep 2010

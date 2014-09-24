@@ -18,7 +18,11 @@
 (defn sql-now []
   (tr/to-sql-time (t/now)))
 
-(def BIG-BANG (sql-time 2010 6 1 0 0))
+; date -> numer, scaled by interval-size-ms
+ (defn rescale-time [t interval-size-in-ms]
+   (/ (tr/to-long t) (double interval-size-in-ms)))
+
+;   (def BIG-BANG (sql-time 2010 6 1 0 0))
 
 (defn connection-params [environment]
   "Get the database connection parameters.  Pass in \"PRODUCTION\" \"TEST\" or \"DEVELOPMENT\" to set the database to the Grails environment's database.  Otherwise, the connection params will assume you're in a Clojure-based development environment and come from the shell's environment variables \"db_name\", \"db_user\" and \"db_password\".  These varibles are picked up by environ/env which is configured for Leiningen \"dev\" and \"test\" profiles."
@@ -277,6 +281,48 @@
   (let [old-ids (cluster-run-list-old-ids user-id)]
     (cluster-run-delete-many old-ids)))
 
+(declare tag-cluster-tag-list)
+(defn loglike-map [tag-cluster-id]
+  (map #(hash-map (:tag_id %) (double (:loglike %)))
+       (tag-cluster-tag-list tag-cluster-id)))
+
+(defn tag-cluster-load [tag-cluster-id]
+  (let [members (apply sorted-set (tag-cluster-list-tag-ids tag-cluster-id))
+        in-intervals  (map #(list (:start_date %) (:stop_date %)) (cluster-interval-list tag-cluster-id))
+        in-intervals-sorted (sort-by first in-intervals)]
+    {:members members
+     :in-intervals in-intervals-sorted}))
+
+(defn latest-tag-cluster-ids [user-id]
+  (let [cluster-run-id (cluster-run-latest-id user-id)]
+    (tag-cluster-list-ids-by-cluster-run-id cluster-run-id)))
+
+(defn loglike-map-latest [user-id]
+  (let [tag-cluster-ids (latest-tag-cluster-ids user-id)]
+    (into {} (flatten (map loglike-map tag-cluster-ids)))))
+
+(defn rescale-interval [interval-size-ms interval]
+  (map #(rescale-time % interval-size-ms) interval))
+
+(defn rescale-intervals [interval-size-ms intervals]
+  (map (partial rescale-interval interval-size-ms) intervals))
+
+(defn convert-cluster-intervals-to-numeric [interval-size-ms cluster]
+  (update-in cluster [:in-intervals] (partial rescale-intervals interval-size-ms)))
+
+(defn cluster-load-latest
+  ([user-id]
+  (let [tag-cluster-ids (latest-tag-cluster-ids user-id)]
+    (vec (map tag-cluster-load tag-cluster-ids))))
+  ([user-id interval-size-ms]
+   (let [clusters (cluster-load-latest user-id)
+         updater (partial convert-cluster-intervals-to-numeric interval-size-ms)]
+     (vec (map updater clusters)))))
+
+(defn cluster-run-load-latest [user-id & {:keys [interval-size-ms] :or {interval-size-ms const/DAY}}]
+  {:C (cluster-load-latest user-id interval-size-ms)
+   :loglike (loglike-map-latest user-id)})
+
 ; *********************
 ; tag cluster CRUD
 ; *********************
@@ -290,6 +336,10 @@
     (kc/order :id :DESC)
     (kc/where {:analytics_cluster_run_id cluster-run-id})))
 
+(defn tag-cluster-list-ids-by-cluster-run-id [cluster-run-id]
+  (->> (tag-cluster-list-by-cluster-run-id cluster-run-id)
+       (map :id)))
+
 (defn tag-cluster-get [tag-cluster-id]
   (kc/select analytics_tag_cluster
     (kc/with analytics_cluster_interval)
@@ -297,11 +347,11 @@
     (kc/where {:id tag-cluster-id})))
 
 (defn tag-clusters-from-cluster-id [cluster-run-id]
-  (kc/select db/analytics_tag_cluster
+  (kc/select analytics_tag_cluster
     (kc/where {:analytics_cluster_run_id cluster-run-id})
-             (kc/with db/analytics_tag_cluster_tag)
-             (kc/with db/analytics_cluster_interval)
-             (kc/with db/analytics_cluster_run)))
+             (kc/with analytics_tag_cluster_tag)
+             (kc/with analytics_cluster_interval)
+             (kc/with analytics_cluster_run)))
 
 ; List tag-ids in tag-cluster
 (defn tag-cluster-list-tag-ids [tag-cluster-id]
@@ -309,8 +359,12 @@
     (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
 
 ; List all tag-ids in any tag-cluster.
-(defn tag-cluster-tag-list []
-  (kc/select analytics_tag_cluster_tag))
+(defn tag-cluster-tag-list
+  ([]
+    (kc/select analytics_tag_cluster_tag))
+  ([tag-cluster-id]
+  (kc/select analytics_tag_cluster_tag
+    (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
 
 ; Create
 (defn tag-cluster-create [cluster-run-id]

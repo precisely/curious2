@@ -15,11 +15,19 @@
                          :user "root"
                          :pass nil}}}
   :source-paths ["dev" "src" "test"]
-  :dependencies [[environ "0.5.0"]
+  :dependencies [; misc.
+                 [environ "0.5.0"]
+                 [clj-time "0.7.0"]
+                 ; numeric stuff
                  [incanter "1.5.6-SNAPSHOT"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/math.numeric-tower "0.0.4"]
-                 [org.clojure/java.jdbc "0.3.3"]
+                 ; database
+                 [korma "0.3.1"]
                  [mysql/mysql-connector-java "5.1.25"]
-                 [clj-time "0.7.0"]
-                 [korma "0.3.1"]])
+                 [org.clojure/java.jdbc "0.3.3"]
+                 ; web stuff
+                 [net.cgrand/moustache "1.1.0"]
+                 [http-kit "2.1.16"]
+                 [org.clojure/data.json "0.2.5"]
+                 ])

@@ -20,7 +20,7 @@
 (def MIN-N 10) ; Min. num. data points per series.
 (def DEFAULT-SCALE const/DAY)
 (def MAX-EPOCH 1)
-
+(def keep-running (atom true))
 ;
 ; Generic helpers
 ;
@@ -763,37 +763,35 @@
     (let [N (count data)]
       (println "resampling partitions for each tag.")
       (resample-singletons data state max-iter-new-cluster)
-      (println "After resample-singletons" (get @state :C))
+      (println "After resampling singletons")
 
       (println "\n\n\n***** First iteration *****")
       (refurbish-clusters data state)
       (pp @state)
       (dotimes [iter max-epoch]
-        (println "\n\n------------------- START Iteration #" iter)
-        (doseq [tag-id (get-tag-ids data)]
-          (let [cluster-id (get-cluster-id @state tag-id)]
-            (if (singleton? data @state tag-id)
-              (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N alpha)]
-                (do (reset! state new-state)
-                    ;(refurbish-clusters data state)
-                    (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
-                    (swap! state assoc-in [:best-clusters] (get @state :C))))
+        (when @keep-running
+          (println "\n\n------------------- START Iteration #" iter)
+          (pp @state)
+          (doseq [tag-id (get-tag-ids data)]
+            (let [cluster-id (get-cluster-id @state tag-id)]
+              (if (singleton? data @state tag-id)
+                (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N alpha)]
+                  (do (reset! state new-state)
+                      ;(refurbish-clusters data state)
+                      (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
+                      (swap! state assoc-in [:best-clusters] (get @state :C))))
 
-              (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N alpha max-iter-new-cluster)]
-                (do
-                  (println "<<-----ITER #" iter ": tag" tag-id "broke out of cluster" cluster-id)
-                  (reset! state new-state))
-                )))))
+                (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N alpha max-iter-new-cluster)]
+                  (do
+                    (println "<<-----ITER #" iter ": tag" tag-id "broke out of cluster" cluster-id)
+                    (reset! state new-state))
+                  ))))))
       (update-loglikes data state))))
 
 ; series to data-map as required by algorithm above.
 (defn to-data-map [series]
   (im/apply-to-values #(apply sorted-set %)
                       (im/collect-into-index series :tag_id :date)))
-
-; date -> numer, scaled by interval-size-ms
-(defn rescale-time [t interval-size-in-ms]
-  (/ (tr/to-long t) (double interval-size-in-ms)))
 
 (defn descale-time [x interval-size-in-ms]
   (tr/to-sql-time (tr/from-long (long (* x interval-size-in-ms)))))
@@ -805,7 +803,7 @@
 ; series (seq of maps with :date (datetime)) -> series with :date (number, scaled by interval-size-ms)
 (defn dates-to-scale [series interval-size-ms]
   "Coerce date-time into a number divided by the scale.  'interval-size-ms' can be const/DAY for example."
-  (im/update-in-map-series series [:date] #(rescale-time % interval-size-ms)))
+  (im/update-in-map-series series [:date] #(db/rescale-time % interval-size-ms)))
 
 (defn prepare-data [series interval-size-ms]
   (-> series
@@ -825,10 +823,11 @@
     (apply dissoc data-map small-tags)))
 
 (defn run-algo [user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
-  (let [start-time-as-decimal (rescale-time start-time interval-size-ms)
-        stop-time-as-decimal (rescale-time stop-time interval-size-ms)
+  (let [start-time-as-decimal (db/rescale-time start-time interval-size-ms)
+        stop-time-as-decimal (db/rescale-time stop-time interval-size-ms)
         debug (println "\n\n\n-----------------\n\n\nloading data for user" user-id "min-n per series:" min-n)
         data (data-series-range-with-min-n min-n interval-size-ms start-time stop-time user-id)]
+    (reset! keep-running true)
     (when (> (count data) 0)
       (println "initializing user" user-id)
       (initialize-state data state start-time-as-decimal stop-time-as-decimal)
@@ -873,7 +872,7 @@
 
 (defn save-intervals-for-user
   ([user-id]
-    (let [max-epoch 10
+    (let [max-epoch 100
           state (atom {})
           min-n 10
           interval-size-ms const/DAY
@@ -887,8 +886,8 @@
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
       (save-clusters cluster-run-id state interval-size-ms make-intervals)
       (db/cluster-run-update-finished cluster-run-id)
-      (db/cluster-run-delete-old cluster-run-id)
-      state)))
+      (db/cluster-run-delete-old user-id)
+      (pp @state))))
 
 (defn skip-cluster-run? [user-id]
   (when-let [last-run (first (db/cluster-run-list-finished user-id))]
