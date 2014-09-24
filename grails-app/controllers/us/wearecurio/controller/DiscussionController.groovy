@@ -12,7 +12,6 @@ class DiscussionController extends LoginController {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
-		debug "DiscussionController.create to group: " + group?.dump()
 		if (!group) {
 			flash.message = "Failed to create new discussion topic: can't post to this group"
 		} else {

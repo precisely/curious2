@@ -476,4 +476,25 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.flash.message == "moves.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
+
+	@Test
+	void testDeleteComment() {
+		HomeController controller = new HomeController()
+		controller.session.userId = user.getId()
+		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['clearPostId'] = plotData.getId()
+		controller.discuss()
+		assert controller.flash.message == null
+	}
+
+	@Test
+	void testCreateComment() {
+		HomeController controller = new HomeController()
+		controller.session.userId = user.getId()
+		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['message'] = "dummyMessage"
+		controller.discuss()
+
+		assert controller.response.redirectUrl.contains("home/discuss")
+	}
 }

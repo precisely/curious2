@@ -1067,10 +1067,11 @@ class DataController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 				discussion.createPost(user, discussionPost)
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
 			}
 		}
-
-		render createDiscussion : "success"
 	}
 	
 	def deleteComment(Long discussionId, Long clearPostId) {
@@ -1079,19 +1080,24 @@ class DataController extends LoginController {
 		if (discussionId && clearPostId) {
 			discussion = Discussion.get(discussionId)
 			DiscussionPost.deleteComment(clearPostId, user, discussion)
+			println("success")
+			renderStringGet('success')
+		} else {
+			renderStringGet('fail')
 		}
-		render deleteComment : "success"
 	}
 	
-	def createComment(Long discussionId, String message) {
+	def createComment(Long discussionId, String message, Long plotIdMessage) {
 		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
-		Discussion discussion = Discussion.get(discussionId)
 		def user = sessionUser()
-		int result = DiscussionPost.createComment(message, user, discussion, null, params)
+		Discussion discussion = Discussion.get(discussionId)
+		DiscussionPost post = discussion.getFirstPost()
+		int result = DiscussionPost.createComment(message, user, discussion, post, plotIdMessage, params)
 		if (result == 0) {
-			render createComment : "success"
+			println("success")
+			renderStringGet('success')
 		} else {
-			render createComment : "failed"
+			renderStringGet('fail')
 		}
 	}
 }
