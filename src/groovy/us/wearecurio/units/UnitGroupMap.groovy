@@ -142,6 +142,75 @@ class UnitGroupMap {
 		}
 	}
 	
+	static final Map<String, String> unitStrings = [
+		'minute':'mins',
+		'hour':'hours',
+		'day':'days',
+		'week':'weeks',
+		'month':'months',
+		'year':'years',
+		'century':'centuries',
+		'second':'secs',
+		'millisecond':'ms',
+		'microsecond':'microseconds',
+		'picosecond':'picoseconds',
+		'centimeter':'cm',
+		'millimeter':'mm',
+		'meter':'m',
+		'foot':'ft',
+		'yard':'yards',
+		'mile':'miles',
+		'kilometer':'km',
+		'gram':'g',
+		'pound':'lbs',
+		'kilogram':'kg',
+		'ounce':'oz',
+		'square meter':'sq m',
+		'square foot':'sq ft',
+		'hectare':'ha',
+		'acre':'acres',
+		'cubic centimeter':'cc',
+		'liter':'l',
+		'gallon':'gal',
+		'quart':'qt',
+		'newton':'n',
+		'dyne':'dyne',
+		'kip':'kip',
+		'watt':'w',
+		'kilowatt':'kw',
+		'milliwatt':'mw',
+		'horsepower':'hp',
+		'joule':'joules',
+		'erg':'erg',
+		'foot-pound':'ft-lbs',
+		'btu':'btu',
+		'horsepower-hour':'hph',
+		'joule':'j',
+		'megajoule':'mj',
+		'gigajoule':'gj',
+		'terajoule':'tj',
+		'petajoule':'pj',
+		'kilowatt-hour':'kw-hr',
+		'therm':'therms',
+		'calories':'cal',
+		'kiloton':'kilotons',
+		'megatons':'megatons',
+		'electron-volt':'ev',
+		'pascal':'pa',
+		'barye':'ba',
+		'psi':'psi',
+		'bar':'bar',
+		'decibar':'dbar',
+		'centibar':'cbar',
+		'millibar':'mbar',
+		'megabar':'megabars',
+		'kilobar':'kbar',
+		'mmHg':'mmHg',
+		'inHg':'inHg',
+		'atmosphere':'atm',
+		'percent':'%',
+	]
+	
 	enum UnitGroup {
 		
 		DURATION(1, "duration", 100, [
@@ -149,7 +218,7 @@ class UnitGroupMap {
 			'minutes':[MINUTE,10,'minute'], 'h':[HOUR,1,'hour'], 'hours':[HOUR,10,'hour'], 'hrs':[HOUR,8,'hour'], 'hour':[HOUR,10,'hour'],
 			'day':[DAY,10,'day'], 'days':[DAY,10,'day'], 'd':[DAY,1,'day'], 'week':[WEEK,10,'week'],
 			'weeks':[WEEK,10,'week'], 'wks':[WEEK,5,'week'], 'wk':[WEEK,4,'week'],
-			'month':[MONTH,10,'month'], 'months':[MONTH,10,'month'], 'mnths':[MONTH,7,'month'], 'year':[YEAR,10,'year'],
+			'month':[MONTH,10,'month'], 'months':[MONTH,10,'month'], 'mnths':[MONTH,7,'month'], 'yfootear':[YEAR,10,'year'],
 			'years':[YEAR,10,'year'], 'y':[YEAR,1,'year'], 'century':[YEAR,10,'century'], 'centuries':[CENTURY,10,'century'],
 			'ms':[MILLISECOND,6,'millisecond'],'sec':[SECOND,5,'second'], 'secs':[SECOND,7,'second'], 'seconds': [SECOND,10,'second'],
 			'second':[SECOND,10,'second'], 'millisecond':[MILLISECOND,10,'millisecond'], 'ms':[MILLISECOND,3,'millisecond'], 'milliseconds':[MILLISECOND,10,'millisecond'], 'microsecond':[MICROSECOND,10,'microsecond'],
@@ -195,7 +264,7 @@ class UnitGroupMap {
 		ENERGY(8, "energy", 350, [
 			'j':[JOULE,3,'joule'], 'joule':[JOULE,10,'joule'], 'joules':[JOULE,10,'joule'],
 			'erg':[ERG,10,'erg'],
-			'ft-lb':[FOOTPOUND,8,'foot-pound'], 'foot-pound':[FOOTPOUND,10,'foot-pound'], 'foot-pounds':[FOOTPOUND,10,'foot-pound'], 'foot pound':[FOOTPOUND,10,'foot-pound'], 'foot pounds':[FOOTPOUND,10,'foot-pound'], 'footpound':[FOOTPOUND,10,'foot-pound'], 'footpounds':[FOOTPOUND,10],
+			'ft-lb':[FOOTPOUND,8,'foot-pound'], 'ft-lbs':[FOOTPOUND,8,'foot-pound'], 'foot-pound':[FOOTPOUND,10,'foot-pound'], 'foot-pounds':[FOOTPOUND,10,'foot-pound'], 'foot pound':[FOOTPOUND,10,'foot-pound'], 'foot pounds':[FOOTPOUND,10,'foot-pound'], 'footpound':[FOOTPOUND,10,'foot-pound'], 'footpounds':[FOOTPOUND,10],
 			'btu':[BTU,8,'btu'],
 			'hph':[HORSEPOWERHOUR,5,'horsepower-hour'], 'horsepower-hour':[HORSEPOWERHOUR,10,'horsepower-hour'], 'horsepower-hours':[HORSEPOWERHOUR,10,'horsepower-hour'], 'horsepower hour':[HORSEPOWERHOUR,10,'horsepower-hour'], 'horsepower hours':[HORSEPOWERHOUR,10,'horsepower-hour'], 'horsepowerhour':[HORSEPOWERHOUR,10,'horsepower-hour'], 'horsepowerhours':[HORSEPOWERHOUR,10,'horsepower-hour'],
 			'mj':[MEGAJOULE,3,'megajoule'], 'megajoule':[MEGAJOULE,10,'megajoule'], 'megajoules':[MEGAJOULE,10,'megajoule'],
@@ -296,7 +365,7 @@ class UnitGroupMap {
 					suffix = val[SUFFIX]
 				
 				map.put(unit, new UnitRatio(
-					this, unit, val[RATIO], val[AFFINITY], val[CANONICALUNIT], suffix
+					this, unit, val[RATIO], val[AFFINITY], val[CANONICALUNIT], unitStrings[val[CANONICALUNIT]], suffix
 				))
 				units.add(unit)
 			}
@@ -338,14 +407,16 @@ class UnitGroupMap {
 		double ratio
 		def affinity
 		String canonicalUnit
+		String canonicalUnitString
 		String suffix
 		
-		public UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String suffix) {
+		public UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String suffix) {
 			this.unitGroup = unitGroup
 			this.unit = unit
 			this.ratio = ratio
 			this.affinity = affinity
 			this.canonicalUnit = canonicalUnit
+			this.canonicalUnitString = canonicalUnitString ?: canonicalUnit
 			this.suffix = suffix
 		}
 		
@@ -355,6 +426,7 @@ class UnitGroupMap {
 			this.ratio = other.ratio
 			this.affinity = other.affinity
 			this.canonicalUnit = other.canonicalUnit
+			this.canonicalUnitString = other.canonicalUnitString
 			this.suffix = newSuffix
 		}
 		

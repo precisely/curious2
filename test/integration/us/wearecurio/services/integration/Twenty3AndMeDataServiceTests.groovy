@@ -6,6 +6,8 @@ import org.junit.*
 import org.scribe.model.Response
 import org.scribe.model.Token
 
+import us.wearecurio.utility.Utils
+
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -32,12 +34,12 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert user2.save()
+		assert Utils.save(user2, true)
 
 		// This token may expire.
 		account = new OAuthAccount([typeId: ThirdParty.TWENTY_THREE_AND_ME, userId: userId,
-			accessToken: "d914a5723ed53e84c58fb376a4cca575", accessSecret: "", accountId: "06b53ee811bf5c9f"]).save()
-		assert account.save()
+			accessToken: "d914a5723ed53e84c58fb376a4cca575", accessSecret: "", accountId: "06b53ee811bf5c9f"])
+		assert Utils.save(account, true)
 	}
 
 	@After

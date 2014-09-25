@@ -102,7 +102,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getListData()
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
-		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 		}
 
 	@Test
@@ -133,9 +133,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		println controller.response.contentAsString
 		def x = controller.response.contentAsString
 		assert controller.response.contentAsString.startsWith('callback({"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1,"amountPrecision":3,"units":"","comment":"","repeatType":null')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 		assert controller.response.contentAsString.contains('"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7,"amountPrecision":3,"units":"","comment":"","repeatType":null')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"bread","amount":7.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 	}
 
 	@Test
@@ -159,7 +159,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
-		assert controller.response.contentAsString.endsWith(',1,"bread"]])')
+		assert controller.response.contentAsString.endsWith(',1.000000000,"bread"]])')
 		}
 
 	@Test
@@ -185,7 +185,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getSumPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
-		assert controller.response.contentAsString.endsWith(',2,"bread"]])')
+		assert controller.response.contentAsString.endsWith(',2.000000000,"bread"]])')
 		}
 
 	@Test
@@ -255,8 +255,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.addEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
 	}
 
 	@Test
@@ -282,8 +282,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.updateEntrySData()
 
-		assert controller.response.contentAsString.contains(',"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
-			|| controller.response.contentAsString.contains(',"date":"2011-01-22T18:00:00Z","datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
+			|| controller.response.contentAsString.contains(',"date":"2011-01-22T18:00:00Z","datePrecisionSecs":86400,"timeZoneName":"America/Chicago","description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null') \
 	}
 
 	@Test
@@ -310,7 +310,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.updateEntrySData()
 
-		controller.response.contentAsString.contains('"date":new Date(1278010800000),"datePrecisionSecs":86400,"timeZoneName":"America/Los_Angeles","description":"updatetest voracious","amount":2,"amountPrecision":3,"units":"units","comment":"","repeatType":null')
+		controller.response.contentAsString.contains('"date":new Date(1278010800000),"datePrecisionSecs":86400,"timeZoneName":"America/Los_Angeles","description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null')
 	}
 
 	@Test

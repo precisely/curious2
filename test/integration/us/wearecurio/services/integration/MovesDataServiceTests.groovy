@@ -78,23 +78,23 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
-		/*def entries = Entry.findAllByUserId(user.getId())
+		Collection entries = Entry.findAllByUserId(user.getId())
 		for (def entry in entries) {
 			if (entry.getAmount().intValue() == 1353) {
 				assert entry.toString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, baseTag:run, description:run steps, amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null, repeatEnd:null")
 			}
-		}*/
-		//assert Entry.count() == 23
+		}
+		assert Entry.count() == 23
 
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 		
-		//entries = Entry.findAllByUserId(user.getId())
-		//assert Entry.count() == 23
+		entries = Entry.findAllByUserId(user.getId())
+		assert entries.size() == 23
 	}
 
-	@Test
+	/*@Test
 	void testPollIfNullDataInSegments() {
 		String parsedResponse = """[{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
 
@@ -133,5 +133,5 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		} catch (e) {
 			assert e instanceof InvalidAccessTokenException
 		}
-	}
+	}*/
 }

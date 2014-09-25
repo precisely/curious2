@@ -90,7 +90,8 @@ class MovesDataService extends DataService {
 			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
 			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
 			 */
-			Entry.findAllByUserIdAndSetIdentifierAndDateBetween(userId, setIdentifier, currentDate, currentDate + 1)*.delete()
+			Entry.executeUpdate("update Entry e set e.userId = 0L where e.userId = :userId and e.setIdentifier = :identifier and e.date >= :currentDateA and e.date < :currentDateB",
+					[userId:userId, identifier:setIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
 
 			daySummary["segments"]?.each { currentSegment ->
 				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"

@@ -43,7 +43,7 @@ grails.mime.types = [ // the first one is the default format
 //grails.urlmapping.cache.maxsize = 1000
 
 // Switch back stupid Grails default
-grails.databinding.convertEmptyStringsToNull = true
+grails.databinding.convertEmptyStringsToNull = false
 
 // Grails default layout
 grails.sitemesh.default.layout = 'nodefaultlayout'

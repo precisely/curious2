@@ -1,7 +1,9 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import org.springframework.aop.aspectj.RuntimeTestWalker.ThisInstanceOfResidueTestVisitor;
 import org.springframework.transaction.annotation.Transactional
+
 import us.wearecurio.units.UnitGroupMap
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
@@ -26,9 +28,12 @@ class TagUnitStats {
 	static constraints = {
 		unitGroupId(nullable:true)
 	}
-
-	@Transactional
-	public static def createOrUpdate(Long userId, Long tagId, String unit) {
+	
+	void incrementTimesUsed(int increment) {
+		this.timesUsed += increment
+	}
+	
+	protected static def createOrUpdateSingle(Long userId, Long tagId, String unit, Long unitGroupId, boolean increment) {
 		def tagUnitStats
 		
 		if (unit == null || unit == '') { // if blank unit, return null
@@ -46,35 +51,38 @@ class TagUnitStats {
 		
 		// If yes then update then we have the correct record to update
 		if (tagUnitStats.size() > 0) {
-			log.debug ("TagUnitStats.createOrUpdate(): ${tagUnitStats.size()} unit stats found for user "+
-					userId + " tag" + tagId)
-			log.debug ("TagUnitStats.createOrUpdate(): ${unit} used in the past ")
 			tagUnitStats = tagUnitStats[0]
 		} else {
-			// If this unit is being used for the first time for this tag
-			UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(unit)
-			if (!unitRatio) {
-				log.debug ("TagUnitStats.createOrUpdate(): ${unit} NOT found in the map ")
-				//If we can't find it in our map we use the most used unit
-				//for this tag
-				tagUnitStats = mostUsedTagUnitStats(userId, tagId)
-				if (!tagUnitStats) {
-					//This unit is not in the map and this is the first entry for this tag
-					//i.e. we don't have the most used unit for this tag
-					tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
-							unit: unit)
-				}
-			} else {
-				log.debug ("TagUnitStats.createOrUpdate(): ${unit} FOUND in the map ")
-				tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
-						unit: unitRatio.getUnit(), unitGroupId: unitRatio.getGroupId())
-			}
+			tagUnitStats = new TagUnitStats(tagId: tagId, userId: userId,
+					unit: unit, unitGroupId: unitGroupId)
+			if (increment)
+				tagUnitStats.incrementTimesUsed(2)
 		}
 		
-		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
 		tagUnitStats.timesUsed+=1
+		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
 		tagUnitStats.save()
 		return tagUnitStats
+	}
+
+	@Transactional
+	public static TagUnitStats createOrUpdate(Long userId, Long tagId, String unit) {
+		if (unit == null || unit == '') { // if blank unit, return null
+			return null
+		}
+		
+		// Find UnitRatio for the unit
+		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(unit)
+
+		if (!unitRatio) {
+			return createOrUpdateSingle(userId, tagId, unit, null, false)
+		} else {
+			TagUnitStats stats = createOrUpdateSingle(userId, tagId, unit, unitRatio.getGroupId(), true)
+			if (unit != unitRatio.canonicalUnitString)
+				createOrUpdateSingle(userId, tagId, unitRatio.canonicalUnitString, unitRatio.getGroupId(), false)
+			
+			return stats
+		}
 	}
 	
 	public static def mostUsedTagUnitStats(Long userId, Long tagId) {
@@ -85,7 +93,7 @@ class TagUnitStats {
 			}
 			order ('timesUsed', 'desc')
 		}
-		return tagUnitStats.size()>1 ? tagUnitStats[0] : null
+		return tagUnitStats.size() > 0 ? tagUnitStats[0] : null
 	}
 	
 	public static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
@@ -100,7 +108,7 @@ class TagUnitStats {
 			return null
 			
 		r = TagUnitStats.executeQuery("select tagStats.unit, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId and tagStats.unitGroupId = :unitGroupId group by tagStats.unit order by s desc",
-				[tagIds: tagIds, userId: userId, unitGroupId: unitGroupId], [max: 1])
+				[tagIds: tagIds, userId: userId, unitGroupId: unitGroupId], [max: 2])
 		
 		if ((!r) || (!r[0]))
 			return null

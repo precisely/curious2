@@ -74,10 +74,11 @@ class HomeController extends DataController {
 				log.info "Setting notification to get previous data for account: $account"
 				withingsDataService.saveNotificationForPreviousData(account)
 			}
-			flash.message = g.message(code: "withings.subscribe.success.message")
+			flash.message = "withings.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
-			flash.message = g.message(code: "withings.subscribe.failure.message", args: [result.message ?: ""])
+			flash.message = "withings.subscribe.failure.message"
+			flash.args = result.message ?: ""
 		}
 		
 		redirect(url: session.deniedURI)
@@ -99,10 +100,11 @@ class HomeController extends DataController {
 
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = g.message(code: "withings.unsubscribe.success.message")
+			flash.message = "withings.unsubscribe.success.message"
 		} else {
 			debug "Failed to unsubscribe: " + (result.message ?: "")
-			flash.message = g.message(code: "withings.unsubscribe.failure.message", args: [result.message ?: ""])
+			flash.message = "withings.unsubscribe.failure.message"
+			flash.args = result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -160,10 +162,10 @@ class HomeController extends DataController {
 
 		if (result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = message(code: "moves.subscribe.success.message")
+			flash.message = "moves.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe"
-			flash.message = message(code: "moves.subscribe.failure.message")
+			flash.message = "moves.subscribe.failure.message"
 		}
 		redirect(url: session.deniedURI)
 	}
@@ -184,10 +186,11 @@ class HomeController extends DataController {
 
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = g.message(code: "moves.unsubscribe.success.message")
+			flash.message = "moves.unsubscribe.success.message"
 		} else {
 			debug "Failure while unsubscribing" + result.message
-			flash.message = g.message(code: "moves.unsubscribe.failure.message", args: [result.message ?: ""])
+			flash.message = "moves.unsubscribe.failure.message"
+			flash.args = result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -232,10 +235,12 @@ class HomeController extends DataController {
 
 		if(result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = g.message(code: "fitbit.subscribe.success.message", args: [result.message ?: ""])
+			flash.message = "fitbit.subscribe.success.message"
+			flash.args = result.message ?: ""
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = g.message(code: "fitbit.subscribe.failure.message", args: [result.message ?: ""])
+			flash.message = "fitbit.subscribe.failure.message"
+			flash.args = result.message ?: ""
 		}
 		redirect(url: session.deniedURI)
 	}
@@ -261,10 +266,11 @@ class HomeController extends DataController {
 
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = g.message(code: "fitbit.unsubscribe.success.message")
+			flash.message = "fitbit.unsubscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = g.message(code: "fitbit.unsubscribe.failure.message", args: [result.message ?: ""])
+			flash.message = "fitbit.unsubscribe.failure.message"
+			flash.args = result.message ?: ""
 		}
 
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))

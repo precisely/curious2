@@ -41,9 +41,8 @@ class DiscussionController extends LoginController {
 		}
 		return discussion
 	}
-
-
-	def create() {
+	
+	def createTopic() {
 		def p = params
 		def user = sessionUser()
 		def group = loadGroup(p, user)

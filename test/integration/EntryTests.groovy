@@ -1,4 +1,3 @@
-
 import static org.junit.Assert.*
 
 import java.math.MathContext
@@ -156,9 +155,10 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		// units filled in automatically
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet favorite", baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -250,13 +250,17 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:what's going on???, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3: 2 bags of chips", baseDate, true), new EntryStats())
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:2.000000000, units:bags of, amountPrecision:3, comment:chips, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3", baseDate, true), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:bags of, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310#", baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -324,17 +328,17 @@ class EntryTests extends CuriousTestCase {
 
 		// none value
 		
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 4pm: none", baseDate, false), new EntryStats())
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "tranch 4pm: none", baseDate, false), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:tranch, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 - 4pm", baseDate, false), new EntryStats())
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "tranch - 4pm", baseDate, false), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:methyl b-12, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:tranch, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "methyl b-12 none we can at 4pm", baseDate, false), new EntryStats())
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "tranch none we can at 4pm", baseDate, false), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:methyl b-12, amount:null, units:we can, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:tranch, amount:null, units:we can, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
 		// test time parsing with unambiguous formats
 

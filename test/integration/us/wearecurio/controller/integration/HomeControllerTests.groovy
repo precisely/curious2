@@ -9,6 +9,7 @@ import us.wearecurio.controller.HomeController
 import us.wearecurio.model.*
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.UrlService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.AuthenticationRequiredException
@@ -24,6 +25,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	HomeController controller
 	FitBitDataService fitBitDataService
 	WithingsDataService withingsDataService
+	UrlService urlService
 
 	User user2
 
@@ -42,16 +44,28 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		Utils.save(discussion, true)
 		String mockedResponseData = """{"status":0,"body":{"updatetime":1385535542,"measuregrps":[{"grpid":162026288,"attrib":2,"date":1385386484,"category":1,"comment":"Hello","measures":[{"value":6500,"type":1,"unit":-2}]},{"grpid":162028086,"attrib":2,"date":1385300615,"category":1,"comment":"Nothing to comment","measures":[{"value":114,"type":9,"unit":0},{"value":113,"type":10,"unit":0},{"value":74,"type":11,"unit":0}]},{"grpid":129575271,"attrib":2,"date":1372931328,"category":1,"comment":"sa","measures":[{"value":170,"type":4,"unit":-2}]},{"grpid":129575311,"attrib":2,"date":1372844945,"category":1,"measures":[{"value":17700,"type":1,"unit":-2}]},{"grpid":129575122,"attrib":2,"date":1372844830,"category":1,"comment":"sa","measures":[{"value":6300,"type":1,"unit":-2}]},{"grpid":128995279,"attrib":0,"date":1372706279,"category":1,"measures":[{"value":84,"type":9,"unit":0},{"value":138,"type":10,"unit":0},{"value":77,"type":11,"unit":0}]},{"grpid":128995003,"attrib":0,"date":1372706125,"category":1,"measures":[{"value":65861,"type":1,"unit":-3}]}]}}"""
 		MockedHttpURLConnection mockedConnection = new MockedHttpURLConnection(mockedResponseData)
+		String mockedFitBitResponseData = """{"someKey": "someValue"}"""
+		MockedHttpURLConnection mockedFitBitConnection = new MockedHttpURLConnection(mockedFitBitResponseData)
 		withingsDataService.oauthService = [
 				getWithingsResource: { token, url, body, header ->
 					return new Response(mockedConnection)
 				},
 				getWithingsResourceWithQuerystringParams: { token, url, body, header ->
 					return new Response(new MockedHttpURLConnection("""{"status": 0, "body": {"activities": []}}"""))
-				}
+				},
 			]
-
+		withingsDataService.urlService = urlService
+		fitBitDataService.oauthService = [
+				getFitBitResource: { token, url, body, header ->
+					return new Response(mockedFitBitConnection)
+				},
+				getFitBitResourceWithQuerystringParams: { token, url, body, header ->
+					return new Response(mockedFitBitConnection)
+				},
+			]
 		controller = new HomeController()
+		controller.withingsDataService = withingsDataService
+		controller.fitBitDataService = fitBitDataService
 	}
 
 	@After
@@ -325,7 +339,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 		controller.registerwithings()
 		assert account.accessToken == ""
-		assert controller.flash.message.contains("Unable to link Withings account. Please try again")
+		assert controller.flash.message == "withings.subscribe.failure.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		account.accessToken = "some-token"
@@ -340,7 +354,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 
 		controller.registerwithings()
-		assert controller.flash.message.contains("Successfully linked Withings account.")
+		assert controller.flash.message == "withings.subscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -350,10 +364,11 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.withingsDataService = [
 			unsubscribe: { Long userId -> return [success:true] }
 		] as WithingsDataService
+		controller.withingsDataService.urlService = urlService
 		controller.session.userId = userId
 
 		controller.unregisterwithings()
-		assert controller.flash.message.contains("Successfully unlinked Withings account")
+		assert controller.flash.message == "withings.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -394,7 +409,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 			}
 		]
 		controller.registerfitbit()
-		assert controller.flash.message.contains("already been subscribed.")
+		assert controller.flash.message == "fitbit.subscribe.success.message"
+		assert controller.flash.args.contains("already been subscribed")
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		controller.response.reset()
@@ -409,7 +425,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 
 		controller.registerfitbit()
-		assert controller.flash.message.contains("Successfully linked FitBit account.")
+		assert controller.flash.message == "fitbit.subscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -422,7 +438,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		controller.unregisterfitbit()
-		assert controller.flash.message.contains("Successfully unlinked FitBit account")
+		assert controller.flash.message == "fitbit.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -444,7 +460,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 
 		controller.registermoves()
-		assert controller.flash.message.contains("Successfully linked Moves account.")
+		assert controller.flash.message == "moves.subscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -457,7 +473,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		controller.unregistermoves()
-		assert controller.flash.message.contains("Successfully unlinked Moves account")
+		assert controller.flash.message == "moves.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 }

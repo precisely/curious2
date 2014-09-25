@@ -28,6 +28,7 @@ class EntryCreateMap {
 	}
 	
 	void add(Entry entry) {
-		entries.put(entry.getDate(), entry)
+		if (entry != null)
+			entries.put(entry.getDate(), entry)
 	}
 }

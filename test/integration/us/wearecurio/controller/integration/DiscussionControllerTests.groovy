@@ -51,7 +51,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller = new DiscussionController()
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.create()
+		def retVal = controller.createTopic()
 		assert Discussion.count() == 0 
     }
 
@@ -62,7 +62,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		params.group = 'testgroup'
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.create()
+		def retVal = controller.createTopic()
 		assert Discussion.count() == 1
     }
 
@@ -76,7 +76,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		params.group = 'nowrite'
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.create()
+		def retVal = controller.createTopic()
 		assert Discussion.count() == 0
     }
     @Test
@@ -86,7 +86,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		params.remove('group') 
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.create()
+		def retVal = controller.createTopic()
 		assert Discussion.count() == 1
     }
 }
