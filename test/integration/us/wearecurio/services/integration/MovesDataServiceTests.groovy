@@ -94,7 +94,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert entries.size() == 23
 	}
 
-	/*@Test
+	@Test
 	void testPollIfNullDataInSegments() {
 		String parsedResponse = """[{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
 
@@ -133,5 +133,5 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		} catch (e) {
 			assert e instanceof InvalidAccessTokenException
 		}
-	}*/
+	}
 }
