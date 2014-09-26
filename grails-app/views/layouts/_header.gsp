@@ -51,6 +51,10 @@
             <g:form url="[controller:'home',action:'login']">
                 <input type="hidden" name="login" value="login"/>
                 <button type="submit" class="btn btn-default header-button">Sign In</button>
+                	<g:if test="${flash.message}">
+						&nbsp;(<span style="text-transform: none">${flash.message.encodeAsHTML()}</span>)
+					</g:if>
+                
             </g:form>
         </li>
 	</ul>
