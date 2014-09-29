@@ -128,6 +128,27 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testMultiCreateSuffix() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", baseDate, true), new EntryStats())
+		
+ 		String v = entry.valueString()
+
+		//assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
+		v = v
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.units
+		}
+		
+		assert x == "run elevation:run:feet elevation:run distance:run:miles"
+	}
+	
+	/*@Test
 	void testMultiList() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 slices 500 calories", baseDate, true), new EntryStats())
 		
@@ -256,5 +277,5 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert c == 0
-	}
+	}*/
 }

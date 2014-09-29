@@ -522,7 +522,7 @@ class UnitGroupMap {
 			String units1 = matcher.group(1)
 			ratio = unitsToRatio.get(units1)
 			if (ratio != null) {
-				String suffix = matcher.group(5)
+				String suffix = matcher.group(4)
 				return new UnitRatio(ratio, suffix)
 			}
 		}
