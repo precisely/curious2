@@ -8,7 +8,7 @@ class DiscussionController extends LoginController {
 
 	static allowedMethods = [create: "POST", update: "POST", delete: "POST"]
 
-	def create(Long plotDataId, String name, Long id, String discussionPost) {
+	def createTopic(Long plotDataId, String name, Long id, String discussionPost) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
