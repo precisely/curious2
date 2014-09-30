@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.parse.ParseUtils
 import us.wearecurio.parse.ScannerPattern
-
 import us.wearecurio.collection.SingleCollection
 import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.parse.PatternScanner
@@ -19,13 +18,14 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.model.EntryGroup
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 import java.util.ArrayList
+import java.util.HashSet;
 import java.util.Map
 import java.util.regex.Pattern
 import java.util.LinkedList
-
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -560,6 +560,7 @@ class Entry implements Comparable {
 		
 		Entry e = null
 		for (ParseAmount amount : amounts) {
+			if (!amount.isActive()) continue
 			amount.copyToMap(m)
 			e = createSingle(userId, m, entryGroup, stats)
 		}
@@ -787,6 +788,7 @@ class Entry implements Comparable {
 		for (Entry e : entry.fetchGroupEntries()) {
 			boolean foundMatch = false
 			for (ParseAmount a : amounts) {
+				if (!a.isActive()) continue
 				if (a.matches(e)) {
 					foundMatch = true
 					amounts.remove(a)
@@ -800,6 +802,7 @@ class Entry implements Comparable {
 				}
 			}			
 			if (!foundMatch) for (ParseAmount a : amounts) {
+				if (!a.isActive()) continue
 				if (a.matchesWeak(e)) {
 					foundMatch = true
 					amounts.remove(a)
@@ -821,6 +824,7 @@ class Entry implements Comparable {
 			Entry e = unmatchedEntries.remove(0)
 			if (amounts.size() > 0) {
 				ParseAmount a = amounts.remove(0)
+				if (!a.isActive()) continue
 				a.copyToMap(m)
 				Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
 				if (e.is(entry))
@@ -834,6 +838,7 @@ class Entry implements Comparable {
 		// finally, create new entries in group for remaining amounts
 		if (amounts.size() > 0) {
 			for (ParseAmount a : amounts) {
+				if (!a.isActive()) continue
 				a.copyToMap(m)
 				Entry created = createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
 				if (retVal == null)
@@ -2410,14 +2415,24 @@ class Entry implements Comparable {
 		String suffix
 		BigDecimal amount
 		int precision
+		UnitRatio unitRatio
 		String units
 		
 		ParseAmount(BigDecimal amount, int precision) {
+			this.tag = null
 			this.amount = amount
 			this.precision = precision
 		}
 		
-		ParseAmount setTagAndBaseTag(Tag tag, Tag baseTag) {
+		void deactivate() {
+			tag = null
+		}
+		
+		boolean isActive() {
+			return tag != null
+		}
+		
+		ParseAmount setTags(Tag tag, Tag baseTag) {
 			this.tag = tag
 			if (baseTag == null || baseTag == tag) {
 				this.suffix = ""
@@ -2445,8 +2460,18 @@ class Entry implements Comparable {
 		}
 		
 		String toString() {
-			return "Tag: " + tag.getDescription() + " amount: " + amount + " units: " + units
+			if (tag == null)
+				return "ParseAmount(inactive)"
+			return "ParseAmount(Tag: " + tag.getDescription() + " amount: " + amount + " units: " + units + ")"
 		}
+	}
+	
+	static HashSet<String> bloodPressureTags = new HashSet<String>()
+	
+	static {
+		bloodPressureTags.add("blood pressure")
+		bloodPressureTags.add("bp")
+		bloodPressureTags.add("blood")
 	}
 	
 	static final int CONDITION_TAGWORD = 1
@@ -2811,8 +2836,57 @@ class Entry implements Comparable {
 		retVal['tag'] = Tag.look(tagDescription)
 		
 		int index = 0
-		for (ParseAmount amount : amounts)
-			amount.setTagAndBaseTag(UnitGroupMap.theMap.tagWithSuffixForUnits(retVal['tag'], amount.getUnits(), index++), retVal['baseTag'])
+		Tag baseTag = retVal['baseTag']
+		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
+		
+		Map<String, ParseAmount> suffixToParseAmount = new HashMap<String, ParseAmount>()
+		
+		for (ParseAmount amount : amounts) {
+			String units = amount.getUnits()
+			
+			if (!units) {
+				amount.setTags(baseTag, baseTag)
+			} else {
+				UnitRatio unitRatio = unitGroupMap.unitRatioForUnits(units)
+				String amountSuffix
+				if (unitRatio) {
+					amountSuffix = unitRatio.getSuffix()
+					amount.setUnitRatio(unitRatio)
+				} else
+					amountSuffix = units
+					
+				if (bloodPressureTags.contains(baseTag.getDescription())) {
+					if (amountSuffix) {
+						if (amountSuffix.equals("pressure")) {
+							if (index == 0) amountSuffix = "systolic"
+							else amountSuffix = "diastolic"
+						}
+					}
+				}
+				
+				Tag tag = Tag.look(baseTag.getDescription() + ' ' + amountSuffix)
+				
+				amount.setTags(tag, baseTag)
+				
+				ParseAmount prevAmount = suffixToParseAmount.get(amountSuffix)
+				
+				if (prevAmount) {
+					UnitRatio prevUnitRatio = prevAmount.getUnitRatio()
+					if (prevUnitRatio.unitGroup == unitRatio.unitGroup) {
+						// merge amounts together, they are the same unit group
+						// use first amount units
+						prevAmount.amount = prevAmount.amount.add(new BigDecimal(amount.amount.doubleValue()
+								* (unitRatio.ratio / prevUnitRatio.ratio)))
+						amount.deactivate()
+					} // otherwise do nothing, don't merge the amounts
+				}
+				
+				if (amount.isActive()) {
+					suffixToParseAmount.put(amountSuffix, amount)
+				}
+			}
+			index++
+		}
 		
 		retVal['amounts'] = amounts
 

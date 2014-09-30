@@ -111,11 +111,6 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiCreate() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 slices 500 calories", baseDate, true), new EntryStats())
 		
- 		String v = entry.valueString()
-
-		//assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
-		v = v
-		
 		Iterable<Entry> group = entry.fetchGroupEntries()
 		
 		String x = ""
@@ -131,11 +126,6 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiCreateSuffix() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", baseDate, true), new EntryStats())
 		
- 		String v = entry.valueString()
-
-		//assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
-		v = v
-		
 		Iterable<Entry> group = entry.fetchGroupEntries()
 		
 		String x = ""
@@ -145,10 +135,28 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == "run elevation:run:feet elevation:run distance:run:miles"
+		assert x == ":run elevation:run:feet elevation:run distance:run:miles"
 	}
 	
-	/*@Test
+	@Test
+	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
+	void testMultiCreateAddSimilarUnits() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "run 2 hours 30 minutes", baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.amount
+			x += ":" + e.units
+		}
+		
+		assert x == ":run duration:run:2.500000000:hours"
+	}
+	
+	@Test
 	void testMultiList() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 slices 500 calories", baseDate, true), new EntryStats())
 		
@@ -199,6 +207,26 @@ class EntryGroupTests extends CuriousTestCase {
 			def amounts = entryDesc['amounts']
 			assert amounts[0].amount.intValue() == 2
 			assert amounts[0].units == "beans"
+			assert amounts[1].amount.intValue() == 255
+			assert amounts[1].units == "calories"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testMultiUpdateDissimilarAddUnits() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 slices 500 calories", baseDate, true), new EntryStats())
+		
+		assert Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 2 hours 30 minutes 255 calories", baseDate, true, true), new EntryStats(), baseDate, true) != null
+
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.toString() == "2.500000000"
+			assert amounts[0].units == "hours"
 			assert amounts[1].amount.intValue() == 255
 			assert amounts[1].units == "calories"
 		}
@@ -277,5 +305,5 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert c == 0
-	}*/
+	}
 }

@@ -12,124 +12,124 @@ class UnitGroupMap {
 
 	private static def log = LogFactory.getLog(this)
 
-	public static final int RATIO = 0
-	public static final int AFFINITY = 1
-	public static final int CANONICALUNIT = 2
-	public static final int SUFFIX = 3
+	static final int RATIO = 0
+	static final int AFFINITY = 1
+	static final int CANONICALUNIT = 2
+	static final int SUFFIX = 3
 	//Duration
-	public static final long MILLISECOND = 1
-	public static final double PICOSECOND = MILLISECOND * 0.000000001d
-	public static final double MICROSECOND = MILLISECOND * 0.001d
-	public static final long SECOND = MILLISECOND * 1000
-	public static final long MINUTE = SECOND * 60
-	public static final long HOUR = MINUTE * 60
-	public static final long DAY = HOUR * 24
-	public static final long WEEK = DAY * 7
-	public static final double MONTH = DAY * 30.4375d
-	public static final double YEAR = MONTH * 12
-	public static final double CENTURY = YEAR * 100
+	static final long MILLISECOND = 1
+	static final double PICOSECOND = MILLISECOND * 0.000000001d
+	static final double MICROSECOND = MILLISECOND * 0.001d
+	static final long SECOND = MILLISECOND * 1000
+	static final long MINUTE = SECOND * 60
+	static final long HOUR = MINUTE * 60
+	static final long DAY = HOUR * 24
+	static final long WEEK = DAY * 7
+	static final double MONTH = DAY * 30.4375d
+	static final double YEAR = MONTH * 12
+	static final double CENTURY = YEAR * 100
 
 	//Distance
-	public static final double METER = 1
-	public static final double CENTIMETER = 0.01d
-	public static final double MILLIMETER = 0.001d
-	public static final double FOOT = METER * 0.30480d
-	public static final double YARD = METER * FOOT * 3.0d
-	public static final double MILE = METER * FOOT * 5280.0d
-	public static final double KILOMETER = METER * 1000
+	static final double METER = 1
+	static final double CENTIMETER = 0.01d
+	static final double MILLIMETER = 0.001d
+	static final double FOOT = METER * 0.30480d
+	static final double YARD = METER * FOOT * 3.0d
+	static final double MILE = METER * FOOT * 5280.0d
+	static final double KILOMETER = METER * 1000
 
 	//Weight
-	public static final double GRAM = 1
-	public static final double MILLIGRAM = 0.001
-	public static final double KILOGRAM = GRAM * 1000
-	public static final double POUND = GRAM * 453.6
-	public static final double OUNCE = POUND / 16.0d
+	static final double GRAM = 1
+	static final double MILLIGRAM = 0.001
+	static final double KILOGRAM = GRAM * 1000
+	static final double POUND = GRAM * 453.6
+	static final double OUNCE = POUND / 16.0d
 	
 	//Area
-	public static final double SQMETER = 1
-	public static final double HECTARE = 10000 * SQMETER
-	public static final double ACRE = HECTARE / 2.471d
-	public static final double SQKILOMETER = KILOMETER * KILOMETER
-	public static final double SQMILE = MILE * MILE
-	public static final double SQFOOT = FOOT * FOOT
+	static final double SQMETER = 1
+	static final double HECTARE = 10000 * SQMETER
+	static final double ACRE = HECTARE / 2.471d
+	static final double SQKILOMETER = KILOMETER * KILOMETER
+	static final double SQMILE = MILE * MILE
+	static final double SQFOOT = FOOT * FOOT
 	
 	//Volume
-	public static final double CC = 1
-	public static final double LITER = 1000.0d
-	public static final double GALLON = OUNCE * 16.0d
-	public static final double QUART = OUNCE * 4.0d
+	static final double CC = 1
+	static final double LITER = 1000.0d
+	static final double GALLON = OUNCE * 16.0d
+	static final double QUART = OUNCE * 4.0d
 	
 	//Force
-	public static final double NEWTON = POUND / 4.44822162825d
-	public static final double DYNE = NEWTON / 100000.0d
-	public static final double KIP = POUND * 1000.0d
+	static final double NEWTON = POUND / 4.44822162825d
+	static final double DYNE = NEWTON / 100000.0d
+	static final double KIP = POUND * 1000.0d
 	
 	//Power
-	public static final double WATT = 1
-	public static final double KILOWATT = 1000.0d * WATT
-	public static final double MILLIWATT = WATT / 1000.0d
-	public static final double HORSEPOWER = 745.699872d * WATT
+	static final double WATT = 1
+	static final double KILOWATT = 1000.0d * WATT
+	static final double MILLIWATT = WATT / 1000.0d
+	static final double HORSEPOWER = 745.699872d * WATT
 	
 	//Energy
-	public static final double JOULE = 1
-	public static final double ERG = 1.0e-7d
-	public static final double FOOTPOUND = 1.3558d
-	public static final double BTU = 1055.056d
-	public static final double HORSEPOWERHOUR = 2.6845e6d
-	public static final double MEGAJOULE = 1000000.0d
-	public static final double GIGAJOULE = 1.0e9d
-	public static final double TERAJOULE = 1.0e12d
-	public static final double PETAJOULE = 1.0e15d
-	public static final double KILOWATTHOUR = 3.6e6d
-	public static final double THERM = 105.5d * MEGAJOULE
-	public static final double CALORIE = 4.184d
-	public static final double KILOCALORIE = 1000.0d * CALORIE
-	public static final double KILOTON = 4.184e3d * GIGAJOULE
-	public static final double MEGATON = 1000.0d * KILOTON
-	public static final double EV = 1.60217653e-19d
+	static final double JOULE = 1
+	static final double ERG = 1.0e-7d
+	static final double FOOTPOUND = 1.3558d
+	static final double BTU = 1055.056d
+	static final double HORSEPOWERHOUR = 2.6845e6d
+	static final double MEGAJOULE = 1000000.0d
+	static final double GIGAJOULE = 1.0e9d
+	static final double TERAJOULE = 1.0e12d
+	static final double PETAJOULE = 1.0e15d
+	static final double KILOWATTHOUR = 3.6e6d
+	static final double THERM = 105.5d * MEGAJOULE
+	static final double CALORIE = 4.184d
+	static final double KILOCALORIE = 1000.0d * CALORIE
+	static final double KILOTON = 4.184e3d * GIGAJOULE
+	static final double MEGATON = 1000.0d * KILOTON
+	static final double EV = 1.60217653e-19d
 	
 	//Pressure
-	public static final double PASCAL = 1
-	public static final double BARYE = 0.1d
-	public static final double PSI = 6894.75729d
-	public static final double BAR = 100000.0d
-	public static final double DECIBAR = BAR / 10.0d
-	public static final double CENTIBAR = BAR / 100.0d
-	public static final double MILLIBAR = BAR / 1000.0d
-	public static final double MEGABAR = 1.0e6d * BAR
-	public static final double KILOBAR = 1.0e3d * BAR
-	public static final double MMHG = 133.3223684211d
-	public static final double INCHHG = 3386.389d
-	public static final double ATMOSPHERE = 98.0665e3d
+	static final double PASCAL = 1
+	static final double BARYE = 0.1d
+	static final double PSI = 6894.75729d
+	static final double BAR = 100000.0d
+	static final double DECIBAR = BAR / 10.0d
+	static final double CENTIBAR = BAR / 100.0d
+	static final double MILLIBAR = BAR / 1000.0d
+	static final double MEGABAR = 1.0e6d * BAR
+	static final double KILOBAR = 1.0e3d * BAR
+	static final double MMHG = 133.3223684211d
+	static final double INCHHG = 3386.389d
+	static final double ATMOSPHERE = 98.0665e3d
 	
 	//Density
-	public static final double KGPERM3 = 1
-	public static final double MGPERDL = 0.01d
-	public static final double KGPERL = 1000.0d
-	public static final double GPERML = 1000.0d
+	static final double KGPERM3 = 1
+	static final double MGPERDL = 0.01d
+	static final double KGPERL = 1000.0d
+	static final double GPERML = 1000.0d
 	// TODO: Finish adding density units
 	
 	//Steps
-	public static final double STEPSUNIT = 1
+	static final double STEPSUNIT = 1
 	
 	//Percentage
-	public static final double PERCENTAGEUNIT = 1
+	static final double PERCENTAGEUNIT = 1
 	
 	//Frequency
-	public static final double PERSECOND = 1.0d
-	public static final double PERMINUTE = 60.0d
-	public static final double PERHOUR = 60.0d * PERMINUTE
-	public static final double PERDAY = 24.0d * PERHOUR
-	public static final double PERWEEK = 7.0d * PERDAY
-	public static final double PERMONTH = 30.4375d * PERDAY
-	public static final double PERYEAR = 365.25d * PERDAY
+	static final double PERSECOND = 1.0d
+	static final double PERMINUTE = 60.0d
+	static final double PERHOUR = 60.0d * PERMINUTE
+	static final double PERDAY = 24.0d * PERHOUR
+	static final double PERWEEK = 7.0d * PERDAY
+	static final double PERMONTH = 30.4375d * PERDAY
+	static final double PERYEAR = 365.25d * PERDAY
 	
 	//Scale
-	public static final double SCALEUNITY = 1
-	public static final double SCALETEN = 10
-	public static final double SCALEFIVE = 5
-	public static final double SCALEFOUR = 4
-	public static final double SCALETHREE = 4
+	static final double SCALEUNITY = 1
+	static final double SCALETEN = 10
+	static final double SCALEFIVE = 5
+	static final double SCALEFOUR = 4
+	static final double SCALETHREE = 4
 	
 	// other suffixes
 	static Map suffixPriority = ['systolic' : 10, 'diastolic' : 20]
@@ -333,13 +333,13 @@ class UnitGroupMap {
 			'unity':[SCALEUNITY,10,'to ten'], 'to one':[SCALEUNITY,10,'to one'],
 			'to three':[SCALETHREE,10,'to three'], 'to four':[SCALEFOUR,10,'to four'], 'to five':[SCALEFIVE,10,'to five'],
 		])
-		public static final double PERSECOND = 1.0d
-		public static final double PERMINUTE = 60.0d
-		public static final double PERHOUR = 60.0d * PERMINUTE
-		public static final double PERDAY = 24.0d * PERHOUR
-		public static final double PERWEEK = 7.0d * PERDAY
-		public static final double PERMONTH = 30.4375d * PERDAY
-		public static final double PERYEAR = 365.25d * PERDAY
+		static final double PERSECOND = 1.0d
+		static final double PERMINUTE = 60.0d
+		static final double PERHOUR = 60.0d * PERMINUTE
+		static final double PERDAY = 24.0d * PERHOUR
+		static final double PERWEEK = 7.0d * PERDAY
+		static final double PERMONTH = 30.4375d * PERDAY
+		static final double PERYEAR = 365.25d * PERDAY
 	
 		final int id
 		final String name
@@ -384,11 +384,11 @@ class UnitGroupMap {
 			unitGroups.get(id)
 		}
 
-		public UnitRatio lookupUnitRatio(String unit) {
+		UnitRatio lookupUnitRatio(String unit) {
 			return map[unit]
 		}
 		
-		public UnitRatio lookupBestUnitRatio(String unit, UnitRatio prevUnitRatio) {
+		UnitRatio lookupBestUnitRatio(String unit, UnitRatio prevUnitRatio) {
 			UnitRatio unitRatio = map[unit]
 
 			if (unitRatio == null) return prevUnitRatio
@@ -396,12 +396,12 @@ class UnitGroupMap {
 			return unitRatio.bestRatio(prevUnitRatio)
 		}
 		
-		public Set<String> fetchUnits() {
+		Set<String> fetchUnits() {
 			return map.keySet()
 		}
 	}
 	
-	public static class UnitRatio {
+	static class UnitRatio {
 		UnitGroup unitGroup
 		String unit 
 		double ratio
@@ -410,7 +410,7 @@ class UnitGroupMap {
 		String canonicalUnitString
 		String suffix
 		
-		public UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String suffix) {
+		UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String suffix) {
 			this.unitGroup = unitGroup
 			this.unit = unit
 			this.ratio = ratio
@@ -420,7 +420,7 @@ class UnitGroupMap {
 			this.suffix = suffix
 		}
 		
-		public UnitRatio(UnitRatio other, String newSuffix) {
+		UnitRatio(UnitRatio other, String newSuffix) {
 			this.unitGroup = other.unitGroup
 			this.unit = other.unit
 			this.ratio = other.ratio
@@ -436,24 +436,24 @@ class UnitGroupMap {
 			return this.affinity > other.affinity ? this : other
 		}
 		
-		public int getGroupId() {
+		int getGroupId() {
 			return unitGroup.getId()
 		}
 		
-		public UnitGroup getGroup() {
+		UnitGroup getGroup() {
 			return unitGroup
 		}
 		
-		public int getGroupPriority() {
+		int getGroupPriority() {
 			return unitGroup.getPriority()
 		}
 		
-		public UnitRatio lookupUnitRatio(String unit) {
+		UnitRatio lookupUnitRatio(String unit) {
 			return unitGroup.map[unit]
 		}
 	}
 	
-	public static final UnitGroupMap theMap = new UnitGroupMap()
+	static final UnitGroupMap theMap = new UnitGroupMap()
 	
 	static Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
@@ -487,7 +487,7 @@ class UnitGroupMap {
 		return unitRatio
 	}
 	
-	public double fetchConversionRatio(String fromUnits, String toUnits) {
+	double fetchConversionRatio(String fromUnits, String toUnits) {
 		UnitRatio fromUnitRatio = unitsToRatio.get(fromUnits)
 		UnitRatio toUnitRatio = unitsToRatio.get(toUnits)
 		
@@ -500,7 +500,7 @@ class UnitGroupMap {
 	/**
 	 * Returns generic closest-matching UnitRatio for the given unit string
 	 */
-	public UnitRatio unitRatioForUnits(String units) {
+	UnitRatio unitRatioForUnits(String units) {
 		UnitRatio ratio = unitsToRatio.get(units)
 		
 		if (ratio != null) return ratio
@@ -533,7 +533,7 @@ class UnitGroupMap {
 	/**
 	 * Look through UnitGroups, or just use most used UnitGroup
 	 */
-	public UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
+	UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
 		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
@@ -547,57 +547,40 @@ class UnitGroupMap {
 	}
 	
 	/**
-	 * Return unit suffix corresponding to unit string. For now, just use simple algorithm
-	 */
-	public String getSuffixForUnits(String tagDescription, String units) {
-		UnitRatio unitRatio = unitRatioForUnits(units)
-		if (unitRatio) {
-			return unitRatio.getSuffix()
-		}
-		return units
-	}
-	
-	static HashSet<String> bloodPressureTags = new HashSet<String>()
-	
-	static {
-		bloodPressureTags.add("blood pressure")
-		bloodPressureTags.add("bp")
-		bloodPressureTags.add("blood")
-	}
-	
-	/**
 	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
 	 */
 	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
+		if (!units) {
+			return baseTag
+		}
+		
+		UnitRatio unitRatio = unitRatioForUnits(units)
+		String suffix
+		if (unitRatio)
+			suffix = unitRatio.getSuffix()
+		else
+			suffix = units
+			
 		if (bloodPressureTags.contains(baseTag.getDescription())) {
-			if (units) {
-				String suffix = getSuffixForUnits(baseTag.getDescription(), units)
-				if (suffix) {
-					if (suffix.equals("pressure")) {
-						if (index == 0) suffix = "systolic"
-						else suffix = "diastolic"
-					}
-					return Tag.look(baseTag.getDescription() + ' ' + suffix)
+			if (suffix) {
+				if (suffix.equals("pressure")) {
+					if (index == 0) suffix = "systolic"
+					else suffix = "diastolic"
 				}
 			}
 		}
-		if (units) {
-			String suffix = UnitGroupMap.theMap.getSuffixForUnits(baseTag.getDescription(), units)
-			if (suffix)
-				return Tag.look(baseTag.getDescription() + ' ' + suffix)
-		}
 		
-		return baseTag
+		return Tag.look(baseTag.getDescription() + ' ' + suffix)
 	}
 
 	/**
 	 * Return set of all suffixes for parsing
 	 */
-	public static Set<String> getSuffixes() {
+	static Set<String> getSuffixes() {
 		return suffixes
 	}
 	
-	public static int getSuffixPriority(String suffix) {
+	static int getSuffixPriority(String suffix) {
 		return suffixPriority.get(suffix)
 	}
 }
