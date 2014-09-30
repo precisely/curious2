@@ -102,7 +102,6 @@ class DiscussionPost {
 	}
 	
 	String toString() {
-		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId
-				+ ", message:'" + message + "')"
+		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}
 }

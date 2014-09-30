@@ -761,7 +761,7 @@ class HomeController extends DataController {
 			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.getPlotDataId() != null && post.getMessage() == null) {
 				// first comment added to a discussion with a plot data at the top is assumed to be a caption on the plot data
 				post.setMessage(params.message)
-				Utils.save(post)
+				Utils.save(post, true)
 			} else if (user) {
 				post = discussion.createPost(user, plotIdMessage, params.message)
 			} else if (params.postname && params.postemail){
