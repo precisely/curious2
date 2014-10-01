@@ -789,7 +789,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (!rangeLine.isContinuous) {
 				var min = rangeLine.minVal < 0 ? rangeLine.minVal : 0;
 				yaxes[line.id]['min'] = min;
-				yaxes[line.id]['max'] = (rangeLine.maxVal - min) * 1.1 + min;
+				yaxes[line.id]['max'] = (rangeLine.maxVal - min) * 1.1 + min + 0.5;
 			} else {
 				var min = rangeLine.minVal - (rangeLine.maxVal - rangeLine.minVal) / 20;
 				if (rangeLine.minVal >= 0 && min < 0)
@@ -800,6 +800,12 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (line.allUnity || line.flatten) {
 				yaxes[line.id]['min'] = 0;
 				yaxes[line.id]['max'] = 2 - (line.yOffset == undefined ? 0 : line.yOffset);
+			}
+			if (yaxes[line.id]['max'] == yaxes[line.id]['min']) {
+				yaxes[line.id]['max'] += 0.5;
+			}
+			if (yaxes[line.id]['min'] > 0) {
+				yaxes[line.id]['min'] -= 0.5;
 			}
 		}
 		
@@ -856,6 +862,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			};
 		}
 
+		if (options.xaxis['max'] == options.xaxis['min']) {
+			options.xaxis['min'] -= 0.5;
+			options.xaxis['max'] += 0.5;
+		}
+		
 		for (var i in this.lines) {
 			if (this.cycleTagLine) {
 				var cyclicData = this.lines[i].getCyclicData(this.cycleTagLine);
@@ -2020,7 +2031,7 @@ function PlotLine(p) {
 					  show: this.showLines
 					},
 					points: {
-						show: this.showPoints
+						show: this.showPoints || data.length < 2
 					},
 					yaxis: this.yaxis,
 					plotLine: this
@@ -2036,7 +2047,7 @@ function PlotLine(p) {
 					  fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 					},
 					points: {
-						show: this.showPoints
+						show: this.showPoints || data.length < 2
 					},
 					yaxis: this.yaxis,
 					plotLine: this
