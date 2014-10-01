@@ -3,7 +3,28 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 class UrlMappings {
 
 	static mappings = {
-        "/$controller/$action?/$id?(.$format)?"{
+
+		"/correlation/index/$flavor" {
+			controller = "correlation"
+			action = "index"
+		}
+
+		"/correlation/patch/$id/markViewed" {
+			controller = "correlation"
+			action = "markViewed"
+		}
+
+		"/correlation/patch/$id/markNoise" {
+			controller = "correlation"
+			action = "markNoise"
+		}
+
+		"/correlation/patch/$id/markSaved" {
+			controller = "correlation"
+			action = "markSaved"
+		}
+
+		"/$controller/$action?/$id?(.$format)?"{
 			constraints {
 				// apply constraints here
 			}

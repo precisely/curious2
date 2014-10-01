@@ -501,6 +501,10 @@ class HomeController extends DataController {
 		render(view:"/home/homepage")
 	}
 
+	def signals() {
+		render(view: "/home/signals")
+	}
+
 	def community(Long discussionId, boolean unpublish, boolean publish) {
 		debug "HomeController.community()"
 		def user = sessionUser()

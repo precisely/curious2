@@ -26,7 +26,7 @@ class BootStrap {
 		def current = Environment.current
 		DatabaseService.set(databaseService)
 		TagService.set(tagService)
-		EmailService.set(emailService)
+		//EmailService.set(emailService)
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 
@@ -35,13 +35,13 @@ class BootStrap {
 		}
 
 		//withingsDataService.refreshSubscriptions()
-		if (current != Environment.TEST) {
-			try {
-				new IntraDayDataThread().start()
-			} catch(IllegalStateException ie) {
-				log.debug "Bootstrap: Could not start IntraDayDataThread"
-			}
-		}
+		//if (current != Environment.TEST) {
+		//	try {
+		//		new IntraDayDataThread().start()
+		//	} catch(IllegalStateException ie) {
+		//		log.debug "Bootstrap: Could not start IntraDayDataThread"
+		//	}
+		//}
 		log.debug "Curious bootstrap finished executing."
 	}
 
