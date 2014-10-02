@@ -251,6 +251,14 @@ class Entry implements Comparable {
 		RepeatType.REMINDWEEKLYGHOST.getId()
 	]
 
+	protected static def LONG_GHOST_IDS = [
+		(long)RepeatType.CONTINUOUSGHOST.getId(),
+		(long)RepeatType.DAILYCONCRETEGHOST.getId(),
+		(long)RepeatType.WEEKLYCONCRETEGHOST.getId(),
+		(long)RepeatType.REMINDDAILYGHOST.getId(),
+		(long)RepeatType.REMINDWEEKLYGHOST.getId()
+	]
+
 	protected static def DAILY_UNGHOSTED_IDS = [
 		RepeatType.DAILY.getId(),
 		RepeatType.DAILYCONCRETEGHOST.getId(),
@@ -527,7 +535,7 @@ class Entry implements Comparable {
 		if (tag.hasEntry(userId)) {
 			User.addToCache(userId, tag)
 		}
-		stats.addTag(entry.getBaseTag())
+		stats.addEntry(entry)
 		stats.setTimeZoneId(entry.getTimeZoneId())
 
 		return entry
@@ -877,7 +885,7 @@ class Entry implements Comparable {
 		
 		stats.setUserId(oldUserId)
 		
-		stats.addTag(entry.getBaseTag())
+		stats.addEntry(entry)
 
 		if (updateDurationEntry != null) {
 			updateDurationEntry.updateDurationEntry(stats)
@@ -1777,12 +1785,11 @@ class Entry implements Comparable {
 	 * Update existing entry and save
 	 */
 	protected doUpdate(Map m, EntryStats stats) {
-		long oldTagId = this.baseTag.getId()
-		doUpdateSingle(m, stats)
-		long newTagId = this.baseTag.getId()
+		stats.addEntry(this)
 		
-		stats.addTagId(oldTagId)
-		stats.addTagId(newTagId)
+		doUpdateSingle(m, stats)
+		
+		stats.addEntry(this)
 	}
 
 	protected doUpdateSingle(Map m, EntryStats stats) {

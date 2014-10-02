@@ -198,12 +198,10 @@ class TagStats {
 		
 		def userId = user.getId()
 
-		def tagStats = []
-		
 		def tags = Entry.getBaseTags(user, Entry.ONLYIDS)
 		
 		for (tagId in tags) {
-			tagStats.add(createOrUpdate(userId, tagId))
+			createOrUpdate(userId, tagId)
 		}
 	}
 	

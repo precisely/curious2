@@ -12,19 +12,19 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagValueStats;
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.services.DatabaseService
-
 import groovy.transform.TypeChecked
 
 import org.joda.time.DateTimeZone
 import org.junit.*
+
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
-
 import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.IntegrationTestMixin
 
@@ -94,6 +94,9 @@ class EntryTests extends CuriousTestCase {
 		veryLateBaseDate = dateFormat.parse("July 20, 2010 12:00 am")
 		
 		Entry.executeUpdate("delete Entry")
+		Entry.executeUpdate("delete TagUnitStats")
+		Entry.executeUpdate("delete TagValueStats")
+		Entry.executeUpdate("delete TagStats")
 	}
 	
 	static within(long a, long b, long d) {
@@ -131,7 +134,7 @@ class EntryTests extends CuriousTestCase {
 		return c
 	}
 	
-	@Test
+	/*@Test
 	void testUpdateRepeatVagueDate() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 repeat", baseDate, true), new EntryStats())
 		
@@ -2110,7 +2113,7 @@ class EntryTests extends CuriousTestCase {
 		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		assert entry.fetchEndEntry() == entry3
 		assert entry3.fetchStartEntry() == entry
-	}
+	}*/
 	
 	static final MathContext mc = new MathContext(9)
 	
@@ -2183,6 +2186,14 @@ class EntryTests extends CuriousTestCase {
 		assert result.getLastAmountPrecision() == 3
 		
 		assert result.getLastUnits().equals("tablet")
+		
+		def tabletTag = Tag.look("abcdef tablet")
+		
+		TagValueStats resultV = TagValueStats.createOrUpdate(userId, tabletTag.getId(), null)
+		
+		assert resultV.getMinimum().intValue() == 1
+		
+		assert resultV.getMaximum().intValue() == 3
 		
 		def tag2 = Tag.look("qwerty")
 		

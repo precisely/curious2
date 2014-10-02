@@ -561,7 +561,7 @@ class UnitGroupMap {
 		else
 			suffix = units
 			
-		if (bloodPressureTags.contains(baseTag.getDescription())) {
+		if (Entry.bloodPressureTags.contains(baseTag.getDescription())) {
 			if (suffix) {
 				if (suffix.equals("pressure")) {
 					if (index == 0) suffix = "systolic"

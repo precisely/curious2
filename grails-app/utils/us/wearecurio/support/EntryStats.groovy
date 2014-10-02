@@ -9,6 +9,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.EntryGroup
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.User
 
 
@@ -19,7 +20,9 @@ class EntryStats {
 	static mapWith = "none"
 	
 	Long userId
+	Set<Long> baseTagIds = new HashSet<Long>()
 	Set<Long> tagIds = new HashSet<Long>()
+	Date startDate
 	Integer timeZoneId = null
 	boolean batchCreation = false
 	
@@ -29,6 +32,7 @@ class EntryStats {
 	EntryStats(boolean batchCreation, Long userId) {
 		this.batchCreation = true
 		this.userId = userId
+		this.startDate = null
 	}
 
 	EntryStats(boolean batchCreation) {
@@ -39,24 +43,30 @@ class EntryStats {
 		this.userId = userId
 	}
 
-	void addTag(Tag tag) {
-		tagIds.add(tag.getId())
-	}
-	
-	void addTagId(Long tagId) {
-		tagIds.add(tagId)
+	void addEntry(Entry entry) {
+		tagIds.add(entry.tag.id)
+		baseTagIds.add(entry.baseTag.id)
+		if (startDate == null)
+			startDate = entry.date
+		else if (startDate > entry.date)
+			startDate = entry.date
+		timeZoneId = entry.getTimeZoneId()
 	}
 	
 	ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
 		ArrayList<TagStats> tagStats = new ArrayList<TagStats>()
 		
+		for (Long baseTagId: baseTagIds) {
+			tagStats.add(TagStats.createOrUpdate(userId, baseTagId))
+		}
+
 		for (Long tagId: tagIds) {
-			tagStats.add(TagStats.createOrUpdate(userId, tagId))
+			TagValueStats.createOrUpdate(userId, tagId, startDate)
 		}
 
 		if (timeZoneId != null)
 			User.setTimeZoneId(userId, timeZoneId)
-			
+
 		return tagStats
 	}
 }
