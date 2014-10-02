@@ -114,7 +114,7 @@ class DiscussionPost {
 		return true
 	}
 	
-	static int createComment(String message, User user, Discussion discussion, DiscussionPost post, Long plotIdMessage, Map params) {
+	static def createComment(String message, User user, Discussion discussion, DiscussionPost post, Long plotIdMessage, Map params) {
 		if (!UserGroup.canWriteDiscussion(user, discussion)) {
 			return 1
 		}
@@ -133,9 +133,8 @@ class DiscussionPost {
 		if (post == null) {
 			return 2
 		} else {
-			return 3
+			return post.id
 		}
-		return 0
 	}
 
 	String toString() {

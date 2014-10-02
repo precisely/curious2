@@ -148,11 +148,9 @@ class Discussion {
 
 	static Discussion create(User user, String name, UserGroup group) {
 		Discussion discussion
-		if (group) {
-			if (group.hasWriter(user)) {
-				discussion = create(user, name)
-				group.addDiscussion(discussion)
-			}
+		if (group?.hasWriter(user)) {
+			discussion = create(user, name)
+			group.addDiscussion(discussion)
 		}
 		return discussion
 	}

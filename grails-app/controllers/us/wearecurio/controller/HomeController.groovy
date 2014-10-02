@@ -749,10 +749,9 @@ class HomeController extends DataController {
 			}
 		}
 		if (params.message || plotIdMessage) {
-			
 			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
 			DiscussionPost post = discussion.getFirstPost()
-			int result = DiscussionPost.createComment(params.message, user, discussion, post, 
+			def result = DiscussionPost.createComment(params.message, user, discussion, post, 
 				plotIdMessage, params)
 			switch (result) {
 				case 1:
@@ -763,10 +762,10 @@ class HomeController extends DataController {
 					flash.message = "Cannot add comment"
 					redirect(url:toUrl(action:'index'))
 					break
-				case 3:
+				default:
 					redirect(url:toUrl(action:'discuss', 
 					  params:[discussionId:discussion.getId()],
-					  fragment:'comment' + post.getId()))
+					  fragment:'comment' + result))
 			}
 			
 		} else {

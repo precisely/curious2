@@ -1086,7 +1086,7 @@ class DataController extends LoginController {
 			renderStringGet('fail')
 		}
 	}
-	
+
 	def createComment(Long discussionId, String message, Long plotIdMessage) {
 		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
 		def user = sessionUser()

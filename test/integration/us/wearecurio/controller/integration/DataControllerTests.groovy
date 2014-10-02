@@ -691,6 +691,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.createDiscussion()
 //		assert controller.response.contentAsString ('success')
+		response.text == "success"
 		assert Discussion.count() == 1
 	}
 }

@@ -481,6 +481,12 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testDeleteComment() {
 		HomeController controller = new HomeController()
 		controller.session.userId = user.getId()
+		
+		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['clearPostId'] = user.getId()
+		controller.discuss()
+		assert controller.flash.message.contains("Can't delete that post")
+		
 		controller.params['discussionId'] = discussion.getId().toString()
 		controller.params['clearPostId'] = plotData.getId()
 		controller.discuss()
