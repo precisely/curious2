@@ -9,19 +9,8 @@ class UrlMappings {
 			action = "index"
 		}
 
-		"/correlation/patch/$id/markViewed" {
+		"/correlation/patch/$id/$action" {
 			controller = "correlation"
-			action = "markViewed"
-		}
-
-		"/correlation/patch/$id/markNoise" {
-			controller = "correlation"
-			action = "markNoise"
-		}
-
-		"/correlation/patch/$id/markSaved" {
-			controller = "correlation"
-			action = "markSaved"
 		}
 
 		"/$controller/$action?/$id?(.$format)?"{

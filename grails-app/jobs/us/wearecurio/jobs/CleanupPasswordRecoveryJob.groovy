@@ -9,6 +9,6 @@ class CleanupPasswordRecoveryJob extends us.wearecurio.utility.TimerJob {
     }
 
     def execute() {
-        PasswordRecovery.deleteStaleRecoveries()
+//        PasswordRecovery.deleteStaleRecoveries()
     }
 }

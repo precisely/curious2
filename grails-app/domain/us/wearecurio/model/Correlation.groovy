@@ -10,12 +10,10 @@ class Correlation {
 	Long series1Id
 	String series2Type
 	Long series2Id
-	Long userId
-	Double corValue
-	Double mipssValue
-	Double triggerValue
 
-	Double overlapN
+	Long userId
+
+
 	Date created
 	Date updated
 
@@ -23,16 +21,31 @@ class Correlation {
 	Date noise
 	Date viewed
 
+	enum ValueType {
+		MIPSS(0), COR(1), TRIGGER(2)
+		final Integer id
+		ValueType(Integer id) {
+			this.id = id
+		}
+	}
+
+	ValueType valueType
+	Double value
+
+	// auxilliary information serialized as a JSON string.
+	String auxJson
+
+
 	static constraints = {
-		corValue nullable: true //, validator: { val, obj -> val && !Double.isNaN(val) }
-		overlapN nullable: true
-		mipssValue nullable: true
-		triggerValue nullable: true
-		created nullable: true
-		updated nullable: true
+		valueType nullable: true
+		value nullable: true
+		auxJson nullable: true
+
 		saved nullable: true
 		noise nullable: true
 		viewed nullable: true
+		created nullable: true
+		updated nullable: true
 	}
 
 	static mapping = {
@@ -72,15 +85,16 @@ class Correlation {
 		switch(flavor) {
 
 			case "triggered":
-				column = "triggerValue"
+				column = "value"
 				break;
 
 			case "saved":
 				column = "saved"
+				criteria.add( R.isNotNull("saved") )
 				break
 
 			default:
-				column = "mipssValue"
+				column = "value"
 				break
 		}
 		def orderRestriction = (flavor == "negative" ? O.asc(column) : O.desc(column))
@@ -106,5 +120,12 @@ class Correlation {
 		correlation.saved = new Date()
 		Utils.save(correlation, true)
 	}
+
+	def savedAsLong() { saved ? saved.getTime() : null }
+	def viewedAsLong() { viewed ? viewed.getTime() : null }
+	def noiseAsLong() { noise ? noise.getTime() : null }
+
+	def description1() { Tag.get(series1Id).description }
+	def description2() { Tag.get(series2Id).description }
 
 }

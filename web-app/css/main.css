@@ -1829,7 +1829,7 @@ body{
 	margin-right: 10px;
 }
 
-.signals .secret-container {
+.signals #secret-container {
 	position:absolute;
 	width: 20000px;
 	overflow: hidden;

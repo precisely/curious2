@@ -12,6 +12,6 @@ class RemindEmailJob extends us.wearecurio.utility.TimerJob {
     }
 
     def execute() {
-        remindEmailService.sendReminders()
+//        remindEmailService.sendReminders()
     }
 }

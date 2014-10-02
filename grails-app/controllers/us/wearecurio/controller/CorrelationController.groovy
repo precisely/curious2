@@ -1,6 +1,7 @@
 package us.wearecurio.controller
 
 import us.wearecurio.model.Correlation
+import grails.converters.JSON
 
 class CorrelationController {
 	static allowedMethods = [viewed: "PATCH"]
@@ -8,14 +9,13 @@ class CorrelationController {
 
 	def index() {
 		def currentUser = securityService.currentUser
-		if (currentUser != null) {
+		if (currentUser == null) {
 			renderNotLoggedIn()
 			return
 		}
-		response.status = topCorrelations ? 200 : 500
-		render(contentType: "text/json") {
-			Correlation.userCorrelations(currentUser.id, 20, params.flavor)
-		}
+		def correlations = Correlation.userCorrelations(currentUser.id, 20, params.flavor)
+		response.status = correlations ? 200 : 500
+		render correlations as JSON
 	}
 
 	def markViewed() {
@@ -53,6 +53,5 @@ class CorrelationController {
 			render(contentType: "text/json") {['message': 'an error occurred']}
 		}
 	}
-
 
 }

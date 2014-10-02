@@ -27,15 +27,15 @@ function refreshPage() {
 
 $(function(){
 	initTemplate();
-	
+
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
 			function(data){
 				if (!checkData(data))
 					return;
-			
+
 			var found = false;
-			
+
 			jQuery.each(data, function() {
 				if (!found) {
 					// set first user id as the current
@@ -49,46 +49,9 @@ $(function(){
 		});
 });
 
-$(document).ready(function() {
-	$(document).on("click", "a.delete-discussion", function() {
-		var $this = $(this);
-		showYesNo('Are you sure want to delete this?', function() {
-			var discussionId = $this.data('discussionId');
-			$.ajax({
-				url: '/home/discuss',
-				data: {
-					discussionId: discussionId,
-					deleteDiscussion: true
-				},
-				success: function(data) {
-					showAlert(JSON.parse(data).message, function() {
-						$this.parents('.graphItem').fadeOut();
-					});
-				},
-				error: function(xhr) {
-					var data = JSON.parse(xhr.responseText);
-					showAlert(data.message);
-				}
-			});
-		});
-		return false;
-	});
-
-	$(document).on("click", "ul#discussion-pagination a", function() {
-		var url = $(this).attr('href');
-		$.ajax({
-			url: url,
-			success: function(data) {
-				$('div#discussions').html(data);
-				wrapPagination();
-			}
-		});
-		return false;
-	});
-});
 </script>
 
-
+<script src="/js/mustache.js"></script>
 </head>
 
 <body class="signals">
@@ -107,6 +70,7 @@ $(document).ready(function() {
 
 
 <img class="garbage-can-icon" src="/images/signals/garbage-bin.png" >
+
 <div class="arrow-box">
 	<h3 class='tooltip-title'>Reviewing your signal</h3>
 	<p class='tooltip-body'>At vero eos et accusamus et iusto odio dignissimos corrupti quos dolores et quas molestias id est laborum et dolorum fuga.</p>
@@ -126,7 +90,7 @@ $(document).ready(function() {
 		<div class="col-md-2 signal-name">
 			<span class="saved-action">Saved</span>
 			<!-- Preload the toggle image //-->
-			<img src="/images/signals/arrow-right-sm.png" style="display: none">
+			<img src="/images/signals/arrow-right-sm.png" class="nodisplay">
 			<img src="/images/signals/arrow-down-sm.png" class="toggle-saved toggle-arrow">
 		</div>
 	</div>
@@ -134,85 +98,20 @@ $(document).ready(function() {
 		<tr>
 			<td width='30' > <div class="arrow arrow-left"></div>  </td>
 			<td class='nav-carousel-container'>
-				<div class="secret-container">
-				<div class="nav-box" data-id="1">
-					<img class="nav-box-icon comment-icon" src="/images/comment-icon.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Title:</span>
-						<span class="carousel-item-body">
-							This is the body of item 1.
-						<span>
-					</div>
-				</div>
-				<div class="nav-box" data-id="33">
-					<img class="nav-box-icon" src="/images/graph-icon.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Graph name:</span>
-						<span class="carousel-item-body">
-							This is the body 2.
-						<span>
-					</div>
-				</div>
+				<div id="secret-container">
 
-				<div class="nav-box" data-id="152">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
-
-				<div class="nav-box" data-id="153">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
-
-				<div class="nav-box" data-id="154">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
-
-				<div class="nav-box" data-id="155">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
-
-				<div class="nav-box" data-id="156">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
-
-				<div class="nav-box" data-id="157">
-					<img class="nav-box-icon" src="/images/signals/2-hill-series-small.png"/>
-					<div class="carousel-caption">
-						<span class="carousel-item-title">Signal:</span>
-						<span class="carousel-item-body">
-							Here is a signal description.
-						<span>
-					</div>
-				</div>
+					<script id="saved-item-template" type="x-tmpl-mustache">
+						<div class="nav-box" data-id="{{id}}">
+							<img class="nav-box-icon {{type}}-icon" src="/images/signals/{{type}}.png"/>
+							<div class="carousel-caption">
+								<span class="carousel-item-title">{{type}}:</span>
+								<span class="carousel-item-body">
+									Score: {{score}}<br>
+									{{description1}} X {{description2}}
+								<span>
+							</div>
+						</div>
+					</script>
 
 				</div> <!--- secret-container //-->
 
@@ -223,74 +122,35 @@ $(document).ready(function() {
 
 	<div class="red-header"></div>
 
-	<div class="row signal-row" type="pos">
-		<div class="col-md-2 signal-name">
-			<img src="/images/signals/2-hill-series-medium.png" />
-			<h2 class="signal-category"> Proportional </h2>
-		</div>
-		<div class="col-md-8 signal-description">
-			<p>
-				<span class="signal-section-title">TAGS:</span>
-				<span class="signal-section-details">Are sleep mood and anxiety proportional to each other?</span>
-			</p>
-			<p>
-				<span class="signal-section-title">SPAN:</span>
-				<span class="signal-section-details">3/2/2014 - 3/28/2014</span>
-			</p>
-		</div>
-		<div class="col-md-2 signal-action">
-			<div class="signal-action-button" data-action="graph">View Graph</div>
-			<div class="signal-action-button" data-action="noise">Mark as Noise</div>
-			<div class="signal-action-button" data-action="save" >Save</div>
-		</div>
+	<div id="correlation-container">
+
+		<script id="correlation-template" type="x-tmpl-mustache">
+			<div class="row signal-row" type="triggered">
+				<div class="col-md-2 signal-name">
+					<img src="/images/signals/{{type}}.png" />
+					<h2 class="signal-category"> Event<br>{{type}} </h2>
+				</div>
+				<div class="col-md-8 signal-description">
+
+					<p>
+						<span class="signal-section-title">TAGS:</span>
+						<span class="signal-section-details">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
+					</p>
+					<p>
+						<span class="signal-section-title">SCORE:</span>
+						<span class="signal-section-details">{{score}}</span>
+					</p>
+				</div>
+				<div class="col-md-2 signal-action">
+					<div class="signal-action-button" data-action="graph">View Graph</div>
+					<div class="signal-action-button" data-action="noise">Mark as Noise</div>
+					<div class="signal-action-button" data-action="save" >Save</div>
+				</div>
+			</div>
+		</script>
+
 	</div>
-
-	<div class="row signal-row" type="neg">
-		<div class="col-md-2 signal-name">
-			<img src="/images/signals/inversely-proportional.png" />
-			<h2 class="signal-category"> Inversely<br>Proportional </h2>
-		</div>
-		<div class="col-md-8 signal-description">
-			<p>
-				<span class="signal-section-title">TAGS:</span>
-				<span class="signal-section-details">Are mood level and dm inversely proportional to each other?</span>
-			</p>
-			<p>
-				<span class="signal-section-title">SPAN:</span>
-				<span class="signal-section-details">1/2/2014 - 3/18/2014</span>
-			</p>
-		</div>
-		<div class="col-md-2 signal-action">
-			<div class="signal-action-button" data-action="graph">View Graph</div>
-			<div class="signal-action-button" data-action="noise">Mark as Noise</div>
-			<div class="signal-action-button" data-action="save" >Save</div>
-		</div>
-	</div>
-
-	<div class="row signal-row" type="trig">
-		<div class="col-md-2 signal-name">
-			<img src="/images/signals/event-triggered.png" />
-			<h2 class="signal-category"> Event<br>Triggered </h2>
-		</div>
-		<div class="col-md-8 signal-description">
-
-			<p>
-				<span class="signal-section-title">TAGS:</span>
-				<span class="signal-section-details">Is anxiety level triggered by gluten exposure?</span>
-			</p>
-			<p>
-				<span class="signal-section-title">SPAN:</span>
-				<span class="signal-section-details">1/2/2014 - 1/7/2014</span>
-			</p>
-		</div>
-		<div class="col-md-2 signal-action">
-			<div class="signal-action-button" data-action="graph">View Graph</div>
-			<div class="signal-action-button" data-action="noise">Mark as Noise</div>
-			<div class="signal-action-button" data-action="save" >Save</div>
-		</div>
-	</div>
-
-
+	<!-- id='correlation-container' //-->
 </div>
 <!-- /MAIN -->
 
