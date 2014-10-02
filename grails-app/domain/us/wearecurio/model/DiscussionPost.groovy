@@ -106,7 +106,9 @@ class DiscussionPost {
 		DiscussionPost post = DiscussionPost.get(clearPostId)
 		if (post != null && (user == null || post.getUserId() != user.getId())) {
 			return false
-		} else {
+		} else if (post == null){
+			return false
+		} else{
 			post.setMessage(null)
 			discussion.setUpdated(new Date())
 		}

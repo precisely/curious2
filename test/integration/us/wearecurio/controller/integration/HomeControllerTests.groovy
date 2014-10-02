@@ -480,15 +480,23 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	@Test
 	void testDeleteComment() {
 		HomeController controller = new HomeController()
-		controller.session.userId = user.getId()
-		
-		controller.params['discussionId'] = discussion.getId().toString()
-		controller.params['clearPostId'] = user.getId()
+
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
+		discussionPostInstance.save(flush: true)
+
+		// When the user isn't authorized to delete comment
+		controller.params['discussionId'] = discussionInstance.id
+		controller.params['clearPostId'] = plotData.getId()
+		controller.session.userId = user2.getId()
 		controller.discuss()
-		assert controller.flash.message.contains("Can't delete that post")
-		
+		assert controller.flash.message == ("Can't delete that post")
+		controller.flash.message = null
+
+		//When user is authorized
 		controller.params['discussionId'] = discussion.getId().toString()
 		controller.params['clearPostId'] = plotData.getId()
+		controller.session.userId = user.getId()
 		controller.discuss()
 		assert controller.flash.message == null
 	}
@@ -497,10 +505,20 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testCreateComment() {
 		HomeController controller = new HomeController()
 		controller.session.userId = user.getId()
+		
+		// When the user doesn't have the write permission
 		controller.params['discussionId'] = discussion.getId().toString()
 		controller.params['message'] = "dummyMessage"
+		controller.session.userId = user2.getId()
 		controller.discuss()
-
+		assert controller.flash.message == ("You don't have permission to add a comment to this discussion")
+		controller.response.reset()
+		
+		// When the user have the write permission
+		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['message'] = "dummyMessage"
+		controller.session.userId = user.getId()
+		controller.discuss()
 		assert controller.response.redirectUrl.contains("home/discuss")
 	}
 }

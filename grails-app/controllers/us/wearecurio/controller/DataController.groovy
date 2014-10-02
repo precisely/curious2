@@ -1080,7 +1080,6 @@ class DataController extends LoginController {
 		if (discussionId && clearPostId) {
 			discussion = Discussion.get(discussionId)
 			DiscussionPost.deleteComment(clearPostId, user, discussion)
-			println("success")
 			renderStringGet('success')
 		} else {
 			renderStringGet('fail')
@@ -1091,11 +1090,14 @@ class DataController extends LoginController {
 		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
 		def user = sessionUser()
 		Discussion discussion = Discussion.get(discussionId)
-		DiscussionPost post = discussion.getFirstPost()
-		int result = DiscussionPost.createComment(message, user, discussion, post, plotIdMessage, params)
-		if (result == 0) {
-			println("success")
-			renderStringGet('success')
+		if (discussion) {
+			DiscussionPost post = discussion.getFirstPost()
+			int result = DiscussionPost.createComment(message, user, discussion, post, plotIdMessage, params)
+			if (result == 0) {
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
+			}
 		} else {
 			renderStringGet('fail')
 		}

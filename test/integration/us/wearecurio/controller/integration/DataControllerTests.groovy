@@ -682,16 +682,59 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		assert c == 5
 	}
-	
+
 	@Test
 	void testCreateDiscussion() {
 		controller.session.userId = user.getId()
+
+		// Test for invalid params
+		controller.params['name'] = 'dummyDiscussion'
+		controller.createDiscussion()
+		controller.response.text == "fail"
+
+		// Test for valid params
 		controller.params['name'] = 'dummyDiscussion'
 		controller.params['discussionPost'] = 'dummyPost'
-
 		controller.createDiscussion()
-//		assert controller.response.contentAsString ('success')
-		response.text == "success"
-		assert Discussion.count() == 1
+		controller.response.text == "success"
+
+	}
+	
+	@Test
+	void testDeleteComment() {
+		controller.session.userId = user.getId()
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
+
+		// Test for invalid params
+		controller.params['discussionId'] = discussionInstance.id
+		controller.params['clearPostId'] = 23
+		controller.deleteComment()
+		controller.response.text == "fail"
+		
+		// Test for valid params
+		discussionPostInstance.save(flush: true)
+		controller.params['discussionId'] = discussionInstance.id
+		controller.params['clearPostId'] = discussionPostInstance.id
+		controller.deleteComment()
+		controller.response.text == "success"
+	}
+	
+	@Test
+	void testCreateComment() {
+		controller.session.userId = user.getId()
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		
+		// Test for invalid params
+		controller.params['discussionId'] = 23
+		controller.params['message'] = 'dummyMessage'
+		controller.createComment()
+		controller.response.text == "fail"
+
+		// Test for valid params
+		controller.params['discussionId'] = discussionInstance.id
+		controller.params['message'] = 'dummyMessage'
+		controller.createComment()
+		controller.response.text == "success"
 	}
 }
