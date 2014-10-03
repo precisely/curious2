@@ -1055,7 +1055,7 @@ class DataController extends LoginController {
 		renderStringGet('success')
 	}
 	
-	def createDiscussion(Long plotDataId, String name, Long id, String discussionPost) {
+	def createDiscussionData(Long plotDataId, String name, Long id, String discussionPost) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
@@ -1074,7 +1074,7 @@ class DataController extends LoginController {
 		}
 	}
 	
-	def deleteComment(Long discussionId, Long clearPostId) {
+	def deleteCommentData(Long discussionId, Long clearPostId) {
 		def user = sessionUser()
 		Discussion discussion
 		if (discussionId && clearPostId) {
@@ -1086,7 +1086,7 @@ class DataController extends LoginController {
 		}
 	}
 
-	def createComment(Long discussionId, String message, Long plotIdMessage) {
+	def createCommentData(Long discussionId, String message, Long plotIdMessage) {
 		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
 		def user = sessionUser()
 		Discussion discussion = Discussion.get(discussionId)

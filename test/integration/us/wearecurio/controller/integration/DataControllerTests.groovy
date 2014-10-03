@@ -689,13 +689,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		// Test for invalid params
 		controller.params['name'] = 'dummyDiscussion'
-		controller.createDiscussion()
+		controller.createDiscussionData()
 		controller.response.text == "fail"
 
 		// Test for valid params
 		controller.params['name'] = 'dummyDiscussion'
 		controller.params['discussionPost'] = 'dummyPost'
-		controller.createDiscussion()
+		controller.createDiscussionData()
 		controller.response.text == "success"
 
 	}
@@ -709,14 +709,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 		// Test for invalid params
 		controller.params['discussionId'] = discussionInstance.id
 		controller.params['clearPostId'] = 23
-		controller.deleteComment()
+		controller.deleteCommentData()
 		controller.response.text == "fail"
 		
 		// Test for valid params
 		discussionPostInstance.save(flush: true)
 		controller.params['discussionId'] = discussionInstance.id
 		controller.params['clearPostId'] = discussionPostInstance.id
-		controller.deleteComment()
+		controller.deleteCommentData()
 		controller.response.text == "success"
 	}
 	
@@ -728,13 +728,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		// Test for invalid params
 		controller.params['discussionId'] = 23
 		controller.params['message'] = 'dummyMessage'
-		controller.createComment()
+		controller.createCommentData()
 		controller.response.text == "fail"
 
 		// Test for valid params
 		controller.params['discussionId'] = discussionInstance.id
 		controller.params['message'] = 'dummyMessage'
-		controller.createComment()
+		controller.createCommentData()
 		controller.response.text == "success"
 	}
 }
