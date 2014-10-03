@@ -116,27 +116,30 @@ class DiscussionPost {
 		return true
 	}
 	
-	static def createComment(String message, User user, Discussion discussion, DiscussionPost post, Long plotIdMessage, Map params) {
-		if (!UserGroup.canWriteDiscussion(user, discussion)) {
-			return 1
+	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params) {
+		def post
+		Discussion.withTransaction {
+			post = discussion.getFirstPost()
+			if (!UserGroup.canWriteDiscussion(user, discussion)) {
+				post =  "No permissions"
+				return
+			}
+			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 
+				&& post.getPlotDataId() != null && post.getMessage() == null) {
+				// first comment added to a discussion with a plot data at the top is
+				// assumed to be a caption on the plot data
+				log.debug("DiscussionPost.createComment: 1 post with plotData")
+				post.setMessage(message)
+				Utils.save(post)
+			} else if (user) {
+				log.debug("DiscussionPost.createComment: 1st comment")
+				post = discussion.createPost(user, plotIdMessage, message)
+			} else if (params.postname && params.postemail){
+				post = discussion.createPost(params.postname, params.postemail, params.postsite, 
+				plotIdMessage, message)
+			}
 		}
-		if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 
-			  && post.getPlotDataId() != null && post.getMessage() == null) {
-			// first comment added to a discussion with a plot data at the top is
-			  // assumed to be a caption on the plot data
-			post.setMessage(message)
-			Utils.save(post)
-		} else if (user) {
-			post = discussion.createPost(user, plotIdMessage, message)
-		} else if (params.postname && params.postemail){
-			post = discussion.createPost(params.postname, params.postemail, params.postsite, 
-			  plotIdMessage, message)
-		}
-		if (post == null) {
-			return 2
-		} else {
-			return post.id
-		}
+		return post
 	}
 
 	String toString() {

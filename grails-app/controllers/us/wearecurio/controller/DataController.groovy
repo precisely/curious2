@@ -1091,9 +1091,8 @@ class DataController extends LoginController {
 		def user = sessionUser()
 		Discussion discussion = Discussion.get(discussionId)
 		if (discussion) {
-			DiscussionPost post = discussion.getFirstPost()
-			int result = DiscussionPost.createComment(message, user, discussion, post, plotIdMessage, params)
-			if (result == 0) {
+			def result = DiscussionPost.createComment(message, user, discussion, plotIdMessage, params)
+			if (result && !(result instanceof String)) {
 				renderStringGet('success')
 			} else {
 				renderStringGet('fail')

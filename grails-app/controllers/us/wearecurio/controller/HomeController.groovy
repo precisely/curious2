@@ -750,22 +750,23 @@ class HomeController extends DataController {
 		}
 		if (params.message || plotIdMessage) {
 			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
-			DiscussionPost post = discussion.getFirstPost()
-			def result = DiscussionPost.createComment(params.message, user, discussion, post, 
+			def comment = DiscussionPost.createComment(params.message, user, discussion , 
 				plotIdMessage, params)
-			switch (result) {
-				case 1:
-					flash.message = "You don't have permission to add a comment to this discussion"
-					redirect(url:toUrl(action:'index'))
-					break
-				case 2:
-					flash.message = "Cannot add comment"
-					redirect(url:toUrl(action:'index'))
-					break
-				default:
-					redirect(url:toUrl(action:'discuss', 
-					  params:[discussionId:discussion.getId()],
-					  fragment:'comment' + result))
+			if (comment instanceof String) {
+				flash.message = "You don't have permission to add a comment to this discussion"
+				redirect(url:toUrl(action:'index'))
+				return
+			}
+
+			if (comment == null) {
+				flash.message = "Cannot add comment"
+				redirect(url:toUrl(action:'index'))
+				return
+			} else {
+				redirect(url:toUrl(action:'discuss', 
+					params:[discussionId:discussion.getId()],
+					fragment:'comment' + comment.id))
+				return
 			}
 			
 		} else {
