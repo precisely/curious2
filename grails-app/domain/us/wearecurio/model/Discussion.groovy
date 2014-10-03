@@ -55,6 +55,15 @@ class Discussion {
 		return discussion
 	}
 	
+	static Discussion create(User user, String name, UserGroup group) {
+		Discussion discussion
+		if (group?.hasWriter(user)) {
+			discussion = create(user, name)
+			group.addDiscussion(discussion)
+		}
+		return discussion
+	}
+
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
@@ -146,14 +155,6 @@ class Discussion {
 		return discussion
 	}
 
-	static Discussion create(User user, String name, UserGroup group) {
-		Discussion discussion
-		if (group?.hasWriter(user)) {
-			discussion = create(user, name)
-			group.addDiscussion(discussion)
-		}
-		return discussion
-	}
 
 	DiscussionPost fetchFirstPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
