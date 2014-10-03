@@ -1,6 +1,9 @@
 package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
+
+import java.util.Map;
+
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -740,41 +743,31 @@ class HomeController extends DataController {
 			Utils.save(discussion, true)
 		}
 		if (clearPostId) {
-			debug "Attemtping to clear post id " + clearPostId
-			DiscussionPost post = DiscussionPost.get(clearPostId)
-			if (post != null && (user == null || post.getUserId() != user.getId())) {
+			boolean result = DiscussionPost.deleteComment(clearPostId, user, discussion)
+			if (result == false) {
 				flash.message = "Can't delete that post"
-			} else {
-				post.setMessage(null)
-				discussion.setUpdated(new Date())
 			}
-			Utils.save(post, true)
 		}
 		if (params.message || plotIdMessage) {
 			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
-			if (!UserGroup.canWriteDiscussion(user, discussion)) {
-				flash.message = "You don't have permission to add a comment to this discussion"
-				redirect(url:toUrl(action:'index'))
-				return
-			}
 			DiscussionPost post = discussion.getFirstPost()
-			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 && post.getPlotDataId() != null && post.getMessage() == null) {
-				// first comment added to a discussion with a plot data at the top is assumed to be a caption on the plot data
-				post.setMessage(params.message)
-				Utils.save(post, true)
-			} else if (user) {
-				post = discussion.createPost(user, plotIdMessage, params.message)
-			} else if (params.postname && params.postemail){
-				post = discussion.createPost(params.postname, params.postemail, params.postsite, plotIdMessage, params.message)
+			def result = DiscussionPost.createComment(params.message, user, discussion, post, 
+				plotIdMessage, params)
+			switch (result) {
+				case 1:
+					flash.message = "You don't have permission to add a comment to this discussion"
+					redirect(url:toUrl(action:'index'))
+					break
+				case 2:
+					flash.message = "Cannot add comment"
+					redirect(url:toUrl(action:'index'))
+					break
+				default:
+					redirect(url:toUrl(action:'discuss', 
+					  params:[discussionId:discussion.getId()],
+					  fragment:'comment' + result))
 			}
-			if (post == null) {
-				flash.message = "Cannot add comment"
-				redirect(url:toUrl(action:'index'))
-				return
-			} else {
-				redirect(url:toUrl(action:'discuss', params:[discussionId:discussion.getId()],
-						fragment:'comment' + post.getId()))
-			}
+			
 		} else {
 			params.max = params.max ?: 5
 			params.offset = params.offset ?: 0

@@ -23,6 +23,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Entry.ParseAmount
@@ -1052,5 +1053,53 @@ class DataController extends LoginController {
 		Discussion.delete(discussion)
 
 		renderStringGet('success')
+	}
+	
+	def createDiscussion(Long plotDataId, String name, Long id, String discussionPost) {
+		def user = sessionUser()
+		UserGroup group = Discussion.loadGroup(params.group, user)
+
+		debug "DiscussionController.create to group: " + group?.dump()
+		if (group) {
+			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
+			discussion = discussion ?: Discussion.create(user, name, group)
+
+			if (discussion != null) {
+				Utils.save(discussion, true)
+				discussion.createPost(user, discussionPost)
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
+			}
+		}
+	}
+	
+	def deleteComment(Long discussionId, Long clearPostId) {
+		def user = sessionUser()
+		Discussion discussion
+		if (discussionId && clearPostId) {
+			discussion = Discussion.get(discussionId)
+			DiscussionPost.deleteComment(clearPostId, user, discussion)
+			renderStringGet('success')
+		} else {
+			renderStringGet('fail')
+		}
+	}
+
+	def createComment(Long discussionId, String message, Long plotIdMessage) {
+		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
+		def user = sessionUser()
+		Discussion discussion = Discussion.get(discussionId)
+		if (discussion) {
+			DiscussionPost post = discussion.getFirstPost()
+			int result = DiscussionPost.createComment(message, user, discussion, post, plotIdMessage, params)
+			if (result == 0) {
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
+			}
+		} else {
+			renderStringGet('fail')
+		}
 	}
 }

@@ -124,6 +124,37 @@ class Discussion {
 		return DiscussionPost.countByDiscussionId(getId())
 	}
 
+	static UserGroup loadGroup(String groupName, User user) {
+		UserGroup group = groupName ? UserGroup.lookup(groupName) : UserGroup.getDefaultGroupForUser(user)
+
+		if (group && !group.hasWriter(user)) {
+			return null
+		}
+		return group
+	}
+
+	static def loadDiscussion(def id, def plotDataId, def user) {
+		def discussion
+		if (id) {
+			discussion = Discussion.get(id)
+		} else if (plotDataId) {
+			discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
+			log.debug "Discussion for plotDataId not found: " + plotDataId
+		}
+
+		log.debug "Discussion found: " + discussion?.dump()
+		return discussion
+	}
+
+	static Discussion create(User user, String name, UserGroup group) {
+		Discussion discussion
+		if (group?.hasWriter(user)) {
+			discussion = create(user, name)
+			group.addDiscussion(discussion)
+		}
+		return discussion
+	}
+
 	DiscussionPost fetchFirstPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
