@@ -482,20 +482,19 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 
 		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
-		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
-		discussionPostInstance.save(flush: true)
+		def discussionPostInstance = discussionInstance.createPost(DiscussionAuthor.create(user), "comment")
 
 		// When the user isn't authorized to delete comment
 		controller.params['discussionId'] = discussionInstance.id
-		controller.params['clearPostId'] = plotData.getId()
+		controller.params['clearPostId'] = discussionPostInstance.getId()
 		controller.session.userId = user2.getId()
 		controller.discuss()
 		assert controller.flash.message == ("Can't delete that post")
 		controller.flash.message = null
 
 		//When user is authorized
-		controller.params['discussionId'] = discussion.getId().toString()
-		controller.params['clearPostId'] = plotData.getId()
+		controller.params['discussionId'] = discussionInstance.id
+		controller.params['clearPostId'] = discussionPostInstance.getId()
 		controller.session.userId = user.getId()
 		controller.discuss()
 		assert controller.flash.message == null
