@@ -27,7 +27,7 @@
 			<li><g:link controller='home' action="graph">Graph</g:link></li>
 			<li><g:link controller='home' action="community">Community</g:link></li>
 			<li class="active-nav-link"><g:link controller='home' action="signals">Signals</g:link>
-				(<span class="new-signal-count">3 new</span>)
+				<span class="new-signals" style="display:none">(<span class="new-signal-count">3 new</span>)</span>
 			</li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>

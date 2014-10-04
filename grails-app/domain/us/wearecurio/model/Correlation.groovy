@@ -81,6 +81,8 @@ class Correlation {
 	public static userCorrelations(Long userId, Integer max, String flavor) {
 		def criteria = Correlation.createCriteria()
 		criteria = criteria.add( R.eq("userId", userId) )
+		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
+
 		def column = null
 		switch(flavor) {
 

@@ -61,7 +61,7 @@ $(function(){
 <div id="tooltip-go-graph" class="nodisplay">View graph</div>
 
 <div id="tooltip-title-noise" class="nodisplay">Mark this interaction as noise.</div>
-<div id="tooltip-body-noise" class="nodisplay">Not interesting.  This is probably a false positive.  Maybe it's just an artifact of the computation, the experimental set-up, noisy data, or possibly an outlier.  Either way, mark this tag interaction as noise.</div>
+<div id="tooltip-body-noise" class="nodisplay">This interaction is not interesting.  It's probably a false positive.	Maybe it's just an artifact of the computation, the experimental set-up, noisy data, or possibly an outlier.	Regard this interaction of tag pairs as noise.</div>
 <div id="tooltip-go-noise" class="nodisplay">Mark as noise</div>
 
 <div id="tooltip-title-save" class="nodisplay">Save this interaction</div>
@@ -69,14 +69,14 @@ $(function(){
 <div id="tooltip-go-save" class="nodisplay">Save</div>
 
 
-<img class="garbage-can-icon" src="/images/signals/garbage-bin.png" >
+<img id="garbage-can-icon" src="/images/signals/garbage-bin.png" >
 
 <div class="arrow-box">
 	<h3 class='tooltip-title'>Reviewing your signal</h3>
 	<p class='tooltip-body'>At vero eos et accusamus et iusto odio dignissimos corrupti quos dolores et quas molestias id est laborum et dolorum fuga.</p>
 	<p class="buttons">
 		<button type="button" class="btn btn-primary maybe-later-button">Maybe later</button>
-		<button type="button" class="btn btn-primary tooltip-go-button">Next</button>
+		<button type="button" class="btn btn-primary tooltip-action-button">Next</button>
 	</p>
 </div>
 
@@ -125,7 +125,7 @@ $(function(){
 	<div id="correlation-container">
 
 		<script id="correlation-template" type="x-tmpl-mustache">
-			<div class="row signal-row" type="triggered">
+			<div class="row signal-row" type="triggered" data-id="{{id}}">
 				<div class="col-md-2 signal-name">
 					<img src="/images/signals/{{type}}.png" />
 					<h2 class="signal-category"> Event<br>{{type}} </h2>

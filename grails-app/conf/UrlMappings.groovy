@@ -9,7 +9,7 @@ class UrlMappings {
 			action = "index"
 		}
 
-		"/correlation/patch/$id/$action" {
+		"/correlation/$id/$action" {
 			controller = "correlation"
 		}
 
