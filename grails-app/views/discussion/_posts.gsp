@@ -2,7 +2,7 @@
 	<div class="comment">
 		<a name="comment${discussPostInstance.getId()}"></a>
 		<div class="message">
-			${discussPostInstance.getMessage() ? discussPostInstance.getMessage().encodeAsHTML() : "[graph]"}
+			${discussPostInstance.getMessage() ? discussPostInstance.getMessage().encodeAsHTML() : ""}
 		</div>
 		<div class="messageInfo">
 			<g:set var="authorName"

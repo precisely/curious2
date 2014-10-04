@@ -682,7 +682,7 @@ class HomeController extends DataController {
 		}
 		
 		if (discussion == null) {
-			def name = "New question or discussion topic?"
+			def name = "New question or discussion title?"
 			if (plotIdMessage != null) {
 				def plot = PlotData.get(plotIdMessage)
 				if (plot)

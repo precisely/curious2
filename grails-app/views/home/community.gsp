@@ -126,8 +126,8 @@ $(document).ready(function() {
 		<div id="graphList" class="col-md-9">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">
-					<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" />
-					<textarea class="full-width"  name="discussionPost"></textarea>
+					<input class="full-width" type="text" placeholder="New question or discussion title?" name="name" />
+					<textarea class="full-width"  name="discussionPost" style="height:7em"></textarea>
 					<input type="hidden" name="group" value="${groupName}" />
 					<input type="submit" name="POST" value="POST"  />
 				</form>
