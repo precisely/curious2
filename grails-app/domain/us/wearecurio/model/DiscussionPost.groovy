@@ -101,6 +101,47 @@ class DiscussionPost {
 		post.delete()
 	}
 	
+	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
+		
+		DiscussionPost post = DiscussionPost.get(clearPostId)
+		if (post != null && (user == null || post.getUserId() != user.getId())) {
+			return false
+		} else if (post == null){
+			return false
+		} else{
+			post.setMessage(null)
+			discussion.setUpdated(new Date())
+		}
+		Utils.save(post, true)
+		return true
+	}
+	
+	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params) {
+		def post
+		Discussion.withTransaction {
+			post = discussion.getFirstPost()
+			if (!UserGroup.canWriteDiscussion(user, discussion)) {
+				post =  "No permissions"
+				return
+			}
+			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 
+				&& post.getPlotDataId() != null && post.getMessage() == null) {
+				// first comment added to a discussion with a plot data at the top is
+				// assumed to be a caption on the plot data
+				log.debug("DiscussionPost.createComment: 1 post with plotData")
+				post.setMessage(message)
+				Utils.save(post)
+			} else if (user) {
+				log.debug("DiscussionPost.createComment: 1st comment")
+				post = discussion.createPost(user, plotIdMessage, message)
+			} else if (params.postname && params.postemail){
+				post = discussion.createPost(params.postname, params.postemail, params.postsite, 
+				plotIdMessage, message)
+			}
+		}
+		return post
+	}
+
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}
