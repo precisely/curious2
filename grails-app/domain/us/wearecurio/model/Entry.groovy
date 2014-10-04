@@ -2113,8 +2113,30 @@ class Entry implements Comparable {
 
 		return (int) (Math.round((averageAngle / twoPi) * 86400.0d)) % 86400
 	}
+	
+	/**
+	 * return [min, max] for list of tagIds for given user
+	 */
+	static def fetchTagIdsMinMax(Long userId, def tagIds) {
+		def tagValueStats = []
+		
+		for (Long tagId : tagIds) {
+			tagValueStats.add(TagValueStats.look(userId, tagId))
+		}
+		
+		BigDecimal min = null, max = null
+		
+		for (TagValueStats stats : tagValueStats) {
+			if ((min == null) || (stats.minimum != null && stats.minimum < min))
+				min = stats.minimum
+			if ((max == null) || (stats.maximum != null && stats.maximum < max))
+				max = stats.maximum
+		}
+		
+		return [min, max]
+	}
 
-	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName) {
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
 
@@ -2193,6 +2215,13 @@ class Entry implements Comparable {
 		}
 		// keep generating remaining repeaters until endDate
 		generateRepeaterEntries(repeaters, endDate.getTime(), results)
+		
+		if (plotInfo != null) {
+			plotInfo['unitRatio'] = mostUsedUnitRatioForTags
+			plotInfo['unitGroupId'] = mostUsedUnitRatioForTags == null ? -1 : mostUsedUnitRatioForTags.unitGroup.id
+			plotInfo['valueScale'] = mostUsedUnitRatio
+		}
+		
 		return results
 	}
 
@@ -2201,7 +2230,7 @@ class Entry implements Comparable {
 	static final int HALFDAYSECS = 12 * 60 * 60
 	static final int HOURSECS = 60 * 60
 
-	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName) {
+	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Map plotInfo = null) {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
 		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
@@ -2255,6 +2284,14 @@ class Entry implements Comparable {
 				}
 			}
 
+		}
+		
+		double valueScale = mostUsedUnitRatio ? mostUsedUnitRatio.ratio : 1.0d
+
+		if (plotInfo != null) {
+			plotInfo['unitRatio'] = mostUsedUnitRatio
+			plotInfo['unitGroupId'] = mostUsedUnitRatio == null ? -1 : mostUsedUnitRatio.unitGroup.id
+			plotInfo['valueScale'] = valueScale
 		}
 
 		return summedResults

@@ -2113,7 +2113,7 @@ class EntryTests extends CuriousTestCase {
 		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		assert entry.fetchEndEntry() == entry3
 		assert entry3.fetchStartEntry() == entry
-	}*/
+	}
 	
 	static final MathContext mc = new MathContext(9)
 	
@@ -2264,5 +2264,52 @@ class EntryTests extends CuriousTestCase {
 		assert result.getLastAmountPrecision() == -1
 		
 		assert result.getLastUnits().equals("")
+	}*/
+
+	@Test
+	void testTagValueStats() {
+		def now = new Date()
+		def yesterday = new Date(now.getTime() - 1000L * 60 * 60 * 24)
+		def twoMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 60)
+		def nineMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 9 * 30)
+		def twoYearsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 24 * 30)
+		
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(now, timeZone, "yoohoo 3 km", now, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "yoohoo 1 km", yesterday, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "yoohoo 1000 meters", twoMonthsAgo, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "yoohoo 4000 meters", twoMonthsAgo, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(now, timeZone, "woohoo 3 km", now, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(yesterday, timeZone, "woohoo 1 km", yesterday, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "woohoo 10000 eggs", twoMonthsAgo, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "woohoo 1000 meters", twoMonthsAgo, true), stats)
+
+		entry = Entry.create(userId, Entry.parse(twoMonthsAgo, timeZone, "woohoo 4000 meters", twoMonthsAgo, true), stats)
+
+		stats.finish() // generate new tag stats
+
+		def tag = Tag.look("yoohoo distance")
+		
+		TagValueStats resultV = TagValueStats.createOrUpdate(userId, tag.getId(), null)
+		
+		assert resultV.getMinimum().intValue() == 1
+		
+		assert resultV.getMaximum().intValue() == 4
+		
+		def tag2 = Tag.look("woohoo distance")
+		
+		TagValueStats resultV2 = TagValueStats.createOrUpdate(userId, tag.getId(), null)
+		
+		assert resultV2.getMinimum().intValue() == 1
+		
+		assert resultV2.getMaximum().intValue() == 4
 	}
 }

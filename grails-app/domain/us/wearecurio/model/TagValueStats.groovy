@@ -2,11 +2,15 @@ package us.wearecurio.model;
 
 import org.apache.commons.logging.LogFactory
 
-import java.math.MathContext;
+import java.math.MathContext
+import java.math.RoundingMode
 import java.sql.ResultSet
 import java.util.TreeSet
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitGroup
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 class TagValueStats {
 
@@ -14,12 +18,14 @@ class TagValueStats {
 
 	Long userId
 	Long tagId
+	String units
 	BigDecimal minimum
 	BigDecimal maximum
 	
 	static constraints = {
 		minimum(nullable:true)
 		maximum(nullable:true)
+		units(nullable:true)
 	}
 	static mapping = {
 		version false
@@ -31,8 +37,19 @@ class TagValueStats {
 	TagValueStats() {
 	}
 	
-	static final MathContext mc = new MathContext(9)
+	static final MathContext mc = new MathContext(9, RoundingMode.HALF_UP)
 	
+	static def look(Long userId, Long tagId) {
+		log.debug "TagValueStats.lookup() userId:" + userId + ", tag:" + Tag.get(tagId)
+		
+		TagValueStats stats = TagValueStats.findByTagIdAndUserId(tagId, userId)
+		
+		if (!stats)
+			return createOrUpdate(userId, tagId, null)
+		
+		return stats
+	}
+
 	static def createOrUpdate(Long userId, Long tagId, Date startDate) {
 		log.debug "TagValueStats.createOrUpdate() userId:" + userId + ", tag:" + Tag.get(tagId) + ", startDate:" + startDate
 		
@@ -43,32 +60,45 @@ class TagValueStats {
 			startDate = null // start from scratch
 		}
 		
+		def minMax
+		
 		if (startDate == null) {
-			def minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount) from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds)))",
+			minMax = Entry.executeQuery(
+					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
 					[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
-			
-			if (minMax) {
+		} else {
+			minMax = Entry.executeQuery(
+					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
+					[tagId:tagId, userId:userId, startDate:startDate, ghostIds:Entry.LONG_GHOST_IDS])
+		}
+
+		if (minMax && minMax.size() > 0) {
+			UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, [tagId])
+
+			if (mostUsedUnitRatio == null) {
 				stats.minimum = minMax[0][0]
 				stats.maximum = minMax[0][1]
-			}
-		} else {
-			def minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount) from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds)))",
-					[tagId:tagId, userId:userId, startDate:startDate, ghostIds:Entry.LONG_GHOST_IDS])
-			
-			if (minMax) {
-				BigDecimal min = minMax[0][0]
-				BigDecimal max = minMax[0][1]
+			} else for (int i = 0; i < minMax.size(); ++i) {
+				String units = minMax[i][2]
+				BigDecimal ratio = mostUsedUnitRatio.conversionRatio(units)
 				
-				if (min != null && min < stats.minimum)
+				BigDecimal min
+				BigDecimal max
+				
+				if (ratio == null) {
+					min = minMax[i][0]
+					max = minMax[i][1]
+				} else {
+					min = minMax[i][0].multiply(ratio).round(mc)
+					max = minMax[i][1].multiply(ratio).round(mc)
+				}
+				
+				if (stats.minimum == null || (min != null && min < stats.minimum))
 					stats.minimum = min
-				if (max != null && max > stats.maximum)
+				if (stats.maximum == null || (max != null && max > stats.maximum))
 					stats.maximum = max
 			}
 		}
-		
-		Utils.save(stats, true)
 		
 		return stats
 	}

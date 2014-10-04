@@ -451,6 +451,21 @@ class UnitGroupMap {
 		UnitRatio lookupUnitRatio(String unit) {
 			return unitGroup.map[unit]
 		}
+		
+		BigDecimal conversionRatio(String unit) {
+			if (!unit)
+				return null
+			
+			UnitRatio otherRatio = lookupUnitRatio(unit)
+			
+			if (otherRatio == null)
+				return null
+				
+			if (otherRatio == this)
+				return null
+			
+			return new BigDecimal(otherRatio.ratio / this.ratio)
+		}
 	}
 	
 	static final UnitGroupMap theMap = new UnitGroupMap()

@@ -769,7 +769,55 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		
 		var maxId = -1;
 		
-		for (var i in this.lines) {
+		for (i in this.lines) {
+			var line = this.lines[i];
+			
+			if (line.hidden) continue;
+
+			var valueScale = line.valueScale;
+			
+			var scaleMin, scaleMax;
+			
+			var min = line.minTotal;
+			var max = line.maxTotal;
+			var delta = max - min;
+			var unitGroupId = line.unitGroupId;
+			
+			if (delta == 0) {
+				if (max == 0) {
+					line.scaleMin = 0;
+					line.scaleMax = 0;
+				} else if (max < 0) {
+					line.scaleMin = max;
+					line.scaleMax = max;
+				} else {
+					var logMax = Math.log(max) / Math.LN10;
+					var newDelta = Math.pow(10, Math.ceil(logMax * 2) / 2);
+					line.scaleMax = newDelta;
+					line.scaleMin = 0;
+				}
+			} else {
+				var logDelta = Math.log(delta) / Math.LN10;
+				var logMin = Math.log(min) / Math.LN10;
+				
+				if ((logDelta < logMin - 1) || (min < 0)) {
+					// variation of data is much smaller than minimum value, set minimum to 
+					// nearest increment below min
+					
+					var newDelta = Math.floor(Math.pow(10, Math.ceil(logDelta * 2) / 2));
+					var newMin = newMin - (min < 0 ? (min % newDelta) + newDelta : min % newDelta);
+					
+					line.scaleMin = newMin;
+					line.scaleMax = newMin + newDelta;
+				} else {
+					var newDelta = Math.pow(10, Math.ceil(logDelta * 2) / 2);
+					line.scaleMax = newDelta;
+					line.scaleMin = 0;
+				}
+			}
+		}
+		
+		for (i in this.lines) {
 			var line = this.lines[i];
 			
 			if (line.hidden) continue;
@@ -787,15 +835,15 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			yaxes[line.id] = { show: line.yAxisVisible(),
 					position: 'left', tickDecimals: 1 };
 			if (!rangeLine.isContinuous) {
-				var min = rangeLine.minVal < 0 ? rangeLine.minVal : 0;
+				var min = rangeLine.scaleMin;
 				yaxes[line.id]['min'] = min;
-				yaxes[line.id]['max'] = (rangeLine.maxVal - min) * 1.1 + min + 0.5;
+				yaxes[line.id]['max'] = (rangeLine.scaleMax - min) * 1.1 + min + 0.5;
 			} else {
-				var min = rangeLine.minVal - (rangeLine.maxVal - rangeLine.minVal) / 20;
+				var min = rangeLine.minVal - (rangeLine.scaleMax - rangeLine.scaleMin) / 20;
 				if (rangeLine.minVal >= 0 && min < 0)
 					min = 0;
 				yaxes[line.id]['min'] = min;
-				yaxes[line.id]['max'] = (rangeLine.maxVal - min) * 1.1 + min;
+				yaxes[line.id]['max'] = (rangeLine.scaleMax - min) * 1.1 + min;
 			}
 			if (line.allUnity || line.flatten) {
 				yaxes[line.id]['min'] = 0;
@@ -1685,7 +1733,7 @@ function PlotLine(p) {
 	}
 	this.loadPlotData = function() {
 		if (this.snapshot) {
-			this.normalizeEntries();
+			this.parseEntries();
 			this.prepEntries();
 			return; // do not reload snapshots
 		}
@@ -1702,16 +1750,16 @@ function PlotLine(p) {
 		
 		var timeZoneName = jstz.determine().name();
 		
-		var method = this.sumData ? "getSumPlotData" : "getPlotData";
+		var method = this.sumData ? "getSumPlotDescData" : "getPlotDescData";
 		var plotLine = this;
 		
 		queueJSON("loading graph data", makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				timeZoneName:timeZoneName }),
-				function(entries){
-					if (checkData(entries)) {
-						plotLine.loadEntries(entries);
+				function(plotDesc){
+					if (checkData(plotDesc)) {
+						plotLine.loadEntries(plotDesc);
 						if (plotLine.smoothLine && plotLine.smoothDataWidth > 0 && plot.interactive)
 							plotLine.smoothLine.entries = undefined;
 						if (plotLine.freqLine && plotLine.freqDataWidth > 0 && plot.interactive)
@@ -2007,19 +2055,25 @@ function PlotLine(p) {
 			this.plot.refreshPlot();
 		}
 	}
-	this.normalizeEntries = function() {
+	this.parseEntries = function() {
 		var entries = this.entries;
-		// normalize times
+		// parse times if needed
 		for (var i = 0; i < entries.length; ++i) {
 			if (typeof(entries[i][0]) == 'string') {
 				entries[i][0] = parseISO8601(entries[i][0]);
 			}
 		}
 	}
-	this.loadEntries = function(entries) {
-		this.entries = entries;
-		this.normalizeEntries();
+	this.loadEntries = function(plotDesc) {
+		this.entries = plotDesc.entries;
+		this.minSeriesVal = plotDesc.min;
+		this.maxSeriesVal = plotDesc.max;
+		this.unitGroupId = plotDesc.unitGroupId;
+		this.valueScale = plotDesc.valueScale;
+		this.parseEntries();
 		this.prepEntries();
+		this.minTotal = this.minSeriesVal < this.minVal ? this.minSeriesVal : this.minVal;
+		this.maxTotal = this.maxSeriesVal < this.maxVal ? this.maxSeriesVal : this.maxVal;
 	}
 	this.makePlotData = function(name, data) {
 		if (this.intervals || (!this.fill)) {
@@ -2183,7 +2237,7 @@ function PlotLine(p) {
 	if ((!this.isSmoothLine()) && (!this.isFreqLine()) && (!this.getTags()))
 		this.addTagName(p.name);
 	if (this.entries)
-		this.normalizeEntries();
+		this.parseEntries();
 }
 
 $(window).resize(function() {

@@ -24,6 +24,8 @@ class SecurityFilters {
 		'getListData',
 		'getPlotData',
 		'getSumPlotData',
+		'getPlotDescData',
+		'getSumPlotDescData',
 		'getTagsData',
 		'setTagPropertiesData',
 		'autocompleteData',

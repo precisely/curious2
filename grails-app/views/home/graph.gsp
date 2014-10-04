@@ -3,7 +3,7 @@
 <meta name="layout" content="plot" />
 <title>Curious</title>
 
-<c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
 addBackToTagGroupDataCSRF" />
@@ -220,7 +220,6 @@ $(function(){
 									</div>
 								</div>
 								<div class="col-xs-4">
-									<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
 								</div>
 								<div class="col-xs-4">
 									<div class="endDate">

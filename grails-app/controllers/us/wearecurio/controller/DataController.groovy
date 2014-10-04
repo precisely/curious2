@@ -406,7 +406,7 @@ class DataController extends LoginController {
 	def getListData() {
 		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date + " timeZoneName:" + params.timeZoneName
 
-		def user = userFromIdStr(params.userId);
+		def user = userFromIdStr(params.userId)
 		if (user == null) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
@@ -441,44 +441,95 @@ class DataController extends LoginController {
 
 		renderJSONGet(entries)
 	}
-
-	def getPlotData() {
+	
+	protected def fetchPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
-		debug "DataController.getPlotData() tags:" + tags + " startDate:" + startDateStr + " endDate:" + endDateStr + " timeZoneName:" + timeZoneName
-
 		def tagIds = []
-
 		for (tagStr in tags) {
 			tagIds.add(Tag.look(tagStr).getId())
 		}
 
-		def results = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
-				endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName)
+		def plotInfo = [:]
+		
+		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
+			endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName, plotInfo)
+		
+		return [entries:plotEntries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
+				valueScale:plotInfo.valueScale]
+	}
 
-		renderDataGet(new JSON(results))
+	def getPlotData() {
+		debug "DataController.getPlotData() params:" + params
+
+		renderDataGet(new JSON(fetchPlotEntries().entries))
+	}
+
+	def getPlotDescData() {
+		debug "DataController.getPlotDescData() params:" + params
+
+		User user = sessionUser()
+		
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+		
+		def results = fetchPlotEntries()
+		
+		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
+		
+		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1],
+				unitGroupId:results.unitGroupId, valueScale:results.valueScale]))
+	}
+	
+	protected def fetchSumPlotEntries() {
+		def tags = JSON.parse(params.tags)
+		def startDateStr = params.startDate
+		def endDateStr = params.endDate
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+
+		def tagIds = []
+		for (tagStr in tags) {
+			tagIds.add(Tag.look(tagStr).getId())
+		}
+
+		def plotInfo = [:]
+		
+		def entries = Entry.fetchSumPlotData(sessionUser(), tagIds,
+			startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName, plotInfo)
+		
+		return [entries:entries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
+				valueScale:plotInfo.valueScale]
 	}
 
 	def getSumPlotData() {
-		def tags = JSON.parse(params.tags)
-		def startDateStr = params.startDate
-		def endDateStr = params.endDate
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
+		debug "DataController.getSumPlotData() params:" + params
+		
+		renderDataGet(new JSON(fetchSumPlotEntries().entries))
+	}
 
-		debug "DataController.getSumPlotData() params: " + params
-
-		def tagIds = []
-		for (tagStr in tags) {
-			tagIds.add(Tag.look(tagStr).getId())
+	def getSumPlotDescData() {
+		debug "DataController.getSumPlotDescData() params:" + params
+		
+		User user = sessionUser()
+		
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
 		}
-
-		def results = Entry.fetchSumPlotData(sessionUser(), tagIds,
-				startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName)
-
-		renderDataGet(new JSON(results))
+		
+		def results = fetchSumPlotEntries()
+		
+		def minMax = Entry.fetchTagIdsMinMax(user.getId(), results.tagIds)
+		
+		renderDataGet(new JSON([entries:results.entries, min:minMax[0], max:minMax[1], unitGroupId:results.unitGroupId,
+				valueScale:results.valueScale]))
 	}
 
 	def getTagsData() {
