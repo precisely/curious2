@@ -1187,6 +1187,34 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.store();
 		}
 	}
+	// delegation methods for PlotProperties
+	this.getName = function() {
+		return this.properties.getName();
+	}
+	this.setName = function(name) {
+		return this.properties.setName(name);
+	}
+	this.setUsername = function(name) {
+		return this.properties.setUsername(name);
+	}
+	this.getStartDate = function() {
+		return this.properties.getStartDate();
+	}
+	this.getStartTime = function() {
+		return this.properties.getStartTime();
+	}
+	this.setStartDate = function(date) {
+		return this.properties.setStartDate(date);
+	}
+	this.getEndDate = function() {
+		return this.properties.getEndDate();
+	}
+	this.getEndTime = function() {
+		return this.properties.getEndTime();
+	}
+	this.setEndDate = function(date) {
+		return this.properties.setEndDate(date);
+	}
 }
 
 function parseISO8601(str) {
