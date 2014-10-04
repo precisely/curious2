@@ -792,7 +792,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					line.scaleMax = max;
 				} else {
 					var logMax = Math.log(max) / Math.LN10;
-					var newDelta = Math.pow(10, Math.ceil(logMax * 2) / 2);
+					var newDelta = Math.pow(10, Math.ceil(logMax * 4) / 4);
 					line.scaleMax = newDelta;
 					line.scaleMin = 0;
 				}
@@ -804,13 +804,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					// variation of data is much smaller than minimum value, set minimum to 
 					// nearest increment below min
 					
-					var newDelta = Math.floor(Math.pow(10, Math.ceil(logDelta * 2) / 2));
+					var newDelta = Math.floor(Math.pow(10, Math.ceil(logDelta * 4) / 4));
 					var newMin = newMin - (min < 0 ? (min % newDelta) + newDelta : min % newDelta);
 					
 					line.scaleMin = newMin;
 					line.scaleMax = newMin + newDelta;
 				} else {
-					var newDelta = Math.pow(10, Math.ceil(logDelta * 2) / 2);
+					var newDelta = Math.pow(10, Math.ceil(logDelta * 4) / 4);
 					line.scaleMax = newDelta;
 					line.scaleMin = 0;
 				}
