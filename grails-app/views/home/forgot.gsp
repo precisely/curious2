@@ -33,7 +33,7 @@
                     style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
                     <p
                         style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
-                        Join Curious</p>
+                        Get Started</p>
                 </button>
             </g:link>
         </div>
