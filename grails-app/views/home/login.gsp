@@ -7,7 +7,7 @@
 		<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 	</head>
 	<body>
-
+		<g:render template="/layouts/alertMessage" />
 		<br>
 		<br>
 		<br>

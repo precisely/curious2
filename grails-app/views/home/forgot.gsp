@@ -12,7 +12,7 @@
     });
 </script>
 <body>
-
+	<g:render template="/layouts/alertMessage" />
     <br>
     <br>
     <br>
@@ -53,8 +53,8 @@
                         <div class="form-group">
                             <label for="exampleInputEmail1"
                                 style="color: white;">Please
-                                enter your username:</label><input
-                                style="width: 250px"  type="username"
+                                enter your username or email:</label><input
+                                style="width: 250px; color:black;"  type="username"
                                 id="username" name="username" />
                         </div>
                         <input type="hidden" name="preaction"

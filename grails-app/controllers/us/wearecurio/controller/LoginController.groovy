@@ -179,22 +179,15 @@ class LoginController extends SessionController {
 		return FORGOT_SUCCESS
 	}
 	
-	protected def execForgotEmail(String email) {
-		email = email?.toLowerCase()
-		def user = User.findByEmail(email)
+	protected def execForgotPassword(String emailOrUsername) {
+		emailOrUsername = emailOrUsername?.toLowerCase()
+		def user = User.findByUsername(emailOrUsername)
 		if (user == null) {
-			debug "Error recovering user email '" + email + "' not found'"
-			return FORGOT_ERROR_EMAIL_NOT_RECOGNIZED
-		}
-		return execForgot(user)
-	}
-	
-	protected def execForgotUsername(String username) {
-		username = username?.toLowerCase()
-		def user = User.findByUsername(username)
-		if (user == null) {
-			debug "Error recovering user name '" + username + "' not found'"
-			return FORGOT_ERROR_EMAIL_NOT_RECOGNIZED
+			user = User.findByEmail(emailOrUsername)
+			if (user == null) {
+				debug "Error recovering password '" + emailOrUsername + "' not found'"
+				return FORGOT_ERROR_EMAIL_NOT_RECOGNIZED
+			}
 		}
 		return execForgot(user)
 	}
@@ -207,16 +200,12 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(controller:params.precontroller ?: name(), action:params.preaction ?: 'login'))
 			return
 		}
-		if (params.email && execForgotEmail(params.email) == FORGOT_SUCCESS) {
-			flash.message = "Password recovery email sent; please check your email"
-			
-			redirect(url:toUrl(controller:name(), action:'login'))
-		} else if (params.username && execForgotUsername(params.username) == FORGOT_SUCCESS) {
+		if (params.username && execForgotPassword(params.username) == FORGOT_SUCCESS) {
 			flash.message = "Password recovery email sent; please check your email"
 			
 			redirect(url:toUrl(controller:name(), action:'login'))
 		} else {
-			flash.message = "No user found"
+			flash.message = "Cannot find user '" + params.username + "'"
 			redirect(url:toUrl(action:"forgot",
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		}
