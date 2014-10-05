@@ -525,7 +525,7 @@ class Entry implements Comparable {
 
 		entry.processAndSave(stats)
 		
-		entry.createRepeat()
+		entry.createRepeat(stats)
 
 		Entry generator = entry.fetchGeneratorEntry()
 
@@ -1620,7 +1620,7 @@ class Entry implements Comparable {
 		[desc:this.tag.getDescription(), userId:this.userId, repeatIds:DAILY_IDS])
 	}
 
-	protected createRepeat() {
+	protected createRepeat(EntryStats stats) {
 		if (this.repeatType == null) return
 
 		if (this.repeatType.isContinuous()) {
@@ -1632,7 +1632,7 @@ class Entry implements Comparable {
 			for (def v in entries) {
 				if (v != null) {
 					Entry e = Entry.get(v['id'])
-					Entry.delete(e, null) // delete matching entries, to avoid duplicates
+					Entry.delete(e, stats) // delete matching entries, to avoid duplicates
 					Utils.save(e, true)
 				}
 			}
@@ -1841,7 +1841,7 @@ class Entry implements Comparable {
 		Utils.save(this, true)
 
 		if (updateRepeatType)
-			createRepeat()
+			createRepeat(stats)
 
 		if (updateDurationEntry != null) {
 			updateDurationEntry.updateDurationEntry(stats)
@@ -2357,7 +2357,7 @@ class Entry implements Comparable {
 	 * 
 	 * If you update repeatPattern, you need to update repeatMap
 	 */
-	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|repeat|pinned|favorite|remind|reminder|daily|weekly)\b\s*/
+	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|button|repeat|pinned|favorite|remind|reminder|daily|weekly)\b\s*/
 	
 	protected static final int REPEATMAP_SYNONYM = 0
 	protected static final int REPEATMAP_TYPE = 1
@@ -2366,8 +2366,9 @@ class Entry implements Comparable {
 		'repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
-		'pinned':['favorite', RepeatType.CONTINUOUSGHOST],
-		'favorite':['favorite', RepeatType.CONTINUOUSGHOST],
+		'button':['button', RepeatType.CONTINUOUSGHOST],
+		'pinned':['button', RepeatType.CONTINUOUSGHOST],
+		'favorite':['button', RepeatType.CONTINUOUSGHOST],
 		'remind':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind daily':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
@@ -2552,13 +2553,13 @@ class Entry implements Comparable {
 		def matcher;
 		def parts;
 
-		// [time] [tag] <[amount] <[units]>>... <repeat|remind|pinned> (<[comment]>)
+		// [time] [tag] <[amount] <[units]>>... <repeat|remind|button> (<[comment]>)
 		//
 		// OR
 		//
-		// [tag] <[amount] <[units]>>... <[time]> <repeat|remind|pinned> (<[comment]>)
+		// [tag] <[amount] <[units]>>... <[time]> <repeat|remind|button> (<[comment]>)
 		//
-		// <repeat|remind|pinned> ahead of the above
+		// <repeat|remind|button> ahead of the above
 
 		PatternScanner scanner = new PatternScanner(entryStr)
 

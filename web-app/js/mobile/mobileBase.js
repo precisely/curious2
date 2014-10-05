@@ -789,7 +789,7 @@ function selectEntry($selectee, forceUpdate) {
 				.append('<span id="tagTextEdit"><input type="text" class="entryNoBlur" id="tagTextInput" style="margin: 2px; width: calc(100% - 110px);"></input>'
 						+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png">'
 						+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png">'
-						+ '<img class="entryModify" data-suffix="pinned" src="/images/pin.png"></span>');
+						+ '<img class="entryModify" data-suffix="button" src="/images/pin.png"></span>');
 		
 		var $textInput = $("#tagTextInput").val(entryText).focus();
 		
@@ -803,7 +803,7 @@ function selectEntry($selectee, forceUpdate) {
 		});
 
 		if ($selectee.data('isContinuous')) {
-			toggleSuffix($("#tagTextInput"), 'pinned');
+			toggleSuffix($("#tagTextInput"), 'button');
 		}
 		
 		if (selectRange) {
@@ -1022,11 +1022,11 @@ function toggleSuffix($control, suffix) {
 		if (suffix == "remind")
 			return text.length > 0;
 	}
-	if (text.endsWith(" pinned")) {
+	if (text.endsWith(" button")) {
 		text = text.substr(0, text.length - 7);
 		$control.val(text);
 
-		if (suffix == "pinned")
+		if (suffix == "button")
 			return text.length > 0;
 	}
 

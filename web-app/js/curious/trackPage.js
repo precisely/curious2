@@ -214,11 +214,11 @@ function toggleSuffix($control, suffix) {
 			return text.length > 0;
 		}
 	}
-	if (text.endsWith(" pinned")) {
+	if (text.endsWith(" button")) {
 		text = text.substr(0, text.length - 7);
 		$control.val(text);
 
-		if (suffix == "pinned") {
+		if (suffix == "button") {
 			window.setTimeout(function() {
 				$control.selectRange(text.length, text.length);
 				$control.focus();
@@ -455,7 +455,7 @@ function selectEntry($selectee) {
 	});
 
 	if ($selectee.data('isContinuous'))
-		toggleSuffix($("#tagTextInput"), 'pinned');
+		toggleSuffix($("#tagTextInput"), 'button');
 
 	if (selectRange) {
 		$("#tagTextInput").selectRange(selectRange[0], selectRange[1]);
