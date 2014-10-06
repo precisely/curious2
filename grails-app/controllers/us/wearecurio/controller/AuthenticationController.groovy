@@ -24,6 +24,7 @@ class AuthenticationController extends SessionController {
 
 	def fitBitDataService
 	def humanDataService
+	def jawboneUpDataService
 	def movesDataService
 	def oauthAccountService
 	def oauthService	// From OAuth Plugin
@@ -98,6 +99,13 @@ class AuthenticationController extends SessionController {
 		Integer timeZoneId = TimeZoneId.look(userInfo.defaultTimeZone.name).id
 
 		oauthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
+	}
+
+	def jawboneupAuth() {
+		JSONObject userInfo = jawboneUpDataService.getUserProfile(tokenInstance)
+		Integer timeZoneId = TimeZoneId.look(userInfo.data.timezone).id
+
+		oauthAccountService.createOrUpdate(JAWBONE, userInfo.data.xid, tokenInstance, userId, timeZoneId)
 	}
 
 	def movesAuth() {

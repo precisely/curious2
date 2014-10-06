@@ -1,4 +1,4 @@
-package us.wearecurio.thirdparty.moves
+package us.wearecurio.thirdparty
 
 import grails.converters.JSON
 import grails.util.Environment
@@ -14,19 +14,26 @@ import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
 
-import us.wearecurio.thirdparty.RefreshTokenVerifier
-
 /**
- * @deprecated Use {@link us.wearecurio.thirdparty.QueryParamTypeOAuth20ServiceImpl QueryParamTypeOAuth20ServiceImpl }
+ * A oauth 2.0 service implementation which overrides default oauth 2.0 service implementation shipped with plugin
+ * to allow a common pattern of some APIs to get access token: example: Moves, Jawbone
+ * 
+ * This implementation sends parameter as query string including <b>grant_type</b> unlike the 
+ * default implementation and extracts access token from received response (in JSON format).
+ * 
  * @author Shashank
+ * 
+ * @see https://github.com/fernandezpablo85/scribe-java/blob/master/src/main/java/org/scribe/oauth/OAuth20ServiceImpl.java#L28
+ * @see https://github.com/fernandezpablo85/scribe-java/blob/master/src/main/java/org/scribe/extractors/TokenExtractorImpl.java#L35
  */
-@Deprecated
-class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
+class QueryParamTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
+
+	public static final String GRANT_TYPE = "grant_type";
 
 	DefaultApi20 api
 	OAuthConfig config
 
-	MovesOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
+	QueryParamTypeOAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
 		super(api, config)
 		this.api = api
 		this.config = config
@@ -43,10 +50,10 @@ class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		 */
 		if (verifier instanceof RefreshTokenVerifier) {
 			queryParams.put(RefreshTokenVerifier.REFRESH_TOKEN, verifier.getValue())
-			queryParams.put("grant_type", RefreshTokenVerifier.REFRESH_TOKEN)
+			queryParams.put(GRANT_TYPE, RefreshTokenVerifier.REFRESH_TOKEN)
 		} else {
 			queryParams.put(OAuthConstants.CODE, verifier.getValue())
-			queryParams.put("grant_type", "authorization_code")
+			queryParams.put(GRANT_TYPE, "authorization_code")
 		}
 
 		queryParams.put(OAuthConstants.CLIENT_ID, config.apiKey)
@@ -63,16 +70,16 @@ class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 		String responseBody = response.body
 
-		if (Environment.current == Environment.DEVELOPMENT) {
-			println "Received response from moves api: $responseBody"
+		if (Environment.isDevelopmentMode()) {
+			println "Received response from $api: $responseBody"
 		}
+
 		JSONObject responseJSON = JSON.parse(responseBody)
 
-		if(!responseJSON.access_token) {
-			throw new OAuthException("Response body is incorrect. Can't extract a token from this: $responseBody", null);
+		if (!responseJSON["access_token"]) {
+			throw new OAuthException("Response body is incorrect. Can't extract a token from this: $responseBody", null)
 		}
 
-		return new Token(responseJSON.access_token, "", responseBody)
+		return new Token(responseJSON["access_token"], "", responseBody)
 	}
-
 }

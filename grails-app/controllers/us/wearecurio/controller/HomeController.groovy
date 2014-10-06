@@ -30,6 +30,7 @@ class HomeController extends DataController {
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
 	MovesDataService movesDataService
+	def jawboneUpDataService
 	def oauthService
 	Twenty3AndMeDataService twenty3AndMeDataService
 
@@ -170,6 +171,33 @@ class HomeController extends DataController {
 			debug "Failed to subscribe"
 			flash.message = "moves.subscribe.failure.message"
 		}
+		redirect(url: session.deniedURI)
+	}
+
+	def registerJawboneUp() {
+		debug "HomeController.registerJawboneUp() params:" + params
+		User user = sessionUser()
+		Long userId = user.id
+		session.deniedURI = toUrl(controller: "home", action: "userpreferences", params: [userId: userId])
+
+		Map result = [:]
+
+		try {
+			result = jawboneUpDataService.subscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("jawboneup")
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("jawboneup")
+		}
+
+		if (result.success) {
+			debug "Succeeded in subscribing"
+			flash.message = "moves.subscribe.success.message"
+		} else {
+			debug "Failed to subscribe"
+			flash.message = "moves.subscribe.failure.message"
+		}
+
 		redirect(url: session.deniedURI)
 	}
 

@@ -157,7 +157,7 @@ abstract class DataService {
 			throws InvalidAccessTokenException {
 		long currentTime = System.currentTimeMillis()
 
-		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL]"
+		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL] & method: $method"
 
 		checkNotNull(tokenInstance)
 
