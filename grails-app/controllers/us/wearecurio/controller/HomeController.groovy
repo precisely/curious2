@@ -451,6 +451,12 @@ class HomeController extends DataController {
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
 
+	def graph_signals() {
+		debug "HomeController.graph_signals()" + params.description1 + " - " + params.description2
+		def user = sessionUser()
+		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
+	}
+
 	def upload() {
 		debug "HomeController.upload()"
 		def user = sessionUser()
@@ -470,11 +476,11 @@ class HomeController extends DataController {
 		}
 
 		response.setHeader "Content-disposition", "attachment; filename=export.csv"
-	    response.contentType = 'text/csv'
+			response.contentType = 'text/csv'
 		
 		doExportCSVAnalysis(response.outputStream, user)
 		
-        response.outputStream.flush()
+				response.outputStream.flush()
 	}
 
 	def termsofservice() {
@@ -594,8 +600,8 @@ class HomeController extends DataController {
 		List associatedGroups = UserGroup.getGroupsForWriter(currentUserInstance)
 
 		/*
-		 *  Share option will contain ids of UserGroup to share discussion to,
-		 *  and "isPublic" value if user wants to make Discussion visible to the world.
+		 *	Share option will contain ids of UserGroup to share discussion to,
+		 *	and "isPublic" value if user wants to make Discussion visible to the world.
 		 */
 		boolean isPublic = shareOptions.remove("isPublic")
 		shareOptions = shareOptions*.toLong()

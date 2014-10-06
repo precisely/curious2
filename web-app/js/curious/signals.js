@@ -91,6 +91,12 @@ $(function() {
 				}
 			}
 		});
+
+		if (action == 'graph') {
+			var c = correlationIndex[correlation_id];
+			var new_uri = '/home/graph/signals/' + c.description1 + '/' + c.description2;
+			window.location = new_uri;
+		}
 	};
 
 	var action_handler = function() {

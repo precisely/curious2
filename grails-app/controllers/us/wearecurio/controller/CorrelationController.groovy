@@ -4,7 +4,7 @@ import us.wearecurio.model.Correlation
 import grails.converters.JSON
 
 class CorrelationController {
-	static allowedMethods = [graph: "PATCH", markNoise: "PATCH", markSaved: "PATCH", index: "GET"]
+	static allowedMethods = [markViewed: "PATCH", markNoise: "PATCH", markSaved: "PATCH", index: "GET"]
 	def securityService
 
 	def index() {
@@ -18,7 +18,7 @@ class CorrelationController {
 		render correlations as JSON
 	}
 
-	def graph() {
+	def markViewed() {
 		def id = params.id.toLong()
 		renderOk isOwner(id) && Correlation.markViewed(id)
 	}

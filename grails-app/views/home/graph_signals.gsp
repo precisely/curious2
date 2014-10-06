@@ -3,13 +3,26 @@
 <meta name="layout" content="plot" />
 <title>Curious</title>
 
+<c:jsCSRFToken keys="getPlotDataCSRF, getSumPlotDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
+addBackToTagGroupDataCSRF" />
+<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 <script type="text/javascript">
 function refreshPage() {
 	// TODO: used to reload taglist here, instead do incremental updates on changes
 	tagList.load();
 }
-
 var plot = null;
+
+var getPlot = function() {
+	return plot;
+};
+
+Curious = {
+	getPlot: getPlot
+};
+
 var tagListWidget;
 var tagList;
 function doLogout() {
@@ -33,7 +46,7 @@ $(function(){
 					// set first user id as the current
 					setUserId(this['id']);
 					setUserName(this['username']);
-					plot = new Plot(tagListWidget.list, this['id'], this['username'], "#plotArea", true, true, new PlotProperties({
+					plot = new Plot(tagListWidget.list, this['id'], this['username'], "#plotArea", false, true, new PlotProperties({
 						'startDate':'#startdatepicker1',
 						'startDateInit':'start date and/or tag',
 						'endDate':'#enddatepicker1',
@@ -49,7 +62,7 @@ $(function(){
 					$("#plotArea").droppable({
 						drop:plot.handleDropTag.bind(plot)
 					});
-					
+
 					// TODO: Refactor this to shared code
 
 					/**$(document).mouseup(function(e) {
@@ -100,6 +113,67 @@ $(function(){
 			});
 		});
 });
+</script>
+<script>
+	$(document).on(beforeLinePlotEvent, function(e, tag) {
+		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
+		$(".graphData").addClass("has-plot-data");
+		$("#plotArea").removeClass("table");
+	});
+	$(document).on(afterLinePlotEvent, function(e, tag) {
+		adjustTrackingTagHeaderHeight();
+	});
+	$(document).on(afterQueryTitleChangeEvent, function(e, tag) {
+		adjustTrackingTagHeaderHeight();
+	});
+	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
+		if (!plot) return;
+		adjustTrackingTagHeaderHeight();
+		if (!plot.plotData || plot.plotData == null) {
+			$("#zoomcontrol1").slider("destroy");
+			$(".graphData").removeClass("has-plot-data");
+			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
+		}
+	});
+	function adjustTrackingTagHeaderHeight() {
+		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
+		var queryTitleHeight = $('.red-header').height();
+		console.log('Height is', queryTitleHeight);
+		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {	// Checking if header's height is greater 20px as default plus 18px as padding.
+			var padding = (queryTitleHeight - 20)/2;
+			$('.tags-header-container').css('padding', padding + 'px 7px');
+		}
+
+		//Also need to adjust graph height so it does not  move
+		var graphAdjustedHeight = 530 - $('#plotLeftNav').height();
+		if (graphAdjustedHeight > 300) {
+			$('#plotArea').css('height', graphAdjustedHeight + 'px');
+			if ($(".graphData").hasClass("has-plot-data") && plot && plot.plotData && plot.plotData.length != 0) {
+				plot.redrawPlot();
+			}
+		}
+
+		if ($(window).width() <= 480) {
+			var $queryTitle = $('#queryTitle');
+			var $mobileQueryTitle = $('#mobileQueryTitle');
+			var text = $queryTitle.text();
+			if (text && text.length > 25) {
+				text = text.substring(0, 25) + '...';
+			}
+			$mobileQueryTitle.html(text);
+		}
+	}
+	// Callback handler after tag collapse animation finished.
+	function afterTagCollapseToggle() {
+		if ($(window).width() <= 480) {
+			adjustTrackingTagHeaderHeight();
+		}
+		if (!plot) return;
+		// Checking if any plot line available.
+		if (plot.plotData && plot.plotData.length != 0) {
+			plot.refreshPlot();
+		}
+	}
 </script>
 </head>
 <body class="graph-page">
@@ -153,6 +227,7 @@ $(function(){
 									</div>
 								</div>
 								<div class="col-xs-4">
+									<div class="cycleTag" id="cycleTag1">drag relative tag here</div>
 								</div>
 								<div class="col-xs-4">
 									<div class="endDate">
@@ -186,5 +261,9 @@ $(function(){
 			}, 1000);
 		});
 	</script>
+
+	<input id="description1" type="text" name="description1" value="<%= params.description1 %>" class="nodisplay">
+	<input id="description2" type="text" name="description1" value="<%= params.description2 %>" class="nodisplay">
+	<script src="/js/curious/graph_signals.js"></script>
 </body>
 </html>

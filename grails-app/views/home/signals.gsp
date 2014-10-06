@@ -107,7 +107,7 @@ $(function(){
 								<span class="carousel-item-title">{{type}}:</span>
 								<span class="carousel-item-body">
 									Score: {{score}}<br>
-									{{description1}} X {{description2}}
+									<a href="/home/graph/signals/{{description1}}/{{description2}}">{{description1}} X {{description2}}</a>
 								<span>
 							</div>
 						</div>
