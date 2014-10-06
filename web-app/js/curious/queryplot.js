@@ -457,6 +457,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	
 	this.loadLine = function(save,version) {
 		var parentLine = null;
+		this.minSeriesVal = save.min;
+		this.maxSeriesVal = save.max;
+		this.unitGroupId = save.unitGroupId;
+		this.valueScale = save.valueScale;
 		var version = version || 5;
 		if (save.parentLineName) {
 			parentLine = this.getLineByTagName(save.parentLineName);
@@ -811,7 +815,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					line.scaleMax = newMin + newDelta;
 				} else {
 					var newDelta = Math.pow(10, Math.ceil(logDelta * 4) / 4);
-					line.scaleMax = newDelta;
+					line.scaleMax = min + newDelta;
 					line.scaleMin = 0;
 				}
 			}
@@ -1377,7 +1381,8 @@ function PlotLine(p) {
 				tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
 				isContinuous:this.isContinuous,isFreqLineFlag:this.isFreqLineFlag,showPoints:this.showPoints,fill:this.fill,smoothDataWidth:this.smoothDataWidth,
 				freqDataWidth:this.freqDataWidth,parentLineName:this.parentLine?this.parentLine.name:'',flatten:this.flatten,smoothData:this.smoothLine&&this.smoothDataWidth>0?true:false,
-				freqData:this.freqLine&&this.freqDataWidth>0?true:false};
+				freqData:this.freqLine&&this.freqDataWidth>0?true:false,
+				min:this.minSeriesVal,max:this.maxSeriesVal,unitGroupId:this.unitGroupId,valueScale:this.valueScale};
 		if (this.minRange != undefined) data.minRange = this.minRange;
 		if (this.maxRange != undefined) data.maxRange = this.maxRange;
 		return data;
@@ -2100,8 +2105,6 @@ function PlotLine(p) {
 		this.valueScale = plotDesc.valueScale;
 		this.parseEntries();
 		this.prepEntries();
-		this.minTotal = this.minSeriesVal < this.minVal ? this.minSeriesVal : this.minVal;
-		this.maxTotal = this.maxSeriesVal < this.maxVal ? this.maxSeriesVal : this.maxVal;
 	}
 	this.makePlotData = function(name, data) {
 		if (this.intervals || (!this.fill)) {
@@ -2215,6 +2218,11 @@ function PlotLine(p) {
 			this.setRange(0, this.minRange);
 			this.setRange(1, this.maxRange);
 		}
+		
+		this.minTotal = this.minSeriesVal < this.minVal ? this.minSeriesVal : this.minVal;
+		this.maxTotal = this.maxSeriesVal < this.maxVal ? this.maxSeriesVal : this.maxVal;
+		if (this.minTotal == undefined) this.minTotal = this.minVal;
+		if (this.maxTotal == undefined) this.maxTotal = this.maxVal;
 	}
 	this.getCyclicData = function(cyclicPlotLine) {
 		var multiCyclicData = [];
