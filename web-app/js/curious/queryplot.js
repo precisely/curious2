@@ -67,12 +67,22 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	
 	var datepicker = properties.getStartDatePicker();
 	datepicker.datepicker({dateFormat: 'DD MM dd, yy', disabled:!interactive,
+		beforeShow: function() {
+	        setTimeout(function(){
+	            $('.ui-datepicker').css('z-index', 99999999999999);
+	        }, 0);
+	    },
 		onClose: function(dateText, inst) { if (dateText == "") { properties.initStartDate(); plot.loadAllData(); } }});
 	datepicker.change(function () {
 		plot.loadAllData();
 	});
 	datepicker = properties.getEndDatePicker();
 	datepicker.datepicker({dateFormat: 'DD MM dd, yy', disabled:!interactive,
+		beforeShow: function() {
+	        setTimeout(function(){
+	            $('.ui-datepicker').css('z-index', 99999999999999);
+	        }, 0);
+	    },
 		onClose: function(dateText, inst) { if (dateText == "") { properties.initEndDate(); plot.loadAllData(); } }});
 	datepicker.change(function () {
 		plot.loadAllData();
@@ -967,18 +977,18 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		plotArea.on("plotclick", function(event, pos, item) {
 	        if (item) {
 	        	var now = new Date().getTime();
-	        	/*if (plot.lastItemClicked == null) {
-	        		plot.lastItemClicked = item;
-	        		plot.lastItemClickTime = now;
-	        	} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
-	        				&& now - plot.lastItemClickTime < 1000 && now - plot.lastItemClickTime > 30) {
-        			plot.lastItemClicked = null;
-        			plot.lastItemClickTime = null;
-        			if (plot.interactive) {
-        				plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
-        			}
-        			return;
-        		}*/
+	        	//if (plot.lastItemClicked == null) {
+	        	//	plot.lastItemClicked = item;
+	        	//	plot.lastItemClickTime = now;
+	        	//} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
+	        	//			&& now - plot.lastItemClickTime < 1000 && now - plot.lastItemClickTime > 30) {
+        		//	plot.lastItemClicked = null;
+        		//	plot.lastItemClickTime = null;
+        		//	if (plot.interactive) {
+        		//		plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
+        		//	}
+        		//	return;
+        		//}
         		plot.lastItemClicked = item;
         		plot.lastItemClickTime = now;
 				var dialogDiv = plot.getDialogDiv(); 

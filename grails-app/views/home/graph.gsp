@@ -101,67 +101,6 @@ $(function(){
 		});
 });
 </script>
-<script>
-	$(document).on(beforeLinePlotEvent, function(e, tag) {
-		$("div#drag-here-msg").css("visibility", "hidden"); // Keeping element space but invisible.
-		$(".graphData").addClass("has-plot-data");
-		$("#plotArea").removeClass("table");
-	});
-	$(document).on(afterLinePlotEvent, function(e, tag) {
-		adjustTrackingTagHeaderHeight();
-	});
-	$(document).on(afterQueryTitleChangeEvent, function(e, tag) {
-		adjustTrackingTagHeaderHeight();
-	});
-	$(document).on(afterLineRemoveEvent, function(e, plotInstance) {
-		if (!plot) return;
-		adjustTrackingTagHeaderHeight();
-		if (!plot.plotData || plot.plotData == null) {
-			$("#zoomcontrol1").slider("destroy");
-			$(".graphData").removeClass("has-plot-data");
-			$("#plotArea").addClass("table").html('<div id="drag-here-msg" class="table-cell align-middle">DRAG TRACKING TAGS HERE TO GRAPH</div>');
-		}
-	});
-	function adjustTrackingTagHeaderHeight() {
-		$('.tags-header-container').css("padding", "");		// Clearing any previous padding to calculate actual height.
-		var queryTitleHeight = $('.red-header').height();
-		console.log('Height is', queryTitleHeight);
-		if (queryTitleHeight > (20 + 18) && $(window).width() > 480) {	// Checking if header's height is greater 20px as default plus 18px as padding.
-			var padding = (queryTitleHeight - 20)/2;
-			$('.tags-header-container').css('padding', padding + 'px 7px');
-		}
-
-		//Also need to adjust graph height so it does not  move
-		var graphAdjustedHeight = 530 - $('#plotLeftNav').height();
-		if (graphAdjustedHeight > 300) {
-			$('#plotArea').css('height', graphAdjustedHeight + 'px');
-			if ($(".graphData").hasClass("has-plot-data") && plot && plot.plotData && plot.plotData.length != 0) {
-				plot.redrawPlot();
-			}
-		}
-
-		if ($(window).width() <= 480) {
-			var $queryTitle = $('#queryTitle');
-			var $mobileQueryTitle = $('#mobileQueryTitle');
-			var text = $queryTitle.text();
-			if (text && text.length > 25) {
-				text = text.substring(0, 25) + '...';
-			}
-			$mobileQueryTitle.html(text);
-		}
-	}
-	// Callback handler after tag collapse animation finished.
-	function afterTagCollapseToggle() {
-		if ($(window).width() <= 480) {
-			adjustTrackingTagHeaderHeight();
-		}
-		if (!plot) return;
-		// Checking if any plot line available.
-		if (plot.plotData && plot.plotData.length != 0) {
-			plot.refreshPlot();
-		}
-	}
-</script>
 </head>
 <body class="graph-page">
 	<div class="red-header graph-header-container clearfix">
