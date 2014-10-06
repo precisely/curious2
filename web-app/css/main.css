@@ -638,7 +638,7 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 .ui-accordion .ui-accordion-header.ui-state-active a { padding: 2px 2px .5em 2.2em; }
 .ui-accordion .ui-accordion-content { padding: 5px 5px; border-top: 0; margin-top: -2px; position: relative; top: 1px; margin-bottom: 2px; overflow: auto; display: none; zoom: 1; }
 
-.ui-dialog { overflow:hidden; position: relative; padding: 3px; width: 150px; }
+.ui-dialog { overflow:hidden; position: relative; padding: 3px; width: 150px; z-index: 99999999999 !important; }
 .ui-dialog .ui-dialog-titlebar { overflow:hidden; height: 10px; padding: 0 0 0 0; position: relative;  }
 .ui-dialog .ui-dialog-title { float: left; margin: 0px 0 0px; } 
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 5px; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 10px; }

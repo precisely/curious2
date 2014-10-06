@@ -502,6 +502,8 @@ $(document).on("mousedown", function(e) {
 	if (e.which != 1) {
 		return;
 	}
+	if (__dialogInProgress > 0)
+		return;
 
 	var $target = $(e.target);
 	var $alreadySelectedEntry = $("li.entry.ui-selected");

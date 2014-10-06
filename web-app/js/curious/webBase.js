@@ -31,42 +31,62 @@ function closeAlert() {
 	$messageDialog.dialog("close");
 }
 
+var __dialogInProgress = 0;
+
 function showYesNo(alertText, onConfirm) {
+	__dialogInProgress++;
 	$messageTextDialog.text(alertText);
 	$messageDialog.dialog({
 		dialogClass: "no-close",
-		modal: false,
+		modal: true,
 		resizable: false,
 		title: "Query",
 		buttons: {
 			"Yes ": function() {
 				$(this).dialog("close");
+				if (--__dialogInProgress < 0)
+					__dialogInProgress = 0;
 				onConfirm();
 			},
 			No: function() {
 				$(this).dialog("close");
+				if (--__dialogInProgress < 0)
+					__dialogInProgress = 0;
 			}
+		},
+		close: function() {
+			if (--__dialogInProgress < 0)
+				__dialogInProgress = 0;
 		}
 	});
 }
 
 function showAB(alertText, aText, bText, onA, onB) {
+	__dialogInProgress++;
 	$messageTextDialog.text(alertText);
 	var buttons = {};
 	buttons[aText + " "] = function() {
+		if (--__dialogInProgress < 0)
+			__dialogInProgress = 0;
 		onA();
 		$(this).dialog("close");
 	};
 	buttons[bText] = function() {
+		if (--__dialogInProgress < 0)
+			__dialogInProgress = 0;
 		onB();
 		$(this).dialog("close");
 	};
 	$messageDialog.dialog({
 		dialogClass: "no-close",
-		modal: false,
+		modal: true,
 		resizable: false,
 		title: "Query",
-		buttons: buttons
+		buttons: buttons,
+		close: function() {
+			if (--__dialogInProgress < 0)
+				__dialogInProgress = 0;
+		}
 	});
 }
 $(window).load(function(){
