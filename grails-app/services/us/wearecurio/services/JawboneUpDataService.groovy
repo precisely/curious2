@@ -50,18 +50,4 @@ class JawboneUpDataService extends DataService {
 	void notificationHandler(String notificationData) {
 		// TODO Auto-generated method stub
 	}
-
-	@Override
-	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
-		log.debug("subscribe() for userId: $userId")
-
-		OAuthAccount account = getOAuthAccountInstance(userId)
-		checkNotNull(account)
-
-		return [success: true]
-	}
-
-	@Override
-	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
-	}
 }

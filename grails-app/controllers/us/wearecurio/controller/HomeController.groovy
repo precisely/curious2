@@ -72,17 +72,19 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("withings")
 		}
 
+		flash.args = ["Withings"]
+
 		if (result.success) {
 			OAuthAccount account = result.account
 			if (!account.lastPolled) {	// Check to see if first time subscription.
 				log.info "Setting notification to get previous data for account: $account"
 				withingsDataService.saveNotificationForPreviousData(account)
 			}
-			flash.message = "withings.subscribe.success.message"
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
-			flash.message = "withings.subscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		
 		redirect(url: session.deniedURI)
@@ -102,13 +104,15 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["Withings"]
+
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "withings.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failed to unsubscribe: " + (result.message ?: "")
-			flash.message = "withings.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -164,14 +168,41 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("moves")
 		}
 
+		flash.args = ["Moves"]
 		if (result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = "moves.subscribe.success.message"
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe"
-			flash.message = "moves.subscribe.failure.message"
+			flash.message = "thirdparty.subscribe.failure.message"
 		}
 		redirect(url: session.deniedURI)
+	}
+
+	def unregistermoves() {
+		debug "HomeController.unregistermoves() params:" + params
+		User user = sessionUser()
+		Long userId = user.id
+		Map result = [:]
+
+		try {
+			result = movesDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("moves")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
+		flash.args = ["Moves"]
+		if (result.success) {
+			debug "Succeeded in unsubscribing"
+			flash.message = "thirdparty.unsubscribe.success.message"
+		} else {
+			debug "Failure while unsubscribing" + result.message
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
+		}
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
 
 	def registerJawboneUp() {
@@ -190,38 +221,40 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("jawboneup")
 		}
 
+		flash.args = ["JawboneUp"]
 		if (result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = "moves.subscribe.success.message"
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe"
-			flash.message = "moves.subscribe.failure.message"
+			flash.message = "thirdparty.subscribe.failure.message"
 		}
 
 		redirect(url: session.deniedURI)
 	}
 
-	def unregistermoves() {
-		debug "HomeController.unregistermoves() params:" + params
+	def unregisterJawboneUp() {
+		debug "unregisterJawboneUp() params: $params"
 		User user = sessionUser()
 		Long userId = user.id
 		Map result = [:]
 
 		try {
-			result = movesDataService.unsubscribe(userId)
+			result = jawboneUpDataService.unsubscribe(userId)
 		} catch (InvalidAccessTokenException e) {
-			throw new AuthenticationRequiredException("moves")
+			throw new AuthenticationRequiredException("jawboneup")
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["JawboneUp"]
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "moves.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failure while unsubscribing" + result.message
-			flash.message = "moves.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -264,14 +297,14 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("fitbit")
 		}
 
+		flash.args = ["FitBit"]
 		if(result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = "fitbit.subscribe.success.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = "fitbit.subscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		redirect(url: session.deniedURI)
 	}
@@ -295,13 +328,14 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["FitBit"]
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "fitbit.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = "fitbit.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))

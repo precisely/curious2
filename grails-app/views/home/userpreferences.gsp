@@ -230,7 +230,7 @@ $(function() {
 							</oauth:checkSubscription>
 							<oauth:checkSubscription userId="${user.id}" typeId="JAWBONE">
 								<g:if test="${it?.accessToken }">
-									<g:link action="unregistermoves">Unlink JawboneUp Account</g:link>
+									<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
 								</g:if>
 								<g:elseif test="${it && !it.accessToken }">
 									<g:link action="registerJawboneUp" class="text-danger">Re-link JawboneUp Account</g:link>
