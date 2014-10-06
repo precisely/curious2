@@ -3,12 +3,6 @@
 <meta name="layout" content="plot" />
 <title>Curious</title>
 
-<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
-deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
-addBackToTagGroupDataCSRF" />
-<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
-
 <script type="text/javascript">
 function refreshPage() {
 	// TODO: used to reload taglist here, instead do incremental updates on changes

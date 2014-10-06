@@ -4,6 +4,12 @@
 <script type="text/javascript" src="/js/flot/jquery.flot.js"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <script type="text/javascript" src="/js/curious/queryplot.js"></script>
+<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
+addBackToTagGroupDataCSRF" />
+<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+
 <script type="text/javascript">
 
 //assumes propertyClosure has the following methods:

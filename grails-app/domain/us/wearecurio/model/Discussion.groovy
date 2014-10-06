@@ -121,11 +121,11 @@ class Discussion {
 		this.isPublic = false
 	}
 	
-	def isNew() {
+	boolean isNew() {
 		return this.name == null
 	}
 	
-	def isUnmodified() {
+	boolean isModified() {
 		return this.created.getTime() != this.updated.getTime()
 	}
 	
