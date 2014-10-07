@@ -13,11 +13,11 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 
 	WithingsDataService withingsDataService
 
-		//def execute() {
-		//def timestamp = System.currentTimeMillis()
-		//log.debug "PollWithingsJob: Started at ${timestamp}"
-		//withingsDataService.pollAll()
-		//log.debug "PollWithingsJob: Job started at ${timestamp} ended"
-		//}
+		def execute() {
+		def timestamp = System.currentTimeMillis()
+		log.debug "PollWithingsJob: Started at ${timestamp}"
+		withingsDataService.pollAll()
+		log.debug "PollWithingsJob: Job started at ${timestamp} ended"
+		}
 
 }

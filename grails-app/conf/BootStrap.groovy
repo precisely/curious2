@@ -38,14 +38,14 @@ class BootStrap {
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
-		//withingsDataService.refreshSubscriptions()
-		//if (current != Environment.TEST) {
-		//	try {
-		//		new IntraDayDataThread().start()
-		//	} catch(IllegalStateException ie) {
-		//		log.debug "Bootstrap: Could not start IntraDayDataThread"
-		//	}
-		//}
+		withingsDataService.refreshSubscriptions()
+		if (current != Environment.TEST) {
+			try {
+				new IntraDayDataThread().start()
+			} catch(IllegalStateException ie) {
+				log.debug "Bootstrap: Could not start IntraDayDataThread"
+			}
+		}
 		log.debug "Curious bootstrap finished executing."
 	}
 

@@ -23,38 +23,38 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 	}
 
 	def execute() {
-		////humanDataService.poll()
-		//movesDataService.pollAll()
-		//def c = OAuthAccount.createCriteria()
-		//def results = c.list {
-		//	projections {
-		//		groupProperty('timeZoneId')
-		//	}
-		//}
-		//
-		//println results
-		//
-		//results.each { timeZoneId ->
-		//	if (timeZoneId) {
-		//		DateTimeZone timezone = TimeZoneId.fromId(timeZoneId).toDateTimeZone()
-		//		DateTime now = new DateTime().withZone(timezone)
-		//		LocalDateTime localTime = now.toLocalDateTime()
-		//		log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
-		//		
-		//		if (localTime.getHourOfDay() == 0) {
-		//			OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS).each { account ->
-		//				log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
-		//				try {
-		//					withingsDataService.getDataDefault(account, null, false)
-		//				} catch (InvalidAccessTokenException e) {
-		//					log.warn "Token expired while polling account: [$account] for Withings."
-		//				}
-		//				
-		//			}
-		//		}
-		//	}
-		//}
-		
+		//humanDataService.poll()
+		movesDataService.pollAll()
+		def c = OAuthAccount.createCriteria()
+		def results = c.list {
+			projections {
+				groupProperty('timeZoneId')
+			}
+		}
+
+		println results
+
+		results.each { timeZoneId ->
+			if (timeZoneId) {
+				DateTimeZone timezone = TimeZoneId.fromId(timeZoneId).toDateTimeZone()
+				DateTime now = new DateTime().withZone(timezone)
+				LocalDateTime localTime = now.toLocalDateTime()
+				log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
+
+				if (localTime.getHourOfDay() == 0) {
+					OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS).each { account ->
+						log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
+						try {
+							withingsDataService.getDataDefault(account, null, false)
+						} catch (InvalidAccessTokenException e) {
+							log.warn "Token expired while polling account: [$account] for Withings."
+						}
+
+					}
+				}
+			}
+		}
+
 	}
 
 }

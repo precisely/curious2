@@ -13,10 +13,10 @@ class DeviceIntegrationDailyJob extends TimerJob {
 	}
 
 	def execute() {
-		//log.debug "Started executing Daily basis job.."
-		//oauthAccountService.refreshAllToken()
-		//withingsDataService.refreshSubscriptions()
-		//log.debug "Finished executing Daily basis job.."
+		log.debug "Started executing Daily basis job.."
+		oauthAccountService.refreshAllToken()
+		withingsDataService.refreshSubscriptions()
+		log.debug "Finished executing Daily basis job.."
 	}
 
 }
