@@ -74,6 +74,7 @@ a.disabled {
 	margin-right: 40px;
 	width: auto;
 }
+
 ul {
 	margin-bottom: 0;
 }
@@ -113,11 +114,11 @@ input {
 	border: 1px solid;
 }
 a,a:link,a:hover,a:visited {
-	color:#08BBF1;	
+	color:#08BBF1;
 	text-decoration:none;
 }
 .body1 {
-	text-align: left;	
+	text-align: left;
 	border:1px solid #cccccc;
 	border-width:0px 1px 1px 1px;
 }
@@ -128,7 +129,7 @@ a,a:link,a:hover,a:visited {
 	border:1px solid #cccccc;
 	-moz-box-shadow: 3px 3px 3px #dddddd;
 	-webkit-box-shadow: 3px 3px 3px #dddddd;
-	box-shadow: 3px 3px 3px #dddddd;	
+	box-shadow: 3px 3px 3px #dddddd;
 }
 .main h1 {
 	padding:7px 10px;
@@ -141,21 +142,38 @@ a,a:link,a:hover,a:visited {
 	color: #FFFFFF;
 	margin:-1px;
 }
-.bugs {
+.right-icon {
 	position:relative;
 }
-.bugs a {	
+
+.right-icon a {
 	display:block;
-	background:url(/images/bugs.gif) no-repeat;
 	width:19px;
 	height:20px;
 	position:absolute;
-	top:22px;
-	right:-20px;	
+	right:-20px;
 }
-.bugs a span {	
+
+.bugs a {
+	background:url(/images/bugs.gif) no-repeat;
+	top:22px;
+}
+
+.search-icon a {
+	background:url(/images/search-icon.png) no-repeat;
+	top:72px;
+}
+
+.help-icon a {
+	background:url(/images/help-icon.png) no-repeat;
+	top:122px;
+}
+
+.right-icon a span {
 	display:none;
 }
+
+
 .ui-dialog-titlebar {
 	height: auto !important;
 }
@@ -199,7 +217,7 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks li a {
 	color:#999999;
-}	
+}
 .signin {
 	padding:14px 20px 0px 0px;
 	font-size:.8em;
@@ -275,7 +293,7 @@ body.discuss-page input#discussTitleInput {
 	}
 }
 .discussmain .cycleTagInput {
-    width: 100%;
+		width: 100%;
 }
 .discussmain .discussPlotArea {
 	height:500px;
@@ -306,13 +324,13 @@ body.discuss-page input#discussTitleInput {
  */
 .tagNav h1 {
 	background-color: #EF4B3A;
-    padding: 7px 10px;
-    vertical-align: middle;
-    color:#ffffff;
-    font-weight:normal;
-    text-transform:uppercase;
-    font-size:.8em;
-    line-height:20px;
+		padding: 7px 10px;
+		vertical-align: middle;
+		color:#ffffff;
+		font-weight:normal;
+		text-transform:uppercase;
+		font-size:.8em;
+		line-height:20px;
 }
 
 .footer {
@@ -330,7 +348,7 @@ body.discuss-page input#discussTitleInput {
 	float:left;
 	width:200px;
 	font-size:.75em;
-}	
+}
 .footer li {
 	display:block;
 	line-height:1.4em
@@ -380,10 +398,10 @@ input.textInput {
 }
 input.buttonInput {
 	float:left;
-}	
+}
 
 /* RIGHT NAV */
-	
+
 #addData, .panel-wrapper {
 	background-color:#EBEBEB;
 	padding:9px;
@@ -439,7 +457,7 @@ ul.ui-autocomplete {
 #searchTags h1 a {
 	color:#000000;
 	padding-left:1.3em;
-	background:url(/images/your_tags.gif) no-repeat 0px .2em;	
+	background:url(/images/your_tags.gif) no-repeat 0px .2em;
 }
 #searchTags input.textInput {
 	width: 100%;
@@ -459,20 +477,20 @@ ul.ui-autocomplete {
 	font-size:.8em;
 }
 .unstyled {
-    list-style: none;
+		list-style: none;
 }
 .hide, .hid {
-    display: none;
+		display: none;
 }
 ul.tags {
-    list-style: none;
+		list-style: none;
 }
 ul.tags li {
-    margin-bottom: 4px;
+		margin-bottom: 4px;
 }
 ul.tags li.tagGroup, ul.tags li.wildCardTagGroup {
-    cursor: pointer;
-    overflow: hidden;
+		cursor: pointer;
+		overflow: hidden;
 }
 
 ul.tags li.tag {
@@ -522,14 +540,14 @@ li.wildcardTagGroup.active ul .ui-icon-close {
 }
 
 ul.tags .ui-icon {
-    float: left;
+		float: left;
 }
 
 li.treeItemView.highlight {
 	background-color: #bbbbbb;
 }
 ul.tags li.ui-draggable {
-    cursor: pointer;
+		cursor: pointer;
 }
 .draggable-helper {
 	z-index: 99999;
@@ -627,7 +645,7 @@ ul#tagList {
 .ui-accordion-header {
 	border:none;
 	background: none;
-	border-radius: 0;			
+	border-radius: 0;
 }
 
 
@@ -640,7 +658,7 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 
 .ui-dialog { overflow:hidden; position: relative; padding: 3px; width: 150px; z-index: 99999999999 !important; }
 .ui-dialog .ui-dialog-titlebar { overflow:hidden; height: 10px; padding: 0 0 0 0; position: relative;  }
-.ui-dialog .ui-dialog-title { float: left; margin: 0px 0 0px; } 
+.ui-dialog .ui-dialog-title { float: left; margin: 0px 0 0px; }
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 5px; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 10px; }
 .ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
 .ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
@@ -714,7 +732,7 @@ a.calendar {
 	display: none;
 }
 .plotlineinfo .form-group {
-	clear: left;	
+	clear: left;
 	width: 100%;
 }
 .plotlineinfo .graph-icon {
@@ -757,7 +775,7 @@ div.plotGroup {
 
 span.delete {
 	display: inline-block;
-    width: 14px;
+		width: 14px;
 	height: 14px;
 	line-height: 11px;
 	color: #f1f1f1;
@@ -780,10 +798,10 @@ div.plotLine {
 	padding:2px 5px;
 	border-color: #ffffff;
 	border-style: solid;
- 	border-width: 1px;
- 	-moz-border-radius: 5px;
- 	-webkit-border-radius: 5px;
- 	border-radius: 5px 5px 5px 5px; 	
+	border-width: 1px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px 5px 5px 5px;
 }
 
 div.plotLine:hover {
@@ -792,7 +810,7 @@ div.plotLine:hover {
 span.plotLine {
 	float:right;
 	padding-left:10px;
-        padding-top:4px;
+				padding-top:4px;
 	display:none;
 }
 div.plotLine:hover span {
@@ -805,10 +823,10 @@ div.plotLine:hover span {
 }
 
 #preFooter #cycleRange {
-    width: 490px;
-    padding-top:2px;
+		width: 490px;
+		padding-top:2px;
 	padding-left:230px;
-    float:left;
+		float:left;
 }
 
 #preFooter .tagNav {
@@ -865,11 +883,11 @@ body.tags-displayed .floating-column {
 	font-size: 12pt;
 }
 .swatch {
-	padding-left:20px;	
+	padding-left:20px;
 	list-style-type:square;
 }
 .swatch li {
-	margin:10px 0px;	
+	margin:10px 0px;
 }
 .swatch li span {
 	color:#000000;
@@ -879,7 +897,7 @@ body.tags-displayed .floating-column {
 	border:0px;
 	-moz-box-shadow: 0px 0px 0px;
 	-webkit-box-shadow: 0px 0px 0px;
-	box-shadow: 0px 0px 0px;	
+	box-shadow: 0px 0px 0px;
 }
 
 body.discuss-page .red-header {
@@ -920,7 +938,7 @@ body.discuss-page .red-header h1 {
 	font-weight:bold;
 	margin:2em 0px;
 	border-top:2px solid #EF4B3A;
-	border-bottom:2px solid #EF4B3A;	
+	border-bottom:2px solid #EF4B3A;
 }
 .discusscomments .description p {
 	margin:1em 0px;
@@ -929,12 +947,12 @@ body.discuss-page .red-header h1 {
 .discusscomments .button {
 	text-align:right;
 	margin:2em 0px;
-	
-	
+
+
 }
 .discusscomments .button a {
 	display:inline-block;
-	text-align:right;	
+	text-align:right;
 	padding:2px 0px;
 	text-align:center;
 	width:230px;
@@ -985,7 +1003,7 @@ body.discuss-page .red-header h1 {
 	vertical-align:top;
 }
 * html .message {
-  left: 600px;           /* RC width */
+	left: 600px;					 /* RC width */
 }
 .description .comment {
 	margin-top:20px;
@@ -1006,17 +1024,17 @@ body.discuss-page .red-header h1 {
 	color:#666666;
 }
 #addComment input,#addComment textarea {
-	background-color:#EFEFEF;	
+	background-color:#EFEFEF;
 	padding:2px;
 }
 #addComment input {
 	width:350px;
-	margin:2px 0px;	
+	margin:2px 0px;
 }
 #addComment textarea {
 	width:100%;
 	height:80px;
-	margin:2px 0px 0px 0px;	
+	margin:2px 0px 0px 0px;
 }
 #addComment .submitButton {
 	display:inline-block;
@@ -1158,7 +1176,7 @@ body.discuss-page .red-header h1 {
 	border-color: #EF4B3A #EF4B3A #ffffff #EF4B3A;
 }
 .close {
- 	float: right;
+	float: right;
 	font-size: 18px;
 	font-weight: bold;
 	line-height: 1;
@@ -1487,7 +1505,7 @@ body.load-graph #graphList .summary .close {
 #remove-exclusion-dialog ul li {
 	font-size: 16px;
 }
-.about-background{ 
+.about-background{
 	position: absolute;
 	height: 100%;
 	border-top: 500px solid transparent;
@@ -1521,7 +1539,7 @@ body.load-graph #graphList .summary .close {
 }
 
 .nav-pills li {
-	list-style: none; 
+	list-style: none;
 }
 body{
 	overflow-x:hidden;
@@ -1560,4 +1578,306 @@ body{
 .news .col-sm-10 {
 	font-size: 30px;
 	padding-top: 10px;
+}
+
+.padding10 {
+	padding: 0px 10px;
+	margin: 0px 10px;
+}
+
+.right-icon {
+	left: -10px;
+}
+
+.signals {
+	color: #777;
+}
+.mainLinks .active a {
+	color: #f14a42;
+}
+
+.signals .mainLinks .new-signal-count {
+	color: #08BBF1;
+}
+
+.signals img.flip-horizontally {
+	transform: scaleX(-1);
+}
+
+.signals .nav-box {
+	display: inline-block;
+	vertical-align:top;
+	width: 200px;
+	padding: 0px 10px;
+	margin: 0px 10px;
+}
+
+.signals .nav-box img {
+	margin-bottom: 5px;
+}
+
+.signals .nav-box-edge {
+	width:40px;
+}
+
+.signals .nav-arrow {
+	height: 80px;
+	width: 10px;
+}
+
+.signals .arrow {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	cursor: pointer;
+}
+
+.signals .arrow-left {
+	border-width: 60px 25px 60px 0;
+	border-color: transparent #aaa transparent transparent;
+}
+
+.signals .arrow-right {
+	border-width: 60px 0 60px 25px;
+	border-color: transparent transparent transparent #aaa;
+}
+
+.signals .arrow-down {
+	border-width:  12px 6px 0 6px;
+	border-color: #aaa transparent transparent transparent;
+	position: relative;
+	top: 14px;
+}
+
+.signals .small-arrow-down {
+	border-width:  12px 6px 0 6px;
+	border-color: #aaa transparent transparent transparent;
+	position: relative;
+	top: 14px;
+}
+
+.signals .saved-carousel-layout {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.signals .toggle-arrow {
+	z-index: 1;
+}
+
+.signals .nav-carousel-container {
+	width: 2000px;
+	overflow: hidden;
+	position:relative;
+}
+
+.signals .right-icon {
+	position:absolute;
+	right: 0px;
+}
+
+.signals .right-icon a {
+	position:absolute;
+	right: 0px;
+}
+
+.signals td.nav-carousel-container {
+	vertical-align:top;
+}
+
+.signals .nav-box img.comment-icon {
+	position: relative;
+	left: 15px;
+}
+
+.signals .nav-box img.nav-box-icon {
+	height: 60px;
+}
+
+.signals .carousel-caption {
+	font-size: 0.9em;
+	line-height: 1.3em;
+}
+
+.signals .carousel-item-title {
+	font-weight: bold;
+	display:block;
+	text-transform: uppercase;
+}
+
+.signals .signal-row {
+	margin-top: 15px;
+	border-bottom: 3px solid #eee;
+	margin-bottom: 15px;
+}
+
+.signals .signal-description {
+	padding: 15px;
+	line-height: 0.9em;
+}
+
+.signals .signal-section-title {
+	font-weight: bold;
+}
+
+.signals h2.signal-category {
+	font-weight: bold;
+	font-size: 14px;
+	padding-left: 15px;
+	text-transform: uppercase;
+}
+
+.signals .x-button {
+		background-color: #ccc;
+		border-radius: 12px; /* one half of ( (border * 2) + height + padding ) */
+		color: white;
+		font: bold 15px/13px Helvetica, Verdana, Tahoma;
+		height: 14px;
+		padding: 4px 3px 0 3px;
+		text-align: center;
+		min-width: 14px;
+
+		position: relative;
+		float: right;
+		right: 25px;
+		margin: 3px;
+		cursor: pointer;
+}
+
+.signals .x-button span {
+	font-size: 12px;
+	position:relative;
+	top: -4px;
+}
+
+.signal-action-button {
+	line-height: 1.5em;
+	cursor: pointer;
+}
+
+.signals .signal-action {
+	padding: 15px;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.signals .arrow-box {
+	position: absolute;
+
+	width: 400px;
+	background: #eee;
+	opacity: 0.9;
+	padding: 20px;
+
+	top: -1000px;
+	opacity: 1;
+	transition: opacity 0.3s ease-out 0s;
+	z-index: 10000;
+}
+
+.signals .arrow-box:after {
+	left: 100%;
+	top: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(221, 221, 221, 0.0);
+	border-left-color: #eee;
+	border-width: 30px;
+	margin-top: -30px;
+
+}
+
+.signals .arrow-box h3 {
+	font-size:18px;
+	color: #222;
+	margin-bottom: 20px;
+}
+
+.signals .arrow-box p {
+	font-weight: bold;
+	line-height: 1.2em;
+}
+
+.signals .arrow-box .buttons {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.signals .arrow-box .buttons button{
+	font-weight: bold;
+	border-radius: 20px;
+	margin-right: 10px;
+	background-color: #4092a5;
+	border-width: 0px;
+}
+
+.signals #garbage-can-icon {
+	position: absolute;
+	top: -30px;
+	left: -80px;
+	z-index: 10000;
+	transition: all 0.2s ease-out 0s;
+}
+
+.signals .saved-action {
+	text-transform: uppercase;
+	font-weight: bold;
+	margin-right: 10px;
+	cursor:pointer;
+}
+
+.signals #secret-container {
+	position:absolute;
+	width: 20000px;
+	overflow: hidden;
+	left: 0px;
+	transition: left 0.8s ease-out 0s;
+}
+
+.signals .container {
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.signals .container-fluid {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.signals .red-header {
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.signals .padding10 {
+	padding-left: 0px;
+	padding-right: 0px;
+
+}
+
+.signals .row {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.signals .header {
+	padding: 0 10px;
+}
+
+.signals .signal-name {
+	margin-top: 20px;
+}
+
+.rotate90 {
+	transform: rotate(90deg);
+	transition: transform 0.5 ease-out 0s;
+}
+
+.nodisplay {
+	display: none;
 }

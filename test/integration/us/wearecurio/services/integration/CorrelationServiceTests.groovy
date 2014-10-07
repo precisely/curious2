@@ -63,44 +63,5 @@ class CorrelationServiceTests extends CuriousServiceTestCase {
 		assert pairs[3] == [t1, t1]
 	}
 	
-	@Test
-	void testCorrelationsSaved() {
-		def entries1 = EntryFactory.makeN(3, { Math.sin(it) }, ['tag_description': 'tag1'])
-		def entries2 = EntryFactory.makeN(3, { Math.cos(it) }, ['tag_description': 'tag2'])
-		assert Tag.count() == 2
-		assert Entry.count() == 6
-		correlationService.iterateOverTagPairs(user, { tag1, tag2 ->
-			def series1 = CuriousSeries.create(tag1, user.id)
-			def series2 = CuriousSeries.create(tag2, user.id)
-			correlationService.saveMipss(series1, series2)
-			log("series1: ${tag1.description} X series2: ${tag2.description}")
-		})
-		assert Correlation.count() == 4
-	}
-	
-	@Test
-	void testUpdateUserCorrelations() {
-		//	Assume there are two users with a different set of tags.
-		def entries1 = EntryFactory.makeN(3, { Math.sin(it) },		 ['tag_description': 'tag1', 'username': 'a'])
-		def entries2 = EntryFactory.makeN(3, { Math.cos(it) },		 ['tag_description': 'tag2', 'username': 'a'])
-		def entries3 = EntryFactory.makeN(4, { Math.sin(it) },		 ['tag_description': 'tag3', 'username': 'b'])
-		def entries4 = EntryFactory.makeN(4, { Math.cos(it) },		 ['tag_description': 'tag4', 'username': 'b'])
-		def entries5 = EntryFactory.makeN(4, { Math.cos(1.2*it) }, ['tag_description': 'tag5', 'username': 'b'])
-		assert Tag.count() == 5
-		assert Entry.count() == 18
-		def user_a = User.findWhere(username: 'a')
-		correlationService.updateUserCorrelations(user_a)
-		assert Correlation.count() == 4
-		
-		def user_b = User.findWhere(username: 'b')
-		correlationService.updateUserCorrelations(user_b)
-		assert Correlation.count() == 4 + 9
-		
-		def correlations = Correlation.findAll().collect { it.corValue }
-		//assertEquals correlations[0], 1.0, 0.0001
-		//assertEquals correlations[1], 0.73387, 0.0001
-		//assertEquals correlations[2], 0.73387, 0.0001
-		//assertEquals correlations[3], 1.0, 0.0001
-	}
 	
 }

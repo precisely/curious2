@@ -31,16 +31,16 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 				groupProperty('timeZoneId')
 			}
 		}
-		
+
 		println results
-		
+
 		results.each { timeZoneId ->
 			if (timeZoneId) {
 				DateTimeZone timezone = TimeZoneId.fromId(timeZoneId).toDateTimeZone()
 				DateTime now = new DateTime().withZone(timezone)
 				LocalDateTime localTime = now.toLocalDateTime()
 				log.debug "DeviceIntegrationHourlyJob.execute() Local Hour of the day: " + localTime.getHourOfDay()
-				
+
 				if (localTime.getHourOfDay() == 0) {
 					OAuthAccount.findAllByTimeZoneIdAndTypeId(timeZoneId, ThirdParty.WITHINGS).each { account ->
 						log.debug "DeviceIntegrationHourlyJob.execute() calling getDataForWithings " + account
@@ -49,12 +49,12 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 						} catch (InvalidAccessTokenException e) {
 							log.warn "Token expired while polling account: [$account] for Withings."
 						}
-						
+
 					}
 				}
 			}
 		}
-		
+
 	}
 
 }

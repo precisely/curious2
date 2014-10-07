@@ -8,8 +8,8 @@ var beforeLineRemoveEvent = "curious.before.line.remove";
 var afterLineRemoveEvent = "curious.after.line.remove";
 var afterQueryTitleChangeEvent = "curious.after.title.change";
 
-var plotLineColorSequence =      [ '#FF6633', '#990066', '#5BCDFC', '#449BAF', '#9AD3AE', '#D5D879' ];
-var plotColorClass =  {'#FF6633':'orange', '#990066':'eggplant', '#5BCDFC':'malibu', 
+var plotLineColorSequence =			 [ '#FF6633', '#990066', '#5BCDFC', '#449BAF', '#9AD3AE', '#D5D879' ];
+var plotColorClass =	{'#FF6633':'orange', '#990066':'eggplant', '#5BCDFC':'malibu', 
 		'#449BAF':'bostonBlue','#9AD3AE':'vistaBlue', '#D5D879':'chenin'};
 function colorToFillColor(color,opacity) {
 	return 'rgba(' + parseInt(color.substr(1,2),16) + ',' + parseInt(color.substr(3,2),16) + ','
@@ -341,7 +341,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 	}
 	this.clearGraphs = function () {
-	    if (confirm("Are you sure you want to clear the graph and start over?")) {
+			if (confirm("Are you sure you want to clear the graph and start over?")) {
 			for (var i in this.lines) {
 				var line = this.lines[i];
 				console.log('Plot ID: ' + this.id);
@@ -1011,10 +1011,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 							+ ' (' + item.datapoint[1] + ')');
 					dialogDiv.dialog({ position: [pos.pageX + 10, pos.pageY], width: 140, height: 42});
 				}
-	        } else {
+					} else {
 				console.log('plotclick: Item not found');
 			}
-	    });
+			});
 		
 		this.store();
 	}
@@ -1133,6 +1133,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.handleDropTag = function(event, ui) {
 		var $sourceElement = $(ui.draggable[0]);
+		console.log($sourceElement);
 		var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
 		var plot = this;
 
@@ -1146,6 +1147,21 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		
 	}
+
+	this.drawLine = function($elt) {
+		var tagListItem = $elt.data(DATA_KEY_FOR_ITEM_VIEW).getData();
+		var plot = this;
+
+		if (tagListItem instanceof TagGroup) {
+			tagListItem.fetchAll(function() { plot.addLine(tagListItem); });
+		} else {
+			tagListItem.getTagProperties(function(tagProperties){
+				console.log("import tag properties");
+				plot.addLine(tagListItem);
+			});
+		}
+	}
+
 	this.addLine = function(initialTag) {
 		// prevent adding duplicate lines
 		if (this.getLineByTag(initialTag)) 
@@ -1574,13 +1590,13 @@ function PlotLine(p) {
 		if (!this.isContinuous) this.isContinuous = false;
 		if (!this.showPoints) this.showPoints = false;
 		var html = '<div id="plotline' + idSuffix + '" class="'+plotColorClass[this.color]+'">\
-		  <h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
-		  + escapehtml(this.name) + '</span> <span class="plotGroup">'
-		  + (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
-			  + "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
-			  this.plot.id + "','" + this.id + '\')" >x</span>')
-		  + '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
-		  + idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
+			<h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
+			+ escapehtml(this.name) + '</span> <span class="plotGroup">'
+			+ (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
+				+ "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
+				this.plot.id + "','" + this.id + '\')" >x</span>')
+			+ '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
+			+ idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if (this.isCycle) {
 			html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix
 					+ '"></div><div style="display:inline-block;margin-left:10px;width:50px;display:relative;top:3px;" id="plotlinecyclerange'
@@ -1588,11 +1604,11 @@ function PlotLine(p) {
 					+ '"></div></div>';
 		}
 		if (!this.isCycle)
-		    html += '<h4>GRAPH AS</h4><div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
+				html += '<h4>GRAPH AS</h4><div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
 			+ idSuffix + '" id="plotlinepoints' + idSuffix + '"' + 'value="points"' + (this.showPoints ? 'checked' : '') 
 			+ '/> <label> PLOT</label></div><img src="/images/gf-plot.png" class="graph-icon" /></div> \
 				<div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
-				+ idSuffix + '" id="plotlineline' + idSuffix + '"' +  'value="line"' + (this.showPoints ? '' :'checked') 
+				+ idSuffix + '" id="plotlineline' + idSuffix + '"' +	'value="line"' + (this.showPoints ? '' :'checked') 
 				+ '/> <label> LINE</label></div><img src="/images/gf-line.png" class="graph-icon" /></div> ';
 			html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
 			+ 'value="continuous" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"' 
@@ -2123,7 +2139,7 @@ function PlotLine(p) {
 					data: data,
 					color: ((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-					  show: this.showLines
+						show: this.showLines
 					},
 					points: {
 						show: this.showPoints || data.length < 2
@@ -2137,9 +2153,9 @@ function PlotLine(p) {
 					data: data,
 					color: ((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-					  show: this.showLines,
-					  fill: true,
-					  fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
+						show: this.showLines,
+						fill: true,
+						fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 					},
 					points: {
 						show: this.showPoints || data.length < 2

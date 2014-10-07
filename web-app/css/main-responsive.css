@@ -79,6 +79,11 @@
 	.header .mainLinks {
 		padding-top: 0;
 	}
+	.mainLinks li {
+		display:block;
+		float: none;
+		padding: 0;
+	}
 	.footer ul {
 		width: 25%;
 		text-align: center;
@@ -86,21 +91,29 @@
 }
 
 @media (max-width: 992px) {
-    .container {
-        padding: 0;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .bugs a {
-        right: -10px;
-    }
-    .fixed-column {
-        width: 33%;
-    }
-    .red-header .right {
-        width: 67%;
-    }
-    body.tags-displayed .floating-column {
-        width: calc(67% - 2px);
-    }
+		.container {
+				padding: 0;
+				margin-left: 10px;
+				margin-right: 10px;
+		}
+		.signals .container {
+				padding: 10px;
+				margin-left: 0px;
+				margin-right: 0px;
+		}
+		.signals .arrow-box {
+			display: none;
+		}
+		.bugs a {
+				right: -10px;
+		}
+		.fixed-column {
+				width: 33%;
+		}
+		.red-header .right {
+				width: 67%;
+		}
+		body.tags-displayed .floating-column {
+				width: calc(67% - 2px);
+		}
 }

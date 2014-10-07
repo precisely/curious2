@@ -7,10 +7,13 @@ import us.wearecurio.thirdparty.withings.*
 import us.wearecurio.server.BackgroundTask
 
 import us.wearecurio.marshaller.EnumMarshaller
+import us.wearecurio.marshaller.CorrelationMarshaller
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.*
 import us.wearecurio.thirdparty.withings.*
 import us.wearecurio.utility.Utils
+import org.springframework.web.context.support.WebApplicationContextUtils
+
 
 class BootStrap {
 
@@ -26,15 +29,16 @@ class BootStrap {
 		def current = Environment.current
 		DatabaseService.set(databaseService)
 		TagService.set(tagService)
-		EmailService.set(emailService)
+		//EmailService.set(emailService)
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
+		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
+		springContext.getBean( "customObjectMarshallers" ).register()
 
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
-
-		//withingsDataService.refreshSubscriptions()
+		withingsDataService.refreshSubscriptions()
 		if (current != Environment.TEST) {
 			try {
 				new IntraDayDataThread().start()
