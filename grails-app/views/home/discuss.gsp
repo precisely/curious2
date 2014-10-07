@@ -215,7 +215,7 @@ $(function(){
 			<span id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
-					<li id="share-discussion"><a href="#">Share</a></li>
+					<li id="share-discussion"><a href="#">Change Visibility</a></li>
 					<li class="${isAdmin ? '' : 'disabled text-muted' }">
 						<g:link params="[discussionId: params.discussionId, deleteDiscussion: true]"
 							action="discuss">Delete</g:link>
