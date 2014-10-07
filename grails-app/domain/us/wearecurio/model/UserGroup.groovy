@@ -276,15 +276,16 @@ class UserGroup {
 
 		DatabaseService databaseService = DatabaseService.get()
 
-		String countQuery = String.format(DISCUSSIONS_QUERY, "COUNT(d.id) as count", argument2)
+		argument2 += " GROUP BY d.id"
+		
+		String countQuery = "SELECT count(*) as count FROM (" + String.format(DISCUSSIONS_QUERY, "d.id", argument2) + ") as t"
 		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, namedParameters)[0]?.count
 
-		argument2 += " GROUP BY d.id"
 		String listQuery = String.format(DISCUSSIONS_QUERY, argument1, argument2)
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 
 		List result = databaseService.sqlRows(listQuery, namedParameters)
-
+		
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData

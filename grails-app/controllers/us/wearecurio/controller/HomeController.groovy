@@ -660,11 +660,11 @@ class HomeController extends DataController {
 				if (!UserGroup.canAdminDiscussion(user, discussion)) {
 					status = UNAUTHORIZED
 					debug "Not admin of discussion: " + discussionId
-					message = "You don't have admin rights to delete the discussion."
+					message = "You don't have the right to delete this discussion."
 				} else {
 					status = OK
 					Discussion.delete(discussion)
-					message = "Discussion delete successfully."
+					message = "Discussion deleted successfully."
 				}
 
 				if (request.xhr) {
