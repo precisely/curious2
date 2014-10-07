@@ -1609,6 +1609,7 @@ function PlotLine(p) {
 			html += '<h4 style="margin-top:15px">OPERATIONS</h4> <div class="form-group"><input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
 					+ (this.sumData ? 'checked' : '') + '/> <label>SUM</label></div> ';
 		if (!this.isCycle) {
+			html += '<label>SMOOTH</label>'
 			html += '<div style="display:inline-block;margin-left:10px;width:90%;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div>';
 			//html += '<div style="display:inline-block;">frequency <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinefreqwidth' + idSuffix + '"></div></div>';
 		}
