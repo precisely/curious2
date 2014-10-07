@@ -91,7 +91,6 @@ $(function() {
 </head>
 <body class="user-preference">
 	<div class="red-strip"></div>
-	<g:render template="/layouts/alertMessage" />
 	<div class="row">
 		<div class="col-sm-3 text-center">
 			<div class="logo"></div>

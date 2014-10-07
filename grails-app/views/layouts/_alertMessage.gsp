@@ -8,7 +8,7 @@
 <g:set var="classes" value="${flash.messageType ? 'alert-' + flash.messageType : 'alert-info' } ${flash.message ? '' : 'hide' }" />
 <div id="alert-message" class="alert ${classes }">
 	<button type="button" class="close" onclick="$(this).parent().fadeOut()">&times;</button>
-	<strong><%=flash.message %></strong>
+	<strong><g:message code="${flash.message }" args="${flash.args }" /></strong>
 </div>
 
 <g:if test="${flash.message && (!flash.timeout || (flash.timeout && flash.timeout != 'clear')) }">
