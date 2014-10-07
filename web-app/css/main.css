@@ -1592,7 +1592,7 @@ body{
 .signals {
 	color: #777;
 }
-.signals .mainLinks .active-nav-link a {
+.mainLinks .active a {
 	color: #f14a42;
 }
 
