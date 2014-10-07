@@ -62,18 +62,18 @@ class Correlation {
 		updated = new Date()
 	}
 
-	public Correlation(CuriousSeries series1, CuriousSeries series2, Double corValue) {
+	public Correlation(CuriousSeries series1, CuriousSeries series2, Double score) {
 		userId = series1.userId
 		series1Type = series1.source.toString()
 		series2Type = series2.source.toString()
 		series1Id = series1.sourceId
 		series2Id = series2.sourceId
 
-		if (Double.isNaN(corValue)) {
-			corValue = null
+		if (Double.isNaN(score)) {
+			score = null
 		}
 
-		this.corValue = corValue
+		this.value = score
 		created = new Date()
 		updated = new Date()
 	}
