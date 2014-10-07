@@ -1280,24 +1280,24 @@ div.graph-header-container .red-header {
 }
 
 /**
- * Style for community & load page.
+ * Style for feed & load page.
  */
-.community .red-header h1 {
+.feed .red-header h1 {
 	width: 100%;
 	border: 0;
 	font-size: 15px;
 	margin-top: 0px;
 }
-.community .red-header #actions {
+.feed .red-header #actions {
 	margin-top: 7px;
 }
-.community {
+.feed {
 	color: #879293;
 }
-.community .col-md-12 {
+.feed .col-md-12 {
 	padding: 0;
 }
-.community .subscriptions {
+.feed .subscriptions {
 	list-style: none;
 }
 .new-post {
@@ -1305,7 +1305,7 @@ div.graph-header-container .red-header {
 	border: 1px solid #F1F1F1;
 	text-align: right;
 }
-.community .media {
+.feed .media {
 	padding: 10px;
 	border: 1px solid #F1F1F1;
 }
@@ -1463,7 +1463,7 @@ div.graph-header-container .red-header {
 	line-height: 1.5em;
 	padding-top: 20px
 }
-.communityMessage {
+.feedMessage {
 	padding-bottom: 1em;
 }
 .discussHeader {

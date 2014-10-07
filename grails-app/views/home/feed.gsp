@@ -88,18 +88,15 @@ $(document).ready(function() {
 });
 </script>
 </head>
-<body class="community">
+<body class="feed">
 <!-- MAIN -->
 <div class="main container-fluid" >
-	<g:if test="${flash.message}">
-		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
-	</g:if>
 	<div class="row red-header">
 		<div class="col-md-3">
 			<div id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
-					<li><a Ref="/home/community" >Home Feed</a></li>
+					<li><a Ref="/home/feed" >Home Feed</a></li>
 				</ul>
 			</div>
 		</div>
@@ -114,11 +111,11 @@ $(document).ready(function() {
 			<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
 			<ul class="subscriptions">
 				<li>
-					<a href = "/home/community"> Home Feed </a>
+					<a href = "/home/feed"> Home Feed </a>
 				</li>
 				<g:each var="membership" in="${groupMemberships}">
 					<li>
-						<a href = "/home/community?userGroupNames=${membership[0].name}"> ${membership[0].fullName} </a>
+						<a href = "/home/feed?userGroupNames=${membership[0].name}"> ${membership[0].fullName} </a>
 					</li>
 				</g:each>
 			</ul>
@@ -133,7 +130,7 @@ $(document).ready(function() {
 				</form>
 			</div>
 			<div id="discussions">
-				<g:render template="/community/discussions" />
+				<g:render template="/feed/discussions" />
 			</div>
 		</div>
 

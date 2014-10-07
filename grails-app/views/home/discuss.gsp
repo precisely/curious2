@@ -210,10 +210,6 @@ $(function(){
 <body class="discuss-page">
 <!-- SHARE PAGE -->
 <div id="container" class="sharePage" >
-	<g:if test="${flash.message}">
-		<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
-	</g:if>
-
 	<div class="discussTitle red-header" id="discussTitleArea">
 		<h1>
 			<span id="actions">

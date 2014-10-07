@@ -211,12 +211,12 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testCommunity() {
+	void testFeed() {
 		HomeController controller = new HomeController()
 
 		controller.session.userId = user.getId()
 
-		def model = controller.community()
+		def model = controller.feed()
 
 		assert model.prefs != null
 	}

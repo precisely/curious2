@@ -502,7 +502,11 @@ class HomeController extends DataController {
 	}
 
 	def community(Long discussionId, boolean unpublish, boolean publish) {
-		debug "HomeController.community()"
+		feed(discussionId, unpublish, publish)
+	}
+	
+	def feed(Long discussionId, boolean unpublish, boolean publish) {
+		debug "HomeController.feed()"
 		def user = sessionUser()
 
 		if (user == null) {
@@ -554,14 +558,14 @@ class HomeController extends DataController {
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
 				UserGroup.getDiscussionsInfoForUser(user, true, params)
 
-		log.debug("HomeController.community: User has read memberships for :" + groupMemberships.dump())
+		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {
-			render template: "/community/discussions", model: model
+			render template: "/feed/discussions", model: model
 			return
 		}
 
@@ -649,7 +653,7 @@ class HomeController extends DataController {
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
 				flash.message = "That discussion topic no longer exists."
-				redirect(url:toUrl(action:'community'))
+				redirect(url:toUrl(action:'feed'))
 				return
 			}
 			if (params.deleteDiscussion) {
@@ -667,7 +671,7 @@ class HomeController extends DataController {
 					renderJSONPost([message: message], status)
 				} else {
 					flash.message = message
-					redirect(url: toUrl(action: 'community'))
+					redirect(url: toUrl(action: 'feed'))
 				}
 				return
 			}
@@ -676,7 +680,7 @@ class HomeController extends DataController {
 			debug "Discussion for plotDataId not found: " + plotDataId
 			if (discussion == null) {
 				flash.message = "That shared graph discussion no longer exists."
-				redirect(url:toUrl(action:'community'))
+				redirect(url:toUrl(action:'feed'))
 				return
 			}
 		}
@@ -773,6 +777,8 @@ class HomeController extends DataController {
 			params.max = params.max ?: 5
 			params.offset = params.offset ?: 0
 
+			// see duplicated code in DiscussionController.createTopic
+			// edits here should be duplicated there
 			Map model = discussion.getJSONModel(params)
 
 			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
