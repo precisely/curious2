@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
 
-class Tag implements Serializable {
+class Tag implements Serializable, Comparable {
 
 	// TODO: Turn tags() into an interface called Taggables that both TagGroup and Tag implement.
 	//	This will allow us to iterate on both TagGroups and Tags.
@@ -130,5 +130,13 @@ class Tag implements Serializable {
 			return false
 		
 		return getId() == other.getId()
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if (!(o instanceof Tag))
+			return -1;
+		
+		return description.compareTo(((Tag)o).description)
 	}
 }

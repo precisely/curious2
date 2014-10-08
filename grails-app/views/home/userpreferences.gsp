@@ -6,6 +6,12 @@
 <meta name="layout" content="main" />
 <meta name="description" content="A platform for health hackers" />
 
+<c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryDataCSRF, pingDataCSRF,
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
+
+<script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
 <script>
 function refreshPage() {
 }
@@ -13,6 +19,8 @@ function doLogout() {
     callLogoutCallbacks();
 }
 var origUsername = "${user.username}";
+
+var interestTagList;
 
 $(function() {
     initTemplate();
@@ -33,6 +41,8 @@ $(function() {
             return true;
         });
     });
+    this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
+    
     // defeat the damn browser autofill
     $("#username").val("${user.username}");
     $("#oldPassword").val("");
@@ -151,19 +161,32 @@ $(function() {
 					</div>
 
 					<div class="form-group">
+						<!-- div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div  -->
+						<label class="control-label col-sm-3" for="interests">Interest Tags</label>
+						<div class="col-sm-5">
+							<input type="text" id="interestTagInput" name="data"
+								value="" />
+							<br/>&nbsp;<br/>
+							<ol id="interestTagList" style="border:1px solid #000000;padding:3px;height:10em;list-style:none;overflow:auto;width:300px;"></ol>
+						</div>
+					</div>
+
+					<!-- 
+					<div class="form-group">
 						<label class="control-label col-sm-3" for="birthdate">Birthdate (MM/DD/YYYY)</label>
 						<div class="col-sm-5">
 							<g:textField name="birthdate"
 								value="${user.birthdate ? new java.text.SimpleDateFormat("MM/dd/yyyy").format(user.birthdate) : ''}" />
 						</div>
 					</div>
+					-->
 
-					<div class="form-group">
+					<!--div class="form-group">
 						<label class="control-label col-sm-3" for="Notify Email">Email to send reminders to</label>
 						<div class="col-sm-5">
 							<g:textField name="remindEmail" value="${user.remindEmail ? user.remindEmail.encodeAsHTML() : ""}" />
 						</div>
-					</div>
+					</div -->
 
 					<div class="form-group">
 						<label class="control-label col-sm-3" for="first">Email Notifications</label>
@@ -186,8 +209,9 @@ $(function() {
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-sm-3">Other Accounts</label>
+						<label class="control-label col-sm-3">External Accounts</label>
 						<div class="col-sm-5">
+							<!--
 							<g:if test="${!user.twitterAccountName}">
 								<g:link action="registertwitter">Link Twitter Account</g:link>
 							</g:if>
@@ -195,6 +219,7 @@ $(function() {
 								Twitter Account: ${user.twitterAccountName}<br>
 								<g:link action="registertwitter">Link Other Twitter Account</g:link>
 							</g:else><br>
+							 -->
 							<oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
 								<g:if test="${it?.accessToken }">
 									<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
@@ -241,6 +266,7 @@ $(function() {
 						</div>
 					</div>
 
+					<!-- 
 					<div class="form-group">
 						<label class="control-label col-sm-3" for="first">Default Twitter to Now</label>
 						<div class="col-sm-5">
@@ -248,6 +274,7 @@ $(function() {
 								<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>> Default Twitter timestamp to now
 						</div>
 					</div>
+					 -->
 					<div class="form-group">
 						<div class="col-sm-12 text-right">
 							<g:submitButton class="savebutton" name="Update" />

@@ -40,6 +40,12 @@ class User implements NameEmail {
 		table '_user'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 	}
+	
+	SortedSet interestTags
+	
+	static hasMany = [
+		interestTags: Tag
+	]
 
 	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
 	static BoundedCache<Long, List<Long>> tagGroupIdCache = new BoundedCache<Long, List<Long>>(100000)
@@ -275,6 +281,27 @@ class User implements NameEmail {
 
 	List<GenericTagGroup> getTagGroups() {
 		getTagGroups(this.id)
+	}
+	
+	void addInterestTag(Tag tag) {
+		this.addToInterestTags(tag)
+	}
+	
+	void deleteInterestTag(Tag tag) {
+		this.removeFromInterestTags(tag)
+	}
+	
+	def fetchInterestTagsJSON() {
+		def retVal = []
+		
+		if (!this.interestTags)
+			return []
+		
+		for (Tag tag : this.interestTags) {
+			retVal.add([description:tag.getDescription()])
+		}
+		
+		return retVal
 	}
 
 	String toString() {

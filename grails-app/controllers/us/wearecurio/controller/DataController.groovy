@@ -443,6 +443,124 @@ class DataController extends LoginController {
 		renderJSONGet(entries)
 	}
 	
+	def getInterestTagsData() {
+		debug "DataController.getInterestTagsData() userId:" + params.userId
+
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		def tags = user.fetchInterestTagsJSON()
+
+		debug "Interest tags:" + tags
+
+		renderJSONGet([interestTags:tags])
+	}
+	
+	def addInterestTagData() {
+		debug "DataController.addInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
+
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+		
+		if (!params.tagName) {
+			debug "no tag name specified"
+			renderStringGet("No tag name specified")
+			return
+		}
+
+		user.addInterestTag(Tag.look(params.tagName.toLowerCase()))
+		
+		if (Utils.save(user, true))  {
+			debug "Successfully added tag"
+			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
+		} else {
+			debug "Failure adding tag"
+			renderStringGet("Error adding interest tag")
+		}
+	}
+	
+	def updateInterestTagData() {
+		debug "DataController.updateInterestTagData() userId:" + params.userId + ", oldTagName: " + params.oldTagName + ", newTagName: " + params.newTagName
+
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+		
+		if ((!params.oldTagName) || (!params.newTagName)) {
+			debug "no tag name specified"
+			renderStringGet("No tag name specified")
+			return
+		}
+		
+		Tag oldTag = Tag.findByDescription(params.oldTagName.toLowerCase())
+		Tag newTag = Tag.look(params.newTagName.toLowerCase())
+		
+		if ((!oldTag) || (!newTag)) {
+			debug "tag not found"
+			renderStringGet("Internal error: tag not found")
+			return
+
+		}
+
+		user.deleteInterestTag(oldTag)
+		user.addInterestTag(newTag)
+		
+		if (Utils.save(user, true))  {
+			debug "Successfully updated tag"
+			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
+		} else {
+			debug "Failure removing tag"
+			renderStringGet("Error adding interest tag")
+		}
+	}
+	
+	def deleteInterestTagData() {
+		debug "DataController.deleteInterestTagData() userId:" + params.userId + ", tagName: " + params.tagName
+ 
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+		
+		if (!params.tagName) {
+			debug "no tag name specified"
+			renderStringGet("No tag name specified")
+			return
+		}
+		
+		Tag tag = Tag.findByDescription(params.tagName.toLowerCase())
+		
+		if (!tag) {
+			debug "tag not found"
+			renderStringGet("Internal error: tag not found")
+			return
+
+		}
+
+		user.deleteInterestTag(tag)
+		
+		if (Utils.save(user, true))  {
+			debug "Successfully removed tag"
+			renderJSONGet([interestTags:user.fetchInterestTagsJSON()])
+		} else {
+			debug "Failure removing tag"
+			renderStringGet("Error adding interest tag")
+		}
+	}
+	
 	protected def fetchPlotEntries() {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
