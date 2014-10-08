@@ -29,7 +29,7 @@ class BootStrap {
 		def current = Environment.current
 		DatabaseService.set(databaseService)
 		TagService.set(tagService)
-		//EmailService.set(emailService)
+		EmailService.set(emailService)
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
