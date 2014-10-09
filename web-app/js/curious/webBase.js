@@ -15,7 +15,7 @@ function showAlert(alertText, onAlertClose) {
 	$messageTextDialog.text(alertText);
 	$messageDialog.dialog({
 		dialogClass: "no-close",
-		modal: true,
+		modal: false,
 		resizable: false,
 		title: "Alert",
 		buttons: {
@@ -38,7 +38,7 @@ function showYesNo(alertText, onConfirm) {
 	$messageTextDialog.text(alertText);
 	$messageDialog.dialog({
 		dialogClass: "no-close",
-		modal: true,
+		modal: false,
 		resizable: false,
 		title: "Query",
 		buttons: {
@@ -79,7 +79,7 @@ function showAB(alertText, aText, bText, onA, onB) {
 	};
 	$messageDialog.dialog({
 		dialogClass: "no-close",
-		modal: true,
+		modal: false,
 		resizable: false,
 		title: "Query",
 		buttons: buttons,
