@@ -25,7 +25,7 @@
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Graph</g:link></li>
-			<li><g:link controller='home' action="community">Community</g:link></li>
+			<li><g:link controller='home' action="feed">Feed</g:link></li>
 			<li class="active-nav-link"><g:link controller='home' action="signals">Signals</g:link>
 				<span class="new-signals" style="display:none">(<span class="new-signal-count">3 new</span>)</span>
 			</li>
