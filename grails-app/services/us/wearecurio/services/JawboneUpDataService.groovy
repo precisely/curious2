@@ -21,7 +21,8 @@ import us.wearecurio.thirdparty.jawbone.JawboneUpTagUnitMap
 
 class JawboneUpDataService extends DataService {
 
-	static final String BASE_URL = "https://jawbone.com/nudge/api%s"
+	static final String BASE_URL = "https://jawbone.com"
+	static final String COMMON_BASE_URL = "$BASE_URL/nudge/api%s"
 	static final String COMMENT = "(Jawbone Up)"
 	static final String SET_NAME = "JUP"
 
@@ -30,7 +31,7 @@ class JawboneUpDataService extends DataService {
 	JawboneUpDataService() {
 		provider = "Jawboneup"
 		typeId = ThirdParty.JAWBONE
-		profileURL = String.format(BASE_URL, "/users/@me")
+		profileURL = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me")
 	}
 
 	@Override
@@ -39,11 +40,36 @@ class JawboneUpDataService extends DataService {
 	}
 
 	boolean isRequestSucceded(JSONObject response) {
-		return !response || !response["meta"] || response["meta"] != 200
+		return response && response["meta"] && response["meta"]["code"] == 200
+	}
+
+	TimeZone getTimeZone(OAuthAccount account) {
+
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug "getDataSleep(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
+
+		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/sleeps")
+
+		if (forDay) {
+			Integer timeZoneIdNumber = getTimeZoneId(account)
+			TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+			DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+			TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
+
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+			formatter.setTimeZone(timeZone)
+
+			String forDate = formatter.format(forDay)
+			requestUrl += "?date=$forDate"
+		}
+
+		return getDataSleep(account, refreshAll, requestUrl)
+	}
+
+	// Overloaded method to support pagination
+	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL) {
 
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -52,32 +78,28 @@ class JawboneUpDataService extends DataService {
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
 		formatter.setTimeZone(timeZone)
-		SimpleDateFormat dateTimeParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
-		dateTimeParser.setTimeZone(timeZone)
 
 		String accountId = account.accountId
-		String forDate = formatter.format(forDay)
-		String setName = SET_NAME + " " + forDate
-		String requestUrl = String.format(BASE_URL, "/users/@me/sleeps")
 		Long userId = account.userId
-
-		Map args = [setName: setName, comment: COMMENT]
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		JSONObject sleepData = getResponse(account.tokenInstance, requestUrl, "get", [date: forDate])
+		JSONObject sleepDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
-		if (!isRequestSucceded(sleepData)) {
+		if (!isRequestSucceded(sleepDataResponse)) {
 			return [success: false, message: "Received non 200 response"]
 		}
 
-		sleepData["data"]["items"].find { sleepEntry ->
-			if (!sleepEntry["details"]) {
+		sleepDataResponse["data"]["items"].find { sleepEntry ->
+			JSONObject sleepDetails = sleepEntry["details"]
+
+			if (!sleepDetails) {
 				return false	// continue looping
 			}
 
-			JSONObject sleepDetails = sleepEntry["details"]
+			String setName = SET_NAME + " " + sleepDetails["date"]
+			Map args = [comment: COMMENT, setName: setName]
 
 			Date entryDate = new Date(sleepDetails["asleep_time"])
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
@@ -96,6 +118,12 @@ class JawboneUpDataService extends DataService {
 		}
 
 		stats.finish()
+
+		if (sleepDataResponse["links"] && sleepDataResponse["links"]["next"]) {
+			log.debug "Processing get sleep data for paginated URL"
+
+			getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
+		}
 
 		return [success: true]
 	}
