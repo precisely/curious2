@@ -43,8 +43,77 @@ class JawboneUpDataService extends DataService {
 		return response && response["meta"] && response["meta"]["code"] == 200
 	}
 
-	TimeZone getTimeZone(OAuthAccount account) {
+	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll) {
+		log.debug "getDataBody(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
+		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/body_events")
+
+		if (forDay) {
+			Integer timeZoneIdNumber = getTimeZoneId(account)
+			TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+			DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+			TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
+
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+			formatter.setTimeZone(timeZone)
+
+			String forDate = formatter.format(forDay)
+			requestUrl += "?date=$forDate"
+		}
+
+		return getDataBody(account, refreshAll, requestUrl)
+	}
+
+	// Overloaded method to support pagination
+	Map getDataBody(OAuthAccount account, boolean refreshAll, String requestURL) {
+
+		Integer timeZoneIdNumber = getTimeZoneId(account)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+		TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
+
+		SimpleDateFormat shortDateParser = new SimpleDateFormat("yyyyMMdd", Locale.US)
+		shortDateParser.setTimeZone(timeZone)
+
+		String accountId = account.accountId
+		Long userId = account.userId
+
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
+
+		JSONObject bodyDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+
+		if (!isRequestSucceded(bodyDataResponse)) {
+			return [success: false, message: "Received non 200 response"]
+		}
+
+		bodyDataResponse["data"]["items"].find { bodyEntry ->
+			JSONObject bodyDetails = bodyEntry["details"]
+
+			String setName = SET_NAME + " " + bodyDetails["date"]
+			Map args = [comment: COMMENT, setName: setName]
+
+			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
+			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
+
+			/*Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+			 e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])*/
+
+			tagUnitMap.buildEntry(creationMap, stats, "weight", bodyEntry["weight"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+
+			return false	// continue looping
+		}
+
+		stats.finish()
+
+		if (bodyDataResponse["links"] && bodyDataResponse["links"]["next"]) {
+			log.debug "Processing get sleep data for paginated URL"
+
+			getDataBody(account, refreshAll, bodyDataResponse["links"]["next"])
+		}
+
+		return [success: true]
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
@@ -98,14 +167,14 @@ class JawboneUpDataService extends DataService {
 				return false	// continue looping
 			}
 
-			String setName = SET_NAME + " " + sleepDetails["date"]
+			String setName = SET_NAME + " " + sleepEntry["date"]
 			Map args = [comment: COMMENT, setName: setName]
 
-			Date entryDate = new Date(sleepDetails["asleep_time"])
+			Date entryDate = new Date(sleepDetails["asleep_time"] * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+			/*Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+			 e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])*/
 
 			if (sleepDetails["duration"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "duration", sleepDetails["duration"], userId,
@@ -115,6 +184,8 @@ class JawboneUpDataService extends DataService {
 				tagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", sleepDetails["awakenings"], userId,
 						timeZoneIdNumber, entryDate, COMMENT, setName)
 			}
+
+			return false	// continue looping
 		}
 
 		stats.finish()
@@ -122,7 +193,7 @@ class JawboneUpDataService extends DataService {
 		if (sleepDataResponse["links"] && sleepDataResponse["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
+			//getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
 		}
 
 		return [success: true]

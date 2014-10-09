@@ -21,7 +21,7 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 	}
 
 	JawboneUpTagUnitMap() {
-		tagUnitMappings = initializeTagUnitMappings(columnDetailMap)
+		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
 	}
 
 	@Override
