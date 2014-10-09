@@ -1839,34 +1839,9 @@ body{
 	transition: left 0.8s ease-out 0s;
 }
 
-.signals .container {
-	margin-left: 0px;
-	margin-right: 0px;
-}
-
-.signals .container-fluid {
-	padding-left: 0px;
-	padding-right: 0px;
-}
-
-.signals .red-header {
-	margin-left: 0px;
-	margin-right: 0px;
-}
-
-.signals .padding10 {
-	padding-left: 0px;
-	padding-right: 0px;
-
-}
-
 .signals .row {
 	margin-left: 10px;
 	margin-right: 10px;
-}
-
-.signals .header {
-	padding: 0 10px;
 }
 
 .signals .signal-name {

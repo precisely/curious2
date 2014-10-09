@@ -1,15 +1,25 @@
-<div class="bugs right-icon"><a href="#"><span>Bugs</span></a></div>
-<div class="search-icon right-icon"><a href="#"><span>Search</span></a></div>
-<div class="help-icon right-icon"><a href="#"><span>Help</span></a></div>
+<%
 
-<div class="container">
+def activeClass = { a ->
+	if (actionName == a) {
+		'active-nav-link'
+	} else {
+		''
+	}
+}
+
+%>
+<div class="body1 container">
+<div class="body2">
+<div class="bugs right-icon"><a href="#"><span>Bugs</span></a></div>
+
 <div class="main padding10">
 
 <!-- HEADER -->
 <div class="header clearfix">
 	<div class="pull-left logo-container">
 		<a href="/home/index" class="logo-link">
-			<img height='40' src="/images/signals/logo2.png" />
+			<img src="/images/logo.png" />
 		</a>
 		<g:if test="${templateVer == 'lhp'}">
 			<a href="https://npo1.networkforgood.org/Donate/Donate.aspx?npoSubscriptionId=3737" id="headerbutton">
@@ -25,10 +35,10 @@
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Graph</g:link></li>
-			<li><g:link controller='home' action="feed">Feed</g:link></li>
 			<li class="active-nav-link"><g:link controller='home' action="signals">Signals</g:link>
 				<span class="new-signals" style="display:none">(<span class="new-signal-count">3 new</span>)</span>
 			</li>
+			<li><g:link controller='home' action="feed">Feed</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>
@@ -56,6 +66,7 @@
 <g:render template="/layouts/footer"/>
 <!-- /FOOTER -->
 <div style="clear:both;"></div>
+</div>
 </div>
 </div>
 <div id="alert-message-dialog" class="hide">

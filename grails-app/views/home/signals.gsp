@@ -2,7 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<meta name="layout" content="main-signals" />
+<meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
 <c:jsCSRFToken keys="getPeopleDataCSRF" />
@@ -55,6 +55,8 @@ $(function(){
 </head>
 
 <body class="signals">
+
+<div class="main container-fluid" >
 
 <div id="tooltip-title-graph" class="nodisplay">View the Graph of these two tags</div>
 <div id="tooltip-body-graph" class="nodisplay">View the time series graph of these tags.</div>
@@ -153,10 +155,13 @@ $(function(){
 	<!-- id='correlation-container' //-->
 </div>
 <!-- /MAIN -->
+</div>
 
 <div style="clear: both;"></div>
 
 <footer>
 </footer>
+
+
 </body>
 </html>
