@@ -7,7 +7,6 @@ import org.scribe.model.Response
 import spock.lang.*
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.Tag
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
@@ -20,6 +19,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 	private static final String BASE_DATA_PATH = "./test/integration/test-files"
 	private static final String BODY_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-body-data.js"
 	private static final String DATA_SPLITER = "-----"
+	private static final String MOVES_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-moves-data.js"
 	private static final String SLEEP_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-sleep-data.js"
 
 	OAuthAccount account
@@ -76,6 +76,24 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		then:
 		result.success == false
 		Entry.count() == 0
+	}
+
+	void "test get data moves"() {
+		String mockedResponseData = new File(MOVES_DATA_PATH).text.split(DATA_SPLITER)[0]
+
+		jawboneUpDataService.oauthService = [
+			getJawboneupResource: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection(mockedResponseData))
+			}
+		]
+
+		when:
+		Map result = jawboneUpDataService.getDataMoves(account, new Date(), false)
+
+		then:
+		result.success == true
+
+		Entry.count() == 5
 	}
 
 	void "test get data sleep"() {

@@ -96,8 +96,8 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = shortDateParser.parse(bodyEntry["date"].toString())
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			/*Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-			 e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])*/
+			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
 			tagUnitMap.buildEntry(creationMap, stats, "weight", bodyEntry["weight"], userId, timeZoneIdNumber,
 					entryDate, COMMENT, setName)
@@ -111,6 +111,95 @@ class JawboneUpDataService extends DataService {
 			log.debug "Processing get sleep data for paginated URL"
 
 			getDataBody(account, refreshAll, bodyDataResponse["links"]["next"])
+		}
+
+		return [success: true]
+	}
+
+	Map getDataMoves(OAuthAccount account, Date forDay, boolean refreshAll) {
+		log.debug "getDataMoves(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
+
+		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/moves")
+
+		if (forDay) {
+			Integer timeZoneIdNumber = getTimeZoneId(account)
+			TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+			DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+			TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
+
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+			formatter.setTimeZone(timeZone)
+
+			String forDate = formatter.format(forDay)
+			requestUrl += "?date=$forDate"
+		}
+
+		return getDataMoves(account, refreshAll, requestUrl)
+	}
+
+	// Overloaded method to support pagination
+	Map getDataMoves(OAuthAccount account, boolean refreshAll, String requestURL) {
+
+		Integer timeZoneIdNumber = getTimeZoneId(account)
+		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
+		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
+		TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+		formatter.setTimeZone(timeZone)
+
+		String accountId = account.accountId
+		Long userId = account.userId
+
+		EntryCreateMap creationMap = new EntryCreateMap()
+		EntryStats stats = new EntryStats(userId)
+
+		JSONObject movesDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+
+		if (!isRequestSucceded(movesDataResponse)) {
+			return [success: false, message: "Received non 200 response"]
+		}
+
+		movesDataResponse["data"]["items"].find { movesEntry ->
+			JSONObject movesDetails = movesEntry["details"]
+
+			if (!movesDetails) {
+				return false	// continue looping
+			}
+
+			String setName = SET_NAME + " " + movesEntry["date"]
+			Map args = [comment: COMMENT, setName: setName]
+
+			Date entryDate = formatter.parse(movesEntry["date"].toString())
+			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
+
+			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+
+			tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+
+			tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+
+			tagUnitMap.buildEntry(creationMap, stats, "calories", movesDetails["bg_calories"], userId,
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+
+			tagUnitMap.buildEntry(creationMap, stats, "workoutCalories", movesDetails["wo_calories"], userId,
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+
+			tagUnitMap.buildEntry(creationMap, stats, "workoutMinutes", movesDetails["wo_time"], userId,
+					timeZoneIdNumber, entryDate, COMMENT, setName)
+
+			return false	// continue looping
+		}
+
+		stats.finish()
+
+		if (movesDataResponse["links"] && movesDataResponse["links"]["next"]) {
+			log.debug "Processing get moves data for paginated URL"
+
+			//getDataMoves(account, refreshAll, sleepDataResponse["links"]["next"])
 		}
 
 		return [success: true]
@@ -173,8 +262,8 @@ class JawboneUpDataService extends DataService {
 			Date entryDate = new Date(sleepDetails["asleep_time"] * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
-			/*Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-			 e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])*/
+			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
 			if (sleepDetails["duration"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "duration", sleepDetails["duration"], userId,
