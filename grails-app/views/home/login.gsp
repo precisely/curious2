@@ -79,8 +79,8 @@
 						src="/images/home/home-third-icon.png" />
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Signals</p>
-							Automated algorithms detect patterns and
-							correlations, or ‘signals’—you decide what’s
+							Our software detects patterns and
+							correlations, or 'signals'—you decide what's
 							a valid signal and what's noise. Graph it
 							yourself to explore and map your own
 							intuitions. Plot, share, explore with
