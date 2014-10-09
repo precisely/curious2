@@ -139,6 +139,16 @@ pushNotification {
 	}
 }
 
+oauth {
+	providers {
+		// For development & test environment
+		jawboneup {
+			key = "bTdM02oiakY"
+			secret = "f81b22f0191e3a8db8618372c86e776db344cae4"
+		}
+	}
+}
+
 environments {
     development {
         grails.logging.jul.usebridge = false
@@ -165,10 +175,6 @@ environments {
 				human {
 					key = "0708a0bf2529bc24042d0bc1b2a3be09660a905f"
 					secret = "24f75e7f789a2a0c1f94b58aa77cd067f10c8c34"
-				}
-				jawboneup {
-					key = "bTdM02oiakY"
-					secret = "f81b22f0191e3a8db8618372c86e776db344cae4"
 				}
 				moves {
 					key = "XB8ZcuJjcK2f8dI9jHDzheNG1pEnX3oK"
@@ -419,7 +425,7 @@ oauth {
 			callback = "${grails.serverURL }oauth/jawboneup/callback"
 			successUri = "authentication/jawboneup/success"
 			failureUri = "authentication/jawboneup/fail"
-			scope = "basic_read,mood_read,move_read,sleep_read,meal_read,weight_read"
+			scope = "basic_read mood_read move_read sleep_read meal_read weight_read"
 		}
 		moves {
 			api = MovesApi

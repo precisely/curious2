@@ -27,7 +27,7 @@ class Identifier {
 	
 	public static final int MAXIDENTIFIERLENGTH = 100
 	
-	public static BoundedCache<String,Identifier> map = new BoundedCache<String, Identifier>(10000)
+	public static BoundedCache<String, Identifier> map = new BoundedCache<String, Identifier>(10000)
 	
 	static constraints = {
 		value(maxSize:MAXIDENTIFIERLENGTH, unique:true)

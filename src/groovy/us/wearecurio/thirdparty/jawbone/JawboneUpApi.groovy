@@ -3,6 +3,7 @@ package us.wearecurio.thirdparty.jawbone
 import org.scribe.builder.api.DefaultApi20
 import org.scribe.model.OAuthConfig
 import org.scribe.oauth.OAuthService
+import org.scribe.utils.OAuthEncoder
 
 import us.wearecurio.thirdparty.QueryParamTypeOAuth20ServiceImpl
 
@@ -23,6 +24,6 @@ class JawboneUpApi extends DefaultApi20 {
 
 	@Override
 	String getAuthorizationUrl(OAuthConfig config) {
-		String.format(AUTHORIZE_URL, config.apiKey, config.scope, config.callback)
+		String.format(AUTHORIZE_URL, config.apiKey, OAuthEncoder.encode(config.scope), config.callback)
 	}
 }
