@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import grails.converters.JSON
+
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.web.json.JSONElement
@@ -12,7 +14,9 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -116,7 +120,7 @@ class JawboneUpDataService extends DataService {
 		return [success: true]
 	}
 
-	Map getDataMoves(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataMove(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug "getDataMoves(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
 		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/moves")
@@ -134,11 +138,11 @@ class JawboneUpDataService extends DataService {
 			requestUrl += "?date=$forDate"
 		}
 
-		return getDataMoves(account, refreshAll, requestUrl)
+		return getDataMove(account, refreshAll, requestUrl)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataMoves(OAuthAccount account, boolean refreshAll, String requestURL) {
+	Map getDataMove(OAuthAccount account, boolean refreshAll, String requestURL) {
 
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -308,6 +312,46 @@ class JawboneUpDataService extends DataService {
 
 	@Override
 	void notificationHandler(String notificationData) {
-		// TODO Auto-generated method stub
+		log.debug "Received notification data: $notificationData"
+
+		if (!notificationData) {
+			return
+		}
+
+		// Jawbone sends a hash of client id & app secret encoded with SHA256 for security
+		ConfigObject config = grailsApplication.config.oauth.providers.jawboneup
+		String cliendSecretID = config.key + config.secret
+		String hash = cliendSecretID.encodeAsSHA256()
+
+		JSONObject notifications = JSON.parse(notificationData)
+
+		notifications["events"].find { notification ->
+			log.debug "Saving $notification."
+
+			// Jawbone also sends notification when band buttons are pressed (has no type)
+			if (!notification["type"] || !notification["timestamp"]) {
+				log.debug "Notification type or timestamp not received."
+				return false	// continue looping
+			}
+
+			if (notification["secret_hash"] != hash) {
+				log.debug "Notification hash does not match"
+				return false
+			}
+
+			Map params = [:]
+			params["typeId"] = typeId
+			params["ownerType"] = "user"
+			params["ownerId"] = notification["user_xid"]
+			params["collectionType"] = notification["type"]
+			params["subscriptionId"] = notification["event_xid"]
+			params["date"] = new Date(notification["timestamp"].toLong() * 1000)
+
+			ThirdPartyNotification.withTransaction {
+				new ThirdPartyNotification(params).save(failOnError: true)
+			}
+
+			return false	// continue looping
+		}
 	}
 }
