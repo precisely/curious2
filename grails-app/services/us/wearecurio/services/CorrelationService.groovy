@@ -11,6 +11,8 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.User
 import us.wearecurio.model.Tag
 
+import org.springframework.transaction.annotation.Transactional
+
 import grails.util.Environment
 import us.wearecurio.analytics.Interop
 
@@ -208,11 +210,37 @@ class CorrelationService {
 		}
 		iterateOverTagPairs(user, series_cb)
 	}
+	
+	@Transactional
+	def saveAnalyticsTimeSeriesFor(User user, Tag tag) {
+		def data_points
+		
+		try {
+			data_points = Entry.fetchPlotData(user, [tag.getId()], null, null, now, time_zone)
+		} catch(err) {
+			log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
+			return
+		}
+
+		def prop = TagProperties.lookup(user.id, tag.id)
+
+		data_points.each { point ->
+			def init = [
+				tagId: tag.id,
+				userId: user.id,
+				date: point[0],
+				amount: point[1],
+				description: point[2],
+				dataType: prop.fetchDataType().toString()
+			]
+			def ts = new AnalyticsTimeSeries(init)
+			ts.save(flush:true)
+		}
+	}
 
 	def refreshSeriesCache() {
 		String time_zone = "Etc/UTC"
 
-		def data_points = null
 		def timer_start = new Date()
 		def timer_stop = null
 		if (DEBUG) {
@@ -228,26 +256,7 @@ class CorrelationService {
 		User.findAll().each { user ->
 			Date now = new Date();
 			user.tags().each { tag ->
-				try {
-					data_points = Entry.fetchPlotData(user, [tag.getId()], null, null, now, time_zone)
-				} catch(err) {
-					log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
-				}
-
-				def prop = TagProperties.lookup(user.id, tag.id)
-
-				data_points.each { point ->
-					def init = [
-						tagId: tag.id,
-						userId: user.id,
-						date: point[0],
-						amount: point[1],
-						description: point[2],
-						dataType: prop.fetchDataType().toString()
-					]
-					def ts = new AnalyticsTimeSeries(init)
-					ts.save(flush:true)
-				} // data_points.each
+				saveAnalyticsTimeSeriesFor(user, tag)
 			} // tags.each
 		} // User.findAll
 
@@ -257,14 +266,18 @@ class CorrelationService {
 			log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
 		}
 	}
+	
+	@Transactional
+	def classifyProperty(TagProperties property) {
+		// Set the is_event value of the user-tag property.
+		// This will save the property.
+		property.classifyAsEvent().save(flush:true)
+	}
 
 	def classifyAsEventLike() {
 		User.findAll().each { user ->
 			user.tags().each { tag ->
-				def property = TagProperties.createOrLookup(user.id, tag.id)
-				// Set the is_event value of the user-tag property.
-				// This will save the property.
-				property.classifyAsEvent().save()
+				classifyProperty(TagProperties.createOrLookup(user.id, tag.id))				
 			}
 		}
 	}

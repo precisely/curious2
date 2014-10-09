@@ -137,10 +137,9 @@
 
 (defn compute-and-save-score [user-id tag1-id tag2-id]
 	(when-let [mipss					(compute-mipss user-id tag1-id tag2-id)]
-		(let [score					(mipss :mipss)
-					overlap-n			(mipss :n)]
+		(let [score					(mipss :mipss)]
 			;(print-mipss user-id tag1-id tag2-id mipss)
-			(db/score-update-or-create user-id tag1-id tag2-id score overlap-n "tag" "tag"))))
+			(db/score-update-or-create user-id tag1-id tag2-id score "tag" "tag"))))
 
 (defn update-all-users []
 	"For each user in anaytics_time_series, iterate over all that user's tag-pairs, compute the MIPSS, then save it to the correlation table."

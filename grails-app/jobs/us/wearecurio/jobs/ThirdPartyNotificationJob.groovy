@@ -4,7 +4,7 @@ import us.wearecurio.model.ThirdPartyNotification
 
 class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	static transactional = false
-	
+
 	static triggers = {
 		simple startDelay: 10 * MINUTE, repeatInterval: 5 * MINUTE
 	}
