@@ -1,3 +1,5 @@
+var autocompleteWidget;
+
 function showAlert(alertText) {
 	$("#alert-message-text").text(alertText);
 	$("#alert-message").dialog({
@@ -1114,10 +1116,10 @@ function deleteEntryId(entryId) {
 						if (checkData(entries)) {
 							refreshEntries(entries[0], true);
 							if (entries[1] != null)
-								updateAutocomplete(entries[1][0], entries[1][1],
+								autocompleteWidget.update(entries[1][0], entries[1][1],
 										entries[1][2], entries[1][3]);
 							if (entries[2] != null)
-								updateAutocomplete(entries[2][0],
+								autocompleteWidget.update(entries[2][0],
 										entries[2][1], entries[2][2],
 										entries[2][3]);
 						} else {
@@ -1199,10 +1201,10 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 					refreshEntries(entries[0], true);
 					
 					if (entries[1] != null)
-						updateAutocomplete(entries[1][0], entries[1][1],
+						autocompleteWidget.update(entries[1][0], entries[1][1],
 								entries[1][2], entries[1][3]);
 					if (entries[2] != null)
-						updateAutocomplete(entries[2][0], entries[2][1],
+						autocompleteWidget.update(entries[2][0], entries[2][1],
 								entries[2][2], entries[2][3]);
 				} else {
 					showAlert("Error updating entry");
@@ -1276,7 +1278,7 @@ function addEntry(userId, text, defaultToNow) {
 			})
 			refreshEntries(entries[0], true);
 			if (entries[2] != null)
-				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2],
+				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2],
 						entries[2][3]);
 		} else {
 			showAlert("Error adding entry");
@@ -1346,7 +1348,7 @@ function getPeopleData(full) {
 				setPeopleData(data);
 				// wait to init autocomplete until after login
 				if (full) {
-					initAutocomplete();
+					autocompleteWidget = new AutocompleteWidget("autocomplete", "input0");
 					refreshPage();
 				}
 				callDataReadyCallbacks();
@@ -1451,81 +1453,10 @@ var initTrackPage = function() {
 
 	if (cache && isLoggedIn()) {
 		setPeopleData(cache);
-		initAutocomplete();
+		autocompleteWidget = new AutocompleteWidget("autocomplete", "input0");
 		refreshPage();
 		return;
 	}
 
 	getPeopleData(true);
-}
-
-// Overriding autocomplete from autocomplete.js
-
-initAutocomplete = function() {
-	backgroundJSON("getting autocomplete info", makeGetUrl("autocompleteData"),
-			getCSRFPreventionObject("autocompleteDataCSRF", {
-				all : 'info'
-			}), function(data) {
-				if (checkData(data)) {
-					tagStatsMap.import(data['all']);
-					algTagList = data['alg'];
-					freqTagList = data['freq'];
-
-					var inputField = $("#input0");
-
-					inputField.autocomplete({
-						minLength : 1,
-						attachTo : "#autocomplete",
-						source : function(request, response) {
-							var term = request.term.toLowerCase();
-
-							var skipSet = {};
-							var result = [];
-
-							var matches = findAutoMatches(tagStatsMap,
-									algTagList, term, 3, skipSet, 1);
-
-							addStatsTermToSet(matches, skipSet);
-							appendStatsTextToList(result, matches);
-
-							var remaining = 6 - matches.length;
-
-							if (term.length == 1) {
-								var nextRemaining = remaining > 3 ? 3
-										: remaining;
-								matches = findAutoMatches(tagStatsMap,
-										algTagList, term, nextRemaining,
-										skipSet, 0);
-								addStatsTermToSet(matches, skipSet);
-								appendStatsTextToList(result, matches);
-								remaining -= nextRemaining;
-							}
-
-							if (remaining > 0) {
-								matches = findAutoMatches(tagStatsMap,
-										freqTagList, term, remaining, skipSet,
-										0);
-								appendStatsTextToList(result, matches);
-							}
-
-							var obj = new Object();
-							obj.data = result;
-							response(result);
-						},
-						selectcomplete : function(event, ui) {
-							var tagStats = tagStatsMap
-									.getFromText(ui.item.value);
-							if (tagStats) {
-								var range = tagStats.getAmountSelectionRange();
-								inputField.selectRange(range[0], range[1]);
-								inputField.focus();
-							}
-						}
-					});
-					// open autocomplete on focus
-					inputField.focus(function() {
-						inputField.autocomplete("search", $("#input0").val());
-					});
-				}
-			});
 }

@@ -74,7 +74,6 @@ $(function() {
 		console.log(action, correlation_id);
 		var action2url = {save: 'markSaved', noise: 'markNoise', graph: 'markViewed'}
 		var url = '/correlation/' + correlation_id + '/' + action2url[action];
-		WORK STOPPED HERE: add CSRF protection
 		queuePostJSON(actionName, url, { _method: 'PATCH' },
 				function(data) {
 					console.log(data);

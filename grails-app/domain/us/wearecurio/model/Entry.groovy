@@ -456,12 +456,6 @@ class Entry implements Comparable {
 		return false
 	}
 
-	/**
-	 * 
-	 * WORK STOPPED HERE:
-		modify web and mobile app to correctly display multidimensional entry
-	 */
-	
 	protected static Entry createSingle(Long userId, Map m, EntryGroup group, EntryStats stats) {
 		log.debug "Entry.createSingle() userId:" + userId + ", m:" + m
 

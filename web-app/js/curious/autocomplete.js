@@ -1,49 +1,6 @@
 // dynamic autocomplete
 // var autoCache = {}, lastAutoXhr;
 
-function addStatsTermToSet(list, set) {
-	for (var i in list) {
-		set[list[i].term] = 1;
-	}
-}
-
-function appendStatsTextToList(list, stats) {
-	for (var i in stats) {
-		list.push(stats[i].text());
-	}
-}
-
-function findAutoMatches(map, list, term, limit, skipSet, additionalWordsCharLimit) {
-	var i, j, num = 0, result = [];
-	
-	var terms = term.split(' ');
-	var spaceTerms = [];
-	
-	for (j in terms) {
-		spaceTerms.push(' ' + terms[j]);
-	}
-	
-	var termLonger = term.length > additionalWordsCharLimit;
-	
-	for (i in list) {
-		var tag = list[i];
-		if (tag in skipSet) continue;
-		var match = true;
-		for (j in terms) {
-			if (terms[j].length >0 && (!(tag.startsWith(terms[j]) || (termLonger && (tag.indexOf(spaceTerms[j]) >= 0)) ))) {
-				match = false;
-				break;
-			}
-		}
-		if (match) {
-			result.push(map.get(tag));
-			if (++num >= limit) break;
-		}
-	}
-	
-	return result;
-}
-
 //static autocomplete
 function TagStats(term, amount, amountPrecision, units) {
 	this.term = term;
@@ -158,60 +115,110 @@ function TagStatsMap() {
 	}
 }
 
-var tagStatsMap = new TagStatsMap();
-var algTagList = [];
-var freqTagList = [];
-
-// refresh autocomplete data if new tag added
-function updateAutocomplete(term, amount, amountPrecision, units) {
-	var stats = tagStatsMap.set(term, amount, amountPrecision, units);
-	if (stats != null) {
-		algTagList.push(term);
-		freqTagList.push(term);
+function AutocompleteWidget(autocompleteId, editId) {
+	this.editId = editId;
+	this.autocompleteId = autocompleteId;
+	this.editDiv = $('#' + editId);
+	this.autocompleteDiv = $('#' + autocompleteId);
+	
+	this.addStatsTermToSet = function(list, set) {
+		for (var i in list) {
+			set[list[i].term] = 1;
+		}
 	}
-}
 
-// clear any cached state on logoff
-registerLogoutCallback(function() {
-});
+	this.appendStatsTextToList = function(list, stats) {
+		for (var i in stats) {
+			list.push(stats[i].text());
+		}
+	}
 
-var initAutocomplete = function() {
+	this.findAutoMatches = function(list, term, limit, skipSet, additionalWordsCharLimit) {
+		var i, j, num = 0, result = [];
+		
+		var terms = term.split(' ');
+		var spaceTerms = [];
+		
+		for (j in terms) {
+			spaceTerms.push(' ' + terms[j]);
+		}
+		
+		var termLonger = term.length > additionalWordsCharLimit;
+		
+		for (i in list) {
+			var tag = list[i];
+			if (tag in skipSet) continue;
+			var match = true;
+			for (j in terms) {
+				if (terms[j].length >0 && (!(tag.startsWith(terms[j]) || (termLonger && (tag.indexOf(spaceTerms[j]) >= 0)) ))) {
+					match = false;
+					break;
+				}
+			}
+			if (match) {
+				result.push(this.tagStatsMap.get(tag));
+				if (++num >= limit) break;
+			}
+		}
+		
+		return result;
+	}
+
+	this.tagStatsMap = new TagStatsMap();
+	this.algTagList = [];
+	this.freqTagList = [];
+
+	// refresh autocomplete data if new tag added
+	this.update = function(term, amount, amountPrecision, units) {
+		var stats = this.tagStatsMap.set(term, amount, amountPrecision, units);
+		if (stats != null) {
+			this.algTagList.push(term);
+			this.freqTagList.push(term);
+		}
+	}
+
+	// clear any cached state on logoff
+	registerLogoutCallback(function() {
+	});
+	
+	var autocompleteWidget = this;
+
 	backgroundJSON("getting autocomplete info", makeGetUrl("autocompleteData"), getCSRFPreventionObject("autocompleteDataCSRF", {all: 'info'}),
 			function(data) {
 		if (checkData(data)) {
-			tagStatsMap.import(data['all']);
-			algTagList = data['alg'];
-			freqTagList = data['freq'];
+			autocompleteWidget.tagStatsMap.import(data['all']);
+			autocompleteWidget.algTagList = data['alg'];
+			autocompleteWidget.freqTagList = data['freq'];
 			
-			var inputField = $("#input0");
+			var inputField = autocompleteWidget.editDiv;
 			
 			inputField.autocomplete({
 				minLength: 1,
-				attachTo: "#autocomplete",
+				attachTo: "#" + autocompleteWidget.autocompleteId,
 				source: function(request, response) {
 					var term = request.term.toLowerCase();
 
 					var skipSet = {};
 					var result = [];
 					
-					var matches = findAutoMatches(tagStatsMap, algTagList, term, 3, skipSet, 1);
+					var matches = autocompleteWidget.findAutoMatches(autocompleteWidget.algTagList, term, 3, skipSet, 1);
 					
-					addStatsTermToSet(matches, skipSet);
-					appendStatsTextToList(result, matches);
+					autocompleteWidget.addStatsTermToSet(matches, skipSet);
+					autocompleteWidget.appendStatsTextToList(result, matches);
 					
 					var remaining = 6 - matches.length;
 					
 					if (term.length == 1) {
 						var nextRemaining = remaining > 3 ? 3 : remaining;
-						matches = findAutoMatches(tagStatsMap, algTagList, term, nextRemaining, skipSet, 0);
-						addStatsTermToSet(matches, skipSet);
-						appendStatsTextToList(result, matches);
+						matches = autocompleteWidget.findAutoMatches(autocompleteWidget.algTagList, term, nextRemaining, skipSet, 0);
+						autocompleteWidget.addStatsTermToSet(matches, skipSet);
+						autocompleteWidget.appendStatsTextToList(result, matches);
 						remaining -= nextRemaining;
 					}
 					
 					if (remaining > 0) {
-						matches = findAutoMatches(tagStatsMap, freqTagList, term, remaining, skipSet, 0);
-						appendStatsTextToList(result, matches);
+						matches = autocompleteWidget.findAutoMatches(autocompleteWidget.freqTagList, term, remaining, skipSet, 0);
+						autocompleteWidget.appendStatsTextToList(result, matches);
 					}
 
 					var obj = new Object();
@@ -219,7 +226,7 @@ var initAutocomplete = function() {
 					response(result);
 				},
 				selectcomplete: function(event, ui) {
-					var tagStats = tagStatsMap.getFromText(ui.item.value);
+					var tagStats = autocompleteWidget.tagStatsMap.getFromText(ui.item.value);
 					if (tagStats) {
 						var range = tagStats.getAmountSelectionRange();
 						inputField.selectRange(range[0], range[1]);
@@ -229,7 +236,7 @@ var initAutocomplete = function() {
 			});
 			// open autocomplete on focus
 			inputField.focus(function(){
-				inputField.autocomplete("search",$("#input0").val());
+				inputField.autocomplete("search",autocompleteWidget.editDiv.val());
 			});
 		}
 	});

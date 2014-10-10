@@ -1,3 +1,5 @@
+var autocompleteWidget;
+
 var isTodayOrLater, cachedDate, cachedDateUTC, timeZoneName, currentTimeUTC, tagList, currentDrag, currentDragTag,
 entrySelectData, freqTagList, dateTagList,
 dayDuration = 86400000,
@@ -287,9 +289,9 @@ function deleteEntryId(entryId) {
 				tagList.load();
 				refreshEntries(entries[0]);
 				if (entries[1] != null)
-					updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+					autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null) {
-					updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 				}
 			}
 		});
@@ -309,9 +311,9 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 			tagList.load();
 			refreshEntries(entries[0]);
 			if (entries[1] != null)
-				updateAutocomplete(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+				autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 			if (entries[2] != null) {
-				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			}
 		}
 	});
@@ -346,7 +348,7 @@ function addEntry(userId, text, defaultToNow) {
 			tagList.load();
 			refreshEntries(entries[0]);
 			if (entries[2] != null)
-				updateAutocomplete(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 		}
 	});
 }
@@ -560,7 +562,7 @@ function adjustDatePicker() {
 
 $(function() {
 	initTemplate();
-	initAutocomplete();
+	autocompleteWidget = new AutocompleteWidget("autocomplete", "input0");
 	initTagListWidget();
 
 	$("#input0").val('Enter a tag.  For example: nap at 2pm');
