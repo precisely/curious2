@@ -26,7 +26,7 @@ import us.wearecurio.thirdparty.jawbone.JawboneUpTagUnitMap
 class JawboneUpDataService extends DataService {
 
 	static final String BASE_URL = "https://jawbone.com"
-	static final String COMMON_BASE_URL = "$BASE_URL/nudge/api%s"
+	static final String COMMON_BASE_URL = "/nudge/api%s"
 	static final String COMMENT = "(Jawbone Up)"
 	static final String SET_NAME = "JUP"
 
@@ -50,7 +50,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataBody(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug "getDataBody(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
-		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/body_events")
+		String requestUrl = String.format(COMMON_BASE_URL, "/users/@me/body_events")
 
 		if (forDay) {
 			Integer timeZoneIdNumber = getTimeZoneId(account)
@@ -123,7 +123,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataMove(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug "getDataMoves(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
-		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/moves")
+		String requestUrl = String.format(COMMON_BASE_URL, "/users/@me/moves")
 
 		if (forDay) {
 			Integer timeZoneIdNumber = getTimeZoneId(account)
@@ -212,7 +212,7 @@ class JawboneUpDataService extends DataService {
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
 		log.debug "getDataSleep(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
-		String requestUrl = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/sleeps")
+		String requestUrl = String.format(COMMON_BASE_URL, "/users/@me/sleeps")
 
 		if (forDay) {
 			Integer timeZoneIdNumber = getTimeZoneId(account)
@@ -263,7 +263,7 @@ class JawboneUpDataService extends DataService {
 			String setName = SET_NAME + " " + sleepEntry["date"]
 			Map args = [comment: COMMENT, setName: setName]
 
-			Date entryDate = new Date(sleepDetails["asleep_time"] * 1000)
+			Date entryDate = new Date(sleepDetails["asleep_time"].toLong() * 1000)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
