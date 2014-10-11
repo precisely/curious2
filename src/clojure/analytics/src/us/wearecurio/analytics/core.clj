@@ -144,3 +144,6 @@
 (defn update-all-users []
 	"For each user in anaytics_time_series, iterate over all that user's tag-pairs, compute the MIPSS, then save it to the correlation table."
 	(db/for-all-users-and-tag-pairs compute-and-save-score))
+
+(defn update-user [user-id]
+	(db/for-all-tag-pairs (partial compute-and-save-score user-id) user-id))

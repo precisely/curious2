@@ -17,8 +17,8 @@ import grails.util.Environment
 import us.wearecurio.analytics.Interop
 
 class CorrelationService {
-	private static def DEBUG=true
-	private static def LOG = new File("debug.out")
+	private static def DEBUG=false
+	private static def LOG = new File("/tmp/debug.out")
 	def log(text) {
 		LOG.withWriterAppend("UTF-8", { writer ->
 			writer.write( "CorrelationService: ${text}\n")
@@ -56,31 +56,31 @@ class CorrelationService {
 		def values1 = Stats.standardize(CuriousSeries.valuesOn(series1, times))
 		def values2 = Stats.standardize(CuriousSeries.valuesOn(series2, times))
 		def values3 = Stats.dot(values1, values2)
-		println tag1.description
-		println values1
-		println tag2.description
-		println values2
-		println "merged:"
-		println values3
-		println "correlation:"
+		log tag1.description
+		log values1
+		log tag2.description
+		log values2
+		log "merged:"
+		log values3
+		log "correlation:"
 
 		def count = 0
 		for (int i=0; i < values1.size(); i++) {
 			if (values1[i] != null && values2[i] != null) {
 				count += 1
-				println "${i}: ${values1[i]} * ${values2[i]} = ${values3[i]}"
+				log "${i}: ${values1[i]} * ${values2[i]} = ${values3[i]}"
 			}
 		}
-		println "---"
-		println "sum1: ${Stats.sum(values1)}"
-		println "sum2: ${Stats.sum(values2)}"
-		println "sum_1,2: ${Stats.sum(values3)}"
+		log "---"
+		log "sum1: ${Stats.sum(values1)}"
+		log "sum2: ${Stats.sum(values2)}"
+		log "sum_1,2: ${Stats.sum(values3)}"
 		def cross_score = 0
 		if (count > 0) {
 			cross_score = Stats.sum(values3)/count
 		}
-		println "average cross-score (N=${count}): ${Stats.sum(values3)/count}"
-		println corr
+		log "average cross-score (N=${count}): ${Stats.sum(values3)/count}"
+		log corr
 	}
 
 	def cor(CuriousSeries x, CuriousSeries y) {
@@ -210,13 +210,13 @@ class CorrelationService {
 		}
 		iterateOverTagPairs(user, series_cb)
 	}
-	
-	@Transactional
+
 	def saveAnalyticsTimeSeriesFor(User user, Tag tag) {
+		log("saveAnalyticsTimeSeriesFor: " + user.username)
 		def data_points
-		
+
 		try {
-			data_points = Entry.fetchPlotData(user, [tag.getId()], null, null, now, time_zone)
+			data_points = Entry.fetchPlotData(user, [tag.getId()], null, null, new Date(), "Etc/UTC")
 		} catch(err) {
 			log("***** ERROR ${err.class}\n ${err.getMessage()}\n ${err.getStackTrace().join("\n")}:\n")
 			return
@@ -234,11 +234,12 @@ class CorrelationService {
 				dataType: prop.fetchDataType().toString()
 			]
 			def ts = new AnalyticsTimeSeries(init)
+			log init
 			ts.save(flush:true)
 		}
 	}
 
-	def refreshSeriesCache() {
+	def refreshSeriesCache(user) {
 		String time_zone = "Etc/UTC"
 
 		def timer_start = new Date()
@@ -249,16 +250,10 @@ class CorrelationService {
 			log("updateTimeSeries timer: start at: ${timer_start}")
 		}
 
-		// Delete the whole caching table to avoid duplicates and orphaned
-		//	series of tags that have been completely deleted.
-		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
-
-		User.findAll().each { user ->
-			Date now = new Date();
-			user.tags().each { tag ->
-				saveAnalyticsTimeSeriesFor(user, tag)
-			} // tags.each
-		} // User.findAll
+		Date now = new Date();
+		user.tags().each { tag ->
+			saveAnalyticsTimeSeriesFor(user, tag)
+		} // tags.each
 
 		if (DEBUG) {
 			timer_stop = new Date()
@@ -266,7 +261,7 @@ class CorrelationService {
 			log("updateTimeSeries timer: total time: ${TimeCategory.minus(timer_stop, timer_start)}")
 		}
 	}
-	
+
 	@Transactional
 	def classifyProperty(TagProperties property) {
 		// Set the is_event value of the user-tag property.
@@ -274,19 +269,23 @@ class CorrelationService {
 		property.classifyAsEvent().save(flush:true)
 	}
 
-	def classifyAsEventLike() {
-		User.findAll().each { user ->
-			user.tags().each { tag ->
-				classifyProperty(TagProperties.createOrLookup(user.id, tag.id))				
-			}
+	def classifyAsEventLike(user) {
+		user.tags().each { tag ->
+			classifyProperty(TagProperties.createOrLookup(user.id, tag.id))
 		}
 	}
 
 	def recalculateMipss() {
-		classifyAsEventLike()
-		refreshSeriesCache()
-		String environment = Environment.getCurrent().toString()
-		Interop.updateAllUsers(environment)
+		User.findAll().each { user ->
+			// Delete the whole caching table to avoid duplicates and orphaned
+			//	series of tags that have been completely deleted.
+			AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
+
+			classifyAsEventLike(user)
+			refreshSeriesCache(user)
+			String environment = Environment.getCurrent().toString()
+			Interop.updateUser(environment, user.id)
+		} // User.findAll
 	}
 
 }

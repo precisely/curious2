@@ -145,6 +145,15 @@
             :series2id   tag2-id
             :series2type tag2-type})))
 
+(defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
+  "Update a correlation score."
+  (kc/delete correlation
+    (kc/where {:user_id    user-id
+            :series1id   tag1-id
+            :series1type tag1-type
+            :series2id   tag2-id
+            :series2type tag2-type})))
+
 (defn score-find [user-id tag1-id tag2-id tag1-type tag2-type]
   (kc/select correlation
     (kc/where {
@@ -159,10 +168,13 @@
     (kc/select* correlation))
   ([user-id]
     (kc/where (score-list*) {:user_id user-id}))
+  ; Add this signature when handle tag-groups:
+  ;   ([user-id tag1-id tag1-type tag2-id tag2-type]
   ([user-id tag1-id tag2-id]
     (kc/where (score-list* user-id)
               {:series1id tag1-id
                :series2id tag2-id})))
+
 
 (defn score-list [& args]
   "List all elements of the score."
@@ -176,11 +188,17 @@
 ; Update or create Score
 ; **********************
 
+; TODO: How will we know when to delete correlations of tags that have
+;   been deleted?
 (defn score-update-or-create [user-id tag1-id tag2-id score tag1-type tag2-type]
-  (let [ct (score-count user-id tag1-id tag2-id)]
-    (if (> ct 0)
-      (score-update user-id tag1-id tag2-id score tag1-type tag2-type)
-      (score-create user-id tag1-id tag2-id score tag1-type tag2-type))))
+  (let [ct (score-count user-id tag1-id tag2-id)] ; Need to update this when handling tag-groups.
+    (cond (= 0 ct)
+            (score-create user-id tag1-id tag2-id score tag1-type tag2-type)
+          (= 1 ct)
+            (score-update user-id tag1-id tag2-id score tag1-type tag2-type)
+          :else
+            (do (score-delete user-id tag1-id tag2-id score tag1-type tag2-type)
+                (score-create user-id tag1-id tag2-id score tag1-type tag2-type)))))
 
 ; *********
 ; Iterators
