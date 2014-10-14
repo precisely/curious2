@@ -226,6 +226,7 @@
 									(s1 :tag1-id)
 									(s1 :tag2-id)
 									(s1 :score)
+                  (s1 :overlap-n)
 									(s1 :tag1-type)
 									(s1 :tag2-type))
 				 (db/score-count)
@@ -244,6 +245,7 @@
 											 (s1 :tag1-id)
 											 (s1 :tag2-id)
 											 (s1 :score)
+                       (s1 :overlap-n)
 											 (s1 :tag1-type)
 											 (s1 :tag2-type))
 
@@ -251,6 +253,7 @@
 											 (s1 :tag1-id)
 											 (s1 :tag2-id)
 											 (s1 :score)
+                       (s1 :overlap-n)
 											 (s1 :tag1-type)
 											 (s1 :tag2-type))
 				 (db/score-count)

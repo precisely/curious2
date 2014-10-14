@@ -1,9 +1,12 @@
 package us.wearecurio.model
+
 import us.wearecurio.utility.Utils
 import org.hibernate.criterion.Restrictions as R
 import org.hibernate.criterion.Order as O
 
 class Correlation {
+
+	private static final Long minOverlap = 3
 
 	Long id
 	String series1Type
@@ -12,7 +15,6 @@ class Correlation {
 	Long series2Id
 
 	Long userId
-
 
 	Date created
 	Date updated
@@ -31,15 +33,16 @@ class Correlation {
 
 	ValueType valueType
 	Double value
+	Long overlapN
 
 	// auxilliary information serialized as a JSON string.
 	String auxJson
-
 
 	static constraints = {
 		valueType nullable: true
 		value nullable: true
 		auxJson nullable: true
+		overlapN nullable: true
 
 		saved nullable: true
 		noise nullable: true
@@ -50,6 +53,12 @@ class Correlation {
 
 	static mapping = {
 		version false
+		overlapN index: 'overlapNIdx'
+		userId index: 'updateIdx,overlapNIdx'
+		series1Id index: 'updateIdx'
+		series1Type index: 'updateIdx'
+		series2Id index: 'updateIdx'
+		series2Type index: 'updateIdx'
 	}
 
 	public Correlation(CuriousSeries series1, CuriousSeries series2) {
@@ -82,6 +91,7 @@ class Correlation {
 		def criteria = Correlation.createCriteria()
 		criteria = criteria.add( R.eq("userId", userId) )
 		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
+		criteria = criteria.add( R.ge( "overlapN", minOverlap ) )
 
 		def column = null
 		switch(flavor) {
