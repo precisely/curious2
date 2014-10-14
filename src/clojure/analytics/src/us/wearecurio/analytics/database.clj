@@ -121,7 +121,7 @@
 ; *********************
 ; Score CRUD operations
 ; *********************
-(defn score-create [user-id tag1-id tag2-id score tag1-type tag2-type]
+(defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Insert a correlation score."
   (kc/insert correlation
     (kc/values {:user_id user-id
@@ -130,14 +130,16 @@
              :series2id tag2-id
              :series2type tag2-type
              :value score
+             :overlapn overlap-n
              :value_type MIPSS_VALUE_TYPE
              :updated (sql-now)
              :created (sql-now)})))
 
-(defn score-update [user-id tag1-id tag2-id score tag1-type tag2-type]
+(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Update a correlation score."
   (kc/update correlation
     (kc/set-fields {:value score
+                 :overlapn overlap-n
                  :updated (sql-now)})
     (kc/where {:user_id    user-id
             :series1id   tag1-id
@@ -156,7 +158,7 @@
 
 (defn score-find [user-id tag1-id tag2-id tag1-type tag2-type]
   (kc/select correlation
-    (kc/where {
+    (kc/where {:user_id    user-id
             :series1id    tag1-id
             :series2id    tag2-id
             :series1type  tag1-type
@@ -190,15 +192,15 @@
 
 ; TODO: How will we know when to delete correlations of tags that have
 ;   been deleted?
-(defn score-update-or-create [user-id tag1-id tag2-id score tag1-type tag2-type]
+(defn score-update-or-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   (let [ct (score-count user-id tag1-id tag2-id)] ; Need to update this when handling tag-groups.
     (cond (= 0 ct)
-            (score-create user-id tag1-id tag2-id score tag1-type tag2-type)
+            (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
           (= 1 ct)
-            (score-update user-id tag1-id tag2-id score tag1-type tag2-type)
+            (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
           :else
             (do (score-delete user-id tag1-id tag2-id score tag1-type tag2-type)
-                (score-create user-id tag1-id tag2-id score tag1-type tag2-type)))))
+                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)))))
 
 ; *********
 ; Iterators

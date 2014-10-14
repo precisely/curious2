@@ -42,6 +42,7 @@
                 `viewed` datetime DEFAULT NULL,
                 `aux_json` varchar(255) DEFAULT NULL,
                 `value` double DEFAULT NULL,
+                `overlapn` double DEFAULT NULL,
                  `value_type` varchar(255) DEFAULT NULL,
                  PRIMARY KEY (`id`)
                )"))

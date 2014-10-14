@@ -4,6 +4,7 @@ import us.wearecurio.model.Correlation
 import grails.converters.JSON
 
 class CorrelationController {
+
 	static allowedMethods = [markViewed: "PATCH", markNoise: "PATCH", markSaved: "PATCH", index: "GET"]
 	def securityService
 
