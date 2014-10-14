@@ -801,19 +801,23 @@ class HomeController extends DataController {
 				return
 			}
 
-			List associatedGroups = UserGroup.getGroupsForWriter(user)
-			List alreadySharedGroups = [], otherGroups = []
-
-			associatedGroups.each { userGroup ->
-				if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
-					alreadySharedGroups << userGroup.plus([shared: true])
-				} else {
-					otherGroups << userGroup
+			if (user == null) {
+				model.put("associatedGroups", []) // public discussion
+			} else {
+				List associatedGroups = UserGroup.getGroupsForWriter(user)
+				List alreadySharedGroups = [], otherGroups = []
+	
+				associatedGroups.each { userGroup ->
+					if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
+						alreadySharedGroups << userGroup.plus([shared: true])
+					} else {
+						otherGroups << userGroup
+					}
 				}
+				associatedGroups = alreadySharedGroups.sort { it.name }
+				associatedGroups.addAll(otherGroups.sort { it.name })
+				model.put("associatedGroups", associatedGroups)
 			}
-			associatedGroups = alreadySharedGroups.sort { it.name }
-			associatedGroups.addAll(otherGroups.sort { it.name })
-			model.put("associatedGroups", associatedGroups)
 
 			render(view: "/home/discuss", model: model)
 		}
