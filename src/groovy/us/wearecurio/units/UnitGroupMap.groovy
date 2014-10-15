@@ -330,7 +330,7 @@ class UnitGroupMap {
 		]),
 		SCALE(13, "scale", 3, [
 			'scale':[SCALETEN,10,'to ten'], '':[SCALETEN,1,'to ten'], 'to ten':[SCALETEN,10,'to ten'],
-			'unity':[SCALEUNITY,10,'to ten'], 'to one':[SCALEUNITY,10,'to one'],
+			'unity':[SCALEUNITY,10,'to one'], 'to one':[SCALEUNITY,10,'to one'],
 			'to three':[SCALETHREE,10,'to three'], 'to four':[SCALEFOUR,10,'to four'], 'to five':[SCALEFIVE,10,'to five'],
 		])
 		static final double PERSECOND = 1.0d
