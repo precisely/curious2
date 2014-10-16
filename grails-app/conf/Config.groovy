@@ -403,6 +403,9 @@ log4j.main = {
 	error  'org.springframework.aop.framework.Cglib2AopProxy'
 
 	warn   'org.mortbay.log'
+	// Uncomment to see hibernate queries with their values
+	//debug 'org.hibernate.SQL'
+	//trace 'org.hibernate.type'
 }
 
 oauth {

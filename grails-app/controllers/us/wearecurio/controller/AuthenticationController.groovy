@@ -103,7 +103,8 @@ class AuthenticationController extends SessionController {
 
 	def jawboneupAuth() {
 		JSONObject userInfo = jawboneUpDataService.getUserProfile(tokenInstance)
-		Integer timeZoneId = TimeZoneId.look(userInfo.data.timezone).id
+		String timezone = jawboneUpDataService.getTimeZoneName(tokenInstance)
+		Integer timeZoneId = TimeZoneId.look(timezone).id
 
 		oauthAccountService.createOrUpdate(JAWBONE, userInfo.data.xid, tokenInstance, userId, timeZoneId)
 	}

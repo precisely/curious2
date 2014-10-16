@@ -106,8 +106,10 @@ class JawboneUpDataService extends DataService {
 			tagUnitMap.buildEntry(creationMap, stats, "weight", bodyEntry["weight"], userId, timeZoneIdNumber,
 					entryDate, COMMENT, setName)
 
-			tagUnitMap.buildEntry(creationMap, stats, "fatRatio", bodyEntry["body_fat"], userId, timeZoneIdNumber,
-					entryDate, COMMENT, setName)
+			if (bodyEntry["body_fat"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "fatRatio", bodyEntry["body_fat"], userId, timeZoneIdNumber,
+						entryDate, COMMENT, setName)
+			}
 
 			return false	// continue looping
 		}
@@ -192,6 +194,25 @@ class JawboneUpDataService extends DataService {
 			tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName)
 
+			// no data for hours
+			List noActivityGroup = []
+			// active_time <= 300
+			List mildActivityGroup = []
+			// active_time > 300
+			List highActivityGroup = []
+
+			movesDetails["hourly_totals"].each { datetime, hourlyData ->
+				if (hourlyData["active_time"] <= 300) {
+					mildActivityGroup << hourlyData
+				} else {
+					highActivityGroup << hourlyData
+				}
+			}
+
+			if (mildActivityGroup) {
+				int averageDistance = mildActivityGroup / mildActivityGroup.size()
+			}
+
 			return false	// continue looping
 		}
 
@@ -200,7 +221,7 @@ class JawboneUpDataService extends DataService {
 		if (movesDataResponse["links"] && movesDataResponse["links"]["next"]) {
 			log.debug "Processing get moves data for paginated URL"
 
-			//getDataMoves(account, refreshAll, sleepDataResponse["links"]["next"])
+			getDataMove(account, refreshAll, movesDataResponse["links"]["next"])
 		}
 
 		return [success: true]
@@ -291,7 +312,7 @@ class JawboneUpDataService extends DataService {
 		if (sleepDataResponse["links"] && sleepDataResponse["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			//getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
+			getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
 		}
 
 		return [success: true]
@@ -311,8 +332,19 @@ class JawboneUpDataService extends DataService {
 
 	@Override
 	String getTimeZoneName(OAuthAccount account) throws MissingOAuthAccountException, InvalidAccessTokenException {
-		// TODO Auto-generated method stub
-		return null;
+		getTimeZoneName(account.tokenInstance)
+	}
+
+	// Overloaded method
+	String getTimeZoneName(Token tokenInstance) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		String url = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me/timezone")
+		JSONObject timezoneResponse = getResponse(tokenInstance, url)
+
+		if (!isRequestSucceded(timezoneResponse)) {
+			return null
+		}
+
+		return timezoneResponse["data"][0]?.tz
 	}
 
 	@Override

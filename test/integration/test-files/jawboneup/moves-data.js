@@ -60,9 +60,6 @@
         }
       }
     ],
-    "links": {
-      "next": "/nudge/api/v.1.1/users/6xl39CsoVp2KirfHwVq_Fx/moves?page_token=1384390680"
-    },
     "size": 10
   }
 }

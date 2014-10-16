@@ -19,11 +19,9 @@ import us.wearecurio.utility.Utils
 
 class JawboneUpDataServiceSpec extends IntegrationSpec {
 
-	private static final String BASE_DATA_PATH = "./test/integration/test-files"
-	private static final String BODY_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-body-data.js"
-	private static final String DATA_SPLITER = "-----"
-	private static final String MOVES_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-moves-data.js"
-	private static final String SLEEP_DATA_PATH = "$BASE_DATA_PATH/jawbone-up-sleep-data.js"
+	// Example: ./test/integration/test-files/jawboneup/body-data.js		For single data file
+	// Example: ./test/integration/test-files/jawboneup/sleep-data-1.js		For multiple data file
+	private static final String BASE_DATA_PATH = "./test/integration/test-files/jawboneup/%s-data%s.js"
 
 	OAuthAccount account
 	def grailsApplication
@@ -32,7 +30,17 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 
 	Long userId
 
+	private String testDataPath(String fileName, int number = 0) {
+		String fileNumber = number ? "-$number" : ""
+		return String.format(BASE_DATA_PATH, fileName, fileNumber)
+	}
+
 	def setup() {
+		Utils.resetForTesting()
+
+		User.list()*.delete()	// Deleting existing records temporary to create default user.
+		Entry.list()*.delete(flush: true)
+
 		user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user.save()
@@ -46,7 +54,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 	}
 
 	void "test get data body"() {
-		String mockedResponseData = new File(BODY_DATA_PATH).text.split(DATA_SPLITER)[0]
+		String mockedResponseData = new File(testDataPath("body")).text
 
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
@@ -60,9 +68,10 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		then:
 		result.success == true
 
-		Entry.withCriteria() {
-			baseTag { eq("description", "weight") }
-		}.size() == 2
+		List<Entry> userEntries = Entry.findAllByUserId(userId)
+		userEntries.size() == 1
+		userEntries[0].baseTag.description == "measurement"
+		userEntries[0].tag.description == "measurement weight"
 	}
 
 	void "test get data body if response is not success"() {
@@ -83,7 +92,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 	}
 
 	void "test get data moves"() {
-		String mockedResponseData = new File(MOVES_DATA_PATH).text.split(DATA_SPLITER)[0]
+		String mockedResponseData = new File(testDataPath("moves")).text
 
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
@@ -97,11 +106,11 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		then:
 		result.success == true
 
-		Entry.count() == 5
+		Entry.count() == 3
 	}
 
 	void "test get data sleep"() {
-		String mockedResponseData = new File(SLEEP_DATA_PATH).text.split(DATA_SPLITER)[0]
+		String mockedResponseData = new File(testDataPath("sleep", 1)).text
 
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, url, p, header ->
@@ -114,18 +123,18 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 
 		then:
 		result.success == true
-		Entry.count() == 2
+		Entry.count() == 4
 
-		Entry entryInstance = Entry.withCriteria(uniqueResult: true) {
+		Entry entryInstance = Entry.withCriteria() {
 			baseTag { eq("description", "sleep") }
-		}
+		}[0]
 
 		entryInstance != null
 	}
 
 	void "test get data sleep for pagination"() {
-		String mockedResponseData = new File(SLEEP_DATA_PATH).text.split(DATA_SPLITER)[0]
-		String mockedResponsePaginationData = new File(SLEEP_DATA_PATH).text.split(DATA_SPLITER)[1]
+		String mockedResponseData = new File(testDataPath("sleep", 1)).text
+		String mockedResponsePaginationData = new File(testDataPath("sleep", 2)).text
 
 		jawboneUpDataService.oauthService = [
 			getJawboneupResource: { token, String url, p, header ->
