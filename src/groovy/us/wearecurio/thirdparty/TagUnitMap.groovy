@@ -16,7 +16,6 @@ import us.wearecurio.units.UnitGroupMap
 abstract class TagUnitMap {
 
 	final static String ACTIVITY = "activity"
-	final static String ACTIVITY_SUMMARY = "$ACTIVITY summary"
 	final static String MEAL = "meal"
 	final static String MOVEMENT = "movement"
 	final static String MOOD = "mood"
@@ -79,7 +78,9 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
-	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId,
+			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+
 		Map currentMapping = tagUnitMappings[tagName]
 
 		if (!currentMapping) {

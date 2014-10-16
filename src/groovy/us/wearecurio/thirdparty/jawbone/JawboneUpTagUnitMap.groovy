@@ -17,10 +17,15 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 		]
 
 		activityUnitMap = [
-			miles: [tag: ACTIVITY_SUMMARY, suffix: "distance", unit: "miles", convert: true, from: "m"],
-			minutes: [tag: ACTIVITY_SUMMARY, suffix: "", unit: "mins", convert: true, from: "seconds"],
-			steps: [tag: ACTIVITY_SUMMARY, suffix: "steps"],
-			longestActive: [tag: ACTIVITY_SUMMARY, suffix: "steps"],
+			miles: [tag: ACTIVITY, suffix: "distance", unit: "miles", convert: true, from: "meters"],
+			minutes: [tag: ACTIVITY, suffix: "", unit: "mins", convert: true, from: "seconds"],
+			steps: [tag: ACTIVITY, suffix: "steps"],
+			lightlyActiveDistance: [tag: "light $ACTIVITY", unit: "miles", unit: "miles", convert: true, from: "meters"],
+			lightlyActiveMinutes: [tag: "light $ACTIVITY", unit: "mins", convert: true, from: "seconds"],
+			lightlyActiveSteps: [tag: "light $ACTIVITY", unit: "steps"],
+			highActiveDistance: [tag: "high $ACTIVITY", unit: "miles", unit: "miles", convert: true, from: "meters"],
+			highActiveMinutes: [tag: "high $ACTIVITY", unit: "mins", convert: true, from: "seconds"],
+			highActiveSteps: [tag: "high $ACTIVITY", unit: "steps"],
 		]
 
 		measurementUnitMap = [

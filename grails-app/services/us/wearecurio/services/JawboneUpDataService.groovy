@@ -85,13 +85,15 @@ class JawboneUpDataService extends DataService {
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		JSONObject bodyDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
-		if (!isRequestSucceded(bodyDataResponse)) {
+		if (!isRequestSucceded(apiResponse)) {
 			return [success: false, message: "Received non 200 response"]
 		}
 
-		bodyDataResponse["data"]["items"].find { bodyEntry ->
+		JSONObject bodyData = apiResponse["data"]
+
+		bodyData["items"].find { bodyEntry ->
 			JSONObject bodyDetails = bodyEntry["details"]
 
 			String setName = SET_NAME + " " + bodyDetails["date"]
@@ -116,10 +118,10 @@ class JawboneUpDataService extends DataService {
 
 		stats.finish()
 
-		if (bodyDataResponse["links"] && bodyDataResponse["links"]["next"]) {
+		if (bodyData["links"] && bodyData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			getDataBody(account, refreshAll, bodyDataResponse["links"]["next"])
+			getDataBody(account, refreshAll, bodyData["links"]["next"])
 		}
 
 		return [success: true]
@@ -163,13 +165,15 @@ class JawboneUpDataService extends DataService {
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		JSONObject movesDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
-		if (!isRequestSucceded(movesDataResponse)) {
+		if (!isRequestSucceded(apiResponse)) {
 			return [success: false, message: "Received non 200 response"]
 		}
 
-		movesDataResponse["data"]["items"].find { movesEntry ->
+		JSONObject moveData = apiResponse["data"]
+
+		moveData["items"].find { movesEntry ->
 			JSONObject movesDetails = movesEntry["details"]
 
 			if (!movesDetails) {
@@ -209,8 +213,40 @@ class JawboneUpDataService extends DataService {
 				}
 			}
 
+			args["isSummary"] = true	// Indicating that these entries are summary entries
+
 			if (mildActivityGroup) {
-				int averageDistance = mildActivityGroup / mildActivityGroup.size()
+				def averageDistance = getAverage(mildActivityGroup, "distance")
+
+				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveDistance", averageDistance, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+
+				def averageActiveTime = getAverage(mildActivityGroup, "active_time")
+
+				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveMinutes", averageActiveTime, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+
+				def averageStep = getAverage(mildActivityGroup, "steps")
+
+				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveSteps", averageStep, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+
+			if (highActivityGroup) {
+				def averageDistance = getAverage(highActivityGroup, "distance")
+
+				tagUnitMap.buildEntry(creationMap, stats, "highActiveDistance", averageDistance, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+
+				def averageActiveTime = getAverage(highActivityGroup, "active_time")
+
+				tagUnitMap.buildEntry(creationMap, stats, "highActiveMinutes", averageActiveTime, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+
+				def averageStep = getAverage(highActivityGroup, "steps")
+
+				tagUnitMap.buildEntry(creationMap, stats, "highActiveSteps", averageStep, userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
 			}
 
 			return false	// continue looping
@@ -218,13 +254,29 @@ class JawboneUpDataService extends DataService {
 
 		stats.finish()
 
-		if (movesDataResponse["links"] && movesDataResponse["links"]["next"]) {
+		if (moveData["links"] && moveData["links"]["next"]) {
 			log.debug "Processing get moves data for paginated URL"
 
-			getDataMove(account, refreshAll, movesDataResponse["links"]["next"])
+			getDataMove(account, refreshAll, moveData["links"]["next"])
 		}
 
 		return [success: true]
+	}
+
+	/**
+	 * Get average of any key in the given list of data. It ensures the average if key is missing.
+	 * @param groupData the list of map for data
+	 * @param key key to collect & get average
+	 * @return
+	 * 
+	 * @example
+	 * 
+	 * assert getAverage([[name: 'A', count: 2], [name: 'B', count: 3]], "count") == 2.5
+	 * If any key is missing
+	 * assert getAverage([[name: 'A', count: 2], [name: 'B']], "count") == 1
+	 */
+	def getAverage(List groupData, String key) {
+		return groupData.collect { it[key] ?: 0 }.sum() / groupData.size()
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
@@ -265,13 +317,15 @@ class JawboneUpDataService extends DataService {
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		JSONObject sleepDataResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 
-		if (!isRequestSucceded(sleepDataResponse)) {
+		if (!isRequestSucceded(apiResponse)) {
 			return [success: false, message: "Received non 200 response"]
 		}
 
-		sleepDataResponse["data"]["items"].find { sleepEntry ->
+		JSONObject sleepData = apiResponse["data"]
+
+		sleepData["items"].find { sleepEntry ->
 			JSONObject sleepDetails = sleepEntry["details"]
 
 			if (!sleepDetails) {
@@ -309,10 +363,10 @@ class JawboneUpDataService extends DataService {
 
 		stats.finish()
 
-		if (sleepDataResponse["links"] && sleepDataResponse["links"]["next"]) {
+		if (sleepData["links"] && sleepData["links"]["next"]) {
 			log.debug "Processing get sleep data for paginated URL"
 
-			getDataSleep(account, refreshAll, sleepDataResponse["links"]["next"])
+			getDataSleep(account, refreshAll, sleepData["links"]["next"])
 		}
 
 		return [success: true]

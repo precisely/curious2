@@ -2,6 +2,8 @@ package us.wearecurio.services.integration
 
 import grails.test.spock.IntegrationSpec
 
+import java.text.SimpleDateFormat
+
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
 import org.scribe.model.Response
 
@@ -35,7 +37,13 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		return String.format(BASE_DATA_PATH, fileName, fileNumber)
 	}
 
+	def cleanup() {
+	}
+
 	def setup() {
+		// Adding mixin to class like meta class for testing
+		BigDecimal.mixin(Roundable)
+
 		Utils.resetForTesting()
 
 		User.list()*.delete()	// Deleting existing records temporary to create default user.
@@ -72,6 +80,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		userEntries.size() == 1
 		userEntries[0].baseTag.description == "measurement"
 		userEntries[0].tag.description == "measurement weight"
+		userEntries[0].amount.round(2) == 120.toBigDecimal().round(2)
 	}
 
 	void "test get data body if response is not success"() {
@@ -91,7 +100,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		Entry.count() == 0
 	}
 
-	void "test get data moves"() {
+	void "test get data move"() {
 		String mockedResponseData = new File(testDataPath("moves")).text
 
 		jawboneUpDataService.oauthService = [
@@ -100,13 +109,56 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 			}
 		]
 
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+
 		when:
 		Map result = jawboneUpDataService.getDataMove(account, new Date(), false)
 
 		then:
 		result.success == true
 
-		Entry.count() == 3
+		List<Entry> userEntries = Entry.findAllByUserId(userId)
+		userEntries.size() == 9
+
+		userEntries.find { it.tag.description == "activity distance" } != null
+		userEntries.find { it.tag.description == "activity duration" } != null
+		userEntries.find { it.tag.description == "activity steps" } != null
+
+		Entry highActivityEntry = userEntries.find { it.tag.description == "high activity steps" }
+		highActivityEntry != null
+		// Average of steps
+		highActivityEntry.amount == 1000.toBigDecimal()
+		highActivityEntry.units == "steps"
+
+		Entry highActivityDurationEntry = userEntries.find { it.tag.description == "high activity duration" }
+		highActivityDurationEntry != null
+		// Average of durations
+		highActivityDurationEntry.amount == (8.59).toBigDecimal()
+		highActivityDurationEntry.units == "mins"
+
+		Entry highActivityDistanceEntry = userEntries.find { it.tag.description == "high activity distance" }
+		highActivityDistanceEntry != null
+		// Average of distance
+		highActivityDistanceEntry.amount == (0.459).toBigDecimal()
+		highActivityDistanceEntry.units == "miles"
+
+		Entry lightActivityEntry = userEntries.find { it.tag.description == "light activity steps" }
+		lightActivityEntry != null
+		// Average of steps
+		lightActivityEntry.amount.round(3) == (209.286).toBigDecimal().round(3)
+		lightActivityEntry.units == "steps"
+
+		Entry lightActivityDurationEntry = userEntries.find { it.tag.description == "light activity duration" }
+		lightActivityDurationEntry != null
+		// Average of durations
+		lightActivityDurationEntry.amount.round(2) == (1.880).toBigDecimal().round(2)
+		lightActivityDurationEntry.units == "mins"
+
+		Entry lightActivityDistanceEntry = userEntries.find { it.tag.description == "light activity distance" }
+		lightActivityDistanceEntry != null
+		// Average of distance
+		lightActivityDistanceEntry.amount.round(3) == (0.094).toBigDecimal().round(3)
+		lightActivityDistanceEntry.units == "miles"
 	}
 
 	void "test get data sleep"() {
@@ -123,13 +175,25 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 
 		then:
 		result.success == true
-		Entry.count() == 4
 
-		Entry entryInstance = Entry.withCriteria() {
-			baseTag { eq("description", "sleep") }
-		}[0]
+		List<Entry> userEntries = Entry.findAllByUserId(userId)
+		userEntries.size() == 4
 
-		entryInstance != null
+		userEntries.find { it.tag.description == "sleep duration" } != null
+		userEntries.find { it.tag.description == "sleep duration" }.amount.round(2) == 673
+		userEntries.find { it.tag.description == "sleep duration" }.units == "mins"
+
+		userEntries.find { it.tag.description == "sleep interruptions" } != null
+		userEntries.find { it.tag.description == "sleep interruptions" }.amount.round(0) == 2.toBigDecimal()
+		userEntries.find { it.tag.description == "sleep interruptions" }.units == ""
+
+		userEntries.find { it.tag.description == "sleep awake" } != null
+		userEntries.find { it.tag.description == "sleep awake" }.amount.round(2) == (53.30).toBigDecimal()
+		userEntries.find { it.tag.description == "sleep awake" }.units == "mins"
+
+		userEntries.find { it.tag.description == "sleep quality" } != null
+		userEntries.find { it.tag.description == "sleep quality" }.amount.round(2) == 80.toBigDecimal().round(2)
+		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
 	}
 
 	void "test get data sleep for pagination"() {
@@ -152,7 +216,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 
 		then:
 		result.success == true
-		Entry.count() == 4
+		Entry.count() == 8
 	}
 
 	void "test get data sleep if response is not success"() {
@@ -227,5 +291,11 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		firstNotification.ownerId == "RGaCBFg9CsB83FsEcMY44A"
 		firstNotification.status == Status.UNPROCESSED
 		firstNotification.typeId == ThirdParty.JAWBONE
+	}
+}
+
+class Roundable {
+	BigDecimal round(int n) {
+		return setScale(n, BigDecimal.ROUND_HALF_UP)
 	}
 }

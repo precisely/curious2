@@ -25,7 +25,7 @@
                     "rem":0,
                     "duration":40355,
                     "smart_alarm_fire":0,
-                    "quality":100,
+                    "quality":80,
                     "awake_time":1410368100
                 },
                 "date":20140910,
