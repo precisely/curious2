@@ -22,7 +22,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 abstract class DataService {
-
+	
 	static transactional = false
 
 	private static def log = LogFactory.getLog(this)
@@ -55,7 +55,7 @@ abstract class DataService {
 
 	// very early start date
 	static final Date earlyStartDate
-
+	
 	static {
 		if (Environment.current == Environment.DEVELOPMENT) {
 			earlyStartDate = new Date() - 60
@@ -63,7 +63,7 @@ abstract class DataService {
 			earlyStartDate = new Date(-5364658800L)
 		}
 	}
-
+	
 
 	// register data service for lookup
 	@PostConstruct
@@ -151,7 +151,7 @@ abstract class DataService {
 	 */
 	@Transactional
 	JSONElement getResponse(Token tokenInstance, String requestURL, String method = "get", Map queryParams = [:], Map requestHeaders = [:])
-	throws InvalidAccessTokenException {
+			throws InvalidAccessTokenException {
 		long currentTime = System.currentTimeMillis()
 
 		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL] & method: $method"
@@ -187,7 +187,7 @@ abstract class DataService {
 				parsedResponse = new JSONObject()
 			}
 		}
-
+		
 		if (Environment.current == Environment.DEVELOPMENT) {
 			log.debug "DataService.getResponse() Response data:"
 			log.debug parsedResponse
@@ -235,7 +235,7 @@ abstract class DataService {
 
 		account.timeZoneId
 	}
-
+	
 	@Transactional
 	TimeZone getTimeZone(OAuthAccount account) {
 		Long timeZoneId = getTimeZoneId(account)

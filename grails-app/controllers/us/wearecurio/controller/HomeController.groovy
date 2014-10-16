@@ -36,17 +36,17 @@ class HomeController extends DataController {
 	static debug(str) {
 		log.debug(str)
 	}
-
+	
 	def HomeController() {
 		debug "HomeController()"
 	}
-
+	
 	def causeexception() throws AuthenticationRequiredException {
 		debug "HomeController.causeexception() params:" + params
-
+		
 		throw new AuthenticationRequiredException("test only please ignore")
 	}
-
+		
 	def registerwithings() throws AuthenticationRequiredException {
 		debug "HomeController.registerwithings() params:" + params
 
@@ -56,12 +56,12 @@ class HomeController extends DataController {
 			return
 		}
 		Long userId = user.id
-
+		
 		debug "userId: $userId"
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
-
+		
 		Map result = [:]
-
+		
 		try {
 			result = withingsDataService.subscribe(userId)
 		} catch (MissingOAuthAccountException e) {
@@ -260,32 +260,32 @@ class HomeController extends DataController {
 
 	def polldevices() {
 		debug "HomeController.polldevices() request:" + request
-
+		
 		User user = sessionUser()
-
+		
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
 
 		DataService.pollAllForUserId(user.getId())
-
+		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
 
 	def registerfitbit() {
 		debug "HomeController.registerfitbit() params:" + params
 		User user = sessionUser()
-
+		
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
 		Long userId = user.id
-
+		
 		debug "userId: $userId"
 		session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
-
+		
 		Map result = [:]
 
 		try {
@@ -346,36 +346,28 @@ class HomeController extends DataController {
 	def notifyfitbit() {
 		debug "HomeController.notifyfitbit() params:" + params
 		debug "File text as is: " + request.getFile("updates").inputStream.text
-
+		
 		fitBitDataService.notificationHandler(request.getFile("updates").inputStream.text)
 		render status: 204
 		return
 	}
-
-	def notifyJawbone() {
-		debug "notifyJawbone() from IP: [$request.remoteAddr] with params:" + params
-
-		jawboneUpDataService.notificationHandler(request.getFile("file").inputStream.text)
-
-		renderStringGet('success')
-	}
-
+	
 	def registertwitter() {
 		debug "HomeController.registertwitter() request:" + request
-
+		
 		redirect(url:twitterDataService.twitterAuthorizationURL(toUrl(controller:'home', action:'doregistertwitter')))
 	}
 
 	def doregistertwitter() {
 		debug "HomeController.doregistertwitter() params:" + params
-
+		
 		User user = sessionUser()
-
+		
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
-
+		
 		debug "userId:" + user.getId()
 
 		def twitterUsername = null
@@ -393,47 +385,47 @@ class HomeController extends DataController {
 			user.setTwitterAccountName(twitterUsername)
 		}
 		render(view:"/home/userpreferences",
-		model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
+				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
-
+	
 	static processPrefs(prefs) {
 		def p = [:]
-
+		
 		for (param in prefs) {
 			def k = param.key
 			def v = param.value
-
+			
 			int i = k.indexOf("_profile_")
-
+			
 			if (i > 0)
 				p[k.substring(0, i)] = v
 			else
 				p[k] = v
 		}
-
+			
 		return p
 	}
 
 	def userpreferences() {
 		debug "HomeController.userpreferences() params:" + params
-
+		
 		User user = userFromIdStr(params.userId)
-
+		
 		if (user == null) {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-
+		
 		debug "Trying to edit user preferences for:" + user
-
+		
 		render(view:"/home/userpreferences",
-		model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-			prefs:user.getPreferences(), templateVer:urlService.template(request)])
+				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+					prefs:user.getPreferences(), templateVer:urlService.template(request)])
 	}
 
 	def doupdateuserpreferences() {
 		debug "HomeController.doupdateuserpreferences() params:" + params
-
+		
 		User user = userFromIdStr(params.userId)
 
 		if (user == null) {
@@ -441,19 +433,19 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'upload'))
 			return
 		}
-
+		
 		def p = processPrefs(params)
 
 		if (p.twitterDefaultToNow != 'on')
 			p.twitterDefaultToNow = 'off';
-
+			
 		if (p.password != null && p.password.length() > 0) {
 			if (!user.checkPassword(p.oldPassword)) {
 				flash.message = "Error updating user preferences: old password does not match"
 				log.warn "Error updating user preferences: old password does not match"
 				render(view:"/home/userpreferences",
-				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-					prefs:user.getPreferences(), templateVer:urlService.template(request)])
+						model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+							prefs:user.getPreferences(), templateVer:urlService.template(request)])
 				return
 			}
 		}
@@ -461,13 +453,13 @@ class HomeController extends DataController {
 		user.setParameters(p)
 
 		Utils.save(user)
-
+		
 		if (!user.validate()) {
 			flash.message = "Error updating user preferences: missing field or email already in use"
 			log.warn "Error updating user preferences: $user.errors"
 			render(view:"/home/userpreferences",
-			model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-				prefs:user.getPreferences(), templateVer:urlService.template(request)])
+					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+						prefs:user.getPreferences(), templateVer:urlService.template(request)])
 		} else {
 			flash.message = "User preferences updated"
 			redirect(url:toUrl(controller:p.controller, action:p.preaction))
@@ -476,7 +468,7 @@ class HomeController extends DataController {
 
 	def doUpload() {
 		debug "HomeController.doUpload() params:" + params
-
+		
 		def user = sessionUser()
 
 		if (user == null) {
@@ -528,9 +520,9 @@ class HomeController extends DataController {
 
 	def download() {
 		debug "HomeController.download()"
-
+		
 		def user = sessionUser()
-
+		
 		if (user == null) {
 			debug "auth failure"
 			flash.message = "Must be logged in"
@@ -539,11 +531,11 @@ class HomeController extends DataController {
 		}
 
 		response.setHeader "Content-disposition", "attachment; filename=export.csv"
-		response.contentType = 'text/csv'
-
+	    response.contentType = 'text/csv'
+		
 		doExportCSVAnalysis(response.outputStream, user)
-
-		response.outputStream.flush()
+		
+        response.outputStream.flush()
 	}
 
 	def termsofservice() {
@@ -553,7 +545,7 @@ class HomeController extends DataController {
 
 	def viewgraph() {
 		debug "HomeController.viewgraph()"
-
+		
 		def user = sessionUser()
 
 		if (user == null) {
@@ -562,10 +554,10 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-
+		
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
-
+	
 	def homepage() {
 		render(view:"/home/homepage")
 	}
@@ -583,13 +575,13 @@ class HomeController extends DataController {
 
 		if (discussionId) {
 			Discussion discussion = Discussion.get(discussionId)
-
+	
 			if (!discussion) {
 				debug "no discussion for discussionId " + discussionId
 				flash.message = "No discussion found"
 				return
 			}
-
+						
 			if (unpublish) {
 				if (UserGroup.canAdminDiscussion(user, discussion)) {
 					discussion.setIsPublic(false)
@@ -698,11 +690,11 @@ class HomeController extends DataController {
 		 * Should support both modes
 		 */
 		debug "HomeController.discuss()"
-
+		
 		def user = sessionUser()
-
+		
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
-
+		
 		if (plotIdMessage == null && plotDataId==null && discussionId==null && params.createTopic == null) {
 			flash.message = "Blank discussion call"
 			redirect(url:toUrl(action:'index'))
@@ -749,7 +741,7 @@ class HomeController extends DataController {
 				return
 			}
 		}
-
+		
 		if (discussion == null) {
 			def name = "New question or discussion title?"
 			if (plotIdMessage != null) {
@@ -789,13 +781,13 @@ class HomeController extends DataController {
 			}
 		}
 		/*
-		 if (!discussion.getIsPublished()) {
-		 if ((!user) || (discussion.getUserId() != user.getId())) {
-		 flash.message = "Don't have permission to access this discussion"
-		 redirect(url:toUrl(action:'index'))
-		 return
-		 }
-		 }*/
+		if (!discussion.getIsPublished()) {
+			if ((!user) || (discussion.getUserId() != user.getId())) {
+				flash.message = "Don't have permission to access this discussion"
+				redirect(url:toUrl(action:'index'))
+				return
+			}
+		}*/
 		if (deletePostId) {
 			debug "Attemtping to delete post id " + deletePostId
 			DiscussionPost post = DiscussionPost.get(deletePostId)
@@ -819,8 +811,8 @@ class HomeController extends DataController {
 		}
 		if (params.message || plotIdMessage) {
 			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
-			def comment = DiscussionPost.createComment(params.message, user, discussion ,
-					plotIdMessage, params)
+			def comment = DiscussionPost.createComment(params.message, user, discussion , 
+				plotIdMessage, params)
 			if (comment instanceof String) {
 				flash.message = "You don't have permission to add a comment to this discussion"
 				redirect(url:toUrl(action:'index'))
@@ -832,12 +824,12 @@ class HomeController extends DataController {
 				redirect(url:toUrl(action:'index'))
 				return
 			} else {
-				redirect(url:toUrl(action:'discuss',
-				params:[discussionId:discussion.getId()],
-				fragment:'comment' + comment.id))
+				redirect(url:toUrl(action:'discuss', 
+					params:[discussionId:discussion.getId()],
+					fragment:'comment' + comment.id))
 				return
 			}
-
+			
 		} else {
 			params.max = params.max ?: 5
 			params.offset = params.offset ?: 0
@@ -845,8 +837,8 @@ class HomeController extends DataController {
 			Map model = discussion.getJSONModel(params)
 
 			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-				templateVer: urlService.template(request)]
+					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+					templateVer: urlService.template(request)]
 
 			// If used for pagination
 			if (request.xhr) {
@@ -871,7 +863,7 @@ class HomeController extends DataController {
 			render(view: "/home/discuss", model: model)
 		}
 	}
-
+	
 	def lgmd2iproject() {
 		def model = []
 		render(view:"/home/lgmd2iproject", model:model)
