@@ -106,6 +106,9 @@ class JawboneUpDataService extends DataService {
 			tagUnitMap.buildEntry(creationMap, stats, "weight", bodyEntry["weight"], userId, timeZoneIdNumber,
 					entryDate, COMMENT, setName)
 
+			tagUnitMap.buildEntry(creationMap, stats, "fatRatio", bodyEntry["body_fat"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+
 			return false	// continue looping
 		}
 
@@ -186,13 +189,7 @@ class JawboneUpDataService extends DataService {
 			tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName)
 
-			tagUnitMap.buildEntry(creationMap, stats, "calories", movesDetails["bg_calories"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
-
-			tagUnitMap.buildEntry(creationMap, stats, "workoutCalories", movesDetails["wo_calories"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
-
-			tagUnitMap.buildEntry(creationMap, stats, "workoutMinutes", movesDetails["wo_time"], userId,
+			tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
 					timeZoneIdNumber, entryDate, COMMENT, setName)
 
 			return false	// continue looping
@@ -275,6 +272,14 @@ class JawboneUpDataService extends DataService {
 			}
 			if (sleepDetails["awakenings"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "awakeningsCount", sleepDetails["awakenings"], userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (sleepDetails["awake"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "awake", sleepDetails["awake"], userId,
+						timeZoneIdNumber, entryDate, COMMENT, setName)
+			}
+			if (sleepDetails["quality"]) {
+				tagUnitMap.buildEntry(creationMap, stats, "quality", sleepDetails["quality"], userId,
 						timeZoneIdNumber, entryDate, COMMENT, setName)
 			}
 

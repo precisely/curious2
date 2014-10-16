@@ -4,32 +4,37 @@ import us.wearecurio.thirdparty.TagUnitMap
 
 class JawboneUpTagUnitMap extends TagUnitMap {
 
-	private static Map sleepUnitMap, activityUnitMap, workOutUnitMap, columnDetailMap = [:]
+	private static Map sleepUnitMap, activityUnitMap, workOutUnitMap, measurementUnitMap, columnDetailMap = [:]
 
 	Map buckets
 
 	static {
 		sleepUnitMap = [
-			duration: [tag: "$SLEEP", unit: "mins", convert: true, from: "seconds"],
-			awakeningsCount: [tag: "$SLEEP interruptions", unit: ""],
-			minutesAsleep: [tag: "$SLEEP", unit: "hours", convert: true, from: "ms"],
-			startTime: [tag: "$SLEEP startTime", unit: ""],
+			duration: [tag: SLEEP, suffix: "duration", unit: "mins", convert: true, from: "seconds"],
+			awake: [tag: SLEEP, suffix: "awake", unit: "mins", convert: true, from: "seconds"],
+			awakeningsCount: [tag: SLEEP, suffix: "interruptions", unit: ""],
+			quality: [tag: SLEEP, suffix: "quality", unit: "%"]
 		]
 
 		activityUnitMap = [
-			miles: [tag: "$ACTIVITY", unit: "miles", convert: true, from: "m"],
-			minutes: [tag: "$ACTIVITY", unit: "mins", convert: true, from: "seconds"],
-			calories: [tag: "$MOVEMENT", unit: "cal"],
-			workoutCalories: [tag: ACTIVITY, unit: "cal"],
-			workoutMinutes: [tag: ACTIVITY, unit: "mins", convert: true, from: "seconds"]
+			miles: [tag: ACTIVITY, suffix: "distance", unit: "miles", convert: true, from: "m"],
+			minutes: [tag: ACTIVITY, suffix: "", unit: "mins", convert: true, from: "seconds"],
+			steps: [tag: ACTIVITY, suffix: "steps"],
+		]
+
+		measurementUnitMap = [
+			weight: [tag: MEASUREMENT, suffix: "weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
+			fatRatio: [tag: MEASUREMENT, suffix: "fat ratio", unit: "%"]
 		]
 
 		columnDetailMap.putAll(sleepUnitMap)
 		columnDetailMap.putAll(activityUnitMap)
+		columnDetailMap.putAll(measurementUnitMap)
 	}
 
 	JawboneUpTagUnitMap() {
-		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
+		// First keeping commonTagMap so that unit map from here can override the common
+		tagUnitMappings = initializeTagUnitMappings(commonTagMap + columnDetailMap)
 	}
 
 	@Override

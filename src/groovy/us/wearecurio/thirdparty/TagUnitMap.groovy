@@ -16,15 +16,17 @@ import us.wearecurio.units.UnitGroupMap
 abstract class TagUnitMap {
 
 	final static String ACTIVITY = "activity"
+	final static String ACTIVITY_SUMMARY = "$ACTIVITY summary"
 	final static String MEAL = "meal"
 	final static String MOVEMENT = "movement"
 	final static String MOOD = "mood"
 	final static String NAP = "nap"
 	final static String SLEEP = "sleep"
+	final static String MEASUREMENT = "measurement"
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
-	
+
 	/**
 	 * @return A map containing tag names as key and their entry description as value.
 	 * Used for creating entries from data coming from third party APIs.
@@ -34,9 +36,9 @@ abstract class TagUnitMap {
 	static Map commonTagMap = [:]
 
 	private static def log = LogFactory.getLog(this)
-	
+
 	UnitGroupMap unitGroupMap
-	
+
 	public TagUnitMap() {
 		unitGroupMap = UnitGroupMap.theMap
 	}
@@ -60,13 +62,13 @@ abstract class TagUnitMap {
 			weight: [tag: "weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 		]
 	}
-	
+
 	static Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
 			if (value['convert'])
 				value['ratio'] = UnitGroupMap.theMap.fetchConversionRatio(value['from'], value['unit'])
 		}
-		
+
 		return map
 	}
 
@@ -86,7 +88,7 @@ abstract class TagUnitMap {
 		}
 
 		log.debug "The tag map is: $currentMapping"
-		
+
 		int amountPrecision = currentMapping.amountPrecision ?: Entry.DEFAULT_AMOUNTPRECISION
 
 		if (amount != null) {
@@ -107,32 +109,32 @@ abstract class TagUnitMap {
 		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
 
 		String description = args["tagName"] ?: currentMapping["tag"]
-		
+
 		Tag baseTag = Tag.look(description)
-		
+
 		Tag tag
-		
+
 		if (currentMapping["suffix"]) {
 			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
 			tag = unitGroupMap.tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
 		}
-		
+
 		if (args["isSummary"]) {
-			description += " summary" 
+			description += " summary"
 			args['datePrecisionSecs'] = Entry.VAGUE_DATE_PRECISION_SECS
 		} else
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
 
 		Map parsedEntry = [userId: userId, date: date, tag: tag, baseTag: baseTag, description: description, amount: amount,
-				units: currentMapping["unit"], amountPrecision: (args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION),
-				comment: comment, setName: setName, timeZoneId: timeZoneId]
-		
+			units: currentMapping["unit"], amountPrecision: (args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION),
+			comment: comment, setName: setName, timeZoneId: timeZoneId]
+
 		parsedEntry.putAll(args)
 		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
-		
+
 		creationMap.add(e)
-		
+
 		return e
 	}
 
