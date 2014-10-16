@@ -351,6 +351,17 @@ class HomeController extends DataController {
 		render status: 204
 		return
 	}
+
+	def notifyJawbone() {
+		def requestBodyData = request.JSON
+		def requestFileData = request.getFile("file")?.inputStream?.text
+
+		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData & file: $requestFileData"
+
+		jawboneUpDataService.notificationHandler(requestBodyData?.file ?: requestFileData)
+
+		renderStringGet('success')
+	}
 	
 	def registertwitter() {
 		debug "HomeController.registertwitter() request:" + request
