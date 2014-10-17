@@ -297,13 +297,13 @@ class HomeController extends DataController {
 		}
 
 		flash.args = ["FitBit"]
+		flash.args << result.message ? ", " + result.message : ""
 		if(result.success) {
 			debug "Succeeded in subscribing"
 			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
 			flash.message = "thirdparty.subscribe.failure.message"
-			flash.args << result.message ?: ""
 		}
 		redirect(url: session.deniedURI)
 	}
