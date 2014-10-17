@@ -1,11 +1,7 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
-import grails.util.Environment;
-
-import org.springframework.transaction.annotation.Transactional
-
-import org.hibernate.StaleObjectStateException
+import grails.util.Environment
 
 import javax.annotation.PostConstruct
 
@@ -15,6 +11,7 @@ import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Response
 import org.scribe.model.Token
+import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
@@ -157,7 +154,7 @@ abstract class DataService {
 			throws InvalidAccessTokenException {
 		long currentTime = System.currentTimeMillis()
 
-		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL]"
+		log.debug "[$currentTime] Fetching data for [$provider] with request URL: [$requestURL] & method: $method"
 
 		checkNotNull(tokenInstance)
 
@@ -418,6 +415,14 @@ abstract class DataService {
 	 */
 	@Transactional
 	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		// If no URL means, API does not require any subscription
+		if (!subscribeURL) {
+			OAuthAccount account = getOAuthAccountInstance(userId)
+			checkNotNull(account)
+
+			return [success: true]
+		}
+
 		subscribe(userId, subscribeURL, "get", [:])
 	}
 
@@ -454,6 +459,19 @@ abstract class DataService {
 	 */
 	@Transactional
 	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
+		// If no URL means, API does not require any unsubscription
+		if (!unsubscribeURL) {
+			OAuthAccount account = getOAuthAccountInstance(userId)
+			if (!account) {
+				//Sanity check. This should never ever happen
+				throw new MissingOAuthAccountException()
+			}
+
+			OAuthAccount.delete(account)
+
+			return [success: true]
+		}
+
 		unsubscribe(userId, unsubscribeURL, "get", [:])
 	}
 
@@ -471,6 +489,7 @@ abstract class DataService {
 	@Transactional
 	Map unsubscribe(Long userId, String url, String method, Map queryParams) throws MissingOAuthAccountException, InvalidAccessTokenException {
 		debug "DataService.unsubscribe() userId:" + userId + ", url:" + url + ", method: " + method + ", queryParams: " + queryParams
+
 		OAuthAccount account = getOAuthAccountInstance(userId)
 		if (!account) {
 			//Sanity check. This should never ever happen

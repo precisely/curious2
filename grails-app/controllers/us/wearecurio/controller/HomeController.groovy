@@ -1,9 +1,6 @@
 package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
-
-import java.util.Map;
-
 import grails.converters.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -24,12 +21,15 @@ import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
-	
+
+	static allowedMethods = [notifyJawbone: "POST"]
+
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
 	MovesDataService movesDataService
+	def jawboneUpDataService
 	def oauthService
 	Twenty3AndMeDataService twenty3AndMeDataService
 
@@ -71,19 +71,21 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("withings")
 		}
 
+		flash.args = ["Withings"]
+
 		if (result.success) {
 			OAuthAccount account = result.account
 			if (!account.lastPolled) {	// Check to see if first time subscription.
 				log.info "Setting notification to get previous data for account: $account"
 				withingsDataService.saveNotificationForPreviousData(account)
 			}
-			flash.message = "withings.subscribe.success.message"
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
-			flash.message = "withings.subscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
-		
+
 		redirect(url: session.deniedURI)
 	}
 
@@ -101,13 +103,15 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["Withings"]
+
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "withings.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failed to unsubscribe: " + (result.message ?: "")
-			flash.message = "withings.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -163,12 +167,13 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("moves")
 		}
 
+		flash.args = ["Moves"]
 		if (result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = "moves.subscribe.success.message"
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failed to subscribe"
-			flash.message = "moves.subscribe.failure.message"
+			flash.message = "thirdparty.subscribe.failure.message"
 		}
 		redirect(url: session.deniedURI)
 	}
@@ -187,13 +192,68 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["Moves"]
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "moves.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failure while unsubscribing" + result.message
-			flash.message = "moves.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
+		}
+		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+	}
+
+	def registerJawboneUp() {
+		debug "HomeController.registerJawboneUp() params:" + params
+		User user = sessionUser()
+		Long userId = user.id
+		session.deniedURI = toUrl(controller: "home", action: "userpreferences", params: [userId: userId])
+
+		Map result = [:]
+
+		try {
+			result = jawboneUpDataService.subscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("jawboneup")
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("jawboneup")
+		}
+
+		flash.args = ["JawboneUp"]
+		if (result.success) {
+			debug "Succeeded in subscribing"
+			flash.message = "thirdparty.subscribe.success.message"
+		} else {
+			debug "Failed to subscribe"
+			flash.message = "thirdparty.subscribe.failure.message"
+		}
+
+		redirect(url: session.deniedURI)
+	}
+
+	def unregisterJawboneUp() {
+		debug "unregisterJawboneUp() params: $params"
+		User user = sessionUser()
+		Long userId = user.id
+		Map result = [:]
+
+		try {
+			result = jawboneUpDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("jawboneup")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
+		flash.args = ["JawboneUp"]
+		if (result.success) {
+			debug "Succeeded in unsubscribing"
+			flash.message = "thirdparty.unsubscribe.success.message"
+		} else {
+			debug "Failure while unsubscribing" + result.message
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 	}
@@ -236,14 +296,14 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("fitbit")
 		}
 
+		flash.args = ["FitBit"]
+		flash.args << result.message ? ", " + result.message : ""
 		if(result.success) {
 			debug "Succeeded in subscribing"
-			flash.message = "fitbit.subscribe.success.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = "fitbit.subscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.subscribe.failure.message"
 		}
 		redirect(url: session.deniedURI)
 	}
@@ -267,13 +327,14 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
+		flash.args = ["FitBit"]
 		if (result.success) {
 			debug "Succeeded in unsubscribing"
-			flash.message = "fitbit.unsubscribe.success.message"
+			flash.message = "thirdparty.unsubscribe.success.message"
 		} else {
 			debug "Failure in unsubscribing:" + result.message
-			flash.message = "fitbit.unsubscribe.failure.message"
-			flash.args = result.message ?: ""
+			flash.message = "thirdparty.unsubscribe.failure.message"
+			flash.args << result.message ?: ""
 		}
 
 		redirect (url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
@@ -289,6 +350,17 @@ class HomeController extends DataController {
 		fitBitDataService.notificationHandler(request.getFile("updates").inputStream.text)
 		render status: 204
 		return
+	}
+
+	def notifyJawbone() {
+		def requestBodyData = request.JSON
+		def requestFileData = request.getFile("file")?.inputStream?.text
+
+		debug "notifyJawbone() from IP: [$request.remoteAddr] params:" + params + ", body: $requestBodyData & file: $requestFileData"
+
+		jawboneUpDataService.notificationHandler(requestBodyData?.file ?: requestFileData)
+
+		renderStringGet('success')
 	}
 	
 	def registertwitter() {

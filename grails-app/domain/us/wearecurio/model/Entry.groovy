@@ -61,6 +61,7 @@ class Entry implements Comparable {
 		durationType(nullable:true)
 		timeZoneId(nullable:true)
 		setIdentifier(nullable:true)
+		userId(nullable: true)
 	}
 
 	static mapping = {

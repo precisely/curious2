@@ -131,7 +131,7 @@
 
 						<div class="form-group">
 							<label>Username:</label> <input
-							class="form-control" type="text"
+							class="form-control" type="text" autofocus
 							id="username" name="username" value="" />
 						</div>
 

@@ -386,6 +386,9 @@ class MigrationService {
 		tryMigration("Changed pinned to button") {
 			sql("update entry set comment = 'button' where comment = 'pinned' or comment = 'favorite'")
 		}
+		tryMigration("Change accountId field length") {
+			sql("alter table oauth_account change column account_id account_id varchar(24)")
+		}
 	}
 	
 	/**

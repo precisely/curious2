@@ -253,6 +253,18 @@ $(function() {
 									<g:link action="registermoves">Link Moves Account</g:link><br>
 								</g:else>
 							</oauth:checkSubscription>
+							<oauth:checkSubscription userId="${user.id}" typeId="JAWBONE">
+								<g:if test="${it?.accessToken }">
+									<g:link action="unregisterJawboneUp">Unlink JawboneUp Account</g:link>
+								</g:if>
+								<g:elseif test="${it && !it.accessToken }">
+									<g:link action="registerJawboneUp" class="text-danger">Re-link JawboneUp Account</g:link>
+								</g:elseif>
+								<g:else>
+									<g:link action="registerJawboneUp">Link JawboneUp Account</g:link>
+								</g:else>
+								<br>
+							</oauth:checkSubscription>
 							<g:link action="register23andme">
 								<oauth:checkSubscription userId="${user.id}" typeId="TWENTY_THREE_AND_ME">
 									<g:if test="${it }">

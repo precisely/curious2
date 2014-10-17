@@ -2,6 +2,7 @@ import org.scribe.model.SignatureType
 
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
+import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
@@ -135,6 +136,16 @@ pushNotification {
 	
 	gcm {
 		senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
+	}
+}
+
+oauth {
+	providers {
+		// For development & test environment
+		jawboneup {
+			key = "bTdM02oiakY"
+			secret = "f81b22f0191e3a8db8618372c86e776db344cae4"
+		}
 	}
 }
 
@@ -392,6 +403,9 @@ log4j.main = {
 	error  'org.springframework.aop.framework.Cglib2AopProxy'
 
 	warn   'org.mortbay.log'
+	// Uncomment to see hibernate queries with their values
+	//debug 'org.hibernate.SQL'
+	//trace 'org.hibernate.type'
 }
 
 oauth {
@@ -408,6 +422,13 @@ oauth {
 			callback = "${grails.serverURL }oauth/human/callback"
 			successUri = "authentication/human/success"
 			failureUri = "authentication/human/fail"
+		}
+		jawboneup {
+			api = JawboneUpApi
+			callback = "${grails.serverURL }oauth/jawboneup/callback"
+			successUri = "authentication/jawboneup/success"
+			failureUri = "authentication/jawboneup/fail"
+			scope = "basic_read mood_read move_read sleep_read meal_read weight_read"
 		}
 		moves {
 			api = MovesApi
