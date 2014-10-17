@@ -28,15 +28,6 @@
           "bmr": 1253.50856141,
           "bg_calories": 123.468999565,
           "hourly_totals": {
-            "2014091003": {
-              "distance": 36,
-              "active_time": 24,
-              "calories": 1.37700003386,
-              "inactive_time": 0,
-              "longest_idle_time": 0,
-              "steps": 48,
-              "longest_active_time": 24
-            },
             "2014091008": {
               "distance": 64,
               "active_time": 48,
@@ -108,15 +99,6 @@
               "longest_idle_time": 960,
               "steps": 1145,
               "longest_active_time": 444
-            },
-            "2014091016": {
-              "distance": 349,
-              "active_time": 269,
-              "calories": 14.1249998808,
-              "inactive_time": 840,
-              "longest_idle_time": 540,
-              "steps": 487,
-              "longest_active_time": 204
             }
           },
           "wo_time": 0,

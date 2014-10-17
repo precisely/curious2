@@ -118,47 +118,88 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		result.success == true
 
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
-		userEntries.size() == 9
+		userEntries.size() == 19
 
 		userEntries.find { it.tag.description == "activity distance" } != null
 		userEntries.find { it.tag.description == "activity duration" } != null
 		userEntries.find { it.tag.description == "activity steps" } != null
 
-		Entry highActivityEntry = userEntries.find { it.tag.description == "high activity steps" }
-		highActivityEntry != null
+		/**
+		 * High activity entries. First for timed group of hour 12th & second for 14th, 15th
+		 */
+		List<Entry> highActivityEntries = userEntries.findAll { it.tag.description == "high activity steps" }
 		// Average of steps
-		highActivityEntry.amount == 1000.toBigDecimal()
-		highActivityEntry.units == "steps"
+		// First is for hour 12th
+		highActivityEntries[0].amount.round(0) == 1244.toBigDecimal().round(0)
+		highActivityEntries[0].units == "steps"
 
-		Entry highActivityDurationEntry = userEntries.find { it.tag.description == "high activity duration" }
-		highActivityDurationEntry != null
+		// Second for hour 14th & 15th (grouped)
+		highActivityEntries[1].amount.round(0) == 878.toBigDecimal().round(0)
+		highActivityEntries[1].units == "steps"
+
+		List<Entry> highActivityDurationEntry = userEntries.findAll { it.tag.description == "high activity duration" }
 		// Average of durations
-		highActivityDurationEntry.amount == (8.59).toBigDecimal()
-		highActivityDurationEntry.units == "mins"
+		// First is for hour 12th
+		highActivityDurationEntry[0].amount.round(2) == (10.80).toBigDecimal().round(2)
+		highActivityDurationEntry[0].units == "mins"
 
-		Entry highActivityDistanceEntry = userEntries.find { it.tag.description == "high activity distance" }
-		highActivityDistanceEntry != null
+		// Second for hour 14th & 15th (grouped)
+		highActivityDurationEntry[1].amount.round(2) == (7.48).toBigDecimal().round(2)
+		highActivityDurationEntry[1].units == "mins"
+
+		List<Entry> highActivityDistanceEntry = userEntries.findAll { it.tag.description == "high activity distance" }
 		// Average of distance
-		highActivityDistanceEntry.amount == (0.459).toBigDecimal()
-		highActivityDistanceEntry.units == "miles"
+		// First is for hour 12th
+		highActivityDistanceEntry[0].amount.round(3) == (0.566).toBigDecimal().round(3)
+		highActivityDistanceEntry[0].units == "miles"
 
-		Entry lightActivityEntry = userEntries.find { it.tag.description == "light activity steps" }
-		lightActivityEntry != null
-		// Average of steps
-		lightActivityEntry.amount.round(3) == (209.286).toBigDecimal().round(3)
-		lightActivityEntry.units == "steps"
+		// Second for hour 14th & 15th (grouped)
+		highActivityDistanceEntry[1].amount.round(3) == (0.406).toBigDecimal().round(3)
+		highActivityDistanceEntry[1].units == "miles"
 
-		Entry lightActivityDurationEntry = userEntries.find { it.tag.description == "light activity duration" }
-		lightActivityDurationEntry != null
+		List<Entry> highActivityCaloriesEntry = userEntries.findAll { it.tag.description == "high activity calories" }
+		// Average of distance
+		// First is for hour 12th
+		highActivityCaloriesEntry[0].amount.round(3) == (1244).toBigDecimal().round(3)
+		highActivityCaloriesEntry[0].units == "cal"
+
+		// Second for hour 14th & 15th (grouped)
+		highActivityCaloriesEntry[1].amount.round(3) == (878).toBigDecimal().round(3)
+		highActivityCaloriesEntry[1].units == "cal"
+
+		/**
+		 * Light activities. First for timed group of hours 08th, 09th, 10th, 11th & second for 13th
+		 */
+		List <Entry> lightActivityEntries = userEntries.findAll { it.tag.description == "light activity steps" }
+		lightActivityEntries.size() == 2
+
+		// For timed group of hours 08th, 09th, 10th, 11th
+		lightActivityEntries[0].amount.round(0) == (212).toBigDecimal().round(0)
+		lightActivityEntries[0].units == "steps"
+
+		// For hour 13th
+		lightActivityEntries[1].amount.round(0) == (82).toBigDecimal().round(0)
+		lightActivityEntries[1].units == "steps"
+
+		List <Entry> lightActivityDurationEntries = userEntries.findAll { it.tag.description == "light activity duration" }
 		// Average of durations
-		lightActivityDurationEntry.amount.round(2) == (1.880).toBigDecimal().round(2)
-		lightActivityDurationEntry.units == "mins"
+		// For timed group of hours 08th, 09th, 10th, 11th
+		lightActivityDurationEntries[0].amount.round(2) == (1.89).toBigDecimal().round(2)
+		lightActivityDurationEntries[0].units == "mins"
 
-		Entry lightActivityDistanceEntry = userEntries.find { it.tag.description == "light activity distance" }
-		lightActivityDistanceEntry != null
+		// For hour 13th
+		lightActivityDurationEntries[1].amount.round(4) == (0.7170).toBigDecimal().round(4)
+		lightActivityDurationEntries[1].units == "mins"
+
+		List<Entry> lightActivityDistanceEntries = userEntries.findAll { it.tag.description == "light activity distance" }
 		// Average of distance
-		lightActivityDistanceEntry.amount.round(3) == (0.094).toBigDecimal().round(3)
-		lightActivityDistanceEntry.units == "miles"
+		// For timed group of hours 08th, 09th, 10th, 11th
+		lightActivityDistanceEntries[0].amount.round(4) == (0.0951).toBigDecimal().round(4)
+		lightActivityDistanceEntries[0].units == "miles"
+
+		// For hour 13th
+		lightActivityDistanceEntries[1].amount.round(4) == (0.0373).toBigDecimal().round(4)
+		lightActivityDistanceEntries[1].units == "miles"
 	}
 
 	void "test get data sleep"() {

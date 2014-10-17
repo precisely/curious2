@@ -16,7 +16,6 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -29,6 +28,30 @@ class JawboneUpDataService extends DataService {
 	static final String COMMON_BASE_URL = "/nudge/api%s"
 	static final String COMMENT = "(Jawbone Up)"
 	static final String SET_NAME = "JUP"
+
+	/**
+	 * Helper constant to represent an high activity data means the hourly data which has
+	 * active_time greater than 300.
+	 *
+	 * Used for moves endpoint of JawboneUP
+	 */
+	static final int NO_ACTIVITY_DATA = 0
+
+	/**
+	 * Helper constant to represent an high activity data means the hourly data which has
+	 * active_time greater than 300.
+	 *
+	 * Used for moves endpoint of JawboneUP
+	 */
+	static final int HIGH_ACTIVITY_DATA = 1
+
+	/**
+	 * Helper constant to represent an light or mild activity data means the hourly data which has
+	 * active_time less than or equal to 300.
+	 *
+	 * Used for moves endpoint of JawboneUP
+	 */
+	static final int LIGHT_ACTIVITY_DATA = 2
 
 	JawboneUpTagUnitMap tagUnitMap = new JawboneUpTagUnitMap()
 
@@ -156,8 +179,10 @@ class JawboneUpDataService extends DataService {
 		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
 		TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
 
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
-		formatter.setTimeZone(timeZone)
+		SimpleDateFormat dateOnlyFormatter = new SimpleDateFormat("yyyyMMdd", Locale.US)
+		SimpleDateFormat dateHourFormatter = new SimpleDateFormat("yyyyMMddHH", Locale.US)
+		dateOnlyFormatter.setTimeZone(timeZone)
+		dateHourFormatter.setTimeZone(timeZone)
 
 		String accountId = account.accountId
 		Long userId = account.userId
@@ -180,73 +205,83 @@ class JawboneUpDataService extends DataService {
 				return false	// continue looping
 			}
 
-			String setName = SET_NAME + " " + movesEntry["date"]
-			Map args = [comment: COMMENT, setName: setName]
+			// Raw date received in yyyyMMdd format. Example: 20140910
+			String rawDate = movesEntry["date"].toString()
 
-			Date entryDate = formatter.parse(movesEntry["date"].toString())
+			String setName = SET_NAME + " " + rawDate
+			Map args = [comment: COMMENT, setName: setName, isSummary: true]
+
+			Date entryDate = dateOnlyFormatter.parse(rawDate)
 			entryDate = new DateTime(entryDate.time).withZoneRetainFields(dateTimeZoneInstance).toDate()
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
 			tagUnitMap.buildEntry(creationMap, stats, "miles", movesDetails["distance"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 
 			tagUnitMap.buildEntry(creationMap, stats, "minutes", movesDetails["active_time"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 
 			tagUnitMap.buildEntry(creationMap, stats, "steps", movesDetails["steps"], userId,
-					timeZoneIdNumber, entryDate, COMMENT, setName)
+					timeZoneIdNumber, entryDate, COMMENT, setName, args)
 
-			// no data for hours
-			List noActivityGroup = []
-			// active_time <= 300
-			List mildActivityGroup = []
-			// active_time > 300
-			List highActivityGroup = []
 
-			movesDetails["hourly_totals"].each { datetime, hourlyData ->
-				if (hourlyData["active_time"] <= 300) {
-					mildActivityGroup << hourlyData
-				} else {
-					highActivityGroup << hourlyData
+			if (movesDetails["hourly_totals"]) {
+				// Used to hold continuous adjacent same type hourly data
+				Map<String, JSONObject> sameDataTypeBucket = [:]
+
+				int previousActivityDataType = NO_ACTIVITY_DATA
+
+				(1..23).find { int hour ->
+					// Construct key of the hourly_total field. Example: 2014091014
+					String key = rawDate + String.format("%02d", hour)	// Two digit hours. Example: 01, 03, 14
+
+					JSONObject hourlyData = movesDetails["hourly_totals"][key]
+
+					// If hourly data of current hour is not available or its active time is 0
+					if (!hourlyData || hourlyData == JSONObject.NULL || hourlyData["active_time"] == 0) {
+						// Then create entry from the bucket (if any)
+
+						createHourlyEntry(creationMap, stats, userId, timeZoneIdNumber, sameDataTypeBucket,
+								previousActivityDataType, dateHourFormatter, COMMENT, setName)
+
+						// And empty the bucket
+						sameDataTypeBucket = [:]
+
+						return false	// continue looping
+					}
+
+					// Else there is hourly data available for current hour
+
+					int activeTime = hourlyData["active_time"]
+
+					// If active time is greater than 300 then it is high activity else is a mild/light activity
+					int currentActivityDataType = activeTime > 300 ? HIGH_ACTIVITY_DATA : LIGHT_ACTIVITY_DATA
+
+					// Grouping continuous data of same type if previous data group is same as current one
+					// Or this is first activity data type i.e. previous data type was not available
+					if ((previousActivityDataType == NO_ACTIVITY_DATA) || (previousActivityDataType == currentActivityDataType)) {
+						sameDataTypeBucket[key] = hourlyData
+					} else {
+						// Else create entry
+
+						// First create entry for the previous grouped data (if any)
+						createHourlyEntry(creationMap, stats, userId, timeZoneIdNumber, sameDataTypeBucket,
+								previousActivityDataType, dateHourFormatter, COMMENT, setName)
+
+						// Then empty the bucket
+						sameDataTypeBucket = [:]
+
+						// And then add current hourly data to the bucket for next match
+						sameDataTypeBucket[key] = hourlyData
+					}
+
+					// Set current data type to previous for next iteration
+					previousActivityDataType = currentActivityDataType
+
+					return false // continue looping
 				}
-			}
-
-			args["isSummary"] = true	// Indicating that these entries are summary entries
-
-			if (mildActivityGroup) {
-				def averageDistance = getAverage(mildActivityGroup, "distance")
-
-				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveDistance", averageDistance, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
-
-				def averageActiveTime = getAverage(mildActivityGroup, "active_time")
-
-				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveMinutes", averageActiveTime, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
-
-				def averageStep = getAverage(mildActivityGroup, "steps")
-
-				tagUnitMap.buildEntry(creationMap, stats, "lightlyActiveSteps", averageStep, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
-			}
-
-			if (highActivityGroup) {
-				def averageDistance = getAverage(highActivityGroup, "distance")
-
-				tagUnitMap.buildEntry(creationMap, stats, "highActiveDistance", averageDistance, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
-
-				def averageActiveTime = getAverage(highActivityGroup, "active_time")
-
-				tagUnitMap.buildEntry(creationMap, stats, "highActiveMinutes", averageActiveTime, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
-
-				def averageStep = getAverage(highActivityGroup, "steps")
-
-				tagUnitMap.buildEntry(creationMap, stats, "highActiveSteps", averageStep, userId,
-						timeZoneIdNumber, entryDate, COMMENT, setName)
 			}
 
 			return false	// continue looping
@@ -261,6 +296,67 @@ class JawboneUpDataService extends DataService {
 		}
 
 		return [success: true]
+	}
+
+	void createHourlyEntry(creationMap, stats, Long userId, timeZoneIdNumber, Map hourlyGroupedData,
+			int activityDataType, SimpleDateFormat dateHourFormatter, String comment, String setName) {
+
+		// Either there is no data in bucket or activity data type is not defined
+		if (!hourlyGroupedData || activityDataType == NO_ACTIVITY_DATA) {
+			log.debug "No hourly data: $hourlyGroupedData, type: $activityDataType"
+			return
+		}
+
+		// Collect all keys from map i.e. hourly dates: ["2014091013", "2014091014"]
+		List<String> groupedHourlyDates = hourlyGroupedData.collect { it.key }
+
+		log.debug "Groped hourly dates: " + groupedHourlyDates
+
+		// Collect all their values
+		List<JSONObject> groupHourlyData = hourlyGroupedData.collect { it.value }
+
+		log.debug "Grouped hourly data: " + groupHourlyData
+
+		String tagType = activityDataType == HIGH_ACTIVITY_DATA ? "high" : "lightly"
+
+		// Create entry date for first hour for same continuous data
+		Date entryDate = dateHourFormatter.parse(groupedHourlyDates.sort()[0])
+
+		log.debug "Date for grouped data: " + entryDate
+
+		def averageDistance = getAverage(groupHourlyData, "distance")
+
+		Entry entry = tagUnitMap.buildEntry(creationMap, stats, "${tagType}ActiveDistance", averageDistance, userId,
+				timeZoneIdNumber, entryDate, COMMENT, setName)
+
+		if (!entry) {
+			log.warn "Error creating entry for ${tagType}ActiveDistance"
+		}
+
+		def averageActiveTime = getAverage(groupHourlyData, "active_time")
+
+		entry = tagUnitMap.buildEntry(creationMap, stats, "${tagType}ActiveMinutes", averageActiveTime, userId,
+				timeZoneIdNumber, entryDate, COMMENT, setName)
+
+		if (!entry) {
+			log.warn "Error creating entry for ${tagType}ActiveMinutes"
+		}
+
+		def averageStep = getAverage(groupHourlyData, "steps")
+
+		entry = tagUnitMap.buildEntry(creationMap, stats, "${tagType}ActiveSteps", averageStep, userId,
+				timeZoneIdNumber, entryDate, COMMENT, setName)
+
+		if (!entry) {
+			log.warn "Error creating entry for ${tagType}ActiveSteps"
+		}
+
+		entry = tagUnitMap.buildEntry(creationMap, stats, "${tagType}ActiveCalories", averageStep, userId,
+				timeZoneIdNumber, entryDate, COMMENT, setName)
+
+		if (!entry) {
+			log.warn "Error creating entry for ${tagType}ActiveCalories"
+		}
 	}
 
 	/**
