@@ -24,6 +24,7 @@ class OAuthAccount {
 
 	static constraints = {
 		accessToken maxSize: 1024
+		accountId maxSize: 24	// Jawbone sends around 22 characters accountId
 		expiresOn nullable: true
 		userId(unique:['typeId'])
 		lastPolled(nullable:true)

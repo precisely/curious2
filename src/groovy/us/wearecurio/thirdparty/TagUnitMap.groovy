@@ -21,6 +21,7 @@ abstract class TagUnitMap {
 	final static String MOOD = "mood"
 	final static String NAP = "nap"
 	final static String SLEEP = "sleep"
+	final static String MEASUREMENT = "measurement"
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
@@ -77,7 +78,9 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
-	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId, Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId,
+			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
+
 		Map currentMapping = tagUnitMappings[tagName]
 
 		if (!currentMapping) {

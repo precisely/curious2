@@ -162,28 +162,4 @@ class MovesDataService extends DataService {
 			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
 		}
 	}
-
-	@Override
-	@Transactional
-	Map subscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
-		log.debug("MovesDataService.subscribe() userId: " + userId)
-		
-		OAuthAccount account = getOAuthAccountInstance(userId)
-		checkNotNull(account)
-
-		[success: true]
-	}
-
-	@Override
-	@Transactional
-	Map unsubscribe(Long userId) throws MissingOAuthAccountException, InvalidAccessTokenException {
-		log.debug("MovesDataService.unsubscribe() userId: " + userId)
-			
-		OAuthAccount account = getOAuthAccountInstance(userId)
-		checkNotNull(account)
-
-		// always remove account whether success or failure reported, so user can re-link
-		OAuthAccount.delete(account)
-		[success: true]
-	}
 }

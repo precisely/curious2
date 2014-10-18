@@ -53,7 +53,7 @@ enum ThirdParty {
 	IHEALTH(5, "ihealth", TWO),
 	HUMAN(6, "human", TWO),
 	TWITTER(7, "twitter", ONE),
-	//JAWBONE(8, )
+	JAWBONE(8, "Jawbone", TWO)
 
 	final int id
 	final String providerName
