@@ -22,7 +22,7 @@
  (defn rescale-time [t interval-size-in-ms]
    (/ (tr/to-long t) (double interval-size-in-ms)))
 
-;   (def BIG-BANG (sql-time 2010 6 1 0 0))
+(def BIG-BANG (sql-time 2010 6 1 0 0))
 
 (defn connection-params [environment]
   "Get the database connection parameters.  Pass in \"PRODUCTION\" \"TEST\" or \"DEVELOPMENT\" to set the database to the Grails environment's database.  Otherwise, the connection params will assume you're in a Clojure-based development environment and come from the shell's environment variables \"db_name\", \"db_user\" and \"db_password\".  These varibles are picked up by environ/env which is configured for Leiningen \"dev\" and \"test\" profiles."
@@ -111,6 +111,14 @@
         (kc/select)
         first
         :count))
+
+(defn series-data-type [user-id tag-id]
+  (-> (kc/select analytics_time_series
+                 (kc/fields :data_type)
+                 (kc/limit 1)
+                 (kc/where {:user_id user-id :tag_id tag-id}))
+      first
+      :data_type))
 
 (defn series-count [& args]
   "Count the number of elements in the series."
@@ -216,6 +224,9 @@
     (kc/select analytics_cluster_run
       (kc/where {:user_id user-id}))))
 
+(defn cluster-run-list-ids [& args]
+  (map :id (apply cluster-run-list args)))
+
 ; Delete all cluster runs from a user.
 (defn cluster-run-delete [user-id]
   (kc/delete analytics_cluster_run
@@ -286,6 +297,35 @@
   (map #(hash-map (:tag_id %) (double (:loglike %)))
        (tag-cluster-tag-list tag-cluster-id)))
 
+; List tag-ids in tag-cluster
+(defn tag-cluster-list-tag-ids [tag-cluster-id]
+  (map :tag_id (kc/select analytics_tag_cluster_tag
+    (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
+
+(defn tag-clusters-list-tag-ids [tag-cluster-ids]
+  (map tag-cluster-list-tag-ids tag-cluster-ids))
+
+(defn tag-clusters-flattened-tag-ids [tag-cluster-ids]
+  (flatten (map tag-cluster-list-tag-ids tag-cluster-ids)))
+
+(defn make-tag-id-pairs [tag-id-list]
+  (for [t1 tag-id-list t2 tag-id-list] (list t1 t2)))
+
+(declare tag-cluster-list-ids-by-cluster-run-id)
+(defn pairs-with-overlap-in-cluster [user-id]
+  (set
+    (->> (cluster-run-list-ids user-id)               ; cluster-run-ids from user-id
+         (map tag-cluster-list-ids-by-cluster-run-id) ; tag-cluster-ids
+         (map tag-clusters-flattened-tag-ids)         ; tag-ids per cluster-run
+         (map make-tag-id-pairs)                      ; cross-product of tag-id pairs
+         (mapcat identity))))                            ; flatten by 1 level only, to get a list of pairs.
+
+(declare tag-cluster-list)
+(defn tag-ids-in-clusters-for-user [user-id]
+  (->> (map :id (tag-cluster-list user-id))
+       (map tag-cluster-list-tag-ids)))
+
+(declare cluster-interval-list)
 (defn tag-cluster-load [tag-cluster-id]
   (let [members (apply sorted-set (tag-cluster-list-tag-ids tag-cluster-id))
         in-intervals  (map #(list (:start_date %) (:stop_date %)) (cluster-interval-list tag-cluster-id))
@@ -328,8 +368,22 @@
 ; *********************
 
 ; List
-(defn tag-cluster-list []
-  (kc/select analytics_tag_cluster))
+(defn tag-cluster-list
+  ([]
+    (kc/select analytics_tag_cluster))
+  ([user-id]
+    (kc/select analytics_tag_cluster
+       (kc/where {:user_id user-id})))
+  ([user-id tag-id]
+    (filter #(< 0 (count (:analytics_tag_cluster_tag %)))
+            (kc/select analytics_tag_cluster
+                       (kc/where {:user_id user-id})
+                       (kc/with analytics_tag_cluster_tag
+                         (kc/where { :tag_id tag-id}))))))
+
+; Get the tag-cluster that a tag belongs to for a given user.
+(defn get-tag-cluster-id [user-id tag-id]
+  (map :id (tag-cluster-list user-id tag-id)))
 
 (defn tag-cluster-list-by-cluster-run-id [cluster-run-id]
   (kc/select analytics_tag_cluster
@@ -353,18 +407,16 @@
              (kc/with analytics_cluster_interval)
              (kc/with analytics_cluster_run)))
 
-; List tag-ids in tag-cluster
-(defn tag-cluster-list-tag-ids [tag-cluster-id]
-  (map :tag_id (kc/select analytics_tag_cluster_tag
-    (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
-
 ; List all tag-ids in any tag-cluster.
 (defn tag-cluster-tag-list
   ([]
     (kc/select analytics_tag_cluster_tag))
   ([tag-cluster-id]
-  (kc/select analytics_tag_cluster_tag
-    (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
+    (kc/select analytics_tag_cluster_tag
+      (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
+  ([user-id tag-id]
+    (kc/select analytics_tag_cluster_tag
+      (kc/where {:user_id user-id :tag_id tag-id}))))
 
 ; Create
 (defn tag-cluster-create [cluster-run-id]
@@ -412,7 +464,32 @@
   ([tag-cluster-id]
     (kc/select analytics_cluster_interval
       (kc/order :id :DESC)
-      (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
+      (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
+  ([user-id tag-id]
+   (map cluster-interval-list (get-tag-cluster-id user-id tag-id))))
+
+(defn start-stop-only [interval-result]
+  (cons (:start_date interval-result)
+        (list (:stop_date interval-result))))
+
+(defn interval-as-numeric [interval-result]
+  (map tr/to-long (start-stop-only interval-result)))
+
+(defn intervals-as-numeric [intervals]
+  (map interval-as-numeric intervals))
+
+; A list flattened list of interval results.
+(defn interval-list [user-id tag-id]
+  (->> (mapcat identity (cluster-interval-list user-id tag-id))
+       (sort-by :start_date)))
+
+(defn interval-list-as-numeric [user-id tag-id]
+  (let [intervals (interval-list user-id tag-id)]
+    (intervals-as-numeric intervals)))
+
+(defn interval-list-as-date [user-id tag-id]
+  (let [intervals (interval-list user-id tag-id)]
+    (map start-stop-only intervals)))
 
 ; Create
 (defn cluster-interval-create [tag-cluster-id start-date stop-date]
@@ -452,7 +529,7 @@
 
 (defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Update a correlation score."
-  (kc/update correlation
+  (kc/update analytics_correlation
     (kc/set-fields {:value score
              :mipss_value score
              :overlapn overlap-n
@@ -473,7 +550,7 @@
 
 (defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
   "Update a correlation score."
-  (kc/delete correlation
+  (kc/delete analytics_correlation
     (kc/where {:user_id    user-id
             :series1id   tag1-id
             :series1type tag1-type
@@ -491,7 +568,8 @@
 
 (defn score-list*
   "List all elements of the score."
-  ([]
+  ([] (kc/select* analytics_correlation))
+  ([user-id]
     (kc/where (score-list*) {:user_id user-id}))
   ; Add this signature when handle tag-groups:
   ;   ([user-id tag1-id tag1-type tag2-id tag2-type]

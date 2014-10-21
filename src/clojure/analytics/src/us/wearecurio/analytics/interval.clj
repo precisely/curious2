@@ -757,6 +757,9 @@
   (merge-redundant-clusters state)
   (update-loglikes data state))
 
+(defn evolve-alpha [epoch alpha]
+ (* alpha (Math/pow 100 (- (* 1.0 (Math/log10 epoch))))))
+
 (defn algorithm-7-Neal-2000
   ([data state max-epoch] (algorithm-7-Neal-2000 data state MAX-ITER-NEW-CLUSTER α MAX-ITER-NEW-CLUSTER))
   ([data state max-epoch alpha max-iter-new-cluster]
@@ -769,23 +772,24 @@
       (refurbish-clusters data state)
       (pp @state)
       (dotimes [iter max-epoch]
+        (let  [new-alpha (evolve-alpha iter alpha)]
         (when @keep-running
           (println "\n\n------------------- START Iteration #" iter)
           (pp @state)
           (doseq [tag-id (get-tag-ids data)]
             (let [cluster-id (get-cluster-id @state tag-id)]
               (if (singleton? data @state tag-id)
-                (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N alpha)]
+                (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N new-alpha)]
                   (do (reset! state new-state)
                       ;(refurbish-clusters data state)
                       (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
                       (swap! state assoc-in [:best-clusters] (get @state :C))))
 
-                (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N alpha max-iter-new-cluster)]
+                (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N new-alpha max-iter-new-cluster)]
                   (do
                     (println "<<-----ITER #" iter ": tag" tag-id "broke out of cluster" cluster-id)
                     (reset! state new-state))
-                  ))))))
+                  )))))))
       (update-loglikes data state))))
 
 ; series to data-map as required by algorithm above.
@@ -872,13 +876,15 @@
 
 (defn save-intervals-for-user
   ([user-id]
-    (let [max-epoch 100
+    (let [start-time db/BIG-BANG
+          stop-time (db/sql-now)]
+      (save-intervals-for-user user-id start-time stop-time)))
+  ([user-id start-time stop-time]
+    (let [max-epoch 200
           state (atom {})
           min-n 10
           interval-size-ms const/DAY
-          start-time db/BIG-BANG
-          stop-time (db/sql-now)
-          alpha 1
+          alpha 10
           max-iter-new-cluster 10]
       (save-intervals-for-user user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
   ([user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
@@ -886,7 +892,6 @@
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
       (save-clusters cluster-run-id state interval-size-ms make-intervals)
       (db/cluster-run-update-finished cluster-run-id)
-      (db/cluster-run-delete-old user-id)
       (pp @state))))
 
 (defn skip-cluster-run? [user-id]
@@ -897,6 +902,82 @@
       (< (- now-in-ms last-run-ms)
          one-day-ms))))
 
+(defn save-cluster-year-by-year [user-id]
+  (let [next-year (inc (clj-time.core/year (clj-time.core/now)))]
+    (doseq [year (range 2010 next-year)]
+      (save-intervals-for-user user-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)))))
+
 (defn refresh-intervals-for-user [user-id]
-  (when (not (skip-cluster-run? user-id))
-    (save-intervals-for-user user-id)))
+  ;(when (not (skip-cluster-run? user-id))
+  (db/cluster-run-delete user-id)
+  (save-cluster-year-by-year user-id))
+
+(defn within-tolerance-ms? [t1 t2]
+  (>= (+ 1000 t1) t2))
+
+(defn connecting-pts-within-tolerance? [intervals]
+  (let [stop1         (second (first intervals))
+        start2        (first (second intervals))]
+    (within-tolerance-ms? stop1 start2)))
+
+(defn first-two-intervals-merged [intervals]
+  (list (-> intervals first first) (-> intervals second second)))
+
+(defn stitch-new-year [intervals]
+  (cond (< (count intervals) 2)
+          intervals
+        (connecting-pts-within-tolerance? intervals)
+          (cons (first-two-intervals-merged intervals)
+                (stitch-new-year (rest (rest intervals))))
+        :else
+          (cons (first intervals) (stitch-new-year (rest intervals)))))
+
+(defn intervals-for-tag [user-id tag-id]
+  (-> (db/interval-list-as-numeric user-id tag-id) stitch-new-year))
+
+(defn join-intervals [intervals1 intervals2]
+  (->> (concat intervals1 intervals2)
+       (sort-by first)))
+
+(defn merge-first-two? [intervals]
+  (let [l (-> intervals first first)
+        r (-> intervals first second)
+        l2 (-> intervals second first)]
+    (<= l2 r)))
+
+(defn merge-first-two [intervals]
+  (let [i1 (first intervals)
+        i2 (second intervals)]
+    (list (first i1) (max (second i1) (second i2)))))
+
+(defn union-intervals
+  ([intervals]
+    (cond (< (count intervals) 2)
+            intervals
+          (merge-first-two? intervals)
+            (cons (merge-first-two intervals)
+                  (union-intervals (rest (rest intervals))))
+          :else
+            (cons (first intervals) (union-intervals (rest intervals)))))
+  ([intervals1 intervals2]
+    (union-intervals (join-intervals intervals1 intervals2))))
+
+(defn rescale-numeric-time [interval-size-ms numeric-date]
+  (double (/ numeric-date interval-size-ms)))
+
+(defn rescale-numeric-time-interval [interval-size-ms interval]
+  (map (partial rescale-numeric-time interval-size-ms) interval))
+
+(defn rescale-intervals [interval-size-ms intervals]
+  (map (partial rescale-numeric-time-interval interval-size-ms) intervals))
+
+(defn unioned-intervals [user-id tag1-id tag2-id]
+  (let [intervals1 (stitch-new-year (db/interval-list-as-numeric user-id tag1-id))
+        intervals2 (stitch-new-year (db/interval-list-as-numeric user-id tag2-id))]
+    (union-intervals intervals1 intervals2)))
+
+(defn rescaled-unioned-intervals [interval-size-ms user-id tag1-id tag2-id]
+  (let [intervals (unioned-intervals user-id tag1-id tag2-id)]
+    (rescale-intervals interval-size-ms intervals)))
+
+

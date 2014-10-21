@@ -6,13 +6,14 @@
 
 (def namespaces '(binify core database idioms tag-group))
 
-(def my-aliases {'re 'rest
-                 'bi 'binify
-                 'co 'core
-                 'db 'database
-                 'im 'idioms
-                 'iv 'interval
-                 'tg 'tag-group })
+(def my-aliases {'re    'rest
+                 'bi    'binify
+                 'co    'core
+                 'const 'constants
+                 'db    'database
+                 'im    'idioms
+                 'iv    'interval
+                 'tg    'tag-group })
 
 (def external-aliases { 'cs 'clojure.set
                         'ic  'incanter.core
@@ -76,9 +77,7 @@
 (defn init []
   (res)
   (make-aliases)
-  (db/connect)
-  (in-ns (full 're)))
-
+  (db/connect))
 
 ; http://stackoverflow.com/questions/3636364/can-i-clean-the-repl
 ; Answered by Peter Tillemans, Sep 2010
@@ -87,4 +86,4 @@
    ([] (ns-clean *ns*)) 
    ([ns] (map #(ns-unmap ns %) (keys (ns-interns ns)))))
 
-
+(init)

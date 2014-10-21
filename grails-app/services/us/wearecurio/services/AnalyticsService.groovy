@@ -2,7 +2,6 @@ package us.wearecurio.services
 
 import groovy.time.*
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.AnalyticsCorrelation
 import us.wearecurio.model.AnalyticsTimeSeries
 import us.wearecurio.model.AnalyticsTagMembership
 import us.wearecurio.model.TagProperties
@@ -26,8 +25,6 @@ class AnalyticsService {
 		def data_points = Entry.fetchPlotData(user, [tagId], null, null, now, time_zone)
 
 		def prop = TagProperties.lookup(userId, tagId)
-
-		//log.debug "RefreshSriesCach:: uid: " + userId + " tgid: " + tagId
 
 		data_points.each { point ->
 			def init = [
@@ -67,10 +64,20 @@ class AnalyticsService {
 				atm.save(flush: true)
 			} // iterate over tags in tagGroup
 		}// iterate over tagGroup
+	}
 
+	@Transactional
+	def classifyProperty(TagProperties property) {
+		// Set the is_event value of the user-tag property.
+		// This will save the property.
+		property.classifyAsEvent().save(flush:true)
 	}
 
 	def processUser(userId) {
+		// Delete the whole caching table to avoid duplicates and orphaned
+		//	series of tags that have been completely deleted.
+		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
+
 		def user = User.get(userId.toLong())
 		def tagIds = user.tags().collect { it.id }
 
@@ -79,17 +86,18 @@ class AnalyticsService {
 
 		//String environment = Environment.getCurrent().toString()
 		tagIds.each { tagId ->
-			classifyAsEventLike(userId, tagId)
+			classifyProperty(TagProperties.createOrLookup(userId, tagId))
 			refreshSeriesCache(userId, tagId)
 		}
 
 		// Run analytics on user.
-		// Interop.updateUser(environment, userId)
+		Interop.updateUser(environment, userId)
 	}
 
 	def processUsers() {
 		def user_ids = User.executeQuery('select u.id from User u order by u.id')
 		user_ids.each { userId	->
+			log.debug " processUser" + userId
 			processUser(userId)
 		}
 	}

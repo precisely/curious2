@@ -2,7 +2,7 @@
   (:require [us.wearecurio.analytics.database :as db]
             [us.wearecurio.analytics.idioms :as im]
             [us.wearecurio.analytics.constants :as const]
-            [clj-time.coerce :as c]
+            [clj-time.coerce :as tr]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clojure.math.numeric-tower :as nt]))
@@ -20,7 +20,7 @@ making date-time objects that are compatible with keyify."
   ([date-time]
     (keyify date-time DAY))
   ([date-time interval-size-ms]
-    (-> (/ (c/to-long date-time) interval-size-ms)
+    (-> (/ (tr/to-long date-time) interval-size-ms)
         clojure.math.numeric-tower/floor)))
 
 (defn append-datum [interval-size-ms]
@@ -51,7 +51,7 @@ making date-time objects that are compatible with keyify."
   (reduce + (map :amount bin)))
 
 (defn avg-bin [bin]
-  (/ (reduce + (map :amount bin)) (count bin)))
+  (/ (reduce + (map :amount bin)) (double (count bin))))
 
 (defn map-bins [f & args]
   (let [time-bins (apply binify args)]
@@ -69,18 +69,24 @@ making date-time objects that are compatible with keyify."
 (defn last-y [bins]
   (get bins (last-x bins)))
 
+(defn longify-keys [m]
+  (into {} (zipmap (map long (keys m))
+                   (vals m))))
+
 ; Generate sequences with start-dates and stop-dates after the binification process.
 ; value-series-map looks like
 ; {1160 7.7 16161 6.5 16162 7.0}, where the keys are the keyified dates,
 ;   and the bin values have already been averaged, maxed, summed or whatever.
 (defn event-series
-  ([value-series-map start-date-index stop-date-index]
-   (event-series value-series-map start-date-index stop-date-index start-date-index))
-  ([value-series-map start-date-index stop-date-index current-date-index]
-    (let [value (get value-series-map current-date-index)]
-      (cond (> current-date-index stop-date-index) '()
-            (nil? value) (cons 0.0 (lazy-seq (event-series value-series-map start-date-index stop-date-index (inc current-date-index))))
-            :else (cons value (lazy-seq (event-series value-series-map start-date-index stop-date-index (inc current-date-index))))))))
+  [value-series-map start-date-index stop-date-index]
+  (let [zero-keys    (map long (range start-date-index (inc stop-date-index)))
+        zeroes       (repeat (count zero-keys) 0)
+        zero-series  (apply sorted-map (interleave zero-keys zeroes))
+        value-series (->> (longify-keys value-series-map)
+                           vec flatten (apply sorted-map))]
+    (merge zero-series value-series)))
+        
+
 
 ; event-series just returns the value if it exists or 0 otherwise, so let's just call it the identity series
 ;  generator.
@@ -120,9 +126,12 @@ making date-time objects that are compatible with keyify."
               y       (+ y0 (* Δx m))]
           (cons y (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-y)))))))
 
-(defn continuous-series [value-series-map start-date-index stop-date-index]
+(defn continuous-series
   "A convenience wrapper for -continuous-series."
+  [value-series-map start-date-index stop-date-index]
   (let [last-data-point-y (last-y value-series-map)
         date-index-pairs  (partition 2 1 (-> value-series-map keys sort))]
-    (-continuous-series value-series-map date-index-pairs start-date-index stop-date-index last-data-point-y)))
+    (->> (-continuous-series value-series-map date-index-pairs start-date-index stop-date-index last-data-point-y)
+        (interleave (range start-date-index (inc stop-date-index)))
+        (apply sorted-map))))
 

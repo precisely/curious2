@@ -1,6 +1,8 @@
 (ns us.wearecurio.analytics.core
   (:require [us.wearecurio.analytics.database :as db]
             [us.wearecurio.analytics.interval :as iv]
+            [us.wearecurio.analytics.constants :as const]
+            [us.wearecurio.analytics.binify :as bi]
             [us.wearecurio.analytics.idioms :as im]
             [incanter.core :as ico]
             [incanter.charts :as ich]
@@ -16,20 +18,6 @@
   "A convenience wrapper for use at the REPL."
   (db/connect))
 
-(def day-formatter (cf/formatters :year-month-day))
-
-(defn to-day-string [entry]
-  (cf/unparse day-formatter (tr/from-sql-time (:date entry))))
-
-(defn as-day-string [entry]
-  (assoc entry :date (to-day-string entry)))
-
-(defn format-day-values [series]
-  (map as-day-string series))
-
-(defn day-values [series]
-  (im/collect-into-index (format-day-values series) :date :amount))
-
 (defn avg [v]
   "The average of a vector of values."
   (cond
@@ -37,7 +25,7 @@
     (number? v) v
     (and (coll? v) (= 0 (count v))) nil
   :else
-    (let [n   (* 1.0 (count v))
+    (let [n   (-> (count v) double)
           sum (reduce + v)]
       (/ sum n))))
 
@@ -57,84 +45,94 @@
             sum2 (reduce + v2)]
         (math/sqrt (/ sum2 n)))))
 
-(defn series-daily-average [& args]
-  "Get a sequence of [{\"YYYY-mm-dd\" <AMOUNT>} ...] where each entry represents the average amount for the day. E.g.
-  {\"1986-10-04\" 40.5, \"1986-10-05\" 50.5, \"1986-10-06\" 60.5}"
-  (let [series (day-values (apply db/series-list args))]
-    (im/apply-to-values avg series)))
+(defn dot-product [x y]
+  (->> (interleave x y)
+       (partition 2 2)
+       (map #(apply * %))
+       (reduce +)))
 
-(defn standardize [x mu s]
-  "Take a value and subtract the mean and divide by the standard deviation."
-  (/ (- x mu) s))
+(defn normalize [x]
+  (let [mu (avg x)
+        s  (sd x)]
+    (map #(/ (- % mu) s) x)))
 
-(defn replace-values-with-ones [hmap]
-  "Replace a hash-map's values with the floating point number 1."
-  (im/apply-to-values (fn [x] 1.0) hmap))
+(defn cor [v1 v2]
+  (double (/ (dot-product (normalize v1) (normalize v2))
+             (-> v1 count dec))))
 
-(defn standardize-series [user-id tag-id]
-  "Return the standardized series of a sequence of tags."
-  ; When-let essentially checks for nil.
-  (when-let [series (series-daily-average user-id tag-id)]
-    ; Compute the size of the series once ahead of time.
-    (let [size (count series)]
-      ; Return the empty series if it's empty.
-      (if (= 0 size)
-        series
-        (let [v  (vals series)
-              mu (avg v)
-              s  (sd v)]
-          ; If the standard deviation is 0, the series has all
-          ;   the same values, so it's essentialy a stream of
-          ;   events.  So standardize events to the value of 1.
-          (if (== s 0)
-            (replace-values-with-ones series)
-            (im/apply-to-values #(standardize % mu s) series)))))))
+; Input a sorted map, and select for keys in the range of the interval.
+(defn select-in-interval [sorted interval]
+    (subseq sorted >= (first interval) <= (last interval)))
 
-(defn inner-product [hmap1 hmap2]
-  "Given a hash-map of (datetime-as-key, amount-as-value) entries, return the product of the values."
-  (letfn [(prod [[k1 v1]]
-             (if-let [v2 (get hmap2 k1)]
-               (* v1 v2)))]
-    (keep prod hmap1)))
+(defn binify [user-id tag-id]
+  (-> (db/series-list user-id tag-id)
+      ;(tap println)
+      (bi/binify-by-avg const/DAY)))
 
-(defn overlapping-keys [hmap1 hmap2]
-  "Given two hashmaps, count the number of intersecting keys"
-  (let [s1 (-> hmap1 keys set)
-        s2 (-> hmap2 keys set)]
-    (clojure.set/intersection s1 s2)))
+(defn fill-in-series [bins start-date stop-date data-type]
+  (if (= "CONTINUOUS" data-type)
+      (bi/continuous-series bins start-date stop-date)
+      (bi/event-series bins start-date stop-date)))
 
-(defn num-overlap [hmap1 hmap2]
-  "Given two time-series hashes, count the number of intersecting days/time points."
-  (count (overlapping-keys hmap1 hmap2)))
+(defn index-by-bin [bins start-date stop-date data-type]
+  (fill-in-series bins start-date stop-date data-type))
 
-(defn compute-mipss [user-id tag1-id tag2-id]
-  "Average product of overlapping standardized day values."
-  (let [ser1  (standardize-series user-id tag1-id)
-        ser2  (standardize-series user-id tag2-id)
-        mipss (avg (inner-product ser1 ser2))
-        n     (num-overlap ser1 ser2)]
-    (when mipss
-      {:mipss mipss :n n})))
+(defn to-sorted-map [m]
+  (let [filtered (filter identity m)
+        vected   (vec filtered)
+        flattened (flatten vected)
+        sorted (apply sorted-map flattened)]
+    sorted))
 
-(defn print-mipss [user-id tag1-id tag2-id score]
-  (println user-id " " tag1-id " " tag2-id " " (score :mipss) " " (score :n)))
+(defn select-values-in-intervals [filled-sorted-map intervals]
+  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)
+        sorted (to-sorted-map selected)]
+    (vals sorted)))
 
-(defn compute-and-save-score [user-id tag1-id tag2-id]
-	(when-let [mipss					(compute-mipss user-id tag1-id tag2-id)]
-		(let [score					(mipss :mipss)
-          overlap-n     (mipss :n)]
-			;(print-mipss user-id tag1-id tag2-id mipss)
-			(db/score-update-or-create user-id tag1-id tag2-id score overlap-n "tag" "tag"))))
+(defn vectorize-in-intervals [user-id tag-id start-date stop-date intervals]
+  (let [data-type (db/series-data-type user-id tag-id)]
+    (-> (binify user-id tag-id)
+        (index-by-bin start-date stop-date data-type)
+        (select-values-in-intervals intervals))))
 
-(defn update-all-users []
-	"For each user in anaytics_time_series, iterate over all that user's tag-pairs, compute the MIPSS, then save it to the correlation table."
-	(db/for-all-users-and-tag-pairs compute-and-save-score))
+(defn zero-cor? [x y]
+  (or (< (count x) 3) (< (count y) 3)
+      (== 0 (sd x)) (== 0 (sd y))))
+
+(defn compute-correlation-helper [user-id tag1-id tag2-id intervals]
+  (let [start-date (->> intervals flatten (apply min) long)
+        stop-date  (->> intervals flatten (apply max) long)
+
+        values1 (vectorize-in-intervals user-id tag1-id start-date stop-date intervals)
+        values2 (vectorize-in-intervals user-id tag2-id start-date stop-date intervals)]
+    (if (zero-cor? values1 values2)
+        {:score 0
+         :n 0
+         :tag1_id tag1-id
+         :tag2_id tag1-id}
+        {:score (cor values1 values2)
+         :n     (count values1)
+         :tag1_id tag1-id
+         :tag2_id tag1-id
+         })))
+
+(defn compute-correlation [user-id tag1-id tag2-id]
+  (let [intervals (iv/rescaled-unioned-intervals const/DAY user-id tag1-id tag2-id)
+        num-points-in-interval (-> intervals flatten count)]
+    (when (> num-points-in-interval 1)
+      (compute-correlation-helper user-id tag1-id tag2-id intervals))))
+
+(defn compute-and-save-score [user-id]
+  (doseq [pair (db/pairs-with-overlap-in-cluster user-id)]
+    (let [tag1-id (first pair)
+          tag2-id (second pair)
+          result  (apply (partial compute-correlation user-id) pair)
+          score   (:score result)
+          n       (:n result)]
+      ;(println "user-id: " user-id ", correlation: " pair " -> " score " n: " n)
+      (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag"))))
 
 (defn update-user [user-id]
   (iv/refresh-intervals-for-user user-id)
-	(db/for-all-tag-pairs (partial compute-and-save-score user-id) user-id))
+  (compute-and-save-score user-id))
 
-(defn update-all-users []
-  "For each user in anaytics_time_series, iterate over all that user's tag-pairs, compute the MIPSS, then save it to the correlation table."
-  (db/for-all-users iv/refresh-intervals-for-user)
-  (db/for-all-users-and-tag-pairs compute-and-save-score))

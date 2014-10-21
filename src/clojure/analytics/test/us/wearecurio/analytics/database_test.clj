@@ -23,11 +23,11 @@
           description1  "eggs"
           description2  "bacon"
           description3  "ham"
-          date1        (db/sql-time 1970 1 1)
-          date2        (db/sql-time 1970 1 2)
-          date3        (db/sql-time 1970 1 3)
-          date4        (db/sql-time 1970 1 4)
-          date5        (db/sql-time 1970 1 5)]
+          date1        (db/sql-time 2011 1 1)
+          date2        (db/sql-time 2011 1 2)
+          date3        (db/sql-time 2011 1 3)
+          date4        (db/sql-time 2011 1 4)
+          date5        (db/sql-time 2011 1 5)]
 
       (testing "inital state of input table analytics_time_series"
         (is (= 0 (db/series-count))))

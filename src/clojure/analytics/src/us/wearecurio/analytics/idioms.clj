@@ -35,3 +35,13 @@
   "Given a seq of maps, transform the value at a particular key or sequence of keys."
   (map (fn [m] (update-in m ks f)) ms))
 
+; For tapping into the -> macro for side effects.
+(defn tap [x f]
+  (f x)
+  x)
+
+; For tapping into the ->> macro for side effects.
+(defn tap2 [f x]
+  (f x)
+  x)
+
