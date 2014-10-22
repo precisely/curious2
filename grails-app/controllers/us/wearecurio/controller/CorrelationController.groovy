@@ -1,6 +1,6 @@
 package us.wearecurio.controller
 
-import us.wearecurio.model.Correlation
+import us.wearecurio.model.AnalyticsCorrelation
 import grails.converters.JSON
 
 class CorrelationController {
@@ -14,28 +14,28 @@ class CorrelationController {
 			renderNotLoggedIn()
 			return
 		}
-		def correlations = Correlation.userCorrelations(currentUser.id, 20, params.flavor)
+		def correlations = AnalyticsCorrelation.userCorrelations(currentUser.id, 20, params.flavor)
 		response.status = correlations ? 200 : 500
 		render correlations as JSON
 	}
 
 	def markViewed() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && Correlation.markViewed(id)
+		renderOk isOwner(id) && AnalyticsCorrelation.markViewed(id)
 	}
 
 	def markNoise() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && Correlation.markNoise(id)
+		renderOk isOwner(id) && AnalyticsCorrelation.markNoise(id)
 	}
 
 	def markSaved() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && Correlation.markSaved(id)
+		renderOk isOwner(id) && AnalyticsCorrelation.markSaved(id)
 	}
 
 	private isOwner(id) {
-		def obj = Correlation.get(id)
+		def obj = AnalyticsCorrelation.get(id)
 		def currentUser = securityService.currentUser
 		currentUser && obj && obj.userId == currentUser.id
 	}

@@ -7,7 +7,6 @@ import us.wearecurio.thirdparty.withings.*
 import us.wearecurio.server.BackgroundTask
 
 import us.wearecurio.marshaller.EnumMarshaller
-import us.wearecurio.marshaller.CorrelationMarshaller
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.*
 import us.wearecurio.thirdparty.withings.*
@@ -23,7 +22,7 @@ class BootStrap {
 	DatabaseService databaseService
 	TagService tagService
 	EmailService emailService
-	CorrelationService correlationService
+	AnalyticsService analyticsService
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
@@ -35,10 +34,10 @@ class BootStrap {
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
 		springContext.getBean( "customObjectMarshallers" ).register()
-
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
+
 		withingsDataService.refreshSubscriptions()
 		if (current != Environment.TEST) {
 			try {
@@ -47,8 +46,9 @@ class BootStrap {
 				log.debug "Bootstrap: Could not start IntraDayDataThread"
 			}
 		}
+
 		BackgroundTask.launch {
-			correlationService.recalculateMipss()
+			analyticsService.processUsers()
 		}
 		log.debug "Curious bootstrap finished executing."
 	}

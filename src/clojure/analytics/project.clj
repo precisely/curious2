@@ -1,4 +1,4 @@
-(defproject analytics "0.1.0"
+(defproject analytics "0.1.1"
   :description "Analytics for Curious, Inc."
   :url "http://wearecurio.us"
   :plugins [[lein-environ "0.5.0"]]
@@ -19,11 +19,11 @@
                  [environ "0.5.0"]
                  [clj-time "0.7.0"]
                  ; numeric stuff
-                 [incanter "1.5.6-SNAPSHOT"]
+                 [incanter "1.5.5"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  ; database
-                 [korma "0.3.1"]
+                 [korma "0.4.0"]
                  [mysql/mysql-connector-java "5.1.25"]
                  [org.clojure/java.jdbc "0.3.3"]
                  ; web stuff

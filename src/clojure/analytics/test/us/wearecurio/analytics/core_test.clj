@@ -76,37 +76,37 @@
       (is (= (db/series-count)
              3))))
 
-(deftest collect-values-into-days-then-average-them
-  (doseq [x [1 2 3]]
-    (let [user-id-1 1
-          user-id-2 2
-          tag_id (* 5 x)
-          amount (* 10 x)
-          descr (str "tag " tag_id)
-          date (db/sql-time 1986 10 x)]
-      (db/series-create user-id-1 tag_id amount       date descr)
-      (db/series-create user-id-1 tag_id (* 2 amount) date descr)
-      (db/series-create user-id-2 tag_id (* 10 amount) date descr)))
-      ; user tag amount date
-      ; 1    5   10     1986-10-1
-      ; 1    5   20     1986-10-1
-      ; 1    10  20     1986-10-2
-      ; 1    10  40     1986-10-2
-      ; 1    15  30     1986-10-3
-      ; 1    15  60     1986-10-3
-
-      ; 2    5   100    1986-10-1
-      ; 2    10  200    1986-10-2
-      ; 2    15  300    1986-10-3
-      (testing "the first user should have the values collected into a hash"
-        (is (= (-> (day-values (db/series-list 1 5)) class)
-               clojure.lang.PersistentArrayMap)))
-      (testing "the keys should be a unique collection formatted days."
-        (is (= (-> (db/series-list 1) day-values keys set)
-               (set '("1986-10-01" "1986-10-02" "1986-10-03")))))
-      (testing "the average of they first day should be 15"
-        (is (= (-> (db/series-list 1) day-values (get "1986-10-01") avg int)
-               15))))
+;(deftest collect-values-into-days-then-average-them
+;  (doseq [x [1 2 3]]
+;    (let [user-id-1 1
+;          user-id-2 2
+;          tag_id (* 5 x)
+;          amount (* 10 x)
+;          descr (str "tag " tag_id)
+;          date (db/sql-time 1986 10 x)]
+;      (db/series-create user-id-1 tag_id amount       date descr)
+;      (db/series-create user-id-1 tag_id (* 2 amount) date descr)
+;      (db/series-create user-id-2 tag_id (* 10 amount) date descr)))
+;      ; user tag amount date
+;      ; 1    5   10     1986-10-1
+;      ; 1    5   20     1986-10-1
+;      ; 1    10  20     1986-10-2
+;      ; 1    10  40     1986-10-2
+;      ; 1    15  30     1986-10-3
+;      ; 1    15  60     1986-10-3
+;
+;      ; 2    5   100    1986-10-1
+;      ; 2    10  200    1986-10-2
+;      ; 2    15  300    1986-10-3
+;      (testing "the first user should have the values collected into a hash"
+;        (is (= (-> (day-values (db/series-list 1 5)) class)
+;               clojure.lang.PersistentArrayMap)))
+;      (testing "the keys should be a unique collection formatted days."
+;        (is (= (-> (db/series-list 1) day-values keys set)
+;               (set '("1986-10-01" "1986-10-02" "1986-10-03")))))
+;      (testing "the average of they first day should be 15"
+;        (is (= (-> (db/series-list 1) day-values (get "1986-10-01") avg int)
+;               15))))
 
 ;(deftest average-test
 ;  (testing "The avg() of an empty list is nil."

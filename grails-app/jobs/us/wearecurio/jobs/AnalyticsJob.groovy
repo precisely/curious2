@@ -12,6 +12,6 @@ class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 		}
 
 		def execute() {
-			analyticsService.processUsers()
+				analyticsService.processUsers()
 		}
 }

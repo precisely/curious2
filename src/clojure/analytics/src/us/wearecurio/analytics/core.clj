@@ -9,7 +9,7 @@
             [incanter.stats :as ist]
             [clj-time.core :as tc]
             [clj-time.coerce :as tr]
-            [clj-time.format :as cf]
+            [clj-time.format :as tf]
             [clojure.math.numeric-tower :as math]))
 
 ; NB: To use most functions in this namespace you must first call
@@ -129,10 +129,28 @@
           result  (apply (partial compute-correlation user-id) pair)
           score   (:score result)
           n       (:n result)]
-      ;(println "user-id: " user-id ", correlation: " pair " -> " score " n: " n)
-      (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag"))))
+      ;(print "user-id: " user-id ", correlation: " pair " -> " score " n: " n)
+      (when score
+        (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag")))))
 
-(defn update-user [user-id]
+(defn now-formatted []
+  (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tc/now)))
+
+(defn log [log-file-name message]
+  (when log-file-name
+    (spit log-file-name
+          (str "Clojure Interop " (now-formatted) " : " message "\n")
+          :append true)))
+
+(defn update-user [user-id & [log-file-name]]
+  (log log-file-name
+       (str "iv/refresh-intervals-for-user " user-id))
   (iv/refresh-intervals-for-user user-id)
-  (compute-and-save-score user-id))
+
+  (log log-file-name
+       (str "co/compute-and-save-score " user-id))
+  (compute-and-save-score user-id)
+
+  (log log-file-name
+       (str "finished update-user " user-id)))
 

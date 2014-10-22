@@ -781,7 +781,7 @@
               (if (singleton? data @state tag-id)
                 (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N new-alpha)]
                   (do (reset! state new-state)
-                      ;(refurbish-clusters data state)
+                      (refurbish-clusters data state)
                       (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
                       (swap! state assoc-in [:best-clusters] (get @state :C))))
 

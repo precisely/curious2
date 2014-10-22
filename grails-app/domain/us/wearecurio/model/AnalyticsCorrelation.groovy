@@ -1,52 +1,115 @@
 package us.wearecurio.model
 
+import us.wearecurio.utility.Utils
+import org.hibernate.criterion.Restrictions as R
+import org.hibernate.criterion.Order as O
+
 class AnalyticsCorrelation {
+
+	private static final Long minOverlap = 3
 
 	Long id
 	String series1Type
 	Long series1Id
 	String series2Type
 	Long series2Id
+
 	Long userId
-	Double corValue
-	Double mipssValue
-	Double overlapN
+
 	Date created
 	Date updated
 
-	static constraints = {
-		corValue nullable: true //, validator: { val, obj -> val && !Double.isNaN(val) }
-		overlapN nullable: true
-		mipssValue nullable: true
+	Date saved
+	Date noise
+	Date viewed
+
+	enum ValueType {
+		MIPSS(0), COR(1), TRIGGER(2)
+		final Integer id
+		ValueType(Integer id) {
+			this.id = id
+		}
 	}
+
+	ValueType valueType
+	Double value
+	Long overlapN
+  String auxJson
+
+	static constraints = {
+		valueType nullable: true
+		value nullable: true
+		auxJson nullable: true
+		overlapN nullable: true
+
+		saved nullable: true
+		noise nullable: true
+		viewed nullable: true
+		created nullable: true
+		updated nullable: true
+	}
+
 	static mapping = {
 		version false
+		overlapN index: 'overlapNIdx'
+		userId index: 'updateIdx,overlapNIdx'
+		series1Id index: 'updateIdx'
+		series1Type index: 'updateIdx'
+		series2Id index: 'updateIdx'
+		series2Type index: 'updateIdx'
 	}
 
-	public AnalyticsCorrelation(AnalyticsTimeSeries series1, AnalyticsTimeSeries series2) {
-		userId = series1.userId
-		series1Type = series1.source.toString()
-		series2Type = series2.source.toString()
-		series1Id = series1.sourceId
-		series2Id = series2.sourceId
-		created = new Date()
-		updated = new Date()
-	}
+	public static userCorrelations(Long userId, Integer max, String flavor) {
+		def criteria = AnalyticsCorrelation.createCriteria()
+		criteria = criteria.add( R.eq("userId", userId) )
+		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
+		criteria = criteria.add( R.ge( "overlapN", minOverlap ) )
 
-	public AnalyticsCorrelation(AnalyticsTimeSeries series1, AnalyticsTimeSeries series2, Double corValue) {
-    userId = series1.userId
-		series1Type = series1.source.toString()
-		series2Type = series2.source.toString()
-		series1Id = series1.sourceId
-		series2Id = series2.sourceId
+		def column = null
+		switch(flavor) {
 
-		if (Double.isNaN(corValue)) {
-			corValue = null
+			case "triggered":
+				column = "value"
+				break;
+
+			case "saved":
+				column = "saved"
+				criteria.add( R.isNotNull("saved") )
+				break
+
+			default:
+				column = "value"
+				break
 		}
-
-		this.corValue = corValue
-		created = new Date()
-		updated = new Date()
+		def orderRestriction = (flavor == "negative" ? O.asc(column) : O.desc(column))
+		criteria.addOrder( orderRestriction )
+		criteria = criteria.setMaxResults( max )
+		criteria.list()
 	}
+
+	public static markViewed(Long theId) {
+		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
+		correlation.viewed = new Date()
+		Utils.save(correlation, true)
+	}
+
+	public static markNoise(Long theId) {
+		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
+		correlation.noise = new Date()
+		Utils.save(correlation, true)
+	}
+
+	public static markSaved(Long theId) {
+		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
+		correlation.saved = new Date()
+		Utils.save(correlation, true)
+	}
+
+	def savedAsLong() { saved ? saved.getTime() : null }
+	def viewedAsLong() { viewed ? viewed.getTime() : null }
+	def noiseAsLong() { noise ? noise.getTime() : null }
+
+	def description1() { Tag.get(series1Id).description }
+	def description2() { Tag.get(series2Id).description }
 
 }
