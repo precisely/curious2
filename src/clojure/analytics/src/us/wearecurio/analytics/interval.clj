@@ -10,8 +10,10 @@
 ; Tuning parameter α for DP.
 ; Number of clusters is proportional to α∙logN.
 
+;(db/connect (db/connection-params "DEVELOPMENT"))
+
 (def state (atom {})) ; The state of each iteration.
-(def α 0.0000001) ; The main Dirichlet Process hyper parameter.
+(def α 10) ; The main Dirichlet Process hyper parameter.
 (def λ_in 2)
 (def λ_out 0.1)
 (def INTERVAL-LENGTH 5)
@@ -19,7 +21,7 @@
 (def z 1.1) ; scaling factor for automatically adjusting λ
 (def MIN-N 10) ; Min. num. data points per series.
 (def DEFAULT-SCALE const/DAY)
-(def MAX-EPOCH 1)
+(def MAX-EPOCH 100)
 (def keep-running (atom true))
 ;
 ; Generic helpers
@@ -410,7 +412,7 @@
         start-time (get-start-time the-state)
         stop-time (get-stop-time the-state)
         like-before -999999]
-    (assoc (resample-row row partition-points (:in rate) (:out rate) start-time stop-time like-before 0 MAX-ITER-NEW-CLUSTER)
+    (assoc (resample-row row partition-points (:in rate) (:out rate) start-time stop-time like-before 0 max-iter)
            :members (sorted-set tag-id))))
 
 (defn resample-tag-with-cluster-points [data the-state cluster-id tag-id max-iter]
@@ -420,7 +422,7 @@
         start-time (get the-state :start-time)
         stop-time (get the-state :stop-time)
         like-before (like-for-row row (make-intervals partition-points) (:in rate) (:out rate))]
-    (resample-row row partition-points (:in rate) (:out rate) start-time stop-time like-before 0 MAX-ITER-NEW-CLUSTER)))
+    (resample-row row partition-points (:in rate) (:out rate) start-time stop-time like-before 0 max-iter)))
 
 (defn get-start-with
   "Given enough information to compute the first interval's log likelihood, decide whether it is an :in interval or an :out interval.  (This will be used to determine the the other in/out state of the partition by alternating in-out."
@@ -657,16 +659,10 @@
             like    (like-for-row row intervals (:in rate) (:out rate) (:start-with cluster))]
         (println "       like for tag id#" tag-id " : " like)))))
 
-(defn print-state [the-state data]
-  (let [clusters (get the-state :C)
-        C        (sort-clusters-by-num-partition-points clusters)]
-    (println "\n*** CLUSTER SUMMARY *** ")
-    (print (map #(into '() (get % :members)) C) "\n")
-    (dotimes [i (count C)]
-      (let [cluster (get C i)]
-        (print "    CLUSTER #" i ": ")
-        (print-cluster cluster data (get-rates the-state))))
-    (println "")))
+(defn print-state [data the-state user-id]
+  (let [clusters (get the-state :C)]
+    (print "*** CLUSTERING USER #" user-id ": ")
+    (println (map #(get % :members) clusters))))
 
 (defn all-points-within-epsilon? [epsilon points1 points2]
   (every? #(< (nt/abs (apply - %)) epsilon) (partition 2 2 (interleave points1 points2))))
@@ -762,7 +758,7 @@
 
 (defn algorithm-7-Neal-2000
   ([data state max-epoch] (algorithm-7-Neal-2000 data state MAX-ITER-NEW-CLUSTER α MAX-ITER-NEW-CLUSTER))
-  ([data state max-epoch alpha max-iter-new-cluster]
+  ([data state max-epoch alpha max-iter-new-cluster & [user-id]]
     (let [N (count data)]
       (println "resampling partitions for each tag.")
       (resample-singletons data state max-iter-new-cluster)
@@ -775,7 +771,6 @@
         (let  [new-alpha (evolve-alpha iter alpha)]
         (when @keep-running
           (println "\n\n------------------- START Iteration #" iter)
-          (pp @state)
           (doseq [tag-id (get-tag-ids data)]
             (let [cluster-id (get-cluster-id @state tag-id)]
               (if (singleton? data @state tag-id)
@@ -783,11 +778,13 @@
                   (do (reset! state new-state)
                       (refurbish-clusters data state)
                       (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
+                      (print-state data @state user-id)
                       (swap! state assoc-in [:best-clusters] (get @state :C))))
 
                 (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N new-alpha max-iter-new-cluster)]
                   (do
                     (println "<<-----ITER #" iter ": tag" tag-id "broke out of cluster" cluster-id)
+                    (print-state data @state user-id)
                     (reset! state new-state))
                   )))))))
       (update-loglikes data state))))
@@ -836,11 +833,13 @@
       (println "initializing user" user-id)
       (initialize-state data state start-time-as-decimal stop-time-as-decimal)
       (println "running" max-epoch "epochs")
-      (algorithm-7-Neal-2000 data state max-epoch alpha max-iter-new-cluster)
+      (algorithm-7-Neal-2000 data state max-epoch alpha max-iter-new-cluster user-id)
       (println "finished clustering for user" user-id)
       (when-let [best-clusters (get @state :best-clusters)]
-        (swap! state assoc-in [:C] best-clusters))
-      state)))
+        (swap! state assoc-in [:C] best-clusters)))))
+
+(defn terminate []
+  (reset! keep-running false))
 
 ; *** Saving to database ***
 
@@ -880,19 +879,18 @@
           stop-time (db/sql-now)]
       (save-intervals-for-user user-id start-time stop-time)))
   ([user-id start-time stop-time]
-    (let [max-epoch 200
+    (let [max-epoch MAX-EPOCH
           state (atom {})
-          min-n 10
+          min-n MIN-N
           interval-size-ms const/DAY
-          alpha 10
-          max-iter-new-cluster 10]
+          alpha α
+          max-iter-new-cluster MAX-ITER-NEW-CLUSTER]
       (save-intervals-for-user user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
   ([user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
     (let [cluster-run-id (db/cluster-run-create user-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms)]
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
       (save-clusters cluster-run-id state interval-size-ms make-intervals)
-      (db/cluster-run-update-finished cluster-run-id)
-      (pp @state))))
+      (db/cluster-run-update-finished cluster-run-id))))
 
 (defn skip-cluster-run? [user-id]
   (when-let [last-run (first (db/cluster-run-list-finished user-id))]

@@ -86,4 +86,3 @@
    ([] (ns-clean *ns*)) 
    ([ns] (map #(ns-unmap ns %) (keys (ns-interns ns)))))
 
-(init)

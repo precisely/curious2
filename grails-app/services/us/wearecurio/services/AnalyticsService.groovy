@@ -26,7 +26,6 @@ class AnalyticsService {
 		})
 	}
 
-
 	public static refreshSeriesCache(userId, tagId) {
 		String time_zone = "Etc/UTC"
 		Date now = new Date();
@@ -82,12 +81,6 @@ class AnalyticsService {
 	}
 
 	public static processUser(userId) {
-		// Delete the whole caching table to avoid duplicates and orphaned
-		//	series of tags that have been completely deleted.
-
-		log "user id ${userId}: delete table analytics_time_series"
-		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
-
 		def user = User.get(userId.toLong())
 		def tagIds = user.tags().collect { it.id }
 
@@ -99,6 +92,11 @@ class AnalyticsService {
 		tagIds.each { tagId ->
 			classifyProperty(TagProperties.createOrLookup(userId, tagId))
 		}
+
+		// Delete the whole caching table to avoid duplicates and orphaned
+		//	series of tags that have been completely deleted.
+		log "user id ${userId}: delete table analytics_time_series"
+		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries')
 
 		log "user id ${userId}: refreshSeriesCache(${userId})"
 		tagIds.each { tagId ->

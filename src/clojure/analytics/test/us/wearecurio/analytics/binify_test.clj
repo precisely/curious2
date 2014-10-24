@@ -110,11 +110,11 @@
 
     (testing "Take the average of the points"
       (is (= (bi/binify-by-avg series bi/DAY)
-             {1 4.500000000M}))
+             {1 4.5}))
 
       (is (= (bi/binify-by-avg series bi/HOUR)
-            {24 4.000000000M
-             30 5.000000000M})))))
+            {24 4.0
+             30 5.0})))))
 
 (deftest test-make-an-event-sequence
   (testing "Event-like series: Missing data should be zeroed out."
@@ -132,11 +132,11 @@
       (is (= (count averaged-bins) 3) "Binned series should also be of length 3.")
       (is (= (count (bi/event-series averaged-bins start-date stop-date)) 6), "There are 5 days between Mar 10-15 including the last day, so the return value should be a sequence of length 6.")
       (testing "Test if it's equal up to 1 decimal place."
-        (is (= (map (comp long (partial * 10)) (bi/event-series averaged-bins start-date stop-date))
+        (is (= (map (comp long (partial * 10)) (vals (bi/event-series averaged-bins start-date stop-date)))
                (map (comp long (partial * 10)) '(0 0 6.75 5.5 7.33 0)))))
-      (testing "A start date after the first data point should exclude the first data point."
-        (is (= (map (comp long (partial * 10)) (bi/event-series averaged-bins (bi/keyify (bi/date-time 2014 3 13)) stop-date ))
-             (map (comp long (partial * 10)) '(5.5 7.33 0)))))
+      (testing "A start date at the first data point."
+        (is (= (map (comp long (partial * 10)) (vals (bi/event-series averaged-bins (bi/keyify (bi/date-time 2014 3 13)) stop-date )))
+             (map (comp long (partial * 10)) '(6.75 5.5 7.33 0)))))
 
       )))
 

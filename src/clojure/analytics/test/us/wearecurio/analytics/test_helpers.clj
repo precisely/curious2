@@ -130,12 +130,52 @@
   KEY `stop_date_index` (`stop_date`),
   KEY `tag_cluster_id_index` (`analytics_tag_cluster_id`))"))
 
+(defn create-table-entry []
+  (kc/exec-raw "CREATE TABLE IF NOT EXISTS `entry` (
+           `id` bigint(20) NOT NULL AUTO_INCREMENT,
+           `amount` decimal(19,9) DEFAULT NULL,
+           `tag_id` bigint(20) NOT NULL,
+           `user_id` bigint(20) DEFAULT NULL,
+           `date` datetime DEFAULT NULL,
+           `units` varchar(255) NOT NULL,
+           `comment` text,
+           `amount_precision` int(11) DEFAULT NULL,
+           `date_precision_secs` int(11) DEFAULT NULL,
+           `repeat_type` int(11) DEFAULT NULL,
+           `set_name` varchar(50) DEFAULT NULL,
+           `tweet_id` bigint(20) DEFAULT NULL,
+           `base_tag_id` bigint(20) DEFAULT NULL,
+           `duration_type` int(11) DEFAULT NULL,
+           `time_zone_offset_secs` int(11) DEFAULT NULL,
+           `repeat_end` datetime DEFAULT NULL,
+           `time_zone_id` int(11) DEFAULT NULL,
+           `set_identifier` bigint(20) DEFAULT NULL,
+           `group_id` bigint(20) DEFAULT NULL,
+           PRIMARY KEY (`id`),
+           KEY `FK5C30872CB7A9B5A` (`tag_id`),
+           KEY `FK5C3087245614FBD` (`tag_id`),
+           KEY `FK5C30872F07DD657` (`tag_id`),
+           KEY `FK5C30872B7E2AF85` (`base_tag_id`),
+           KEY `duration_type_index` (`duration_type`),
+           KEY `tag_id_index` (`tag_id`),
+           KEY `date_index` (`date`),
+           KEY `user_id_index` (`user_id`),
+           KEY `tweet_id_index` (`tweet_id`),
+           KEY `repeat_type_index` (`repeat_type`),
+           KEY `repeat_end_index` (`repeat_end`),
+           KEY `FK5C3087272E47BD2` (`set_identifier`),
+           KEY `set_identifier_index` (`set_identifier`),
+           KEY `FK5C308728DD9A68B` (`group_id`),
+           KEY `group_id_index` (`group_id`)
+         )"))
+
 (defn create-analytics-tables []
       (create-table-analytics-time-series)
       (create-table-correlation)
       (create-table-cluster-run)
       (create-table-tag-cluster)
-      (create-table-tag-cluster-tag))
+      (create-table-tag-cluster-tag)
+      (create-table-entry))
 
 (defn prepare-test-db []
   (do (drop-analytics-tables)

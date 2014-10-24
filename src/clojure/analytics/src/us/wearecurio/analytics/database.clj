@@ -126,7 +126,7 @@
 
 (defn series-create [user-id tag-id amount date description]
   "Insert one element into the time series.  Specific to one user and one tag.  For testing purposes mainly."
-  (:GENERATED_KEY (kc/insert analytics_time_series
+  (:generated_key (kc/insert analytics_time_series
     (kc/values {:user_id user-id
               :tag_id tag-id
               :amount amount
@@ -196,7 +196,7 @@
                                           min-n 10
                                           interval-size-ms const/DAY}}]
   "Insert cluster run meta data."
-  (:GENERATED_KEY (kc/insert analytics_cluster_run
+  (:generated_key (kc/insert analytics_cluster_run
     (kc/values {:user_id user-id
              :start_date start-date
              :stop_date stop-date
@@ -421,7 +421,7 @@
 ; Create
 (defn tag-cluster-create [cluster-run-id]
   (let [user-id (-> (cluster-run-get cluster-run-id) :user_id)]
-    (:GENERATED_KEY
+    (:generated_key
       (kc/insert analytics_tag_cluster
         (kc/values {:user_id user-id
                     :analytics_cluster_run_id cluster-run-id})))))
@@ -430,7 +430,7 @@
 ; Update (add tag to tag-cluster)
 (defn tag-cluster-add-tag [tag-cluster-id tag-id loglike]
   (let [loglike-safe (if (< loglike -1000000) -1000000 loglike)]
-    (:GENERATED_KEY
+    (:generated_key
       (kc/insert analytics_tag_cluster_tag
         (kc/values {:tag_id tag-id
                     :analytics_tag_cluster_id tag-cluster-id
@@ -494,7 +494,7 @@
 ; Create
 (defn cluster-interval-create [tag-cluster-id start-date stop-date]
   (let [user-id (:user_id (cluster-run-get-from-tag-cluster-id tag-cluster-id))]
-    (:GENERATED_KEY
+    (:generated_key
       (kc/insert analytics_cluster_interval
         (kc/values {:user_id user-id
                     :analytics_tag_cluster_id tag-cluster-id
@@ -515,7 +515,7 @@
 ; *********************
 (defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Insert a correlation score."
-  (:GENERATED_KEY (kc/insert analytics_correlation
+  (:generated_key (kc/insert analytics_correlation
     (kc/values {:user_id user-id
              :series1id tag1-id
              :series1type tag1-type
@@ -531,7 +531,6 @@
   "Update a correlation score."
   (kc/update analytics_correlation
     (kc/set-fields {:value score
-             :mipss_value score
              :overlapn overlap-n
              :updated (sql-now)
              :created (sql-now)}))))
@@ -539,7 +538,7 @@
 (defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Update a correlation score."
   (kc/update analytics_correlation
-    (kc/set-fields {:mipss_value score
+    (kc/set-fields {:value score
                  :overlapn overlap-n
                  :updated (sql-now)})
     (kc/where {:user_id    user-id
@@ -607,7 +606,7 @@
 ; ************************
 
 (defn cluster-input-create [user-id group-id value]
-  (:GENERATED_KEY (kc/insert analytics_cluster_input
+  (:generated_key (kc/insert analytics_cluster_input
     (kc/values {:user_id user-id
                 :group_id group-id
                 :value value}))))
