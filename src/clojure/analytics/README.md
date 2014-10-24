@@ -18,7 +18,7 @@
 
 4. Run the tests.
 	```
-	lein with-profile test midje
+	lein test
 	```
 ## Install Counterclockwise Clojure plugin
 
@@ -37,11 +37,11 @@ Similarity scores are stored in the table called `correlation`. Row values are t
 ## Purpose
 
 	* Compute similarity scores between tags.
-	* TBD: Clustering of tag time-series data.
+	* Clustering of tag time-series data.
 
-## Autotest
+## Test
 
-lein with-profile test midje :autotest
+lein with-profile test test
 
 ## Integrating with Grails (specific to this project):
 

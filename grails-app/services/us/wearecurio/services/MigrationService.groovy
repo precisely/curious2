@@ -443,5 +443,8 @@ class MigrationService {
 			systemGroup.addAdmin(User.findByUsernameIlike("%vishesh%"))
 			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
+		tryMigration("Remove correlation table since we're using analytics_correlation instead.") {
+		  sql("DROP TABLE IF EXISTS correlation");
+		}
 	}
 }

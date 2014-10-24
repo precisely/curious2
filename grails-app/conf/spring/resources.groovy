@@ -1,11 +1,11 @@
 import us.wearecurio.handlers.CuriousExceptionResolver
 import util.marshalling.CustomObjectMarshallers
-import us.wearecurio.marshaller.CorrelationMarshaller
+import us.wearecurio.marshaller.AnalyticsCorrelationMarshaller
 
 // Place your Spring DSL code here
 beans = {
 	customObjectMarshallers( CustomObjectMarshallers ) {
-		marshallers = [ new CorrelationMarshaller() ]
+		marshallers = [ new AnalyticsCorrelationMarshaller() ]
 	}
 
 	exceptionHandler(CuriousExceptionResolver) {
