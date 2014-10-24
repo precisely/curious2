@@ -1,4 +1,6 @@
 package us.wearecurio.model
+// Not currently being used, but I thought I would leave it in here since it was working
+//  and we might want to compare clustering methods at some point in the future.
 
 // A class to represent a matrix, which is required for the Python clustering algorithm.
 //	Each row in the table represents an entry in the matrix with coordinates i,j.
