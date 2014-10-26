@@ -200,12 +200,13 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(controller:params.precontroller ?: name(), action:params.preaction ?: 'login'))
 			return
 		}
-		if (params.username && execForgotPassword(params.username) == FORGOT_SUCCESS) {
+		def forgotKey = params.username ?: params.email
+		if (forgotKey && execForgotPassword(forgotKey) == FORGOT_SUCCESS) {
 			flash.message = "Password recovery email sent; please check your email"
 			
 			redirect(url:toUrl(controller:name(), action:'login'))
 		} else {
-			flash.message = "Cannot find user '" + params.username + "'"
+			flash.message = "Cannot find user '" + forgotKey + "'"
 			redirect(url:toUrl(action:"forgot",
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		}
