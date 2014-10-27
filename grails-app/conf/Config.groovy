@@ -143,8 +143,8 @@ oauth {
 	providers {
 		// For development & test environment
 		jawboneup {
-			key = "bTdM02oiakY"
-			secret = "f81b22f0191e3a8db8618372c86e776db344cae4"
+			key = "60JJRGSRWds"
+			secret = "691aa8414e6731d7438f27295f172b50d4a74f2b"
 		}
 	}
 }
@@ -237,6 +237,10 @@ environments {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
+				jawboneup {
+					key = "AxngCv4Khsg"
+					secret = "112ac88aadd5e3c19ae8ebe182849a3cf152eaf4"
+				}
 			}
 		}
 		
@@ -292,6 +296,10 @@ environments {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}*/
+				jawboneup {
+					key = "LiO8QsxqKeY"
+					secret = "e7d665b549580d7a4611d36b09889dd69c4cdf38"
+				}
 			}
 		}
 		
