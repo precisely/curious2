@@ -383,11 +383,11 @@ class MigrationService {
 		tryMigration("Add unit index to TagUnitStats") {
 			sql("create index unit_index ON tag_unit_stats (unit)")
 		}
-		tryMigration("Changed pinned to button") {
-			sql("update entry set comment = 'button' where comment = 'pinned' or comment = 'favorite'")
-		}
 		tryMigration("Change accountId field length") {
 			sql("alter table oauth_account change column account_id account_id varchar(24)")
+		}
+		tryMigration("Change continuous repeats back to pinned") {
+			sql("update entry set comment = 'pinned' where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
 		}
 	}
 	

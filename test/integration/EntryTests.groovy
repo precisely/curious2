@@ -134,7 +134,7 @@ class EntryTests extends CuriousTestCase {
 		return c
 	}
 	
-	/*@Test
+	@Test
 	void testUpdateRepeatVagueDate() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 repeat", baseDate, true), new EntryStats())
 		
@@ -163,9 +163,9 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet favorite", baseDate, true), new EntryStats())
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet pinned", baseDate, true), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:favorite, repeatType:768, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:pinned, repeatType:768, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -263,7 +263,7 @@ class EntryTests extends CuriousTestCase {
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack#3", baseDate, true), new EntryStats())
 		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:bags of, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack#3, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "weight: 310#", baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -874,7 +874,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateNonRepeatToRepeat() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 2pm ", baseDate, true), new EntryStats())
 		
-		def updated = Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 8 favorite", baseDate, true, true), new EntryStats(), baseDate, true)
+		def updated = Entry.update(entry, Entry.parse(currentTime, timeZone, "bread 8 pinned", baseDate, true, true), new EntryStats(), baseDate, true)
 		
 		assert updated == entry
 		
@@ -1305,8 +1305,8 @@ class EntryTests extends CuriousTestCase {
 	
 	@Test
 	void testDeleteContinuousRepeat() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread favorite", baseDate, true), new EntryStats())
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:favorite, repeatType:768, repeatEnd:null)")
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread pinned", baseDate, true), new EntryStats())
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:pinned, repeatType:768, repeatEnd:null)")
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		for (entryDesc in entries) {
 			assert entryDesc['id'] == entry.getId()
@@ -1515,7 +1515,7 @@ class EntryTests extends CuriousTestCase {
 		def entries = Entry.fetchListDataNoRepeats(user, baseDate)
 		assert entries.size() == 0
 		
-		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3pm favorite", baseDate, true), new EntryStats())
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 3pm pinned", baseDate, true), new EntryStats())
 		entries = Entry.fetchListDataNoRepeats(user, baseDate)
 		assert entries.size() == 0
 
@@ -2264,7 +2264,7 @@ class EntryTests extends CuriousTestCase {
 		assert result.getLastAmountPrecision() == -1
 		
 		assert result.getLastUnits().equals("")
-	}*/
+	}
 
 	@Test
 	void testTagValueStats() {

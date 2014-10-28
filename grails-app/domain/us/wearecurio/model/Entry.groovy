@@ -478,8 +478,8 @@ class Entry implements Comparable {
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
 		def tagUnitStats
-		if (!m['units']) {
-			// Using the most used unit in case the unit is unknown
+		if ((!m['units']) && (m['amountPrecision'] > 0)) {
+			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0
 			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
 			if (tagUnitStats) {
 				m['units'] = tagUnitStats.unit
@@ -2361,9 +2361,9 @@ class Entry implements Comparable {
 		'repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
-		'button':['button', RepeatType.CONTINUOUSGHOST],
-		'pinned':['button', RepeatType.CONTINUOUSGHOST],
-		'favorite':['button', RepeatType.CONTINUOUSGHOST],
+		'button':['pinned', RepeatType.CONTINUOUSGHOST],
+		'pinned':['pinned', RepeatType.CONTINUOUSGHOST],
+		'favorite':['pinned', RepeatType.CONTINUOUSGHOST],
 		'remind':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind daily':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
@@ -2885,7 +2885,10 @@ class Entry implements Comparable {
 			String units = amount.getUnits()
 			
 			if (!units) {
-				amount.setTags(baseTag, baseTag)
+				if (foundDuration)
+					amount.setTags(retVal['tag'], baseTag)
+				else
+					amount.setTags(baseTag, baseTag)
 			} else {
 				UnitRatio unitRatio = unitGroupMap.unitRatioForUnits(units)
 				String amountSuffix
