@@ -1,4 +1,4 @@
-(defproject analytics "0.1.1"
+(defproject analytics "0.1.2"
   :description "Analytics for Curious, Inc."
   :url "http://wearecurio.us"
   :plugins [[lein-environ "0.5.0"]]
@@ -30,4 +30,6 @@
                  [net.cgrand/moustache "1.1.0"]
                  [http-kit "2.1.16"]
                  [org.clojure/data.json "0.2.5"]
+                 ; xml
+                 [xalan "2.7.1"]
                  ])
