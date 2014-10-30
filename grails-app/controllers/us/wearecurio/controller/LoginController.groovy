@@ -79,16 +79,25 @@ class LoginController extends SessionController {
 	
 	protected def renderJSONGet(data) {
 		//debug "${params.callback}(${new JSON(data)})"
-		render "${params.callback}(${new JSON(data)})"
+		if (params.callback)
+			render "${params.callback}(${new JSON(data)})"
+		else
+			render "${new JSON(data)}"
 	}
 	
 	protected def renderDataGet(data) {
-		render "${params.callback}(${data})"
+		if (params.callback)
+			render "${params.callback}(${data})"
+		else
+			render "${data}"
 	}
 	
 	protected def renderStringGet(str) {
 		def repl = str.replaceAll("'", "\\\\'")
-		render "${params.callback}('${repl}')"
+		if (params.callback)
+			render "${params.callback}('${repl}')"
+		else
+			render "'${repl}'"
 	}
 	
 	protected def renderStringPost(str) {
