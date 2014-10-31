@@ -260,7 +260,7 @@ function isLoggedIn() {
 }
 
 function makeGetUrl(url) {
-	return "/mobiledata/" + url + '?callback=?';
+	return "/mobiledata/" + url;
 }
 
 function makeGetArgs(args) {
