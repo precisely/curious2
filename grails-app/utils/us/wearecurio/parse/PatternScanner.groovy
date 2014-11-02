@@ -46,7 +46,7 @@ class PatternScanner {
 		Matcher matcher
 		Closure fireClosure
 		
-		// nextConditions are the allowed next matching conditions (must match these next condition ids to match this state
+		// nextConditions are the allowed next matching conditions (must match these next condition ids to match this state)
 		List<ScannerPattern> nextPatterns
 		
 		ScannerTry(PatternScanner scanner, int conditionId, int begin, int endMatch, Matcher matcher, List<ScannerPattern> nextPatterns, Closure fireClosure) {

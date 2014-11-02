@@ -153,6 +153,24 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testNoTag() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "1 slice bread", baseDate, true), new EntryStats())
+		def v = entry.valueString()
+		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "1 slice", baseDate, true), new EntryStats())
+		v = entry.valueString()
+		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:unknown, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+	}
+	
+	@Test
+	void testRepeatFirst() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "repeat cream pie 8pm", baseDate, true), new EntryStats())
+		def v = entry.valueString()
+		assert v.endsWith("date:2010-07-02T03:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:cream pie, amount:1.000000000, units:, amountPrecision:-1, comment:repeat, repeatType:1025, repeatEnd:null)")
+	}
+	
+	@Test
 	void testParse() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), new EntryStats())
 		println entry.valueString()

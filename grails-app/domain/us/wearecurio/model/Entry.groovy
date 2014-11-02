@@ -2598,11 +2598,13 @@ class Entry implements Comparable {
 		
 		boolean foundRepeat = false
 		boolean foundDuration = false
+		boolean foundTag = false
 		boolean matchTag = true
 		boolean inComment = false
 
 		ScannerPattern tagWordScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, tagWordPattern, false, {
 			words.add(scanner.group(1))
+			foundTag = true
 		})
 
 		Closure repeatClosure = {
@@ -2634,7 +2636,8 @@ class Entry implements Comparable {
 		int currentAmountIndex = 0
 		String currentUnits = null
 		
-		ScannerPattern amountScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, {
+		// amount
+		Closure amountClosure = {
 			String amountStr
 			ArrayList<String> amountStrs = []
 			currentAmountIndex = amounts.size()
@@ -2656,15 +2659,25 @@ class Entry implements Comparable {
 					amounts.add(new ParseAmount(new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION)) 
 				}
 			}
-		})
+		}
 		
-		// first word of units
-		ScannerPattern unitsScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, {
+		// amountFirst is used before a tag has appeared in the text
+		// amount is the scan pattern to use after the tag has appeared in the text
+		ScannerPattern amountFirstScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, amountClosure)
+		ScannerPattern amountScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, amountClosure)
+		
+		// units
+		Closure unitsAClosure = {
 			currentUnits = scanner.group(1)
 			for (int i = currentAmountIndex; i < amounts.size(); ++i) {
 				((ParseAmount)amounts[i]).setUnits(currentUnits)
 			}
-		})
+		}
+		
+		// first word of units if a tag has appeared
+		// unitsFirst - if a tag has not appeared, only parse one word of units
+		ScannerPattern unitsScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
+		ScannerPattern unitsFirstScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
 		
 		// second word of units
 		ScannerPattern unitsScanPatternB = new ScannerPattern(scanner, CONDITION_UNITSB, tagWordPattern, false, {
@@ -2688,7 +2701,7 @@ class Entry implements Comparable {
 		ScannerPattern commentScanPattern = new ScannerPattern(scanner, CONDITION_COMMENT, commentWordPattern, false, {
 			commentWords.add(scanner.group(1))
 			inComment = true
-		}, { (!matchTag) || scanner.trying(CONDITION_AMOUNT) })
+		}, { (!foundTag) && ((!matchTag) || scanner.trying(CONDITION_AMOUNT)) })
 
 		// set up structural rules
 		
@@ -2698,9 +2711,11 @@ class Entry implements Comparable {
 		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, repeatStartScanPattern])
 		
 		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
+		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
 		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
 		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
-
+		unitsFirstScanPatternA.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+		
 		// start parsing!
 		
 		// time can appear at the beginning, and since it is context-free can just run it at the outset
@@ -2708,6 +2723,7 @@ class Entry implements Comparable {
 		
 		while (scanner.ready()) {
 			if (words.size() == 0) { // try repeat at start
+				amountFirstScanPattern.tryMatch()
 				repeatStartScanPattern.tryMatch()
 				durationStartScanPattern.tryMatch()
 				durationSynonymScanPattern.match() { matchTag = false }
@@ -2870,6 +2886,7 @@ class Entry implements Comparable {
 				retVal['repeatType'] = retVal['repeatType'].makeGhost()
 		}
 
+		if (!description) description = "unknown"
 		retVal['baseTag'] = Tag.look(description)
 		String tagDescription = description
 		if (suffix) tagDescription += ' ' + suffix
