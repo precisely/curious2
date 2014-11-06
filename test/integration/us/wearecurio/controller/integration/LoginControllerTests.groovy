@@ -148,6 +148,66 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 	}
 	
 	@Test
+	void testDoforgotDataEmailSuccess() {
+		LoginController controller = new LoginController()
+		
+		controller.params['callback'] = 'callback'
+		controller.params['email'] = user.getEmail()
+		
+		controller.doforgotData()
+		
+		def x = controller.response.contentAsString
+		x = x
+
+		assert x == 'callback({"success":true})'
+	}
+
+	@Test
+	void testDoforgotDataUsernameSuccess() {
+		LoginController controller = new LoginController()
+		
+		controller.params['callback'] = 'callback'
+		controller.params['username'] = user.getUsername()
+		
+		controller.doforgotData()
+		
+		def x = controller.response.contentAsString
+		x = x
+
+		assert x == 'callback({"success":true})'
+	}
+
+	@Test
+	void testDoforgotDataEmailFailures() {
+		LoginController controller = new LoginController()
+		
+		controller.params['callback'] = 'callback'
+		controller.params['email'] = "aetnatnatnathfavsdvsd"
+		
+		controller.doforgotData()
+		
+		def x = controller.response.contentAsString
+		x = x
+
+		assert x.endsWith('"success":false})')
+	}
+
+	@Test
+	void testDoforgotDataUsernameFailure() {
+		LoginController controller = new LoginController()
+		
+		controller.params['callback'] = 'callback'
+		controller.params['username'] = "abtarbaergaerg"
+		
+		controller.doforgotData()
+		
+		def x = controller.response.contentAsString
+		x = x
+
+		assert x.endsWith('"success":false})')
+	}
+
+	@Test
 	void testRecoverSuccess() {
 		LoginController controller = new LoginController()
 		

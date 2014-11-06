@@ -224,9 +224,9 @@ class LoginController extends SessionController {
 	def doforgotData() {
 		debug "LoginController.doForgotData()"
 		
-		if (params.email && execForgotEmail(params.email) == FORGOT_SUCCESS) {
+		if (params.email && execForgotPassword(params.email) == FORGOT_SUCCESS) {
 			renderJSONGet([success:true])
-		} else if (params.username && execForgotUsername(params.username) == FORGOT_SUCCESS) {
+		} else if (params.username && execForgotPassword(params.username) == FORGOT_SUCCESS) {
 			renderJSONGet([success:true])
 		} else {
 			renderJSONGet([message:"We don't recognize that user.",success:false])
