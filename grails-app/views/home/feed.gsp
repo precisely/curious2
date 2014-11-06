@@ -2,6 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
+<link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel= "stylesheet">
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
@@ -88,7 +89,6 @@ $(document).ready(function() {
 </head>
 <body class="feed">
 <!-- MAIN -->
-<div class="main container-fluid" >
 	<div class="row red-header">
 		<div class="col-md-3">
 			<div id="actions">
@@ -104,9 +104,10 @@ $(document).ready(function() {
 			</h1>
 		</div>
 	</div>
+<div class="main container-fluid" >
 	<div class="row">
-		<div class="col-md-3">
-			<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
+		<div class="col-md-1">
+			<%--<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
 			<ul class="subscriptions">
 				<li>
 					<a href = "/home/feed"> Home Feed </a>
@@ -117,21 +118,24 @@ $(document).ready(function() {
 					</li>
 				</g:each>
 			</ul>
-		</div>
-		<div id="graphList" class="col-md-9">
+		--%></div>
+		<div id="graphList" class="col-md-10">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">
-					<input class="full-width" type="text" placeholder="New question or discussion title?" name="name" />
-					<textarea class="full-width"  name="discussionPost" style="height:7em"></textarea>
+					<div class="inner-addon left-addon">
+						<i class="fa fa-pencil" ></i>
+						<input class="full-width" type="text" placeholder="New question or discussion topic?" name="name" required/>
+					</div>
+<%--					<textarea class="full-width"  name="discussionPost" style="height:7em" required></textarea>--%>
 					<input type="hidden" name="group" value="${groupName}" />
-					<input type="submit" name="POST" value="POST"  />
+<%--					<input type="submit" name="POST" value="POST"  />--%>
 				</form>
 			</div>
 			<div id="discussions">
 				<g:render template="/feed/discussions" />
 			</div>
 		</div>
-
+		<div class="col-md-1"></div>
 	</div>
 
 </div>

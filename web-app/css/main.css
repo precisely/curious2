@@ -70,8 +70,8 @@ a.disabled {
 }
 
 .container {
-	margin-left: 40px;
-	margin-right: 40px;
+	margin-left: 20px;
+	margin-right: 20px;
 	width: auto;
 }
 
@@ -88,7 +88,7 @@ ul {
 
 * {
 	vertical-align: baseline;
-	font-weight: inherit;
+	font-weight: lighter;
 	font-family: arial,helvetica,san-serif;
 	font-style: inherit;
 	font-size: 100%;
@@ -110,6 +110,21 @@ body {
 input {
 	line-height: normal;
 }
+::-webkit-input-placeholder { /* WebKit browsers */
+	color: #fc3f28;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+	color: #fc3f28;
+	opacity: 1;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+	color: #fc3f28;
+	opacity: 1;
+}
+:-ms-input-placeholder { /* Internet Explorer 10+ */
+	color: #fc3f28;
+}
+
 .postcomment textarea {
 	border: 1px solid;
 }
@@ -119,7 +134,6 @@ a,a:link,a:hover,a:visited {
 }
 .body1 {
 	text-align: left;
-	border:1px solid #cccccc;
 	border-width:0px 1px 1px 1px;
 }
 .body2 {
@@ -127,13 +141,10 @@ a,a:link,a:hover,a:visited {
 }
 .main {
 	border:1px solid #cccccc;
-	-moz-box-shadow: 3px 3px 3px #dddddd;
-	-webkit-box-shadow: 3px 3px 3px #dddddd;
-	box-shadow: 3px 3px 3px #dddddd;
+	background-color: #f6f6f6;
 }
 .main h1 {
 	padding:7px 10px;
-	background-color:#f14a42;
 	vertical-align:middle;
 	font-weight:bold;
 	line-height:20px;
@@ -181,7 +192,7 @@ a,a:link,a:hover,a:visited {
 	font-size: 12pt;
 }
 .header {
-	padding:10px 0px 10px 0px;
+	padding:30px 0px 10px 0px;
 }
 .header a.logo-link {
 	margin-bottom: 15px;
@@ -196,13 +207,15 @@ a,a:link,a:hover,a:visited {
 .mainLinks {
 	display:inline-block;
 	padding: 12px 0px 0px 0px;
+	height: 70px;
+	text-align: center;
 }
 .mainLinks li {
 	display:inline;
 	padding:0px 0px 0px 3em;
 	text-transform:uppercase;
 	font-size:.8em;
-	color:#999999;
+	color:#797979;
 	float: left;
 }
 .mainLinks li:first-child {
@@ -214,9 +227,10 @@ a,a:link,a:hover,a:visited {
 .mainLinks li.active a {
 	pointer-events: none;
 	cursor: default;
+	border-bottom: #F14A42 2px solid;
 }
 .mainLinks li a {
-	color:#999999;
+	color:#797979;
 }
 .signin {
 	padding:14px 20px 0px 0px;
@@ -1101,12 +1115,14 @@ body.discuss-page .red-header h1 {
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	background-color: #f14a42;
+	background-color: fc3f28;
 	vertical-align: middle;
 	color: #ffffff;
-	text-transform: uppercase;
-	min-height: 34px;
+	text-transform: none;
+	height: 60px;
+	margin-left: 0px;
 	width: 100%;
+	border-radius: 2px;
 }
 .red-header .right {
 	float: left;
@@ -1240,8 +1256,31 @@ body.discuss-page .red-header h1 {
 	display: table-cell;
 }
 .full-width {
-	width: 100%
+	width: 100%;
+	height: 60px;
 }
+
+.inner-addon {
+	position: relative; 
+}
+
+.inner-addon .fa {
+	position: absolute;
+	padding: 10px;
+	font-size: 30;
+	color: #fc3f28;
+	margin: 5 0 0 15;
+	pointer-events: none;
+}
+
+.left-addon .fa {
+	left: 0px;
+}
+
+.left-addon input {
+	padding-left: 70px;
+}
+
 .align-middle {
 	text-align: center;
 	vertical-align: middle;
@@ -1319,16 +1358,14 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	padding: 10px;
-	border: 1px solid #F1F1F1;
+	padding: 20 0 20 0;
 	text-align: right;
 }
 .feed .media {
 	padding: 10px;
 	border: 1px solid #F1F1F1;
 }
-.new-post input, .new-post textarea {
-	border: 3px solid #F1F1F1;
+.new-post textarea {
 	padding: 3px;
 }
 .new-post input[type='submit'] {
@@ -1532,10 +1569,12 @@ body.load-graph #graphList .summary .close {
 	color: #9d9d9d;
 	text-decoration: none;
 	font-size: 14px;
+	text-align: center;
 	font-weight: bold;
 }
 .headerLinks li a {
 	text-decoration: none;
+	padding-bottom: 5px;
 }
 
 .nav-pills li {
@@ -1855,4 +1894,56 @@ body{
 
 .nodisplay {
 	display: none;
+}
+
+.feed-item {
+	
+}
+
+.feed-item .discussion {
+	margin-bottom: 20px;
+}
+
+.feed-item .discussion .discusssion-topic {
+	background-color: white;
+	color: #5d5d5d;
+	padding: 20px;
+	margin-top: 10px;
+}
+
+.feed-item .discussion .discusssion-topic .title {
+	font-weight: bold;
+	text-align: left;
+	color: #5d5d5d;
+}
+
+.feed-item .discussion .discusssion-topic .avatar {
+	height: 30px;
+	width: 30px;
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discusssion-topic p {
+	font-style: normal;
+	margin-top: 10px;
+}
+
+.feed-item .discussion .discusssion-topic .buttons {
+	text-align: right;
+}
+
+.feed-item .discussion .discusssion-topic button img{
+	height: 40px;
+	width: auto;
+}
+
+
+.feed-item .discussion .discusssion-topic hr {
+	background: #eeeeee;
+	height: .03em;
+	margin-top: 30px;
+}
+
+.feed-item .user-name {
+	color: #c04f7f;
 }
