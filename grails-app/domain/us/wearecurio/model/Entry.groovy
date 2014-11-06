@@ -3146,7 +3146,7 @@ class Entry implements Comparable {
 		if (thisPri < thatPri) return -1
 		else if (thisPri > thatPri) return 1
 		
-		return this.valueString().compareTo(obj.valueString())
+		return this.units.compareTo(obj.units)
 	}
 
 	boolean equals(Object o) {
