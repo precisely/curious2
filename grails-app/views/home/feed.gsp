@@ -92,7 +92,7 @@ $(document).ready(function() {
 <body class="feed">
 <!-- MAIN -->
 	<div class="row red-header">
-		<div class="col-md-3">
+		<%--<div class="col-md-3">
 			<div id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
@@ -100,7 +100,7 @@ $(document).ready(function() {
 				</ul>
 			</div>
 		</div>
-		<div class="col-md-9">
+		--%><div>
 			<h1 class="clearfix">
 				<span id="queryTitle">${groupFullname}</span>
 			</h1>

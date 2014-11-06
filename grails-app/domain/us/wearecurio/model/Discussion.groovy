@@ -388,7 +388,8 @@ class Discussion {
 			}
 		}
 
-		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', firstPost: firstPostInstance,
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
+			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]
 	}
 

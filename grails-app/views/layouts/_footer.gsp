@@ -64,9 +64,40 @@
          <g:if test="${params.action == 'login' && !params.login}">
          </g:if>
         <%-- Inner Pages --%>
-        <div class=""> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
-            <div class="col-md-6">
-                <ul class="nav nav-pills" style="margin-left: 20px;">
+        <div class="row footer-items"> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
+            <div class="col-md-3">
+            	<ul> 
+            	<li> <span class="ul-head"> Company </span><br></li>
+            		<li ><a href="#">About</a> </li>
+            		<li ><a href="#">Jobs</a> </li>
+            		<li ><a href="#">Contacts</a> </li>
+            	</ul>
+            </div>
+            <div class="col-md-3">
+            	<ul> 
+            	 <li><span class="ul-head">Policies</span><br></li>
+            		<li ><a href="#">Community Guideline</a> </li>
+            		<li > <g:link controller='home' action="termsofservice" >Terms of Service</g:link></li>
+            		<li ><a href="#">Privacy</a> </li>
+            	</ul>
+            </div>
+            <div class="col-md-3">
+            	<ul> 
+            		<li> <span class="ul-head">Support</span> <br></li>
+            		<li ><a href="#">Wiki</a> </li>
+            		<li ><a href="#">FAQS</a> </li>
+            		<li ><a href="#">Email Help</a> </li>
+            	</ul>
+            </div>
+            <div class="col-md-3">
+            	<ul>
+            	<li> <span class="ul-head">Follow</span><br></li>
+            		<li ><a href="#"> Blog </a></li>
+            		<li ><a href="#">Twitter</a> </li>
+            		<li ><a href="#">Facebook</a> </li>
+            	</ul>
+            </div>
+                <%--<ul class="nav nav-pills" style="margin-left: 20px;">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">GET THE APP</a></li>
@@ -74,9 +105,7 @@
                         href="#">TUTORIALS</a></li>
                     <li style="font-size: 16px;"><g:link
                             controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS</g:link></li>
-                </ul>
-            </div>
-            
+                </ul> --%>
         </div>
     </g:else>
 </div>

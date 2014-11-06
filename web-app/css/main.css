@@ -89,7 +89,7 @@ ul {
 * {
 	vertical-align: baseline;
 	font-weight: lighter;
-	font-family: arial,helvetica,san-serif;
+	font-family: 'Open Sans', sans;
 	font-style: inherit;
 	font-size: 100%;
 	border: 0 none;
@@ -129,7 +129,7 @@ input {
 	border: 1px solid;
 }
 a,a:link,a:hover,a:visited {
-	color:#08BBF1;
+	color: #949494;
 	text-decoration:none;
 }
 .body1 {
@@ -270,7 +270,6 @@ body.graph-page .querymain {
 }
 #plotLeftNav {
 	width: 100%;
-	margin-top: 4px;
 }
 body.graph-page .querymain #plotArea {
 	height:530px;
@@ -907,7 +906,7 @@ body.tags-displayed .floating-column {
 	color:#000000;
 }
 
-.sharePage .leftNav,.sharePage .main {
+.sharePage .leftNav, {
 	border:0px;
 	-moz-box-shadow: 0px 0px 0px;
 	-webkit-box-shadow: 0px 0px 0px;
@@ -934,11 +933,8 @@ body.discuss-page .red-header h1 {
 	width:225px;
 	float:right;
 }
-.discussTitle {
-	margin-bottom:5px;
-}
 #discussTitleSpan {
-	font-size:15pt;
+	font-size:20px;
 	width:500px;
 }
 .discusscomments {
@@ -1123,6 +1119,7 @@ body.discuss-page .red-header h1 {
 	margin-left: 0px;
 	width: 100%;
 	border-radius: 2px;
+	padding: 20px;
 }
 .red-header .right {
 	float: left;
@@ -1258,6 +1255,7 @@ body.discuss-page .red-header h1 {
 .full-width {
 	width: 100%;
 	height: 60px;
+	border-radius: 2px;
 }
 
 .inner-addon {
@@ -1342,7 +1340,7 @@ div.graph-header-container .red-header {
 .feed .red-header h1 {
 	width: 100%;
 	border: 0;
-	font-size: 15px;
+	font-size: 20px;
 	margin-top: 0px;
 }
 .feed .red-header #actions {
@@ -1904,46 +1902,119 @@ body{
 	margin-bottom: 20px;
 }
 
-.feed-item .discussion .discusssion-topic {
+.feed-item .discussion .discussion-topic {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 20px;
+	padding: 25px;
 	margin-top: 10px;
 }
 
-.feed-item .discussion .discusssion-topic .title {
+.feed-item .discussion .discussion-topic .title {
 	font-weight: bold;
-	text-align: left;
-	color: #5d5d5d;
+	color: #717171;
 }
 
-.feed-item .discussion .discusssion-topic .avatar {
+.feed-item .discussion .discussion-topic .avatar {
 	height: 30px;
 	width: 30px;
 	margin-bottom: 10px;
 }
 
-.feed-item .discussion .discusssion-topic p {
-	font-style: normal;
-	margin-top: 10px;
+.feed-item .discussion .discussion-topic .posting-time {
+	font-size: 14px;
+	color: #a8a8a8;
+	margin-right: 5px;
 }
 
-.feed-item .discussion .discusssion-topic .buttons {
+.feed-item .discussion .discussion-topic p {
+	font-style: normal;
+	margin: 15 0 20 0;
+	color: #717171;
+}
+
+.feed-item .discussion .discussion-topic .buttons {
 	text-align: right;
 }
 
-.feed-item .discussion .discusssion-topic button img{
-	height: 40px;
+.feed-item .discussion .discussion-topic button {
+	margin: 0 0 -10 45;
+}
+
+.feed-item .discussion .discussion-topic button img{
+	height: 50px;
 	width: auto;
 }
 
+.feed-item .discussion .discussion-topic .contents {
+	border-bottom: solid 0.09em;
+	border-bottom-color: #eeeeee;
+	margin-bottom: 10px;
+}
+.feed-item .discussion .discussion-comment {
+	background-color: #eeeeee;
+	color: #5d5d5d;
+	padding: 20px;
+	font-size: 14px;
+}
 
-.feed-item .discussion .discusssion-topic hr {
-	background: #eeeeee;
-	height: .03em;
-	margin-top: 30px;
+.feed-item .discussion .discussion-comment .view-all{
+	color: #5d5d5d;
+	font-size: 16px;
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discussion-comment .add-comment {
+	margin-left: 20px;
+}
+
+.feed-item .discussion .discussion-comment .posting-time {
+	margin:12 0 0 20;
+	font-size: 12px;
+	color: #a8a8a8;
+}
+
+.feed-item .discussion .discussion-comment .add-comment input{
+	width: 100%;
+	height: 35px;
+	padding: 10px;
+}
+
+#post-comment::-webkit-input-placeholder {color: #a4a4a4;}
+#post-comment::-moz-placeholder {color: #a4a4a4;} /* firefox 19+ */
+#post-comment:-moz-placeholder {color: #a4a4a4;}
+#post-comment:-ms-input-placeholder {color: #a4a4a4;} /* ie */
+
+.feed-item .discussion .discussion-comment .avatar {
+	height: 20px;
+	width: 20px;
+	margin: 10 0 10 0;
 }
 
 .feed-item .user-name {
 	color: #c04f7f;
+	margin-left: 5px;
+}
+
+.footer-items{
+	
+}
+
+.footer-items .col-md-3{
+	padding-left: 40px;
+}
+
+.footer-items ul{
+	list-style-type: none;
+}
+
+.footer-items ul li{
+	font-weight: lighter;
+	color: #949494;
+	text-transform: none;
+	padding-bottom: 12px;
+}
+
+.footer-items ul li .ul-head{
+	text-transform: uppercase;
+	color: #656565;
 }
