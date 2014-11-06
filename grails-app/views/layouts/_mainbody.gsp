@@ -11,7 +11,6 @@ def activeClass = { a ->
 %>
 <div class="body1 container">
 <div class="body2">
-<div class="bugs right-icon"><a href="#"><span>Bugs</span></a></div>
 
 <!-- HEADER -->
 <div class="header clearfix">
@@ -32,9 +31,9 @@ def activeClass = { a ->
 	<div class="text-center clearfix">
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
-			<li><g:link controller='home' action="graph">Graph</g:link></li>
+			<li><g:link controller='home' action="graph">Chart</g:link></li>
+			<li><g:link controller='home' action="feed">Community</g:link></li>
 			<li><g:link controller='home' action="signals">Signals</g:link></li>
-			<li><g:link controller='home' action="feed">Feed</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>
