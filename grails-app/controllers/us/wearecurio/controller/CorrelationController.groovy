@@ -21,23 +21,23 @@ class CorrelationController {
 
 	def markViewed() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markViewed(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markViewed(id))
 	}
 
 	def markNoise() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markNoise(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markNoise(id))
 	}
 
 	def markSaved() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markSaved(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markSaved(id))
 	}
 
 	private isOwner(id) {
 		def obj = AnalyticsCorrelation.get(id)
 		def currentUser = securityService.currentUser
-		currentUser && obj && obj.userId == currentUser.id
+		currentUser && obj && (obj.userId == currentUser.id)
 	}
 
 	private renderNotLoggedIn() {

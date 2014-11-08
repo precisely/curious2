@@ -1,11 +1,14 @@
 (ns us.wearecurio.analytics.interval
   (:require [us.wearecurio.analytics.database :as db]
             [us.wearecurio.analytics.idioms :as im]
+            [us.wearecurio.analytics.binify :as bi]
             [us.wearecurio.analytics.constants :as const]
+            [clj-time.core :as tc]
             [clj-time.coerce :as tr]
+            [clj-time.format :as tf]
             [incanter.stats :as ist]
             [incanter.core :as ic]
-            [clojure.math.numeric-tower :as nt]))
+            [clojure.math.numeric-tower :as math]))
 
 ; Tuning parameter α for DP.
 ; Number of clusters is proportional to α∙logN.
@@ -16,12 +19,11 @@
 (def α 10) ; The main Dirichlet Process hyper parameter.
 (def λ_in 2)
 (def λ_out 0.1)
-(def INTERVAL-LENGTH 5)
-(def MAX-ITER-NEW-CLUSTER 750)
+(def MAX-ITER-NEW-CLUSTER 7) ; 750
 (def z 1.1) ; scaling factor for automatically adjusting λ
 (def MIN-N 10) ; Min. num. data points per series.
 (def DEFAULT-SCALE const/DAY)
-(def MAX-EPOCH 100)
+(def MAX-EPOCH 5); 200
 (def keep-running (atom true))
 ;
 ; Generic helpers
@@ -641,7 +643,7 @@
     (= (count (take 2 members)) 1)))
 
 (defn pp-num [x]
-  (/ (nt/round (* 10 x)) 10.0))
+  (/ (math/round (* 10 x)) 10.0))
 
 (defn sort-clusters-by-num-partition-points [clusters]
   (sort-by #(+ (count (:partition-points %))
@@ -665,7 +667,7 @@
     (println (map #(get % :members) clusters))))
 
 (defn all-points-within-epsilon? [epsilon points1 points2]
-  (every? #(< (nt/abs (apply - %)) epsilon) (partition 2 2 (interleave points1 points2))))
+  (every? #(< (math/abs (apply - %)) epsilon) (partition 2 2 (interleave points1 points2))))
 
 (defn average-partition-points [points1 points2]
   (apply sorted-set (map #(/ (apply + %) 2.0) (partition 2 2 (interleave points1 points2)))))
@@ -760,17 +762,17 @@
   ([data state max-epoch] (algorithm-7-Neal-2000 data state MAX-ITER-NEW-CLUSTER α MAX-ITER-NEW-CLUSTER))
   ([data state max-epoch alpha max-iter-new-cluster & [user-id]]
     (let [N (count data)]
-      (println "resampling partitions for each tag.")
+      (println "Resampling partitions for each tag.")
       (resample-singletons data state max-iter-new-cluster)
       (println "After resampling singletons")
 
-      (println "\n\n\n***** First iteration *****")
+      (println "\n\n\n***** First Epoch *****")
       (refurbish-clusters data state)
       (pp @state)
       (dotimes [iter max-epoch]
         (let  [new-alpha (evolve-alpha iter alpha)]
         (when @keep-running
-          (println "\n\n------------------- START Iteration #" iter)
+          (println "\n\n------------------- START Epoch #" iter)
           (doseq [tag-id (get-tag-ids data)]
             (let [cluster-id (get-cluster-id @state tag-id)]
               (if (singleton? data @state tag-id)
@@ -823,6 +825,9 @@
         small-tags             (filter #(not (nil? %)) small-tags-with-nils)]
     (apply dissoc data-map small-tags)))
 
+(defn str-date [date]
+  (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tr/from-sql-time date)))
+
 (defn run-algo [user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
   (let [start-time-as-decimal (db/rescale-time start-time interval-size-ms)
         stop-time-as-decimal (db/rescale-time stop-time interval-size-ms)
@@ -834,7 +839,7 @@
       (initialize-state data state start-time-as-decimal stop-time-as-decimal)
       (println "running" max-epoch "epochs")
       (algorithm-7-Neal-2000 data state max-epoch alpha max-iter-new-cluster user-id)
-      (println "finished clustering for user" user-id)
+      (println "finished clustering for user" user-id "over period:" (str-date start-time) "-" (str-date stop-time))
       (when-let [best-clusters (get @state :best-clusters)]
         (swap! state assoc-in [:C] best-clusters)))))
 
@@ -886,7 +891,7 @@
           alpha α
           max-iter-new-cluster MAX-ITER-NEW-CLUSTER]
       (save-intervals-for-user user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
-  ([user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
+  ([user-id start-time stop-time max-epoch state min-n interval-size-ms alpha max-iter-new-cluster]
     (let [cluster-run-id (db/cluster-run-create user-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms)]
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
       (save-clusters cluster-run-id state interval-size-ms make-intervals)
@@ -900,15 +905,41 @@
       (< (- now-in-ms last-run-ms)
          one-day-ms))))
 
-(defn save-cluster-year-by-year [user-id]
+(defn save-cluster-year-by-year [user-id & {:keys [max-epoch state min-n interval-size-ms alpha max-iter-new-cluster]
+                                             :or {max-epoch MAX-EPOCH
+                                                  state (atom {})
+                                                  min-n MIN-N
+                                                  interval-size-ms const/DAY
+                                                  alpha α
+                                                  max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
   (let [next-year (inc (clj-time.core/year (clj-time.core/now)))]
     (doseq [year (range 2010 next-year)]
-      (save-intervals-for-user user-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)))))
+      (when @keep-running
+        (println "\n\n\n**************\n\nSTART save-intervals-for-user YEAR:" year)
+        (save-intervals-for-user user-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)
+                                 max-epoch state min-n interval-size-ms alpha max-iter-new-cluster )))))
 
-(defn refresh-intervals-for-user [user-id]
-  ;(when (not (skip-cluster-run? user-id))
+(defn refresh-intervals-for-user [user-id & {:keys [start-time stop-time
+                                                    max-epoch state min-n
+                                                    interval-size-ms alpha max-iter-new-cluster]
+                                             :or {start-time nil
+                                                  stop-time nil
+                                                  max-epoch MAX-EPOCH
+                                                  state (atom {})
+                                                  min-n MIN-N
+                                                  interval-size-ms const/DAY
+                                                  alpha α
+                                                  max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
   (db/cluster-run-delete user-id)
-  (save-cluster-year-by-year user-id))
+  (if (and start-time stop-time)
+      (save-intervals-for-user user-id start-time stop-time
+                               max-epoch state min-n interval-size-ms alpha max-iter-new-cluster)
+      (save-cluster-year-by-year user-id
+                                 :max-epoch max-epoch
+                                 :min-n min-n
+                                 :interval-size-ms interval-size-ms
+                                 :alpha alpha
+                                 :max-iter-new-cluster max-iter-new-cluster)))
 
 (defn within-tolerance-ms? [t1 t2]
   (>= (+ 1000 t1) t2))
@@ -978,4 +1009,168 @@
   (let [intervals (unioned-intervals user-id tag1-id tag2-id)]
     (rescale-intervals interval-size-ms intervals)))
 
+
+(defn now-formatted []
+  (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tc/now)))
+
+(defn log [log-file-name message]
+  (println "core/log (" log-file-name "):" message)
+  (when log-file-name
+    (spit log-file-name
+          (str "Clojure Interop " (now-formatted) " : " message "\n")
+          :append true)))
+
+(defn avg [v]
+  "The average of a vector of values."
+  (cond
+    (nil?    v) nil
+    (number? v) v
+    (and (coll? v) (= 0 (count v))) nil
+  :else
+    (let [n   (-> (count v) double)
+          sum (reduce + v)]
+      (/ sum n))))
+
+(defn sd [v]
+  "The standard deviation of a bunch of numbers."
+  (cond
+    (number? v)
+      0
+    (and (coll? v) (= (count v) 0))
+      nil
+    (and (coll? v) (= (count v) 1))
+      0
+    (and (coll? v) (> (count v) 1))
+      (let [mu (avg v)
+            n (dec (count v))
+            v2 (map (fn [x] (* (- x mu) (- x mu))) v)
+            sum2 (reduce + v2)]
+        (math/sqrt (/ sum2 n)))))
+
+(defn dot-product [x y]
+  (->> (interleave x y)
+       (partition 2 2)
+       (map #(apply * %))
+       (reduce +)))
+
+(defn normalize [x]
+  (let [mu (avg x)
+        s  (sd x)]
+    (map #(/ (- % mu) s) x)))
+
+(defn cor [v1 v2]
+  (double (/ (dot-product (normalize v1) (normalize v2))
+             (-> v1 count dec))))
+
+; Input a sorted map, and select for keys in the range of the interval.
+(defn select-in-interval [sorted interval]
+    (subseq sorted >= (first interval) <= (last interval)))
+
+(defn binify [user-id tag-id]
+  (-> (db/series-list user-id tag-id)
+      ;(tap println)
+      (bi/binify-by-avg const/DAY)))
+
+(defn fill-in-series [bins start-date stop-date data-type]
+  (if (= "CONTINUOUS" data-type)
+      (bi/continuous-series bins start-date stop-date)
+      (bi/event-series bins start-date stop-date)))
+
+(defn index-by-bin [bins start-date stop-date data-type]
+  (fill-in-series bins start-date stop-date data-type))
+
+(defn to-sorted-map [m]
+  (let [filtered (filter identity m)
+        vected   (vec filtered)
+        flattened (flatten vected)
+        sorted (apply sorted-map flattened)]
+    sorted))
+
+(defn select-values-in-intervals [filled-sorted-map intervals]
+  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)
+        sorted (to-sorted-map selected)]
+    (vals sorted)))
+
+(defn vectorize-in-intervals [user-id tag-id start-date stop-date intervals]
+  (let [data-type (db/series-data-type user-id tag-id)]
+    (-> (binify user-id tag-id)
+        (index-by-bin start-date stop-date data-type)
+        (select-values-in-intervals intervals))))
+
+(defn zero-cor? [x y]
+  (or (< (count x) 3) (< (count y) 3)
+      (== 0 (sd x)) (== 0 (sd y))))
+
+(defn compute-correlation-helper [user-id tag1-id tag2-id intervals]
+  (let [start-date (->> intervals flatten (apply min) long)
+        stop-date  (->> intervals flatten (apply max) long)
+
+        values1 (vectorize-in-intervals user-id tag1-id start-date stop-date intervals)
+        values2 (vectorize-in-intervals user-id tag2-id start-date stop-date intervals)]
+    (if (zero-cor? values1 values2)
+        {:score 0
+         :n 0
+         :tag1_id tag1-id
+         :tag2_id tag1-id}
+        {:score (cor values1 values2)
+         :n     (count values1)
+         :tag1_id tag1-id
+         :tag2_id tag1-id
+         })))
+
+(defn compute-correlation
+  ([user-id tag1-id tag2-id]
+  (let [intervals (rescaled-unioned-intervals const/DAY user-id tag1-id tag2-id)
+        num-points-in-interval (-> intervals flatten count)]
+    (when (> num-points-in-interval 1)
+      (compute-correlation-helper user-id tag1-id tag2-id intervals)))))
+
+(defn compute-and-save-score [user-id & [log-file-name]]
+  (let [pairs (db/pairs-with-overlap-in-cluster user-id)]
+    (println "computing" (count pairs) "correlations")
+    (doseq [pair pairs]
+      (when @keep-running
+        (print ".") (flush)
+        (let [tag1-id (first pair)
+              tag2-id (second pair)
+              result  (apply (partial compute-correlation user-id) pair)
+              score   (:score result)
+              n       (:n result)]
+          (when score
+            (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag")))))))
+
+(defn update-user [user-id & {:keys [log-file-name start-time stop-time
+                                     max-epoch state min-n
+                                     interval-size-ms alpha max-iter-new-cluster]
+                              :or {log-file-name const/DEFAULT-LOG-FILE
+                                   start-time nil
+                                   stop-time nil
+                                   max-epoch MAX-EPOCH
+                                   state (atom {})
+                                   min-n MIN-N
+                                   interval-size-ms const/DAY
+                                   alpha α
+                                   max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
+  (log log-file-name
+       (str "USER " user-id ": connect to database\n"))
+  (db/connect)
+
+  (log log-file-name
+       (str "refresh-intervals-for-user " user-id))
+  (refresh-intervals-for-user user-id
+                                 :start-time start-time
+                                 :stop-time stop-time
+                                 :max-epoch max-epoch
+                                 :min-n min-n
+                                 :interval-size-ms interval-size-ms
+                                 :alpha alpha
+                                 :max-iter-new-cluster max-iter-new-cluster)
+
+  (when @keep-running
+    (log log-file-name
+         (str "co/compute-and-save-score " user-id))
+    (compute-and-save-score user-id log-file-name))
+
+  (log log-file-name
+       (str "finished update-user " user-id " keep-running: " @keep-running)))
 
