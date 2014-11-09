@@ -21,9 +21,7 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-$(function(){
-	initTemplate();
-	
+$(function() {
 	backgroundJSON("getting list of saved graphs", "/home/listPlotData?callback=?",
 		function(data){
 			if (!checkData(data))

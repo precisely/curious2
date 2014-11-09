@@ -59,7 +59,6 @@ p {
 <script type="text/javascript">
 
 $(function(){
-	initTemplate();
 });
 </script>
 </head>

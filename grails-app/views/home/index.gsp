@@ -59,12 +59,39 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 	</div>
 	<!-- /MAIN -->
 	<div id="remove-exclusion-dialog" class="hide" title="Add back to the Group"></div>
+	<script type="text/javascript" src="/js/curious/entrylist.js"></script>
 	<script type="text/javascript">
 		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
 		var currentDate = new Date();
 		if (${showTime} > 0)
 			currentDate = new Date(${showTime});
+
+		var entryListWidget;
+		
+		$(function() {
+			entryListWidget = new EntryListWidget(initTagListWidget());
+			queueJSON("getting login info", "/home/getPeopleData?callback=?", getCSRFPreventionObject("getPeopleDataCSRF"),
+					function(data){
+				if (!checkData(data)) {
+					return;
+				}
+	
+				var found = false;
+	
+				jQuery.each(data, function() {
+					if (!found) {
+						// set first user id as the current
+						setUserId(this['id']);
+						found = true;
+					}
+					addPerson(this['first'] + ' ' + this['last'],
+							this['username'], this['id'], this['sex']);
+					return true;
+				});
+	
+				entryListWidget.refresh();
+			});
+		}
 	</script>
-	<script type="text/javascript" src="/js/curious/trackPage.js"></script>
 </body>
 </html>

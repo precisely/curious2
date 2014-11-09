@@ -25,9 +25,7 @@ function doLogout() {
 function refreshPage() {
 }
 
-$(function(){
-	initTemplate();
-
+$(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
 			function(data){

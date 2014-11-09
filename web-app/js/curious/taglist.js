@@ -5,8 +5,6 @@
  */
 var DATA_KEY_FOR_TAGLIST_ITEM = "tag-list-item";
 var DATA_KEY_FOR_PARENT_TAGGROUP_ITEM = "parent-tag-group-item";
-var tagListWidget;
-var wildcardTagGroup;
 
 function Tag(args) {
 	TreeItem.call(this, args);
@@ -748,6 +746,7 @@ inherit(TagGroupView, TreeItemGroupView)
  * @returns
  */
 function TagListWidget(args) {
+	var tagListWidget = this;
 	args = args || {};
 	args.list = args.list || new TagList({store:args.store});
 	TreeWidget.call(this,args);
@@ -993,7 +992,7 @@ function initTagListOnly(load) {
 function initTagListWidget() {
 	var tagStore = new TagStore(); 
 	tagList = new TagList({store:tagStore});
-	tagListWidget = tagListWidget || new TagListWidget({list:tagList});
+	var tagListWidget = new TagListWidget({list:tagList});
 	tagListWidget.bindClickOnTreeItemGroupView();
 	tagListWidget.bindClickOnAllItems();
 	tagList.load();
@@ -1050,4 +1049,6 @@ function initTagListWidget() {
 			return false;
 		}
 	});
+	
+	return tagListWidget;
 }

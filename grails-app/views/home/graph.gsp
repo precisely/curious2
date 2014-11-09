@@ -17,8 +17,7 @@ function doLogout() {
 }
 
 $(function(){
-	initTemplate();
-	initTagListWidget();
+	tagListWidget = initTagListWidget();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		getCSRFPreventionObject("getPeopleDataCSRF"),

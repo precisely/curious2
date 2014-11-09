@@ -30,7 +30,7 @@ function makePlainUrl(url) {
 	return "/home/" + url;
 }
 
-function initTemplate() {
+$(function() {
 	$("#logoutLink").click(function() {
 		doLogout();
 		return true;
