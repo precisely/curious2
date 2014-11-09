@@ -19,11 +19,11 @@
 (def α 10) ; The main Dirichlet Process hyper parameter.
 (def λ_in 2)
 (def λ_out 0.1)
-(def MAX-ITER-NEW-CLUSTER 7) ; 750
+(def MAX-ITER-NEW-CLUSTER 750) ; 750
 (def z 1.1) ; scaling factor for automatically adjusting λ
 (def MIN-N 10) ; Min. num. data points per series.
 (def DEFAULT-SCALE const/DAY)
-(def MAX-EPOCH 5); 200
+(def MAX-EPOCH 100); 200
 (def keep-running (atom true))
 ;
 ; Generic helpers
