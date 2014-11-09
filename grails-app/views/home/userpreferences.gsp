@@ -23,8 +23,6 @@ var origUsername = "${user.username}";
 var interestTagList;
 
 $(function() {
-    initTemplate();
-
     queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) {
         if (!checkData(data))
             return;

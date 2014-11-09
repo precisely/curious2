@@ -37,9 +37,6 @@ function makePlainUrl(url) {
 	return "/public/" + url;
 }
 
-function initTemplate() {
-}
-
 function formatDate(d) {
 	var hour = d.getHours();
 	var ampm = "am";
