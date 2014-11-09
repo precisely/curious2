@@ -11,6 +11,7 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]))
 
+(def WEB-SERVER "http://localhost:8080")
 (def PORT 8090)
 
 (defonce run-state (atom nil))
@@ -145,8 +146,8 @@
 
 (defn after-cluster [task-type task-id]
   (if (= "collection-child" task-type)
-      (post-async "http://localhost:8080/analyticsTask/runNext" { :id task-id })
-      (post-async "http://localhost:8080/analyticsTask/done" { :id task-id })))
+      (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id })
+      (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id })))
 
 (defn run-cluster-job [user-id req]
   (let [params (:params req)

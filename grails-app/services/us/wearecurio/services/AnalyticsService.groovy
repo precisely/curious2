@@ -17,7 +17,7 @@ import grails.util.Environment
 
 class AnalyticsService {
 
-	private static DEBUG = true
+	private static DEBUG = false
 
 	public static def SERVERS = [
 		'127.0.0.1:8090',
@@ -69,7 +69,6 @@ class AnalyticsService {
 	public static saveTagMembership(userId) {
 		def user = User.get(userId.toLong())
 		log.debug("saveTagMembership: " + userId + ", numgroups: " + user.getTagGroups().size)
-		//log.debug "Write Tag Group:: uid: " + userId + " num Groups: " + user.getTagGroups().size
 		user.getTagGroups().each { tagGroup ->
 			def tagGroupId = tagGroup.id
 			tagGroup.getTags(userId).each { tag ->
@@ -91,6 +90,9 @@ class AnalyticsService {
 
 	public static prepareUser(analyticsTask) {
 		def userId = analyticsTask.userId
+		if (null == userId) {
+			return null
+		}
 		def user = User.get(userId.toLong())
 		def tagIds = user.tags().collect { it.id }
 
