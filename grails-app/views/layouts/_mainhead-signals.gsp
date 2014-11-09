@@ -40,12 +40,12 @@ function makePlainUrl(url) {
 	return "/home/" + url;
 }
 
-function initTemplate() {
+$(function() {
 	$("#logoutLink").click(function() {
 		doLogout();
 		return true;
 	});
-}
+});
 
 function addPerson(name, username, userId, sex) {
 	if (sex == 'F') sex = 'Female';

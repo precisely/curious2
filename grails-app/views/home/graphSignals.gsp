@@ -23,15 +23,14 @@ Curious = {
 	getPlot: getPlot
 };
 
-var tagListWidget;
 var tagList;
+var tagListWidget;
 function doLogout() {
 	callLogoutCallbacks();
 }
 
-$(function(){
-	initTemplate();
-	initTagListWidget();
+$(function() {
+	tagListWidget = initTagListWidget();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		getCSRFPreventionObject("getPeopleDataCSRF"),

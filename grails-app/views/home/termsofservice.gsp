@@ -54,8 +54,7 @@ p {
 
 <script type="text/javascript">
 
-$(function(){
-	initTemplate();
+$(function() {
 });
 </script>
 </head>

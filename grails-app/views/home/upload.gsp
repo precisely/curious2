@@ -19,9 +19,7 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-$(function(){
-	initTemplate();
-	
+$(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		function(data){
 			if (!checkData(data))

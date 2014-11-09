@@ -18,9 +18,8 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-$(function(){
-	initTemplate();
-	initTagListWidget();
+$(function() {
+	tagListWidget = initTagListWidget();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		function(data) {

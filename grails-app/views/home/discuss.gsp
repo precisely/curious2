@@ -40,7 +40,6 @@ function deletePost(postId) {
 }
 
 $(function(){
-	initTemplate();
 	initTagListOnly();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
