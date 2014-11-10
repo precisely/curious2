@@ -192,6 +192,8 @@ class UserGroup {
 		return retVals
 	}
 
+//	private List 
+
 	static Map getDiscussionsInfoForGroupNameList(User user, def groupNameList, Map args = [:]) {
 		boolean owned = false
 		log.debug "UserGroup.getDiscussionsInfoForGroupNameListr(): name list: " + groupNameList?.dump()
@@ -247,6 +249,8 @@ class UserGroup {
 
 		List result = databaseService.sqlRows(listQuery, map)
 
+		log.debug "data: ${result.dump()}"
+		//info["discussionId"]
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
@@ -285,7 +289,16 @@ class UserGroup {
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 
 		List result = databaseService.sqlRows(listQuery, namedParameters)
-		
+		List discussionList = [];
+		result.each{discussionList << it["discussionId"]}
+		/*List allPostOrderdByDiscussion = DiscussionPost.withCriteria {
+											projections {
+												"message as message"
+											}
+											'in'("discussionId",discussionList)
+											maxResults(2)
+										}
+		log.debug "data: ${allPostOrderdByDiscussion.dump()}"*/
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData

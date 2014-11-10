@@ -103,6 +103,42 @@ function dateToTime(date) {
 	return date.getTime();
 }
 
+function prettyDate(time) {
+	var date = dateToTime(time);
+	var diff = (((new Date()).getTime() - date) / 1000),
+	day_diff = Math.floor(diff / 86400);
+
+	if (isNaN(day_diff) || day_diff < 0)
+		return;
+
+	if (day_diff >= 31) {
+		return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
+	}
+
+	return day_diff == 0 && (
+		diff < 60 && "just now" ||
+		diff < 120 && "1 minute ago" ||
+		diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
+		diff < 7200 && "1 hour ago" ||
+		diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
+		day_diff == 1 && "Yesterday" ||
+		day_diff < 7 && day_diff + " days ago" ||
+		day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
+}
+
+function showCommentAgeFromDate() {
+	$('.posting-time').each(function() {
+		var time = $(this).data("time");
+		if (time) {
+			$(this).html(prettyDate(time));
+		}
+	});
+}
+
+$(document).ready(function() {
+	showCommentAgeFromDate();
+});
+
 function dateToTimeStr(d, shortForm) {
 	var ap = "";
 	var hour = d.getHours();
@@ -142,6 +178,87 @@ DateUtil.prototype.getDateRangeForToday = function() {
 		start: start,
 		end: end
 	}
+}
+
+function modifyShare(discussionId) {
+	var $selectElement = $('select#shareOptions');
+	if (discussionId == null) {
+		discussionId = $('input#discussionId').val()
+	}
+	$.ajax({
+		type: 'POST',
+		url: '/home/shareDiscussion',
+		data: {
+			discussionId: discussionId,
+			shareOptions: $selectElement.val().join(',')
+		},
+		success: function(data) {
+			showAlert(JSON.parse(data).message);
+		},
+		error: function(xhr) {
+			showAlert(JSON.parse(xhr.responseText).message);
+		}
+	});
+}
+
+function showShareDialog(discussionId) {
+	$('div#share-dialog').dialog({
+		dialogClass: "no-close",
+		modal: false,
+		resizable: false,
+		title: "Query",
+		buttons: {
+			"Yes ": function() {
+				$(this).dialog("close");
+				if (discussionId != null) {
+					modifyShare(discussionId);
+				} else {
+					modifyShare(null);
+				}
+			},
+			No: function() {
+				$(this).dialog("close");
+			}
+		}
+	});
+}
+
+function addComment(discussionId) {
+	var $inputElement = $('input#userComment');
+	if (discussionId == null) {
+		discussionId = $('input#discussionId').val()
+	}
+	$.ajax({
+		type: 'POST',
+		url: '/home/discuss?commentForm=true',
+		data: {
+			discussionId: discussionId,
+			message: $inputElement.val()
+		},
+		success: function(data) {
+		},
+		error: function(xhr) {
+		}
+	});
+}
+
+function showCommentDialog(discussionId) {
+	$('div#comment-dialog').dialog({
+		dialogClass: "no-close",
+		modal: false,
+		resizable: false,
+		title: "Comment",
+		buttons: {
+			"Post ": function() {
+				$(this).dialog("close");
+				if (discussionId != null) {
+					addComment(discussionId);
+				} else {
+					addComment(null);
+				}
+			}
+		}
+	});
 }
 
 var numJSONCalls = 0;

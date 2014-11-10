@@ -621,6 +621,7 @@ class HomeController extends DataController {
 			}
 		}
 		def groupMemberships = UserGroup.getGroupsForReader(user)
+		List associatedGroups = UserGroup.getGroupsForWriter(user)
 		def groupName
 		def groupFullname = "Community Feed"
 
@@ -635,7 +636,7 @@ class HomeController extends DataController {
 		params.offset = params.offset ?: 0
 
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupNameList
+		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
 				UserGroup.getDiscussionsInfoForUser(user, true, params)
@@ -643,7 +644,7 @@ class HomeController extends DataController {
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname,
+			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {

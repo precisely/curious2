@@ -1007,11 +1007,7 @@ body.discuss-page .red-header h1 {
 	display:inline-block;
 	vertical-align:top;
 }
-.commentList .comment .messageControls {
-	width:20px;
-	display:inline-block;
-	vertical-align:top;
-}
+
 * html .message {
 	left: 600px;					 /* RC width */
 }
@@ -1115,11 +1111,11 @@ body.discuss-page .red-header h1 {
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: none;
-	height: 60px;
+	height: 75px;
 	margin-left: 0px;
 	width: 100%;
 	border-radius: 2px;
-	padding: 20px;
+	padding: 25px;
 }
 .red-header .right {
 	float: left;
@@ -1254,7 +1250,7 @@ body.discuss-page .red-header h1 {
 }
 .full-width {
 	width: 100%;
-	height: 60px;
+	height: 75px;
 	border-radius: 2px;
 }
 
@@ -1265,7 +1261,7 @@ body.discuss-page .red-header h1 {
 .inner-addon .fa {
 	position: absolute;
 	padding: 10px;
-	font-size: 30;
+	font-size: 40;
 	color: #fc3f28;
 	margin: 5 0 0 15;
 	pointer-events: none;
@@ -1905,19 +1901,38 @@ body{
 .feed-item .discussion .discussion-topic {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 25px;
+	padding: 18 28 25 28;
+	font-size: 16px;
 	margin-top: 10px;
 }
 
-.feed-item .discussion .discussion-topic .title {
+.feed-item .discussion .discussion-topic .top-left-margin {
+	margin-top: 15px;
+	margin-left: 0px;
+}
+
+.feed-item .discussion .discussion-topic .group {
 	font-weight: bold;
 	color: #717171;
 }
 
+.feed-item .discussion .discussion-topic .discussion-header {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.feed-item .discussion .discussion-topic .title {
+	margin-top: 18px;
+	margin-left: 0px;
+}
+
+.feed-item .discussion .discussion-topic .title a {
+	color: #717171;
+}
+
 .feed-item .discussion .discussion-topic .avatar {
-	height: 30px;
-	width: 30px;
-	margin-bottom: 10px;
+	height: 46px;
+	width: 46px;
 }
 
 .feed-item .discussion .discussion-topic .posting-time {
@@ -1928,8 +1943,17 @@ body{
 
 .feed-item .discussion .discussion-topic p {
 	font-style: normal;
-	margin: 15 0 20 0;
-	color: #717171;
+	margin: 5 0 10 10;
+	color: #929090;
+}
+
+.feed-item .discussion .discussion-topic hr {
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discussion-topic .discussion-topic-span {
+	text-align: right;
+	margin-top: 10px;
 }
 
 .feed-item .discussion .discussion-topic .buttons {
@@ -1953,18 +1977,32 @@ body{
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 20px;
+	padding: 25 30 25 30;
 	font-size: 14px;
 }
 
-.feed-item .discussion .discussion-comment .view-all{
+.feed-item .discussion .multiple-comments {
+	padding: 0 30 0 30;
+}
+
+
+.feed-item .discussion .discussion-comment .view-comment{
 	color: #5d5d5d;
 	font-size: 16px;
-	margin-bottom: 10px;
 }
 
 .feed-item .discussion .discussion-comment .add-comment {
-	margin-left: 20px;
+	margin-left: 34px;
+}
+
+.feed-item .discussion .discussion-comment .add-comment-to-discussion {
+	margin: 0 0 38 0;
+}
+
+.feed-item .discussion .discussion-comment .add-comment-to-discussion input {
+	width: 100%;
+	height: 52px;
+	padding: 10px;
 }
 
 .feed-item .discussion .discussion-comment .posting-time {
@@ -1973,9 +2011,9 @@ body{
 	color: #a8a8a8;
 }
 
-.feed-item .discussion .discussion-comment .add-comment input{
+.feed-item .discussion .discussion-comment .add-comment input {
 	width: 100%;
-	height: 35px;
+	height: 45px;
 	padding: 10px;
 }
 
@@ -1985,9 +2023,28 @@ body{
 #post-comment:-ms-input-placeholder {color: #a4a4a4;} /* ie */
 
 .feed-item .discussion .discussion-comment .avatar {
-	height: 20px;
+	height: 34px;
+	width: 34px;
+	margin: 10 0 0 0;
+}
+
+.feed-item .discussion .discussion-comment .comment-controll{
 	width: 20px;
-	margin: 10 0 10 0;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.feed-item .discussion .discussion-comment p {
+	margin-left: 44px;
+	margin-bottom: 25px;
+}
+
+.feed-item .discussion .discussion-comment .without-margin{
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discussion-comment .bottom-margin {
+	margin-bottom: 10px;
 }
 
 .feed-item .user-name {
