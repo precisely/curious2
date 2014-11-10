@@ -171,6 +171,13 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testSleepQuality() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "sleep quality 7", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep quality, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+	}
+	
+	@Test
 	void testParse() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), new EntryStats())
 		println entry.valueString()

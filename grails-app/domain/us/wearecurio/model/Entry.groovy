@@ -2709,6 +2709,7 @@ class Entry implements Comparable {
 		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, durationStartScanPattern])
 		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, commentScanPattern ])
 		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, repeatStartScanPattern])
+		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern ])
 		
 		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
 		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
@@ -2726,7 +2727,7 @@ class Entry implements Comparable {
 				amountFirstScanPattern.tryMatch()
 				repeatStartScanPattern.tryMatch()
 				durationStartScanPattern.tryMatch()
-				durationSynonymScanPattern.match() { matchTag = false }
+				durationSynonymScanPattern.tryMatch() { matchTag = false }
 			}
 			
 			if (matchTag) tagWordScanPattern.match()
