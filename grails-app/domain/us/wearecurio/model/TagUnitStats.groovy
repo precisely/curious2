@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.aop.aspectj.RuntimeTestWalker.ThisInstanceOfResidueTestVisitor;
 import org.springframework.transaction.annotation.Transactional
 
+import us.wearecurio.cache.BoundedCache
 import us.wearecurio.units.UnitGroupMap
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
@@ -32,6 +33,30 @@ class TagUnitStats {
 	void incrementTimesUsed(int increment) {
 		this.timesUsed += increment
 	}
+	
+	static class UserTagId {
+		Long userId
+		Long tagId
+		
+		UserTagId(Long userId, Long tagId) {
+			this.userId = userId
+			this.tagId = tagId
+		}
+		
+		int hashCode() {
+			return (int) (this.userId + this.tagId)
+		}
+		
+		boolean equals(Object o) {
+			if (o instanceof UserTagId) {
+				return (((UserTagId)o).userId == this.userId) && (((UserTagId)o).tagId == this.tagId)
+			}
+			
+			return false
+		}
+	}
+	
+	protected static BoundedCache cache = new BoundedCache<UserTagId, TagUnitStats>(10000)
 	
 	protected static def createOrUpdateSingle(Long userId, Long tagId, String unit, Long unitGroupId, boolean increment) {
 		def tagUnitStats
@@ -62,6 +87,8 @@ class TagUnitStats {
 		tagUnitStats.timesUsed+=1
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
 		tagUnitStats.save()
+		
+		cache.putAt(new UserTagId(userId, tagId), tagUnitStats)
 		return tagUnitStats
 	}
 
@@ -86,6 +113,14 @@ class TagUnitStats {
 	}
 	
 	public static def mostUsedTagUnitStats(Long userId, Long tagId) {
+		TagUnitStats stats = cache.getAt(new UserTagId(userId, tagId))
+		if (stats != null) {
+			if (!stats.isAttached()) {
+				stats.attach()
+			}
+			
+			return stats
+		}
 		def tagUnitStats = TagUnitStats.withCriteria {
 			and {
 				eq ('tagId', tagId)

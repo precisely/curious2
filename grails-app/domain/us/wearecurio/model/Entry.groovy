@@ -1,5 +1,8 @@
 package us.wearecurio.model
 
+import java.math.BigDecimal
+import java.util.Map
+
 import groovy.time.*
 import grails.converters.*
 
@@ -3046,8 +3049,7 @@ class Entry implements Comparable {
 		Map amounts = [:]
 		
 		for (Entry e : fetchGroupEntries()) {
-			amounts.put(index, [amount:e.getAmount(), amountPrecision:e.fetchAmountPrecision(), units:e.getUnits()])
-			index++
+			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
 		}
 		
 		retVal['amounts'] = amounts

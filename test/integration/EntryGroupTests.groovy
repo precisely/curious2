@@ -157,6 +157,25 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
+	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
+	void testMultiCreateAddSimilarUnitsListExpansion() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "run 2 hours 30 minutes", baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 2
+			assert amounts[0].units == "hours"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
 	void testMultiList() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 5 slices 500 calories", baseDate, true), new EntryStats())
 		
@@ -226,10 +245,12 @@ class EntryGroupTests extends CuriousTestCase {
 		for (entryDesc in entries) {
 			++c
 			def amounts = entryDesc['amounts']
-			assert amounts[0].amount.toString() == "2.500000000"
+			assert amounts[0].amount.toString() == "2"
 			assert amounts[0].units == "hours"
-			assert amounts[1].amount.intValue() == 255
-			assert amounts[1].units == "calories"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins"
+			assert amounts[2].amount.intValue() == 255
+			assert amounts[2].units == "calories"
 		}
 		
 		assert c == 1
