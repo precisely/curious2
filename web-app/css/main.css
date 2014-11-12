@@ -1981,10 +1981,14 @@ body{
 	font-size: 14px;
 }
 
+
 .feed-item .discussion .multiple-comments {
 	padding: 0 30 0 30;
 }
 
+.feed-item .discussion .multiple-comments:nth-last-child(2) {
+	padding: 0 30 40 30;
+}
 
 .feed-item .discussion .discussion-comment .view-comment{
 	color: #5d5d5d;
