@@ -867,7 +867,7 @@ class HomeController extends DataController {
 			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
 					templateVer: urlService.template(request)]
-
+			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
 				render (template: "/discussion/posts", model: model)

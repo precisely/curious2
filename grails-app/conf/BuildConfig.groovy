@@ -15,7 +15,7 @@ grails.project.fork = [
     //test: [maxMemory: 2048, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
     test: false,
     // configure settings for the run-app JVM
-    run: [maxMemory: 2048, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
+    //run: [maxMemory: 2048, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
     // configure settings for the run-war JVM
     war: [maxMemory: 2048, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
     // configure settings for the Console UI JVM
@@ -75,6 +75,7 @@ grails.project.dependency.resolution = {
         // plugins needed at runtime but not for compilation
         // runtime ":hibernate4:4.3.5.5" // or
 		runtime ":hibernate:3.6.10.17"
+		//runtime ':hibernate4:4.3.5.5'
         //runtime ":database-migration:1.4.0"
 
         // Uncomment these to enable additional asset-pipeline capabilities

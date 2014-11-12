@@ -242,6 +242,7 @@ class UserGroup {
 
 		String countQuery = String.format(discussionQuery, "COUNT(d.id) as count", argument2)
 		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, map)[0]?.count
+		log.debug "paginated data count: ${paginatedData['totalCount']}"
 		
 		argument2 += " GROUP BY d.id"
 		String listQuery = String.format(discussionQuery, argument1, argument2)
@@ -284,6 +285,7 @@ class UserGroup {
 		
 		String countQuery = "SELECT count(*) as count FROM (" + String.format(DISCUSSIONS_QUERY, "d.id", argument2) + ") as t"
 		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, namedParameters)[0]?.count
+		log.debug "paginated data count: ${paginatedData['totalCount']}"
 
 		String listQuery = String.format(DISCUSSIONS_QUERY, argument1, argument2)
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
