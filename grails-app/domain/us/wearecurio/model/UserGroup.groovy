@@ -289,16 +289,24 @@ class UserGroup {
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 
 		List result = databaseService.sqlRows(listQuery, namedParameters)
-		List discussionList = [];
-		result.each{discussionList << it["discussionId"]}
-		/*List allPostOrderdByDiscussion = DiscussionPost.withCriteria {
+		List discussionIdList = result.collect { it.discussionId }*.toLong()
+
+		def allPostOrderdByDiscussion = DiscussionPost.withCriteria {
 											projections {
-												"message as message"
+												groupProperty("discussionId")
+												count("id")
 											}
-											'in'("discussionId",discussionList)
-											maxResults(2)
+											'in'("discussionId",discussionIdList)
 										}
-		log.debug "data: ${allPostOrderdByDiscussion.dump()}"*/
+		log.debug "result we are getting: ${allPostOrderdByDiscussion.dump()}"
+
+		/*String getTopPostQuery = """set @num \\:= 0; set @did \\:= ''; select id, message ,
+									@num \\:= if(@did = discussion_id, @num + 1, 1) as row_num, 
+									@did \\:= discussion_id as dummy from discussion_post force index(discussion_id) 
+									having row_num <= 2 order by dummy;"""
+*/
+		//List topPost = databaseService.sqlRows(getTopPostQuery);
+		//log.debug "result we are getting: ${topPost.dump()}"
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
