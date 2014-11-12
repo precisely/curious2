@@ -378,7 +378,7 @@ class Discussion {
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
 
-		if (args.max && args.offset) {
+		if (args.max && args.offset.toInteger()  > -1) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
 
@@ -387,8 +387,7 @@ class Discussion {
 				totalPostCount --
 			}
 		}
-
-		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
+				[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]
 	}

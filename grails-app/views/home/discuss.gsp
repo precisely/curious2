@@ -179,9 +179,8 @@ $(function(){
 <body class="discuss-page">
 	<!-- SHARE PAGE -->
 	<div id="container" class="sharePage">
-		<div class="discussTitle red-header" id="discussTitleArea">
-			<h1>
-				<span id="actions"> <span
+		<div class="row red-header">
+				<!-- <span id="actions"> <span
 					class="icon-triangle icon-triangle-right toggle"></span>
 					<ul>
 						<li id="share-discussion"><a href="#">Change Visibility</a></li>
@@ -189,14 +188,8 @@ $(function(){
 								params="[discussionId: params.discussionId, deleteDiscussion: true]"
 								action="discuss">Delete</g:link></li>
 					</ul>
-				</span> <span id="discussTitleSpan"><g:if test="${!isNew}">
-						${discussionTitle}
-					</g:if></span>
-				<div class="byline">
-					<span class="username bittext" id="discussUsername"></span> <span
-						class="date bittext" id="discussDate"></span>
-				</div>
-			</h1>
+				</span>--!><h1 class="clearfix">
+                               			 <span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>	 			   </h1>
 		</div>
 		<div id="plotLeftNav">
 			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>

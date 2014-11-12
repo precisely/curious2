@@ -917,10 +917,6 @@ body.discuss-page .red-header {
 	text-transform: none;
 }
 
-body.discuss-page .red-header h1 {
-	padding:10px;
-}
-
 .sharePage h1 .bittext {
 	font-size:10px;
 	font-weight:normal;
@@ -1128,7 +1124,7 @@ body.discuss-page .red-header h1 {
 }
 .red-header h1 {
 	font-weight: normal;
-	font-size: .8em;
+	font-size: 20px;
 	line-height: 20px;
 }
 .red-header #actions {
