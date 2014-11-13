@@ -1,9 +1,10 @@
 package us.wearecurio.model;
 
 import grails.converters.*
+import groovy.sql.Sql
 
 import org.apache.commons.logging.LogFactory
-
+import grails.util.Holders
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
@@ -293,22 +294,27 @@ class UserGroup {
 		List result = databaseService.sqlRows(listQuery, namedParameters)
 		List discussionIdList = result.collect { it.discussionId }*.toLong()
 
-		def allPostOrderdByDiscussion = DiscussionPost.withCriteria {
-											projections {
-												groupProperty("discussionId")
-												count("id")
-											}
-											'in'("discussionId",discussionIdList)
-										}
-		log.debug "result we are getting: ${allPostOrderdByDiscussion.dump()}"
+		def allPostOrderdByDiscussion
+		if(discussionIdList) {
+			allPostOrderdByDiscussion = DiscussionPost.withCriteria {
+				projections {
+					groupProperty("discussionId")
+					count("id")
+				}
+				'in'("discussionId",discussionIdList)
+			}
+			log.debug "result we are getting: ${allPostOrderdByDiscussion.dump()}"
+		}
 
-		/*String getTopPostQuery = """set @num \\:= 0; set @did \\:= ''; select id, message ,
-									@num \\:= if(@did = discussion_id, @num + 1, 1) as row_num, 
-									@did \\:= discussion_id as dummy from discussion_post force index(discussion_id) 
+		String getTopPostQuery = """select id, message ,
+									@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
+									@did := discussion_id as dummy from discussion_post force index(discussion_id) 
 									having row_num <= 2 order by dummy;"""
-*/
-		//List topPost = databaseService.sqlRows(getTopPostQuery);
-		//log.debug "result we are getting: ${topPost.dump()}"
+		def dataSource =  Holders.getApplicationContext().dataSource
+		def sql = new Sql(dataSource)
+
+		def topPost = sql.rows(getTopPostQuery);
+		
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
