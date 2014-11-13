@@ -101,7 +101,7 @@
 									placeholder="Add Comment..."
 									id="post-comment" name="message" required>
 							</g:else>
-							<input type="hidden" name="discussionId" value="${discussionId}">
+							<input type="hidden" name="discussionId" value="${discussionData.id}">
 						</form>
 					</div>
 					<div class="class-md-6"></div>

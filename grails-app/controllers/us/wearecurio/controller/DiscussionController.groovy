@@ -21,7 +21,10 @@ class DiscussionController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 				//flash.message = "Created new discussion: " + name
-				discussion.createPost(user, discussionPost)
+
+				if(discussionPost) {
+					discussion.createPost(user, discussionPost)
+				}
 				
 			Map model = discussion.getJSONModel(params)
 	
