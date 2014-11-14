@@ -2,6 +2,7 @@ package us.wearecurio.model;
 
 import grails.converters.*
 import groovy.sql.Sql
+import org.hibernate.criterion.CriteriaSpecification
 
 import org.apache.commons.logging.LogFactory
 import grails.util.Holders
@@ -176,6 +177,7 @@ class UserGroup {
 			// Adding a flag to indicate if this discussion was started with a plot
 			def firstPost = Discussion.get(discussionId).fetchFirstPost()
 			retVal['isPlot'] = firstPost?.plotDataId ? true : false
+			retVal['firstPost'] = firstPost
 			discussionMap[discussionId] = retVal
 			retVals.add(retVal)
 		}
@@ -294,27 +296,34 @@ class UserGroup {
 		List result = databaseService.sqlRows(listQuery, namedParameters)
 		List discussionIdList = result.collect { it.discussionId }*.toLong()
 
-		def allPostOrderdByDiscussion
+		def allPostCountOrderdByDiscussion
 		if(discussionIdList) {
-			allPostOrderdByDiscussion = DiscussionPost.withCriteria {
+			allPostCountOrderdByDiscussion = DiscussionPost.withCriteria {
+				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
 				projections {
-					groupProperty("discussionId")
-					count("id")
+					groupProperty("discussionId", "discussionId")
+					count("id", "totalPosts")
 				}
 				'in'("discussionId",discussionIdList)
 			}
-			log.debug "result we are getting: ${allPostOrderdByDiscussion.dump()}"
 		}
 
-		String getTopPostQuery = """select id, message ,
+		String getSecondPostQuery = """select id, message , discussion_id,
 									@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
 									@did := discussion_id as dummy from discussion_post force index(discussion_id) 
-									having row_num <= 2 order by dummy;"""
+									group by discussion_id,message having row_num = 2;"""
 		def dataSource =  Holders.getApplicationContext().dataSource
 		def sql = new Sql(dataSource)
 
-		def topPost = sql.rows(getTopPostQuery);
-		
+		def secondPostsList = sql.rows(getSecondPostQuery);
+		def discussionPostData = [ : ]
+		discussionIdList.each() {
+			def discussionId = it
+			discussionPostData["$discussionId"] = ["secondPost": secondPostsList.find{it.discussion_id == discussionId}?.message,
+				 "totalPosts": allPostCountOrderdByDiscussion.find{it.discussionId == discussionId}?.totalPosts]
+		}
+
+		paginatedData["discussionPostData"] = discussionPostData
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 
 		paginatedData
