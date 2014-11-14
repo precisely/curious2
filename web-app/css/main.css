@@ -142,6 +142,7 @@ a,a:link,a:hover,a:visited {
 .main {
 	border:1px solid #cccccc;
 	background-color: #f6f6f6;
+	padding: 0 15;
 }
 .main h1 {
 	padding:7px 10px;
@@ -1542,7 +1543,8 @@ body.load-graph #graphList .summary .close {
 }
 .about-wrapper{
 	position:relative;
-	width:100%;
+	width:80%;
+	margin: 0 auto;
 	overflow:hidden;
 }
 .footerLinks{
@@ -2053,7 +2055,7 @@ body{
 }
 
 .footer-items{
-	
+	padding-left: 5%;
 }
 
 .footer-items .col-md-3{
@@ -2074,4 +2076,8 @@ body{
 .footer-items ul li .ul-head{
 	text-transform: uppercase;
 	color: #656565;
+}
+
+.pagination:empty {
+	padding: 0px;
 }

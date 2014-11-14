@@ -24,7 +24,9 @@
 					</a>
 				</div>
 				<div class="row">
-					<p>dkdknvkdasnvck sikucnksancfawe ciwaefnuwaeiofc aweufinaweu</p>
+<%--				<g:if test="${discussionPostData["${discussionData.id}"][0]?.id == discussionData.firstPostId }">--%>
+					<p>${discussionData.firstPost?.message }</p>
+<%--				</g:if>--%>
 				</div>
 				</div>
 				<div class="row buttons">
@@ -55,7 +57,7 @@
 			<div class="discussion-comment">
 				<div class="row bottom-margin">
 					<a href="/home/discuss?discussionId=${discussionData.id }"> <span class="view-comment">VIEW ALL
-							COMMENTS (18)</span>
+							COMMENTS (${discussionPostData["${discussionData.id}"]?.totalPosts })</span>
 					</a>
 				</div>
 				<div class="row">
@@ -65,7 +67,7 @@
 				</div>
 				<div class="row">
 					<p>
-						Random comment to perform visual test.
+						${discussionPostData["${discussionData.id}"]?.secondPost }
 					</p>
 				</div>
 				<div class="row">

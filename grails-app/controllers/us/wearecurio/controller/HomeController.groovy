@@ -645,7 +645,7 @@ class HomeController extends DataController {
 
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
-			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
+			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {
 			render template: "/feed/discussions", model: model

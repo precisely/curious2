@@ -65,7 +65,7 @@
          </g:if>
         <%-- Inner Pages --%>
         <div class="row footer-items"> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
-            <div class="col-md-3">
+            <div class="col-md-2 ">
             	<ul> 
             	<li> <span class="ul-head"> Company </span><br></li>
             		<li ><a href="#">About</a> </li>
@@ -73,7 +73,7 @@
             		<li ><a href="#">Contacts</a> </li>
             	</ul>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-md-offset-1">
             	<ul> 
             	 <li><span class="ul-head">Policies</span><br></li>
             		<li ><a href="#">Community Guideline</a> </li>
@@ -81,7 +81,7 @@
             		<li ><a href="#">Privacy</a> </li>
             	</ul>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2 col-md-offset-1">
             	<ul> 
             		<li> <span class="ul-head">Support</span> <br></li>
             		<li ><a href="#">Wiki</a> </li>
@@ -89,7 +89,7 @@
             		<li ><a href="#">Email Help</a> </li>
             	</ul>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-1 col-md-offset-1">
             	<ul>
             	<li> <span class="ul-head">Follow</span><br></li>
             		<li ><a href="#"> Blog </a></li>
