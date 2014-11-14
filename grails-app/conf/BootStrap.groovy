@@ -23,13 +23,19 @@ class BootStrap {
 	TagService tagService
 	EmailService emailService
 	AnalyticsService analyticsService
+	EntryService entryService
+	SecurityService securityService
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
+		
 		DatabaseService.set(databaseService)
 		TagService.set(tagService)
 		EmailService.set(emailService)
+		EntryService.set(entryService)
+		SecurityService.set(securityService)
+		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )

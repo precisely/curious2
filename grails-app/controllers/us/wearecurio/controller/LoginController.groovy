@@ -43,30 +43,13 @@ class LoginController extends SessionController {
 	protected User execLogin() {
 		debug "LoginController.execLogin()"
 		
-		params.username = params.username.toLowerCase()
+		return securityService.login(params.username, params.password)
+	}
+	
+	protected def execLogout() {
+		debug "LoginController.execLogout()"
 		
-		boolean authorized = false
-		
-		def user = User.findByUsername(params.username)
-		if (user != null) {
-			// if admin sets the password to '', let the next person to log in set the password for
-			// the account (should never be used in production, only for local sandboxes)
-			if (user.getPassword().length() == 0) {
-				debug "password cleared by admin: reset password: WARNING SHOULD NEVER OCCUR ON PRODUCTION SYSTEM"
-				user.encodePassword(params.password)
-				authorized = true
-			} else if (user.checkPassword(params.password)) {
-				authorized = true
-			}
-		}
-		if (authorized) {
-			debug "auth success user:" + user
-			setLoginUser(user)
-			return user
-		} else {
-			debug "auth failure"
-			return null
-		}
+		return securityService.logout()
 	}
 	
 	protected def renderJSONPost(data) {
@@ -249,6 +232,10 @@ class LoginController extends SessionController {
 
 		render(view:"/" + name() + "/recover",
 				model:[precontroller:params.precontroller, preaction:params.preaction, code:params.code, templateVer:urlService.template(request)])
+	}
+	
+	def setLoginUser(user) {
+		securityService.setLoginUser(user)
 	}
 	
 	def dorecover() {

@@ -1,21 +1,28 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+
 import javax.servlet.http.HttpServletRequest
 
 import org.springframework.transaction.annotation.Transactional
-
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 import us.wearecurio.model.User
 import us.wearecurio.server.Session
+import grails.compiler.GrailsTypeChecked
 
 class SecurityService {
 
-	static transactional = false
+	static transactional = true
 	
+	static SecurityService service
+	
+	public static def set(s) { service = s }
+
+	public static SecurityService get() { return service }
+		
 	// list of actions that should be cross-site checked
 	static def csrfActions = [
 		"addEntrySData",
@@ -76,7 +83,7 @@ class SecurityService {
 			User mobileUser = Session.lookupSessionUser(params.mobileSessionId)
 			if (mobileUser != null) {
 				if (user == null) {
-					println "Opening mobile session with user " + user
+					println "Opening mobile session with user " + mobileUser
 					session.userId = mobileUser.getId()
 					return true
 				} else if (user.getId() != mobileUser.getId()) {
@@ -170,4 +177,75 @@ class SecurityService {
 		return null
 	}
 
+	protected def clearTags() {
+		log.debug "clearTags()"
+		
+		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
+		
+		session.tags = null
+	}
+	
+	User login(String username, String password) {
+		log.debug "login() username: " + username
+		
+		username = username.toLowerCase()
+		
+		boolean authorized = false
+		
+		def user = User.findByUsername(username)
+		if (user != null) {
+			// if admin sets the password to '', let the next person to log in set the password for
+			// the account (should never be used in production, only for local sandboxes)
+			if (user.getPassword().length() == 0) {
+				log.debug "password cleared by admin: reset password: WARNING SHOULD NEVER OCCUR ON PRODUCTION SYSTEM"
+				user.encodePassword(password)
+				authorized = true
+			} else if (user.checkPassword(password)) {
+				authorized = true
+			}
+		}
+		if (authorized) {
+			log.debug "auth success user:" + user
+			setLoginUser(user)
+			return user
+		} else {
+			log.debug "auth failure"
+			return null
+		}
+	}
+	
+	def setLoginUser(user) {
+		log.debug "setLoginUser() " + user
+
+		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
+		
+		if (user != null) {
+			Session persistentSession = Session.createOrGetSession(user)
+			log.debug "Login: persistent session " + persistentSession.fetchUuid()
+			session.persistentSession = persistentSession
+		}
+		session.tags = null
+		if (user == null) {
+			log.debug "Logoff: login user cleared"
+			session.userId = null
+			clearTags()
+		} else {
+			log.debug "Login: setting login user " + user.getId()
+			session.userId = user.getId()
+		}
+		session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
+	}
+	
+	def logout() {
+		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
+		
+		setLoginUser(null)
+		if (session.persistentSession != null && !session.persistentSession.isDisabled()) {
+			session.persistentSession.setDisabled(true)
+			Session.delete(session.persistentSession)
+		}
+		session.persistentSession = null
+		session.sessionCache = null
+
+	}
 }

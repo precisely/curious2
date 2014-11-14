@@ -49,6 +49,8 @@ class SecurityFilters {
 					redirect(url:urlService.base(request) + 'home/login')
 					return true
 				}
+				if (!actionName)
+					return false
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
 						println "Unauthorized data action " + actionName

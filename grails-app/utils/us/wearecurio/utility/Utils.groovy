@@ -12,6 +12,10 @@ import us.wearecurio.services.TagService
 import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 
+import us.wearecurio.services.EmailService
+
+import grails.util.GrailsUtil
+
 /**
  * @author mitsu
  */
@@ -52,6 +56,15 @@ class Utils {
 	static boolean save(obj, boolean flush) {
 		if (!obj.save(flush: flush)) {
 			log.debug "Error saving $obj: $obj.errors"
+		   	def messageBody = "Error saving while executing Curious app:\n" + obj.errors
+			def messageSubject = "CURIOUS SERVER SAVE ERROR: " + GrailsUtil.environment
+			EmailService.get().sendMail {
+				to "server@wearecurio.us"
+				from "server@wearecurio.us"
+				subject messageSubject
+				body messageBody
+			}
+			
 			return false
 		} else {
 			log.debug "Object saved successfully $obj."

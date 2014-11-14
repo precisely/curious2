@@ -29,37 +29,15 @@ class SessionController {
 		map.controller = map.controller ? map.controller : name
 		return urlService.make(map, request)
 	}
+	
+	protected def execLogin() {
+		securityService.login(session.username, session.password)
+	}
 
 	protected def execLogout() {
 		debug "SessionController.execLogout()"
 		
-		setLoginUser(null)
-		if (session.persistentSession != null && !session.persistentSession.isDisabled()) {
-			session.persistentSession.setDisabled(true)
-			Session.delete(session.persistentSession)
-		}
-		session.persistentSession = null
-		session.sessionCache = null
-	}
-
-	protected def setLoginUser(user) {
-		debug "SessionController.setLoginUser()"
-
-		if (user != null) {
-			Session persistentSession = Session.createOrGetSession(user)
-			debug "Login: persistent session " + persistentSession.fetchUuid()
-			session.persistentSession = persistentSession
-		}
-		session.tags = null
-		if (user == null) {
-			debug "Logoff: login user cleared"
-			session.userId = null
-			clearTags()
-		} else {
-			debug "Login: setting login user " + user.getId()
-			session.userId = user.getId()
-		}
-		session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
+		securityService.logout()
 	}
 
 	protected User sessionUser() {
@@ -116,9 +94,9 @@ class SessionController {
 	}
 
 	protected def clearTags() {
-		debug "SessionController.clearTags()"
+		debug "clearTags()"
 		
-		session.tags = null
+		securityService.clearTags()
 	}
 	
 	protected def userFromId(Long userId) {
@@ -130,7 +108,7 @@ class SessionController {
 
 	protected def userFromIdStr(String userIdStr) {
 		if (userIdStr == "undefined") {
-			return sessionUser();
+			return sessionUser()
 		}
 		return userFromId(Long.parseLong(userIdStr))
 	}

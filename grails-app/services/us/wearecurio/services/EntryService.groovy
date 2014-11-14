@@ -4,6 +4,12 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 
 class EntryService {
+	
+	static EntryService service
+	
+	static set(EntryService s) { service = s }
+	
+	static EntryService get() { service }
 
 	def getEntriesByUserAndTag(Long userId, String tagDescription) {
 		// TODO: write more efficient SQL.
