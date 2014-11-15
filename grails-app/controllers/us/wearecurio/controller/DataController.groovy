@@ -291,7 +291,11 @@ class DataController extends LoginController {
 			writer.write(",")
 			writeCSV(writer, entry.fetchTimeZoneName())
 			writer.write(",")
-			writeCSV(writer, entry.getBaseTag().getDescription())
+			if (entry.getBaseTag())
+				writeCSV(writer, entry.getBaseTag().getDescription())
+			else
+				writeCSV(writer, entry.getTag().getDescription())
+			
 			writer.write("\n")
 		}
 
