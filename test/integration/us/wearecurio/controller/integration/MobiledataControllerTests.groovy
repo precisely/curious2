@@ -167,6 +167,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 		
 		controller.params.clear()
+		controller.params.callback = "callback"
 		controller.params.putAll([
 			token:'asdfsdfsdfalsdjflskjdfsalkfj',
 			deviceType:'1',
@@ -174,7 +175,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		
 		controller.registerForPushNotificationData()
 		
-		assert controller.response.contentAsString.startsWith('null({"success":true')
+		assert controller.response.contentAsString.startsWith('callback({"success":true')
 	}
 	
 	@Test
@@ -188,13 +189,14 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 				userId: user.id)
 			
 		controller.params.clear()
+		controller.params.callback = "callback"
 		controller.params.putAll([
 			token:'asdfsdfasdfsadfas',
 		])
 		
 		controller.unregisterPushNotification()
 		
-		assert controller.response.contentAsString.startsWith('null({"success":true')
+		assert controller.response.contentAsString.startsWith('callback({"success":true')
 	}
 	
 }
