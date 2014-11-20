@@ -16,15 +16,16 @@
 ;(db/connect (db/connection-params "DEVELOPMENT"))
 
 (def state (atom {})) ; The state of each iteration.
-(def α 10) ; The main Dirichlet Process hyper parameter.
+(def α 0.00001) ; The main Dirichlet Process hyper parameter.
 (def λ_in 2)
 (def λ_out 0.1)
-(def MAX-ITER-NEW-CLUSTER 750) ; 750
+(def MAX-ITER-NEW-CLUSTER 2000)
 (def z 1.1) ; scaling factor for automatically adjusting λ
 (def MIN-N 10) ; Min. num. data points per series.
 (def DEFAULT-SCALE const/DAY)
-(def MAX-EPOCH 100); 200
+(def MAX-EPOCH 300); 200
 (def keep-running (atom true))
+(def resample (atom true))
 ;
 ; Generic helpers
 ;
@@ -622,7 +623,8 @@
   [data the-state tag-id N alpha max-iter]
   (let [old-cluster-id        (get-cluster-id the-state tag-id)
         old-cluster           (get-cluster the-state old-cluster-id)
-        new-cluster           (resample-tag data the-state tag-id max-iter)
+        first-cluster-id      (get-in the-state [:first-phonebook tag-id])
+        new-cluster           (get-in the-state [:first-clusters first-cluster-id])
         rate                  (get-rates the-state tag-id)
         row                   (get data tag-id)
         start-with-old        (get-in the-state [:C old-cluster-id :start-with])
@@ -758,38 +760,60 @@
 (defn evolve-alpha [epoch alpha]
  (* alpha (Math/pow 100 (- (* 1.0 (Math/log10 epoch))))))
 
+(defn save-original-sampling [state]
+  (let [the-state @state]
+    (swap! state assoc-in [:first-clusters] (get the-state :C))
+    (swap! state assoc-in [:first-phonebook] (make-phonebook (get the-state :C)))))
+
+(defn cluster-fit [clusters]
+   (->> clusters
+        (map :loglike)
+        (map vals)
+        flatten
+        (sort >)
+        (reduce +)))
+
+(defn avg-cluster-fit [clusters n]
+  (/ (cluster-fit clusters) n))
+
+(defn percent-fit [state n]
+  (/ (avg-cluster-fit (:first-clusters @state) n)
+     (avg-cluster-fit (:C @state) n)))
+
+(defn process-singleton [data state tag-id N alpha]
+  (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N alpha)]
+    (reset! state new-state)
+    (refurbish-clusters data state)))
+
+(defn process-non-singleton [data state tag-id N alpha max-iter-new-cluster]
+  "Assign tag back to original partition if it passes the transition probability sampling."
+  (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N alpha max-iter-new-cluster)]
+    (reset! state new-state)))
+
+(defn cluster-counts [clusters]
+  (->> clusters (map :members) (map count)))
+
 (defn algorithm-7-Neal-2000
   ([data state max-epoch] (algorithm-7-Neal-2000 data state MAX-ITER-NEW-CLUSTER α MAX-ITER-NEW-CLUSTER))
   ([data state max-epoch alpha max-iter-new-cluster & [user-id]]
     (let [N (count data)]
-      (println "Resampling partitions for each tag.")
-      (resample-singletons data state max-iter-new-cluster)
-      (println "After resampling singletons")
-
-      (println "\n\n\n***** First Epoch *****")
+      (println "Sample partitions for each tag.")
+      (when @resample (resample-singletons data state max-iter-new-cluster))
+      ; Save original sampling of partitions to (dramatically) speed up the clustering.
+      (save-original-sampling state)
       (refurbish-clusters data state)
-      (pp @state)
       (dotimes [iter max-epoch]
-        (let  [new-alpha (evolve-alpha iter alpha)]
         (when @keep-running
-          (println "\n\n------------------- START Epoch #" iter)
           (doseq [tag-id (get-tag-ids data)]
-            (let [cluster-id (get-cluster-id @state tag-id)]
-              (if (singleton? data @state tag-id)
-                (when-let [new-state (assign-singleton-to-existing-cluster data @state tag-id N new-alpha)]
-                  (do (reset! state new-state)
-                      (refurbish-clusters data state)
-                      (println "----->>ITER #" iter ": tag" tag-id "JOINED cluster" cluster-id)
-                      (print-state data @state user-id)
-                      (swap! state assoc-in [:best-clusters] (get @state :C))))
-
-                (when-let [new-state (assign-non-singleton-to-new-cluster data @state tag-id N new-alpha max-iter-new-cluster)]
-                  (do
-                    (println "<<-----ITER #" iter ": tag" tag-id "broke out of cluster" cluster-id)
-                    (print-state data @state user-id)
-                    (reset! state new-state))
-                  )))))))
-      (update-loglikes data state))))
+            (if (singleton? data @state tag-id)
+              (process-singleton data state tag-id N alpha)
+              (process-non-singleton data state tag-id N alpha max-iter-new-cluster)))
+          (print "Finished Epoch #" iter ".")
+          (print " fitness:" (percent-fit state N))
+          (println  " -- "  (cluster-counts (:C @state)))))
+      (swap! state assoc-in [:best-clusters] (get @state :C))
+      (update-loglikes data state)
+      nil)))
 
 ; series to data-map as required by algorithm above.
 (defn to-data-map [series]
@@ -826,7 +850,10 @@
     (apply dissoc data-map small-tags)))
 
 (defn str-date [date]
-  (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tr/from-sql-time date)))
+  (let [joda-date (if (= java.sql.Timestamp (class date))
+            (tr/from-sql-time date)
+            date)]
+    (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") joda-date)))
 
 (defn run-algo [user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
   (let [start-time-as-decimal (db/rescale-time start-time interval-size-ms)
@@ -836,12 +863,13 @@
     (reset! keep-running true)
     (when (> (count data) 0)
       (println "initializing user" user-id)
-      (initialize-state data state start-time-as-decimal stop-time-as-decimal)
+      (when @resample (initialize-state data state start-time-as-decimal stop-time-as-decimal))
       (println "running" max-epoch "epochs")
       (algorithm-7-Neal-2000 data state max-epoch alpha max-iter-new-cluster user-id)
       (println "finished clustering for user" user-id "over period:" (str-date start-time) "-" (str-date stop-time))
       (when-let [best-clusters (get @state :best-clusters)]
-        (swap! state assoc-in [:C] best-clusters)))))
+        (swap! state assoc-in [:C] best-clusters))
+      nil)))
 
 (defn terminate []
   (reset! keep-running false))
