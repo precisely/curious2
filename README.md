@@ -56,7 +56,7 @@ Install Vagrant from [here](https://www.vagrantup.com/downloads.html), and Docke
 Run following command inside your project directory in order to create the Docker container using Vagrant:    
 `sudo vagrant up --provider=docker --debug`
 
-With the successful execution of above command your container is created, now you just have have to ssh into the container.
+With the successful execution of above command your container is created, now you just have to ssh into the container.
 Run following command inside your project directory to login into the container:    
 `sudo vagrant ssh`
 
