@@ -14,8 +14,6 @@ RUN yum install vim -y
 #Installing java7
 RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/7u51-b13/jdk-7u51-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie' && rpm -i jdk-7u51-linux-x64.rpm
 
-RUN yum install ruby -y
-
 #Installing MySQL 5.1.73
 RUN curl -LO 'https://downloads.mariadb.com/archives/mysql-5.1/MySQL-server-5.1.73-1.glibc23.x86_64.rpm'
 RUN yum install MySQL-server-5.1.73-1.glibc23.x86_64.rpm -y
