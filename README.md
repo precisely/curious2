@@ -50,7 +50,7 @@ This customization ID sets:
 After downloading the customized files, remove **!important** in **.hide** class CSS from bootstrap.min.css    
 This is required because, we're using **hide** class in most portions & jQuery's **show()** method can't display element due to important mark in css.
 
-## Vagrant-Docker set up
+## New development machine set-up
 
 Install Vagrant from [here](https://www.vagrantup.com/downloads.html), and Docker From [here](https://docs.docker.com/installation/) on your development machine.
 Run following command inside your project directory in order to create the Docker container using Vagrant:    
