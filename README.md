@@ -53,20 +53,21 @@ This is required because, we're using **hide** class in most portions & jQuery's
 ## Vagrant-Docker set up
 
 Install Vagrant from [here](https://www.vagrantup.com/downloads.html), and Docker From [here](https://docs.docker.com/installation/) on your development machine.
-Run following command inside your project directory in order to create the Docker container using Vagrant: 
+Run following command inside your project directory in order to create the Docker container using Vagrant:    
 `sudo vagrant up --provider=docker --debug`
 
 With the successful execution of above command your container is created, now you just have have to ssh into the container.
-Run following command inside your project directory to login into the container: 
+Run following command inside your project directory to login into the container:    
 `sudo vagrant ssh`
 
 ### After Logging into the container first time:
  * Default user for the container is  **root**.
  * **After first login you need to set up MySql user name, password and create the database to be used for development **.
+ * Install required version of grails using `gvm`.
 
 ### TODOs after Logging into the container every time:
  * By default your project directory will be automatically synchronized with the container inside `/vagrant` directory.
  * `cd` into the `/vagrant` directory and run `gvm use grails <version>` command. This will also start grails.
  * Now run following command to run your project:
    `grails -reloading run-app`
- * Once server has started you can browse through `localhost/home/index`.(On browser server will bw running on port 80 NOT 8080)
+ * Once server has started you can browse through `localhost/home/index`.(On browser, server will be running on port 80 NOT 8080)
