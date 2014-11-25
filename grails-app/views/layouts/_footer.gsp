@@ -104,10 +104,7 @@
                     <li style="font-size: 16px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">TUTORIALS</a></li>
                     <li style="font-size: 16px;"><g:link
-                    controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS<br/>&nbsp;</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="upload" style="font-weight: bold;color: #999999 ">IMPORT</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="download" style="font-weight: bold;color: #999999 ">EXPORT</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="polldevices" style="font-weight: bold;color: #999999 ">POLL DEVICES<br/>&nbsp;</g:link></li>
+                            controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS</g:link></li>
                 </ul> --%>
         </div>
     </g:else>
