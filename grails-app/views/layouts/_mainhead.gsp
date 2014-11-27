@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
 <link type="text/css" href="/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
+<link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel= "stylesheet">
 <script type="text/javascript" src="/js/jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>

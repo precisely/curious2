@@ -22,11 +22,11 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 	<div class="red-header date-controls clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true]" />
 		<h1 class="clearfix right">
-			<a class="back icon-triangle icon-triangle-left" href="#" onclick="changeDate(-1);">
+			<a class="back icon icon-left-arrow" href="#" onclick="changeDate(-1);">
 				<span class="hide">back</span>
 			</a>
 			<span class="date"><input id="datepicker" type="text" value="" /></span>
-			<a class="next  icon-triangle icon-triangle-right" href="#" onclick="changeDate(1);">
+			<a class="next icon icon-right-arrow" href="#" onclick="changeDate(1);">
 				<span class="hide">next</span>
 			</a>
 		</h1>
@@ -55,7 +55,15 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 					</div>
 						<div style="clear: both"></div>
 					</div>
-			
+				<div id="pinned-tags">
+					<img alt="Pinned Tags" class="pin-header" src="/images/pinned-tags.png">
+					<span id="pinned-tag-list"></span>
+				</div>
+				<hr>
+					<span class="sort-lable">Sort By:</span>
+					<a href="#" class="sort-entry active">A-Z</a>
+					<a href="#" class="sort-entry">1-2</a>
+				<hr>
 					<div id="recordList">
 						<ol id="entry0"></ol>
 					</div>

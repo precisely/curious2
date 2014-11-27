@@ -35,6 +35,17 @@
 .input-affordance .icon-pin {
 	right: 25;
 }
+.icon-right-arrow {
+	width: 25px;
+	height: 20px;
+	background-position: 626px -1592px;
+}
+
+.icon-left-arrow {
+	width: 25px;
+	height: 20px;
+	background-position: 689px -1592px;
+}
 
 .icon-bell {
 	width: 32px;

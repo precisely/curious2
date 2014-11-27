@@ -2,7 +2,6 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel= "stylesheet">
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />

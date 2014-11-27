@@ -73,6 +73,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 	this.clearEntries = function() {
 		$("#" + this.listId).html('');
+		$("#pinned-tag-list").html('');
 	}
 
 	$(document).mousemove(function(e) {
@@ -101,7 +102,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var comment = entry.comment;
 		var classes = "entry full-width " + ((comment != '')?comment:'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
-		console.log('entry: ',entry);
 
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -143,6 +143,12 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
+		if(isContinuous) {
+			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
+				+',\'' + description + '\',' + this.defaultToNow + ')">'+ description + '<i class="fa fa-plus-circle"></i></button>';
+			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
+		}
+		
 		var diff = date.getTime() - this.cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
 			return; // skip items outside display
@@ -293,11 +299,14 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		this.toggleSuffix($('#' + this.editId), suffix);
 	}
 
-	this.deleteGhost = function($entryToDelete, entryId, allFuture) {
+	this.deleteGhost = function($entryToDelete, isContinuous, entryId, allFuture) {
 		queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC})),
 			function(ret) {
 				if (checkData(ret, 'success', "Error deleting entry")) {
+					if(isContinuous) {
+						$("#pin-button"+entryId).remove();
+					}
 					$entryToDelete.remove();
 				}
 			});
@@ -312,13 +321,15 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		var $entryToDelete = this.getEntryElement(entryId);
 		if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
-			if ($entryToDelete.data("isContinuous") || this.isTodayOrLater) {
-				this.deleteGhost($entryToDelete, entryId, true);
+			if ($entryToDelete.data("isContinuous")) {
+				this.deleteGhost($entryToDelete, true, entryId, true);
+			} else if(this.isTodayOrLater) {
+				this.deleteGhost($entryToDelete, false, entryId, true);
 			} else {
 				showAB("Delete just this one event or also future events?", "One", "Future", function() {
-					self.deleteGhost($entryToDelete, entryId, false);
+					self.deleteGhost($entryToDelete, false, entryId, false);
 				}, function() {
-					self.deleteGhost($entryToDelete, entryId, true);
+					self.deleteGhost($entryToDelete, false, entryId, true);
 				});
 			}
 		} else {
@@ -416,7 +427,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var $inp = $("#" + this.editId);
 		$inp.autocomplete("close");
 		$inp.val(text);
-		$inp.css('color','#000000');
 		if (startSelect) {
 			$inp.selectRange(startSelect, endSelect);
 		}
@@ -441,6 +451,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
+		var $button = $unselectee.find(".save");
+		$button.removeClass("save");
+		$button.addClass("edit");
+		$button.text("Edit");
+
 		$contentWrapper.html(displayText);
 		$contentWrapper.show();
 		if (displaySpinner) {
@@ -459,12 +474,15 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		$selectee.siblings().removeClass("ui-selected");
 		var $contentWrapper = $selectee.find(".content-wrapper");
-
+		var $button = $selectee.find(".edit");
+		$button.removeClass("edit");
+		$button.addClass("save");
+		$button.text("Save Edit");
+			
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
-
-		var entryText = $selectee.text();
+		var entryText = $contentWrapper.find(".entryDescription").text();
 
 		var selectRange = self.entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
@@ -520,8 +538,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		if ($unselectee.data('isContinuous')) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
-			this.addEntry(currentUserId, newText, this.defaultToNow);
 			this.unselectEntry($unselectee, false, true);
+			this.updateEntry(currentEntryId, newText, this.defaultToNow);
 		} else if (!$unselectee.data('isRemind') && $unselectee.data('originalText') == newText) {
 			console.debug('Is not remind & no change in entry.');
 			this.unselectEntry($unselectee);

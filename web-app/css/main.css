@@ -1,7 +1,15 @@
 input, optgroup, select, textarea {
 	color: black;
 }
-
+#addData input {
+	color: #c04f7f;
+}
+.new-post input {
+	color: #fc3f28;
+}
+.add-comment input, .add-comment-to-discussion input {
+	color: #a4a4a4;
+}
 .btn {
 	display: inline-block;
 	margin-bottom: 0;
@@ -57,7 +65,7 @@ input, optgroup, select, textarea {
 	border-color: #ac2925;
 }
 
-button {
+.track-page button {
 	background-color: #f3f3f3;
 	height: 30px;
 	color: #8b8b8b;
@@ -412,7 +420,7 @@ input.textInput {
 .startdatepicker, .enddatepicker {
 	height:30px;
 	width:175px;
-	border:0px
+	border:0px;
 	font-size:.5em;
 }
 .startDate {
@@ -715,9 +723,12 @@ body.track-page .date-controls h1 .gear {
 	margin:2px 12px 0px 0px;
 }
 body.track-page .date-controls #datePicker {
-	background-color:#EF4B3A;
-	color:#ffffff;
-	text-transform:uppercase;
+	border: 0;
+	font-size: 16px;
+	margin-top: 0px;
+	background-color: transparent;
+	color: #ffffff;
+	text-transform: uppercase;
 }
 a.calendar {
 	background:url(/images/calendar.gif) no-repeat;
@@ -877,6 +888,19 @@ body.tags-displayed .floating-column {
 #ui-datepicker-div {
 	display: none;
 }
+
+.entry-container .sort-lable {
+	color: #afafaf;
+	text-transform: uppercase;
+	margin-right: 20px;
+	font-size: 12px;
+}
+
+.entry-container hr {
+	height: 2px;
+	margin: 15 0;
+	color: #d8d8d8;
+}
 #entry0 {
 	width: 100%;
 	height: 500px;
@@ -896,6 +920,7 @@ body.tags-displayed .floating-column {
 	padding: 0;
 }
 #entry0 li {
+	position: relative;
 	margin-bottom: 10px;
 	padding: 10px;
 	font-size: 18px;
@@ -1080,10 +1105,8 @@ body.discuss-page .red-header {
 	color: #C0C8C9;
 }
 .entryAmount {
-	color: #5A6263;
 }
 .entryUnits {
-	color: #5A6263;
 }
 .entryDelete {
 	display:none;
@@ -1116,9 +1139,11 @@ body.discuss-page .red-header {
 	border-radius: 2px;
 	padding: 23px 15px 21px 20px;
 }
+.red-header .icon{
+	zoom: 0.8 !important;
+}
 .red-header .right {
 	float: left;
-	padding: 9px 10px;
 	width: calc(100% - 227px);
 	border-right: 2px solid #fff;
 }
@@ -1334,19 +1359,19 @@ body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 }
 
 li img.edit-repeat {
-	right: 426px;
+	right: 275px;
 }
 
 li img.edit-remind {
-	right: 320px;
+	right: 370px;
 }
 
 li img.edit-pin {
-	right: 225px;
+	right: 177px;
 }
 
 li img.edit-delete {
-	right: 151px;
+	right: 100px;
 	height: 25px;
 }
 
@@ -1388,13 +1413,26 @@ li.entry.no-tag {
 body.track-page ol#entry0 li button.save {
 	background-color: #c04f7f;
 	position: absolute;
-	right: 66px;
-	margin-top: -17px;
+	color: #ffffff;
+	right: 15px;
+	top: 15px;
 }
+
+.track-page .pin-entry {
+	color: #ffffff;
+	background-color: #c04f7f;
+	margin-right: 5px;
+}
+.pin-entry .fa{
+	margin-left: 10px;
+	margin-right: -5px;
+	font-size: 12px;
+}
+
 body.track-page ol#entry0 li button.edit {
 	position: absolute;
-	right: 66px;
-	margin-top: -17px;
+	right: 15px;
+	top: 15px;
 }
 body.track-page ol#entry0 li.entry.ghost span {
 /* 	color: #D9D9D9; */
@@ -1409,6 +1447,17 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 	display: block !important;
 }
 
+#pinned-tags {
+	margin-top: 2px;
+}
+
+#pinned-tags .pin-header {
+	height: 22px;
+	margin: 5 10 5 0;
+}
+
+
+
 .hidden {
 	display: none;
 }
@@ -1417,7 +1466,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
  * Styles for track page for web application. Ends here.
  */
 .tags-header-container {
-	padding: 7px;
+	padding-left: 7px;
 }
 
 div.graph-header-container .red-header {
@@ -1665,6 +1714,17 @@ body.load-graph #graphList .summary .close {
 .headerLinks li a {
 	text-decoration: none;
 	padding-bottom: 5px;
+}
+.sort-entry {
+	margin-right: 30px;
+	color: #999999 !important;
+	font-size: 12px;
+}
+
+.sort-entry.active{
+	margin-right: 30px;
+	color: #c04f7f !important;
+	font-size: 12px;
 }
 
 .nav-pills li {
