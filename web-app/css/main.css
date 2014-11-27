@@ -57,6 +57,15 @@ input, optgroup, select, textarea {
 	border-color: #ac2925;
 }
 
+button {
+	background-color: #f3f3f3;
+	height: 30px;
+	color: #8b8b8b;
+	padding: 10px;
+	font-size: 11px;
+	border-radius: 2px;
+}
+
 .disabled {
 	pointer-events: none;
 }
@@ -110,19 +119,26 @@ body {
 input {
 	line-height: normal;
 }
-::-webkit-input-placeholder { /* WebKit browsers */
-	color: #fc3f28;
+#discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
+#discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
+#discussion-topic::-moz-placeholder {color: #fc3f28;}
+#discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
+
+#input0::-webkit-input-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
 }
-:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-	color: #fc3f28;
-	opacity: 1;
+#input0::-moz-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
 }
-::-moz-placeholder { /* Mozilla Firefox 19+ */
-	color: #fc3f28;
-	opacity: 1;
+#input0::-moz-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
 }
-:-ms-input-placeholder { /* Internet Explorer 10+ */
-	color: #fc3f28;
+#input0::-ms-input-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
 }
 
 .postcomment textarea {
@@ -137,12 +153,12 @@ a,a:link,a:hover,a:visited {
 	border-width:0px 1px 1px 1px;
 }
 .body2 {
-	padding: 0px 10px;
+	padding: 0px 4px;
 }
 .main {
 	border:1px solid #cccccc;
 	background-color: #f6f6f6;
-	padding: 0 15;
+	padding: 15px;
 }
 .main h1 {
 	padding:7px 10px;
@@ -207,16 +223,16 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks {
 	display:inline-block;
-	padding: 12px 0px 0px 0px;
+	padding: 4px 0px 0px 0px;
 	height: 70px;
 	text-align: center;
 }
 .mainLinks li {
-	display:inline;
-	padding:0px 0px 0px 3em;
-	text-transform:uppercase;
-	font-size:.8em;
-	color:#797979;
+	display: inline;
+	padding: 0px 0px 0px 3em;
+	text-transform: uppercase;
+	font-size: 12px;
+	color: #5D5D5D;
 	float: left;
 }
 .mainLinks li:first-child {
@@ -320,7 +336,6 @@ body.discuss-page input#discussTitleInput {
 	width:800px;
 }
 #recordList {
-	padding: 4px;
 	overflow: auto;
 	height: 583px;
 }
@@ -416,16 +431,6 @@ input.buttonInput {
 
 /* RIGHT NAV */
 
-#addData, .panel-wrapper {
-	background-color:#EBEBEB;
-	padding:9px;
-	border-bottom:9px solid #CCCCCC;
-}
-#addData input.textInput {
-	width: 704px;
-	height:30px;
-	border:none;
-}
 .ui-autocomplete a {
 	display: block;
 }
@@ -880,7 +885,6 @@ body.tags-displayed .floating-column {
 	background: #99CCFF;
 }
 #entry0 .ui-selected {
-	background: #3399FF;
 	color: white;
 }
 .ui-menu-item a {
@@ -892,9 +896,10 @@ body.tags-displayed .floating-column {
 	padding: 0;
 }
 #entry0 li {
-	margin: 0px;
-	padding: 1px;
-	font-size: 12pt;
+	margin-bottom: 10px;
+	padding: 10px;
+	font-size: 18px;
+	background-color: #FFFFFF;
 }
 .swatch {
 	padding-left:20px;
@@ -1067,9 +1072,7 @@ body.discuss-page .red-header {
 #addComment p.decorate {
 	border-right:60px solid #08BBF1;
 }
-.entryTime {
-	color: #999999;
-}
+
 .entryComment {
 	color: #999999;
 }
@@ -1092,10 +1095,9 @@ body.discuss-page .red-header {
 }
 .entryModify {
 	cursor: pointer;
-	width: 14px;
-	height: 14px;
-	padding-left: 1px;
-	padding-top: 2px;
+	position: absolute;
+	width: auto;
+	height: 40px;
 }
 .custom-row {
 	padding-right: 10px;
@@ -1108,11 +1110,11 @@ body.discuss-page .red-header {
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: none;
-	height: 75px;
+	height: 60px;
 	margin-left: 0px;
 	width: 100%;
 	border-radius: 2px;
-	padding: 25px;
+	padding: 23px 15px 21px 20px;
 }
 .red-header .right {
 	float: left;
@@ -1125,8 +1127,8 @@ body.discuss-page .red-header {
 }
 .red-header h1 {
 	font-weight: normal;
-	font-size: 20px;
-	line-height: 20px;
+	font-size: 16px;
+	line-height: 21px;
 }
 .red-header #actions {
 	position: relative;
@@ -1247,21 +1249,53 @@ body.discuss-page .red-header {
 }
 .full-width {
 	width: 100%;
-	height: 75px;
+	height: 60px;
 	border-radius: 2px;
 }
 
-.inner-addon {
-	position: relative; 
+.input-affordance {
+	position: relative;
+	margin-bottom: 15; 
 }
 
-.inner-addon .fa {
+.input-affordance .fa {
 	position: absolute;
-	padding: 10px;
-	font-size: 40;
+	padding: 5px;
+	font-size: 36;
 	color: #fc3f28;
 	margin: 5 0 0 15;
 	pointer-events: none;
+}
+
+.input-affordance .icon {
+	position: absolute;
+	margin: 10 0 0 17;
+}
+
+.input-affordance p {
+	position: absolute;
+	margin-top: 20px;
+	font-size: 12px;
+	color: #cdcdcd;
+	right: 295;
+	text-transform: uppercase;
+}
+
+.input-affordance .text {
+	margin-top: 40px;
+	position: absolute;
+	color: #B2B2B2;
+}
+.input-affordance .icon-repeat-text {
+	right: -12;
+}
+
+.input-affordance .icon-bell-text {
+	right: -28;
+}
+
+.input-affordance .icon-pin-text {
+	right: -5;
 }
 
 .left-addon .fa {
@@ -1270,6 +1304,11 @@ body.discuss-page .red-header {
 
 .left-addon input {
 	padding-left: 70px;
+}
+
+.addon input {
+	padding-left: 70px;
+	padding-right: 340px;
 }
 
 .align-middle {
@@ -1291,19 +1330,74 @@ body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
 body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
-	color: #D9D9D9;
-	background-color: #FFFFFF;
+	
 }
+
+li img.edit-repeat {
+	right: 426px;
+}
+
+li img.edit-remind {
+	right: 320px;
+}
+
+li img.edit-pin {
+	right: 225px;
+}
+
+li img.edit-delete {
+	right: 151px;
+	height: 25px;
+}
+
+li.pinned, li.pinned input{
+	color: #f14a42;
+}
+
+li.repeat.remind, li.repeat.remind input {
+	color: #f48d5b;
+}
+
+li.repeat, li.repeat input {
+	color: #c35785;
+}
+
+li.no-tag, li.no-tag input {
+	color: #50e3c2;
+}
+
 li.entry.continuousghost {
+	border-left: 5px;
+	border-left-color: #C04F7F;
 }
-li.entry.anyghost {
+li.entry.pinned {
+	border-left: 5px solid #f14a42;
 }
 li.entry.concreteghost {
+	border-left: 5px solid: #C04F7F;
 }
-li.entry.timedrepeat {
+li.entry.repeat.remind {
+	border-left: 5px solid #f48d5b;
+}
+li.entry.repeat {
+	border-left: 5px solid #c35785;
+}
+li.entry.no-tag {
+	border-left: 5px solid #50e3c2;
+}
+body.track-page ol#entry0 li button.save {
+	background-color: #c04f7f;
+	position: absolute;
+	right: 66px;
+	margin-top: -17px;
+}
+body.track-page ol#entry0 li button.edit {
+	position: absolute;
+	right: 66px;
+	margin-top: -17px;
 }
 body.track-page ol#entry0 li.entry.ghost span {
-	color: #D9D9D9;
+/* 	color: #D9D9D9; */
 }
 body.track-page ol#entry0 li.entry.ghost:not(.remind) a.entryDelete {
 	display: inline;
@@ -1313,6 +1407,10 @@ body.track-page ol#entry0 li.entry.continuous a.entryDelete {
 }
 body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 	display: block !important;
+}
+
+.hidden {
+	display: none;
 }
 
 /**
@@ -1349,7 +1447,7 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	padding: 20 0 20 0;
+	padding: 0 0 20 0;
 	text-align: right;
 }
 .feed .media {
@@ -1558,9 +1656,9 @@ body.load-graph #graphList .summary .close {
 }
 
 .headerLinks li{
-	color: #9d9d9d;
+	font-size: 12px;
+	color: #5D5D5D;
 	text-decoration: none;
-	font-size: 14px;
 	text-align: center;
 	font-weight: bold;
 }
@@ -2023,6 +2121,8 @@ body{
 #post-comment::-moz-placeholder {color: #a4a4a4;} /* firefox 19+ */
 #post-comment:-moz-placeholder {color: #a4a4a4;}
 #post-comment:-ms-input-placeholder {color: #a4a4a4;} /* ie */
+
+
 
 .feed-item .discussion .discussion-comment .avatar {
 	height: 34px;

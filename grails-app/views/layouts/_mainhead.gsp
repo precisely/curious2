@@ -16,6 +16,7 @@
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
+<link rel="stylesheet" href="/css/sprite.css"/>
 <link rel="stylesheet" href="/css/main-responsive.css?ver=21"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>

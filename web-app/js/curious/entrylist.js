@@ -99,8 +99,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry";
+		var classes = "entry full-width " + ((comment != '')?comment:'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
+		console.log('entry: ',entry);
 
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -185,8 +186,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-				+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img width="12" height="12" src="/images/x.gif"></a>';
+				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br> <span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
+				+ '</span><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
 
 		
 		var entryEditItem;
@@ -474,9 +475,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png">'
-				+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png">'
-				+ '<img class="entryModify" data-suffix="pinned" src="/images/pin.png"></span>');
+				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="/images/repeat.png">'
+				+ '<img class="entryModify edit-remind" data-suffix="remind" src="/images/remind.png">'
+				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -594,7 +595,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$datepicker.val($.datepicker.formatDate(datepickerFormat, currentDate));
 	}
 	
-	$("#" + self.editId).val('Enter a tag.  For example: nap at 2pm');
 	$("#" + self.editId).droppable({
 		drop : function(event, ui) {
 			var droppedItem = $(ui.draggable[0]).data(DATA_KEY_FOR_ITEM_VIEW).getData();

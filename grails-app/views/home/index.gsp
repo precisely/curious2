@@ -38,15 +38,21 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 		<g:render template="/tag/tagListWidget" />
 		<!-- /RIGHT NAV -->
 		<div class="floating-column entry-container">
-			<div class="main" id="trackmain">
+			<div class="main container-fluid" id="trackmain">
 				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 				<div id="area0">
-					<div id="addData" class="panel-wrapper">
-						<input type="text" id="input0" name="data" style="width:calc(100% - 75px);margin-right:5px;"
-							value="Enter a tag.  For example: nap at 2pm" class="textInput" />
-						<a href="#" onclick="modifyInput('repeat')"><img src="/images/repeat.png" style="width:20px;height:20px;padding-top:5px;"></a>
-						<a href="#" onclick="modifyInput('remind')"><img src="/images/remind.png" style="width:20px;height:20px;padding-top:5px;"></a>
-						<a href="#" onclick="modifyInput('pinned')"><img src="/images/pin.png" style="width:20px;height:20px;padding-top:5px;"></a>
+					<div id="addData" class="input-affordance addon">
+						<div class="icon icon-tag"></div>
+						<p>choose<br>details:</p>
+						<a href="#" class="icon icon-xl icon-bell" onclick="entryListWidget.modifyInput('remind')">
+							<span class="text icon-bell-text">Reminder</span></a>
+						<a href="#" class="icon icon-xl icon-repeat" onclick="entryListWidget.modifyInput('repeat')">
+							<span class="text icon-repeat-text">Repeat</span></a>
+						<a href="#" class="icon icon-xl icon-pin" onclick="entryListWidget.modifyInput('pinned')">
+							<span class="text icon-pin-text">Pin it</span></a>
+							 <input class="full-width" type="text" placeholder="Enter tags here: (Example: nap 2pm or sleep quality repeat)"
+							name="data" id="input0" required />
+					</div>
 						<div style="clear: both"></div>
 					</div>
 			

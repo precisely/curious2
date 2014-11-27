@@ -120,10 +120,10 @@ $(document).ready(function() {
 		<div id="graphList">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">
-					<div class="inner-addon left-addon">
+					<div class="input-affordance left-addon">
 						<i class="fa fa-pencil"></i> <input class="full-width"
 							type="text" placeholder="New question or discussion topic?"
-							name="name" required />
+							name="name" id="discussion-topic" required />
 					</div>
 					<%--					<textarea class="full-width"  name="discussionPost" style="height:7em" required></textarea>--%>
 					<input type="hidden" name="group" value="${groupName}" />

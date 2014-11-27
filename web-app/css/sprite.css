@@ -1,0 +1,144 @@
+.icon {
+	background-image: url('/images/m-icons.png');
+	background-size: 450px auto;
+	display: inline-block;
+	zoom: 1.2;
+	-moz-transform:scale(0.8);
+	-moz-transform-origin: 0 0;
+}
+
+.input-affordance .icon-xl {
+	zoom: 0.7;
+	margin-top: 15px;
+}
+
+.icon-xs {
+	background-image: url('../content/images/m-icons.png');
+	background-size: 300px auto;
+	display: inline-block;
+}
+
+.icon-track {
+	width: 37px;
+	height: 58px;
+	background-position: 441px -114px;
+}
+
+.input-affordance .icon-bell {
+	right: 330;
+}
+
+.input-affordance .icon-repeat {
+	right: 180;
+}
+
+.input-affordance .icon-pin {
+	right: 25;
+}
+
+.icon-bell {
+	width: 32px;
+	height: 35px;
+	background-position: 683px -1442px;
+}
+
+.icon-repeat {
+	width: 32px;
+	height: 35px;
+	background-position: 877px -1442px;
+}
+
+.icon-pin {
+	width: 35px;
+	height: 35px;
+	background-position: 783px -1442px;
+}
+
+.icon-tag {
+	width: 30px;
+	height: 31px;
+	background-position: 878px -1587px;
+}
+
+.icon-track.active {
+	width: 37px;
+	height: 58px;
+	background-position: 441px -11px;
+}
+
+.icon-signals {
+	width: 47px;
+	height: 63px;
+	background-position: 357px -111px;
+}
+
+
+.icon-signals.active {
+	width: 47px;
+	height: 63px;
+	background-position: 357px -10px;
+}
+
+.icon-chart {
+	width: 47px;
+	height: 58px;
+	background-position: 266px -117px;
+}
+
+.icon-chart.active {
+	width: 47px;
+	height: 58px;
+	background-position: 266px -13px;
+}
+
+.icon-feed {
+	width: 50px;
+	height: 57px;
+	background-position: 183px -117px;
+}
+
+.icon-feed.active {
+	width: 50px;
+	height: 57px;
+	background-position: 183px -13px;
+}
+
+.icon-search {
+	width: 50px;
+	height: 57px;
+	background-position: 86px -117px;
+}
+
+.icon-search.active {
+	width: 50px;
+	height: 57px;
+	background-position: 86px -13px;
+}
+
+
+.icon-comment {
+	width: 33px;
+	height: 26px;
+	background-position: 384px -570px;
+}
+
+.icon-comment-xs {
+	width: 21px;
+	height: 16px;
+	background-position: 256px 20px;
+	margin-top: 11px;
+}
+
+.icon-share {
+	width: 25px;
+	height: 32px;
+	background-position: 441px -564px;
+}
+
+.icon-share-xs {
+	width: 17px;
+	height: 20px;
+	background-position: 294px 23px;
+	margin-top: 9px;
+	overflow: visible;
+}
