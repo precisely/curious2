@@ -18,6 +18,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	
 	divIds = $.extend({editId:"input0", listId:"entry0", calendarId:"datepicker", dragId:"drag", areaId:"area"}, divIds);
 
+	this.entryListItems = [];
+	this.entriesSortOrder = {
+		ascendingDescription: true,
+		ascendingTime: true
+	}
 	this.editId = divIds.editId;
 	this.listId = divIds.listId;
 	this.calendarId = divIds.calendarId;
@@ -72,6 +77,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.clearEntries = function() {
+		this.entryListItems = [];
 		$("#" + this.listId).html('');
 		$("#pinned-tag-list").html('');
 	}
@@ -95,6 +101,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	});
 	
 	this.displayEntry = function(entry, isUpdating, args) {
+		this.entryListItems.push(entry);
 		var id = entry.id;
 		var date = entry.date;
 		var datePrecisionSecs = entry.datePrecisionSecs;
@@ -102,7 +109,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var comment = entry.comment;
 		var classes = "entry full-width " + ((comment != '')?comment:'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
-
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
 				$entryToReplace = $(args.replaceEntry);
@@ -111,6 +117,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				$appendAfterEntry = $(args.appendAfterEntry);
 			}
 		}
+//		console.log('entry: ', entry);
 
 		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
 		if (entry.repeatType) {
@@ -145,8 +152,10 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		if(isContinuous) {
 			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
-				+',\'' + description + '\',' + this.defaultToNow + ')">'+ description + '<i class="fa fa-plus-circle"></i></button>';
+				+',\'' + description + ' ' + entry.amount + ' ' + entry.units +'\',' + this.defaultToNow + ')">'+ 
+				description + ' ' + entry.amount + ' ' + entry.units + '<i class="fa fa-plus-circle"></i></button>';
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
+			return;
 		}
 		
 		var diff = date.getTime() - this.cachedDate.getTime();
@@ -299,6 +308,76 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		this.toggleSuffix($('#' + this.editId), suffix);
 	}
 
+	this.sortByTime = function() {
+		if(this.entriesSortOrder.ascendingTime) {
+			this.entryListItems.sort(function(item1,item2) {
+				if (new Date(item1.date) < new Date(item2.date) )
+					return -1;
+				if ( new Date(item1.date) > new Date(item2.date) )
+					return 1;
+				return 0;
+			} );
+		} else {
+			this.entryListItems.sort(function(item1,item2) {
+				if ( new Date(item1.date) < new Date(item2.date) )
+					return 1;
+				if ( new Date(item1.date) > new Date(item2.date) )
+					return -1;
+				return 0;
+			} );
+		}
+		var $sortByDescription = $("#sort-by-description");
+		var $sortByTime = $("#sort-by-time");
+		this.manipulateSortElementClass($sortByTime, $sortByDescription, this.entriesSortOrder.ascendingTime);
+
+		this.entriesSortOrder.ascendingTime = !this.entriesSortOrder.ascendingTime;
+		this.refreshEntries(this.entryListItems);
+	}
+
+	this.sortByDescription = function() {
+		if(this.entriesSortOrder.ascendingDescription) {
+			this.entryListItems.sort(function(item1,item2) {
+				if (item1.description < item2.description)
+					return -1;
+				if (item1.description > item2.description)
+					return 1;
+				return 0;
+			} );
+		} else {
+			this.entryListItems.sort(function(item1,item2) {
+				if (item1.description < item2.description )
+					return 1;
+				if ( item1.description > item2.description )
+					return -1;
+				return 0;
+			} );
+		}
+
+		var $sortByDescription = $("#sort-by-description");
+		var $sortByTime = $("#sort-by-time");
+		this.manipulateSortElementClass($sortByDescription, $sortByTime, this.entriesSortOrder.ascendingDescription);
+
+		this.entriesSortOrder.ascendingDescription = !this.entriesSortOrder.ascendingDescription;
+		this.refreshEntries(this.entryListItems);
+	}
+
+	this.manipulateSortElementClass = function($activeElement, $passiveElement, isAscending) {
+		$passiveElement.removeClass("active");
+		$passiveElement.find("img").removeClass("descending");
+		$passiveElement.find("img").removeClass("ascending");
+		
+		if(!$activeElement.hasClass("active")) {
+			$activeElement.addClass("active");
+		} 
+		if(isAscending) {
+			$activeElement.find("img").removeClass("descending");
+			$activeElement.find("img").addClass("ascending");
+		} else {
+			$activeElement.find("img").removeClass("ascending");
+			$activeElement.find("img").addClass("descending");
+		}
+	}
+
 	this.deleteGhost = function($entryToDelete, isContinuous, entryId, allFuture) {
 		queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC})),
@@ -376,6 +455,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.updateEntry = function(entryId, text, defaultToNow) {
 		var $oldEntry = this.getEntryElement(entryId);
 
+		console.log('update....');
 		if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) && (!this.isTodayOrLater)) {
 			showAB("Update just this one event or also future events?", "One", "Future", function() {
 				self.doUpdateEntry(entryId, text, defaultToNow, false);
@@ -482,7 +562,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
-		var entryText = $contentWrapper.find(".entryDescription").text();
+		var entryText = $contentWrapper.text();
 
 		var selectRange = self.entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
@@ -538,7 +618,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		if ($unselectee.data('isContinuous')) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
-			this.unselectEntry($unselectee, false, true);
+			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow);
 		} else if (!$unselectee.data('isRemind') && $unselectee.data('originalText') == newText) {
 			console.debug('Is not remind & no change in entry.');

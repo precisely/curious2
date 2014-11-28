@@ -61,8 +61,10 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 				</div>
 				<hr>
 					<span class="sort-lable">Sort By:</span>
-					<a href="#" class="sort-entry active">A-Z</a>
-					<a href="#" class="sort-entry">1-2</a>
+					<a href="#" id="sort-by-description" onclick="entryListWidget.sortByDescription()" class="sort-entry">A-Z
+						<img class=""/> </a>
+					<a href="#" id="sort-by-time" onclick="entryListWidget.sortByTime()" class="sort-entry">1-2
+						<img class=""/> </a>
 				<hr>
 					<div id="recordList">
 						<ol id="entry0"></ol>

@@ -1456,8 +1456,6 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 	margin: 5 10 5 0;
 }
 
-
-
 .hidden {
 	display: none;
 }
@@ -1725,6 +1723,18 @@ body.load-graph #graphList .summary .close {
 	margin-right: 30px;
 	color: #c04f7f !important;
 	font-size: 12px;
+}
+
+.ascending {
+	content: url(/images/asc.png);
+	height: 15px;
+	margin-top: -5px;
+}
+
+.descending {
+	content: url(/images/desc.png);
+	height: 15px;
+	margin-top: -5px;
 }
 
 .nav-pills li {
