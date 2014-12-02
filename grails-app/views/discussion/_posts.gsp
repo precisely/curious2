@@ -2,11 +2,10 @@
 	<div class="discussion-comment multiple-comments">
 		<a name="comment${discussPostInstance.getId()}"></a>
 		<div class="row">
-			<a href="#"><img class="avatar" src="/images/avatar2.png"
-				alt="..."><span class="user-name"> <g:set
-						var="authorName"
+			<a href="#"><img class="avatar" src="/images/avatar2.png" alt="avatar">
+				<span class="user-name"> 
+					<g:set var="authorName" 
 						value="${(discussPostInstance.author.getUsername() ?: discussPostInstance.author.getName()).encodeAsURL()}" />
-
 					<g:if test="${discussPostInstance.author.getSite()}">
 						<%--<a href="${discussPostInstance.author.getSite().encodeAsURL()}">
 							${authorName }
@@ -15,8 +14,9 @@
 					</g:if> <g:else>
 						${authorName }
 					</g:else>
-			</span></a>
-			 <span class="posting-time" data-time="${discussPostInstance.getUpdated()}"></span>
+				</span>
+			</a>
+			<span class="posting-time" data-time="${discussPostInstance.getUpdated()}"></span>
 			<div class="pull-right">
 				<g:if
 					test="${discussPostInstance.getAuthor().getUserId() == userId || isAdmin}">

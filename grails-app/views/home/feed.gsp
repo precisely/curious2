@@ -89,33 +89,13 @@ $(document).ready(function() {
 <body class="feed">
 <!-- MAIN -->
 	<div class="row red-header">
-		<%--<div class="col-md-3">
-			<div id="actions">
-				<span class="icon-triangle icon-triangle-right toggle"></span>
-				<ul>
-					<li><a Ref="/home/feed" >Home Feed</a></li>
-				</ul>
-			</div>
-		</div>
-		--%><div>
+		<div>
 			<h1 class="clearfix">
 				<span id="queryTitle">${groupFullname}</span>
 			</h1>
 		</div>
 	</div>
 	<div class="main container-fluid">
-		<%--<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
-			<ul class="subscriptions">
-				<li>
-					<a href = "/home/feed"> Home Feed </a>
-				</li>
-				<g:each var="membership" in="${groupMemberships}">
-					<li>
-						<a href = "/home/feed?userGroupNames=${membership[0].name}"> ${membership[0].fullName} </a>
-					</li>
-				</g:each>
-			</ul>
-		--%>
 		<div id="graphList">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">

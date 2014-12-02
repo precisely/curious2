@@ -72,6 +72,7 @@ input, optgroup, select, textarea {
 	padding: 10px;
 	font-size: 11px;
 	border-radius: 2px;
+	line-height: 0px;
 }
 
 .disabled {
@@ -278,7 +279,6 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 #trackmain {
-	height:633px;
 }
 /**
  * Styles for graph page starts here.
@@ -728,7 +728,6 @@ body.track-page .date-controls #datePicker {
 	margin-top: 0px;
 	background-color: transparent;
 	color: #ffffff;
-	text-transform: uppercase;
 }
 a.calendar {
 	background:url(/images/calendar.gif) no-repeat;
@@ -1100,9 +1099,15 @@ body.discuss-page .red-header {
 
 .entryComment {
 	color: #999999;
+	text-transform: uppercase;
+	font-size: 12px;
+	vertical-align: baseline;
 }
 .entryRepeat {
+	vertical-align: baseline;
 	color: #C0C8C9;
+	text-transform: uppercase;
+	font-size: 12px;
 }
 .entryAmount {
 }
@@ -1357,6 +1362,25 @@ body.track-page #area0 .panel-wrapper {
 body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 	
 }
+.comment-label {
+}
+.repeatLabelImage {
+	background: url(/images/repeat-sm-light.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	background-size: contain;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.remindLabelImage {
+	background: url(/images/remind-sm-light.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	vertical-align: middle;
+	background-size: contain;
+	display: inline-block;
+}
 
 li img.edit-repeat {
 	right: 275px;
@@ -1379,7 +1403,7 @@ li.pinned, li.pinned input{
 	color: #f14a42;
 }
 
-li.repeat.remind, li.repeat.remind input {
+li.remind, li.repeat.remind, li.repeat.remind input {
 	color: #f48d5b;
 }
 
@@ -1388,7 +1412,8 @@ li.repeat, li.repeat input {
 }
 
 li.no-tag, li.no-tag input {
-	color: #50e3c2;
+	color: #f14a42;
+	line-height: 40px;
 }
 
 li.entry.continuousghost {
@@ -1408,7 +1433,8 @@ li.entry.repeat {
 	border-left: 5px solid #c35785;
 }
 li.entry.no-tag {
-	border-left: 5px solid #50e3c2;
+	border-left: 5px solid #f14a42;
+	line-height: 40px;
 }
 body.track-page ol#entry0 li button.save {
 	background-color: #c04f7f;
@@ -1420,7 +1446,7 @@ body.track-page ol#entry0 li button.save {
 
 .track-page .pin-entry {
 	color: #ffffff;
-	background-color: #c04f7f;
+	background-color: #d1d1d1;
 	margin-right: 5px;
 }
 .pin-entry .fa{
@@ -2061,7 +2087,7 @@ body{
 }
 
 .feed-item .discussion {
-	margin-bottom: 20px;
+	margin-bottom: 15px;
 }
 
 .feed-item .discussion .discussion-topic {
@@ -2069,7 +2095,6 @@ body{
 	color: #5d5d5d;
 	padding: 18 28 25 28;
 	font-size: 16px;
-	margin-top: 10px;
 }
 
 .feed-item .discussion .discussion-topic .top-left-margin {
@@ -2226,6 +2251,7 @@ body{
 
 .footer-items{
 	padding-left: 5%;
+	font-size: 10px;
 }
 
 .footer-items .col-md-3{

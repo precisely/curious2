@@ -117,7 +117,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				$appendAfterEntry = $(args.appendAfterEntry);
 			}
 		}
-//		console.log('entry: ', entry);
+		console.log('entry: ', entry);
 
 		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
 		if (entry.repeatType) {
@@ -172,7 +172,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 		
-		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+		var innerHTMLContent = '<div class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 				+ escapehtml(description) + '</span>';
 		
 		var amounts = entry.amounts;
@@ -201,8 +201,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br> <span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-				+ '</span><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
+				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br><div class="comment-label "> <div class="' +
+				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') ? 
+				'repeatLabelImage' : (comment.startsWith('remind')? 'remindLabelImage':'')) + '"></div> <span class="' +
+				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span></div>' : '')
+				+ '</div><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
 
 		
 		var entryEditItem;
@@ -309,9 +312,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.sortByTime = function() {
-		if(this.entriesSortOrder.ascendingTime) {
+		if( this.entriesSortOrder.ascendingTime ) {
 			this.entryListItems.sort(function(item1,item2) {
-				if (new Date(item1.date) < new Date(item2.date) )
+				if ( new Date(item1.date) < new Date(item2.date) )
 					return -1;
 				if ( new Date(item1.date) > new Date(item2.date) )
 					return 1;
@@ -319,10 +322,12 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			} );
 		} else {
 			this.entryListItems.sort(function(item1,item2) {
-				if ( new Date(item1.date) < new Date(item2.date) )
+				if ( new Date(item1.date) < new Date(item2.date) ) {
 					return 1;
-				if ( new Date(item1.date) > new Date(item2.date) )
+				}
+				if ( new Date(item1.date) > new Date(item2.date) ) {
 					return -1;
+				}
 				return 0;
 			} );
 		}
@@ -570,11 +575,21 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
 			}
 		}
+		var repeatType = $contentWrapper.find(".entryRepeat").text();
+		var repeatImgSrc = "/images/repeat.png";
+		var remindImgSrc = "/images/remind.png";
+		
+		if(repeatType.indexOf("remind") > -1) {
+			remindImgSrc = "/images/remind-active.png"
+		} else if(repeatType.indexOf("repeat") > -1) {
+			repeatImgSrc = "/images/repeat-active.png";
+		} 
+		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="/images/repeat.png">'
-				+ '<img class="entryModify edit-remind" data-suffix="remind" src="/images/remind.png">'
+				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
+				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
 				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');
 
 		$('#' + self.editId + 'tagTextInput')

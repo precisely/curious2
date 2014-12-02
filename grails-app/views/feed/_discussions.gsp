@@ -5,8 +5,10 @@
 			<div class="contents">
 				<div class="row">
 					<div class="col-md-9 discussion-header">
-						<a href="#"><img class="avatar" src="/images/avatar.png"
-							alt="..."><span class="user-name"> ${discussionData.userName}</span></a>
+						<a href="#">
+							<img class="avatar" src="/images/avatar.png" alt="avatar">
+							<span class="user-name"> ${discussionData.userName}</span>
+						</a>
 					</div>
 					<div class="col-md-3 discussion-topic-span discussion-header">
 						<span class="posting-time" data-time="${discussionData.created}"></span>
@@ -18,9 +20,8 @@
 					</span>
 				</div>
 				<div class="row title">
-					<a href="/home/discuss?discussionId=${discussionData.id }"> <span
-						> ${discussionData.name ?: '(No Title)' }
-					</span>
+					<a href="/home/discuss?discussionId=${discussionData.id }"> 
+						<span> ${discussionData.name ?: '(No Title)' }</span>
 					</a>
 				</div>
 				<div class="row">
@@ -39,11 +40,6 @@
 						<img src="/images/comment.png" alt="comment">
 					</button>
 				</div>
-				<%--<div class="text-right">
-					<span> LAST COMMENT ON <g:formatDate
-							date="${discussionData.updated}" format="MM/dd/yyyy" /></span>
-				</div>
-				--%>
 				<%--<g:if test="${discussionData.isAdmin }">
 					<div class="text-right">
 						<a href="#" class="delete-discussion"
@@ -72,18 +68,15 @@
 				</div>
 				<div class="row">
 					<div class="col-md-6 add-comment">
-						<form action="/home/discuss?commentForm=true" method="post"
-							id="commentForm">
+						<form action="/home/discuss?commentForm=true" method="post" id="commentForm">
 							<g:if test="${notLoggedIn}">
 								<p>Enter your details below</p>
 
 								<div id="postname">
-									<input type="text" id="postname" name="postname" value=""
-										class="postInput" /> Name
+									<input type="text" id="postname" name="postname" value="" class="postInput" /> Name
 								</div>
 								<div id="postemail">
-									<input type="text" id="postemail" name="postemail" value=""
-										class="postInput" /> Email (not publicly visible)
+									<input type="text" id="postemail" name="postemail" value="" class="postInput" /> Email (not publicly visible)
 								</div>
 								<div id="posturl">
 									<input type="text" id="postsite" name="postsite" value=""

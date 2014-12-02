@@ -3,12 +3,13 @@
 	background-size: 450px auto;
 	display: inline-block;
 	zoom: 1.2;
-	-moz-transform:scale(0.8);
+	-moz-transform: scale(1.2);
 	-moz-transform-origin: 0 0;
 }
 
 .input-affordance .icon-xl {
 	zoom: 0.7;
+	-moz-transform: scale(0.7);
 	margin-top: 15px;
 }
 
@@ -33,7 +34,7 @@
 }
 
 .input-affordance .icon-pin {
-	right: 25;
+	right: 37px;
 }
 .icon-right-arrow {
 	width: 25px;
@@ -66,9 +67,9 @@
 }
 
 .icon-tag {
-	width: 30px;
+	width: 32px;
 	height: 31px;
-	background-position: 878px -1587px;
+	background-position: 880px -1588px;
 }
 
 .icon-track.active {
