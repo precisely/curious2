@@ -3,8 +3,6 @@
 	background-size: 450px auto;
 	display: inline-block;
 	zoom: 1.2;
-	-moz-transform: scale(1.2);
-	-moz-transform-origin: 0 0;
 }
 
 .input-affordance .icon-xl {
@@ -38,14 +36,14 @@
 }
 .icon-right-arrow {
 	width: 25px;
-	height: 20px;
+	height: 25px;
 	background-position: 626px -1592px;
 }
 
 .icon-left-arrow {
-	width: 25px;
-	height: 20px;
-	background-position: 689px -1592px;
+	width: 27px;
+	height: 25px;
+	background-position: 692px -1592px;
 }
 
 .icon-bell {
@@ -55,9 +53,9 @@
 }
 
 .icon-repeat {
-	width: 32px;
+	width: 34px;
 	height: 35px;
-	background-position: 877px -1442px;
+	background-position: 880px -1442px;
 }
 
 .icon-pin {

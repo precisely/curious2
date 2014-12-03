@@ -117,7 +117,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				$appendAfterEntry = $(args.appendAfterEntry);
 			}
 		}
-		console.log('entry: ', entry);
 
 		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
 		if (entry.repeatType) {
@@ -153,7 +152,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		if(isContinuous) {
 			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
 				+',\'' + description + ' ' + entry.amount + ' ' + entry.units +'\',' + this.defaultToNow + ')">'+ 
-				description + ' ' + entry.amount + ' ' + entry.units + '<i class="fa fa-plus-circle"></i></button>';
+				description + ' ' + entry.amount + ' ' + entry.units + '</button>';
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
 			return;
 		}

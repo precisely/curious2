@@ -65,16 +65,6 @@ input, optgroup, select, textarea {
 	border-color: #ac2925;
 }
 
-.track-page button {
-	background-color: #f3f3f3;
-	height: 30px;
-	color: #8b8b8b;
-	padding: 10px;
-	font-size: 11px;
-	border-radius: 2px;
-	line-height: 0px;
-}
-
 .disabled {
 	pointer-events: none;
 }
@@ -238,25 +228,23 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks li {
 	display: inline;
-	padding: 0px 0px 0px 3em;
+	padding: 0px 20px 5px 20px;
 	text-transform: uppercase;
 	font-size: 12px;
 	color: #5D5D5D;
 	float: left;
 }
-.mainLinks li:first-child {
-	padding-left: 0;
-}
 .mainLinks li.active {
 	font-weight: bold;
 }
-.mainLinks li.active a {
+.mainLinks li.active {
 	pointer-events: none;
 	cursor: default;
 	border-bottom: #F14A42 2px solid;
 }
 .mainLinks li a {
 	color:#797979;
+	font-weight: 600;
 }
 .signin {
 	padding:14px 20px 0px 0px;
@@ -279,6 +267,7 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 #trackmain {
+	max-height: 633px;
 }
 /**
  * Styles for graph page starts here.
@@ -345,7 +334,7 @@ body.discuss-page input#discussTitleInput {
 }
 #recordList {
 	overflow: auto;
-	height: 583px;
+	max-height: 420px
 }
 /**
  * @Deprecated. Use `.red-header` instead.
@@ -729,6 +718,16 @@ body.track-page .date-controls #datePicker {
 	background-color: transparent;
 	color: #ffffff;
 }
+body.track-page button {
+	background-color: #f3f3f3;
+	height: 30px;
+	color: #8b8b8b;
+	padding: 10px;
+	font-size: 11px;
+	border-radius: 2px;
+	line-height: 0px;
+}
+
 a.calendar {
 	background:url(/images/calendar.gif) no-repeat;
 	width:13px;
@@ -902,7 +901,7 @@ body.tags-displayed .floating-column {
 }
 #entry0 {
 	width: 100%;
-	height: 500px;
+	height: 420px;
 }
 #entry0 .ui-selecting {
 	background: #99CCFF;
@@ -1146,10 +1145,11 @@ body.discuss-page .red-header {
 }
 .red-header .icon{
 	zoom: 0.8 !important;
+	transform: scale(0.8) !important;
 }
 .red-header .right {
 	float: left;
-	width: calc(100% - 227px);
+	width: calc(100% - 215px);
 	border-right: 2px solid #fff;
 }
 .tags-container {
@@ -1297,9 +1297,10 @@ body.discuss-page .red-header {
 	pointer-events: none;
 }
 
-.input-affordance .icon {
+.input-affordance .track-input-modifiers {
 	position: absolute;
 	margin: 10 0 0 17;
+	height: 40;
 }
 
 .input-affordance p {
@@ -1345,7 +1346,33 @@ body.discuss-page .red-header {
 	text-align: center;
 	vertical-align: middle;
 }
+.inputRemindPosition {
+	right: 210px;
+}
+.inputRepeatPosition {
+	right: 112px;
+}
+.inputPinPosition {
+	right: 15px;
+}
 
+.inputRemind {
+	height: 40px;
+	width: auto;
+}
+.inputRepeat {
+	height: 40px;
+	width: auto;
+}
+.inputPin {
+	height: 40px;
+	width: auto;
+}
+.inputTag {
+	height: 35px;
+	width: auto;
+	margin-top: 5px;
+}
 /**
  * Generic & common stuff, useful for every where. Ends here.
  */
@@ -1448,6 +1475,10 @@ body.track-page ol#entry0 li button.save {
 	color: #ffffff;
 	background-color: #d1d1d1;
 	margin-right: 5px;
+	background-image: url(/images/pin-button.png);
+	background-repeat: no-repeat;
+	background-position: 5px;
+	padding-left: 25px;
 }
 .pin-entry .fa{
 	margin-left: 10px;
@@ -1491,6 +1522,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
  */
 .tags-header-container {
 	padding-left: 7px;
+	margin-right: -12px;
 }
 
 div.graph-header-container .red-header {
@@ -2263,17 +2295,83 @@ body{
 }
 
 .footer-items ul li{
-	font-weight: lighter;
+	font-weight: 600;
 	color: #949494;
 	text-transform: none;
 	padding-bottom: 12px;
 }
 
+.footer-items ul li a {
+	font-weight: 600;
+}
+
 .footer-items ul li .ul-head{
+	font-weight: 600;
 	text-transform: uppercase;
 	color: #656565;
 }
 
 .pagination:empty {
 	padding: 0px;
+}
+
+.search-bar {
+	position: relative;
+	margin-right: 15px;
+}
+.search-bar .fa {
+	position: absolute;
+	padding: 5px;
+	font-size: 16;
+	color: #AAAAAA;
+	margin: 7px 10px 0px 10px;
+	pointer-events: none;
+}
+
+.search-bar .fa {
+	left: 0px;
+}
+
+.search-bar input {
+	padding: 10px 10px 10px 35px;
+	height: 41px;
+	width: 136px;
+	color: #AAAAAA;
+	background-color: #f3f3f3;
+	font-size: 11px;
+}
+
+.headerLinks .dropdown{
+	text-transform: none;
+}
+.dropdown-menu {
+	left: -85px;
+	width: 155px;
+	background-color: #7a7a7a;
+	border-radius: 0px;
+	text-align: left;
+}
+.dropdown-menu li {
+	text-transform: none;
+	padding: 0px;
+}
+
+.dropdown-menu li a {
+	color: #c4c4c4;
+}
+
+.dropdown-menu>li>span>a {
+	display: block;
+	padding-top: 10px;
+	padding-left: 20px;
+	clear: both;
+	font-weight: 600;
+	line-height: 1.42857143;
+	white-space: nowrap;
+}
+
+.dropdown-menu .divider {
+	background-color: #888888;
+	height: 1px;
+	width: 158px;
 }

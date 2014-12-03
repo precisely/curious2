@@ -53,19 +53,21 @@
 			<div class="discussion-comment">
 				<div class="row bottom-margin">
 					<a href="/home/discuss?discussionId=${discussionData.id }"> <span class="view-comment">VIEW ALL
-							COMMENTS (${discussionPostData["${discussionData.id}"]?.totalPosts })</span>
+							COMMENTS (${discussionPostData[discussionData.id]?.totalPosts?:0})</span>
 					</a>
 				</div>
-				<div class="row">
+				<g:if test="${discussionPostData[discussionData.id]?.secondPost}">
+					<div class="row">
 						<a href="#"><img class="avatar" src="/images/avatar2.png"
 							alt="..."><span class="user-name"> ${discussionData.userName}</span></a>
 						<span class="posting-time" data-time="${discussionData.updated}"></span>
-				</div>
-				<div class="row">
-					<p>
-						${discussionPostData["${discussionData.id}"]?.secondPost }
-					</p>
-				</div>
+					</div>
+					<div class="row">
+						<p>
+							${discussionPostData[discussionData.id]?.secondPost }
+						</p>
+					</div>
+				</g:if>
 				<div class="row">
 					<div class="col-md-6 add-comment">
 						<form action="/home/discuss?commentForm=true" method="post" id="commentForm">
