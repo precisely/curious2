@@ -694,6 +694,16 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 
 /* FIRST PAGE */
 
+body.track-page .date-controls hr, body.graph-page .red-header hr {
+	margin: 0px;
+	width: 2px;
+	height: 60px;
+	position: absolute;
+	right: 227px;
+	top: 0px;
+	background-color: white;
+}
+
 body.track-page .date-controls h1 span.date {
 	display:block;
 	float:left;
@@ -714,7 +724,7 @@ body.track-page .date-controls h1 .gear {
 body.track-page .date-controls #datePicker {
 	border: 0;
 	font-size: 16px;
-	margin-top: 0px;
+	margin-top: -3px;
 	background-color: transparent;
 	color: #ffffff;
 }
@@ -1143,9 +1153,14 @@ body.discuss-page .red-header {
 	border-radius: 2px;
 	padding: 23px 15px 21px 20px;
 }
+.track-page .red-header, .graph-page .red-header {
+	position: relative;
+}
+
 .red-header .icon{
 	zoom: 0.8 !important;
-	transform: scale(0.8) !important;
+	-moz-transform: scale(0.8) !important;
+	margin-top: -3px;
 }
 .red-header .right {
 	float: left;
@@ -1165,6 +1180,11 @@ body.discuss-page .red-header {
 	height: 15px;
 	float: left;
 	width: 20px;
+}
+.date-right-arrow, .date-left-arrow {
+	height: 16px;
+	width: auto;
+	margin-top: -2px;
 }
 #actions ul {
 	background: #fff;
@@ -1438,11 +1458,13 @@ li.repeat, li.repeat input {
 	color: #c35785;
 }
 
-li.no-tag, li.no-tag input {
+li.no-tag input {
 	color: #f14a42;
-	line-height: 40px;
 }
-
+li .no-tag{
+	line-height: 40px;
+	color: #f14a42;
+}
 li.entry.continuousghost {
 	border-left: 5px;
 	border-left-color: #C04F7F;
@@ -1479,6 +1501,7 @@ body.track-page ol#entry0 li button.save {
 	background-repeat: no-repeat;
 	background-position: 5px;
 	padding-left: 25px;
+	font-weight: 600;
 }
 .pin-entry .fa{
 	margin-left: 10px;
@@ -1521,7 +1544,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
  * Styles for track page for web application. Ends here.
  */
 .tags-header-container {
-	padding-left: 7px;
+	padding-left: 10px;
 	margin-right: -12px;
 }
 
@@ -1746,7 +1769,7 @@ body.load-graph #graphList .summary .close {
 }
 .about-wrapper{
 	position:relative;
-	width:80%;
+	width:100%;
 	margin: 0 auto;
 	overflow:hidden;
 }

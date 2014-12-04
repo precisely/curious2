@@ -171,7 +171,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 		
-		var innerHTMLContent = '<div class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+		var innerHTMLContent = '<div class="content-wrapper '+ ((comment != '')?'':'no-tag') +'">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 				+ escapehtml(description) + '</span>';
 		
 		var amounts = entry.amounts;
@@ -586,7 +586,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 10 2 2 2; width: calc(100% - 75px);"></input>'
 				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
 				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
 				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');

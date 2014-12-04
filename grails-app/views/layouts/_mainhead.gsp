@@ -18,7 +18,7 @@
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
-<link rel="stylesheet" href="/css/sprite.css"/>
+<%--<link rel="stylesheet" href="/css/sprite.css"/>--%>
 <link rel="stylesheet" href="/css/main-responsive.css?ver=21"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>
@@ -54,8 +54,14 @@ $(function() {
 function addPerson(name, username, userId, sex) {
 	if (sex == 'F') sex = 'Female';
 	if (sex == 'M') sex = 'Male';
+	console.log(username);
 	$('.dropdown-toggle').html(username + '<b class="caret"></b>');
-	$('#displayUser').html('<a href="/home/userpreferences?userId=' + userId + '"> Edit Profile <\/a>');
+	if(username.indexOf('(anonymous)') > -1) {
+		$('#displayUser').html('<a href="/home/register"> Sign Up <\/a>');
+		$('#logoutLink').html('');
+	} else {
+		$('#displayUser').html('<a href="/home/userpreferences?userId=' + userId + '"> Edit Profile <\/a>');
+	}
 }
 
 function formatDate(d) {

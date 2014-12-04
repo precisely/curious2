@@ -21,15 +21,18 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 
 	<div class="red-header date-controls clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true]" />
-		<h1 class="clearfix right">
-			<a class="back icon icon-left-arrow" href="#" onclick="changeDate(-1);">
+		<h1 class="clearfix">
+			<a class="back" href="#" onclick="changeDate(-1);">
+				<img alt="back" class="date-left-arrow" src="/images/left-arrow.png">
 				<span class="hide">back</span>
 			</a>
 			<span class="date"><input id="datepicker" type="text" value="" /></span>
-			<a class="next icon icon-right-arrow" href="#" onclick="changeDate(1);">
+			<a class="next" href="#" onclick="changeDate(1);">
+				<img alt="back" class="date-right-arrow" src="/images/right-arrow.png">
 				<span class="hide">next</span>
 			</a>
 		</h1>
+		<hr>
 	</div>
 
 	<!-- MAIN -->
