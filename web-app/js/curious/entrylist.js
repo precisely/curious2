@@ -367,18 +367,18 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 	this.manipulateSortElementClass = function($activeElement, $passiveElement, isAscending) {
 		$passiveElement.removeClass("active");
-		$passiveElement.find("img").removeClass("descending");
-		$passiveElement.find("img").removeClass("ascending");
+		$passiveElement.find("img").addClass(" hide");
+		$passiveElement.find("img").attr("src","");
 		
 		if(!$activeElement.hasClass("active")) {
 			$activeElement.addClass("active");
 		} 
 		if(isAscending) {
-			$activeElement.find("img").removeClass("descending");
-			$activeElement.find("img").addClass("ascending");
+			$activeElement.find("img").removeClass("hide");
+			$activeElement.find("img").attr("src", "/images/asc.png");
 		} else {
-			$activeElement.find("img").removeClass("ascending");
-			$activeElement.find("img").addClass("descending");
+			$activeElement.find("img").removeClass("hide");
+			$activeElement.find("img").attr("src", "/images/desc.png");
 		}
 	}
 

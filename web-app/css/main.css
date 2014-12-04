@@ -1806,14 +1806,7 @@ body.load-graph #graphList .summary .close {
 	font-size: 12px;
 }
 
-.ascending {
-	content: url(/images/asc.png);
-	height: 15px;
-	margin-top: -5px;
-}
-
-.descending {
-	content: url(/images/desc.png);
+.sort-arrow {
 	height: 15px;
 	margin-top: -5px;
 }
