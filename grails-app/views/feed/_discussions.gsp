@@ -16,7 +16,7 @@
 						
 				</div>
 				<div class="row top-left-margin">
-					<span class="group"> ${groupFullname }
+					<span class="group"> ${discussionData.groupName }
 					</span>
 				</div>
 				<div class="row title">

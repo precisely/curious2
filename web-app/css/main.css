@@ -2398,3 +2398,10 @@ body{
 	height: 1px;
 	width: 158px;
 }
+.pagination > li > a {
+	color: #717171;
+}
+.pagination > .active > span {
+	background-color: #EEE;
+	border-color: #EEE;
+}
