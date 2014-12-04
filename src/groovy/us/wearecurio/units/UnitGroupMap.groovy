@@ -562,7 +562,7 @@ class UnitGroupMap {
 				amounts.put(amounts.size(), [amount:new BigDecimal(primeVal), amountPrecision:(Integer)amountPrecision, units:this.unit])
 				double remainder = (amount.doubleValue() - ((double)primeVal)) * ratio / subRatio
 				if (remainder != 0.0d && (remainder > 1.0e-5d || remainder < -1.0e-5d))
-					subUnitRatio.getJSONAmounts(amounts, new BigDecimal(remainder), amountPrecision)
+					subUnitRatio.getJSONAmounts(amounts, new BigDecimal(remainder).setScale(2, BigDecimal.ROUND_HALF_UP), amountPrecision)
 			}
 		}
 	}
