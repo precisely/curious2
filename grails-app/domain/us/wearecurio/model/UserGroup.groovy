@@ -1,11 +1,14 @@
 package us.wearecurio.model;
 
 import grails.converters.*
+import grails.util.Holders
 import groovy.sql.Sql
-import org.hibernate.criterion.CriteriaSpecification
+
+import javax.sql.DataSource
 
 import org.apache.commons.logging.LogFactory
-import grails.util.Holders
+import org.hibernate.criterion.CriteriaSpecification
+
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
@@ -297,31 +300,39 @@ class UserGroup {
 		List discussionIdList = result.collect { it.discussionId }*.toLong()
 
 		List allPostCountOrderdByDiscussion
-		if(discussionIdList) {
+		if (discussionIdList) {
 			allPostCountOrderdByDiscussion = DiscussionPost.withCriteria {
 				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
 				projections {
 					groupProperty("discussionId", "discussionId")
 					count("id", "totalPosts")
 				}
-				'in'("discussionId",discussionIdList)
+				'in'("discussionId", discussionIdList)
 			}
 		}
-
-		String getSecondPostQuery = """select id, message , discussion_id,
-									@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
-									@did := discussion_id as discussionId from discussion_post force index(discussion_id) 
-									group by discussion_id,message having row_num = 2;"""
-		def dataSource =  Holders.getApplicationContext().dataSource
-		def sql = new Sql(dataSource)
-
-		def secondPostsList = sql.rows(getSecondPostQuery);
+	
+		String getSecondPostQuery = """select id, message, discussion_id,
+										@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
+										@did := discussion_id as discussionId from discussion_post force index(discussion_id)
+										group by discussion_id, message having row_num = 2"""
+	
+		DataSource dataSource =  Holders.getApplicationContext().dataSource
+		Sql sql = new Sql(dataSource)
+	
+		// Initialize the variable to default value to avoid problem on next query
+		sql.execute("""SET @num := 0, @did := 0""")
+	
+		List secondPostsList = sql.rows(getSecondPostQuery)
+	
+		// Close the connection to avoid memory leak	
+		sql.close()
+	
 		Map discussionPostData = [:]
-		
+	
 		//separating & populating required data for every discussion
 		discussionIdList.each() { discussionId ->
-			discussionPostData[discussionId] = ["secondPost": secondPostsList.find{it.discussion_id == discussionId}?.message,
-				 "totalPosts": allPostCountOrderdByDiscussion.find{it.discussionId == discussionId}?.totalPosts]
+			discussionPostData[discussionId] = ["secondPost": secondPostsList.find{ it.discussion_id == discussionId }?.message,
+				"totalPosts": allPostCountOrderdByDiscussion.find{ it.discussionId == discussionId }?.totalPosts]
 		}
 
 		paginatedData["discussionPostData"] = discussionPostData

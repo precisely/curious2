@@ -33,7 +33,7 @@ hibernate {
 
 // environment specific settings
 environments {
-		development {
+	development {
 		dataSource {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
 			url = "jdbc:mysql://localhost/tlb_dev?zeroDateTimeBehavior=convertToNull"
@@ -42,7 +42,7 @@ environments {
 			//url = "jdbc:hsqldb:file:devDB;shutdown=true"
 			//loggingSql = true
 		}
-		}
+	}
 	test {
 		dataSource {
 			dbCreate = "create-drop" // one of 'create', 'create-drop','update'
