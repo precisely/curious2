@@ -312,9 +312,9 @@ class UserGroup {
 		}
 	
 		String getSecondPostQuery = """select id, message, discussion_id,
-										@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
-										@did := discussion_id as discussionId from discussion_post force index(discussion_id)
-										group by discussion_id, message having row_num = 2"""
+				@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
+				@did := discussion_id as discussionId from discussion_post force index(discussion_id)
+				group by discussion_id, message having row_num = 2"""
 	
 		DataSource dataSource =  Holders.getApplicationContext().dataSource
 		Sql sql = new Sql(dataSource)

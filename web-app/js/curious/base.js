@@ -104,8 +104,8 @@ function dateToTime(date) {
 }
 
 function prettyDate(time) {
-	var date = dateToTime(time);
-	var diff = (((new Date()).getTime() - date) / 1000),
+	var date = new Date(time);
+	var diff = (((new Date()).getTime() - date.getTime()) / 1000),
 	day_diff = Math.floor(diff / 86400);
 
 	if (isNaN(day_diff) || day_diff < 0)
