@@ -2531,7 +2531,11 @@ class Entry implements Comparable {
 		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
-
+		
+		// truncate time to hours:minutes
+		
+		time = new DateTime(time).withField(DateTimeFieldType.secondOfMinute(), 0).toDate()
+		
 		Date date = baseDate
 		Long baseDateTime = baseDate?.getTime()
 		Integer hours = null
