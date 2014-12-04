@@ -1,4 +1,4 @@
-#Create environment for AltruHelp
+#Create environment for Curious
 FROM centos:centos6
 
 #Installing basic tools
@@ -24,11 +24,6 @@ ADD startup.sh /etc/profile.d/
 ADD post-docker.sh /post-docker.sh
 RUN chmod +x /*.sh
 RUN echo 'root:pass' | chpasswd
-
-#Install GVM & Grails
-RUN curl -s get.gvmtool.net | bash
-RUN mkdir -p ~/.gvm/archives
-ADD grails-2.4.3.zip ~/.gvm/archives/
 
 #Dockerising ssh service (This is required)
 RUN yum install -y openssh-server

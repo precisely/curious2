@@ -1,3 +1,4 @@
 #!/bin/bash
 service mysql start
-source "/root/.gvm/bin/gvm-init.sh"
+export GRAILS_HOME="/vagrant/current-grails"
+export PATH="{$PATH}:$GRAILS_HOME/bin"
