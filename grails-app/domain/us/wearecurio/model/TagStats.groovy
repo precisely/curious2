@@ -22,6 +22,7 @@ class TagStats {
 	Long countAllTime
 	BigDecimal lastAmount
 	Integer lastAmountPrecision
+	Boolean typicallyUsesAmount
 	String lastUnits
 	
 	static constraints = {
@@ -30,6 +31,7 @@ class TagStats {
 		lastAmount(nullable:true)
 		lastAmountPrecision(nullable:true)
 		lastUnits(nullable:true)
+		typicallyUsesAmount(nullable:true)
 	}
 	static mapping = {
 		version false
@@ -118,8 +120,12 @@ class TagStats {
 			def secondPrecision = null
 			def secondUnits = null
 			int secondCount = 0
+			int countUsesAmount = 0
 			
 			for (def amount in lastAmounts) {
+				if (amount[1] > 0) {
+					++countUsesAmount
+				}
 				if (firstAmount == null) {
 					firstAmount = amount[0]
 					firstPrecision = amount[1]
@@ -148,6 +154,11 @@ class TagStats {
 						++secondCount;
 				}
 			}
+			
+			if ((totalCount > 2 && countUsesAmount > 1) || (totalCount < 3 && countUsesAmount > 0))
+				stats.setTypicallyUsesAmount(true)
+			else
+				stats.setTypicallyUsesAmount(false)
 
 			if ((firstCount > 1 && ((float)firstCount) / ((float)totalCount) > 0.5)
 					|| ((float)secondCount) / ((float)totalCount) > 0.5) {
@@ -312,7 +323,7 @@ class TagStats {
 				+ description + ", mostRecentUsage:" + Utils.dateToGMTString(mostRecentUsage) \
 				+ ", thirdMostRecentUsage:" + Utils.dateToGMTString(thirdMostRecentUsage) + ", countLastThreeMonths:" + countLastThreeMonths \
 				+ ", countLastYear:" + countLastYear + ", countAllTime:" + countAllTime + ", lastAmount:" + lastAmount \
-				+ ", lastAmountPrecision:" + lastAmountPrecision + ", lastUnits:" + lastUnits + ")"
+				+ ", lastAmountPrecision:" + lastAmountPrecision + ", lastUnits:" + lastUnits + ", typicallyUsesAmount:" + typicallyUsesAmount + ")"
 	}
 	
 	def getJSONDesc() {

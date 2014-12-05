@@ -22,6 +22,7 @@ import groovy.transform.TypeChecked
 
 import org.joda.time.DateTimeZone
 import org.junit.*
+import org.joda.time.*
 
 import grails.test.mixin.*
 import us.wearecurio.utility.Utils
@@ -1561,6 +1562,7 @@ class EntryTests extends CuriousTestCase {
 		def tagStats = stats.finish()[0]
 		assert tagStats.getLastAmount() == null
 		assert tagStats.getLastAmountPrecision() < 0
+		assert !tagStats.getTypicallyUsesAmount()
 		
 		// query for reminder should generate the ghost entry only
 		testEntries(user, timeZone, lateBaseDate, lateCurrentTime) {
@@ -2145,6 +2147,7 @@ class EntryTests extends CuriousTestCase {
 	@Test
 	void testTagStats() {
 		def now = new Date()
+		now = new org.joda.time.DateTime(now).withField(DateTimeFieldType.secondOfMinute(), 0).toDate()
 		def yesterday = new Date(now.getTime() - 1000L * 60 * 60 * 24)
 		def twoMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 60)
 		def nineMonthsAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 9 * 30)
@@ -2256,6 +2259,8 @@ class EntryTests extends CuriousTestCase {
 		
 		assert result4.getLastUnits().equals("")
 		
+		assert result4.getTypicallyUsesAmount()
+		
 		tag4 = Tag.look("gorby")
 		
 		result4 = TagStats.createOrUpdate(userId, tag4.getId())
@@ -2267,6 +2272,8 @@ class EntryTests extends CuriousTestCase {
 		assert result4.getLastAmountPrecision() < 0
 		
 		assert result4.getLastUnits().equals("")
+		
+		assert !result4.getTypicallyUsesAmount()
 		
 		stats = new EntryStats(userId)
 		
