@@ -2,18 +2,21 @@
 // var autoCache = {}, lastAutoXhr;
 
 //static autocomplete
-function TagStats(term, amount, amountPrecision, units) {
+function TagStats(term, amount, amountPrecision, units, typicallyNoAmount) {
 	this.term = term;
 	this.amount = amount;
 	this.amountPrecision = amountPrecision;
 	this.units = units;
+	this.typicallyNoAmount = !(!typicallyNoAmount);
 	
-	this.set = function(amount, amountPrecision, units) {
+	this.set = function(amount, amountPrecision, units, typicallyNoAmount) {
+		typicallyNoAmount = !(!typicallyNoAmount);
 		if (this.amount != amount || this.amountPrecision != amountPrecision
-				|| this.units != units) {
+				|| this.units != units || this.typicallyNoAmount != typicallyNoAmount) {
 			this.amount = amount;
 			this.amountPrecision = amountPrecision;
 			this.units = units;
+			this.typicallyNoAmount = typicallyNoAmount;
 			
 			return true;
 		}
@@ -73,24 +76,24 @@ function TagStatsMap() {
 	this.import = function(list) {
 		// import list of tag elements from server
 		for (var i in list) {
-			this.add(list[i][0], list[i][1], list[i][2], list[i][3]);
+			this.add(list[i][0], list[i][1], list[i][2], list[i][3], list[i][4]);
 		}
 	}
 	
-	this.add = function(term, amount, amountPrecision, units) {
-		var tagStats = new TagStats(term, amount, amountPrecision, units);
+	this.add = function(term, amount, amountPrecision, units, typicallyNoAmount) {
+		var tagStats = new TagStats(term, amount, amountPrecision, units, typicallyNoAmount);
 		this.map[term] = tagStats;
 		this.textMap[tagStats.text().value] = tagStats;
 		return tagStats;
 	}
 	
 	// return null if stats already present, stats if it isn't
-	this.set = function(term, amount, amountPrecision, units) {
+	this.set = function(term, amount, amountPrecision, units, typicallyNoAmount) {
 		var stats = this.map[term];
 		
 		if (stats != null) {
 			var oldTextValue = stats.text().value;
-			if (stats.set(amount, amountPrecision, units)) {
+			if (stats.set(amount, amountPrecision, units, typicallyNoAmount)) {
 				var newTextValue = stats.text().value;
 				if (oldTextValue != newTextValue) {
 					delete this.textMap[oldTextValue];
@@ -103,7 +106,7 @@ function TagStatsMap() {
 			return null;
 		}
 		
-		return this.add(term, amount, amountPrecision, units);
+		return this.add(term, amount, amountPrecision, units, typicallyNoAmount);
 	}
 	
 	this.get = function(term) {
@@ -169,8 +172,8 @@ function AutocompleteWidget(autocompleteId, editId) {
 	this.freqTagList = [];
 
 	// refresh autocomplete data if new tag added
-	this.update = function(term, amount, amountPrecision, units) {
-		var stats = this.tagStatsMap.set(term, amount, amountPrecision, units);
+	this.update = function(term, amount, amountPrecision, units, typicallyNoAmount) {
+		var stats = this.tagStatsMap.set(term, amount, amountPrecision, units, typicallyNoAmount);
 		if (stats != null) {
 			this.algTagList.push(term);
 			this.freqTagList.push(term);
