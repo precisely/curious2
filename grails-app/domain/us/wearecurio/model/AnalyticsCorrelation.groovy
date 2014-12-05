@@ -34,13 +34,15 @@ class AnalyticsCorrelation {
 	ValueType valueType
 	Double value
 	Long overlapN
-  String auxJson
+	String auxJson
+	Double signalLevel
 
 	static constraints = {
 		valueType nullable: true
 		value nullable: true
 		auxJson nullable: true
 		overlapN nullable: true
+		signalLevel nullable:true
 
 		saved nullable: true
 		noise nullable: true
