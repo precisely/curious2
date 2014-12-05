@@ -80,12 +80,13 @@
   (require 'us.wearecurio.analytics.interval :reload)
   (require 'us.wearecurio.analytics.rest :reload)
   (require 'us.wearecurio.analytics.tag-group :reload))
-                       
+
 
 (defn ret []
   (require 'us.wearecurio.analytics.binify-test :reload)
   (require 'us.wearecurio.analytics.core-test :reload)
   (require 'us.wearecurio.analytics.database-test :reload)
+  (require 'us.wearecurio.analytics.interval-test :reload)
   (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 

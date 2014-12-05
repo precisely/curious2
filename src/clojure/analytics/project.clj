@@ -16,6 +16,7 @@
   ;                        :pass nil}}}
   :source-paths ["dev" "src" "test"]
   :dependencies [; misc.
+                 [http-kit.fake "0.2.1"]
                  [environ "0.5.0"]
                  [clj-time "0.7.0"]
                  [org.clojure/tools.cli "0.3.1"]

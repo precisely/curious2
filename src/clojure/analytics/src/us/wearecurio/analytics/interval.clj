@@ -26,12 +26,22 @@
 (def MAX-EPOCH 300); 200
 (def keep-running (atom true))
 (def resample (atom true))
+(def SILENT (atom false))
+
 ;
 ; Generic helpers
 ;
+(defmacro println* [& args]
+  `(when-not @SILENT
+     (println ~@args)))
+
+(defmacro print* [& args]
+  `(when-not @SILENT
+     (print ~@args)))
+
 (defn warn-zero [v loc]
   (when (== 0 v)
-    (println "***WARNING***: Division by zero in" loc)))
+    (println* "***WARNING***: Division by zero in" loc)))
 
 ; For inspecting hashes.
 (defn pp [x] (clojure.pprint/pprint x))
@@ -436,7 +446,7 @@
 
 (defn resample-singletons [data state max-iter]
   (doseq [tag-id (get-tag-ids data)]
-    (print (str "resample tag#" tag-id))
+    (print* (str "resample tag#" tag-id))
     (let [the-state         @state
           cluster-id        (get-cluster-id the-state tag-id)
           partition-points  (get (resample-tag-with-cluster-points data the-state cluster-id tag-id max-iter) :partition-points)
@@ -448,7 +458,7 @@
           new-state         (assoc-in the-state [:C cluster-id :start-with] start-with)
           new-state         (assoc-in new-state [:C cluster-id :partition-points] partition-points)
           new-state         (set-loglike new-state cluster-id tag-id like-new)]
-      (println " " (get-in new-state [:C cluster-id :partition-points]))
+      (println* " " (get-in new-state [:C cluster-id :partition-points]))
       (reset! state new-state))))
 
 (defn update-rate! [state tag-id in-or-out rate]
@@ -655,18 +665,18 @@
 (defn print-cluster [cluster data rates]
   (let [points (get cluster :partition-points)
         intervals (make-intervals points)]
-    (print (map #(pp-num %) points))
-    (println "")
+    (print* (map #(pp-num %) points))
+    (println* "")
     (doseq [tag-id  (into '() (get cluster :members))]
       (let [row     (get data tag-id)
             rate    (get rates tag-id)
             like    (like-for-row row intervals (:in rate) (:out rate) (:start-with cluster))]
-        (println "       like for tag id#" tag-id " : " like)))))
+        (println* "       like for tag id#" tag-id " : " like)))))
 
 (defn print-state [data the-state user-id]
   (let [clusters (get the-state :C)]
-    (print "*** CLUSTERING USER #" user-id ": ")
-    (println (map #(get % :members) clusters))))
+    (print* "*** CLUSTERING USER #" user-id ": ")
+    (println* (map #(get % :members) clusters))))
 
 (defn all-points-within-epsilon? [epsilon points1 points2]
   (every? #(< (math/abs (apply - %)) epsilon) (partition 2 2 (interleave points1 points2))))
@@ -797,7 +807,7 @@
   ([data state max-epoch] (algorithm-7-Neal-2000 data state MAX-ITER-NEW-CLUSTER α MAX-ITER-NEW-CLUSTER))
   ([data state max-epoch alpha max-iter-new-cluster & [user-id]]
     (let [N (count data)]
-      (println "Sample partitions for each tag.")
+      (println* "Sample partitions for each tag.")
       (when @resample (resample-singletons data state max-iter-new-cluster))
       ; Save original sampling of partitions to (dramatically) speed up the clustering.
       (save-original-sampling state)
@@ -808,9 +818,9 @@
             (if (singleton? data @state tag-id)
               (process-singleton data state tag-id N alpha)
               (process-non-singleton data state tag-id N alpha max-iter-new-cluster)))
-          (print "Finished Epoch #" iter ".")
-          (print " fitness:" (percent-fit state N))
-          (println  " -- "  (cluster-counts (:C @state)))))
+          (print* "Finished Epoch #" iter ".")
+          (print* " fitness:" (percent-fit state N))
+          (println* " -- "  (cluster-counts (:C @state)))))
       (swap! state assoc-in [:best-clusters] (get @state :C))
       (update-loglikes data state)
       nil)))
@@ -858,15 +868,15 @@
 (defn run-algo [user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
   (let [start-time-as-decimal (db/rescale-time start-time interval-size-ms)
         stop-time-as-decimal (db/rescale-time stop-time interval-size-ms)
-        debug (println "\n\n\n-----------------\n\n\nloading data for user" user-id "min-n per series:" min-n)
+        debug (println* "\n\n\n-----------------\n\n\nloading data for user" user-id "min-n per series:" min-n)
         data (data-series-range-with-min-n min-n interval-size-ms start-time stop-time user-id)]
     (reset! keep-running true)
     (when (> (count data) 0)
-      (println "initializing user" user-id)
+      (println* "initializing user" user-id)
       (when @resample (initialize-state data state start-time-as-decimal stop-time-as-decimal))
-      (println "running" max-epoch "epochs")
+      (println* "running" max-epoch "epochs")
       (algorithm-7-Neal-2000 data state max-epoch alpha max-iter-new-cluster user-id)
-      (println "finished clustering for user" user-id "over period:" (str-date start-time) "-" (str-date stop-time))
+      (println* "finished clustering for user" user-id "over period:" (str-date start-time) "-" (str-date stop-time))
       (when-let [best-clusters (get @state :best-clusters)]
         (swap! state assoc-in [:C] best-clusters))
       nil)))
@@ -943,7 +953,7 @@
   (let [next-year (inc (clj-time.core/year (clj-time.core/now)))]
     (doseq [year (range 2010 next-year)]
       (when @keep-running
-        (println "\n\n\n**************\n\nSTART save-intervals-for-user YEAR:" year)
+        (println* "\n\n\n**************\n\nSTART save-intervals-for-user YEAR:" year)
         (save-intervals-for-user user-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)
                                  max-epoch state min-n interval-size-ms alpha max-iter-new-cluster )))))
 
@@ -1022,6 +1032,11 @@
 (defn rescale-numeric-time [interval-size-ms numeric-date]
   (double (/ numeric-date interval-size-ms)))
 
+(defn numeric-time [interval-size-ms & args]
+  (->> (apply tc/date-time args)
+      tr/to-long
+      (rescale-numeric-time interval-size-ms)))
+
 (defn rescale-numeric-time-interval [interval-size-ms interval]
   (map (partial rescale-numeric-time interval-size-ms) interval))
 
@@ -1042,7 +1057,7 @@
   (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tc/now)))
 
 (defn log [log-file-name message]
-  (println "core/log (" log-file-name "):" message)
+  (println* "core/log (" log-file-name "):" message)
   (when log-file-name
     (spit log-file-name
           (str "Clojure Interop " (now-formatted) " : " message "\n")
@@ -1096,7 +1111,6 @@
 
 (defn binify [user-id tag-id]
   (-> (db/series-list user-id tag-id)
-      ;(tap println)
       (bi/binify-by-avg const/DAY)))
 
 (defn fill-in-series [bins start-date stop-date data-type]
@@ -1132,7 +1146,6 @@
 (defn compute-correlation-helper [user-id tag1-id tag2-id intervals]
   (let [start-date (->> intervals flatten (apply min) long)
         stop-date  (->> intervals flatten (apply max) long)
-
         values1 (vectorize-in-intervals user-id tag1-id start-date stop-date intervals)
         values2 (vectorize-in-intervals user-id tag2-id start-date stop-date intervals)]
     (if (zero-cor? values1 values2)
@@ -1149,16 +1162,16 @@
 (defn compute-correlation
   ([user-id tag1-id tag2-id]
   (let [intervals (rescaled-unioned-intervals const/DAY user-id tag1-id tag2-id)
-        num-points-in-interval (-> intervals flatten count)]
-    (when (> num-points-in-interval 1)
+        num-intervals (-> intervals flatten count)]
+    (when (> num-intervals 1)
       (compute-correlation-helper user-id tag1-id tag2-id intervals)))))
 
 (defn compute-and-save-score [user-id & [log-file-name]]
   (let [pairs (db/pairs-with-overlap-in-cluster user-id)]
-    (println "computing" (count pairs) "correlations")
+    (println* "computing" (count pairs) "correlations")
     (doseq [pair pairs]
       (when @keep-running
-        (print ".") (flush)
+        (print* ".") (flush)
         (let [tag1-id (first pair)
               tag2-id (second pair)
               result  (apply (partial compute-correlation user-id) pair)
@@ -1169,7 +1182,8 @@
 
 (defn update-user [user-id & {:keys [log-file-name start-time stop-time
                                      max-epoch state min-n
-                                     interval-size-ms alpha max-iter-new-cluster]
+                                     interval-size-ms alpha max-iter-new-cluster
+                                     silent]
                               :or {log-file-name const/DEFAULT-LOG-FILE
                                    start-time nil
                                    stop-time nil
@@ -1178,7 +1192,11 @@
                                    min-n MIN-N
                                    interval-size-ms const/DAY
                                    alpha α
-                                   max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
+                                   max-iter-new-cluster MAX-ITER-NEW-CLUSTER
+                                   silent false}}]
+
+  (reset! SILENT silent)
+
   (log log-file-name
        (str "USER " user-id ": connect to database\n"))
   (db/connect)

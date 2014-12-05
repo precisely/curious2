@@ -36,6 +36,10 @@ Following feature needs to tested after development:
 2. Displaying graph after sharing,
 3. Comment feature on discuss page.
 
+## Analytics
+
+Please read the README in src/clojure/analytics.
+
 ## Bootstrap Customization
 
 Following are some bootstrap customization which needs to be made before downloading new bootstrap resources:

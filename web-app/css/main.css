@@ -1981,8 +1981,17 @@ body{
 }
 
 .signals .signal-row {
+}
+
+.signals .signal-row-top {
 	margin-top: 15px;
+	border-top: 6px solid #f48d5b;
+	margin-bottom: 15px;
 	border-bottom: 3px solid #eee;
+	cursor: pointer;
+}
+
+.signals .signal-row.signal-row-bottom {
 	margin-bottom: 15px;
 }
 
@@ -1991,15 +2000,23 @@ body{
 	line-height: 0.9em;
 }
 
-.signals .signal-section-title {
+.signals .signal-category {
+	width: 150px;
+	text-align:center;
+	font-size: 14px;
+	color: #aaa;
+}
+
+.signals .signal-section-question {
 	font-weight: bold;
 }
 
-.signals h2.signal-category {
-	font-weight: bold;
-	font-size: 14px;
-	padding-left: 15px;
-	text-transform: uppercase;
+.signals .signal-section-mark-noise-or-signal {
+}
+
+.signals .signal-section-mark-noise-or-signal img{
+	width: 70px;
+	cursor: pointer;
 }
 
 .signals .x-button {

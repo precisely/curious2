@@ -5,6 +5,7 @@
             [org.httpkit.server :as hkit]
             [org.httpkit.client :as http]
             [korma.core :as kc]
+            [environ.core :as e]
             [net.cgrand.moustache :as mo]
             [us.wearecurio.analytics.database :as db]
             [us.wearecurio.analytics.interval :as iv]
@@ -13,29 +14,35 @@
 
 (def WEB-SERVER "http://localhost:8080")
 (def PORT 8090)
+(def ENV (e/env :env))
 
 (defonce run-state (atom nil))
 
 ; Declare the possible run states.
 (def RUNNING :running)
-(def IDLE-NEW :idle-new)
-(def IDLE-COMPLETED :idle-completed)
-(def IDLE-TERMINATED :idle-terminated)
-(def IDLE-ERROR :idle-error)
+(def IDLE :idle)
+
+; Declare possible run-sub-state
+(def NEW :new)
+(def CLUSTERING :clustering)
+(def CORRELATING :correlations)
+(def REQUEST-NEXT :request-next)
+(def COMPLETED :completed) ; after finishing 1 user.
+(def COMPLETED-ALL :completed-all) ; after requesting another user but getting none.
+(def TERMINATED :terminated)
+(def ERROR :error)
 
 (defn now []
   (tr/to-date (tc/now)))
 
-(defn init-run-state []
-  (reset! run-state
-          {:status IDLE-NEW
-           :updated-at nil
-           :created-at (now)
-           :started-at nil
-           :stopped-at nil
-           :notes nil
-           :user-id nil
-           :error nil }))
+(defn get-status []
+  (get @run-state :state))
+
+(defn get-sub-status []
+  (get @run-state :sub-state))
+
+(defn get-error []
+  (get @run-state :error))
 
 (def json-resp
   {:status 200
@@ -91,37 +98,90 @@
   (let [options (-> params-map seq flatten)]
     (cons user-id options)))
 
+(defn initial-run-state-hash [the-time]
+  {:state IDLE
+   :sub-state NEW
+   :updated-at the-time
+   :created-at the-time
+   :started-at nil
+   :stopped-at nil
+   :user-id nil
+   :task-id nil
+   :error nil
+   :notes nil })
+
+(defn init-run-state []
+  (reset! run-state (initial-run-state-hash (now))))
+
+(defn update-at [the-time]
+  (-> @run-state
+      (assoc :updated-at the-time)))
+
+(defn stop-at [the-time]
+  (-> (update-at the-time)
+      (assoc :stopped-at the-time)))
+
+(defn start-at [the-time]
+  (-> (update-at the-time)
+      (assoc :started-at the-time)))
+
+(defn update-state-and-sub-state [the-run-state new-state sub-state]
+  (-> (assoc the-run-state :state new-state)
+      (assoc :sub-state sub-state)))
+
+(defn stop-state [new-state sub-state]
+  (-> (stop-at (now))
+      (update-state-and-sub-state new-state sub-state)))
+
+(defn update-state [new-state sub-state]
+  (-> (update-at (now))
+      (update-state-and-sub-state new-state sub-state)))
+
+(defn start-state [new-state sub-state]
+  (-> (start-at (now))
+      (update-state-and-sub-state new-state sub-state)))
+
+(defn start-state! [new-state sub-state]
+  (reset! run-state (start-state new-state sub-state)))
+
+(defn stop-state! [new-state sub-state]
+  (reset! run-state (stop-state new-state sub-state)))
+
+(defn update-state! [new-state sub-state]
+  (reset! run-state (update-state new-state sub-state)))
+
 (defn start-run-state [user-id task-id]
-  (let [the-run-state @run-state
-        the-run-state (assoc the-run-state :status RUNNING)
-        the-run-state (assoc the-run-state :updated-at (now))
-        the-run-state (assoc the-run-state :started-at (now))
-        the-run-state (assoc the-run-state :user-id user-id)]
+  (let [the-run-state (initial-run-state-hash (now))
+        the-run-state (assoc the-run-state :state RUNNING)
+        the-run-state (assoc the-run-state :user-id user-id)
+        the-run-state (assoc the-run-state :task-id task-id)]
     (reset! run-state the-run-state)))
 
 (defn record-error-run-state [notes error-message]
-  (let [the-run-state @run-state
-        the-run-state (assoc the-run-state :status IDLE-ERROR)
-        the-run-state (assoc the-run-state :updated-at (now))
-        the-run-state (assoc the-run-state :stopped-at (now))
+  (let [the-run-state (stop-state IDLE ERROR)
         the-run-state (assoc the-run-state :error error-message)
         the-run-state (assoc the-run-state :notes notes)]
-    (reset! run-state the-run-state)))
+    (reset! run-state the-run-state)
+
+    ; Let the test have enough time to detect a state change.
+    (when (= "test" ENV) (Thread/sleep 50))
+
+    the-run-state))
 
 (defn stopped-normally-run-state []
-  (let [now           (now)
-        the-run-state @run-state
-        the-run-state (assoc the-run-state :status IDLE-COMPLETED)
-        the-run-state (assoc the-run-state :updated-at now)
-        the-run-state (assoc the-run-state :stopped-at now)]
+  (let [the-run-state (stop-state IDLE COMPLETED)]
     (reset! run-state the-run-state)))
 
+(defn completed-all-run-state []
+  (let [the-run-state (stop-state IDLE COMPLETED-ALL)]
+    (reset! run-state the-run-state)))
+    
 (defn terminate-run-state []
-  (let [now           (now)
-        the-run-state @run-state
-        the-run-state (assoc the-run-state :status IDLE-TERMINATED)
-        the-run-state (assoc the-run-state :updated-at now)
-        the-run-state (assoc the-run-state :stopped-at now)]
+  (let [the-run-state (stop-state IDLE TERMINATED)]
+    (reset! run-state the-run-state)))
+
+(defn request-next-run-state []
+  (let [the-run-state (update-state RUNNING REQUEST-NEXT)]
     (reset! run-state the-run-state)))
 
 (defn add-line-breaks [string-seq]
@@ -137,27 +197,42 @@
                  error-string# (add-line-breaks (map str error-stack-trace#))
                  error-string# (str "Caused by: " error-cause# "\n" error-string#)
                  error-string# (str "Error: " error-message# "\n" error-string#)]
-             ; Record the error before throwing it again.
-             (record-error-run-state ~notes error-string#)
-             (throw t#)))))
+             ; Record the error.
+             (record-error-run-state ~notes error-string#) ; For now, don't rethrow it.  (throw t#)
+             ))))
 
-(defn post-async [url query-params]
-  (http/post url {:query-params query-params}))
+(defn post-async [url query-params & [callback]]
+  (http/post url {:query-params query-params} callback))
+
+(defn check-for-more-users [{:keys [status headers body error]}]
+  (when-not (nil? body)
+    (let [user-id (get (json/decode body) "userId")]
+      (when (< user-id 0)
+        (completed-all-run-state)))))
+;  (when error
+;    (record-error-run-state "Error when requesting more users" error)))
 
 (defn after-cluster [task-type task-id]
   (if (= "collection-child" task-type)
-      (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id })
-      (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id })))
+      (do
+        (request-next-run-state)
+        (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id } check-for-more-users))
+      (do
+        (stopped-normally-run-state)
+        (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id }))))
 
 (defn run-cluster-job [user-id req]
   (let [params (:params req)
         args (make-cluster-job-args user-id params)]
-    (future (record-error-if-any "iv/update-user" (apply iv/update-user args))
-            (stopped-normally-run-state)
+    (update-state! RUNNING CLUSTERING)
+    (future (record-error-if-any "iv/update-user"
+                                 (do
+                                   (when (:test-throw req)
+                                     (throw (Exception. "Raise error before calling update-user.")))
+                                   (apply iv/update-user args)))
             (after-cluster (:task-type params) (:task-id params)))))
 
 (defn start-clustering-job-handler [user-id req]
-    (init-run-state)
     (start-run-state user-id (-> req :params :task-id))
     (run-cluster-job user-id req)
     (assoc json-resp :body (json/generate-string {:message (str "begin clustering user " user-id)})))
@@ -172,6 +247,8 @@
   (assoc json-resp :body (json/generate-string {:message "stopping clustering job"})))
 
 ; ----- Server -----
+(defn cluster-user-url [user-id]
+ (str "http://localhost:" PORT "/cluster/user/" user-id))
 
 (defn integer [s]
     (try (Integer/parseInt s) (catch Exception e)))
@@ -237,3 +314,4 @@
 (defn restart-server []
   (stop-server)
   (start-server))
+

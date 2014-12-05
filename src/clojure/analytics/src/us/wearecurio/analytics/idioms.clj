@@ -12,6 +12,9 @@
 (defn apply-to-values [f hash-map]
   (into {} (for [[k v] hash-map] [k (f v)])))
 
+(defn apply-to-keys [f hash-map]
+  (into {} (for [[k v] hash-map] [(f k) v])))
+
 (defn collect-into-index [col index-key value-key]
   "Create an value-based index from a seq of maps.  index-key is the key whose values will be used to collect values of value-key."
   ; E.g.

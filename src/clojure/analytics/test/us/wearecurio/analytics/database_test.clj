@@ -93,117 +93,121 @@
 
 (deftest cluster-run-crud
   (testing "cluster-run table should be empty"
+    (println (db/cluster-run-list))
     (is (= (count (db/cluster-run-list)) 0)))
-  (testing "cluster-run-create: should be able to insert a row."
-    (let [start-date (db/sql-time 2014 1 1)
-          stop-date (db/sql-time 2014 2 2)]
-        (db/cluster-run-create UID)
-        (is (= (count (db/cluster-run-list)) 1))))
-  (testing "cluster-run-create: start-date and stop-date should be able to be specified."
-        (db/cluster-run-create UID :start-date db/BIG-BANG :stop-date (db/sql-time 2014 2 14))
-        (is (= (count (db/cluster-run-list)) 2))
-        (let [last-run (-> (db/cluster-run-list) last)]
-          (is (= (:start_date last-run) db/BIG-BANG))
-          (is (= (:stop_date last-run) (db/sql-time 2014 2 14)))
-          (testing "default interval size is one day in milliseconds."
-            (is (= (:interval_size_ms last-run 86400000))))))
-  (testing "cluster-run-create: min-n, interval-size (time-scale e.g. # of obs per unit time) and name shoud be able to be specified."
-        (db/cluster-run-create UID :name "clustering is fun" :min-n 42 :interval-size-ms 5000)
-        (is (= (count (db/cluster-run-list)) 3))
-        (let [last-run (-> (db/cluster-run-list) last)]
-          (is (= (:min_n last-run 42)))
-          (is (= (:name last-run "clustering is fun")))
-          (is (= (:interval_size_ms last-run 5000)))))
-  (testing "cluster-run-update-finished: time stamp indicating job is finished."
-    (is (= (count (db/cluster-run-list)) 3))
-    (let [last-run (db/cluster-run-latest UID)]
-      (is (nil? (:finished last-run)))
-      (db/cluster-run-update-finished (:id last-run))
-      (is (= java.sql.Timestamp (class (:finished (db/cluster-run-latest UID))))))))
+  )
+;  (testing "cluster-run-create: should be able to insert a row."
+;    (let [start-date (db/sql-time 2014 1 1)
+;          stop-date (db/sql-time 2014 2 2)]
+;        (db/cluster-run-create UID)
+;        (is (= (count (db/cluster-run-list)) 1))))
+;  (testing "cluster-run-create: start-date and stop-date should be able to be specified."
+;        (db/cluster-run-create UID :start-date db/BIG-BANG :stop-date (db/sql-time 2014 2 14))
+;        (is (= (count (db/cluster-run-list)) 2))
+;        (let [last-run (-> (db/cluster-run-list) last)]
+;          (is (= (:start_date last-run) db/BIG-BANG))
+;          (is (= (:stop_date last-run) (db/sql-time 2014 2 14)))
+;          (testing "default interval size is one day in milliseconds."
+;            (is (= (:interval_size_ms last-run 86400000))))))
+;  (testing "cluster-run-create: min-n, interval-size (time-scale e.g. # of obs per unit time) and name shoud be able to be specified."
+;        (db/cluster-run-create UID :name "clustering is fun" :min-n 42 :interval-size-ms 5000)
+;        (is (= (count (db/cluster-run-list)) 3))
+;        (let [last-run (-> (db/cluster-run-list) last)]
+;          (is (= (:min_n last-run 42)))
+;          (is (= (:name last-run "clustering is fun")))
+;          (is (= (:interval_size_ms last-run 5000)))))
+;  (testing "cluster-run-update-finished: time stamp indicating job is finished."
+;    (is (= (count (db/cluster-run-list)) 3))
+;    (let [last-run (db/cluster-run-latest UID)]
+;      (is (nil? (:finished last-run)))
+;      (db/cluster-run-update-finished (:id last-run))
+;      (is (= java.sql.Timestamp (class (:finished (db/cluster-run-latest UID)))))))
+;  )
 
-(deftest tag-cluster-crud
-  (testing "tag-cluster initial state: cluster-run and tag-cluster tables should be empty to start with"
-    (is (= (count (db/cluster-run-list)) 0))
-    (is (= (count (db/tag-cluster-list)) 0)))
-  (testing "tag-cluster: should be able to insert a row."
-    (let [last-run-id          (db/cluster-run-create 4)
-          last-tag-cluster-id  (db/tag-cluster-create last-run-id)]
-      (is (= (count (db/cluster-run-list)) 1))
-      (is (= (count (db/tag-cluster-list)) 1))
-      (testing "tag-cluster: add tag-ids to the tag cluster."
-        (let [tag-ids (fn [] (db/tag-cluster-list-tag-ids last-tag-cluster-id))]
-          (is (= '() (tag-ids)))
-          (db/tag-cluster-add-tag last-tag-cluster-id 42 1000)
-          (db/tag-cluster-add-tag last-tag-cluster-id 99 2000)
-          (db/tag-cluster-add-tag last-tag-cluster-id 100 3000)
-          (is (contains? (set (tag-ids)) 42))
-          (is (contains? (set (tag-ids)) 99))
-          (is (contains? (set (tag-ids)) 100))
-          (is (not (contains? (set (tag-ids)) 41)))
-          (testing "tag-cluster-tag: loglikelihood should be saved"
-            (is (clojure.set/superset?
-                  (set (map #(long (:loglike %))
-                            (:analytics_tag_cluster_tag (first (db/tag-cluster-get last-tag-cluster-id)))))
-                  (set '(1000 2000 3000)))))
-          (testing "tag-cluster: delete all tag-ids from the tag cluster."
-            (is (= 3 (count (tag-ids))))
-            (db/tag-cluster-tag-delete last-tag-cluster-id)
-            (is (= 0 (count (tag-ids))))))))))
+;(deftest tag-cluster-crud
+;  (testing "tag-cluster initial state: cluster-run and tag-cluster tables should be empty to start with"
+;    (println (db/cluster-run-list))
+;    (is (= (count (db/cluster-run-list)) 0))
+;    (is (= (count (db/tag-cluster-list)) 0)))
+;  (testing "tag-cluster: should be able to insert a row."
+;    (let [last-run-id          (db/cluster-run-create 4)
+;          last-tag-cluster-id  (db/tag-cluster-create last-run-id)]
+;      (is (= (count (db/cluster-run-list)) 1))
+;      (is (= (count (db/tag-cluster-list)) 1))
+;      (testing "tag-cluster: add tag-ids to the tag cluster."
+;        (let [tag-ids (fn [] (db/tag-cluster-list-tag-ids last-tag-cluster-id))]
+;          (is (= '() (tag-ids)))
+;          (db/tag-cluster-add-tag last-tag-cluster-id 42 1000)
+;          (db/tag-cluster-add-tag last-tag-cluster-id 99 2000)
+;          (db/tag-cluster-add-tag last-tag-cluster-id 100 3000)
+;          (is (contains? (set (tag-ids)) 42))
+;          (is (contains? (set (tag-ids)) 99))
+;          (is (contains? (set (tag-ids)) 100))
+;          (is (not (contains? (set (tag-ids)) 41)))
+;          (testing "tag-cluster-tag: loglikelihood should be saved"
+;            (is (clojure.set/superset?
+;                  (set (map #(long (:loglike %))
+;                            (:analytics_tag_cluster_tag (first (db/tag-cluster-get last-tag-cluster-id)))))
+;                  (set '(1000 2000 3000)))))
+;          (testing "tag-cluster: delete all tag-ids from the tag cluster."
+;            (is (= 3 (count (tag-ids))))
+;            (db/tag-cluster-tag-delete last-tag-cluster-id)
+;            (is (= 0 (count (tag-ids))))))))))
 
-(deftest cluster-run-crud
-  (testing "cluster-run initial state: all tables should be empty."
-    (is (= (count (db/cluster-run-list)) 0))
-    (is (= (count (db/tag-cluster-list)) 0))
-    (is (= (count (db/tag-cluster-tag-list)) 0))
-    (is (= (count (db/cluster-interval-list)) 0)))
-  (testing "should be able to insert a row into a cluster-interval"
-    (let [run-id          (db/cluster-run-create UID)
-          tag-cluster-id  (db/tag-cluster-create run-id)
-          interval1-id    (db/cluster-interval-create tag-cluster-id (db/sql-time 2014 1 2) (db/sql-time 2014 3 4))
-          interval2-id    (db/cluster-interval-create tag-cluster-id (db/sql-time 2014 5 6) (db/sql-time 2014 7 8))]
-      (is (= (count (db/cluster-run-list)) 1))
-      (is (= (count (db/tag-cluster-list)) 1))
-      (is (= (count (db/tag-cluster-tag-list)) 0))
-      (is (= (count (db/cluster-interval-list)) 2))
-      (is (= (:analytics_tag_cluster_id (last (db/cluster-interval-list tag-cluster-id)))
-             tag-cluster-id))
-      (is (= (:start_date (last (db/cluster-interval-list tag-cluster-id)))
-             (db/sql-time 2014 1 2)))
-      (is (= (:stop_date (last (db/cluster-interval-list tag-cluster-id)))
-             (db/sql-time 2014 3 4)))
-      (db/cluster-interval-delete-by-tag-cluster-id tag-cluster-id)
-      (is (= (count (db/tag-cluster-list)) 1))
-      (is (= (count (db/cluster-interval-list)) 0)))))
-
-(deftest cascading-delete
-  (testing "tag-cluster-tags (tag-ids associated with a tag-cluster) should all be deleted."
-    (is (= (count (db/cluster-run-list)) 0))
-    (is (= (count (db/tag-cluster-list)) 0))
-    (is (= (count (db/tag-cluster-tag-list)) 0))
-    (is (= (count (db/cluster-interval-list)) 0))
-    ; Set up 1 cluster run and attach 3 tag clusters each with 5 tag-ids
-    (let [run-id (db/cluster-run-create UID)
-          wrong-run-id (inc run-id)]
-      (dotimes [i 3]
-        (let [tag-cluster-id (db/tag-cluster-create run-id)]
-          (dotimes [j 5]
-            (db/tag-cluster-add-tag tag-cluster-id (* (inc i) (inc j)) 5000)
-            (db/cluster-interval-create tag-cluster-id
-                                        (db/sql-time 2014 (inc j) (inc i))
-                                        (db/sql-time 2014 (inc j) (inc (inc i)))))))
-      (is (= (count (db/cluster-run-list)) 1))
-      (is (= (count (db/tag-cluster-list)) 3))
-      (is (= (count (db/tag-cluster-tag-list)) 15))
-      (is (= (count (db/cluster-interval-list)) 15))
-      (db/cluster-run-delete wrong-run-id)
-      (is (= (count (db/cluster-run-list)) 1))
-      (is (= (count (db/tag-cluster-list)) 3))
-      (is (= (count (db/tag-cluster-tag-list)) 15))
-      (is (= (count (db/cluster-interval-list)) 15))
-      (db/cluster-run-delete run-id)
-      (is (= (count (db/cluster-run-list)) 0))
-      (is (= (count (db/tag-cluster-list)) 0))
-      (is (= (count (db/tag-cluster-tag-list)) 0))
-      (is (= (count (db/cluster-interval-list)) 0)))))
-
+;(deftest cluster-run-crud
+;  (testing "cluster-run initial state: all tables should be empty."
+;    (is (= (count (db/cluster-run-list)) 0))
+;    (is (= (count (db/tag-cluster-list)) 0))
+;    (is (= (count (db/tag-cluster-tag-list)) 0))
+;    (is (= (count (db/cluster-interval-list)) 0)))
+;  (testing "should be able to insert a row into a cluster-interval"
+;    (let [run-id          (db/cluster-run-create UID)
+;          tag-cluster-id  (db/tag-cluster-create run-id)
+;          interval1-id    (db/cluster-interval-create tag-cluster-id (db/sql-time 2014 1 2) (db/sql-time 2014 3 4))
+;          interval2-id    (db/cluster-interval-create tag-cluster-id (db/sql-time 2014 5 6) (db/sql-time 2014 7 8))]
+;      (is (= (count (db/cluster-run-list)) 1))
+;      (is (= (count (db/tag-cluster-list)) 1))
+;      (is (= (count (db/tag-cluster-tag-list)) 0))
+;      (is (= (count (db/cluster-interval-list)) 2))
+;      (is (= (:analytics_tag_cluster_id (last (db/cluster-interval-list tag-cluster-id)))
+;             tag-cluster-id))
+;      (is (= (:start_date (last (db/cluster-interval-list tag-cluster-id)))
+;             (db/sql-time 2014 1 2)))
+;      (is (= (:stop_date (last (db/cluster-interval-list tag-cluster-id)))
+;             (db/sql-time 2014 3 4)))
+;      (db/cluster-interval-delete-by-tag-cluster-id tag-cluster-id)
+;      (is (= (count (db/tag-cluster-list)) 1))
+;      (is (= (count (db/cluster-interval-list)) 0)))))
+;
+;(deftest cascading-delete
+;  (testing "tag-cluster-tags (tag-ids associated with a tag-cluster) should all be deleted."
+;    (is (= (count (db/cluster-run-list)) 0))
+;    (is (= (count (db/tag-cluster-list)) 0))
+;    (is (= (count (db/tag-cluster-tag-list)) 0))
+;    (is (= (count (db/cluster-interval-list)) 0))
+;    ; Set up 1 cluster run and attach 3 tag clusters each with 5 tag-ids
+;    (let [run-id (db/cluster-run-create UID)
+;          wrong-run-id (inc run-id)]
+;      (dotimes [i 3]
+;        (let [tag-cluster-id (db/tag-cluster-create run-id)]
+;          (dotimes [j 5]
+;            (db/tag-cluster-add-tag tag-cluster-id (* (inc i) (inc j)) 5000)
+;            (db/cluster-interval-create tag-cluster-id
+;                                        (db/sql-time 2014 (inc j) (inc i))
+;                                        (db/sql-time 2014 (inc j) (inc (inc i)))))))
+;      (is (= (count (db/cluster-run-list)) 1))
+;      (is (= (count (db/tag-cluster-list)) 3))
+;      (is (= (count (db/tag-cluster-tag-list)) 15))
+;      (is (= (count (db/cluster-interval-list)) 15))
+;      (db/cluster-run-delete wrong-run-id)
+;      (is (= (count (db/cluster-run-list)) 1))
+;      (is (= (count (db/tag-cluster-list)) 3))
+;      (is (= (count (db/tag-cluster-tag-list)) 15))
+;      (is (= (count (db/cluster-interval-list)) 15))
+;      (db/cluster-run-delete run-id)
+;      (is (= (count (db/cluster-run-list)) 0))
+;      (is (= (count (db/tag-cluster-list)) 0))
+;      (is (= (count (db/tag-cluster-tag-list)) 0))
+;      (is (= (count (db/cluster-interval-list)) 0)))))
+;
 

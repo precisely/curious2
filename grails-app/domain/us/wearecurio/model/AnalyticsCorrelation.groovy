@@ -89,15 +89,21 @@ class AnalyticsCorrelation {
 		criteria.list()
 	}
 
-	public static markViewed(Long theId) {
+	public static updateSignalLevel(Long theId, Double signalLevel) {
 		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
-		correlation.viewed = new Date()
+		if (signalLevel == 0) {
+			correlation.noise = new Date()
+		}
+		if (signalLevel >= 4) {
+			correlation.saved = new Date()
+		}
+		correlation.signalLevel = signalLevel
 		Utils.save(correlation, true)
 	}
 
-	public static markNoise(Long theId) {
+	public static markViewed(Long theId) {
 		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
-		correlation.noise = new Date()
+		correlation.viewed = new Date()
 		Utils.save(correlation, true)
 	}
 

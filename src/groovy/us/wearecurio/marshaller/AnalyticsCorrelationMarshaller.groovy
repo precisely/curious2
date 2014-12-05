@@ -16,6 +16,7 @@ class AnalyticsCorrelationMarshaller {
 				description2: correlation.description2(),
 				valueType: correlation.valueType,
 				value: correlation.value,
+				signalLevel: correlation.signalLevel,
 				overlapn: correlation.overlapN,
 				saved: correlation.savedAsLong(),
 				noise: correlation.noiseAsLong(),

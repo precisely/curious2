@@ -49,12 +49,15 @@ class AnalyticsTaskController {
 			parentTask.updatedAt = new Date()
 			Utils.save(parentTask)
 		}
+
 		// So, let's start a new one. If there are more tasks than users, nextTask.startProcessing will
-		//not do anything.
+		// not do anything.
 		def nextTask = AnalyticsTask.createSibling(prevTask)
-		analyticsService.prepareUser(nextTask)
-		nextTask.startProcessing()
-		render(contentType: "text/json") {['message': "ok" ]}
+		if (nextTask.userId && nextTask.userId > 0) {
+			analyticsService.prepareUser(nextTask)
+			nextTask.startProcessing()
+		}
+		render(contentType: "text/json") {['message': "ok", 'userId': nextTask.userId ]}
 	}
 
 	def serverList() {

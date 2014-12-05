@@ -10,12 +10,14 @@ class AnalyticsTask {
 
 	private static def log = LogFactory.getLog(this)
 
+	// Possible values for status.
 	public static final String RUNNING = "running"
-	public static final String IDLE_NEW= "idle-new"
-	public static final String IDLE_COMPLETED = "idle-completed"
-	public static final String IDLE_TERMINATED = "idle-terminated"
-	public static final String IDLE_ERROR = "idle-error"
+	public static final String NEW = "new"
+	public static final String COMPLETED = "completed"
+	public static final String TERMINATED = "terminated"
+	public static final String ERROR = "error"
 
+	// Possible values for type.
 	public static final String PARENT_OF_COLLECTION = "collection-parent"
 	public static final String CHILD_OF_COLLECTION = "collection-child"
 	public static final String ONE_OFF = "one-off"
@@ -55,7 +57,7 @@ class AnalyticsTask {
 	}
 
 	AnalyticsTask() {
-		status = IDLE_NEW
+		status = NEW
 		userId = null
 		error = null
 		notes = null
@@ -64,7 +66,6 @@ class AnalyticsTask {
 	}
 
 	public static def createChild(serverAddress, parentTask) {
-
 		def childTask = new AnalyticsTask()
 		childTask.name = "cluster intervals & compute correlation for a single user."
 		childTask.serverAddress = serverAddress
@@ -73,8 +74,6 @@ class AnalyticsTask {
 
 		Utils.save(childTask)
 		childTask.fetchUserId()
-		log.debug "*********************************************"
-		log.debug childTask.userId
 		childTask
 	}
 
@@ -96,6 +95,7 @@ class AnalyticsTask {
 		parentTask.serverAddress = null
 		parentTask.parentId = null
 		parentTask.type = PARENT_OF_COLLECTION
+		parentTask.maxNumSubtasks = User.count()
 		Utils.save(parentTask)
 		parentTask
 	}
@@ -123,7 +123,7 @@ class AnalyticsTask {
 		if (i < userIds.size) {
 			userIds[i]
 		} else {
-			return null
+			return -1
 		}
 	}
 
@@ -166,14 +166,15 @@ class AnalyticsTask {
 
 	def startProcessing() {
 		def uid = fetchUserId()
-		if (uid == null) {
+		if (uid == null || uid < 0) {
 			return null
 		}
 
 		// Make an http POST request to: "${serverAddress}/cluster/user/${userId}/run"
 		// Set the POST variable taskId=${fetchUserId()} so that the process can POST back the
 		// status when it finishes, gets terminated or errors out.
-		// In Clojure, after that task is done, it will send a request to /analytics_task/${id}/done
+		// In Clojure, after that task is done, the Clojure worker/process will send a request
+		// to /analytics_task/${id}/next
 		httpPost(baseUrl(), startUri(), ['task-id': getId(), 'task-type': getType()])
 	}
 
@@ -181,4 +182,10 @@ class AnalyticsTask {
 		httpGet(baseUrl(), statusUri(), null)
 		println "\n\nDONE getStatus"
 	}
+
+	def markAsCompleted() {
+		status = COMPLETED
+		Utils.save(this)
+	}
+
 }

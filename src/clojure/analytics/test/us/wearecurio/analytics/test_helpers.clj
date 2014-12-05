@@ -6,7 +6,7 @@
             [clj-time.core :as t]
             [environ.core :as e]))
 
-(defn fake-sql-time [& args]
+(defn sql-time [& args]
   (-> (apply t/date-time args) c/to-sql-time))
 
 (def ENV (e/env :env))
@@ -65,6 +65,7 @@
 (defn create-table-analytics-time-series []
   (kc/exec-raw "CREATE TABLE IF NOT EXISTS `analytics_time_series` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `data_type` varchar(255) DEFAULT NULL,
     `amount` decimal(19,9) DEFAULT NULL,
     `date` datetime DEFAULT NULL,
     `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,

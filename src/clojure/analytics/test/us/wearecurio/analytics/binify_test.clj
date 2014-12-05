@@ -152,16 +152,18 @@
                  :date (db/sql-time 2014 3 16 23 30) :data_type "EVENT"}]
           averaged-bins (bi/map-bins bi/avg-bin series-data)
           ordered-date-index-pairs (partition 2 1 (-> averaged-bins keys sort))
-          last-data-point-y (bi/last-y averaged-bins)]
+          last-data-point-x (-> averaged-bins keys sort last)
+          last-data-point-y (get averaged-bins last-data-point-x)
+          ]
       (testing "Testing preconditions."
         (is (= (count series-data) 3) "Initial series should be length 3.")
         (is (= (count averaged-bins) 3) "Binned series should also be of length 3.")
-        (is (= (count (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-y)) 9), "There are 9 days between Mar 10-18 including the last day, so the return value should be a sequence of length 9."))
+        (is (= (count (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-x last-data-point-y)) 9), "There are 9 days between Mar 10-18 including the last day, so the return value should be a sequence of length 9."))
       (testing "Values before the first data point, should assume the value of the first data point."
-        (is (= 675 (long (* 100 (first (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-y))))))
-        (is (= 675 (long (* 100 (second (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-y)))))))
+        (is (= 675 (long (* 100 (first (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-x last-data-point-y))))))
+        (is (= 675 (long (* 100 (second (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date  last-data-point-x last-data-point-y)))))))
       (testing "Values after the last data point should assume the value of the last data point."
-        (let [continuous-series (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-y)
+        (let [continuous-series (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-x last-data-point-y)
               last-pt (last continuous-series)
               second-to-last-pt (-> continuous-series reverse second)]
           (is (number? last-pt))
@@ -169,7 +171,7 @@
           (is (= 733 (long (* 100 second-to-last-pt))))))
 
       (testing "values between time-slices with data points should be interpolated."
-        (let [continuous-series (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-y)
+        (let [continuous-series (bi/-continuous-series averaged-bins ordered-date-index-pairs start-date stop-date last-data-point-x last-data-point-y)
               in-between-pt1 ((vec continuous-series) 3)
               in-between-pt2 ((vec continuous-series) 4)]
           (is (number? in-between-pt1))

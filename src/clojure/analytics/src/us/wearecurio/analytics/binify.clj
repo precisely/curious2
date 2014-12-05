@@ -95,7 +95,7 @@ making date-time objects that are compatible with keyify."
 
 ; ordered-date-index-pairs is a sequence of pair of date-indices that have user-entered data (y-values).
 ; E.g. (partition 2 1 (-> value-series-map keys sort))
-(defn -continuous-series [value-series-map ordered-date-index-pairs current-date-index stop-date-index last-data-point-y]
+(defn -continuous-series [value-series-map ordered-date-index-pairs current-date-index stop-date-index last-data-point-x last-data-point-y]
   (let [current-value (get value-series-map current-date-index)
         x0            (-> ordered-date-index-pairs first first)
         y0            (get value-series-map x0)
@@ -106,32 +106,44 @@ making date-time objects that are compatible with keyify."
       (> current-date-index stop-date-index) '()
 
       ; After last data point.
-      (nil? x1)
-        (cons last-data-point-y (lazy-seq (-continuous-series value-series-map nil (inc current-date-index) stop-date-index last-data-point-y)))
+      (or (nil? x1) (> current-date-index last-data-point-x))
+          (cons last-data-point-y (lazy-seq (-continuous-series value-series-map nil (inc current-date-index) stop-date-index last-data-point-x last-data-point-y)))
 
       ; Before reaching first data point.
       (< current-date-index x0)
-        (cons y0 (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-y)))
+        (cons y0 (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-x last-data-point-y)))
+
+      ; Lop off heads until you reach the relevant interval.
+      (> current-date-index x1)
+        (-continuous-series value-series-map (rest ordered-date-index-pairs) current-date-index stop-date-index last-data-point-x last-data-point-y)
 
       ; We found a value at the current time slice.
       current-value
-        (let [ordered-date-index-pairs (if (= current-date-index x1) (rest ordered-date-index-pairs) ordered-date-index-pairs)]
-          (cons current-value (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-y))))
+        (let [ordered-date-index-pairs2 (if (== current-date-index x1) (rest ordered-date-index-pairs) ordered-date-index-pairs)]
+              (cons current-value (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs2 (inc current-date-index) stop-date-index last-data-point-x last-data-point-y))))
 
-      ; If we're not before the beginning, after the end, or at a data point, so
-      ;   we must be between two data points.
-      :else
+      ; The point lies between 
+      (and (> current-date-index x0) (< current-date-index x1))
         (let [m       (/ (double (- y1 y0)) (double (- x1 x0)))
               Δx      (- current-date-index x0)
               y       (+ y0 (* Δx m))]
-          (cons y (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-y)))))))
+          (cons y (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-x last-data-point-y))))
+
+      :else
+        (throw (Exception. "This shouldn't happen")))))
 
 (defn continuous-series
   "A convenience wrapper for -continuous-series."
   [value-series-map start-date-index stop-date-index]
-  (let [last-data-point-y (last-y value-series-map)
-        date-index-pairs  (partition 2 1 (-> value-series-map keys sort))]
-    (->> (-continuous-series value-series-map date-index-pairs start-date-index stop-date-index last-data-point-y)
+  (let [last-data-point-x (-> value-series-map keys sort last)
+        last-data-point-y (last-y value-series-map)
+        date-index-pairs  (partition 2 1 (-> value-series-map keys sort))
+        ; start-date-index, stop-date-index and the keys of value-series-map
+        ;   need to be of the same type so that the look-up by key value will work.
+        value-series-map  (im/apply-to-keys long value-series-map)
+        start-date-index  (long start-date-index)
+        stop-date-index   (long stop-date-index)]
+    (->> (-continuous-series value-series-map date-index-pairs start-date-index stop-date-index last-data-point-x last-data-point-y)
         (interleave (range start-date-index (inc stop-date-index)))
         (apply sorted-map))))
 

@@ -53,6 +53,10 @@ $(function() {
 </head>
 
 <body class="signals">
+<!-- preload circle images //-->
+<img src="/images/signals/empty_circle.png" class="nodisplay">
+<img src="/images/signals/filled_circle.png" class="nodisplay">
+<img src="/images/signals/hover_circle.png" class="nodisplay">
 
 <div class="main container-fluid" >
 
@@ -86,65 +90,38 @@ $(function() {
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<div class="row">
-		<div class="col-md-2 signal-name">
-			<span class="saved-action">Saved</span>
-			<!-- Preload the toggle image //-->
-			<img src="/images/signals/arrow-right-sm.png" class="nodisplay">
-			<img src="/images/signals/arrow-down-sm.png" class="toggle-saved toggle-arrow">
-		</div>
-	</div>
-	<table class="row saved-carousel-layout">
-		<tr>
-			<td width='30' > <div class="arrow arrow-left"></div>  </td>
-			<td class='nav-carousel-container'>
-				<div id="secret-container">
-
-					<script id="saved-item-template" type="x-tmpl-mustache">
-						<div class="nav-box" data-id="{{id}}">
-							<img class="nav-box-icon {{type}}-icon" src="/images/signals/{{type}}.png"/>
-							<div class="carousel-caption">
-								<span class="carousel-item-title">{{type}}:</span>
-								<span class="carousel-item-body">
-									Score: {{score}}<br>
-									<a href="/home/graph/signals/{{description1}}/{{description2}}">{{description1}} X {{description2}}</a>
-								<span>
-							</div>
-						</div>
-					</script>
-
-				</div> <!--- secret-container //-->
-
-			</td>
-			<td width='30' > <div class="arrow arrow-right"></div> </td>
-		</tr>
-	</table>
-
 	<div class="red-header"></div>
 
 	<div id="correlation-container">
 
 		<script id="correlation-template" type="x-tmpl-mustache">
-			<div class="row signal-row" type="triggered" data-id="{{id}}">
-				<div class="col-md-2 signal-name">
-					<img src="/images/signals/{{type}}.png" />
-					<h2 class="signal-category"> Event<br>{{type}} </h2>
+			<div class="row signal-row signal-row-top" type="{{type}}" data-id="{{id}}">
+				<div class="col-md-3 signal-name">
+					<img src="/images/signals/{{type}}.png?v=3" width="150"/>
+					<p class="signal-category"> ({{label}}) </p>
 				</div>
-				<div class="col-md-8 signal-description">
+				<div class="col-md-9 signal-description">
 
 					<p>
-						<span class="signal-section-title">TAGS:</span>
-						<span class="signal-section-details">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
+						<span class="signal-section-question">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
 					</p>
+					<br>
 					<p>
 						<span class="signal-section-title">SCORE:</span>
 						<span class="signal-section-details">{{score}}</span>
 					</p>
 				</div>
-				<div class="col-md-2 signal-action">
-					<div class="signal-action-button" action-name="View signal graph" data-action="graph">View Graph</div>
-					<div class="signal-action-button" action-name="Mark as noise" data-action="noise">Mark as Noise</div>
-					<div class="signal-action-button" action-name="Save signal" data-action="save" >Save</div>
+			</div>
+			<div class="row signal-row signal-row-bottom" type="{{type}}" data-id="{{id}}">
+				<div class="col-md-3"></div>
+				<div class="col-md-9 signal-section-mark-noise-or-signal">
+					NOISE
+					<img class="bubble" signal-level="0" src="/images/signals/{{bubble_0}}_circle.png?v=2" >
+					<img class="bubble" signal-level="1" src="/images/signals/{{bubble_1}}_circle.png?v=2" >
+					<img class="bubble" signal-level="2" src="/images/signals/{{bubble_2}}_circle.png?v=2" >
+					<img class="bubble" signal-level="3" src="/images/signals/{{bubble_3}}_circle.png?v=2" >
+					<img class="bubble" signal-level="4" src="/images/signals/{{bubble_4}}_circle.png?v=2" >
+					SIGNAL
 				</div>
 			</div>
 		</script>

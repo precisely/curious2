@@ -119,6 +119,8 @@ class AnalyticsService {
 		tagIds.each { tagId ->
 			refreshSeriesCache(userId, tagId)
 		}
+		log "user id ${userId}: refreshSeriesCache(${userId}) complete."
+
 	}
 
 	public static processOneOfManyUsers(childTask) {
