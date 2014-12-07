@@ -1562,7 +1562,7 @@ class EntryTests extends CuriousTestCase {
 		def tagStats = stats.finish()[0]
 		assert tagStats.getLastAmount() == null
 		assert tagStats.getLastAmountPrecision() < 0
-		assert !tagStats.getTypicallyUsesAmount()
+		assert tagStats.getTypicallyNoAmount()
 		
 		// query for reminder should generate the ghost entry only
 		testEntries(user, timeZone, lateBaseDate, lateCurrentTime) {
@@ -2259,7 +2259,7 @@ class EntryTests extends CuriousTestCase {
 		
 		assert result4.getLastUnits().equals("")
 		
-		assert result4.getTypicallyUsesAmount()
+		assert !result4.getTypicallyNoAmount()
 		
 		tag4 = Tag.look("gorby")
 		
@@ -2273,7 +2273,7 @@ class EntryTests extends CuriousTestCase {
 		
 		assert result4.getLastUnits().equals("")
 		
-		assert !result4.getTypicallyUsesAmount()
+		assert result4.getTypicallyNoAmount()
 		
 		stats = new EntryStats(userId)
 		
