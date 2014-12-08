@@ -104,7 +104,7 @@ $(function(){
 <body class="graph-page">
 	<div class="red-header graph-header-container clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
-		<h1 class="clearfix right">
+		<h1 class="clearfix">
 			<div id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>
@@ -121,6 +121,7 @@ $(function(){
 			<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 			<div id="debug"></div>
 		</h1>
+		<hr>
 	</div>
 
 	<div class="clearfix">

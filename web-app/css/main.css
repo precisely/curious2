@@ -1,7 +1,15 @@
 input, optgroup, select, textarea {
 	color: black;
 }
-
+#addData input {
+	color: #c04f7f;
+}
+.new-post input {
+	color: #fc3f28;
+}
+.add-comment input, .add-comment-to-discussion input {
+	color: #a4a4a4;
+}
 .btn {
 	display: inline-block;
 	margin-bottom: 0;
@@ -70,8 +78,8 @@ a.disabled {
 }
 
 .container {
-	margin-left: 40px;
-	margin-right: 40px;
+	margin-left: 20px;
+	margin-right: 20px;
 	width: auto;
 }
 
@@ -88,8 +96,8 @@ ul {
 
 * {
 	vertical-align: baseline;
-	font-weight: inherit;
-	font-family: arial,helvetica,san-serif;
+	font-weight: lighter;
+	font-family: 'Open Sans', sans;
 	font-style: inherit;
 	font-size: 100%;
 	border: 0 none;
@@ -110,30 +118,49 @@ body {
 input {
 	line-height: normal;
 }
+#discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
+#discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
+#discussion-topic::-moz-placeholder {color: #fc3f28;}
+#discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
+
+#input0::-webkit-input-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
+}
+#input0::-moz-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
+}
+#input0::-moz-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
+}
+#input0::-ms-input-placeholder {
+	color: #C04F7F;
+	font-size: 16px;
+}
+
 .postcomment textarea {
 	border: 1px solid;
 }
 a,a:link,a:hover,a:visited {
-	color:#08BBF1;
+	color: #949494;
 	text-decoration:none;
 }
 .body1 {
 	text-align: left;
-	border:1px solid #cccccc;
 	border-width:0px 1px 1px 1px;
 }
 .body2 {
-	padding: 0px 10px;
+	padding: 0px 4px;
 }
 .main {
 	border:1px solid #cccccc;
-	-moz-box-shadow: 3px 3px 3px #dddddd;
-	-webkit-box-shadow: 3px 3px 3px #dddddd;
-	box-shadow: 3px 3px 3px #dddddd;
+	background-color: #f6f6f6;
+	padding: 15px;
 }
 .main h1 {
 	padding:7px 10px;
-	background-color:#f14a42;
 	vertical-align:middle;
 	font-weight:bold;
 	line-height:20px;
@@ -181,7 +208,7 @@ a,a:link,a:hover,a:visited {
 	font-size: 12pt;
 }
 .header {
-	padding:10px 0px 10px 0px;
+	padding:30px 0px 10px 0px;
 }
 .header a.logo-link {
 	margin-bottom: 15px;
@@ -195,28 +222,29 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks {
 	display:inline-block;
-	padding: 12px 0px 0px 0px;
+	padding: 15px 0px 0px 0px;
+	height: 70px;
+	text-align: center;
 }
 .mainLinks li {
-	display:inline;
-	padding:0px 0px 0px 3em;
-	text-transform:uppercase;
-	font-size:.8em;
-	color:#999999;
+	display: inline;
+	padding: 0px 20px 5px 20px;
+	text-transform: uppercase;
+	font-size: 12px;
+	color: #5D5D5D;
 	float: left;
-}
-.mainLinks li:first-child {
-	padding-left: 0;
 }
 .mainLinks li.active {
 	font-weight: bold;
 }
-.mainLinks li.active a {
+.mainLinks li.active {
 	pointer-events: none;
 	cursor: default;
+	border-bottom: #F14A42 2px solid;
 }
 .mainLinks li a {
-	color:#999999;
+	color:#797979;
+	font-weight: 600;
 }
 .signin {
 	padding:14px 20px 0px 0px;
@@ -239,7 +267,7 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 #trackmain {
-	height:633px;
+	max-height: 633px;
 }
 /**
  * Styles for graph page starts here.
@@ -256,7 +284,6 @@ body.graph-page .querymain {
 }
 #plotLeftNav {
 	width: 100%;
-	margin-top: 4px;
 }
 body.graph-page .querymain #plotArea {
 	height:530px;
@@ -306,9 +333,8 @@ body.discuss-page input#discussTitleInput {
 	width:800px;
 }
 #recordList {
-	padding: 4px;
 	overflow: auto;
-	height: 583px;
+	max-height: 420px
 }
 /**
  * @Deprecated. Use `.red-header` instead.
@@ -383,7 +409,7 @@ input.textInput {
 .startdatepicker, .enddatepicker {
 	height:30px;
 	width:175px;
-	border:0px
+	border:0px;
 	font-size:.5em;
 }
 .startDate {
@@ -402,16 +428,6 @@ input.buttonInput {
 
 /* RIGHT NAV */
 
-#addData, .panel-wrapper {
-	background-color:#EBEBEB;
-	padding:9px;
-	border-bottom:9px solid #CCCCCC;
-}
-#addData input.textInput {
-	width: 704px;
-	height:30px;
-	border:none;
-}
 .ui-autocomplete a {
 	display: block;
 }
@@ -678,6 +694,16 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 
 /* FIRST PAGE */
 
+body.track-page .date-controls hr, body.graph-page .red-header hr {
+	margin: 0px;
+	width: 2px;
+	height: 60px;
+	position: absolute;
+	right: 227px;
+	top: 0px;
+	background-color: white;
+}
+
 body.track-page .date-controls h1 span.date {
 	display:block;
 	float:left;
@@ -696,10 +722,22 @@ body.track-page .date-controls h1 .gear {
 	margin:2px 12px 0px 0px;
 }
 body.track-page .date-controls #datePicker {
-	background-color:#EF4B3A;
-	color:#ffffff;
-	text-transform:uppercase;
+	border: 0;
+	font-size: 16px;
+	margin-top: -3px;
+	background-color: transparent;
+	color: #ffffff;
 }
+body.track-page button {
+	background-color: #f3f3f3;
+	height: 30px;
+	color: #8b8b8b;
+	padding: 10px;
+	font-size: 11px;
+	border-radius: 2px;
+	line-height: 0px;
+}
+
 a.calendar {
 	background:url(/images/calendar.gif) no-repeat;
 	width:13px;
@@ -858,15 +896,27 @@ body.tags-displayed .floating-column {
 #ui-datepicker-div {
 	display: none;
 }
+
+.entry-container .sort-lable {
+	color: #afafaf;
+	text-transform: uppercase;
+	margin-right: 20px;
+	font-size: 12px;
+}
+
+.entry-container hr {
+	height: 2px;
+	margin: 15 0;
+	color: #d8d8d8;
+}
 #entry0 {
 	width: 100%;
-	height: 500px;
+	height: 420px;
 }
 #entry0 .ui-selecting {
 	background: #99CCFF;
 }
 #entry0 .ui-selected {
-	background: #3399FF;
 	color: white;
 }
 .ui-menu-item a {
@@ -878,9 +928,11 @@ body.tags-displayed .floating-column {
 	padding: 0;
 }
 #entry0 li {
-	margin: 0px;
-	padding: 1px;
-	font-size: 12pt;
+	position: relative;
+	margin-bottom: 10px;
+	padding: 10px;
+	font-size: 18px;
+	background-color: #FFFFFF;
 }
 .swatch {
 	padding-left:20px;
@@ -893,7 +945,7 @@ body.tags-displayed .floating-column {
 	color:#000000;
 }
 
-.sharePage .leftNav,.sharePage .main {
+.sharePage .leftNav, {
 	border:0px;
 	-moz-box-shadow: 0px 0px 0px;
 	-webkit-box-shadow: 0px 0px 0px;
@@ -902,10 +954,6 @@ body.tags-displayed .floating-column {
 
 body.discuss-page .red-header {
 	text-transform: none;
-}
-
-body.discuss-page .red-header h1 {
-	padding:10px;
 }
 
 .sharePage h1 .bittext {
@@ -920,11 +968,8 @@ body.discuss-page .red-header h1 {
 	width:225px;
 	float:right;
 }
-.discussTitle {
-	margin-bottom:5px;
-}
 #discussTitleSpan {
-	font-size:15pt;
+	font-size:20px;
 	width:500px;
 }
 .discusscomments {
@@ -997,11 +1042,7 @@ body.discuss-page .red-header h1 {
 	display:inline-block;
 	vertical-align:top;
 }
-.commentList .comment .messageControls {
-	width:20px;
-	display:inline-block;
-	vertical-align:top;
-}
+
 * html .message {
 	left: 600px;					 /* RC width */
 }
@@ -1064,20 +1105,22 @@ body.discuss-page .red-header h1 {
 #addComment p.decorate {
 	border-right:60px solid #08BBF1;
 }
-.entryTime {
-	color: #999999;
-}
+
 .entryComment {
 	color: #999999;
+	text-transform: uppercase;
+	font-size: 12px;
+	vertical-align: baseline;
 }
 .entryRepeat {
+	vertical-align: baseline;
 	color: #C0C8C9;
+	text-transform: uppercase;
+	font-size: 12px;
 }
 .entryAmount {
-	color: #5A6263;
 }
 .entryUnits {
-	color: #5A6263;
 }
 .entryDelete {
 	display:none;
@@ -1089,10 +1132,9 @@ body.discuss-page .red-header h1 {
 }
 .entryModify {
 	cursor: pointer;
-	width: 14px;
-	height: 14px;
-	padding-left: 1px;
-	padding-top: 2px;
+	position: absolute;
+	width: auto;
+	height: 40px;
 }
 .custom-row {
 	padding-right: 10px;
@@ -1101,17 +1143,28 @@ body.discuss-page .red-header h1 {
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	background-color: #f14a42;
+	background-color: fc3f28;
 	vertical-align: middle;
 	color: #ffffff;
-	text-transform: uppercase;
-	min-height: 34px;
+	text-transform: none;
+	height: 60px;
+	margin-left: 0px;
 	width: 100%;
+	border-radius: 2px;
+	padding: 23px 15px 21px 20px;
+}
+.track-page .red-header, .graph-page .red-header {
+	position: relative;
+}
+
+.red-header .icon{
+	zoom: 0.8 !important;
+	-moz-transform: scale(0.8) !important;
+	margin-top: -3px;
 }
 .red-header .right {
 	float: left;
-	padding: 9px 10px;
-	width: calc(100% - 227px);
+	width: calc(100% - 215px);
 	border-right: 2px solid #fff;
 }
 .tags-container {
@@ -1119,14 +1172,19 @@ body.discuss-page .red-header h1 {
 }
 .red-header h1 {
 	font-weight: normal;
-	font-size: .8em;
-	line-height: 20px;
+	font-size: 16px;
+	line-height: 21px;
 }
 .red-header #actions {
 	position: relative;
 	height: 15px;
 	float: left;
 	width: 20px;
+}
+.date-right-arrow, .date-left-arrow {
+	height: 16px;
+	width: auto;
+	margin-top: -2px;
 }
 #actions ul {
 	background: #fff;
@@ -1240,13 +1298,101 @@ body.discuss-page .red-header h1 {
 	display: table-cell;
 }
 .full-width {
-	width: 100%
+	width: 100%;
+	height: 60px;
+	border-radius: 2px;
 }
+
+.input-affordance {
+	position: relative;
+	margin-bottom: 15; 
+}
+
+.input-affordance .fa {
+	position: absolute;
+	padding: 5px;
+	font-size: 36;
+	color: #fc3f28;
+	margin: 5 0 0 15;
+	pointer-events: none;
+}
+
+.input-affordance .track-input-modifiers {
+	position: absolute;
+	margin: 10 0 0 17;
+	height: 40;
+}
+
+.input-affordance p {
+	position: absolute;
+	margin-top: 20px;
+	font-size: 12px;
+	color: #cdcdcd;
+	right: 295;
+	text-transform: uppercase;
+}
+
+.input-affordance .text {
+	margin-top: 40px;
+	position: absolute;
+	color: #B2B2B2;
+}
+.input-affordance .icon-repeat-text {
+	right: -12;
+}
+
+.input-affordance .icon-bell-text {
+	right: -28;
+}
+
+.input-affordance .icon-pin-text {
+	right: -5;
+}
+
+.left-addon .fa {
+	left: 0px;
+}
+
+.left-addon input {
+	padding-left: 70px;
+}
+
+.addon input {
+	padding-left: 70px;
+	padding-right: 340px;
+}
+
 .align-middle {
 	text-align: center;
 	vertical-align: middle;
 }
+.inputRemindPosition {
+	right: 210px;
+}
+.inputRepeatPosition {
+	right: 112px;
+}
+.inputPinPosition {
+	right: 15px;
+}
 
+.inputRemind {
+	height: 40px;
+	width: auto;
+}
+.inputRepeat {
+	height: 40px;
+	width: auto;
+}
+.inputPin {
+	height: 40px;
+	width: auto;
+}
+.inputTag {
+	height: 35px;
+	width: auto;
+	margin-top: 5px;
+}
 /**
  * Generic & common stuff, useful for every where. Ends here.
  */
@@ -1261,19 +1407,114 @@ body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
 body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
-	color: #D9D9D9;
-	background-color: #FFFFFF;
+	
+}
+.comment-label {
+}
+.repeatLabelImage {
+	background: url(/images/repeat-sm-light.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	background-size: contain;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.remindLabelImage {
+	background: url(/images/remind-sm-light.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	vertical-align: middle;
+	background-size: contain;
+	display: inline-block;
+}
+
+li img.edit-repeat {
+	right: 275px;
+}
+
+li img.edit-remind {
+	right: 370px;
+}
+
+li img.edit-pin {
+	right: 177px;
+}
+
+li img.edit-delete {
+	right: 100px;
+	height: 25px;
+}
+
+li.pinned, li.pinned input{
+	color: #f14a42;
+}
+
+li.remind, li.repeat.remind, li.repeat.remind input {
+	color: #f48d5b;
+}
+
+li.repeat, li.repeat input {
+	color: #c35785;
+}
+
+li.no-tag input {
+	color: #f14a42;
+}
+li .no-tag{
+	line-height: 40px;
+	color: #f14a42;
 }
 li.entry.continuousghost {
+	border-left: 5px;
+	border-left-color: #C04F7F;
 }
-li.entry.anyghost {
+li.entry.pinned {
+	border-left: 5px solid #f14a42;
 }
 li.entry.concreteghost {
+	border-left: 5px solid: #C04F7F;
 }
-li.entry.timedrepeat {
+li.entry.repeat.remind {
+	border-left: 5px solid #f48d5b;
+}
+li.entry.repeat {
+	border-left: 5px solid #c35785;
+}
+li.entry.no-tag {
+	border-left: 5px solid #f14a42;
+	line-height: 40px;
+}
+body.track-page ol#entry0 li button.save {
+	background-color: #c04f7f;
+	position: absolute;
+	color: #ffffff;
+	right: 15px;
+	top: 15px;
+}
+
+.track-page .pin-entry {
+	color: #ffffff;
+	background-color: #d1d1d1;
+	margin-right: 5px;
+	background-image: url(/images/pin-button.png);
+	background-repeat: no-repeat;
+	background-position: 5px;
+	padding-left: 25px;
+}
+.pin-entry .fa{
+	margin-left: 10px;
+	margin-right: -5px;
+	font-size: 12px;
+}
+
+body.track-page ol#entry0 li button.edit {
+	position: absolute;
+	right: 15px;
+	top: 15px;
 }
 body.track-page ol#entry0 li.entry.ghost span {
-	color: #D9D9D9;
+/* 	color: #D9D9D9; */
 }
 body.track-page ol#entry0 li.entry.ghost:not(.remind) a.entryDelete {
 	display: inline;
@@ -1285,11 +1526,25 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 	display: block !important;
 }
 
+#pinned-tags {
+	margin-top: 2px;
+}
+
+#pinned-tags .pin-header {
+	height: 22px;
+	margin: 5 10 5 0;
+}
+
+.hidden {
+	display: none;
+}
+
 /**
  * Styles for track page for web application. Ends here.
  */
 .tags-header-container {
-	padding: 7px;
+	padding-left: 10px;
+	margin-right: -12px;
 }
 
 div.graph-header-container .red-header {
@@ -1303,7 +1558,7 @@ div.graph-header-container .red-header {
 .feed .red-header h1 {
 	width: 100%;
 	border: 0;
-	font-size: 15px;
+	font-size: 20px;
 	margin-top: 0px;
 }
 .feed .red-header #actions {
@@ -1319,16 +1574,14 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	padding: 10px;
-	border: 1px solid #F1F1F1;
+	padding: 0 0 20 0;
 	text-align: right;
 }
 .feed .media {
 	padding: 10px;
 	border: 1px solid #F1F1F1;
 }
-.new-post input, .new-post textarea {
-	border: 3px solid #F1F1F1;
+.new-post textarea {
 	padding: 3px;
 }
 .new-post input[type='submit'] {
@@ -1516,6 +1769,7 @@ body.load-graph #graphList .summary .close {
 .about-wrapper{
 	position:relative;
 	width:100%;
+	margin: 0 auto;
 	overflow:hidden;
 }
 .footerLinks{
@@ -1529,13 +1783,31 @@ body.load-graph #graphList .summary .close {
 }
 
 .headerLinks li{
-	color: #9d9d9d;
+	font-size: 12px;
+	color: #5D5D5D;
 	text-decoration: none;
-	font-size: 14px;
+	text-align: center;
 	font-weight: bold;
 }
 .headerLinks li a {
 	text-decoration: none;
+	padding-bottom: 5px;
+}
+.sort-entry {
+	margin-right: 30px;
+	color: #999999 !important;
+	font-size: 12px;
+}
+
+.sort-entry.active{
+	margin-right: 30px;
+	color: #c04f7f !important;
+	font-size: 12px;
+}
+
+.sort-arrow {
+	height: 15px;
+	margin-top: -5px;
 }
 
 .nav-pills li {
@@ -1855,4 +2127,273 @@ body{
 
 .nodisplay {
 	display: none;
+}
+
+.feed-item {
+	
+}
+
+.feed-item .discussion {
+	margin-bottom: 15px;
+}
+
+.feed-item .discussion .discussion-topic {
+	background-color: white;
+	color: #5d5d5d;
+	padding: 18 28 25 28;
+	font-size: 16px;
+}
+
+.feed-item .discussion .discussion-topic .top-left-margin {
+	margin-top: 15px;
+	margin-left: 0px;
+}
+
+.feed-item .discussion .discussion-topic .group {
+	font-weight: bold;
+	color: #717171;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.feed-item .discussion .discussion-topic .title {
+	margin-top: 18px;
+	margin-left: 0px;
+}
+
+.feed-item .discussion .discussion-topic .title a {
+	color: #717171;
+}
+
+.feed-item .discussion .discussion-topic .avatar {
+	height: 46px;
+	width: 46px;
+}
+
+.feed-item .discussion .discussion-topic .posting-time {
+	font-size: 14px;
+	color: #a8a8a8;
+	margin-right: 5px;
+}
+
+.feed-item .discussion .discussion-topic p {
+	font-style: normal;
+	margin: 5 0 10 10;
+	color: #929090;
+}
+
+.feed-item .discussion .discussion-topic hr {
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discussion-topic .discussion-topic-span {
+	text-align: right;
+	margin-top: 10px;
+}
+
+.feed-item .discussion .discussion-topic .buttons {
+	text-align: right;
+}
+
+.feed-item .discussion .discussion-topic button {
+	margin: 0 0 -10 45;
+}
+
+.feed-item .discussion .discussion-topic button img{
+	height: 50px;
+	width: auto;
+}
+
+.feed-item .discussion .discussion-topic .contents {
+	border-bottom: solid 0.09em;
+	border-bottom-color: #eeeeee;
+	margin-bottom: 10px;
+}
+.feed-item .discussion .discussion-comment {
+	background-color: #eeeeee;
+	color: #5d5d5d;
+	padding: 25 30 25 30;
+	font-size: 14px;
+}
+
+
+.feed-item .discussion .multiple-comments {
+	padding: 0 30 0 30;
+}
+
+.feed-item .discussion .multiple-comments:nth-last-child(2) {
+	padding: 0 30 40 30;
+}
+
+.feed-item .discussion .discussion-comment .view-comment{
+	color: #5d5d5d;
+	font-size: 16px;
+}
+
+.feed-item .discussion .discussion-comment .add-comment {
+	margin-left: 34px;
+}
+
+.feed-item .discussion .discussion-comment .add-comment-to-discussion {
+	margin: 0 0 38 0;
+}
+
+.feed-item .discussion .discussion-comment .add-comment-to-discussion input {
+	width: 100%;
+	height: 52px;
+	padding: 10px;
+}
+
+.feed-item .discussion .discussion-comment .posting-time {
+	margin:12 0 0 20;
+	font-size: 12px;
+	color: #a8a8a8;
+}
+
+.feed-item .discussion .discussion-comment .add-comment input {
+	width: 100%;
+	height: 45px;
+	padding: 10px;
+}
+
+#post-comment::-webkit-input-placeholder {color: #a4a4a4;}
+#post-comment::-moz-placeholder {color: #a4a4a4;} /* firefox 19+ */
+#post-comment:-moz-placeholder {color: #a4a4a4;}
+#post-comment:-ms-input-placeholder {color: #a4a4a4;} /* ie */
+
+
+
+.feed-item .discussion .discussion-comment .avatar {
+	height: 34px;
+	width: 34px;
+	margin: 10 0 0 0;
+}
+
+.feed-item .discussion .discussion-comment .comment-controll{
+	width: 20px;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.feed-item .discussion .discussion-comment p {
+	margin-left: 44px;
+	margin-bottom: 25px;
+}
+
+.feed-item .discussion .discussion-comment .without-margin{
+	margin-bottom: 10px;
+}
+
+.feed-item .discussion .discussion-comment .bottom-margin {
+	margin-bottom: 10px;
+}
+
+.feed-item .user-name {
+	color: #c04f7f;
+	margin-left: 5px;
+}
+
+.footer-items{
+	padding-left: 5%;
+	font-size: 10px;
+}
+
+.footer-items .col-md-3{
+	padding-left: 40px;
+}
+
+.footer-items ul{
+	list-style-type: none;
+}
+
+.footer-items ul li{
+	font-weight: 600;
+	color: #949494;
+	text-transform: none;
+	padding-bottom: 12px;
+}
+
+.footer-items ul li a {
+	font-weight: 600;
+}
+
+.footer-items ul li .ul-head{
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #656565;
+}
+
+.pagination:empty {
+	padding: 0px;
+}
+
+.search-bar {
+	position: relative;
+	margin-right: 15px;
+}
+.search-bar .fa {
+	position: absolute;
+	padding: 5px;
+	font-size: 16;
+	color: #AAAAAA;
+	margin: 7px 10px 0px 10px;
+	pointer-events: none;
+}
+
+.search-bar .fa {
+	left: 0px;
+}
+
+.search-bar input {
+	padding: 10px 10px 10px 35px;
+	height: 41px;
+	width: 136px;
+	color: #AAAAAA;
+	background-color: #f3f3f3;
+	font-size: 11px;
+}
+
+.headerLinks .dropdown{
+	text-transform: none;
+}
+.dropdown-menu {
+	left: -85px;
+	width: 155px;
+	background-color: #7a7a7a;
+	border-radius: 0px;
+	text-align: left;
+}
+.dropdown-menu li {
+	text-transform: none;
+	padding: 0px;
+}
+
+.dropdown-menu li a {
+	color: #c4c4c4;
+}
+
+.dropdown-menu>li>span>a {
+	display: block;
+	padding-top: 10px;
+	padding-left: 20px;
+	clear: both;
+	font-weight: 600;
+	line-height: 1.42857143;
+	white-space: nowrap;
+}
+
+.dropdown-menu .divider {
+	background-color: #888888;
+	height: 1px;
+	width: 158px;
+}
+.pagination > li > a {
+	color: #717171;
+}
+.pagination > .active > span {
+	background-color: #EEE;
+	border-color: #EEE;
 }

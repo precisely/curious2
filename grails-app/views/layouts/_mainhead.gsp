@@ -1,11 +1,13 @@
 <title><g:layoutTitle default="Curious" /></title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
-<link type="text/css" href="/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
-<script type="text/javascript" src="/js/jquery/jquery-1.7.2.min.js"></script>
+<link type="text/css" href="/css/custom-theme/jquery-ui.min.css" rel= "stylesheet">
+<link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel= "stylesheet">
+<script type="text/javascript" src="/js/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery-migrate-1.1.0.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
-<script type="text/javascript" src="/js/jquery/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jstz-1.0.4.min.js"></script>
 <script type="text/javascript" src="/js/curious/base.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/webBase.js?ver=21"></script>
@@ -16,6 +18,7 @@
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
+<%--<link rel="stylesheet" href="/css/sprite.css"/>--%>
 <link rel="stylesheet" href="/css/main-responsive.css?ver=21"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>
@@ -51,7 +54,14 @@ $(function() {
 function addPerson(name, username, userId, sex) {
 	if (sex == 'F') sex = 'Female';
 	if (sex == 'M') sex = 'Male';
-	$('#displayUser').html('<a href="/home/userpreferences?userId=' + userId + '">' + username + '<\/a>');
+	console.log(username);
+	$('.dropdown-toggle').html(username + '<b class="caret"></b>');
+	if(username.indexOf('(anonymous)') > -1) {
+		$('#displayUser').html('<a href="/home/register"> Sign Up <\/a>');
+		$('#logoutLink').html('');
+	} else {
+		$('#displayUser').html('<a href="/home/userpreferences?userId=' + userId + '"> Edit Profile <\/a>');
+	}
 }
 
 function formatDate(d) {

@@ -40,7 +40,7 @@ Following feature needs to tested after development:
 
 Following are some bootstrap customization which needs to be made before downloading new bootstrap resources:
 
-Bootstrap customization ID: 04409b33eb78e4f6e3a6 (Also present in bootstrap.min.css)
+Bootstrap customization ID: 7fadbd04b39a8d67b315 (Also present in bootstrap.min.css)
 
 This customization ID sets: 
 1. Uncheck all Less Components except **Grid system, form, typography, Basic utilities, Responsive utilities**,

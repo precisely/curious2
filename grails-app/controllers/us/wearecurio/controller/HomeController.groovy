@@ -621,8 +621,9 @@ class HomeController extends DataController {
 			}
 		}
 		def groupMemberships = UserGroup.getGroupsForReader(user)
+		List associatedGroups = UserGroup.getGroupsForWriter(user)
 		def groupName
-		def groupFullname = "HOME FEED"
+		def groupFullname = "Community Feed"
 
 		groupMemberships.each { group ->
 			if (group[0]?.name.equals(params.userGroupNames)) {
@@ -631,11 +632,11 @@ class HomeController extends DataController {
 			}
 		}
 
-		params.max = params.max ?: 10
+		params.max = params.max ?: 5
 		params.offset = params.offset ?: 0
 
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupNameList
+		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
 				UserGroup.getDiscussionsInfoForUser(user, true, params)
@@ -643,8 +644,8 @@ class HomeController extends DataController {
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, groupName: groupName, groupFullname: groupFullname,
-			discussionList: discussionData["dataList"], totalDiscussionCount: discussionData["totalCount"]]
+			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
+			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {
 			render template: "/feed/discussions", model: model
@@ -866,7 +867,7 @@ class HomeController extends DataController {
 			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
 					templateVer: urlService.template(request)]
-
+			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
 				render (template: "/discussion/posts", model: model)
