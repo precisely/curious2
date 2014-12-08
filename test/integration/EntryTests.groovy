@@ -136,6 +136,15 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testLongTagTwoSpaces() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "dream pissed off mob they want to kill me women fake death put me in coffin w food bury me can play  yrs", baseDate, true), new EntryStats())
+		
+		def v = entry.valueString()
+		
+		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:dream pissed off mob they want to kill me women fake death put me in coffin w food bury me can play, amount:1.000000000, units:, amountPrecision:-1, comment:(yrs), repeatType:null, repeatEnd:null)")
+	}
+	
+	@Test
 	void testUpdateRepeatVagueDate() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "bread 5 repeat", baseDate, true), new EntryStats())
 		

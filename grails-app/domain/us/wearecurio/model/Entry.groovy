@@ -2828,6 +2828,10 @@ class Entry implements Comparable {
 
 		if (description?.length() > Tag.MAXLENGTH) {
 			def lastSpace = description.lastIndexOf(' ', Tag.MAXLENGTH - 1)
+			if (lastSpace < 0) {
+				lastSpace = Tag.MAXLENGTH - 1
+			}
+			def remainder = description.substring(lastSpace + 1)
 			description = description.substring(0, lastSpace)
 
 			if (comment.length() > 0) {
@@ -2839,7 +2843,7 @@ class Entry implements Comparable {
 					}
 				}
 			}
-			comment = '(' + (comment ? comment + ' ' : '') + description.substring(lastSpace + 1) + ')'
+			comment = '(' + (comment ? comment + ' ' : '') + remainder + ')'
 		}
 
 		if (comment?.length() > MAXCOMMENTLENGTH) {
