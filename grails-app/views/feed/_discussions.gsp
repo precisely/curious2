@@ -107,7 +107,3 @@
 		</div>
 	</div>
 </g:each>
-<ul class="pagination" id="discussion-pagination">
-	<g:paginate total="${totalDiscussionCount ?: 0 }" action="feed"
-		params="[userGroupNames: params.userGroupNames]" />
-</ul>

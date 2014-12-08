@@ -35,8 +35,3 @@
 		</div>
 	</div>
 </g:each>
-
-<ul class="pagination" id="posts-pagination">
-	<g:paginate total="${totalPostCount }"
-		params="[discussionId: params.discussionId]" />
-</ul>

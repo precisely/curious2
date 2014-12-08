@@ -23,7 +23,6 @@ import us.wearecurio.utility.Utils
 class HomeController extends DataController {
 
 	static allowedMethods = [notifyJawbone: "POST"]
-
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
@@ -648,7 +647,12 @@ class HomeController extends DataController {
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {
-			render template: "/feed/discussions", model: model
+			if( !model.discussionList ){
+				// render false if there are no more discussions to show.
+				render false
+			} else {
+				render template: "/feed/discussions", model: model
+			}
 			return
 		}
 
@@ -870,7 +874,12 @@ class HomeController extends DataController {
 			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
-				render (template: "/discussion/posts", model: model)
+				if( !model.posts ){
+					// render false if there are no more comments to show.
+					render false
+				} else {
+					render (template: "/discussion/posts", model: model)
+				}
 				return
 			}
 

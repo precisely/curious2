@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <g:setProvider library="jquery" />
 <html>
 <head>
@@ -48,6 +47,11 @@ $(function() {
 });
 
 $(document).ready(function() {
+	var App = window.App || {};
+	App.discussion = {};
+	App.discussion.lockInfiniteScroll = false;
+	App.discussion.offset = 5;
+
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -83,6 +87,43 @@ $(document).ready(function() {
 		});
 		return false;
 	});
+
+	$(window).scroll(function() {
+		if($("#getMoreDiscussions").length == 0)
+			return false;
+
+		var $element = $('#getMoreDiscussions');
+		var docViewTop = $(window).scrollTop();
+		var docViewBottom = docViewTop + $(window).innerHeight();
+
+		var elemTop = $element.offset().top;
+		
+		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
+			$element.addClass(" waiting-icon");
+			setTimeout(function(){
+				$.ajax ({
+					type: 'POST',
+					url: '/home/feed?offset=' + App.discussion.offset,
+					success: function(data, textStatus) {
+						if(data == "false") {
+							$("#getMoreDiscussions").text('No more discussions to show.');
+							setTimeout(function(){
+								$("#getMoreDiscussions").fadeOut()
+							}, 5000);
+						} else {
+							$('#discussions').append(data);
+						}
+						App.discussion.offset = App.discussion.offset + 5;
+					}
+				});
+				$element.removeClass("waiting-icon");
+			}, 600);
+			App.discussion.lockInfiniteScroll = true;
+		} else if(elemTop > docViewBottom) {
+			App.discussion.lockInfiniteScroll = false;
+			return;
+		}
+	});
 });
 </script>
 </head>
@@ -113,6 +154,7 @@ $(document).ready(function() {
 				<g:render template="/feed/discussions" />
 			</div>
 		</div>
+		<div id="getMoreDiscussions"></div>
 
 	</div>
 	<!-- /MAIN -->

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <g:render template="/layouts/mainhead" model="['templateVer':templateVer]" />

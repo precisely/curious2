@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 <g:setProvider library="jquery" />
 <html>
 <head>
@@ -173,6 +173,50 @@ $(function(){
 		return false;
 	});
 
+});
+
+$(document).ready(function() {
+	var App = window.App || {};
+	App.comment = {};
+	App.comment.offset = 5;
+	App.comment.lockInfiniteScroll = false;
+	
+	$(window).scroll(function() {
+		if($("#getMoreComments").length == 0)
+			return false;
+
+		var $element = $('#getMoreComments');
+		var docViewTop = $(window).scrollTop();
+		var docViewBottom = docViewTop + $(window).innerHeight();
+
+		var elemTop = $element.offset().top;
+		
+		if ((elemTop < docViewBottom) && !App.comment.lockInfiniteScroll) {
+			$element.addClass(" waiting-icon");
+			setTimeout(function(){
+				$.ajax ({
+					type: 'POST',
+					url: '/home/discuss?discussionId=${discussionId}&offset=' + App.comment.offset,
+					success: function(data, textStatus) {
+						if(data == "false") {
+							$("#getMoreComments").text('No more comments to show.');
+							setTimeout(function(){
+								$("#getMoreComments").fadeOut()
+							}, 5000);
+						} else {
+							$('#postList').append(data);
+						}
+						App.comment.offset = App.comment.offset + 5;
+					}
+				});
+				$element.removeClass("waiting-icon");
+			}, 600);
+			App.comment.lockInfiniteScroll = true;
+		} else if(elemTop > docViewBottom) {
+			App.comment.lockInfiniteScroll = false;
+			return;
+		}
+	});
 });
 </script>
 </head>
@@ -360,6 +404,7 @@ $(function(){
 							<div id="postList">
 								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
 							</div>
+							<div id="getMoreComments"></div>
 						</div>
 					</div>
 				</div>
