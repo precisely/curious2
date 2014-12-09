@@ -1504,7 +1504,7 @@ class Entry implements Comparable {
 
 		for (Entry entry in results) {
 			if (lastDurationEntry != null) {
-				Entry.delete(entry, null)
+				Entry.delete(entry, stats)
 			} else
 				durationEntry = entry
 			lastDurationEntry = entry
