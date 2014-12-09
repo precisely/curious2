@@ -1515,7 +1515,7 @@ class Entry implements Comparable {
 
 		if (duration == null) {
 			while (durationEntry != null) {
-				Entry.delete(durationEntry, null)
+				Entry.delete(durationEntry, stats)
 				durationEntry = findDurationEntry()
 			}
 			return null
