@@ -1219,19 +1219,19 @@ body.discuss-page .red-header {
 	float: left;
 }
 .icon-triangle-down {
-	border-color: #ffffff #EF4B3A #EF4B3A #EF4B3A;
+	border-color: #ffffff #fc3f28 #fc3f28 #fc3f28;
 	margin-top: 5px;
 }
 .icon-triangle-left {
 	margin-top: 3px;
-	border-color: #EF4B3A #ffffff #EF4B3A #EF4B3A;
+	border-color: #fc3f28 #ffffff #fc3f28 #fc3f28;
 }
 .icon-triangle-right {
-	border-color: #EF4B3A #EF4B3A #EF4B3A #ffffff;
+	border-color: #fc3f28 #fc3f28 #fc3f28 #ffffff;
 	margin-top: 3px;
 }
 .icon-triangle-up {
-	border-color: #EF4B3A #EF4B3A #ffffff #EF4B3A;
+	border-color: #fc3f28 #fc3f28 #ffffff #fc3f28;
 }
 .close {
 	float: right;
@@ -1559,7 +1559,7 @@ div.graph-header-container .red-header {
 	width: 100%;
 	border: 0;
 	font-size: 20px;
-	margin-top: 0px;
+	margin-top: -5px;
 }
 .feed .red-header #actions {
 	margin-top: 7px;
