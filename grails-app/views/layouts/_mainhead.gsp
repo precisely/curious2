@@ -3,7 +3,7 @@
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
 <link type="text/css" href="/css/custom-theme/jquery-ui.min.css" rel= "stylesheet">
 <link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel= "stylesheet">
-<script type="text/javascript" src="/js/jquery/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery-migrate-1.1.0.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>

@@ -118,16 +118,21 @@ body {
 input {
 	line-height: normal;
 }
+
+input:focus::-webkit-input-placeholder {
+    color: transparent !important;
+}
+input:focus::-moz-placeholder {
+    color: transparent !important;
+}
+input:focus::-ms-input-placeholder {
+    color: transparent !important;
+}
 #discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
 #discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
-#discussion-topic::-moz-placeholder {color: #fc3f28;}
 #discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
 
 #input0::-webkit-input-placeholder {
-	color: #C04F7F;
-	font-size: 16px;
-}
-#input0::-moz-placeholder {
 	color: #C04F7F;
 	font-size: 16px;
 }
@@ -334,7 +339,7 @@ body.discuss-page input#discussTitleInput {
 }
 #recordList {
 	overflow: auto;
-	max-height: 420px
+	max-height: 400px
 }
 /**
  * @Deprecated. Use `.red-header` instead.
@@ -721,13 +726,6 @@ body.track-page .date-controls h1 .gear {
 	float:right;
 	margin:2px 12px 0px 0px;
 }
-body.track-page .date-controls #datePicker {
-	border: 0;
-	font-size: 16px;
-	margin-top: -3px;
-	background-color: transparent;
-	color: #ffffff;
-}
 body.track-page button {
 	background-color: #f3f3f3;
 	height: 30px;
@@ -911,7 +909,7 @@ body.tags-displayed .floating-column {
 }
 #entry0 {
 	width: 100%;
-	height: 420px;
+	height: 400px;
 }
 #entry0 .ui-selecting {
 	background: #99CCFF;
@@ -1143,7 +1141,7 @@ body.discuss-page .red-header {
  * Generic & common stuff, useful for every where. Starts here.
  */
 .red-header {
-	background-color: fc3f28;
+	background-color: #fc3f28;
 	vertical-align: middle;
 	color: #ffffff;
 	text-transform: none;
@@ -1219,19 +1217,19 @@ body.discuss-page .red-header {
 	float: left;
 }
 .icon-triangle-down {
-	border-color: #ffffff #EF4B3A #EF4B3A #EF4B3A;
+	border-color: #ffffff #fc3f28 #fc3f28 #fc3f28;
 	margin-top: 5px;
 }
 .icon-triangle-left {
 	margin-top: 3px;
-	border-color: #EF4B3A #ffffff #EF4B3A #EF4B3A;
+	border-color: #fc3f28 #ffffff #fc3f28 #fc3f28;
 }
 .icon-triangle-right {
-	border-color: #EF4B3A #EF4B3A #EF4B3A #ffffff;
+	border-color: #fc3f28 #fc3f28 #fc3f28 #ffffff;
 	margin-top: 3px;
 }
 .icon-triangle-up {
-	border-color: #EF4B3A #EF4B3A #ffffff #EF4B3A;
+	border-color: #fc3f28 #fc3f28 #ffffff #fc3f28;
 }
 .close {
 	float: right;
@@ -1305,30 +1303,30 @@ body.discuss-page .red-header {
 
 .input-affordance {
 	position: relative;
-	margin-bottom: 15; 
+	margin-bottom: 15px; 
 }
 
 .input-affordance .fa {
 	position: absolute;
 	padding: 5px;
-	font-size: 36;
+	font-size: 36px;
 	color: #fc3f28;
-	margin: 5 0 0 15;
+	margin: 5px 0px 0px 15px;
 	pointer-events: none;
 }
 
 .input-affordance .track-input-modifiers {
 	position: absolute;
-	margin: 10 0 0 17;
-	height: 40;
+	margin: 10px 0px 0px 17px;
+	height: 40px;
 }
 
 .input-affordance p {
 	position: absolute;
-	margin-top: 20px;
+	margin-top: 15px;
 	font-size: 12px;
 	color: #cdcdcd;
-	right: 295;
+	right: 295px;
 	text-transform: uppercase;
 }
 
@@ -1401,7 +1399,11 @@ body.discuss-page .red-header {
  * Styles for track page for web application.
  */
 body.track-page #datepicker {
-	width: 260px;
+	border: 0;
+	font-size: 16px;
+	margin-top: -3px;
+	background-color: transparent;
+	color: #ffffff;
 }
 body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
@@ -1501,6 +1503,7 @@ body.track-page ol#entry0 li button.save {
 	background-repeat: no-repeat;
 	background-position: 5px;
 	padding-left: 25px;
+	font-weight: 600;
 }
 .pin-entry .fa{
 	margin-left: 10px;
@@ -1559,7 +1562,7 @@ div.graph-header-container .red-header {
 	width: 100%;
 	border: 0;
 	font-size: 20px;
-	margin-top: 0px;
+	margin-top: -5px;
 }
 .feed .red-header #actions {
 	margin-top: 7px;
@@ -2005,7 +2008,7 @@ body{
 		color: white;
 		font: bold 15px/13px Helvetica, Verdana, Tahoma;
 		height: 14px;
-		padding: 4px 3px 0 3px;
+		padding: 4px 3px 0px 3px;
 		text-align: center;
 		min-width: 14px;
 
@@ -2140,7 +2143,7 @@ body{
 .feed-item .discussion .discussion-topic {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 18 28 25 28;
+	padding: 18px 28px 25px 28px;
 	font-size: 16px;
 }
 
@@ -2181,7 +2184,7 @@ body{
 
 .feed-item .discussion .discussion-topic p {
 	font-style: normal;
-	margin: 5 0 10 10;
+	margin: 5px 0px 10px 10px;
 	color: #929090;
 }
 
@@ -2199,7 +2202,7 @@ body{
 }
 
 .feed-item .discussion .discussion-topic button {
-	margin: 0 0 -10 45;
+	margin: 0px 0px -10px 45px;
 }
 
 .feed-item .discussion .discussion-topic button img{
@@ -2215,17 +2218,13 @@ body{
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 25 30 25 30;
+	padding: 25px 30px 25px 30px;
 	font-size: 14px;
 }
 
 
 .feed-item .discussion .multiple-comments {
-	padding: 0 30 0 30;
-}
-
-.feed-item .discussion .multiple-comments:nth-last-child(2) {
-	padding: 0 30 40 30;
+	padding: 0px 30px 0px 30px;
 }
 
 .feed-item .discussion .discussion-comment .view-comment{
@@ -2238,7 +2237,7 @@ body{
 }
 
 .feed-item .discussion .discussion-comment .add-comment-to-discussion {
-	margin: 0 0 38 0;
+	margin: 0px 0px 38px 0px;
 }
 
 .feed-item .discussion .discussion-comment .add-comment-to-discussion input {
@@ -2269,13 +2268,17 @@ body{
 .feed-item .discussion .discussion-comment .avatar {
 	height: 34px;
 	width: 34px;
-	margin: 10 0 0 0;
+	margin: 10px 0px 0px 0px;
 }
 
 .feed-item .discussion .discussion-comment .comment-controll{
 	width: 20px;
 	display: inline-block;
 	vertical-align: top;
+}
+
+.feed-item .discussion .multiple-comments:last-child {
+	padding: 0px 30px 40px 30px;
 }
 
 .feed-item .discussion .discussion-comment p {
@@ -2375,7 +2378,7 @@ body{
 	color: #c4c4c4;
 }
 
-.dropdown-menu>li>span>a {
+.dropdown-menu > li > span > a {
 	display: block;
 	padding-top: 10px;
 	padding-left: 20px;
@@ -2396,4 +2399,13 @@ body{
 .pagination > .active > span {
 	background-color: #EEE;
 	border-color: #EEE;
+}
+#getMoreDiscussions, #getMoreComments {
+	height: 35px;
+}
+.waiting-icon {
+	background-image: url('/images/loading.gif');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
 }
