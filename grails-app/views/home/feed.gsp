@@ -27,7 +27,7 @@ function refreshPage() {
 $(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
-			function(data){
+			function(data) {
 				if (!checkData(data))
 					return;
 			
@@ -89,7 +89,7 @@ $(document).ready(function() {
 	});
 
 	$(window).scroll(function() {
-		if($("#getMoreDiscussions").length == 0)
+		if ($("#getMoreDiscussions").length == 0)
 			return false;
 
 		var $element = $('#getMoreDiscussions');
@@ -100,14 +100,14 @@ $(document).ready(function() {
 		
 		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
 			$element.addClass(" waiting-icon");
-			setTimeout(function(){
+			setTimeout(function() {
 				$.ajax ({
 					type: 'POST',
 					url: '/home/feed?offset=' + App.discussion.offset,
 					success: function(data, textStatus) {
-						if(data == "false") {
+						if (data == "false") {
 							$("#getMoreDiscussions").text('No more discussions to show.');
-							setTimeout(function(){
+							setTimeout(function() {
 								$("#getMoreDiscussions").fadeOut()
 							}, 5000);
 						} else {
@@ -119,7 +119,7 @@ $(document).ready(function() {
 				$element.removeClass("waiting-icon");
 			}, 600);
 			App.discussion.lockInfiniteScroll = true;
-		} else if(elemTop > docViewBottom) {
+		} else if (elemTop > docViewBottom) {
 			App.discussion.lockInfiniteScroll = false;
 			return;
 		}

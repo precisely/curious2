@@ -40,7 +40,7 @@ function deletePost(postId) {
 	return false;
 }
 
-$(function(){
+$(function() {
 	initTagListOnly();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
@@ -182,7 +182,7 @@ $(document).ready(function() {
 	App.comment.lockInfiniteScroll = false;
 	
 	$(window).scroll(function() {
-		if($("#getMoreComments").length == 0)
+		if ($("#getMoreComments").length == 0)
 			return false;
 
 		var $element = $('#getMoreComments');
@@ -193,14 +193,14 @@ $(document).ready(function() {
 		
 		if ((elemTop < docViewBottom) && !App.comment.lockInfiniteScroll) {
 			$element.addClass(" waiting-icon");
-			setTimeout(function(){
+			setTimeout(function() {
 				$.ajax ({
 					type: 'POST',
 					url: '/home/discuss?discussionId=${discussionId}&offset=' + App.comment.offset,
 					success: function(data, textStatus) {
-						if(data == "false") {
+						if (data == "false") {
 							$("#getMoreComments").text('No more comments to show.');
-							setTimeout(function(){
+							setTimeout(function() {
 								$("#getMoreComments").fadeOut()
 							}, 5000);
 						} else {
@@ -212,7 +212,7 @@ $(document).ready(function() {
 				$element.removeClass("waiting-icon");
 			}, 600);
 			App.comment.lockInfiniteScroll = true;
-		} else if(elemTop > docViewBottom) {
+		} else if (elemTop > docViewBottom) {
 			App.comment.lockInfiniteScroll = false;
 			return;
 		}

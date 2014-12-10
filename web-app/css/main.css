@@ -2373,7 +2373,7 @@ body{
 	color: #c4c4c4;
 }
 
-.dropdown-menu>li>span>a {
+.dropdown-menu > li > span > a {
 	display: block;
 	padding-top: 10px;
 	padding-left: 20px;

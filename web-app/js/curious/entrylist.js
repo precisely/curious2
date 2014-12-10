@@ -69,7 +69,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		queueJSON("getting entries", "/home/getListData?date="+ this.cachedDateUTC + "&currentTime=" + this.currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + this.timeZoneName + "&callback=?",
 				getCSRFPreventionObject("getListDataCSRF"),
-				function(entries){
+				function(entries) {
 			if (checkData(entries))
 				self.refreshEntries(entries);
 		});
@@ -149,7 +149,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
-		if(isContinuous) {
+		if (isContinuous) {
 			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
 				+',\'' + description + ' ' + entry.amount + ' ' + entry.units +'\',' + this.defaultToNow + ')">'+ 
 				description + ' ' + entry.amount + ' ' + entry.units + '</button>';
@@ -311,24 +311,24 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.sortByTime = function() {
-		if( this.entriesSortOrder.ascendingTime ) {
+		if (this.entriesSortOrder.ascendingTime) {
 			this.entryListItems.sort(function(item1,item2) {
-				if ( new Date(item1.date) < new Date(item2.date) )
+				if (new Date(item1.date) < new Date(item2.date))
 					return -1;
-				if ( new Date(item1.date) > new Date(item2.date) )
+				if (new Date(item1.date) > new Date(item2.date))
 					return 1;
 				return 0;
-			} );
+			});
 		} else {
 			this.entryListItems.sort(function(item1,item2) {
-				if ( new Date(item1.date) < new Date(item2.date) ) {
+				if (new Date(item1.date) < new Date(item2.date)) {
 					return 1;
 				}
-				if ( new Date(item1.date) > new Date(item2.date) ) {
+				if (new Date(item1.date) > new Date(item2.date)) {
 					return -1;
 				}
 				return 0;
-			} );
+			});
 		}
 		var $sortByDescription = $("#sort-by-description");
 		var $sortByTime = $("#sort-by-time");
@@ -339,22 +339,22 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.sortByDescription = function() {
-		if(this.entriesSortOrder.ascendingDescription) {
+		if (this.entriesSortOrder.ascendingDescription) {
 			this.entryListItems.sort(function(item1,item2) {
 				if (item1.description < item2.description)
 					return -1;
 				if (item1.description > item2.description)
 					return 1;
 				return 0;
-			} );
+			});
 		} else {
 			this.entryListItems.sort(function(item1,item2) {
-				if (item1.description < item2.description )
+				if (item1.description < item2.description)
 					return 1;
-				if ( item1.description > item2.description )
+				if (item1.description > item2.description)
 					return -1;
 				return 0;
-			} );
+			});
 		}
 
 		var $sortByDescription = $("#sort-by-description");
@@ -370,10 +370,10 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$passiveElement.find("img").addClass(" hide");
 		$passiveElement.find("img").attr("src","");
 		
-		if(!$activeElement.hasClass("active")) {
+		if (!$activeElement.hasClass("active")) {
 			$activeElement.addClass("active");
 		} 
-		if(isAscending) {
+		if (isAscending) {
 			$activeElement.find("img").removeClass("hide");
 			$activeElement.find("img").attr("src", "/images/asc.png");
 		} else {
@@ -387,7 +387,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC})),
 			function(ret) {
 				if (checkData(ret, 'success', "Error deleting entry")) {
-					if(isContinuous) {
+					if (isContinuous) {
 						$("#pin-button"+entryId).remove();
 					}
 					$entryToDelete.remove();
@@ -406,7 +406,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
 			if ($entryToDelete.data("isContinuous")) {
 				this.deleteGhost($entryToDelete, true, entryId, true);
-			} else if(this.isTodayOrLater) {
+			} else if (this.isTodayOrLater) {
 				this.deleteGhost($entryToDelete, false, entryId, true);
 			} else {
 				showAB("Delete just this one event or also future events?", "One", "Future", function() {
@@ -443,7 +443,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				+ "&currentTime=" + this.currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 				+ this.cachedDateUTC + "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
-				function(entries){
+				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
 				self.tagList.load();
 				self.refreshEntries(entries[0]);
@@ -478,7 +478,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + this.cachedDateUTC
 				+ "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
-				function(entries){
+				function(entries) {
 			if (checkData(entries, 'success', "Error adding entry")) {
 				if (entries[1] != null) {
 					showAlert(entries[1]);
@@ -558,7 +558,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		console.log('width: ', $(window).width());
 		if ($(window).width() <= 1025) {
-			// Hide tags on iPad/mobile device.
+			// Hides tag list, if not already hidden hide it
 			var elementToCollapse = $("#tagNav");
 			var isHidden = elementToCollapse.is(":hidden");
 			var triangleElement = $("span.icon-triangle");
@@ -597,9 +597,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var repeatImgSrc = "/images/repeat.png";
 		var remindImgSrc = "/images/remind.png";
 		
-		if(repeatType.indexOf("remind") > -1) {
+		if (repeatType.indexOf("remind") > -1) {
 			remindImgSrc = "/images/remind-active.png"
-		} else if(repeatType.indexOf("repeat") > -1) {
+		} else if (repeatType.indexOf("repeat") > -1) {
 			repeatImgSrc = "/images/repeat-active.png";
 		} 
 		
