@@ -118,16 +118,21 @@ body {
 input {
 	line-height: normal;
 }
+
+input:focus::-webkit-input-placeholder {
+    color: transparent !important;
+}
+input:focus::-moz-placeholder {
+    color: transparent !important;
+}
+input:focus::-ms-input-placeholder {
+    color: transparent !important;
+}
 #discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
 #discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
-#discussion-topic::-moz-placeholder {color: #fc3f28;}
 #discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
 
 #input0::-webkit-input-placeholder {
-	color: #C04F7F;
-	font-size: 16px;
-}
-#input0::-moz-placeholder {
 	color: #C04F7F;
 	font-size: 16px;
 }
