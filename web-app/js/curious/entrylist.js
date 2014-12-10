@@ -556,6 +556,25 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.selectEntry = function($selectee) {
 		console.debug('Select Entry:', $selectee.attr("id"));
 
+		console.log('width: ', $(window).width());
+		if ($(window).width() <= 1025) {
+			// Hide tags on iPad/mobile device.
+			var elementToCollapse = $("#tagNav");
+			var isHidden = elementToCollapse.is(":hidden");
+			var triangleElement = $("span.icon-triangle");
+			
+			if (!isHidden) {	// Means tags going to hide.
+				$("body").toggleClass("tags-collapsed", true);
+				$("body").toggleClass("tags-displayed", false);
+				triangleElement.removeClass("icon-triangle-down").addClass("icon-triangle-right");
+				elementToCollapse.slideToggle(5, function() {
+					if (window.afterTagCollapseToggle) {
+						window.afterTagCollapseToggle();
+					}
+				});
+			}
+		}
+
 		$selectee.siblings().removeClass("ui-selected");
 		var $contentWrapper = $selectee.find(".content-wrapper");
 		var $button = $selectee.find(".edit");
