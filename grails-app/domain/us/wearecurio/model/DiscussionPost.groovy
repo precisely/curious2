@@ -109,10 +109,8 @@ class DiscussionPost {
 		} else if (post == null){
 			return false
 		} else{
-			post.setMessage(null)
-			discussion.setUpdated(new Date())
+			DiscussionPost.delete(post)
 		}
-		Utils.save(post, true)
 		return true
 	}
 	

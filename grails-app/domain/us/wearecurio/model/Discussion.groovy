@@ -213,6 +213,7 @@ class Discussion {
 		 * first post is not fetched.
 		 */
 		if (!args["offset"]) {
+			println ">>>> "
 			args["offset"] = 1
 		}
 
@@ -222,6 +223,7 @@ class Discussion {
 		 * skipping always the first post.
 		 */
 		if (args["max"] && (args["offset"].toInteger() % args["max"].toInteger()) == 0) {
+			println ">>>> offset $args"
 			args["offset"] = args["offset"].toInteger() + 1
 		}
 
@@ -229,6 +231,7 @@ class Discussion {
 	}
 
 	List<DiscussionPost> getPosts(Map args) {
+		println ">>> get posts: $args"
 		List posts = DiscussionPost.createCriteria().list(args) {
 			and {
 				eq("discussionId", getId())
@@ -378,6 +381,7 @@ class Discussion {
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
 
+		println ">>> arga $args $isFollowUp $firstPostInstance"
 		if (args.max && args.offset) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
@@ -387,6 +391,7 @@ class Discussion {
 				totalPostCount --
 			}
 		}
+		println postList.size()
 
 		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]

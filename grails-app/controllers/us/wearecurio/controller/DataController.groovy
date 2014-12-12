@@ -1253,6 +1253,7 @@ class DataController extends LoginController {
 		if (discussionId && clearPostId) {
 			discussion = Discussion.get(discussionId)
 			DiscussionPost.deleteComment(clearPostId, user, discussion)
+			Utils.save(discussion, true)
 			renderStringGet('success')
 		} else {
 			renderStringGet('fail')
