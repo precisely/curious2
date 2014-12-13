@@ -1,14 +1,15 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<g:setProvider library="jquery"/>
+<!DOCTYPE HTML>
+<g:setProvider library="jquery" />
 <html>
 <head>
 <meta name="layout" content="plot" />
 <title>Curious</title>
 <style type="text/css">
 .ui-accordion-header {
-	overflow:hidden;
+	overflow: hidden;
 }
 </style>
+
 <script type="text/javascript">
 // list of users to plot
 function refreshPage() {
@@ -39,7 +40,7 @@ function deletePost(postId) {
 	return false;
 }
 
-$(function(){
+$(function() {
 	initTagListOnly();
 	
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
@@ -168,187 +169,272 @@ $(function(){
 	});
 
 	$('li#share-discussion').on('click', function() {
-		$('div#share-dialog').dialog({
-			dialogClass: "no-close",
-			modal: false,
-			resizable: false,
-			title: "Query",
-			buttons: {
-				"Yes ": function() {
-					$(this).dialog("close");
-					modifyShare();
-				},
-				No: function() {
-					$(this).dialog("close");
-				}
-			}
-		});
+		showShareDialog(null);
 		return false;
 	});
 
-	function modifyShare() {
-		var $selectElement = $('select#shareOptions');
-		$.ajax({
-			type: 'POST',
-			url: '/home/shareDiscussion',
-			data: {
-				discussionId: $('input#discussionId').val(),
-				shareOptions: $selectElement.val().join(',')
-			},
-			success: function(data) {
-				showAlert(JSON.parse(data).message);
-			},
-			error: function(xhr) {
-				showAlert(JSON.parse(xhr.responseText).message);
-			}
-		});
-	}
+});
+
+$(document).ready(function() {
+	var App = window.App || {};
+	App.comment = {};
+	App.comment.offset = 5;
+	App.comment.lockInfiniteScroll = false;
+	
+	$(window).scroll(function() {
+		if ($("#getMoreComments").length == 0)
+			return false;
+
+		var $element = $('#getMoreComments');
+		var docViewTop = $(window).scrollTop();
+		var docViewBottom = docViewTop + $(window).innerHeight();
+
+		var elemTop = $element.offset().top;
+		
+		if ((elemTop < docViewBottom) && !App.comment.lockInfiniteScroll) {
+			$element.addClass(" waiting-icon");
+			setTimeout(function() {
+				$.ajax ({
+					type: 'POST',
+					url: '/home/discuss?discussionId=${discussionId}&offset=' + App.comment.offset,
+					success: function(data, textStatus) {
+						if (data == "false") {
+							$("#getMoreComments").text('No more comments to show.');
+							setTimeout(function() {
+								$("#getMoreComments").fadeOut()
+							}, 5000);
+						} else {
+							$('#postList').append(data);
+						}
+						App.comment.offset = App.comment.offset + 5;
+					}
+				});
+				$element.removeClass("waiting-icon");
+			}, 600);
+			App.comment.lockInfiniteScroll = true;
+		} else if (elemTop > docViewBottom) {
+			App.comment.lockInfiniteScroll = false;
+			return;
+		}
+	});
 });
 </script>
 </head>
 <body class="discuss-page">
-<!-- SHARE PAGE -->
-<div id="container" class="sharePage" >
-	<div class="discussTitle red-header" id="discussTitleArea">
-		<h1>
-			<span id="actions">
-				<span class="icon-triangle icon-triangle-right toggle"></span>
-				<ul>
-					<li id="share-discussion"><a href="#">Change Visibility</a></li>
-					<li class="${isAdmin ? '' : 'disabled text-muted' }">
-						<g:link params="[discussionId: params.discussionId, deleteDiscussion: true]"
-							action="discuss">Delete</g:link>
-					</li>
-				</ul>
-			</span>
-			<span id="discussTitleSpan"><g:if test="${!isNew}">${discussionTitle}</g:if></span>
-			<div class="byline">
-				<span class="username bittext" id="discussUsername"></span>
-				<span class="date bittext" id="discussDate"></span>
-			</div>
-		</h1>
-	</div>
-	<div id="plotLeftNav">
-		<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
-	</div>
+	<!-- SHARE PAGE -->
+	<div id="container" class="sharePage">
+		<div class="row red-header">
+				<!-- <span id="actions"> <span
+					class="icon-triangle icon-triangle-right toggle"></span>
+					<ul>
+						<li id="share-discussion"><a href="#">Change Visibility</a></li>
+						<li class="${isAdmin ? '' : 'disabled text-muted' }"><g:link
+								params="[discussionId: params.discussionId, deleteDiscussion: true]"
+								action="discuss">Delete</g:link></li>
+					</ul>
+				</span>--!><h1 class="clearfix">
+                               			 <span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>	 			   </h1>
+		</div>
+		<div id="plotLeftNav">
+			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
+		</div>
 
-<!-- MAIN -->
-<g:if test="${firstPost?.getPlotDataId() != null}">
-<div class="row row-custom">
-<div class="col-xs-12">
-<!-- /LEFT NAV-->
-<div class="main discussmain" style="margin:0px">
-	<div id="dialogDivplotDiscussArea" class="display:none;">
-	</div>
-	<div class="graphData">
-		<div class="discussPlotArea" id="plotDiscussArea"></div>
+		<!-- MAIN -->
+		<g:if test="${firstPost?.getPlotDataId() != null}">
+			<div class="row row-custom">
+				<div class="col-xs-12">
+					<!-- /LEFT NAV-->
+					<div class="main discussmain" style="margin: 0px">
+						<div id="dialogDivplotDiscussArea" class="display:none;"></div>
+						<div class="graphData">
+							<div class="discussPlotArea" id="plotDiscussArea"></div>
 
-		<div class="main discusscontrols">
-			<div class="calendarRange">
-				<div class="zoomline"><div id="zoomcontrol1"></div></div>
-				<div class="dateline row">
-					<div class="col-xs-4">
-					<span class="startDate"><input id="startdatepicker1" type="text" value="" class="startdatepicker cycleInput"/></span>
-					</div>
-					<div class="col-xs-4">
-					<!-- span class="cycleTag" id="cycleTag1"><input type="text" class="cycleTagInput" name="cycletag" value="" class="cycleInput" /></span -->
-					</div>
-					<div class="col-xs-4">
-					<span class="endDate"><input id="enddatepicker1" type="text" value="" class="enddatepicker cycleInput"/></span>
+							<div class="main discusscontrols">
+								<div class="calendarRange">
+									<div class="zoomline">
+										<div id="zoomcontrol1"></div>
+									</div>
+									<div class="dateline row">
+										<div class="col-xs-4">
+											<span class="startDate"><input id="startdatepicker1"
+												type="text" value="" class="startdatepicker cycleInput" /></span>
+										</div>
+										<div class="col-xs-4">
+											<!-- span class="cycleTag" id="cycleTag1"><input type="text" class="cycleTagInput" name="cycletag" value="" class="cycleInput" /></span -->
+										</div>
+										<div class="col-xs-4">
+											<span class="endDate"><input id="enddatepicker1"
+												type="text" value="" class="enddatepicker cycleInput" /></span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		
-	</div>
-</div>
-</div>
-</div>
-<!-- /MAIN -->
+			<!-- /MAIN -->
 
-<div style="clear:both"></div>
+			<div style="clear: both"></div>
 
-<!-- PRE-FOOTER -->
-<div id="preFooter">
+			<!-- PRE-FOOTER -->
+			<div id="preFooter"></div>
 
-</div>
+			<!-- /PRE-FOOTER -->
 
-<!-- /PRE-FOOTER -->
+			<div style="clear: both"></div>
+		</g:if>
 
-<div style="clear:both"></div>
-</g:if>
-
-<!-- COMMENTS -->
-<div class="discusscomments">
-	<g:if test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
-	<div class="description">
-		<div class="comment">${firstPost ? (firstPost.getMessage() ? firstPost.getMessage().encodeAsHTML() : "") : ""}</div>
-		<div class="messageControls">
-			<g:if test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
-				<!--span class="edit"></span-->
-				<span class="delete"><a href="#" onclick="return clearPostMessage(${firstPost.getId()})"><img src="/images/x.gif" width="8" height="8"></a></span>
-			</g:if>
-		</div>
-		<!--<g:if test="${firstPost}">
+		<!-- COMMENTS -->
+		<div class="main container-fluid">
+			<div class="discusscomments">
+				<g:if
+					test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
+					<div class="description">
+						<div class="comment">
+							${firstPost ? (firstPost.getMessage() ? firstPost.getMessage().encodeAsHTML() : "") : ""}
+						</div>
+						<div class="messageControls">
+							<g:if
+								test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
+								<!--span class="edit"></span-->
+								<span class="delete"><a href="#"
+									onclick="return clearPostMessage(${firstPost.getId()})"><img
+										src="/images/x.gif" width="8" height="8"></a></span>
+							</g:if>
+						</div>
+						<!--<g:if test="${firstPost}">
 			<div class="messageInfo">
 				<div class="username"><g:if test="${firstPost.author.getSite()}"><a href="${firstPost.author.getSite().encodeAsURL()}"></g:if><g:if test="${firstPost.author.getUsername()}">${firstPost.author.getUsername().encodeAsHTML()}</g:if><g:else>${description.author.getName().encodeAsHTML()}</g:else><g:if test="${firstPost.author.getSite()}"></a></g:if></div>
 				<div class="date"><g:formatDate date="${firstPost.getCreated()}" type="datetime" style="MEDIUM"/></div>
 			</div>
 		</g:if>-->
-		<!--div class="button"><a href="#">Try it out. Track the same tags.</a></div -->
-		<br/>&nbsp;
-	</div>
-	</g:if>
+						<!--div class="button"><a href="#">Try it out. Track the same tags.</a></div -->
+						<br />&nbsp;
+					</div>
+				</g:if>
 
-	<div class="commentList">
-		<a name="comments"></a>
-		<g:if test="${firstPost != null && firstPost.getPlotDataId() != null}">
-			<h1>Comments</h1>
-		</g:if>
-		<div id="postList">
-			<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+				<div class="feed-item">
+					<div class="discussion">
+						<div class="discussion-topic">
+							<div class="row">
+								<div class="col-md-9 discussion-header">
+									<a href="#"><img class="avatar" src="/images/avatar.png"
+										alt="..."><span class="user-name"> ${discussionOwner}</span></a>
+								</div>
+								<div class="col-md-3 discussion-topic-span discussion-header">
+									<span class="posting-time" data-time="${discussionCreatedOn}"></span>
+								</div>
+							</div>
+							<div class="row top-left-margin">
+								<span class="group">
+									${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}
+								</span>
+							</div>
+							<div class="row title">
+								<a href="/home/discuss?discussionId=${discussionId }"> ${discussionTitle ?: '(No Title)' }</a>
+							</div>
+							<div class="row">
+								<p>
+									${firstPost?.message}
+								</p>
+							</div>
+							<hr>
+							<div class="row buttons">
+								<button onclick="showShareDialog(${discussionId })">
+									<img src="/images/share.png" alt="share">
+								</button>
+								<button onclick="showCommentDialog(null)">
+									<img src="/images/comment.png" alt="comment">
+								</button>
+							</div>
+						</div>
+						<div class="commentList">
+							<a name="comments"></a>
+							<g:if
+								test="${firstPost != null && firstPost.getPlotDataId() != null}">
+								<h1>Comments</h1>
+							</g:if>
+							<div class="discussion-comment">
+								<div class="row">
+									<div class="add-comment-to-discussion">
+										<form action="/home/discuss?commentForm=true" method="post"
+											id="commentForm">
+											<g:if test="${notLoggedIn}">
+												<p>Enter your details below</p>
+
+												<div id="postname">
+													<input type="text" id="postname" name="postname" value=""
+														class="postInput" /> Name
+												</div>
+												<div id="postemail">
+													<input type="text" id="postemail" name="postemail" value=""
+														class="postInput" /> Email (not publicly visible)
+												</div>
+												<div id="posturl">
+													<input type="text" id="postsite" name="postsite" value=""
+														class="postInput" /> Website URL (optional)
+												</div>
+												<div id="postcomment">
+													<textarea rows="20" cols="100" style="border-style: solid"
+														id="postcommentarea" name="message"></textarea>
+												</div>
+												<br />
+												<input type="button" class="submitButton"
+													id="commentSubmitButton" value="submit" />
+												<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
+											</g:if>
+											<g:else>
+												<input type="text" placeholder="Add Comment to this discussion..."
+													id="post-comment" name="message" required>
+											</g:else>
+											<input type="hidden" name="discussionId"
+												value="${discussionId}">
+										</form>
+									</div>
+								</div>
+								<div class="row">
+									<a href="/home/discuss?discussionId=${discussionId }">
+										<span class="view-all">VIEW LESS COMMENTS (${totalPostCount})
+									</span>
+									</a>
+								</div>
+							</div>
+							<div id="postList">
+								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+							</div>
+							<div id="getMoreComments"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /COMMENTS -->
+
 		</div>
-	</div>
-	<div id="addComment">
-		<g:if test="${firstPost != null && firstPost.getMessage() != null}">
-		<h1>Join the conversation</h1>
-		</g:if>
-        <form action="/home/discuss?commentForm=true" method="post" id="commentForm">
-			<g:if test="${notLoggedIn}">
-				<p>Enter your details below</p>
-	
-				<div id="postname"><input type="text" id="postname" name="postname" value="" class="postInput" /> Name</div>
-				<div id="postemail"><input type="text" id="postemail" name="postemail" value="" class="postInput" /> Email (not publicly visible)</div>
-				<div id="posturl"><input type="text" id="postsite" name="postsite" value="" class="postInput" /> Website URL (optional)</div>
-				<div id="postcomment"><textarea rows="20" cols="100" style="border-style:solid" id="postcommentarea" name="message"></textarea></div>
-				<br /><input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
-				<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
-			</g:if>
-			<g:else>
-				<div id="postcomment"><textarea rows="20" cols="100" style="border-style:solid" id="postcommentarea" name="message"></textarea></div>
-				<br /><input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
-				<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
-			</g:else>
+		<!-- /TOTAL PAGE -->
+
+		<div style="clear: both;"></div>
+
+		<g:hiddenField name="discussionId" value="${discussionId }" />
+
+		<div id="share-dialog" class="hide" title="Share">
+			<select name="shareOptions" id="shareOptions" multiple="multiple"
+				class="form-control" size="8">
+				<option value="isPublic" ${isPublic ? 'selected="selected"' : '' }>Visible
+					to the world</option>
+				<g:each in="${associatedGroups }" var="userGroup">
+					<option value="${userGroup.id }"
+						${userGroup.shared ? 'selected="selected"' : '' }>
+						${userGroup.fullName }
+					</option>
+				</g:each>
+			</select>
+		</div>
+		<div id="comment-dialog" class="hide" title="Comment">
+			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
 			<input type="hidden" name="discussionId" value="${discussionId}">
-		</form>
-	</div>
-</div>
-<!-- /COMMENTS -->
-
-</div>
-<!-- /TOTAL PAGE -->
-
-<div style="clear:both;"></div>
-
-<g:hiddenField name="discussionId" value="${discussionId }" />
-
-<div id="share-dialog" class="hide" title="Share">
-	<select name="shareOptions" id="shareOptions" multiple="multiple" class="form-control" size="8">
-		<option value="isPublic" ${isPublic ? 'selected="selected"' : '' }>Visible to the world</option>
-		<g:each in="${associatedGroups }" var="userGroup">
-			<option value="${userGroup.id }" ${userGroup.shared ? 'selected="selected"' : '' }>${userGroup.fullName }</option>
-		</g:each>
-	</select>
+		</div>
 </div>
 </body>
 </html>

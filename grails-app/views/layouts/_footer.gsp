@@ -34,7 +34,7 @@
         <br>
         <br>
         <div class="row" style="height: 100px">
-            <div class="col-md-9 col-md-offset-1">
+            <div class="col-xs-9 col-xs-offset-1">
                 <ul class="nav nav-pills mainLinks footerLinks">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a
@@ -49,7 +49,7 @@
                 </ul>
             </div>
 
-            <div class="col-md-2 text-center"
+            <div class="col-xs-2 text-center"
                 style="color: white;">
                 <a href="https://twitter.com/wearecurious"> <img
                     class="" src="/images/home/twitter.png"
@@ -64,22 +64,49 @@
          <g:if test="${params.action == 'login' && !params.login}">
          </g:if>
         <%-- Inner Pages --%>
-        <div class=""> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
-            <div class="col-md-6">
-                <ul class="nav nav-pills" style="margin-left: 20px;">
+        <div class="row footer-items"> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
+            <div class="col-xs-2 ">
+            	<ul> 
+            	<li> <span class="ul-head"> Company </span><br></li>
+            		<li ><a href="#">About</a> </li>
+            		<li ><a href="#">Jobs</a> </li>
+            		<li ><a href="#">Contacts</a> </li>
+            	</ul>
+            </div>
+            <div class="col-xs-3 col-xs-offset-1">
+            	<ul> 
+            	 <li><span class="ul-head">Policies</span><br></li>
+            		<li ><a href="#">Community Guideline</a> </li>
+            		<li > <g:link controller='home' action="termsofservice" >Terms of Service</g:link></li>
+            		<li ><a href="#">Privacy</a> </li>
+            	</ul>
+            </div>
+            <div class="col-xs-2 col-xs-offset-1">
+            	<ul> 
+            		<li> <span class="ul-head">Support</span> <br></li>
+            		<li ><a href="#">Wiki</a> </li>
+            		<li ><a href="#">FAQS</a> </li>
+            		<li ><a href="#">Email Help</a> </li>
+            	</ul>
+            </div>
+            <div class="col-xs-1 col-xs-offset-1">
+            	<ul>
+            	<li> <span class="ul-head">Follow</span><br></li>
+            		<li ><a href="#"> Blog </a></li>
+            		<li ><a href="#">Twitter</a> </li>
+            		<li ><a href="#">Facebook</a> </li>
+            	</ul>
+            </div>
+                <%--<ul class="nav nav-pills" style="margin-left: 20px;">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">GET THE APP</a></li>
                     <li style="font-size: 16px; display: none"><a style="font-weight: bold;color: #999999"
                         href="#">TUTORIALS</a></li>
                     <li style="font-size: 16px;"><g:link
-                            controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS<br/>&nbsp;</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="upload" style="font-weight: bold;color: #999999 ">IMPORT</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="download" style="font-weight: bold;color: #999999 ">EXPORT</g:link></li>
-					<li style="font-size: 14px;"><g:link controller='home' action="polldevices" style="font-weight: bold;color: #999999 ">POLL DEVICES<br/>&nbsp;</g:link></li>
-                </ul>
-            </div>
-            
+                            controller='home' action="termsofservice" style="font-weight: bold;color: #999999 ">TERMS</g:link></li>
+                </ul> --%>
         </div>
     </g:else>
 </div>
+<link href='//fonts.googleapis.com/css?family=Open+Sans:300normal,300italic,400normal,400italic,600normal,600italic,700normal,700italic,800normal,800italic|Roboto:400normal|Oswald:400normal|Open+Sans+Condensed:300normal|Lato:400normal|Source+Sans+Pro:400normal|Lato:400normal|Gloria+Hallelujah:400normal|Pacifico:400normal|Raleway:400normal|Merriweather:400normal&subset=all' rel='stylesheet' type='text/css'>

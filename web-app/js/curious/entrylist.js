@@ -18,6 +18,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	
 	divIds = $.extend({editId:"input0", listId:"entry0", calendarId:"datepicker", dragId:"drag", areaId:"area"}, divIds);
 
+	this.entryListItems = [];
+	this.entriesSortOrder = {
+		ascendingDescription: true,
+		ascendingTime: true
+	}
 	this.editId = divIds.editId;
 	this.listId = divIds.listId;
 	this.calendarId = divIds.calendarId;
@@ -64,7 +69,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		queueJSON("getting entries", "/home/getListData?date="+ this.cachedDateUTC + "&currentTime=" + this.currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + this.timeZoneName + "&callback=?",
 				getCSRFPreventionObject("getListDataCSRF"),
-				function(entries){
+				function(entries) {
 			if (checkData(entries))
 				self.refreshEntries(entries);
 		});
@@ -72,7 +77,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.clearEntries = function() {
+		this.entryListItems = [];
 		$("#" + this.listId).html('');
+		$("#pinned-tag-list").html('');
 	}
 
 	$(document).mousemove(function(e) {
@@ -94,14 +101,14 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	});
 	
 	this.displayEntry = function(entry, isUpdating, args) {
+		this.entryListItems.push(entry);
 		var id = entry.id;
 		var date = entry.date;
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry";
+		var classes = "entry full-width " + ((comment != '')?comment:'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
-
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
 				$entryToReplace = $(args.replaceEntry);
@@ -142,6 +149,14 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
+		if (isContinuous) {
+			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
+				+',\'' + description + ' ' + entry.amount + ' ' + entry.units +'\',' + this.defaultToNow + ')">'+ 
+				description + ' ' + entry.amount + ' ' + entry.units + '</button>';
+			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
+			return;
+		}
+		
 		var diff = date.getTime() - this.cachedDate.getTime();
 		if (diff < 0 ||  diff >= dayDuration) {
 			return; // skip items outside display
@@ -156,7 +171,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 		
-		var innerHTMLContent = '<span class="content-wrapper">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+		var innerHTMLContent = '<div class="content-wrapper '+ ((comment != '')?'':'no-tag') +'">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 				+ escapehtml(description) + '</span>';
 		
 		var amounts = entry.amounts;
@@ -185,8 +200,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<span class="' + (comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span>' : '')
-				+ '</span><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img width="12" height="12" src="/images/x.gif"></a>';
+				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br><div class="comment-label "> <div class="' +
+				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') ? 
+				'repeatLabelImage' : (comment.startsWith('remind')? 'remindLabelImage':'')) + '"></div> <span class="' +
+				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span></div>' : '')
+				+ '</div><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
 
 		
 		var entryEditItem;
@@ -292,11 +310,86 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		this.toggleSuffix($('#' + this.editId), suffix);
 	}
 
-	this.deleteGhost = function($entryToDelete, entryId, allFuture) {
+	this.sortByTime = function() {
+		if (this.entriesSortOrder.ascendingTime) {
+			this.entryListItems.sort(function(item1,item2) {
+				if (new Date(item1.date) < new Date(item2.date))
+					return -1;
+				if (new Date(item1.date) > new Date(item2.date))
+					return 1;
+				return 0;
+			});
+		} else {
+			this.entryListItems.sort(function(item1,item2) {
+				if (new Date(item1.date) < new Date(item2.date)) {
+					return 1;
+				}
+				if (new Date(item1.date) > new Date(item2.date)) {
+					return -1;
+				}
+				return 0;
+			});
+		}
+		var $sortByDescription = $("#sort-by-description");
+		var $sortByTime = $("#sort-by-time");
+		this.manipulateSortElementClass($sortByTime, $sortByDescription, this.entriesSortOrder.ascendingTime);
+
+		this.entriesSortOrder.ascendingTime = !this.entriesSortOrder.ascendingTime;
+		this.refreshEntries(this.entryListItems);
+	}
+
+	this.sortByDescription = function() {
+		if (this.entriesSortOrder.ascendingDescription) {
+			this.entryListItems.sort(function(item1,item2) {
+				if (item1.description < item2.description)
+					return -1;
+				if (item1.description > item2.description)
+					return 1;
+				return 0;
+			});
+		} else {
+			this.entryListItems.sort(function(item1,item2) {
+				if (item1.description < item2.description)
+					return 1;
+				if (item1.description > item2.description)
+					return -1;
+				return 0;
+			});
+		}
+
+		var $sortByDescription = $("#sort-by-description");
+		var $sortByTime = $("#sort-by-time");
+		this.manipulateSortElementClass($sortByDescription, $sortByTime, this.entriesSortOrder.ascendingDescription);
+
+		this.entriesSortOrder.ascendingDescription = !this.entriesSortOrder.ascendingDescription;
+		this.refreshEntries(this.entryListItems);
+	}
+
+	this.manipulateSortElementClass = function($activeElement, $passiveElement, isAscending) {
+		$passiveElement.removeClass("active");
+		$passiveElement.find("img").addClass(" hide");
+		$passiveElement.find("img").attr("src","");
+		
+		if (!$activeElement.hasClass("active")) {
+			$activeElement.addClass("active");
+		} 
+		if (isAscending) {
+			$activeElement.find("img").removeClass("hide");
+			$activeElement.find("img").attr("src", "/images/asc.png");
+		} else {
+			$activeElement.find("img").removeClass("hide");
+			$activeElement.find("img").attr("src", "/images/desc.png");
+		}
+	}
+
+	this.deleteGhost = function($entryToDelete, isContinuous, entryId, allFuture) {
 		queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC})),
 			function(ret) {
 				if (checkData(ret, 'success', "Error deleting entry")) {
+					if (isContinuous) {
+						$("#pin-button"+entryId).remove();
+					}
 					$entryToDelete.remove();
 				}
 			});
@@ -311,13 +404,15 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		var $entryToDelete = this.getEntryElement(entryId);
 		if ($entryToDelete.data("isTimed") || $entryToDelete.data("isGhost")) {
-			if ($entryToDelete.data("isContinuous") || this.isTodayOrLater) {
-				this.deleteGhost($entryToDelete, entryId, true);
+			if ($entryToDelete.data("isContinuous")) {
+				this.deleteGhost($entryToDelete, true, entryId, true);
+			} else if (this.isTodayOrLater) {
+				this.deleteGhost($entryToDelete, false, entryId, true);
 			} else {
 				showAB("Delete just this one event or also future events?", "One", "Future", function() {
-					self.deleteGhost($entryToDelete, entryId, false);
+					self.deleteGhost($entryToDelete, false, entryId, false);
 				}, function() {
-					self.deleteGhost($entryToDelete, entryId, true);
+					self.deleteGhost($entryToDelete, false, entryId, true);
 				});
 			}
 		} else {
@@ -348,7 +443,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				+ "&currentTime=" + this.currentTimeUTC + "&text=" + escape(text) + "&baseDate="
 				+ this.cachedDateUTC + "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
-				function(entries){
+				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
 				self.tagList.load();
 				self.refreshEntries(entries[0]);
@@ -364,6 +459,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.updateEntry = function(entryId, text, defaultToNow) {
 		var $oldEntry = this.getEntryElement(entryId);
 
+		console.log('update....');
 		if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) && (!this.isTodayOrLater)) {
 			showAB("Update just this one event or also future events?", "One", "Future", function() {
 				self.doUpdateEntry(entryId, text, defaultToNow, false);
@@ -382,7 +478,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + this.cachedDateUTC
 				+ "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
-				function(entries){
+				function(entries) {
 			if (checkData(entries, 'success', "Error adding entry")) {
 				if (entries[1] != null) {
 					showAlert(entries[1]);
@@ -415,7 +511,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var $inp = $("#" + this.editId);
 		$inp.autocomplete("close");
 		$inp.val(text);
-		$inp.css('color','#000000');
 		if (startSelect) {
 			$inp.selectRange(startSelect, endSelect);
 		}
@@ -440,6 +535,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
+		var $button = $unselectee.find(".save");
+		$button.removeClass("save");
+		$button.addClass("edit");
+		$button.text("Edit");
+
 		$contentWrapper.html(displayText);
 		$contentWrapper.show();
 		if (displaySpinner) {
@@ -456,14 +556,36 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.selectEntry = function($selectee) {
 		console.debug('Select Entry:', $selectee.attr("id"));
 
+		console.log('width: ', $(window).width());
+		if ($(window).width() <= 1025) {
+			// Hides tag list, if not already hidden hide it
+			var elementToCollapse = $("#tagNav");
+			var isHidden = elementToCollapse.is(":hidden");
+			var triangleElement = $("span.icon-triangle");
+			
+			if (!isHidden) {	// Means tags going to hide.
+				$("body").toggleClass("tags-collapsed", true);
+				$("body").toggleClass("tags-displayed", false);
+				triangleElement.removeClass("icon-triangle-down").addClass("icon-triangle-right");
+				elementToCollapse.slideToggle(5, function() {
+					if (window.afterTagCollapseToggle) {
+						window.afterTagCollapseToggle();
+					}
+				});
+			}
+		}
+
 		$selectee.siblings().removeClass("ui-selected");
 		var $contentWrapper = $selectee.find(".content-wrapper");
-
+		var $button = $selectee.find(".edit");
+		$button.removeClass("edit");
+		$button.addClass("save");
+		$button.text("Save Edit");
+			
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
-
-		var entryText = $selectee.text();
+		var entryText = $contentWrapper.text();
 
 		var selectRange = self.entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
@@ -471,12 +593,22 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
 			}
 		}
+		var repeatType = $contentWrapper.find(".entryRepeat").text();
+		var repeatImgSrc = "/images/repeat.png";
+		var remindImgSrc = "/images/remind.png";
+		
+		if (repeatType.indexOf("remind") > -1) {
+			remindImgSrc = "/images/remind-active.png"
+		} else if (repeatType.indexOf("repeat") > -1) {
+			repeatImgSrc = "/images/repeat-active.png";
+		} 
+		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 2px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify" data-suffix="repeat" src="/images/repeat.png">'
-				+ '<img class="entryModify" data-suffix="remind" src="/images/remind.png">'
-				+ '<img class="entryModify" data-suffix="pinned" src="/images/pin.png"></span>');
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 10 2 2 2; width: calc(100% - 75px);"></input>'
+				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
+				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
+				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -519,8 +651,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		if ($unselectee.data('isContinuous')) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
-			this.addEntry(currentUserId, newText, this.defaultToNow);
-			this.unselectEntry($unselectee, false, true);
+			this.unselectEntry($unselectee, true, true);
+			this.updateEntry(currentEntryId, newText, this.defaultToNow);
 		} else if (!$unselectee.data('isRemind') && $unselectee.data('originalText') == newText) {
 			console.debug('Is not remind & no change in entry.');
 			this.unselectEntry($unselectee);
@@ -594,7 +726,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$datepicker.val($.datepicker.formatDate(datepickerFormat, currentDate));
 	}
 	
-	$("#" + self.editId).val('Enter a tag.  For example: nap at 2pm');
 	$("#" + self.editId).droppable({
 		drop : function(event, ui) {
 			var droppedItem = $(ui.draggable[0]).data(DATA_KEY_FOR_ITEM_VIEW).getData();

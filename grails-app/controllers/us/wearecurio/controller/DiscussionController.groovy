@@ -21,39 +21,42 @@ class DiscussionController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 				//flash.message = "Created new discussion: " + name
-				discussion.createPost(user, discussionPost)
-				
-			Map model = discussion.getJSONModel(params)
-	
-			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
+
+				if(discussionPost) {
+					discussion.createPost(user, discussionPost)
+				}
+
+				Map model = discussion.getJSONModel(params)
+
+				model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
 					templateVer: urlService.template(request)]
-	
-			// If used for pagination
-			if (request.xhr) {
-				render (template: "/discussion/posts", model: model)
-				return
-			}
-	
-			// see duplicated code in HomeController.discuss
-			// edits here should be duplicated there
-			List associatedGroups = UserGroup.getGroupsForWriter(user)
-			List alreadySharedGroups = [], otherGroups = []
-	
-			associatedGroups.each { userGroup ->
-				if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
-					alreadySharedGroups << userGroup.plus([shared: true])
-				} else {
-					otherGroups << userGroup
+
+				// If used for pagination
+				if (request.xhr) {
+					render (template: "/discussion/posts", model: model)
+					return
 				}
-			}
-			associatedGroups = alreadySharedGroups.sort { it.name }
-			associatedGroups.addAll(otherGroups.sort { it.name })
-			model.put("associatedGroups", associatedGroups)
-	
-			render(view: "/home/discuss", model: model)
-			// redirect(url:toUrl(controller:'home', action:'feed'))
-			return
+
+				// see duplicated code in HomeController.discuss
+				// edits here should be duplicated there
+				List associatedGroups = UserGroup.getGroupsForWriter(user)
+				List alreadySharedGroups = [], otherGroups = []
+
+				associatedGroups.each { userGroup ->
+					if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
+						alreadySharedGroups << userGroup.plus([shared: true])
+					} else {
+						otherGroups << userGroup
+					}
+				}
+				associatedGroups = alreadySharedGroups.sort { it.name }
+				associatedGroups.addAll(otherGroups.sort { it.name })
+				model.put("associatedGroups", associatedGroups)
+
+				render(view: "/home/discuss", model: model)
+				// redirect(url:toUrl(controller:'home', action:'feed'))
+				return
 			} else {
 				flash.message = "Failed to create new discussion topic: internal error"
 			}

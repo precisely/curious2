@@ -1,4 +1,3 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <g:setProvider library="jquery" />
 <html>
 <head>
@@ -28,7 +27,7 @@ function refreshPage() {
 $(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
-			function(data){
+			function(data) {
 				if (!checkData(data))
 					return;
 			
@@ -48,6 +47,11 @@ $(function() {
 });
 
 $(document).ready(function() {
+	var App = window.App || {};
+	App.discussion = {};
+	App.discussion.lockInfiniteScroll = false;
+	App.discussion.offset = 5;
+
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -83,61 +87,94 @@ $(document).ready(function() {
 		});
 		return false;
 	});
+
+	$(window).scroll(function() {
+		if ($("#getMoreDiscussions").length == 0)
+			return false;
+
+		var $element = $('#getMoreDiscussions');
+		var docViewTop = $(window).scrollTop();
+		var docViewBottom = docViewTop + $(window).innerHeight();
+
+		var elemTop = $element.offset().top;
+		
+		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
+			$element.addClass(" waiting-icon");
+			setTimeout(function() {
+				$.ajax ({
+					type: 'POST',
+					url: '/home/feed?offset=' + App.discussion.offset,
+					success: function(data, textStatus) {
+						if (data == "false") {
+							$("#getMoreDiscussions").text('No more discussions to show.');
+							setTimeout(function() {
+								$("#getMoreDiscussions").fadeOut()
+							}, 5000);
+						} else {
+							$('#discussions').append(data);
+						}
+						App.discussion.offset = App.discussion.offset + 5;
+					}
+				});
+				$element.removeClass("waiting-icon");
+			}, 600);
+			App.discussion.lockInfiniteScroll = true;
+		} else if (elemTop > docViewBottom) {
+			App.discussion.lockInfiniteScroll = false;
+			return;
+		}
+	});
 });
 </script>
 </head>
 <body class="feed">
 <!-- MAIN -->
-<div class="main container-fluid" >
 	<div class="row red-header">
-		<div class="col-md-3">
-			<div id="actions">
-				<span class="icon-triangle icon-triangle-right toggle"></span>
-				<ul>
-					<li><a Ref="/home/feed" >Home Feed</a></li>
-				</ul>
-			</div>
-		</div>
-		<div class="col-md-9">
+		<div>
 			<h1 class="clearfix">
 				<span id="queryTitle">${groupFullname}</span>
 			</h1>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-3">
-			<h2 class="subscription-list"> YOUR SUBSCRIPTIONS </h2>
-			<ul class="subscriptions">
-				<li>
-					<a href = "/home/feed"> Home Feed </a>
-				</li>
-				<g:each var="membership" in="${groupMemberships}">
-					<li>
-						<a href = "/home/feed?userGroupNames=${membership[0].name}"> ${membership[0].fullName} </a>
-					</li>
-				</g:each>
-			</ul>
-		</div>
-		<div id="graphList" class="col-md-9">
+	<div class="main container-fluid">
+		<div id="graphList">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">
-					<input class="full-width" type="text" placeholder="New question or discussion title?" name="name" />
-					<textarea class="full-width"  name="discussionPost" style="height:7em"></textarea>
+					<div class="input-affordance left-addon">
+						<i class="fa fa-pencil"></i> <input class="full-width"
+							type="text" placeholder="New question or discussion topic?"
+							name="name" id="discussion-topic" required />
+					</div>
+					<%--					<textarea class="full-width"  name="discussionPost" style="height:7em" required></textarea>--%>
 					<input type="hidden" name="group" value="${groupName}" />
-					<input type="submit" name="POST" value="POST"  />
+					<%--					<input type="submit" name="POST" value="POST"  />--%>
 				</form>
 			</div>
 			<div id="discussions">
 				<g:render template="/feed/discussions" />
 			</div>
 		</div>
+		<div id="getMoreDiscussions"></div>
 
 	</div>
-
-</div>
-<!-- /MAIN -->
+	<!-- /MAIN -->
 
 <div style="clear: both;"></div>
-
+	<div id="share-dialog" class="hide" title="Share">
+		<select name="shareOptions" id="shareOptions" multiple="multiple"
+			class="form-control" size="8">
+			<option value="isPublic">Visible
+				to the world</option>
+			<g:each in="${associatedGroups }" var="userGroup">
+				<option value="${userGroup.id }">
+					${userGroup.fullName }
+				</option>
+			</g:each>
+		</select>
+	</div>
+	<div id="comment-dialog" class="hide" title="Comment">
+			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
+			<input type="hidden" name="discussionId" value="${discussionId}">
+		</div>
 </body>
 </html>
