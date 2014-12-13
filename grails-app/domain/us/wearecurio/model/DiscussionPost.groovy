@@ -102,17 +102,15 @@ class DiscussionPost {
 	}
 	
 	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
-		
 		DiscussionPost post = DiscussionPost.get(clearPostId)
 		if (post != null && (user == null || post.getUserId() != user.getId())) {
 			return false
-		} else if (post == null){
+		} else if (post == null) {
 			return false
-		} else{
-			post.setMessage(null)
-			discussion.setUpdated(new Date())
+		} else {
+			DiscussionPost.delete(post)
 		}
-		Utils.save(post, true)
+		Utils.save(discussion, true)
 		return true
 	}
 	
