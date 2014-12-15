@@ -6,7 +6,6 @@ import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
-import grails.util.Holders
 
 
 // locations to search for config files that get merged into the main config;
