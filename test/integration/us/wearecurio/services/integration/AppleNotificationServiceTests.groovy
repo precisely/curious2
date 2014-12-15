@@ -27,7 +27,9 @@ class AppleNotificationServiceTests extends CuriousServiceTestCase {
 	@Test
 	void testValidSendMessage() {
 		def messageTxt = "Testing APNS"
-		assert appleNotificationService.sendMessage(messageTxt, devices) == true
+		assert appleNotificationService.sendMessage(messageTxt, devices,"Curious",
+			['entryId':'234565','entryDate':dateTimeFormatter.print(new Date().getDate().getTime())]) == true
+		//assert appleNotificationService.sendMessage(messageTxt, devices) == true
 	}
 	
 	@Test
