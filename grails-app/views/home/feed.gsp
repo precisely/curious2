@@ -21,6 +21,86 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
+function getRecentSearches(params) {
+	if ($('#recentSearches ul').length == 0) {
+		$.ajax ({
+			url: '/feed/getRecentSearches',
+			data: {
+				userId: params.userId,
+				max: 5,
+				offset: params.offset?params.offset:0
+			},
+			success: function(data) {
+				if (data) {
+					console.log('data: ', JSON.parse(data));
+					$('#recentSearches').slideDown( 1000, function() {
+						$(this).append('<ul>');
+						jQuery.each(JSON.parse(data).terms, function() {
+							$('#recentSearches ul').append('<li><a herf="#">' + this + '</a></li>');
+						});
+						$(this).append('</ul>');
+					});
+				} else {
+					console.log('no data', data);
+				}
+			},
+			error: function(xhr) {
+				console.log('error: ', xhr);
+			}
+		});
+	} else {
+		$('#recentSearches ul').remove();
+	}
+}
+
+function getMyThreads(params) {
+	$.ajax ({
+		type: 'POST',
+		url: '/feed/getMyThreads',
+		success: function(data) {
+			if (data) {
+				console.log('data: ', data);
+				$('.new-post').remove();
+				$('#discussions').html(data);
+			} else {
+				console.log('no data', data);
+			}
+		},
+		error: function(xhr) {
+			console.log('error: ', xhr);
+			
+		}
+	});
+}
+
+function searchFeeds(params) {
+	if (params == null) {
+		var params = {};
+		params.userId = $('#userId').val()
+	}
+	var searchString = $('#searchFeed').val();
+	console.log('search feeds:', searchString);
+	$.ajax ({
+		url: '/feed/getSearchResults',
+		data: {
+			userId: params.userId,
+			searchString: searchString,
+			max: 10,
+			offset: params.offset?params.offset:0
+		},
+		success: function(data) {
+			if (data) {
+				$('#discussions').html(data);
+			} else {
+				console.log('no data', data);
+			}
+		},
+		error: function(xhr) {
+			console.log('error: ', xhr);
+		}
+	});
+}
+
 function refreshPage() {
 }
 
@@ -56,6 +136,7 @@ $(document).ready(function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var discussionId = $this.data('discussionId');
+			console.log('discussion ID: ',discussionId);
 			$.ajax({
 				url: '/home/discuss',
 				data: {
@@ -64,7 +145,7 @@ $(document).ready(function() {
 				},
 				success: function(data) {
 					showAlert(JSON.parse(data).message, function() {
-						$this.parents('.graphItem').fadeOut();
+						$this.parents('.feed-item').fadeOut();
 					});
 				},
 				error: function(xhr) {
@@ -74,6 +155,12 @@ $(document).ready(function() {
 			});
 		});
 		return false;
+	});
+
+	$(document).on("click", ".left-menu ul li a", function() {
+		$('.left-menu ul li .active').removeClass('active');
+		$(this).addClass('active');
+		
 	});
 
 	$(document).on("click", "ul#discussion-pagination a", function() {
@@ -88,7 +175,7 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(window).scroll(function() {
+	$('.main').scroll(function() {
 		if ($("#getMoreDiscussions").length == 0)
 			return false;
 
@@ -97,13 +184,17 @@ $(document).ready(function() {
 		var docViewBottom = docViewTop + $(window).innerHeight();
 
 		var elemTop = $element.offset().top;
-		
+
 		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
 			$element.addClass(" waiting-icon");
 			setTimeout(function() {
+				var requestUrl = '/home/feed';
+				if ($('#myThreads a').hasClass('active')) {
+					requestUrl = '/feed/getMyThreads';
+				}
 				$.ajax ({
 					type: 'POST',
-					url: '/home/feed?offset=' + App.discussion.offset,
+					url: requestUrl+'?offset=' + App.discussion.offset,
 					success: function(data, textStatus) {
 						if (data == "false") {
 							$("#getMoreDiscussions").text('No more discussions to show.');
@@ -135,19 +226,38 @@ $(document).ready(function() {
 				<span id="queryTitle">${groupFullname}</span>
 			</h1>
 		</div>
+		<div class="pull-right search-bar left-addon">
+			<form onsubmit="searchFeeds()">
+				<i class="fa fa-search"></i>
+				<input type="text" id="searchFeed" placeholder="Search Feed" required >
+				<input type="hidden" id="userId" value="${userId}">
+			</form>
+		</div>
+	</div>
+	<div class="feed-body">
+	<div class="left-menu">
+		<ul>
+			<li id="allFeeds"><g:link controller='home' action="feed">FEED</g:link></li>
+			<li id="recentSearches"><a href="#" onclick="getRecentSearches({usetId: ${userId}})">RECENT SEARCHES</a></li>
+			<li id="myThreads"><a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a></li>
+			<li id="sprints"><a href="#" >SPRINTS</a></li>
+		</ul>
 	</div>
 	<div class="main container-fluid">
 		<div id="graphList">
 			<div class="new-post">
 				<form action="/discussion/createTopic" method="post">
 					<div class="input-affordance left-addon">
-						<i class="fa fa-pencil"></i> <input class="full-width"
+						<i class="fa fa-pencil"></i> <input class="full-width discussion-topic-input"
 							type="text" placeholder="New question or discussion topic?"
 							name="name" id="discussion-topic" required />
+						<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
+						<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
+						<hr>
+						<input type="text" id="discussion-discription" class="full-width discussion-topic-description" placeholder="Enter Comment/Description"
+						name="discussionPost" required></textarea>
 					</div>
-					<%--					<textarea class="full-width"  name="discussionPost" style="height:7em" required></textarea>--%>
 					<input type="hidden" name="group" value="${groupName}" />
-					<%--					<input type="submit" name="POST" value="POST"  />--%>
 				</form>
 			</div>
 			<div id="discussions">
@@ -155,7 +265,7 @@ $(document).ready(function() {
 			</div>
 		</div>
 		<div id="getMoreDiscussions"></div>
-
+	</div>
 	</div>
 	<!-- /MAIN -->
 

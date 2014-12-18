@@ -12,6 +12,18 @@
 					</div>
 					<div class="col-md-3 discussion-topic-span discussion-header">
 						<span class="posting-time" data-time="${discussionData.created}"></span>
+						<g:if test="${discussionData.isAdmin }">
+							<li class="dropdown">
+								<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
+								<ul class="dropdown-menu" role="menu">
+									<li>
+										<a href="#" class="delete-discussion" data-discussion-id="${discussionData.id } "> 
+											<img src="/images/x.png" width="auto" height="23">Delete
+										</a>
+									</li>
+								</ul>
+							</li>
+						</g:if>
 					</div>
 						
 				</div>
@@ -40,15 +52,6 @@
 						<img src="/images/comment.png" alt="comment">
 					</button>
 				</div>
-				<%--<g:if test="${discussionData.isAdmin }">
-					<div class="text-right">
-						<a href="#" class="delete-discussion"
-							data-discussion-id="${discussionData.id } "> <img
-							src="/images/x.gif" width="8" height="8">
-						</a>
-					</div>
-				</g:if>
-			--%>
 			</div>
 			<div class="discussion-comment">
 				<div class="row bottom-margin">
