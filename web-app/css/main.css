@@ -4,9 +4,21 @@ input, optgroup, select, textarea {
 #addData input {
 	color: #c04f7f;
 }
-.new-post input {
-	color: #fc3f28;
+
+::-webkit-scrollbar {
+	display: none;
 }
+
+.discussion-topic-input {
+	color: #fc3f28;
+	padding-left: 70px;
+	padding-right: 155px;
+}
+.discussion-topic-description {
+	color: #A0A0A0;
+	padding-left: 20px;
+}
+
 .add-comment input, .add-comment-to-discussion input {
 	color: #a4a4a4;
 }
@@ -83,6 +95,12 @@ a.disabled {
 	width: auto;
 }
 
+#graphList {
+	margin-left: 35px;
+	margin-right: 17px;
+	margin-top: 17px;
+}
+
 ul {
 	margin-bottom: 0;
 }
@@ -128,9 +146,18 @@ input:focus::-moz-placeholder {
 input:focus::-ms-input-placeholder {
 		color: transparent !important;
 }
+
+#searchFeed::-webkit-input-placeholder {color: white;}
+#searchFeed::-moz-placeholder {color: white;} /* firefox 19+ */
+#searchFeed::-moz-placeholder {color: white;} /* firefox 19+ */
+
 #discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
 #discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
 #discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
+
+#discussion-discription::-webkit-input-placeholder {color: #A0A0A0;}
+#discussion-discription::-moz-placeholder {color: #A0A0A0;}
+#discussion-discription::-ms-input-placeholder {color: #A0A0A0;}
 
 #input0::-webkit-input-placeholder {
 	color: #C04F7F;
@@ -1151,6 +1178,22 @@ body.discuss-page .red-header {
 	border-radius: 2px;
 	padding: 23px 15px 21px 20px;
 }
+
+.red-header .search-bar {
+	margin-top: -29px;
+	margin-right: 0px;
+}
+
+.red-header .search-bar .fa {
+	color: white;
+	font-weight: lighter;
+}
+
+.red-header .search-bar input{
+	background-color: #de3723;
+	color: white;
+}
+
 .track-page .red-header, .graph-page .red-header {
 	position: relative;
 }
@@ -1441,6 +1484,67 @@ body.discuss-page .red-header {
 	margin-bottom: 15px; 
 }
 
+.input-affordance input[type="radio"] {
+	position: absolute;
+	display: none;
+	height: 16px;
+	width: 16px;
+	border-radius: 5px;
+}
+
+.input-affordance input[type="radio"] + label {
+	font-weight: normal;
+	color: #787878;
+}
+
+input[type=radio]:checked + label { 
+	color:#FC3F28;
+}
+
+.input-affordance label:after { 
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 16px;
+	width: 16px;
+	margin-left: 10px;
+	margin-top: 2px;
+	border-radius: 8px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+}
+
+.input-affordance input[type=radio]:checked+label:after {
+	background-color: #FC3F28;
+	box-shadow: none;
+}
+
+.input-affordance .radio-public {
+	right: 97px;
+	top: 25px;
+}
+
+.input-affordance .radio-private {
+	right: 18px;
+	top: 25px;
+}
+
+.input-affordance .radio-public-label {
+	position: absolute;
+	font-size: 12px;
+	cursor: pointer;
+	right: 122px;
+	top: 25px;
+}
+
+.input-affordance .radio-private-label {
+	position: absolute;
+	font-size: 12px;
+	cursor: pointer;
+	right: 46px;
+	top: 25px;
+}
+
 .input-affordance .fa {
 	position: absolute;
 	padding: 5px;
@@ -1465,6 +1569,13 @@ body.discuss-page .red-header {
 	text-transform: uppercase;
 }
 
+.input-affordance hr {
+	height: 2px;
+	margin: 0px;
+	color: #d8d8d8;
+	margin: 0px 10px;
+}
+
 .input-affordance .text {
 	margin-top: 40px;
 	position: absolute;
@@ -1481,13 +1592,11 @@ body.discuss-page .red-header {
 .input-affordance .icon-pin-text {
 	right: -5;
 }
-
+.left-addon {
+	background-color: white;
+}
 .left-addon .fa {
 	left: 0px;
-}
-
-.left-addon input {
-	padding-left: 70px;
 }
 
 .addon input {
@@ -1716,6 +1825,62 @@ div.graph-header-container .red-header {
 }
 .feed {
 	color: #879293;
+}
+
+.feed .main {
+	float: right;
+	max-height: 726px;
+	overflow-y: auto;
+	max-width: calc(100% - 179px);
+}
+
+.feed .left-menu {
+	float: left;
+	background-color: #ebebeb;
+	border-color: #c6c6c6;
+	padding-left: 23px;
+	padding-top: 32px;
+	width: 179px;
+	height: 726px;
+	border: 1px solid;
+	border-right-width: 0px;
+}
+
+.feed .left-menu li {
+	margin-bottom: 25px;
+}
+
+.feed .left-menu li a:active{
+	color: #f0574f;
+}
+
+.feed .left-menu li a {
+	color: #595959;
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.feed .left-menu li .active {
+	color: #f0574f;
+}
+
+.feed .left-menu li ul {
+	margin-top: 15px;
+}
+
+.feed .left-menu li ul li {
+	margin-bottom: 6px;
+}
+
+.feed .left-menu li ul li a {
+	cursor: pointer;
+	font-weight: normal;
+	color: #5d5d5d;
+	font-size: 12px;
+}
+
+.feed-body {
+	margin: 0px 0px;
 }
 .feed .col-md-12 {
 	padding: 0;
@@ -1965,6 +2130,10 @@ body.load-graph #graphList .summary .close {
 }
 body{
 	overflow-x:hidden;
+}
+
+ul{
+	list-style-type: none;
 }
 
 .features{
@@ -2333,6 +2502,38 @@ body{
 	padding-right: 0px;
 }
 
+.feed-item .discussion .discussion-topic .discussion-header li {
+	display: inline-block;
+	background-color: #f3f3f3;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header .open {
+	width: 92px;
+}
+.feed-item .discussion .discussion-topic .discussion-header li a b {
+	margin: 0px 10px;
+	color: #c8c8c8;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu{
+	background-color: #f3f3f3;
+	min-width: 0px;
+	max-width: 92px;
+	text-align: center;
+	margin-left: 85px;
+	margin-top: -2px;
+	box-shadow: none;
+	border: none;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a {
+	padding: 2px;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a img {
+	margin-right: 10px;
+}
+
 .feed-item .discussion .discussion-topic .title {
 	margin-top: 18px;
 	margin-left: 0px;
@@ -2350,7 +2551,7 @@ body{
 .feed-item .discussion .discussion-topic .posting-time {
 	font-size: 14px;
 	color: #a8a8a8;
-	margin-right: 5px;
+	margin-right: 20px;
 }
 
 .feed-item .discussion .discussion-topic p {
@@ -2400,7 +2601,7 @@ body{
 
 .feed-item .discussion .discussion-comment .view-comment{
 	color: #5d5d5d;
-	font-size: 16px;
+	font-size: 11px;
 }
 
 .feed-item .discussion .discussion-comment .add-comment {
@@ -2477,10 +2678,6 @@ body{
 
 .footer-items .col-md-3{
 	padding-left: 40px;
-}
-
-.footer-items ul{
-	list-style-type: none;
 }
 
 .footer-items ul li{
