@@ -3,16 +3,20 @@ package us.wearecurio.model
 import us.wearecurio.utility.Utils
 import org.hibernate.criterion.Restrictions as R
 import org.hibernate.criterion.Order as O
+import org.hibernate.criterion.Projections as P
 
 class AnalyticsCorrelation {
-
+	private static final pageSize = 10
 	private static final Long minOverlap = 3
 
 	Long id
 	String series1Type
 	Long series1Id
+	String description1
+
 	String series2Type
 	Long series2Id
+	String description2
 
 	Long userId
 
@@ -33,6 +37,8 @@ class AnalyticsCorrelation {
 
 	ValueType valueType
 	Double value
+	Double absValue
+
 	Long overlapN
 	String auxJson
 	Double signalLevel
@@ -40,6 +46,7 @@ class AnalyticsCorrelation {
 	static constraints = {
 		valueType nullable: true
 		value nullable: true
+		absValue nullable: true
 		auxJson nullable: true
 		overlapN nullable: true
 		signalLevel nullable:true
@@ -53,12 +60,17 @@ class AnalyticsCorrelation {
 
 	static mapping = {
 		version false
+		absValue index: 'absValueIdx'
+		value index: 'valueIdx'
 		overlapN index: 'overlapNIdx'
 		userId index: 'updateIdx,overlapNIdx'
 		series1Id index: 'updateIdx'
-		series1Type index: 'updateIdx'
 		series2Id index: 'updateIdx'
+		series1Type index: 'updateIdx'
 		series2Type index: 'updateIdx'
+		description1 index: 'search1'
+		description2 index: 'search2'
+		signalLevel index: 'signalLevelIdx', defaultValue: (Double)-1.0
 	}
 
 	public static userCorrelations(Long userId, Integer max, String flavor) {
@@ -120,4 +132,70 @@ class AnalyticsCorrelation {
 	def description1() { Tag.get(series1Id).description }
 	def description2() { Tag.get(series2Id).description }
 
+	public static addRestriction(criteria, order) {
+		def (name, asc) = order.tokenize(' ')
+		def criterion = criteria;
+		// 'alpha' or 'score'
+		if (name == 'alpha' || name == 'score') {
+			def c = ['alpha': 'description1', 'score': 'value', 'marked': 'signalLevel']
+			def or = (asc == "asc" ? O.asc(c[name]) : O.desc(c[name]));
+			criterion = criteria.addOrder(or)
+
+		}
+		// 'marked'
+		else if (name == 'marked') {
+			if (asc == 'asc') {
+				criterion = criteria.addOrder( O.asc('signalLevel') )
+			} else {
+				criterion = criteria.addOrder( O.desc('signalLevel') )
+			}
+		}
+		// 'natural'
+		else if (name == 'natural') {
+			// Sort by absolute value of 'value' column.
+			criterion = criteria.addOrder(O.asc('signalLevel'))
+			criterion = criteria.addOrder(O.desc('absValue'))
+		}
+		criterion
+	}
+
+	public static addFilter(criteria, filter) {
+		def criterion = criteria
+		if (filter == 'signal') {
+			criterion = criteria.add( R.eq('signalLevel', new Double(4.0) ) )
+		} else if (filter == 'noise') {
+			criterion = criteria.add( R.eq('signalLevel', new Double(0.0) ) )
+		}
+		criterion
+	}
+
+	public static search( userId, filter, order1, order2, q, pageNumber) {
+		def criteria = AnalyticsCorrelation.createCriteria()
+		def resultList = []
+
+		// Restrict results to the current user.
+		criteria.add( R.eq("userId", userId) )
+
+		// Add a search query term if any.
+		if (q && q.size() > 0) {
+			def queryRestriction = R.or(R.ilike("description1", "%${q}%"), R.ilike("description2", "%${q}%"))
+			criteria = criteria.add( queryRestriction )
+		}
+
+		// Add filter ('all', 'signal', 'noise').
+		if (filter && filter.size() > 0) {
+			criteria = addFilter(criteria, filter)
+		}
+
+		if (order1 && order1.size() > 0) {
+			criteria = addRestriction(criteria, order1)
+			if (order2 && order2.size() > 0) {
+				criteria = addRestriction(criteria, order1)
+			}
+		}
+		criteria.setFirstResult((pageNumber - 1) * pageSize)
+		criteria.setMaxResults( pageSize )
+		resultList = criteria.list()
+		resultList
+	}
 }

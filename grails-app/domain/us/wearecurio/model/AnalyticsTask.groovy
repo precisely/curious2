@@ -32,6 +32,7 @@ class AnalyticsTask {
 	Date createdAt
 	Date updatedAt
 	Long parentId
+	Long maxNumSubtasks
 
 	static constraints = {
 		name nullable: true
@@ -44,6 +45,7 @@ class AnalyticsTask {
 		updatedAt nullable: true
 		parentId nullable: true
 		type nullable: true
+		maxNumSubtasks nullable: true
 	}
 
 	static mapping = {

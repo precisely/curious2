@@ -5,7 +5,7 @@ import grails.converters.JSON
 
 class CorrelationController {
 
-	static allowedMethods = [markViewed: "PATCH", markSaved: "PATCH", updateSignalLevel: "PATCH", index: "GET"]
+	static allowedMethods = [markViewed: "PATCH", markSaved: "PATCH", updateSignalLevel: "PATCH", index: "GET", search: "POST"]
 	def securityService
 
 	def index() {
@@ -16,6 +16,15 @@ class CorrelationController {
 		}
 		def correlations = AnalyticsCorrelation.userCorrelations(currentUser.id, 20, params.flavor)
 		response.status = correlations ? 200 : 500
+		render correlations as JSON
+	}
+
+	def search() {
+		def currentUser = securityService.currentUser
+		if (params.int('page') == null || params.int('page') < 1) {
+			params.page = 1
+		}
+		def correlations = AnalyticsCorrelation.search(currentUser.id, params.filter, params.order1, params.order2, params.q, params.int('page'))
 		render correlations as JSON
 	}
 

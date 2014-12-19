@@ -1,6 +1,7 @@
 (ns us.wearecurio.analytics.database
   (:require
     [us.wearecurio.analytics.constants :as const]
+    [clojure.math.numeric-tower :as nt]
     [clj-time.coerce :as tr]
     [clj-time.core :as t]
     [korma.db :as kd]
@@ -79,6 +80,12 @@
 
 ; Temporary matrix store for talking to Python.
 (kc/defentity analytics_cluster_input)
+
+(kc/defentity tag)
+(defn tag-description [id]
+  (-> (kc/select tag (kc/where {:id id}) (kc/fields :description))
+      first
+      :description))
 
 ; **********************
 ; Series CRUD operations
@@ -526,37 +533,41 @@
 ; *********************
 (defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Insert a correlation score."
+  (let [description1 (tag-description tag1-id)
+        description2 (tag-description tag2-id)]
   (:generated_key (kc/insert analytics_correlation
     (kc/values {:user_id user-id
              :series1id tag1-id
-             :series1type tag1-type
              :series2id tag2-id
+             :series1type tag1-type
              :series2type tag2-type
+             :description1 description1
+             :description2 description2
              :value score
+             :abs_value (nt/abs score)
              :overlapn overlap-n
              :value_type MIPSS_VALUE_TYPE
              :updated (sql-now)
-             :created (sql-now)})))
+             :created (sql-now)})))))
 
 (defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  "Update a correlation score."
-  (kc/update analytics_correlation
-    (kc/set-fields {:value score
-             :overlapn overlap-n
-             :updated (sql-now)
-             :created (sql-now)}))))
-
-(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  "Update a correlation score."
-  (kc/update analytics_correlation
-    (kc/set-fields {:value score
-                 :overlapn overlap-n
-                 :updated (sql-now)})
-    (kc/where {:user_id    user-id
-            :series1id   tag1-id
-            :series1type tag1-type
-            :series2id   tag2-id
-            :series2type tag2-type})))
+  ; Update the description in case the user changed it.
+  ;   This affects the search function only.
+  (let [description1 (tag-description tag1-id)
+        description2 (tag-description tag2-id)]
+    "Update a correlation score."
+    (kc/update analytics_correlation
+      (kc/set-fields {:value score
+                   :overlapn overlap-n
+                   :abs_value (nt/abs score)
+                   :description1 description1
+                   :description2 description2
+                   :updated (sql-now)})
+      (kc/where {:user_id    user-id
+              :series1id   tag1-id
+              :series1type tag1-type
+              :series2id   tag2-id
+              :series2type tag2-type}))))
 
 (defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
   "Update a correlation score."

@@ -55,8 +55,8 @@ $(function() {
 <body class="signals">
 <!-- preload circle images //-->
 <img src="/images/signals/empty_circle.png" class="nodisplay">
-<img src="/images/signals/filled_circle.png" class="nodisplay">
-<img src="/images/signals/hover_circle.png" class="nodisplay">
+<img src="/images/signals/marked_circle.png" class="nodisplay">
+<img src="/images/signals/hover_circle.png?v=3" class="nodisplay">
 
 <div class="main container-fluid" >
 
@@ -84,44 +84,84 @@ $(function() {
 	</p>
 </div>
 
+<style>
+	.signals nav {
+		margin: 0;
+	}
+</style>
+
 <!-- MAIN -->
 <div class="container-fluid" >
 	<g:if test="${flash.message}">
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<div class="red-header"></div>
+	<div class="filter-group">
+		<nav class="red-header">
+			<ul class="col-md-4 filter-area disable-select">
+				<li id="all" class="signal-or-noise filter disable-select">All</li>
+				<li id="signal" class="signal-or-noise filter disable-select">Signal</li>
+				<li id="noise" class="signal-or-noise filter disable-select">Noise</li>
+			</ul>
+			<ul class="col-md-8 search-area disable-select" >
+				<li>
+						<input id='search-input' class="search-input disable-select"	type="text" name="signal-search" placeholder="Search Signals"><input id='search-image' type="image" class="disable-select" src="/images/signals/1418886778_685082-Search-128.png" height="25" >
+				</li>
+			</ul>
+		</nav>
+
+		<nav class="row disable-select" id="sort-by-row" >
+			<ul class="disable-select">
+				<li class="label disable-select">Sort By:</li>
+				<li id="natural" class="filter disable-select signal-order active" data-order="natural">Natural</li>
+				<li id="alpha"	 class="filter disable-select signal-order"				 data-order="alpha asc">A-Z</li>
+				<li id="marked"  class="filter disable-select signal-order"				 data-order="marked asc">Marked</li>
+				<li id="score"	 class="filter disable-select signal-order"				 data-order="score asc">Score</li>
+				<!-- <li id="type"		 class="filter disable-select signal-order"				 data-order="type positive">Type</li> //-->
+			</ul>
+		</nav>
+	</div>
+
+	<hr>
 
 	<div id="correlation-container">
 
 		<script id="correlation-template" type="x-tmpl-mustache">
-			<div class="row signal-row signal-row-top" type="{{type}}" data-id="{{id}}">
-				<div class="col-md-3 signal-name">
-					<img src="/images/signals/{{type}}.png?v=3" width="150"/>
-					<p class="signal-category"> ({{label}}) </p>
+			<div class="row signal-row-container" type="{{type}}" marked="{{marked}}" data-id="{{id}}" score="{{score}}" style="display: {{display}}">
+				<div class="row signal-row signal-row-top">
+					<div class="col-md-3 signal-name">
+						<img src="/images/signals/{{type}}.png?v=5" width="150"/>
+						<p class="signal-category"> ({{label}}) </p>
+					</div>
+					<div class="col-md-9 signal-description">
+						<p>
+							<span class="signal-section-question">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
+						</p>
+						<br>
+						<p>
+							<span class="signal-section-title">SCORE:</span>
+							<span class="signal-section-details">{{score}}</span>
+						</p>
+						<p>
+							<span class="signal-section-title">X:</span>
+							<span class="signal-section-details">{{description1}}</span>
+						</p>
+						<p>
+							<span class="signal-section-title">Y:</span>
+							<span class="signal-section-details">{{description2}}</span>
+						</p>
+					</div>
 				</div>
-				<div class="col-md-9 signal-description">
-
-					<p>
-						<span class="signal-section-question">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
-					</p>
-					<br>
-					<p>
-						<span class="signal-section-title">SCORE:</span>
-						<span class="signal-section-details">{{score}}</span>
-					</p>
-				</div>
-			</div>
-			<div class="row signal-row signal-row-bottom" type="{{type}}" data-id="{{id}}">
-				<div class="col-md-3"></div>
-				<div class="col-md-9 signal-section-mark-noise-or-signal">
-					NOISE
-					<img class="bubble" signal-level="0" src="/images/signals/{{bubble_0}}_circle.png?v=2" >
-					<img class="bubble" signal-level="1" src="/images/signals/{{bubble_1}}_circle.png?v=2" >
-					<img class="bubble" signal-level="2" src="/images/signals/{{bubble_2}}_circle.png?v=2" >
-					<img class="bubble" signal-level="3" src="/images/signals/{{bubble_3}}_circle.png?v=2" >
-					<img class="bubble" signal-level="4" src="/images/signals/{{bubble_4}}_circle.png?v=2" >
-					SIGNAL
+				<div class="row signal-row signal-row-bottom">
+					<div class="col-md-3"></div>
+					<div class="col-md-9 signal-section-mark-noise-or-signal"> NOISE
+						<img class="bubble" marked="{{bubble_0}}" signal-level="0" src="/images/signals/{{bubble_0}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_1}}" signal-level="1" src="/images/signals/{{bubble_1}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_2}}" signal-level="2" src="/images/signals/{{bubble_2}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_3}}" signal-level="3" src="/images/signals/{{bubble_3}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_4}}" signal-level="4" src="/images/signals/{{bubble_4}}_circle.png?v=4" >
+						SIGNAL
+					</div>
 				</div>
 			</div>
 		</script>

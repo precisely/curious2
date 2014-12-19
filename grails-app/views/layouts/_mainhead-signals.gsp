@@ -3,6 +3,7 @@
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel= "stylesheet">
 <link type="text/css" href="/css/custom-theme/jquery-ui-1.8.18.custom.css" rel= "stylesheet">
 <script type="text/javascript" src="/js/jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/js/lodash/lodash.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery-ui-1.8.18.custom.js"></script>
 <script type="text/javascript" src="/js/jstz-1.0.4.min.js"></script>
@@ -13,6 +14,7 @@
 <script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
+
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
 <link rel="stylesheet" href="/css/main-responsive.css?ver=21"/>
