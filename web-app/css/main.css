@@ -120,13 +120,13 @@ input {
 }
 
 input:focus::-webkit-input-placeholder {
-    color: transparent !important;
+		color: transparent !important;
 }
 input:focus::-moz-placeholder {
-    color: transparent !important;
+		color: transparent !important;
 }
 input:focus::-ms-input-placeholder {
-    color: transparent !important;
+		color: transparent !important;
 }
 #discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
 #discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
@@ -1517,7 +1517,7 @@ body.track-page ol#entry0 li button.edit {
 	top: 15px;
 }
 body.track-page ol#entry0 li.entry.ghost span {
-/* 	color: #D9D9D9; */
+/*	color: #D9D9D9; */
 }
 body.track-page ol#entry0 li.entry.ghost:not(.remind) a.entryDelete {
 	display: inline;
@@ -1981,9 +1981,25 @@ body{
 }
 
 .signals .signal-row {
-	margin-top: 15px;
-	border-bottom: 3px solid #eee;
-	margin-bottom: 15px;
+}
+
+.signals .signal-row-top {
+	margin-top: 0px;
+	border-top: 6px solid #f48d5b;
+	cursor: pointer;
+	padding-bottom: 15px;
+
+}
+
+.signals .signal-row-top:hover {
+	background-color: #eee;
+}
+
+.signals .signal-row.signal-row-bottom {
+	margin-left: 20px;
+	margin-right: 20px;
+	padding-top: 15px;
+	border-top: 3px solid #eee;
 }
 
 .signals .signal-description {
@@ -1991,15 +2007,23 @@ body{
 	line-height: 0.9em;
 }
 
-.signals .signal-section-title {
+.signals .signal-category {
+	width: 150px;
+	text-align:center;
+	font-size: 14px;
+	color: #aaa;
+}
+
+.signals .signal-section-question {
 	font-weight: bold;
 }
 
-.signals h2.signal-category {
-	font-weight: bold;
-	font-size: 14px;
-	padding-left: 15px;
-	text-transform: uppercase;
+.signals .signal-section-mark-noise-or-signal {
+}
+
+.signals .signal-section-mark-noise-or-signal img{
+	width: 70px;
+	cursor: pointer;
 }
 
 .signals .x-button {
@@ -2115,8 +2139,8 @@ body{
 }
 
 .signals .row {
-	margin-left: 10px;
-	margin-right: 10px;
+	margin-left: 0px;
+	margin-right: 0px;
 }
 
 .signals .signal-name {
@@ -2329,10 +2353,6 @@ body{
 	color: #656565;
 }
 
-.pagination:empty {
-	padding: 0px;
-}
-
 .search-bar {
 	position: relative;
 	margin-right: 15px;
@@ -2342,7 +2362,7 @@ body{
 	padding: 5px;
 	font-size: 16;
 	color: #AAAAAA;
-	margin: 7px 10px 0px 10px;
+	margin: 0px 0px 0px 0px;
 	pointer-events: none;
 }
 
@@ -2362,6 +2382,7 @@ body{
 .headerLinks .dropdown{
 	text-transform: none;
 }
+
 .dropdown-menu {
 	left: -85px;
 	width: 155px;
@@ -2408,4 +2429,114 @@ body{
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: contain;
+}
+
+.signals .signal-or-noise {
+	text-align: center;
+	padding-top: 9px;
+	cursor: pointer;
+	padding: 15px;
+}
+
+.signals .signal-or-noise.active{
+	padding: 14px;
+	background-color: #ff6531;
+}
+
+.signals .red-header .search-area  li{
+	text-align: right;
+	float: right;
+	padding-right: 20px;
+}
+
+.signals .red-header .search-input {
+	color: white;
+	padding: 3px;
+	font-weight: normal;
+	text-align: center;
+	background-color: #de3723;
+	min-height: 33px;
+}
+
+.signals .red-header .search-input::-webkit-input-placeholder
+{
+	color: white;
+}
+
+.signals .red-header {
+	background-color: #fc3f28;
+	vertical-align: middle;
+	color: #ffffff;
+	text-transform: none;
+	height: 50px;
+	margin-left: 0px;
+	width: 100%;
+	border-radius: 2px;
+	padding: 0px 15px 0px 20px;
+}
+	background-color: #fc3f28;
+}
+
+.signals .red-header span {
+}
+
+.signals #sort-by-row {
+	padding: 0px 10px;
+	padding-top: 15px;
+}
+
+.signals #sort-by-row li{
+	margin-right: 30px;
+}
+
+.signals #sort-by-row li.signal-order{
+	color: #999;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.signals #sort-by-row li.signal-order.active{
+	color: #c04f7f;
+}
+
+.signals #sort-by-row li.label{
+	color: #bbb;
+}
+
+.signals nav ul li {
+	float:left;
+	display:list-item;
+	list-style: none;
+}
+
+.disable-select {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.signals #marked {
+	text-transform: capitalize;
+}
+
+.signals #search-input {
+	display:inline;
+	clear: both;
+	margin:0;
+	margin-top: 9px;
+}
+
+.signals #search-image {
+	display:inline;
+	background-color: #de3723;
+	height: 33px;
+	vertical-align: top;
+	cursor: pointer;
+	margin-top: 9px;
+}
+
+.signals .signal-row-container {
+	background-color: white;
+	margin-bottom: 20px;
 }

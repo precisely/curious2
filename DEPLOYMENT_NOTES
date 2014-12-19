@@ -1,0 +1,5 @@
+2014-12-16
+	* Make sure the default value for analytics_correlation.signal_level is -1.	There should be no NULL values in the database.
+	* analytics_correlation.description1 and analytics_correlation.description2 should be there with indexes for searching.
+	*Make sure analytics_correlation.abs_value is set:
+						update analytics_correlation set abs_value=ABS(value);

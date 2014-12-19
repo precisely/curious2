@@ -5,7 +5,7 @@ import grails.converters.JSON
 
 class CorrelationController {
 
-	static allowedMethods = [markViewed: "PATCH", markNoise: "PATCH", markSaved: "PATCH", index: "GET"]
+	static allowedMethods = [markViewed: "PATCH", markSaved: "PATCH", updateSignalLevel: "PATCH", index: "GET", search: "POST"]
 	def securityService
 
 	def index() {
@@ -19,25 +19,41 @@ class CorrelationController {
 		render correlations as JSON
 	}
 
+	def search() {
+		def currentUser = securityService.currentUser
+		if (params.int('page') == null || params.int('page') < 1) {
+			params.page = 1
+		}
+		def correlations = AnalyticsCorrelation.search(currentUser.id, params.filter, params.order1, params.order2, params.q, params.int('page'))
+		render correlations as JSON
+	}
+
+	def updateSignalLevel() {
+		def id = params.id.toLong()
+		def signalLevel = params.signalLevel.toDouble()
+		println "updateSignalLevel ${id} ${signalLevel}"
+		renderOk(isOwner(id) && AnalyticsCorrelation.updateSignalLevel(id, signalLevel))
+	}
+
 	def markViewed() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markViewed(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markViewed(id))
 	}
 
 	def markNoise() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markNoise(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markNoise(id))
 	}
 
 	def markSaved() {
 		def id = params.id.toLong()
-		renderOk isOwner(id) && AnalyticsCorrelation.markSaved(id)
+		renderOk(isOwner(id) && AnalyticsCorrelation.markSaved(id))
 	}
 
 	private isOwner(id) {
 		def obj = AnalyticsCorrelation.get(id)
 		def currentUser = securityService.currentUser
-		currentUser && obj && obj.userId == currentUser.id
+		currentUser && obj && (obj.userId == currentUser.id)
 	}
 
 	private renderNotLoggedIn() {

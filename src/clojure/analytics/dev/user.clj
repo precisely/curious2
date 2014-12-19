@@ -15,12 +15,14 @@
                  'iv    'interval
                  'tg    'tag-group })
 
-(def external-aliases { 'cs 'clojure.set
-                        'ic  'incanter.core
-                        'kc  'korma.core
-                        'ist 'incanter.stats
-                        'tc  'clj-time.core
-                        'tr  'clj-time.coerce })
+(def external-aliases { 'cs   'clojure.set
+                        'ic   'incanter.core
+                        'kc   'korma.core
+                        'ist  'incanter.stats
+                        'tc   'clj-time.core
+                        'tr   'clj-time.coerce
+                        'tf   'clj-time.format
+                        'http 'org.httpkit.client })
 
 (defn expand-ns [my-ns]
   (symbol (str base-ns "." my-ns)))
@@ -62,15 +64,29 @@
       (ct/run-tests test-ns)))))
 
 (defn res []
-  (require 'user :reload)
-  (let [namespaces (vals (merge my-aliases external-aliases))]
-    (doseq [n (map full namespaces)]
-      (require n :reload))))
+  (require 'clojure.set)
+  (require 'clj-time.core)
+  (require 'clj-time.coerce)
+  (require 'clj-time.format)
+  (require 'incanter.core)
+  (require 'incanter.stats)
+  (require 'incanter.core)
+  (require 'incanter.stats)
+
+  (require 'us.wearecurio.analytics.database :reload)
+  (require 'us.wearecurio.analytics.constants :reload)
+  (require 'us.wearecurio.analytics.idioms :reload)
+  (require 'us.wearecurio.analytics.binify :reload)
+  (require 'us.wearecurio.analytics.interval :reload)
+  (require 'us.wearecurio.analytics.rest :reload)
+  (require 'us.wearecurio.analytics.tag-group :reload))
+
 
 (defn ret []
   (require 'us.wearecurio.analytics.binify-test :reload)
   (require 'us.wearecurio.analytics.core-test :reload)
   (require 'us.wearecurio.analytics.database-test :reload)
+  (require 'us.wearecurio.analytics.interval-test :reload)
   (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 

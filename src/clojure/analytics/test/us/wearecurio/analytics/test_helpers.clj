@@ -6,7 +6,7 @@
             [clj-time.core :as t]
             [environ.core :as e]))
 
-(defn fake-sql-time [& args]
+(defn sql-time [& args]
   (-> (apply t/date-time args) c/to-sql-time))
 
 (def ENV (e/env :env))
@@ -31,29 +31,42 @@
 
 (defn create-table-correlation []
   (kc/exec-raw "CREATE TABLE IF NOT EXISTS `analytics_correlation` (
-                `id` bigint(20) NOT NULL AUTO_INCREMENT,
-                `created` datetime NOT NULL,
-                `series1id` bigint(20) NOT NULL,
-                `series1type` varchar(255) NOT NULL,
-                `series2id` bigint(20) NOT NULL,
-                `series2type` varchar(255) NOT NULL,
-                `updated` datetime NOT NULL,
-                `user_id` bigint(20) NOT NULL,
-                `noise` datetime DEFAULT NULL,
-                `saved` datetime DEFAULT NULL,
-                `viewed` datetime DEFAULT NULL,
-                `aux_json` varchar(255) DEFAULT NULL,
-                `value` double DEFAULT NULL,
-                `overlapn` double DEFAULT NULL,
-                 `value_type` varchar(255) DEFAULT NULL,
-                 PRIMARY KEY (`id`)
+                 `id` bigint(20) NOT NULL AUTO_INCREMENT,
+                 `cor_value` double DEFAULT NULL,
+                 `created` datetime NOT NULL,
+                 `mipss_value` double DEFAULT NULL,
+                 `overlapn` double DEFAULT NULL,
+                 `series1id` bigint(20) NOT NULL,
+                 `series1type` varchar(255) NOT NULL,
+                 `series2id` bigint(20) NOT NULL,
+                 `series2type` varchar(255) NOT NULL,
+                 `updated` datetime NOT NULL,
+                 `user_id` bigint(20) NOT NULL,
+                 `aux_json` varchar(255) DEFAULT NULL,
+                 `noise` datetime DEFAULT NULL,
+                 `saved` datetime DEFAULT NULL,
+                 `value` double DEFAULT NULL,
+                 `value_type` int(11) DEFAULT NULL,
+                 `viewed` datetime DEFAULT NULL,
+                 `signal_level` double DEFAULT NULL,
+                 `description1` varchar(255) DEFAULT NULL,
+                 `description2` varchar(255) DEFAULT NULL,
+                 `abs_value` double NOT NULL,
+                 PRIMARY KEY (`id`),
+                 KEY `updateIdx` (`series1id`,`series1type`,`series2id`,`series2type`,`user_id`),
+                 KEY `overlapNIdx` (`overlapn`,`user_id`),
+                 KEY `search1` (`description1`),
+                 KEY `search2` (`description2`),
+                 KEY `absValueIdx` (`abs_value`),
+                 KEY `valueIdx` (`value`),
+                 KEY `signalLevelIdx` (`signal_level`)
                )"))
 
 (defn erase-tables []
   ;(erase-table "tag_group_tag")
   ;(delete-in-reverse "tag_group")
   ;(erase-table "tag_group")
-  ;(erase-table "tag")
+  (erase-table "tag")
   (erase-table "analytics_time_series")
   (erase-table "analytics_cluster_run")
   (erase-table "analytics_tag_cluster")
@@ -65,6 +78,7 @@
 (defn create-table-analytics-time-series []
   (kc/exec-raw "CREATE TABLE IF NOT EXISTS `analytics_time_series` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `data_type` varchar(255) DEFAULT NULL,
     `amount` decimal(19,9) DEFAULT NULL,
     `date` datetime DEFAULT NULL,
     `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -130,6 +144,14 @@
   KEY `stop_date_index` (`stop_date`),
   KEY `tag_cluster_id_index` (`analytics_tag_cluster_id`))"))
 
+(defn create-table-tag []
+  (kc/exec-raw "CREATE TABLE IF NOT EXISTS `tag` (
+                 `id` bigint(20) NOT NULL AUTO_INCREMENT,
+                 `description` varchar(100) NOT NULL,
+                 PRIMARY KEY (`id`),
+                 KEY `description_idx` (`description`)
+               )"))
+
 (defn create-table-entry []
   (kc/exec-raw "CREATE TABLE IF NOT EXISTS `entry` (
            `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -173,6 +195,7 @@
       (create-table-analytics-time-series)
       (create-table-correlation)
       (create-table-cluster-run)
+      (create-table-tag)
       (create-table-tag-cluster)
       (create-table-tag-cluster-tag)
       (create-table-entry))

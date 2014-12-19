@@ -53,6 +53,10 @@ $(function() {
 </head>
 
 <body class="signals">
+<!-- preload circle images //-->
+<img src="/images/signals/empty_circle.png" class="nodisplay">
+<img src="/images/signals/marked_circle.png" class="nodisplay">
+<img src="/images/signals/hover_circle.png?v=3" class="nodisplay">
 
 <div class="main container-fluid" >
 
@@ -80,71 +84,84 @@ $(function() {
 	</p>
 </div>
 
+<style>
+	.signals nav {
+		margin: 0;
+	}
+</style>
+
 <!-- MAIN -->
 <div class="container-fluid" >
 	<g:if test="${flash.message}">
 		<div class="communityMessage">${flash.message.encodeAsHTML()}</div>
 	</g:if>
 
-	<div class="row">
-		<div class="col-md-2 signal-name">
-			<span class="saved-action">Saved</span>
-			<!-- Preload the toggle image //-->
-			<img src="/images/signals/arrow-right-sm.png" class="nodisplay">
-			<img src="/images/signals/arrow-down-sm.png" class="toggle-saved toggle-arrow">
-		</div>
+	<div class="filter-group">
+		<nav class="red-header">
+			<ul class="col-md-4 filter-area disable-select">
+				<li id="all" class="signal-or-noise filter disable-select">All</li>
+				<li id="signal" class="signal-or-noise filter disable-select">Signal</li>
+				<li id="noise" class="signal-or-noise filter disable-select">Noise</li>
+			</ul>
+			<ul class="col-md-8 search-area disable-select" >
+				<li>
+						<input id='search-input' class="search-input disable-select"	type="text" name="signal-search" placeholder="Search Signals"><input id='search-image' type="image" class="disable-select" src="/images/signals/1418886778_685082-Search-128.png" height="25" >
+				</li>
+			</ul>
+		</nav>
+
+		<nav class="row disable-select" id="sort-by-row" >
+			<ul class="disable-select">
+				<li class="label disable-select">Sort By:</li>
+				<li id="natural" class="filter disable-select signal-order active" data-order="natural">Natural</li>
+				<li id="alpha"	 class="filter disable-select signal-order"				 data-order="alpha asc">A-Z</li>
+				<li id="marked"  class="filter disable-select signal-order"				 data-order="marked asc">Marked</li>
+				<li id="score"	 class="filter disable-select signal-order"				 data-order="score asc">Score</li>
+				<!-- <li id="type"		 class="filter disable-select signal-order"				 data-order="type positive">Type</li> //-->
+			</ul>
+		</nav>
 	</div>
-	<table class="row saved-carousel-layout">
-		<tr>
-			<td width='30' > <div class="arrow arrow-left"></div>  </td>
-			<td class='nav-carousel-container'>
-				<div id="secret-container">
 
-					<script id="saved-item-template" type="x-tmpl-mustache">
-						<div class="nav-box" data-id="{{id}}">
-							<img class="nav-box-icon {{type}}-icon" src="/images/signals/{{type}}.png"/>
-							<div class="carousel-caption">
-								<span class="carousel-item-title">{{type}}:</span>
-								<span class="carousel-item-body">
-									Score: {{score}}<br>
-									<a href="/home/graph/signals/{{description1}}/{{description2}}">{{description1}} X {{description2}}</a>
-								<span>
-							</div>
-						</div>
-					</script>
-
-				</div> <!--- secret-container //-->
-
-			</td>
-			<td width='30' > <div class="arrow arrow-right"></div> </td>
-		</tr>
-	</table>
-
-	<div class="red-header"></div>
+	<hr>
 
 	<div id="correlation-container">
 
 		<script id="correlation-template" type="x-tmpl-mustache">
-			<div class="row signal-row" type="triggered" data-id="{{id}}">
-				<div class="col-md-2 signal-name">
-					<img src="/images/signals/{{type}}.png" />
-					<h2 class="signal-category"> Event<br>{{type}} </h2>
+			<div class="row signal-row-container" type="{{type}}" marked="{{marked}}" data-id="{{id}}" score="{{score}}" style="display: {{display}}">
+				<div class="row signal-row signal-row-top">
+					<div class="col-md-3 signal-name">
+						<img src="/images/signals/{{type}}.png?v=5" width="150"/>
+						<p class="signal-category"> ({{label}}) </p>
+					</div>
+					<div class="col-md-9 signal-description">
+						<p>
+							<span class="signal-section-question">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
+						</p>
+						<br>
+						<p>
+							<span class="signal-section-title">SCORE:</span>
+							<span class="signal-section-details">{{score}}</span>
+						</p>
+						<p>
+							<span class="signal-section-title">X:</span>
+							<span class="signal-section-details">{{description1}}</span>
+						</p>
+						<p>
+							<span class="signal-section-title">Y:</span>
+							<span class="signal-section-details">{{description2}}</span>
+						</p>
+					</div>
 				</div>
-				<div class="col-md-8 signal-description">
-
-					<p>
-						<span class="signal-section-title">TAGS:</span>
-						<span class="signal-section-details">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
-					</p>
-					<p>
-						<span class="signal-section-title">SCORE:</span>
-						<span class="signal-section-details">{{score}}</span>
-					</p>
-				</div>
-				<div class="col-md-2 signal-action">
-					<div class="signal-action-button" action-name="View signal graph" data-action="graph">View Graph</div>
-					<div class="signal-action-button" action-name="Mark as noise" data-action="noise">Mark as Noise</div>
-					<div class="signal-action-button" action-name="Save signal" data-action="save" >Save</div>
+				<div class="row signal-row signal-row-bottom">
+					<div class="col-md-3"></div>
+					<div class="col-md-9 signal-section-mark-noise-or-signal"> NOISE
+						<img class="bubble" marked="{{bubble_0}}" signal-level="0" src="/images/signals/{{bubble_0}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_1}}" signal-level="1" src="/images/signals/{{bubble_1}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_2}}" signal-level="2" src="/images/signals/{{bubble_2}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_3}}" signal-level="3" src="/images/signals/{{bubble_3}}_circle.png?v=4" >
+						<img class="bubble" marked="{{bubble_4}}" signal-level="4" src="/images/signals/{{bubble_4}}_circle.png?v=4" >
+						SIGNAL
+					</div>
 				</div>
 			</div>
 		</script>

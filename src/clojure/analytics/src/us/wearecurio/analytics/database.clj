@@ -1,6 +1,7 @@
 (ns us.wearecurio.analytics.database
   (:require
     [us.wearecurio.analytics.constants :as const]
+    [clojure.math.numeric-tower :as nt]
     [clj-time.coerce :as tr]
     [clj-time.core :as t]
     [korma.db :as kd]
@@ -80,6 +81,12 @@
 ; Temporary matrix store for talking to Python.
 (kc/defentity analytics_cluster_input)
 
+(kc/defentity tag)
+(defn tag-description [id]
+  (-> (kc/select tag (kc/where {:id id}) (kc/fields :description))
+      first
+      :description))
+
 ; **********************
 ; Series CRUD operations
 ; **********************
@@ -124,14 +131,19 @@
   "Count the number of elements in the series."
   (model-count (apply series-list* args)))
 
-(defn series-create [user-id tag-id amount date description]
+(defn series-create
   "Insert one element into the time series.  Specific to one user and one tag.  For testing purposes mainly."
-  (:generated_key (kc/insert analytics_time_series
-    (kc/values {:user_id user-id
-              :tag_id tag-id
-              :amount amount
-              :date (tr/to-sql-time date)
-              :description description}))))
+  ([user-id tag-id amount date description]
+   (series-create user-id tag-id amount (tr/to-sql-time date) description "CONTINUOUS"))
+  ([user-id tag-id amount date description data-type]
+   (let [the-type (if (= data-type "EVENT") "EVENT" "CONTINUOUS")]
+    (:generated_key (kc/insert analytics_time_series
+      (kc/values {:user_id user-id
+                :tag_id tag-id
+                :data_type the-type
+                :amount amount
+                :date (tr/to-sql-time date)
+                :description description}))))))
 
 (defn series-delete [user-id tag-id]
   "Delete all elements of the time series.  Specific to one user and one tag.  For testing purposes mainly."
@@ -217,12 +229,19 @@
         (kc/where {:id tag-cluster-id}))))
 
 ; List all cluster runs (from a user).
-(defn cluster-run-list
+(defn cluster-run-list*
   ([]
-    (kc/select analytics_cluster_run))
+    (kc/select* analytics_cluster_run))
   ([user-id]
-    (kc/select analytics_cluster_run
-      (kc/where {:user_id user-id}))))
+    (kc/where (cluster-run-list*)
+       {:user_id user-id})))
+
+(defn cluster-run-list [& args]
+  (kc/select (apply cluster-run-list* args)))
+
+(defn cluster-run-count [& args]
+  "Count the number of elements in the series."
+  (model-count (apply cluster-run-list* args)))
 
 (defn cluster-run-list-ids [& args]
   (map :id (apply cluster-run-list args)))
@@ -314,11 +333,10 @@
 (declare tag-cluster-list-ids-by-cluster-run-id)
 (defn pairs-with-overlap-in-cluster [user-id]
   (set
-    (->> (cluster-run-list-ids user-id)               ; cluster-run-ids from user-id
-         (map tag-cluster-list-ids-by-cluster-run-id) ; tag-cluster-ids
-         (map tag-clusters-flattened-tag-ids)         ; tag-ids per cluster-run
-         (map make-tag-id-pairs)                      ; cross-product of tag-id pairs
-         (mapcat identity))))                            ; flatten by 1 level only, to get a list of pairs.
+    (->> (cluster-run-latest-id user-id)               ; cluster-run-ids from user-id
+         (tag-cluster-list-ids-by-cluster-run-id) ; tag-cluster-ids
+         (tag-clusters-flattened-tag-ids)         ; tag-ids per cluster-run
+         (make-tag-id-pairs))))                      ; cross-product of tag-id pairs
 
 (declare tag-cluster-list)
 (defn tag-ids-in-clusters-for-user [user-id]
@@ -515,37 +533,41 @@
 ; *********************
 (defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
   "Insert a correlation score."
+  (let [description1 (tag-description tag1-id)
+        description2 (tag-description tag2-id)]
   (:generated_key (kc/insert analytics_correlation
     (kc/values {:user_id user-id
              :series1id tag1-id
-             :series1type tag1-type
              :series2id tag2-id
+             :series1type tag1-type
              :series2type tag2-type
+             :description1 description1
+             :description2 description2
              :value score
+             :abs_value (nt/abs score)
              :overlapn overlap-n
              :value_type MIPSS_VALUE_TYPE
              :updated (sql-now)
-             :created (sql-now)})))
+             :created (sql-now)})))))
 
 (defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  "Update a correlation score."
-  (kc/update analytics_correlation
-    (kc/set-fields {:value score
-             :overlapn overlap-n
-             :updated (sql-now)
-             :created (sql-now)}))))
-
-(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  "Update a correlation score."
-  (kc/update analytics_correlation
-    (kc/set-fields {:value score
-                 :overlapn overlap-n
-                 :updated (sql-now)})
-    (kc/where {:user_id    user-id
-            :series1id   tag1-id
-            :series1type tag1-type
-            :series2id   tag2-id
-            :series2type tag2-type})))
+  ; Update the description in case the user changed it.
+  ;   This affects the search function only.
+  (let [description1 (tag-description tag1-id)
+        description2 (tag-description tag2-id)]
+    "Update a correlation score."
+    (kc/update analytics_correlation
+      (kc/set-fields {:value score
+                   :overlapn overlap-n
+                   :abs_value (nt/abs score)
+                   :description1 description1
+                   :description2 description2
+                   :updated (sql-now)})
+      (kc/where {:user_id    user-id
+              :series1id   tag1-id
+              :series1type tag1-type
+              :series2id   tag2-id
+              :series2type tag2-type}))))
 
 (defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
   "Update a correlation score."
