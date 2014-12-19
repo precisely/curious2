@@ -33,27 +33,11 @@ import us.wearecurio.utility.Utils
 
 class DataController extends LoginController {
 
-	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
 	def tokenService
-
-	DateFormat dateFormat
-	Date earlyBaseDate
-	Date currentTime
-	Date endTime
-	Date repeatTime
-	Date noRepeatTime
-	TimeZone timeZone // simulated server time zone
-	Date baseDate
-	User user
-	Long userId
 
 	static debug(str) {
 		log.debug(str)
 	}
-
-	static final String AUTH_ERROR_MESSAGE = 'You have logged into a different account in another window. Please refresh the browser window.'
-	static final String SYNTAX_ERROR_MESSAGE = 'Internal error in application. Please update your application or contact Curious.'
 
 	def DataController() {
 		debug "constructor()"

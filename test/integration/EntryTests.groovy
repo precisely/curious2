@@ -223,6 +223,16 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		// test a and p as time modifiers
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood 7 4p", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// test a and p as time modifiers
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood 7 4a", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T11:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood seven 4pm", baseDate, true), new EntryStats())
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")

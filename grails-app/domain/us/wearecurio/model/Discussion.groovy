@@ -70,7 +70,11 @@ class Discussion {
 		discussion.delete()
 	}
 	
-	public static boolean update(Discussion discussion, def params, User user) {
+	static boolean search(Long userId, String searchString) {
+		
+	}
+	
+	static boolean update(Discussion discussion, def params, User user) {
 		synchronized(Discussion) {
 			log.debug "Trying to update Discussion " + discussion.getName() + " with " + params
 			
@@ -109,6 +113,8 @@ class Discussion {
 			return true
 		}
 	}
+	
+	
 	
 	public Discussion() {
 	}

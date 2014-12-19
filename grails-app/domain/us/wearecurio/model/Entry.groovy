@@ -2325,7 +2325,7 @@ class Entry implements Comparable {
 	 *
 	 */
 
-	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm)\b\s*/
+	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
 	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)($|\s*)/
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
 	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
@@ -2552,8 +2552,8 @@ class Entry implements Comparable {
 		retVal['timeZoneName'] = timeZoneName
 		retVal['today'] = today
 
-		def matcher;
-		def parts;
+		def matcher
+		def parts
 
 		// [time] [tag] <[amount] <[units]>>... <repeat|remind|button> (<[comment]>)
 		//
@@ -2590,10 +2590,11 @@ class Entry implements Comparable {
 			hours = parseInt(scanner.group(14) ?: (scanner.group(9) ?: (scanner.group(3) ?: '0')))
 			if (hours == 12) hours = 0
 			minutes = parseInt(scanner.group(11) ?: (scanner.group(6) ?: '0'))
-			if (scanner.group(8).equals('p') || scanner.group(13).equals('p') || scanner.group(18).equals('pm')) {
+			def g18 = scanner.group(18)
+			if (scanner.group(8).equals('p') || scanner.group(13).equals('p') || scanner.group(18).equals('p') || scanner.group(18).equals('pm')) {
 				foundAMPM = true
 				hours += 12
-			} else if (scanner.group(8).equals('a') || scanner.group(13).equals('a') || scanner.group(18).equals('am')) {
+			} else if (scanner.group(8).equals('a') || scanner.group(13).equals('a') || scanner.group(18).equals('a') || scanner.group(18).equals('am')) {
 				foundAMPM = true
 			}
 		})

@@ -1,5 +1,7 @@
 package us.wearecurio.controller
 
+import java.text.SimpleDateFormat;
+
 import grails.util.GrailsNameUtils
 
 import org.apache.commons.logging.LogFactory
@@ -10,18 +12,24 @@ import us.wearecurio.services.UrlService
 
 class SessionController {
 	
+	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
 	def securityService
 	UrlService urlService
 	def name
 
 	private static def log = LogFactory.getLog(this)
 	
+	static final String AUTH_ERROR_MESSAGE = 'You have logged into a different account in another window. Please refresh the browser window.'
+	static final String SYNTAX_ERROR_MESSAGE = 'Internal error in application. Please update your application or contact Curious.'
+
 	static debug(str) {
 		log.debug(str)
 	}
 	
 	def SessionController() {
 		debug "SessionController()"
+		systemFormat.setTimeZone(TimeZone.getDefault())
 		name = GrailsNameUtils.getLogicalName(getClass(), "Controller").toLowerCase()
 	}
 	

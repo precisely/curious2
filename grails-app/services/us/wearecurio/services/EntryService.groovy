@@ -27,14 +27,18 @@ class EntryService {
 	}
 
 	def userStartTime(userId) {
-		def all_times = Entry.findAllWhere(userId: userId.toLong()).collect { it.date }
-		all_times.removeAll([null])
-		all_times.min()
+		def results = Entry.executeQuery("select min(e.date) from Entry e")
+		if (results && results[0])
+			return results[0]
+		
+		return new Date(0L)
 	}
 
 	def userStopTime(userId) {
-		def all_times = Entry.findAllWhere(userId: userId.toLong()).collect { it.date }
-		all_times.removeAll([null])
-		all_times.max()
+		def results = Entry.executeQuery("select max(e.date) from Entry e")
+		if (results && results[0])
+			return results[0]
+		
+		return new Date(0L)
 	}
 }

@@ -1,5 +1,7 @@
 package us.wearecurio.controller
 
+import java.text.SimpleDateFormat;
+
 import grails.converters.JSON
 import grails.util.Environment
 import us.wearecurio.model.PasswordRecovery
