@@ -7,6 +7,7 @@ import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
 
+
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -246,7 +247,7 @@ environments {
 		
 		pushNotification {
 			apns {
-				pathToCertificate = "./ios-cert/iphone_prod.p12"
+				pathToCertificate = "${userHome}/ios-cert/iphone_prod.p12"
 				password = "causecode.11"
 				environment = "production"
 			}
@@ -305,7 +306,7 @@ environments {
 		
 		pushNotification {
 			apns {
-				pathToCertificate = "./ios-cert/iphone_prod.p12"
+				pathToCertificate = "${userHome}/ios-cert/iphone_prod.p12"
 				password = "causecode.11"
 				environment = "production"
 			}
