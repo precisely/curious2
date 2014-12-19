@@ -37,7 +37,7 @@ class AnalyticsTaskController {
 		def id = params.id.toLong()
 		def prevTask = AnalyticsTask.get(id)
 		// This means the previous task was completed.
-		prevTask.status = AnalyticsTask.IDLE_COMPLETED
+		prevTask.status = AnalyticsTask.COMPLETED
 		Utils.save(prevTask)
 
 		// Update the userId of the parent task, so that we can get a glimps of overall progress.

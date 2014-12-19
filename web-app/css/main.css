@@ -1984,19 +1984,22 @@ body{
 }
 
 .signals .signal-row-top {
-	margin-top: 15px;
+	margin-top: 0px;
 	border-top: 6px solid #f48d5b;
-	margin-bottom: 15px;
-	border-bottom: 3px solid #eee;
 	cursor: pointer;
+	padding-bottom: 15px;
+
 }
 
 .signals .signal-row-top:hover {
-	background-color: #fff;
+	background-color: #eee;
 }
 
 .signals .signal-row.signal-row-bottom {
-	margin-bottom: 15px;
+	margin-left: 20px;
+	margin-right: 20px;
+	padding-top: 15px;
+	border-top: 3px solid #eee;
 }
 
 .signals .signal-description {
@@ -2136,8 +2139,8 @@ body{
 }
 
 .signals .row {
-	margin-left: 10px;
-	margin-right: 10px;
+	margin-left: 0px;
+	margin-right: 0px;
 }
 
 .signals .signal-name {
@@ -2533,3 +2536,7 @@ body{
 	margin-top: 9px;
 }
 
+.signals .signal-row-container {
+	background-color: white;
+	margin-bottom: 20px;
+}

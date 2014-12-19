@@ -140,7 +140,8 @@
                                                        :silent true}})
   
           (test-when (= re/IDLE (re/get-status))
-                     (is (= re/REQUEST-NEXT (re/get-sub-status))))
+                     (or (is (= re/COMPLETED-ALL (re/get-sub-status))
+                             (= re/COMPLETED-ALL (re/get-sub-status)))))
 
           (test-when (= re/IDLE (re/get-status))
                      (is (= nil (re/get-error)))))

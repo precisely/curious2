@@ -50,6 +50,8 @@ class AnalyticsCorrelation {
 		auxJson nullable: true
 		overlapN nullable: true
 		signalLevel nullable:true
+		description1 nullable: true
+		description2 nullable: true
 
 		saved nullable: true
 		noise nullable: true
