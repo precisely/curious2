@@ -25,7 +25,7 @@ function searchFeeds(params) {
 	var searchString = $('#searchFeed').val();
 	console.log('search feeds:', searchString);
 	$.ajax ({
-		url: '/feed/getSearchResults',
+		url: '/dummy/getSearchResults',
 		data: {
 			userId: params.userId,
 			searchString: searchString,
@@ -94,7 +94,7 @@ $(function() {
 				placeholder="Add Comment..."> <input type="hidden"
 				name="discussionId" value="${discussionId}">
 		</div>
-		<g:render template="/layouts/createSprintModal" /> 
+		<g:render template="/sprint/createSprintModal" /> 
 	</content>
 </body>
 </html>

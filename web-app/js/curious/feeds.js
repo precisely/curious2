@@ -7,6 +7,24 @@ $(document).ready(function() {
 	App.discussion.lockInfiniteScroll = false;
 	App.discussion.offset = 5;
 
+	$('#discussion-topic').keypress(function (e) {
+		var key = e.which;
+		if(key == 13)  // the enter key code
+		{
+			$('input[name = discussionPost]').removeClass('hide');
+			return false;  
+		}
+	});
+	
+	$('#discussion-discription').keypress(function (e) {
+		var key = e.which;
+		if(key == 13)  // the enter key code
+		{
+			$('#create-discussion').submit();
+			return false;  
+		}
+	});
+	
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -45,7 +63,7 @@ $(document).ready(function() {
 	});
 
 	$('.main').scroll(function() {
-		if ($("#getMoreDiscussions").length == 0)
+		if (($("#getMoreDiscussions").length == 0) || ($(".feed-item").length == 0))
 			return false;
 
 		var $element = $('#getMoreDiscussions');
@@ -59,7 +77,7 @@ $(document).ready(function() {
 			setTimeout(function() {
 				var requestUrl = '/home/feed';
 				if ($('#myThreads a').hasClass('active')) {
-					requestUrl = '/feed/getMyThreads';
+					requestUrl = '/dummy/getMyThreads';
 				}
 				$.ajax ({
 					type: 'POST',
@@ -72,6 +90,7 @@ $(document).ready(function() {
 							}, 5000);
 						} else {
 							$('#discussions').append(data);
+							showCommentAgeFromDate();
 						}
 						App.discussion.offset = App.discussion.offset + 5;
 					}
@@ -94,7 +113,7 @@ $(document).on("click", ".left-menu ul li a", function() {
 function getMyThreads(params) {
 	$.ajax ({
 		type: 'POST',
-		url: '/feed/getMyThreads',
+		url: '/dummy/getMyThreads',
 		success: function(data) {
 			if (data) {
 				$('.new-post').remove();
@@ -113,7 +132,7 @@ function getMyThreads(params) {
 function getSprintsForUser(params) {
 	if ($('#sprints ul').length == 0) {
 		$.ajax ({
-			url: '/feed/getSprintsForUser',
+			url: '/dummy/getSprintsForUser',
 			data: {
 				userId: params.userId,
 				max: 5,
@@ -124,7 +143,7 @@ function getSprintsForUser(params) {
 					console.log('data: ', JSON.parse(data));
 					$('#sprints').append('<ul>');
 					jQuery.each(JSON.parse(data).terms, function() {
-						$('#sprints ul').append('<li><a href="/feed/sprint?id=1">' + this + '</a></li>');
+						$('#sprints ul').append('<li><a href="/dummy/sprint?id=1">' + this + '</a></li>');
 					});
 					$('#sprints').append('</ul>');
 				} else {
@@ -143,7 +162,7 @@ function getSprintsForUser(params) {
 function getRecentSearches(params) {
 	if ($('#recentSearches ul').length == 0) {
 		$.ajax ({
-			url: '/feed/getRecentSearches',
+			url: '/dummy/getRecentSearches',
 			data: {
 				userId: params.userId,
 				max: 5,

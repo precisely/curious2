@@ -643,7 +643,7 @@ class HomeController extends DataController {
 				UserGroup.getDiscussionsInfoForUser(user, true, params)
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-
+		
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
@@ -727,10 +727,6 @@ class HomeController extends DataController {
 		
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
 		
-		if (!discussionId && params.discussionId) {
-			discussionId = params.discussionId.toLong()
-		}
-
 		if (plotIdMessage == null && plotDataId==null && discussionId==null && params.createTopic == null) {
 			flash.message = "Blank discussion call"
 			redirect(url:toUrl(action:'index'))

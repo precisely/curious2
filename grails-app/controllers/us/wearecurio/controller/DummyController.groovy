@@ -4,7 +4,7 @@ import grails.converters.JSON
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.UserGroup
 
-class FeedController extends DataController {
+class DummyController extends DataController {
 
 	//static responseFormats = ['xml', 'json']
 	def index() { }
@@ -53,6 +53,8 @@ class FeedController extends DataController {
 	 * @param id Id of Sprint
 	 * @param userId Id of {@link us.wearecurio.model.User User}
 	 * @return
+	 * We need to send tagList so that it is available to create sprint modal.
+	 * 
 	 */
 	def sprint(Long id, Long userId) {
 		Map sprint = [
@@ -64,6 +66,9 @@ class FeedController extends DataController {
 			"Body alignment is of key importance in producing the optimal amount of force. Ideally the athlete should begin in a" + 
 			"4-point stance and push off using both legs for maximum force production",
 			tags: ["Tag1","Tag2", "Tag3"],
+			tagList: [[id:1, description: "run miles", repeatType: "pinned"], [id:2, description: "max heart rate", repeatType: "remind"]
+				, [id:3, description: "Repeat Me", repeatType: "repeat"], [id:4, description: "track coffee", repeatType: "pinned"]
+				, [id:5, description: "Take pills", repeatType: "remind"]],
 			participants: [[id: 1, name: "Johan"], [id: 2, name: "Ron"], [id: 3, name: "Rambo"], [id: 4, name: "Don"]],
 			totalParticipants: 5,
 			userId: 1
