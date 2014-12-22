@@ -2,47 +2,40 @@
 	<div class="feed-item">
 		<div class="discussion">
 			<div class="discussion-topic">
-			<div class="contents">
-				<div class="row">
-					<div class="col-xs-9 discussion-header">
-						<a href="#">
-							<img class="avatar" src="/images/avatar.png" alt="avatar">
-							<span class="user-name"> ${discussionData.userName}</span>
-						</a>
+				<div class="contents">
+					<div class="row">
+						<div class="col-xs-9 discussion-header">
+							<a href="#">
+								<img class="avatar" src="/images/avatar.png" alt="avatar">
+								<span class="user-name"> ${discussionData.userName}</span>
+							</a>
+						</div>
+						<div class="col-xs-3 discussion-topic-span discussion-header">
+							<span class="posting-time" data-time="${discussionData.created.time}"></span>
+							<g:if test="${discussionData.isAdmin }">
+								<li class="dropdown">
+									<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
+									<ul class="dropdown-menu" role="menu">
+										<li>
+											<a href="#" class="delete-discussion" data-discussion-id="${discussionData.id }"> 
+												<img src="/images/x.png" width="auto" height="23">Delete
+											</a>
+										</li>
+									</ul>
+								</li>
+							</g:if>
+						</div>
 					</div>
-					<div class="col-xs-3 discussion-topic-span discussion-header">
-						<span class="posting-time" data-time="${discussionData.created}"></span>
-						<g:if test="${discussionData.isAdmin }">
-							<li class="dropdown">
-								<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
-								<ul class="dropdown-menu" role="menu">
-									<li>
-										<a href="#" class="delete-discussion" data-discussion-id="${discussionData.id } "> 
-											<img src="/images/x.png" width="auto" height="23">Delete
-										</a>
-									</li>
-								</ul>
-							</li>
-						</g:if>
+					<div class="group"> 
+						${discussionData.groupName }
 					</div>
-						
-				</div>
-				<div class="row top-left-margin">
-					<span class="group"> ${discussionData.groupName }
-					</span>
-				</div>
-				<div class="row title">
 					<a href="/home/discuss?discussionId=${discussionData.id }"> 
 						<span> ${discussionData.name ?: '(No Title)' }</span>
 					</a>
-				</div>
-				<div class="row">
-<%--				<g:if test="${discussionPostData["${discussionData.id}"][0]?.id == discussionData.firstPostId }">--%>
 					<p>${discussionData.firstPost?.message }</p>
-<%--				</g:if>--%>
 				</div>
-				</div>
-				<div class="row buttons">
+				<hr>
+				<div class="buttons">
 					<g:if test="${discussionData.isAdmin }">
 					<button onclick="showShareDialog(${discussionData.id })">
 						<img src="/images/share.png" alt="share">
@@ -54,22 +47,20 @@
 				</div>
 			</div>
 			<div class="discussion-comment">
-				<div class="row bottom-margin">
+				<div class="bottom-margin">
 					<a href="/home/discuss?discussionId=${discussionData.id }"> <span class="view-comment">VIEW ALL
 							COMMENTS (${discussionPostData[discussionData.id]?.totalPosts?:0})</span>
 					</a>
 				</div>
 				<g:if test="${discussionPostData[discussionData.id]?.secondPost}">
-					<div class="row">
+					<div>
 						<a href="#"><img class="avatar" src="/images/avatar2.png"
 							alt="..."><span class="user-name"> ${discussionData.userName}</span></a>
-						<span class="posting-time" data-time="${discussionData.updated}"></span>
+						<span class="posting-time" data-time="${discussionData.updated.time}"></span>
 					</div>
-					<div class="row">
-						<p>
-							${discussionPostData[discussionData.id]?.secondPost }
-						</p>
-					</div>
+					<p>
+						${discussionPostData[discussionData.id]?.secondPost }
+					</p>
 				</g:if>
 				<div class="row">
 					<div class="col-md-6 add-comment">

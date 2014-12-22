@@ -187,7 +187,7 @@ a,a:link,a:hover,a:visited {
 	padding: 0px 4px;
 }
 .main {
-	border:1px solid #cccccc;
+	border:1px solid #c6c6c6;
 	background-color: #f6f6f6;
 	padding: 15px;
 }
@@ -1497,7 +1497,7 @@ body.discuss-page .red-header {
 	color: #787878;
 }
 
-input[type=radio]:checked + label { 
+.input-affordance input[type=radio]:checked + label { 
 	color:#FC3F28;
 }
 
@@ -1570,8 +1570,6 @@ input[type=radio]:checked + label {
 }
 
 .input-affordance hr {
-	height: 2px;
-	margin: 0px;
 	color: #d8d8d8;
 	margin: 0px 10px;
 }
@@ -1667,9 +1665,35 @@ body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 	display: inline-block;
 	vertical-align: middle;
 }
+.repeatDarkLabelImage {
+	background: url(/images/repeat-sm-dark.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	background-size: contain;
+	display: inline-block;
+	vertical-align: middle;
+}
 
 .remindLabelImage {
 	background: url(/images/remind-sm-light.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	vertical-align: middle;
+	background-size: contain;
+	display: inline-block;
+}
+
+.remindDarkLabelImage {
+	background: url(/images/remind-sm-dark.png) no-repeat center left;
+	height: 15px;
+	width: 15px;
+	vertical-align: middle;
+	background-size: contain;
+	display: inline-block;
+}
+
+.pinnedDarkLabelImage {
+	background: url(/images/pinned-sm-dark.png) no-repeat center left;
 	height: 15px;
 	width: 15px;
 	vertical-align: middle;
@@ -1918,12 +1942,11 @@ div.graph-header-container .red-header {
 .feed .left-menu {
 	float: left;
 	background-color: #ebebeb;
-	border-color: #c6c6c6;
 	padding-left: 23px;
 	padding-top: 32px;
 	width: 179px;
 	height: 726px;
-	border: 1px solid;
+	border: 1px solid #c6c6c6;
 	border-right-width: 0px;
 }
 
@@ -1950,7 +1973,7 @@ div.graph-header-container .red-header {
 }
 
 .feed .left-menu li ul li {
-	margin-bottom: 6px;
+	margin-bottom: 0px;
 }
 
 .feed .left-menu li ul li a {
@@ -1960,57 +1983,94 @@ div.graph-header-container .red-header {
 	font-size: 12px;
 }
 
-.feed .modal-dialog {
-	margin-top: 200px;
-}
-
 .feed .modal-body label {
 	display: block;
 	font-weight: normal;
-	font-size: 12px;
+	font-size: 14px;
 	color: #919191;
-	margin-bottom: 24px;
+	margin-bottom: 15px;
 }
 
 .feed .modal-body textarea {
 	resize: none;
 	border-radius: 2px;
 	padding: 10px;
-	font-size: 11px;
+	font-size: 13px;
 	font-style: italic;
-	border: 1px #c04f7f solid;
+	border: 1px #919191 solid;
 	color: #c04f7f;
-	margin-left: 10px;
 	margin-bottom: 30px;
 }
 
 .feed .modal-body input {
 	border-radius: 2px;
 	padding: 10px;
-	font-size: 11px;
+	font-size: 13px;
 	font-style: italic;
-	border: 1px #c04f7f solid;
+	border: 1px #919191 solid;
 	color: #c04f7f;
-	margin-left: 10px;
+	width: 210px;
 	margin-bottom: 30px;
 }
 
+.feed .modal-body #sprint-tags{
+	text-align: center;
+	width: 160px !important;
+}
+
+.feed .modal-body #sprint-participants {
+	text-align: center;
+}
+
+.feed .modal-body #sprint-admins {
+	text-align: center;
+}
+
 #sprint-details::-webkit-input-placeholder {color: #c04f7f;}
-#sprint-details::-moz-placeholder {color: #c04f7f;} /* firefox 19+ */
-#sprint-details:-ms-input-placeholder {color: #c04f7f;} /* ie */
+#sprint-details::-moz-placeholder {color: #c04f7f;}
+#sprint-details:-ms-input-placeholder {color: #c04f7f;}
 
-#sprint-tags::-webkit-input-placeholder {color: #c04f7f;}
-#sprint-tags::-moz-placeholder {color: #c04f7f;} /* firefox 19+ */
-#sprint-tags:-ms-input-placeholder {color: #c04f7f;} /* ie */
-
-#sprint-participants::-webkit-input-placeholder {color: #c04f7f;}
-#sprint-participants::-moz-placeholder {color: #c04f7f;}
-#sprint-participants:-ms-input-placeholder {color: #c04f7f;}
+.modal-body input::-webkit-input-placeholder {color: #c04f7f;}
+.modal-body input::-moz-placeholder {color: #c04f7f;}
+.modal-body input:-ms-input-placeholder {color: #c04f7f;}
 
 #addTags::-webkit-input-placeholder {color: #adadad;}
 #addTags-details::-moz-placeholder {color: #adadad;} /* firefox 19+ */
 #addTags-details:-ms-input-placeholder {color: #adadad;} /* ie */
 
+.modal-dialog input[type="radio"] {
+	display: none;
+	height: 25px;
+	width: 25px;
+	border-radius: 13px;
+}
+
+.modal-dialog .radio-label {
+	display: inline-block !important;
+	color: #c04f7f !important;
+	margin-right: 50px;
+	margin-left: 15px;
+	font-style: italic;
+	cursor: pointer;
+}
+
+.modal-dialog .radio-label:after{
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 25px;
+	width: 25px;
+	border-radius: 12px;
+	margin-left: 10px;
+	margin-top: -3px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px #c04f7f, 0px 0px 0px 0px #c04f7f;
+}
+
+.modal-dialog input[type=radio]:checked+label:after {
+	background-color: #c04f7f;
+	box-shadow: none;
+}
 
 .feed .modal-backdrop {
 	background-color: #ffffff;
@@ -2019,6 +2079,21 @@ div.graph-header-container .red-header {
 .feed .modal-content {
 	border-radius: 2px;
 	color: #4c4c4c;
+}
+
+.feed .modal-body ul {
+	margin-bottom: 10px;
+	-moz-column-count: 2;
+	-moz-column-gap: 20px;
+	-webkit-column-count: 2;
+	-webkit-column-gap: 20px;
+	column-count: 2;
+	column-gap: 20px;
+}
+
+.feed .modal-body ul li{
+	color: #c04f7f;
+	font-size: 14px;
 }
 
 .feed .modal-footer {
@@ -2325,7 +2400,7 @@ body{
 	overflow-x:hidden;
 }
 
-ul{
+.feed ul, .footer-items ul{
 	list-style-type: none;
 }
 
@@ -2676,23 +2751,24 @@ ul{
 .feed-item .discussion .discussion-topic {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 18px 28px 25px 28px;
+	padding: 10px 7px 20px 7px;
 	font-size: 16px;
 }
 
 .feed-item .discussion .discussion-topic .top-left-margin {
-	margin-top: 15px;
+	margin-top: 10px;
 	margin-left: 0px;
 }
 
 .feed-item .discussion .discussion-topic .group {
 	font-weight: bold;
-	color: #717171;
+	color: #5d5d5d;
+	padding-top: 10px;
+	font-size: 15px;
 }
 
 .feed-item .discussion .discussion-topic .discussion-header {
-	padding-left: 0px;
-	padding-right: 0px;
+	padding-left: 5px;
 }
 
 .feed-item .discussion .discussion-topic .discussion-header li {
@@ -2704,23 +2780,32 @@ ul{
 	width: 92px;
 }
 .feed-item .discussion .discussion-topic .discussion-header li a b {
-	margin: 0px 10px;
+	margin: 10px 12px;
 	color: #c8c8c8;
+}
+
+.feed-item .discussion .discussion-topic .discussion-header li a .caret {
+	border-top: 5px solid;
+	border-right: 5px solid transparent;
 }
 
 .feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu{
 	background-color: #f3f3f3;
 	min-width: 0px;
 	max-width: 92px;
+	min-height: 0px;
+	max-height: 29px;
 	text-align: center;
 	margin-left: 85px;
 	margin-top: -2px;
 	box-shadow: none;
 	border: none;
+	padding-top: 0px;
 }
 
 .feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a {
 	padding: 2px;
+	color: #a8a8a8;
 }
 
 .feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a img {
@@ -2728,17 +2813,18 @@ ul{
 }
 
 .feed-item .discussion .discussion-topic .title {
-	margin-top: 18px;
+	margin-top: 15px;
 	margin-left: 0px;
 }
 
-.feed-item .discussion .discussion-topic .title a {
-	color: #717171;
+.feed-item .discussion .discussion-topic a {
+	color: #5d5d5d;
+	font-size: 15px;
 }
 
 .feed-item .discussion .discussion-topic .avatar {
-	height: 46px;
-	width: 46px;
+	height: 38px;
+	width: 38px;
 }
 
 .feed-item .discussion .discussion-topic .posting-time {
@@ -2749,21 +2835,27 @@ ul{
 
 .feed-item .discussion .discussion-topic p {
 	font-style: normal;
-	margin: 5px 0px 10px 10px;
-	color: #929090;
+	font-size: 14px;
+	margin: 5px 0px 10px 0px;
+	color: #5d5d5d;
+	text-align: justify;
 }
 
 .feed-item .discussion .discussion-topic hr {
 	margin-bottom: 10px;
+	border-width: 2px;
+	border-color: #e9e9e9;
+	margin-top: 0px;
 }
 
 .feed-item .discussion .discussion-topic .discussion-topic-span {
 	text-align: right;
-	margin-top: 10px;
+	margin-top: 5px;
 }
 
 .feed-item .discussion .discussion-topic .buttons {
 	text-align: right;
+	margin-right: 15px;
 }
 
 .feed-item .discussion .discussion-topic button {
@@ -2776,9 +2868,8 @@ ul{
 }
 
 .feed-item .discussion .discussion-topic .contents {
-	border-bottom: solid 0.09em;
-	border-bottom-color: #eeeeee;
 	margin-bottom: 10px;
+	padding: 5px 14px 5px 10px;
 }
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
@@ -2793,12 +2884,12 @@ ul{
 }
 
 .feed-item .discussion .discussion-comment .view-comment{
-	color: #5d5d5d;
+	color: #555555;
 	font-size: 11px;
 }
 
 .feed-item .discussion .discussion-comment .add-comment {
-	margin-left: 34px;
+	margin-left: 32px;
 }
 
 .feed-item .discussion .discussion-comment .add-comment-to-discussion {
@@ -2812,15 +2903,18 @@ ul{
 }
 
 .feed-item .discussion .discussion-comment .posting-time {
-	margin:12 0 0 20;
-	font-size: 12px;
+	margin:12px 0px 0px 10px;
+	font-size: 11px;
 	color: #a8a8a8;
 }
 
 .feed-item .discussion .discussion-comment .add-comment input {
 	width: 100%;
-	height: 45px;
+	max-width: 320px;
+	height: 34px;
 	padding: 10px;
+	font-size: 13px;
+	color: #a4a4a4;
 }
 
 #post-comment::-webkit-input-placeholder {color: #a4a4a4;}
@@ -2831,9 +2925,9 @@ ul{
 
 
 .feed-item .discussion .discussion-comment .avatar {
-	height: 34px;
-	width: 34px;
-	margin: 10px 0px 0px 0px;
+	height: 25px;
+	width: 25px;
+	margin: 5px 0px 0px 0px;
 }
 
 .feed-item .discussion .discussion-comment .comment-controll{
@@ -2847,8 +2941,11 @@ ul{
 }
 
 .feed-item .discussion .discussion-comment p {
-	margin-left: 44px;
-	margin-bottom: 25px;
+	text-align: justify;
+	margin-left: 32px;
+	margin-bottom: 20px;
+	font-size: 13px;
+	color: #5d5d5d;
 }
 
 .feed-item .discussion .discussion-comment .without-margin{
@@ -2859,9 +2956,14 @@ ul{
 	margin-bottom: 10px;
 }
 
+.feed-item .discussion-topic .user-name {
+	font-size: 16px;
+}
+
 .feed-item .user-name {
 	color: #c04f7f;
 	margin-left: 5px;
+	font-size: 13px;
 }
 
 .footer-items{
@@ -2896,10 +2998,10 @@ ul{
 }
 .search-bar .fa {
 	position: absolute;
-	padding: 13px;
+	padding: 5px;
 	font-size: 16px;
 	color: #AAAAAA;
-	margin: 0px 0px 0px 0px;
+	margin: 7px 10px 0px 15px;
 	pointer-events: none;
 }
 
@@ -2908,7 +3010,7 @@ ul{
 }
 
 .search-bar input {
-	padding: 10px 10px 10px 35px;
+	padding: 10px 10px 10px 45px;
 	height: 41px;
 	width: 136px;
 	color: #AAAAAA;
@@ -3319,11 +3421,37 @@ body .modal-footer a .navigate-carousel-right {
 	font-weight: 500;
 }
 
-.sprint #deleteTag {
+.feed #deleteTag {
 	background-color: transparent;
 	margin-left: 5px;
 }
 
-.sprint #deleteTag .fa {
+.feed #deleteTag .fa {
 	color: #d8d8d8;
+}
+
+.feed .modal-body #deleteTag .fa {
+	font-size: 14px !important;
+}
+
+.feed .pull-right {
+	display: flex;
+}
+
+.feed .help {
+	cursor: pointer;
+	height: 35px;
+	width: 35px;
+	border-radius: 17px;
+	margin-top: -25px;
+	background-color: #de3723;
+	margin-right: 10px;
+	text-align: center;
+	padding-top: 7px;
+}
+
+.feed .help .fa {
+	color: white;
+	font-size: 18px;
+	font-weight: 100;
 }

@@ -631,9 +631,8 @@ function TreeWidget(args) {
 	
 	this.addListItemToListWidget = function(listItem, afterItemIndex) {
 		var relativeElement;
-		var start, end;
 		var itemView = this.createTreeItemView(listItem);
-		if (afterItemIndex >= 0 && afterItemIndex < this.list.length() - 1) { // initially when the list is empty there will be no last child
+		if (afterItemIndex >= 0 && afterItemIndex < this.list.length() - 1) {
 			relativeElement = $("> "+itemView.getHTMLTag(), this.element)[afterItemIndex];
 			$(relativeElement).after(itemView.render());
 		} else if (afterItemIndex < 0) {
