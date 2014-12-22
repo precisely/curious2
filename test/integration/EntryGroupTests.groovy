@@ -314,7 +314,7 @@ class EntryGroupTests extends CuriousTestCase {
 	
 	@Test
 	void testMultiUpdatePreserveOrder() {
-		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "run 1 a 2 b", baseDate, true), new EntryStats())
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "run 1 aye 2 b", baseDate, true), new EntryStats())
 		
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		
@@ -323,14 +323,14 @@ class EntryGroupTests extends CuriousTestCase {
 			++c
 			def amounts = entryDesc['amounts']
 			assert amounts[0].amount.intValue() == 1
-			assert amounts[0].units == "a"
+			assert amounts[0].units == "aye"
 			assert amounts[1].amount.intValue() == 2
 			assert amounts[1].units == "b"
 		}
 		
 		assert c == 1
 		
-		assert Entry.update(entry, Entry.parse(currentTime, timeZone, "run 3 a 2 b", baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert Entry.update(entry, Entry.parse(currentTime, timeZone, "run 3 aye 2 b", baseDate, true, true), new EntryStats(), baseDate, true) != null
 
 		entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		
@@ -339,7 +339,7 @@ class EntryGroupTests extends CuriousTestCase {
 			++c
 			def amounts = entryDesc['amounts']
 			assert amounts[0].amount.intValue() == 3
-			assert amounts[0].units == "a"
+			assert amounts[0].units == "aye"
 			assert amounts[1].amount.intValue() == 2
 			assert amounts[1].units == "b"
 		}

@@ -553,6 +553,7 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
+		def baseDate = parseDate(params.baseDateStr ?: startDateStr)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		def tagIds = []
@@ -598,6 +599,7 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
+		def baseDate = parseDate(params.baseDateStr ?: startDateStr)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		def tagIds = []

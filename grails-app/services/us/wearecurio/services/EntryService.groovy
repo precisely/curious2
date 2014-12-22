@@ -27,7 +27,7 @@ class EntryService {
 	}
 
 	def userStartTime(userId) {
-		def results = Entry.executeQuery("select min(e.date) from Entry e")
+		def results = Entry.executeQuery("select min(e.date) from Entry e where e.userId = :userId", [userId:userId])
 		if (results && results[0])
 			return results[0]
 		
@@ -35,7 +35,7 @@ class EntryService {
 	}
 
 	def userStopTime(userId) {
-		def results = Entry.executeQuery("select max(e.date) from Entry e")
+		def results = Entry.executeQuery("select max(e.date) from Entry e where e.userId = :userId", [userId:userId])
 		if (results && results[0])
 			return results[0]
 		
