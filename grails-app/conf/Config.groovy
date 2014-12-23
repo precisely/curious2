@@ -7,7 +7,6 @@ import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 import us.wearecurio.thirdparty.withings.WithingsApi
 
-
 // locations to search for config files that get merged into the main config;
 // config files can be ConfigSlurper scripts, Java properties files, or classes
 // in the classpath in ConfigSlurper format
@@ -261,6 +260,7 @@ environments {
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		grails.config.locations = ["classpath:LocalConfig.groovy"]
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"

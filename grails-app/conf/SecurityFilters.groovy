@@ -1,5 +1,8 @@
 import grails.converters.JSON
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import us.wearecurio.model.UserGroup
+import us.wearecurio.services.SecurityService
+import us.wearecurio.services.TokenService
 import us.wearecurio.services.UrlService
 
 /*
@@ -14,8 +17,9 @@ import us.wearecurio.services.UrlService
  */
 class SecurityFilters {
 	UrlService urlService
-	def tokenService
-	def securityService
+	TokenService tokenService
+	SecurityService securityService
+	GrailsApplication grailsApplication
 	
 	// list of actions that do not need to be duplicate checked
 	static def idempotentActions = [
@@ -106,8 +110,18 @@ class SecurityFilters {
 				}
 			}
 		}
-		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
+		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)") {
 			before = {
+				String adminKey
+				try {
+					adminKey = grailsApplication.config.wearecurious.adminKey
+				} catch (Throwable t) {
+					grailsApplication.config.wearecurious = [:]
+					grailsApplication.config.wearecurious.adminKey = null
+					adminKey = null
+				}
+				if (adminKey != null && params.key && params.key == "")
+					return true
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					redirect(url: urlService.base(request) + 'home/login')
 					return false

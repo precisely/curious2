@@ -216,10 +216,10 @@
   (if (= "collection-child" task-type)
       (do
         (request-next-run-state)
-        (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id } check-for-more-users))
+        (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id :key (e/env :key) } check-for-more-users))
       (do
         (stopped-normally-run-state)
-        (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id }))))
+        (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id :key (e/env :key) }))))
 
 (defn run-cluster-job [user-id req]
   (let [params (:params req)
