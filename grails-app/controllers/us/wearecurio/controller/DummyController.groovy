@@ -37,17 +37,6 @@ class DummyController extends DataController {
 		return
 	}
 
-	def getSprintsForUser() {
-		List sprintsList = ['Eat Halthier', 'Runners challange', 'Sprint3', 'Sprint4', 'Sprint5']
-		// If is a ajax call
-		if (request.xhr) {
-			log.debug "sending requested search items"
-			renderJSONGet([terms: sprintsList])
-			return
-		}
-		render sprintsList
-	}
-
 	/**
 	 * 
 	 * @param id Id of Sprint

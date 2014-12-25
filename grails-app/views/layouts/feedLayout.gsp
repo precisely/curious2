@@ -33,8 +33,16 @@
 					<li id="allFeeds"><g:link controller='home' action="feed">FEED</g:link></li>
 					<li id="recentSearches"><a href="#" onclick="getRecentSearches({usetId: ${userId}})">RECENT SEARCHES</a></li>
 					<li id="myThreads"><a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a></li>
-					<li id="sprints"><a href="#" onclick="getSprintsForUser({usetId: ${userId}})">SPRINTS</a><button id="createSprint" data-toggle="modal" data-target="#createSprintOverlay">
-					<span class="create-sprint-label">CREATE</span></button></li>
+					<li id="sprints"><a href="#">SPRINTS</a><button id="createSprint" data-toggle="modal" data-target="#createSprintOverlay">
+					<span class="create-sprint-label">CREATE</span></button>
+						<g:if test="${sprintList}">
+							<ul>
+								<g:each in="${sprintList}" var="sprint">
+									<li><a href="/dummy/sprint?id=${sprint.id}">${sprint.title}</a> </li>
+								</g:each>
+							</ul>
+						</g:if>
+					</li>
 				</ul>
 			</div>
 			<div class="main container-fluid">
@@ -47,7 +55,7 @@
 									name="name" id="discussion-topic" required />
 								<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
 								<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
-								<hr>
+								<hr class="hide">
 								<input type="text" id="discussion-discription" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
 								name="discussionPost">
 							</div>

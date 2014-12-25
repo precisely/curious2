@@ -2352,7 +2352,8 @@ body.load-graph #graphList .summary .close {
 .about-wrapper{
 	position:relative;
 	width:100%;
-	margin: 0 auto;
+	padding-top: 35px;
+	padding-bottom: 35px;
 	overflow:hidden;
 }
 .footerLinks{
