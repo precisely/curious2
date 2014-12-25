@@ -11,6 +11,7 @@ $(document).ready(function() {
 		var key = e.which;
 		if(key == 13)  // the enter key code
 		{
+			$('.input-affordance hr').removeClass('hide');
 			$('input[name = discussionPost]').removeClass('hide');
 			return false;  
 		}
@@ -127,36 +128,6 @@ function getMyThreads(params) {
 			
 		}
 	});
-}
-
-function getSprintsForUser(params) {
-	if ($('#sprints ul').length == 0) {
-		$.ajax ({
-			url: '/dummy/getSprintsForUser',
-			data: {
-				userId: params.userId,
-				max: 5,
-				offset: params.offset?params.offset:0
-			},
-			success: function(data) {
-				if (data) {
-					console.log('data: ', JSON.parse(data));
-					$('#sprints').append('<ul>');
-					jQuery.each(JSON.parse(data).terms, function() {
-						$('#sprints ul').append('<li><a href="/dummy/sprint?id=1">' + this + '</a></li>');
-					});
-					$('#sprints').append('</ul>');
-				} else {
-					console.log('no data', data);
-				}
-			},
-			error: function(xhr) {
-				console.log('error: ', xhr);
-			}
-		});
-	} else {
-		$('#sprints ul').remove();
-	}
 }
 
 function getRecentSearches(params) {
