@@ -2144,6 +2144,11 @@ class Entry implements Comparable {
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
+				
+		if (!tagIds.size()) {
+			log.error "Entry.fetchPlotData() ERROR: No tag ids specified!"
+			return []
+		}
 
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 
