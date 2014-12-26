@@ -828,9 +828,16 @@ class Entry implements Comparable {
 		// next, update remaining entries
 		while (unmatchedEntries.size() > 0) {
 			Entry e = unmatchedEntries.remove(0)
-			if (amounts.size() > 0) {
-				ParseAmount a = amounts.remove(0)
-				if (!a.isActive()) continue
+			ParseAmount a = null
+			while (amounts.size() > 0) {
+				a = amounts.remove(0)
+				if (!a.isActive()) {
+					a = null
+					continue
+				} else
+					break
+			}
+			if (a != null) {
 				a.copyToMap(m)
 				Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
 				if (e.is(entry))
