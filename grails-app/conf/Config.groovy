@@ -260,7 +260,7 @@ environments {
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
-		grails.config.locations = ["classpath:LocalConfig.groovy"]
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
