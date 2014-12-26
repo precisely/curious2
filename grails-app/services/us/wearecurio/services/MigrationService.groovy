@@ -122,10 +122,10 @@ class MigrationService {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
 		
-		try {
+		/*try {
 			sql ("ALTER TABLE `migration` CHANGE COLUMN `code` code bigint(20) DEFAULT NULL")
 		} catch (Throwable t) {
-		}
+		}*/
 		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
 			// if this is running on a brand new instance, skip initial migrations
 			skipMigrations = true
@@ -388,6 +388,9 @@ class MigrationService {
 		}
 		tryMigration("Change continuous repeats back to pinned") {
 			sql("update entry set comment = 'pinned' where repeat_type in (:repeatIds)", [repeatIds:Entry.CONTINUOUS_IDS])
+		}
+		tryMigration("Add admin users") {
+			UserGroup.lookupOrCreateSystemGroup().addAdmin(User.findByUsername("x"))
 		}
 	}
 	

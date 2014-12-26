@@ -120,7 +120,7 @@ class SecurityFilters {
 					grailsApplication.config.wearecurious.adminKey = null
 					adminKey = null
 				}
-				if (adminKey != null && params.key && params.key == "")
+				if (adminKey != null && params.key && params.key == adminKey)
 					return true
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					redirect(url: urlService.base(request) + 'home/login')
