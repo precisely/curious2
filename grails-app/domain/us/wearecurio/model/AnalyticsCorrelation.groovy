@@ -195,6 +195,7 @@ class AnalyticsCorrelation {
 				criteria = addRestriction(criteria, order1)
 			}
 		}
+		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
 		criteria.setFirstResult((pageNumber - 1) * pageSize)
 		criteria.setMaxResults( pageSize )
 		resultList = criteria.list()
