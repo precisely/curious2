@@ -553,8 +553,6 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
-		def baseDate = parseDate(params.baseDateStr ?: startDateStr)
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		def tagIds = []
 		for (tagStr in tags) {
@@ -564,7 +562,7 @@ class DataController extends LoginController {
 		def plotInfo = [:]
 		
 		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
-			endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName, plotInfo)
+			endDateStr ? parseDate(endDateStr) : null, new Date(), params.timeZoneName, plotInfo)
 		
 		return [entries:plotEntries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
@@ -599,8 +597,6 @@ class DataController extends LoginController {
 		def tags = JSON.parse(params.tags)
 		def startDateStr = params.startDate
 		def endDateStr = params.endDate
-		def baseDate = parseDate(params.baseDateStr ?: startDateStr)
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		def tagIds = []
 		for (tagStr in tags) {
@@ -610,7 +606,7 @@ class DataController extends LoginController {
 		def plotInfo = [:]
 		
 		def entries = Entry.fetchSumPlotData(sessionUser(), tagIds,
-			startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), timeZoneName, plotInfo)
+			startDateStr ? parseDate(startDateStr) : null, endDateStr ? parseDate(endDateStr) : null, new Date(), params.timeZoneName, plotInfo)
 		
 		return [entries:entries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
