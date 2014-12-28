@@ -7,9 +7,14 @@ $(function() {
 	};
 
 	var plot = null;
-	var plotReady = setInterval(function() {
+	var plotReady = null;
+	function drawPlot() {
 		console.log("plot ready?");
 		elt1 = getUIFromDescription(description1);
+		if (elt1.data(DATA_KEY_FOR_ITEM_VIEW) == undefined) {
+			plotReady = setInterval(drawPlot, 1000);
+			return;
+		}
 		elt2 = getUIFromDescription(description2);
 		if (Curious.getPlot()) {
 			plot = Curious.getPlot();
@@ -18,6 +23,6 @@ $(function() {
 			plot.drawLine(elt1);
 			plot.drawLine(elt2);
 		}
-	}, 1000);
-
+	}
+	var plotReady = setInterval(drawPlot, 1000);
 });
