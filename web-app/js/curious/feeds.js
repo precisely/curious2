@@ -1,6 +1,28 @@
 /**
  * 
  */
+$(function() {
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
+			getCSRFPreventionObject("getPeopleDataCSRF"),
+			function(data) {
+				if (!checkData(data))
+					return;
+			
+			var found = false;
+			
+			jQuery.each(data, function() {
+				if (!found) {
+					// set first user id as the current
+					setUserId(this['id']);
+					found = true;
+				}
+				addPerson(this['first'] + ' ' + this['last'],
+						this['username'], this['id'], this['sex']);
+				return true;
+			});
+		});
+});
+
 $(document).ready(function() {
 	var App = window.App || {};
 	App.discussion = {};
@@ -104,6 +126,66 @@ $(document).ready(function() {
 			return;
 		}
 	});
+
+	$('#submitSprint').submit(function( event ) {
+		console.log('submitting');
+		params  = $(this).serializeArray();
+		$.ajax ({
+			type: 'POST',
+			url: '/dummy/createSprint',
+			data: params,
+			success: function(data) {
+				data = JSON.parse(data);
+				console.log('data: ', data);
+				if (data.error) {
+					$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
+					setInterval(function() {
+						$('.modal-dialog .alert').addClass('hide');
+					}, 5000);
+				} else {
+					location.assign('/dummy/sprint/id?=' + data.id);
+				}
+			},
+			error: function(xhr) {
+				console.log('error: ', xhr);
+			}
+		});
+	
+		return false;
+	});
+
+	$(document).on("click", "#deleteTag", function() {
+		var $element = $(this);
+		$.ajax ({
+			url: '/dummy/deleteTagsInSprint',
+			data: {
+				id: $(this).data('id')
+			},
+			success: function(data) {
+				data = JSON.parse(data);
+				if (data.success) {
+					console.log('li: ', $(this).parents("li"));
+					$element.parents('li').remove();
+				} else {
+					if ($element.parents('.modal-dialog').length > 0) {
+						$('.modal-dialog .alert').text(data.message).show();
+						setInterval(function() {
+							$('.modal-dialog .alert').hide();
+						}, 5000);
+					} else {
+						$('.alert').text(data.message).show();
+						setInterval(function() {
+							$('.alert').hide();
+						}, 5000);
+					}
+				}
+			},
+			error: function(xhr) {
+				console.log('error: ', xhr);
+			}
+		});
+		return false;
+	});
 });
 
 $(document).on("click", ".left-menu ul li a", function() {
@@ -128,36 +210,4 @@ function getMyThreads(params) {
 			
 		}
 	});
-}
-
-function getRecentSearches(params) {
-	if ($('#recentSearches ul').length == 0) {
-		$.ajax ({
-			url: '/dummy/getRecentSearches',
-			data: {
-				userId: params.userId,
-				max: 5,
-				offset: params.offset?params.offset:0
-			},
-			success: function(data) {
-				if (data) {
-					console.log('data: ', JSON.parse(data));
-					$('#recentSearches').slideDown( 1000, function() {
-						$(this).append('<ul>');
-						jQuery.each(JSON.parse(data).terms, function() {
-							$('#recentSearches ul').append('<li><a herf="#">' + this + '</a></li>');
-						});
-						$(this).append('</ul>');
-					});
-				} else {
-					console.log('no data', data);
-				}
-			},
-			error: function(xhr) {
-				console.log('error: ', xhr);
-			}
-		});
-	} else {
-		$('#recentSearches ul').remove();
-	}
 }

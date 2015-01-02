@@ -31,7 +31,15 @@
 			<div class="left-menu">
 				<ul>
 					<li id="allFeeds"><g:link controller='home' action="feed">FEED</g:link></li>
-					<li id="recentSearches"><a href="#" onclick="getRecentSearches({usetId: ${userId}})">RECENT SEARCHES</a></li>
+					<li id="recentSearches"><a href="#">RECENT SEARCHES</a>
+						<g:if test="${searchKeywords}">
+							<ul>
+								<g:each in="${searchKeywords}" var="searchInstance">
+									<li><a href="#">${searchInstance.searchString}</a> </li>
+								</g:each>
+							</ul>
+						</g:if>
+					</li>
 					<li id="myThreads"><a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a></li>
 					<li id="sprints"><a href="#">SPRINTS</a><button id="createSprint" data-toggle="modal" data-target="#createSprintOverlay">
 					<span class="create-sprint-label">CREATE</span></button>

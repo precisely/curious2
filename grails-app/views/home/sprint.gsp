@@ -31,10 +31,10 @@ $(document).ready(function() {
 					</div>
 					<div class="right-content">
 						<ul>
-							<g:each in="${tags}" var="tagName">
-								<li>
-									${tagName } 
-									<button type="button" id="deleteTag">
+							<g:each in="${tags}" var="tag">
+								<li class="sprintTag">
+									${tag.description } 
+									<button type="button" id="deleteTag" data-id="${tag.id}">
 										<i class="fa fa-times-circle"></i>
 									</button>
 								</li>
