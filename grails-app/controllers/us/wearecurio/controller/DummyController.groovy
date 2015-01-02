@@ -71,7 +71,7 @@ class DummyController extends DataController {
 	}
 
 	def deleteTagsInSprint(Long id) {
-		renderJSONGet([success: false, message: "An error occurred while deleting the tag."])
+		renderJSONGet([success: true, message: "Removed the tag successfully."])
 		return
 	}
 }
