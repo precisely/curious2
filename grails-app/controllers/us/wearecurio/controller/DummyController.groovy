@@ -19,22 +19,20 @@ class DummyController extends DataController {
 		redirect (action: "getMyThreads") 
 	}
 
-	def getRecentSearches() {
-		List searchKeywords = ['Good sleep', 'Fast Sprint', 'Alcohol', 'Snapshot', 'Dream']
-		if (request.xhr) {
-			log.debug "sending requested search items"
-			renderJSONGet([terms: searchKeywords])
-			return
-		}
-		render searchKeywords
-	}
-
-	def createSprint(String details, String tags, String participants) {
+	def createSprint(String details, String tags, String participants, boolean error) {
 		log.debug "parameters recieved to save sprint: ${params}"
 		log.debug "Details: ${details}"
 		log.debug "Tags: ${tags}"
 		log.debug "Participants: ${participants}"
-		return
+		log.debug "error: ${error}"
+		
+		if (error) {
+			renderJSONPost([error: true])
+			return
+		} else {
+			renderJSONPost([success: true, id: 1])
+			return
+		}
 	}
 
 	/**
@@ -46,6 +44,11 @@ class DummyController extends DataController {
 	 * 
 	 */
 	def sprint(Long id, Long userId) {
+		
+		// This is dummy sprint and recent searches data.
+		List sprintList = [[title: 'Eat Halthier', id: 1], [title: 'Runners challange', id: 2], [title: 'Sprint3', id: 3]]
+		List searchKeywords = [[userId: 1, searchString: 'Good sleep'], [userId: 1, searchString: 'Fast Sprint'], 
+			[userId: 1, searchString: 'Alcohol'], [userId: 1, searchString: 'Snapshot']]
 		Map sprint = [
 			id: 1,
 			title: "Demo Sprint",
@@ -54,14 +57,21 @@ class DummyController extends DataController {
 			"the race progresses and momentum is gained. The set position differs depending on the start." + 
 			"Body alignment is of key importance in producing the optimal amount of force. Ideally the athlete should begin in a" + 
 			"4-point stance and push off using both legs for maximum force production",
-			tags: ["Tag1","Tag2", "Tag3"],
+			tags: [[id: 1, description: "Tag1"], [id: 2, description: "Tag2"], [id: 3, description: "Tag3"]],
 			tagList: [[id:1, description: "run miles", repeatType: "pinned"], [id:2, description: "max heart rate", repeatType: "remind"]
 				, [id:3, description: "Repeat Me", repeatType: "repeat"], [id:4, description: "track coffee", repeatType: "pinned"]
 				, [id:5, description: "Take pills", repeatType: "remind"]],
 			participants: [[id: 1, name: "Johan"], [id: 2, name: "Ron"], [id: 3, name: "Rambo"], [id: 4, name: "Don"]],
 			totalParticipants: 5,
-			userId: 1
+			userId: 1,
+			sprintList: sprintList,
+			searchKeywords: searchKeywords
 		]
 		render(view: "/home/sprint", model: sprint)
+	}
+
+	def deleteTagsInSprint(Long id) {
+		renderJSONGet([success: false, message: "An error occurred while deleting the tag."])
+		return
 	}
 }

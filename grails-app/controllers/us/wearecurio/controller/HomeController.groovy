@@ -644,7 +644,10 @@ class HomeController extends DataController {
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 		
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+		// This is dummy sprint data, similarly recent searches data also needs to be passed along.
+		List sprintList = [[title: 'Eat Halthier', id: 1], [title: 'Runners challange', id: 2], [title: 'Sprint3', id: 3]]
+		
+		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 

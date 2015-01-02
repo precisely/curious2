@@ -47,28 +47,6 @@ function searchFeeds(params) {
 
 function refreshPage() {
 }
-
-$(function() {
-	queueJSON("getting login info", "/home/getPeopleData?callback=?",
-			getCSRFPreventionObject("getPeopleDataCSRF"),
-			function(data) {
-				if (!checkData(data))
-					return;
-			
-			var found = false;
-			
-			jQuery.each(data, function() {
-				if (!found) {
-					// set first user id as the current
-					setUserId(this['id']);
-					found = true;
-				}
-				addPerson(this['first'] + ' ' + this['last'],
-						this['username'], this['id'], this['sex']);
-				return true;
-			});
-		});
-});
 </script>
 </head>
 <body>
