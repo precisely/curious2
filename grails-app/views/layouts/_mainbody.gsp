@@ -9,6 +9,7 @@ def activeClass = { a ->
 }
 
 %>
+
 <div class="body1 container">
 <div class="body2">
 
@@ -59,6 +60,12 @@ def activeClass = { a ->
 		</ul>
 	</div>
 </div>
+<g:if test="${survey == true}">
+	<script>
+		console.log('hdhyebksdkjcnaskjnk');
+		var showModal = true;
+	</script>
+</g:if>
 <script>
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
@@ -68,13 +75,19 @@ def activeClass = { a ->
 				return false;
 			}
 		})
+		if((typeof showModal != 'undefined') && showModal) {
+			console.log('skdsjcksdjcnsdjnnjdn');
+			$('#takeSurveyOverlay').modal({show: true});
+		}
 	});
 	jQuery.curCSS = jQuery.css;
+	
 </script>
 </script>
 <!-- /HEADER -->
 
 <g:render template="/layouts/alertMessage" />
+<g:render template="/survey/takeSurveyModal" /> 
 <g:layoutBody />
 
 <!-- FOOTER -->

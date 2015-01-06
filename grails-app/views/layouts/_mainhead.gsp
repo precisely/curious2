@@ -17,6 +17,7 @@
 <script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
+<script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
 <%--<link rel="stylesheet" href="/css/sprite.css"/>--%>

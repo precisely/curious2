@@ -2540,3 +2540,154 @@ body{
 	background-color: white;
 	margin-bottom: 20px;
 }
+
+body .modal-header button {
+	background-color: transparent;
+	padding: 0px;
+}
+
+.modal-body label {
+	display: block;
+	font-weight: normal;
+	font-size: 12px;
+	margin-bottom: 24px;
+}
+
+.modal-body textarea {
+	resize: none;
+	border-radius: 2px;
+	padding: 10px;
+	font-size: 11px;
+	font-style: italic;
+	border: 1px #c04f7f solid;
+	color: #c04f7f;
+	margin-left: 10px;
+	margin-bottom: 30px;
+}
+
+.modal-body .form-group input {
+	border-radius: 2px;
+	padding: 10px;
+	font-size: 14px;
+	color: #8c8c8c !important;
+	width: 95%;
+	margin-bottom: 30px;
+	background-color: #f7f7f7;
+}
+
+.modal-body .form-group ol {
+	border: 1px solid #A19C9C;
+	padding: 10px;
+	height: 10em;
+	list-style: none;
+	overflow: auto;
+	width: 95%;
+}
+
+.modal-backdrop {
+	background-color: #ffffff;
+}
+
+.modal-content {
+	border-radius: 2px;
+	color: #4c4c4c;
+}
+
+.modal-footer {
+	padding: 0px;
+	height: 50px;
+}
+
+body .modal-footer a .navigate-carousel-left {
+	background-color: #fc3f28;
+	color: white;
+	width: 50%;
+	height: 100%;
+	float: left;
+	border-radius: 0px;
+	font-size: 18px;
+}
+
+body .modal-footer a .navigate-carousel-right {
+	background-color: #fc3f28;
+	color: white;
+	width: 50%;
+	height: 100%;
+	float: right;
+	border-radius: 0px;
+	font-size: 18px;
+}
+
+.modal-content .close {
+	opacity: 1;
+}
+
+.modal-content button .fa {
+	font-weight: 100;
+	font-size: x-large;
+	color: #4c4c4c;
+}
+
+.modal-footer a button:active {
+	background-color: #E42F18;
+}
+
+#takeSurveyOverlay .modal-body{
+	min-height: 400px;
+}
+
+.carousel-inner .item .section{
+	color: #fc3f28;
+	font-size: 15px;
+	margin-bottom: 20px;
+}
+.modal-dialog .carousel-inner input[type="radio"] {
+	display: none;
+	height: 25px;
+	width: 25px;
+	border-radius: 13px;
+}
+
+.modal-dialog .carousel-inner .radio-label {
+	display: inline-block !important;
+	margin-right: 20px;
+	margin-left: 40px;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.modal-dialog .carousel-inner .radio-label:before{
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 25px;
+	width: 25px;
+	border-radius: 12px;
+	margin-left: -40px;
+	margin-top: -3px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px #fc3f28, 0px 0px 0px 0px #fc3f28;
+}
+
+.modal-dialog .carousel-inner input[type=radio]:checked+label {
+	font-weight: bold;
+}
+
+.modal-dialog .carousel-inner input[type=radio]:checked+label:before {
+	background-color: #fc3f28;
+	box-shadow: none;
+}
+.carousel-inner .item p {
+	color: #3b3b3b;
+	font-weight: 500;
+	font-size: 18px;
+	margin-bottom: 25px;
+}
+
+.carousel .item {
+	-webkit-transition: none;
+	-moz-transition: none;
+	-ms-transition: none;
+	-o-transition:none;
+	transition: none;
+}

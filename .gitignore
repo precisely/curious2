@@ -27,7 +27,6 @@ target-eclipse/**
 /grails-app/conf/QuartzConfig.groovy
 .metadata/**
 Servers/**
-*DummyController.groovy
 tags
 .vimrc
 JavaImp

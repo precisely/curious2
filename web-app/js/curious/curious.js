@@ -164,3 +164,53 @@ function setUserName(userName) {
 		currentUserName = userName;
 	}
 }
+
+$(document).ready(function() {
+	var interestTagList;
+	$('#navigate-left').prop('disabled', true).children('button').text('');
+
+	$('#carousel-content').on('slid.bs.carousel', '', function() {
+		var $this = $(this);
+		$('#navigate-left').prop('disabled', false).children('button').text('PREVIOUS');
+		$('#navigate-right').prop('href','#carousel-content');
+		$('#navigate-right').html('<button type="button" class="navigate-carousel-right">NEXT</button>');
+		
+		if($('.carousel-inner .item:first').hasClass('active')) {
+			$('#navigate-left').prop('disabled', true).children('button').text('');
+		} else if($('.carousel-inner .item:last').hasClass('active')) {
+			$('#navigate-right').prop('href','#');
+			$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+		}
+	});
+
+	queueJSON("getting login info", "/home/getPeopleData?callback=?",
+			function(data){ 
+		this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
+	});
+
+	$('#surveyForm').submit(function(event) {
+		console.log('submited....');
+		params = $(this).serializeArray();
+		
+		$.ajax({
+			type: 'POST',
+			url: '/dummy/saveSurveyData',
+			data: params,
+			success: function(data) {
+				data = JSON.parse(data);
+				if(data.success) {
+					$('#takeSurveyOverlay').modal('hide');
+				} else {
+					$('#surveyForm .alert').removeClass('hide');
+					setInterval(function() {
+						$('#surveyForm .alert').addClass('hide');
+					}, 5000);
+				}
+			},
+			error: function(xhr) {
+				console.log('xhr:', xhr);
+			}
+		});
+		return false;
+	});
+});
