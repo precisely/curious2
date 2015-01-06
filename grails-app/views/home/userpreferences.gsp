@@ -39,7 +39,7 @@ $(function() {
             return true;
         });
     });
-    this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
+    this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
     
     // defeat the damn browser autofill
     $("#username").val("${user.username}");
@@ -162,10 +162,10 @@ $(function() {
 						<!-- div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div  -->
 						<label class="control-label col-sm-3" for="interests">Interest Tags</label>
 						<div class="col-sm-5">
-							<input type="text" id="interestTagInput" name="data"
+							<input type="text" id="interestTagInputField" name="data"
 								value="" />
 							<br/>&nbsp;<br/>
-							<ol id="interestTagList" style="border:1px solid #000000;padding:3px;height:10em;list-style:none;overflow:auto;width:300px;"></ol>
+							<ol id="interestTagsList" style="border:1px solid #000000;padding:3px;height:10em;list-style:none;overflow:auto;width:300px;"></ol>
 						</div>
 					</div>
 

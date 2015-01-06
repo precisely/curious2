@@ -62,7 +62,6 @@ def activeClass = { a ->
 </div>
 <g:if test="${survey == true}">
 	<script>
-		console.log('hdhyebksdkjcnaskjnk');
 		var showModal = true;
 	</script>
 </g:if>
@@ -76,7 +75,6 @@ def activeClass = { a ->
 			}
 		})
 		if((typeof showModal != 'undefined') && showModal) {
-			console.log('skdsjcksdjcnsdjnnjdn');
 			$('#takeSurveyOverlay').modal({show: true});
 		}
 	});

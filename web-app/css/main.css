@@ -1412,6 +1412,8 @@ body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 	
 }
 .comment-label {
+	color: #C0C8C9;
+	font-size: 12px;
 }
 .repeatLabelImage {
 	background: url(/images/repeat-sm-light.png) no-repeat center left;
@@ -1483,10 +1485,14 @@ li.entry.repeat.remind {
 li.entry.repeat {
 	border-left: 5px solid #c35785;
 }
-li.entry.no-tag {
+li.entry.no-tag, li.entry.plain {
 	border-left: 5px solid #f14a42;
-	line-height: 40px;
 }
+
+li.entry.plain {
+	color: #f14a42
+}
+
 body.track-page ol#entry0 li button.save {
 	background-color: #c04f7f;
 	position: absolute;
@@ -1498,12 +1504,12 @@ body.track-page ol#entry0 li button.save {
 .track-page .pin-entry {
 	color: #ffffff;
 	background-color: #d1d1d1;
-	margin-right: 5px;
 	background-image: url(/images/pin-button.png);
 	background-repeat: no-repeat;
 	background-position: 5px;
 	padding-left: 25px;
 	font-weight: 600;
+	border-radius: 1px;
 }
 .pin-entry .fa{
 	margin-left: 10px;
@@ -2359,8 +2365,8 @@ body{
 }
 .search-bar .fa {
 	position: absolute;
-	padding: 5px;
-	font-size: 16;
+	padding: 13px;
+	font-size: 16px;
 	color: #AAAAAA;
 	margin: 0px 0px 0px 0px;
 	pointer-events: none;
@@ -2690,4 +2696,55 @@ body .modal-footer a .navigate-carousel-right {
 	-ms-transition: none;
 	-o-transition:none;
 	transition: none;
+}
+
+#pinned-tag-list div {
+	display: inline-block;
+}
+
+#pinned-tag-list li {
+	display: inline-block;
+	height: 30px;
+	margin-right: 10px;
+	top: -2px;
+	padding: 0px 5px;
+	background-color: #d1d1d1;
+}
+
+#pinned-tag-list .dropdown .caret {
+	border-top: 4px solid white;
+}
+
+#pinned-tag-list .dropdown-menu {
+	left: -45px;
+	top: 28px;
+	height: 30px;
+	min-width: 0px;
+	max-width: 65px;
+	padding: 0px;
+	background-color: #d1d1d1;
+	border-radius: 0px;
+	text-align: left;
+	box-shadow: none;
+}
+
+#pinned-tag-list .dropdown-menu li {
+	width: 64px;
+	height: 25px;
+}
+
+#pinned-tag-list .dropdown-menu li a {
+	color: white;
+	font-size: 11px;
+	padding: 0px;
+}
+
+#pinned-tag-list .dropdown-menu li a:HOVER {
+	background-color: #d1d1d1;
+}
+
+#pinned-tag-list .dropdown-menu li a img {
+	margin-right: 10px;
+	height: 15px;
+	width: auto;
 }
