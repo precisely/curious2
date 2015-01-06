@@ -18,11 +18,6 @@ class UrlMappings {
 			controller = "correlation"
 		}
 
-		"/analyticsTask/$id/next" {
-			controller = "analyticsTask"
-			action = "next"
-		}
-
 		"/$controller/$action?/$id?(.$format)?"{
 			constraints {
 				// apply constraints here

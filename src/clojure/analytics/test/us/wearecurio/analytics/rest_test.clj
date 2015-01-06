@@ -103,13 +103,13 @@
     (re/start-server)
 
     (testing "starting the server initializes the worker state"
-      (is (= (re/get-status) re/IDLE)))
+      (is (= (re/get-status) re/READY)))
 
       (let [task-id 500]
   
         (testing "normal completion of one-off jobs"
           (re/init-run-state)
-          (is (= re/IDLE (re/get-status)))
+          (is (= re/READY (re/get-status)))
           (is (= re/NEW (re/get-sub-status)))
   
           ; Make sure the function that updates the status works.
@@ -130,7 +130,7 @@
                      (is true "The CORRELATING sub-status was reached."))
   
           ; Wait for clustering thread to stop normally.
-          (test-when (= re/IDLE (re/get-status))
+          (test-when (= re/READY (re/get-status))
                      (is (= re/COMPLETED (re/get-sub-status)))))
 
         (testing "normal completion of child tasks"
@@ -139,11 +139,11 @@
                                                        :task-type "collection-child"
                                                        :silent true}})
   
-          (test-when (= re/IDLE (re/get-status))
+          (test-when (= re/READY (re/get-status))
                      (or (is (= re/COMPLETED-ALL (re/get-sub-status))
                              (= re/COMPLETED-ALL (re/get-sub-status)))))
 
-          (test-when (= re/IDLE (re/get-status))
+          (test-when (= re/READY (re/get-status))
                      (is (= nil (re/get-error)))))
 
         (testing "error handling"
@@ -164,11 +164,11 @@
                        (is (= re/REQUEST-NEXT (re/get-sub-status))))))
 
         (testing "when there are no more users to process."
-          (hkf/with-fake-http [{:url (str re/WEB-SERVER "/analyticsTask/runNext") :method :post} {:status 200 :body "{\"userId\": -1}"}]
+          (hkf/with-fake-http [{:url (str re/WEB-URL re/WEB-NEXT-PATH) :method :post} {:status 200 :body "{\"userId\": -1}"}]
              (re/after-cluster "collection-child" task-id)
              (test-when (= re/COMPLETED-ALL (re/get-sub-status))
                         (is (= re/COMPLETED-ALL (re/get-sub-status)))
-                        (is (= re/IDLE (re/get-status))))))
+                        (is (= re/READY (re/get-status))))))
 
           )))
 

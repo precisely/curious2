@@ -12,15 +12,17 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]))
 
-(def WEB-SERVER "http://localhost:8080")
 (def PORT 8090)
-(def ENV (e/env :env))
+(def ENV (:env e/env))
+(def WEB-URL (:web-url e/env))
+(def WEB-NEXT-PATH (:web-next-path e/env))
+(def WEB-DONE-PATH (:web-done-path e/env))
 
 (defonce run-state (atom nil))
 
 ; Declare the possible run states.
-(def RUNNING :running)
-(def IDLE :idle)
+(def PROCESS-RUNNING :running)
+(def PROCESS-READY :ready)
 
 ; Declare possible run-sub-state
 (def NEW :new)
@@ -31,6 +33,13 @@
 (def COMPLETED-ALL :completed-all) ; after requesting another user but getting none.
 (def TERMINATED :terminated)
 (def ERROR :error)
+
+; Declare task types.  This should match what's in AnalyticsTask under
+;   "Possible values for type"
+
+(def PARENT-OF-COLLECTION 8)
+(def CHILD-OF-COLLECTION 9)
+(def ONE-OFF 10)
 
 (defn now []
   (tr/to-date (tc/now)))
@@ -99,7 +108,7 @@
     (cons user-id options)))
 
 (defn initial-run-state-hash [the-time]
-  {:state IDLE
+  {:state PROCESS-READY
    :sub-state NEW
    :updated-at the-time
    :created-at the-time
@@ -145,20 +154,23 @@
   (reset! run-state (start-state new-state sub-state)))
 
 (defn stop-state! [new-state sub-state]
+  (db/task-update-terminated (:task-id @run-state))
   (reset! run-state (stop-state new-state sub-state)))
 
 (defn update-state! [new-state sub-state]
   (reset! run-state (update-state new-state sub-state)))
 
 (defn start-run-state [user-id task-id]
+  (db/task-update-running task-id)
   (let [the-run-state (initial-run-state-hash (now))
-        the-run-state (assoc the-run-state :state RUNNING)
+        the-run-state (assoc the-run-state :state PROCESS-RUNNING)
         the-run-state (assoc the-run-state :user-id user-id)
         the-run-state (assoc the-run-state :task-id task-id)]
     (reset! run-state the-run-state)))
 
 (defn record-error-run-state [notes error-message]
-  (let [the-run-state (stop-state IDLE ERROR)
+  (db/task-update-error (get @run-state :task-id) error-message)
+  (let [the-run-state (stop-state PROCESS-READY ERROR)
         the-run-state (assoc the-run-state :error error-message)
         the-run-state (assoc the-run-state :notes notes)]
     (reset! run-state the-run-state)
@@ -169,19 +181,26 @@
     the-run-state))
 
 (defn stopped-normally-run-state []
-  (let [the-run-state (stop-state IDLE COMPLETED)]
+  (db/task-update-completed (get @run-state :task-id))
+  (let [the-run-state (stop-state PROCESS-READY COMPLETED)]
     (reset! run-state the-run-state)))
 
 (defn completed-all-run-state []
-  (let [the-run-state (stop-state IDLE COMPLETED-ALL)]
+  (let [the-run-state (stop-state PROCESS-READY COMPLETED-ALL)
+        task-id       (:task-id the-run-state)
+        parent-id     (db/task-parent-id task-id)]
+    (when (db/task-all-successful? parent-id)
+      (do (db/tasks-delete-dummy-tasks parent-id)
+          (db/task-update-completed parent-id)))
     (reset! run-state the-run-state)))
     
 (defn terminate-run-state []
-  (let [the-run-state (stop-state IDLE TERMINATED)]
+  (db/task-update-terminated (get @run-state :task-id))
+  (let [the-run-state (stop-state PROCESS-READY TERMINATED)]
     (reset! run-state the-run-state)))
 
 (defn request-next-run-state []
-  (let [the-run-state (update-state RUNNING REQUEST-NEXT)]
+  (let [the-run-state (update-state PROCESS-RUNNING REQUEST-NEXT)]
     (reset! run-state the-run-state)))
 
 (defn add-line-breaks [string-seq]
@@ -207,38 +226,47 @@
 (defn check-for-more-users [{:keys [status headers body error]}]
   (when-not (nil? body)
     (let [user-id (get (json/decode body) "userId")]
-      (when (< user-id 0)
-        (completed-all-run-state)))))
+      (println "check-for-more-users")
+      (println body)
+      (when (nil? user-id) (completed-all-run-state)))))
+
 ;  (when error
 ;    (record-error-run-state "Error when requesting more users" error)))
 
 (defn after-cluster [task-type task-id]
-  (if (= "collection-child" task-type)
+  (println "CHILD-OF-COLLECTION" CHILD-OF-COLLECTION (class CHILD-OF-COLLECTION) "task-type" task-type (class task-type))
+  (stopped-normally-run-state)
+  (if (== CHILD-OF-COLLECTION task-type)
       (do
+        (println "REQUEST NEXT TASK FROM WEB SERVER")
         (request-next-run-state)
-        (post-async (str WEB-SERVER "/analyticsTask/runNext") { :id task-id :key (e/env :key) } check-for-more-users))
-      (do
-        (stopped-normally-run-state)
-        (post-async (str WEB-SERVER "/analyticsTask/done") { :id task-id :key (e/env :key) }))))
+        (post-async (str WEB-URL WEB-NEXT-PATH) { :id task-id :key (e/env :web-secret) } check-for-more-users))
+      (do ; It's probably a ONE-OFF task, so don't request next.
+        (println "ONE-OFF TASK.  STOP HERE.")
+        (post-async (str WEB-URL WEB-DONE-PATH) { :id task-id :key (e/env :web-secret) }))))
 
 (defn run-cluster-job [user-id req]
   (let [params (:params req)
         args (make-cluster-job-args user-id params)]
-    (update-state! RUNNING CLUSTERING)
+    (update-state! PROCESS-RUNNING CLUSTERING)
     (future (record-error-if-any "iv/update-user"
                                  (do
                                    (when (:test-throw req)
                                      (throw (Exception. "Raise error before calling update-user.")))
                                    (apply iv/update-user args)))
-            (after-cluster (:task-type params) (:task-id params)))))
+            (after-cluster (Integer/parseInt (:task-type params)) (:task-id params)))))
 
 (defn start-clustering-job-handler [user-id req]
-    (start-run-state user-id (-> req :params :task-id))
+  (let [task-id (-> req :params :task-id)]
+    (start-run-state user-id task-id)
+    (db/task-update-status task-id db/TASK-RUNNING)
+    ;(db/task-update-parent-status task-id db/TASK-RUNNING)
     (run-cluster-job user-id req)
-    (assoc json-resp :body (json/generate-string {:message (str "begin clustering user " user-id)})))
+    (assoc json-resp :body (json/generate-string {:message (str "begin clustering user " user-id)}))))
 
 (defn stop-job []
   "Update the run-state atom and terminate the clustering process gracefully (write the current best cluster to the dataabase)."
+  (db/task-update-parent-status (:task-id @run-state) db/TASK-TERMINATED)
   (record-error-if-any "terminate-run-state" (terminate-run-state))
   (record-error-if-any "iv/terminate" (iv/terminate)))
 
@@ -247,9 +275,6 @@
   (assoc json-resp :body (json/generate-string {:message "stopping clustering job"})))
 
 ; ----- Server -----
-(defn cluster-user-url [user-id]
- (str "http://localhost:" PORT "/cluster/user/" user-id))
-
 (defn integer [s]
     (try (Integer/parseInt s) (catch Exception e)))
 
@@ -266,9 +291,9 @@
     ["cluster" "stop"]
       {:post stop-job-handler}
 
-    ["cluster" "status"]
+    ["status"]
       (fn [req]
-        (assoc json-resp :body (json/generate-string @run-state)))
+          (assoc json-resp :body (json/generate-string @run-state)))
 
     ; ---
    
