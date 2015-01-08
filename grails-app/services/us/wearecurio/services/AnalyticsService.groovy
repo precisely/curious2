@@ -20,7 +20,7 @@ import grails.util.Environment
 
 class AnalyticsService {
 
-	private static DEBUG = true
+	private static DEBUG = false
 
 	private static def log = LogFactory.getLog(this)
 	static transactional = false

@@ -110,8 +110,8 @@ class SecurityFilters {
 				}
 			}
 		}
-		//adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)") {
-		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
+		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)") {
+		//adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
 			before = {
 				String adminKey
 				try {

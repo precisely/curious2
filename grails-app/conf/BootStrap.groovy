@@ -55,9 +55,6 @@ class BootStrap {
 			}
 		}
 
-		//BackgroundTask.launch {
-		//	analyticsService.pingServers()
-		//}
 		log.debug "Curious bootstrap finished executing."
 	}
 
