@@ -166,7 +166,6 @@ function setUserName(userName) {
 }
 
 $(document).ready(function() {
-	var interestTagList;
 	$('#navigate-left').prop('disabled', true).children('button').text('');
 
 	$('#carousel-content').on('slid.bs.carousel', '', function() {
@@ -183,10 +182,6 @@ $(document).ready(function() {
 		}
 	});
 
-	queueJSON("getting login info", "/home/getPeopleData?callback=?",
-			function(data){ 
-		this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
-	});
 
 	$('#surveyForm').submit(function(event) {
 		console.log('submited....');
@@ -201,9 +196,9 @@ $(document).ready(function() {
 				if(data.success) {
 					$('#takeSurveyOverlay').modal('hide');
 				} else {
-					$('#surveyForm .alert').removeClass('hide');
+					$('#survey-alert').removeClass('hide');
 					setInterval(function() {
-						$('#surveyForm .alert').addClass('hide');
+						$('#survey-alert').addClass('hide');
 					}, 5000);
 				}
 			},

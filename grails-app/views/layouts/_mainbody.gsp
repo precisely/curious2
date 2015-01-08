@@ -75,7 +75,30 @@ def activeClass = { a ->
 			}
 		})
 		if((typeof showModal != 'undefined') && showModal) {
-			$('#takeSurveyOverlay').modal({show: true});
+			var interestTagList;
+			$.ajax({
+				url: '/dummy/getSurveyData',
+				success: function(data) {
+					if(data != null) {
+						console.log('data success!', data);
+						$('.carousel-inner').html(data);
+
+						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data){ 
+							this.interstTagList = new InterestTagList("interestTagInput", "interestTagList");
+						});
+
+						$('#takeSurveyOverlay').modal({show: true});
+					} else {
+						console.log('data error!');
+						/* setInterval(function() {
+							$('#surveyForm .alert').addClass('hide');
+						}, 5000); */
+					}
+				},
+				error: function(xhr) {
+					console.log('xhr:', xhr);
+				}
+			});
 		}
 	});
 	jQuery.curCSS = jQuery.css;
