@@ -16,6 +16,7 @@
                :web-next-path "/analyticsTask/runNext"
                :web-done-path "/analyticsTask/done"
                :db-host "127.0.0.1"
+               :db-schema-from "tlb_dev"
                :db-port "3306"
                :db-name "tlb_test"
                :db-user "root"

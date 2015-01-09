@@ -30,7 +30,6 @@
 (def CORRELATING :correlations)
 (def REQUEST-NEXT :request-next)
 (def COMPLETED :completed) ; after finishing 1 user.
-(def COMPLETED-ALL :completed-all) ; after requesting another user but getting none.
 (def TERMINATED :terminated)
 (def ERROR :error)
 
@@ -119,8 +118,13 @@
    :error nil
    :notes nil })
 
+(defn set-run-state [new-state]
+  ;(println "BEFORE:" (:state @run-state) (:sub-state @run-state))
+  ;(println " AFTER:" (:state new-state) (:sub-state new-state))
+  (reset! run-state new-state))
+
 (defn init-run-state []
-  (reset! run-state (initial-run-state-hash (now))))
+  (set-run-state (initial-run-state-hash (now))))
 
 (defn update-at [the-time]
   (-> @run-state
@@ -151,14 +155,14 @@
       (update-state-and-sub-state new-state sub-state)))
 
 (defn start-state! [new-state sub-state]
-  (reset! run-state (start-state new-state sub-state)))
+  (set-run-state (start-state new-state sub-state)))
 
 (defn stop-state! [new-state sub-state]
   (db/task-update-terminated (:task-id @run-state))
-  (reset! run-state (stop-state new-state sub-state)))
+  (set-run-state (stop-state new-state sub-state)))
 
 (defn update-state! [new-state sub-state]
-  (reset! run-state (update-state new-state sub-state)))
+  (set-run-state (update-state new-state sub-state)))
 
 (defn start-run-state [user-id task-id]
   (db/task-update-running task-id)
@@ -166,14 +170,14 @@
         the-run-state (assoc the-run-state :state PROCESS-RUNNING)
         the-run-state (assoc the-run-state :user-id user-id)
         the-run-state (assoc the-run-state :task-id task-id)]
-    (reset! run-state the-run-state)))
+    (set-run-state the-run-state)))
 
 (defn record-error-run-state [notes error-message]
   (db/task-update-error (get @run-state :task-id) error-message)
   (let [the-run-state (stop-state PROCESS-READY ERROR)
         the-run-state (assoc the-run-state :error error-message)
         the-run-state (assoc the-run-state :notes notes)]
-    (reset! run-state the-run-state)
+    (set-run-state the-run-state)
 
     ; Let the test have enough time to detect a state change.
     (when (= "test" ENV) (Thread/sleep 50))
@@ -183,25 +187,25 @@
 (defn stopped-normally-run-state []
   (db/task-update-completed (get @run-state :task-id))
   (let [the-run-state (stop-state PROCESS-READY COMPLETED)]
-    (reset! run-state the-run-state)))
+    (set-run-state the-run-state)))
 
 (defn completed-all-run-state []
-  (let [the-run-state (stop-state PROCESS-READY COMPLETED-ALL)
+  (let [the-run-state (stop-state PROCESS-READY COMPLETED)
         task-id       (:task-id the-run-state)
         parent-id     (db/task-parent-id task-id)]
     (when (db/task-all-successful? parent-id)
       (do (db/tasks-delete-dummy-tasks parent-id)
           (db/task-update-completed parent-id)))
-    (reset! run-state the-run-state)))
+    (set-run-state the-run-state)))
     
 (defn terminate-run-state []
   (db/task-update-terminated (get @run-state :task-id))
   (let [the-run-state (stop-state PROCESS-READY TERMINATED)]
-    (reset! run-state the-run-state)))
+    (set-run-state the-run-state)))
 
 (defn request-next-run-state []
   (let [the-run-state (update-state PROCESS-RUNNING REQUEST-NEXT)]
-    (reset! run-state the-run-state)))
+    (set-run-state the-run-state)))
 
 (defn add-line-breaks [string-seq]
   "Add line breaks to a lazy-seq of strings."
@@ -234,7 +238,6 @@
 ;    (record-error-run-state "Error when requesting more users" error)))
 
 (defn after-cluster [task-type task-id]
-  (println "CHILD-OF-COLLECTION" CHILD-OF-COLLECTION (class CHILD-OF-COLLECTION) "task-type" task-type (class task-type))
   (stopped-normally-run-state)
   (if (== CHILD-OF-COLLECTION task-type)
       (do
@@ -253,8 +256,9 @@
                                  (do
                                    (when (:test-throw req)
                                      (throw (Exception. "Raise error before calling update-user.")))
-                                   (apply iv/update-user args)))
-            (after-cluster (Integer/parseInt (:task-type params)) (:task-id params)))))
+                                   (apply iv/update-user args)
+                                   (stopped-normally-run-state)
+                                   (after-cluster (Integer/parseInt (:task-type params)) (:task-id params)))))))
 
 (defn start-clustering-job-handler [user-id req]
   (let [task-id (-> req :params :task-id)]
