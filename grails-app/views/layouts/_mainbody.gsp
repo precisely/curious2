@@ -77,11 +77,17 @@ def activeClass = { a ->
 		if((typeof showModal != 'undefined') && showModal) {
 			var interestTagList;
 			$.ajax({
-				url: '/dummy/getSurveyData',
+				url: '/home/getSurveyData',
 				success: function(data) {
 					if(data != null) {
 						console.log('data success!', data);
 						$('.carousel-inner').html(data);
+						var questionCount = $('.carousel-inner').find('.item').length;
+						console.log(questionCount)
+						if (questionCount == 1) {
+							console.log('ha ha question count');
+							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+						}
 
 						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data){ 
 							this.interstTagList = new InterestTagList("interestTagInput", "interestTagList");

@@ -167,7 +167,6 @@ function setUserName(userName) {
 
 $(document).ready(function() {
 	$('#navigate-left').prop('disabled', true).children('button').text('');
-
 	$('#carousel-content').on('slid.bs.carousel', '', function() {
 		var $this = $(this);
 		$('#navigate-left').prop('disabled', false).children('button').text('PREVIOUS');
@@ -189,7 +188,7 @@ $(document).ready(function() {
 		
 		$.ajax({
 			type: 'POST',
-			url: '/dummy/saveSurveyData',
+			url: '/home/saveSurveyData',
 			data: params,
 			success: function(data) {
 				data = JSON.parse(data);

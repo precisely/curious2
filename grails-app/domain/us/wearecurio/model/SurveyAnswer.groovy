@@ -2,15 +2,16 @@ package us.wearecurio.model
 
 import java.io.Serializable;
 
-class SurveyAnswer implements Serializable, Comparable{
+class SurveyAnswer implements Comparable{
 
 	String code
 	String answer
 	SurveyAnswerType answerType
+	Integer priority
 
 	static constraints = {
-		code(blank: false, size: 5..40)
-		answer(blank: false, size: 5..1000)
+		code(blank: false, size: 1..40)
+		answer(blank: false, size: 1..1000)
 	}
 
 	@Override
@@ -18,7 +19,7 @@ class SurveyAnswer implements Serializable, Comparable{
 		if (!(o instanceof SurveyAnswer))
 			return -1;
 		
-		return code.compareTo(((SurveyAnswer)o).code)
+		return ((SurveyAnswer)o).priority.compareTo(priority)
 	}
 }
 

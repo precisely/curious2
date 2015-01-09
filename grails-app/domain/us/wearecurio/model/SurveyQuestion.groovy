@@ -1,7 +1,9 @@
 package us.wearecurio.model
 
 import java.util.SortedSet;
+
 import us.wearecurio.model.SurveyAnswerType
+import us.wearecurio.utility.Utils
 
 class SurveyQuestion {
 
@@ -16,7 +18,7 @@ class SurveyQuestion {
 	]
 
 	static constraints = {
-		code blank: false, size: 5..40, unique: true
+		code blank: false, size: 1..40, unique: true
 		question blank: false, size: 5..1000
 		possibleAnswers blank: true, validator: {possibleAnswers->
 			boolean argumentsValid = true
@@ -34,6 +36,19 @@ class SurveyQuestion {
 
 	static mapping = {
 		sort priority: "desc"
+	}
+
+	public static def create(Map params) {
+		SurveyQuestion surveyQuestion = new SurveyQuestion(params)
+		surveyQuestion.validate()
+
+		if (surveyQuestion.hasErrors()) {
+			println ">>>>>>>>>>error: $surveyQuestion.errors"
+			return false
+		} else {
+			Utils.save(surveyQuestion, true)
+			return surveyQuestion
+		}
 	}
 }
 
