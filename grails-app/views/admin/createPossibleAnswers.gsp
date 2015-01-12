@@ -34,7 +34,7 @@
 						rowIdToRemove = null;
 					}
 					$('#answerInputAffordance').append(innerHTMLContent);
-					$('#addAnswerOverlay').hide();
+					$('#addAnswerOverlay').modal('toggle');
 					rowNo += 1;
 				}
 				return false;
@@ -43,6 +43,7 @@
 			$('#submitAnswersForm').submit(function(event) {
 				params = $(this).serializeArray();
 				console.log('submited....',params);
+				// If form is in edit mode, final form should not be submitted
 				if (rowIdToRemove == null) {
 					$.ajax({
 						type: 'POST',
@@ -84,7 +85,7 @@
 			$('#addAnswerOverlay').find('.add-answer').text('Save');
 			$('#addAnswerOverlay').find('h4').text('Edit Answer');
 			$('#addAnswerOverlay').css('display','block');
-			$('#addAnswerOverlay').modal({show: true});
+			$('#addAnswerOverlay').modal('toggle');
 		}
 		</script>
 	</head>

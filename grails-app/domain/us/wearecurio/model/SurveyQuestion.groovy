@@ -11,6 +11,7 @@ class SurveyQuestion {
 	String question
 	SortedSet<SurveyAnswer> possibleAnswers
 	Integer priority
+	String validator
 	QuestionStatus status
 	
 	static hasMany = [
@@ -20,6 +21,7 @@ class SurveyQuestion {
 	static constraints = {
 		code blank: false, size: 1..40, unique: true
 		question blank: false, size: 5..1000
+		validator nullable: true 
 		possibleAnswers blank: true, validator: {possibleAnswers->
 			boolean argumentsValid = true
 			possibleAnswers.any({ possibleAnswer ->

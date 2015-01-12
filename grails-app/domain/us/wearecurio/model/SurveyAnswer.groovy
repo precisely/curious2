@@ -1,7 +1,5 @@
 package us.wearecurio.model
 
-import java.io.Serializable;
-
 class SurveyAnswer implements Comparable{
 
 	String code

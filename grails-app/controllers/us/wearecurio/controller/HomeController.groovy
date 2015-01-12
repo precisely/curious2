@@ -911,22 +911,23 @@ class HomeController extends DataController {
 	}
 
 	def saveSurveyData() {
-		log.debug "Dummy.saveSurveyData()"
+		log.debug "Home.saveSurveyData()"
 		User currentUserInstance = sessionUser()
 		boolean hasErrors = false
 
 		// Using any instead of each so as to be able to break the loop when error occurs
-		params.answer.any({ questionAnswerMap ->
-			log.debug "$questionAnswerMap.key";
-			log.debug "$questionAnswerMap.value";
-			def userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-			if( !userSurveyAnswer) {
-				hasErrors = true
-				return true
-			} else {
-				return
-			}
-		})
+		UserSurveyAnswer.withTransaction { status ->
+			params.answer.any({ questionAnswerMap ->
+				def userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+				if( !userSurveyAnswer) {
+					hasErrors = true
+					status.setRollbackOnly()
+					return true
+				} else {
+					return
+				}
+			})
+		}
 		
 		if (hasErrors) {
 			renderJSONPost([success: false])
@@ -938,9 +939,9 @@ class HomeController extends DataController {
 	}
 
 	def getSurveyData() {
-		log.debug "Dummy.gettingSurveyData()"
+		log.debug "Home.getSurveyData()"
 		List questions = SurveyQuestion.findAllWhere(status: QuestionStatus.ACTIVE)
-		log.debug "questions: $questions"
+		questions.sort{a,b -> b.priority <=> a.priority}
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
 		return

@@ -15,10 +15,17 @@
 	</div>
 	<div class="main container-fluid survey-factory">
 		<form action="/admin/createNewQuestion" method="post">
-			<div class="survey-question">
-				<label for="question">Question:</label>
-				<textarea placeholder="New survey question..."
-					name="question" id="question" required></textarea>
+			<div class="row survey-question">
+				<div class="col-md-6">
+					<label for="question">Question:</label>
+					<textarea placeholder="New survey question..."
+						name="question" id="question" maxlength="1000" required></textarea>
+				</div>
+				<div class="col-md-6">
+					<label for="validator">Validator:</label>
+					<textarea placeholder="Write a custom validator for user answers..."
+						name="validator" id="validator"></textarea>
+				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-4">

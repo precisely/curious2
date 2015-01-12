@@ -198,7 +198,7 @@ $(document).ready(function() {
 					$('#survey-alert').removeClass('hide');
 					setInterval(function() {
 						$('#survey-alert').addClass('hide');
-					}, 5000);
+					}, 6000);
 				}
 			},
 			error: function(xhr) {

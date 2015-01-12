@@ -8,12 +8,12 @@
 				</button>
 				<h4 class="modal-title">Add Answer</h4>
 			</div>
-			<div class="alert alert-danger hide" id="alert" role="alert">Some error has occurred while performing the operation.</div>
+			<div class="alert alert-danger hide" id="alert" role="alert">Some error has occurred while performing the operation. Perhaps some answers are not in required format or survey has already been done!</div>
 			<form id="addSurveyAnswerForm">
 				<div class="modal-body">
 					<div>
 						<label for="question">Answer:</label>
-						<textarea placeholder="Add answer text..." name="answer" id="answer" required></textarea>
+						<textarea placeholder="Add answer text..." maxlength="1000" name="answer" id="answer" required></textarea>
 					</div>
 					<div class="row">
 						<div class="col-md-4">

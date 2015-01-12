@@ -31,15 +31,10 @@ class AdminController extends LoginController {
 	def createAnswers() {
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
 		log.debug "parameters: $params";
-		println ">>>>" + params['possibleAnswers[0]']
-		println ">>>>" + params['possibleAnswers[1]']
-		println ">>>>" + params['possibleAnswers[2]']
-		println ">>>>" + params['possibleAnswers[3]']
 		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
 		surveyQuestion.validate()
 
 		if (surveyQuestion.hasErrors()) {
-			println ">>>>>>>>>>error: $surveyQuestion.errors"
 			renderJSONPost([success: false])
 			return
 		} else {
@@ -50,7 +45,6 @@ class AdminController extends LoginController {
 	}
 
 	def listSurveyQuestions() {
-		log.debug "listing survey questions"
 		List questions = SurveyQuestion.findAllWhere(status: QuestionStatus.ACTIVE)
 		Map model = [questions: questions]
 		model
@@ -78,7 +72,6 @@ class AdminController extends LoginController {
 		surveyAnswer.validate()
 
 		if (surveyAnswer.hasErrors()) {
-			println ">>>>>>>>>>error: $surveyAnswer.errors"
 			renderJSONPost([success: false])
 			return
 		} else {

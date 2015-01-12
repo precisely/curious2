@@ -17,8 +17,9 @@
 		</g:if>
 		<g:else>
 			<div class="">
-				<input type="text" id="${questionInstance.code }" name="answer.${questionInstance.code }"
-					value="" />
+				<textarea id="${questionInstance.code }" name="answer.${questionInstance.code }"
+					value="" ></textarea>
+			</div>
 		</g:else>
 	</div>
 	<g:set var="counter" value="${counter + 1}" />
