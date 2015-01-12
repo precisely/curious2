@@ -8,7 +8,7 @@
 	</g:else>
 		<div class="section">QUESTION:</div>
 		<p>${questionInstance.question }</p>
-		<g:if test="${questionInstance.possibleAnswers[0]?.answerType.value() == 1}">
+		<g:if test="${questionInstance.possibleAnswers[0].answerType.value() == 1}">
 			<div class="section">SELECT AN ANSWER</div>
 			<g:each in="${questionInstance.possibleAnswers}" var="answerInstance">
 					<input type="radio" name="answer.${questionInstance.code }" id="answer-${answerInstance.id}" value="${answerInstance.code}">

@@ -71,6 +71,31 @@
 				$('#addAnswerOverlay').css('display','block');
 				$('#addAnswerOverlay').modal({show: true});
 			}
+
+			function deleteQuestion(questionId) {
+				$.ajax({
+					type: 'POST',
+					url: '/admin/deleteSurveyQuestion',
+					data: {
+							questionId: questionId
+						},
+					success: function(data) {
+						data = JSON.parse(data);
+						if(data.success) {
+							window.location.assign('/admin/listSurveyQuestions');
+						} else {
+							console.log('error');
+							$('.alert').removeClass('hide').text('Could not delete the question!');
+							setInterval(function() {
+								$('.alert').addClass('hide');
+							}, 5000);
+						}
+					},
+					error: function(xhr) {
+						console.log('xhr:', xhr);
+					}
+				});
+			}
 		</script>
 	</head>
 	<body>
@@ -89,16 +114,21 @@
 					<tr>
 						<th>Question Priority</th>
 						<th>Question Status</th>
+						<th>Edit</th>
+						<th>Delete</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td>${surveyQuestion.priority }</td>
 						<td>${surveyQuestion.status }</td>
+						<td><g:link class="edit-question" controller="admin" action="surveyFactory" params="[id: surveyQuestion.id]"><i class="fa fa-pencil"></i></g:link></td>
+						<td><button class="delete-question" onclick="deleteQuestion(${surveyQuestion.id})"><i class="fa fa-trash"></i></button></td>
 					</tr>
 				</tbody>
 			</table>
-			<h3>Possible Answers: </h2>
+			<h3 style="display: inline-block;">Possible Answers &nbsp;&nbsp;</h2>
+			<g:link class="edit-question" controller="admin" action="addPossibleAnswers" params="[id: surveyQuestion.id]"><i class="fa fa-plus-circle"></i></g:link>
 			<table class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
@@ -132,4 +162,3 @@
 		<g:render template="/survey/addAnswersModal" /> 
 	</body>
 </html>
-		

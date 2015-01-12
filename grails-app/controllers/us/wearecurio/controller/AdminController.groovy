@@ -12,26 +12,53 @@ class AdminController extends LoginController {
 	def dashboard() {
 		
 	}
-	def surveyFactory() {
-	
+
+	def surveyFactory(Long id) {
+		log.debug "survey facotry"
+		Map model = null
+		if (id) {
+			model = [surveyQuestion: SurveyQuestion.get(id)]
+		}
+		model
 	}
 
-	def createNewQuestion() {
-		log.debug "create question: $params"
-		def surveyQuestion = SurveyQuestion.create(params)
-		
-		if (surveyQuestion) {
-			Map model = [surveyQuestion: surveyQuestion];
-			render(view: "/admin/createPossibleAnswers", model: model)
+	def createOrUpdateQuestion() {
+		log.debug "create or update question: $params"
+		if (params.id) {
+			def surveyQuestion = SurveyQuestion.get(params.id)
+			
+			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
+			surveyQuestion.validate()
+	
+			if (!surveyQuestion.hasErrors()) {
+				Utils.save(surveyQuestion, true)
+				redirect(uri: "admin/listSurveyQuestions")
+			} else {
+				flash.message = "Could not update question, please verify all fields!"
+			}
 		} else {
-			render "error occured!"
+			def surveyQuestion = SurveyQuestion.create(params)
+			
+			if (surveyQuestion) {
+				Map model = [surveyQuestion: surveyQuestion];
+				redirect(uri: "admin/addPossibleAnswers?id=$surveyQuestion.id")
+			} else {
+				flash.message = "Could not add question, perhaps code is not unique!"
+			}
 		}
+	}
+
+	def addPossibleAnswers() {
+		Map model = [surveyQuestion: SurveyQuestion.get(params.id)];
+		render(view: "/admin/createPossibleAnswers", model: model)
 	}
 
 	def createAnswers() {
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
 		log.debug "parameters: $params";
 		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
+		surveyQuestion.possibleAnswers.removeAll([null])
+		surveyQuestion.possibleAnswers.sort()
 		surveyQuestion.validate()
 
 		if (surveyQuestion.hasErrors()) {
@@ -61,7 +88,7 @@ class AdminController extends LoginController {
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
-		surveyAnswer.delete(flush: true)
+		//surveyAnswer.delete(flush: true)
 		renderJSONPost([success: true])
 		return
 	}
@@ -79,5 +106,12 @@ class AdminController extends LoginController {
 			renderJSONPost([success: true])
 			return
 		}
+	}
+
+	def deleteSurveyQuestion(Long questionId) {
+		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+		surveyQuestion.delete(flush: true)
+		renderJSONPost([success: true])
+		return
 	}
 }

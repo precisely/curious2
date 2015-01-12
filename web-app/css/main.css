@@ -1375,12 +1375,12 @@ body.discuss-page .red-header {
 	background-color: #f7f7f7
 }
 
-.edit-answer, .delete-answer {
+.edit-answer, .edit-question, .delete-question, .delete-answer {
 	background-color: transparent;
 	border: none;
 }
 
-.edit-answer .fa, .delete-answer .fa {
+.edit-answer .fa, .edit-question .fa, .delete-question .fa, .delete-answer .fa {
 	font-size: 25px;
 	margin-top: 8px;
 	color: #a4a4a4;

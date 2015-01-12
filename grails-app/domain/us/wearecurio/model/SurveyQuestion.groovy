@@ -9,7 +9,7 @@ class SurveyQuestion {
 
 	String code
 	String question
-	SortedSet<SurveyAnswer> possibleAnswers
+	List<SurveyAnswer> possibleAnswers
 	Integer priority
 	String validator
 	QuestionStatus status
@@ -37,16 +37,16 @@ class SurveyQuestion {
 	}
 
 	static mapping = {
-		sort priority: "desc"
+		possibleAnswers cascade: 'all-delete-orphan'
 	}
 
-	public static def create(Map params) {
+	static SurveyQuestion create(Map params) {
 		SurveyQuestion surveyQuestion = new SurveyQuestion(params)
 		surveyQuestion.validate()
 
 		if (surveyQuestion.hasErrors()) {
 			println ">>>>>>>>>>error: $surveyQuestion.errors"
-			return false
+			return null
 		} else {
 			Utils.save(surveyQuestion, true)
 			return surveyQuestion

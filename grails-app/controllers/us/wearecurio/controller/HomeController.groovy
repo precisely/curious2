@@ -874,7 +874,7 @@ class HomeController extends DataController {
 			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
-				if( !model.posts ){
+				if (!model.posts ){
 					// render false if there are no more comments to show.
 					render false
 				} else {
@@ -919,7 +919,7 @@ class HomeController extends DataController {
 		UserSurveyAnswer.withTransaction { status ->
 			params.answer.any({ questionAnswerMap ->
 				def userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-				if( !userSurveyAnswer) {
+				if (!userSurveyAnswer) {
 					hasErrors = true
 					status.setRollbackOnly()
 					return true
