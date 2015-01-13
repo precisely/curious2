@@ -94,7 +94,7 @@ class AdminController extends LoginController {
 		return
 	}
 
-	def UpdateSurveyAnswer() {
+	def updateSurveyAnswer() {
 		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
 		grailsWebDataBinder.bind(surveyAnswer, 
 			params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])

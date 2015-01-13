@@ -9,7 +9,7 @@
 					params = $(this).serializeArray();
 					$.ajax({
 						type: 'POST',
-						url: '/admin/UpdateSurveyAnswer',
+						url: '/admin/updateSurveyAnswer',
 						data: params,
 						success: function(data) {
 							data = JSON.parse(data);
@@ -61,10 +61,10 @@
 			}
 
 			function editPossibleAnswer(answerId) {
-				$('#addAnswerOverlay').find('#answer').val($('#answer-text-' + answerId).text());
-				$('#addAnswerOverlay').find('#code').val($('#answer-code-' + answerId).text());
-				$('#addAnswerOverlay').find('#priority').val($('#answer-priority-' + answerId).text());
-				$('#addAnswerOverlay').find('.answer-type').val($('#answer-type-' + answerId).text());
+				$('#addAnswerOverlay').find('#answer').val($('#answer-text-' + answerId).data('value'));
+				$('#addAnswerOverlay').find('#code').val($('#answer-code-' + answerId).data('value'));
+				$('#addAnswerOverlay').find('#priority').val($('#answer-priority-' + answerId).data('value'));
+				$('#addAnswerOverlay').find('.answer-type').val($('#answer-type-' + answerId).data('value'));
 				$('#addSurveyAnswerForm').append('<input type="hidden" name="answerId" value="' + answerId + '"/>');
 				$('#addAnswerOverlay').find('.add-answer').text('Save');
 				$('#addAnswerOverlay').find('h4').text('Edit Answer');
@@ -172,16 +172,16 @@
 				<tbody>
 					<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
 						<tr id="answer-${answerInstance.id}">
-							<td id="answer-code-${answerInstance.id}">
+							<td id="answer-code-${answerInstance.id}" data-value="${answerInstance.code}">
 								${answerInstance.code}
 							</td>
-							<td id="answer-text-${answerInstance.id}">
+							<td id="answer-text-${answerInstance.id}" data-value="${answerInstance.answer}">
 								${answerInstance.answer}
 							</td>
-							<td id="answer-priority-${answerInstance.id}">
+							<td id="answer-priority-${answerInstance.id}" data-value="${answerInstance.priority}">
 								${answerInstance.priority}
 							</td>
-							<td id="answer-type-${answerInstance.id}">
+							<td id="answer-type-${answerInstance.id}" data-value="${answerInstance.answerType}">
 								${answerInstance.answerType}
 							</td>
 							<td>
