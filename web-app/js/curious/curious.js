@@ -194,6 +194,7 @@ $(document).ready(function() {
 				data = JSON.parse(data);
 				if(data.success) {
 					$('#takeSurveyOverlay').modal('hide');
+					showAlert('Survey completed successfully!');
 				} else {
 					$('#survey-alert').removeClass('hide');
 					setInterval(function() {

@@ -88,7 +88,6 @@ class AdminController extends LoginController {
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
-		//surveyAnswer.delete(flush: true)
 		renderJSONPost([success: true])
 		return
 	}

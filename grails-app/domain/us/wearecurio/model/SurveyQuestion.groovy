@@ -45,7 +45,6 @@ class SurveyQuestion {
 		surveyQuestion.validate()
 
 		if (surveyQuestion.hasErrors()) {
-			println ">>>>>>>>>>error: $surveyQuestion.errors"
 			return null
 		} else {
 			Utils.save(surveyQuestion, true)

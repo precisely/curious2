@@ -15,7 +15,7 @@ class UserSurveyAnswer {
 
 	public static def create(User user, String questionCode, String answerText) {
 		SurveyQuestion surveyQuestion = SurveyQuestion.findByCode(questionCode)
-		if(surveyQuestion?.validator) {
+		if (surveyQuestion?.validator) {
 			GroovyShell shell = new GroovyShell()
 			CustomAnswerFieldHolder customAnswerHolder = new CustomAnswerFieldHolder()
 			ConstrainedProperty constrainedProperty = new ConstrainedProperty(CustomAnswerFieldHolder, "answerText", String)
@@ -37,8 +37,12 @@ class UserSurveyAnswer {
 		if (userSurveyAnswer.hasErrors()) {
 			return false
 		} else {
-			Utils.save(userSurveyAnswer, false)
-			return userSurveyAnswer
+			try {
+				Utils.save(userSurveyAnswer, false)
+				return userSurveyAnswer
+			} catch (Exception e) {
+				return false
+			}
 		}
 	}
 }

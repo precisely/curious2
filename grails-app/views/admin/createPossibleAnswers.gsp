@@ -8,7 +8,7 @@
 		$(document).ready(function() {
 			var rowNo = ${(surveyQuestion.possibleAnswers.size() ?: -1) + 1};
 			$('#addSurveyAnswerForm').submit(function(event) {
-				console.log('in submit answer');
+				$('.add-answer').attr('disabled','disabled');
 				params = $(this).serializeArray();
 				console.log('modal submited....',params);
 				var answerType = (params[3].value == "MCQ")?"MCQ":"DESCRIPTIVE";
@@ -27,6 +27,7 @@
 				}
 				$('#answerInputAffordance').append(innerHTMLContent);
 				$('#addAnswerOverlay').modal('toggle');
+				$('.add-answer').removeAttr('disabled');
 				rowNo += 1;
 				return false;
 			});
@@ -42,7 +43,7 @@
 						data: params,
 						success: function(data) {
 							data = JSON.parse(data);
-							if(data.success) {
+							if (data.success) {
 								console.log('success');
 								window.location.assign('/admin/listSurveyQuestions');
 							} else {
@@ -99,11 +100,13 @@
 			<div class="col-md-1">Delete</div>
 		</div>
 		<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
-			<div class="row surveyAnswers">
-			<div class="col-md-3">${answerInstance.answer}</div>
-			<div class="col-md-3">${answerInstance.code}</div>
-			<div class="col-md-3">${answerInstance.priority}</div>
-			<div class="col-md-3">${answerInstance.answerType}</div>
+			<div class="row savedSurveyAnswers">
+			<div class="col col-md-3">${answerInstance.answer}</div>
+			<div class="col col-md-3">${answerInstance.code}</div>
+			<div class="col col-md-2">${answerInstance.priority}</div>
+			<div class="col col-md-2">${answerInstance.answerType}</div>
+			<div class="col col-md-1">-</div>
+			<div class="col col-md-1">-</div>
 		</div>
 		</g:each>
 		<form action="/admin/createAnswers" id="submitAnswersForm">

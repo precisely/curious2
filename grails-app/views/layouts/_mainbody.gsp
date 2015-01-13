@@ -96,9 +96,6 @@ def activeClass = { a ->
 						$('#takeSurveyOverlay').modal({show: true});
 					} else {
 						console.log('data error!');
-						/* setInterval(function() {
-							$('#surveyForm .alert').addClass('hide');
-						}, 5000); */
 					}
 				},
 				error: function(xhr) {

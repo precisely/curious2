@@ -13,7 +13,7 @@
 						data: params,
 						success: function(data) {
 							data = JSON.parse(data);
-							if(data.success) {
+							if (data.success) {
 								$('#answer-text-' + params[4].value).text(params[0].value);
 								$('#answer-code-' + params[4].value).text(params[1].value);
 								$('#answer-priority-' + params[4].value).text(params[2].value);
@@ -44,7 +44,7 @@
 						},
 					success: function(data) {
 						data = JSON.parse(data);
-						if(data.success) {
+						if (data.success) {
 							$("#answer-"+answerId).remove();
 						} else {
 							console.log('error');
@@ -81,7 +81,7 @@
 						},
 					success: function(data) {
 						data = JSON.parse(data);
-						if(data.success) {
+						if (data.success) {
 							window.location.assign('/admin/listSurveyQuestions');
 						} else {
 							console.log('error');

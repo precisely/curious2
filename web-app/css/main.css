@@ -1416,6 +1416,21 @@ body.discuss-page .red-header {
 	border-bottom: 1px rgb(221, 221, 221) solid;
 }
 
+.savedSurveyAnswers {
+	margin: 0px 10px;
+}
+
+.savedSurveyAnswers .col {
+	background-color: white;
+	height: 30px;
+	border-left: 1px rgb(221, 221, 221) solid;
+	border-bottom: 1px rgb(221, 221, 221) solid;
+}
+
+.savedSurveyAnswers .col:last-child {
+	border-right: 1px rgb(221, 221, 221) solid;
+}
+
 .surveyAnswers .answer-type {
 	color: #a4a4a4;
 	background-color: white;
