@@ -9,7 +9,7 @@ class SurveyQuestion {
 
 	String code
 	String question
-	List<SurveyAnswer> possibleAnswers
+	List<SurveyAnswer> possibleAnswers = []
 	Integer priority
 	String validator
 	QuestionStatus status
@@ -22,7 +22,7 @@ class SurveyQuestion {
 		code blank: false, size: 1..40, unique: true
 		question blank: false, size: 5..1000
 		validator nullable: true 
-		possibleAnswers blank: true, validator: {possibleAnswers->
+		possibleAnswers validator: {possibleAnswers->
 			boolean argumentsValid = true
 			possibleAnswers.any({ possibleAnswer ->
 				if (possibleAnswer.answerType.value() == possibleAnswers[0]?.answerType.value()) {

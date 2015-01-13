@@ -28,7 +28,7 @@
 	<div class="form-group">
 		<div class="section" for="interests">Type some interesting bio tags here:</div>
 		<div class="">
-			<input type="text" id="interestTagInput" name="answer.data"
+			<input type="text" id="interestTagInput" name="interestingTagInput"
 				value="" />
 			<ol id="interestTagList"></ol>
 		</div>

@@ -24,7 +24,7 @@ class AdminController extends LoginController {
 	def createOrUpdateQuestion() {
 		log.debug "create or update question: $params"
 		if (params.id) {
-			def surveyQuestion = SurveyQuestion.get(params.id)
+			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 			
 			grailsWebDataBinder.bind(surveyQuestion, 
 				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
@@ -38,7 +38,7 @@ class AdminController extends LoginController {
 				flash.message = "Could not update question, please verify all fields!"
 			}
 		} else {
-			def surveyQuestion = SurveyQuestion.create(params)
+			SurveyQuestion surveyQuestion = SurveyQuestion.create(params)
 			
 			if (surveyQuestion) {
 				Map model = [surveyQuestion: surveyQuestion];
@@ -65,11 +65,9 @@ class AdminController extends LoginController {
 
 		if (surveyQuestion.hasErrors()) {
 			renderJSONPost([success: false])
-			return
 		} else {
 			Utils.save(surveyQuestion, true)
 			renderJSONPost([success: true])
-			return
 		}
 	}
 
@@ -91,7 +89,6 @@ class AdminController extends LoginController {
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
 		renderJSONPost([success: true])
-		return
 	}
 
 	def updateSurveyAnswer() {
@@ -102,11 +99,9 @@ class AdminController extends LoginController {
 
 		if (surveyAnswer.hasErrors()) {
 			renderJSONPost([success: false])
-			return
 		} else {
 			Utils.save(surveyAnswer, true)
 			renderJSONPost([success: true])
-			return
 		}
 	}
 
@@ -114,6 +109,5 @@ class AdminController extends LoginController {
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
 		surveyQuestion.delete(flush: true)
 		renderJSONPost([success: true])
-		return
 	}
 }

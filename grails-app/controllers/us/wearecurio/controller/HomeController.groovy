@@ -919,7 +919,7 @@ class HomeController extends DataController {
 		// Using any instead of each so as to be able to break the loop when error occurs
 		UserSurveyAnswer.withTransaction { status ->
 			params.answer.any({ questionAnswerMap ->
-				def userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
 				if (!userSurveyAnswer) {
 					hasErrors = true
 					status.setRollbackOnly()
@@ -932,10 +932,8 @@ class HomeController extends DataController {
 		
 		if (hasErrors) {
 			renderJSONPost([success: false])
-			return
 		} else {
 			renderJSONPost([success: true])
-			return
 		}
 	}
 
@@ -945,6 +943,5 @@ class HomeController extends DataController {
 			[max: 50, sort: "priority", order: "desc"])
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
-		return
 	}
 }
