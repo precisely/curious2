@@ -61,7 +61,7 @@ def activeClass = { a ->
 	</div>
 </div>
 <script>
-	var showModal = ${survey ? true : false};
+	var showModal = ${params.survey ? true : false};
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
 			var href = $(this).attr('href');

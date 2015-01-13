@@ -507,7 +507,8 @@ class HomeController extends DataController {
 	def index() {
 		debug "HomeController.index()"
 		def user = sessionUser()
-		[prefs:user.getPreferences(), survey: true, showTime:params.showTime?:0, templateVer:urlService.template(request)]
+		params.survey = true
+		[prefs:user.getPreferences(), showTime:params.showTime?:0, templateVer:urlService.template(request)]
 	}
 
 	def load() {
@@ -643,7 +644,7 @@ class HomeController extends DataController {
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname, survey: true,
+			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
 		if (request.xhr) {
