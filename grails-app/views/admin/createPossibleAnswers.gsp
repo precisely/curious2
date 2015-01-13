@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title>Survey Factory</title>
+		<title>Survey</title>
 		<script type="text/javascript">
 		var rowIdToRemove;
 		$(document).ready(function() {
@@ -89,7 +89,9 @@
 	<div class="main container-fluid">
 		<div>
 			<p id="surveyAnswerLable">Add possible Answers to the created question: </p>
-			<button id="addAnswerButton" data-toggle="modal" class="btn btn-default" data-target="#addAnswerOverlay"> ADD </button>
+			<button id="addAnswerButton" data-toggle="modal" class="btn btn-default" data-target="#addAnswerOverlay"> 
+				ADD 
+			</button>
 		</div>
 		<div class="row Answer-Headers">
 			<div class="col-md-3">Answer</div>
