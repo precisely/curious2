@@ -19,8 +19,7 @@
 							Answer:
 						</label>
 						<textarea placeholder="Add answer text..." maxlength="1000" 
-							name="answer" id="answer" required>
-						</textarea>
+							name="answer" id="answer" required></textarea>
 					</div>
 					<div class="row">
 						<div class="col-md-4">
@@ -36,7 +35,7 @@
 							<label for="priority">
 								Answer Priority:
 							</label>
-							<input class="answer-priority" type="number" min="0" max="10" 
+							<input class="answer-priority" type="number" min="0" 
 								name="priority" placeholder="Priority" id="priority" required/>
 						</div>
 						<div class="col-md-4">

@@ -23,8 +23,7 @@
 		<g:else>
 			<div class="">
 				<textarea id="${questionInstance.code }" name="answer.${questionInstance.code }"
-					value="" >
-				</textarea>
+					value="" ></textarea>
 			</div>
 		</g:else>
 	</div>

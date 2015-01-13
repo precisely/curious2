@@ -3,7 +3,7 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title>Survey Factory</title>
+		<title>Survey</title>
 	</head>
 	<body>
 	<div class="row red-header">
@@ -21,18 +21,14 @@
 						Question:
 					</label>
 					<textarea placeholder="New survey question..."
-						name="question" id="question" maxlength="1000" required>
-						${surveyQuestion?.question}
-					</textarea>
+						name="question" id="question" maxlength="1000" required>${surveyQuestion?.question}</textarea>
 				</div>
 				<div class="col-md-6">
 					<label for="validator">
 						Validator:
 					</label>
 					<textarea placeholder="Write a custom validator for user answers..."
-						name="validator" id="validator">
-						${surveyQuestion?.validator}
-					</textarea>
+						name="validator" id="validator">${surveyQuestion?.validator}</textarea>
 				</div>
 			</div>
 			<div class="row">
@@ -50,7 +46,7 @@
 						Question Priority:
 					</label>
 					<input class="question-priority" type="number" value= "${surveyQuestion?.priority}" 
-						min="0" max="10" name="priority" placeholder="Priority" id="priority" required/>
+						min="0" name="priority" placeholder="Priority" id="priority" required/>
 				</div>
 				<div class="col-md-4">
 					<label for="status">
