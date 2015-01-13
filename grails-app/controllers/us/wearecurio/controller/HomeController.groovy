@@ -462,7 +462,7 @@ class HomeController extends DataController {
 
 		user.setParameters(p)
 
-		Utils.save(user)
+		Utils.save(user, true)
 		
 		if (!user.validate()) {
 			flash.message = "Error updating user preferences: missing field or email already in use"
