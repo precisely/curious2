@@ -112,19 +112,31 @@
 			<table class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
-						<th>Question Priority</th>
-						<th>Question Status</th>
-						<th>Edit</th>
-						<th>Delete</th>
+						<th>
+							Question Priority
+						</th>
+						<th>
+							Question Status
+						</th>
+						<th>
+							Edit
+						</th>
+						<th>
+							Delete
+						</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td>${surveyQuestion.priority }</td>
-						<td>${surveyQuestion.status }</td>
+						<td>
+							${surveyQuestion.priority }
+						</td>
+						<td>
+							${surveyQuestion.status }
+						</td>
 						<td>
 							<g:link class="edit-question" controller="admin"
-								 action="survey" params="[id: surveyQuestion.id]">
+								action="survey" params="[id: surveyQuestion.id]">
 								<i class="fa fa-pencil"></i>
 							</g:link>
 						</td>
@@ -158,26 +170,34 @@
 					</tr>
 				</thead>
 				<tbody>
-				<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
-					<tr id="answer-${answerInstance.id}">
-						<td id="answer-code-${answerInstance.id}">${answerInstance.code}</td>
-						<td id="answer-text-${answerInstance.id}">${answerInstance.answer}</td>
-						<td id="answer-priority-${answerInstance.id}">${answerInstance.priority}</td>
-						<td id="answer-type-${answerInstance.id}">${answerInstance.answerType}</td>
-						<td>
-							<button class="edit-answer" 
-								onclick="editPossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
-								<i class="fa fa-pencil"></i>
-							</button>
-						</td>
-						<td>
-							<button class="delete-answer" 
-								onclick="deletePossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
-								<i class="fa fa-trash"></i>
-							</button>
-						</td>
-					</tr>
-				</g:each>
+					<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
+						<tr id="answer-${answerInstance.id}">
+							<td id="answer-code-${answerInstance.id}">
+								${answerInstance.code}
+							</td>
+							<td id="answer-text-${answerInstance.id}">
+								${answerInstance.answer}
+							</td>
+							<td id="answer-priority-${answerInstance.id}">
+								${answerInstance.priority}
+							</td>
+							<td id="answer-type-${answerInstance.id}">
+								${answerInstance.answerType}
+							</td>
+							<td>
+								<button class="edit-answer" 
+									onclick="editPossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
+									<i class="fa fa-pencil"></i>
+								</button>
+							</td>
+							<td>
+								<button class="delete-answer" 
+									onclick="deletePossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
+									<i class="fa fa-trash"></i>
+								</button>
+							</td>
+						</tr>
+					</g:each>
 				</tbody>
 			</table>
 		</div>

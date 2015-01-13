@@ -88,28 +88,51 @@
 	</div>
 	<div class="main container-fluid">
 		<div>
-			<p id="surveyAnswerLable">Add possible Answers to the created question: </p>
-			<button id="addAnswerButton" data-toggle="modal" class="btn btn-default" data-target="#addAnswerOverlay"> 
+			<p id="surveyAnswerLable">
+				Add possible Answers to the created question: 
+			</p>
+			<button id="addAnswerButton" data-toggle="modal" 
+				class="btn btn-default" data-target="#addAnswerOverlay"> 
 				ADD 
 			</button>
 		</div>
 		<div class="row Answer-Headers">
-			<div class="col-md-3">Answer</div>
-			<div class="col-md-3">Code</div>
-			<div class="col-md-1">Priority</div>
-			<div class="col-md-3 type">Type</div>
-			<div class="col-md-1">Edit</div>
-			<div class="col-md-1">Delete</div>
+			<div class="col-md-3">
+				Answer
+			</div>
+			<div class="col-md-3">
+				Code
+			</div>
+			<div class="col-md-1">
+				Priority
+			</div>
+			<div class="col-md-3 type">
+				Type
+			</div>
+			<div class="col-md-1">
+				Edit
+			</div>
+			<div class="col-md-1">
+				Delete
+			</div>
 		</div>
 		<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
 			<div class="row savedSurveyAnswers">
-			<div class="col col-md-3">${answerInstance.answer}</div>
-			<div class="col col-md-3">${answerInstance.code}</div>
-			<div class="col col-md-2">${answerInstance.priority}</div>
-			<div class="col col-md-2">${answerInstance.answerType}</div>
-			<div class="col col-md-1">-</div>
-			<div class="col col-md-1">-</div>
-		</div>
+				<div class="col col-md-3">
+					${answerInstance.answer}
+				</div>
+				<div class="col col-md-3">
+					${answerInstance.code}
+				</div>
+				<div class="col col-md-2">
+					${answerInstance.priority}
+				</div>
+				<div class="col col-md-2">
+					${answerInstance.answerType}
+				</div>
+				<div class="col col-md-1">-</div>
+				<div class="col col-md-1">-</div>
+			</div>
 		</g:each>
 		<form action="/admin/createAnswers" id="submitAnswersForm">
 			<input type="hidden" name="questionId" value="${surveyQuestion.id}" />

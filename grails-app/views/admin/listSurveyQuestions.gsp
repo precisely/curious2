@@ -13,7 +13,9 @@
 			</div>
 		</div>
 		<div class="main container-fluid survey-factory">
-			<h1>Question List:</h1>
+			<h1>
+				Question List:
+			</h1>
 			<table class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
@@ -27,18 +29,24 @@
 					</tr>
 				</thead>
 				<tbody>
-				<g:each in="${questions}" var="questionInstance">
-					<tr>
-						<td>
-							<g:link controller="admin" action="showSurveyQuestion" id= "${questionInstance.id}">
-								${questionInstance.code}
-							</g:link>
-						</td>
-						<td>${questionInstance.question}</td>
-						<td>${questionInstance.priority}</td>
-						<td>${questionInstance.status}</td>
-					</tr>
-				</g:each>
+					<g:each in="${questions}" var="questionInstance">
+						<tr>
+							<td>
+								<g:link controller="admin" action="showSurveyQuestion" id= "${questionInstance.id}">
+									${questionInstance.code}
+								</g:link>
+							</td>
+							<td>
+								${questionInstance.question}
+							</td>
+							<td>
+								${questionInstance.priority}
+							</td>
+							<td>
+								${questionInstance.status}
+							</td>
+						</tr>
+					</g:each>
 				</tbody>
 			</table>
 		</div>

@@ -23,10 +23,14 @@
 					</div>
 					<div class="modal-footer">
 						<a id="navigate-left" href="#carousel-content" role="button" data-slide="prev">
-							<button type="button" class="navigate-carousel-left">Previous</button>
+							<button type="button" class="navigate-carousel-left">
+								Previous
+							</button>
 						</a>
 						<a id="navigate-right" href="#carousel-content" role="button" data-slide="next">
-							<button type="button" class="navigate-carousel-right">Next</button>
+							<button type="button" class="navigate-carousel-right">
+								Next
+							</button>
 						</a>
 					</div>
 				</form>
