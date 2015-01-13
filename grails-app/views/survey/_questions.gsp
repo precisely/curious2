@@ -11,7 +11,8 @@
 		<g:if test="${questionInstance.possibleAnswers[0].answerType.value() == 1}">
 			<div class="section">SELECT AN ANSWER</div>
 			<g:each in="${questionInstance.possibleAnswers}" var="answerInstance">
-					<input type="radio" name="answer.${questionInstance.code }" id="answer-${answerInstance.id}" value="${answerInstance.code}">
+					<input type="radio" name="answer.${questionInstance.code }" 
+						id="answer-${answerInstance.id}" value="${answerInstance.code}">
 					<label for="answer-${answerInstance.id}" class="radio-label">${answerInstance.answer}</label>
 			</g:each>
 		</g:if>

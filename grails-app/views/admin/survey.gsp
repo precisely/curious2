@@ -31,16 +31,19 @@
 				<div class="col-md-4">
 					<div class="input-affordance">
 						<label for="code">Question Code:</label>
-						<input class="question-code" type="text" value= "${surveyQuestion?.code}" placeholder="Unique survey question code..." name="code" id="code" required />
+						<input class="question-code" type="text" value= "${surveyQuestion?.code}" 
+							placeholder="Unique survey question code..." name="code" id="code" required />
 					</div>
 				</div>
 				<div class="col-md-4">
 					<label for="priority">Question Priority:</label>
-					<input class="question-priority" type="number" value= "${surveyQuestion?.priority}" min="0" max="10" name="priority" placeholder="Priority" id="priority" required/>
+					<input class="question-priority" type="number" value= "${surveyQuestion?.priority}" 
+						min="0" max="10" name="priority" placeholder="Priority" id="priority" required/>
 				</div>
 				<div class="col-md-4">
 					<label for="status">Question Status:</label>
-					<g:select class="question-status" name="status" from="${QuestionStatus.values()}" value="${QuestionStatus}" />
+					<g:select class="question-status" name="status" 
+						from="${QuestionStatus.values()}" value="${QuestionStatus}" />
 				</div>
 			</div>
 			<input type="hidden" name="id" value="${surveyQuestion?.id}"/>

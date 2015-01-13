@@ -16,7 +16,7 @@
             <g:link controller="sharedTagGroup" action="list">Shared Tag Groups</g:link>
         </li>
         <li>
-            <g:link controller="admin" action="surveyFactory">Survey Factory</g:link>
+            <g:link controller="admin" action="survey">Survey</g:link>
         </li>
         <li>
             <g:link controller="admin" action="listSurveyQuestions">Survey Questions</g:link>

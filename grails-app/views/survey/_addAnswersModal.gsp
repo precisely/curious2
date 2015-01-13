@@ -8,27 +8,35 @@
 				</button>
 				<h4 class="modal-title">Add Answer</h4>
 			</div>
-			<div class="alert alert-danger hide" id="alert" role="alert">Some error has occurred while performing the operation. Perhaps some answers are not in required format or survey has already been done!</div>
+			<div class="alert alert-danger hide" id="alert" role="alert">
+				Some error has occurred while performing the operation. 
+				Perhaps some answers are not in required format or survey has already been done!
+			</div>
 			<form id="addSurveyAnswerForm">
 				<div class="modal-body">
 					<div>
 						<label for="question">Answer:</label>
-						<textarea placeholder="Add answer text..." maxlength="1000" name="answer" id="answer" required></textarea>
+						<textarea placeholder="Add answer text..." maxlength="1000" 
+							name="answer" id="answer" required>
+						</textarea>
 					</div>
 					<div class="row">
 						<div class="col-md-4">
 							<div class="input-affordance">
 								<label for="question">Answer Code:</label>
-								<input class="answer-code" type="text" placeholder="Enter answer code..." name="code" id="code" required />
+								<input class="answer-code" type="text" placeholder="Enter answer code..." 
+									name="code" id="code" required />
 							</div>
 						</div>
 						<div class="col-md-4">
 							<label for="priority">Answer Priority:</label>
-							<input class="answer-priority" type="number" min="0" max="10" name="priority" placeholder="Priority" id="priority" required/>
+							<input class="answer-priority" type="number" min="0" max="10" 
+								name="priority" placeholder="Priority" id="priority" required/>
 						</div>
 						<div class="col-md-4">
 							<label for="question">Answer Type:</label>
-							<g:select class="answer-type" name="answerType" from="${SurveyAnswerType.values()}" value="${SurveyAnswerType}"/>
+							<g:select class="answer-type" name="answerType" 
+								from="${SurveyAnswerType.values()}" value="${SurveyAnswerType}"/>
 						</div>
 					</div>
 				</div>

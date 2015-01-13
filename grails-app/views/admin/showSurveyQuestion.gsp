@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title>Survey Factory</title>
+		<title>Survey</title>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('#addSurveyAnswerForm').submit(function(event) {
@@ -122,13 +122,25 @@
 					<tr>
 						<td>${surveyQuestion.priority }</td>
 						<td>${surveyQuestion.status }</td>
-						<td><g:link class="edit-question" controller="admin" action="surveyFactory" params="[id: surveyQuestion.id]"><i class="fa fa-pencil"></i></g:link></td>
-						<td><button class="delete-question" onclick="deleteQuestion(${surveyQuestion.id})"><i class="fa fa-trash"></i></button></td>
+						<td>
+							<g:link class="edit-question" controller="admin"
+								 action="survey" params="[id: surveyQuestion.id]">
+								<i class="fa fa-pencil"></i>
+							</g:link>
+						</td>
+						<td>
+							<button class="delete-question" onclick="deleteQuestion(${surveyQuestion.id})">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
 					</tr>
 				</tbody>
 			</table>
 			<h3 style="display: inline-block;">Possible Answers &nbsp;&nbsp;</h2>
-			<g:link class="edit-question" controller="admin" action="addPossibleAnswers" params="[id: surveyQuestion.id]"><i class="fa fa-plus-circle"></i></g:link>
+			<g:link class="edit-question" controller="admin" 
+				action="addPossibleAnswers" params="[id: surveyQuestion.id]">
+				<i class="fa fa-plus-circle"></i>
+			</g:link>
 			<table class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
@@ -152,8 +164,18 @@
 						<td id="answer-text-${answerInstance.id}">${answerInstance.answer}</td>
 						<td id="answer-priority-${answerInstance.id}">${answerInstance.priority}</td>
 						<td id="answer-type-${answerInstance.id}">${answerInstance.answerType}</td>
-						<td><button class="edit-answer" onclick="editPossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})"><i class="fa fa-pencil"></i></button></div>
-						<td><button class="delete-answer" onclick="deletePossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})"><i class="fa fa-trash"></i></button></div>
+						<td>
+							<button class="edit-answer" 
+								onclick="editPossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
+								<i class="fa fa-pencil"></i>
+							</button>
+						</td>
+						<td>
+							<button class="delete-answer" 
+								onclick="deletePossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
 					</tr>
 				</g:each>
 				</tbody>

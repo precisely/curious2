@@ -13,8 +13,7 @@ class AdminController extends LoginController {
 		
 	}
 
-	def surveyFactory(Long id) {
-		log.debug "survey facotry"
+	def survey(Long id) {
 		Map model = null
 		if (id) {
 			model = [surveyQuestion: SurveyQuestion.get(id)]
@@ -27,7 +26,8 @@ class AdminController extends LoginController {
 		if (params.id) {
 			def surveyQuestion = SurveyQuestion.get(params.id)
 			
-			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
+			grailsWebDataBinder.bind(surveyQuestion, 
+				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
 			surveyQuestion.validate()
 	
 			if (!surveyQuestion.hasErrors()) {
@@ -94,7 +94,8 @@ class AdminController extends LoginController {
 
 	def UpdateSurveyAnswer() {
 		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
-		grailsWebDataBinder.bind(surveyAnswer, params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])
+		grailsWebDataBinder.bind(surveyAnswer, 
+			params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])
 		surveyAnswer.validate()
 
 		if (surveyAnswer.hasErrors()) {

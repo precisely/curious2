@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title>Survey Factory</title>
+		<title>Survey</title>
 	</head>
 	<body>
 		<div class="row red-header">
@@ -29,7 +29,11 @@
 				<tbody>
 				<g:each in="${questions}" var="questionInstance">
 					<tr>
-						<td><g:link controller="admin" action="showSurveyQuestion" id= "${questionInstance.id}">${questionInstance.code}</g:link></td>
+						<td>
+							<g:link controller="admin" action="showSurveyQuestion" id= "${questionInstance.id}">
+								${questionInstance.code}
+							</g:link>
+						</td>
 						<td>${questionInstance.question}</td>
 						<td>${questionInstance.priority}</td>
 						<td>${questionInstance.status}</td>
