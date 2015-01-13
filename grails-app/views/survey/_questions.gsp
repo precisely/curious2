@@ -1,11 +1,6 @@
 <g:set var="counter" value="${1}" />
 <g:each in="${questions }" var="questionInstance">
-	<g:if test="${counter == 1}">
-		<div class="item active">
-	</g:if>
-	<g:else>
-		<div class="item">
-	</g:else>
+	<div class="item ${(counter == 1) ? 'active' : ''}">
 		<div class="section">QUESTION:</div>
 		<p>${questionInstance.question }</p>
 		<g:if test="${questionInstance.possibleAnswers[0].answerType.value() == 1}">
@@ -29,12 +24,7 @@
 	</div>
 	<g:set var="counter" value="${counter + 1}" />
 </g:each>
-<g:if test="${counter == 1}">
-	<div class="item active">
-</g:if>
-<g:else>
-	<div class="item">
-</g:else>
+<div class="item ${(counter == 1) ? 'active' : ''}">
 	<div class="form-group">
 		<div class="section" for="interests">Type some interesting bio tags here:</div>
 		<div class="">

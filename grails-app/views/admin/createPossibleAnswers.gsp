@@ -13,7 +13,7 @@
 				console.log('modal submited....',params);
 				var answerType = (params[3].value == "MCQ")?"MCQ":"DESCRIPTIVE";
 
-				var innerHTMLContent = '<div class="row surveyAnswers" id="' + rowNo +'"><div class="col-md-3"> ' + 
+				var innerHTMLContent = '<div class="row survey-answers" id="' + rowNo +'"><div class="col-md-3"> ' + 
 					'<input type="text" name="possibleAnswers['+ rowNo +'].answer" id="answer" readonly value="' + params[0].value + '"/></div>' + 
 					'<div class="col-md-3"><input type="text" class="answer-code" name="possibleAnswers['+ rowNo +'].code" id="code" readonly value="' + params[1].value + '"/></div>' + 
 					'<div class="col-md-1"><input type="number" class="answer-priority" name="possibleAnswers['+ rowNo +'].priority" id="priority" value="' + params[2].value + '" readonly/></div>' + 
@@ -117,7 +117,7 @@
 			</div>
 		</div>
 		<g:each in="${surveyQuestion.possibleAnswers}" var="answerInstance">
-			<div class="row savedSurveyAnswers">
+			<div class="row saved-survey-answers">
 				<div class="col col-md-3">
 					${answerInstance.answer}
 				</div>

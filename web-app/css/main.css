@@ -1309,7 +1309,7 @@ body.discuss-page .red-header {
 	margin-bottom: 10px;
 }
 
-.surveyAnswers #answer {
+.survey-answers #answer {
 	width: 100%;
 	height: 40px;
 	background-color: #fff;
@@ -1410,28 +1410,28 @@ body.discuss-page .red-header {
 	text-align: center;
 }
 
-.surveyAnswers {
+.survey-answers {
 	background-color: white;
 	margin: 10px;
 	border-bottom: 1px rgb(221, 221, 221) solid;
 }
 
-.savedSurveyAnswers {
+.saved-survey-answers {
 	margin: 0px 10px;
 }
 
-.savedSurveyAnswers .col {
+.saved-survey-answers .col {
 	background-color: white;
 	height: 30px;
 	border-left: 1px rgb(221, 221, 221) solid;
 	border-bottom: 1px rgb(221, 221, 221) solid;
 }
 
-.savedSurveyAnswers .col:last-child {
+.saved-survey-answers .col:last-child {
 	border-right: 1px rgb(221, 221, 221) solid;
 }
 
-.surveyAnswers .answer-type {
+.survey-answers .answer-type {
 	color: #a4a4a4;
 	background-color: white;
 }

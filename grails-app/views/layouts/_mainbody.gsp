@@ -60,12 +60,8 @@ def activeClass = { a ->
 		</ul>
 	</div>
 </div>
-<g:if test="${survey == true}">
-	<script>
-		var showModal = true;
-	</script>
-</g:if>
 <script>
+	var showModal = ${survey ? true : false};
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
 			var href = $(this).attr('href');

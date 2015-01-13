@@ -173,9 +173,9 @@ $(document).ready(function() {
 		$('#navigate-right').prop('href','#carousel-content');
 		$('#navigate-right').html('<button type="button" class="navigate-carousel-right">NEXT</button>');
 		
-		if($('.carousel-inner .item:first').hasClass('active')) {
+		if ($('.carousel-inner .item:first').hasClass('active')) {
 			$('#navigate-left').prop('disabled', true).children('button').text('');
-		} else if($('.carousel-inner .item:last').hasClass('active')) {
+		} else if ($('.carousel-inner .item:last').hasClass('active')) {
 			$('#navigate-right').prop('href','#');
 			$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 		}
@@ -192,7 +192,7 @@ $(document).ready(function() {
 			data: params,
 			success: function(data) {
 				data = JSON.parse(data);
-				if(data.success) {
+				if (data.success) {
 					$('#takeSurveyOverlay').modal('hide');
 					showAlert('Survey completed successfully!');
 				} else {
