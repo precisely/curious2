@@ -6,29 +6,29 @@
 		<script type="text/javascript">
 		var rowIdToRemove;
 		$(document).ready(function() {
-			var rowNo = ${(surveyQuestion.possibleAnswers.size() ?: -1) + 1};
+			var rowNumber = ${(surveyQuestion.possibleAnswers.size() ?: -1) + 1};
 			$('#addSurveyAnswerForm').submit(function(event) {
 				$('.add-answer').attr('disabled','disabled');
 				params = $(this).serializeArray();
 				console.log('modal submited....',params);
 				var answerType = (params[3].value == "MCQ")?"MCQ":"DESCRIPTIVE";
 
-				var innerHTMLContent = '<div class="row survey-answers" id="' + rowNo +'"><div class="col-md-3"> ' + 
-					'<input type="text" name="possibleAnswers['+ rowNo +'].answer" id="answer" readonly value="' + params[0].value + '"/></div>' + 
-					'<div class="col-md-3"><input type="text" class="answer-code" name="possibleAnswers['+ rowNo +'].code" id="code" readonly value="' + params[1].value + '"/></div>' + 
-					'<div class="col-md-1"><input type="number" class="answer-priority" name="possibleAnswers['+ rowNo +'].priority" id="priority" value="' + params[2].value + '" readonly/></div>' + 
-					'<div class="col-md-3"><input readonly type="text" class="answer-type" name="possibleAnswers['+ rowNo +'].answerType" value="' + answerType + '"></div>' + 
-					'<div class="col-md-1"> <button class="edit-answer" onclick="editAnswer(' + rowNo + ')"><i class="fa fa-pencil"></i></button></div>' + 
-					'<div class="col-md-1"><button onclick="deleteAnswer(' + rowNo + ')" class="delete-answer"> <i class="fa fa-trash"></i></button></div></div>';
+				var innerHTMLContent = '<div class="row survey-answers" id="' + rowNumber + '"><div class="col-md-3"> ' + 
+					'<input type="text" name="possibleAnswers[' + rowNumber + '].answer" id="answer" readonly value="' + params[0].value + '"/></div>' + 
+					'<div class="col-md-3"><input type="text" class="answer-code" name="possibleAnswers[' + rowNumber + '].code" id="code" readonly value="' + params[1].value + '"/></div>' + 
+					'<div class="col-md-1"><input type="number" class="answer-priority" name="possibleAnswers[' + rowNumber + '].priority" id="priority" value="' + params[2].value + '" readonly/></div>' + 
+					'<div class="col-md-3"><input readonly type="text" class="answer-type" name="possibleAnswers[' + rowNumber + '].answerType" value="' + answerType + '"></div>' + 
+					'<div class="col-md-1"> <button class="edit-answer" onclick="editAnswer(' + rowNumber + ')"><i class="fa fa-pencil"></i></button></div>' + 
+					'<div class="col-md-1"><button onclick="deleteAnswer(' + rowNumber + ')" class="delete-answer"> <i class="fa fa-trash"></i></button></div></div>';
 
 				if (rowIdToRemove != null) {
-					$('#'+rowIdToRemove).remove();
+					$('#' + rowIdToRemove).remove();
 					rowIdToRemove = null;
 				}
 				$('#answerInputAffordance').append(innerHTMLContent);
 				$('#addAnswerOverlay').modal('toggle');
 				$('.add-answer').removeAttr('disabled');
-				rowNo += 1;
+				rowNumber += 1;
 				return false;
 			});
 
@@ -68,10 +68,10 @@
 
 		function editAnswer(rowId) {
 			rowIdToRemove = rowId;
-			$('#addAnswerOverlay').find('#answer').val($('#'+rowId).find('#answer').val());
-			$('#addAnswerOverlay').find('#code').val($('#'+rowId).find('#code').val());
-			$('#addAnswerOverlay').find('#priority').val($('#'+rowId).find('#priority').val());
-			$('#addAnswerOverlay').find('.answer-type').val($('#'+rowId).find('.answer-type').val());
+			$('#addAnswerOverlay').find('#answer').val($('#' + rowId).find('#answer').val());
+			$('#addAnswerOverlay').find('#code').val($('#' + rowId).find('#code').val());
+			$('#addAnswerOverlay').find('#priority').val($('#' + rowId).find('#priority').val());
+			$('#addAnswerOverlay').find('.answer-type').val($('#' + rowId).find('.answer-type').val());
 			$('#addAnswerOverlay').find('.add-answer').text('Save');
 			$('#addAnswerOverlay').find('h4').text('Edit Answer');
 			$('#addAnswerOverlay').modal('toggle');

@@ -34,6 +34,7 @@ class AdminController extends LoginController {
 				Utils.save(surveyQuestion, true)
 				redirect(uri: "admin/listSurveyQuestions")
 			} else {
+				redirect(uri: "admin/survey?id=" + params.id)
 				flash.message = "Could not update question, please verify all fields!"
 			}
 		} else {
@@ -43,6 +44,7 @@ class AdminController extends LoginController {
 				Map model = [surveyQuestion: surveyQuestion];
 				redirect(uri: "admin/addPossibleAnswers?id=$surveyQuestion.id")
 			} else {
+				redirect(uri: "admin/survey")
 				flash.message = "Could not add question, perhaps code is not unique!"
 			}
 		}
