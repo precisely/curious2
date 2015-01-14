@@ -12,6 +12,11 @@ class SurveyAnswer implements Comparable{
 		answer(blank: false, size: 1..1000)
 	}
 
+	static mapping = {
+		id column : 'id', index:'id_index'
+		code column : 'code', index:'code_index'
+	}
+
 	@Override
 	public int compareTo(Object o) {
 		if (!(o instanceof SurveyAnswer))
@@ -19,15 +24,15 @@ class SurveyAnswer implements Comparable{
 		
 		return ((SurveyAnswer)o).priority.compareTo(priority)
 	}
-}
 
-enum SurveyAnswerType {
-	MCQ(1),
-	DESCRIPTIVE(2)
-	
-	final int id
-	SurveyAnswerType(int id) {
-		this.id = id;
+	public static enum SurveyAnswerType {
+		MCQ(1),
+		DESCRIPTIVE(2)
+		
+		final int id
+		SurveyAnswerType(int id) {
+			this.id = id;
+		}
+		public int value() { return id }
 	}
-	public int value() { return id }
 }

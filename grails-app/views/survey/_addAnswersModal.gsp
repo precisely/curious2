@@ -1,4 +1,4 @@
-<%@ page import="us.wearecurio.model.SurveyAnswerType" %>
+<%@ page import="us.wearecurio.model.SurveyAnswer" %>
 <div class="modal fade" id="addAnswerOverlay">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -43,7 +43,7 @@
 								Answer Type:
 							</label>
 							<g:select class="answer-type" name="answerType" 
-								from="${SurveyAnswerType.values()}" value="${SurveyAnswerType}"/>
+								from="${SurveyAnswer.SurveyAnswerType.values()}" value="${SurveyAnswer.SurveyAnswerType}"/>
 						</div>
 					</div>
 				</div>

@@ -1,4 +1,4 @@
-<%@ page import="us.wearecurio.model.QuestionStatus" %>
+<%@ page import="us.wearecurio.model.SurveyQuestion" %>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -15,21 +15,12 @@
 	</div>
 	<div class="main container-fluid survey-factory">
 		<form action="/admin/createOrUpdateQuestion" method="post">
-			<div class="row survey-question">
-				<div class="col-md-6">
-					<label for="question">
-						Question:
-					</label>
-					<textarea placeholder="New survey question..."
-						name="question" id="question" maxlength="1000" required>${surveyQuestion?.question}</textarea>
-				</div>
-				<div class="col-md-6">
-					<label for="validator">
-						Validator:
-					</label>
-					<textarea placeholder="Write a custom validator for user answers..."
-						name="validator" id="validator">${surveyQuestion?.validator}</textarea>
-				</div>
+			<div class="survey-question">
+				<label for="question">
+					Question:
+				</label>
+				<textarea placeholder="New survey question..."
+					name="question" id="question" maxlength="1000" required>${surveyQuestion?.question}</textarea>
 			</div>
 			<div class="row">
 				<div class="col-md-4">
@@ -52,8 +43,8 @@
 					<label for="status">
 						Question Status:
 					</label>
-					<g:select class="question-status" name="status" 
-						from="${QuestionStatus.values()}" value="${QuestionStatus}" />
+					<g:select class="question-status" name="status"
+						from="${SurveyQuestion.QuestionStatus.values()}" value="${surveyQuestion?.status}" />
 				</div>
 			</div>
 			<input type="hidden" name="id" value="${surveyQuestion?.id}"/>

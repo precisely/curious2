@@ -3,7 +3,6 @@ package us.wearecurio.controller
 import org.grails.databinding.SimpleMapDataBindingSource
 import us.wearecurio.model.SurveyAnswer
 import us.wearecurio.model.SurveyQuestion
-import us.wearecurio.model.QuestionStatus
 import us.wearecurio.utility.Utils
 
 class AdminController extends LoginController {
@@ -72,7 +71,7 @@ class AdminController extends LoginController {
 	}
 
 	def listSurveyQuestions() {
-		List questions = SurveyQuestion.findAllWhere(status: QuestionStatus.ACTIVE)
+		List questions = SurveyQuestion.findAll()
 		Map model = [questions: questions]
 		model
 	}

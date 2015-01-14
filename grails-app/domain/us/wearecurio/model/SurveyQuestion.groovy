@@ -1,8 +1,5 @@
 package us.wearecurio.model
 
-import java.util.SortedSet;
-
-import us.wearecurio.model.SurveyAnswerType
 import us.wearecurio.utility.Utils
 
 class SurveyQuestion {
@@ -11,7 +8,6 @@ class SurveyQuestion {
 	String question
 	List<SurveyAnswer> possibleAnswers = []
 	Integer priority
-	String validator
 	QuestionStatus status
 	
 	static hasMany = [
@@ -21,7 +17,6 @@ class SurveyQuestion {
 	static constraints = {
 		code blank: false, size: 1..40, unique: true
 		question blank: false, size: 5..1000
-		validator nullable: true 
 		possibleAnswers validator: {possibleAnswers->
 			boolean argumentsValid = true
 			possibleAnswers.any({ possibleAnswer ->
@@ -38,6 +33,8 @@ class SurveyQuestion {
 
 	static mapping = {
 		possibleAnswers cascade: 'all-delete-orphan'
+		id column : 'id', index:'id_index'
+		code column : 'code', index:'code_index'
 	}
 
 	static SurveyQuestion create(Map params) {
@@ -51,14 +48,13 @@ class SurveyQuestion {
 			return surveyQuestion
 		}
 	}
-}
-
-enum QuestionStatus {
-	ACTIVE(1),
-	INACTIVE(0)
-	
-	final int id
-	QuestionStatus(int id) {
-		this.id = id
+	public static enum QuestionStatus {
+		ACTIVE(1),
+		INACTIVE(0)
+		
+		final int id
+		QuestionStatus(int id) {
+			this.id = id
+		}
 	}
 }

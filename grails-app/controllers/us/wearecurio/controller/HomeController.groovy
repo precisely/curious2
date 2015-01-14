@@ -939,7 +939,7 @@ class HomeController extends DataController {
 
 	def getSurveyData() {
 		log.debug "Home.getSurveyData()"
-		List questions = SurveyQuestion.findAllByStatus(QuestionStatus.ACTIVE, 
+		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE, 
 			[max: 50, sort: "priority", order: "desc"])
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model

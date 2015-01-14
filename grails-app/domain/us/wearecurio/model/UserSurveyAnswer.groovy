@@ -1,6 +1,5 @@
 package us.wearecurio.model
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import us.wearecurio.utility.Utils
 
 class UserSurveyAnswer {
@@ -13,26 +12,17 @@ class UserSurveyAnswer {
 		questionCode(nullable: false)
 	}
 
+	static mapping = {
+		userId column : 'user_id', index:'user_id_index'
+		questionCode column : 'question_code', index:'question_code_index'
+	}
+
 	public static UserSurveyAnswer create(User user, String questionCode, String answerText) {
 		SurveyQuestion surveyQuestion = SurveyQuestion.findByCode(questionCode)
-
 		if (!surveyQuestion) {
 			return null
 		}
 
-		if (surveyQuestion.validator) {
-			GroovyShell shell = new GroovyShell()
-			CustomAnswerFieldHolder customAnswerHolder = new CustomAnswerFieldHolder()
-			ConstrainedProperty constrainedProperty = new ConstrainedProperty(CustomAnswerFieldHolder, "answerText", String)
-			
-			Closure validationClosure = shell.evaluate(surveyQuestion.validator)
-			constrainedProperty.applyConstraint(ConstrainedProperty.VALIDATOR_CONSTRAINT, validationClosure)
-			constrainedProperty.validate(customAnswerHolder, answerText, customAnswerHolder.getErrors())
-			if (customAnswerHolder.hasErrors()) {
-				return null
-			}
-		}
-		
 		UserSurveyAnswer userSurveyAnswer = new UserSurveyAnswer()
 		userSurveyAnswer.userId = user.id
 		userSurveyAnswer.questionCode = questionCode
