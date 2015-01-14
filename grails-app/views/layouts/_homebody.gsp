@@ -1,7 +1,7 @@
 <!-- HEADER -->
 <g:render template="/layouts/header"/>
 <!-- /HEADER -->
-
+<g:render template="/layouts/alertMessage" />
 <g:layoutBody />
 
 <!-- FOOTER -->
