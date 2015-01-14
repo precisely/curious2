@@ -3174,7 +3174,7 @@ class Entry implements Comparable {
 	}
 
 	boolean equals(Object o) {
-		if (!o instanceof Entry)
+		if (!(o instanceof Entry))
 			return false
 		return this.is(o)
 	}
