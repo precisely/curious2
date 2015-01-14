@@ -507,7 +507,6 @@ class HomeController extends DataController {
 	def index() {
 		debug "HomeController.index()"
 		def user = sessionUser()
-		params.survey = true
 		[prefs:user.getPreferences(), showTime:params.showTime?:0, templateVer:urlService.template(request)]
 	}
 
@@ -933,6 +932,7 @@ class HomeController extends DataController {
 		if (hasErrors) {
 			renderJSONPost([success: false])
 		} else {
+			session.survey = null
 			renderJSONPost([success: true])
 		}
 	}
