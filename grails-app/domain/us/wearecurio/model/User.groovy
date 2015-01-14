@@ -30,9 +30,9 @@ class User implements NameEmail {
 		sex(maxSize:1, blank:false)
 		twitterAccountName(maxSize:32, nullable:true, unique:true)
 		twitterDefaultToNow(nullable:true)
-		location(maxSize:150, nullable:true)
 		created(nullable:true)
 		notifyOnComments(nullable:true)
+		virtual(nullable:true)
 	}
 
 	static mapping = {
@@ -65,7 +65,23 @@ class User implements NameEmail {
 
 		return user
 	}
-
+	
+	public static User createVirtual() {
+		log.debug "User.createVirtual()"
+		
+		User user = new User()
+		user.created = new Date()
+		user.username = "__virtual" + UUID.randomUUID().toString()
+		user.email = user.username
+		user.virtual = true
+		user.setPassword("x")
+		user.sex = 'N'
+		
+		Utils.save(user, true)
+		
+		return user
+	}
+	
 	public static void delete(User user) {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
@@ -98,7 +114,6 @@ class User implements NameEmail {
 		first = map["first"] == null ? first : map['first']
 		last = map["last"] == null ? last : map['last']
 		sex = map["sex"] == null ? sex : map['sex']
-		location = map["location"] == null ? location : map['location']
 
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
@@ -146,13 +161,13 @@ class User implements NameEmail {
 	String first
 	String last
 	String sex
-	String location
 	Date birthdate
 	String twitterAccountName
 	Boolean twitterDefaultToNow
 	Boolean displayTimeAfterTag
 	Boolean webDefaultToNow
 	Boolean notifyOnComments
+	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
 
 	def getPreferences() {
@@ -163,7 +178,7 @@ class User implements NameEmail {
 	}
 
 	static lookup(String username, String password) {
-		return User.findByUsernameAndPassword(username, (password + passwordSalt + username).encodeAsMD5Hex())
+		return User.findByUsernameAndPasswordAndVirtualNotEqual(username, (password + passwordSalt + username).encodeAsMD5Hex(), (Boolean)true)
 	}
 
 	boolean checkPassword(password) {
@@ -306,7 +321,7 @@ class User implements NameEmail {
 
 	String toString() {
 		return "User(id: " + id + " username: " + username + " email: " + email + " remindEmail: " + remindEmail + " password: " + (password ? "set" : "unset") \
-				+ " first: " + first + " last: " + last + " sex: " + sex + " location: " + location \
+				+ " first: " + first + " last: " + last + " sex: " + sex \
 				+ " birthdate: " + Utils.dateToGMTString(birthdate) \
 				+ " twitterAccountName: " + twitterAccountName \
 				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"

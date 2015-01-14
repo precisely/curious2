@@ -42,6 +42,7 @@ grails.project.dependency.resolution = {
         grailsCentral()
         mavenCentral()
         // uncomment these (or add new ones) to enable remote dependency resolution from public Maven repositories
+		mavenRepo "http://repo.grails.org/grails/core"
 		mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
@@ -71,6 +72,7 @@ grails.project.dependency.resolution = {
 		compile ":oauth:2.4"
 		compile ":csv:0.3.1"
 		compile ":message-digest:1.1"
+		//compile ":searchable:0.6.9"
 		
         // plugins needed at runtime but not for compilation
         // runtime ":hibernate4:4.3.5.5" // or

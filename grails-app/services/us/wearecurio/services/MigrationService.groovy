@@ -392,6 +392,13 @@ class MigrationService {
 		tryMigration("Add admin users") {
 			UserGroup.lookupOrCreateSystemGroup().addAdmin(User.findByUsername("x"))
 		}
+		tryMigration("Remove user location") {
+			try {
+				sql("ALTER TABLE `user` DROP COLUMN `location`")
+			} catch (Throwable t) {
+			}
+
+		}
 	}
 	
 	/**

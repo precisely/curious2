@@ -79,7 +79,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def c = controller.response.contentAsString
 
 		assert controller.response.contentAsString.startsWith('callback([{"class":"us.wearecurio.model.User","id":' + userId + ',"birthdate"')
-		assert controller.response.contentAsString.contains('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","interestTags":null,"last":"y","location":null,"notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","webDefaultToNow":true')
+		assert controller.response.contentAsString.contains('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","interestTags":null,"last":"y","notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","virtual":null,"webDefaultToNow":true')
 	}
 
 	@Test

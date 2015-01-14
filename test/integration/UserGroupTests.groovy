@@ -211,4 +211,12 @@ class UserGroupTests extends CuriousTestCase {
 
 		assert paginationData.totalCount == 6
 	}
+	
+	@Test
+	void testVirtualUserGroup() {
+		UserGroup group = UserGroup.createVirtual("Test full name")
+		
+		assert group.fullName == "Test full name"
+		assert group.isVirtual
+	}
 }

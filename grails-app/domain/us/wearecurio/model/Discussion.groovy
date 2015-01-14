@@ -5,6 +5,7 @@ import grails.converters.*
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EmailService
 
 class Discussion {
@@ -113,8 +114,6 @@ class Discussion {
 			return true
 		}
 	}
-	
-	
 	
 	public Discussion() {
 	}

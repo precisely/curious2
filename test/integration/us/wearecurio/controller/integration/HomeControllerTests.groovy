@@ -107,7 +107,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		def modelAndView = controller.modelAndView
 
 		assert modelAndView.model.toString().startsWith("[precontroller:home, preaction:index, user:User(")
-		assert modelAndView.model.toString().contains("username: y email: y@y.com remindEmail: null password: set first: y last: y sex: F location: null birthdate:")
+		assert modelAndView.model.toString().contains("username: y email: y@y.com remindEmail: null password: set first: y last: y sex: F birthdate:")
 		assert modelAndView.model.toString().endsWith("twitterAccountName: null twitterDefaultToNow: true), prefs:[twitterAccountName:null, twitterDefaultToNow:true, displayTimeAfterTag:true, webDefaultToNow:true], templateVer:main]")
 		assert modelAndView.getViewName().equals("/home/userpreferences")
 	}

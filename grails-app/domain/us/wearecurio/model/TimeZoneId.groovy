@@ -1,6 +1,6 @@
 package us.wearecurio.model
 
-import java.util.Date;
+import java.util.Date
 
 import us.wearecurio.utility.Utils
 
@@ -70,9 +70,29 @@ class TimeZoneId {
 		
 		return timeZoneId
 	}
+	
+	static TimeZone getUTCTimeZone() {
+		return getTimeZone(null)
+	}
+	
+	static TimeZone getTimeZone(String name) {
+		return getTimeZoneInstance(look(name))
+	}
+
+	static TimeZone getUTCDateTimeZone() {
+		return getDateTimeZone(null)
+	}
+	
+	static TimeZone getDateTimeZone(String name) {
+		return getDateTimeZoneInstance(look(name))
+	}
 
 	static TimeZone getTimeZoneInstance(Integer timeZoneId) {
 		fromId(timeZoneId).toDateTimeZone().toTimeZone()
+	}
+	
+	static DateTimeZone getDateTimeZoneInstance(Integer timeZoneId) {
+		fromId(timeZoneId).toDateTimeZone()
 	}
 	
 	static TimeZoneId look(String name) {

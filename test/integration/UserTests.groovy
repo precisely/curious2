@@ -30,7 +30,6 @@ class UserTests extends CuriousTestCase {
 		params.put("first", "first")
 		params.put("last", "last")
 		params.put("sex", "F")
-		params.put("location", "New York, NY")
 		params.put("birthdate", "12/1/1990")
 		params.put("notifyOnComments", "false")
 		
@@ -50,7 +49,6 @@ class UserTests extends CuriousTestCase {
 		params.put("first", "first")
 		params.put("last", "last")
 		params.put("sex", "F")
-		params.put("location", "New York, NY")
 		params.put("birthdate", "12/1/1990")
 		
 		def user = User.create(params)
@@ -59,4 +57,12 @@ class UserTests extends CuriousTestCase {
 
 		assertTrue(Utils.save(user))
 	}
+	
+	@Test
+	void testCreateVirtual() {
+		User user = User.createVirtual()
+		
+		assert user.virtual
+	}
+
 }

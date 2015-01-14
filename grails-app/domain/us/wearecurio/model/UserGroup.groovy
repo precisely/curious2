@@ -23,6 +23,7 @@ class UserGroup {
 		fullName(unique:true)
 		fullName(nullable:true)
 		description(nullable:true)
+		isVirtual(nullable:true)
 	}
 
 	static mapping = {
@@ -37,6 +38,7 @@ class UserGroup {
 	boolean isModerated // all posts are moderated before posting (not yet implemented)
 	boolean defaultNotify // notify admins by default
 	boolean isSystemGroup
+	Boolean isVirtual
 	String name
 	String fullName
 	String description
@@ -61,6 +63,24 @@ class UserGroup {
 
 	static UserGroup lookupOrCreateSystemGroup() {
 		createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
+	}
+
+	static UserGroup createVirtual(String fullName) {
+		UserGroup userGroup = new UserGroup()
+		
+		userGroup.name = "__virtual" + UUID.randomUUID().toString()
+		userGroup.fullName = fullName
+		userGroup.description = ''
+		userGroup.isVirtual = true
+		userGroup.isOpen = false
+		userGroup.isReadOnly = false
+		userGroup.isModerated = false
+		userGroup.defaultNotify = false
+		userGroup.isSystemGroup = false
+		
+		Utils.save(userGroup, true)
+		
+		return userGroup
 	}
 
 	static UserGroup createOrUpdate(String name, String fullName, String description, def options) {

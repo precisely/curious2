@@ -3,13 +3,14 @@ import grails.test.*
 import us.wearecurio.server.Session
 import us.wearecurio.integration.CuriousTestCase;
 import us.wearecurio.model.User
+import us.wearecurio.model.Sprint
 import us.wearecurio.utility.Utils
 
 import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class SprintTests extends CuriousTestCase {
+class SessionTests extends CuriousTestCase {
 	static transactional = true
 
 	User user1
@@ -52,17 +53,12 @@ class SprintTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testCreateNewSession() {
-		def session = Session.createOrGetSession(user1)
-		assert session != null
-		assert (session.fetchUuid() != null) && session.fetchUuid().length() > 10 && session.fetchUuid().length() < 50
-
-		def session2 = Session.createOrGetSession(user2)
-		assert session2 != null
-		assert (session2.fetchUuid() != null) && session2.fetchUuid().length() > 10 && session2.fetchUuid().length() < 50
-		assert session.fetchUuid() != session2.fetchUuid()
-
-		def lookupUser = Session.lookupSessionUser(session.fetchUuid())
-		assert lookupUser.getId() == session.getUserId()
+	void testCreateSprint() {
+		def sprint = Sprint.create(user1)
+		assert sprint.userId == user1.id
+		
+		sprint = Sprint.create(user2, "Sprint")
+		assert sprint.userId == user2.id
+		assert sprint.name == "Sprint"
 	}
 }
