@@ -9,6 +9,7 @@ def activeClass = { a ->
 }
 
 %>
+
 <div class="body1 container">
 <div class="body2">
 
@@ -60,6 +61,7 @@ def activeClass = { a ->
 	</div>
 </div>
 <script>
+	var showModal = ${params.survey ? true : false};
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
 			var href = $(this).attr('href');
@@ -68,13 +70,44 @@ def activeClass = { a ->
 				return false;
 			}
 		})
+		if ((typeof showModal != 'undefined') && showModal) {
+			var interestTagList;
+			$.ajax({
+				url: '/home/getSurveyData',
+				success: function(data) {
+					if (data != null) {
+						console.log('data success!', data);
+						$('.carousel-inner').html(data);
+						var questionCount = $('.carousel-inner').find('.item').length;
+						console.log(questionCount)
+						if (questionCount == 1) {
+							console.log('ha ha question count');
+							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+						}
+
+						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data){ 
+							this.interstTagList = new InterestTagList("interestTagInput", "interestTagList");
+						});
+
+						$('#takeSurveyOverlay').modal({show: true});
+					} else {
+						console.log('data error!');
+					}
+				},
+				error: function(xhr) {
+					console.log('xhr:', xhr);
+				}
+			});
+		}
 	});
 	jQuery.curCSS = jQuery.css;
+	
 </script>
 </script>
 <!-- /HEADER -->
 
 <g:render template="/layouts/alertMessage" />
+<g:render template="/survey/takeSurveyModal" /> 
 <g:layoutBody />
 
 <!-- FOOTER -->

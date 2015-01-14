@@ -107,7 +107,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry full-width " + ((comment != '')?comment:'no-tag') + " ";
+		var classes = "entry full-width " + ((comment != '')?'':'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -118,42 +118,59 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
-		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false;
+		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false. isPlain = true;
 		if (entry.repeatType) {
 			var repeatType = entry.repeatType;
 			if (RepeatType.isGhost(repeatType)) {
+				isPlain = false;
 				isGhost = true;
 				isAnyGhost = true;
 				classes += " ghost anyghost";
 			}
 			if (RepeatType.isConcreteGhost(repeatType)) {
 				isConcreteGhost = true;
+				isPlain = false;
 				isAnyGhost = true;
 				classes += " concreteghost anyghost";
 			}
 			if (RepeatType.isContinuous(repeatType)) {
 				isContinuous = true;
+				isPlain = false;
 				classes += " continuous"
 			}
 			if (RepeatType.isTimed(repeatType)) {
 				isTimed = true;
+				isPlain = false;
 				classes += " timedrepeat"
 			}
 			if (RepeatType.isRepeat(repeatType)) {
 				isRepeat = true;
+				isPlain = false;
 				classes += " repeat"
 			}
 			if (RepeatType.isRemind(repeatType)) {
 				isRemind = true;
+				isPlain = false;
 				classes += " remind"
+			}
+			if (isPlain) {
+				classes += " plain"
 			}
 		}
 
 		if (isContinuous) {
-			var pinnedTagButtonHTMLContent = '<button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
-				+',\'' + description + ' ' + entry.amount + ' ' + entry.units +'\',' + this.defaultToNow + ')">'+ 
-				description + ' ' + entry.amount + ' ' + entry.units + '</button>';
+			var buttonText = description;
+			if(entry.amountPrecision > 0) {
+				buttonText += ' ' + entry.amount + ' ' + entry.units;
+			}
+			var pinnedTagButtonHTMLContent = '<div id="' + this.editId + 'entryid' + id + '"> <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
+				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
+				buttonText + '</button>' + '<li class="dropdown"><a href="#" data-toggle="dropdown">' + 
+				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
+				'<a href="#" class="delete-discussion" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');">' + 
+				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
+			
 			return;
 		}
 		
@@ -224,6 +241,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			entryEditItem = $("#" + this.editId + "entryid" + id);
 		}
 		$("#entrydelid" + this.editId + id).click(function() {
+			console.log('deleting....');
 			self.deleteEntryId(id);
 		});
 		

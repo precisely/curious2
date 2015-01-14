@@ -462,7 +462,7 @@ class HomeController extends DataController {
 
 		user.setParameters(p)
 
-		Utils.save(user)
+		Utils.save(user, true)
 		
 		if (!user.validate()) {
 			flash.message = "Error updating user preferences: missing field or email already in use"
@@ -507,6 +507,7 @@ class HomeController extends DataController {
 	def index() {
 		debug "HomeController.index()"
 		def user = sessionUser()
+		params.survey = true
 		[prefs:user.getPreferences(), showTime:params.showTime?:0, templateVer:urlService.template(request)]
 	}
 
@@ -874,7 +875,7 @@ class HomeController extends DataController {
 			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
-				if( !model.posts ){
+				if (!model.posts ){
 					// render false if there are no more comments to show.
 					render false
 				} else {
@@ -908,5 +909,39 @@ class HomeController extends DataController {
 	def lgmd2iproject() {
 		def model = []
 		render(view:"/home/lgmd2iproject", model:model)
+	}
+
+	def saveSurveyData() {
+		log.debug "Home.saveSurveyData()"
+		User currentUserInstance = sessionUser()
+		boolean hasErrors = false
+
+		// Using any instead of each so as to be able to break the loop when error occurs
+		UserSurveyAnswer.withTransaction { status ->
+			params.answer.any({ questionAnswerMap ->
+				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+				if (!userSurveyAnswer) {
+					hasErrors = true
+					status.setRollbackOnly()
+					return true
+				} else {
+					return
+				}
+			})
+		}
+		
+		if (hasErrors) {
+			renderJSONPost([success: false])
+		} else {
+			renderJSONPost([success: true])
+		}
+	}
+
+	def getSurveyData() {
+		log.debug "Home.getSurveyData()"
+		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE, 
+			[max: 50, sort: "priority", order: "desc"])
+		Map model = [questions: questions]
+		render template: "/survey/questions", model: model
 	}
 }

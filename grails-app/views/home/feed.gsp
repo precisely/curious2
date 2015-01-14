@@ -4,7 +4,7 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
-<c:jsCSRFToken keys="getPeopleDataCSRF" />
+<c:jsCSRFToken keys="getPeopleDataCSRF,getInterestTagsDataCSRF, addInterestTagDataCSRF" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

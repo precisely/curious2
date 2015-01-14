@@ -10,7 +10,8 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryDataCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
+
 
 </head>
 <body class="track-page">
@@ -19,7 +20,6 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF" />
 		<p><p>
 		<div id="alert-message-text"></div>
 	</div>
-
 	<div class="red-header date-controls clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true]" />
 		<h1 class="clearfix">
