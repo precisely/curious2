@@ -1,9 +1,10 @@
 import grails.test.*
 
 import us.wearecurio.server.Session
-import us.wearecurio.integration.CuriousTestCase;
+import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.User
 import us.wearecurio.model.Sprint
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.utility.Utils
 
 import static org.junit.Assert.*
@@ -57,8 +58,9 @@ class SessionTests extends CuriousTestCase {
 		def sprint = Sprint.create(user1)
 		assert sprint.userId == user1.id
 		
-		sprint = Sprint.create(user2, "Sprint")
+		sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Sprint"
+		assert sprint.visibility == Visibility.PUBLIC
 	}
 }

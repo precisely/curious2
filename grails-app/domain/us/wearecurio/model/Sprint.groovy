@@ -50,8 +50,6 @@ class Sprint {
 	}
 	
 	static mapping = {
-		version false
-		table 'sprint'
 		name column: 'name', index:'name_index'
 		virtualGroupId column: 'virtual_group_id', index:'virtual_group_id_index'
 		virtualUserId column: 'virtual_user_id', index:'virtual_user_id_index'
@@ -64,10 +62,10 @@ class Sprint {
 		return create(user, null)
 	}
 	
-	public static Sprint create(User user, String name) {
+	public static Sprint create(User user, String name, Visibility visibility) {
 		log.debug "Sprint.create() userId:" + user?.getId() + ", name:" + name
 		return Sprint.withTransaction {
-			def sprint = new Sprint(user, name)
+			def sprint = new Sprint(user, name, visibility)
 			Utils.save(sprint, true)
 			return sprint
 		}

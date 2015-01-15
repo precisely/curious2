@@ -76,15 +76,16 @@ class TimeZoneId {
 	}
 	
 	static TimeZone getTimeZone(String name) {
-		return getTimeZoneInstance(look(name))
+		return getDateTimeZone(name).toTimeZone()
 	}
 
-	static TimeZone getUTCDateTimeZone() {
+	static DateTimeZone getUTCDateTimeZone() {
 		return getDateTimeZone(null)
 	}
 	
-	static TimeZone getDateTimeZone(String name) {
-		return getDateTimeZoneInstance(look(name))
+	static DateTimeZone getDateTimeZone(String name) {
+		if (!name) name = "Etc/UTC"
+		return DateTimeZone.forID(name)
 	}
 
 	static TimeZone getTimeZoneInstance(Integer timeZoneId) {
