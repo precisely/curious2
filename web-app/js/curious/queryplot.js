@@ -968,7 +968,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				var activeLine = plot.getLine(plot.activeLineId);
 				if (activeLine) {
 					activeLine.deactivate();
-					plot.getDialogDiv().dialog("close");
+					plot.getDialogDiv().dialog().dialog("close");
 				}
 				plot.activeLineId = undefined;
 			}
@@ -1009,9 +1009,9 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
-					dialogDiv.dialog({ position: [pos.pageX + 10, pos.pageY], width: 140, height: 42});
+					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
 				}
-					} else {
+			} else {
 				console.log('plotclick: Item not found');
 			}
 			});
@@ -1039,7 +1039,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (activeLine) {
 			console.log('plot.deactivateActivatedLine: Deactivating line id: ' + plot.activeLineId);
 			activeLine.deactivate();
-			plot.getDialogDiv().dialog("close");
+			plot.getDialogDiv().dialog().dialog("close");
 		} else {
 			console.log('plot.deactivateActivatedLine: No active line to deactivate');
 		}

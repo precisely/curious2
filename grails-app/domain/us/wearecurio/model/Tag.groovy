@@ -122,14 +122,13 @@ class Tag implements Serializable, Comparable {
 	}
 	
 	public int hashCode() {
-		return (int)getId()
+		return (int)this.id
 	}
 	
 	public boolean equals(Object other) {
-		if (!other instanceof Tag)
+		if (!(other instanceof Tag))
 			return false
-		
-		return getId() == other.getId()
+		return this.id == other.id
 	}
 
 	@Override

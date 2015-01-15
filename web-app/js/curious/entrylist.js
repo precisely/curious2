@@ -118,7 +118,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 
-		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false. isPlain = true;
+		var isGhost = false, isConcreteGhost = false, isAnyGhost = false, isContinuous = false, isTimed = false, isRepeat = false, isRemind = false, isPlain = true;
 		if (entry.repeatType) {
 			var repeatType = entry.repeatType;
 			if (RepeatType.isGhost(repeatType)) {
@@ -153,9 +153,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				isPlain = false;
 				classes += " remind"
 			}
-			if (isPlain) {
-				classes += " plain"
-			}
+		}
+		if (isPlain) {
+			classes += " plain"
 		}
 
 		if (isContinuous) {

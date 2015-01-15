@@ -6,8 +6,8 @@
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <script type="text/javascript" src="/js/curious/queryplot.js"></script>
 <c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
-deleteTagGroupCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
+deleteTagGroupCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
 addBackToTagGroupDataCSRF" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 
