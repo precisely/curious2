@@ -1009,7 +1009,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
-					console.log('xy: ', pos.pageX, pos.pageY);
 					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
 				}
 			} else {
@@ -1037,7 +1036,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 		}
 		var activeLine = plot.getLine(plot.activeLineId);
-		console.log('active line: ', activeLine);
 		if (activeLine) {
 			console.log('plot.deactivateActivatedLine: Deactivating line id: ' + plot.activeLineId);
 			activeLine.deactivate();
