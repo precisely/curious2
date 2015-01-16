@@ -1592,7 +1592,7 @@ li.pinned, li.pinned input{
 li.remind, li.repeat.remind, li.repeat.remind input {
 	color: #f48d5b;
 }
-li.repeat.remind.ghost {
+li.remind.ghost {
 	color: #b2b2b2
 }
 
