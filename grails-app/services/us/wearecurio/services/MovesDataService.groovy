@@ -53,7 +53,7 @@ class MovesDataService extends DataService {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd")
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)
-		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'")
+		SimpleDateFormat startEndTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ")
 
 		format.setTimeZone(timeZoneInstance)
 		formatter.setTimeZone(timeZoneInstance)
@@ -64,7 +64,7 @@ class MovesDataService extends DataService {
 
 		Token tokenInstance = account.tokenInstance
 
-		String pollURL = "https://api.moves-app.com/api/v1/user/activities/daily/" + formatter.format(startDate)
+		String pollURL = String.format(BASE_URL, ("/user/activities/daily/" + formatter.format(startDate)))
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)

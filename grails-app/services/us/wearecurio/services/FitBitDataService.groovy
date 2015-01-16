@@ -2,10 +2,7 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 
-import org.springframework.transaction.annotation.Transactional
-
 import java.text.SimpleDateFormat
-import java.util.List;
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONElement
@@ -13,13 +10,14 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.scribe.model.Token
+import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.Identifier
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -29,7 +27,7 @@ import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
 class FitBitDataService extends DataService {
 
 	static final String API_VERSION = "1"
-	static final String BASE_URL = "http://api.fitbit.com/$API_VERSION/user%s"
+	static final String BASE_URL = "https://api.fitbit.com/$API_VERSION/user%s"
 	static final String COMMENT = "(FitBit)"
 	static final String SET_NAME = "fitbit import"
 
@@ -259,14 +257,14 @@ class FitBitDataService extends DataService {
 		notifications.each { notification ->
 			log.debug "Saving " + notification.dump()
 			notification.typeId = typeId
-			List<OAuthAccount> accounts = getAllOAuthAccounts(notification.accountId)
+			List<OAuthAccount> accounts = getAllOAuthAccounts(notification.ownerId)
 			TimeZone timeZone = null
 			for (OAuthAccount account in accounts) {
 				timeZone = getTimeZone(account)
 				if (timeZone != null) break
 			}
 			if (timeZone == null) {
-				log.debug "No time zone found for fitbit accountId " + notification.accountId
+				log.debug "No time zone found for fitbit accountId " + notification.ownerId
 				timeZone = TimeZone.getTimeZone("UTC")
 			}
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US)

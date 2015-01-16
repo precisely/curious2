@@ -148,7 +148,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		String mockedResponseData = """{"sleep":[{"isMainSleep":true,"logId":29767,"efficiency":98,"startTime":"${startTime}","duration":6000000,"minutesToFallAsleep":0,"minutesAsleep":47,"minutesAwake":24,"awakeningsCount":10,"timeInBed":100}]}"""
 		fitBitDataService.oauthService = [
 			getFitBitResource: { token, url, p, header ->
-				assert url == "http://api.fitbit.com/1/user/${account.accountId}/sleep/date/${formatter.format(forDay)}.json"
+				assert url == "https://api.fitbit.com/1/user/${account.accountId}/sleep/date/${formatter.format(forDay)}.json"
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
