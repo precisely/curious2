@@ -9,7 +9,7 @@ import static org.junit.Assert.*
 import org.junit.*
 import grails.test.mixin.*
 
-class SprintTests extends CuriousTestCase {
+class SessionTests extends CuriousTestCase {
 	static transactional = true
 
 	User user1

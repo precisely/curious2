@@ -8,6 +8,7 @@
     [korma.core :as kc]
     [environ.core :as e]))
 
+
 (def MIPSS_VALUE_TYPE 0)
 ; ***********************
 ; SQL time stamp wrappers
@@ -27,25 +28,11 @@
 
 (defn connection-params [environment]
   "Get the database connection parameters.  Pass in \"PRODUCTION\" \"TEST\" or \"DEVELOPMENT\" to set the database to the Grails environment's database.  Otherwise, the connection params will assume you're in a Clojure-based development environment and come from the shell's environment variables \"db_name\", \"db_user\" and \"db_password\".  These varibles are picked up by environ/env which is configured for Leiningen \"dev\" and \"test\" profiles."
-  (cond (= "PRODUCTION" environment)
-          {:db       "tlb"
-           :user     "curious"
-           :password "734qf7q35"}
-        (= "TEST" environment)
-          {:db       "tlb_test"
-           :user     "curious"
-           :password "734qf7q35"}
-        (= "DEVELOPMENT" environment)
-          {:db       "tlb_dev"
-           :user     "curious"
-           :password "734qf7q35"}
-        :else
-          ; Environment variables are lower-cased then dasherized into Clojure
-          ;  keywords.
-          ; E.g. the shell environment will change DB_NAME to :db-name.
-          {:db       (e/env :db-name)
-           :user     (e/env :db-user)
-           :password (e/env :db-pass)}))
+          {:db       (:db-name e/env)
+           :user     (:db-user e/env)
+           :host     (:db-host e/env)
+           :port     (:db-port e/env)
+           :password (:db-pass e/env)})
 
 (defn connect
   "Connect to the database using Korma's defdb."
@@ -77,6 +64,7 @@
   (kc/belongs-to analytics_tag_cluster))
 
 (kc/defentity analytics_correlation)
+(kc/defentity analytics_task)
 
 ; Temporary matrix store for talking to Python.
 (kc/defentity analytics_cluster_input)
@@ -328,15 +316,18 @@
   (flatten (map tag-cluster-list-tag-ids tag-cluster-ids)))
 
 (defn make-tag-id-pairs [tag-id-list]
-  (for [t1 tag-id-list t2 tag-id-list] (list t1 t2)))
+  (for [t1 tag-id-list t2 tag-id-list]
+    (when (not= t1 t2)
+          (list t1 t2))))
 
 (declare tag-cluster-list-ids-by-cluster-run-id)
 (defn pairs-with-overlap-in-cluster [user-id]
   (set
     (->> (cluster-run-latest-id user-id)               ; cluster-run-ids from user-id
-         (tag-cluster-list-ids-by-cluster-run-id) ; tag-cluster-ids
-         (tag-clusters-flattened-tag-ids)         ; tag-ids per cluster-run
-         (make-tag-id-pairs))))                      ; cross-product of tag-id pairs
+         (tag-cluster-list-ids-by-cluster-run-id)      ; tag-cluster-i
+         (tag-clusters-flattened-tag-ids)              ; tag-ids per cluster-run
+         (make-tag-id-pairs)                           ; cross-product of tag-id pairs except when tag1=tag2
+         (filter identity))))                          ; remove nils where tag1 == tag2
 
 (declare tag-cluster-list)
 (defn tag-ids-in-clusters-for-user [user-id]
@@ -570,7 +561,7 @@
               :series2type tag2-type}))))
 
 (defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
-  "Update a correlation score."
+  "Delete a correlation score."
   (kc/delete analytics_correlation
     (kc/where {:user_id    user-id
             :series1id   tag1-id
@@ -623,6 +614,100 @@
             (do (score-delete user-id tag1-id tag2-id score tag1-type tag2-type)
                 (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)))))
 
+; ********************
+; Update task status
+; ********************
+
+; NB: The statuses listed here should match those in AnalyticsTask.groovy
+;   Task statuses.
+
+(def TASK-RUNNING 3)
+(def TASK-READY 4)
+(def TASK-COMPLETED 5)
+(def TASK-TERMINATED 6)
+(def TASK-ERROR 7)
+
+(defn task-get* [id]
+  (-> (kc/select* analytics_task)
+      (kc/where {:id id})))
+
+(defn task-get [id]
+  (-> (task-get* id)
+      (kc/select)))
+
+(defn task-get-attr [id attr]
+  (-> (task-get* id)
+      (kc/fields attr)
+      (kc/select)
+      first
+      attr))
+
+(defn task-update-status* [id status]
+  (-> (kc/update* analytics_task)
+      (kc/set-fields {:status status
+                      :updated_at (sql-now)})
+      (kc/where {:id id})))
+
+(defn task-update-status [id status]
+  (-> (task-update-status* id status)
+      (kc/update)))
+
+(defn task-update-running [id]
+  (task-update-status id TASK-RUNNING))
+
+(defn task-update-completed [id]
+  (task-update-status id TASK-COMPLETED))
+
+(defn task-update-terminated [id]
+  (task-update-status id TASK-TERMINATED))
+
+(defn task-update-error [id error-message]
+  (-> (task-update-status* id TASK-ERROR)
+      (kc/set-fields {:error error-message})
+      (kc/update)))
+
+(defn task-parent-id [id]
+  (task-get-attr id :parent_id))
+
+(defn task-max-num-subtasks [id]
+  (task-get-attr id :max_num_subtasks))
+
+(defn task-update-parent-status [child-id status]
+  (when-let [parent-id (task-parent-id child-id)]
+    (task-update-status parent-id status)))
+
+(defn task-children* [parent-id]
+  (-> (kc/select* analytics_task)
+      (kc/where {:parent_id parent-id})))
+
+(defn task-children [parent-id]
+  (-> (task-children* parent-id)
+      (kc/select)))
+
+(defn task-children-completed* [parent-id]
+  (-> (task-children* parent-id)
+      (kc/where {:status TASK-COMPLETED})))
+
+(defn task-children-completed-count [parent-id]
+  (model-count (task-children-completed* parent-id)))
+
+(defn task-all-successful? [parent-id]
+  (>= (task-children-completed-count parent-id)
+      (task-max-num-subtasks parent-id)))
+
+(defn task-children-attr [parent-id attr]
+  (let [attrs (-> (task-children* parent-id) (kc/fields attr) kc/select)]
+    (map attr attrs)))
+
+(defn task-children-has-error? [parent-id]
+  (some #(= TASK-ERROR %) (task-children-attr parent-id :status)))
+
+(defn tasks-delete-dummy-tasks [parent-id]
+  (-> (kc/delete analytics_task)
+      (kc/where {:parent_id parent-id})
+      (kc/where {:user_id -1})))
+
+
 ; ************************
 ; Create analytics_cluster_input (Not used, because we're not using the Python code.)
 ; ************************
@@ -663,3 +748,5 @@
           t1  (list-tag-ids uid)
           t2  (list-tag-ids uid)]
     (f uid t1 t2)))
+
+(connect)

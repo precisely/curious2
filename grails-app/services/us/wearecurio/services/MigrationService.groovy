@@ -399,6 +399,13 @@ class MigrationService {
 			}
 
 		}
+		tryMigration("Change username length") {
+			try {
+				sql("ALTER TABLE `user` CHANGE COLUMN `username` username varchar(80) DEFAULT NULL")
+			} catch (Throwable t) {
+			}
+
+		}
 	}
 	
 	/**

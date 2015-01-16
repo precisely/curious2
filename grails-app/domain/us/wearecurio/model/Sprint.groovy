@@ -59,7 +59,7 @@ class Sprint {
 	}
 	
 	public static Sprint create(User user) {
-		return create(user, null)
+		return create(user, null, null)
 	}
 	
 	public static Sprint create(User user, String name, Visibility visibility) {
@@ -96,6 +96,7 @@ class Sprint {
 		UserGroup virtualUserGroup = UserGroup.createVirtual("Sprint Group " + name)
 		this.virtualGroupId = virtualUserGroup.id
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
+		virtualUserGroup.addWriter(virtualUser)
 		this.virtualUserId = virtualUser.id
 		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup)
 		this.discussionId = discussion.id

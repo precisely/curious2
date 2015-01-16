@@ -1,0 +1,67 @@
+
+.analytics-tasks tr.task-row:hover td{
+	cursor: pointer;
+}
+
+.analytics-tasks table {
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	width: 480px;
+	text-align: left;
+	border-collapse: collapse;
+	margin: 20px;
+}
+
+.analytics-tasks th.date {
+	column-width: 200px;
+}
+
+.analytics-tasks th {
+	font-size: 13px;
+	font-weight: normal;
+	background-color: #b9c9fe;
+	border-top: 4px solid #aabcfe;
+	border-bottom: 1px solid #fff;
+	color: #039;
+	padding: 8px;
+}
+
+.analytics-tasks td	{
+	border-bottom: 1px solid #fff;
+	color: #669;
+	border-top: 1px solid transparent;
+	padding: 8px;
+}
+
+.analytics-tasks tr.child {
+	line-height: 0.9em;
+	font-size: 0.9em;
+}
+
+.analytics-tasks tr.parent td	{
+	background-color: #e8edff;
+}
+
+.analytics-tasks tr.child td	{
+	background-color: #e8ffed;
+}
+
+.analytics-tasks tr.task-row.parent:hover td {
+	background: #d0dafd;
+	color: #339;
+}
+
+.analytics-tasks tr.task-row.child:hover td {
+	background: #d0fdda;
+	color: #393;
+}
+
+.analytics-tasks .child .action button{
+	display: none;
+	border: 1px solid black;
+}
+
+.analytics-tasks button.disabled {
+	opacity: 0.3;
+}
+

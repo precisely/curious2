@@ -55,9 +55,6 @@ class BootStrap {
 			}
 		}
 
-		//BackgroundTask.launch {
-		//	analyticsService.processUsers()
-		//}
 		log.debug "Curious bootstrap finished executing."
 	}
 

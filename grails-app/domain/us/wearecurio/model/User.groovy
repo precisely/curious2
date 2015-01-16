@@ -14,7 +14,7 @@ class User implements NameEmail {
 	private static def log = LogFactory.getLog(this)
 	static transients = [ 'name', 'site' ]
 	static constraints = {
-		username(maxSize:50, unique:true)
+		username(maxSize:70, unique:true)
 		email(maxSize:200, unique:true, blank:false)
 		remindEmail(maxSize:200, nullable:true)
 		/**
@@ -71,11 +71,16 @@ class User implements NameEmail {
 		
 		User user = new User()
 		user.created = new Date()
-		user.username = "__virtual" + UUID.randomUUID().toString()
+		user.username = "_" + UUID.randomUUID().toString()
 		user.email = user.username
 		user.virtual = true
 		user.setPassword("x")
 		user.sex = 'N'
+		user.first = '_'
+		user.last = '_'
+		user.twitterDefaultToNow
+		user.displayTimeAfterTag = true
+		user.webDefaultToNow = true
 		
 		Utils.save(user, true)
 		
