@@ -915,6 +915,10 @@ class HomeController extends DataController {
 		User currentUserInstance = sessionUser()
 		boolean hasErrors = false
 
+		if (params.answer.size() < 1) {
+			renderJSONPost([success: false])
+			return
+		}
 		// Using any instead of each so as to be able to break the loop when error occurs
 		UserSurveyAnswer.withTransaction { status ->
 			params.answer.any({ questionAnswerMap ->
