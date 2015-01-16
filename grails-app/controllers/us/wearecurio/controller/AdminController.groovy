@@ -53,20 +53,31 @@ class AdminController extends LoginController {
 		if (!params.id) {
 			redirect(uri: "admin/survey")
 			flash.message = "You can not add answers to a question that does not exist!"
+			return
+		}
+		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
+		if (!surveyQuestion) {
+			redirect(uri: "admin/survey")
+			flash.message = "You can not add answers to a question that does not exist!"
+			return
 		} else {
-			Map model = [surveyQuestion: SurveyQuestion.get(params.id)];
+			Map model = [surveyQuestion: surveyQuestion];
 			render(view: "/admin/createPossibleAnswers", model: model)
 		}
 	}
 
 	def createAnswers() {
 		if (!params.questionId) {
-			redirect(uri: "admin/survey")
-			flash.message = "You can not add answers to a question that does not exist!"
+			renderJSONPost([success: false])
 			return
 		}
+
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
-		log.debug "parameters: $params";
+		if (!surveyQuestion) {
+			renderJSONPost([success: false])
+			return
+		}
+
 		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
 		surveyQuestion.possibleAnswers.removeAll([null])
 		surveyQuestion.possibleAnswers.sort()
@@ -105,22 +116,18 @@ class AdminController extends LoginController {
 
 	def deletePossibleAnswer(Long answerId, Long questionId) {
 		if (!questionId) {
-			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "Question does not exist!"
+			renderJSONPost([success: false])
 			return
 		}
 		if (!answerId) {
-			log.debug ">>>>>>>>>no answer id passed"
-			redirect(uri: "admin/showSurveyQuestion?id=" + questionId)
-			flash.message = "Answer does not exist!"
+			renderJSONPost([success: false])
 			return
 		}
 
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
 
 		if (!surveyQuestion) {
-			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "Invalid Question Id!"
+			renderJSONPost([success: false])
 			return
 		}
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
@@ -131,14 +138,12 @@ class AdminController extends LoginController {
 
 	def updateSurveyAnswer() {
 		if (!params.answerId) {
-			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "No answer found by given Id!"
+			renderJSONPost([success: false])
 			return
 		}
 		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
 		if (!surveyAnswer) {
-			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "Answer does not exist!"
+			renderJSONPost([success: false])
 			return
 		}
 

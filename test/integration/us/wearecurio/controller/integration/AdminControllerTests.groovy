@@ -180,9 +180,14 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createAnswers when question id is not passed"() {
 		controller.createAnswers()
-		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "You can not add answers to a question that does not exist!"
-		controller.response.reset()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test createAnswers when false question id is passed"() {
+		controller.params.questionId = 0
+		controller.createAnswers()
+		assert controller.response.json.success == false
 	}
 
 	@Test
@@ -269,18 +274,14 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
 		controller.params["questionId"] = null
 		controller.deletePossibleAnswer()
-		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "Question does not exist!"
-		controller.response.reset()
+		assert controller.response.json.success == false
 	}
 
 	@Test
 	void "Test deletePossibleAnswer when no answerId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.deletePossibleAnswer()
-		assert controller.response.redirectUrl.contains("admin/showSurveyQuestion")
-		assert controller.flash.message == "Answer does not exist!"
-		controller.response.reset()
+		assert controller.response.json.success == false
 	}
 
 	@Test
@@ -296,9 +297,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
 		controller.params["questionId"] = 0
 		controller.deletePossibleAnswer()
-		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "Question does not exist!"
-		controller.response.reset()
+		assert controller.response.json.success == false
 	}
 
 	@Test
@@ -318,18 +317,14 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test updateSurveyAnswer when no answerId is passed"() {
 		controller.updateSurveyAnswer()
-		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "No answer found by given Id!"
-		controller.response.reset()
+		assert controller.response.json.success == false
 	}
 
 	@Test
 	void "Test updateSurveyAnswer when false answerId is passed"() {
 		controller.params["answerId"] = 0;
 		controller.updateSurveyAnswer()
-		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "No answer found by given Id!"
-		controller.response.reset()
+		assert controller.response.json.success == false
 	}
 
 	@Test
