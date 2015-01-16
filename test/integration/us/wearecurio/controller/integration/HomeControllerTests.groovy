@@ -520,4 +520,47 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.discuss()
 		assert controller.response.redirectUrl.contains("home/discuss")
 	}
+
+	@Test
+	void testSaveSurveyData() {
+		HomeController controller = new HomeController()
+
+		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance2 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode3", priority: 3, question: "Question 3?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance3 = SurveyQuestion.create(questionParams)
+
+		controller.session.userId = user.getId()
+
+		// When the when all questions are answered properly
+		controller.params['answer'] = [qcode1: 'Answer no. 1.', qcode2: 'Answer no. 2.', 
+			qcode3: 'Answer no. 3.']
+		controller.saveSurveyData()
+		assert controller.response.json.success == true
+
+		controller.response.reset()
+
+		// When the when an answer is missing for a question
+		controller.params['answer'] = ['qcode1': null, 'qcode2': 'Answer no. 2.',
+			'qcode3': 'Answer no. 3.']
+		controller.saveSurveyData()
+		assert controller.response.json.success == false
+
+		controller.response.reset()
+
+		// When the when blank data is sent
+		controller.params['answer'] = [:]
+		controller.saveSurveyData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void testGetSurveyData() {
+		HomeController controller = new HomeController()
+		def responseData = controller.getSurveyData()
+		
+		assert controller.response.text.contains("<div class=\"item active\">")
+	}
 }

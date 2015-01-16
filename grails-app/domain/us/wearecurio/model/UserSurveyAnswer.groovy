@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import us.wearecurio.utility.Utils
+import org.apache.commons.logging.LogFactory
 
 class UserSurveyAnswer {
 
@@ -8,8 +9,11 @@ class UserSurveyAnswer {
 	String questionCode
 	String answerText
 
+	private static def log = LogFactory.getLog(this)
 	static constraints = {
-		questionCode(nullable: false)
+		questionCode nullable: false, blank: false
+		answerText blank: false
+		userId nullable: false
 	}
 
 	static mapping = {
@@ -17,7 +21,7 @@ class UserSurveyAnswer {
 		questionCode column : 'question_code', index:'question_code_index'
 	}
 
-	public static UserSurveyAnswer create(User user, String questionCode, String answerText) {
+	static UserSurveyAnswer create(User user, String questionCode, String answerText) {
 		SurveyQuestion surveyQuestion = SurveyQuestion.findByCode(questionCode)
 		if (!surveyQuestion) {
 			return null

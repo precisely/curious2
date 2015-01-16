@@ -26,7 +26,7 @@ class AdminController extends LoginController {
 			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 			
 			grailsWebDataBinder.bind(surveyQuestion, 
-				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
+				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question"])
 			surveyQuestion.validate()
 	
 			if (!surveyQuestion.hasErrors()) {
@@ -50,11 +50,21 @@ class AdminController extends LoginController {
 	}
 
 	def addPossibleAnswers() {
-		Map model = [surveyQuestion: SurveyQuestion.get(params.id)];
-		render(view: "/admin/createPossibleAnswers", model: model)
+		if (!params.id) {
+			redirect(uri: "admin/survey")
+			flash.message = "You can not add answers to a question that does not exist!"
+		} else {
+			Map model = [surveyQuestion: SurveyQuestion.get(params.id)];
+			render(view: "/admin/createPossibleAnswers", model: model)
+		}
 	}
 
 	def createAnswers() {
+		if (!params.questionId) {
+			redirect(uri: "admin/survey")
+			flash.message = "You can not add answers to a question that does not exist!"
+			return
+		}
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
 		log.debug "parameters: $params";
 		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
@@ -62,7 +72,9 @@ class AdminController extends LoginController {
 		surveyQuestion.possibleAnswers.sort()
 		surveyQuestion.validate()
 
-		if (surveyQuestion.hasErrors()) {
+		List answersValidation = surveyQuestion.possibleAnswers*.validate()
+
+		if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
 			renderJSONPost([success: false])
 		} else {
 			Utils.save(surveyQuestion, true)
@@ -77,13 +89,40 @@ class AdminController extends LoginController {
 	}
 
 	def showSurveyQuestion(Long id) {
+		if (!id) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Could not find the question you are looking for!"
+			return
+		}
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(id)
+		if (!surveyQuestion) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Could not find the question you are looking for!"
+			return
+		}
 		[surveyQuestion: surveyQuestion]
 	}
 
 	def deletePossibleAnswer(Long answerId, Long questionId) {
+		if (!questionId) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Question does not exist!"
+			return
+		}
+		if (!answerId) {
+			log.debug ">>>>>>>>>no answer id passed"
+			redirect(uri: "admin/showSurveyQuestion?id=" + questionId)
+			flash.message = "Answer does not exist!"
+			return
+		}
+
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
-		
+
+		if (!surveyQuestion) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Invalid Question Id!"
+			return
+		}
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
@@ -91,7 +130,18 @@ class AdminController extends LoginController {
 	}
 
 	def updateSurveyAnswer() {
+		if (!params.answerId) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "No answer found by given Id!"
+			return
+		}
 		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
+		if (!surveyAnswer) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Answer does not exist!"
+			return
+		}
+
 		grailsWebDataBinder.bind(surveyAnswer, 
 			params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])
 		surveyAnswer.validate()
@@ -105,7 +155,18 @@ class AdminController extends LoginController {
 	}
 
 	def deleteSurveyQuestion(Long questionId) {
+		if (!questionId) {
+			renderJSONPost([success: false])
+			return
+		}
+
 		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+
+		if (!surveyQuestion) {
+			renderJSONPost([success: false])
+			return
+		}
+
 		surveyQuestion.delete(flush: true)
 		renderJSONPost([success: true])
 	}
