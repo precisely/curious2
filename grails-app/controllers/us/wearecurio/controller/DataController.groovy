@@ -348,12 +348,14 @@ class DataController extends LoginController {
 
 			if (entry.getUserId() != sessionUser().getId()) {
 				renderStringGet('You do not have permission to activate this entry.')
+				return
 			}
 			EntryStats stats = new EntryStats(user.getId())
 			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName, stats)
 			stats.finish()
 			if (newEntry != null) {
 				renderJSONGet(newEntry.getJSONDesc())
+				return
 			} else
 				renderStringGet("Failed to activate entry due to internal server error.")
 		}
@@ -380,16 +382,21 @@ class DataController extends LoginController {
 		def allFuture = params.all?.equals("true") ? true : false
 
 		def currentDate = params.date == null ? null : parseDate(params.date)
+		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		if (entry.getUserId() != sessionUser().getId()) {
 			renderStringGet('You do not have permission to delete this entry.')
+			return
 		} else {
 			EntryStats stats = new EntryStats()
 			Entry.deleteGhost(entry, stats, currentDate, allFuture)
-			stats.finish()
+			def tagStats = stats.finish()
+			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.displayDate),
+				tagStats[0]?.getJSONDesc(),
+				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
 		}
 
-		renderStringGet("success")
 	}
 
 	def getListData() {
