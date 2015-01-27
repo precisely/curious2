@@ -9,6 +9,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder
 
+import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.server.Session
 import grails.compiler.GrailsTypeChecked
@@ -160,12 +161,20 @@ class SecurityService {
 		return true
 	}
 	
+	Long getCurrentUserId() {
+		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
+		
+		return session.userId
+	}
+	
 	User getCurrentUser() {
 		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
 		
-		if (session.userId) {
-			User user = User.get(session.userId)
-			log.debug "userId " + session.userId
+		Long userId = getCurrentUserId()
+		
+		if (userId) {
+			User user = User.get(userId)
+			log.debug "userId " + userId
 			session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
 			if (session.persistentSession != null && !session.persistentSession.isDisabled()) {
 				if (session.persistentSession.getUserId() != user.getId()) {
@@ -178,6 +187,31 @@ class SecurityService {
 		}
 		log.debug "No session user"
 		return null
+	}
+	
+	/**
+	 * Returns true if given userId is writable by currently logged-in user
+	 * 
+	 * At present, this is true if userId == currently logged in user id or
+	 * if userId is a virtualUserId of a sprint that is writable by the currently logged-in user
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	boolean userIdIsAccessible(Long userId) {
+		Long currentUserId = getCurrentUserId()
+		
+		if (!currentUserId) return false
+		
+		if (userId == currentUserId) return true
+		
+		Sprint sprint = Sprint.findByVirtualUserId(userId)
+		
+		if (sprint) {
+			return sprint.hasWriter(userId)
+		}
+		
+		return false
 	}
 
 	protected def clearTags() {

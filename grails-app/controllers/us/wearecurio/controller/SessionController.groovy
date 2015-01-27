@@ -8,13 +8,14 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.User
 import us.wearecurio.server.Session
+import us.wearecurio.services.SecurityService
 import us.wearecurio.services.UrlService
 
 class SessionController {
 	
 	SimpleDateFormat systemFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-	def securityService
+	SecurityService securityService
 	UrlService urlService
 	def name
 
@@ -107,10 +108,10 @@ class SessionController {
 		securityService.clearTags()
 	}
 	
-	protected def userFromId(Long userId) {
-		User sessionUser = sessionUser()
-		if (sessionUser != null && sessionUser.getId() == userId)
-			return sessionUser
+	protected User userFromId(Long userId) {
+		if (securityService.userIdIsAccessible(userId))
+			return User.get(userId)
+
 		return null
 	}
 

@@ -51,6 +51,7 @@ class Sprint {
 	
 	static mapping = {
 		name column: 'name', index:'name_index'
+		userId column: 'user_id', index:'user_id_index'
 		virtualGroupId column: 'virtual_group_id', index:'virtual_group_id_index'
 		virtualUserId column: 'virtual_user_id', index:'virtual_user_id_index'
 		discussionId column: 'discussion_id', index:'discussion_id_index'
@@ -58,11 +59,20 @@ class Sprint {
 		updated column: 'updated', index:'updated_index'
 	}
 	
-	public static Sprint create(User user) {
+	static Sprint create(User user) {
 		return create(user, null, null)
 	}
 	
-	public static Sprint create(User user, String name, Visibility visibility) {
+	boolean hasWriter(Long userId) {
+		UserGroup virtualUserGroup = UserGroup.get(virtualGroupId)
+		if (virtualUserGroup != null) {
+			return virtualUserGroup.hasWriter(userId)
+		}
+		
+		return false
+	}
+	
+	static Sprint create(User user, String name, Visibility visibility) {
 		log.debug "Sprint.create() userId:" + user?.getId() + ", name:" + name
 		return Sprint.withTransaction {
 			def sprint = new Sprint(user, name, visibility)
@@ -84,10 +94,10 @@ class Sprint {
 		
 	}
 	
-	public Sprint() {
+	Sprint() {
 	}
 	
-	public Sprint(User user, String name, Visibility visibility) {
+	Sprint(User user, String name, Visibility visibility) {
 		this.userId = user?.getId()
 		this.name = name
 		this.created = new Date()
