@@ -392,7 +392,7 @@ class DataController extends LoginController {
 			EntryStats stats = new EntryStats()
 			Entry.deleteGhost(entry, stats, currentDate, allFuture)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.displayDate),
+			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.baseDate),
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
 		}

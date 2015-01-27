@@ -1059,7 +1059,8 @@ function deleteGhost($entryToDelete, entryId, allFuture) {
 					"deleteGhostEntryDataCSRF", {
 						entryId : entryId,
 						all : (allFuture ? "true" : "false"),
-						date : cachedDateUTC
+						date : cachedDateUTC,
+						baseDate : cachedDateUTC
 					})), function(ret) {
 				console.log('deleteGhost: Response received' + checkData(ret, 'success', "Error deleting entry"));
 				if (checkData(ret, 'success', "Error deleting entry")) {
