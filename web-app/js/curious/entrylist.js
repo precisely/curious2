@@ -402,7 +402,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 	this.deleteGhost = function($entryToDelete, isContinuous, entryId, allFuture) {
 		queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
-			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC})),
+			all:(allFuture ? "true" : "false"), date:this.cachedDateUTC, baseDate:this.cachedDateUTC})),
 			function(ret) {
 				if (checkData(ret, 'success', "Error deleting entry")) {
 					if (isContinuous) {
