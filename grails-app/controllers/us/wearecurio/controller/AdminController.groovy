@@ -8,6 +8,7 @@ import us.wearecurio.utility.Utils
 class AdminController extends LoginController {
 
 	def grailsWebDataBinder
+
 	def dashboard() {
 		
 	}
@@ -22,6 +23,7 @@ class AdminController extends LoginController {
 
 	def createOrUpdateQuestion() {
 		log.debug "create or update question: $params"
+		println "$params"
 		if (params.id) {
 			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 			
@@ -72,24 +74,29 @@ class AdminController extends LoginController {
 			return
 		}
 
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
-		if (!surveyQuestion) {
-			renderJSONPost([success: false])
-			return
-		}
-
-		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
-		surveyQuestion.possibleAnswers.removeAll([null])
-		surveyQuestion.possibleAnswers.sort()
-		surveyQuestion.validate()
-
-		List answersValidation = surveyQuestion.possibleAnswers*.validate()
-
-		if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
-			renderJSONPost([success: false])
-		} else {
-			Utils.save(surveyQuestion, true)
-			renderJSONPost([success: true])
+		SurveyAnswer.withTransaction { status ->
+			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
+			if (!surveyQuestion) {
+				renderJSONPost([success: false])
+				return
+			}
+			
+			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
+			surveyQuestion.possibleAnswers.removeAll([null])
+			surveyQuestion.possibleAnswers.sort()
+			surveyQuestion.validate()
+			
+			List answersValidation = surveyQuestion.possibleAnswers*.validate()
+			
+			println ">>>>>>>>>>>>>>>>>>>>>>error: $surveyQuestion.errors, answers: $answersValidation : " + surveyQuestion.possibleAnswers*.errors
+			if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false])
+				return
+			} else {
+				Utils.save(surveyQuestion, true)
+				renderJSONPost([success: true])
+			}
 		}
 	}
 

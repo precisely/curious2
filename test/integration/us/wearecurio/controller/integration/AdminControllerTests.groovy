@@ -15,10 +15,12 @@ import us.wearecurio.utility.Utils
  */
 class AdminControllerTests extends CuriousControllerTestCase {
 
+	def sessionFactory
 	AdminController controller
 	SurveyQuestion surveyQuestionInstance1
 	SurveyQuestion surveyQuestionInstance2
 	SurveyQuestion surveyQuestionInstance3
+
 	@Before
 	void setUp() {
 		super.setUp()
@@ -69,6 +71,10 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["priority"] = 3
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
+
+		SurveyQuestion surveyQuestionInstance = SurveyQuestion.get(surveyQuestionInstance1.id)
+
+		assert surveyQuestionInstance.code.equals("qcode4")
 		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
 		controller.response.reset()
 	}
@@ -89,12 +95,11 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createOrUpdateQestions when question id is passed and question is missing"() {
 		controller.params.id = surveyQuestionInstance1.id
-		controller.params["code"] = "qcode2"
+		controller.params["code"] = "qcode1"
 		controller.params["status"] = "ACTIVE"
 		controller.params["priority"] = 3
 		controller.createOrUpdateQuestion()
-		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not update question, please verify all fields!"
+		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
 		controller.response.reset()
 	}
 
@@ -131,17 +136,25 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["priority"] = 3
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
+
+		SurveyQuestion surveyQuestionInstance = SurveyQuestion.last()
+		
+		assert surveyQuestionInstance.code.equals("qcode4")
+		assert surveyQuestionInstance.priority == 3
+		assert surveyQuestionInstance.question.equals("Question 1?")
 		assert controller.response.redirectUrl.contains("admin/addPossibleAnswers")
 		controller.response.reset()
 	}
 
 	@Test
-	void "Test createOrUpdateQestions when no question id is passed ans code is not unique"() {
+	void "Test createOrUpdateQestions when no question id is passed and code is not unique"() {
 		controller.params["code"] = "qcode2"
 		controller.params["status"] = "ACTIVE"
 		controller.params["priority"] = 3
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
+
+		assert SurveyQuestion.count() == 3
 		assert controller.response.redirectUrl.contains("admin/survey")
 		assert controller.flash.message == "Could not add question, perhaps code is not unique!"
 		controller.response.reset()
@@ -207,6 +220,11 @@ class AdminControllerTests extends CuriousControllerTestCase {
 			["answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
 		controller.createAnswers()
+
+		SurveyQuestion surveyQuestionInstance = SurveyQuestion.get(surveyQuestionInstance1.id)
+
+		assert surveyQuestionInstance.hasErrors()
+		assert SurveyAnswer.count() == 0
 		assert controller.response.json.success == false
 	}
 
@@ -217,6 +235,11 @@ class AdminControllerTests extends CuriousControllerTestCase {
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
 		controller.createAnswers()
+
+		SurveyQuestion surveyQuestionInstance = SurveyQuestion.get(surveyQuestionInstance1.id)
+
+		assert surveyQuestionInstance.hasErrors()
+		assert SurveyAnswer.count() == 0
 		assert controller.response.json.success == false
 	}
 
@@ -227,7 +250,11 @@ class AdminControllerTests extends CuriousControllerTestCase {
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "DESCRIPTIVE"]]
 		controller.createAnswers()
+
+		sessionFactory.currentSession.clear()
+
 		assert controller.response.json.success == false
+		assert SurveyAnswer.findAllByCodeInList(["acode1", "acode2", "acode3"]) == []
 	}
 
 	@Test
@@ -349,6 +376,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	void "Test deleteSurveyQuestion when correct questionId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.deleteSurveyQuestion()
+
 		assert controller.response.json.success == true
 		assert !SurveyQuestion.get(surveyQuestionInstance1.id)
 	}

@@ -3,7 +3,7 @@
 	<div class="item ${(counter == 1) ? 'active' : ''}">
 		<div class="section">QUESTION:</div>
 		<p>${questionInstance.question }</p>
-		<g:if test="${questionInstance.possibleAnswers[0].answerType.value() == 1}">
+		<g:if test="${questionInstance.possibleAnswers[0]?.answerType?.value() == 1}">
 			<div class="section">
 				SELECT AN ANSWER
 			</div>
