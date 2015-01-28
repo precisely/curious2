@@ -88,7 +88,6 @@ class AdminController extends LoginController {
 			
 			List answersValidation = surveyQuestion.possibleAnswers*.validate()
 			
-			println ">>>>>>>>>>>>>>>>>>>>>>error: $surveyQuestion.errors, answers: $answersValidation : " + surveyQuestion.possibleAnswers*.errors
 			if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
 				status.setRollbackOnly()
 				renderJSONPost([success: false])
