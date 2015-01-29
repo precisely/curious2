@@ -52,12 +52,7 @@ class AdminController extends LoginController {
 	}
 
 	def addPossibleAnswers() {
-		if (!params.id) {
-			redirect(uri: "admin/survey")
-			flash.message = "You can not add answers to a question that does not exist!"
-			return
-		}
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
+		SurveyQuestion surveyQuestion = params.id ? SurveyQuestion.get(params.id) : null
 		if (!surveyQuestion) {
 			redirect(uri: "admin/survey")
 			flash.message = "You can not add answers to a question that does not exist!"
@@ -69,13 +64,8 @@ class AdminController extends LoginController {
 	}
 
 	def createAnswers() {
-		if (!params.questionId) {
-			renderJSONPost([success: false])
-			return
-		}
-
 		SurveyAnswer.withTransaction { status ->
-			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
+			SurveyQuestion surveyQuestion = params.questionId ? SurveyQuestion.get(params.questionId) : null
 			if (!surveyQuestion) {
 				renderJSONPost([success: false])
 				return
@@ -106,12 +96,7 @@ class AdminController extends LoginController {
 	}
 
 	def showSurveyQuestion(Long id) {
-		if (!id) {
-			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "Could not find the question you are looking for!"
-			return
-		}
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(id)
+		SurveyQuestion surveyQuestion = id ? SurveyQuestion.get(id) : null
 		if (!surveyQuestion) {
 			redirect(uri: "admin/listSurveyQuestions")
 			flash.message = "Could not find the question you are looking for!"
@@ -121,18 +106,10 @@ class AdminController extends LoginController {
 	}
 
 	def deletePossibleAnswer(Long answerId, Long questionId) {
-		if (!questionId) {
-			renderJSONPost([success: false])
-			return
-		}
-		if (!answerId) {
-			renderJSONPost([success: false])
-			return
-		}
 
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
 
-		if (!surveyQuestion) {
+		if (!answerId || !surveyQuestion) {
 			renderJSONPost([success: false])
 			return
 		}
@@ -143,11 +120,7 @@ class AdminController extends LoginController {
 	}
 
 	def updateSurveyAnswer() {
-		if (!params.answerId) {
-			renderJSONPost([success: false])
-			return
-		}
-		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
+		SurveyAnswer surveyAnswer = params.answerId ? SurveyAnswer.get(params.answerId) : null
 		if (!surveyAnswer) {
 			renderJSONPost([success: false])
 			return
@@ -166,12 +139,7 @@ class AdminController extends LoginController {
 	}
 
 	def deleteSurveyQuestion(Long questionId) {
-		if (!questionId) {
-			renderJSONPost([success: false])
-			return
-		}
-
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
 
 		if (!surveyQuestion) {
 			renderJSONPost([success: false])
