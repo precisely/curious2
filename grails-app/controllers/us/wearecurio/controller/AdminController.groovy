@@ -8,6 +8,7 @@ import us.wearecurio.utility.Utils
 class AdminController extends LoginController {
 
 	def grailsWebDataBinder
+
 	def dashboard() {
 		
 	}
@@ -22,11 +23,12 @@ class AdminController extends LoginController {
 
 	def createOrUpdateQuestion() {
 		log.debug "create or update question: $params"
+		println "$params"
 		if (params.id) {
 			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 			
 			grailsWebDataBinder.bind(surveyQuestion, 
-				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question", "validator"])
+				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question"])
 			surveyQuestion.validate()
 	
 			if (!surveyQuestion.hasErrors()) {
@@ -50,23 +52,40 @@ class AdminController extends LoginController {
 	}
 
 	def addPossibleAnswers() {
-		Map model = [surveyQuestion: SurveyQuestion.get(params.id)];
-		render(view: "/admin/createPossibleAnswers", model: model)
+		SurveyQuestion surveyQuestion = params.id ? SurveyQuestion.get(params.id) : null
+		if (!surveyQuestion) {
+			redirect(uri: "admin/survey")
+			flash.message = "You can not add answers to a question that does not exist!"
+			return
+		} else {
+			Map model = [surveyQuestion: surveyQuestion];
+			render(view: "/admin/createPossibleAnswers", model: model)
+		}
 	}
 
 	def createAnswers() {
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
-		log.debug "parameters: $params";
-		grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
-		surveyQuestion.possibleAnswers.removeAll([null])
-		surveyQuestion.possibleAnswers.sort()
-		surveyQuestion.validate()
-
-		if (surveyQuestion.hasErrors()) {
-			renderJSONPost([success: false])
-		} else {
-			Utils.save(surveyQuestion, true)
-			renderJSONPost([success: true])
+		SurveyAnswer.withTransaction { status ->
+			SurveyQuestion surveyQuestion = params.questionId ? SurveyQuestion.get(params.questionId) : null
+			if (!surveyQuestion) {
+				renderJSONPost([success: false])
+				return
+			}
+			
+			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
+			surveyQuestion.possibleAnswers.removeAll([null])
+			surveyQuestion.possibleAnswers.sort()
+			surveyQuestion.validate()
+			
+			List answersValidation = surveyQuestion.possibleAnswers*.validate()
+			
+			if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false])
+				return
+			} else {
+				Utils.save(surveyQuestion, true)
+				renderJSONPost([success: true])
+			}
 		}
 	}
 
@@ -77,13 +96,23 @@ class AdminController extends LoginController {
 	}
 
 	def showSurveyQuestion(Long id) {
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(id)
+		SurveyQuestion surveyQuestion = id ? SurveyQuestion.get(id) : null
+		if (!surveyQuestion) {
+			redirect(uri: "admin/listSurveyQuestions")
+			flash.message = "Could not find the question you are looking for!"
+			return
+		}
 		[surveyQuestion: surveyQuestion]
 	}
 
 	def deletePossibleAnswer(Long answerId, Long questionId) {
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
-		
+
+		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
+
+		if (!answerId || !surveyQuestion) {
+			renderJSONPost([success: false])
+			return
+		}
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
@@ -91,7 +120,12 @@ class AdminController extends LoginController {
 	}
 
 	def updateSurveyAnswer() {
-		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
+		SurveyAnswer surveyAnswer = params.answerId ? SurveyAnswer.get(params.answerId) : null
+		if (!surveyAnswer) {
+			renderJSONPost([success: false])
+			return
+		}
+
 		grailsWebDataBinder.bind(surveyAnswer, 
 			params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])
 		surveyAnswer.validate()
@@ -105,7 +139,13 @@ class AdminController extends LoginController {
 	}
 
 	def deleteSurveyQuestion(Long questionId) {
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
+
+		if (!surveyQuestion) {
+			renderJSONPost([success: false])
+			return
+		}
+
 		surveyQuestion.delete(flush: true)
 		renderJSONPost([success: true])
 	}

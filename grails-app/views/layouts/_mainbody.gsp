@@ -62,6 +62,27 @@ def activeClass = { a ->
 </div>
 <script>
 	var showModal = ${(session.survey == 'compass')? true: false};
+	$(function() {
+		queueJSON("getting login info", "/home/getPeopleData?callback=?",
+				getCSRFPreventionObject("getPeopleDataCSRF"),
+				function(data) {
+					if (!checkData(data))
+						return;
+				
+				var found = false;
+				
+				jQuery.each(data, function() {
+					if (!found) {
+						// set first user id as the current
+						setUserId(this['id']);
+						found = true;
+					}
+					addPerson(this['first'] + ' ' + this['last'],
+							this['username'], this['id'], this['sex']);
+					return true;
+				});
+			});
+	});
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
 			var href = $(this).attr('href');
