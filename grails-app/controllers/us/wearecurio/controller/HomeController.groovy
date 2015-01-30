@@ -22,7 +22,8 @@ import us.wearecurio.utility.Utils
 
 class HomeController extends DataController {
 
-	static allowedMethods = [notifyJawbone: "POST"]
+	static allowedMethods = [notifyJawbone: "POST", notifyfitbit: "POST"]
+
 	TwitterDataService twitterDataService
 	WithingsDataService withingsDataService
 	FitBitDataService fitBitDataService
@@ -343,10 +344,11 @@ class HomeController extends DataController {
 	 * FitBit Subscriber Endpoint
 	 */
 	def notifyfitbit() {
-		debug "HomeController.notifyfitbit() params:" + params
-		debug "File text as is: " + request.getFile("updates").inputStream.text
+		// Fitbit now sends notification data as request body
+		String notificationData = request.JSON.toString()
+		debug "HomeController.notifyfitbit() from IP: [$request.remoteAddr] with params: $params and data: $notificationData"
 		
-		fitBitDataService.notificationHandler(request.getFile("updates").inputStream.text)
+		fitBitDataService.notificationHandler(notificationData)
 		render status: 204
 		return
 	}

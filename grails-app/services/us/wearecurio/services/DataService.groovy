@@ -22,7 +22,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 
 abstract class DataService {
-	
+
 	static transactional = false
 
 	private static def log = LogFactory.getLog(this)
@@ -55,7 +55,7 @@ abstract class DataService {
 
 	// very early start date
 	static final Date earlyStartDate
-	
+
 	static {
 		if (Environment.current == Environment.DEVELOPMENT) {
 			earlyStartDate = new Date() - 60
@@ -63,7 +63,6 @@ abstract class DataService {
 			earlyStartDate = new Date(-5364658800L)
 		}
 	}
-	
 
 	// register data service for lookup
 	@PostConstruct
@@ -187,7 +186,7 @@ abstract class DataService {
 				parsedResponse = new JSONObject()
 			}
 		}
-		
+
 		if (Environment.current == Environment.DEVELOPMENT) {
 			log.debug "DataService.getResponse() Response data:"
 			log.debug parsedResponse
@@ -230,7 +229,7 @@ abstract class DataService {
 			account.timeZoneId = timeZoneId
 			account.save(flush: true)
 		} else {
-			log.debug "Found timeZoneId in account itself for account [$account]"
+			log.debug "Found timeZoneId [${account.timeZoneId}] in account itself for account [$account]"
 		}
 
 		account.timeZoneId
@@ -239,7 +238,7 @@ abstract class DataService {
 	@Transactional
 	TimeZone getTimeZone(OAuthAccount account) {
 		Long timeZoneId = getTimeZoneId(account)
-		return timeZoneId == null ? null : TimeZoneId.getTimeZoneInstance(timeZoneId)
+		return timeZoneId == null ? null : TimeZoneId.getTimeZoneInstance(timeZoneId as Integer)
 	}
 
 	/**

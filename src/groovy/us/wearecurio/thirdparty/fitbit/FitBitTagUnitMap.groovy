@@ -17,17 +17,17 @@ class FitBitTagUnitMap extends TagUnitMap {
 
 		activityUnitMap = [
 			miles: [tag: "$ACTIVITY", unit: "miles"],
-			minutes: [tag: "$ACTIVITY", unit: "mins", convert: true, from: "ms"],
+			minutes: [tag: "$ACTIVITY", unit: "mins"],
 			total: [tag: "$ACTIVITY total ", unit: "miles"],
 			tracker: [tag: "$ACTIVITY tracker", unit: "miles"],
 			veryActive: [tag: "high $ACTIVITY", unit: "miles"],
 			moderatelyActive: [tag: "moderate $ACTIVITY", unit: "miles"],
 			lightlyActive: [tag: "light $ACTIVITY", unit: "miles"],
 			sedentaryActive: [tag: "sedentary $ACTIVITY", unit: "miles"],
-			fairlyActiveMinutes: [tag: "moderate $ACTIVITY", unit: "mins", convert: true, from: "ms"],
-			lightlyActiveMinutes: [tag: "light $ACTIVITY", unit: "mins", convert: true, from: "ms"],
-			sedentaryMinutes: [tag: "sedentary $ACTIVITY", unit: "mins", convert: true, from: "ms"],
-			veryActiveMinutes: [tag: "high $ACTIVITY", unit: "mins", convert: true, from: "ms"],
+			fairlyActiveMinutes: [tag: "moderate $ACTIVITY", unit: "mins"],
+			lightlyActiveMinutes: [tag: "light $ACTIVITY", unit: "mins"],
+			sedentaryMinutes: [tag: "sedentary $ACTIVITY", unit: "mins"],
+			veryActiveMinutes: [tag: "high $ACTIVITY", unit: "mins"],
 		]
 
 		columnDetailMap.putAll(sleepUnitMap)
