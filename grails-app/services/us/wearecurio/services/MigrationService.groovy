@@ -463,5 +463,11 @@ class MigrationService {
 		tryMigration("Remove correlation table since we're using analytics_correlation instead.") {
 		  sql("DROP TABLE IF EXISTS correlation");
 		}
+		tryMigration("Recompute all tag stats again") {
+			def users = User.list()
+			for (u in users) {
+				TagStats.updateTagStats(u)
+			}
+		}
 	}
 }

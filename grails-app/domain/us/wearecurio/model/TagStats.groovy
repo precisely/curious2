@@ -212,7 +212,9 @@ class TagStats {
 		def tags = Entry.getBaseTags(user, Entry.ONLYIDS)
 		
 		for (tagId in tags) {
-			createOrUpdate(userId, tagId)
+			Model.withTransaction {
+				createOrUpdate(userId, tagId)
+			}
 		}
 	}
 	
