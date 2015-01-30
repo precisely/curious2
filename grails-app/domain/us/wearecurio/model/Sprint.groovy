@@ -1,5 +1,6 @@
 package us.wearecurio.model
 
+import java.util.Date;
 import java.util.Map;
 
 import grails.converters.*
@@ -9,8 +10,11 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.services.EmailService
+import us.wearecurio.support.EntryStats;
 import us.wearecurio.model.Model.Visibility
+
 import java.text.DateFormat
+
 import org.joda.time.*
 
 class Sprint {
@@ -29,6 +33,8 @@ class Sprint {
 	String description
 	Date created
 	Date updated
+	Long daysDuration
+	Date startDate
 	Visibility visibility
 	
 	static final int MAXPLOTDATALENGTH = 1024
@@ -47,6 +53,8 @@ class Sprint {
 		name(nullable:true)
 		discussionId(nullable:true)
 		description(nullable:true, maxSize:10000)
+		daysDuration(nullable:true)
+		startDate(nullable:true)
 	}
 	
 	static mapping = {
@@ -64,13 +72,33 @@ class Sprint {
 		return create(user, null, null)
 	}
 	
+	protected UserGroup fetchUserGroup() {
+		return UserGroup.get(virtualGroupId)
+
+	}
+	
 	boolean hasWriter(Long userId) {
-		UserGroup virtualUserGroup = UserGroup.get(virtualGroupId)
-		if (virtualUserGroup != null) {
-			return virtualUserGroup.hasWriter(userId)
-		}
-		
-		return false
+		return fetchUserGroup()?.hasWriter(userId)
+	}
+	
+	def addWriter(Long userId) {
+		return fetchUserGroup()?.addWriter(userId)
+	}
+	
+	def removeWriter(Long userId) {
+		return fetchUserGroup()?.removeWriter(userId)
+	}
+	
+	boolean hasReader(Long userId) {
+		return fetchUserGroup()?.hasReader(userId)
+	}
+	
+	def addReader(Long userId) {
+		fetchUserGroup()?.addReader(userId)
+	}
+	
+	def removeReader(Long userId) {
+		fetchUserGroup()?.removeReader(userId)
 	}
 	
 	static Sprint create(User user, String name, Visibility visibility) {
@@ -108,10 +136,82 @@ class Sprint {
 		this.virtualGroupId = virtualUserGroup.id
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
 		virtualUserGroup.addWriter(virtualUser)
+		virtualUserGroup.addReader(virtualUser)
 		this.virtualUserId = virtualUser.id
 		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup)
 		this.discussionId = discussion.id
 		this.description = null
+	}
+	
+	void addMember(Long userId) {
+		addReader(userId)
+	}
+	
+	void removeMember(Long userId) {
+		removeReader(userId)
+	}
+	
+	boolean hasMember(Long userId) {
+		return hasReader(userId)
+	}
+	
+	void addAdmin(Long userId) {
+		addWriter(userId)
+		addReader(userId)
+	}
+	
+	void removeAdmin(Long userId) {
+		removeWriter(userId)
+		removeReader(userId)
+	}
+	
+	boolean hasAdmin(Long userId) {
+		return hasWriter(userId)
+	}
+	
+	protected String entrySetName() {
+		return "sprint id: " + this.id
+	}
+	
+	protected String sprintTagName() {
+		return "sprint " + name.toLowerCase()
+	}
+	
+	// add sprint entries to user account in the specified time zone
+	boolean start(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
+		String setName = entrySetName()
+		
+		def entries = Entry.findByUserId(virtualUserId)
+		for (Entry entry in entries) {
+			if (!entry.isPrimaryEntry())
+				continue
+			
+			entry.activateTemplateEntry(userId, baseDate, now, timeZoneName, stats, setName)
+		}
+		
+		// add start and stop elements
+		
+	}
+	
+	// remove sprint entries from user account for current base date
+	// remove pinned entries outright
+	// end repeat entries
+	// end remind entries
+	boolean stop(Long userId, Date baseDate, EntryStats stats) {
+		String setName = entrySetName()
+		
+		Identifier setIdentifier = Identifier.look(setName)
+		
+		def entries = Entry.findByUserIdAndSetIdentifier(userId, setIdentifier)
+		for (Entry entry in entries) {
+			if (!entry.isPrimaryEntry())
+				continue
+			
+			if (entry.isGhost()) {
+				Entry.deleteGhost(entry, stats, baseDate, true)
+			} else
+				Entry.delete(entry, stats)
+		}
 	}
 	
 	boolean isModified() {

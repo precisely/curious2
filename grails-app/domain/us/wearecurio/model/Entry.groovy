@@ -335,6 +335,11 @@ class Entry implements Comparable {
 	DurationType durationType
 	Identifier setIdentifier
 	
+	boolean isGhost() {
+		if (repeatType == null) return false
+		return repeatType.isGhost()
+	}
+	
 	String fetchSuffix() { 
 		if (baseTag == null || baseTag == tag) {
 			return ""
@@ -918,7 +923,7 @@ class Entry implements Comparable {
 	 */
 	static delete(Entry entry, EntryStats stats) {
 		log.debug "Entry.delete() entry:" + entry
-
+		
 		for (Entry e : entry.fetchGroupEntries()) {
 			deleteSingle(e, stats)
 		}
@@ -1721,8 +1726,15 @@ class Entry implements Comparable {
 		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
 	}
 	
-	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
-			EntryStats stats) {
+	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
+		if (this.repeatType == null)
+			return null
+		
+		return activateTemplateEntry(userId, currentBaseDate, nowDate, timeZoneName, stats, null)
+	}
+
+	protected Entry activateTemplateEntrySingle(Long targetUserId, Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
+			EntryStats stats, String setName) {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
 		long diff = now - dayStartTime
@@ -1731,7 +1743,7 @@ class Entry implements Comparable {
 		if (this.repeatType == null)
 			return null
 
-		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
+		if ((userId == targetUserId) && (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS))) {
 			// activate this entry
 
 			this.unGhost(stats)
@@ -1759,7 +1771,8 @@ class Entry implements Comparable {
 				m['date'] = new Date(dayStartTime + HALFDAYTICKS)
 				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 			}
-			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+			if (setName) m['setName'] = setName
+			def retVal = Entry.createSingle(targetUserId, m, creationMap.groupForDate(m['date']), stats)
 			
 			creationMap.add(retVal)
 
@@ -1770,7 +1783,8 @@ class Entry implements Comparable {
 			m['repeatType'] = this.repeatType
 			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 			m['datePrecisionSecs'] = this.datePrecisionSecs
-			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+			if (setName) m['setName'] = setName
+			def retVal = Entry.createSingle(targetUserId, m, creationMap.groupForDate(m['date']), stats)
 			
 			creationMap.add(retVal)
 
@@ -1780,10 +1794,7 @@ class Entry implements Comparable {
 		}
 	}
 
-	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
-		if (this.repeatType == null)
-			return null
-			
+	Entry activateTemplateEntry(Long targetUserId, Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats, String setName) {
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -1791,7 +1802,7 @@ class Entry implements Comparable {
 		Entry firstActivated = null
 		
 		for (Entry e : fetchGroupEntries()) {
-			Entry activated = e.activateGhostEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats)
+			Entry activated = e.activateTemplateEntrySingle(targetUserId, currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats, setName)
 			if (firstActivated == null) firstActivated = activated
 		}
 		
@@ -2551,7 +2562,7 @@ class Entry implements Comparable {
 	static final int CONDITION_TIME = 8
 	static final int CONDITION_COMMENT = 9
 	
-	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow, boolean forUpdate = false) {
+	static def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
 		log.debug "Entry.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input

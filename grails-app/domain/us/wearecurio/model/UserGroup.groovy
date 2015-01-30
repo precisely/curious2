@@ -422,6 +422,12 @@ class UserGroup {
 				+ user.getLast() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
 	}
 
+	def addReader(Long userId) {
+		if (!userId) return;
+		
+		addReader(User.get(userId))
+	}
+
 	def removeReader(User user) {
 		if (!user) return
 
@@ -432,10 +438,22 @@ class UserGroup {
 				+ user.getLast() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
 	}
 
+	def removeReader(Long userId) {
+		if (!userId) return
+		
+		removeReader(User.get(userId))
+	}
+
 	def hasReader(User user) {
 		if (!user) return false
 
 		return GroupMemberReader.lookup(id, user.getId()) != null
+	}
+
+	def hasReader(Long userId) {
+		if (!userId) return false
+
+		return GroupMemberReader.lookup(id, userId) != null
 	}
 
 	def addWriter(User user) {
@@ -444,10 +462,22 @@ class UserGroup {
 		GroupMemberWriter.create(id, user.getId())
 	}
 
+	def addWriter(Long userId) {
+		if (!userId) return
+
+		GroupMemberWriter.create(id, userId)
+	}
+
 	def removeWriter(User user) {
 		if (!user) return
 
 		GroupMemberReader.delete(id, user.getId())
+	}
+
+	def removeWriter(Long userId) {
+		if (!userId) return
+
+		GroupMemberReader.delete(id, userId)
 	}
 
 	boolean hasWriter(User user) {
