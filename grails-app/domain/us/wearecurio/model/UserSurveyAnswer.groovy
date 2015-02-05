@@ -17,6 +17,7 @@ class UserSurveyAnswer {
 	}
 
 	static mapping = {
+		version false
 		userId column : 'user_id', index:'user_id_index'
 		questionCode column : 'question_code', index:'question_code_index'
 	}

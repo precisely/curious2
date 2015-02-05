@@ -34,6 +34,10 @@ class EntryGroup {
 	
 	private static def log = LogFactory.getLog(this)
 	
+	static mapping = {
+		version false
+	}
+	
 	static EntryGroup create(Entry firstEntry) {
 		EntryGroup group = new EntryGroup()
 		group.addToEntries(firstEntry)

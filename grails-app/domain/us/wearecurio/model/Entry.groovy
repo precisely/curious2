@@ -118,19 +118,22 @@ class Entry implements Comparable {
 				CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT,
 				7L * 24L * 60L * 60000),
 		
-		GHOST(GHOST_BIT, 0), NOTHING(0, 0);
+		GHOST(GHOST_BIT, 0), NOTHING(0, 0),
 		
-		static final int DAILY_BIT = 1;
-		static final int WEEKLY_BIT = 2;
-		static final int REMIND_BIT = 4;
-		static final int CONTINUOUS_BIT = 0x0100;
-		static final int GHOST_BIT = 0x0200;
-		static final int CONCRETEGHOST_BIT = 0x0400;
+		DURATIONGHOST(GHOST_BIT | DURATION_BIT, 0);
+		
+		static final int DAILY_BIT = 1
+		static final int WEEKLY_BIT = 2
+		static final int REMIND_BIT = 4
+		static final int CONTINUOUS_BIT = 0x0100
+		static final int GHOST_BIT = 0x0200
+		static final int CONCRETEGHOST_BIT = 0x0400
+		static final int DURATION_BIT = 0x0800
 	
-		final Integer id;
-		final long duration;
+		final Integer id
+		final long duration
 		
-		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>();
+		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>()
 		
 		static {
 			for (RepeatType t : RepeatType.values()) {
@@ -139,76 +142,80 @@ class Entry implements Comparable {
 		}
 		
 		static RepeatType get(int id) {
-			return map.get(id);
+			return map.get(id)
 		}
 		
 		RepeatType(int id, long duration) {
-			this.id = id;
-			this.duration = duration;
+			this.id = id
+			this.duration = duration
 		}
 		
 		int getId() {
-			return id;
+			return id
 		}
 		
 		boolean isGhost() {
-			return (this.id & GHOST_BIT) > 0;
+			return (this.id & GHOST_BIT) > 0
 		}
 		
 		boolean isConcreteGhost() {
-			return (this.id & CONCRETEGHOST_BIT) > 0;
+			return (this.id & CONCRETEGHOST_BIT) > 0
 		}
 		
 		boolean isAnyGhost() {
-			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0;
+			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
 		}
 		
 		boolean isContinuous() {
-			return (this.id & CONTINUOUS_BIT) > 0;
+			return (this.id & CONTINUOUS_BIT) > 0
 		}
 		
 		boolean isDaily() {
-			return (this.id & DAILY_BIT) > 0;
+			return (this.id & DAILY_BIT) > 0
 		}
 		
 		boolean isWeekly() {
-			return (this.id & WEEKLY_BIT) > 0;
+			return (this.id & WEEKLY_BIT) > 0
 		}
 		
 		boolean isReminder() {
-			return (this.id & REMIND_BIT) > 0;
+			return (this.id & REMIND_BIT) > 0
 		}
 		
 		boolean isTimed() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0;
+			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
 		}
 		
 		boolean isRepeat() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0;
+			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
+		}
+		
+		boolean isDurationGhost() {
+			return this.id == DURATIONGHOST
 		}
 		
 		RepeatType unGhost() {
-			return RepeatType.get(this.id & (~GHOST_BIT));
+			return RepeatType.get(this.id & (~GHOST_BIT))
 		}
 		
 		RepeatType toggleGhost() {
 			if (isGhost())
-				return RepeatType.get(this.id & (~GHOST_BIT));
-			return RepeatType.get(this.id | GHOST_BIT);
+				return RepeatType.get(this.id & (~GHOST_BIT))
+			return RepeatType.get(this.id | GHOST_BIT)
 		}
 		
 		RepeatType makeGhost() {
-			return RepeatType.get(this.id | GHOST_BIT);
+			return RepeatType.get(this.id | GHOST_BIT)
 		}
 		
 		RepeatType makeConcreteGhost() {
-			return RepeatType.get(this.id | CONCRETEGHOST_BIT);
+			return RepeatType.get(this.id | CONCRETEGHOST_BIT)
 		}
 		
 		RepeatType forUpdate() {
 			if (isReminder())
 				return RepeatType.get(this.id
-						& (~(GHOST_BIT | CONCRETEGHOST_BIT)));
+						& (~(GHOST_BIT | CONCRETEGHOST_BIT)))
 			return this;
 		}
 	}
@@ -252,7 +259,8 @@ class Entry implements Comparable {
 		RepeatType.DAILYCONCRETEGHOST.getId(),
 		RepeatType.WEEKLYCONCRETEGHOST.getId(),
 		RepeatType.REMINDDAILYGHOST.getId(),
-		RepeatType.REMINDWEEKLYGHOST.getId()
+		RepeatType.REMINDWEEKLYGHOST.getId(),
+		RepeatType.DURATIONGHOST.getId()
 	]
 
 	protected static def LONG_GHOST_IDS = [
@@ -261,6 +269,10 @@ class Entry implements Comparable {
 		(long)RepeatType.WEEKLYCONCRETEGHOST.getId(),
 		(long)RepeatType.REMINDDAILYGHOST.getId(),
 		(long)RepeatType.REMINDWEEKLYGHOST.getId()
+	]
+
+	protected static def DURATIONGHOST_IDS = [
+		RepeatType.DURATIONGHOST.getId()
 	]
 
 	protected static def DAILY_UNGHOSTED_IDS = [
@@ -277,32 +289,32 @@ class Entry implements Comparable {
 				GHOSTSTART(DURATIONSTART_BIT | DURATIONGHOST_BIT),
 				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT);
 
-		static final int DURATIONSTART_BIT = 1;
-		static final int DURATIONEND_BIT = 2;
-		static final int DURATIONGHOST_BIT = 16;
+		static final int DURATIONSTART_BIT = 1
+		static final int DURATIONEND_BIT = 2
+		static final int DURATIONGHOST_BIT = 16
 		
-		final Integer id;
+		final Integer id
 
 		DurationType(Integer id) {
-			this.id = id;
+			this.id = id
 		}
 		
 		boolean isGhost() {
-			return (this.id & DURATIONGHOST_BIT) != 0;
+			return (this.id & DURATIONGHOST_BIT) != 0
 		}
 		
 		DurationType unGhost() {
-			if (this == GHOSTSTART) return START;
-			else if (this == GHOSTEND) return END;
+			if (this == GHOSTSTART) return START
+			else if (this == GHOSTEND) return END
 			
-			return this;
+			return this
 		}
 		
 		DurationType makeGhost() {
-			if (this == START) return GHOSTSTART;
-			else if (this == END) return GHOSTEND;
+			if (this == START) return GHOSTSTART
+			else if (this == END) return GHOSTEND
 			
-			return this;
+			return this
 		}
 	}
 	

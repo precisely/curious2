@@ -50,6 +50,7 @@ class Sprint {
 	}
 	
 	static mapping = {
+		version false
 		name column: 'name', index:'name_index'
 		userId column: 'user_id', index:'user_id_index'
 		virtualGroupId column: 'virtual_group_id', index:'virtual_group_id_index'

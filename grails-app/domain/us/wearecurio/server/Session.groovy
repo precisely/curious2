@@ -27,6 +27,7 @@ class Session {
 
 	static constraints = { uuid(maxSize:50) }
 	static mapping = {
+		version false
 		userId column: 'user_id', index: 'user_id_index'
 		uuid column:'uuid', index:'uuid_index'
 	}

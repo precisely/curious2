@@ -4,6 +4,10 @@ import java.util.Map;
 
 class SharedTagGroup extends TagGroup {
 
+	static mapping = {
+		version false
+	}
+	
 	static constraints = {
 	}
 

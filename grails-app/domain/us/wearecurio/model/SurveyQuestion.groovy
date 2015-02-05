@@ -32,6 +32,7 @@ class SurveyQuestion {
 	}
 
 	static mapping = {
+		version false
 		possibleAnswers cascade: 'all-delete-orphan'
 		id column : 'id', index:'id_index'
 		code column : 'code', index:'code_index'

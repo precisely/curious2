@@ -13,6 +13,7 @@ class SurveyAnswer implements Comparable{
 	}
 
 	static mapping = {
+		version false
 		id column : 'id', index:'id_index'
 		code column : 'code', index:'code_index'
 	}
