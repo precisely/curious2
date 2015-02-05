@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.support.EntryStats;
 import us.wearecurio.model.Model.Visibility
@@ -36,6 +37,7 @@ class Sprint {
 	Long daysDuration
 	Date startDate
 	Visibility visibility
+	String tagName
 	
 	static final int MAXPLOTDATALENGTH = 1024
 	
@@ -47,6 +49,8 @@ class Sprint {
 		dateFormat.setTimeZone(gmtTimeZone)
 		sprintBaseDate = dateFormat.parse("January 1, 2001 12:00 am")
 	}
+	
+	static transients = { "tagName" }
 
 	static constraints = {
 		userId(nullable:true)
@@ -173,8 +177,19 @@ class Sprint {
 		return "sprint id: " + this.id
 	}
 	
-	protected String sprintTagName() {
-		return "sprint " + name.toLowerCase()
+	void setName(String name) {
+		this.name = name
+		
+		this.tagName = null
+		
+		this.fetchTagName()
+	}
+	
+	protected String fetchTagName() {
+		if (tagName) return tagName
+		tagName = "sprint " + name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '')
+		
+		return tagName
 	}
 	
 	// add sprint entries to user account in the specified time zone
@@ -189,8 +204,8 @@ class Sprint {
 			entry.activateTemplateEntry(userId, baseDate, now, timeZoneName, stats, setName)
 		}
 		
-		// add start and stop elements
-		
+		// add start element
+		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true), stats)
 	}
 	
 	// remove sprint entries from user account for current base date
@@ -212,6 +227,9 @@ class Sprint {
 			} else
 				Entry.delete(entry, stats)
 		}
+		
+		// add stop element
+		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " stop", baseDate, true), stats)
 	}
 	
 	boolean isModified() {
