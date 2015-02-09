@@ -4,13 +4,13 @@
 			<div class="discussion-topic">
 			<div class="contents">
 				<div class="row">
-					<div class="col-md-9 discussion-header">
+					<div class="col-xs-9 discussion-header">
 						<a href="#">
 							<img class="avatar" src="/images/avatar.png" alt="avatar">
 							<span class="user-name"> ${discussionData.userName}</span>
 						</a>
 					</div>
-					<div class="col-md-3 discussion-topic-span discussion-header">
+					<div class="col-xs-3 discussion-topic-span discussion-header">
 						<span class="posting-time" data-time="${discussionData.created}"></span>
 						<g:if test="${discussionData.isAdmin }">
 							<li class="dropdown">
