@@ -11,53 +11,7 @@ class FeedController extends DataController {
 	
 	def getMyThreads(Long discussionId) {
 		debug "DummyController.getMyThreads()"
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			flash.message = "Must be logged in"
-			redirect(url:toUrl(action:'index'))
-			return
-		}
-
-		def groupMemberships = UserGroup.getGroupsForReader(user)
-		List associatedGroups = UserGroup.getGroupsForWriter(user)
-		def groupName
-		def groupFullname = "Community Feed"
-
-		groupMemberships.each { group ->
-			if (group[0]?.name.equals(params.userGroupNames)) {
-				groupFullname = group[0].fullName ?: group[0].name
-				groupName = group[0].name
-			}
-		}
-
-		params.max = params.max ?: 5
-		params.offset = params.offset ?: 0
-
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
-
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, params)
-
-		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
-			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
-
-		if (request.xhr) {
-			if( !model.discussionList ){
-				// render false if there are no more discussions to show.
-				render false
-			} else {
-				render template: "/feed/discussions", model: model
-			}
-			return
-		}
-
-		model
+		redirect (uri: "home/feed", params: discussionId)
 	}
 
 	def getSearchResults() {
@@ -73,5 +27,47 @@ class FeedController extends DataController {
 			return
 		}
 		render searchKeywords
+	}
+
+	def createSprint(String details, String tags, String participants) {
+		log.debug "parameters recieved to save sprint: ${params}"
+		log.debug "Details: ${details}"
+		log.debug "Tags: ${tags}"
+		log.debug "Participants: ${participants}"
+		return
+	}
+
+	def getSprintsForUser() {
+		List sprintsList = ['Eat Halthier', 'Runners challange', 'Sprint3', 'Sprint4', 'Sprint5']
+		// If is a ajax call
+		if (request.xhr) {
+			log.debug "sending requested search items"
+			renderJSONGet([terms: sprintsList])
+			return
+		}
+		render sprintsList
+	}
+
+	/**
+	 * 
+	 * @param id Id of Sprint
+	 * @param userId Id of {@link us.wearecurio.model.User User}
+	 * @return
+	 */
+	def sprint(Long id, Long userId) {
+		Map sprint = [
+			id: 1,
+			title: "Demo Sprint",
+			description: "At the professional level, sprinters begin the race by assuming a crouching position" + 
+			"in the starting blocks before leaning forward and gradually moving into an upright position as" + 
+			"the race progresses and momentum is gained. The set position differs depending on the start." + 
+			"Body alignment is of key importance in producing the optimal amount of force. Ideally the athlete should begin in a" + 
+			"4-point stance and push off using both legs for maximum force production",
+			tags: ["Tag1","Tag2", "Tag3"],
+			participants: [[id: 1, name: "Johan"], [id: 2, name: "Ron"], [id: 3, name: "Rambo"], [id: 4, name: "Don"]],
+			totalParticipants: 5,
+			userId: 1
+		]
+		render(view: "/home/sprint", model: sprint)
 	}
 }

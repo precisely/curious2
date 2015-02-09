@@ -15,6 +15,7 @@
 <script type="text/javascript" src="/js/curious/curious.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>
+<script type="text/javascript" src="/js/curious/feeds.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
