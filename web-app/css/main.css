@@ -1725,9 +1725,6 @@ li.pinned, li.pinned input{
 li.remind, li.repeat.remind, li.repeat.remind input {
 	color: #f48d5b;
 }
-li.remind.ghost {
-	color: #b2b2b2
-}
 
 li.repeat, li.repeat input {
 	color: #c35785;
@@ -1754,7 +1751,7 @@ li.entry.repeat.remind {
 	border-left: 5px solid #f48d5b;
 }
 li.entry.remind.ghost {
-	border-left: 5px solid #b2b2b2;
+	opacity: 0.5;
 }
 li.entry.repeat {
 	border-left: 5px solid #c35785;
