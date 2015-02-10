@@ -53,7 +53,7 @@
 		</thead>
 		<tbody>
 			<script id="task-template" type="x-tmpl-mustache">
-				<tr class="task-row {{typeEn}}" task-id="{{id}}" parent-id="{{parentId}}">
+				<tr class="task-row {{typeEn}} {{statusEn}}" task-id="{{id}}" parent-id="{{parentId}}">
 					<td class="id"> {{id}} </td>
 					<td class="user-id"> {{userId}} </td>
 					<td class="status"> {{statusEn}} </td>
@@ -69,7 +69,7 @@
 				</tr>
 			</script>
 				<g:each in="${analyticsTasks}" var="task">
-				<tr class="task-row parent" task-id="${task.id}" expanded="no">
+				<tr class="task-row parent ${task.statusEn().toLowerCase()}" task-id="${task.id}" expanded="no">
 					<td class="id"> ${task.id} </td>
 					<td class="user-id"> ${task.userId} </td>
 					<td class="status"> ${task.statusEn()} </td>

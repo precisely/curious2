@@ -13,9 +13,7 @@ class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 		}
 
 		def execute() {
-			// analyticsService.processUsers()
-			log "analyticsJob"
-			println "println analyticsJob"
-			analyticsService.pingServers()
+			analyticsService.processUsers()
+			log "analyticsJob launched."
 		}
 }

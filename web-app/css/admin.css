@@ -38,6 +38,22 @@
 	font-size: 0.9em;
 }
 
+.analytics-tasks tr.parent.running td {
+	background-color: #ffd;
+}
+
+.analytics-tasks tr.task-row.parent.running:hover td {
+	background-color: #ffc;
+}
+
+.analytics-tasks tr.parent.error td {
+	background-color: #fdd;
+}
+
+.analytics-tasks tr.task-row.parent.error:hover td {
+	background-color: #fcc;
+}
+
 .analytics-tasks tr.parent td	{
 	background-color: #e8edff;
 }
@@ -59,6 +75,10 @@
 .analytics-tasks .child .action button{
 	display: none;
 	border: 1px solid black;
+}
+
+.analytics-tasks td.status {
+	text-transform: uppercase;
 }
 
 .analytics-tasks button.disabled {

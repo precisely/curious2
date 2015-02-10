@@ -48,3 +48,7 @@
   (f x)
   x)
 
+(defn assert-type [x t]
+  (assert (= t (class x))
+          (str x " is not a " t ".  It's a " (class x) ".")))
+

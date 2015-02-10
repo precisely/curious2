@@ -20,7 +20,7 @@ import grails.util.Environment
 
 class AnalyticsService {
 
-	private static DEBUG = false
+	private static DEBUG = true
 
 	private static def log = LogFactory.getLog(this)
 	static transactional = false
@@ -95,8 +95,8 @@ class AnalyticsService {
 		def tagIds = user.tags().collect { it.id }
 
 		if (DEBUG) {
-			if (tagIds.size > 15) {
-				tagIds = tagIds[0..15]
+			if (tagIds.size > 25) {
+				tagIds = tagIds[0..25]
 			}
 		}
 
@@ -111,18 +111,20 @@ class AnalyticsService {
 
 		// Delete the user's realizations of fetchPlotData.
 		log.debug "user id ${userId}: delete table analytics_time_series"
-		AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId=?', [userId])
+		if (!DEBUG) {
+			AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId=?', [userId])
 
-		log.debug "user id ${userId}: refreshSeriesCache(${userId})"
-		tagIds.each { tagId ->
-			refreshSeriesCache(userId, tagId)
+			// Refresh the analytics_time_series dump for the user.
+			log.debug "user id ${userId}: refreshSeriesCache(${userId})"
+			tagIds.each { tagId ->
+				refreshSeriesCache(userId, tagId)
+			}
+			log.debug "user id ${userId}: refreshSeriesCache(${userId}) complete."
 		}
-		log.debug "user id ${userId}: refreshSeriesCache(${userId}) complete."
 
 	}
 
 	public static processOneOfManyUsers(childTask) {
-
 		try {
 			log.debug "AnalyticsTask processOneOfManyUsers @ ${childTask.serverAddress}: start"
 			AnalyticsTask.incBusy()
@@ -149,14 +151,13 @@ class AnalyticsService {
 		def childTask
 		AnalyticsTask.SERVERS.eachWithIndex { serverAddress, i ->
 			childTask = null
-			BackgroundTask.launch {
-				if (incompleteTasks && i < incompleteTasks.size) {
-					childTask = incompleteTasks[i]
-				} else {
-					childTask = AnalyticsTask.createChild(serverAddress, parentTask)
-				}
-				if (childTask) { processOneOfManyUsers(childTask) }
+			if (incompleteTasks && i < incompleteTasks.size) {
+				childTask = incompleteTasks[i]
+			} else {
+				childTask = AnalyticsTask.createChild(serverAddress, parentTask)
 			}
+			if (childTask) { processOneOfManyUsers(childTask) }
+			Utils.save(childTask, true)
 		}
 		incompleteTasks.collect { it.userId }
 	}

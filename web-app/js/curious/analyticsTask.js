@@ -93,6 +93,9 @@ $(function() {
 			var newRow = makeTaskRow(task);
 			$('#task-template').after(newRow);
 		}
+		if (task.status) {
+			$('.task-row[task-id='+task.id+']').attr('class', 'task-row parent ' + task.status.toLowerCase())
+		}
 		$('.task-row[task-id='+task.id+']').find('.user-id').html(task.userId);
 		$('.task-row[task-id='+task.id+']').find('.status').html(task.status);
 		$('.task-row[task-id='+task.id+']').find('.percent-successful').html(task.percentSuccessful);
