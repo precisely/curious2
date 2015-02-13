@@ -962,10 +962,10 @@ class HomeController extends DataController {
 					property("id", "id")
 				}
 				or {
-					ilike('first', '%' + params.searchString + '%')
-					ilike('last', '%' + params.searchString + '%')
-					ilike('email', '%' + params.searchString + '%')
-					ilike('username', '%' + params.searchString + '%')
+					ilike("first", "%" + params.searchString + "%")
+					ilike("last", "%" + params.searchString + "%")
+					ilike("email", "%" + params.searchString + "%")
+					ilike("username", "%" + params.searchString + "%")
 				}
 			}
 			renderJSONGet([usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])

@@ -3428,7 +3428,7 @@ body .modal-footer a .navigate-carousel-right {
 	margin-left: 5px;
 }
 
-.feed #deleteTag .fa ,.feed #deleteParticipants .fa,.feed #deleteAdmins .fa{
+.feed #deleteTag .fa , .feed #deleteParticipants .fa, .feed #deleteAdmins .fa{
 	color: #d8d8d8;
 }
 
