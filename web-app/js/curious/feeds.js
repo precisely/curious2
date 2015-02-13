@@ -1,6 +1,8 @@
 /**
  * 
  */
+var autocompleteWidget;
+var searchList = [];
 $(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 			getCSRFPreventionObject("getPeopleDataCSRF"),
@@ -20,6 +22,7 @@ $(function() {
 						this['username'], this['id'], this['sex']);
 				return true;
 			});
+			autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
 		});
 });
 
@@ -28,6 +31,8 @@ $(document).ready(function() {
 	App.discussion = {};
 	App.discussion.lockInfiniteScroll = false;
 	App.discussion.offset = 5;
+
+	//var autocompleteWidget = new AutocompleteWidget('autocomplete', 'sprint-tags');
 
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
@@ -52,7 +57,6 @@ $(document).ready(function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var discussionId = $this.data('discussionId');
-			console.log('discussion ID: ',discussionId);
 			$.ajax({
 				url: '/home/discuss',
 				data: {
@@ -154,44 +158,220 @@ $(document).ready(function() {
 		return false;
 	});
 
+	handelAutocomplete('sprint-participants', 'participantsAutocomplete');
+	handelAutocomplete('sprint-admins', 'adminsAutocomplete');
+
 	$(document).on("click", "#deleteTag", function() {
 		var $element = $(this);
+		var repeatType = $(this).data('repeatType');
+		var id = $(this).data('id');
+		console.log('repeat type: ', repeatType);
+		if (RepeatType.isGhost(repeatType) || RepeatType.isContinuous(repeatType) || RepeatType.isTimed(repeatType) ||
+				RepeatType.isRepeat(repeatType) || RepeatType.isRemind(repeatType)) {
+			deleteGhost($element, id, true);
+		} else {
+			deleteSimpleEntry(id, $element);
+		}
+		return false;
+	});
+
+	$(document).on("click", "#deleteParticipants", function() {
+		var $element = $(this);
+		var username = $(this).data('username');
+		deleteParticipantsOrAdmins($element, username, 'participants');
+	});
+
+	$(document).on("click", "#deleteAdmins", function() {
+		var $element = $(this);
+		var username = $(this).data('username');
+		deleteParticipantsOrAdmins($element, username, 'admins');
+	});
+});
+
+function deleteParticipantsOrAdmins($element, username, actionType) {
+	var actionName = (actionType === 'participants')?'deleteSprintParticipant':'deleteSprintAdmin';
+	$.ajax ({
+		type: 'POST',
+		url: '/dummy/' + actionName,
+		data: {
+			username: username,
+			virtualGroupId: $('#sprintVirtualGroupId').val(),
+			error: false
+		},
+		success: function(data) {
+			data = JSON.parse(data);
+			if (data.success) {
+				$element.parents('li').remove();
+			} else {
+				$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
+				setInterval(function() {
+					$('.modal-dialog .alert').addClass('hide');
+				}, 5000);
+			}
+		},
+		error: function(xhr) {
+			console.log('error: ', xhr);
+		}
+	});
+}
+
+function handelAutocomplete(inputId, autocompleteId) {
+	$( "#" + inputId ).autocomplete({
+		appendTo: "#" + autocompleteId,
+		minLength: 0,
+		source: []
+	});
+
+	$( "#" + inputId ).on( "keyup", function() {
+		var searchString = $("#" + inputId).val();
 		$.ajax ({
-			url: '/dummy/deleteTagsInSprint',
+			type: 'GET',
+			url: '/home/getAutocompleteParticipants',
 			data: {
-				id: $(this).data('id')
+				searchString: searchString
 			},
 			success: function(data) {
 				data = JSON.parse(data);
 				if (data.success) {
-					console.log('li: ', $(this).parents("li"));
-					$element.parents('li').remove();
 				} else {
-					if ($element.parents('.modal-dialog').length > 0) {
-						$('.modal-dialog .alert').text(data.message).show();
-						setInterval(function() {
-							$('.modal-dialog .alert').hide();
-						}, 5000);
-					} else {
-						$('.alert').text(data.message).show();
-						setInterval(function() {
-							$('.alert').hide();
-						}, 5000);
-					}
+					$( "#" + inputId ).autocomplete( "option", "source", data.usernameList);
 				}
 			},
 			error: function(xhr) {
 				console.log('error: ', xhr);
 			}
 		});
-		return false;
 	});
-});
 
+	$("#" + inputId).keypress(function (e) {
+		userName = $("#" + inputId).val();
+		var actionName = (inputId === 'sprint-participants')?'addSprintParticipants':'addSprintAdmins';
+		var deleteButtonId = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
+		var key = e.which;
+		if(key == 13)  // the enter key code
+		{
+			$.ajax ({
+				type: 'POST',
+				url: '/dummy/' + actionName,
+				data: {
+					participantUsername: userName,
+					virtualGroupId: $('#sprintVirtualGroupId').val(),
+					error: false
+				},
+				success: function(data) {
+					data = JSON.parse(data);
+					if (data.success) {
+						$("#" + inputId).val('');
+						$("#" + inputId + "-list").append('<li>' + userName + 
+								' (<i>invited</i>) <button type="button" id="' + deleteButtonId + '" data-username="' + 
+								userName + '"><i class="fa fa-times-circle"></i></button></li>');
+					} else {
+						$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
+						setInterval(function() {
+							$('.modal-dialog .alert').addClass('hide');
+						}, 5000);
+					}
+				},
+				error: function(xhr) {
+					console.log('error: ', xhr);
+				}
+			});
+			return false;  
+		}
+	});
+}
 $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
 });
+
+function addData(usernameList) {
+	searchList = usernameList;
+}
+
+function deleteSimpleEntry(id, $element) {
+	var now = new Date();
+	this.currentTimeUTC = now.toUTCString();
+	this.cachedDateUTC = now.toUTCString();
+	this.timeZoneName = jstz.determine().name();
+	queueJSON("deleting entry", "/home/deleteEntrySData?entryId=" + id
+			+ "&currentTime=" + this.currentTimeUTC + "&baseDate=" + this.cachedDateUTC
+			+ "&timeZoneName=" + this.timeZoneName + "&displayDate=" + this.cachedDateUTC + "&"
+			+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
+			function(entries) {
+		if (checkData(entries, 'success', "Error deleting entry")) {
+			$element.parents('li').remove();
+			if (entries[1] != null)
+				autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+			if (entries[2] != null) {
+				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+			}
+		} else {
+			if ($element.parents('.modal-dialog').length > 0) {
+				$('.modal-dialog .alert').text(data.message).show();
+				setInterval(function() {
+					$('.modal-dialog .alert').hide();
+				}, 5000);
+			} else {
+				$('.alert').text(data.message).show();
+				setInterval(function() {
+					$('.alert').hide();
+				}, 5000);
+			}
+		}
+	});
+}
+
+function deleteGhost($tagToDelete, entryId, allFuture) {
+	var now = new Date();
+	this.cachedDateUTC = now.toUTCString();
+	queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
+		all:(allFuture ? "true" : "false"), date:this.cachedDateUTC, baseDate:this.cachedDateUTC})),
+		function(ret) {
+				$tagToDelete.parents('li').remove();
+		}
+	);
+}
+
+function createSprintTags(inputElement, suffix) {
+	var $inputElement = $('#' + inputElement);
+	var virtualUserId = $('#sprintVirtualUserId').val();
+	$inputElement.val($inputElement.val() + ' ' + suffix);
+
+	var now = new Date();
+	this.currentTimeUTC = now.toUTCString();
+	this.cachedDateUTC = now.toUTCString();
+	this.timeZoneName = jstz.determine().name();
+
+	queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + this.currentTimeUTC
+			+ "&userId=" + virtualUserId + "&text=" + $inputElement.val() + "&baseDate=" + this.cachedDateUTC
+			+ "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&"
+			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
+			function(entries) {
+		if (checkData(entries, 'success', "Error adding entry")) {
+			$inputElement.val('');
+			if (entries[1] != null) {
+				showAlert(entries[1]);
+			}
+			if (entries[2] != null)
+				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+			var addedEntry = entries[3];
+			if (addedEntry.comment === 'pinned') {
+				$('#sprint-tag-list').append('<li><div class="pinnedDarkLabelImage"></div> ' + addedEntry.description + 
+						' (<i>Pinned</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						addedEntry.repeatType + '"> <i class="fa fa-times-circle"></i></button></li>');
+			} else if (addedEntry.comment === 'remind') {
+				$('#sprint-tag-list').append('<li><div class="remindDarkLabelImage"></div> ' + addedEntry.description + 
+						' (<i>Remind</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
+			} else if (addedEntry.comment === 'repeat') {
+				$('#sprint-tag-list').append('<li><div class="repeatDarkLabelImage"></div> ' + addedEntry.description + 
+						' (<i>Repeat</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
+			}
+		}
+	});
+}
 
 function getMyThreads(params) {
 	$.ajax ({
@@ -208,6 +388,28 @@ function getMyThreads(params) {
 		error: function(xhr) {
 			console.log('error: ', xhr);
 			
+		}
+	});
+}
+
+function createBlankSprint() {
+	$.ajax ({
+		type: 'GET',
+		url: '/dummy/createNewBlankSprint',
+		success: function(data) {
+			data = JSON.parse(data);
+			if (data.success) {
+				$('.new-post').remove();
+				$('#sprintIdField').val(data.id);
+				$('#sprintVirtualUserId').val(data.userId);
+				$('#sprintVirtualGroupId').val(data.groupId);
+				$('#createSprintOverlay').modal({show: true});
+			} else {
+				showAlert("Unable to create new sprint!")
+			}
+		},
+		error: function(xhr) {
+			console.log('error: ', xhr);
 		}
 	});
 }
