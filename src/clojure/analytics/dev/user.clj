@@ -11,10 +11,10 @@
                  'co    'core
                  'const 'constants
                  'db    'database
+                 'dc    'detect-changes
                  'im    'idioms
                  'iv    'interval
                  'dso   'datastructure-operations
-                 'tg    'tag-group
                  'stats 'stats })
 
 (def external-aliases { 'cs   'clojure.set
@@ -79,13 +79,13 @@
 
   (require 'us.wearecurio.analytics.database :reload)
   (require 'us.wearecurio.analytics.datastructure-operations :reload)
+  (require 'us.wearecurio.analytics.detect-changes :reload)
   (require 'us.wearecurio.analytics.constants :reload)
   (require 'us.wearecurio.analytics.idioms :reload)
   (require 'us.wearecurio.analytics.binify :reload)
   (require 'us.wearecurio.analytics.interval :reload)
   (require 'us.wearecurio.analytics.rest :reload)
-  (require 'us.wearecurio.analytics.stats :reload)
-  (require 'us.wearecurio.analytics.tag-group :reload))
+  (require 'us.wearecurio.analytics.stats :reload))
 
 
 (defn ret []
@@ -93,7 +93,6 @@
   (require 'us.wearecurio.analytics.core-test :reload)
   (require 'us.wearecurio.analytics.database-test :reload)
   (require 'us.wearecurio.analytics.interval-test :reload)
-  (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 
 (defn init []

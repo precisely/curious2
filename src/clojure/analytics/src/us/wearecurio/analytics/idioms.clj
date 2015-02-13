@@ -4,6 +4,9 @@
 (defn pp [x]
   (cp/pprint x))
 
+(defn pp [x]
+  (clojure.pprint/pprint x))
+
 (defn sort-map-by-value [m] 
     (into (sorted-map-by (fn [k1 k2] (compare (k1 m) (k2 m)))) m)) 
 

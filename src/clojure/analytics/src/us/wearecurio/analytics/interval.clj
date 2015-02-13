@@ -45,9 +45,6 @@
   (when (== 0 v)
     (println* "***WARNING***: Division by zero in" loc)))
 
-; For inspecting hashes.
-(defn pp [x] (clojure.pprint/pprint x))
-
 ;-----
 ;
 ; Needed for DP clustering algorithm.
@@ -1095,7 +1092,7 @@
 
 (defn vectorize-in-intervals [user-id tag-id start-date-index stop-date-index rescaled-intervals & {:keys [shift] :or {shift 0}}]
   (let [data-type          (db/series-data-type user-id tag-id)
-        shift-fn           (partial + shift)
+        shift-fn           (partial + shift) ; Since the units of time have been normalized to the scale of time (days, by default), shift by 1 is a shift of 1 day.
         start-date-index'  (shift-fn start-date-index)
         stop-date-index'   (shift-fn stop-date-index)
         rescaled-intervals (map #(map shift-fn %) rescaled-intervals)]
@@ -1134,18 +1131,6 @@
     (when (> (count rescaled-intervals) 0)
       (let [values (values-in-intervals user-id tag1-id tag2-id rescaled-intervals)]
         (compute-correlation-helper (:v1 values) (:v2 values) tag1-id tag2-id)))))
-
-; TODO: remove f[].
-(defn f []
-  (let [user-id 4]
-    (doseq [pair (db/pairs-with-min-n user-id :min-n 10)]
-      (let [t1 (first pair)
-            t2 (last pair)
-            intervals (rescaled-intersected-intervals const/DAY user-id t1 t2)]
-        (when (> (count intervals) 0)
-          (let [values (values-in-intervals user-id t1 t2 intervals)]
-            (println pair (compute-correlation-helper (:v1 values) (:v2 values) t1 t2))))))))
-
 
 (defn remove-noise-pairs [all-pairs noise-pairs]
   (remove #(contains? (set noise-pairs) %) all-pairs))

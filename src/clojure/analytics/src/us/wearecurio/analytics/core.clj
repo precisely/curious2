@@ -23,8 +23,6 @@
   "A convenience wrapper for use at the REPL."
   (db/connect))
 
-(defn pp [x] (clojure.pprint/pprint x))
-
 (defn parse-int [s]
   (Integer/parseInt s))
 
@@ -112,5 +110,5 @@
     (when (:clear-log options)
       (io/delete-file log-file-name))
     (when (:debug options)
-      (pp parsed-options))))
+      (im/pp parsed-options))))
 
