@@ -19,11 +19,14 @@ class DummyController extends DataController {
 		redirect (action: "getMyThreads") 
 	}
 
-	def createSprint(String details, String tags, String participants, boolean error) {
+	def createNewBlankSprint() {
+		renderJSONGet([id: 1, name: "New Sprint", userId: 1, groupId: 1, success: true])
+		return
+	}
+
+	def createSprint(String details, boolean error) {
 		log.debug "parameters recieved to save sprint: ${params}"
 		log.debug "Details: ${details}"
-		log.debug "Tags: ${tags}"
-		log.debug "Participants: ${participants}"
 		log.debug "error: ${error}"
 		
 		if (error) {
@@ -70,8 +73,47 @@ class DummyController extends DataController {
 		render(view: "/home/sprint", model: sprint)
 	}
 
-	def deleteTagsInSprint(Long id) {
-		renderJSONGet([success: true, message: "Removed the tag successfully."])
-		return
+	def addSprintParticipants(String username, long virtualGroupId, boolean error) {
+		log.debug "DummyController.addParticipants(): parameters recieved- $params"
+		if (error) {
+			renderJSONPost([error: true, errorMessage: "Participant Already Invited!"])
+			return
+		} else {
+			renderJSONPost([success: true])
+			return
+		}
+	}
+
+	def addSprintAdmins(String username, long virtualGroupId, boolean error) {
+		log.debug "DummyController.addAdmins(): parameters recieved- $params"
+		if (error) {
+			renderJSONPost([error: true, errorMessage: "Admin Already Invited!"])
+			return
+		} else {
+			renderJSONPost([success: true])
+			return
+		}
+	}
+
+	def deleteSprintParticipant(String username, long virtualGroupId, boolean error) {
+		log.debug "DummyController.deleteSprintParticipant(): parameters recieved- $params"
+		if (error) {
+			renderJSONPost([error: true, errorMessage: "No such participant!"])
+			return
+		} else {
+			renderJSONPost([success: true])
+			return
+		}
+	}
+
+	def deleteSprintAdmin(String username, long virtualGroupId, boolean error) {
+		log.debug "DummyController.deleteSprintAdmin(): parameters recieved- $params"
+		if (error) {
+			renderJSONPost([error: true, errorMessage: "No such admin!"])
+			return
+		} else {
+			renderJSONPost([success: true])
+			return
+		}
 	}
 }

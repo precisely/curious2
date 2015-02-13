@@ -3,7 +3,9 @@
 	<head>
 	<title>Curious</title>
 	<meta name="description" content="A platform for health hackers" />
-	<c:jsCSRFToken keys="getPeopleDataCSRF,getInterestTagsDataCSRF, addInterestTagDataCSRF" />
+	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
+	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF,getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -41,7 +43,7 @@
 						</g:if>
 					</li>
 					<li id="myThreads"><a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a></li>
-					<li id="sprints"><a href="#">SPRINTS</a><button id="createSprint" data-toggle="modal" data-target="#createSprintOverlay">
+					<li id="sprints"><a href="#">SPRINTS</a><button id="createSprint" onclick="createBlankSprint()">
 					<span class="create-sprint-label">CREATE</span></button>
 						<g:if test="${sprintList}">
 							<ul>

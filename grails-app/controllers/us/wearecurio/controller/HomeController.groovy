@@ -953,4 +953,24 @@ class HomeController extends DataController {
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
 	}
+
+	def getAutocompleteParticipants() {
+		if (params.searchString) {
+			List searchResults = User.withCriteria {
+				projections{
+					property("username", "username")
+					property("id", "id")
+				}
+				or {
+					ilike('first', '%' + params.searchString + '%')
+					ilike('last', '%' + params.searchString + '%')
+					ilike('email', '%' + params.searchString + '%')
+					ilike('username', '%' + params.searchString + '%')
+				}
+			}
+			renderJSONGet([usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
+		} else {
+			renderJSONGet([success: true])
+		}
+	}
 }
