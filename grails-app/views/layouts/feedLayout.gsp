@@ -5,7 +5,8 @@
 	<meta name="description" content="A platform for health hackers" />
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
-	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF,getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF" />
+	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
+	getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">

@@ -36,7 +36,7 @@ $(document).ready(function() {
 
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
-		if(key == 13)  // the enter key code
+		if (key == 13)  // the enter key code
 		{
 			$('.input-affordance hr').removeClass('hide');
 			$('input[name = discussionPost]').removeClass('hide');
@@ -46,7 +46,7 @@ $(document).ready(function() {
 	
 	$('#discussion-discription').keypress(function (e) {
 		var key = e.which;
-		if(key == 13)  // the enter key code
+		if (key == 13)  // the enter key code
 		{
 			$('#create-discussion').submit();
 			return false;  
@@ -248,8 +248,7 @@ function handelAutocomplete(inputId, autocompleteId) {
 		var actionName = (inputId === 'sprint-participants')?'addSprintParticipants':'addSprintAdmins';
 		var deleteButtonId = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
 		var key = e.which;
-		if(key == 13)  // the enter key code
-		{
+		if (key == 13) { // the enter key code
 			$.ajax ({
 				type: 'POST',
 				url: '/dummy/' + actionName,
@@ -294,6 +293,7 @@ function deleteSimpleEntry(id, $element) {
 	this.currentTimeUTC = now.toUTCString();
 	this.cachedDateUTC = now.toUTCString();
 	this.timeZoneName = jstz.determine().name();
+
 	queueJSON("deleting entry", "/home/deleteEntrySData?entryId=" + id
 			+ "&currentTime=" + this.currentTimeUTC + "&baseDate=" + this.cachedDateUTC
 			+ "&timeZoneName=" + this.timeZoneName + "&displayDate=" + this.cachedDateUTC + "&"
@@ -325,6 +325,7 @@ function deleteSimpleEntry(id, $element) {
 function deleteGhost($tagToDelete, entryId, allFuture) {
 	var now = new Date();
 	this.cachedDateUTC = now.toUTCString();
+
 	queueJSON("deleting entry", makeGetUrl("deleteGhostEntryData"), makeGetArgs(getCSRFPreventionObject("deleteGhostEntryDataCSRF", {entryId:entryId,
 		all:(allFuture ? "true" : "false"), date:this.cachedDateUTC, baseDate:this.cachedDateUTC})),
 		function(ret) {
