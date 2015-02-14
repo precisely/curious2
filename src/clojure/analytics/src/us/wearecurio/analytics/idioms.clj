@@ -1,4 +1,8 @@
-(ns us.wearecurio.analytics.idioms)
+(ns us.wearecurio.analytics.idioms
+  (:require [clojure.pprint :as cp]))
+
+(defn pp [x]
+  (cp/pprint x))
 
 (defn sort-map-by-value [m] 
     (into (sorted-map-by (fn [k1 k2] (compare (k1 m) (k2 m)))) m)) 
