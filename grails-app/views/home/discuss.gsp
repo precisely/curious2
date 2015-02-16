@@ -322,14 +322,18 @@ $(document).ready(function() {
 							<div class="contents">
 								<div class="row">
 									<div class="col-md-9 discussion-header">
-										<a href="#"><img class="avatar" src="/images/avatar.png"
-											alt="..."><span class="user-name"> ${discussionOwner}</span></a>
+										<a href="#">
+											<img class="avatar" src="/images/avatar.png" alt="...">
+											<span class="user-name"> ${discussionOwner}</span>
+										</a>
 									</div>
 									<div class="col-md-3 discussion-topic-span discussion-header">
 										<span class="posting-time" data-time="${discussionCreatedOn.time}"></span>
 										<g:if test="${isAdmin }">
 											<li class="dropdown">
-												<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
+												<a href="#" data-toggle="dropdown">
+													<b class="caret"></b>
+												</a>
 												<ul class="dropdown-menu" role="menu">
 													<li>
 														<a href="#" class="delete-discussion" data-discussion-id="${discussionId}"> 

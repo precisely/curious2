@@ -13,14 +13,14 @@
 					<div class="row">
 						<div class="col-md-6">
 							<label for="sprint-title">TITLE</label>
-								<input type="text" name="title" required placeholder="Enter title here..." id="sprint-title">
+							<input type="text" name="title" required placeholder="Enter title here..." id="sprint-title">
 						</div>
 						<div class="col-md-6">
 							<label class="">PRIVACY</label>
-								<input type="radio" class="radio-open" name="visibility" id="open" value="open" checked>
-								<label for="open" class="radio-label">Open</label>
-								<input type="radio" class="radio-closed" name="visibility" id="closed" value="closed">
-								<label for="closed" class="radio-label">Closed</label>
+							<input type="radio" class="radio-open" name="visibility" id="open" value="open" checked>
+							<label for="open" class="radio-label">Open</label>
+							<input type="radio" class="radio-closed" name="visibility" id="closed" value="closed">
+							<label for="closed" class="radio-label">Closed</label>
 						</div>
 					</div>
 					<div class="row">
