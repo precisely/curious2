@@ -36,8 +36,7 @@ $(document).ready(function() {
 
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
-		if (key == 13)  // the enter key code
-		{
+		if (key == 13) {
 			$('.input-affordance hr').removeClass('hide');
 			$('input[name = discussionPost]').removeClass('hide');
 			return false;  
@@ -46,8 +45,7 @@ $(document).ready(function() {
 	
 	$('#discussion-discription').keypress(function (e) {
 		var key = e.which;
-		if (key == 13)  // the enter key code
-		{
+		if (key == 13) {
 			$('#create-discussion').submit();
 			return false;  
 		}
