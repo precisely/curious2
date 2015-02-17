@@ -34,7 +34,7 @@ $(document).ready(function() {
 							<g:each in="${tags}" var="tag">
 								<li class="sprintTag">
 									${tag.description } 
-									<button type="button" id="deleteTag" data-id="${tag.id}">
+									<button type="button" class="deleteSprintEntry" data-id="${tag.id}">
 										<i class="fa fa-times-circle"></i>
 									</button>
 								</li>
@@ -73,25 +73,6 @@ $(document).ready(function() {
 				</div>
 			</div>
 		</div>
-	
-		<div style="clear: both;"></div>
-		<div id="share-dialog" class="hide" title="Share">
-			<select name="shareOptions" id="shareOptions" multiple="multiple"
-				class="form-control" size="8">
-				<option value="isPublic">Visible to the world</option>
-				<g:each in="${associatedGroups }" var="userGroup">
-					<option value="${userGroup.id }">
-						${userGroup.fullName }
-					</option>
-				</g:each>
-			</select>
-		</div>
-		<div id="comment-dialog" class="hide" title="Comment">
-			<input type="text" name="comment" id="userComment" required
-				placeholder="Add Comment..."> <input type="hidden"
-				name="discussionId" value="${discussionId}">
-		</div>
-		<g:render template="/sprint/createSprintModal" /> 
 	</content>
 </body>
 </html>

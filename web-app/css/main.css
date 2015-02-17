@@ -1526,18 +1526,18 @@ body.discuss-page .red-header {
 	top: 25px;
 }
 
-.input-affordance .radio-public-label {
+.input-affordance .radio-public-label, .input-affordance .radio-private-label {
 	position: absolute;
 	font-size: 12px;
 	cursor: pointer;
+}
+
+.input-affordance .radio-public-label {
 	right: 122px;
 	top: 25px;
 }
 
 .input-affordance .radio-private-label {
-	position: absolute;
-	font-size: 12px;
-	cursor: pointer;
 	right: 46px;
 	top: 25px;
 }
@@ -1654,48 +1654,30 @@ body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
 	color: #C0C8C9;
 	font-size: 12px;
 }
-.repeatLabelImage {
-	background: url(/images/repeat-sm-light.png) no-repeat center left;
+.pinnedDarkLabelImage, .repeatLabelImage, .repeatDarkLabelImage, .remindLabelImage, .remindDarkLabelImage {
 	height: 15px;
 	width: 15px;
-	background-size: contain;
+	background-size: contain !important;
 	display: inline-block;
 	vertical-align: middle;
 }
+.repeatLabelImage {
+	background: url('/images/repeat-sm-light.png') no-repeat center left;
+}
 .repeatDarkLabelImage {
-	background: url(/images/repeat-sm-dark.png) no-repeat center left;
-	height: 15px;
-	width: 15px;
-	background-size: contain;
-	display: inline-block;
-	vertical-align: middle;
+	background: url('/images/repeat-sm-dark.png') no-repeat center left;
 }
 
 .remindLabelImage {
-	background: url(/images/remind-sm-light.png) no-repeat center left;
-	height: 15px;
-	width: 15px;
-	vertical-align: middle;
-	background-size: contain;
-	display: inline-block;
+	background: url('/images/remind-sm-light.png') no-repeat center left;
 }
 
 .remindDarkLabelImage {
-	background: url(/images/remind-sm-dark.png) no-repeat center left;
-	height: 15px;
-	width: 15px;
-	vertical-align: middle;
-	background-size: contain;
-	display: inline-block;
+	background: url('/images/remind-sm-dark.png') no-repeat center left;
 }
 
 .pinnedDarkLabelImage {
-	background: url(/images/pinned-sm-dark.png) no-repeat center left;
-	height: 15px;
-	width: 15px;
-	vertical-align: middle;
-	background-size: contain;
-	display: inline-block;
+	background: url('/images/pinned-sm-dark.png') no-repeat center left;
 }
 
 li img.edit-repeat {
@@ -1980,7 +1962,7 @@ div.graph-header-container .red-header {
 	font-size: 12px;
 }
 
-.feed .modal-body label {
+.feed #createSprintOverlay .modal-body label {
 	display: block;
 	font-weight: normal;
 	font-size: 14px;
@@ -2012,8 +1994,8 @@ div.graph-header-container .red-header {
 
 .feed .modal-body #sprint-tags {
 	border: none;
-	width: 250px !important;
-	height: 30px !important;
+	width: 250px;
+	height: 30px;
 	margin-bottom: 0px;
 	font-weight: 500;
 }
@@ -2046,7 +2028,7 @@ div.graph-header-container .red-header {
 	border-radius: 13px;
 }
 
-.modal-dialog .radio-label {
+.feed #createSprintOverlay .modal-dialog .radio-label {
 	display: inline-block !important;
 	color: #c04f7f !important;
 	margin-right: 50px;
@@ -2055,7 +2037,7 @@ div.graph-header-container .red-header {
 	cursor: pointer;
 }
 
-.modal-dialog .radio-label:after {
+.feed #createSprintOverlay .modal-dialog .radio-label:after {
 	content: "";
 	position: absolute;
 	display: inline-block; 
@@ -2068,16 +2050,16 @@ div.graph-header-container .red-header {
 	box-shadow: inset 0px 0px 0px 1px #c04f7f, 0px 0px 0px 0px #c04f7f;
 }
 
-.modal-dialog input[type=radio]:checked+label:after {
+.feed #createSprintOverlay .modal-dialog input[type=radio]:checked+label:after {
 	background-color: #c04f7f;
 	box-shadow: none;
 }
 
-.feed .modal-backdrop {
+.modal-backdrop {
 	background-color: #ffffff;
 }
 
-.feed .modal-content {
+.modal-content {
 	border-radius: 2px;
 	color: #4c4c4c;
 }
@@ -2098,7 +2080,7 @@ div.graph-header-container .red-header {
 	font-weight: 500;
 }
 
-.feed .modal-footer {
+.modal-footer {
 	padding: 0px;
 	height: 50px;
 }
@@ -2114,13 +2096,13 @@ div.graph-header-container .red-header {
 	opacity: 1;
 }
 
-.feed .modal-content button .fa {
+.feed .modal-body button .fa {
 	font-weight: 100;
 	font-size: x-large;
-	color: #4c4c4c;
+	color: #d8d8d8;
 }
 
-.feed .modal-content button:active {
+.feed #createSprintOverlay .modal-content button:active {
 	background-color: #AB4470;
 }
 
@@ -2770,29 +2752,29 @@ body {
 	font-size: 15px;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header {
+.discussion-header {
 	padding-left: 5px;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header li {
+.discussion-header li {
 	display: inline-block;
 	background-color: #f3f3f3;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header .open {
+.discussion-header .open {
 	width: 92px;
 }
-.feed-item .discussion .discussion-topic .discussion-header li a b {
+.discussion-header li a b {
 	margin: 10px 12px;
 	color: #c8c8c8;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header li a .caret {
+.discussion-header li a .caret {
 	border-top: 5px solid;
 	border-right: 5px solid transparent;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu {
+.discussion-header li .dropdown-menu {
 	background-color: #f3f3f3;
 	min-width: 0px;
 	max-width: 92px;
@@ -2806,12 +2788,12 @@ body {
 	padding-top: 0px;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a {
+.discussion-header li .dropdown-menu li a {
 	padding: 2px;
 	color: #a8a8a8;
 }
 
-.feed-item .discussion .discussion-topic .discussion-header li .dropdown-menu li a img {
+.discussion-header li .dropdown-menu li a img {
 	margin-right: 10px;
 }
 
@@ -2851,26 +2833,26 @@ body {
 	margin-top: 0px;
 }
 
-.feed-item .discussion .discussion-topic .discussion-topic-span {
+.discussion-topic .discussion-topic-span {
 	text-align: right;
 	margin-top: 5px;
 }
 
-.feed-item .discussion .discussion-topic .buttons {
+.discussion-topic .buttons {
 	text-align: right;
 	margin-right: 15px;
 }
 
-.feed-item .discussion .discussion-topic button {
+.discussion-topic button {
 	margin: 0px 0px -10px 45px;
 }
 
-.feed-item .discussion .discussion-topic button img{
+.discussion-topic button img{
 	height: 50px;
 	width: auto;
 }
 
-.feed-item .discussion .discussion-topic .contents {
+.discussion-topic .contents {
 	margin-bottom: 10px;
 	padding: 5px 14px 5px 10px;
 }
@@ -2895,23 +2877,23 @@ body {
 	margin-left: 32px;
 }
 
-.feed-item .discussion .discussion-comment .add-comment-to-discussion {
+.discussion-comment .add-comment-to-discussion {
 	margin: 0px 0px 38px 0px;
 }
 
-.feed-item .discussion .discussion-comment .add-comment-to-discussion input {
+.discussion-comment .add-comment-to-discussion input {
 	width: 100%;
 	height: 52px;
 	padding: 10px;
 }
 
-.feed-item .discussion .discussion-comment .posting-time {
+.discussion-comment .posting-time {
 	margin:12px 0px 0px 10px;
 	font-size: 11px;
 	color: #a8a8a8;
 }
 
-.feed-item .discussion .discussion-comment .add-comment input {
+.discussion-comment .add-comment input {
 	width: 100%;
 	max-width: 320px;
 	height: 34px;
@@ -3359,9 +3341,9 @@ body .modal-footer a .navigate-carousel-right {
 	display: inline-block;
 	height: 30px;
 	margin-right: 10px;
-	top: -2px;
 	padding: 0px 5px;
 	background-color: #d1d1d1;
+	vertical-align: middle;
 }
 
 #pinned-tag-list .dropdown .caret {
@@ -3421,16 +3403,16 @@ body .modal-footer a .navigate-carousel-right {
 	font-weight: 500;
 }
 
-.feed #deleteTag , .feed #deleteParticipants, .feed #deleteAdmins {
+.feed .deleteSprintEntry , .feed .deleteParticipants, .feed .deleteSprintEntry {
 	background-color: transparent;
 	margin-left: 5px;
 }
 
-.feed #deleteTag .fa , .feed #deleteParticipants .fa, .feed #deleteAdmins .fa {
+.feed .deleteSprintEntry .fa , .feed .deleteParticipants .fa, .feed .deleteAdmins .fa {
 	color: #d8d8d8;
 }
 
-.feed .modal-body #deleteTag .fa, .feed .modal-body #deleteParticipants .fa, .feed .modal-body #deleteAdmins .fa {
+.feed .modal-body .deleteSprintEntry .fa, .feed .modal-body .deleteParticipants .fa, .feed .modal-body .deleteAdmins .fa {
 	font-size: 14px !important;
 }
 
