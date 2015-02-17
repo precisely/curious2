@@ -43,9 +43,14 @@
 							</ul>
 						</g:if>
 					</li>
-					<li id="myThreads"><a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a></li>
-					<li id="sprints"><a href="#">SPRINTS</a><button id="createSprint" onclick="createBlankSprint()">
-					<span class="create-sprint-label">CREATE</span></button>
+					<li id="myThreads">
+						<a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a>
+					</li>
+					<li id="sprints">
+						<a href="#">SPRINTS</a>
+						<button id="createSprint" onclick="createSprint()">
+							<span class="create-sprint-label">CREATE</span>
+						</button>
 						<g:if test="${sprintList}">
 							<ul>
 								<g:each in="${sprintList}" var="sprint">
@@ -79,6 +84,23 @@
 			</div>
 		</div>
 		<!-- /MAIN -->
+		<div style="clear: both;"></div>
+		<div id="share-dialog" class="hide" title="Share">
+			<select name="shareOptions" id="shareOptions" multiple="multiple"
+				class="form-control" size="8">
+				<option value="isPublic">Visible to the world</option>
+				<g:each in="${associatedGroups }" var="userGroup">
+					<option value="${userGroup.id }">
+						${userGroup.fullName }
+					</option>
+				</g:each>
+			</select>
+		</div>
+		<div id="comment-dialog" class="hide" title="Comment">
+			<input type="text" name="comment" id="userComment" required placeholder="Add Comment..."> 
+			<input type="hidden" name="discussionId" value="${discussionId}">
+		</div>
+		<g:render template="/sprint/createSprintModal" />
 	</body>
 </html>
 </g:applyLayout>

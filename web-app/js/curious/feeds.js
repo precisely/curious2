@@ -37,8 +37,8 @@ $(document).ready(function() {
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
 		if (key == 13) {
-			$('.input-affordance hr').removeClass('hide');
-			$('input[name = discussionPost]').removeClass('hide');
+			$('.input-affordance hr').show();
+			$('input[name = discussionPost]').show();
 			return false;  
 		}
 	});
@@ -156,10 +156,10 @@ $(document).ready(function() {
 		return false;
 	});
 
-	handelAutocomplete('sprint-participants', 'participantsAutocomplete');
-	handelAutocomplete('sprint-admins', 'adminsAutocomplete');
+	createAutocomplete('sprint-participants', 'participantsAutocomplete');
+	createAutocomplete('sprint-admins', 'adminsAutocomplete');
 
-	$(document).on("click", "#deleteTag", function() {
+	$(document).on("click", ".deleteSprintEntry", function() {
 		var $element = $(this);
 		var repeatType = $(this).data('repeatType');
 		var id = $(this).data('id');
@@ -173,13 +173,13 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("click", "#deleteParticipants", function() {
+	$(document).on("click", ".deleteParticipants", function() {
 		var $element = $(this);
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'participants');
 	});
 
-	$(document).on("click", "#deleteAdmins", function() {
+	$(document).on("click", ".deleteAdmins", function() {
 		var $element = $(this);
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'admins');
@@ -187,7 +187,7 @@ $(document).ready(function() {
 });
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
-	var actionName = (actionType === 'participants')?'deleteSprintParticipant':'deleteSprintAdmin';
+	var actionName = (actionType === 'participants') ? 'deleteSprintParticipant' : 'deleteSprintAdmin';
 	$.ajax ({
 		type: 'POST',
 		url: '/dummy/' + actionName,
@@ -213,7 +213,7 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 	});
 }
 
-function handelAutocomplete(inputId, autocompleteId) {
+function createAutocomplete(inputId, autocompleteId) {
 	$( "#" + inputId ).autocomplete({
 		appendTo: "#" + autocompleteId,
 		minLength: 0,
@@ -231,7 +231,6 @@ function handelAutocomplete(inputId, autocompleteId) {
 			success: function(data) {
 				data = JSON.parse(data);
 				if (data.success) {
-				} else {
 					$( "#" + inputId ).autocomplete( "option", "source", data.usernameList);
 				}
 			},
@@ -244,7 +243,7 @@ function handelAutocomplete(inputId, autocompleteId) {
 	$("#" + inputId).keypress(function (e) {
 		userName = $("#" + inputId).val();
 		var actionName = (inputId === 'sprint-participants')?'addSprintParticipants':'addSprintAdmins';
-		var deleteButtonId = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
+		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
 		var key = e.which;
 		if (key == 13) { // the enter key code
 			$.ajax ({
@@ -260,7 +259,7 @@ function handelAutocomplete(inputId, autocompleteId) {
 					if (data.success) {
 						$("#" + inputId).val('');
 						$("#" + inputId + "-list").append('<li>' + userName + 
-								' (<i>invited</i>) <button type="button" id="' + deleteButtonId + '" data-username="' + 
+								' (<i>invited</i>) <button type="button" class="' + deleteButtonClass + '" data-username="' + 
 								userName + '"><i class="fa fa-times-circle"></i></button></li>');
 					} else {
 						$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
@@ -281,10 +280,6 @@ $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
 });
-
-function addData(usernameList) {
-	searchList = usernameList;
-}
 
 function deleteSimpleEntry(id, $element) {
 	var now = new Date();
@@ -332,7 +327,7 @@ function deleteGhost($tagToDelete, entryId, allFuture) {
 	);
 }
 
-function createSprintTags(inputElement, suffix) {
+function addEntryToSprint(inputElement, suffix) {
 	var $inputElement = $('#' + inputElement);
 	var virtualUserId = $('#sprintVirtualUserId').val();
 	$inputElement.val($inputElement.val() + ' ' + suffix);
@@ -357,15 +352,15 @@ function createSprintTags(inputElement, suffix) {
 			var addedEntry = entries[3];
 			if (addedEntry.comment === 'pinned') {
 				$('#sprint-tag-list').append('<li><div class="pinnedDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Pinned</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						' (<i>Pinned</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
 						addedEntry.repeatType + '"> <i class="fa fa-times-circle"></i></button></li>');
 			} else if (addedEntry.comment === 'remind') {
 				$('#sprint-tag-list').append('<li><div class="remindDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Remind</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						' (<i>Remind</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
 						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 			} else if (addedEntry.comment === 'repeat') {
 				$('#sprint-tag-list').append('<li><div class="repeatDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Repeat</i>) <button type="button" id="deleteTag" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+						' (<i>Repeat</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
 						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 			}
 		}
@@ -391,14 +386,13 @@ function getMyThreads(params) {
 	});
 }
 
-function createBlankSprint() {
+function createSprint() {
 	$.ajax ({
 		type: 'GET',
 		url: '/dummy/createNewBlankSprint',
 		success: function(data) {
 			data = JSON.parse(data);
 			if (data.success) {
-				$('.new-post').remove();
 				$('#sprintIdField').val(data.id);
 				$('#sprintVirtualUserId').val(data.userId);
 				$('#sprintVirtualGroupId').val(data.groupId);

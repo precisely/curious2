@@ -958,19 +958,19 @@ class HomeController extends DataController {
 		if (params.searchString) {
 			List searchResults = User.withCriteria {
 				projections{
-					property("username", "username")
-					property("id", "id")
+					property("username")
+					property("id")
 				}
 				or {
-					ilike("first", "%" + params.searchString + "%")
-					ilike("last", "%" + params.searchString + "%")
-					ilike("email", "%" + params.searchString + "%")
-					ilike("username", "%" + params.searchString + "%")
+					ilike("first", "%${params.searchString}%")
+					ilike("last", "%${params.searchString}%")
+					ilike("email", "%${params.searchString}%")
+					ilike("username", "%${params.searchString}%")
 				}
 			}
 			renderJSONGet([usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
 		} else {
-			renderJSONGet([success: true])
+			renderJSONGet([success: false])
 		}
 	}
 }

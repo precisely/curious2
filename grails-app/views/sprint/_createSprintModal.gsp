@@ -7,9 +7,9 @@
 				</button>
 				<h4 class="modal-title">Create Sprint</h4>
 			</div>
-			<div class="alert alert-danger hide" role="alert">Some error has occurred while performing the operation.</div>
 			<form id="submitSprint">
 				<div class="modal-body">
+					<div class="alert alert-danger hide" role="alert">Some error has occurred while performing the operation.</div>
 					<div class="row">
 						<div class="col-md-6">
 							<label for="sprint-title">TITLE</label>
@@ -41,11 +41,11 @@
 					<div class="input-group">
 						<input type="text" placeholder="click to add a tag" id="sprint-tags">
 						<span class="input-group-addon pinnedDarkLabelImage" id="basic-addon2" 
-							onclick="createSprintTags('sprint-tags', 'pinned')"></span>
+							onclick="addEntryToSprint('sprint-tags', 'pinned')"></span>
 						<span class="input-group-addon repeatDarkLabelImage" id="basic-addon2"
-							onclick="createSprintTags('sprint-tags', 'repeat')"></span>
+							onclick="addEntryToSprint('sprint-tags', 'repeat')"></span>
 						<span class="input-group-addon remindDarkLabelImage" id="basic-addon2"
-							onclick="createSprintTags('sprint-tags', 'remind')"></span>
+							onclick="addEntryToSprint('sprint-tags', 'remind')"></span>
 					</div>
 					<ul id="sprint-tag-list">
 						<g:if test="${tagList}">
@@ -54,24 +54,18 @@
 									<g:if test="${tag.repeatType.equals('repeat')}">
 										<div class="repeatDarkLabelImage"></div>
 										${tag.description} (<i>Repeat</i>)
-										<button type="button" id="deleteTag" data-id="${tag.id}" data-repeatType="${tag.repeatType}"> 
-											<i class="fa fa-times-circle"></i>
-										</button>
 									</g:if> 
 									<g:elseif test="${tag.repeatType.equals('remind')}">
 										<div class="remindDarkLabelImage"></div>
 										${tag.description} (<i>Remind</i>)
-										<button type="button" id="deleteTag" data-id="${tag.id}" data-repeatType="${tag.repeatType}"> 
-											<i class="fa fa-times-circle"></i>
-										</button>
 									</g:elseif>
 									<g:elseif test="${tag.repeatType.equals('pinned')}">
 										<div class="pinnedDarkLabelImage"></div>
 										${tag.description} (<i>Pinned</i>) 
-										<button type="button" id="deleteTag" data-id="${tag.id}" data-repeatType="${tag.repeatType}">
-											<i class="fa fa-times-circle"></i>
-										</button>
 									</g:elseif> 
+									<button type="button" class="deleteSprintEntry" data-id="${tag.id}" data-repeat-type="${tag.repeatType}">
+										<i class="fa fa-times-circle"></i>
+									</button>
 								</li>
 							</g:each>
 						</g:if>
