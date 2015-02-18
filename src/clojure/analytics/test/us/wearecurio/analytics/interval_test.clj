@@ -173,19 +173,19 @@
               interval-pair-2  (list interval-2-start interval-2-stop)
               both-intervals   (list interval-pair-1 interval-pair-2) ]
           (is (= '(6 4 4 6 7 7)
-                 (map #(long (* 10 %)) (iv/vectorize-in-intervals 1 42 interval-1-start interval-1-stop (list interval-pair-1)))))
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-1-stop (list interval-pair-1) :x))))
           (is (= '(4 4 6 7 6)
-                 (map #(long (* 10 %)) (iv/vectorize-in-intervals 1 42 interval-2-start interval-2-stop (list interval-pair-2)))))
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-2-start interval-2-stop (list interval-pair-2) :x))))
           (is (= '(6 4 4 6 7 6 1 3 6 7 6)
-                 (map #(long (* 10 %)) (iv/vectorize-in-intervals 1 42 interval-1-start interval-2-stop both-intervals))))
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-2-stop both-intervals :x))))
           (is (= '(109 108 108 107 107 108)
-                 (map long (iv/vectorize-in-intervals 1 99 interval-1-start interval-1-stop (list interval-pair-1)))))
+                 (map long (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-1-stop (list interval-pair-1) :x))))
           (is (= '(1030 1052 1092 1134 1161)
-                 (map  #(long (* 10 %))(iv/vectorize-in-intervals 1 99 interval-2-start interval-2-stop (list interval-pair-2)))))
+                 (map  #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 99 interval-2-start interval-2-stop (list interval-pair-2) :x))))
           (is (= '(1090 1087 1081 1075 1078 1094 1041 1054 1092 1134 1161)
-                 (map #(long (* 10 %)) (iv/vectorize-in-intervals 1 99 interval-1-start interval-2-stop both-intervals))))
-          (let [v1 (iv/vectorize-in-intervals 1 42 interval-1-start interval-2-stop both-intervals)
-                v2 (iv/vectorize-in-intervals 1 99 interval-1-start interval-2-stop both-intervals)]
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-2-stop both-intervals :x))))
+          (let [v1 (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-2-stop both-intervals :x)
+                v2 (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-2-stop both-intervals :x)]
 
             ; In R,
             ;> cor(c(1.0, 0, 0, 1.0, 1.0, 1.0, 0.0, 0, 1.0, 1.0, 1.0), c(109.0, 109.0, 109.0, 107.0, 105.0, 110.0, 103.0, 101.0, 109.0, 117.0, 117.0))

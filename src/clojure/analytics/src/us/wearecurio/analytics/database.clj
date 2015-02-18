@@ -10,6 +10,8 @@
 
 
 (def MIPSS_VALUE_TYPE 0)
+(def COR_VALUE_TYPE 1)
+(def TRIGGER_VALUE_TYPE 2)
 ; ***********************
 ; SQL time stamp wrappers
 ; ***********************
@@ -598,7 +600,7 @@
 ; *********************
 ; Score/correlation CRUD operations
 ; *********************
-(defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
+(defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
   "Insert a correlation score."
   (let [description1 (tag-description tag1-id)
         description2 (tag-description tag2-id)]
@@ -613,11 +615,11 @@
              :value score
              :abs_value (nt/abs score)
              :overlapn overlap-n
-             :value_type MIPSS_VALUE_TYPE
+             :value_type value-type
              :updated (sql-now)
              :created (sql-now)})))))
 
-(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
+(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
   ; Update the description in case the user changed it.
   ;   This affects the search function only.
   (let [description1 (tag-description tag1-id)
@@ -634,16 +636,19 @@
               :series1id   tag1-id
               :series1type tag1-type
               :series2id   tag2-id
-              :series2type tag2-type}))))
+              :series2type tag2-type
+              :value_type  value-type
+                 }))))
 
-(defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
+(defn score-delete [user-id tag1-id tag2-id tag1-type tag2-type value-type]
   "Delete a correlation score."
   (kc/delete analytics_correlation
     (kc/where {:user_id    user-id
             :series1id   tag1-id
             :series1type tag1-type
             :series2id   tag2-id
-            :series2type tag2-type})))
+            :series2type tag2-type
+            :value_type value-type})))
 
 
 (defn score-find [user-id tag1-id tag2-id tag1-type tag2-type]
@@ -658,13 +663,17 @@
   "List all elements of the score."
   ([] (kc/select* analytics_correlation))
   ([user-id]
-    (kc/where (score-list*) {:user_id user-id}))
+    (kc/where (score-list*)
+              {:user_id user-id}))
   ; Add this signature when handle tag-groups:
   ;   ([user-id tag1-id tag1-type tag2-id tag2-type]
   ([user-id tag1-id tag2-id]
     (kc/where (score-list* user-id)
               {:series1id tag1-id
-               :series2id tag2-id})))
+               :series2id tag2-id}))
+  ([user-id tag1-id tag2-id value-type]
+    (kc/where (score-list* user-id tag1-id tag2-id)
+              {:value_type value-type})))
 
 (defn score-list [& args]
   "List all elements of the score."
@@ -683,7 +692,8 @@
 (defn noise-pairs [& args]
   "Get a list of tag-id pairs where the user marked the interaction as noise."
   (->> (apply score-list-noise args)
-       (map #(list (:series1id %) (:series2id %)))))
+       (map #(list (:series1id %) (:series2id %)))
+       set))
 
 (defn score-tag-ids [c]
   (list (:series1id c)
@@ -728,25 +738,35 @@
       (kc/where {:updated [< (sql-yesterday)]})
       (kc/delete)))
 
+(defn score-delete-user-value-type [user-id value-type]
+  "'Clean out' all the scores for a particular value type for a particular user."
+  (kc/delete analytics_correlation
+             (kc/where {:user_id user-id
+                        :value_type value-type})))
 ; **********************
 ; Update or create Score
 ; **********************
 
 ; TODO: How will we know when to delete correlations of tags that have
 ;   been deleted?
-(defn score-update-or-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  (let [ct (score-count user-id tag1-id tag2-id)] ; Need to update this when handling tag-groups.
+(defn score-update-or-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
+  (let [ct (score-count user-id tag1-id tag2-id value-type)] ; Need to update this when handling tag-groups.
     (cond (= 0 ct)
-            (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
+            (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)
           (= 1 ct)
-            (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
+            (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)
           :else
-            (do (score-delete user-id tag1-id tag2-id score tag1-type tag2-type)
-                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)))))
+            (do (score-delete user-id tag1-id tag2-id tag1-type tag2-type value-type)
+                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)))
+     ; The following line is a migration for the release of the branch change-points-draft-1
+     ;   It's done here to minimize the time that the user sees either zero correlations or duplicate
+     ;   correlations. -- David Beckwith Feb 15, 2015.
+     ;   TODO: Delete the following line after the analytics job as been run on production.
+     (score-delete user-id tag1-id tag2-id tag1-type tag2-type MIPSS_VALUE_TYPE)))
 
-; ********************
+; *******************
 ; Update task status
-; ********************
+; *******************
 
 ; NB: The statuses listed here should match those in AnalyticsTask.groovy
 ;   Task statuses.

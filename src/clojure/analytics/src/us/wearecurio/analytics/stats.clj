@@ -28,6 +28,12 @@
             sum2 (reduce + v2)]
         (nt/sqrt (/ sum2 n)))))
 
+(defn zero-cor? [x y]
+  (or (< (count x) 3)
+      (< (count y) 3)
+      (== 0 (sd x))
+      (== 0 (sd y))))
+
 (defn dot [x y]
   (->> (interleave x y)
        (partition 2 2)

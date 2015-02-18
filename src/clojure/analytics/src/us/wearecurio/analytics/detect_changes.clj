@@ -1,12 +1,13 @@
 (ns us.wearecurio.analytics.detect-changes
   (:require
      [incanter.stats :as ist]
+     [us.wearecurio.analytics.idioms :as im]
      [us.wearecurio.analytics.stats :as stats]
      [us.wearecurio.analytics.constants :as const]))
 
 (def MIN-SAMPLE-SIZE 4)
 (def WINDOW-SIZE (* 3 MIN-SAMPLE-SIZE))
-(def SIGNIFICANCE-LEVEL 0.005)
+(def SIGNIFICANCE-LEVEL 0.001)
 ; Basic idea:
 ; Write a function that takes a vector and returns the index of the change points.
 ; E.g.
@@ -51,15 +52,15 @@
        first
        first))))
 
-(defn change-point-index [v & {:keys [offset] :or {:offset 0}}]
+(defn change-point-index [v & {:keys [offset] :or {offset 0}}]
   "Get the index of the last value before the most extreme change point in a list of numbers."
   ; Return nil if there are fewer than 2 X MIN-SAMPLE-SIZE numbers in the list.
   (when (> (count v) (* 2 (dec MIN-SAMPLE-SIZE)))
     (let [v'     (-> v perturb stats/normalize)
           p-vals (get-p-values v')
-          min-p-val (apply min p-vals)]
+          min-p-val (if (> (count p-vals) 0) (apply min p-vals) 1)]
       (when (< min-p-val SIGNIFICANCE-LEVEL)
-        (+ offset (get-min-index p-vals))))))
+            (+ offset (get-min-index p-vals))))))
 
 (defn change-point-value [v]
   (get (vec v) (change-point-index v)))
@@ -74,13 +75,21 @@
     
 (defn change-point-indexes-helper [v]
   "Input a vector and return the index representing the point where there was a significant change in values."
-  (if (< (count v) (* 3 MIN-SAMPLE-SIZE))
-    (change-point-index v)
-    (map #(apply change-point-index %)
-         (partition 3 3 (interleave (partitions-for-change-points v)
-                                    (repeat (long (/ (count v) MIN-SAMPLE-SIZE)) :offset)
-                                    (range 0 (count v) MIN-SAMPLE-SIZE))))))
+  (let [N (count v)]
+    (cond (< N (* 2 MIN-SAMPLE-SIZE)) (repeat (count v) 0)
+          (< N (* 3 MIN-SAMPLE-SIZE)) (list (change-point-index v))
+          :else (map #(apply change-point-index %)
+                     (partition 3 3 (interleave (partitions-for-change-points v)
+                                                (repeat (long (/ (count v) MIN-SAMPLE-SIZE)) :offset)
+                                                (range 0 (count v) MIN-SAMPLE-SIZE)))))))
 
 (defn change-point-indexes [v]
   (->> v change-point-indexes-helper (filter identity) (apply sorted-set)))
+
+(defn change-point-spike-train [v]
+  (let [zeroes (vec (repeat (count v) 0))]
+    (->> (change-point-indexes v)
+         (reduce #(assoc %1 %2 1)
+                 (vec (repeat (count v) 0))))))
+
 

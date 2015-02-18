@@ -14,8 +14,6 @@
   (is (= [9 19 29 39]
       (into [] (dc/change-point-indexes (stats/step-function 10 0 10 1 10 -1 10 2 10 100))))))
 
-(defn add-noise [v]
-  (
 (deftest get-indices-of-change-points
   (is (= [9 19 29 39]
       (into [] (dc/change-point-indexes (stats/step-function 10 0 10 1 10 -1 10 2 10 100))))))

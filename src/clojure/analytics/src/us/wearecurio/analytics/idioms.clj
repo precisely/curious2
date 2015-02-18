@@ -4,9 +4,6 @@
 (defn pp [x]
   (cp/pprint x))
 
-(defn pp [x]
-  (clojure.pprint/pprint x))
-
 (defn sort-map-by-value [m] 
     (into (sorted-map-by (fn [k1 k2] (compare (k1 m) (k2 m)))) m)) 
 
@@ -46,14 +43,15 @@
   (map (fn [m] (update-in m ks f)) ms))
 
 ; For tapping into the -> macro for side effects.
-(defn tap [x f]
-  (f x)
+(defn tap [x f & args]
+  (apply f (cons x args))
   x)
 
 ; For tapping into the ->> macro for side effects.
-(defn tap2 [f x]
-  (f x)
-  x)
+(defn tap2
+  ([f x] (f x) x)
+  ([f arg1 x] (f arg1 x) x)
+  ([f arg1 arg2 x] (f arg1 arg2 x) x))
 
 (defn assert-type [x t]
   (assert (= t (class x))

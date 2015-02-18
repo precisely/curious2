@@ -491,6 +491,7 @@ $(function() {
 				var saved = data[i].saved;
 				var noise = data[i].noise;
 				var signalLevel = data[i].signalLevel;
+				var valueType = data[i].valueType;
 				var score = 0.0;
 				var marked = (-1 == signalLevel) ? 'empty' : 'marked';
 				if (data[i].value) {
@@ -500,8 +501,9 @@ $(function() {
 					}
 				}
 
-				// TODO: update this when "triggered" case is handled.
-				if (score >= 0) {
+				if ('TRIGGER' == valueType ) {
+					intent = 'triggered';
+				} else if (score >= 0) {
 					intent = 'positive';
 				} else {
 					intent = 'negative';

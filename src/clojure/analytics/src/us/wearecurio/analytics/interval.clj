@@ -4,6 +4,7 @@
             [us.wearecurio.analytics.binify :as bi]
             [us.wearecurio.analytics.constants :as const]
             [us.wearecurio.analytics.datastructure-operations :as dso]
+            [us.wearecurio.analytics.detect-changes :as dc]
             [us.wearecurio.analytics.stats :as stats]
             [clj-time.core :as tc]
             [clj-time.coerce :as tr]
@@ -1051,7 +1052,7 @@
 
 (defn binify [user-id tag-id]
   (into (sorted-map) (-> (db/series-list user-id tag-id)
-                     (bi/binify-by-avg const/DAY))))
+                         (bi/binify-by-avg const/DAY))))
 
 (defn fill-in-series [bins start-date stop-date data-type]
   (if (= "CONTINUOUS" data-type)
@@ -1066,9 +1067,8 @@
     sorted))
 
 (defn select-values-in-intervals [filled-sorted-map intervals]
-  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)
-        sorted (to-sorted-map selected)]
-    (vals sorted)))
+  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)]
+    (to-sorted-map selected)))
 
 (defn smooth-bins [filled-bins n]
   "Apply a smoothing function to a sorted-map of time-amount values and return the result as a sorted-map."
@@ -1078,38 +1078,70 @@
         smoothed-vals (stats/smooth vs n)]
     (into (sorted-map) (zipmap ks smoothed-vals))))
 
-(defn shift-bins [bins n]
+(defn replace-keys [smap new-ks]
+  "Replace the keys of a sorted map."
+  (into (sorted-map) (zipmap new-ks (vals smap))))
+
+(defn replace-vals [smap new-vals]
+  "Replace the vals of a sorted map."
+  (into (sorted-map) (zipmap (keys smap) new-vals)))
+  
+(defn shift-keys [bins n]
   "Shift the numeric keys of a sorted-map to the left(n<0) or right (n>0)."
   (im/assert-type bins clojure.lang.PersistentTreeMap)
-  (let [ks (keys bins)
-        ks2 (map (partial + n) ks)
-        vs (vals bins)]
-    (into (sorted-map) (zipmap ks2 vs))))
+  (replace-keys bins (map (partial + n) (keys bins))))
 
 (defn binify-shift-fill [user-id tag-id n]
   (-> (binify user-id tag-id)
-      (shift-bins n)))
+      (shift-keys n)))
 
-(defn vectorize-in-intervals [user-id tag-id start-date-index stop-date-index rescaled-intervals & {:keys [shift] :or {shift 0}}]
-  (let [data-type          (db/series-data-type user-id tag-id)
-        shift-fn           (partial + shift) ; Since the units of time have been normalized to the scale of time (days, by default), shift by 1 is a shift of 1 day.
-        start-date-index'  (shift-fn start-date-index)
-        stop-date-index'   (shift-fn stop-date-index)
-        rescaled-intervals (map #(map shift-fn %) rescaled-intervals)]
+; This is where to put logic for pre-transforming time-series for the same-day correlation computation.
+(defn vectorize-in-intervals-cor [user-id tag-id start-date-index stop-date-index rescaled-intervals x-or-y]
+  (let [data-type          (db/series-data-type user-id tag-id)]
     (-> (binify user-id tag-id)
-        (shift-bins shift)
-        (fill-in-series start-date-index' stop-date-index' data-type)
+        (fill-in-series start-date-index stop-date-index data-type)
         (smooth-bins SPREAD)
-        (select-values-in-intervals rescaled-intervals))))
+        (select-values-in-intervals rescaled-intervals)
+        vals)))
 
-(defn zero-cor? [x y]
-  (or (< (count x) 3)
-      (< (count y) 3)
-      (== 0 (stats/sd x))
-      (== 0 (stats/sd y))))
+(defmacro if-target [target x-or-y a b] `(if (= ~target ~x-or-y) ~a ~b))
+(defn if-x [x-or-y a b] (if-target :x x-or-y a b))
+(defn if-y [x-or-y a b] (if-target :y x-or-y a b))
+
+(defmacro if-bins [if-fn bins x-or-y f args]
+  `(~if-fn ~x-or-y
+           (apply ~f (cons ~bins ~args))
+           ~bins))
+
+(defn if-x-bins [bins x-or-y f & args]
+  (if-bins if-x bins x-or-y f args))
+
+(defn if-y-bins [bins x-or-y f & args]
+  (if-bins if-y bins x-or-y f args))
+
+(defn change-point-spike-train [bins]
+  "A wrapper around detect-changes/change-point-spike-train to take in hash-maps instead of vectors."
+  (replace-vals bins (dc/change-point-spike-train (vals bins))))
+
+(defn shift-intervals [intervals n]
+  "Shift a list of intervals to the right (n>0) or left (n<0)."
+  (map #(map (partial + n) %) intervals))
+
+; This is where to put logic for pre-transforming time-series for the trigger computation.
+(defn vectorize-in-intervals-trigger [user-id tag-id start-date-index stop-date-index rescaled-intervals x-or-y]
+  (let [data-type          (db/series-data-type user-id tag-id)
+        stop-date-index'   (+ 1 stop-date-index)
+        rescaled-intervals (if-x x-or-y (shift-intervals rescaled-intervals 1) rescaled-intervals)]
+    (-> (binify user-id tag-id)
+        (if-x-bins x-or-y shift-keys +1)
+        (fill-in-series start-date-index stop-date-index' data-type)
+        (smooth-bins SPREAD)
+        (if-y-bins x-or-y change-point-spike-train)
+        (select-values-in-intervals rescaled-intervals)
+        vals)))
 
 (defn compute-correlation-helper [values1 values2 tag1-id tag2-id]
-    (if (zero-cor? values1 values2)
+    (if (stats/zero-cor? values1 values2)
         {:score 0
          :n 0
          :tag1_id tag1-id
@@ -1119,37 +1151,50 @@
          :tag1_id tag1-id
          :tag2_id tag1-id }))
 
-(defn values-in-intervals [user-id tag1-id tag2-id rescaled-intervals]
+(defn values-in-intervals [vectorize-fn user-id tag1-id tag2-id rescaled-intervals]
   (let [start-date-index (->> rescaled-intervals flatten (apply min) long)
         stop-date-index  (->> rescaled-intervals flatten (apply max) long)
-        values1 (vectorize-in-intervals user-id tag1-id start-date-index stop-date-index rescaled-intervals :shift +1)
-        values2 (vectorize-in-intervals user-id tag2-id start-date-index stop-date-index rescaled-intervals) ]
-    {:v1 values1 :v2 values2}))
+        x-values (vectorize-fn user-id tag1-id start-date-index stop-date-index rescaled-intervals :x)
+        y-values (vectorize-fn user-id tag2-id start-date-index stop-date-index rescaled-intervals :y)]
+    {:x x-values :y y-values}))
 
-(defn compute-correlation [user-id tag1-id tag2-id]
+(defn compute-correlation [vectorize-fn user-id tag1-id tag2-id]
+  "Compute the correlation cor(x, y)"
   (let [rescaled-intervals (rescaled-intersected-intervals const/DAY user-id tag1-id tag2-id)]
     (when (> (count rescaled-intervals) 0)
-      (let [values (values-in-intervals user-id tag1-id tag2-id rescaled-intervals)]
-        (compute-correlation-helper (:v1 values) (:v2 values) tag1-id tag2-id)))))
+      (let [values (values-in-intervals vectorize-fn user-id tag1-id tag2-id rescaled-intervals)]
+        (compute-correlation-helper (:x values) (:y values) tag1-id tag2-id)))))
+
+(defn compute-and-save-score [vectorize-fn value-type user-id tag1-id tag2-id]
+  (let [result  (compute-correlation vectorize-fn user-id tag1-id tag2-id)
+        score   (:score result)
+        n       (:n result)]
+    (when score
+      (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag" value-type))))
+
+(def compute-and-save-cor
+  "This will produce a function with signature [user-id tag1-id tag2-id], which is what iterate-on-tag-pairs expects."
+  (partial compute-and-save-score vectorize-in-intervals-cor db/COR_VALUE_TYPE))
+
+(def compute-and-save-trigger
+  "This will produce a function with signature [user-id tag1-id tag2-id], which is what iterate-on-tag-pairs expects."
+  (partial compute-and-save-score vectorize-in-intervals-trigger db/TRIGGER_VALUE_TYPE))
 
 (defn remove-noise-pairs [all-pairs noise-pairs]
   (remove #(contains? (set noise-pairs) %) all-pairs))
 
-(defn compute-and-save-score [user-id & {:keys [log-file-name min-n] :or {min-n MIN-N log-file-name "/tmp/analytics.log"}}]
-  (let [all-pairs   (db/pairs-with-min-n user-id :min-n min-n)
-        noise-pairs (db/noise-pairs user-id)
-        pairs       (remove-noise-pairs all-pairs noise-pairs)]
-    (println* "computing" (count pairs) "correlations")
+(defn non-noise-pairs [user-id min-n]
+  (-> (db/pairs-with-min-n user-id :min-n min-n)
+      (remove-noise-pairs (db/noise-pairs user-id))))
+
+(defn iterate-on-tag-pairs [user-id compute-score & {:keys [min-n type-of] :or {min-n MIN-N type-of ""}}]
+  "Call a scoring function with signature [user-id tag1-id tag2-id] on all tag pairs, which are not marked as noise."
+  (let [pairs (non-noise-pairs user-id min-n)]
+    (println* "computing" (count pairs) type-of "correlations")
     (doseq [pair pairs]
       (when @keep-running
         (print* ".") (flush)
-        (let [tag1-id (first pair)
-              tag2-id (second pair)
-              result  (apply (partial compute-correlation user-id) pair)
-              score   (:score result)
-              n       (:n result)]
-          (when score
-            (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag")))))))
+        (compute-score user-id (first pair) (second pair))))))
 
 (defn update-user [user-id & {:keys [log-file-name start-time stop-time
                                      max-epoch state min-n
@@ -1187,9 +1232,18 @@
                                        :max-iter-new-cluster max-iter-new-cluster)
         (when @keep-running
           (log log-file-name
-               (str "co/compute-and-save-score " user-id " " :min-n ": " min-n))
+               (str "compute and save correlations " user-id " " :min-n ": " min-n))
           (db/score-delete-old-unmarked user-id)
-          (compute-and-save-score user-id :log-file-name log-file-name :min-n min-n ))
+          (iterate-on-tag-pairs user-id compute-and-save-cor :min-n min-n :type-of "standard")
+
+          ; TODO: Remove the following line after the analytics job has run at least once on production.
+          ; Feb 15, 2015 -- David Beckwith.  There's no harm in leaving it in until the next deployment.
+          (db/score-delete-user-value-type user-id db/MIPSS_VALUE_TYPE)
+
+          (log log-file-name
+               (str "compute and save triggers " user-id " " :min-n ": " min-n))
+          (iterate-on-tag-pairs user-id compute-and-save-trigger :min-n min-n :type-of "trigger"))
+
         (log log-file-name
              (str "finished update-user " user-id " keep-running: " @keep-running)))
       (println "Skipping user" user-id "because there is/are only" (db/series-count user-id) "data points.")))
