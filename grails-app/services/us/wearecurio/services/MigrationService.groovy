@@ -9,6 +9,7 @@ import org.joda.time.*
 import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.*
+import us.wearecurio.model.Entry.*
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 
@@ -405,6 +406,19 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 
+		}
+		tryMigration("Modify DurationType") {
+			try {
+				def entries = Entry.findAllByUnitsAndDurationType("hours", DurationType.NONE)
+				
+				for (Entry entry : entries) {
+					if (entry.oldFetchIsGenerated()) {
+						entry.setDurationType(DurationType.GENERATEDDURATION)
+						Utils.save(entry, true)
+					}
+				}
+			} catch (Throwable t) {
+			}
 		}
 	}
 	

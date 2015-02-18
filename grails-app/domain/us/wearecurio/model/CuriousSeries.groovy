@@ -68,9 +68,8 @@ class CuriousSeries {
 				generated_repeat_entries += createRepeatedEntries(entry)
 
 			// PRE-PROCESS (map) DURATION_TYPE entries
-			} else if (entry.durationType == Entry.DurationType.START ||
-								 entry.durationType == Entry.DurationType.END) {
-				if (entry.durationType == Entry.DurationType.END) {
+			} else if (entry.durationType.isStartOrEnd()) {
+				if (entry.durationType.isEnd()) {
 					if (entry && entry.date && entry.baseTagId && last_start_tag[entry.baseTagId]) {
 						entry.amount = entry.date.getTime() - last_start_tag[entry.baseTagId].date.getTime()
 						duration_end_entries << entry

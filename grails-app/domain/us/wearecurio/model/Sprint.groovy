@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.support.EntryStats;
@@ -176,6 +177,15 @@ class Sprint {
 		return hasWriter(userId)
 	}
 	
+	boolean hasStarted(Long userId, Date now) {
+		if (!hasMember(userId))
+			return false
+		Entry entry = Entry.fetchPreviousEqualStartOrEndEntry(userId, Tag.look(fetchTagName()), now)
+		if (!entry)
+			return false
+		return entry.fetchIsStart()
+	}
+	
 	protected String entrySetName() {
 		return "sprint id: " + this.id
 	}
@@ -199,6 +209,11 @@ class Sprint {
 	boolean start(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
 		if (!hasMember(userId))
 			return false
+			
+		if (hasStarted(userId, now))
+			return false
+			
+		stats.setBatchCreation(true)
 		
 		String setName = entrySetName()
 		
@@ -211,7 +226,9 @@ class Sprint {
 		}
 		
 		// add start element
-		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true), stats)
+		def m = Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true)
+		m['durationType'] = DurationType.GENERATEDSTART
+		def entry = Entry.create(userId, m, stats)
 		
 		return true
 	}
@@ -221,6 +238,11 @@ class Sprint {
 	// end repeat entries
 	// end remind entries
 	boolean stop(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
+		if (!hasStarted(userId, now))
+			return false
+		
+		stats.setBatchCreation(true)
+		
 		String setName = entrySetName()
 		
 		Identifier setIdentifier = Identifier.look(setName)
@@ -234,7 +256,9 @@ class Sprint {
 		}
 		
 		// add stop element
-		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " end", baseDate, true), stats)
+		def m = Entry.parse(now, timeZoneName, fetchTagName() + " end", baseDate, true)
+		m['durationType'] = DurationType.GENERATEDEND
+		def entry = Entry.create(userId, m, stats)
 		entry = entry
 	}
 	

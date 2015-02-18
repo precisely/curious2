@@ -287,11 +287,15 @@ class Entry implements Comparable {
 	static enum DurationType {
 		NONE(0), START(DURATIONSTART_BIT), END(DURATIONEND_BIT),
 				GHOSTSTART(DURATIONSTART_BIT | DURATIONGHOST_BIT),
-				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT);
+				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT),
+				GENERATEDSTART(DURATIONSTART_BIT | DURATIONGENERATED_BIT),
+				GENERATEDEND(DURATIONEND_BIT | DURATIONGENERATED_BIT),
+				GENERATEDDURATION(DURATIONGENERATED_BIT) // this is a generated calculated duration entry
 
 		static final int DURATIONSTART_BIT = 1
 		static final int DURATIONEND_BIT = 2
 		static final int DURATIONGHOST_BIT = 16
+		static final int DURATIONGENERATED_BIT = 32
 		
 		final Integer id
 
@@ -301,6 +305,22 @@ class Entry implements Comparable {
 		
 		boolean isGhost() {
 			return (this.id & DURATIONGHOST_BIT) != 0
+		}
+		
+		boolean isGenerated() {
+			return (this.id & DURATIONGENERATED_BIT) != 0
+		}
+		
+		boolean isStart() {
+			return (this.id & DURATIONSTART_BIT) != 0
+		}
+		
+		boolean isEnd() {
+			return (this.id & DURATIONEND_BIT) != 0
+		}
+		
+		boolean isStartOrEnd() {
+			return (this.id & (DURATIONSTART_BIT | DURATIONEND_BIT)) != 0
 		}
 		
 		DurationType unGhost() {
@@ -316,7 +336,26 @@ class Entry implements Comparable {
 			
 			return this
 		}
+		
+		DurationType makeGenerated() {
+			if (this == START) return GENERATEDSTART
+			else if (this == END) return GENERATEDEND
+			else if (this == NONE) return GENERATEDDURATION
+		}
 	}
+	
+	static def START_DURATIONS = [
+		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART
+	]
+	
+	static def END_DURATIONS = [
+		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND
+	]
+	
+	static def STARTOREND_DURATIONS = [
+		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART,
+		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND
+	]
 	
 	static transients = [ 'groupEntries' ]
 	
@@ -597,7 +636,7 @@ class Entry implements Comparable {
 	}
 	
 	protected boolean ifDurationRemoveFromGroup() {
-		if (durationType != null && durationType != DurationType.NONE) {
+		if (durationType != null && durationType.isStartOrEnd()) {
 			if (group != null) {
 				group.remove(this)
 			}
@@ -1267,7 +1306,11 @@ class Entry implements Comparable {
 	 * editing of generated entries
 	 */
 	protected boolean fetchIsGenerated() {
-		return fetchGeneratorEntry() ? true : false
+		return durationType?.isGenerated()
+	}
+
+	protected boolean oldFetchIsGenerated() {
+		return oldFetchGeneratorEntry() ? true : false
 	}
 
 	/**
@@ -1276,6 +1319,24 @@ class Entry implements Comparable {
 	 * Returns end entry corresponding to this generated entry if it is a generated entry
 	 */
 	protected Entry fetchGeneratorEntry() {
+		if (durationType != DurationType.GENERATEDDURATION) return null
+
+		def c = Entry.createCriteria()
+
+		def results = c {
+			eq("userId", userId)
+			eq("date", date)
+			eq("baseTag", tag)
+			'in'("durationType", START_DURATIONS)
+		}
+
+		for (Entry r in results) {
+			if (r.getId() != this.id) return r
+		}
+		return null
+	}
+
+	protected Entry oldFetchGeneratorEntry() {
 		if (!durationType.equals(DurationType.NONE)) return null
 
 		if (units && units.equals('hours')) {
@@ -1285,7 +1346,7 @@ class Entry implements Comparable {
 				eq("userId", userId)
 				eq("date", date)
 				eq("baseTag", tag)
-				eq("durationType", DurationType.END)
+				'in'("durationType", END_DURATIONS)
 			}
 
 			for (Entry r in results) {
@@ -1301,7 +1362,7 @@ class Entry implements Comparable {
 	 * Returns true if this entry is the end of a duration pair
 	 */
 	boolean fetchIsEnd() {
-		return durationType.equals(DurationType.END)
+		return durationType?.isEnd()
 	}
 
 	/**
@@ -1310,7 +1371,7 @@ class Entry implements Comparable {
 	 * Returns true if this entry is the start of a duration pair
 	 */
 	boolean fetchIsStart() {
-		return durationType.equals(DurationType.START)
+		return durationType?.isStart()
 	}
 
 	/**
@@ -1333,7 +1394,7 @@ class Entry implements Comparable {
 			eq("tag", baseTag)
 			eq("units", "hours")
 			or {
-				eq("durationType", DurationType.NONE)
+				eq("durationType", DurationType.GENERATEDDURATION)
 				isNull("durationType")
 			}
 			maxResults(1)
@@ -1398,7 +1459,7 @@ class Entry implements Comparable {
 			eq("tag", baseTag)
 			eq("units", "hours")
 			or {
-				eq("durationType", DurationType.NONE)
+				eq("durationType", DurationType.GENERATEDDURATION)
 				isNull("durationType")
 			}
 			maxResults(1)
@@ -1416,7 +1477,7 @@ class Entry implements Comparable {
 			eq("tag", baseTag)
 			eq("units", "hours")
 			or {
-				eq("durationType", DurationType.NONE)
+				eq("durationType", DurationType.GENERATEDDURATION)
 				isNull("durationType")
 			}
 			maxResults(1)
@@ -1458,25 +1519,43 @@ class Entry implements Comparable {
 
 		return null
 	}
-
-	protected Entry fetchPreviousStartOrEndEntry() {
+	
+	static Entry fetchPreviousEqualStartOrEndEntry(Long userId, Tag baseTag, Date date) {
 		def c = Entry.createCriteria()
+		
+		// look for latest matching entry prior to this one
 
+		def results = c {
+			eq("userId", userId)
+			le("date", date)
+			eq("baseTag", baseTag)
+			'in'("durationType", STARTOREND_DURATIONS)
+			maxResults(1)
+			order("date", "desc")
+		}
+
+		return results[0]
+	}
+
+	static Entry fetchPreviousStartOrEndEntry(Long userId, Tag baseTag, Date date) {
+		def c = Entry.createCriteria()
+		
 		// look for latest matching entry prior to this one
 
 		def results = c {
 			eq("userId", userId)
 			lt("date", date)
 			eq("baseTag", baseTag)
-			or {
-				eq("durationType", DurationType.START)
-				eq("durationType", DurationType.END)
-			}
+			'in'("durationType", STARTOREND_DURATIONS)
 			maxResults(1)
 			order("date", "desc")
 		}
 
 		return results[0]
+	}
+
+	protected Entry fetchPreviousStartOrEndEntry() {
+		return fetchPreviousStartOrEndEntry(userId, baseTag, date)
 	}
 
 	/**
@@ -1491,10 +1570,7 @@ class Entry implements Comparable {
 			eq("userId", userId)
 			gt("date", date)
 			eq("baseTag", baseTag)
-			or {
-				eq("durationType", DurationType.START)
-				eq("durationType", DurationType.END)
-			}
+			'in'("durationType", STARTOREND_DURATIONS)
 			maxResults(1)
 			order("date", "asc")
 		}
@@ -1518,7 +1594,7 @@ class Entry implements Comparable {
 			eq("tag", baseTag)
 			eq("units", "hours")
 			or {
-				eq("durationType", DurationType.NONE)
+				eq("durationType", DurationType.GENERATEDDURATION)
 				isNull("durationType")
 			}
 		}
@@ -1557,7 +1633,7 @@ class Entry implements Comparable {
 				m['comment'] = this.comment ?: ""
 				m['repeatType'] = null
 				m['baseTag'] = baseTag
-				m['durationType'] = DurationType.NONE
+				m['durationType'] = DurationType.GENERATEDDURATION
 				m['amountPrecision'] = DEFAULT_AMOUNTPRECISION
 				durationEntry = Entry.createSingle(userId, m, createOrFetchGroup(), stats)
 			} else {
@@ -1950,7 +2026,7 @@ class Entry implements Comparable {
 			return true
 		}
 		
-		if (durationType == DurationType.START)
+		if (durationType.isStart())
 			return true
 		
 		Entry firstEntry = group.fetchSortedEntries().first()
@@ -3122,7 +3198,7 @@ class Entry implements Comparable {
 			date:date,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
-			description:(durationType != DurationType.NONE) ? tag.getDescription() : baseTag.getDescription(),
+			description:(durationType?.isStartOrEnd()) ? tag.getDescription() : baseTag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
