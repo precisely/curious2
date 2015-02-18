@@ -50,8 +50,8 @@ class Sprint {
 		sprintBaseDate = dateFormat.parse("January 1, 2001 12:00 am")
 	}
 	
-	static transients = { "tagName" }
-
+	static Date getSprintBaseDate() { return sprintBaseDate }
+	
 	static constraints = {
 		userId(nullable:true)
 		name(nullable:true)
@@ -59,6 +59,8 @@ class Sprint {
 		description(nullable:true, maxSize:10000)
 		daysDuration(nullable:true)
 		startDate(nullable:true)
+		tagName(nullable:true)
+		visibility(nullable:true)
 	}
 	
 	static mapping = {
@@ -128,6 +130,7 @@ class Sprint {
 	}
 	
 	Sprint() {
+		this.visibility = Visibility.PRIVATE
 	}
 	
 	Sprint(User user, String name, Visibility visibility) {
@@ -187,16 +190,19 @@ class Sprint {
 	
 	protected String fetchTagName() {
 		if (tagName) return tagName
-		tagName = "sprint " + name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '')
+		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ') + ' sprint'
 		
 		return tagName
 	}
 	
 	// add sprint entries to user account in the specified time zone
 	boolean start(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
+		if (!hasMember(userId))
+			return false
+		
 		String setName = entrySetName()
 		
-		def entries = Entry.findByUserId(virtualUserId)
+		def entries = Entry.findAllByUserId(virtualUserId)
 		for (Entry entry in entries) {
 			if (!entry.isPrimaryEntry())
 				continue
@@ -206,30 +212,30 @@ class Sprint {
 		
 		// add start element
 		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true), stats)
+		
+		return true
 	}
 	
 	// remove sprint entries from user account for current base date
 	// remove pinned entries outright
 	// end repeat entries
 	// end remind entries
-	boolean stop(Long userId, Date baseDate, EntryStats stats) {
+	boolean stop(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
 		String setName = entrySetName()
 		
 		Identifier setIdentifier = Identifier.look(setName)
 		
-		def entries = Entry.findByUserIdAndSetIdentifier(userId, setIdentifier)
+		def entries = Entry.findAllByUserIdAndSetIdentifier(userId, setIdentifier)
 		for (Entry entry in entries) {
 			if (!entry.isPrimaryEntry())
 				continue
 			
-			if (entry.isGhost()) {
-				Entry.deleteGhost(entry, stats, baseDate, true)
-			} else
-				Entry.delete(entry, stats)
+			Entry.deleteGhost(entry, stats, baseDate, true)
 		}
 		
 		// add stop element
-		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " stop", baseDate, true), stats)
+		def entry = Entry.create(userId, Entry.parse(now, timeZoneName, fetchTagName() + " end", baseDate, true), stats)
+		entry = entry
 	}
 	
 	boolean isModified() {

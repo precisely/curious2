@@ -1726,15 +1726,8 @@ class Entry implements Comparable {
 		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
 	}
 	
-	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
-		if (this.repeatType == null)
-			return null
-		
-		return activateTemplateEntry(userId, currentBaseDate, nowDate, timeZoneName, stats, null)
-	}
-
-	protected Entry activateTemplateEntrySingle(Long targetUserId, Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
-			EntryStats stats, String setName) {
+	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
+			EntryStats stats) {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
 		long diff = now - dayStartTime
@@ -1743,7 +1736,7 @@ class Entry implements Comparable {
 		if (this.repeatType == null)
 			return null
 
-		if ((userId == targetUserId) && (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS))) {
+		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
 
 			this.unGhost(stats)
@@ -1771,8 +1764,7 @@ class Entry implements Comparable {
 				m['date'] = new Date(dayStartTime + HALFDAYTICKS)
 				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 			}
-			if (setName) m['setName'] = setName
-			def retVal = Entry.createSingle(targetUserId, m, creationMap.groupForDate(m['date']), stats)
+			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
 			
 			creationMap.add(retVal)
 
@@ -1783,8 +1775,7 @@ class Entry implements Comparable {
 			m['repeatType'] = this.repeatType
 			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 			m['datePrecisionSecs'] = this.datePrecisionSecs
-			if (setName) m['setName'] = setName
-			def retVal = Entry.createSingle(targetUserId, m, creationMap.groupForDate(m['date']), stats)
+			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
 			
 			creationMap.add(retVal)
 
@@ -1794,7 +1785,10 @@ class Entry implements Comparable {
 		}
 	}
 
-	Entry activateTemplateEntry(Long targetUserId, Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats, String setName) {
+	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
+		if (this.repeatType == null)
+			return null
+			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
 		EntryCreateMap creationMap = new EntryCreateMap()
@@ -1802,7 +1796,54 @@ class Entry implements Comparable {
 		Entry firstActivated = null
 		
 		for (Entry e : fetchGroupEntries()) {
-			Entry activated = e.activateTemplateEntrySingle(targetUserId, currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats, setName)
+			Entry activated = e.activateGhostEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats)
+			if (firstActivated == null) firstActivated = activated
+		}
+		
+		return firstActivated
+	}
+
+	protected Entry activateTemplateEntrySingle(Long forUserId, Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
+			EntryStats stats, String setName) {
+		long dayStartTime = currentBaseDate.getTime()
+		def now = nowDate.getTime()
+		long diff = now - dayStartTime
+		long thisDiff = this.date.getTime() - dayStartTime
+
+		def m = [:]
+		m['timeZoneName'] = timeZoneName
+		m['tag'] = this.tag
+		m['amount'] = this.amount
+		m['amountPrecision'] = this.amountPrecision
+		m['units'] = this.units
+		m['durationType'] = this.durationType?.unGhost()
+		m['baseTag'] = baseTag
+		m['repeatType'] = this.repeatType
+		m['setName'] = setName
+
+		m['comment'] = this.comment
+		m['repeatType'] = this.repeatType
+		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
+		m['datePrecisionSecs'] = this.datePrecisionSecs
+		def retVal = Entry.createSingle(forUserId, m, creationMap.groupForDate(m['date']), stats)
+		
+		creationMap.add(retVal)
+
+		return retVal
+	}
+
+	Entry activateTemplateEntry(Long forUserId, Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats, String setName) {
+		if (this.repeatType == null)
+			return null
+			
+		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
+		
+		EntryCreateMap creationMap = new EntryCreateMap()
+		
+		Entry firstActivated = null
+		
+		for (Entry e : fetchGroupEntries()) {
+			Entry activated = e.activateTemplateEntrySingle(forUserId, currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats, setName)
 			if (firstActivated == null) firstActivated = activated
 		}
 		
