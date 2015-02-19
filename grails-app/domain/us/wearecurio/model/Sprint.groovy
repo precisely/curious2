@@ -24,7 +24,7 @@ class Sprint {
 	/**
 	 * Entries associated with a sprint are in GMT, coded to date 1/1/2001
 	 */
-
+	
 	private static def log = LogFactory.getLog(this)
 	
 	Long userId // user id of creator of sprint
@@ -81,7 +81,7 @@ class Sprint {
 	
 	protected UserGroup fetchUserGroup() {
 		return UserGroup.get(virtualGroupId)
-
+		
 	}
 	
 	boolean hasWriter(Long userId) {
@@ -209,10 +209,10 @@ class Sprint {
 	boolean start(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
 		if (!hasMember(userId))
 			return false
-			
+		
 		if (hasStarted(userId, now))
 			return false
-			
+		
 		stats.setBatchCreation(true)
 		
 		String setName = entrySetName()
@@ -278,7 +278,7 @@ class Sprint {
 			updated:this.updated
 		]
 	}
-
+	
 	String toString() {
 		return "Sprint(id:" + getId() + ", userId:" + userId + ", name:" + name + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", visibility:" + visibility + ")"

@@ -190,10 +190,6 @@ class Entry implements Comparable {
 			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
 		}
 		
-		boolean isDurationGhost() {
-			return this.id == DURATIONGHOST
-		}
-		
 		RepeatType unGhost() {
 			return RepeatType.get(this.id & (~GHOST_BIT))
 		}
@@ -290,17 +286,37 @@ class Entry implements Comparable {
 				GHOSTEND(DURATIONEND_BIT | DURATIONGHOST_BIT),
 				GENERATEDSTART(DURATIONSTART_BIT | DURATIONGENERATED_BIT),
 				GENERATEDEND(DURATIONEND_BIT | DURATIONGENERATED_BIT),
-				GENERATEDDURATION(DURATIONGENERATED_BIT) // this is a generated calculated duration entry
-
+				GENERATEDDURATION(DURATIONGENERATED_BIT), // this is a generated calculated duration entry
+				GENERATEDSPRINT(DURATIONGENERATED_BIT | SPRINT_BIT),
+				GENERATEDSPRINTSTART(DURATIONGENERATED_BIT | SPRINT_BIT | DURATIONSTART_BIT),
+				GENERATEDSPRINTEND(DURATIONGENERATED_BIT | SPRINT_BIT | DURATIONEND_BIT)
+				
 		static final int DURATIONSTART_BIT = 1
 		static final int DURATIONEND_BIT = 2
+		static final int SPRINT_BIT = 4
 		static final int DURATIONGHOST_BIT = 16
 		static final int DURATIONGENERATED_BIT = 32
 		
 		final Integer id
 
+		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>()
+		
+		static {
+			for (DurationType t : DurationType.values()) {
+				map.put(t.getId(), t)
+			}
+		}
+		
+		static DurationType get(int id) {
+			return map.get(id)
+		}
+		
 		DurationType(Integer id) {
 			this.id = id
+		}
+		
+		boolean isDurationGhost() {
+			return this.id & DURATIONGHOST_BIT != 0
 		}
 		
 		boolean isGhost() {
@@ -319,42 +335,42 @@ class Entry implements Comparable {
 			return (this.id & DURATIONEND_BIT) != 0
 		}
 		
+		boolean isSprint() {
+			return (this.id & SPRINT_BIT) != 0
+		}
+		
 		boolean isStartOrEnd() {
 			return (this.id & (DURATIONSTART_BIT | DURATIONEND_BIT)) != 0
 		}
 		
 		DurationType unGhost() {
-			if (this == GHOSTSTART) return START
-			else if (this == GHOSTEND) return END
-			
-			return this
+			return get(this.id & ~DURATIONGHOST_BIT)
 		}
 		
 		DurationType makeGhost() {
-			if (this == START) return GHOSTSTART
-			else if (this == END) return GHOSTEND
-			
-			return this
+			return get(this.id | DURATIONGHOST_BIT)
 		}
 		
 		DurationType makeGenerated() {
-			if (this == START) return GENERATEDSTART
-			else if (this == END) return GENERATEDEND
-			else if (this == NONE) return GENERATEDDURATION
+			return get(this.id | DURATIONGENERATED_BIT)
+		}
+		
+		DurationType makeSprint() {
+			return get(this.id | SPRINT_BIT)
 		}
 	}
 	
 	static def START_DURATIONS = [
-		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART
+		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART, DurationType.GENERATEDSPRINTSTART
 	]
 	
 	static def END_DURATIONS = [
-		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND
+		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND, DurationType.GENERATEDSPRINTEND
 	]
 	
 	static def STARTOREND_DURATIONS = [
-		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART,
-		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND
+		DurationType.START, DurationType.GHOSTSTART, DurationType.GENERATEDSTART, DurationType.GENERATEDSPRINTSTART,
+		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND, DurationType.GENERATEDSPRINTEND
 	]
 	
 	static transients = [ 'groupEntries' ]
@@ -3097,7 +3113,7 @@ class Entry implements Comparable {
 				
 				if (prevAmount) {
 					UnitRatio prevUnitRatio = prevAmount.getUnitRatio()
-					if (prevUnitRatio.unitGroup == unitRatio.unitGroup) {
+					if (prevUnitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup) {
 						// merge amounts together, they are the same unit group
 						// use first amount units
 						prevAmount.amount = prevAmount.amount.add(new BigDecimal(amount.amount.doubleValue()
