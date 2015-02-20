@@ -99,9 +99,6 @@
 (defn amount-list-json [& args]
   (json/generate-string (apply amount-list args)))
 
-(defn cluster-list-json [user-id interval-size-ms]
-  (json/generate-string (db/cluster-load-latest user-id interval-size-ms)))
-
 (defn make-cluster-job-args [user-id params-map]
   (let [options (-> params-map seq flatten)]
     (cons user-id options)))
@@ -321,10 +318,7 @@
       (fn [req]
         (let [start-time (apply db/sql-time (map integer (list start-year start-month start-day)))
               stop-time (apply db/sql-time (map integer (list stop-year stop-month stop-day)))]
-        (assoc json-resp :body (amount-list-json user-id tag-id start-time stop-time))))
-
-    ["clusters" [user-id integer] [interval-size-ms integer]]
-      (fn [req] (assoc json-resp :body (cluster-list-json user-id interval-size-ms)))))
+        (assoc json-resp :body (amount-list-json user-id tag-id start-time stop-time))))))
 
 (defonce server (atom nil))
 

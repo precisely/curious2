@@ -420,7 +420,7 @@ class AnalyticsTask {
 	}
 
 	public static updateParentStatus(parentTask) {
-		if (parentTask.type != PARENT_OF_COLLECTION) { return null }
+		if (parentTask == null || parentTask.type != PARENT_OF_COLLECTION) { return null }
 		def children = AnalyticsTask.children(parentTask.id)
 		if (!children || children.size() == 0) { return null }
 		if (hasError(children)) {

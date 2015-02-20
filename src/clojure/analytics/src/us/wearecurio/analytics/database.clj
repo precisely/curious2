@@ -10,6 +10,8 @@
 
 
 (def MIPSS_VALUE_TYPE 0)
+(def COR_VALUE_TYPE 1)
+(def TRIGGER_VALUE_TYPE 2)
 ; ***********************
 ; SQL time stamp wrappers
 ; ***********************
@@ -19,6 +21,9 @@
 
 (defn sql-now []
   (tr/to-sql-time (t/now)))
+
+(defn sql-yesterday []
+  (tr/to-sql-time (t/minus (t/now) (t/hours 24))))
 
 ; date -> numer, scaled by interval-size-ms
  (defn rescale-time [t interval-size-in-ms]
@@ -139,6 +144,48 @@
     (kc/where {:user_id user-id
             :tag_id tag-id})))
 
+(defn series-first [& args]
+  (-> (apply series-list* args)
+      (kc/order :date :ASC)
+      (kc/limit 1)
+      (kc/select)
+      first))
+
+(defn series-last [& args]
+  (-> (apply series-list* args)
+      (kc/order :date :DESC)
+      (kc/limit 1)
+      (kc/select)
+      first))
+
+(defn series-first-date [& args]
+  (-> (apply series-first args)
+      :date))
+
+(defn series-last-date [& args]
+  (-> (apply series-last args)
+      :date))
+
+(defn series-first-date-as-numeric [& args]
+  (-> (apply series-first-date args) tr/to-long))
+
+(defn series-last-date-as-numeric [& args]
+  (-> (apply series-last-date args) tr/to-long))
+
+(defn series-support-as-numeric [& args]
+  (list (apply series-first-date-as-numeric args)
+        (apply series-last-date-as-numeric args)))
+
+(defn series-first-index [user-id tag-id interval-size-ms]
+  (-> (series-first-date user-id tag-id) (rescale-time interval-size-ms) long))
+
+(defn series-last-index [user-id tag-id interval-size-ms]
+  (-> (series-last-date user-id tag-id) (rescale-time interval-size-ms) long inc))
+
+(defn series-support-as-index [user-id tag-id interval-size-ms]
+  (list (series-first-index user-id tag-id interval-size-ms)
+        (series-last-index user-id tag-id interval-size-ms)))
+
 ; *******************
 ; List user's tag ids
 ; *******************
@@ -163,6 +210,10 @@
 
 (defn list-tag-ids [& args]
   (apply (partial map-sql-result list-tag-ids* :tag_id) args))
+
+(defn list-tag-ids-with-min-n [user-id min-n]
+  (->> (list-tag-ids user-id)
+       (filter #(> (series-count user-id %) min-n))))
 
 (defn list-tag-ids-in-range [& args]
   (apply (partial map-sql-result list-tag-ids-in-range* :tag_id) args))
@@ -189,18 +240,21 @@
 (defn cluster-run-create [user-id & {:keys [start-date
                                             stop-date
                                             cluster-run-name
-                                            min-n interval-size-ms]
+                                            min-n interval-size-ms cluster-run-parent-id]
                                      :or {start-date BIG-BANG
                                           stop-date (sql-now)
                                           cluster-run-name (str "Cluster Run " (sql-now))
                                           min-n 10
-                                          interval-size-ms const/DAY}}]
+                                          interval-size-ms const/DAY
+                                          cluster-run-parent-id nil
+                                          }}]
   "Insert cluster run meta data."
   (:generated_key (kc/insert analytics_cluster_run
     (kc/values {:user_id user-id
              :start_date start-date
              :stop_date stop-date
              :name cluster-run-name
+             :parent_id cluster-run-parent-id
              :min_n min-n
              :interval_size_ms interval-size-ms
              :created (sql-now)}))))
@@ -234,11 +288,6 @@
 (defn cluster-run-list-ids [& args]
   (map :id (apply cluster-run-list args)))
 
-; Delete all cluster runs from a user.
-(defn cluster-run-delete [user-id]
-  (kc/delete analytics_cluster_run
-    (kc/where {:user_id user-id})))
-
 ; List finished cluster runs from a user.
 (defn cluster-run-list-finished [user-id]
   (kc/select analytics_cluster_run
@@ -256,10 +305,17 @@
 (defn cluster-run-latest [user-id]
   (first (kc/select analytics_cluster_run
              (kc/order :id :DESC)
-             (kc/where {:user_id user-id}))))
+             (kc/where {:user_id user-id
+                        :parent_id nil }))))
 
-(defn cluster-run-latest-id [user-id]
-  (:id (cluster-run-latest user-id)))
+;(defn cluster-run-latest-id [user-id]
+;  (:id (cluster-run-latest user-id)))
+
+(defn cluster-run-latest-ids [user-id]
+  (let [parent-id (:id (cluster-run-latest user-id))]
+    (map :id (kc/select analytics_cluster_run
+                        (kc/order :id :DESC)
+                        (kc/where {:parent_id parent-id})))))
 
 (declare tag-cluster-delete-by-cluster-run-id )
 (defn cluster-run-delete [id]
@@ -271,7 +327,7 @@
     (cluster-run-delete id)))
 
 ; Cascading delete of unfinished cluster runs.
-;   "Cascading" means that it deletes everything under that has-many relationships.
+;   "Cascading" means that it deletes everything under the has-many relationships tied to the cluster-runs.
 (defn cluster-run-delete-unfinished
   ([]
     (let [unfinished-ids (map :id (kc/select analytics_cluster_run
@@ -282,6 +338,9 @@
                                     (kc/where {:user_id user-id
                                                  :finished nil})))]
       (cluster-run-delete-many unfinished-ids))))
+
+(defn cluster-run-delete-all-by-user [user-id]
+  (cluster-run-delete-many (cluster-run-list-ids user-id)))
 
 (defn cluster-run-list-old [user-id]
   (rest
@@ -307,7 +366,7 @@
 ; List tag-ids in tag-cluster
 (defn tag-cluster-list-tag-ids [tag-cluster-id]
   (map :tag_id (kc/select analytics_tag_cluster_tag
-    (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
+                 (kc/where {:analytics_tag_cluster_id tag-cluster-id}))))
 
 (defn tag-clusters-list-tag-ids [tag-cluster-ids]
   (map tag-cluster-list-tag-ids tag-cluster-ids))
@@ -318,59 +377,47 @@
 (defn make-tag-id-pairs [tag-id-list]
   (for [t1 tag-id-list t2 tag-id-list]
     (when (not= t1 t2)
-          (list t1 t2))))
+      (list t1 t2))))
 
 (declare tag-cluster-list-ids-by-cluster-run-id)
-(defn pairs-with-overlap-in-cluster [user-id]
-  (set
-    (->> (cluster-run-latest-id user-id)               ; cluster-run-ids from user-id
-         (tag-cluster-list-ids-by-cluster-run-id)      ; tag-cluster-i
-         (tag-clusters-flattened-tag-ids)              ; tag-ids per cluster-run
-         (make-tag-id-pairs)                           ; cross-product of tag-id pairs except when tag1=tag2
-         (filter identity))))                          ; remove nils where tag1 == tag2
+(defn pairs-with-min-n [user-id & {:keys [min-n] :or {min-n 1}}]
+    (->> (list-tag-ids user-id)
+         (filter #(> (series-count user-id %) min-n))
+         make-tag-id-pairs                           ; cross-product of tag-id pairs except when tag1=tag2
+         (filter identity)                           ; get rid of the pesky nils cause by the when.
+         set))                                       ; remove duplicate pairs.
 
 (declare tag-cluster-list)
 (defn tag-ids-in-clusters-for-user [user-id]
   (->> (map :id (tag-cluster-list user-id))
        (map tag-cluster-list-tag-ids)))
 
-(declare cluster-interval-list)
+(declare cluster-interval-list-by-tag-cluster-id)
 (defn tag-cluster-load [tag-cluster-id]
   (let [members (apply sorted-set (tag-cluster-list-tag-ids tag-cluster-id))
-        in-intervals  (map #(list (:start_date %) (:stop_date %)) (cluster-interval-list tag-cluster-id))
+        in-intervals  (map #(list (:start_date %) (:stop_date %)) (cluster-interval-list-by-tag-cluster-id tag-cluster-id))
         in-intervals-sorted (sort-by first in-intervals)]
     {:members members
      :in-intervals in-intervals-sorted}))
 
-(defn latest-tag-cluster-ids [user-id]
-  (let [cluster-run-id (cluster-run-latest-id user-id)]
-    (tag-cluster-list-ids-by-cluster-run-id cluster-run-id)))
-
-(defn loglike-map-latest [user-id]
-  (let [tag-cluster-ids (latest-tag-cluster-ids user-id)]
-    (into {} (flatten (map loglike-map tag-cluster-ids)))))
+(defn latest-tag-cluster-ids
+  ([user-id]
+  (let [cluster-run-ids (cluster-run-latest-ids user-id)]
+    (->> (map tag-cluster-list-ids-by-cluster-run-id cluster-run-ids)
+         flatten
+         set)))
+  ([user-id tag-id]
+   (let [tag-cluster-ids (latest-tag-cluster-ids user-id)]
+     (->> (kc/select analytics_tag_cluster_tag
+            (kc/where {:tag_id tag-id
+                       :analytics_tag_cluster_id [in tag-cluster-ids]}))
+          (map :analytics_tag_cluster_id)))))
 
 (defn rescale-interval [interval-size-ms interval]
   (map #(rescale-time % interval-size-ms) interval))
 
 (defn rescale-intervals [interval-size-ms intervals]
   (map (partial rescale-interval interval-size-ms) intervals))
-
-(defn convert-cluster-intervals-to-numeric [interval-size-ms cluster]
-  (update-in cluster [:in-intervals] (partial rescale-intervals interval-size-ms)))
-
-(defn cluster-load-latest
-  ([user-id]
-  (let [tag-cluster-ids (latest-tag-cluster-ids user-id)]
-    (vec (map tag-cluster-load tag-cluster-ids))))
-  ([user-id interval-size-ms]
-   (let [clusters (cluster-load-latest user-id)
-         updater (partial convert-cluster-intervals-to-numeric interval-size-ms)]
-     (vec (map updater clusters)))))
-
-(defn cluster-run-load-latest [user-id & {:keys [interval-size-ms] :or {interval-size-ms const/DAY}}]
-  {:C (cluster-load-latest user-id interval-size-ms)
-   :loglike (loglike-map-latest user-id)})
 
 ; *********************
 ; tag cluster CRUD
@@ -436,7 +483,6 @@
                     :analytics_cluster_run_id cluster-run-id})))))
 
 
-; Update (add tag to tag-cluster)
 (defn tag-cluster-add-tag [tag-cluster-id tag-id loglike]
   (let [loglike-safe (if (< loglike -1000000) -1000000 loglike)]
     (:generated_key
@@ -464,18 +510,45 @@
 ; *********************
 ; cluster interval CRUD
 ; *********************
+;
+(defn cluster-interval-list-by-tag-cluster-id [tag-cluster-id]
+    (kc/select analytics_cluster_interval
+      (kc/order :id :DESC)
+      (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
+
+; Stitch together intervals within a tolerance (representing 1000 ms)... this can probably be separated out into another auxilliary file.
+
+(defn within-tolerance-ms? [t1 t2]
+  (>= (+ 1000 t1) t2))
+
+(defn connecting-pts-within-tolerance? [intervals]
+  (let [stop1         (second (first intervals))
+        start2        (first (second intervals))]
+    (within-tolerance-ms? stop1 start2)))
+
+(defn first-two-intervals-merged [intervals]
+  (list (-> intervals first first) (-> intervals second second)))
+
+(defn stitch-new-year [intervals]
+  (cond (< (count intervals) 2)
+          intervals
+        (connecting-pts-within-tolerance? intervals)
+          (cons (first-two-intervals-merged intervals)
+                (stitch-new-year (rest (rest intervals))))
+        :else
+          (cons (first intervals) (stitch-new-year (rest intervals)))))
 
 ; List
 (defn cluster-interval-list
   ([]
     (kc/select analytics_cluster_interval
       (kc/order :id :DESC)))
-  ([tag-cluster-id]
-    (kc/select analytics_cluster_interval
-      (kc/order :id :DESC)
-      (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
   ([user-id tag-id]
-   (map cluster-interval-list (get-tag-cluster-id user-id tag-id))))
+   (map cluster-interval-list-by-tag-cluster-id (latest-tag-cluster-ids user-id tag-id))))
+
+(defn cluster-interval-list-latest [& args]
+    (when-let [tag-cluster-ids (apply latest-tag-cluster-ids args)]
+      (map cluster-interval-list-by-tag-cluster-id tag-cluster-ids)))
 
 (defn start-stop-only [interval-result]
   (cons (:start_date interval-result)
@@ -485,16 +558,21 @@
   (map tr/to-long (start-stop-only interval-result)))
 
 (defn intervals-as-numeric [intervals]
-  (map interval-as-numeric intervals))
+  (-> (map interval-as-numeric intervals)
+      stitch-new-year))
 
-; A list flattened list of interval results.
-(defn interval-list [user-id tag-id]
-  (->> (mapcat identity (cluster-interval-list user-id tag-id))
+; A list flattened list of interval results for a particular tag -- only from the latest run.
+(defn interval-list [& args]
+  (->> (apply cluster-interval-list-latest args)
+       (mapcat identity)
        (sort-by :start_date)))
 
 (defn interval-list-as-numeric [user-id tag-id]
-  (let [intervals (interval-list user-id tag-id)]
-    (intervals-as-numeric intervals)))
+  (let [intervals (interval-list user-id tag-id)
+        num-intervals (count intervals)]
+    (if (> num-intervals 0)
+      (intervals-as-numeric intervals)
+      (list (series-support-as-numeric user-id tag-id)))))
 
 (defn interval-list-as-date [user-id tag-id]
   (let [intervals (interval-list user-id tag-id)]
@@ -520,9 +598,9 @@
     (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
 
 ; *********************
-; Score CRUD operations
+; Score/correlation CRUD operations
 ; *********************
-(defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
+(defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
   "Insert a correlation score."
   (let [description1 (tag-description tag1-id)
         description2 (tag-description tag2-id)]
@@ -537,11 +615,11 @@
              :value score
              :abs_value (nt/abs score)
              :overlapn overlap-n
-             :value_type MIPSS_VALUE_TYPE
+             :value_type value-type
              :updated (sql-now)
              :created (sql-now)})))))
 
-(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
+(defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
   ; Update the description in case the user changed it.
   ;   This affects the search function only.
   (let [description1 (tag-description tag1-id)
@@ -558,16 +636,19 @@
               :series1id   tag1-id
               :series1type tag1-type
               :series2id   tag2-id
-              :series2type tag2-type}))))
+              :series2type tag2-type
+              :value_type  value-type
+                 }))))
 
-(defn score-delete [user-id tag1-id tag2-id score tag1-type tag2-type]
+(defn score-delete [user-id tag1-id tag2-id tag1-type tag2-type value-type]
   "Delete a correlation score."
   (kc/delete analytics_correlation
     (kc/where {:user_id    user-id
             :series1id   tag1-id
             :series1type tag1-type
             :series2id   tag2-id
-            :series2type tag2-type})))
+            :series2type tag2-type
+            :value_type value-type})))
 
 
 (defn score-find [user-id tag1-id tag2-id tag1-type tag2-type]
@@ -582,41 +663,110 @@
   "List all elements of the score."
   ([] (kc/select* analytics_correlation))
   ([user-id]
-    (kc/where (score-list*) {:user_id user-id}))
+    (kc/where (score-list*)
+              {:user_id user-id}))
   ; Add this signature when handle tag-groups:
   ;   ([user-id tag1-id tag1-type tag2-id tag2-type]
   ([user-id tag1-id tag2-id]
     (kc/where (score-list* user-id)
               {:series1id tag1-id
-               :series2id tag2-id})))
+               :series2id tag2-id}))
+  ([user-id tag1-id tag2-id value-type]
+    (kc/where (score-list* user-id tag1-id tag2-id)
+              {:value_type value-type})))
 
 (defn score-list [& args]
   "List all elements of the score."
   (kc/select (apply score-list* args)))
 
+(defn score-list-noise* [& args]
+  "Get all correlations marked as noise."
+  (-> (apply score-list* args)
+      (kc/where {:signal_level 0})))
+
+(defn score-list-noise [& args]
+  "Get all correlations marked as noise."
+  (-> (apply score-list-noise* args)
+      (kc/select)))
+
+(defn noise-pairs [& args]
+  "Get a list of tag-id pairs where the user marked the interaction as noise."
+  (->> (apply score-list-noise args)
+       (map #(list (:series1id %) (:series2id %)))
+       set))
+
+(defn score-tag-ids [c]
+  (list (:series1id c)
+        (:series2id c)))
+
+(defn score-tag-ids [base & args]
+  (->> (apply base args)
+       (kc/select)
+       (map score-tag-ids)))
+
+(defn score-noise-tag-ids [& args]
+  (apply (partial score-tag-ids score-list-noise*) args))
+
 (defn score-count [& args]
   "Count the number of elements in the score."
   (model-count (apply score-list* args)))
 
+(defn score-delete*
+  "List all elements of the score."
+  ([] (kc/delete* analytics_correlation))
+  ([user-id]
+    (kc/where (score-delete*) {:user_id user-id}))
+  ; Add this signature when handle tag-groups:
+  ;   ([user-id tag1-id tag1-type tag2-id tag2-type]
+  ([user-id tag1-id tag2-id]
+    (kc/where (score-delete* user-id)
+              {:series1id tag1-id
+               :series2id tag2-id})))
+
+(defn score-delete-unmarked* [& args]
+  "Delete unmarked scores."
+  (-> (apply score-delete* args)
+      (kc/where (or {:signal_level nil}
+                    {:signal_level -1}))))
+
+(defn score-delete-unmarked [& args]
+  (-> (apply score-delete-unmarked* args)
+      (kc/delete)))
+
+(defn score-delete-old-unmarked [& args]
+  (-> (apply score-delete-unmarked* args)
+      (kc/where {:updated [< (sql-yesterday)]})
+      (kc/delete)))
+
+(defn score-delete-user-value-type [user-id value-type]
+  "'Clean out' all the scores for a particular value type for a particular user."
+  (kc/delete analytics_correlation
+             (kc/where {:user_id user-id
+                        :value_type value-type})))
 ; **********************
 ; Update or create Score
 ; **********************
 
 ; TODO: How will we know when to delete correlations of tags that have
 ;   been deleted?
-(defn score-update-or-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type]
-  (let [ct (score-count user-id tag1-id tag2-id)] ; Need to update this when handling tag-groups.
+(defn score-update-or-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
+  (let [ct (score-count user-id tag1-id tag2-id value-type)] ; Need to update this when handling tag-groups.
     (cond (= 0 ct)
-            (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
+            (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)
           (= 1 ct)
-            (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)
+            (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)
           :else
-            (do (score-delete user-id tag1-id tag2-id score tag1-type tag2-type)
-                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type)))))
+            (do (score-delete user-id tag1-id tag2-id tag1-type tag2-type value-type)
+                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)))
+     ; The following line is a migration for the release of the branch change-points-draft-1
+     ;   It's done here to minimize the time that the user sees either zero correlations or duplicate
+     ;   correlations. -- David Beckwith Feb 15, 2015.
+     ;   TODO: Delete the following line after the analytics job as been run on production.
+     (score-delete user-id tag1-id tag2-id tag1-type tag2-type MIPSS_VALUE_TYPE)))
 
-; ********************
+; *******************
 ; Update task status
-; ********************
+; *******************
 
 ; NB: The statuses listed here should match those in AnalyticsTask.groovy
 ;   Task statuses.
@@ -748,5 +898,13 @@
           t1  (list-tag-ids uid)
           t2  (list-tag-ids uid)]
     (f uid t1 t2)))
+
+; Clear analytics tables.
+(defn truncate-analytics-tables []
+  (kc/delete analytics_correlation)
+  (kc/delete analytics_cluster_interval)
+  (kc/delete analytics_tag_cluster_tag)
+  (kc/delete analytics_tag_cluster)
+  (kc/delete analytics_cluster_run))
 
 (connect)

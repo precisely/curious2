@@ -85,8 +85,6 @@ making date-time objects that are compatible with keyify."
         value-series (->> (longify-keys value-series-map)
                            vec flatten (apply sorted-map))]
     (merge zero-series value-series)))
-        
-
 
 ; event-series just returns the value if it exists or 0 otherwise, so let's just call it the identity series
 ;  generator.
@@ -121,14 +119,12 @@ making date-time objects that are compatible with keyify."
       current-value
         (let [ordered-date-index-pairs2 (if (== current-date-index x1) (rest ordered-date-index-pairs) ordered-date-index-pairs)]
               (cons current-value (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs2 (inc current-date-index) stop-date-index last-data-point-x last-data-point-y))))
-
       ; The point lies between 
       (and (> current-date-index x0) (< current-date-index x1))
         (let [m       (/ (double (- y1 y0)) (double (- x1 x0)))
               Δx      (- current-date-index x0)
               y       (+ y0 (* Δx m))]
           (cons y (lazy-seq (-continuous-series value-series-map ordered-date-index-pairs (inc current-date-index) stop-date-index last-data-point-x last-data-point-y))))
-
       :else
         (throw (Exception. "This shouldn't happen")))))
 

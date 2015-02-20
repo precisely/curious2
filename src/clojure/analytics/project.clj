@@ -22,7 +22,7 @@
                  [org.clojure/tools.cli "0.3.1"]
                  ; numeric stuff
                  [incanter "1.5.5"]
-                 [org.clojure/clojure "1.5.1"]
+                 [org.clojure/clojure "1.6.0"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  ; database
                  [korma "0.4.0"]

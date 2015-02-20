@@ -4,21 +4,24 @@
 
 (def base-ns "us.wearecurio.analytics")
 
-(def namespaces '(binify core database idioms tag-group))
+(def namespaces '(binify core database idioms tag-group stats))
 
 (def my-aliases {'re    'rest
                  'bi    'binify
                  'co    'core
                  'const 'constants
                  'db    'database
+                 'dc    'detect-changes
                  'im    'idioms
                  'iv    'interval
-                 'tg    'tag-group })
+                 'dso   'datastructure-operations
+                 'stats 'stats })
 
 (def external-aliases { 'cs   'clojure.set
                         'ic   'incanter.core
                         'kc   'korma.core
                         'ist  'incanter.stats
+                        'nt   'clojure.math.numeric-tower
                         'tc   'clj-time.core
                         'tr   'clj-time.coerce
                         'tf   'clj-time.format
@@ -72,14 +75,17 @@
   (require 'incanter.stats)
   (require 'incanter.core)
   (require 'incanter.stats)
+  (require 'clojure.math.numeric-tower)
 
   (require 'us.wearecurio.analytics.database :reload)
+  (require 'us.wearecurio.analytics.datastructure-operations :reload)
+  (require 'us.wearecurio.analytics.detect-changes :reload)
   (require 'us.wearecurio.analytics.constants :reload)
   (require 'us.wearecurio.analytics.idioms :reload)
   (require 'us.wearecurio.analytics.binify :reload)
   (require 'us.wearecurio.analytics.interval :reload)
   (require 'us.wearecurio.analytics.rest :reload)
-  (require 'us.wearecurio.analytics.tag-group :reload))
+  (require 'us.wearecurio.analytics.stats :reload))
 
 
 (defn ret []
@@ -87,7 +93,6 @@
   (require 'us.wearecurio.analytics.core-test :reload)
   (require 'us.wearecurio.analytics.database-test :reload)
   (require 'us.wearecurio.analytics.interval-test :reload)
-  (require 'us.wearecurio.analytics.tag-group-test :reload)
   (require 'us.wearecurio.analytics.test-helpers :reload))
 
 (defn init []

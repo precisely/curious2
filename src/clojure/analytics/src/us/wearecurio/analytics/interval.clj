@@ -3,6 +3,9 @@
             [us.wearecurio.analytics.idioms :as im]
             [us.wearecurio.analytics.binify :as bi]
             [us.wearecurio.analytics.constants :as const]
+            [us.wearecurio.analytics.datastructure-operations :as dso]
+            [us.wearecurio.analytics.detect-changes :as dc]
+            [us.wearecurio.analytics.stats :as stats]
             [clj-time.core :as tc]
             [clj-time.coerce :as tr]
             [clj-time.format :as tf]
@@ -27,7 +30,7 @@
 (def keep-running (atom true))
 (def resample (atom true))
 (def SILENT (atom false))
-
+(def SPREAD 2) ; The number of interval-size-ms that the blur effect will spread over. E.g. +- 2 days.
 ;
 ; Generic helpers
 ;
@@ -42,9 +45,6 @@
 (defn warn-zero [v loc]
   (when (== 0 v)
     (println* "***WARNING***: Division by zero in" loc)))
-
-; For inspecting hashes.
-(defn pp [x] (clojure.pprint/pprint x))
 
 ;-----
 ;
@@ -868,7 +868,6 @@
 (defn run-algo [user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster]
   (let [start-time-as-decimal (db/rescale-time start-time interval-size-ms)
         stop-time-as-decimal (db/rescale-time stop-time interval-size-ms)
-        debug (println* "\n\n\n-----------------\n\n\nloading data for user" user-id "min-n per series:" min-n)
         data (data-series-range-with-min-n min-n interval-size-ms start-time stop-time user-id)]
     (reset! keep-running true)
     (when (> (count data) 0)
@@ -917,30 +916,35 @@
     (tag-cluster-save-substructure cluster-run-id state-cluster interval-size-ms make-intervals)))
 
 (defn save-intervals-for-user
-  ([user-id]
+  ([user-id cluster-run-parent-id]
     (let [start-time db/BIG-BANG
           stop-time (db/sql-now)]
-      (save-intervals-for-user user-id start-time stop-time)))
-  ([user-id start-time stop-time]
+      (save-intervals-for-user user-id cluster-run-parent-id start-time stop-time)))
+  ([user-id cluster-run-parent-id start-time stop-time]
     (let [max-epoch MAX-EPOCH
           state (atom {})
           min-n MIN-N
           interval-size-ms const/DAY
           alpha α
           max-iter-new-cluster MAX-ITER-NEW-CLUSTER]
-      (save-intervals-for-user user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
-  ([user-id start-time stop-time max-epoch state min-n interval-size-ms alpha max-iter-new-cluster]
-    (let [cluster-run-id (db/cluster-run-create user-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms)]
+      (save-intervals-for-user user-id cluster-run-parent-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)))
+  ([user-id cluster-run-parent-id start-time stop-time max-epoch state min-n interval-size-ms alpha max-iter-new-cluster]
+    (let [cluster-run-id (db/cluster-run-create user-id :cluster-run-parent-id cluster-run-parent-id :start-date start-time :stop-date stop-time :min-n min-n :interval-size-ms interval-size-ms )]
       (run-algo user-id max-epoch state min-n interval-size-ms start-time stop-time alpha max-iter-new-cluster)
       (save-clusters cluster-run-id state interval-size-ms make-intervals)
       (db/cluster-run-update-finished cluster-run-id))))
 
+(defn now-in-ms [] (-> (db/sql-now) tr/to-long))
+
+(declare rescale-numeric-time)
+(defn now-index [interval-size-ms]
+  (rescale-numeric-time interval-size-ms (now-in-ms)))
+
 (defn skip-cluster-run? [user-id]
   (when-let [last-run (first (db/cluster-run-list-finished user-id))]
     (let [one-day-ms  const/DAY
-          last-run-ms (-> last-run :finished tr/to-long)
-          now-in-ms   (-> (db/sql-now) tr/to-long)]
-      (< (- now-in-ms last-run-ms)
+          last-run-ms (-> last-run :finished tr/to-long) ]
+      (< (- (now-in-ms) last-run-ms)
          one-day-ms))))
 
 (defn save-cluster-year-by-year [user-id & {:keys [max-epoch state min-n interval-size-ms alpha max-iter-new-cluster]
@@ -950,11 +954,12 @@
                                                   interval-size-ms const/DAY
                                                   alpha α
                                                   max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
-  (let [next-year (inc (clj-time.core/year (clj-time.core/now)))]
+  (let [cluster-run-parent-id (db/cluster-run-create user-id)
+        next-year (inc (clj-time.core/year (clj-time.core/now)))]
     (doseq [year (range 2010 next-year)]
       (when @keep-running
-        (println* "\n\n\n**************\n\nSTART save-intervals-for-user YEAR:" year)
-        (save-intervals-for-user user-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)
+        (println* "\n\n\n**************\n\nSTART save-intervals-for-user:" user-id " year: " year)
+        (save-intervals-for-user user-id cluster-run-parent-id (db/sql-time year 1 1) (db/sql-time year 12 31 23 59 59)
                                  max-epoch state min-n interval-size-ms alpha max-iter-new-cluster )))))
 
 (defn refresh-intervals-for-user [user-id & {:keys [start-time stop-time
@@ -968,9 +973,8 @@
                                                   interval-size-ms const/DAY
                                                   alpha α
                                                   max-iter-new-cluster MAX-ITER-NEW-CLUSTER }}]
-  (db/cluster-run-delete user-id)
   (if (and start-time stop-time)
-      (save-intervals-for-user user-id start-time stop-time
+      (save-intervals-for-user user-id nil start-time stop-time
                                max-epoch state min-n interval-size-ms alpha max-iter-new-cluster)
       (save-cluster-year-by-year user-id
                                  :max-epoch max-epoch
@@ -979,28 +983,8 @@
                                  :alpha alpha
                                  :max-iter-new-cluster max-iter-new-cluster)))
 
-(defn within-tolerance-ms? [t1 t2]
-  (>= (+ 1000 t1) t2))
-
-(defn connecting-pts-within-tolerance? [intervals]
-  (let [stop1         (second (first intervals))
-        start2        (first (second intervals))]
-    (within-tolerance-ms? stop1 start2)))
-
-(defn first-two-intervals-merged [intervals]
-  (list (-> intervals first first) (-> intervals second second)))
-
-(defn stitch-new-year [intervals]
-  (cond (< (count intervals) 2)
-          intervals
-        (connecting-pts-within-tolerance? intervals)
-          (cons (first-two-intervals-merged intervals)
-                (stitch-new-year (rest (rest intervals))))
-        :else
-          (cons (first intervals) (stitch-new-year (rest intervals)))))
-
 (defn intervals-for-tag [user-id tag-id]
-  (-> (db/interval-list-as-numeric user-id tag-id) stitch-new-year))
+  (-> (db/interval-list-as-numeric user-id tag-id) identity))
 
 (defn join-intervals [intervals1 intervals2]
   (->> (concat intervals1 intervals2)
@@ -1029,29 +1013,28 @@
   ([intervals1 intervals2]
     (union-intervals (join-intervals intervals1 intervals2))))
 
-(defn rescale-numeric-time [interval-size-ms numeric-date]
-  (double (/ numeric-date interval-size-ms)))
+(defn rescale-numeric-time [interval-size-ms numeric-date-time-in-ms-since-1970]
+  (double (/ numeric-date-time-in-ms-since-1970 interval-size-ms)))
 
 (defn numeric-time [interval-size-ms & args]
   (->> (apply tc/date-time args)
       tr/to-long
       (rescale-numeric-time interval-size-ms)))
 
-(defn rescale-numeric-time-interval [interval-size-ms interval]
-  (map (partial rescale-numeric-time interval-size-ms) interval))
+(defn rescale-numeric-time-interval [interval-size-ms interval-in-ms]
+  (map (partial rescale-numeric-time interval-size-ms) interval-in-ms))
 
 (defn rescale-intervals [interval-size-ms intervals]
   (map (partial rescale-numeric-time-interval interval-size-ms) intervals))
 
-(defn unioned-intervals [user-id tag1-id tag2-id]
-  (let [intervals1 (stitch-new-year (db/interval-list-as-numeric user-id tag1-id))
-        intervals2 (stitch-new-year (db/interval-list-as-numeric user-id tag2-id))]
-    (union-intervals intervals1 intervals2)))
+(defn intersected-intervals [user-id tag1-id tag2-id]
+  (let [intervals1 (db/interval-list-as-numeric user-id tag1-id)
+        intervals2 (db/interval-list-as-numeric user-id tag2-id)]
+    (dso/intersect-intervals intervals1 intervals2)))
 
-(defn rescaled-unioned-intervals [interval-size-ms user-id tag1-id tag2-id]
-  (let [intervals (unioned-intervals user-id tag1-id tag2-id)]
+(defn rescaled-intersected-intervals [interval-size-ms user-id tag1-id tag2-id]
+  (let [intervals (intersected-intervals user-id tag1-id tag2-id)]
     (rescale-intervals interval-size-ms intervals)))
-
 
 (defn now-formatted []
   (tf/unparse (tf/formatter "yyyy-MM-dd_HH:mm:ss") (tc/now)))
@@ -1063,63 +1046,18 @@
           (str "Clojure Interop " (now-formatted) " : " message "\n")
           :append true)))
 
-(defn avg [v]
-  "The average of a vector of values."
-  (cond
-    (nil?    v) nil
-    (number? v) v
-    (and (coll? v) (= 0 (count v))) nil
-  :else
-    (let [n   (-> (count v) double)
-          sum (reduce + v)]
-      (/ sum n))))
-
-(defn sd [v]
-  "The standard deviation of a bunch of numbers."
-  (cond
-    (number? v)
-      0
-    (and (coll? v) (= (count v) 0))
-      nil
-    (and (coll? v) (= (count v) 1))
-      0
-    (and (coll? v) (> (count v) 1))
-      (let [mu (avg v)
-            n (dec (count v))
-            v2 (map (fn [x] (* (- x mu) (- x mu))) v)
-            sum2 (reduce + v2)]
-        (math/sqrt (/ sum2 n)))))
-
-(defn dot-product [x y]
-  (->> (interleave x y)
-       (partition 2 2)
-       (map #(apply * %))
-       (reduce +)))
-
-(defn normalize [x]
-  (let [mu (avg x)
-        s  (sd x)]
-    (map #(/ (- % mu) s) x)))
-
-(defn cor [v1 v2]
-  (double (/ (dot-product (normalize v1) (normalize v2))
-             (-> v1 count dec))))
-
 ; Input a sorted map, and select for keys in the range of the interval.
 (defn select-in-interval [sorted interval]
     (subseq sorted >= (first interval) <= (last interval)))
 
 (defn binify [user-id tag-id]
-  (-> (db/series-list user-id tag-id)
-      (bi/binify-by-avg const/DAY)))
+  (into (sorted-map) (-> (db/series-list user-id tag-id)
+                         (bi/binify-by-avg const/DAY))))
 
 (defn fill-in-series [bins start-date stop-date data-type]
   (if (= "CONTINUOUS" data-type)
       (bi/continuous-series bins start-date stop-date)
       (bi/event-series bins start-date stop-date)))
-
-(defn index-by-bin [bins start-date stop-date data-type]
-  (fill-in-series bins start-date stop-date data-type))
 
 (defn to-sorted-map [m]
   (let [filtered (filter identity m)
@@ -1129,56 +1067,134 @@
     sorted))
 
 (defn select-values-in-intervals [filled-sorted-map intervals]
-  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)
-        sorted (to-sorted-map selected)]
-    (vals sorted)))
+  (let [selected (map (partial select-in-interval filled-sorted-map) intervals)]
+    (to-sorted-map selected)))
 
-(defn vectorize-in-intervals [user-id tag-id start-date stop-date intervals]
-  (let [data-type (db/series-data-type user-id tag-id)]
+(defn smooth-bins [filled-bins n]
+  "Apply a smoothing function to a sorted-map of time-amount values and return the result as a sorted-map."
+  (im/assert-type filled-bins clojure.lang.PersistentTreeMap)
+  (let [ks (keys filled-bins)
+        vs (vals filled-bins)
+        smoothed-vals (stats/smooth vs n)]
+    (into (sorted-map) (zipmap ks smoothed-vals))))
+
+(defn replace-keys [smap new-ks]
+  "Replace the keys of a sorted map."
+  (into (sorted-map) (zipmap new-ks (vals smap))))
+
+(defn replace-vals [smap new-vals]
+  "Replace the vals of a sorted map."
+  (into (sorted-map) (zipmap (keys smap) new-vals)))
+  
+(defn shift-keys [bins n]
+  "Shift the numeric keys of a sorted-map to the left(n<0) or right (n>0)."
+  (im/assert-type bins clojure.lang.PersistentTreeMap)
+  (replace-keys bins (map (partial + n) (keys bins))))
+
+(defn binify-shift-fill [user-id tag-id n]
+  (-> (binify user-id tag-id)
+      (shift-keys n)))
+
+; This is where to put logic for pre-transforming time-series for the same-day correlation computation.
+(defn vectorize-in-intervals-cor [user-id tag-id start-date-index stop-date-index rescaled-intervals x-or-y]
+  (let [data-type          (db/series-data-type user-id tag-id)]
     (-> (binify user-id tag-id)
-        (index-by-bin start-date stop-date data-type)
-        (select-values-in-intervals intervals))))
+        (fill-in-series start-date-index stop-date-index data-type)
+        (smooth-bins SPREAD)
+        (select-values-in-intervals rescaled-intervals)
+        vals)))
 
-(defn zero-cor? [x y]
-  (or (< (count x) 3) (< (count y) 3)
-      (== 0 (sd x)) (== 0 (sd y))))
+(defmacro if-target [target x-or-y a b] `(if (= ~target ~x-or-y) ~a ~b))
+(defn if-x [x-or-y a b] (if-target :x x-or-y a b))
+(defn if-y [x-or-y a b] (if-target :y x-or-y a b))
 
-(defn compute-correlation-helper [user-id tag1-id tag2-id intervals]
-  (let [start-date (->> intervals flatten (apply min) long)
-        stop-date  (->> intervals flatten (apply max) long)
-        values1 (vectorize-in-intervals user-id tag1-id start-date stop-date intervals)
-        values2 (vectorize-in-intervals user-id tag2-id start-date stop-date intervals)]
-    (if (zero-cor? values1 values2)
+(defmacro if-bins [if-fn bins x-or-y f args]
+  `(~if-fn ~x-or-y
+           (apply ~f (cons ~bins ~args))
+           ~bins))
+
+(defn if-x-bins [bins x-or-y f & args]
+  (if-bins if-x bins x-or-y f args))
+
+(defn if-y-bins [bins x-or-y f & args]
+  (if-bins if-y bins x-or-y f args))
+
+(defn change-point-spike-train [bins]
+  "A wrapper around detect-changes/change-point-spike-train to take in hash-maps instead of vectors."
+  (replace-vals bins (dc/change-point-spike-train (vals bins))))
+
+(defn shift-intervals [intervals n]
+  "Shift a list of intervals to the right (n>0) or left (n<0)."
+  (map #(map (partial + n) %) intervals))
+
+; This is where to put logic for pre-transforming time-series for the trigger computation.
+(defn vectorize-in-intervals-trigger [user-id tag-id start-date-index stop-date-index rescaled-intervals x-or-y]
+  (let [data-type          (db/series-data-type user-id tag-id)
+        stop-date-index'   (+ 1 stop-date-index)
+        rescaled-intervals (if-x x-or-y (shift-intervals rescaled-intervals 1) rescaled-intervals)]
+    (-> (binify user-id tag-id)
+        (if-x-bins x-or-y shift-keys +1)
+        (fill-in-series start-date-index stop-date-index' data-type)
+        (smooth-bins SPREAD)
+        (if-y-bins x-or-y change-point-spike-train)
+        (select-values-in-intervals rescaled-intervals)
+        vals)))
+
+(defn compute-correlation-helper [values1 values2 tag1-id tag2-id]
+    (if (stats/zero-cor? values1 values2)
         {:score 0
          :n 0
          :tag1_id tag1-id
          :tag2_id tag1-id}
-        {:score (cor values1 values2)
+        {:score (stats/cor values1 values2)
          :n     (count values1)
          :tag1_id tag1-id
-         :tag2_id tag1-id
-         })))
+         :tag2_id tag1-id }))
 
-(defn compute-correlation
-  ([user-id tag1-id tag2-id]
-  (let [intervals (rescaled-unioned-intervals const/DAY user-id tag1-id tag2-id)
-        num-intervals (-> intervals flatten count)]
-    (when (> num-intervals 1)
-      (compute-correlation-helper user-id tag1-id tag2-id intervals)))))
+(defn values-in-intervals [vectorize-fn user-id tag1-id tag2-id rescaled-intervals]
+  (let [start-date-index (->> rescaled-intervals flatten (apply min) long)
+        stop-date-index  (->> rescaled-intervals flatten (apply max) long)
+        x-values (vectorize-fn user-id tag1-id start-date-index stop-date-index rescaled-intervals :x)
+        y-values (vectorize-fn user-id tag2-id start-date-index stop-date-index rescaled-intervals :y)]
+    {:x x-values :y y-values}))
 
-(defn compute-and-save-score [user-id & [log-file-name]]
-  (let [pairs (db/pairs-with-overlap-in-cluster user-id)]
-    (println* "computing" (count pairs) "correlations")
+(defn compute-correlation [vectorize-fn user-id tag1-id tag2-id]
+  "Compute the correlation cor(x, y)"
+  (let [rescaled-intervals (rescaled-intersected-intervals const/DAY user-id tag1-id tag2-id)]
+    (when (> (count rescaled-intervals) 0)
+      (let [values (values-in-intervals vectorize-fn user-id tag1-id tag2-id rescaled-intervals)]
+        (compute-correlation-helper (:x values) (:y values) tag1-id tag2-id)))))
+
+(defn compute-and-save-score [vectorize-fn value-type user-id tag1-id tag2-id]
+  (let [result  (compute-correlation vectorize-fn user-id tag1-id tag2-id)
+        score   (:score result)
+        n       (:n result)]
+    (when score
+      (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag" value-type))))
+
+(def compute-and-save-cor
+  "This will produce a function with signature [user-id tag1-id tag2-id], which is what iterate-on-tag-pairs expects."
+  (partial compute-and-save-score vectorize-in-intervals-cor db/COR_VALUE_TYPE))
+
+(def compute-and-save-trigger
+  "This will produce a function with signature [user-id tag1-id tag2-id], which is what iterate-on-tag-pairs expects."
+  (partial compute-and-save-score vectorize-in-intervals-trigger db/TRIGGER_VALUE_TYPE))
+
+(defn remove-noise-pairs [all-pairs noise-pairs]
+  (remove #(contains? (set noise-pairs) %) all-pairs))
+
+(defn non-noise-pairs [user-id min-n]
+  (-> (db/pairs-with-min-n user-id :min-n min-n)
+      (remove-noise-pairs (db/noise-pairs user-id))))
+
+(defn iterate-on-tag-pairs [user-id compute-score & {:keys [min-n type-of] :or {min-n MIN-N type-of ""}}]
+  "Call a scoring function with signature [user-id tag1-id tag2-id] on all tag pairs, which are not marked as noise."
+  (let [pairs (non-noise-pairs user-id min-n)]
+    (println* "computing" (count pairs) type-of "correlations")
     (doseq [pair pairs]
       (when @keep-running
         (print* ".") (flush)
-        (let [tag1-id (first pair)
-              tag2-id (second pair)
-              result  (apply (partial compute-correlation user-id) pair)
-              score   (:score result)
-              n       (:n result)]
-          (when score
-            (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag")))))))
+        (compute-score user-id (first pair) (second pair))))))
 
 (defn update-user [user-id & {:keys [log-file-name start-time stop-time
                                      max-epoch state min-n
@@ -1201,22 +1217,34 @@
        (str "USER " user-id ": connect to database\n"))
   (db/connect)
 
-  (log log-file-name
-       (str "refresh-intervals-for-user " user-id))
-  (refresh-intervals-for-user user-id
-                                 :start-time start-time
-                                 :stop-time stop-time
-                                 :max-epoch max-epoch
-                                 :min-n min-n
-                                 :interval-size-ms interval-size-ms
-                                 :alpha alpha
-                                 :max-iter-new-cluster max-iter-new-cluster)
+  (db/cluster-run-delete-all-by-user user-id)
+  (if (> (db/series-count user-id) 10)
+      (do
+        (log log-file-name
+             (str "refresh-intervals-for-user " user-id))
+        (refresh-intervals-for-user user-id
+                                       :start-time start-time
+                                       :stop-time stop-time
+                                       :max-epoch max-epoch
+                                       :min-n min-n
+                                       :interval-size-ms interval-size-ms
+                                       :alpha alpha
+                                       :max-iter-new-cluster max-iter-new-cluster)
+        (when @keep-running
+          (log log-file-name
+               (str "compute and save correlations " user-id " " :min-n ": " min-n))
+          (db/score-delete-old-unmarked user-id)
+          (iterate-on-tag-pairs user-id compute-and-save-cor :min-n min-n :type-of "standard")
 
-  (when @keep-running
-    (log log-file-name
-         (str "co/compute-and-save-score " user-id))
-    (compute-and-save-score user-id log-file-name))
+          ; TODO: Remove the following line after the analytics job has run at least once on production.
+          ; Feb 15, 2015 -- David Beckwith.  There's no harm in leaving it in until the next deployment.
+          (db/score-delete-user-value-type user-id db/MIPSS_VALUE_TYPE)
 
-  (log log-file-name
-       (str "finished update-user " user-id " keep-running: " @keep-running)))
+          (log log-file-name
+               (str "compute and save triggers " user-id " " :min-n ": " min-n))
+          (iterate-on-tag-pairs user-id compute-and-save-trigger :min-n min-n :type-of "trigger"))
+
+        (log log-file-name
+             (str "finished update-user " user-id " keep-running: " @keep-running)))
+      (println "Skipping user" user-id "because there is/are only" (db/series-count user-id) "data points.")))
 

@@ -5,6 +5,7 @@
             [korma.core :as kc]
             [us.wearecurio.analytics.test-helpers :as th]
             [us.wearecurio.analytics.interval :as iv]
+            [us.wearecurio.analytics.stats :as stats]
             [us.wearecurio.analytics.constants :as const]
             [us.wearecurio.analytics.database :as db]))
 
@@ -171,25 +172,24 @@
               interval-pair-1  (list interval-1-start interval-1-stop)
               interval-pair-2  (list interval-2-start interval-2-stop)
               both-intervals   (list interval-pair-1 interval-pair-2) ]
-          (is (= '(1 0 0 1 1 1)
-                 (map long (iv/vectorize-in-intervals 1 42 interval-1-start interval-1-stop (list interval-pair-1)))))
-          (is (= '(0 0 1 1 1)
-                 (map long (iv/vectorize-in-intervals 1 42 interval-2-start interval-2-stop (list interval-pair-2)))))
-          (is (= '(1 0 0 1 1 1 0 0 1 1 1)
-                 (map long (iv/vectorize-in-intervals 1 42 interval-1-start interval-2-stop both-intervals))))
-          (is (= '(109 109 109 107 105 110)
-                 (map long (iv/vectorize-in-intervals 1 99 interval-1-start interval-1-stop (list interval-pair-1)))))
-          (is (= '(103 101 109 117 117)
-                 (map long (iv/vectorize-in-intervals 1 99 interval-2-start interval-2-stop (list interval-pair-2)))))
-          (is (= '(109 109 109 107 105 110 103 101 109 117 117)
-                 (map long (iv/vectorize-in-intervals 1 99 interval-1-start interval-2-stop both-intervals))))
-          (let [v1 (iv/vectorize-in-intervals 1 42 interval-1-start interval-2-stop both-intervals)
-                v2 (iv/vectorize-in-intervals 1 99 interval-1-start interval-2-stop both-intervals)]
+          (is (= '(6 4 4 6 7 7)
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-1-stop (list interval-pair-1) :x))))
+          (is (= '(4 4 6 7 6)
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-2-start interval-2-stop (list interval-pair-2) :x))))
+          (is (= '(6 4 4 6 7 6 1 3 6 7 6)
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-2-stop both-intervals :x))))
+          (is (= '(109 108 108 107 107 108)
+                 (map long (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-1-stop (list interval-pair-1) :x))))
+          (is (= '(1030 1052 1092 1134 1161)
+                 (map  #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 99 interval-2-start interval-2-stop (list interval-pair-2) :x))))
+          (is (= '(1090 1087 1081 1075 1078 1094 1041 1054 1092 1134 1161)
+                 (map #(long (* 10 %)) (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-2-stop both-intervals :x))))
+          (let [v1 (iv/vectorize-in-intervals-cor 1 42 interval-1-start interval-2-stop both-intervals :x)
+                v2 (iv/vectorize-in-intervals-cor 1 99 interval-1-start interval-2-stop both-intervals :x)]
 
             ; In R,
             ;> cor(c(1.0, 0, 0, 1.0, 1.0, 1.0, 0.0, 0, 1.0, 1.0, 1.0), c(109.0, 109.0, 109.0, 107.0, 105.0, 110.0, 103.0, 101.0, 109.0, 117.0, 117.0))
             ;[1] 0.5136035
 
-            (is (= 5136
-                   (-> (iv/cor v1 v2) (* 10000) long)))
-))))))
+            (is (= 6541
+                   (-> (stats/cor v1 v2) (* 10000) long)))))))))
