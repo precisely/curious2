@@ -329,7 +329,7 @@ class MigrationService {
 		}
 		tryMigration(FIX_TAG_PROPERTIES2) {
 			sql ("ALTER TABLE `tag_properties` DROP COLUMN `data_type_computed`, DROP COLUMN `data_type_manual`")
-			sql ("ALTER TABLE `tag_properties` ADD COLUMN `data_type_computed` INT NULL DEFAULT NULL  , ADD COLUMN `data_type_manual` INT NULL DEFAULT NULL")
+			sql ("ALTER TABLE `tag_properties` ADD COLUMN `data_type_computed` INT NULL DEFAULT NULL	, ADD COLUMN `data_type_manual` INT NULL DEFAULT NULL")
 		}
 		tryMigration(HISTORICAL_INTRA_DAY) {
 			sql("delete from entry where set_name like 'withings import%'")
@@ -478,13 +478,16 @@ class MigrationService {
 			sql("ALTER TABLE tag_group_properties MODIFY COLUMN user_id bigint;")
 		}
 		tryMigration("Remove correlation table since we're using analytics_correlation instead.") {
-		  sql("DROP TABLE IF EXISTS correlation");
+			sql("DROP TABLE IF EXISTS correlation");
 		}
 		tryMigration("Recompute all tag stats again") {
 			def users = User.list()
 			for (u in users) {
 				TagStats.updateTagStats(u)
 			}
+		}
+		tryMigration("Change analytics_task.status to integer") {
+			sql("alter table analytics_task change status status2 varchar(255) null default null; alter table analytics_task add status int(11) NULL default NULL; update analytics_task set status = 3 where status2='new'; update analytics_task set status = 5 where status2='completed'; alter table analytics_task drop status2;")
 		}
 	}
 }
