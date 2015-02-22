@@ -135,6 +135,7 @@ class SessionController {
 	}
 
 	protected def parseDate(String dateStr) {
+		if (dateStr == null) return null
 		return Date.parse("EEE, dd MMM yyyy HH:mm:ss z", dateStr)
 	}
 

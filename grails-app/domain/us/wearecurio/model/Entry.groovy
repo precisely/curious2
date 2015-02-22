@@ -1049,7 +1049,7 @@ class Entry implements Comparable {
 					if (repeatEndDate == null || repeatEndDate >= newDate) {
 						def m = [:]
 						m['tag'] = entry.getTag()
-						m['date'] = newDateTime.toDate()
+						m['date'] = newDate
 
 						Long repeatId = entry.getRepeatType().getId().longValue()
 						RepeatType toggleType = entry.getRepeatType().toggleGhost()

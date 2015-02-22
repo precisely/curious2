@@ -121,14 +121,12 @@ class DataController extends LoginController {
 	}
 
 	// find entries including those with null events
-	protected def listEntries(User user, String timeZoneName, String dateStr) {
-		debug "DataController.listEntries() userId:" + user.getId() + ", timeZoneName:" + timeZoneName + ", dateStr:" + dateStr
-
-		Date baseDate = parseDate(dateStr)
+	protected def listEntries(User user, String timeZoneName, Date baseDate, Date currentTime) {
+		debug "DataController.listEntries() userId:" + user.getId() + ", timeZoneName:" + timeZoneName + ", baseDate:" + baseDate
 
 		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
 
-		return Entry.fetchListData(user, timeZoneName, baseDate, new Date())
+		return Entry.fetchListData(user, timeZoneName, baseDate, currentTime)
 	}
 
 	MathContext mc = new MathContext(9)
@@ -342,8 +340,8 @@ class DataController extends LoginController {
 		if (!tokenService.acquire(session, "activateGhost:" + userId + ":" + params.entryId + ":" + params.date)) {
 			renderStringGet("error") // silently fail
 		} else {
-			Date baseDate = params.date == null ? null : parseDate(params.date)
-			Date currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
+			Date baseDate = parseDate(params.baseDate)
+			Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 			String timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 			if (entry.getUserId() != sessionUser().getId()) {
@@ -381,8 +379,8 @@ class DataController extends LoginController {
 		def userId = entry.getUserId();
 		def allFuture = params.all?.equals("true") ? true : false
 
-		def currentDate = params.date == null ? null : parseDate(params.date)
-		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
+		Date baseDate = parseDate(params.baseDate)
+		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
 		if (entry.getUserId() != sessionUser().getId()) {
@@ -390,9 +388,9 @@ class DataController extends LoginController {
 			return
 		} else {
 			EntryStats stats = new EntryStats()
-			Entry.deleteGhost(entry, stats, currentDate, allFuture)
+			Entry.deleteGhost(entry, stats, currentTime, allFuture)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, baseDate),
+			renderJSONGet([listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
 		}
@@ -660,11 +658,14 @@ class DataController extends LoginController {
 			return
 		}
 
+		Date baseDate = parseDate(params.baseDate)
+		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
+		
 		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
 				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
 			renderJSONGet([
-				listEntries(userId, params.timeZoneName, params.baseDate),
+				listEntries(userId, params.timeZoneName, baseDate, currentTime),
 				result[1],
 				result[2].getJSONDesc(),
 				result[0].getJSONDesc()
@@ -677,10 +678,13 @@ class DataController extends LoginController {
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() params:" + params)
 
+		Date baseDate = parseDate(params.baseDate)
+		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
+		
 		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneName,
 				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
 		if (entry != null) {
-			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, params.baseDate),
+			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
 		} else {
 			debug "Error while updating: " + message
@@ -702,7 +706,7 @@ class DataController extends LoginController {
 		def entry = Entry.get(params.entryId.toLong());
 		def userId = entry.getUserId();
 
-		def currentTime = params.currentTime == null ? null : parseDate(params.currentTime)
+		def currentTime = params.currentTime == null ? new Date() : parseDate(params.currentTime)
 		def baseDate = params.baseDate == null? null : parseDate(params.baseDate)
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
@@ -714,7 +718,7 @@ class DataController extends LoginController {
 			EntryStats stats = new EntryStats()
 			Entry.delete(entry, stats)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, params.displayDate),
+			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),
 				tagStats[0]?.getJSONDesc(),
 				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
 		}

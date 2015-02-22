@@ -325,9 +325,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		stats.finish()
 		
 		controller.session.userId = userId
-		controller.params.entryId = entry.getId()
+		controller.params.entryId = entry.getId().toString()
 		controller.params.displayDate = "Sat, 11 Aug 2012 07:00:00 GMT"
-		controller.params.currentTime = "Sat, 11 Aug 2012 09:00:00 GMT"
+		controller.params.date = "Sat, 11 Aug 2012 09:00:00 GMT"
 		controller.params.baseDate = "Sat, 11 Aug 2012 07:00:00 GMT"
 		controller.params.timeZoneName = "America/Los_Angeles"
 
@@ -338,7 +338,33 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def content = controller.response.contentAsString
 
 		assert content.startsWith('callback([[]')
-		}
+	}
+
+	@Test
+	void testDeleteRepeatEntrySData() {
+		DataController controller = new DataController()
+
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 repeat", baseDate, true), stats)
+
+		stats.finish()
+		
+		controller.session.userId = userId
+		controller.params.entryId = entry.getId().toString()
+		controller.params.displayDate = "Sat, 11 Jul 2012 08:00:00 GMT"
+		controller.params.date = "Sat, 11 Jul 2012 08:00:00 GMT"
+		controller.params.baseDate = "Sat, 11 Jul 2012 08:00:00 GMT"
+		controller.params.timeZoneName = "America/Los_Angeles"
+
+		controller.params['callback'] = 'callback'
+
+		controller.deleteGhostEntryData()
+
+		def content = controller.response.contentAsString
+
+		assert content.startsWith('callback([[]')
+	}
 
 	@Test
 	void testSetPreferencesData() {

@@ -420,6 +420,9 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 		}
+		tryMigration("Drop Session version") {
+			sql ("alter table session drop column version")
+		}
 	}
 	
 	/**
