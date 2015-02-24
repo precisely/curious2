@@ -56,6 +56,7 @@
 (kc/defentity analytics_tag_cluster)
 (kc/defentity analytics_tag_cluster_tag)
 (kc/defentity analytics_cluster_interval)
+(kc/defentity analytics_correlation_interval)
 
 (kc/defentity analytics_cluster_run
   (kc/has-many analytics_tag_cluster))
@@ -68,7 +69,9 @@
 (kc/defentity analytics_cluster_interval
   (kc/belongs-to analytics_tag_cluster))
 
-(kc/defentity analytics_correlation)
+(kc/defentity analytics_correlation
+  (kc/has-many analytics_correlation_interval))
+
 (kc/defentity analytics_task)
 
 ; Temporary matrix store for talking to Python.
@@ -598,6 +601,24 @@
     (kc/where {:analytics_tag_cluster_id tag-cluster-id})))
 
 ; *********************
+; correlation interval CRUD
+; *********************
+;  The intersection between two sets of intervals.
+;  It's being saved for easy consumption in Grails.
+
+(defn save-correlation-interval [user-id correlation-id interval-in-ms]
+  (:generated_key
+    (kc/insert analytics_correlation_interval
+      (kc/values {:analytics_correlation_id correlation-id
+                  :start_ms (first interval-in-ms)
+                  :stop_ms (last interval-in-ms)
+                  :user_id user-id}))))
+
+(defn save-correlation-intervals [user-id correlation-id intervals-in-ms]
+  (doseq [interval-in-ms intervals-in-ms]
+    (save-correlation-interval user-id correlation-id interval-in-ms)))
+
+; *********************
 ; Score/correlation CRUD operations
 ; *********************
 (defn score-create [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
@@ -619,10 +640,21 @@
              :updated (sql-now)
              :created (sql-now)})))))
 
+(defn score-find [user-id tag1-id tag2-id tag1-type tag2-type value-type]
+  (kc/select analytics_correlation
+    (kc/where {:user_id      user-id
+               :series1id    tag1-id
+               :series2id    tag2-id
+               :series1type  tag1-type
+               :series2type  tag2-type
+               :value_type   value-type})))
+
 (defn score-update [user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type]
   ; Update the description in case the user changed it.
+  ;   We want to return the id updated, so need to search for it first...
   ;   This affects the search function only.
-  (let [description1 (tag-description tag1-id)
+  (let [score-id     (-> (score-find user-id tag1-id tag2-id tag1-type tag2-type value-type) :id)
+        description1 (tag-description tag1-id)
         description2 (tag-description tag2-id)]
     "Update a correlation score."
     (kc/update analytics_correlation
@@ -632,13 +664,8 @@
                    :description1 description1
                    :description2 description2
                    :updated (sql-now)})
-      (kc/where {:user_id    user-id
-              :series1id   tag1-id
-              :series1type tag1-type
-              :series2id   tag2-id
-              :series2type tag2-type
-              :value_type  value-type
-                 }))))
+      (kc/where {:id score-id}))
+    score-id))
 
 (defn score-delete [user-id tag1-id tag2-id tag1-type tag2-type value-type]
   "Delete a correlation score."
@@ -649,15 +676,6 @@
             :series2id   tag2-id
             :series2type tag2-type
             :value_type value-type})))
-
-
-(defn score-find [user-id tag1-id tag2-id tag1-type tag2-type]
-  (kc/select analytics_correlation
-    (kc/where {:user_id    user-id
-            :series1id    tag1-id
-            :series2id    tag2-id
-            :series1type  tag1-type
-            :series2type  tag2-type})))
 
 (defn score-list*
   "List all elements of the score."
@@ -757,12 +775,7 @@
             (score-update user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)
           :else
             (do (score-delete user-id tag1-id tag2-id tag1-type tag2-type value-type)
-                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)))
-     ; The following line is a migration for the release of the branch change-points-draft-1
-     ;   It's done here to minimize the time that the user sees either zero correlations or duplicate
-     ;   correlations. -- David Beckwith Feb 15, 2015.
-     ;   TODO: Delete the following line after the analytics job as been run on production.
-     (score-delete user-id tag1-id tag2-id tag1-type tag2-type MIPSS_VALUE_TYPE)))
+                (score-create user-id tag1-id tag2-id score overlap-n tag1-type tag2-type value-type)))))
 
 ; *******************
 ; Update task status

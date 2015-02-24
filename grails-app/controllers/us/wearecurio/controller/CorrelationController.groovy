@@ -8,17 +8,6 @@ class CorrelationController {
 	static allowedMethods = [markViewed: "PATCH", markSaved: "PATCH", updateSignalLevel: "PATCH", index: "GET", search: "POST"]
 	def securityService
 
-	def index() {
-		def currentUser = securityService.currentUser
-		if (currentUser == null) {
-			renderNotLoggedIn()
-			return
-		}
-		def correlations = AnalyticsCorrelation.userCorrelations(currentUser.id, 20, params.flavor)
-		response.status = correlations ? 200 : 500
-		render correlations as JSON
-	}
-
 	def search() {
 		def currentUser = securityService.currentUser
 		if (params.int('page') == null || params.int('page') < 1) {

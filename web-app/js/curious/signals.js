@@ -486,6 +486,7 @@ $(function() {
 			for (var i=0; i < data.length; i++) {
 				// Aliases for readability.
 				var id = data[i].id;
+				log('processSearchResults id:', id);
 				var description1 = data[i].description1;
 				var description2 = data[i].description2;
 				var saved = data[i].saved;

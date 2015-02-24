@@ -125,7 +125,6 @@ $(function() {
 	<hr>
 
 	<div id="correlation-container">
-
 		<script id="correlation-template" type="x-tmpl-mustache">
 			<div class="row signal-row-container" type="{{type}}" marked="{{marked}}" data-id="{{id}}" score="{{score}}" style="display: {{display}}">
 				<div class="row signal-row signal-row-top">

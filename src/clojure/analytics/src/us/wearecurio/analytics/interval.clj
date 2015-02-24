@@ -1027,13 +1027,13 @@
 (defn rescale-intervals [interval-size-ms intervals]
   (map (partial rescale-numeric-time-interval interval-size-ms) intervals))
 
-(defn intersected-intervals [user-id tag1-id tag2-id]
+(defn intersect-intervals [user-id tag1-id tag2-id]
   (let [intervals1 (db/interval-list-as-numeric user-id tag1-id)
         intervals2 (db/interval-list-as-numeric user-id tag2-id)]
     (dso/intersect-intervals intervals1 intervals2)))
 
-(defn rescaled-intersected-intervals [interval-size-ms user-id tag1-id tag2-id]
-  (let [intervals (intersected-intervals user-id tag1-id tag2-id)]
+(defn rescale-intersected-intervals [interval-size-ms user-id tag1-id tag2-id]
+  (let [intervals (intersect-intervals user-id tag1-id tag2-id)]
     (rescale-intervals interval-size-ms intervals)))
 
 (defn now-formatted []
@@ -1160,7 +1160,7 @@
 
 (defn compute-correlation [vectorize-fn user-id tag1-id tag2-id]
   "Compute the correlation cor(x, y)"
-  (let [rescaled-intervals (rescaled-intersected-intervals const/DAY user-id tag1-id tag2-id)]
+  (let [rescaled-intervals (rescale-intersected-intervals const/DAY user-id tag1-id tag2-id)]
     (when (> (count rescaled-intervals) 0)
       (let [values (values-in-intervals vectorize-fn user-id tag1-id tag2-id rescaled-intervals)]
         (compute-correlation-helper (:x values) (:y values) tag1-id tag2-id)))))
@@ -1170,7 +1170,10 @@
         score   (:score result)
         n       (:n result)]
     (when score
-      (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag" value-type))))
+      (let [correlation-id (db/score-update-or-create user-id tag1-id tag2-id score n "tag" "tag" value-type)
+            intervals-in-ms (intersect-intervals user-id tag1-id tag2-id)]
+        (db/save-correlation-intervals user-id correlation-id intervals-in-ms)
+        score))))
 
 (def compute-and-save-cor
   "This will produce a function with signature [user-id tag1-id tag2-id], which is what iterate-on-tag-pairs expects."

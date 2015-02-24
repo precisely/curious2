@@ -1163,7 +1163,6 @@ body.discuss-page .red-header {
 .red-header .right {
 	float: left;
 	width: calc(100% - 215px);
-	border-right: 2px solid #fff;
 }
 .tags-container {
 	margin-left: 2px;
@@ -2929,3 +2928,8 @@ body .modal-footer a .navigate-carousel-right {
 	font-weight: 500;
 }
 
+#interval-nav {
+	float: right;
+	width: 25%;
+	border-right: 2px solid #fff;
+}

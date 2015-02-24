@@ -86,7 +86,18 @@ $(function() {
 <body class="graph-page">
 	<div class="red-header graph-header-container clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
-		<h1 class="clearfix right">
+		<div id="interval-nav">
+			&nbsp;
+			<div id="interval-nav-content" style="display: none">
+				Interval:
+				<select id="interval-select">
+					<script id="interval-option-template" type="x-tmpl-mustache">
+						<option value="{{id}}">{{start_date}} - {{stop_date}}</option>
+					</script>
+				</select>
+			</div>
+		</div>
+		<h1 class="clearfix right" style="width: 50%;">
 			<div id="actions">
 				<span class="icon-triangle icon-triangle-right toggle"></span>
 				<ul>

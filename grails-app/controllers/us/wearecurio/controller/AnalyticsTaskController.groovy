@@ -71,7 +71,11 @@ class AnalyticsTaskController {
 
 	def getLatestParent() {
 		AnalyticsTask.updateLatestParent()
-		render(contentType: "text/json") { AnalyticsTask.getLatestParent() }
+		if (null == AnalyticsTask.getLatestParent()) {
+			render(contentType: "text/json") { ['message': "No tasks to display."] }
+		} else {
+			render(contentType: "text/json") { AnalyticsTask.getLatestParent() }
+		}
 	}
 
 	def getTasks() {

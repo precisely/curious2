@@ -229,7 +229,7 @@
     (testing "The correlation table should start off empty."
       (is (= (db/score-count)
              0))
-      (is (= (count (db/score-find 1 2 3 "tag" "tag"))
+      (is (= (count (db/score-find 1 2 3 "tag" "tag" db/COR_VALUE_TYPE))
              0)))
     (testing "After saving score1, we should be able to find it again."
       (do (db/score-update-or-create (s1 :user-id)

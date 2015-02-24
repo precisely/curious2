@@ -75,34 +75,6 @@ class AnalyticsCorrelation {
 		signalLevel index: 'signalLevelIdx', defaultValue: (Double)-1.0
 	}
 
-	public static userCorrelations(Long userId, Integer max, String flavor) {
-		def criteria = AnalyticsCorrelation.createCriteria()
-		criteria = criteria.add( R.eq("userId", userId) )
-		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
-		criteria = criteria.add( R.ge( "overlapN", minOverlap ) )
-
-		def column = null
-		switch(flavor) {
-
-			case "triggered":
-				column = "value"
-				break;
-
-			case "saved":
-				column = "saved"
-				criteria.add( R.isNotNull("saved") )
-				break
-
-			default:
-				column = "value"
-				break
-		}
-		def orderRestriction = (flavor == "negative" ? O.asc(column) : O.desc(column))
-		criteria.addOrder( orderRestriction )
-		criteria = criteria.setMaxResults( max )
-		criteria.list()
-	}
-
 	public static updateSignalLevel(Long theId, Double signalLevel) {
 		AnalyticsCorrelation correlation = AnalyticsCorrelation.get(theId)
 		if (signalLevel == 0) {
