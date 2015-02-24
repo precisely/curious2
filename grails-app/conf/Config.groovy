@@ -438,6 +438,7 @@ oauth {
 			successUri = "authentication/jawboneup/success"
 			failureUri = "authentication/jawboneup/fail"
 			scope = "basic_read mood_read move_read sleep_read meal_read weight_read"
+			signatureType = SignatureType.Header
 		}
 		moves {
 			api = MovesApi
