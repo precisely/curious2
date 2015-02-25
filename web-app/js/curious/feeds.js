@@ -134,7 +134,7 @@ $(document).ready(function() {
 		params  = $(this).serializeArray();
 		$.ajax ({
 			type: 'POST',
-			url: '/dummy/createSprint',
+			url: '/data/createSprintData',
 			data: params,
 			success: function(data) {
 				data = JSON.parse(data);
@@ -145,7 +145,7 @@ $(document).ready(function() {
 						$('.modal-dialog .alert').addClass('hide');
 					}, 5000);
 				} else {
-					location.assign('/dummy/sprint/id?=' + data.id);
+					location.assign('/home/sprint?id=' + data.id);
 				}
 			},
 			error: function(xhr) {
@@ -164,12 +164,7 @@ $(document).ready(function() {
 		var repeatType = $(this).data('repeatType');
 		var id = $(this).data('id');
 		console.log('repeat type: ', repeatType);
-		if (RepeatType.isGhost(repeatType) || RepeatType.isContinuous(repeatType) || RepeatType.isTimed(repeatType) ||
-				RepeatType.isRepeat(repeatType) || RepeatType.isRemind(repeatType)) {
-			deleteGhost($element, id, true);
-		} else {
-			deleteSimpleEntry(id, $element);
-		}
+		deleteGhost($element, id, true);
 		return false;
 	});
 
@@ -187,14 +182,14 @@ $(document).ready(function() {
 });
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
-	var actionName = (actionType === 'participants') ? 'deleteSprintParticipant' : 'deleteSprintAdmin';
+	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
 	$.ajax ({
 		type: 'POST',
-		url: '/dummy/' + actionName,
+		url: '/data/' + actionName,
 		data: {
 			username: username,
-			virtualGroupId: $('#sprintVirtualGroupId').val(),
-			error: false
+			now: new Date().toUTCString(),
+			sprintId: $('#sprintIdField').val(),
 		},
 		success: function(data) {
 			data = JSON.parse(data);
@@ -230,6 +225,7 @@ function createAutocomplete(inputId, autocompleteId) {
 			},
 			success: function(data) {
 				data = JSON.parse(data);
+				console.log('data: ', data);
 				if (data.success) {
 					$( "#" + inputId ).autocomplete( "option", "source", data.usernameList);
 				}
@@ -242,25 +238,23 @@ function createAutocomplete(inputId, autocompleteId) {
 
 	$("#" + inputId).keypress(function (e) {
 		userName = $("#" + inputId).val();
-		var actionName = (inputId === 'sprint-participants')?'addSprintParticipants':'addSprintAdmins';
+		var actionName = (inputId === 'sprint-participants')?'addMemberToSprintData':'addAdminToSprintData';
 		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
 		var key = e.which;
 		if (key == 13) { // the enter key code
 			$.ajax ({
 				type: 'POST',
-				url: '/dummy/' + actionName,
+				url: '/data/' + actionName,
 				data: {
-					participantUsername: userName,
-					virtualGroupId: $('#sprintVirtualGroupId').val(),
-					error: false
+					username: userName,
+					sprintId: $('#sprintIdField').val()
 				},
 				success: function(data) {
 					data = JSON.parse(data);
 					if (data.success) {
+						console.log('added persons: ', data);
 						$("#" + inputId).val('');
-						$("#" + inputId + "-list").append('<li>' + userName + 
-								' (<i>invited</i>) <button type="button" class="' + deleteButtonClass + '" data-username="' + 
-								userName + '"><i class="fa fa-times-circle"></i></button></li>');
+						addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
 					} else {
 						$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
 						setInterval(function() {
@@ -350,21 +344,31 @@ function addEntryToSprint(inputElement, suffix) {
 			if (entries[2] != null)
 				autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
 			var addedEntry = entries[3];
-			if (addedEntry.comment === 'pinned') {
-				$('#sprint-tag-list').append('<li><div class="pinnedDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Pinned</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-						addedEntry.repeatType + '"> <i class="fa fa-times-circle"></i></button></li>');
-			} else if (addedEntry.comment === 'remind') {
-				$('#sprint-tag-list').append('<li><div class="remindDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Remind</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
-			} else if (addedEntry.comment === 'repeat') {
-				$('#sprint-tag-list').append('<li><div class="repeatDarkLabelImage"></div> ' + addedEntry.description + 
-						' (<i>Repeat</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-						addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
-			}
+			addTagsToList(addedEntry);
 		}
 	});
+}
+
+function addTagsToList(addedEntry) {
+	if (addedEntry.comment === 'pinned') {
+		$('#sprint-tag-list').append('<li><div class="pinnedDarkLabelImage"></div> ' + addedEntry.description + 
+				' (<i>Pinned</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+				addedEntry.repeatType + '"> <i class="fa fa-times-circle"></i></button></li>');
+	} else if (addedEntry.comment === 'remind') {
+		$('#sprint-tag-list').append('<li><div class="remindDarkLabelImage"></div> ' + addedEntry.description + 
+				' (<i>Remind</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+				addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
+	} else if (addedEntry.comment === 'repeat') {
+		$('#sprint-tag-list').append('<li><div class="repeatDarkLabelImage"></div> ' + addedEntry.description + 
+				' (<i>Repeat</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+				addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
+	}
+}
+
+function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
+	$element.append('<li>' + userName + 
+			' (<i>invited</i>) <button type="button" class="' + deleteButtonClass + '" data-username="' + 
+			userName + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
 function getMyThreads(params) {
@@ -389,13 +393,14 @@ function getMyThreads(params) {
 function createSprint() {
 	$.ajax ({
 		type: 'GET',
-		url: '/dummy/createNewBlankSprint',
+		url: '/data/createNewSprintData',
 		success: function(data) {
+			console.log('data: ', data);
 			data = JSON.parse(data);
-			if (data.success) {
+			if (!data.error) {
 				$('#sprintIdField').val(data.id);
-				$('#sprintVirtualUserId').val(data.userId);
-				$('#sprintVirtualGroupId').val(data.groupId);
+				$('#sprintVirtualUserId').val(data.virtualUserId);
+				$('#sprintVirtualGroupId').val(data.virtualGroupId);
 				$('#createSprintOverlay').modal({show: true});
 			} else {
 				showAlert("Unable to create new sprint!")
@@ -403,6 +408,122 @@ function createSprint() {
 		},
 		error: function(xhr) {
 			console.log('error: ', xhr);
+		}
+	});
+}
+
+function editSprint(sprintId) {
+	queueJSON("getting login info", "/data/fetchSprintData?callback=?",
+			{sprintId: sprintId},
+			function(data) {
+				console.log('data: ', data);
+				if (data.error) {
+					showAlert("No sprint found to edit!");
+				} else {
+					console.log(data.sprint);
+					$('#sprintIdField').val(data.sprint.id);
+					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
+					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
+					$('#sprint-title').val(data.sprint.name);
+					$('#sprint-duration').val(data.sprint.daysDuration);
+					$('#sprint-details').val(data.sprint.description);
+					//$('#sprint-title').val(sprint.name);
+					if (data.sprint.visibility === 'PRIVATE') {
+						$('#closed').prop('checked', true);
+					} else {
+						$('#open').prop('checked', true);
+					}
+					$.each(data.tags, function(index, value) {
+						addTagsToList(value);
+					});
+					$.each(data.participants, function(index, participant) {
+						if (!participant.virtual) {
+							addParticipantsAndAdminsToList($("#sprint-participants-list"), 
+									'deleteParticipants', participant.username);
+						}
+					});
+					$.each(data.admins, function(index, admin) {
+						if (!admin.virtual) {
+							addParticipantsAndAdminsToList($("#sprint-admins-list"), 
+									'deleteAdmins', admin.username);
+						}
+					});
+					$('#createSprintOverlay').modal({show: true});
+				}
+			});
+}
+
+function deleteSprint(sprintId) {
+	showYesNo('Delete this sprint?', function() {
+		$.ajax ({
+			type: 'GET',
+			url: '/data/deleteSprintData?sprintId=' + sprintId,
+			success: function(data) {
+				console.log('data: ', data);
+				data = JSON.parse(data);
+				if (!data.success) {
+					showAlert('Unable to delete sprint!');
+				} else {
+					location.assign('/home/feed');
+				}
+			},
+			error: function(xhr) {
+				console.log('error: ', xhr);
+				showAlert('Unable to delete sprint!');
+			}
+		});
+	});
+}
+
+function startSprint(sprintId) {
+	backgroundPostJSON("Starting Sprint", "/data/startSprintData", {
+		sprintId: sprintId,
+		now: new Date().toUTCString()
+	}, function(data) {
+		if (data.success) {
+			$('#start-sprint').removeClass('prompted-action').prop('disabled', true);
+			$('#stop-sprint').addClass(' prompted-action').prop('disabled', false);
+		} else {
+			showAlert("Unable to start sprint!")
+		}
+	});
+}
+
+function stopSprint(sprintId) {
+	backgroundPostJSON("Stopping Sprint", "/data/stopSprintData", {
+		sprintId: sprintId,
+		now: new Date().toUTCString()
+	}, function(data) {
+		if (data.success) {
+			$('#stop-sprint').removeClass('prompted-action').prop('disabled', true);
+			$('#start-sprint').addClass(' prompted-action').prop('disabled', false);
+		} else {
+			showAlert("Unable to stop sprint!")
+		}
+	});
+}
+
+function leaveSprint(sprintId) {
+	backgroundPostJSON("Leaving Sprint", "/data/leaveSprintData", {
+		sprintId: sprintId,
+		now: (new Date()).toUTCString()
+	}, function(data) {
+		if (data.success) {
+			location.reload();
+		} else {
+			showAlert("Unable to leave sprint!")
+		}
+	});
+}
+
+function joinSprint(sprintId) {
+	backgroundPostJSON("Leaving Sprint", "/data/joinSprintData", {
+		sprintId: sprintId
+	}, function(data) {
+		if (data.success) {
+			location.reload();
+		} else {
+			showAlert("Unable to join sprint!")
 		}
 	});
 }

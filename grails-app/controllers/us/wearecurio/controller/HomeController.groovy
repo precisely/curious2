@@ -962,15 +962,39 @@ class HomeController extends DataController {
 					property("id")
 				}
 				or {
+					ilike("username", "%${params.searchString}%")
 					ilike("first", "%${params.searchString}%")
 					ilike("last", "%${params.searchString}%")
 					ilike("email", "%${params.searchString}%")
-					ilike("username", "%${params.searchString}%")
 				}
+				maxResults(10)
 			}
-			renderJSONGet([usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
+			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
 		} else {
 			renderJSONGet([success: false])
 		}
+	}
+
+	def sprint() {
+		log.debug "id: $params.id"
+		Sprint sprintInstance = params.id ? Sprint.get(params.id) : null
+		if (!sprintInstance) {
+			debug "SprintId not found: " + params.id
+			flash.message = "That sprint does not exist."
+			redirect(url:toUrl(action:'feed'))
+			return
+		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && !sprintInstance.hasMember(sessionUser().id)) {
+			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
+			flash.message = "You are not permitted to see that sprint."
+			redirect(url:toUrl(action:'feed'))
+			return
+		}
+
+		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)
+		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> participants = memberReaders.collect {User.get(it.memberId)}
+
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, tags: tags, 
+			participants : participants , user: sessionUser()])
 	}
 }
