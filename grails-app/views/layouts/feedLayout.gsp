@@ -48,13 +48,13 @@
 					</li>
 					<li id="sprints">
 						<a href="#">SPRINTS</a>
-						<button id="createSprint" onclick="createSprint()">
+						<button class="sprint-button" onclick="createSprint()">
 							<span class="create-sprint-label">CREATE</span>
 						</button>
 						<g:if test="${sprintList}">
 							<ul>
 								<g:each in="${sprintList}" var="sprint">
-									<li><a href="/dummy/sprint?id=${sprint.id}">${sprint.title}</a> </li>
+									<li><a href="/home/sprint?id=${sprint.id}">${sprint.title}</a> </li>
 								</g:each>
 							</ul>
 						</g:if>

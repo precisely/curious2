@@ -1,24 +1,28 @@
 package us.wearecurio.controller.integration
 
 import grails.test.*
-
 import grails.converters.*
 import us.wearecurio.controller.DataController;
 import us.wearecurio.model.*
 import grails.util.GrailsUtil
 import us.wearecurio.utility.Utils
+
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
+
 import us.wearecurio.model.User
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
-
 import static org.junit.Assert.*
+
+import org.joda.time.DateTime
 import org.junit.*
+
 import grails.test.mixin.*
 
 class DataControllerTests extends CuriousControllerTestCase {
@@ -762,5 +766,627 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params['message'] = 'dummyMessage'
 		controller.createCommentData()
 		controller.response.text == "success"
+	}
+
+	Sprint dummySprint
+	User dummyUser2
+	void mockSprintData() {
+		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
+		
+		Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", first: "a", password: "y"]
+		dummyUser2 = User.create(params)
+
+		Utils.save(dummyUser2, true)
+	}
+
+	@Test
+	void "Test createSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = 0
+		controller.params["name"] = "Sprint1"
+		controller.params["description"] = "Description1"
+		controller.params["durationDays"] = 6
+		controller.createSprintData()
+		assert controller.response.json.error == true
+	}
+
+	@Test
+	void "Test createSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = null
+		controller.params["name"] = "Sprint1"
+		controller.params["description"] = "Description1"
+		controller.params["durationDays"] = 6
+		controller.createSprintData()
+		assert controller.response.json.error == true
+	}
+
+	@Test
+	void "Test createSprintData when correct sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = dummySprint.id
+		controller.params["name"] = "Sprint1"
+		controller.params["description"] = "Description1"
+		controller.params["durationDays"] = 6
+		
+		controller.createSprintData()
+		assert controller.response.json.success == true
+		assert controller.response.json.id == dummySprint.id
+		assert dummySprint.name == "Sprint1"
+	}
+
+	@Test
+	void "test deleteSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = 0
+		
+		controller.deleteSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "test deleteSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = null
+		
+		controller.deleteSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "test deleteSprintData when Non admin user tries to delete the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		controller.deleteSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "test deleteSprintData when admin tries to delete the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		controller.deleteSprintData()
+		assert controller.response.json.success == true
+	}
+
+	@Test
+	void "Test fetchSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = 0
+		
+		controller.fetchSprintData()
+		assert controller.response.json.error == true
+	}
+
+	@Test
+	void "Test fetchSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["sprintId"] = null
+		
+		controller.fetchSprintData()
+		assert controller.response.json.error == true
+	}
+
+	@Test
+	void "Test fetchSprintData when non admin user tries to fetch data"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		controller.fetchSprintData()
+		assert controller.response.json.error == true
+	}
+
+	@Test
+	void "Test fetchSprintData when admin tries to fetch data"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		dummySprint.addMember(dummyUser2.getId())
+		controller.fetchSprintData()
+		assert controller.response.json.sprint.id == dummySprint.id
+		assert controller.response.json.participants.size() == 3	//Including virtual user
+	}
+
+	@Test
+	void "Test startSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.startSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+	}
+
+	@Test
+	void "Test startSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = null
+		
+		controller.startSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+	}
+
+	@Test
+	void "Test startSprintData when non member user tries to start the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.startSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+	}
+
+	@Test
+	void startSprint() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		
+		controller.startSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasStarted(user.getId(), new Date()) == true
+	}
+
+	@Test
+	void "Test stopSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.stopSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+	}
+
+	@Test
+	void "Test stopSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = null
+		
+		controller.stopSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+	}
+
+	@Test
+	void "Test stopSprintData when non member user tries to stop the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.stopSprintData()
+		assert controller.response.json.success == false
+		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+	}
+
+	@Test
+	void "Test stopSprintData when a member has not started the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		
+		controller.stopSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void stopSprintData() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		
+		controller.startSprintData()
+		controller.response.reset()
+		controller.params["now"] = "Wed, 25 Feb 2015 11:44:07 GMT"
+		
+		controller.stopSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasEnded(user.getId(), new Date()) == true
+	}
+
+	@Test
+	void "Test leaveSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.leaveSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test leaveSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = null
+		
+		controller.leaveSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test leaveSprintData when non member user tries to leave the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.leaveSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test leaveSprintData when a member leaves the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.leaveSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasMember(user.getId()) == false
+	}
+
+	@Test
+	void "Test joinSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.joinSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test joinSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = null
+		
+		controller.joinSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test joinSprintData when member user tries to join the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.joinSprintData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test joinSprintData when a non member joins the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.joinSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasMember(dummyUser2.getId()) == true
+	}
+
+	@Test
+	void "Test addMemberToSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = 0
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not add participant!"
+		assert dummySprint.hasMember(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addMemberToSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = null
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not add participant!"
+		assert dummySprint.hasMember(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addMemberToSprintData when user name is null"() {
+		mockSprintData()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert dummySprint.hasMember(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addMemberToSprintData when user name is wrong"() {
+		mockSprintData()
+		controller.params["username"] = "z"
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert dummySprint.hasMember(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addMemberToSprintData when a non admin performs the action"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "you don'thave permission to add members to this sprint!"
+		assert dummySprint.hasMember(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addMemberToSprintData"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.getId()
+		
+		controller.addMemberToSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasMember(dummyUser2.getId()) == true
+	}
+
+	@Test
+	void "Test addAdminToSprintData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = 0
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not add admin!"
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addAdminToSprintData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = null
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not add admin!"
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addAdminToSprintData when user name is null"() {
+		mockSprintData()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addAdminToSprintData when user name is wrong"() {
+		mockSprintData()
+		controller.params["username"] = "z"
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addAdminToSprintData when a non admin performs the action"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "you don'thave permission to add admins to this sprint!"
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
+	}
+
+	@Test
+	void "Test addAdminToSprintData"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.getId()
+		
+		controller.addAdminToSprintData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasAdmin(dummyUser2.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = 0
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert dummySprint.hasMember(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = null
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert dummySprint.hasMember(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when user name is null"() {
+		mockSprintData()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert dummySprint.hasMember(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when user name is wrong"() {
+		mockSprintData()
+		controller.params["username"] = "z"
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete participant!"
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when a non admin performs the action"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "you don'thave permission to delete members of this sprint!"
+		assert dummySprint.hasMember(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintMemberData when a non member is being deleted"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No such Member to delete from this sprint!"
+	}
+
+	@Test
+	void "Test deleteSprintMemberData"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = dummySprint.getId()
+		
+		controller.deleteSprintMemberData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasMember(user.getId()) == false
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = 0
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert dummySprint.hasAdmin(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when null sprintId is passed"() {
+		mockSprintData()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = null
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert dummySprint.hasAdmin(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when user name is null"() {
+		mockSprintData()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert dummySprint.hasAdmin(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when user name is wrong"() {
+		mockSprintData()
+		controller.params["username"] = "z"
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert dummySprint.hasAdmin(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when a non admin performs the action"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "you don'thave permission to delete admins of this sprint!"
+		assert dummySprint.hasAdmin(user.getId()) == true
+	}
+
+	@Test
+	void "Test deleteSprintAdminData when a non admin is being deleted"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = dummyUser2.username
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.error == true
+		assert controller.response.json.errorMessage == "No such Admin to delete from this sprint!"
+	}
+
+	def sessionFactory
+
+	@Test
+	void "Test deleteSprintAdminData"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["username"] = user.username
+		controller.params["sprintId"] = dummySprint.getId()
+		
+		controller.deleteSprintAdminData()
+		assert controller.response.json.success == true
+		assert dummySprint.hasAdmin(user.getId()) == false
 	}
 }

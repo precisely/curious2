@@ -1,3 +1,4 @@
+<%@ page import="us.wearecurio.model.Model.Visibility" %>
 <div class="modal fade" id="createSprintOverlay">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -13,13 +14,13 @@
 					<div class="row">
 						<div class="col-md-6">
 							<label for="sprint-title">TITLE</label>
-							<input type="text" name="title" required placeholder="Enter title here..." id="sprint-title">
+							<input type="text" name="name" required placeholder="Enter title here..." id="sprint-title">
 						</div>
 						<div class="col-md-6">
 							<label class="">PRIVACY</label>
-							<input type="radio" class="radio-open" name="visibility" id="open" value="open" checked>
+							<input type="radio" class="radio-open" name="visibility" id="open" value="${Visibility.PUBLIC}" checked>
 							<label for="open" class="radio-label">Open</label>
-							<input type="radio" class="radio-closed" name="visibility" id="closed" value="closed">
+							<input type="radio" class="radio-closed" name="visibility" id="closed" value="${Visibility.PRIVATE}">
 							<label for="closed" class="radio-label">Closed</label>
 						</div>
 					</div>
@@ -30,11 +31,11 @@
 						</div>
 						<div class="col-md-6">
 							<label for="sprint-duration">DURATION</label>
-							<input type="text" name="duration" required placeholder="Select Duration" id="sprint-duration">
+							<input type="text" name="daysDuration" placeholder="Select Duration" id="sprint-duration">
 						</div>
 					</div>
 					<label for="sprint-details">DETAILS</label>
-					<textarea rows="4" name="details" cols="74" required id="sprint-details" placeholder="Enter details here..."></textarea>
+					<textarea rows="4" name="description" cols="74" required id="sprint-details" placeholder="Enter details here..."></textarea>
 
 					<label class="inline-labels" for="sprint-tags">TAGS</label>
 					<div class="inline-labels" id="autocomplete1"></div>
@@ -48,29 +49,7 @@
 							onclick="addEntryToSprint('sprint-tags', 'remind')"></span>
 					</div>
 					<ul id="sprint-tag-list">
-						<g:if test="${tagList}">
-							<g:each in="${tagList}" var="tag">
-								<li>
-									<g:if test="${tag.repeatType.equals('repeat')}">
-										<div class="repeatDarkLabelImage"></div>
-										${tag.description} (<i>Repeat</i>)
-									</g:if> 
-									<g:elseif test="${tag.repeatType.equals('remind')}">
-										<div class="remindDarkLabelImage"></div>
-										${tag.description} (<i>Remind</i>)
-									</g:elseif>
-									<g:elseif test="${tag.repeatType.equals('pinned')}">
-										<div class="pinnedDarkLabelImage"></div>
-										${tag.description} (<i>Pinned</i>) 
-									</g:elseif> 
-									<button type="button" class="deleteSprintEntry" data-id="${tag.id}" data-repeat-type="${tag.repeatType}">
-										<i class="fa fa-times-circle"></i>
-									</button>
-								</li>
-							</g:each>
-						</g:if>
 					</ul>
-						
 					<div class="row">
 						<div class="col-md-6">
 							<label class="inline-labels" for="sprint-participants">PARTICIPANTS</label>

@@ -131,6 +131,8 @@ body {
 	text-align:left;
 	line-height: normal;
 	color: rgb(0, 0, 0);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 input {
 	line-height: normal;
@@ -1743,10 +1745,13 @@ li.entry.plain {
 	color: #f14a42
 }
 
-body.track-page ol#entry0 li button.save {
+body.track-page ol#entry0 li button.save, .sprint .prompted-action {
 	background-color: #c04f7f;
-	position: absolute;
 	color: #ffffff;
+}
+
+body.track-page ol#entry0 li button.save {
+	position: absolute;
 	right: 15px;
 	top: 15px;
 }
@@ -1846,8 +1851,20 @@ div.graph-header-container .red-header {
 .sprint {
 	padding-top: 50px;
 	color: #5d5d5d;
-	margin-right: 100px;
+	margin-right: 20px;
 	margin-bottom: 20px;
+}
+
+.sprint button {
+	margin: 0px 10px 10px 10px;
+}
+
+.sprint .prompted-action {
+	border-color: white;
+}
+
+.sprint .sprint-content {
+	border-right: 1px solid #eee;
 }
 
 .sprint .participantsAvatar {
@@ -2106,7 +2123,7 @@ div.graph-header-container .red-header {
 	background-color: #AB4470;
 }
 
-#createSprint {
+.sprint-button {
 	font-size: 10px;
 	height: 22px;
 	width: 55px;
@@ -2118,16 +2135,16 @@ div.graph-header-container .red-header {
 	vertical-align: bottom;
 }
 
-#createSprint .create-sprint-label {
+.sprint-button .create-sprint-label {
 	color: #656565;
 	font-weight: 600;
 }
-#createSprint:hover {
+.sprint-button:hover {
 	-moz-box-shadow: 2px 2px 2px #dddddd;
 	-webkit-box-shadow: 2px 2px 2px #dddddd;
 	box-shadow: 2px 2px 2px #dddddd;
 }
-#createSprint:active {
+.sprint-button:active {
 	background-color: #dddddd;
 }
 
@@ -3403,7 +3420,7 @@ body .modal-footer a .navigate-carousel-right {
 	font-weight: 500;
 }
 
-.feed .deleteSprintEntry , .feed .deleteParticipants, .feed .deleteSprintEntry {
+.feed .deleteSprintEntry , .feed .deleteParticipants, .feed .deleteAdmins, .feed .deleteSprintEntry {
 	background-color: transparent;
 	margin-left: 5px;
 }
@@ -3496,4 +3513,17 @@ body .modal-footer a .navigate-carousel-right {
 	color: black;
 	display: block;
 	width: 160px;
+}
+
+#sprint-participants-list, #sprint-admins-list {
+	max-height: 70px;
+	overflow: scroll;
+}
+
+.inline-block {
+	display: inline-block;
+}
+
+.sprint .inline-block p {
+	text-align: center;
 }

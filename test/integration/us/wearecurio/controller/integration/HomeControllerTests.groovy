@@ -574,4 +574,58 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.response.text.contains("<div class=\"item active\">")
 		assert !controller.response.text.contains("qcode3")
 	}
+
+	@Test 
+	void "Test sprint when wrong id is passed"() {
+		HomeController controller = new HomeController()
+		
+		Sprint dummySprint = Sprint.create(user, "1", Model.Visibility.PRIVATE)
+		controller.params["id"] = 0
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("That sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint when null id is passed"() {
+		HomeController controller = new HomeController()
+		
+		Sprint dummySprint = Sprint.create(user, "1", Model.Visibility.PRIVATE)
+		controller.params["id"] = null
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("That sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint when a non member tries to open the private sprint"() {
+		HomeController controller = new HomeController()
+		
+		Sprint dummySprint = Sprint.create(user, "1", Model.Visibility.PRIVATE)
+		controller.params["id"] = dummySprint.id
+		controller.session.userId = user2.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("You are not permitted to see that sprint.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint"() {
+		HomeController controller = new HomeController()
+		
+		Sprint dummySprint = Sprint.create(user, "1", Model.Visibility.PRIVATE)
+		controller.params["id"] = dummySprint.id
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+
+		def modelAndView = controller.modelAndView
+		assert modelAndView.model['participants'][1].id == user.getId()
+		assert modelAndView.getViewName().equals("/home/sprint")
+	}
 }
