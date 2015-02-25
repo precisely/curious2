@@ -403,7 +403,7 @@ function createSprint() {
 				$('#sprintVirtualGroupId').val(data.virtualGroupId);
 				$('#createSprintOverlay').modal({show: true});
 			} else {
-				showAlert("Unable to create new sprint!")
+				showAlert("Unable to create new sprint!");
 			}
 		},
 		error: function(xhr) {
@@ -484,7 +484,7 @@ function startSprint(sprintId) {
 			$('#start-sprint').removeClass('prompted-action').prop('disabled', true);
 			$('#stop-sprint').addClass(' prompted-action').prop('disabled', false);
 		} else {
-			showAlert("Unable to start sprint!")
+			showAlert("Unable to start sprint!");
 		}
 	});
 }
@@ -498,7 +498,7 @@ function stopSprint(sprintId) {
 			$('#stop-sprint').removeClass('prompted-action').prop('disabled', true);
 			$('#start-sprint').addClass(' prompted-action').prop('disabled', false);
 		} else {
-			showAlert("Unable to stop sprint!")
+			showAlert("Unable to stop sprint!");
 		}
 	});
 }
@@ -511,7 +511,7 @@ function leaveSprint(sprintId) {
 		if (data.success) {
 			location.reload();
 		} else {
-			showAlert("Unable to leave sprint!")
+			showAlert("Unable to leave sprint!");
 		}
 	});
 }
@@ -523,7 +523,7 @@ function joinSprint(sprintId) {
 		if (data.success) {
 			location.reload();
 		} else {
-			showAlert("Unable to join sprint!")
+			showAlert("Unable to join sprint!");
 		}
 	});
 }
