@@ -4,7 +4,7 @@ class UrlMappings {
 
 	static mappings = {
 
-		"/home/graph/signals/$description1/$description2" {
+		"/home/graph/signals/$id/$description1/$description2" {
 			controller = "home"
 			action = "graphSignals"
 		}

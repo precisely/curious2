@@ -3,7 +3,7 @@ package us.wearecurio.marshaller
 import grails.converters.JSON
 import us.wearecurio.model.AnalyticsCorrelationInterval
 
-class AnalyticsCorrelationMarshaller {
+class AnalyticsCorrelationIntervalMarshaller {
 	void register() {
 		JSON.registerObjectMarshaller( AnalyticsCorrelationInterval ) { AnalyticsCorrelationInterval correlationInterval ->
 			return [

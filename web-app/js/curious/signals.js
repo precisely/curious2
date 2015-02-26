@@ -230,7 +230,7 @@ $(function() {
 
 	var viewGraph = function(correlation_id) {
 		var c = C.correlationIndex[correlation_id];
-		var new_uri = '/home/graph/signals/' + c.description1 + '/' + c.description2;
+		var new_uri = '/home/graph/signals/' + c.id + '/' + c.description1 + '/' + c.description2;
 		window.location = new_uri;
 	};
 
@@ -269,8 +269,8 @@ $(function() {
 
 	// Load data.
 
-	var correlation_template = $('#correlation-template').html();
-	Mustache.parse(correlation_template);
+	var correlationTemplate = $('#correlation-template').html();
+	Mustache.parse(correlationTemplate);
 
 	var in_english = {
 		triggered: 'triggered by',
@@ -298,7 +298,7 @@ $(function() {
 			}
 		}
 
-		var new_row = Mustache.render(correlation_template,
+		var new_row = Mustache.render(correlationTemplate,
 			{
 				id: id,
 				type: type,
@@ -486,7 +486,6 @@ $(function() {
 			for (var i=0; i < data.length; i++) {
 				// Aliases for readability.
 				var id = data[i].id;
-				log('processSearchResults id:', id);
 				var description1 = data[i].description1;
 				var description2 = data[i].description2;
 				var saved = data[i].saved;
@@ -535,7 +534,7 @@ $(function() {
 		};
 	};	 // processSearchResults
 
-	search = function(afterSuccess, q, pageNumber, filter, order1, order2) {
+	var search = function(afterSuccess, q, pageNumber, filter, order1, order2) {
 		var url = '/correlation/search';
 		log('search more data via AJAX', url);
 		var searchId = getSearchId(q)
@@ -594,4 +593,5 @@ $(function() {
 	initSignalFilter();
 	initSortOrder();
 	performSearch();
+
 });

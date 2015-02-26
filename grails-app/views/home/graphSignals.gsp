@@ -88,11 +88,11 @@ $(function() {
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<div id="interval-nav">
 			&nbsp;
-			<div id="interval-nav-content" style="display: none">
+			<div id="interval-nav-content" style="display: inline">
 				Interval:
 				<select id="interval-select">
 					<script id="interval-option-template" type="x-tmpl-mustache">
-						<option value="{{id}}">{{start_date}} - {{stop_date}}</option>
+						<option value="{{id}}" startMs="{{startMs}}" stopMs="{{stopMs}}">{{start}} - {{stop}}</option>
 					</script>
 				</select>
 			</div>
@@ -180,8 +180,10 @@ $(function() {
 		});
 	</script>
 
+	<input id="correlationId" type="text" name="correlationId" value="<%= params.id %>" class="nodisplay">
 	<input id="description1" type="text" name="description1" value="<%= params.description1 %>" class="nodisplay">
 	<input id="description2" type="text" name="description1" value="<%= params.description2 %>" class="nodisplay">
+	<script src="/js/mustache.js"></script>
 	<script src="/js/curious/graphSignals.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ import grails.converters.JSON
 
 class CorrelationIntervalController {
 
-	static allowedMethods = [index: "GET"]
+	static allowedMethods = [index: "POST"]
 	def securityService
 
 	def index() {
@@ -14,9 +14,9 @@ class CorrelationIntervalController {
 			renderNotLoggedIn()
 			return
 		}
-		def correlationIntervals = AnalyticsCorrelationInterval.userCorrelationIntervals(currentUser.id.toLong())
+		def correlationIntervals = AnalyticsCorrelationInterval.list(params.id.toLong())
 		response.status = correlationIntervals ? 200 : 500
-		render correlationIntervals as JSON
+		render correlationIntervals.collect { it.asJson() } as JSON
 	}
 
 	private isOwner(id) {

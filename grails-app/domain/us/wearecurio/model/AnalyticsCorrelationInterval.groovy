@@ -26,6 +26,17 @@ class AnalyticsCorrelationInterval {
 	Long stopMs
 
 	static def userCorrelationIntervals(Long userId) {
-		AnalyticsTask.executeQuery("select aci.id from AnalyticsCorrelationInterval aci where aci.userId = ? order by aci.id", [userId])
+		AnalyticsCorrelationInterval.executeQuery("select aci.id from AnalyticsCorrelationInterval aci where aci.userId = ? order by aci.id", [userId])
+	}
+
+	static def list(Long correlationId) {
+		AnalyticsCorrelationInterval.findAllByCorrelationId(correlationId)
+	}
+
+	def asJson () {
+		[ id: id,
+			userId: userId,
+			startMs: startMs,
+			stopMs: stopMs ]
 	}
 }

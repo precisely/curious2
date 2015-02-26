@@ -45,12 +45,12 @@ String.prototype.endsWith = function (str) { return this.length >= str.length &&
  * Usage:
  * 
  * function Person(age) {
- * 	this.age = age;
+ *	this.age = age;
  * }
  * 
  * function Fireman(age, station) {
- * 	Person.call(this, age);
- * 	this.station = station;
+ *	Person.call(this, age);
+ *	this.station = station;
  * }
  * inherit(Fireman, Person);
  * 
