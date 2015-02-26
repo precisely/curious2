@@ -90,7 +90,7 @@ $(function() {
 			&nbsp;
 			<div id="interval-nav-content" style="display: inline">
 				Interval:
-				<select id="interval-select">
+				<select id="interval-select" style="display: none">
 					<script id="interval-option-template" type="x-tmpl-mustache">
 						<option value="{{id}}" startMs="{{startMs}}" stopMs="{{stopMs}}">{{start}} - {{stop}}</option>
 					</script>

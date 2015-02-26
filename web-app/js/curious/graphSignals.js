@@ -95,6 +95,7 @@ $(function() {
 			$('#interval-nav-content').hide();
 		} else {
 			$('#interval-nav-content').show();
+			$('#interval-selec:').show();
 			appendOptions(data);
 		}
 	};
