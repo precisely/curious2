@@ -201,4 +201,21 @@ class AnalyticsCorrelation {
 		resultList = criteria.list()
 		resultList
 	}
+
+	def asJson() {
+		[ id: id,
+			series1Type: series1Type,
+			series2Type: series2Type,
+			series1Id: series1Id,
+			series2Id: series2Id,
+			description1: description1(),
+			description2: description2(),
+			valueType: valueType,
+			value: value,
+			signalLevel: signalLevel,
+			overlapn: overlapN,
+			saved: savedAsLong(),
+			noise: noiseAsLong(),
+			viewed: viewedAsLong()]
+	}
 }

@@ -25,7 +25,7 @@ class CorrelationController {
 			params.page = 1
 		}
 		def correlations = AnalyticsCorrelation.search(currentUser.id, params.filter, params.order1, params.order2, params.q, params.int('page'))
-		render correlations as JSON
+		render correlations.collect { it.asJson() } as JSON
 	}
 
 	def updateSignalLevel() {
