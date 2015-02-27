@@ -119,6 +119,8 @@ class SessionController {
 		if (userIdStr == "undefined") {
 			return sessionUser()
 		}
+		if (!userIdStr)
+			return null
 		return userFromId(Long.parseLong(userIdStr))
 	}
 

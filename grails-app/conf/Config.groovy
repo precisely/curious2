@@ -156,6 +156,8 @@ environments {
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
+		elasticsearch.client.mode = 'local'
+		
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
@@ -198,6 +200,8 @@ environments {
 		}
     }
     qa {
+		elasticsearch.client.mode = 'local'
+		
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
@@ -257,6 +261,8 @@ environments {
 		}
     }
     production {
+		elasticsearch.client.mode = 'local'
+		
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
