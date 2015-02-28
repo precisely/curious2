@@ -121,7 +121,13 @@ class SessionController {
 		}
 		if (!userIdStr)
 			return null
-		return userFromId(Long.parseLong(userIdStr))
+		try {
+			return userFromId(Long.parseLong(userIdStr))
+		} catch (NumberFormatException e) {
+			log.error("userIdStr passed in has a format exception ")
+			e.printStackTrace()
+			return null
+		}
 	}
 
 	def static parseLong(numStr) {
