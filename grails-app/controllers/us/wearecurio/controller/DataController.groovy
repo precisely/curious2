@@ -1299,7 +1299,7 @@ class DataController extends LoginController {
 		return
 	}
 
-	def createSprintData() {
+	def updateSprintData() {
 		log.debug "parameters recieved to save sprint: ${params}"
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 
@@ -1325,13 +1325,9 @@ class DataController extends LoginController {
 
 	def deleteSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
-		
-		if (!sprintInstance) {
-			renderJSONGet([success: false])
-			return
-		}
 		User currentUser = sessionUser()
-		if (!sprintInstance.hasAdmin(currentUser.id)) {
+		
+		if (!sprintInstance || !sprintInstance.hasAdmin(currentUser.id)) {
 			renderJSONGet([success: false])
 			return
 		}
@@ -1344,10 +1340,7 @@ class DataController extends LoginController {
 		log.debug "DataController.editSprintData()"
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance) {
-			renderJSONGet([error: true])
-			return
-		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
+		if (!sprintInstance || !sprintInstance.hasAdmin(sessionUser().id)) {
 			renderJSONGet([error: true])
 			return
 		}
@@ -1364,10 +1357,7 @@ class DataController extends LoginController {
 	def startSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance) {
-			renderJSONPost([success: false])
-			return
-		} else if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
 			renderJSONPost([success: false])
 			return
 		}
@@ -1389,10 +1379,7 @@ class DataController extends LoginController {
 	def stopSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance) {
-			renderJSONPost([success: false])
-			return
-		} else if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
 			renderJSONPost([success: false])
 			return
 		}
@@ -1413,14 +1400,9 @@ class DataController extends LoginController {
 	
 	def leaveSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
-		
-		if (!sprintInstance) {
-			renderJSONPost([success: false])
-			return
-		}
-
 		User currentUser = sessionUser()
-		if (!sprintInstance.hasMember(currentUser.id)) {
+		
+		if (!sprintInstance || !sprintInstance.hasMember(currentUser.id)) {
 			renderJSONPost([success: false])
 			return
 		}
@@ -1440,14 +1422,9 @@ class DataController extends LoginController {
 	
 	def joinSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
-		
-		if (!sprintInstance) {
-			renderJSONPost([success: false])
-			return
-		}
-
 		User currentUser = sessionUser()
-		if (sprintInstance.hasMember(currentUser.id)) {
+
+		if (!sprintInstance || sprintInstance.hasMember(currentUser.id)) {
 			renderJSONPost([success: false])
 			return
 		}
@@ -1461,16 +1438,16 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: "Can not add participant!"])
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.participant.failed")])
 			return
 		} else if (!memberInstance) {
-			renderJSONPost([error: true, errorMessage: "No user with such username found!"])
+			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
 			return
 		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: "you don'thave permission to add members to this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.member.permission.denied")])
 			return
 		} else if (sprintInstance.hasMember(memberInstance.id)) {
-			renderJSONPost([error: true, errorMessage: "User already added as member!"])
+			renderJSONPost([error: true, errorMessage: message(code: "sprint.member.already.added")])
 			return
 		}
 
@@ -1483,16 +1460,16 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: "Can not add admin!"])
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.failed")])
 			return
 		} else if (!adminInstance) {
-			renderJSONPost([error: true, errorMessage: "No user with such username found!"])
+			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
 			return
 		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: "you don'thave permission to add admins to this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.permission.denied")])
 			return
 		} else if (sprintInstance.hasAdmin(adminInstance.id)) {
-			renderJSONPost([error: true, errorMessage: "User already added as admin!"])
+			renderJSONPost([error: true, errorMessage: message(code: "sprint.admin.already.added")])
 			return
 		}
 
@@ -1505,13 +1482,13 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
 		if (!sprintInstance || !memberInstance) {
-			renderJSONPost([error: true, errorMessage: "Can not delete participant!"])
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.participant.failed")])
 			return
 		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: "you don'thave permission to delete members of this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.member.permission.denied")])
 			return
 		} else if (!sprintInstance.hasMember(memberInstance.id)) {
-			renderJSONPost([error: true, errorMessage: "No such Member to delete from this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.member.to.delete")])
 			return
 		}
 
@@ -1532,13 +1509,13 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
 		if (!sprintInstance || !adminInstance) {
-			renderJSONPost([error: true, errorMessage: "Can not delete Admin!"])
+			renderJSONPost([error: true, errorMessage:  message(code: "delete.sprint.admin.failed")])
 			return
 		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: "you don'thave permission to delete admins of this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.admin.permission.denied")])
 			return
 		} else if (!sprintInstance.hasAdmin(adminInstance.id)) {
-			renderJSONPost([error: true, errorMessage: "No such Admin to delete from this sprint!"])
+			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.admin.to.delete")])
 			return
 		}
 
