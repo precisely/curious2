@@ -134,7 +134,7 @@ $(document).ready(function() {
 		params  = $(this).serializeArray();
 		$.ajax ({
 			type: 'POST',
-			url: '/data/createSprintData',
+			url: '/data/updateSprintData',
 			data: params,
 			success: function(data) {
 				data = JSON.parse(data);
@@ -427,6 +427,7 @@ function editSprint(sprintId) {
 					$('#sprint-title').val(data.sprint.name);
 					$('#sprint-duration').val(data.sprint.daysDuration);
 					$('#sprint-details').val(data.sprint.description);
+					$('.submit-sprint').text('Update Sprint');
 					//$('#sprint-title').val(sprint.name);
 					if (data.sprint.visibility === 'PRIVATE') {
 						$('#closed').prop('checked', true);

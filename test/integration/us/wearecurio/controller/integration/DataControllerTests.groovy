@@ -780,36 +780,36 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test createSprintData when wrong sprintId is passed"() {
+	void "Test updateSprintData when wrong sprintId is passed"() {
 		mockSprintData()
 		controller.params["sprintId"] = 0
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
-		controller.createSprintData()
+		controller.updateSprintData()
 		assert controller.response.json.error == true
 	}
 
 	@Test
-	void "Test createSprintData when null sprintId is passed"() {
+	void "Test updateSprintData when null sprintId is passed"() {
 		mockSprintData()
 		controller.params["sprintId"] = null
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
-		controller.createSprintData()
+		controller.updateSprintData()
 		assert controller.response.json.error == true
 	}
 
 	@Test
-	void "Test createSprintData when correct sprintId is passed"() {
+	void "Test updateSprintData when correct sprintId is passed"() {
 		mockSprintData()
 		controller.params["sprintId"] = dummySprint.id
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
 		
-		controller.createSprintData()
+		controller.updateSprintData()
 		assert controller.response.json.success == true
 		assert controller.response.json.id == dummySprint.id
 		assert dummySprint.name == "Sprint1"
@@ -1085,7 +1085,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add participant!"
+		assert controller.response.json.errorMessage == "Can not add participant."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1097,7 +1097,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add participant!"
+		assert controller.response.json.errorMessage == "Can not add participant."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1108,7 +1108,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1120,7 +1120,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1133,7 +1133,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "you don'thave permission to add members to this sprint!"
+		assert controller.response.json.errorMessage == "You don't have permission to add members to this sprint."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1157,7 +1157,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add admin!"
+		assert controller.response.json.errorMessage == "Can not add admin."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1169,7 +1169,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add admin!"
+		assert controller.response.json.errorMessage == "Can not add admin."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1180,7 +1180,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1192,7 +1192,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No user with such username found!"
+		assert controller.response.json.errorMessage == "No user with such username found."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1205,7 +1205,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "you don'thave permission to add admins to this sprint!"
+		assert controller.response.json.errorMessage == "You don't have permission to add admins to this sprint."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1229,7 +1229,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert controller.response.json.errorMessage == "Can not delete participant."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1241,7 +1241,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert controller.response.json.errorMessage == "Can not delete participant."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1252,7 +1252,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert controller.response.json.errorMessage == "Can not delete participant."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1264,7 +1264,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant!"
+		assert controller.response.json.errorMessage == "Can not delete participant."
 	}
 
 	@Test
@@ -1276,7 +1276,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "you don'thave permission to delete members of this sprint!"
+		assert controller.response.json.errorMessage == "You don't have permission to delete members of this sprint."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1289,7 +1289,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No such Member to delete from this sprint!"
+		assert controller.response.json.errorMessage == "No such member to delete from this sprint."
 	}
 
 	@Test
@@ -1312,7 +1312,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert controller.response.json.errorMessage == "Can not delete admin."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1324,7 +1324,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert controller.response.json.errorMessage == "Can not delete admin."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1335,7 +1335,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert controller.response.json.errorMessage == "Can not delete admin."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1347,7 +1347,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete Admin!"
+		assert controller.response.json.errorMessage == "Can not delete admin."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1360,7 +1360,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "you don'thave permission to delete admins of this sprint!"
+		assert controller.response.json.errorMessage == "You don't have permission to delete admins of this sprint."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1373,7 +1373,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No such Admin to delete from this sprint!"
+		assert controller.response.json.errorMessage == "No such admin to delete from this sprint."
 	}
 
 	def sessionFactory
