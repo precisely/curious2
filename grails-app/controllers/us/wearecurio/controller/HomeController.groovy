@@ -2,6 +2,7 @@ package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
+import grails.gorm.DetachedCriteria
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
@@ -644,8 +645,8 @@ class HomeController extends DataController {
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 		
-		// This is dummy sprint data, similarly recent searches data also needs to be passed along.
-		List sprintList = [[title: 'Eat Halthier', id: 1], [title: 'Runners challange', id: 2], [title: 'Sprint3', id: 3]]
+		// This is to get list of sprints the user belongs to or is admin of
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
 		
 		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
@@ -983,18 +984,20 @@ class HomeController extends DataController {
 			flash.message = "That sprint does not exist."
 			redirect(url:toUrl(action:'feed'))
 			return
-		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && !sprintInstance.hasMember(sessionUser().id)) {
+		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
+						!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
 			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
 			flash.message = "You are not permitted to see that sprint."
 			redirect(url:toUrl(action:'feed'))
 			return
 		}
-
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+		
 		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)
 		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> participants = memberReaders.collect {User.get(it.memberId)}
 
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, tags: tags, 
-			participants : participants , user: sessionUser()])
+			participants : participants , user: sessionUser(), sprintList: sprintList])
 	}
 }

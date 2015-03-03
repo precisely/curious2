@@ -130,7 +130,6 @@ $(document).ready(function() {
 	});
 
 	$('#submitSprint').submit(function( event ) {
-		console.log('submitting');
 		params  = $(this).serializeArray();
 		$.ajax ({
 			type: 'POST',
@@ -146,6 +145,7 @@ $(document).ready(function() {
 					}, 5000);
 				} else {
 					location.assign('/home/sprint?id=' + data.id);
+					clearSprintFormData()
 				}
 			},
 			error: function(xhr) {
@@ -179,7 +179,29 @@ $(document).ready(function() {
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'admins');
 	});
+
+	$('#close-sprint-modal').click(function() {
+		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
+		clearSprintFormData();
+	});
 });
+
+function clearSprintFormData() {
+	var form = $('#submitSprint');
+	// iterate over all of the inputs for the form
+	// element that was passed in
+	$(':input', form).each(function() {
+		var type = this.type;
+		var tag = this.tagName.toLowerCase();
+		if (type == 'text' || tag == 'textarea') {
+			this.value = '';
+		} else if (type == 'checkbox' || type == 'radio') {
+			this.checked = false;
+		}
+	});
+	$('.modal ul li').html('');
+	$('.submit-sprint').text('Create Sprint');
+}
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
 	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
@@ -189,7 +211,7 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 		data: {
 			username: username,
 			now: new Date().toUTCString(),
-			sprintId: $('#sprintIdField').val(),
+			sprintId: $('#sprintIdField').val()
 		},
 		success: function(data) {
 			data = JSON.parse(data);
