@@ -1292,9 +1292,7 @@ class DataController extends LoginController {
 		
 		// Geting next id of user group to make fullName field in userGroup unique
 		long nextId = UserGroup.last() ? (UserGroup.last().id + 1) : 1
-		log.debug "parameters recieved to create sprint: ${Sprint.last()}"
-		println "parameters recieved to create sprint: ${nextId.toString()}"
-		Sprint sprintInstsnce = Sprint.create(currentUser, nextId.toString(), Model.Visibility.PRIVATE);
+		Sprint sprintInstsnce = Sprint.create(currentUser, "Sprint " + nextId, Model.Visibility.PRIVATE);
 		renderJSONGet(sprintInstsnce.getJSONDesc())
 		return
 	}

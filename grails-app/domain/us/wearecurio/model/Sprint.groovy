@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import grails.converters.*
+import grails.gorm.DetachedCriteria
 
 import org.apache.commons.logging.LogFactory
 
@@ -293,6 +294,32 @@ class Sprint {
 			/*created:this.created,
 			updated:this.updated*/
 		]
+	}
+	
+	static List<Sprint> getSprintListForUser(Long userId) {
+		if (!userId) {
+			return []
+		}
+		
+		List<Long> groupReaderList = new DetachedCriteria(GroupMemberReader).build {
+				projections {
+					property "groupId"
+				}
+				eq "memberId", userId
+			}.list()
+			
+		List<Long> groupWriterList = new DetachedCriteria(GroupMemberWriter).build {
+				projections {
+					property "groupId"
+				}
+				eq "memberId", userId
+			}.list()
+		
+		List<Sprint> sprintList = Sprint.withCriteria {
+			'in'("virtualGroupId", groupReaderList.plus(groupWriterList) ?: [0l]) // When using in clause GORM gives error on passing blank list
+		}
+		
+		return sprintList
 	}
 	
 	String toString() {

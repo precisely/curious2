@@ -57,7 +57,7 @@
 							<ul>
 								<g:each in="${sprintList}" var="sprint">
 									<li>
-										<a href="/home/sprint?id=${sprint.id}">${sprint.title}</a> 
+										<a href="/home/sprint?id=${sprint?.id}">${sprint?.name}</a> 
 									</li>
 								</g:each>
 							</ul>
