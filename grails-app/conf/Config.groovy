@@ -143,8 +143,8 @@ oauth {
 	providers {
 		// For development & test environment
 		jawboneup {
-			key = "60JJRGSRWds"
-			secret = "691aa8414e6731d7438f27295f172b50d4a74f2b"
+			key = "NnEi0A9cnvQ"
+			secret = "6731781ff5f8478129d2c0e7e724286c083a19ce"
 		}
 	}
 }
@@ -242,8 +242,8 @@ environments {
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
 				jawboneup {
-					key = "AxngCv4Khsg"
-					secret = "112ac88aadd5e3c19ae8ebe182849a3cf152eaf4"
+					key = "VUDxNbIdPYE"
+					secret = "23007f9c511576608bd991bdbad53b6703840ef9"
 				}
 			}
 		}
@@ -304,8 +304,8 @@ environments {
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}*/
 				jawboneup {
-					key = "LiO8QsxqKeY"
-					secret = "e7d665b549580d7a4611d36b09889dd69c4cdf38"
+					key = "zNg9SWw1G74"
+					secret = "55de868ea52b843d07400c3dc79f5e533a478006"
 				}
 			}
 		}
@@ -444,6 +444,7 @@ oauth {
 			successUri = "authentication/jawboneup/success"
 			failureUri = "authentication/jawboneup/fail"
 			scope = "basic_read mood_read move_read sleep_read meal_read weight_read"
+			signatureType = SignatureType.Header
 		}
 		moves {
 			api = MovesApi

@@ -475,8 +475,6 @@ class JawboneUpDataService extends DataService {
 	JSONElement getResponse(Token tokenInstance, String requestUrl, String method = "get", Map queryParams = [:],
 			Map requestHeaders = [:]) {
 		requestHeaders << ["Accept": "application/json"]
-		// TODO Remove this. This should work automatically.
-		requestHeaders << ["Authorization": "Bearer ${tokenInstance?.token}"]
 		super.getResponse(tokenInstance, requestUrl, method, queryParams, requestHeaders)
 	}
 

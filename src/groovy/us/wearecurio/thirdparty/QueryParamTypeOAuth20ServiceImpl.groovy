@@ -10,6 +10,7 @@ import org.scribe.model.OAuthConfig
 import org.scribe.model.OAuthConstants
 import org.scribe.model.OAuthRequest
 import org.scribe.model.Response
+import org.scribe.model.SignatureType
 import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
@@ -81,5 +82,22 @@ class QueryParamTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		}
 
 		return new Token(responseJSON["access_token"], "", responseBody)
+	}
+
+	/**
+	 * Some API like JawboneUP accepts access token in request header but
+	 * does not accepts in query parameter, while moves accepts access token in any form.
+	 * 
+	 * By default, the default implementation of OAuth20ServiceImpl in Grails oauth plugin
+	 * does not respects the signature type and always sets the access token in query parameter,
+	 * so overriding that method to add support for Header based authentication.
+	 */
+	@Override
+	void signRequest(Token accessToken, OAuthRequest request) {
+		if (config.signatureType == SignatureType.Header) {
+			request.addHeader(OAuthConstants.HEADER, "Bearer " + accessToken.getToken())
+		} else {
+			request.addQuerystringParameter(OAuthConstants.ACCESS_TOKEN, accessToken.getToken())
+		}
 	}
 }
