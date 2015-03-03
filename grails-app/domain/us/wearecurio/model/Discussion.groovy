@@ -68,7 +68,7 @@ class Discussion {
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
-		discussion.delete()
+		discussion.delete(flush: true)
 	}
 	
 	static boolean search(Long userId, String searchString) {

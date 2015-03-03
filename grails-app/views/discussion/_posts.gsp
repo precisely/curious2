@@ -16,7 +16,7 @@
 					</g:else>
 				</span>
 			</a>
-			<span class="posting-time" data-time="${discussPostInstance.getUpdated()}"></span>
+			<span class="posting-time" data-time="${discussPostInstance.getUpdated().time}"></span>
 			<div class="pull-right">
 				<g:if
 					test="${discussPostInstance.getAuthor().getUserId() == userId || isAdmin}">

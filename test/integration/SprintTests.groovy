@@ -266,4 +266,35 @@ class SprintTests extends CuriousTestCase {
 		
 		assert sprintStop && sprintDuration
 	}
+	
+	Sprint dummySprint1, dummySprint2, dummySprint3
+	void mockSprintData() {
+		dummySprint1 = Sprint.create(user, "demo1", Visibility.PRIVATE)
+		dummySprint2 = Sprint.create(user, "demo2", Visibility.PRIVATE)
+		dummySprint3 = Sprint.create(user, "demo3", Visibility.PRIVATE)
+		dummySprint1.addMember(user2.getId())
+		dummySprint2.addAdmin(user2.getId())
+	}
+	
+	@Test
+	void "Test getSprintListForUser when no userId is passed"() {
+		mockSprintData()
+		List<Sprint> sprintList = Sprint.getSprintListForUser(null)
+		assert sprintList == []
+	}
+	
+	@Test
+	void "Test getSprintListForUser when a user has no sprint"() {
+		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId())
+		assert sprintList == []
+	}
+	
+	@Test
+	void TestGetSprintListForUser() {
+		mockSprintData()
+		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId())
+		assert sprintList.size() == 2
+		assert sprintList[0].id == dummySprint1.id
+		assert sprintList[1].id == dummySprint2.id
+	}
 }

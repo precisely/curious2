@@ -31,7 +31,7 @@ class GroupMemberWriter {
 	
 	public static delete(GroupMemberWriter item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

@@ -642,7 +642,6 @@ class Entry implements Comparable {
 			amount.copyToMap(m)
 			e = createSingle(userId, m, entryGroup, stats)
 		}
-		
 		if (entryGroup != null) {
 			Utils.save(entryGroup, true)
 			return entryGroup.fetchSortedEntries().first() // return first entry in sorted list
@@ -997,9 +996,8 @@ class Entry implements Comparable {
 	protected static deleteGhostSingle(Entry entry, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
 		log.debug "Entry.deleteGhostSingle() entry:" + entry + " baseDate: " + baseDate + " allFuture: " + allFuture
 
-		if (entry.getRepeatType()?.isContinuous()) {
+		if (entry.getRepeatType()?.isContinuous() || User.get(entry.userId).virtual) {
 			Entry.deleteSingle(entry, stats)
-
 			return
 		}
 
@@ -1540,7 +1538,7 @@ class Entry implements Comparable {
 		def c = Entry.createCriteria()
 		
 		// look for latest matching entry prior to this one
-
+		
 		def results = c {
 			eq("userId", userId)
 			le("date", date)
@@ -1916,6 +1914,7 @@ class Entry implements Comparable {
 		m['comment'] = this.comment
 		m['repeatType'] = this.repeatType
 		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
+		log.debug "activateTemplateEntrySingle(), data: ${m['date']} and currentTimeZone Calculated: $currentTimeZone"
 		m['datePrecisionSecs'] = this.datePrecisionSecs
 		def retVal = Entry.createSingle(forUserId, m, creationMap.groupForDate(m['date']), stats)
 		

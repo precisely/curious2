@@ -205,6 +205,7 @@ $(document).ready(function() {
 							}, 5000);
 						} else {
 							$('#postList').append(data);
+							showCommentAgeFromDate();
 						}
 						App.comment.offset = App.comment.offset + 5;
 					}
@@ -318,30 +319,42 @@ $(document).ready(function() {
 				<div class="feed-item">
 					<div class="discussion">
 						<div class="discussion-topic">
-							<div class="row">
-								<div class="col-md-9 discussion-header">
-									<a href="#"><img class="avatar" src="/images/avatar.png"
-										alt="..."><span class="user-name"> ${discussionOwner}</span></a>
+							<div class="contents">
+								<div class="row">
+									<div class="col-md-9 discussion-header">
+										<a href="#">
+											<img class="avatar" src="/images/avatar.png" alt="...">
+											<span class="user-name"> ${discussionOwner}</span>
+										</a>
+									</div>
+									<div class="col-md-3 discussion-topic-span discussion-header">
+										<span class="posting-time" data-time="${discussionCreatedOn.time}"></span>
+										<g:if test="${isAdmin }">
+											<li class="dropdown">
+												<a href="#" data-toggle="dropdown">
+													<b class="caret"></b>
+												</a>
+												<ul class="dropdown-menu" role="menu">
+													<li>
+														<a href="#" class="delete-discussion" data-discussion-id="${discussionId}"> 
+															<img src="/images/x.png" width="auto" height="23">Delete
+														</a>
+													</li>
+												</ul>
+											</li>
+										</g:if>
+									</div>
 								</div>
-								<div class="col-md-3 discussion-topic-span discussion-header">
-									<span class="posting-time" data-time="${discussionCreatedOn}"></span>
-								</div>
-							</div>
-							<div class="row top-left-margin">
-								<span class="group">
+								<div class="group">
 									${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}
-								</span>
-							</div>
-							<div class="row title">
+								</div>
 								<a href="/home/discuss?discussionId=${discussionId }"> ${discussionTitle ?: '(No Title)' }</a>
-							</div>
-							<div class="row">
 								<p>
 									${firstPost?.message}
 								</p>
 							</div>
 							<hr>
-							<div class="row buttons">
+							<div class="buttons">
 								<button onclick="showShareDialog(${discussionId })">
 									<img src="/images/share.png" alt="share">
 								</button>
@@ -396,7 +409,7 @@ $(document).ready(function() {
 								</div>
 								<div class="row">
 									<a href="/home/discuss?discussionId=${discussionId }">
-										<span class="view-all">VIEW LESS COMMENTS (${totalPostCount})
+										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
 									</a>
 								</div>

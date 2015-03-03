@@ -5,7 +5,9 @@ import grails.converters.JSON
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.Date;
 
+import org.grails.databinding.SimpleMapDataBindingSource
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -13,9 +15,13 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 
 import us.wearecurio.model.Discussion
+
+import us.wearecurio.model.*
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.PlotData
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.Model
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.TagStats
@@ -34,6 +40,7 @@ import us.wearecurio.utility.Utils
 class DataController extends LoginController {
 
 	def tokenService
+	def grailsWebDataBinder
 
 	static debug(str) {
 		log.debug(str)
@@ -377,25 +384,37 @@ class DataController extends LoginController {
 
 		def entry = Entry.get(Long.parseLong(params.entryId))
 		def userId = entry.getUserId();
+
+		if (userId != sessionUser().getId()) {
+			User entryOwner = User.get(userId)
+			if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(userId)) {
+				renderJSONGet(deleteGhostEntryHelper(params))
+				return
+			} else {
+				renderStringGet('You do not have permission to delete this entry.')
+				return
+			}
+		} else {
+			renderJSONGet(deleteGhostEntryHelper(params))
+		}
+	}
+	
+	private def deleteGhostEntryHelper(Map params) {
+		def entry = Entry.get(Long.parseLong(params.entryId))
 		def allFuture = params.all?.equals("true") ? true : false
 
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
-		if (entry.getUserId() != sessionUser().getId()) {
-			renderStringGet('You do not have permission to delete this entry.')
-			return
-		} else {
 			EntryStats stats = new EntryStats()
 			Entry.deleteGhost(entry, stats, currentTime, allFuture)
 			def tagStats = stats.finish()
-			renderJSONGet([listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
+			return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
 				tagStats[0]?.getJSONDesc(),
-				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null])
-		}
-
+				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null]
 	}
+
 
 	def getListData() {
 		debug "DataController.getListData() userId:" + params.userId + " date: " + params.date + " timeZoneName:" + params.timeZoneName
@@ -1266,5 +1285,239 @@ class DataController extends LoginController {
 		} else {
 			renderStringGet('fail')
 		}
+	}
+
+	def createNewSprintData() {
+		User currentUser = sessionUser()
+		
+		// Geting next id of user group to make fullName field in userGroup unique
+		long nextId = UserGroup.last() ? (UserGroup.last().id + 1) : 1
+		Sprint sprintInstsnce = Sprint.create(currentUser, "Sprint " + nextId, Model.Visibility.PRIVATE);
+		renderJSONGet(sprintInstsnce.getJSONDesc())
+		return
+	}
+
+	def updateSprintData() {
+		log.debug "parameters recieved to save sprint: ${params}"
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+
+		if (!sprintInstance ) {
+			renderJSONPost([error: true])
+			return
+		} else {
+			Sprint.withTransaction { status ->
+				grailsWebDataBinder.bind(sprintInstance, params as SimpleMapDataBindingSource)
+				sprintInstance.validate()
+				
+				if (sprintInstance.hasErrors()) {
+					status.setRollbackOnly()
+					renderJSONPost([error: true])
+					return
+				} else {
+					Utils.save(sprintInstance, true)
+					renderJSONPost([success: true, id: sprintInstance.id])
+				}
+			}
+		}
+	}
+
+	def deleteSprintData() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		User currentUser = sessionUser()
+		
+		if (!sprintInstance || !sprintInstance.hasAdmin(currentUser.id)) {
+			renderJSONGet([success: false])
+			return
+		}
+
+		Sprint.delete(sprintInstance)
+		renderJSONGet([success: true])
+	}
+
+	def fetchSprintData() {
+		log.debug "DataController.editSprintData()"
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance || !sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONGet([error: true])
+			return
+		}
+
+		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
+		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> participants = memberReaders.collect {User.get(it.memberId)}
+		List memberWriters = GroupMemberWriter.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> admins = memberWriters.collect {User.get(it.memberId)}
+
+		renderJSONGet([sprint: sprintInstance, tags: tags, participants: participants, admins: admins])
+	}
+
+	def startSprintData() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
+			renderJSONPost([success: false])
+			return
+		}
+		User currentUser = sessionUser()
+		def now = params.now == null ? null : parseDate(params.now)
+		def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		DateTime dt = new DateTime(now).withTimeAtStartOfDay()
+		def baseDate = dt.toDate();
+		EntryStats stats = new EntryStats()
+
+		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
+			renderJSONPost([success: true])
+			return
+		} else {
+			renderJSONPost([success: false])
+		}
+	}
+	
+	def stopSprintData() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
+			renderJSONPost([success: false])
+			return
+		}
+
+		def now = params.now == null ? null : parseDate(params.now)
+		def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		DateTime dt = new DateTime(now).withTimeAtStartOfDay()
+		def baseDate = dt.toDate();
+		EntryStats stats = new EntryStats()
+
+		if (sprintInstance.stop(sessionUser().id, baseDate, now, timeZoneName, stats)) {
+			renderJSONPost([success: true])
+			return
+		} else {
+			renderJSONPost([success: false])
+		}
+	}
+	
+	def leaveSprintData() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		User currentUser = sessionUser()
+		
+		if (!sprintInstance || !sprintInstance.hasMember(currentUser.id)) {
+			renderJSONPost([success: false])
+			return
+		}
+		
+		if (sprintInstance.hasStarted(currentUser.id, new Date())) {
+			def now = params.now == null ? null : parseDate(params.now)
+			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+			DateTime dt = new DateTime(now).withTimeAtStartOfDay();
+			def baseDate = dt.toDate();
+			EntryStats stats = new EntryStats()
+			sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
+		}
+
+		sprintInstance.removeMember(currentUser.id)
+		renderJSONPost([success: true])
+	}
+	
+	def joinSprintData() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		User currentUser = sessionUser()
+
+		if (!sprintInstance || sprintInstance.hasMember(currentUser.id)) {
+			renderJSONPost([success: false])
+			return
+		}
+
+		sprintInstance.addMember(currentUser.id)
+		renderJSONPost([success: true])
+	}
+
+	def addMemberToSprintData() {
+		User memberInstance = params.username ? User.findByUsername(params.username) : null
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance) {
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.participant.failed")])
+			return
+		} else if (!memberInstance) {
+			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
+			return
+		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.member.permission.denied")])
+			return
+		} else if (sprintInstance.hasMember(memberInstance.id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "sprint.member.already.added")])
+			return
+		}
+
+		sprintInstance.addMember(memberInstance.id)
+		renderJSONPost([success: true])
+	}
+
+	def addAdminToSprintData() {
+		User adminInstance = params.username ? User.findByUsername(params.username) : null
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance) {
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.failed")])
+			return
+		} else if (!adminInstance) {
+			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
+			return
+		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.permission.denied")])
+			return
+		} else if (sprintInstance.hasAdmin(adminInstance.id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "sprint.admin.already.added")])
+			return
+		}
+
+		sprintInstance.addAdmin(adminInstance.id)
+		renderJSONPost([success: true])
+	}
+
+	def deleteSprintMemberData() {
+		User memberInstance = params.username ? User.findByUsername(params.username) : null
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance || !memberInstance) {
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.participant.failed")])
+			return
+		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.member.permission.denied")])
+			return
+		} else if (!sprintInstance.hasMember(memberInstance.id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.member.to.delete")])
+			return
+		}
+
+		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
+			def now = params.now == null ? null : parseDate(params.now)
+			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+			EntryStats stats = new EntryStats()
+			DateTime dt = new DateTime(now).withTimeAtStartOfDay()
+			def baseDate = dt.toDate();
+			sprintInstance.stop(memberInstance.id, baseDate, now, timeZoneName, stats)
+		}
+		sprintInstance.removeMember(memberInstance.id)
+		renderJSONPost([success: true])
+	}
+
+	def deleteSprintAdminData() {
+		User adminInstance = params.username ? User.findByUsername(params.username) : null
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		
+		if (!sprintInstance || !adminInstance) {
+			renderJSONPost([error: true, errorMessage:  message(code: "delete.sprint.admin.failed")])
+			return
+		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.admin.permission.denied")])
+			return
+		} else if (!sprintInstance.hasAdmin(adminInstance.id)) {
+			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.admin.to.delete")])
+			return
+		}
+
+		sprintInstance.removeAdmin(adminInstance.id)
+		renderJSONPost([success: true])
 	}
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import grails.converters.*
+import grails.gorm.DetachedCriteria
 
 import org.apache.commons.logging.LogFactory
 
@@ -145,6 +146,8 @@ class Sprint {
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
 		virtualUserGroup.addWriter(virtualUser)
 		virtualUserGroup.addReader(virtualUser)
+		virtualUserGroup.addWriter(this.userId)
+		virtualUserGroup.addReader(this.userId)
 		this.virtualUserId = virtualUser.id
 		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup)
 		this.discussionId = discussion.id
@@ -178,12 +181,24 @@ class Sprint {
 	}
 	
 	boolean hasStarted(Long userId, Date now) {
+		if (!hasMember(userId)) 
+			return false
+		
+		Entry entry = Entry.fetchPreviousEqualStartOrEndEntry(userId, Tag.look(fetchTagName()), now)
+		if (!entry) {
+			return false
+		}
+		return entry.fetchIsStart()
+	}
+	
+	boolean hasEnded(Long userId, Date now) {
 		if (!hasMember(userId))
 			return false
 		Entry entry = Entry.fetchPreviousEqualStartOrEndEntry(userId, Tag.look(fetchTagName()), now)
-		if (!entry)
+		if (!entry) {
 			return false
-		return entry.fetchIsStart()
+		}
+		return entry.fetchIsEnd()
 	}
 	
 	protected String entrySetName() {
@@ -238,8 +253,9 @@ class Sprint {
 	// end repeat entries
 	// end remind entries
 	boolean stop(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
-		if (!hasStarted(userId, now))
+		if (!hasStarted(userId, now)) {
 			return false
+		}
 		
 		stats.setBatchCreation(true)
 		
@@ -274,9 +290,37 @@ class Sprint {
 			id:this.id,
 			name:this.name?:'New Sprint',
 			userId:this.userId,
-			created:this.created,
-			updated:this.updated
+			virtualUserId:this.virtualUserId,
+			virtualGroupId:this.virtualGroupId,
+			/*created:this.created,
+			updated:this.updated*/
 		]
+	}
+	
+	static List<Sprint> getSprintListForUser(Long userId) {
+		if (!userId) {
+			return []
+		}
+		
+		List<Long> groupReaderList = new DetachedCriteria(GroupMemberReader).build {
+			projections {
+				property "groupId"
+			}
+			eq "memberId", userId
+		}.list()
+		
+		List<Long> groupWriterList = new DetachedCriteria(GroupMemberWriter).build {
+			projections {
+				property "groupId"
+			}
+			eq "memberId", userId
+		}.list()
+		
+		List<Sprint> sprintList = Sprint.withCriteria {
+			'in'("virtualGroupId", groupReaderList.plus(groupWriterList) ?: [0l]) // When using in clause GORM gives error on passing blank list
+		}
+		
+		return sprintList
 	}
 	
 	String toString() {

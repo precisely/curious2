@@ -2,6 +2,7 @@ package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
+import grails.gorm.DetachedCriteria
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
@@ -643,8 +644,11 @@ class HomeController extends DataController {
 				UserGroup.getDiscussionsInfoForUser(user, true, params)
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+		
+		// This is to get list of sprints the user belongs to or is admin of
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+		
+		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
@@ -949,5 +953,51 @@ class HomeController extends DataController {
 			[max: 50, sort: "priority", order: "desc"])
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
+	}
+
+	def getAutocompleteParticipants() {
+		if (params.searchString) {
+			List searchResults = User.withCriteria {
+				projections{
+					property("username")
+					property("id")
+				}
+				or {
+					ilike("username", "%${params.searchString}%")
+					ilike("first", "%${params.searchString}%")
+					ilike("last", "%${params.searchString}%")
+					ilike("email", "%${params.searchString}%")
+				}
+				maxResults(10)
+			}
+			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
+		} else {
+			renderJSONGet([success: false])
+		}
+	}
+
+	def sprint() {
+		log.debug "id: $params.id"
+		Sprint sprintInstance = params.id ? Sprint.get(params.id) : null
+		if (!sprintInstance) {
+			debug "SprintId not found: " + params.id
+			flash.message = "That sprint does not exist."
+			redirect(url:toUrl(action:'feed'))
+			return
+		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
+						!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
+			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
+			flash.message = "You are not permitted to see that sprint."
+			redirect(url:toUrl(action:'feed'))
+			return
+		}
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+		
+		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)
+		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> participants = memberReaders.collect {User.get(it.memberId)}
+
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, tags: tags, 
+			participants : participants , user: sessionUser(), sprintList: sprintList])
 	}
 }
