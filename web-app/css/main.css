@@ -1857,10 +1857,12 @@ div.graph-header-container .red-header {
 
 .sprint button {
 	margin: 0px 10px 10px 10px;
+	text-transform: uppercase;
+	font-weight: 600;
 }
 
 .sprint .prompted-action {
-	border-color: white;
+	border: none;
 }
 
 .sprint .sprint-content {
