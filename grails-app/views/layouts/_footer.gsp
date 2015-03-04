@@ -84,9 +84,10 @@
             <div class="col-xs-2 col-xs-offset-1">
             	<ul> 
             		<li> <span class="ul-head">Support</span> <br></li>
-            		<li ><a href="#">Wiki</a> </li>
-            		<li ><a href="#">FAQS</a> </li>
-            		<li ><a href="#">Email Help</a> </li>
+            		<li><a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a></li>
+            		<li><a href="#">Wiki</a> </li>
+            		<li><a href="#">FAQS</a> </li>
+            		<li><a href="#">Email Help</a> </li>
             	</ul>
             </div>
             <div class="col-xs-1 col-xs-offset-1">

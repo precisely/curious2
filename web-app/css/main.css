@@ -2929,3 +2929,148 @@ body .modal-footer a .navigate-carousel-right {
 	font-weight: 500;
 }
 
+#helpWizardOverlay .modal-content {
+	background-color: #F48D5B;
+	color: #fff;
+}
+
+#helpWizardOverlay .modal-body {
+	text-align: center;
+}
+
+#helpWizardOverlay .sub-heading {
+	color: #fff;
+	font-style: italic;
+	font-weight: 300;
+	font-size: 14px;
+}
+
+#helpWizardOverlay .questions {
+	font-weight: 600;
+	margin: 40px 0px;
+}
+
+#helpWizardOverlay input {
+	font-weight: 600;
+	border-radius: 2px;
+	color: #999999;
+	font-style: italic;
+	font-size: 14px;
+}
+
+#helpWizardOverlay label {
+	margin: 10px 65px;
+	font-weight: 400;
+	font-size: 12px;
+	text-align: left;
+}
+
+#helpWizardOverlay .exercise-details {
+	padding: 10px;
+	height: 40px;
+	width: 430px;
+}
+
+#sleep-hour {
+	padding: 20px;
+	height: 50px;
+	width: 470px;
+}
+#helpWizardOverlay .left-carousel-control {
+	float: left;
+	color: #fff;
+	margin: 20px 0px;
+}
+
+#helpWizardOverlay .right-carousel-control {
+	float: right;
+	color: #fff;
+	margin: 20px 0px;
+}
+
+#helpWizardOverlay .modal-footer {
+	border-top: none;
+}
+
+#helpWizardOverlay .next-question {
+	background-color: #e27c4a;
+	color: white;
+	height: 100%;
+	border-radius: 0px;
+	font-size: 18px;
+}
+
+#helpWizardOverlay .next-question:active {
+	background-color: #d46c39;
+}
+
+#helpWizardOverlay input[type='range'] {
+	-webkit-appearance: none !important;
+	background: #e27c4a;
+	height: 13px;
+	width: 465px;
+	border-radius: 6px !important;
+	-webkit-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+	box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+}
+
+#helpWizardOverlay input[type=range]::-moz-range-track {
+	background: #e27c4a;
+	height: 13px;
+	width: 465px;
+	border-radius: 6px !important; 
+	-moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+	text-align: center; 
+}
+
+#helpWizardOverlay input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none !important;
+	background: #fff;
+	height: 35px;
+	border-radius: 17.5px;
+	width: 35px;
+}
+
+#helpWizardOverlay input[type=range]::-moz-range-thumb {
+	background: #fff;
+	height: 35px;
+	border-radius: 17.5px;
+	width: 35px;
+}
+
+#helpWizardOverlay .good-day {
+	float: left;
+	text-align: center;
+	margin: 30px 0px;
+	width: 90px;
+	display: inline-table;
+}
+
+#helpWizardOverlay .calm-day {
+	text-align: center;
+	margin: 30px 0px;
+	width: 80px;
+	display: inline-table;
+}
+
+#helpWizardOverlay .super-day {
+	float: right;
+	text-align: center;
+	margin: 30px 0px;
+	display: inline-table;
+	width: 90px;
+}
+
+#helpWizardOverlay .range-box {
+	width: 465px;
+	margin-left: 41px;
+}
+
+#sleep-entry-label, #mood-entry-label {
+	text-align: left;
+}
+
+#sleep-entry-label {
+	margin-left: 45px;
+}

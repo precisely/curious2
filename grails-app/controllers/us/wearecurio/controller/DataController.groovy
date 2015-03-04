@@ -1114,7 +1114,7 @@ class DataController extends LoginController {
 		if (user == null) {
 			Discussion discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
 			if (!discussion.getIsPublic()) {
-				debug "auth failure"
+				debug "auth failure"renderJSONPost([plotDataId:plotDataObj.getId()])
 				renderStringGet(AUTH_ERROR_MESSAGE)
 				return
 			}
@@ -1266,5 +1266,33 @@ class DataController extends LoginController {
 		} else {
 			renderStringGet('fail')
 		}
+	}
+
+	def createHelpEntriesData() {
+		def entries = params.entry.findAll{item -> !item.isEmpty()}
+		log.debug "Entries recieved to save: $params"
+		if (!entries.size()) {
+			renderJSONPost([success: false])
+			return
+		}
+		
+		Date baseDate = parseDate(params.baseDate)
+		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
+		
+		boolean operationSuccess = true;
+		Entry.withTransaction { status ->
+			entries.any({ entryText ->
+				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
+					entryText, params.baseDate, false)
+				if (!result[0]) {
+					operationSuccess = false
+					status.setRollbackOnly()
+					return true
+				} else {
+					return
+				}
+			})
+		}
+		renderJSONPost([success: operationSuccess])
 	}
 }
