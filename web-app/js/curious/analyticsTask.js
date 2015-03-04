@@ -205,8 +205,8 @@ $(function() {
 	$('#stop-analytics-job-button').on('click', stop_analytics_job(8090));
 	$('#task-list').on('click', '.task-row', getChildTasks);
 	$('#task-list').on('click', '.rerun', rerunParent);
-	setInterval(pingServers, 2000);
-	setInterval(updateLatestParent, 2000);
-	setInterval(updateActiveParents, 2000);
+	//setInterval(pingServers, 2000);
+	//setInterval(updateLatestParent, 2000);
+	//setInterval(updateActiveParents, 2000);
 
 });
