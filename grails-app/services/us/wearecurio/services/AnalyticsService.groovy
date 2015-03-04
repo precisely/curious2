@@ -199,19 +199,24 @@ class AnalyticsService {
 		def incompleteTasks = AnalyticsTask.childrenIncomplete(parentId)
 		AnalyticsTask childTask
 		AnalyticsTask.SERVERS.eachWithIndex { serverAddress, i ->
-			AnalyticsTask.withTransaction {
-				childTask = null
-				if (incompleteTasks && i < incompleteTasks.size) {
-					childTask = incompleteTasks[i]
-				} else {
-					childTask = AnalyticsTask.createChild(serverAddress, parentTask)
-				}
-				if (childTask) {
-					if (!processOneOfManyUsers(childTask)) {
+			boolean successfulLaunch = false
+			while (!successfulLaunch) {
+				AnalyticsTask.withTransaction {
+					childTask = null
+					if (incompleteTasks && i < incompleteTasks.size) {
+						childTask = incompleteTasks[i]
+					} else {
+						childTask = AnalyticsTask.createChild(serverAddress, parentTask)
+					}
+					if (!childTask)
+						successfulLaunch = true
+					else if (!processOneOfManyUsers(childTask)) {
 						childTask.markAsCompleted()
+					} else {
+						successfulLaunch = true
+						Utils.save(childTask, true)
 					}
 				}
-				Utils.save(childTask, true)
 			}
 		}
 		incompleteTasks.collect { it.userId }

@@ -33,7 +33,7 @@ class AnalyticsTaskController {
 
 	def runNext() {
 		def userId = null
-		// This controller action expense params['id'] to be set to a completed task's id.
+		// This controller action expects params['id'] to be set to a completed task's id.
 		AnalyticsTask.withTransaction {
 			def id = params.id.toLong()
 			def prevTask = AnalyticsTask.get(id)

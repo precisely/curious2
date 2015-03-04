@@ -17,7 +17,7 @@ class PlotData {
 	String jsonPlotData
 	Boolean isSnapshot
 
-	public static final int MAXPLOTDATALENGTH = 500000
+	public static final int MAXPLOTDATALENGTH = 1000000
 
 	static constraints = {
 		jsonPlotData(maxSize:MAXPLOTDATALENGTH)
@@ -31,7 +31,7 @@ class PlotData {
 		userId column: 'user_id', index:'user_id_index'
 		name column:'name', index:'name_index'
 		jsonPlotData column:'json_plot_data'
-		is_snapshot column: 'is_snapshot'
+		isSnapshot column: 'is_snapshot'
 	}
 	
 	public static createOrReplace(User user, String name, String jsonPlotData, Boolean isSnapshot) {
