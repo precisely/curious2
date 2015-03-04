@@ -114,53 +114,62 @@ class AnalyticsTask {
 	}
 
 	public static def createChild(serverAddress, parentTask) {
-		def childTask = new AnalyticsTask()
-		childTask.name = "cluster intervals & compute correlation for a single user."
-		childTask.serverAddress = serverAddress
-		childTask.parentId = parentTask.id
-		childTask.type = CHILD_OF_COLLECTION
-
-		Utils.save(childTask, true)
-		childTask.fetchUserId()
-		childTask
+		return AnalyticsTask.withTransaction {
+			def childTask = new AnalyticsTask()
+			childTask.name = "cluster intervals & compute correlation for a single user."
+			childTask.serverAddress = serverAddress
+			childTask.parentId = parentTask.id
+			childTask.type = CHILD_OF_COLLECTION
+	
+			Utils.save(childTask, true)
+			childTask.fetchUserId()
+			childTask
+		}
 	}
 
 	public static def createSibling(childTask) {
-		def parentTask = AnalyticsTask.get(childTask.parentId)
-		if (AnalyticsTask.numChildren(childTask.parentId) >= parentTask.maxNumSubtasks){
-			return null
+		return AnalyticsTask.withTransaction {
+			def parentTask = AnalyticsTask.get(childTask.parentId)
+			if (AnalyticsTask.numChildren(childTask.parentId) >= parentTask.maxNumSubtasks){
+				return null
+			}
+			def siblingTask = new AnalyticsTask()
+			siblingTask.name = childTask.name
+			siblingTask.serverAddress = childTask.serverAddress
+			siblingTask.parentId = childTask.parentId
+			siblingTask.type = CHILD_OF_COLLECTION
+	
+			Utils.save(siblingTask, true)
+			siblingTask.fetchUserId()
+			siblingTask
 		}
-		def siblingTask = new AnalyticsTask()
-		siblingTask.name = childTask.name
-		siblingTask.serverAddress = childTask.serverAddress
-		siblingTask.parentId = childTask.parentId
-		siblingTask.type = CHILD_OF_COLLECTION
-
-		Utils.save(siblingTask, true)
-		siblingTask.fetchUserId()
-		siblingTask
 	}
 
 	public static def createParent() {
-		def parentTask = new AnalyticsTask()
-		parentTask.name = "Collection of analytics jobs: cluster intervals & compute correlation"
-		parentTask.serverAddress = null
-		parentTask.parentId = null
-		parentTask.type = PARENT_OF_COLLECTION
-		parentTask.maxNumSubtasks = User.count()
-		Utils.save(parentTask, true)
-		parentTask
+		return AnalyticsTask.withTransaction {
+			def parentTask = new AnalyticsTask()
+			parentTask.name = "Collection of analytics jobs: cluster intervals & compute correlation"
+			parentTask.serverAddress = null
+			parentTask.parentId = null
+			parentTask.type = PARENT_OF_COLLECTION
+			parentTask.maxNumSubtasks = User.count()
+			Utils.save(parentTask, true)
+			parentTask
+		}
 	}
-
+	
 	public static def createOneOff(userId, serverAddress) {
-		// For tasks that are just run once.
-		def task = new AnalyticsTask()
-		task.name = "cluster intervals & compute correlation for user ${userId}"
-		task.serverAddress = serverAddress
-		task.parentId = null
-		task.type = ONE_OFF
-		task.userId = userId
-		Utils.save(task, true)
+		return AnalyticsTask.withTransaction {
+			// For tasks that are just run once.
+			def task = new AnalyticsTask()
+			task.name = "cluster intervals & compute correlation for user ${userId}"
+			task.serverAddress = serverAddress
+			task.parentId = null
+			task.type = ONE_OFF
+			task.userId = userId
+			Utils.save(task, true)
+			task
+		}
 	}
 
 	def obtainUserId() {
@@ -420,26 +429,30 @@ class AnalyticsTask {
 	}
 
 	public static updateParentStatus(parentTask) {
-		if (parentTask == null || parentTask.type != PARENT_OF_COLLECTION) { return null }
-		def children = AnalyticsTask.children(parentTask.id)
-		if (!children || children.size() == 0) { return null }
-		if (hasError(children)) {
-			parentTask.status = ERROR
-		} else if (hasTerminated(children)) {
-			parentTask.status = TERMINATED
-		} else if (parentTask.percentSuccessful() >= 100) {
-			parentTask.status = COMPLETED
-		} else {
-			parentTask.status = RUNNING
+		return AnalyticsTask.withTransaction {
+			if (parentTask == null || parentTask.type != PARENT_OF_COLLECTION) { return null }
+			def children = AnalyticsTask.children(parentTask.id)
+			if (!children || children.size() == 0) { return null }
+			if (hasError(children)) {
+				parentTask.status = ERROR
+			} else if (hasTerminated(children)) {
+				parentTask.status = TERMINATED
+			} else if (parentTask.percentSuccessful() >= 100) {
+				parentTask.status = COMPLETED
+			} else {
+				parentTask.status = RUNNING
+			}
+			Utils.save(parentTask, true)
+			parentTask.status
 		}
-		Utils.save(parentTask, true)
-		parentTask.status
 	}
 
 	public static updateLatestParent() {
-		def parentTask = getLatestParent()
-		if (parentTask == null) { return null }
-		updateParentStatus(parentTask)
+		AnalyticsTask.withTransaction {
+			def parentTask = getLatestParent()
+			if (parentTask == null) { return null }
+			updateParentStatus(parentTask)
+		}
 	}
 
 }
