@@ -32,30 +32,14 @@ class AnalyticsTaskController {
 	}
 
 	def runNext() {
-		// This controller action expense params['id'] to be set to a completed task's id.
-		def id = params.id.toLong()
-		def prevTask = AnalyticsTask.get(id)
-		// This means the previous task was completed.
-		prevTask.status = AnalyticsTask.COMPLETED
-		Utils.save(prevTask, true)
-
-		// Update the parentTask status.
-		def parentTask = AnalyticsTask.get(prevTask.parentId)
-		if (parentTask && prevTask && prevTask.userId && (parentTask.userId < prevTask.userId)) {
-			// The parentTask.userId is the id of the highest userId completed.  (But there might be, lower ids
-			//	 still in progress, so check the parentTask.status before concluding the job is all done.)
-			parentTask.userId = prevTask.userId
-			parentTask.updatedAt = new Date()
-			Utils.save(parentTask, true)
-		}
-
-		// So, let's start a new one. If there are more tasks than users, nextTask.startProcessing will
-		// not do anything.
-		def nextTask = AnalyticsTask.createSibling(prevTask)
 		def userId = null
-		if (nextTask && nextTask.userId && nextTask.userId > 0) {
-			analyticsService.processOneOfManyUsers(nextTask)
-			userId = nextTask.userId
+		// This controller action expense params['id'] to be set to a completed task's id.
+		AnalyticsTask.withTransaction {
+			def id = params.id.toLong()
+			def prevTask = AnalyticsTask.get(id)
+			if (prevTask != null) {
+				userId = analyticsService.processNextTask(prevTask)
+			}
 		}
 		render(contentType: "text/json") {['message': "ok", 'userId': userId ]}
 	}

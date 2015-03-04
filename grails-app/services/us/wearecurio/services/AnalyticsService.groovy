@@ -132,18 +132,57 @@ class AnalyticsService {
 		}
 	}
 
-	def processOneOfManyUsers(childTask) {
-		AnalyticsTask.withTransaction {
+	boolean processOneOfManyUsers(childTask) {
+		return AnalyticsTask.withTransaction {
 			try {
 				log.debug "AnalyticsTask processOneOfManyUsers @ ${childTask.serverAddress}: start"
 				AnalyticsTask.incBusy()
 				prepareUser(childTask)
 				childTask.startProcessing()
 			} catch(e) {
-				throw e
+				e.printStackTrace()
+				return false
 			} finally {
 				AnalyticsTask.decBusy()
 			}
+			
+			return true
+		}
+	}
+	
+	// mark given task as finished and process next one
+	Long processNextTask(AnalyticsTask prevTask) {
+		return AnalyticsTask.withTransaction {
+			if (!prevTask) {
+				return null
+			}
+			
+			// This means the previous task was completed.
+			prevTask.markAsCompleted()
+		
+			// Update the parentTask status.
+			def parentTask = AnalyticsTask.get(prevTask.parentId)
+			if (parentTask && prevTask && prevTask.userId && (parentTask.userId < prevTask.userId)) {
+				// The parentTask.userId is the id of the highest userId completed.  (But there might be, lower ids
+				//	 still in progress, so check the parentTask.status before concluding the job is all done.)
+				parentTask.userId = prevTask.userId
+				parentTask.updatedAt = new Date()
+				Utils.save(parentTask, true)
+			}
+		
+			// So, let's start a new one. If there are more tasks than users, nextTask.startProcessing will
+			// not do anything.
+			def nextTask = AnalyticsTask.createSibling(prevTask)
+			def userId = null
+			if (nextTask && nextTask.userId && nextTask.userId > 0) {
+				if (!processOneOfManyUsers(nextTask)) {
+					// server error while posting to analytics server
+					return processNextTask(nextTask) // end error task and go on to next one
+				}
+				userId = nextTask.userId
+			}
+			
+			return userId
 		}
 	}
 
@@ -158,7 +197,7 @@ class AnalyticsService {
 		Utils.save(parentTask, true)
 
 		def incompleteTasks = AnalyticsTask.childrenIncomplete(parentId)
-		def childTask
+		AnalyticsTask childTask
 		AnalyticsTask.SERVERS.eachWithIndex { serverAddress, i ->
 			AnalyticsTask.withTransaction {
 				childTask = null
@@ -167,7 +206,11 @@ class AnalyticsService {
 				} else {
 					childTask = AnalyticsTask.createChild(serverAddress, parentTask)
 				}
-				if (childTask) { processOneOfManyUsers(childTask) }
+				if (childTask) {
+					if (!processOneOfManyUsers(childTask)) {
+						childTask.markAsCompleted()
+					}
+				}
 				Utils.save(childTask, true)
 			}
 		}
