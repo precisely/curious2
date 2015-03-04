@@ -247,11 +247,11 @@ class AnalyticsTask {
 
 	public static fetchStatus(theState) {
 		if (statusMap[theState]) {
-			statusMap[theState]
+			statusMap[theState].intValue()
 		} else if (theState.class == Integer) {
 			theState
 		} else {
-			UNKNOWN
+			UNKNOWN.intValue()
 		}
 	}
 
@@ -330,10 +330,8 @@ class AnalyticsTask {
 			requests[i] = makeRequest(http, SERVERS.size(), i)
 		}
 
-		// Rethrow caught errors if any.
 		requests.eachWithIndex { request, i ->
 			try {
-				// Throw any caught errors.
 				request.get()
 			} catch(e) {
 				if (e.message =~ /refused/) {
