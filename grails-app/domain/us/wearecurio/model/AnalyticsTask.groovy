@@ -26,18 +26,18 @@ class AnalyticsTask {
 	// Possible values for status.
 	//If you make changes, make sure these match the status codes in
 	//		src/clojure/analytics/src/.../database.clj
-	public static int UNKNOWN = 1
-	public static int OFF = 2
-	public static int RUNNING = 3
-	public static int READY = 4
-	public static int COMPLETED = 5
-	public static int TERMINATED = 6
-	public static int ERROR = 7
+	public static Long UNKNOWN = 1
+	public static Long OFF = 2
+	public static Long RUNNING = 3
+	public static Long READY = 4
+	public static Long COMPLETED = 5
+	public static Long TERMINATED = 6
+	public static Long ERROR = 7
 
 	// Possible values for type.
-	public static int PARENT_OF_COLLECTION = 8
-	public static int CHILD_OF_COLLECTION = 9
-	public static int ONE_OFF = 10
+	public static Long PARENT_OF_COLLECTION = 8
+	public static Long CHILD_OF_COLLECTION = 9
+	public static Long ONE_OFF = 10
 
 	public static statusMap = [
 		"unknown": UNKNOWN,
@@ -61,9 +61,9 @@ class AnalyticsTask {
 		10: "ONE-OFF"]
 
 	String name
-	int type
+	Long type
 	String serverAddress
-	int status
+	Long status
 	Long userId
 	String error
 	String notes
@@ -256,18 +256,18 @@ class AnalyticsTask {
 
 	public static fetchStatus(theState) {
 		if (statusMap[theState]) {
-			statusMap[theState]
+			statusMap[theState].intValue()
 		} else if (theState.class == Integer) {
 			theState
 		} else {
-			UNKNOWN
+			UNKNOWN.intValue()
 		}
 	}
 
 	public static fetchStatus2En(statusId) {
 		if (statusMap2En[statusId]) {
 			statusMap2En[statusId]
-		} else if (statusId.class == Integer) {
+		} else if (statusId != null && statusId.class == Integer) {
 			statusId
 		} else {
 			"NULL"
@@ -339,18 +339,16 @@ class AnalyticsTask {
 			requests[i] = makeRequest(http, SERVERS.size(), i)
 		}
 
-		// Rethrow caught errors if any.
 		requests.eachWithIndex { request, i ->
 			try {
-				// Throw any caught errors.
 				request.get()
 			} catch(e) {
 				if (e.message =~ /refused/) {
-					responses.set(i, OFF)
+					responses.set(i, OFF.intValue())
 					//println "\nCould not connect to analytics server.  Maybe it's not running."
 					//println "Cause: ${e.getCause()}"
 				} else {
-					responses.set(i, ERROR)
+					responses.set(i, ERROR.intValue())
 					println "\nUnknown error ${e.class}"
 					println "Cause: ${e.getCause()}"
 					println "Message: ${e.message}"

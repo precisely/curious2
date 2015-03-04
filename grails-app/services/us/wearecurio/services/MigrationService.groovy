@@ -486,8 +486,20 @@ class MigrationService {
 				TagStats.updateTagStats(u)
 			}
 		}
-		tryMigration("Change analytics_task.status to integer") {
-			sql("alter table analytics_task change status status2 varchar(255) null default null; alter table analytics_task add status int(11) NULL default NULL; update analytics_task set status = 3 where status2='new'; update analytics_task set status = 5 where status2='completed'; alter table analytics_task drop status2;")
+		tryMigration("Change analytics_task.status and analytics_task.type to integer.") {
+			sql("alter table analytics_task drop column status2;");
+			sql("alter table analytics_task change status status2 varchar(255) null default null;")
+			sql("alter table analytics_task add status int(11) NULL default NULL;")
+			sql("update analytics_task set status = 3 where status2='new';")
+			sql("update analytics_task set status = 5 where status2='completed';")
+			sql("alter table analytics_task drop status2;")
+
+			sql("alter table analytics_task drop column type2;")
+			sql("alter table analytics_task change type type2 varchar(255) null default null;")
+			sql("alter table analytics_task add type int(11) NULL default NULL;")
+			sql("update analytics_task set type=8 where type2='collection-parent';")
+			sql("update analytics_task set type = 9 where type2='collection-child';")
+			sql("alter table analytics_task drop type2;")
 		}
 	}
 }
