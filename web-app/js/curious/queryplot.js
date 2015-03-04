@@ -812,17 +812,25 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				}
 			} else {
 				var logDelta = Math.log(delta) / Math.LN10;
-				var logMin = Math.log(min) / Math.LN10;
 				
-				if ((logDelta < logMin - 1) || (min < 0)) {
+				if (min < 0) {
+					logDelta = Math.log(delta + 5) / Math.LN10;
+					var newDelta = Math.pow(10, Math.ceil(logDelta * 4) / 4);
+					var deltaDiff = newDelta - delta / 2;
+					
+					line.scaleMin = min - deltaDiff;
+					line.scaleMax = min + newDelta;
+				} else if (logDelta < logMin - 1 && (min > 0)) {
 					// variation of data is much smaller than minimum value, set minimum to 
 					// nearest increment below min
+					var logMin = Math.log(max) / Math.LN10;
+					var logMin = Math.log(min) / Math.LN10;
 					
-					var newDelta = Math.floor(Math.pow(10, Math.ceil(logDelta * 4) / 4));
-					var newMin = newMin - (min < 0 ? (min % newDelta) + newDelta : min % newDelta);
+					var newMax = Math.pow(10, Math.ceil(logMax * 4) / 4);
+					var newMin = Math.pow(10, Math.floor(logMin * 4) / 4);
 					
 					line.scaleMin = newMin;
-					line.scaleMax = newMin + newDelta;
+					line.scaleMax = newMax;
 				} else {
 					var newDelta = Math.pow(10, Math.ceil(logDelta * 4) / 4);
 					line.scaleMax = min + newDelta;
