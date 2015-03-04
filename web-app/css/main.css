@@ -2990,6 +2990,7 @@ body .modal-footer a .navigate-carousel-right {
 
 #helpWizardOverlay .modal-footer {
 	border-top: none;
+	height: 50px;
 }
 
 #helpWizardOverlay .next-question {
@@ -2998,6 +2999,7 @@ body .modal-footer a .navigate-carousel-right {
 	height: 100%;
 	border-radius: 0px;
 	font-size: 18px;
+	box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 #helpWizardOverlay .next-question:active {

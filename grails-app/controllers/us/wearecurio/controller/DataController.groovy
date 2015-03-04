@@ -1276,9 +1276,6 @@ class DataController extends LoginController {
 			return
 		}
 		
-		Date baseDate = parseDate(params.baseDate)
-		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		
 		boolean operationSuccess = true;
 		Entry.withTransaction { status ->
 			entries.any({ entryText ->

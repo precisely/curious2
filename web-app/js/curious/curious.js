@@ -201,7 +201,7 @@ $(document).ready(function() {
 	});
 
 	$('#helpWizardForm').submit(function(event) {
-		now = new Date();
+		var now = new Date();
 		$('#current-time-input').val(now.toUTCString());
 		$('#time-zone-name-input').val(jstz.determine().name());
 		$('#base-date-input').val(now.toUTCString());
