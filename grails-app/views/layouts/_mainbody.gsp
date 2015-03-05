@@ -42,6 +42,9 @@ def activeClass = { a ->
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><g:link controller='home' action="feed">Feed</g:link></li>
 			<li><g:link controller='home' action="signals">Signals</g:link></li>
+			<c:ifAdmin>
+				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
+			</c:ifAdmin>
 			<li class="dropdown">
 				<a href="#" data-toggle="dropdown" class="dropdown-toggle"><b class="caret"></b></a>
 				<ul class="dropdown-menu" role="menu">
@@ -54,9 +57,6 @@ def activeClass = { a ->
 					</li>
 				</ul>
 			</li>
-			<c:ifAdmin>
-				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
-			</c:ifAdmin>
 		</ul>
 	</div>
 </div>

@@ -42,6 +42,18 @@ def activeClass = { a ->
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>
+			<li class="dropdown">
+				<a href="#" data-toggle="dropdown" class="dropdown-toggle"><b class="caret"></b></a>
+				<ul class="dropdown-menu" role="menu">
+					<li>
+						<span id="displayUser"></span>
+					</li>
+					<li class="divider"></li>
+					<li>
+						<a href="/home/logout" id="logoutLink">Logout</a>
+					</li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 </div>
