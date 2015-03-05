@@ -30,7 +30,6 @@ class Sprint {
 	Long userId // user id of creator of sprint
 	Long virtualGroupId // id of UserGroup for keeping track of sprint members and admins
 	Long virtualUserId // user id for virtual user (owner of sprint tags/entries)
-	Long discussionId // id of discussion associated with sprint
 	String name
 	String description
 	Date created
@@ -56,7 +55,6 @@ class Sprint {
 	static constraints = {
 		userId(nullable:true)
 		name(nullable:true)
-		discussionId(nullable:true)
 		description(nullable:true, maxSize:10000)
 		daysDuration(nullable:true)
 		startDate(nullable:true)
@@ -70,7 +68,6 @@ class Sprint {
 		userId column: 'user_id', index:'user_id_index'
 		virtualGroupId column: 'virtual_group_id', index:'virtual_group_id_index'
 		virtualUserId column: 'virtual_user_id', index:'virtual_user_id_index'
-		discussionId column: 'discussion_id', index:'discussion_id_index'
 		created column: 'created', index:'created_index'
 		updated column: 'updated', index:'updated_index'
 	}
@@ -108,6 +105,18 @@ class Sprint {
 		fetchUserGroup()?.removeReader(userId)
 	}
 	
+	boolean hasAdmin(Long userId) {
+		return fetchUserGroup()?.hasAdmin(userId)
+	}
+	
+	def addAdmin(Long userId) {
+		return fetchUserGroup()?.addAdmin(userId)
+	}
+	
+	def removeAdmin(Long userId) {
+		return fetchUserGroup()?.removeAdmin(userId)
+	}
+	
 	static Sprint create(User user, String name, Visibility visibility) {
 		log.debug "Sprint.create() userId:" + user?.getId() + ", name:" + name
 		return Sprint.withTransaction {
@@ -143,38 +152,28 @@ class Sprint {
 		UserGroup virtualUserGroup = UserGroup.createVirtual("Sprint Group " + name)
 		this.virtualGroupId = virtualUserGroup.id
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
-		virtualUserGroup.addWriter(virtualUser)
-		virtualUserGroup.addReader(virtualUser)
+		addAdmin(user.id)
 		this.virtualUserId = virtualUser.id
+		/*
 		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup)
 		this.discussionId = discussion.id
+		*/
 		this.description = null
 	}
 	
 	void addMember(Long userId) {
 		addReader(userId)
+		addWriter(userId)
 	}
 	
 	void removeMember(Long userId) {
 		removeReader(userId)
+		removeWriter(userId)
+		removeAdmin(userId)
 	}
 	
 	boolean hasMember(Long userId) {
 		return hasReader(userId)
-	}
-	
-	void addAdmin(Long userId) {
-		addWriter(userId)
-		addReader(userId)
-	}
-	
-	void removeAdmin(Long userId) {
-		removeWriter(userId)
-		removeReader(userId)
-	}
-	
-	boolean hasAdmin(Long userId) {
-		return hasWriter(userId)
 	}
 	
 	boolean hasStarted(Long userId, Date now) {

@@ -519,6 +519,29 @@ class UserGroup {
 		return hasAdmin(id, user.id)
 	}
 
+	def addAdmin(Long userId) {
+		if (!userId) return
+		addReader(userId)
+		addWriter(userId)
+		if (defaultNotify) {
+			addNotified(userId)
+			addNotifiedMajor(userId)
+		}
+		GroupMemberAdmin.create(id, userId)
+	}
+
+	def removeAdmin(Long userId) {
+		if (!userId) return
+
+		GroupMemberAdmin.delete(id, userId)
+	}
+
+	boolean hasAdmin(Long userId) {
+		if (!userId) return false
+
+		return hasAdmin(id, userId)
+	}
+
 	static boolean hasAdmin(Long groupId, Long userId) {
 		return GroupMemberAdmin.lookup(groupId, userId) != null
 	}
@@ -541,6 +564,24 @@ class UserGroup {
 		return GroupMemberNotified.lookup(id, user.getId()) != null
 	}
 
+	def addNotified(Long userId) {
+		if (!userId) return
+
+		GroupMemberNotified.create(id, userId)
+	}
+
+	def removeNotified(Long userId) {
+		if (!userId) return
+
+		GroupMemberNotified.delete(id, userId)
+	}
+
+	def hasNotified(long userId) {
+		if (!userId) return false
+
+		return GroupMemberNotified.lookup(id, userId) != null
+	}
+
 	def addNotifiedMajor(User user) {
 		if (!user) return
 
@@ -557,6 +598,24 @@ class UserGroup {
 		if (!user) return false
 
 		return GroupMemberNotifiedMajor.lookup(id, user.getId()) != null
+	}
+
+	def addNotifiedMajor(Long userId) {
+		if (!userId) return
+
+		GroupMemberNotifiedMajor.create(id, userId)
+	}
+
+	def removeNotifiedMajor(Long userId) {
+		if (!userId) return
+
+		GroupMemberNotified.delete(id, userId)
+	}
+
+	def hasNotifiedMajor(Long userId) {
+		if (!userId) return false
+
+		return GroupMemberNotifiedMajor.lookup(id, userId) != null
 	}
 
 	/** 

@@ -120,6 +120,24 @@ class SprintTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testCreateSprintAdmin() {
+		def sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Sprint"
+		assert sprint.visibility == Visibility.PUBLIC
+		
+		assert sprint.hasAdmin(user2.id)
+		
+		sprint.addAdmin(user.id)
+		assert sprint.hasAdmin(user.id)
+		assert sprint.hasReader(user.id)
+		assert sprint.hasWriter(user.id)
+		
+		sprint.removeAdmin(user.id)
+		assert !sprint.hasAdmin(user.id)
+	}
+	
+	@Test
 	void testCreateSprintTags() {
 		Sprint sprint = Sprint.create(user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
