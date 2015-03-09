@@ -43,10 +43,7 @@ $(document).ready(function() {
 										</li>
 									</g:each>
 								</ul>
-								<%--<form action="/dummy/createSprint" method="post">
-									<input id="addTags" name="tag" placeholder="click to add tag">
-								</form>
-							--%></div>
+							</div>
 						</div>
 						<hr>
 						<div class="row">

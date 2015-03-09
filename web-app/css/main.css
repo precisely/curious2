@@ -2083,16 +2083,6 @@ div.graph-header-container .red-header {
 	color: #4c4c4c;
 }
 
-.feed .modal-body ul {
-	margin-bottom: 10px;
-	-moz-column-count: 2;
-	-moz-column-gap: 20px;
-	-webkit-column-count: 2;
-	-webkit-column-gap: 20px;
-	column-count: 2;
-	column-gap: 20px;
-}
-
 .feed .modal-body ul li {
 	color: black;
 	font-size: 14px;
@@ -3244,11 +3234,6 @@ body .modal-header button {
 	color: #4c4c4c;
 }
 
-.modal-footer {
-	padding: 0px;
-	height: 50px;
-}
-
 .modal-footer button {
 	background-color: #fc3f28;
 	color: white;
@@ -3488,8 +3473,8 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 #sprint-tag-list {
-	display: inline-block;
 	margin-bottom: 30px;
+	clear: left;
 }
 
 #participantsAutocomplete, #adminsAutocomplete {

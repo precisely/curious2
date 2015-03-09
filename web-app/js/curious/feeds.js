@@ -456,6 +456,11 @@ function editSprint(sprintId) {
 					} else {
 						$('#open').prop('checked', true);
 					}
+
+					//Clearing data from last load
+					$("#sprint-participants-list").html('');
+					$("#sprint-admins-list").html('');
+					$('#sprint-tag-list').html('');
 					$.each(data.tags, function(index, value) {
 						addTagsToList(value);
 					});
