@@ -183,8 +183,8 @@ $(document).ready(function() {
 
 	$("#sleep-hour").keydown(function(event) {
 		if (event.which == 13) {
-			$('#sleep-entry-label').text('[Sleep ' + $(this).val() + ']');
-			$('#sleep-hour-entry').val('Sleep ' + $(this).val());
+			$('#sleep-entry-label').text('[sleep ' + $(this).val() + ']');
+			$('#sleep-hour-entry').val('sleep ' + $(this).val());
 			event.preventDefault();
 		}
 	});
@@ -204,32 +204,25 @@ $(document).ready(function() {
 		var now = new Date();
 		$('#current-time-input').val(now.toUTCString());
 		$('#time-zone-name-input').val(jstz.determine().name());
+		now.setHours(0,0,0,0);
 		$('#base-date-input').val(now.toUTCString());
 		params = $(this).serializeArray();
 		console.log(params);
-		$.ajax({
-			type: 'POST',
-			url: '/data/createHelpEntriesData',
-			data: params,
-			success: function(data) {
-				data = JSON.parse(data);
-				if (data.success) {
-					$('#helpWizardOverlay').modal('hide');
-					showAlert('Entries created successfully');
-					if (window.location.href.indexOf('/index') > 0) {
-						location.reload();
+		queuePostJSON('Creating help entries', '/data/createHelpEntriesData', params,
+				function(data) {
+					if (data.success) {
+						$('#helpWizardOverlay').modal('hide');
+						showAlert('Entries created successfully');
+						if (window.location.href.indexOf('/index') > 0) {
+							location.reload();
+						}
+					} else {
+						$('#help-alert').removeClass('hide');
+						setInterval(function() {
+							$('#help-alert').addClass('hide');
+						}, 6000);
 					}
-				} else {
-					$('#help-alert').removeClass('hide');
-					setInterval(function() {
-						$('#help-alert').addClass('hide');
-					}, 6000);
-				}
-			},
-			error: function(xhr) {
-				console.log('xhr:', xhr);
-			}
-		});
+				}, function() {});
 		return false;
 	});
 
@@ -279,11 +272,11 @@ $(document).ready(function() {
 function setMood() {
 	var value;
 	if ($('#mood-range').val() <= 5) {
-		value = 'Mood good';
+		value = 'mood good';
 	} else if ($('#mood-range').val() <= 10) {
-		value = 'Mood fine';
+		value = 'mood fine';
 	} else {
-		value = 'Mood super';
+		value = 'mood super';
 	}
 	$('#mood-entry-label').text('[' + value + ']');
 	$('#mood-entry').val(value);
