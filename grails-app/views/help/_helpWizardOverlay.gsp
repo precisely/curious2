@@ -27,8 +27,8 @@
 
 							<div class="item range-box">
 								<h3 class="questions">How is your mood?</h3>
-								<input type="range" id="mood-range" min="1" max="15" 
-									value="8" onchange="setMood()" /> 
+								<input type="range" id="mood-range" min="1" max="10" 
+									value="5" onchange="setMood()" /> 
 								<label class="good-day">
 									Oh dear, what a day.
 								</label> 

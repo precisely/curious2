@@ -270,14 +270,7 @@ $(document).ready(function() {
 });
 
 function setMood() {
-	var value;
-	if ($('#mood-range').val() <= 5) {
-		value = 'mood good';
-	} else if ($('#mood-range').val() <= 10) {
-		value = 'mood fine';
-	} else {
-		value = 'mood super';
-	}
+	var value = 'mood ' + $('#mood-range').val();
 	$('#mood-entry-label').text('[' + value + ']');
 	$('#mood-entry').val(value);
 }
