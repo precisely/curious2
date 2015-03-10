@@ -228,13 +228,14 @@ function AutocompleteWidget(autocompleteId, editId) {
 					obj.data = result;
 					response(result);
 				},
-				selectcomplete: function(event, ui) {
+				select: function(event, ui) {
 					var tagStats = autocompleteWidget.tagStatsMap.getFromText(ui.item.value);
 					if (tagStats) {
 						var range = tagStats.getAmountSelectionRange();
+						inputField.val(ui.item.value);
 						inputField.selectRange(range[0], range[1]);
-						inputField.focus();
 					}
+					return false;
 				}
 			});
 			// open autocomplete on focus
