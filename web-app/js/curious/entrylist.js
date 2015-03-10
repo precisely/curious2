@@ -773,7 +773,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 	$("#" + this.editId)
 			.on("click", function(e) {
-				if (!$("#" + this.editId).data('entryTextSet')) {
+				if (!$(this).data('entryTextSet')) {
 					self.setEntryText('');
 				}
 			})
