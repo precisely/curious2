@@ -2867,9 +2867,9 @@ body .modal-footer a .navigate-carousel-right {
 	display: inline-block;
 	height: 30px;
 	margin-right: 10px;
-	top: -2px;
 	padding: 0px 5px;
 	background-color: #d1d1d1;
+	vertical-align: middle;
 }
 
 #pinned-tag-list .dropdown .caret {
@@ -2972,7 +2972,7 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 #sleep-hour {
-	padding: 20px;
+	padding: 10px;
 	height: 50px;
 	width: 470px;
 }
@@ -3067,6 +3067,12 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay .range-box {
 	width: 465px;
 	margin-left: 41px;
+}
+
+#helpWizardOverlay .wait-form-submit {
+	width: 100%;
+	height: 100%;
+	background-color: #F0F0F0;
 }
 
 #sleep-entry-label, #mood-entry-label {

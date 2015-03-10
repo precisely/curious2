@@ -2,7 +2,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div id="help-carousel-content" class="carousel slide"
-				data-ride="carousel" data-interval="false" data-wrap="false">
+					data-ride="carousel" data-interval="false" data-wrap="false">
 				<form id="helpWizardForm">
 					<div class="modal-body">
 						<div class="alert alert-danger hide" id="help-alert" role="alert">
@@ -20,7 +20,7 @@
 									How many hours did you sleep last night?
 								</h3>
 								<input type="text" id="sleep-hour" value=""
-									placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
+										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
 								<h4 id="sleep-entry-label"></h4>
 								<input type="hidden" name="entry" value="" id="sleep-hour-entry" />
 							</div>
@@ -28,7 +28,7 @@
 							<div class="item range-box">
 								<h3 class="questions">How is your mood?</h3>
 								<input type="range" id="mood-range" min="1" max="10" 
-									value="5" onchange="setMood()" /> 
+										value="5" onchange="setMood()" /> 
 								<label class="good-day">
 									Oh dear, what a day.
 								</label> 
@@ -48,37 +48,38 @@
 									CARDIO
 								</label>
 								<input type="text" class="exercise-details" name="entry" id="cardio"
-									placeholder="e.g. running 45 minutes, zumba 60 min" /> 
+										placeholder="e.g. running 45 minutes, zumba 60 min" /> 
 								<label for="resistance">
 									RESISTANCE
 								</label>
 								<input type="text" class="exercise-details" name="entry" id="resistance"
-									placeholder="e.g. weight lifting 2  hrs" />
+										placeholder="e.g. weight lifting 2  hrs" />
 								<label for="stretch">
 									STRETCH
 								</label>
 								<input type="text" class="exercise-details" name="entry" id="stretch"
-									placeholder="e.g. 90 mins bikram yoga" />
+										placeholder="e.g. 90 mins bikram yoga" />
 								<label for="metabolic">
 									METABOLIC TRAINING
 								</label>
 								<input type="text" class="exercise-details" name="entry" id="metabolic"
-									placeholder="e.g. crossfit 1 hour 15 min" />
+										placeholder="e.g. crossfit 1 hour 15 min" />
 							</div>
 						</div>
 						<br>
 
 						<!-- Left and right controls -->
 						<a class="left-carousel-control" href="#help-carousel-content"
-							role="button" data-slide="prev"> 
+								role="button" data-slide="prev"> 
 							<span>Back</span>
 						</a>
 						<a class="right-carousel-control" href="#help-carousel-content"
-							role="button" onclick="skipToNextQuestion()">
+								role="button" onclick="skipToNextQuestion()">
 							<span>Skip Questions</span>
 						</a>
 					</div>
 					<div class="modal-footer">
+						<div class="wait-form-submit waiting-icon" hidden="true"></div>
 						<button class="next-question" onclick="nextQuestion()">ADD</button>
 					</div>
 					<input type="hidden" name="currentTime" id="current-time-input" />

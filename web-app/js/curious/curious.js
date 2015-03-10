@@ -189,7 +189,7 @@ $(document).ready(function() {
 		}
 	});
 
-	$('.exercise-details').keydown(function(event) {
+	$('#helpWizardOverlay .exercise-details').keydown(function(event) {
 		if (event.which === 13) {
 			if (this.id === 'metabolic') {
 				$('#helpWizardForm').submit();
@@ -201,6 +201,11 @@ $(document).ready(function() {
 	});
 
 	$('#helpWizardForm').submit(function(event) {
+		$('#helpWizardForm .next-question').prop('hidden', true);
+		$('#helpWizardForm .left-carousel-control').prop('hidden', true);
+		$('#helpWizardForm .right-carousel-control').prop('hidden', true);
+		$('#helpWizardForm .wait-form-submit').prop('hidden', false);
+		
 		var now = new Date();
 		$('#current-time-input').val(now.toUTCString());
 		$('#time-zone-name-input').val(jstz.determine().name());
@@ -208,6 +213,7 @@ $(document).ready(function() {
 		$('#base-date-input').val(now.toUTCString());
 		params = $(this).serializeArray();
 		console.log(params);
+		
 		queuePostJSON('Creating help entries', '/data/createHelpEntriesData', params,
 				function(data) {
 					if (data.success) {
@@ -216,7 +222,10 @@ $(document).ready(function() {
 						if (window.location.href.indexOf('/index') > 0) {
 							location.reload();
 						}
+						enableHelpForm();
+						$("#helpWizardOverlay input:hidden").val('');
 					} else {
+						enableHelpForm();
 						$('#help-alert').removeClass('hide');
 						setInterval(function() {
 							$('#help-alert').addClass('hide');
@@ -252,8 +261,8 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$('.left-carousel-control').prop('hidden', true);
-	$('.next-question').attr('type', 'button').text('NEXT(1 of 3)');
+	$('#help-carousel-content .left-carousel-control').prop('hidden', true);
+	$('#help-carousel-content .next-question').attr('type', 'button').text('NEXT(1 of 3)');
 	$('#help-carousel-content').on('slid.bs.carousel', '', function() {
 		var $this = $(this);
 		
@@ -269,6 +278,13 @@ $(document).ready(function() {
 	});
 });
 
+function enableHelpForm() {
+	$('#helpWizardForm .next-question').prop('hidden', false);
+	$('#helpWizardForm .left-carousel-control').prop('hidden', false);
+	$('#helpWizardForm .right-carousel-control').prop('hidden', false);
+	$('#helpWizardForm .wait-form-submit').prop('hidden', true);
+}
+
 function setMood() {
 	var value = 'mood ' + $('#mood-range').val();
 	$('#mood-entry-label').text('[' + value + ']');
@@ -276,17 +292,17 @@ function setMood() {
 }
 
 function nextQuestion() {
-	if (!$('.carousel-inner .item:last').hasClass('active')) {
+	if (!$('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
 		$('#help-carousel-content').carousel('next');
 	}
 }
 
 function skipToNextQuestion() {
-	if ($('.carousel-inner .item:first').hasClass('active')) {
+	if ($('#helpWizardOverlay .carousel-inner .item:first').hasClass('active')) {
 		$('#sleep-entry-label').text('');
 		$('#sleep-hour-entry').val('');
-	} else if ($('.carousel-inner .item:last').hasClass('active')){
-		$('.exercise-details').val('');
+	} else if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')){
+		$('#helpWizardOverlay .exercise-details').val('');
 		$('#helpWizardForm').submit();
 		return;
 	} else {
