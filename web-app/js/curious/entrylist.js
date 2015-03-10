@@ -29,6 +29,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.dragId = divIds.dragId;
 	this.tagListWidget = tagListWidget;
 	this.tagList = tagListWidget.list;
+	this.latestEntryId;
 	if (!autocompleteWidget) {
 		autocompleteWidget = new AutocompleteWidget("autocomplete", this.editId);
 	}
@@ -163,7 +164,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			if(entry.amountPrecision > 0) {
 				buttonText += ' ' + entry.amount + ' ' + entry.units;
 			}
-			var pinnedTagButtonHTMLContent = '<div id="' + this.editId + 'entryid' + id + '"> <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.addEntry(' + currentUserId 
+			var pinnedTagButtonHTMLContent = '<div id="' + this.editId + 'entryid' + id + '">' + 
+				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId 
 				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
 				buttonText + '</button>' + '<li class="dropdown"><a href="#" data-toggle="dropdown">' + 
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
@@ -491,7 +493,19 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 	}
 
-	this.addEntry = function(userId, text, defaultToNow) {
+	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow) {
+		var tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
+		if (!tagStats.typicallyNoAmount) {
+			this.addEntry(userId, text, defaultToNow, function() {
+				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
+				self.selectEntry($(selectee), false);
+			});
+		} else {
+			this.addEntry(userId, text, defaultToNow);
+		}
+	}
+
+	this.addEntry = function(userId, text, defaultToNow, callBack) {
 		this.cacheNow();
 
 		queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + this.currentTimeUTC
@@ -504,9 +518,13 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					showAlert(entries[1]);
 				}
 				self.tagList.load();
+				self.latestEntryId = entries[3].id;
 				self.refreshEntries(entries[0]);
 				if (entries[2] != null)
 					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+				if (callBack && typeof callBack == 'function') {
+					callBack();
+				}
 			}
 		});
 	}
