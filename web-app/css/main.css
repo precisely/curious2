@@ -2749,6 +2749,7 @@ body .modal-header button {
 .modal-content {
 	border-radius: 2px;
 	color: #4c4c4c;
+	border: none;
 }
 
 .modal-footer {
