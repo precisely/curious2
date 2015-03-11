@@ -232,7 +232,7 @@ $(document).ready(function() {
 					} else {
 						enableHelpForm();
 						$('#help-alert').removeClass('hide');
-						setInterval(function() {
+						setTimeout(function() {
 							$('#help-alert').addClass('hide');
 						}, 6000);
 					}
@@ -254,7 +254,7 @@ $(document).ready(function() {
 					showAlert('Survey completed successfully.');
 				} else {
 					$('#survey-alert').removeClass('hide');
-					setInterval(function() {
+					setTimeout(function() {
 						$('#survey-alert').addClass('hide');
 					}, 6000);
 				}
