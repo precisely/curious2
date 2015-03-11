@@ -121,18 +121,21 @@ $(document).ready(function() {
 				if (getUrlVars()['userId']) {
 					parameters += '&userId=' + getUrlVars()['userId'];
 				}
-				backgroundPostJSON('Fetching more data', requestUrl + parameters,
-					function(data) {
-					if (data == "false") {
-						$("#getMoreDiscussions").text('No more discussions to show.');
-						setTimeout(function() {
-							$("#getMoreDiscussions").fadeOut()
-						}, 5000);
-					} else {
-						$('#discussions').append(data);
-						showCommentAgeFromDate();
+				$.ajax ({
+					type: 'POST',
+					url: requestUrl + parameters,
+					success: function(data, textStatus) {
+						if (data == "false") {
+							$("#getMoreDiscussions").text('No more discussions to show.');
+							setTimeout(function() {
+								$("#getMoreDiscussions").fadeOut()
+							}, 5000);
+						} else {
+							$('#discussions').append(data);
+							showCommentAgeFromDate();
+						}
+						App.discussion.offset = App.discussion.offset + 5;
 					}
-					App.discussion.offset = App.discussion.offset + 5;
 				});
 				$element.removeClass("waiting-icon");
 			}, 600);
