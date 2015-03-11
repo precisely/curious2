@@ -26,13 +26,22 @@ $(function() {
 		});
 });
 
+// This function returns url parameters as key value pair
+function getUrlVars() {
+	var vars = {};
+	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
+		function(m,key,value) {
+			vars[key] = value;
+		}
+	);
+	return vars;
+}
+
 $(document).ready(function() {
 	var App = window.App || {};
 	App.discussion = {};
 	App.discussion.lockInfiniteScroll = false;
 	App.discussion.offset = 5;
-
-	//var autocompleteWidget = new AutocompleteWidget('autocomplete', 'sprint-tags');
 
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
@@ -87,6 +96,13 @@ $(document).ready(function() {
 		return false;
 	});
 
+	$('#sprint-tags').keypress(function (e) {
+		var key = e.which;
+		if (key == 13) { // the enter key code
+			return false;
+		}
+	});
+
 	$('.main').scroll(function() {
 		if (($("#getMoreDiscussions").length == 0) || ($(".feed-item").length == 0))
 			return false;
@@ -101,24 +117,22 @@ $(document).ready(function() {
 			$element.addClass(" waiting-icon");
 			setTimeout(function() {
 				var requestUrl = '/home/feed';
-				if ($('#myThreads a').hasClass('active')) {
-					requestUrl = '/dummy/getMyThreads';
+				var parameters = '?offset=' + App.discussion.offset;
+				if (getUrlVars()['userId']) {
+					parameters += '&userId=' + getUrlVars()['userId'];
 				}
-				$.ajax ({
-					type: 'POST',
-					url: requestUrl+'?offset=' + App.discussion.offset,
-					success: function(data, textStatus) {
-						if (data == "false") {
-							$("#getMoreDiscussions").text('No more discussions to show.');
-							setTimeout(function() {
-								$("#getMoreDiscussions").fadeOut()
-							}, 5000);
-						} else {
-							$('#discussions').append(data);
-							showCommentAgeFromDate();
-						}
-						App.discussion.offset = App.discussion.offset + 5;
+				backgroundPostJSON('Fetching more data', requestUrl + parameters,
+					function(data) {
+					if (data == "false") {
+						$("#getMoreDiscussions").text('No more discussions to show.');
+						setTimeout(function() {
+							$("#getMoreDiscussions").fadeOut()
+						}, 5000);
+					} else {
+						$('#discussions').append(data);
+						showCommentAgeFromDate();
 					}
+					App.discussion.offset = App.discussion.offset + 5;
 				});
 				$element.removeClass("waiting-icon");
 			}, 600);
@@ -131,12 +145,8 @@ $(document).ready(function() {
 
 	$('#submitSprint').submit(function( event ) {
 		params  = $(this).serializeArray();
-		$.ajax ({
-			type: 'POST',
-			url: '/data/updateSprintData',
-			data: params,
-			success: function(data) {
-				data = JSON.parse(data);
+		queuePostJSON('Updating sprint', '/data/updateSprintData', params,
+			function(data) {
 				console.log('data: ', data);
 				if (data.error) {
 					$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
@@ -147,12 +157,9 @@ $(document).ready(function() {
 					location.assign('/home/sprint?id=' + data.id);
 					clearSprintFormData()
 				}
-			},
-			error: function(xhr) {
+			}, function(xhr) {
 				console.log('error: ', xhr);
-			}
-		});
-	
+			});
 		return false;
 	});
 
@@ -205,16 +212,8 @@ function clearSprintFormData() {
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
 	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
-	$.ajax ({
-		type: 'POST',
-		url: '/data/' + actionName,
-		data: {
-			username: username,
-			now: new Date().toUTCString(),
-			sprintId: $('#sprintIdField').val()
-		},
-		success: function(data) {
-			data = JSON.parse(data);
+	queuePostJSON('Removing members', '/data/' + actionName, {username: username, now: new Date().toUTCString(),
+		sprintId: $('#sprintIdField').val()}, function(data) {
 			if (data.success) {
 				$element.parents('li').remove();
 			} else {
@@ -223,11 +222,9 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			}
-		},
-		error: function(xhr) {
+		}, function(xhr) {
 			console.log('error: ', xhr);
-		}
-	});
+		});
 }
 
 function createAutocomplete(inputId, autocompleteId) {
@@ -239,23 +236,15 @@ function createAutocomplete(inputId, autocompleteId) {
 
 	$( "#" + inputId ).on( "keyup", function() {
 		var searchString = $("#" + inputId).val();
-		$.ajax ({
-			type: 'GET',
-			url: '/home/getAutocompleteParticipants',
-			data: {
-				searchString: searchString
-			},
-			success: function(data) {
-				data = JSON.parse(data);
+		queueJSON('Getting autocomplete', '/home/getAutocompleteParticipants', {searchString: searchString},
+			function(data) {
 				console.log('data: ', data);
 				if (data.success) {
 					$( "#" + inputId ).autocomplete( "option", "source", data.usernameList);
 				}
-			},
-			error: function(xhr) {
+			}, function(xhr) {
 				console.log('error: ', xhr);
-			}
-		});
+			});
 	});
 
 	$("#" + inputId).keypress(function (e) {
@@ -264,15 +253,8 @@ function createAutocomplete(inputId, autocompleteId) {
 		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
 		var key = e.which;
 		if (key == 13) { // the enter key code
-			$.ajax ({
-				type: 'POST',
-				url: '/data/' + actionName,
-				data: {
-					username: userName,
-					sprintId: $('#sprintIdField').val()
-				},
-				success: function(data) {
-					data = JSON.parse(data);
+			queuePostJSON('Adding members', '/data/' + actionName, {username: userName, sprintId: $('#sprintIdField').val()},
+				function(data) {
 					if (data.success) {
 						console.log('added persons: ', data);
 						$("#" + inputId).val('');
@@ -283,11 +265,9 @@ function createAutocomplete(inputId, autocompleteId) {
 							$('.modal-dialog .alert').addClass('hide');
 						}, 5000);
 					}
-				},
-				error: function(xhr) {
+				}, function(xhr) {
 					console.log('error: ', xhr);
-				}
-			});
+				});
 			return false;  
 		}
 	});
@@ -393,32 +373,10 @@ function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
 			userName + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
-function getMyThreads(params) {
-	$.ajax ({
-		type: 'POST',
-		url: '/dummy/getMyThreads',
-		success: function(data) {
-			if (data) {
-				$('.new-post').remove();
-				$('#discussions').html(data);
-			} else {
-				console.log('no data', data);
-			}
-		},
-		error: function(xhr) {
-			console.log('error: ', xhr);
-			
-		}
-	});
-}
-
 function createSprint() {
-	$.ajax ({
-		type: 'GET',
-		url: '/data/createNewSprintData',
-		success: function(data) {
+	queueJSON('Creating sprint', '/data/createNewSprintData', 
+		function(data) {
 			console.log('data: ', data);
-			data = JSON.parse(data);
 			if (!data.error) {
 				$('#sprintIdField').val(data.id);
 				$('#sprintVirtualUserId').val(data.virtualUserId);
@@ -427,11 +385,10 @@ function createSprint() {
 			} else {
 				showAlert("Unable to create new sprint!");
 			}
-		},
-		error: function(xhr) {
+		}, function(xhr) {
 			console.log('error: ', xhr);
 		}
-	});
+	);
 }
 
 function editSprint(sprintId) {
@@ -443,6 +400,8 @@ function editSprint(sprintId) {
 					showAlert("No sprint found to edit!");
 				} else {
 					console.log(data.sprint);
+					//Clearing data from last load
+					clearSprintFormData();
 					$('#sprintIdField').val(data.sprint.id);
 					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
 					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
@@ -450,17 +409,12 @@ function editSprint(sprintId) {
 					$('#sprint-duration').val(data.sprint.daysDuration);
 					$('#sprint-details').val(data.sprint.description);
 					$('.submit-sprint').text('Update Sprint');
-					//$('#sprint-title').val(sprint.name);
 					if (data.sprint.visibility === 'PRIVATE') {
 						$('#closed').prop('checked', true);
 					} else {
 						$('#open').prop('checked', true);
 					}
 
-					//Clearing data from last load
-					$("#sprint-participants-list").html('');
-					$("#sprint-admins-list").html('');
-					$('#sprint-tag-list').html('');
 					$.each(data.tags, function(index, value) {
 						addTagsToList(value);
 					});
@@ -483,23 +437,18 @@ function editSprint(sprintId) {
 
 function deleteSprint(sprintId) {
 	showYesNo('Delete this sprint?', function() {
-		$.ajax ({
-			type: 'GET',
-			url: '/data/deleteSprintData?sprintId=' + sprintId,
-			success: function(data) {
+		queueJSON('Deleting sprint', '/data/deleteSprintData?sprintId=' + sprintId, 
+			function(data) {
 				console.log('data: ', data);
-				data = JSON.parse(data);
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
 				} else {
 					location.assign('/home/feed');
 				}
-			},
-			error: function(xhr) {
-				console.log('error: ', xhr);
+			}, function() {
 				showAlert('Unable to delete sprint!');
 			}
-		});
+		);
 	});
 }
 
@@ -527,31 +476,6 @@ function stopSprint(sprintId) {
 			$('#start-sprint').addClass(' prompted-action').prop('disabled', false);
 		} else {
 			showAlert("Unable to stop sprint!");
-		}
-	});
-}
-
-function leaveSprint(sprintId) {
-	backgroundPostJSON("Leaving Sprint", "/data/leaveSprintData", {
-		sprintId: sprintId,
-		now: (new Date()).toUTCString()
-	}, function(data) {
-		if (data.success) {
-			location.reload();
-		} else {
-			showAlert("Unable to leave sprint!");
-		}
-	});
-}
-
-function joinSprint(sprintId) {
-	backgroundPostJSON("Leaving Sprint", "/data/joinSprintData", {
-		sprintId: sprintId
-	}, function(data) {
-		if (data.success) {
-			location.reload();
-		} else {
-			showAlert("Unable to join sprint!");
 		}
 	});
 }

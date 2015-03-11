@@ -1859,6 +1859,7 @@ div.graph-header-container .red-header {
 	margin: 0px 10px 10px 10px;
 	text-transform: uppercase;
 	font-weight: 600;
+	color: dimgrey;
 }
 
 .sprint .prompted-action {
@@ -3504,7 +3505,7 @@ body .modal-footer a .navigate-carousel-right {
 
 #sprint-participants-list, #sprint-admins-list {
 	max-height: 70px;
-	overflow: scroll;
+	overflow-y: scroll;
 }
 
 .inline-block {

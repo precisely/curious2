@@ -308,7 +308,7 @@ class Sprint {
 			eq "memberId", userId
 		}.list()
 		
-		List<Long> groupWriterList = new DetachedCriteria(GroupMemberWriter).build {
+		List<Long> groupAdminList = new DetachedCriteria(GroupMemberAdmin).build {
 			projections {
 				property "groupId"
 			}
@@ -316,7 +316,10 @@ class Sprint {
 		}.list()
 		
 		List<Sprint> sprintList = Sprint.withCriteria {
-			'in'("virtualGroupId", groupReaderList.plus(groupWriterList) ?: [0l]) // When using in clause GORM gives error on passing blank list
+			or {
+				'in'("virtualGroupId", groupReaderList.plus(groupAdminList) ?: [0l]) // When using in clause GORM gives error on passing blank list
+				eq("visibility", Visibility.PUBLIC)
+			}
 		}
 		
 		return sprintList

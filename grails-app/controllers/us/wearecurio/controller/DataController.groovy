@@ -1062,7 +1062,7 @@ class DataController extends LoginController {
 		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, params)
+				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 
 		debug "Found $discussionData"
 
@@ -1346,8 +1346,8 @@ class DataController extends LoginController {
 		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> participants = memberReaders.collect {User.get(it.memberId)}
-		List memberWriters = GroupMemberWriter.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> admins = memberWriters.collect {User.get(it.memberId)}
+		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
 
 		renderJSONGet([sprint: sprintInstance, tags: tags, participants: participants, admins: admins])
 	}
@@ -1394,41 +1394,6 @@ class DataController extends LoginController {
 		} else {
 			renderJSONPost([success: false])
 		}
-	}
-	
-	def leaveSprintData() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
-		User currentUser = sessionUser()
-		
-		if (!sprintInstance || !sprintInstance.hasMember(currentUser.id)) {
-			renderJSONPost([success: false])
-			return
-		}
-		
-		if (sprintInstance.hasStarted(currentUser.id, new Date())) {
-			def now = params.now == null ? null : parseDate(params.now)
-			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-			DateTime dt = new DateTime(now).withTimeAtStartOfDay();
-			def baseDate = dt.toDate();
-			EntryStats stats = new EntryStats()
-			sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
-		}
-
-		sprintInstance.removeMember(currentUser.id)
-		renderJSONPost([success: true])
-	}
-	
-	def joinSprintData() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
-		User currentUser = sessionUser()
-
-		if (!sprintInstance || sprintInstance.hasMember(currentUser.id)) {
-			renderJSONPost([success: false])
-			return
-		}
-
-		sprintInstance.addMember(currentUser.id)
-		renderJSONPost([success: true])
 	}
 
 	def addMemberToSprintData() {

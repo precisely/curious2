@@ -37,7 +37,7 @@ $(document).ready(function() {
 										<li class="sprintTag">
 											${tag.description } 
 											<button type="button" class="deleteSprintEntry" data-id="${tag.id}" 
-												data-repeat-type="${tag.repeatType}">
+													data-repeat-type="${tag.repeatType}">
 												<i class="fa fa-times-circle"></i>
 											</button>
 										</li>
@@ -79,7 +79,9 @@ $(document).ready(function() {
 					</div>
 					<div class="col-xs-2">
 						<g:if test="${sprintInstance.hasMember(user.id)}">
-							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Leave</button>
+							<a href="/home/leaveSprint?sprintId=${sprintInstance.id }">
+								<button id="leave-sprint" class="sprint-button">Leave</button>
+							</a>
 							<button id="start-sprint" 
 								${(sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date()))? 
 									raw('class="sprint-button" disabled') : raw('class="prompted-action sprint-button"')}
@@ -90,7 +92,9 @@ $(document).ready(function() {
 								onclick="stopSprint(${sprintInstance.id })">Stop</button>
 						</g:if>
 						<g:else>
-							<button id="join-sprint" class="sprint-button" onclick="joinSprint(${sprintInstance.id })">Join</button>
+							<a href="/home/joinSprint?sprintId=${sprintInstance.id }">
+								<button id="join-sprint" class="sprint-button">Join</button>
+							</a>
 						</g:else>
 						<g:if test="${sprintInstance.hasAdmin(user.id)}">
 							<button class="sprint-button" onclick="editSprint(${sprintInstance.id})">Edit</button>

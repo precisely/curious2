@@ -46,7 +46,7 @@
 						</g:if>
 					</li>
 					<li id="myThreads">
-						<a href="#" onclick="getMyThreads({usetId: ${userId}})">MY THREADS</a>
+						<a href="/home/feed?userId=${userId}">MY THREADS</a>
 					</li>
 					<li id="sprints">
 						<a href="#">SPRINTS</a>

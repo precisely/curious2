@@ -27,7 +27,7 @@ class GroupMemberAdmin {
 	
 	public static delete(GroupMemberAdmin item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

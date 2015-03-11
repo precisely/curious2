@@ -5,6 +5,7 @@ import grails.converters.*
 import grails.gorm.DetachedCriteria
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
 
 import us.wearecurio.exceptions.*
@@ -16,6 +17,7 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
@@ -589,13 +591,18 @@ class HomeController extends DataController {
 		feed(discussionId, unpublish, publish)
 	}
 	
-	def feed(Long discussionId, boolean unpublish, boolean publish) {
-		debug "HomeController.feed()"
+	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish) {
+		debug "HomeController.feed(): $params"
 		def user = sessionUser()
 
 		if (user == null) {
 			debug "auth failure"
 			flash.message = "Must be logged in"
+			redirect(url:toUrl(action:'index'))
+			return
+		} else if (userId && userId != user.id) {
+			debug "authorization failure"
+			flash.message = "Not authorized"
 			redirect(url:toUrl(action:'index'))
 			return
 		}
@@ -622,6 +629,7 @@ class HomeController extends DataController {
 				}
 			}
 		}
+
 		def groupMemberships = UserGroup.getGroupsForReader(user)
 		List associatedGroups = UserGroup.getGroupsForWriter(user)
 		def groupName
@@ -641,7 +649,8 @@ class HomeController extends DataController {
 		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, params)
+				userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) : 
+				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 		
@@ -999,5 +1008,42 @@ class HomeController extends DataController {
 
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, tags: tags, 
 			participants : participants , user: sessionUser(), sprintList: sprintList])
+	}
+
+	def leaveSprint() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		User currentUser = sessionUser()
+		
+		if (!sprintInstance || !sprintInstance.hasMember(currentUser.id)) {
+			flash.message = message(code: "can.not.leave.sprint")
+			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+			return
+		}
+		
+		if (sprintInstance.hasStarted(currentUser.id, new Date())) {
+			def now = params.now == null ? null : parseDate(params.now)
+			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+			DateTime dt = new DateTime(now).withTimeAtStartOfDay();
+			def baseDate = dt.toDate();
+			EntryStats stats = new EntryStats()
+			sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
+		}
+
+		sprintInstance.removeMember(currentUser.id)
+		redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+	}
+	
+	def joinSprint() {
+		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		User currentUser = sessionUser()
+
+		if (!sprintInstance || sprintInstance.hasMember(currentUser.id)) {
+			flash.message = message(code: "can.not.join.sprint")
+			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+			return
+		}
+
+		sprintInstance.addMember(currentUser.id)
+		redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
 	}
 }
