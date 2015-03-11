@@ -26,11 +26,11 @@
 							</div>
 
 							<div class="item range-box">
-								<h3 class="questions">How is your mood?</h3>
+								<h3 class="questions">How's your mood right now?</h3>
 								<input type="range" id="mood-range" min="1" max="10" 
 										value="5" onchange="setMood()" /> 
 								<label class="good-day">
-									Oh dear, what a day.
+									Oh dear,<br>what a day.
 								</label> 
 								<label class="calm-day">
 									Pretty calm, even-keeled.

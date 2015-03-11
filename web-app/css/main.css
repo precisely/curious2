@@ -2941,7 +2941,7 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay .sub-heading {
 	color: #fff;
 	font-style: italic;
-	font-weight: 300;
+	font-weight: 500;
 	font-size: 14px;
 }
 
@@ -2959,7 +2959,7 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 #helpWizardOverlay label {
-	margin: 10px 65px;
+	margin: 15px 0px 10px 65px;
 	font-weight: 400;
 	font-size: 12px;
 	text-align: left;
@@ -2979,18 +2979,19 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay .left-carousel-control {
 	float: left;
 	color: #fff;
-	margin: 20px 0px;
+	margin-top: 20px;
 }
 
 #helpWizardOverlay .right-carousel-control {
 	float: right;
 	color: #fff;
-	margin: 20px 0px;
+	margin-top: 20px;
 }
 
 #helpWizardOverlay .modal-footer {
 	border-top: none;
 	height: 50px;
+	margin-top: 40px;
 }
 
 #helpWizardOverlay .next-question {
@@ -2999,7 +3000,6 @@ body .modal-footer a .navigate-carousel-right {
 	height: 100%;
 	border-radius: 0px;
 	font-size: 18px;
-	box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 #helpWizardOverlay .next-question:active {
