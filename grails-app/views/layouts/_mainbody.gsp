@@ -129,6 +129,7 @@ def activeClass = { a ->
 
 <g:render template="/layouts/alertMessage" />
 <g:render template="/survey/takeSurveyModal" /> 
+<g:render template="/help/helpWizardOverlay" /> 
 <g:layoutBody />
 
 <!-- FOOTER -->
