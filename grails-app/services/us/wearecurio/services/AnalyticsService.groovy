@@ -86,104 +86,100 @@ class AnalyticsService {
 	}
 
 	def classifyProperty(TagProperties property) {
+		// Set the is_event value of the user-tag property.
+		// This will save the property.
 		AnalyticsTask.withTransaction {
-			// Set the is_event value of the user-tag property.
-			// This will save the property.
 			property.classifyAsEvent().save(flush:true)
 		}
 	}
 
 	def prepareUser(analyticsTask) {
-		AnalyticsTask.withTransaction {
-			def userId = analyticsTask.userId
-			if (null == userId) {
-				return null
+		def userId = analyticsTask.userId
+		if (null == userId) {
+			return null
+		}
+		def user = User.get(userId.toLong())
+		def tagIds = user.tags().collect { it.id }
+
+		if (DEBUG) {
+			if (tagIds.size > 25) {
+				tagIds = tagIds[0..25]
 			}
-			def user = User.get(userId.toLong())
-			def tagIds = user.tags().collect { it.id }
-	
-			if (DEBUG) {
-				if (tagIds.size > 25) {
-					tagIds = tagIds[0..25]
-				}
-			}
-	
-			// Write out tagGroup -> tag join table.
-			log.debug "user id ${userId}: SaveTagMembership(${userId})"
-			saveTagMembership(userId)
-	
-			log.debug "user id ${userId}: classifyProperty(${userId})"
+		}
+
+		// Write out tagGroup -> tag join table.
+		log.debug "user id ${userId}: SaveTagMembership(${userId})"
+		saveTagMembership(userId)
+
+		log.debug "user id ${userId}: classifyProperty(${userId})"
+		tagIds.each { tagId ->
+			classifyProperty(TagProperties.createOrLookup(userId, tagId))
+		}
+
+		// Delete the user's realizations of fetchPlotData.
+		log.debug "user id ${userId}: delete table analytics_time_series"
+		if (!DEBUG) {
+			AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId=?', [userId])
+
+			// Refresh the analytics_time_series dump for the user.
+			log.debug "user id ${userId}: refreshSeriesCache(${userId})"
 			tagIds.each { tagId ->
-				classifyProperty(TagProperties.createOrLookup(userId, tagId))
-			}
-	
-			// Delete the user's realizations of fetchPlotData.
-			log.debug "user id ${userId}: delete table analytics_time_series"
-			if (!DEBUG) {
-				AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId=?', [userId])
-	
-				// Refresh the analytics_time_series dump for the user.
-				log.debug "user id ${userId}: refreshSeriesCache(${userId})"
-				tagIds.each { tagId ->
+				AnalyticsTask.withTransaction {
 					refreshSeriesCache(userId, tagId)
 				}
-				log.debug "user id ${userId}: refreshSeriesCache(${userId}) complete."
 			}
+			log.debug "user id ${userId}: refreshSeriesCache(${userId}) complete."
 		}
 	}
 
-	boolean processOneOfManyUsers(childTask) {
-		return AnalyticsTask.withTransaction {
-			try {
-				log.debug "AnalyticsTask processOneOfManyUsers @ ${childTask.serverAddress}: start"
-				AnalyticsTask.incBusy()
-				prepareUser(childTask)
-				childTask.startProcessing()
-			} catch(e) {
-				e.printStackTrace()
-				return false
-			} finally {
-				AnalyticsTask.decBusy()
-			}
-			
-			return true
+	boolean processOneOfManyUsers(AnalyticsTask childTask) {
+		try {
+			log.debug "AnalyticsTask processOneOfManyUsers @ ${childTask.serverAddress}: start"
+			AnalyticsTask.incBusy()
+			prepareUser(childTask)
+			childTask.startProcessing()
+		} catch(e) {
+			e.printStackTrace()
+			return false
+		} finally {
+			AnalyticsTask.decBusy()
 		}
+			
+		return true
 	}
 	
 	// mark given task as finished and process next one
 	Long processNextTask(AnalyticsTask prevTask) {
-		return AnalyticsTask.withTransaction {
-			if (!prevTask) {
-				return null
-			}
-			
-			// This means the previous task was completed.
-			prevTask.markAsCompleted()
-		
-			// Update the parentTask status.
-			def parentTask = AnalyticsTask.get(prevTask.parentId)
-			if (parentTask && prevTask && prevTask.userId && (parentTask.userId < prevTask.userId)) {
-				// The parentTask.userId is the id of the highest userId completed.  (But there might be, lower ids
-				//	 still in progress, so check the parentTask.status before concluding the job is all done.)
-				parentTask.userId = prevTask.userId
-				parentTask.updatedAt = new Date()
-				Utils.save(parentTask, true)
-			}
-		
-			// So, let's start a new one. If there are more tasks than users, nextTask.startProcessing will
-			// not do anything.
-			def nextTask = AnalyticsTask.createSibling(prevTask)
-			def userId = null
-			if (nextTask && nextTask.userId && nextTask.userId > 0) {
-				if (!processOneOfManyUsers(nextTask)) {
-					// server error while posting to analytics server
-					return processNextTask(nextTask) // end error task and go on to next one
-				}
-				userId = nextTask.userId
-			}
-			
-			return userId
+		if (!prevTask) {
+			return null
 		}
+		
+		// This means the previous task was completed.
+		prevTask.markAsCompleted()
+	
+		// Update the parentTask status.
+		def parentTask = AnalyticsTask.get(prevTask.parentId)
+		if (parentTask && prevTask && prevTask.userId && (parentTask.userId < prevTask.userId)) {
+			// The parentTask.userId is the id of the highest userId completed.  (But there might be, lower ids
+			//	 still in progress, so check the parentTask.status before concluding the job is all done.)
+			parentTask.userId = prevTask.userId
+			parentTask.updatedAt = new Date()
+			Utils.save(parentTask, true)
+		}
+	
+		// So, let's start a new one. If there are more tasks than users, nextTask.startProcessing will
+		// not do anything.
+		def nextTask = AnalyticsTask.createSibling(prevTask)
+		def userId = null
+		if (nextTask && nextTask.userId && nextTask.userId > 0) {
+			if (!processOneOfManyUsers(nextTask)) {
+				// server error while posting to analytics server
+				return processNextTask(nextTask) // end error task and go on to next one
+			}
+			userId = nextTask.userId
+		}
+		
+		return userId
 	}
 
 	def processUsers(parentId=null) {
@@ -201,21 +197,19 @@ class AnalyticsService {
 		AnalyticsTask.SERVERS.eachWithIndex { serverAddress, i ->
 			boolean successfulLaunch = false
 			while (!successfulLaunch) {
-				AnalyticsTask.withTransaction {
-					childTask = null
-					if (incompleteTasks && i < incompleteTasks.size) {
-						childTask = incompleteTasks[i]
-					} else {
-						childTask = AnalyticsTask.createChild(serverAddress, parentTask)
-					}
-					if (!childTask)
-						successfulLaunch = true
-					else if (!processOneOfManyUsers(childTask)) {
-						childTask.markAsCompleted()
-					} else {
-						successfulLaunch = true
-						Utils.save(childTask, true)
-					}
+				childTask = null
+				if (incompleteTasks && i < incompleteTasks.size) {
+					childTask = incompleteTasks[i]
+				} else {
+					childTask = AnalyticsTask.createChild(serverAddress, parentTask)
+				}
+				if (!childTask)
+					successfulLaunch = true
+				else if (!processOneOfManyUsers(childTask)) {
+					childTask.markAsCompleted()
+				} else {
+					successfulLaunch = true
+					Utils.save(childTask, true)
 				}
 			}
 		}

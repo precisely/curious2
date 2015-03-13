@@ -34,12 +34,10 @@ class AnalyticsTaskController {
 	def runNext() {
 		def userId = null
 		// This controller action expects params['id'] to be set to a completed task's id.
-		AnalyticsTask.withTransaction {
-			def id = params.id.toLong()
-			def prevTask = AnalyticsTask.get(id)
-			if (prevTask != null) {
-				userId = analyticsService.processNextTask(prevTask)
-			}
+		def id = params.id.toLong()
+		def prevTask = AnalyticsTask.get(id)
+		if (prevTask != null) {
+			userId = analyticsService.processNextTask(prevTask)
 		}
 		render(contentType: "text/json") {['message': "ok", 'userId': userId ]}
 	}

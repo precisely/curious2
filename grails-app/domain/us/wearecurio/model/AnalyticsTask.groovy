@@ -228,10 +228,12 @@ class AnalyticsTask {
 	}
 
 	def startProcessing() {
-		def userId = fetchUserId()
-		if (userId == null || userId < 0) {
-			this.delete()
-			return null
+		AnalyticsTask.withTransaction {
+			def userId = fetchUserId()
+			if (userId == null || userId < 0) {
+				this.delete()
+				userId = null
+			}
 		}
 
 		// Make an http POST request to: "${serverAddress}/cluster/user/${userId}/run"
@@ -239,7 +241,8 @@ class AnalyticsTask {
 		// status when it finishes, gets terminated or errors out.
 		// In Clojure, after that task is done, the Clojure worker/process will send a request
 		// to /analytics_task/${id}/next
-		httpPost(baseUrl(), startUri(), ['task-id': getId(), 'task-type': getType()])
+	 	if (userId)
+			httpPost(baseUrl(), startUri(), ['task-id': getId(), 'task-type': getType()])
 	}
 
 	def httpGetStatus() {
@@ -248,8 +251,10 @@ class AnalyticsTask {
 	}
 
 	def markAsCompleted() {
-		status = COMPLETED
-		Utils.save(this, true)
+		AnalyticsTask.withTransaction {
+			status = COMPLETED
+			Utils.save(this, true)
+		}
 	}
 
 //--- For checking the status of the analytics processes.
@@ -452,5 +457,4 @@ class AnalyticsTask {
 			updateParentStatus(parentTask)
 		}
 	}
-
 }
