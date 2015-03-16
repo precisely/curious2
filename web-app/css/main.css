@@ -3377,6 +3377,7 @@ body .modal-footer a .navigate-carousel-right {
 	color: white;
 	font-size: 11px;
 	padding: 0px;
+	margin-top: 5px;
 }
 
 #pinned-tag-list .dropdown-menu li a:HOVER {
