@@ -33,11 +33,11 @@ $(document).ready(function() {
 							</div>
 							<div class="right-content">
 								<ul>
-									<g:each in="${tags}" var="tag">
+									<g:each in="${entries}" var="entry">
 										<li class="sprintTag">
-											${tag.description } 
-											<button type="button" class="deleteSprintEntry" data-id="${tag.id}" 
-													data-repeat-type="${tag.repeatType}">
+											${entry.description } 
+											<button type="button" class="deleteSprintEntry" data-id="${entry.id}" 
+													data-repeat-type="${entry.repeatType}">
 												<i class="fa fa-times-circle"></i>
 											</button>
 										</li>
@@ -69,7 +69,9 @@ $(document).ready(function() {
 									</g:if>
 								</g:each>
 								<g:if test="${participants.size() >= 5}">
-									<img src="/images/moreParticipants.png" alt="avatar" id="moreAvatars" onclick="">
+									<div class="inline-block">
+										<img src="/images/moreParticipants.png" alt="avatar" id="moreAvatars" onclick="">
+									</div>
 								</g:if>
 								<%--<form action="/dummy/createSprint" method="post">
 									<input id="invitePartcipants" name="participants" placeholder="click to invite participants">
@@ -79,9 +81,7 @@ $(document).ready(function() {
 					</div>
 					<div class="col-xs-2">
 						<g:if test="${sprintInstance.hasMember(user.id)}">
-							<a href="/home/leaveSprint?sprintId=${sprintInstance.id }">
-								<button id="leave-sprint" class="sprint-button">Leave</button>
-							</a>
+							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Leave</button>
 							<button id="start-sprint" 
 								${(sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date()))? 
 									raw('class="sprint-button" disabled') : raw('class="prompted-action sprint-button"')}

@@ -13,23 +13,12 @@ import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.springframework.http.HttpStatus
+import static org.springframework.http.HttpStatus.*
 
 import us.wearecurio.model.Discussion
 
 import us.wearecurio.model.*
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Identifier
-import us.wearecurio.model.PlotData
-import us.wearecurio.model.Sprint
-import us.wearecurio.model.Model
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagProperties
-import us.wearecurio.model.TagStats
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.model.UserGroup
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Entry.ParseAmount
@@ -375,27 +364,16 @@ class DataController extends LoginController {
 		debug "DataController.deleteGhostEntryData() params:" + params
 
 		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
 		def entry = Entry.get(Long.parseLong(params.entryId))
-		def userId = entry.getUserId();
 
-		if (userId != sessionUser().getId()) {
-			User entryOwner = User.get(userId)
-			if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(userId)) {
-				renderJSONGet(deleteGhostEntryHelper(params))
-				return
-			} else {
-				renderStringGet('You do not have permission to delete this entry.')
-				return
-			}
-		} else {
+		Map result = Entry.canDelete(entry, user)
+		
+		if (result.canDelete) {
 			renderJSONGet(deleteGhostEntryHelper(params))
+		} else {
+			String message = result.messageCode == "AUTH_ERROR_MESSAGE" ? AUTH_ERROR_MESSAGE : message(code: "delete.entry.permission.denied")
+			renderStringGet(message)
+			return
 		}
 	}
 	
@@ -407,12 +385,12 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
-			EntryStats stats = new EntryStats()
-			Entry.deleteGhost(entry, stats, currentTime, allFuture)
-			def tagStats = stats.finish()
-			return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
-				tagStats[0]?.getJSONDesc(),
-				tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null]
+		EntryStats stats = new EntryStats()
+		Entry.deleteGhost(entry, stats, currentTime, allFuture)
+		def tagStats = stats.finish()
+		return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
+			tagStats[0]?.getJSONDesc(),
+			tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null]
 	}
 
 
@@ -1291,8 +1269,8 @@ class DataController extends LoginController {
 		User currentUser = sessionUser()
 		
 		// Geting next id of user group to make fullName field in userGroup unique
-		long nextId = UserGroup.last() ? (UserGroup.last().id + 1) : 1
-		Sprint sprintInstsnce = Sprint.create(currentUser, "Sprint " + nextId, Model.Visibility.PRIVATE);
+		
+		Sprint sprintInstsnce = Sprint.create(currentUser, "Untitled Sprint", Model.Visibility.PRIVATE);
 		renderJSONGet(sprintInstsnce.getJSONDesc())
 		return
 	}
@@ -1302,7 +1280,7 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 
 		if (!sprintInstance ) {
-			renderJSONPost([error: true])
+			renderJSONPost([error: true, message: message(code: "sprint.not.exist")])
 			return
 		} else {
 			Sprint.withTransaction { status ->
@@ -1311,7 +1289,7 @@ class DataController extends LoginController {
 				
 				if (sprintInstance.hasErrors()) {
 					status.setRollbackOnly()
-					renderJSONPost([error: true])
+					renderJSONPost([error: true, message: message(code: "can.not.update.sprint")])
 					return
 				} else {
 					Utils.save(sprintInstance, true)
@@ -1325,8 +1303,13 @@ class DataController extends LoginController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		User currentUser = sessionUser()
 		
-		if (!sprintInstance || !sprintInstance.hasAdmin(currentUser.id)) {
-			renderJSONGet([success: false])
+		if (!sprintInstance) {
+			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
+			return
+		}
+		
+		if (!sprintInstance.hasAdmin(currentUser.id)) {
+			renderJSONGet([success: false, message: message(code: "delete.sprint.permission.denied")])
 			return
 		}
 
@@ -1335,11 +1318,16 @@ class DataController extends LoginController {
 	}
 
 	def fetchSprintData() {
-		log.debug "DataController.editSprintData()"
+		log.debug "DataController.editSprintData() $params"
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance || !sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONGet([error: true])
+		if (!sprintInstance) {
+			renderJSONGet([error: true, message: message(code: "sprint.not.exist")])
+			return
+		}
+		
+		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONGet([error: true, message: message(code: "edit.sprint.permission.denied")])
 			return
 		}
 
@@ -1355,44 +1343,53 @@ class DataController extends LoginController {
 	def startSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
-			renderJSONPost([success: false])
+		if (!sprintInstance) {
+			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
 			return
 		}
+		
+		if (!sprintInstance.hasMember(sessionUser().id)) {
+			renderJSONGet([success: false, message: message(code: "not.sprint.member")])
+			return
+		}
+		
 		User currentUser = sessionUser()
 		def now = params.now == null ? null : parseDate(params.now)
-		def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		DateTime dt = new DateTime(now).withTimeAtStartOfDay()
-		def baseDate = dt.toDate();
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		def baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
-			renderJSONPost([success: true])
+			renderJSONGet([success: true])
 			return
 		} else {
-			renderJSONPost([success: false])
+			renderJSONGet([success: false, message: message(code: "can.not.start.sprint")])
 		}
 	}
 	
 	def stopSprintData() {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		
-		if (!sprintInstance || !sprintInstance.hasMember(sessionUser().id)) {
-			renderJSONPost([success: false])
+		if (!sprintInstance) {
+			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
+			return
+		}
+		
+		if (!sprintInstance.hasMember(sessionUser().id)) {
+			renderJSONGet([success: false, message: message(code: "not.sprint.member")])
 			return
 		}
 
 		def now = params.now == null ? null : parseDate(params.now)
-		def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		DateTime dt = new DateTime(now).withTimeAtStartOfDay()
-		def baseDate = dt.toDate();
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		def baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
 		if (sprintInstance.stop(sessionUser().id, baseDate, now, timeZoneName, stats)) {
-			renderJSONPost([success: true])
+			renderJSONGet([success: true])
 			return
 		} else {
-			renderJSONPost([success: false])
+			renderJSONGet([success: false, message: message(code: "can.not.stop.sprint")])
 		}
 	}
 
@@ -1457,11 +1454,9 @@ class DataController extends LoginController {
 
 		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
 			def now = params.now == null ? null : parseDate(params.now)
-			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 			EntryStats stats = new EntryStats()
-			DateTime dt = new DateTime(now).withTimeAtStartOfDay()
-			def baseDate = dt.toDate();
-			sprintInstance.stop(memberInstance.id, baseDate, now, timeZoneName, stats)
+			def baseDate = Sprint.sprintBaseDate
+			sprintInstance.stop(memberInstance.id, baseDate, now, params.timeZoneName, stats)
 		}
 		sprintInstance.removeMember(memberInstance.id)
 		renderJSONPost([success: true])
@@ -1484,5 +1479,45 @@ class DataController extends LoginController {
 
 		sprintInstance.removeAdmin(adminInstance.id)
 		renderJSONPost([success: true])
+	}
+
+	def getAutocompleteParticipantsData() {
+		if (params.searchString) {
+			List searchResults = User.withCriteria {
+				projections{
+					property("username")
+					property("id")
+				}
+				and {
+					or {
+						ilike("username", "%${params.searchString}%")
+						ilike("first", "%${params.searchString}%")
+						ilike("last", "%${params.searchString}%")
+						ilike("email", "%${params.searchString}%")
+					}
+					or {
+						eq("virtual", false)
+						isNull("virtual")
+					}
+				}
+				maxResults(10)
+			}
+			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
+		} else {
+			renderJSONGet([success: false])
+		}
+	}
+
+	def deleteDiscussionData() {
+		Discussion discussion = Discussion.get(params.discussionId)
+		if (discussion == null) {
+			debug "DiscussionId not found: " + params.discussionId
+			renderJSONGet([success: false, message: "That discussion topic no longer exists."])
+			return
+		} else {
+			Map result = Discussion.delete(discussion, sessionUser())
+			renderJSONGet(result)
+			return
+		}
 	}
 }

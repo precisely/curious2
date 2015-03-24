@@ -24,25 +24,21 @@ function searchFeeds(params) {
 	}
 	var searchString = $('#searchFeed').val();
 	console.log('search feeds:', searchString);
-	$.ajax ({
-		url: '/dummy/getSearchResults',
-		data: {
+	queuePostJSON('Getting search results', '/dummy/getSearchResults', getCSRFPreventionObject('getSearchResultsCSRF', {
 			userId: params.userId,
 			searchString: searchString,
 			max: 10,
-			offset: params.offset ? params.offset : 0
-		},
-		success: function(data) {
-			if (data) {
-				$('#discussions').html(data);
-			} else {
-				console.log('no data', data);
-			}
-		},
-		error: function(xhr) {
-			console.log('error: ', xhr);
-		}
-	});
+			offset: params.offset ? params.offset : 0}),
+			function(data) {
+				console.log('data: ', data);
+				if (data.success) {
+					$('#discussions').html(data.searchResults);
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				console.log('error: ', xhr);
+			});
 }
 </script>
 </head>

@@ -11,6 +11,7 @@ import us.wearecurio.services.TagService
 
 import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
+import org.joda.time.DateTime
 
 import us.wearecurio.services.EmailService
 
@@ -215,5 +216,10 @@ class Utils {
 		}
 
 		[dataList: dataList, totalCount: totalCount]
+	}
+
+	static Date getStartOfDay(Date dateInstance) {
+		DateTime dt = new DateTime(dateInstance).withTimeAtStartOfDay();
+		return dt.toDate();
 	}
 }

@@ -788,6 +788,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["durationDays"] = 6
 		controller.updateSprintData()
 		assert controller.response.json.error == true
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -799,6 +800,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["durationDays"] = 6
 		controller.updateSprintData()
 		assert controller.response.json.error == true
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -822,6 +824,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -831,6 +834,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -840,6 +844,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = dummySprint.id
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == "You don't have permission to delete this sprint."
 	}
 
 	@Test
@@ -858,6 +863,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -867,6 +873,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -876,6 +883,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = dummySprint.id
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
+		assert controller.response.json.message == "You don't have permission to edit this sprint."
 	}
 
 	@Test
@@ -898,6 +906,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.startSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -909,6 +918,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.startSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -920,6 +930,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.startSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
 	@Test
@@ -943,6 +954,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.stopSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -954,6 +966,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.stopSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
@@ -965,6 +978,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.stopSprintData()
 		assert controller.response.json.success == false
 		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
 	@Test
@@ -977,6 +991,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == "Can not stop this sprint."
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
 import grails.gorm.DetachedCriteria
+import grails.gsp.PageRenderer
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
@@ -34,6 +35,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 	def oauthService
+	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 
 	static debug(str) {
@@ -602,7 +604,7 @@ class HomeController extends DataController {
 			return
 		} else if (userId && userId != user.id) {
 			debug "authorization failure"
-			flash.message = "Not authorized"
+			flash.message = "You don't have permission to read these feeds."
 			redirect(url:toUrl(action:'index'))
 			return
 		}
@@ -666,7 +668,7 @@ class HomeController extends DataController {
 				// render false if there are no more discussions to show.
 				render false
 			} else {
-				render template: "/feed/discussions", model: model
+				renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
 			}
 			return
 		}
@@ -754,27 +756,14 @@ class HomeController extends DataController {
 			discussion = Discussion.get(discussionId)
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
+				status = NOT_FOUND
 				flash.message = "That discussion topic no longer exists."
-				redirect(url:toUrl(action:'feed'))
+				redirect(url: toUrl(action: 'feed'))
 				return
-			}
-			if (params.deleteDiscussion) {
-				if (!UserGroup.canAdminDiscussion(user, discussion)) {
-					status = UNAUTHORIZED
-					debug "Not admin of discussion: " + discussionId
-					message = "You don't have the right to delete this discussion."
-				} else {
-					status = OK
-					Discussion.delete(discussion)
-					message = "Discussion deleted successfully."
-				}
-
-				if (request.xhr) {
-					renderJSONPost([message: message], status)
-				} else {
-					flash.message = message
-					redirect(url: toUrl(action: 'feed'))
-				}
+			} else if (params.deleteDiscussion) {
+				Map result = Discussion.delete(discussion, user)
+				flash.message = result.message
+				redirect(url: toUrl(action: 'feed'))
 				return
 			}
 		} else if (plotDataId) {
@@ -964,27 +953,6 @@ class HomeController extends DataController {
 		render template: "/survey/questions", model: model
 	}
 
-	def getAutocompleteParticipants() {
-		if (params.searchString) {
-			List searchResults = User.withCriteria {
-				projections{
-					property("username")
-					property("id")
-				}
-				or {
-					ilike("username", "%${params.searchString}%")
-					ilike("first", "%${params.searchString}%")
-					ilike("last", "%${params.searchString}%")
-					ilike("email", "%${params.searchString}%")
-				}
-				maxResults(10)
-			}
-			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
-		} else {
-			renderJSONGet([success: false])
-		}
-	}
-
 	def sprint() {
 		log.debug "id: $params.id"
 		Sprint sprintInstance = params.id ? Sprint.get(params.id) : null
@@ -1002,11 +970,11 @@ class HomeController extends DataController {
 		}
 		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
 		
-		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)
+		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> participants = memberReaders.collect {User.get(it.memberId)}
-
-		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, tags: tags, 
+		List<User> participantsList = memberReaders.collect {User.get(it.memberId)}
+		List<Map> participants = participantsList*.getJSONShortDesc()
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
 			participants : participants , user: sessionUser(), sprintList: sprintList])
 	}
 
@@ -1014,17 +982,21 @@ class HomeController extends DataController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		User currentUser = sessionUser()
 		
-		if (!sprintInstance || !sprintInstance.hasMember(currentUser.id)) {
-			flash.message = message(code: "can.not.leave.sprint")
+		if (!sprintInstance) {
+			flash.message = message(code: "sprint.not.exist")
+			redirect(url:toUrl(action:'feed'))
+			return
+		}
+		if (!sprintInstance.hasMember(currentUser.id)) {
+			flash.message = message(code: "not.sprint.member")
 			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
 			return
 		}
 		
 		if (sprintInstance.hasStarted(currentUser.id, new Date())) {
 			def now = params.now == null ? null : parseDate(params.now)
-			def timeZoneName = TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-			DateTime dt = new DateTime(now).withTimeAtStartOfDay();
-			def baseDate = dt.toDate();
+			def baseDate = Sprint.sprintBaseDate
+			def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
 			EntryStats stats = new EntryStats()
 			sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 		}
@@ -1037,8 +1009,13 @@ class HomeController extends DataController {
 		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
 		User currentUser = sessionUser()
 
-		if (!sprintInstance || sprintInstance.hasMember(currentUser.id)) {
-			flash.message = message(code: "can.not.join.sprint")
+		if (!sprintInstance) {
+			flash.message = message(code: "sprint.not.exist")
+			redirect(url:toUrl(action:'feed'))
+			return
+		}
+		if (sprintInstance.hasMember(currentUser.id)) {
+			flash.message = message(code: "already.joined.sprint")
 			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
 			return
 		}

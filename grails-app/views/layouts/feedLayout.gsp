@@ -6,7 +6,10 @@
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
-	getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF" />
+	getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
+	deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
+	deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
+	deleteDiscussionDataCSRF, getSearchResultsCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -49,7 +52,7 @@
 						<a href="/home/feed?userId=${userId}">MY THREADS</a>
 					</li>
 					<li id="sprints">
-						<a href="#">SPRINTS</a>
+						<a>SPRINTS</a>
 						<button class="sprint-button" onclick="createSprint()">
 							<span class="create-sprint-label">CREATE</span>
 						</button>

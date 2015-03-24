@@ -996,7 +996,7 @@ class Entry implements Comparable {
 	protected static deleteGhostSingle(Entry entry, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
 		log.debug "Entry.deleteGhostSingle() entry:" + entry + " baseDate: " + baseDate + " allFuture: " + allFuture
 
-		if (entry.getRepeatType()?.isContinuous() || User.get(entry.userId).virtual) {
+		if (entry.getRepeatType()?.isContinuous()) {
 			Entry.deleteSingle(entry, stats)
 			return
 		}
@@ -3332,5 +3332,27 @@ class Entry implements Comparable {
 		if (!(o instanceof Entry))
 			return false
 		return this.is(o)
+	}
+
+	static Map canDelete(Entry entry, User user) {
+		Map result
+
+		if (user == null) {
+			result = [canDelete: false, messageCode: "AUTH_ERROR_MESSAGE"]
+		} else {
+			def userId = entry.getUserId();
+			if (userId != user.getId()) {
+				User entryOwner = User.get(userId)
+				if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(user.getId())) {
+					result = [canDelete: true]
+				} else {
+					result = [canDelete: false, messageCode: "DELETE_ENTRY_PERMISSION_DENIED"]
+				}
+			} else {
+				result = [canDelete: true]
+			}
+		}
+
+		return result
 	}
 }

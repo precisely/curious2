@@ -85,6 +85,16 @@ function removeElem(arr, elem) {
 }
 
 /*
+ * This method will return javascript object by mapping form input fields as name: value
+ * See this for reference: http://stackoverflow.com/a/17784656/4395233
+ */
+jQuery.fn.serializeObject = function() {
+	var params = {};
+	$(this).serializeArray().map(function(x){params[x.name] = x.value;});
+	return params;
+}
+
+/*
  * Number/date formatting
  */
 function isNumeric(str) {

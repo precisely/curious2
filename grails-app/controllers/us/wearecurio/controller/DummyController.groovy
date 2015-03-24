@@ -11,7 +11,7 @@ class DummyController extends DataController {
 	
 	def getSearchResults() {
 		log.debug "params: ${params}"
-		redirect (action: "getMyThreads") 
+		renderJSONGet ([success: false, message: "Search feeds under construction."]) 
 	}
 
 }

@@ -150,7 +150,8 @@ class Sprint {
 		this.created = new Date()
 		this.updated = this.created
 		this.visibility = visibility
-		UserGroup virtualUserGroup = UserGroup.createVirtual("Sprint Group " + name)
+		String uniqueId = UUID.randomUUID().toString()
+		UserGroup virtualUserGroup = UserGroup.createVirtual("Sprint Group " + name + " " + uniqueId)
 		this.virtualGroupId = virtualUserGroup.id
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
 		addAdmin(user.id)
@@ -308,16 +309,9 @@ class Sprint {
 			eq "memberId", userId
 		}.list()
 		
-		List<Long> groupAdminList = new DetachedCriteria(GroupMemberAdmin).build {
-			projections {
-				property "groupId"
-			}
-			eq "memberId", userId
-		}.list()
-		
 		List<Sprint> sprintList = Sprint.withCriteria {
 			or {
-				'in'("virtualGroupId", groupReaderList.plus(groupAdminList) ?: [0l]) // When using in clause GORM gives error on passing blank list
+				'in'("virtualGroupId", groupReaderList ?: [0l]) // When using 'in' clause GORM gives error on passing blank list
 				eq("visibility", Visibility.PUBLIC)
 			}
 		}

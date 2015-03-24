@@ -648,8 +648,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = 0
 		
 		controller.leaveSprint()
-		assert controller.flash.message == ("Can not leave this sprint.")
-		assert controller.response.redirectUrl.contains("sprint")
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
 	}
 
 	@Test
@@ -659,8 +659,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = null
 		
 		controller.leaveSprint()
-		assert controller.flash.message == ("Can not leave this sprint.")
-		assert controller.response.redirectUrl.contains("sprint")
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
 	}
 
 	@Test
@@ -670,7 +670,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = dummySprint.id
 		
 		controller.leaveSprint()
-		assert controller.flash.message == ("Can not leave this sprint.")
+		assert controller.flash.message == ("You are not a member of this sprint.")
 		assert controller.response.redirectUrl.contains("sprint")
 	}
 
@@ -692,8 +692,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = 0
 		
 		controller.joinSprint()
-		assert controller.flash.message == ("Can not join this sprint.")
-		assert controller.response.redirectUrl.contains("sprint")
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
 	}
 
 	@Test
@@ -703,8 +703,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = null
 		
 		controller.joinSprint()
-		assert controller.flash.message == ("Can not join this sprint.")
-		assert controller.response.redirectUrl.contains("sprint")
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
 	}
 
 	@Test
@@ -714,7 +714,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.params["sprintId"] = dummySprint.id
 		
 		controller.joinSprint()
-		assert controller.flash.message == ("Can not join this sprint.")
+		assert controller.flash.message == ("You have already joined this sprint.")
 		assert controller.response.redirectUrl.contains("sprint")
 	}
 

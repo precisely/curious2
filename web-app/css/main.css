@@ -1881,6 +1881,8 @@ div.graph-header-container .red-header {
 	width: auto;
 	padding: 0px 10px 10px 10px;
 	cursor: pointer;
+	vertical-align: super;
+	margin-top: -10px;
 }
 
 .sprint h2 {

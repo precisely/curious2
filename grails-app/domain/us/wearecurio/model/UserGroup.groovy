@@ -482,6 +482,7 @@ class UserGroup {
 	def removeWriter(Long userId) {
 		if (!userId) return
 
+		GroupMemberReader.delete(id, userId)
 		GroupMemberWriter.delete(id, userId)
 	}
 
