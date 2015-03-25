@@ -1267,8 +1267,6 @@ class DataController extends LoginController {
 	def createNewSprintData() {
 		User currentUser = sessionUser()
 		
-		// Geting next id of user group to make fullName field in userGroup unique
-		
 		Sprint sprintInstsnce = Sprint.create(currentUser, "Untitled Sprint", Model.Visibility.PRIVATE);
 		renderJSONGet(sprintInstsnce.getJSONDesc())
 		return
