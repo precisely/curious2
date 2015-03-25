@@ -371,7 +371,7 @@ class DataController extends LoginController {
 		if (result.canDelete) {
 			renderJSONGet(deleteGhostEntryHelper(params))
 		} else {
-			renderStringGet(message(code: result.messageCode))
+			renderStringGet(g.message(code: result.messageCode))
 			return
 		}
 	}
@@ -1269,15 +1269,14 @@ class DataController extends LoginController {
 		
 		Sprint sprintInstsnce = Sprint.create(currentUser, "Untitled Sprint", Model.Visibility.PRIVATE);
 		renderJSONGet(sprintInstsnce.getJSONDesc())
-		return
 	}
 
 	def updateSprintData() {
 		log.debug "parameters recieved to save sprint: ${params}"
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 
-		if (!sprintInstance ) {
-			renderJSONPost([error: true, message: message(code: "sprint.not.exist")])
+		if (!sprintInstance) {
+			renderJSONPost([error: true, message: g.message(code: "sprint.not.exist")])
 			return
 		} else {
 			Sprint.withTransaction { status ->
@@ -1286,27 +1285,26 @@ class DataController extends LoginController {
 				
 				if (sprintInstance.hasErrors()) {
 					status.setRollbackOnly()
-					renderJSONPost([error: true, message: message(code: "can.not.update.sprint")])
+					renderJSONPost([error: true, message: g.message(code: "can.not.update.sprint")])
 					return
-				} else {
-					Utils.save(sprintInstance, true)
-					renderJSONPost([success: true, id: sprintInstance.id])
 				}
+				Utils.save(sprintInstance, true)
+				renderJSONPost([success: true, id: sprintInstance.id])
 			}
 		}
 	}
 
 	def deleteSprintData() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		User currentUser = sessionUser()
 		
 		if (!sprintInstance) {
-			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 		
 		if (!sprintInstance.hasAdmin(currentUser.id)) {
-			renderJSONGet([success: false, message: message(code: "delete.sprint.permission.denied")])
+			renderJSONGet([success: false, message: g.message(code: "delete.sprint.permission.denied")])
 			return
 		}
 
@@ -1316,95 +1314,99 @@ class DataController extends LoginController {
 
 	def fetchSprintData() {
 		log.debug "DataController.editSprintData() $params"
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance) {
-			renderJSONGet([error: true, message: message(code: "sprint.not.exist")])
+			renderJSONGet([error: true, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 		
 		if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONGet([error: true, message: message(code: "edit.sprint.permission.denied")])
+			renderJSONGet([error: true, message: g.message(code: "edit.sprint.permission.denied")])
 			return
 		}
 
-		List<Entry> tags = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
+		List<Entry> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> participants = memberReaders.collect {User.get(it.memberId)}
 		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
 
-		renderJSONGet([sprint: sprintInstance, tags: tags, participants: participants, admins: admins])
+		renderJSONGet([sprint: sprintInstance, entries: entries, participants: participants, admins: admins])
 	}
 
 	def startSprintData() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance) {
-			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 		
 		if (!sprintInstance.hasMember(sessionUser().id)) {
-			renderJSONGet([success: false, message: message(code: "not.sprint.member")])
+			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
 		
 		User currentUser = sessionUser()
-		def now = params.now == null ? null : parseDate(params.now)
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		def now = params.now ? parseDate(params.now) : null
+		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		def baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
 			renderJSONGet([success: true])
 			return
-		} else {
-			renderJSONGet([success: false, message: message(code: "can.not.start.sprint")])
 		}
+		renderJSONGet([success: false, message: g.message(code: "can.not.start.sprint")])
 	}
 	
 	def stopSprintData() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance) {
-			renderJSONGet([success: false, message: message(code: "sprint.not.exist")])
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 		
 		if (!sprintInstance.hasMember(sessionUser().id)) {
-			renderJSONGet([success: false, message: message(code: "not.sprint.member")])
+			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
 
-		def now = params.now == null ? null : parseDate(params.now)
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		def now = params.now ? parseDate(params.now) : null
+		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		def baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
 		if (sprintInstance.stop(sessionUser().id, baseDate, now, timeZoneName, stats)) {
 			renderJSONGet([success: true])
 			return
-		} else {
-			renderJSONGet([success: false, message: message(code: "can.not.stop.sprint")])
 		}
+		renderJSONGet([success: false, message: g.message(code: "can.not.stop.sprint")])
 	}
 
 	def addMemberToSprintData() {
 		User memberInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.participant.failed")])
+			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.participant.failed")])
 			return
-		} else if (!memberInstance) {
-			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
+		}
+
+		if (!memberInstance) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
 			return
-		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.member.permission.denied")])
+		}
+
+		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.member.permission.denied")])
 			return
-		} else if (sprintInstance.hasMember(memberInstance.id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "sprint.member.already.added")])
+		}
+
+		if (sprintInstance.hasMember(memberInstance.id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "sprint.member.already.added")])
 			return
 		}
 
@@ -1414,19 +1416,25 @@ class DataController extends LoginController {
 
 	def addAdminToSprintData() {
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance) {
-			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.failed")])
+			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.failed")])
 			return
-		} else if (!adminInstance) {
-			renderJSONPost([error: true, errorMessage: message(code: "user.not.found")])
+		}
+
+		if (!adminInstance) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
 			return
-		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "add.sprint.admin.permission.denied")])
+		}
+
+		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.permission.denied")])
 			return
-		} else if (sprintInstance.hasAdmin(adminInstance.id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "sprint.admin.already.added")])
+		}
+
+		if (sprintInstance.hasAdmin(adminInstance.id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "sprint.admin.already.added")])
 			return
 		}
 
@@ -1436,21 +1444,25 @@ class DataController extends LoginController {
 
 	def deleteSprintMemberData() {
 		User memberInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance || !memberInstance) {
-			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.participant.failed")])
+			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.participant.failed")])
 			return
-		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.member.permission.denied")])
+		}
+
+		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.member.permission.denied")])
 			return
-		} else if (!sprintInstance.hasMember(memberInstance.id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.member.to.delete")])
+		}
+
+		if (!sprintInstance.hasMember(memberInstance.id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.member.to.delete")])
 			return
 		}
 
 		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
-			def now = params.now == null ? null : parseDate(params.now)
+			def now = params.now ? null : parseDate(params.now)
 			EntryStats stats = new EntryStats()
 			def baseDate = Utils.getStartOfDay(now)
 			sprintInstance.stop(memberInstance.id, baseDate, now, params.timeZoneName, stats)
@@ -1461,16 +1473,20 @@ class DataController extends LoginController {
 
 	def deleteSprintAdminData() {
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		
 		if (!sprintInstance || !adminInstance) {
-			renderJSONPost([error: true, errorMessage:  message(code: "delete.sprint.admin.failed")])
+			renderJSONPost([error: true, errorMessage:  g.message(code: "delete.sprint.admin.failed")])
 			return
-		} else if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "delete.sprint.admin.permission.denied")])
+		}
+
+		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.admin.permission.denied")])
 			return
-		} else if (!sprintInstance.hasAdmin(adminInstance.id)) {
-			renderJSONPost([error: true, errorMessage: message(code: "no.sprint.admin.to.delete")])
+		}
+
+		if (!sprintInstance.hasAdmin(adminInstance.id)) {
+			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.admin.to.delete")])
 			return
 		}
 
@@ -1511,10 +1527,9 @@ class DataController extends LoginController {
 			debug "DiscussionId not found: " + params.discussionId
 			renderJSONGet([success: false, message: "That discussion topic no longer exists."])
 			return
-		} else {
-			Map result = Discussion.delete(discussion, sessionUser())
-			renderJSONGet(result)
-			return
 		}
+		Map result = Discussion.delete(discussion, sessionUser())
+		renderJSONGet(result)
+		return
 	}
 }

@@ -73,10 +73,7 @@ $(document).ready(function() {
 										<img src="/images/moreParticipants.png" alt="avatar" id="moreAvatars" onclick="">
 									</div>
 								</g:if>
-								<%--<form action="/dummy/createSprint" method="post">
-									<input id="invitePartcipants" name="participants" placeholder="click to invite participants">
-								</form>
-							--%></div>
+								</div>
 						</div>
 					</div>
 					<div class="col-xs-2">

@@ -5,10 +5,6 @@ input, optgroup, select, textarea {
 	color: #c04f7f;
 }
 
-::-webkit-scrollbar {
-	display: none;
-}
-
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
@@ -138,37 +134,25 @@ input {
 	line-height: normal;
 }
 
-input:focus::-webkit-input-placeholder {
-		color: transparent !important;
-}
-input:focus::-moz-placeholder {
-		color: transparent !important;
-}
-input:focus::-ms-input-placeholder {
+input:focus::-webkit-input-placeholder, input:focus::-moz-placeholder, input:focus::-ms-input-placeholder {
 		color: transparent !important;
 }
 
-#searchFeed::-webkit-input-placeholder {color: white;}
-#searchFeed::-moz-placeholder {color: white;} /* firefox 19+ */
-#searchFeed::-moz-placeholder {color: white;} /* firefox 19+ */
-
-#discussion-topic::-webkit-input-placeholder {color: #fc3f28;}
-#discussion-topic::-moz-placeholder {color: #fc3f28;} /* firefox 19+ */
-#discussion-topic::-ms-input-placeholder {color: #fc3f28;} /* ie */
-
-#discussion-discription::-webkit-input-placeholder {color: #A0A0A0;}
-#discussion-discription::-moz-placeholder {color: #A0A0A0;}
-#discussion-discription::-ms-input-placeholder {color: #A0A0A0;}
-
-#input0::-webkit-input-placeholder {
-	color: #C04F7F;
-	font-size: 16px;
+#searchFeed::-webkit-input-placeholder, #searchFeed::-moz-placeholder, #searchFeed::-moz-placeholder {
+	color: white;
 }
-#input0::-moz-placeholder {
-	color: #C04F7F;
-	font-size: 16px;
+
+#discussion-topic::-webkit-input-placeholder, #discussion-topic::-moz-placeholder, 
+#discussion-topic::-ms-input-placeholder {
+	color: #fc3f28;
 }
-#input0::-ms-input-placeholder {
+
+#discussion-discription::-webkit-input-placeholder, #discussion-discription::-moz-placeholder, 
+#discussion-discription::-ms-input-placeholder {
+	color: #A0A0A0;
+}
+
+#input0::-webkit-input-placeholder, #input0::-moz-placeholder, #input0::-ms-input-placeholder {
 	color: #C04F7F;
 	font-size: 16px;
 }
@@ -1373,16 +1357,7 @@ body.discuss-page .red-header {
 	font-style: normal;
 }
 
-#answer::-webkit-input-placeholder {
-	font-style: normal;
-	font-size: 16px;
-}
-
-#answer:-moz-placeholder {
-	font-style: normal;
-	font-size: 16px;
-}
-
+#answer::-webkit-input-placeholder, #answer:-moz-placeholder, 
 #answer::-moz-placeholder {
 	font-style: normal;
 	font-size: 16px;
@@ -2031,17 +2006,18 @@ div.graph-header-container .red-header {
 	font-weight: 500;
 }
 
-#sprint-details::-webkit-input-placeholder {color: #c04f7f;}
-#sprint-details::-moz-placeholder {color: #c04f7f;}
-#sprint-details:-ms-input-placeholder {color: #c04f7f;}
+#sprint-details::-webkit-input-placeholder, #sprint-details::-moz-placeholder, #sprint-details:-ms-input-placeholder {
+	color: #c04f7f;
+}
 
-.modal-body input::-webkit-input-placeholder {color: #c04f7f;}
-.modal-body input::-moz-placeholder {color: #c04f7f;}
-.modal-body input:-ms-input-placeholder {color: #c04f7f;}
+.modal-body input::-webkit-input-placeholder, .modal-body input::-moz-placeholder, 
+.modal-body input:-ms-input-placeholder {
+	color: #c04f7f;
+}
 
-#addTags::-webkit-input-placeholder {color: #adadad;}
-#addTags-details::-moz-placeholder {color: #adadad;} /* firefox 19+ */
-#addTags-details:-ms-input-placeholder {color: #adadad;} /* ie */
+#addTags::-webkit-input-placeholder, #addTags-details::-moz-placeholder, #addTags-details:-ms-input-placeholder {
+	color: #adadad;
+}
 
 .modal-dialog input[type="radio"] {
 	display: none;
@@ -2914,10 +2890,10 @@ body {
 	color: #a4a4a4;
 }
 
-#post-comment::-webkit-input-placeholder {color: #a4a4a4;}
-#post-comment::-moz-placeholder {color: #a4a4a4;} /* firefox 19+ */
-#post-comment:-moz-placeholder {color: #a4a4a4;}
-#post-comment:-ms-input-placeholder {color: #a4a4a4;} /* ie */
+#post-comment::-webkit-input-placeholder, #post-comment::-moz-placeholder, #post-comment:-moz-placeholder, 
+#post-comment:-ms-input-placeholder {
+	color: #a4a4a4;
+}
 
 
 

@@ -84,6 +84,25 @@ function removeElem(arr, elem) {
 	});
 }
 
+/* 
+ * This function will capitalize first letter of a String
+ * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+ */
+String.prototype.capitalizeFirstLetter = function() {
+	return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+// This function returns url parameters as key value pair
+function getSearchParams() {
+	var vars = {};
+	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
+			function(m,key,value) {
+		vars[key] = value;
+	}
+	);
+	return vars;
+}
+
 /*
  * This method will return javascript object by mapping form input fields as name: value
  * See this for reference: http://stackoverflow.com/a/17784656/4395233

@@ -595,7 +595,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user.getId()
 		
 		controller.sprint()
-		assert controller.flash.message == ("That sprint does not exist.")
+		assert controller.flash.message == ("Sprint does not exist.")
 		assert controller.response.redirectUrl.contains("feed")
 	}
 
@@ -608,7 +608,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user.getId()
 		
 		controller.sprint()
-		assert controller.flash.message == ("That sprint does not exist.")
+		assert controller.flash.message == ("Sprint does not exist.")
 		assert controller.response.redirectUrl.contains("feed")
 	}
 

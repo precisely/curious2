@@ -894,7 +894,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		dummySprint.addMember(dummyUser2.getId())
 		controller.fetchSprintData()
 		assert controller.response.json.sprint.id == dummySprint.id
-		assert controller.response.json.participants.size() == 3	//Including virtual user
+		assert controller.response.json.participants.size() == 3	// Including virtual user
 	}
 
 	@Test
@@ -1308,8 +1308,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.error == true
 		assert controller.response.json.errorMessage == "No such admin to delete from this sprint."
 	}
-
-	def sessionFactory
 
 	@Test
 	void "Test deleteSprintAdminData"() {

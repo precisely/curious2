@@ -4,17 +4,6 @@
 var autocompleteWidget;
 var searchList = [];
 
-// This function returns url parameters as key value pair
-function getUrlVars() {
-	var vars = {};
-	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
-		function(m,key,value) {
-			vars[key] = value;
-		}
-	);
-	return vars;
-}
-
 $(document).ready(function() {
 	var App = window.App || {};
 	App.discussion = {};
@@ -82,8 +71,8 @@ $(document).ready(function() {
 			setTimeout(function() {
 				var requestUrl = '/home/feed';
 				var parameters = '?offset=' + App.discussion.offset;
-				if (getUrlVars()['userId']) {
-					parameters += '&userId=' + getUrlVars()['userId'];
+				if (getSearchParams()['userId']) {
+					parameters += '&userId=' + getSearchParams()['userId'];
 				}
 				queueJSON('Getting discussion data', requestUrl + parameters,
 						function(data) {
@@ -146,17 +135,20 @@ $(document).ready(function() {
 		var $element = $(this);
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'participants');
+		return false;
 	});
 
 	$(document).on("click", ".deleteAdmins", function() {
 		var $element = $(this);
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'admins');
+		return false;
 	});
 
 	$('#close-sprint-modal').click(function() {
 		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
 		clearSprintFormData();
+		return false;
 	});
 });
 
@@ -164,15 +156,7 @@ function clearSprintFormData() {
 	var form = $('#submitSprint');
 	// iterate over all of the inputs for the form
 	// element that was passed in
-	$(':input', form).each(function() {
-		var type = this.type;
-		var tag = this.tagName.toLowerCase();
-		if (type == 'text' || tag == 'textarea') {
-			this.value = '';
-		} else if (type == 'checkbox' || type == 'radio') {
-			this.checked = false;
-		}
-	});
+	form.reset();
 	$('.modal ul li').html('');
 	$('.submit-sprint').text('Create Sprint');
 }
@@ -219,7 +203,7 @@ function createAutocomplete(inputId, autocompleteId) {
 
 	$("#" + inputId).keypress(function (e) {
 		userName = $("#" + inputId).val();
-		var actionName = (inputId === 'sprint-participants')?'addMemberToSprintData':'addAdminToSprintData';
+		var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
 		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
 		var key = e.which;
 		if (key == 13) { // the enter key code
@@ -246,6 +230,7 @@ function createAutocomplete(inputId, autocompleteId) {
 $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
+	return false;
 });
 
 function deleteSimpleEntry(id, $element) {
@@ -304,14 +289,14 @@ function addEntryToSprint(inputElement, suffix) {
 	$inputElement.val($inputElement.val() + ' ' + suffix);
 
 	var now = new Date();
-	this.currentTimeUTC = now.toUTCString();
-	this.cachedDateUTC = now.toUTCString();
-	this.timeZoneName = jstz.determine().name();
-	this.baseDate = new Date('January 1, 2001 12:00 am').toUTCString();
+	var currentTimeUTC = now.toUTCString();
+	var cachedDateUTC = now.toUTCString();
+	var timeZoneName = jstz.determine().name();
+	var baseDate = new Date('January 1, 2001 12:00 am').toUTCString();
 
-	queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + this.currentTimeUTC
-			+ "&userId=" + virtualUserId + "&text=" + $inputElement.val() + "&baseDate=" + this.baseDate
-			+ "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&"
+	queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + currentTimeUTC
+			+ "&userId=" + virtualUserId + "&text=" + $inputElement.val() + "&baseDate=" + baseDate
+			+ "&timeZoneName=" + timeZoneName + "&defaultToNow=" + (true ? '1':'0') + "&"
 			+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 			function(entries) {
 		if (checkData(entries, 'success', "Error adding entry")) {
@@ -328,19 +313,9 @@ function addEntryToSprint(inputElement, suffix) {
 }
 
 function addTagsToList(addedEntry) {
-	if (addedEntry.comment === 'pinned') {
-		$('#sprint-tag-list').append('<li><div class="pinnedDarkLabelImage"></div> ' + addedEntry.description + 
-				' (<i>Pinned</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-				addedEntry.repeatType + '"> <i class="fa fa-times-circle"></i></button></li>');
-	} else if (addedEntry.comment === 'remind') {
-		$('#sprint-tag-list').append('<li><div class="remindDarkLabelImage"></div> ' + addedEntry.description + 
-				' (<i>Remind</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-				addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
-	} else if (addedEntry.comment === 'repeat') {
-		$('#sprint-tag-list').append('<li><div class="repeatDarkLabelImage"></div> ' + addedEntry.description + 
-				' (<i>Repeat</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
-				addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
-	}
+	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + 
+			' (<i>' + addedEntry.comment.capitalizeFirstLetter() + '</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
 function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
@@ -392,7 +367,7 @@ function editSprint(sprintId) {
 						$('#open').prop('checked', true);
 					}
 
-					$.each(data.tags, function(index, value) {
+					$.each(data.entries, function(index, value) {
 						addTagsToList(value);
 					});
 					$.each(data.participants, function(index, participant) {

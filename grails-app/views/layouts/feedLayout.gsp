@@ -6,10 +6,10 @@
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
-	getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
-	deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
-	deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-	deleteDiscussionDataCSRF, getSearchResultsCSRF" />
+			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
+			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
+			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
+			deleteDiscussionDataCSRF, getSearchResultsCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -60,7 +60,7 @@
 							<ul>
 								<g:each in="${sprintList}" var="sprint">
 									<li>
-										<a href="/home/sprint?id=${sprint?.id}">${sprint?.name}</a> 
+										<a href="/home/sprint?id=${sprint.id}">${sprint.name}</a> 
 									</li>
 								</g:each>
 							</ul>

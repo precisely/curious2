@@ -756,7 +756,6 @@ class HomeController extends DataController {
 			discussion = Discussion.get(discussionId)
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
-				status = NOT_FOUND
 				flash.message = "That discussion topic no longer exists."
 				redirect(url: toUrl(action: 'feed'))
 				return
@@ -955,17 +954,17 @@ class HomeController extends DataController {
 
 	def sprint() {
 		log.debug "id: $params.id"
-		Sprint sprintInstance = params.id ? Sprint.get(params.id) : null
+		Sprint sprintInstance = Sprint.get(params.id)
 		if (!sprintInstance) {
-			debug "SprintId not found: " + params.id
-			flash.message = message(code: "sprint.not.exist")
-			redirect(url:toUrl(action:'feed'))
+			debug "SprintId not found: $params.id"
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
 			return
 		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
-						!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
+					!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
 			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
-			flash.message = message(code: "not.permitted.to.see.sprint")
-			redirect(url:toUrl(action:'feed'))
+			flash.message = g.message(code: "not.permitted.to.see.sprint")
+			redirect(url: toUrl(action:'feed'))
 			return
 		}
 		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
@@ -979,46 +978,46 @@ class HomeController extends DataController {
 	}
 
 	def leaveSprint() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		User currentUser = sessionUser()
 		
 		if (!sprintInstance) {
-			flash.message = message(code: "sprint.not.exist")
-			redirect(url:toUrl(action:'feed'))
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
 			return
 		}
 		if (!sprintInstance.hasMember(currentUser.id)) {
-			flash.message = message(code: "not.sprint.member")
-			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+			flash.message = g.message(code: "not.sprint.member")
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
 			return
 		}
 		
-		def now = params.now == null ? null : parseDate(params.now)
+		def now = params.now ? parseDate(params.now) : null
 		def baseDate = Utils.getStartOfDay(now)
-		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		EntryStats stats = new EntryStats()
 		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
 		sprintInstance.removeMember(currentUser.id)
-		redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
 	}
 	
 	def joinSprint() {
-		Sprint sprintInstance = params.sprintId ? Sprint.get(params.sprintId) : null
+		Sprint sprintInstance = Sprint.get(params.sprintId)
 		User currentUser = sessionUser()
 
 		if (!sprintInstance) {
-			flash.message = message(code: "sprint.not.exist")
-			redirect(url:toUrl(action:'feed'))
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
 			return
 		}
 		if (sprintInstance.hasMember(currentUser.id)) {
-			flash.message = message(code: "already.joined.sprint")
-			redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+			flash.message = g.message(code: "already.joined.sprint")
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
 			return
 		}
 
 		sprintInstance.addMember(currentUser.id)
-		redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
 	}
 }
