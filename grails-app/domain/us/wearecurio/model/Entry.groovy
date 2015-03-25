@@ -3338,7 +3338,7 @@ class Entry implements Comparable {
 		Map result
 
 		if (user == null) {
-			result = [canDelete: false, messageCode: "AUTH_ERROR_MESSAGE"]
+			result = [canDelete: false, messageCode: "auth.error.message"]
 		} else {
 			def userId = entry.getUserId();
 			if (userId != user.getId()) {
@@ -3346,7 +3346,7 @@ class Entry implements Comparable {
 				if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(user.getId())) {
 					result = [canDelete: true]
 				} else {
-					result = [canDelete: false, messageCode: "DELETE_ENTRY_PERMISSION_DENIED"]
+					result = [canDelete: false, messageCode: "delete.entry.permission.denied"]
 				}
 			} else {
 				result = [canDelete: true]

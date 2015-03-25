@@ -2168,7 +2168,7 @@ class EntryTests extends CuriousTestCase {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, null)
 		assert result.canDelete == false
-		assert result.messageCode == "AUTH_ERROR_MESSAGE"
+		assert result.messageCode == "auth.error.message"
 	}
 
 	@Test
@@ -2188,7 +2188,7 @@ class EntryTests extends CuriousTestCase {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, user2)
 		assert result.canDelete == false
-		assert result.messageCode == "DELETE_ENTRY_PERMISSION_DENIED"
+		assert result.messageCode == "delete.entry.permission.denied"
 	}
 
 	@Test
@@ -2212,6 +2212,6 @@ class EntryTests extends CuriousTestCase {
 		def entry = Entry.create(sprint.getVirtualUserId(), Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, user)
 		assert result.canDelete == false
-		assert result.messageCode == "DELETE_ENTRY_PERMISSION_DENIED"
+		assert result.messageCode == "delete.entry.permission.denied"
 	}
 }

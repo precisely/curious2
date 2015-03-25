@@ -371,8 +371,7 @@ class DataController extends LoginController {
 		if (result.canDelete) {
 			renderJSONGet(deleteGhostEntryHelper(params))
 		} else {
-			String message = result.messageCode == "AUTH_ERROR_MESSAGE" ? AUTH_ERROR_MESSAGE : message(code: "delete.entry.permission.denied")
-			renderStringGet(message)
+			renderStringGet(message(code: result.messageCode))
 			return
 		}
 	}
@@ -1455,7 +1454,7 @@ class DataController extends LoginController {
 		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
 			def now = params.now == null ? null : parseDate(params.now)
 			EntryStats stats = new EntryStats()
-			def baseDate = Sprint.sprintBaseDate
+			def baseDate = Utils.getStartOfDay(now)
 			sprintInstance.stop(memberInstance.id, baseDate, now, params.timeZoneName, stats)
 		}
 		sprintInstance.removeMember(memberInstance.id)

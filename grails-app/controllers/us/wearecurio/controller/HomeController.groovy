@@ -993,13 +993,11 @@ class HomeController extends DataController {
 			return
 		}
 		
-		if (sprintInstance.hasStarted(currentUser.id, new Date())) {
-			def now = params.now == null ? null : parseDate(params.now)
-			def baseDate = Sprint.sprintBaseDate
-			def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
-			EntryStats stats = new EntryStats()
-			sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
-		}
+		def now = params.now == null ? null : parseDate(params.now)
+		def baseDate = Utils.getStartOfDay(now)
+		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(now) : params.timeZoneName
+		EntryStats stats = new EntryStats()
+		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
 		sprintInstance.removeMember(currentUser.id)
 		redirect(url:toUrl(action:'sprint', params: [id: params.sprintId]))
