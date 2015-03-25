@@ -958,13 +958,13 @@ class HomeController extends DataController {
 		Sprint sprintInstance = params.id ? Sprint.get(params.id) : null
 		if (!sprintInstance) {
 			debug "SprintId not found: " + params.id
-			flash.message = "That sprint does not exist."
+			flash.message = message(code: "sprint.not.exist")
 			redirect(url:toUrl(action:'feed'))
 			return
 		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
 						!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
 			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
-			flash.message = "You are not permitted to see that sprint."
+			flash.message = message(code: "not.permitted.to.see.sprint")
 			redirect(url:toUrl(action:'feed'))
 			return
 		}
