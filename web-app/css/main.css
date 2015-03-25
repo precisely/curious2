@@ -1856,8 +1856,6 @@ div.graph-header-container .red-header {
 	width: auto;
 	padding: 0px 10px 10px 10px;
 	cursor: pointer;
-	vertical-align: super;
-	margin-top: -10px;
 }
 
 .sprint h2 {
@@ -2110,7 +2108,7 @@ div.graph-header-container .red-header {
 	color: #656565;
 	font-weight: 600;
 }
-.sprint-button:hover {
+.sprint-button:not(:disabled):hover {
 	-moz-box-shadow: 2px 2px 2px #dddddd;
 	-webkit-box-shadow: 2px 2px 2px #dddddd;
 	box-shadow: 2px 2px 2px #dddddd;
@@ -3170,7 +3168,6 @@ body .modal-header button {
 	font-style: italic;
 	border: 1px #c04f7f solid;
 	color: #c04f7f;
-	margin-left: 10px;
 	margin-bottom: 30px;
 }
 

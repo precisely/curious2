@@ -156,9 +156,18 @@ function clearSprintFormData() {
 	var form = $('#submitSprint');
 	// iterate over all of the inputs for the form
 	// element that was passed in
-	form.reset();
+	$(':input', form).each(function() {
+		var type = this.type;
+		var tag = this.tagName.toLowerCase();
+		if (type == 'text' || tag == 'textarea') {
+			this.value = '';
+		} else if (type == 'checkbox' || type == 'radio') {
+			this.checked = false;
+		}
+	});
 	$('.modal ul li').html('');
 	$('.submit-sprint').text('Create Sprint');
+	$('#createSprintOverlay .modal-title').text('Create Sprint');
 }
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
@@ -230,7 +239,6 @@ function createAutocomplete(inputId, autocompleteId) {
 $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
-	return false;
 });
 
 function deleteSimpleEntry(id, $element) {
@@ -361,6 +369,7 @@ function editSprint(sprintId) {
 					$('#sprint-duration').val(data.sprint.daysDuration);
 					$('#sprint-details').val(data.sprint.description);
 					$('.submit-sprint').text('Update Sprint');
+					$('#createSprintOverlay .modal-title').text('Edit Sprint');
 					if (data.sprint.visibility === 'PRIVATE') {
 						$('#closed').prop('checked', true);
 					} else {

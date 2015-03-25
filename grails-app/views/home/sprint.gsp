@@ -71,6 +71,7 @@ $(document).ready(function() {
 								<g:if test="${participants.size() >= 5}">
 									<div class="inline-block">
 										<img src="/images/moreParticipants.png" alt="avatar" id="moreAvatars" onclick="">
+										<p>&nbsp;</p>
 									</div>
 								</g:if>
 								</div>

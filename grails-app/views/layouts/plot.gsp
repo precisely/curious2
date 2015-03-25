@@ -8,7 +8,7 @@
 <c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
-addBackToTagGroupDataCSRF" />
+addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 
 <script type="text/javascript">
