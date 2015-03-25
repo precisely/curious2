@@ -574,4 +574,158 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.response.text.contains("<div class=\"item active\">")
 		assert !controller.response.text.contains("qcode3")
 	}
+
+	Sprint dummySprint
+	User dummyUser2
+	void mockSprintData() {
+		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
+				
+				Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", first: "a", password: "y"]
+						dummyUser2 = User.create(params)
+						
+						Utils.save(dummyUser2, true)
+	}
+
+	@Test 
+	void "Test sprint when wrong id is passed"() {
+		HomeController controller = new HomeController()
+		
+		mockSprintData()
+		controller.params["id"] = 0
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint when null id is passed"() {
+		HomeController controller = new HomeController()
+		
+		mockSprintData()
+		controller.params["id"] = null
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint when a non member tries to open the private sprint"() {
+		HomeController controller = new HomeController()
+
+		mockSprintData()
+		controller.params["id"] = dummySprint.id
+		controller.session.userId = user2.getId()
+		
+		controller.sprint()
+		assert controller.flash.message == ("You are not permitted to see that sprint.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test sprint"() {
+		HomeController controller = new HomeController()
+
+		mockSprintData()
+		controller.params["id"] = dummySprint.id
+		controller.session.userId = user.getId()
+		
+		controller.sprint()
+
+		def modelAndView = controller.modelAndView
+		assert modelAndView.model['participants'][0].id == user.getId()
+		assert modelAndView.getViewName().equals("/home/sprint")
+	}
+
+
+	@Test
+	void "Test leaveSprint when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.leaveSprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test leaveSprint when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = null
+		
+		controller.leaveSprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test leaveSprint when non member user tries to leave the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.leaveSprint()
+		assert controller.flash.message == ("You are not a member of this sprint.")
+		assert controller.response.redirectUrl.contains("sprint")
+	}
+
+	@Test
+	void "Test leaveSprint when a member leaves the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.leaveSprint()
+		assert controller.response.redirectUrl.contains("sprint")
+		assert dummySprint.hasMember(user.getId()) == false
+	}
+
+	@Test
+	void "Test joinSprint when wrong sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = 0
+		
+		controller.joinSprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test joinSprint when null sprintId is passed"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = null
+		
+		controller.joinSprint()
+		assert controller.flash.message == ("Sprint does not exist.")
+		assert controller.response.redirectUrl.contains("feed")
+	}
+
+	@Test
+	void "Test joinSprint when member user tries to join the sprint"() {
+		mockSprintData()
+		controller.session.userId = user.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.joinSprint()
+		assert controller.flash.message == ("You have already joined this sprint.")
+		assert controller.response.redirectUrl.contains("sprint")
+	}
+
+	@Test
+	void "Test joinSprint when a non member joins the sprint"() {
+		mockSprintData()
+		controller.session.userId = dummyUser2.getId()
+		controller.params["sprintId"] = dummySprint.id
+		
+		controller.joinSprint()
+		assert controller.response.redirectUrl.contains("sprint")
+		assert dummySprint.hasMember(dummyUser2.getId()) == true
+	}
 }

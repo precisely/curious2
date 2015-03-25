@@ -31,7 +31,7 @@ class GroupMemberReader {
 	
 	public static delete(GroupMemberReader item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

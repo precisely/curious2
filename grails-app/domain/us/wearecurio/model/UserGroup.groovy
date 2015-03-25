@@ -289,7 +289,7 @@ class UserGroup {
 				INNER JOIN _user AS user ON d.user_id = user.id
 				WHERE rItem.member_id = :id %s ORDER BY d.updated DESC"""
 
-	static Map getDiscussionsInfoForUser(User user, boolean owned, Map args = [:]) {
+	static Map getDiscussionsInfoForUser(User user, boolean owned, boolean onlyOwned, Map args = [:]) {
 		Map paginatedData = [:]
 		Map namedParameters = [id: user.id]
 
@@ -300,9 +300,14 @@ class UserGroup {
 		String argument2 = ""
 
 		if (owned) {
+			// One can only get one of owned or onlyOwned(entries created by the user) entries
+			onlyOwned = false
 			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting owned entries"
 
 			argument2 = "OR d.user_id = :id"
+		} else if (onlyOwned) {
+			log.debug "UserGroup.getDiscussionsInfoForUser(): Getting entries created by the user"
+			argument2 = "AND d.user_id = :id"
 		}
 
 		DatabaseService databaseService = DatabaseService.get()
@@ -471,13 +476,14 @@ class UserGroup {
 	def removeWriter(User user) {
 		if (!user) return
 
-		GroupMemberReader.delete(id, user.getId())
+		removeWriter(user.id)
 	}
 
 	def removeWriter(Long userId) {
 		if (!userId) return
 
 		GroupMemberReader.delete(id, userId)
+		GroupMemberWriter.delete(id, userId)
 	}
 
 	boolean hasWriter(User user) {

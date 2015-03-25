@@ -65,10 +65,19 @@ class Discussion {
 		return discussion
 	}
 
+	static Map delete(Discussion discussion, User user) {
+		if (!UserGroup.canAdminDiscussion(user, discussion)) {
+			return [success: false, message: "You don't have the right to delete this discussion."]
+		}
+		Discussion.delete(discussion)
+		return [success: true, message: "Discussion deleted successfully."]
+		
+	}
+
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
-		discussion.delete()
+		discussion.delete(flush: true)
 	}
 	
 	static boolean search(Long userId, String searchString) {

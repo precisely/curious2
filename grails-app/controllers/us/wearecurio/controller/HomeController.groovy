@@ -2,8 +2,11 @@ package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
+import grails.gorm.DetachedCriteria
+import grails.gsp.PageRenderer
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
 
 import us.wearecurio.exceptions.*
@@ -15,6 +18,7 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
@@ -31,6 +35,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 	def oauthService
+	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 
 	static debug(str) {
@@ -588,13 +593,18 @@ class HomeController extends DataController {
 		feed(discussionId, unpublish, publish)
 	}
 	
-	def feed(Long discussionId, boolean unpublish, boolean publish) {
-		debug "HomeController.feed()"
+	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish) {
+		debug "HomeController.feed(): $params"
 		def user = sessionUser()
 
 		if (user == null) {
 			debug "auth failure"
 			flash.message = "Must be logged in"
+			redirect(url:toUrl(action:'index'))
+			return
+		} else if (userId && userId != user.id) {
+			debug "authorization failure"
+			flash.message = "You don't have permission to read these feeds."
 			redirect(url:toUrl(action:'index'))
 			return
 		}
@@ -621,6 +631,7 @@ class HomeController extends DataController {
 				}
 			}
 		}
+
 		def groupMemberships = UserGroup.getGroupsForReader(user)
 		List associatedGroups = UserGroup.getGroupsForWriter(user)
 		def groupName
@@ -640,11 +651,15 @@ class HomeController extends DataController {
 		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
 
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, params)
+				userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) : 
+				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 
 		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+		
+		// This is to get list of sprints the user belongs to or is admin of
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+		
+		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
 			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
@@ -653,7 +668,7 @@ class HomeController extends DataController {
 				// render false if there are no more discussions to show.
 				render false
 			} else {
-				render template: "/feed/discussions", model: model
+				renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
 			}
 			return
 		}
@@ -742,26 +757,12 @@ class HomeController extends DataController {
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
 				flash.message = "That discussion topic no longer exists."
-				redirect(url:toUrl(action:'feed'))
+				redirect(url: toUrl(action: 'feed'))
 				return
-			}
-			if (params.deleteDiscussion) {
-				if (!UserGroup.canAdminDiscussion(user, discussion)) {
-					status = UNAUTHORIZED
-					debug "Not admin of discussion: " + discussionId
-					message = "You don't have the right to delete this discussion."
-				} else {
-					status = OK
-					Discussion.delete(discussion)
-					message = "Discussion deleted successfully."
-				}
-
-				if (request.xhr) {
-					renderJSONPost([message: message], status)
-				} else {
-					flash.message = message
-					redirect(url: toUrl(action: 'feed'))
-				}
+			} else if (params.deleteDiscussion) {
+				Map result = Discussion.delete(discussion, user)
+				flash.message = result.message
+				redirect(url: toUrl(action: 'feed'))
 				return
 			}
 		} else if (plotDataId) {
@@ -949,5 +950,74 @@ class HomeController extends DataController {
 			[max: 50, sort: "priority", order: "desc"])
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
+	}
+
+	def sprint() {
+		log.debug "id: $params.id"
+		Sprint sprintInstance = Sprint.get(params.id)
+		if (!sprintInstance) {
+			debug "SprintId not found: $params.id"
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
+			return
+		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
+					!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
+			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
+			flash.message = g.message(code: "not.permitted.to.see.sprint")
+			redirect(url: toUrl(action:'feed'))
+			return
+		}
+		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+		
+		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
+		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
+		List<User> participantsList = memberReaders.collect {User.get(it.memberId)}
+		List<Map> participants = participantsList*.getJSONShortDesc()
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
+			participants : participants , user: sessionUser(), sprintList: sprintList])
+	}
+
+	def leaveSprint() {
+		Sprint sprintInstance = Sprint.get(params.sprintId)
+		User currentUser = sessionUser()
+		
+		if (!sprintInstance) {
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
+			return
+		}
+		if (!sprintInstance.hasMember(currentUser.id)) {
+			flash.message = g.message(code: "not.sprint.member")
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+			return
+		}
+		
+		def now = params.now ? parseDate(params.now) : null
+		def baseDate = Utils.getStartOfDay(now)
+		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		EntryStats stats = new EntryStats()
+		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
+
+		sprintInstance.removeMember(currentUser.id)
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+	}
+	
+	def joinSprint() {
+		Sprint sprintInstance = Sprint.get(params.sprintId)
+		User currentUser = sessionUser()
+
+		if (!sprintInstance) {
+			flash.message = g.message(code: "sprint.not.exist")
+			redirect(url: toUrl(action:'feed'))
+			return
+		}
+		if (sprintInstance.hasMember(currentUser.id)) {
+			flash.message = g.message(code: "already.joined.sprint")
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+			return
+		}
+
+		sprintInstance.addMember(currentUser.id)
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
 	}
 }

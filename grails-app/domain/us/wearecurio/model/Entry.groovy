@@ -642,7 +642,6 @@ class Entry implements Comparable {
 			amount.copyToMap(m)
 			e = createSingle(userId, m, entryGroup, stats)
 		}
-		
 		if (entryGroup != null) {
 			Utils.save(entryGroup, true)
 			return entryGroup.fetchSortedEntries().first() // return first entry in sorted list
@@ -999,7 +998,6 @@ class Entry implements Comparable {
 
 		if (entry.getRepeatType()?.isContinuous()) {
 			Entry.deleteSingle(entry, stats)
-
 			return
 		}
 
@@ -1540,7 +1538,7 @@ class Entry implements Comparable {
 		def c = Entry.createCriteria()
 		
 		// look for latest matching entry prior to this one
-
+		
 		def results = c {
 			eq("userId", userId)
 			le("date", date)
@@ -1916,6 +1914,7 @@ class Entry implements Comparable {
 		m['comment'] = this.comment
 		m['repeatType'] = this.repeatType
 		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
+		log.debug "activateTemplateEntrySingle(), data: ${m['date']} and currentTimeZone Calculated: $currentTimeZone"
 		m['datePrecisionSecs'] = this.datePrecisionSecs
 		def retVal = Entry.createSingle(forUserId, m, creationMap.groupForDate(m['date']), stats)
 		
@@ -3333,5 +3332,27 @@ class Entry implements Comparable {
 		if (!(o instanceof Entry))
 			return false
 		return this.is(o)
+	}
+
+	static Map canDelete(Entry entry, User user) {
+		Map result
+
+		if (user == null) {
+			result = [canDelete: false, messageCode: "auth.error.message"]
+		} else {
+			def userId = entry.getUserId();
+			if (userId != user.getId()) {
+				User entryOwner = User.get(userId)
+				if (entryOwner.virtual && Sprint.findByVirtualUserId(userId)?.hasAdmin(user.getId())) {
+					result = [canDelete: true]
+				} else {
+					result = [canDelete: false, messageCode: "delete.entry.permission.denied"]
+				}
+			} else {
+				result = [canDelete: true]
+			}
+		}
+
+		return result
 	}
 }

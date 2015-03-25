@@ -15,6 +15,8 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagValueStats;
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.services.DatabaseService
@@ -2159,5 +2161,57 @@ class EntryTests extends CuriousTestCase {
 		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 		assert entry.fetchEndEntry() == entry3
 		assert entry3.fetchStartEntry() == entry
+	}
+
+	@Test
+	void "Test canDelete when user is null"() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
+		Map result = Entry.canDelete(entry, null)
+		assert result.canDelete == false
+		assert result.messageCode == "auth.error.message"
+	}
+
+	@Test
+	void "Test canDelete when user has created the entry"() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
+		Map result = Entry.canDelete(entry, user)
+		assert result.canDelete == true
+	}
+
+	@Test
+	void "Test canDelete when user has not created the entry"() {
+		Map params = [username: "z", sex: "M", last: "z", email: "z@z.com", birthdate: "01/01/2001", first: "z", password: "z"]
+		
+		User user2 = User.create(params)
+		Utils.save(user2, true)
+		
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
+		Map result = Entry.canDelete(entry, user2)
+		assert result.canDelete == false
+		assert result.messageCode == "delete.entry.permission.denied"
+	}
+
+	@Test
+	void "Test canDelete when user has not created the entry but is admin of the sprint which contains the entry"() {
+		def sprint = Sprint.create(user, "Sprint", Visibility.PUBLIC)
+		
+		def entry = Entry.create(sprint.getVirtualUserId(), Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
+		Map result = Entry.canDelete(entry, user)
+		assert result.canDelete == true
+	}
+
+	@Test
+	void "Test canDelete when user has not created the entry and is not an admin of the sprint containing the entry"() {
+		Map params = [username: "z", sex: "M", last: "z", email: "z@z.com", birthdate: "01/01/2001", first: "z", password: "z"]
+		
+		User user2 = User.create(params)
+		Utils.save(user2, true)
+		
+		def sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
+		
+		def entry = Entry.create(sprint.getVirtualUserId(), Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
+		Map result = Entry.canDelete(entry, user)
+		assert result.canDelete == false
+		assert result.messageCode == "delete.entry.permission.denied"
 	}
 }

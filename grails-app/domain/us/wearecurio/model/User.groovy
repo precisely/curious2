@@ -331,4 +331,12 @@ class User implements NameEmail {
 				+ " twitterAccountName: " + twitterAccountName \
 				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
 	}
+
+	def getJSONShortDesc() {
+		return [
+			id: id,
+			virtual: virtual,
+			username: username
+		];
+	}
 }
