@@ -1,0 +1,26 @@
+#!/bin/bash
+if [ ! -d ~/.gvm ]; then
+	curl -s get.gvmtool.net | bash
+fi
+
+if [ ! -d ~/.gvm/grails/2.4.3 ] ; then
+	echo -e "no installed grails found!\nIf you have installed it somewhere else then please provide the grails installation directory absolute path(eg: /opt/grails/2.4.3) or,\npress 'y' to let us install grails-2.4.3 for you or, press 'n' to exit"
+    		read -p ": " opt
+    		case $opt in
+        		[Yy]* ) source ~/.gvm/bin/gvm-init.sh
+				gvm install grails 2.4.3
+				cp -r ~/.gvm/grails/2.4.3 ./current-grails
+				;;
+        		[Nn]* ) exit;;
+        		* ) cp -r $opt ./current-grails 
+			   ;;
+    		esac
+elif [ -d ~/.gvm/grails/2.4.3 ]; then
+	cp -r ~/.gvm/grails/2.4.3 ./current-grails
+fi
+
+echo -e "Creating Docker Container using vagrant...\n"
+sudo vagrant up --provider=docker --debug
+
+echo -e "loging into the Docker container... \n"
+sudo vagrant ssh
