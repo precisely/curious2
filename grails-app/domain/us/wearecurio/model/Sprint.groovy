@@ -215,7 +215,7 @@ class Sprint {
 	
 	protected String fetchTagName() {
 		if (tagName) return tagName
-		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ') + ' sprint'
+		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ').replaceAll(~/ (?=[^ ]*$)+/, '') + ' sprint'
 		
 		return tagName
 	}
