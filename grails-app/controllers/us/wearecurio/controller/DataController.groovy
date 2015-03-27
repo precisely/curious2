@@ -1264,6 +1264,42 @@ class DataController extends LoginController {
 		}
 	}
 
+	def createHelpEntriesData() {
+		log.debug "Entries recieved to save: $params"
+		def iterator = params.entry.entrySet().iterator()
+		
+		while (iterator.hasNext()) {
+			if (iterator.next().value == "") {
+				iterator.remove()
+			}
+		}
+		
+		def entries = params.entry
+
+		if (!entries.size()) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ['Entries'])])
+			return
+		}
+		
+		boolean operationSuccess = true;
+		String messageCode = "default.create.label"
+		Entry.withTransaction { status ->
+			entries.any({
+				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
+					it.value, params.baseDate, false)
+				if (!result[0]) {
+					operationSuccess = false
+					messageCode = "not.saved.message"
+					status.setRollbackOnly()
+					return true
+				} else {
+					return
+				}
+			})
+		}
+		renderJSONPost([success: operationSuccess, message: g.message(code: messageCode, args: ['Entries'])])
+	}
+
 	def createNewSprintData() {
 		User currentUser = sessionUser()
 		
@@ -1533,21 +1569,21 @@ class DataController extends LoginController {
 		return
 	}
 
-	def createHelpEntriesData() {
-		def entries = params.entry.findAll{item -> !item.isEmpty()}
-		log.debug "Entries recieved to save: $params"
-		if (!entries.size()) {
-			renderJSONPost([success: false])
+	def saveSurveyData() {
+		log.debug "Data.saveSurveyData() $params"
+		User currentUserInstance = sessionUser()
+		boolean hasErrors = false
+
+		if (params.answer.size() < 1) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
 			return
 		}
-		
-		boolean operationSuccess = true;
-		Entry.withTransaction { status ->
-			entries.any({ entryText ->
-				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
-					entryText, params.baseDate, false)
-				if (!result[0]) {
-					operationSuccess = false
+		// Using any instead of each so as to be able to break the loop when error occurs
+		UserSurveyAnswer.withTransaction { status ->
+			params.answer.any({ questionAnswerMap ->
+				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+				if (!userSurveyAnswer) {
+					hasErrors = true
 					status.setRollbackOnly()
 					return true
 				} else {
@@ -1555,6 +1591,20 @@ class DataController extends LoginController {
 				}
 			})
 		}
-		renderJSONPost([success: operationSuccess])
+		
+		if (hasErrors) {
+			renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
+		} else {
+			session.survey = null
+			renderJSONPost([success: true])
+		}
+	}
+
+	def getSurveyData() {
+		log.debug "Data.getSurveyData()"
+		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE,
+			[max: 50, sort: "priority", order: "desc"])
+		Map model = [questions: questions]
+		render template: "/survey/questions", model: model
 	}
 }

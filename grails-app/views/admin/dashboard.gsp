@@ -18,6 +18,12 @@
 				<li>
 						<g:link controller="analyticsTask" action="index">Analytics Jobs</g:link>
 				</li>
-		</ul>
+				<li>
+					<g:link controller="admin" action="survey">Survey</g:link>
+				</li>
+				<li>
+					<g:link controller="admin" action="listSurveyQuestions">Survey Questions</g:link>
+				</li>
+			</ul>
 </body>
 </html>

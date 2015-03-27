@@ -26,7 +26,13 @@ class AdminController extends LoginController {
 		println "$params"
 		if (params.id) {
 			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
-			
+
+			if (!surveyQuestion) {
+				redirect(uri: "admin/survey?id=" + params.id)
+				flash.message = g.message(code: "default.not.found.message",
+						args: ["Survey question", params.id])
+			}
+
 			grailsWebDataBinder.bind(surveyQuestion, 
 				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question"])
 			surveyQuestion.validate()
@@ -36,7 +42,7 @@ class AdminController extends LoginController {
 				redirect(uri: "admin/listSurveyQuestions")
 			} else {
 				redirect(uri: "admin/survey?id=" + params.id)
-				flash.message = "Could not update question, please verify all fields!"
+				flash.message = g.message(code: "not.created.message", args: ["Survey question"])
 			}
 		} else {
 			SurveyQuestion surveyQuestion = SurveyQuestion.create(params)
@@ -46,16 +52,15 @@ class AdminController extends LoginController {
 				redirect(uri: "admin/addPossibleAnswers?id=$surveyQuestion.id")
 			} else {
 				redirect(uri: "admin/survey")
-				flash.message = "Could not add question, perhaps code is not unique!"
+				flash.message = g.message(code: "not.created.message", args: ['Survey question'])
 			}
 		}
 	}
 
-	def addPossibleAnswers() {
-		SurveyQuestion surveyQuestion = params.id ? SurveyQuestion.get(params.id) : null
+	def addPossibleAnswers(SurveyQuestion surveyQuestion) {
 		if (!surveyQuestion) {
 			redirect(uri: "admin/survey")
-			flash.message = "You can not add answers to a question that does not exist!"
+			flash.message = g.message(code: "default.not.found.message", args: ['Survey question', params.id])
 			return
 		} else {
 			Map model = [surveyQuestion: surveyQuestion];
@@ -63,14 +68,15 @@ class AdminController extends LoginController {
 		}
 	}
 
-	def createAnswers() {
+	def createAnswersData() {
+		SurveyQuestion surveyQuestion = SurveyQuestion.get(params.questionId)
+		if (!surveyQuestion) {
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+					args: ["Survey question", params.questionId])])
+					return
+		}
+
 		SurveyAnswer.withTransaction { status ->
-			SurveyQuestion surveyQuestion = params.questionId ? SurveyQuestion.get(params.questionId) : null
-			if (!surveyQuestion) {
-				renderJSONPost([success: false])
-				return
-			}
-			
 			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
 			surveyQuestion.possibleAnswers.removeAll([null])
 			surveyQuestion.possibleAnswers.sort()
@@ -80,12 +86,12 @@ class AdminController extends LoginController {
 			
 			if (surveyQuestion.hasErrors() || answersValidation.contains(false)) {
 				status.setRollbackOnly()
-				renderJSONPost([success: false])
+				renderJSONPost([success: false, message: g.message(code: "not.created.message", 
+					args: ["Survey answers"])])
 				return
-			} else {
-				Utils.save(surveyQuestion, true)
-				renderJSONPost([success: true])
-			}
+			} 
+			Utils.save(surveyQuestion, true)
+			renderJSONPost([success: true])
 		}
 	}
 
@@ -95,34 +101,49 @@ class AdminController extends LoginController {
 		model
 	}
 
-	def showSurveyQuestion(Long id) {
-		SurveyQuestion surveyQuestion = id ? SurveyQuestion.get(id) : null
+	def showSurveyQuestion(SurveyQuestion surveyQuestion) {
 		if (!surveyQuestion) {
 			redirect(uri: "admin/listSurveyQuestions")
-			flash.message = "Could not find the question you are looking for!"
+			flash.message = g.message(code: "default.not.found.message", args: ["Survey question", params.id])
 			return
 		}
 		[surveyQuestion: surveyQuestion]
 	}
 
-	def deletePossibleAnswer(Long answerId, Long questionId) {
+	def deletePossibleAnswerData(Long answerId, Long questionId) {
 
-		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
-
-		if (!answerId || !surveyQuestion) {
-			renderJSONPost([success: false])
+		if (!answerId) {
+			renderJSONPost([success: false, message: g.message(code: "default.null.message", 
+					args: ["id", "Answer"])])
 			return
 		}
+
+		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+		if (!surveyQuestion) {
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+					args: ["Survey question", questionId])])
+			return
+		}
+
 		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
+
+		if (!surveyAnswer) {
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
+					args: ["Survey answer", answerId])])
+			return
+		}
 		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
 		Utils.save(surveyQuestion, true)
 		renderJSONPost([success: true])
 	}
 
-	def updateSurveyAnswer() {
-		SurveyAnswer surveyAnswer = params.answerId ? SurveyAnswer.get(params.answerId) : null
+	def updateSurveyAnswerData() {
+		log.debug "Admin.updateSurveyAnswerData: params: $params"
+		
+		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
 		if (!surveyAnswer) {
-			renderJSONPost([success: false])
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+					args: ['Survey answer', params.answerId])])
 			return
 		}
 
@@ -131,18 +152,19 @@ class AdminController extends LoginController {
 		surveyAnswer.validate()
 
 		if (surveyAnswer.hasErrors()) {
-			renderJSONPost([success: false])
+			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", 
+					args: ['Survey answer'])])
 		} else {
 			Utils.save(surveyAnswer, true)
 			renderJSONPost([success: true])
 		}
 	}
 
-	def deleteSurveyQuestion(Long questionId) {
-		SurveyQuestion surveyQuestion = questionId ? SurveyQuestion.get(questionId) : null
+	def deleteSurveyQuestionData(SurveyQuestion surveyQuestion) {
 
 		if (!surveyQuestion) {
-			renderJSONPost([success: false])
+			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+					args: ['Survey question', params.id])])
 			return
 		}
 

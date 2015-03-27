@@ -97,9 +97,8 @@ def activeClass = { a ->
 				url: '/home/getSurveyData',
 				success: function(data) {
 					if (data != null) {
-						console.log('data success!', data);
-						$('.carousel-inner').html(data);
-						var questionCount = $('.carousel-inner').find('.item').length;
+						$('#survey-carousel-content .carousel-inner').html(data);
+						var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
 						console.log(questionCount)
 						if (questionCount == 1) {
 							console.log('ha ha question count');

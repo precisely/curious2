@@ -22,7 +22,7 @@
 								<input type="text" id="sleep-hour" value=""
 										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
 								<h4 id="sleep-entry-label"></h4>
-								<input type="hidden" name="entry" value="" id="sleep-hour-entry" />
+								<input type="hidden" name="entry.0" value="" id="sleep-hour-entry" />
 							</div>
 
 							<div class="item range-box">
@@ -39,7 +39,7 @@
 									Super stocked, cheerful frame of mind.
 								</label>
 								<h4 id="mood-entry-label"></h4>
-								<input type="hidden" name="entry" id="mood-entry" />
+								<input type="hidden" name="entry.1" id="mood-entry" />
 							</div>
 
 							<div class="item">
@@ -47,22 +47,22 @@
 								<label for="cardio">
 									CARDIO
 								</label>
-								<input type="text" class="exercise-details" name="entry" id="cardio"
+								<input type="text" class="exercise-details" name="entry.2" id="cardio"
 										placeholder="e.g. running 45 minutes, zumba 60 min" /> 
 								<label for="resistance">
 									RESISTANCE
 								</label>
-								<input type="text" class="exercise-details" name="entry" id="resistance"
+								<input type="text" class="exercise-details" name="entry.3" id="resistance"
 										placeholder="e.g. weight lifting 2  hrs" />
 								<label for="stretch">
 									STRETCH
 								</label>
-								<input type="text" class="exercise-details" name="entry" id="stretch"
+								<input type="text" class="exercise-details" name="entry.4" id="stretch"
 										placeholder="e.g. 90 mins bikram yoga" />
 								<label for="metabolic">
 									METABOLIC TRAINING
 								</label>
-								<input type="text" class="exercise-details" name="entry" id="metabolic"
+								<input type="text" class="exercise-details" name="entry.5" id="metabolic"
 										placeholder="e.g. crossfit 1 hour 15 min" />
 							</div>
 						</div>

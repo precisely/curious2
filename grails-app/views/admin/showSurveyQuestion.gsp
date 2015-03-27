@@ -6,57 +6,44 @@
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('#addSurveyAnswerForm').submit(function(event) {
-					params = $(this).serializeArray();
-					$.ajax({
-						type: 'POST',
-						url: '/admin/updateSurveyAnswer',
-						data: params,
-						success: function(data) {
-							data = JSON.parse(data);
-							if (data.success) {
-								$('#answer-text-' + params[4].value).text(params[0].value);
-								$('#answer-code-' + params[4].value).text(params[1].value);
-								$('#answer-priority-' + params[4].value).text(params[2].value);
-								$('#answer-type-' + params[4].value).text(params[3].value);
-								$('#addAnswerOverlay').hide();
-							} else {
-								console.log('error');
-								$('#alert').removeClass('hide').text('Error while updating answer!');
-								setInterval(function() {
-									$('#alert').addClass('hide');
-								}, 5000);
-							}
-						},
-						error: function(xhr) {
-							console.log('xhr:', xhr);
+					var params = $(this).serializeObject();
+					queuePostJSON('Adding answer to survey question', '/admin/updateSurveyAnswerData', 
+							getCSRFPreventionObject('updateSurveyAnswerDataCSRF', params),
+							function(data) {
+						if (data.success) {
+							$('#answer-text-' + params.answerId).text(params.answer);
+							$('#answer-code-' + params.answerId).text(params.code);
+							$('#answer-priority-' + params.answerId).text(params.priority);
+							$('#answer-type-' + params.answerId).text(params.answerType);
+							$('#addAnswerOverlay').hide();
+						} else {
+							console.log('error');
+							$('#alert').removeClass('hide').text(data.message);
+							setInterval(function() {
+								$('#alert').addClass('hide');
+							}, 5000);
 						}
+					}, function(xhr) {
+						console.log('error: ', xhr);
 					});
 					return false;
 				});
 			});
 			function deletePossibleAnswer(answerId, questionId) {
-				$.ajax({
-					type: 'POST',
-					url: '/admin/deletePossibleAnswer',
-					data: {
-							answerId: answerId,
-							questionId: questionId
-						},
-					success: function(data) {
-						data = JSON.parse(data);
-						if (data.success) {
-							$("#answer-"+answerId).remove();
-						} else {
-							console.log('error');
-							$('.alert').removeClass('hide').text('Error while adding answers to the question!');
-							setInterval(function() {
-								$('.alert').addClass('hide');
-							}, 5000);
-						}
-					},
-					error: function(xhr) {
-						console.log('xhr:', xhr);
+				queuePostJSON('Deleting survey answer', '/admin/deletePossibleAnswerData', 
+						getCSRFPreventionObject('deletePossibleAnswerDataCSRF', {answerId: answerId, questionId: questionId}),
+						function(data) {
+					if (data.success) {
+						$("#answer-"+answerId).remove();
+					} else {
+						console.log('error');
+						$('.alert').removeClass('hide').text(data.message);
+						setInterval(function() {
+							$('.alert').addClass('hide');
+						}, 5000);
 					}
+				}, function(xhr) {
+					console.log('error: ', xhr);
 				});
 			}
 
@@ -73,27 +60,19 @@
 			}
 
 			function deleteQuestion(questionId) {
-				$.ajax({
-					type: 'POST',
-					url: '/admin/deleteSurveyQuestion',
-					data: {
-							questionId: questionId
-						},
-					success: function(data) {
-						data = JSON.parse(data);
-						if (data.success) {
-							window.location.assign('/admin/listSurveyQuestions');
-						} else {
-							console.log('error');
-							$('.alert').removeClass('hide').text('Could not delete the question!');
-							setInterval(function() {
-								$('.alert').addClass('hide');
-							}, 5000);
-						}
-					},
-					error: function(xhr) {
-						console.log('xhr:', xhr);
+				queuePostJSON('Deleting survey questions', '/admin/deleteSurveyQuestionData', 
+						getCSRFPreventionObject('deleteSurveyQuestionDataCSRF', {id: questionId}),
+						function(data) {
+					if (data.success) {
+						window.location.assign('/admin/listSurveyQuestions');
+					} else {
+						$('.alert').removeClass('hide').text(data.message);
+						setInterval(function() {
+							$('.alert').addClass('hide');
+						}, 5000);
 					}
+				}, function(xhr) {
+					console.log('error: ', xhr);
 				});
 			}
 		</script>
@@ -186,7 +165,7 @@
 							</td>
 							<td>
 								<button class="edit-answer" 
-									onclick="editPossibleAnswer(${answerInstance.id}, ${surveyQuestion.id})">
+									onclick="editPossibleAnswer(${answerInstance.id})">
 									<i class="fa fa-pencil"></i>
 								</button>
 							</td>
