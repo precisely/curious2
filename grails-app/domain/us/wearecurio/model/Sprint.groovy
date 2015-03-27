@@ -215,7 +215,10 @@ class Sprint {
 	
 	protected String fetchTagName() {
 		if (tagName) return tagName
-		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ').replaceAll(~/ (?=[^ ]*$)+/, '') + ' sprint'
+		tagName = name.toLowerCase()
+		.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
+		.replaceAll(~/ +/, ' ')				// Replaces all multiple spaces with single space
+		.trim() + ' sprint'					// Removes spaces from the start and the end of the string
 		
 		return tagName
 	}
