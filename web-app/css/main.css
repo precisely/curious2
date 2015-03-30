@@ -1475,7 +1475,7 @@ body.discuss-page .red-header {
 	color:#FC3F28;
 }
 
-.input-affordance label:after { 
+.feed-body .input-affordance label:after { 
 	content: "";
 	position: absolute;
 	display: inline-block; 
