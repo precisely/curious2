@@ -916,7 +916,7 @@ class HomeController extends DataController {
 	def sprint() {
 		log.debug "id: $params.id"
 		Sprint sprintInstance = Sprint.get(params.id)
-		if (!sprintInstance) {
+		if (!sprintInstance || sprintInstance.userId == 0) {
 			debug "SprintId not found: $params.id"
 			flash.message = g.message(code: "sprint.not.exist")
 			redirect(url: toUrl(action:'feed'))

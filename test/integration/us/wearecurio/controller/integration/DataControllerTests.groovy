@@ -893,7 +893,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user.getId()
 		controller.params["sprintId"] = dummySprint.id
 		controller.deleteSprintData()
+		
 		assert controller.response.json.success == true
+		assert !dummySprint.hasAdmin(user.getId())
+		assert !dummySprint.hasMember(user.getId())
+		assert dummySprint.userId == 0l
 	}
 
 	@Test
