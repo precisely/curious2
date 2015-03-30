@@ -1320,4 +1320,42 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == true
 		assert dummySprint.hasAdmin(user.getId()) == false
 	}
+
+	@Test
+	void "Test createHelpEntriesData when no entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = ['', '']
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == false
+	}
+
+	@Test
+	void "Test createHelpEntriesData when few blank entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = ['', '', 'sleep 9 hrs']
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == true
+		assert Entry.count() == 1
+	}
+
+	@Test
+	void "Test createHelpEntriesData when no blank entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = ['mood 3', 'sleep 9 hrs']
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == true
+		assert Entry.count() == 2
+	}
 }
