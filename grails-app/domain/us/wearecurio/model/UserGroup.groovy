@@ -449,6 +449,12 @@ class UserGroup {
 		removeReader(User.get(userId))
 	}
 
+	def removeAllParticipants() {
+		removeAllReaders()
+		removeAllWriters()
+		removeAllAdmins()
+	}
+
 	def removeAllReaders() {
 		GroupMemberReader.executeUpdate("DELETE GroupMemberReader gmr WHERE gmr.groupId = :groupId", [groupId: id])
 	}

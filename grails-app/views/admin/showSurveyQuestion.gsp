@@ -3,6 +3,7 @@
 	<head>
 		<meta name="layout" content="main">
 		<title>Survey</title>
+		<c:jsCSRFToken keys="deleteSurveyQuestionDataCSRF, updateSurveyAnswerDataCSRF, deletePossibleAnswerDataCSRF"/>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('#addSurveyAnswerForm').submit(function(event) {
@@ -17,11 +18,7 @@
 							$('#answer-type-' + params.answerId).text(params.answerType);
 							$('#addAnswerOverlay').hide();
 						} else {
-							console.log('error');
-							$('#alert').removeClass('hide').text(data.message);
-							setInterval(function() {
-								$('#alert').addClass('hide');
-							}, 5000);
+							showAlertMessage($('.alert'), data.message);
 						}
 					}, function(xhr) {
 						console.log('error: ', xhr);
@@ -36,11 +33,7 @@
 					if (data.success) {
 						$("#answer-"+answerId).remove();
 					} else {
-						console.log('error');
-						$('.alert').removeClass('hide').text(data.message);
-						setInterval(function() {
-							$('.alert').addClass('hide');
-						}, 5000);
+						showAlertMessage($('.alert'), data.message);
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);
@@ -66,10 +59,7 @@
 					if (data.success) {
 						window.location.assign('/admin/listSurveyQuestions');
 					} else {
-						$('.alert').removeClass('hide').text(data.message);
-						setInterval(function() {
-							$('.alert').addClass('hide');
-						}, 5000);
+						showAlertMessage($('.alert'), data.message);
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);

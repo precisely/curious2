@@ -139,7 +139,7 @@ input:focus::-webkit-input-placeholder, input:focus::-moz-placeholder, input:foc
 }
 
 #searchFeed::-webkit-input-placeholder, #searchFeed::-moz-placeholder, #searchFeed::-ms-input-placeholder {
-	color: white;
+	color: white !important;
 }
 
 #discussion-topic::-webkit-input-placeholder, #discussion-topic::-moz-placeholder, 

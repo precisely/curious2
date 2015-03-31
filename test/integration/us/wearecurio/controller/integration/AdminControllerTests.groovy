@@ -88,7 +88,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == messageSource.getMessage("not.created.message",
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
 				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
@@ -113,7 +113,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == messageSource.getMessage("not.created.message",
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
 				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
@@ -127,7 +127,7 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == messageSource.getMessage("not.created.message",
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
 				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}

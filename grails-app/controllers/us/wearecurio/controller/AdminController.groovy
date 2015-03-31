@@ -28,7 +28,7 @@ class AdminController extends LoginController {
 			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 
 			if (!surveyQuestion) {
-				redirect(uri: "admin/survey?id=" + params.id)
+				redirect(uri: "admin/survey/$params.id")
 				flash.message = g.message(code: "default.not.found.message",
 						args: ["Survey question", params.id])
 			}
@@ -42,7 +42,7 @@ class AdminController extends LoginController {
 				redirect(uri: "admin/listSurveyQuestions")
 			} else {
 				redirect(uri: "admin/survey?id=" + params.id)
-				flash.message = g.message(code: "not.created.message", args: ["Survey question"])
+				flash.message = g.message(code: "default.not.updated.message", args: ["Survey question"])
 			}
 		} else {
 			SurveyQuestion surveyQuestion = SurveyQuestion.create(params)
@@ -112,6 +112,7 @@ class AdminController extends LoginController {
 
 	def deletePossibleAnswerData(Long answerId, Long questionId) {
 
+		log.debug "Delete survey possible answer with id: $answerId"
 		if (!answerId) {
 			renderJSONPost([success: false, message: g.message(code: "default.null.message", 
 					args: ["id", "Answer"])])

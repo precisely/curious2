@@ -3,6 +3,7 @@
 	<head>
 		<meta name="layout" content="main">
 		<title>Survey</title>
+		<c:jsCSRFToken keys="createAnswersDataCSRF"/>
 		<script type="text/javascript">
 		var rowIdToRemove;
 		$(document).ready(function() {
@@ -10,7 +11,7 @@
 
 			$('#addSurveyAnswerForm').submit(function(event) {
 				$('.add-answer').attr('disabled','disabled');
-				params = $(this).serializeObject();
+				var params = $(this).serializeObject();		// Defined in base.js file
 
 				var innerHTMLContent = '<div class="row survey-answers" id="' + rowNumber + '"><div class="col-md-3"> ' + 
 					'<input type="text" name="possibleAnswers[' + rowNumber + '].answer" id="answer" readonly value="' + params.answer + '"/></div>' + 
@@ -39,14 +40,9 @@
 							getCSRFPreventionObject('createAnswersDataCSRF', params),
 							function(data) {
 						if (data.success) {
-							console.log('success');
 							window.location.assign('/admin/listSurveyQuestions');
 						} else {
-							console.log('error');
-							$('.alert').removeClass('hide').text(data.message);
-							setInterval(function() {
-								$('.alert').addClass('hide');
-							}, 5000);
+							showAlertMessage($('.alert'), data.message);
 						}
 					}, function(xhr) {
 						console.log('error: ', xhr);

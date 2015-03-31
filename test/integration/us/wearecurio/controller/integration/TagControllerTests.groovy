@@ -44,7 +44,7 @@ class TagControllerTests extends CuriousControllerTestCase{
 	}
 
 	@Test
-	void testRemoveTagFromTagGroupData() {
+	void "Test removeTagFromTagGroupData"() {
 		
 		assert tagGroupInstance.getTags(userId).size() == 2
 		
@@ -60,9 +60,9 @@ class TagControllerTests extends CuriousControllerTestCase{
 	}
 
 	@Test
-	void testDeleteTagGroupData() {
+	void "Test deleteTagGroupData"() {
 		
-		assert GenericTagGroupProperties.findAllByUserIdAndTagGroupId(userId, tagGroupInstance.id).size() == 1
+		assert GenericTagGroupProperties.countByUserIdAndTagGroupId(userId, tagGroupInstance.id) == 1
 		
 		controller.session.userId = userId
 		controller.params["id"] = tagGroupInstance.id
@@ -70,7 +70,7 @@ class TagControllerTests extends CuriousControllerTestCase{
 		controller.deleteTagGroupData()
 		
 		assert controller.response.json.success == true
-		assert GenericTagGroupProperties.findAllByUserIdAndTagGroupId(userId, tagGroupInstance.id).size() == 0
+		assert GenericTagGroupProperties.countByUserIdAndTagGroupId(userId, tagGroupInstance.id) == 0
 	}
 
 }

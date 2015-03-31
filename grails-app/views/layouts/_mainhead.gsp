@@ -26,9 +26,8 @@
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>
 </g:if>
-<c:jsCSRFToken keys="createHelpEntriesData, saveSurveyDataCSRF, getPeopleDataCSRF, updateSurveyAnswerDataCSRF, 
-		deletePossibleAnswerDataCSRF, deletePossibleAnswerDataCSRF, createAnswersDataCSRF, getInterestTagsDataCSRF, 
-		createHelpEntriesDataCSRF"/>
+<c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, 
+		getInterestTagsDataCSRF"/>
 <script type="text/javascript">
 function makeGetUrl(url) {
 	return "/home/" + url + "?callback=?";

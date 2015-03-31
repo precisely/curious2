@@ -771,7 +771,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createHelpEntriesData when no entries are passed in params"() {
 		controller.session.userId = user.getId()
-		controller.params['entry'] = [0: '',1: '']
+		controller.params['entry'] = [0: '', 1: '']
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
@@ -785,7 +785,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createHelpEntriesData when few blank entries are passed in params"() {
 		controller.session.userId = user.getId()
-		controller.params['entry'] = [0: '',1: '',2: 'sleep 9 hrs']
+		controller.params['entry'] = [0: "", 1: "", 2: "sleep 9 hrs"]
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
@@ -793,12 +793,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
 		assert Entry.count() == 1
+		assert Entry.last().description == "sleep duration"
 	}
 
 	@Test
 	void "Test createHelpEntriesData when no blank entries are passed in params"() {
 		controller.session.userId = user.getId()
-		controller.params['entry'] = [0: 'mood 3',1: 'sleep 9 hrs']
+		controller.params['entry'] = [0: 'mood 3', 1: 'sleep 9 hrs']
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
@@ -1366,7 +1367,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testSaveSurveyData() {
+	void "Test SaveSurveyData"() {
 		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
 		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
 		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
@@ -1381,13 +1382,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 			qcode3: 'Answer no. 3.']
 		controller.saveSurveyData()
 		assert controller.response.json.success == true
+		assert UserSurveyAnswer.count() == 3
 		controller.response.reset()
 
 		// When an answer is missing for a question
 		controller.params['answer'] = ['qcode1': null, 'qcode2': 'Answer no. 2.',
 			'qcode3': 'Answer no. 3.']
 		controller.saveSurveyData()
-		UserSurveyAnswer.count() == 0
+		assert UserSurveyAnswer.count() == 3		// 3 answers already created in previous call
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("not.saved.message", ["Answers"] as Object[], null)
 
@@ -1396,13 +1398,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		// When blank data is sent
 		controller.params['answer'] = [:]
 		controller.saveSurveyData()
-		UserSurveyAnswer.count() == 0
+		assert UserSurveyAnswer.count() == 3
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Answers"] as Object[], null)
 	}
 
 	@Test
-	void testGetSurveyData() {
+	void "Test testGetSurveyData"() {
 		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
 		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
 		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]

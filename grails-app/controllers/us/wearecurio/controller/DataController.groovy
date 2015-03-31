@@ -1110,7 +1110,7 @@ class DataController extends LoginController {
 		if (user == null) {
 			Discussion discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
 			if (!discussion.getIsPublic()) {
-				debug "auth failure"renderJSONPost([plotDataId:plotDataObj.getId()])
+				debug "auth failure"
 				renderStringGet(AUTH_ERROR_MESSAGE)
 				return
 			}
@@ -1266,17 +1266,9 @@ class DataController extends LoginController {
 
 	def createHelpEntriesData() {
 		log.debug "Entries recieved to save: $params"
-		def iterator = params.entry.entrySet().iterator()
-		
-		while (iterator.hasNext()) {
-			if (iterator.next().value == "") {
-				iterator.remove()
-			}
-		}
-		
-		def entries = params.entry
+		def entries = params.entry.findAll { it.value }
 
-		if (!entries.size()) {
+		if (!entries) {
 			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ['Entries'])])
 			return
 		}
@@ -1284,6 +1276,7 @@ class DataController extends LoginController {
 		boolean operationSuccess = true;
 		String messageCode = "default.create.label"
 		Entry.withTransaction { status ->
+			// Iterating over all the entries received and creating entries for them
 			entries.any({
 				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
 					it.value, params.baseDate, false)
@@ -1574,7 +1567,7 @@ class DataController extends LoginController {
 		User currentUserInstance = sessionUser()
 		boolean hasErrors = false
 
-		if (params.answer.size() < 1) {
+		if (!params.answer) {
 			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
 			return
 		}

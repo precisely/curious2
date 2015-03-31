@@ -131,9 +131,8 @@ class Sprint {
 		log.debug "Sprint.delete() id:" + sprint.getId()
 		// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
 		sprint.userId = 0
-		sprint.fetchUserGroup()?.removeAllAdmins()
-		sprint.fetchUserGroup()?.removeAllWriters()
-		sprint.fetchUserGroup()?.removeAllReaders()
+		UserGroup sprintUserGroup = sprint.fetchUserGroup()
+		sprintUserGroup?.removeAllParticipants()
 		
 		Utils.save(sprint, true)
 	}

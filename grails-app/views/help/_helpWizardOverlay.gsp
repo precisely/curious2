@@ -19,10 +19,10 @@
 								<h3 class="questions">
 									How many hours did you sleep last night?
 								</h3>
-								<input type="text" id="sleep-hour" value=""
+								<input type="text" id="sleep-hour"
 										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
 								<h4 id="sleep-entry-label"></h4>
-								<input type="hidden" name="entry.0" value="" id="sleep-hour-entry" />
+								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
 							<div class="item range-box">
