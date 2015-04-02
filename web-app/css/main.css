@@ -1740,6 +1740,7 @@ body.track-page ol#entry0 li button.save {
 	padding-left: 25px;
 	font-weight: 600;
 	border-radius: 1px;
+	vertical-align: top;
 }
 .pin-entry .fa {
 	margin-left: 10px;

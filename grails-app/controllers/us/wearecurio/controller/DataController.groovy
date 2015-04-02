@@ -14,14 +14,12 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.springframework.http.HttpStatus
+
 import static org.springframework.http.HttpStatus.*
-
-import us.wearecurio.model.Discussion
-
 import us.wearecurio.model.*
-import us.wearecurio.model.Entry.RepeatType
-import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.model.Entry.ParseAmount
+import us.wearecurio.model.Entry.RepeatType;
+import us.wearecurio.model.Entry.DurationType;
+import us.wearecurio.model.Entry.ParseAmount;
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -1565,31 +1563,26 @@ class DataController extends LoginController {
 	def saveSurveyData() {
 		log.debug "Data.saveSurveyData() $params"
 		User currentUserInstance = sessionUser()
-		boolean hasErrors = false
 
 		if (!params.answer) {
 			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
 			return
 		}
-		// Using any instead of each so as to be able to break the loop when error occurs
+
 		UserSurveyAnswer.withTransaction { status ->
-			params.answer.any({ questionAnswerMap ->
-				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-				if (!userSurveyAnswer) {
-					hasErrors = true
-					status.setRollbackOnly()
-					return true
-				} else {
-					return
-				}
-			})
-		}
-		
-		if (hasErrors) {
-			renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
-		} else {
-			session.survey = null
-			renderJSONPost([success: true])
+			try {
+				params.answer.each({ questionAnswerMap ->
+					UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+					if (!userSurveyAnswer) {
+						throw new IllegalArgumentException()
+					}
+				})
+				session.survey = null
+				renderJSONPost([success: true])
+			} catch (IllegalArgumentException e) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
+			}
 		}
 	}
 
