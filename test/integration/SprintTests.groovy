@@ -308,11 +308,30 @@ class SprintTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void TestGetSprintListForUser() {
+	void testGetSprintListForUser() {
 		mockSprintData()
 		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId())
 		assert sprintList.size() == 2
 		assert sprintList[0].id == dummySprint1.id
 		assert sprintList[1].id == dummySprint2.id
+	}
+
+	@Test
+	void testDelete() {
+		mockSprintData()
+		dummySprint1.addAdmin(user2.getId())
+		assert dummySprint1.hasAdmin(user2.getId())
+		assert dummySprint1.hasAdmin(user.getId())
+		assert dummySprint1.hasMember(user2.getId())
+		assert dummySprint1.hasMember(user.getId())
+		assert dummySprint1.userId == userId
+		
+		Sprint.delete(dummySprint1)
+		
+		assert !dummySprint1.hasAdmin(user2.getId())
+		assert !dummySprint1.hasAdmin(user.getId())
+		assert !dummySprint1.hasMember(user2.getId())
+		assert !dummySprint1.hasMember(user.getId())
+		assert dummySprint1.userId == 0l
 	}
 }

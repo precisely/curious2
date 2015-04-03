@@ -129,11 +129,12 @@ class Sprint {
 	
 	static void delete(Sprint sprint) {
 		log.debug "Sprint.delete() id:" + sprint.getId()
-		Sprint.withTransaction {
-			// TODO: remove users from sprint groups, etc.
-			// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
-			sprint.delete()
-		}
+		// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
+		sprint.userId = 0
+		UserGroup sprintUserGroup = sprint.fetchUserGroup()
+		sprintUserGroup?.removeAllParticipants()
+		
+		Utils.save(sprint, true)
 	}
 	
 	static boolean search(Long userId, String searchString) {
@@ -215,7 +216,11 @@ class Sprint {
 	
 	protected String fetchTagName() {
 		if (tagName) return tagName
-		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ') + ' sprint'
+		
+		tagName = name.toLowerCase()
+		.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
+		.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
+		.trim() + ' sprint'			// Removes spaces from the start and the end of the string
 		
 		return tagName
 	}
@@ -312,7 +317,10 @@ class Sprint {
 		List<Sprint> sprintList = Sprint.withCriteria {
 			or {
 				'in'("virtualGroupId", groupReaderList ?: [0l]) // When using 'in' clause GORM gives error on passing blank list
-				eq("visibility", Visibility.PUBLIC)
+				and {
+					eq("visibility", Visibility.PUBLIC)
+					ne("userId", 0l)
+				}
 			}
 		}
 		

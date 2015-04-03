@@ -913,49 +913,10 @@ class HomeController extends DataController {
 		render(view:"/home/lgmd2iproject", model:model)
 	}
 
-	def saveSurveyData() {
-		log.debug "Home.saveSurveyData()"
-		User currentUserInstance = sessionUser()
-		boolean hasErrors = false
-
-		if (params.answer.size() < 1) {
-			renderJSONPost([success: false])
-			return
-		}
-		// Using any instead of each so as to be able to break the loop when error occurs
-		UserSurveyAnswer.withTransaction { status ->
-			params.answer.any({ questionAnswerMap ->
-				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-				if (!userSurveyAnswer) {
-					hasErrors = true
-					status.setRollbackOnly()
-					return true
-				} else {
-					return
-				}
-			})
-		}
-		
-		if (hasErrors) {
-			renderJSONPost([success: false])
-		} else {
-			session.survey = null
-			renderJSONPost([success: true])
-		}
-	}
-
-	def getSurveyData() {
-		log.debug "Home.getSurveyData()"
-		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE, 
-			[max: 50, sort: "priority", order: "desc"])
-		Map model = [questions: questions]
-		render template: "/survey/questions", model: model
-	}
-
 	def sprint() {
 		log.debug "id: $params.id"
 		Sprint sprintInstance = Sprint.get(params.id)
-		if (!sprintInstance) {
+		if (!sprintInstance?.userId) {
 			debug "SprintId not found: $params.id"
 			flash.message = g.message(code: "sprint.not.exist")
 			redirect(url: toUrl(action:'feed'))

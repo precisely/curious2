@@ -31,7 +31,7 @@
 						</div>
 						<div class="col-md-6">
 							<label for="sprint-duration">DURATION</label>
-							<input type="text" name="daysDuration" placeholder="Select Duration" id="sprint-duration">
+							<input type="number" name="daysDuration" placeholder="Enter duration in days" min="0" id="sprint-duration">
 						</div>
 					</div>
 					<label for="sprint-details">DETAILS</label>

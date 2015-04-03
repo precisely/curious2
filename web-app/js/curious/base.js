@@ -37,6 +37,14 @@ function callLogoutCallbacks() {
 String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
 String.prototype.endsWith = function (str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
 
+/* 
+ * This function will capitalize first letter of a String
+ * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+ */
+String.prototype.capitalizeFirstLetter = function() {
+	return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 /*
  * Simple, clean Javascript inheritance scheme
  * 
@@ -84,13 +92,6 @@ function removeElem(arr, elem) {
 	});
 }
 
-/* 
- * This function will capitalize first letter of a String
- * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
- */
-String.prototype.capitalizeFirstLetter = function() {
-	return this.charAt(0).toUpperCase() + this.slice(1);
-}
 
 // This function returns url parameters as key value pair
 function getSearchParams() {
@@ -109,7 +110,7 @@ function getSearchParams() {
  */
 jQuery.fn.serializeObject = function() {
 	var params = {};
-	$(this).serializeArray().map(function(x){params[x.name] = x.value;});
+	$(this).serializeArray().map(function(x) {params[x.name] = x.value;});
 	return params;
 }
 
@@ -496,4 +497,12 @@ $.datepicker._gotoToday = function(id) {
 	}
 	this._notifyChange(inst);
 	this._adjustDate(target);
+}
+
+function showAlertMessage($element, message, delay) {
+	delay = !delay ? 5000 : delay
+	$element.show().text(message);
+	setInterval(function() {
+		$element.hide();
+	}, delay);
 }

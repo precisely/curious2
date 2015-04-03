@@ -16,6 +16,7 @@ abstract class CuriousTestCase {
 
 	private static def log = LogFactory.getLog(this)
 
+	def messageSource
 	Long userId
 	User user
 

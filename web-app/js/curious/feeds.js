@@ -191,55 +191,62 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 }
 
 function createAutocomplete(inputId, autocompleteId) {
-	$("#" + inputId).autocomplete({
-		appendTo: "#" + autocompleteId,
+	$('#' + inputId).autocomplete({
+		appendTo: '#' + autocompleteId,
 		minLength: 0,
 		source: []
 	});
 
-	$("#" + inputId).on("keyup", function() {
-		var searchString = $("#" + inputId).val();
+	$('#' + inputId).on('keyup', function() {
+		var searchString = $('#' + inputId).val();
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?", 
 				{searchString: searchString},
 				function(data) {
 			if (data.success) {
-				$("#" + inputId).autocomplete("option", "source", data.usernameList);
+				$('#' + inputId).autocomplete('option', 'source', data.usernameList);
 			}
 		}, function(xhr) {
 			console.log('error: ', xhr);
 		});
 	});
 
-	$("#" + inputId).keypress(function (e) {
-		userName = $("#" + inputId).val();
-		var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
-		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
+	$('#' + inputId).keypress(function (e) {
+		var userName = $(this).val();
 		var key = e.which;
 		if (key == 13) { // the enter key code
-			queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-					{username: userName, sprintId: $('#sprintIdField').val()}),
-					function(data) {
-				if (data.success) {
-					console.log('added persons: ', data);
-					$("#" + inputId).val('');
-					addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
-				} else {
-					$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
-					setInterval(function() {
-						$('.modal-dialog .alert').addClass('hide');
-					}, 5000);
-				}
-			}, function(xhr) {
-				console.log('error: ', xhr);
-			});
+			addSprintMemberOrAdmin(inputId, userName);
 			return false;  
 		}
 	});
+
+	$('#' + inputId).on('autocompleteselect', function( event, ui ) {
+		addSprintMemberOrAdmin(inputId, ui.item.value);
+		return false;
+	});
 }
+
 $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
 });
+
+function addSprintMemberOrAdmin(inputId, userName) {
+	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
+	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
+	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+			{username: userName, sprintId: $('#sprintIdField').val()}),
+			function(data) {
+		if (data.success) {
+			console.log('added persons: ', data);
+			$("#" + inputId).val('');
+			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+		} else {
+			showAlertMessage($('.modal-dialog .alert'), data.message);
+		}
+	}, function(xhr) {
+		console.log('error: ', xhr);
+	});
+}
 
 function deleteSimpleEntry(id, $element) {
 	var now = new Date();
@@ -262,15 +269,9 @@ function deleteSimpleEntry(id, $element) {
 			}
 		} else {
 			if ($element.parents('.modal-dialog').length > 0) {
-				$('.modal-dialog .alert').text(data.message).show();
-				setInterval(function() {
-					$('.modal-dialog .alert').hide();
-				}, 5000);
+				showAlertMessage($('.modal-dialog .alert'), data.message);
 			} else {
-				$('.alert').text(data.message).show();
-				setInterval(function() {
-					$('.alert').hide();
-				}, 5000);
+				showAlertMessage($('.alert'), data.message);
 			}
 		}
 	});
@@ -408,7 +409,7 @@ function deleteSprint(sprintId) {
 				} else {
 					location.assign('/home/feed');
 				}
-			}, function() {
+			}, function(data) {
 				showAlert(data.message);
 			}
 		);
