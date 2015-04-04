@@ -149,6 +149,10 @@ oauth {
 	}
 }
 
+elasticSearch {
+	datastoreImpl = 'hibernateDatastore'
+}
+
 environments {
     development {
         grails.logging.jul.usebridge = false

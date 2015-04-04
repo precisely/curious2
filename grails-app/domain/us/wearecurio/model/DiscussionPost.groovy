@@ -6,6 +6,7 @@ import us.wearecurio.utility.Utils
 
 import grails.converters.*
 import us.wearecurio.model.DiscussionAuthor
+import us.wearecurio.model.Model.Visibility
 
 class DiscussionPost {
 	
@@ -36,6 +37,16 @@ class DiscussionPost {
 		message type: 'text'
 		
 		discussionId column:'discussion_id', index:'discussion_id_index'
+	}
+	
+	static transients = ['visibility', 'discussion']
+	
+	static searchable = {
+		only = ['discussionId', 'author', 'created', 'updated', 'plotDataId', 'message']
+	}
+	
+	Visibility getVisibility() {
+		getDiscussion.getVisibility()
 	}
 	
 	def getDiscussion() {

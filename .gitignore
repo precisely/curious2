@@ -31,3 +31,5 @@ tags
 .vimrc
 JavaImp
 grails-console
+/data/
+/.settings/

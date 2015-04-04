@@ -20,6 +20,10 @@ class DiscussionAuthor {
 		version false
 	}
 	
+	static searchable = {
+		only = ['userId', 'authorId', 'cache']
+	}
+	
 	static transients = ['cache']
 	
 	public static def create(Long userId) {

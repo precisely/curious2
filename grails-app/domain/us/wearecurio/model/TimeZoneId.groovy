@@ -239,6 +239,8 @@ class TimeZoneId {
 	}
 	
 	// try to guess time zone name from baseDate alone, for converting deprecated time zone values
+	// DO NOT USE THIS METHOD AS THE PRIMARY MEANS TO GET THE TIME ZONE. This is only used when the time zone name has not been
+	// specified by the client.
 	static String guessTimeZoneNameFromBaseDate(Date baseDate) {
 		LocalTime utcTime = new DateTime(baseDate, DateTimeZone.UTC).toLocalTime()
 		

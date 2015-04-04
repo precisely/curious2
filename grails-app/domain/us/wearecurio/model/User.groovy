@@ -9,9 +9,26 @@ import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
 
-class User implements NameEmail {
+class User extends NameEmail {
 
 	private static def log = LogFactory.getLog(this)
+
+	String username
+	String email
+	String remindEmail
+	String password
+	String first
+	String last
+	String sex
+	Date birthdate
+	String twitterAccountName
+	Boolean twitterDefaultToNow
+	Boolean displayTimeAfterTag
+	Boolean webDefaultToNow
+	Boolean notifyOnComments
+	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
+	Date created
+
 	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:70, unique:true)
@@ -33,12 +50,17 @@ class User implements NameEmail {
 		created(nullable:true)
 		notifyOnComments(nullable:true)
 		virtual(nullable:true)
+		remindEmail(nullable:true)
 	}
 
 	static mapping = {
 		version false
 		table '_user'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
+	}
+	
+	static searchable = {
+		only = ['username', 'email', 'remindEmail', 'first', 'last', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created']
 	}
 	
 	SortedSet interestTags
@@ -119,6 +141,7 @@ class User implements NameEmail {
 		first = map["first"] == null ? first : map['first']
 		last = map["last"] == null ? last : map['last']
 		sex = map["sex"] == null ? sex : map['sex']
+		virtual = map["virtual"] == null ? false : true
 
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
@@ -158,22 +181,6 @@ class User implements NameEmail {
 
 		log.debug "Updated user:" + this
 	}
-
-	String username
-	String email
-	String remindEmail
-	String password
-	String first
-	String last
-	String sex
-	Date birthdate
-	String twitterAccountName
-	Boolean twitterDefaultToNow
-	Boolean displayTimeAfterTag
-	Boolean webDefaultToNow
-	Boolean notifyOnComments
-	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
-	Date created
 
 	def getPreferences() {
 		return [twitterAccountName:twitterAccountName,

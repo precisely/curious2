@@ -3,7 +3,7 @@ package us.wearecurio.model;
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.utility.Utils
 
-class AnonymousAuthor implements NameEmail {
+class AnonymousAuthor extends NameEmail {
 
 	private static def log = LogFactory.getLog(this)
 

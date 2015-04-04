@@ -73,6 +73,10 @@ class Sprint {
 		updated column: 'updated', index:'updated_index'
 	}
 	
+	static searchable = {
+		only = [ 'userId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
+	}
+	
 	static Sprint create(User user) {
 		return create(user, null, null)
 	}

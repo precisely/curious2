@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date;
 
 import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
@@ -1020,6 +1021,8 @@ class DataController extends LoginController {
 
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
+	
+	ElasticSearchService elasticSearchService
 
 	def listDiscussionData() {
 		debug "DataController.listDiscussionData() params:" + params
@@ -1038,6 +1041,8 @@ class DataController extends LoginController {
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
 
+		elasticSearchService.search()
+		
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
 				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 

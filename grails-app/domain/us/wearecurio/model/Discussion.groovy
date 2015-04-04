@@ -1,4 +1,4 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 import grails.converters.*
 
@@ -17,7 +17,7 @@ class Discussion {
 	String name
 	Date created
 	Date updated
-	boolean isPublic
+	Visibility visibility
 	
 	public static final int MAXPLOTDATALENGTH = 1024
 
@@ -31,6 +31,12 @@ class Discussion {
 		version false
 		table 'discussion'
 		firstPostId column: 'first_post_id', index:'first_post_id_index'
+	}
+	
+	static transients = [ 'groups', 'groupIds' ]
+	
+	static searchable = {
+		only = ['userId', 'firstPostId', 'name', 'created', 'updated', 'visibility', 'groupIds']
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
@@ -125,6 +131,7 @@ class Discussion {
 	}
 	
 	public Discussion() {
+		this.visibility = Model.Visibility.PUBLIC
 	}
 	
 	public Discussion(User user, String name) {
@@ -132,7 +139,6 @@ class Discussion {
 		this.name = name
 		this.created = new Date()
 		this.updated = this.created
-		this.isPublic = false
 	}
 	
 	boolean isNew() {
@@ -333,6 +339,25 @@ class Discussion {
 		}
 	}
 	
+	def getGroups() {
+		UserGroup.getGroupsForDiscussion(this)
+	}
+	
+	Long[] getGroupIds() {
+		def groups = UserGroup.getGroupsForDiscussion(this)
+		
+		if ((!groups) || groups.size() == 0)
+			return new Long[0]
+			
+		Long[] retVal = new Long[groups.size()]
+		int i = 0
+		for (UserGroup group : groups) {
+			retVal[i++] = group.getId()
+		}
+		
+		return retVal
+	}
+	
 	def notifyParticipants(DiscussionPost post, boolean onlyAdmins) {
 		def participants = this.getParticipants()
 		
@@ -380,7 +405,7 @@ class Discussion {
 			id:this.id,
 			name:this.name?:'New question or discussion topic?',
 			userId:this.userId,
-			isPublic:this.isPublic,
+			isPublic:this.visibility == Model.Visibility.PUBLIC,
 			created:this.created,
 			updated:this.updated
 		]
@@ -403,11 +428,11 @@ class Discussion {
 		}
 				[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
-			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: isPublic]
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
 	}
 
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
-				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + isPublic + ")"
+				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + this.visibility == Model.Visibility.PUBLIC + ")"
 	}
 }

@@ -3,6 +3,7 @@ package us.wearecurio.services
 import grails.util.Environment
 
 import org.apache.commons.logging.LogFactory
+import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.hibernate.SessionFactory
 import org.joda.time.*
 
@@ -60,6 +61,7 @@ class MigrationService {
 	SessionFactory sessionFactory
 	DatabaseService databaseService
 	WithingsDataService withingsDataService
+	ElasticSearchService elasticSearchService
 	
 	boolean skipMigrations = false
 	
@@ -426,6 +428,14 @@ class MigrationService {
 		tryMigration("Drop Sprint version") {
 			sql ("alter table sprint drop column version")
 		}
+		tryMigration("Remove old discussion author columns") {
+			try {
+				sql("ALTER TABLE `discussion_author` DROP COLUMN `authorid`")
+				sql("ALTER TABLE `discussion_author` DROP COLUMN `userid`")
+			} catch (Throwable t) {
+			}
+
+		}
 	}
 	
 	/**
@@ -503,6 +513,9 @@ class MigrationService {
 			sql("update analytics_task set type=8 where type2='collection-parent';")
 			sql("update analytics_task set type = 9 where type2='collection-child';")
 			sql("alter table analytics_task drop type2;")
+		}
+		tryMigration("Index elasticsearch") {
+			elasticSearchService.index()
 		}
 	}
 }
