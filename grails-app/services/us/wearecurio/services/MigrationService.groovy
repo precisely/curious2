@@ -423,6 +423,9 @@ class MigrationService {
 		tryMigration("Drop Session version") {
 			sql ("alter table session drop column version")
 		}
+		tryMigration("Drop Sprint version") {
+			sql ("alter table sprint drop column version")
+		}
 	}
 	
 	/**

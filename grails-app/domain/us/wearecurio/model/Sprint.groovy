@@ -237,6 +237,9 @@ class Sprint {
 			if (!entry.isPrimaryEntry())
 				continue
 			
+			if (entry.getRepeatType() == null)
+				continue
+			
 			entry.activateTemplateEntry(userId, baseDate, now, timeZoneName, stats, setName)
 		}
 		

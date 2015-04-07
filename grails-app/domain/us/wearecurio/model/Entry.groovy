@@ -506,27 +506,48 @@ class Entry implements Comparable {
 		log.debug "Trying to find duplicate for " + userId + " for " + m
 
 		Identifier setId = Identifier.look(m.setName)
-
-		def c = Entry.createCriteria()
-		def results = c {
-			and {
-				eq("userId", userId)
-				eq("date", m.date)
-				eq("tag", m.tag)
-				eq("datePrecisionSecs", m.datePrecisionSecs == null ? DEFAULT_DATEPRECISION_SECS : m.datePrecisionSecs)
-				eq("amount", m.amount)
-				eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
-				eq("units", m.units)
-				eq("comment", m.comment)
-				eq("setIdentifier", setId)
+		
+		RepeatType repeatType = (RepeatType) m['repeatType']
+		
+		if (repeatType != null && repeatType.isContinuous()) {
+			def c = Entry.createCriteria()
+			def results = c {
+				and {
+					eq("userId", userId)
+					eq("tag", m.tag)
+					eq("amount", m.amount)
+					eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
+					eq("units", m.units)
+					eq("repeatType", repeatType)
+				}
+			}
+	
+			for (r in results) {
+				log.debug ("Found duplicate " + r)
+				return true
+			}
+		} else {
+			def c = Entry.createCriteria()
+			def results = c {
+				and {
+					eq("userId", userId)
+					eq("date", m.date)
+					eq("tag", m.tag)
+					eq("datePrecisionSecs", m.datePrecisionSecs == null ? DEFAULT_DATEPRECISION_SECS : m.datePrecisionSecs)
+					eq("amount", m.amount)
+					eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
+					eq("units", m.units)
+					eq("comment", m.comment)
+					eq("setIdentifier", setId)
+				}
+			}
+	
+			for (r in results) {
+				log.debug ("Found duplicate " + r)
+				return true
 			}
 		}
-
-		for (r in results) {
-			log.debug ("Found duplicate " + r)
-			return true
-		}
-
+		
 		log.debug "No duplicate found"
 
 		return false

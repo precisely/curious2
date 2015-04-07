@@ -30,7 +30,7 @@
 							<input type="text" name="startDate" placeholder="Pick Date (Optional)" id="sprint-start-date">
 						</div>
 						<div class="col-md-6">
-							<label for="sprint-duration">DURATION</label>
+							<label for="sprint-duration">DURATION (DAYS)</label>
 							<input type="text" name="daysDuration" placeholder="Select Duration" id="sprint-duration">
 						</div>
 					</div>
