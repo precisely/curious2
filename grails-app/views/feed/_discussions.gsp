@@ -1,3 +1,21 @@
+<g:if test="${parameters.offset == '0' || !parameters.offset}">
+	<div class="new-post">
+		<form id="create-discussion" action="/discussion/createTopic" method="post">
+			<div class="input-affordance left-addon">
+				<i class="fa fa-pencil"></i> 
+				<input class="full-width discussion-topic-input"
+						type="text" placeholder="New question or discussion topic?"
+						name="name" id="discussion-topic" required />
+				<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
+				<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
+				<hr class="hide">
+				<input type="text" id="discussion-discription" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
+						name="discussionPost">
+			</div>
+			<input type="hidden" name="group" value="${groupName}" />
+		</form>
+	</div>
+</g:if>
 <g:each in="${discussionList }" var="discussionData">
 	<div class="feed-item">
 		<div class="discussion">
@@ -29,29 +47,54 @@
 					<div class="group"> 
 						${discussionData.groupName }
 					</div>
-					<a href="/home/discuss?discussionId=${discussionData.id }"> 
-						<span> ${discussionData.name ?: '(No Title)' }</span>
-					</a>
-					<p>${discussionData.firstPost?.message }</p>
-				</div>
-				<hr>
-				<div class="buttons">
-					<g:if test="${discussionData.isAdmin }">
-					<button onclick="showShareDialog(${discussionData.id })">
-						<img src="/images/share.png" alt="share">
-					</button>
-					</g:if>
-					<button onclick="showCommentDialog(${discussionData.id })">
-						<img src="/images/comment.png" alt="comment">
-					</button>
+					<div class="row">
+						<div class="col-xs-7">
+							<a href="/home/discuss?discussionId=${discussionData.id}"> 
+								<span> ${discussionData.name ?: '(No Title)' }</span>
+							</a>
+						</div>
+						<div class="col-xs-5 button-box">
+							<div class="buttons">
+								<g:if test="true">
+									<button onclick="showShareDialog(${discussionData.id})">
+										<img src="/images/follow.png" alt="follow">Follow
+									</button>
+								</g:if>
+								<g:if test="${discussionData.isAdmin }">
+									<button class="share-button" onclick="showShareDialog(${discussionData.id})">
+										<img src="/images/share.png" alt="share">Share
+									</button>
+								</g:if>
+								<button onclick="toggleCommentsList(${discussionData.id})">
+									<g:if test="${!discussionPostData[discussionData.id]?.totalPosts}">
+										<img src="/images/comment.png" alt="comment"> Comment</img>
+									</g:if>
+									<g:else>
+									<div class="dark-comment">${discussionPostData[discussionData.id]?.totalPosts}</div>
+										Comment
+									</g:else>
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div class="discussion-comment">
+			<div class="discussion-comment hide" id="discussion${discussionData.id}-comment-list">
 				<div class="bottom-margin">
 					<a href="/home/discuss?discussionId=${discussionData.id }"> <span class="view-comment">VIEW ALL
 							COMMENTS (${discussionPostData[discussionData.id]?.totalPosts?:0})</span>
 					</a>
 				</div>
+				<g:if test="${discussionData.firstPost?.message}">
+					<div>
+						<a href="#"><img class="avatar" src="/images/avatar2.png"
+							alt="..."><span class="user-name"> ${discussionData.firstPost?.author.getUsername()}</span></a>
+						<span class="posting-time" data-time="${discussionData.firstPost?.updated.time}"></span>
+					</div>
+					<p>
+						${discussionData.firstPost?.message}
+					</p>
+				</g:if>
 				<g:if test="${discussionPostData[discussionData.id]?.secondPost}">
 					<div>
 						<a href="#"><img class="avatar" src="/images/avatar2.png"

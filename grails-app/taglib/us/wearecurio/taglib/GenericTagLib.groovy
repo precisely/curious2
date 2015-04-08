@@ -69,4 +69,13 @@ class GenericTagLib {
 		out << body()
 	}
 
+	def ifLoggedin = { attrs, body ->
+		def (boolean authorized, User user) = securityService.checkLogin(actionName, request, params, flash, session)    
+		if (!authorized || !session.userId) {                                                                            
+			return                                                                                                       
+		}
+
+		out << body()
+	}
+
 }

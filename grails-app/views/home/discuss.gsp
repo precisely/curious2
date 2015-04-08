@@ -352,15 +352,15 @@ $(document).ready(function() {
 								<p>
 									${firstPost?.message}
 								</p>
-							</div>
-							<hr>
-							<div class="buttons">
-								<button onclick="showShareDialog(${discussionId })">
-									<img src="/images/share.png" alt="share">
-								</button>
-								<button onclick="showCommentDialog(null)">
-									<img src="/images/comment.png" alt="comment">
-								</button>
+								<hr>
+								<div class="buttons">
+									<button class="share-button" onclick="showShareDialog(${discussionId })">
+										<img src="/images/share.png" alt="share"> Share
+									</button>
+									<button onclick="showCommentDialog(null)">
+										<img src="/images/comment.png" alt="comment"> Comment
+									</button>
+								</div>
 							</div>
 						</div>
 						<div class="commentList">

@@ -43,7 +43,7 @@
 </head>
 
 <div class="headLinks">
-	<ul class="nav nav-pills mainLinks headerLinks">
+	<ul class="mainLinks headerLinks">
 		<li><a href="/home/index">HOME</a></li>
 		<li><a href="/home/index/#features">FEATURES</a></li>
 		<li style="display: none;"><a href="#">LEARN</a></li>

@@ -114,6 +114,16 @@ class Sprint {
 		return fetchUserGroup()?.addAdmin(userId)
 	}
 	
+	Long getEntriesCount() {
+		Long entriesCount = Entry.countByUserId(virtualUserId)
+		return entriesCount
+	}
+	
+	Long getParticipantsCount() {
+		Long participantsCount = GroupMemberReader.countByGroupId(virtualGroupId)
+		return participantsCount
+	}
+
 	def removeAdmin(Long userId) {
 		return fetchUserGroup()?.removeAdmin(userId)
 	}

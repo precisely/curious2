@@ -109,6 +109,10 @@ function formatUnits(units) {
  * Curious data json return value check
  */
 function checkData(data, status, errorMessage, successMessage) {
+	if (location.href.indexOf('termsofservice') > -1) {
+		// This is to avoid session time out message when user is not logged in and wants to view terms of service
+		return false;
+	}
 	if (data == 'error') {
 		if (errorMessage && status != 'cached')
 			showAlert(errorMessage);

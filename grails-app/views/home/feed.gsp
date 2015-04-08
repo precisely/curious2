@@ -1,6 +1,7 @@
 <html>
 <head>
 <meta name="layout" content="feedLayout" />
+
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

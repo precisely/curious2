@@ -4,6 +4,14 @@
 var autocompleteWidget;
 var searchList = [];
 
+$(window).load(function() {
+	if (location.href.indexOf('#sprints') > -1) {
+		showSprints();
+	} else if (location.href.indexOf('#discussions') > -1) {
+		showDiscussions();
+	}
+});
+
 $(document).ready(function() {
 	var App = window.App || {};
 	App.discussion = {};
@@ -82,7 +90,7 @@ $(document).ready(function() {
 							$('#getMoreDiscussions').fadeOut()
 						}, 5000);
 					} else {
-						$('#discussions').append(data.feeds);
+						$('#graphList').append(data.feeds);
 						showCommentAgeFromDate();
 					}
 					App.discussion.offset = App.discussion.offset + 5;
@@ -150,7 +158,50 @@ $(document).ready(function() {
 		clearSprintFormData();
 		return false;
 	});
+
+	$('#feed-sprints-tab a').click(function(e) {
+		showSprints();
+	});
+
+	$('#feed-discussions-tab a').click(function(e) {
+		showDiscussions();
+	})
 });
+
+function showSprints() {
+	queueJSON('Getting sprint list', '/home/feed?listSprint=true&' + 
+			getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data != false) {
+			$('#graphList').html(data.sprints);
+			showCommentAgeFromDate();
+			$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>')
+			$('#queryTitle').text('Curious Sprints');
+			$('#feed-sprints-tab a').tab('show');
+		}
+	}, function(data) {
+		console.log('error: ', data);
+		showAlert('Internal server error occurred.');
+	});
+}
+
+function showDiscussions() {
+	queueJSON('Getting discussion data', '/home/feed?offset=0&' + 
+			getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data == false) {
+			$('#graphList').text('No discussions to show.');
+		} else {
+			$('#graphList').html(data.feeds);
+			showCommentAgeFromDate();
+			$('#feed-discussions-tab a').tab('show');
+			$('#queryTitle').text('Curious Discussions');
+		}
+	}, function(data) {
+		console.log('error: ', data);
+		showAlert('Internal server error occurred.');
+	});
+}
 
 function clearSprintFormData() {
 	var form = $('#submitSprint');
@@ -454,4 +505,13 @@ function leaveSprint(sprintId) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	location.assign('/home/leaveSprint?sprintId=' + sprintId + '&timeZoneName=' + timeZoneName + '&now=' + now);
+}
+
+function toggleCommentsList(discussionId) {
+	var $element = $('#discussion' + discussionId + '-comment-list');
+	if ($element.is(':visible')) {
+		$element.hide();
+	} else {
+		$element.show();
+	}
 }

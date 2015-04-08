@@ -35,7 +35,7 @@
         <br>
         <div class="row" style="height: 100px">
             <div class="col-xs-9 col-xs-offset-1">
-                <ul class="nav nav-pills mainLinks footerLinks">
+                <ul class="mainLinks footerLinks">
                     <li
                         style="font-size: 16px; padding-left: 0px; display: none"><a
                         href="#">GET THE APP</a></li>
@@ -84,7 +84,9 @@
             <div class="col-xs-2 col-xs-offset-1">
             	<ul> 
             		<li> <span class="ul-head">Support</span> <br></li>
-            		<li><a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a></li>
+					<c:ifLoggedin>
+						<li><a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a></li>
+					</c:ifLoggedin>
             		<li><a href="#">Wiki</a> </li>
             		<li><a href="#">FAQS</a> </li>
             		<li><a href="#">Email Help</a> </li>

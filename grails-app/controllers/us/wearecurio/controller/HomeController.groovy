@@ -593,7 +593,7 @@ class HomeController extends DataController {
 		feed(discussionId, unpublish, publish)
 	}
 	
-	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish) {
+	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint) {
 		debug "HomeController.feed(): $params"
 		def user = sessionUser()
 
@@ -609,68 +609,76 @@ class HomeController extends DataController {
 			return
 		}
 
-		if (discussionId) {
-			Discussion discussion = Discussion.get(discussionId)
-	
-			if (!discussion) {
-				debug "no discussion for discussionId " + discussionId
-				flash.message = "No discussion found"
+		Map model
+
+		if (listSprint) {
+			// This is to get list of sprints the user belongs to or is admin of
+			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+			model = [sprintList: sprintList]
+			renderJSONGet([sprints: groovyPageRenderer.render(template: "/sprint/sprints", model: model)])
+		} else {
+			if (discussionId) {
+				Discussion discussion = Discussion.get(discussionId)
+						
+						if (!discussion) {
+							debug "no discussion for discussionId " + discussionId
+							flash.message = "No discussion found"
+							return
+						}
+				
+				if (unpublish) {
+					if (UserGroup.canAdminDiscussion(user, discussion)) {
+						discussion.setIsPublic(false)
+						Utils.save(discussion, true)
+					}
+				}
+				if (publish) {
+					if (UserGroup.canAdminDiscussion(user, discussion)) {
+						discussion.setIsPublic(true)
+						Utils.save(discussion, true)
+					}
+				}
+			}
+			
+			def groupMemberships = UserGroup.getGroupsForReader(user)
+					List associatedGroups = UserGroup.getGroupsForWriter(user)
+					def groupName
+					def groupFullname = "Community Feed"
+					
+					groupMemberships.each { group ->
+					if (group[0]?.name.equals(params.userGroupNames)) {
+						groupFullname = group[0].fullName ?: group[0].name
+								groupName = group[0].name
+					}
+			}
+			
+			params.max = params.max ?: 5
+			params.offset = params.offset ?: 0
+
+			List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+			debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
+
+			Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+					userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) :
+					UserGroup.getDiscussionsInfoForUser(user, true, false, params)
+
+			log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
+
+			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
+				discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
+
+			model["parameters"] = params
+			if (request.xhr) {
+				if( !model.discussionList ){
+					// render false if there are no more discussions to show.
+					render false
+				} else {
+					log.debug "model: $model"
+					renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
+				}
 				return
 			}
-						
-			if (unpublish) {
-				if (UserGroup.canAdminDiscussion(user, discussion)) {
-					discussion.setIsPublic(false)
-					Utils.save(discussion, true)
-				}
-			}
-			if (publish) {
-				if (UserGroup.canAdminDiscussion(user, discussion)) {
-					discussion.setIsPublic(true)
-					Utils.save(discussion, true)
-				}
-			}
-		}
-
-		def groupMemberships = UserGroup.getGroupsForReader(user)
-		List associatedGroups = UserGroup.getGroupsForWriter(user)
-		def groupName
-		def groupFullname = "Community Feed"
-
-		groupMemberships.each { group ->
-			if (group[0]?.name.equals(params.userGroupNames)) {
-				groupFullname = group[0].fullName ?: group[0].name
-				groupName = group[0].name
-			}
-		}
-
-		params.max = params.max ?: 5
-		params.offset = params.offset ?: 0
-
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
-
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) : 
-				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
-
-		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-		
-		// This is to get list of sprints the user belongs to or is admin of
-		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
-		
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
-			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
-
-		if (request.xhr) {
-			if( !model.discussionList ){
-				// render false if there are no more discussions to show.
-				render false
-			} else {
-				renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
-			}
-			return
 		}
 
 		model

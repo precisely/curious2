@@ -9,7 +9,7 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getDiscussionsDataCSRF, getSprintsDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -24,19 +24,28 @@
 				<div class="help">
 					<i class="fa fa-question"></i>
 				</div>
-				<div class="search-bar left-addon">
-					<form onsubmit="searchFeeds()">
-						<i class="fa fa-search"></i>
-						<input type="text" id="searchFeed" placeholder="Search Feed" required >
-						<input type="hidden" id="userId" value="${userId}">
-					</form>
-				</div>
 			</div>
 		</div>
 		<div class="feed-body">
-			<div class="left-menu">
+		<div class="main container-fluid">
+		<ul class="nav nav-pills">
+			<li id="feed-all-tab" role="presentation" class="active">
+				<a href="#" data-toggle="pill">ALL</a>
+			</li>
+			<li id="feed-people-tab" role="presentation">
+				<a href="#" data-toggle="pill">PEOPLE</a>
+			</li>
+			<li id="feed-discussions-tab" role="presentation">
+				<a href="#discussions">DISCUSSIONS</a>
+			</li>
+			<li id="feed-sprints-tab" role="presentation">
+				<a href="#sprints">SPRINTS</a>
+			</li>
+			<li id="feed-right-tab" role="presentation">
+			<li>
+		</ul>
+		<%--<div class="left-menu">
 				<ul>
-					<li id="allFeeds"><g:link controller='home' action="feed">FEED</g:link></li>
 					<li id="recentSearches"><a href="#">RECENT SEARCHES</a>
 						<g:if test="${searchKeywords}">
 							<ul>
@@ -68,24 +77,8 @@
 					</li>
 				</ul>
 			</div>
-			<div class="main container-fluid">
+			--%>
 				<div id="graphList">
-					<div class="new-post">
-						<form id="create-discussion" action="/discussion/createTopic" method="post">
-							<div class="input-affordance left-addon">
-								<i class="fa fa-pencil"></i> 
-								<input class="full-width discussion-topic-input"
-									type="text" placeholder="New question or discussion topic?"
-									name="name" id="discussion-topic" required />
-								<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
-								<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
-								<hr class="hide">
-								<input type="text" id="discussion-discription" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
-									name="discussionPost">
-							</div>
-							<input type="hidden" name="group" value="${groupName}" />
-						</form>
-					</div>
 					<g:pageProperty name="page.feedContent" />
 				</div>
 				<div id="getMoreDiscussions"></div>
