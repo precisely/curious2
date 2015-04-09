@@ -10,6 +10,8 @@
 }
 </style>
 
+<c:jsCSRFToken keys="getCommentsCSRF" />
+
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <script type="text/javascript">
 // list of users to plot
@@ -177,6 +179,8 @@ $(function() {
 });
 
 $(document).ready(function() {
+	var discussionId = ${discussionId};
+
 	$("#postList").infiniteScroll({
 		bufferPx: 360,
 		onFinishedMessage: 'No more comments to show',
@@ -185,20 +189,19 @@ $(document).ready(function() {
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
 
-			$.ajax ({
-				type: 'POST',
-				url: '/home/discuss?discussionId=${discussionId}&offset=' + this.getOffset(),
-				success: function(data) {
-					if (data == "false") {
-						this.finish();
-					} else {
-						$element.append(data);
-						showCommentAgeFromDate();
-						this.setNextPage();		// Increment offset for next page
-						this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
-					}
-				}.bind(this)
-			});
+			var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + this.getOffset() + "&" +
+					getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+
+			queueJSON("fetching more comments", url, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					$element.append(data.posts);
+					showCommentAgeFromDate();
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				}
+			}.bind(this));
 		}
 	});
 });
