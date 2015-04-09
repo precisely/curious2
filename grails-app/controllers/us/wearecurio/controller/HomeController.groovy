@@ -887,9 +887,9 @@ class HomeController extends DataController {
 			if (request.xhr) {
 				if (!model.posts ){
 					// render false if there are no more comments to show.
-					render false
+					renderJSONGet([posts: false])
 				} else {
-					render (template: "/discussion/posts", model: model)
+					renderJSONGet([posts: groovyPageRenderer.render(template: "/discussion/posts", model: model)])
 				}
 				return
 			}

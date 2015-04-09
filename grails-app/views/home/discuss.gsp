@@ -10,6 +10,9 @@
 }
 </style>
 
+<c:jsCSRFToken keys="getCommentsCSRF" />
+
+<script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <script type="text/javascript">
 // list of users to plot
 function refreshPage() {
@@ -176,46 +179,29 @@ $(function() {
 });
 
 $(document).ready(function() {
-	var App = window.App || {};
-	App.comment = {};
-	App.comment.offset = 5;
-	App.comment.lockInfiniteScroll = false;
-	
-	$(window).scroll(function() {
-		if ($("#getMoreComments").length == 0)
-			return false;
+	var discussionId = ${discussionId};
 
-		var $element = $('#getMoreComments');
-		var docViewTop = $(window).scrollTop();
-		var docViewBottom = docViewTop + $(window).innerHeight();
+	$("#postList").infiniteScroll({
+		bufferPx: 360,
+		onFinishedMessage: 'No more comments to show',
+		onScrolledToBottom: function(e, $element) {
+			// Pause the scroll event to not trigger again untill AJAX call finishes
+			// Can be also called as: $("#postList").infiniteScroll("pause")
+			this.pause();
 
-		var elemTop = $element.offset().top;
-		
-		if ((elemTop < docViewBottom) && !App.comment.lockInfiniteScroll) {
-			$element.addClass(" waiting-icon");
-			setTimeout(function() {
-				$.ajax ({
-					type: 'POST',
-					url: '/home/discuss?discussionId=${discussionId}&offset=' + App.comment.offset,
-					success: function(data, textStatus) {
-						if (data == "false") {
-							$("#getMoreComments").text('No more comments to show.');
-							setTimeout(function() {
-								$("#getMoreComments").fadeOut()
-							}, 5000);
-						} else {
-							$('#postList').append(data);
-							showCommentAgeFromDate();
-						}
-						App.comment.offset = App.comment.offset + 5;
-					}
-				});
-				$element.removeClass("waiting-icon");
-			}, 600);
-			App.comment.lockInfiniteScroll = true;
-		} else if (elemTop > docViewBottom) {
-			App.comment.lockInfiniteScroll = false;
-			return;
+			var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + this.getOffset() + "&" +
+					getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+
+			queueJSON("fetching more comments", url, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					$element.append(data.posts);
+					showCommentAgeFromDate();
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				}
+			}.bind(this));
 		}
 	});
 });
