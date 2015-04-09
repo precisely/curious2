@@ -12,7 +12,6 @@
 
 <c:jsCSRFToken keys="getCommentsCSRF" />
 
-<script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <script type="text/javascript">
 // list of users to plot
 function refreshPage() {

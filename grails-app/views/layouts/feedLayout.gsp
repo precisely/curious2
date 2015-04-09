@@ -78,10 +78,8 @@
 				</ul>
 			</div>
 			--%>
-				<div id="graphList">
-					<g:pageProperty name="page.feedContent" />
-				</div>
-				<div id="getMoreDiscussions"></div>
+			<div id="graphList">
+				<g:pageProperty name="page.feedContent" />
 			</div>
 		</div>
 		<!-- /MAIN -->

@@ -13,11 +13,6 @@ $(window).load(function() {
 });
 
 $(document).ready(function() {
-	var App = window.App || {};
-	App.discussion = {};
-	App.discussion.lockInfiniteScroll = false;
-	App.discussion.offset = 5;
-
 	$('#discussion-topic').keypress(function (e) {
 		var key = e.which;
 		if (key == 13) {
@@ -64,46 +59,34 @@ $(document).ready(function() {
 		}
 	});
 
-	$('.main').scroll(function() {
-		if (($("#getMoreDiscussions").length == 0) || ($(".feed-item").length == 0))
-			return false;
+	$('#graphList').infiniteScroll({
+		bufferPx: 20,
+		bindTo: $('.main'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			var url;
+			if (location.href.indexOf('#sprints') > -1) {
+				url = '/home/feed?listSprint=true&offset=' + this.getOffset() + '&' +
+						getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?';
+			} else if (location.href.indexOf('#discussions') > -1) {
+				url = '/home/feed?offset=' + this.getOffset() + '&' + 
+						getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?';
+			}
 
-		var $element = $('#getMoreDiscussions');
-		var docViewTop = $(window).scrollTop();
-		var docViewBottom = docViewTop + $(window).innerHeight();
-
-		var elemTop = $element.offset().top;
-
-		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
-			$element.addClass(' waiting-icon');
-			setTimeout(function() {
-				var requestUrl = '/home/feed';
-				var parameters = '?offset=' + App.discussion.offset;
-				if (getSearchParams()['userId']) {
-					parameters += '&userId=' + getSearchParams()['userId'];
+			queueJSON('Getting discussion data', url,
+					function(data) {
+				if (data.listItems == false) {
+					this.finish();
+				} else {
+					$element.append(data.listItems);
+					showCommentAgeFromDate();
+					this.setNextPage();
+					this.resume();
 				}
-				queueJSON('Getting discussion data', requestUrl + parameters,
-						function(data) {
-					if (data == false) {
-						$('#getMoreDiscussions').text('No more discussions to show.');
-						setTimeout(function() {
-							$('#getMoreDiscussions').fadeOut()
-						}, 5000);
-					} else {
-						$('#graphList').append(data.feeds);
-						showCommentAgeFromDate();
-					}
-					App.discussion.offset = App.discussion.offset + 5;
-				}, function(data) {
-					console.log('error: ', data);
-					showAlert('Internal server error occurred.');
-				});
-				$element.removeClass('waiting-icon');
-			}, 600);
-			App.discussion.lockInfiniteScroll = true;
-		} else if (elemTop > docViewBottom) {
-			App.discussion.lockInfiniteScroll = false;
-			return;
+			}.bind(this), function(data) {
+				console.log('error: ', data);
+				showAlert('Internal server error occurred.');
+			});
 		}
 	});
 
@@ -172,8 +155,8 @@ function showSprints() {
 	queueJSON('Getting sprint list', '/home/feed?listSprint=true&' + 
 			getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?',
 			function(data) {
-		if (data != false) {
-			$('#graphList').html(data.sprints);
+		if (data.listItems != false) {
+			$('#graphList').html(data.listItems);
 			showCommentAgeFromDate();
 			$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>')
 			$('#queryTitle').text('Curious Sprints');
@@ -189,10 +172,10 @@ function showDiscussions() {
 	queueJSON('Getting discussion data', '/home/feed?offset=0&' + 
 			getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?',
 			function(data) {
-		if (data == false) {
+		if (data.listItems == false) {
 			$('#graphList').text('No discussions to show.');
 		} else {
-			$('#graphList').html(data.feeds);
+			$('#graphList').html(data.listItems);
 			showCommentAgeFromDate();
 			$('#feed-discussions-tab a').tab('show');
 			$('#queryTitle').text('Curious Discussions');

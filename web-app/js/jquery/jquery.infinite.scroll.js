@@ -97,7 +97,9 @@
 				pixelsNearBottom = $(document).height() - $(window).height() - $(window).scrollTop();
 			} else {
 				// If scroll event has been applied for any other element in the page
-				pixelsNearBottom = $element[0].scrollHeight - $element.scrollTop() - $element.innerHeight();
+				var $scrollElement = options.bindTo;
+				pixelsNearBottom = $scrollElement[0].scrollHeight - $scrollElement.scrollTop() - 
+						$scrollElement.innerHeight();
 			}
 
 			// Keep a gutter space to pre-fetch the data when user is about to reach the end
@@ -128,7 +130,7 @@
 			}
 
 			// Display a spinner on pause or while waiting
-			$element.find(waitingElementSelector).html('<i class="fa fa-spin fa-spinner"></i>');
+			$element.find(waitingElementSelector).html('<i class="fa fa-circle-o-notch fa-spin fa-2x"></i>');
 		},
 		onResume: function($element) {
 			$element.find(waitingElementSelector).remove();

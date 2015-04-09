@@ -593,7 +593,7 @@ class HomeController extends DataController {
 		feed(discussionId, unpublish, publish)
 	}
 	
-	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint) {
+	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
 		debug "HomeController.feed(): $params"
 		def user = sessionUser()
 
@@ -610,12 +610,18 @@ class HomeController extends DataController {
 		}
 
 		Map model
+		params.max = max ?: 5
+		params.offset = offset ?: 0
 
 		if (listSprint) {
 			// This is to get list of sprints the user belongs to or is admin of
-			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
+			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id, params.max, params.offset)
+			if (!sprintList) {
+				renderJSONGet([listItems: false])
+				return
+			}
 			model = [sprintList: sprintList]
-			renderJSONGet([sprints: groovyPageRenderer.render(template: "/sprint/sprints", model: model)])
+			renderJSONGet([listItems: groovyPageRenderer.render(template: "/sprint/sprints", model: model)])
 		} else {
 			if (discussionId) {
 				Discussion discussion = Discussion.get(discussionId)
@@ -652,8 +658,6 @@ class HomeController extends DataController {
 					}
 			}
 			
-			params.max = params.max ?: 5
-			params.offset = params.offset ?: 0
 
 			List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 			debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
@@ -672,10 +676,9 @@ class HomeController extends DataController {
 			if (request.xhr) {
 				if( !model.discussionList ){
 					// render false if there are no more discussions to show.
-					render false
+					renderJSONGet([listItems: false])
 				} else {
-					log.debug "model: $model"
-					renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
+					renderJSONGet([listItems: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
 				}
 				return
 			}
@@ -936,14 +939,13 @@ class HomeController extends DataController {
 			redirect(url: toUrl(action:'feed'))
 			return
 		}
-		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
 		
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> participantsList = memberReaders.collect {User.get(it.memberId)}
 		List<Map> participants = participantsList*.getJSONShortDesc()
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
-			participants : participants , user: sessionUser(), sprintList: sprintList])
+			participants : participants , user: sessionUser()])
 	}
 
 	def leaveSprint() {

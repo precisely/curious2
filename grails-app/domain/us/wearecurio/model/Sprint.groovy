@@ -312,11 +312,14 @@ class Sprint {
 		]
 	}
 	
-	static List<Sprint> getSprintListForUser(Long userId) {
+	static List<Sprint> getSprintListForUser(Long userId, int max, int offset) {
 		if (!userId) {
 			return []
 		}
 		
+		max = max ?: 5;
+		offset = offset ?: 0;
+
 		List<Long> groupReaderList = new DetachedCriteria(GroupMemberReader).build {
 			projections {
 				property "groupId"
@@ -332,6 +335,8 @@ class Sprint {
 					ne("userId", 0l)
 				}
 			}
+			firstResult(offset)
+			maxResults(max)
 		}
 		
 		return sprintList

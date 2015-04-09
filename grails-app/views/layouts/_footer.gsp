@@ -85,7 +85,9 @@
             	<ul> 
             		<li> <span class="ul-head">Support</span> <br></li>
 					<c:ifLoggedin>
-						<li><a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a></li>
+						<li>
+							<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a>
+						</li>
 					</c:ifLoggedin>
             		<li><a href="#">Wiki</a> </li>
             		<li><a href="#">FAQS</a> </li>
