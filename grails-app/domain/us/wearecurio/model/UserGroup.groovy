@@ -19,8 +19,8 @@ class UserGroup {
 	static final String SYSTEM_USER_GROUP_NAME = "System"
 
 	static constraints = {
-		name(unique:true)
-		fullName(unique:true)
+		name(unique:false)
+		fullName(unique:false)
 		fullName(nullable:true)
 		description(nullable:true)
 		isVirtual(nullable:true)
@@ -423,8 +423,7 @@ class UserGroup {
 		GroupMemberReader.create(id, user.getId())
 
 		this.notifyNotifiedMajors("contact@wearecurio.us", "New user '" + user.getUsername() + "' joined group '" + this.description + "'",
-				"New user '" + user.getUsername() + "' (" + user.getFirst() + " "
-				+ user.getLast() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
+				"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
 	}
 
 	def addReader(Long userId) {
@@ -439,8 +438,7 @@ class UserGroup {
 		GroupMemberReader.delete(id, user.getId())
 
 		this.notifyNotifiedMajors("contact@wearecurio.us", "User '" + user.getUsername() + "' left group '" + this.description + "'",
-				"User '" + user.getUsername() + "' (" + user.getFirst() + " "
-				+ user.getLast() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
+				"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
 	}
 
 	def removeReader(Long userId) {

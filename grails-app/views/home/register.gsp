@@ -61,17 +61,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="first"
-                            class="registerlabel ${hasErrors(bean:flash.user,field:'first','registererror')}">First
-                            Name:</label> <input class="form-control" type="text" name="first"
-                            value="${fieldValue(bean:flash.user,field:'first')}" />
-                    </div>
-
-                    <div class="form-group">
-                        <label for="last"
-                            class="registerlabel ${hasErrors(bean:flash.user,field:'last','registererror')}">Last
-                            Name:</label> <input class="form-control" type="text" name="last"
-                            value="${fieldValue(bean:flash.user,field:'last')}" />
+                        <label for="name"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'name','registererror')}">Full
+                            Name:</label> <input class="form-control" type="text" name="name"
+                            value="${fieldValue(bean:flash.user,field:'name')}" />
                     </div>
 
                     <div class="form-group">

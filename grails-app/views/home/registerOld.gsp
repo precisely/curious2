@@ -497,20 +497,11 @@ We expect that you have the rights to any content you enter or upload.
 		</div>
 		
 		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'first','registererror')}">
-			<label for="first">First Name:</label>
+			<div class="registerlabel ${hasErrors(bean:flash.user,field:'name','registererror')}">
+			<label for="name">Name:</label>
 			</div>
 			<div class="registerfield">
-			<input type="text" name="first" value="${fieldValue(bean:flash.user,field:'first')}"/>
-			</div>
-		</div>
-		
-		<div class="registerline">
-			<div class="registerlabel ${hasErrors(bean:flash.user,field:'last','registererror')}">
-			<label for="last">Last Name:</label>
-			</div>
-			<div class="registerfield">
-			<input type="text" name="last" value="${fieldValue(bean:flash.user,field:'last')}"/>
+			<input type="text" name="name" value="${fieldValue(bean:flash.user,field:'name')}"/>
 			</div>
 		</div>
 		

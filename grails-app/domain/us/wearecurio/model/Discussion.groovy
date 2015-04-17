@@ -25,6 +25,7 @@ class Discussion {
 		userId(nullable:true)
 		name(nullable:true)
 		firstPostId(nullable:true)
+		visibility(nullable:true)
 	}
 	
 	static mapping = {
@@ -33,7 +34,7 @@ class Discussion {
 		firstPostId column: 'first_post_id', index:'first_post_id_index'
 	}
 	
-	static transients = [ 'groups', 'groupIds' ]
+	static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
 		only = ['userId', 'firstPostId', 'name', 'created', 'updated', 'visibility', 'groupIds']
@@ -139,6 +140,15 @@ class Discussion {
 		this.name = name
 		this.created = new Date()
 		this.updated = this.created
+		this.visibility = Model.Visibility.PUBLIC
+	}
+	
+	boolean isPublic() {
+		return getIsPublic()
+	}
+	
+	boolean getIsPublic() {
+		return this.visibility == Model.Visibility.PUBLIC
 	}
 	
 	boolean isNew() {
@@ -262,35 +272,22 @@ class Discussion {
 
 	def createPost(User user, String message) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'"
-		return createPost(DiscussionAuthor.create(user), message)
-	}
-
-	def createPost(User user, Long plotDataId, String comment) {
-		log.debug "Discussion.createPost() userId:" + user.getId() + ", comment:'" + comment + "'"
-		return createPost(DiscussionAuthor.create(user), plotDataId, comment)
+		return createPost(user, null, message)
 	}
 
 	def createPost(String name, String email, String site, Long plotDataId, String comment) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
-		return createPost(DiscussionAuthor.create(AnonymousAuthor.create(name, email, site)), plotDataId, comment)
+		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment)
 	}
 
-	def createPost(DiscussionAuthor author, String message) {
-		return createPost(author, null, message)
-	}
-	
-	def createPost(DiscussionAuthor author, Long plotDataId, String comment) {
-		return createPost(author, plotDataId, comment, null)
-	}
-
-	def createPost(DiscussionAuthor author, Long plotDataId, String comment, Date created) {
-		log.debug "DiscussionAuthor.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + "', created:" + created
-		DiscussionPost post = DiscussionPost.create(this, author, plotDataId, comment, null)
+	def createPost(User author, Long plotDataId, String comment) {
+		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment
+		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, null)
 		Utils.save(this, true) // write new updated state
 		Utils.save(post, true)
 		
 		if (userId == null)
-			this.userId = post.getAuthor().getUserId()
+			this.userId = post.getAuthorUserId()
 		
 		if (firstPostId == null) {
 			firstPostId = post.getId()
@@ -317,11 +314,11 @@ class Discussion {
 	 */
 	def getParticipants() {
 		def results = DiscussionPost.executeQuery(
-				"select distinct post.author.userId, post.author.authorId from DiscussionPost post where post.discussionId = ?", getId())
+				"select distinct post.authorUserId from DiscussionPost post where post.discussionId = ?", getId())
 		
 		def retVal = []
 		for (r in results) {
-			DiscussionAuthor author = DiscussionAuthor.create(r[0], r[1])
+			User author = User.get(r)
 			if (author != null)
 				retVal.push(author)
 		}
@@ -363,18 +360,16 @@ class Discussion {
 		
 		def notifiedSet = [:]
 		
-		def postUsername = post.getAuthor().getShortDescription()
+		def postUsername = (post.getAuthor()?.getShortDescription()) ?: "(unknown)"
+		
+		Long authorUserId = post.getAuthorUserId()
 
 		if (!onlyAdmins) {
-			for (DiscussionAuthor participant in participants) {
-				Long userId = participant.getUserId()
-				if (userId != null) {
-					User user = User.get(userId)
-					if (!user.getNotifyOnComments())
-						continue // don't notify users who have turned off comment notifications
-					notifiedSet[userId] = true
-				}
-				if (participant.equals(post.getAuthor())) {
+			for (User participant in participants) {
+				if (!participant.getNotifyOnComments())
+					continue // don't notify users who have turned off comment notifications
+				notifiedSet[participant.getId()] = true
+				if (participant.getId() == authorUserId) {
 					continue // don't notify author of this post
 				}
 				if (participant.getEmail() != null) {
@@ -426,13 +421,13 @@ class Discussion {
 				totalPostCount --
 			}
 		}
-				[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
 	}
 
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
-				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + this.visibility == Model.Visibility.PUBLIC + ")"
+				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
 	}
 }

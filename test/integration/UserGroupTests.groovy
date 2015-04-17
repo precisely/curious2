@@ -132,7 +132,7 @@ class UserGroupTests extends CuriousTestCase {
 
 		curious.addDiscussion(discussion)
 
-		discussion.createPost(DiscussionAuthor.create(user), null, "comment")
+		discussion.createPost(user, null, "comment")
 
 		assert curious.hasDiscussion(discussion)
 
@@ -156,7 +156,7 @@ class UserGroupTests extends CuriousTestCase {
 
 		announce.addDiscussion(announcement)
 
-		announcement.createPost(DiscussionAuthor.create(admin), null, "comment")
+		announcement.createPost(admin, null, "comment")
 
 		assert announce.hasDiscussion(announcement)
 

@@ -330,8 +330,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 			username:'q',
 			email:'q@q.com',
 			password:'q',
-			first:'q',
-			last:'q',
+			name:'q q',
 			sex:'F',
 			groups:"['curious','announce']"
 		])
@@ -379,8 +378,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 			username:'q',
 			email:'q@q.com',
 			password:'q',
-			first:'q',
-			last:'q',
+			name:'q q',
 			sex:'F'
 		])
 		

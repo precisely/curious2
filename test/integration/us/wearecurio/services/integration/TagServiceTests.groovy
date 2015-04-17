@@ -67,7 +67,7 @@ class TagServiceTests extends CuriousServiceTestCase {
 	}
 
 	private static User createUser(name, email) {
-		Map params = [username: name, sex: "F", last: "y", email: email, birthdate: "01/01/2001", first: "y", password: "y"]
+		Map params = [username: name, sex: "F", name: "y y", email: email, birthdate: "01/01/2001", password: "y"]
 
 		User user = User.create(params)
 

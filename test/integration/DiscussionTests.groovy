@@ -9,8 +9,6 @@ import org.junit.Before
 import org.junit.Test
 
 import us.wearecurio.integration.CuriousTestCase
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagValueStats;
@@ -67,6 +65,7 @@ class DiscussionTests extends CuriousTestCase {
 		
 		testGroup = UserGroup.create("group", "Curious Group", "Discussion topics for test users",
 				[isReadOnly:false, defaultNotify:false])
+		testGroup.addWriter(user)
 	}
 	
 	@After
@@ -82,13 +81,24 @@ class DiscussionTests extends CuriousTestCase {
 		Utils.save(discussion, true)
 		Utils.save(post, true)
 		
+		post = post
+		
+		elasticSearchService.index()
+		
+		Thread.sleep(2000)
+		
 		// test elastic search here
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			match {
-				name: "Topic name"
-			}
+		def results = elasticSearchService.search(searchType:'query_and_fetch') {
+		  bool {
+		      must {
+		          query_string(query: "name:Topic name")
+		      }
+	          /*must {
+	              term(name: "name")
+	          }*/
+		  }
 		}
 		
-		results = results
+		assert results.searchResults[0].id == discussion.id
 	}
 }

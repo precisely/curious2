@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.utility.Utils
 
 import grails.converters.*
-import us.wearecurio.model.DiscussionAuthor
 import us.wearecurio.model.Model.Visibility
 
 class DiscussionPost {
@@ -13,7 +12,7 @@ class DiscussionPost {
 	private static def log = LogFactory.getLog(this)
 
 	Long discussionId
-	DiscussionAuthor author
+	Long authorUserId
 	Date created
 	Date updated
 	Long plotDataId
@@ -24,6 +23,7 @@ class DiscussionPost {
 	static constraints = {
 		message(maxSize:50000)
 		plotDataId(nullable:true)
+		authorUserId(nullable:true)
 		message(nullable:true)
 	}
 	static embedded = [ 'author' ]
@@ -37,16 +37,13 @@ class DiscussionPost {
 		message type: 'text'
 		
 		discussionId column:'discussion_id', index:'discussion_id_index'
+		authorUserId column:'author_user_id', index:'author_user_id_index'
 	}
 	
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'author', 'created', 'updated', 'plotDataId', 'message']
-	}
-	
-	Visibility getVisibility() {
-		getDiscussion.getVisibility()
+		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message']
 	}
 	
 	def getDiscussion() {
@@ -69,16 +66,23 @@ class DiscussionPost {
 	}
 	
 	def getUserId() {
-		return author.getUserId()
+		return authorUserId
+	}
+	
+	User getAuthor() {
+		if (authorUserId != null)
+			return User.get(authorUserId)
+		
+		return null
 	}
 	
 	public DiscussionPost() {
 	}
 	
-	public DiscussionPost(discussion, author, plotDataId, comment, created) {
+	public DiscussionPost(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
 		if (created == null) created = new Date()
 		this.discussionId = discussion.getId()
-		this.author = author
+		this.authorUserId = authorUserId
 		this.created = created
 		this.updated = created
 		discussion.setUpdated(created)
@@ -90,19 +94,19 @@ class DiscussionPost {
 		
 	}
 	
-	static def create(Discussion discussion, DiscussionAuthor author, String message) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", author:" + author + ", message:'" + message + "'"
-		return new DiscussionPost(discussion, author, null, message, new Date())
+	static def create(Discussion discussion, Long authorUserId, String message) {
+		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", message:'" + message + "'"
+		return new DiscussionPost(discussion, authorUserId, null, message, new Date())
 	}
 	
-	static def create(Discussion discussion, DiscussionAuthor author, Long plotDataId, String comment) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
-		return new DiscussionPost(discussion, author, plotDataId, comment, new Date())
+	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
+		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
+		return new DiscussionPost(discussion, authorUserId, plotDataId, comment, new Date())
 	}
 	
-	static def create(Discussion discussion, DiscussionAuthor author, Long plotDataId, String comment, Date created) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
-		return new DiscussionPost(discussion, author, plotDataId, comment, created ?: new Date())
+	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
+		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
+		return new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date())
 	}
 	
 	public static void delete(DiscussionPost post) {
@@ -126,12 +130,11 @@ class DiscussionPost {
 	}
 	
 	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params) {
-		def post
-		Discussion.withTransaction {
+		DiscussionPost post
+		return Discussion.withTransaction {
 			post = discussion.getFirstPost()
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
-				post =  "No permissions"
-				return
+				return "No permissions"
 			}
 			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 
 				&& post.getPlotDataId() != null && post.getMessage() == null) {
@@ -147,8 +150,8 @@ class DiscussionPost {
 				post = discussion.createPost(params.postname, params.postemail, params.postsite, 
 				plotIdMessage, message)
 			}
+			return post
 		}
-		return post
 	}
 
 	String toString() {

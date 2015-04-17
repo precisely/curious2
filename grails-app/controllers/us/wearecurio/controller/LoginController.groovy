@@ -154,7 +154,7 @@ class LoginController extends SessionController {
 	protected static final int FORGOT_SUCCESS = 0
 	protected static final int FORGOT_ERROR_EMAIL_NOT_RECOGNIZED = 1
 
-	protected def execForgot(def user) {
+	protected def execForgot(User user) {
 		debug "Sending password recovery email for: " + user.getEmail()
 		
 		def recovery = PasswordRecovery.create(user.getId())
@@ -175,9 +175,9 @@ class LoginController extends SessionController {
 	
 	protected def execForgotPassword(String emailOrUsername) {
 		emailOrUsername = emailOrUsername?.toLowerCase()
-		def user = User.findByUsername(emailOrUsername)
+		User user = User.findByUsername(emailOrUsername)
 		if (user == null) {
-			user = User.findByEmail(emailOrUsername)
+			user = User.findByEmailAndVirtual(emailOrUsername, false)
 			if (user == null) {
 				debug "Error recovering password '" + emailOrUsername + "' not found'"
 				return FORGOT_ERROR_EMAIL_NOT_RECOGNIZED
@@ -258,27 +258,32 @@ class LoginController extends SessionController {
 			return
 		}
 		
-		def user = User.get(recovery.getUserId())
+		User primeUser = User.get(recovery.getUserId())
+		
+		if (primeUser == null) {
+			flash.message = "Invalid password recovery link, please try again"
+			
+			redirect(url:toUrl(controller:name(), action:'recover'))
+			return
+		}
 		
 		PasswordRecovery.delete(recovery)
 		
-		if (user == null) {
-			flash.message = "Invalid password recovery link, please try again"
-			
-			redirect(url:toUrl(controller:name(), action:'recover'))			
-			return
-		}
-		user.setParameters([password:params.password])
-		Utils.save(user, true)
+		def users = User.findAllByEmailAndVirtual(primeUser.getEmail(), false)
 		
-		if (!user.validate()) {
-			flash.message = "Error saving new password, please email contact@wearecurio.us to investigate"
+		for (User user in users) {
+			user.setParameters([password:params.password])
+			Utils.save(user, true)
 			
-			redirect(url:toUrl(controller:name(), action:'recover'))			
-			return
+			if (!user.validate()) {
+				flash.message = "Error saving new password, please email contact@wearecurio.us to investigate"
+				
+				redirect(url:toUrl(controller:name(), action:'recover'))
+				return
+			}
 		}
-
-		setLoginUser(user)
+		
+		setLoginUser(primeUser)
 		
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
@@ -322,7 +327,7 @@ class LoginController extends SessionController {
 			return retVal
 		}
 		
-		if (User.findByEmail(p.email) != null) {
+		if (User.findByEmailAndVirtual(p.email, false) != null) {
 			retVal['errorCode'] = REGISTER_DUPLICATE_EMAIL
 			return retVal
 		}
@@ -413,6 +418,9 @@ class LoginController extends SessionController {
 		
 		p.first = p.first ?: ''
 		p.last = p.last ?: ''
+		if (!p.name) {
+			p.name = p.first + ' ' + p.last
+		}
 		p.sex = p.sex ?: 'N'
 		p.birthdate = p.birthdate ?: '1/1/1901'
 		

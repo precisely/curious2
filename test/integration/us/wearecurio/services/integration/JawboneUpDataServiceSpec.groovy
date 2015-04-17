@@ -49,7 +49,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		User.list()*.delete()	// Deleting existing records temporary to create default user.
 		Entry.list()*.delete(flush: true)
 
-		user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user.save()
 

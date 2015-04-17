@@ -434,7 +434,36 @@ class MigrationService {
 				sql("ALTER TABLE `discussion_author` DROP COLUMN `userid`")
 			} catch (Throwable t) {
 			}
-
+		}
+		tryMigration("Get rid of first and last name fields") {
+			try {
+				sql("UPDATE _user SET name = CONCAT(first, ' ', last)")
+			} catch (Throwable t) {
+			}
+			try {
+				sql("ALTER TABLE _user DROP COLUMN first")
+				sql("ALTER TABLE _user DROP COLUMN last")
+			} catch (Throwable t) {
+			}
+		}
+		tryMigration("Get rid of anonymous author") {
+			try {
+				sql("ALTER TABLE discussion_post DROP COLUMN author_author_id")
+			} catch (Throwable t) {
+			}
+		}
+		tryMigration("Set user virtual to false") {
+			try {
+				sql("UPDATE _user SET virtual = false WHERE virtual IS NULL")
+			} catch (Throwable t) {
+			}
+		}
+		tryMigration("Drop unique constraint on user email") {
+			try {
+				sql("ALTER TABLE _user DROP INDEX email_idx")
+				sql("CREATE INDEX email_idx ON _user(email) USING BTREE")
+			} catch (Throwable t) {
+			}
 		}
 	}
 	

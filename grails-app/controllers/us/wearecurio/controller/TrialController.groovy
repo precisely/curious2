@@ -203,6 +203,8 @@ class TrialController extends LoginController {
 			params.first = 'anonymous'
 		if (params.last == null || params.last.length() == 0)
 			params.last = 'anonymous'
+		if (!params.name)
+			params.name = params.first + ' ' + params.last
 		println "user " + params.username + " pw " + params.password
 		if (User.findByUsername(params.username) != null) {
 			flash.message = "User " + params.username + " already exists"

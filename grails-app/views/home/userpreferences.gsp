@@ -35,7 +35,7 @@ $(function() {
                 setUserId(this['id']);
                 found = true;
             }
-            addPerson(this['first'] + ' ' + this['last'], this['username'], this['id'], this['sex']);
+            addPerson(this['name'], this['username'], this['id'], this['sex']);
             return true;
         });
     });
@@ -145,16 +145,9 @@ $(function() {
 					</div>
 
 					<div class="form-group">
-						<label class="control-label col-sm-3" for="first">First Name</label>
+						<label class="control-label col-sm-3" for="name">Name</label>
 						<div class="col-sm-5">
-							<g:textField name="first" value="${user.first.encodeAsHTML()}" />
-						</div>
-					</div>
-
-					<div class="form-group">
-						<label class="control-label col-sm-3" for="last">Last Name</label>
-						<div class="col-sm-5">
-							<g:textField name="last" value="${user.last.encodeAsHTML()}" />
+							<g:textField name="name" value="${user.name.encodeAsHTML()}" />
 						</div>
 					</div>
 
@@ -187,7 +180,7 @@ $(function() {
 					</div -->
 
 					<div class="form-group">
-						<label class="control-label col-sm-3" for="first">Email Notifications</label>
+						<label class="control-label col-sm-3" for="email notifications">Email Notifications</label>
 						<div class="col-sm-5">
 							<g:radio name="notifyOnComments" value="off" checked="${!user.getNotifyOnComments()}" />
 							No emails on comments<br>
@@ -278,7 +271,7 @@ $(function() {
 
 					<!-- 
 					<div class="form-group">
-						<label class="control-label col-sm-3" for="first">Default Twitter to Now</label>
+						<label class="control-label col-sm-3" for="default twitter to now">Default Twitter to Now</label>
 						<div class="col-sm-5">
 							<input type="checkbox" name="twitterDefaultToNow" style="border: none; width: 20px;"
 								<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>> Default Twitter timestamp to now

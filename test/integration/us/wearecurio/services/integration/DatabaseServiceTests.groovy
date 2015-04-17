@@ -93,7 +93,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 				while (!proceed) try { sync.wait() } catch (InterruptedException e) {}
 				
 				DatabaseService.retry(user) {
-					user.setLast("voodoo")
+					user.setName("voodoo")
 					
 					user.save(flush:true)
 				}
@@ -105,8 +105,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 		
 		assert success
 		user.refresh()
-		assert user.getFirst().equals("hooboy")
-		assert user.getLast().equals("voodoo")
+		assert user.getName().equals("voodoo")
 		*/
 	}
 }

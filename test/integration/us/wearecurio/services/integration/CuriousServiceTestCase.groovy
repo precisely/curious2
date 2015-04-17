@@ -59,8 +59,8 @@ abstract class CuriousServiceTestCase {
 		def users = User.list(max:1)
 		if (users.size() == 0) {
 			def params = [username:'y', sex:'F', \
-				last:'y', email:'y@y.com', birthdate:'01/01/2001', \
-				first:'y', password:'y', action:'doregister', \
+				name:'y y', email:'y@y.com', birthdate:'01/01/2001', \
+				password:'y', action:'doregister', \
 				controller:'home']
 
 			user = User.create(params)

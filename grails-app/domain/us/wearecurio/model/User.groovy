@@ -9,7 +9,7 @@ import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
 
-class User extends NameEmail {
+class User {
 
 	private static def log = LogFactory.getLog(this)
 
@@ -17,11 +17,11 @@ class User extends NameEmail {
 	String email
 	String remindEmail
 	String password
-	String first
-	String last
+	String name
 	String sex
 	Date birthdate
 	String twitterAccountName
+	String website
 	Boolean twitterDefaultToNow
 	Boolean displayTimeAfterTag
 	Boolean webDefaultToNow
@@ -32,16 +32,9 @@ class User extends NameEmail {
 	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:70, unique:true)
-		email(maxSize:200, unique:true, blank:false)
+		email(maxSize:200, unique:false, blank:false)
 		remindEmail(maxSize:200, nullable:true)
-		/**
-		 * Workaround for grails constraint issue while testing.
-		 *
-		 * @see http://jira.grails.org/browse/GRAILS-10603
-		 * @see http://stackoverflow.com/questions/19960840/grails-domain-with-first-and-last-properties/19962381#19962381
-		 */
-		delegate.first(maxSize:100)
-		delegate.last(maxSize:100)
+		name(maxSize:150)
 		password(blank:false)
 		birthdate(nullable:true)
 		sex(maxSize:1, blank:false)
@@ -51,16 +44,18 @@ class User extends NameEmail {
 		notifyOnComments(nullable:true)
 		virtual(nullable:true)
 		remindEmail(nullable:true)
+		website(nullable:true)
 	}
 
 	static mapping = {
 		version false
 		table '_user'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
+		email column:'email', index:'email_idx'
 	}
 	
 	static searchable = {
-		only = ['username', 'email', 'remindEmail', 'first', 'last', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created']
+		only = ['username', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created']
 	}
 	
 	SortedSet interestTags
@@ -98,8 +93,42 @@ class User extends NameEmail {
 		user.virtual = true
 		user.setPassword("x")
 		user.sex = 'N'
-		user.first = '_'
-		user.last = '_'
+		user.name = '_'
+		user.twitterDefaultToNow
+		user.displayTimeAfterTag = true
+		user.webDefaultToNow = true
+		
+		Utils.save(user, true)
+		
+		return user
+	}
+	
+	public static User lookupOrCreateVirtualEmailUser(String name, String email, String website) {
+		log.debug "User.lookupOrCreateVirtualEmailUser() name: " + name + " email: " + email + " website: " + website
+		
+		if (name)
+			name = name.trim()
+		if (email) {
+			email = email.toLowerCase().trim()
+		}
+		if (website) {
+			website = website.toLowerCase().trim()
+		}
+		
+		User match = User.findByNameAndEmailAndWebsiteAndVirtual(name, email, website, true)
+		
+		if (match != null)
+			return match
+		
+		User user = new User()
+		user.created = new Date()
+		user.username = "_" + UUID.randomUUID().toString()
+		user.email = user.username
+		user.virtual = true
+		user.setPassword("x")
+		user.sex = 'N'
+		user.name = name
+		user.website = website
 		user.twitterDefaultToNow
 		user.displayTimeAfterTag = true
 		user.webDefaultToNow = true
@@ -138,9 +167,12 @@ class User extends NameEmail {
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
-		first = map["first"] == null ? first : map['first']
-		last = map["last"] == null ? last : map['last']
+		if ((!map["name"]) && (map["first"] || map["last"])) {
+			map["name"] = (map["first"] ?: '') + ' ' + (map["last"] ?: '')
+		}
+		name = map["name"] == null ? name : map['name']
 		sex = map["sex"] == null ? sex : map['sex']
+		website = map["website"]
 		virtual = map["virtual"] == null ? false : true
 
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
@@ -202,10 +234,6 @@ class User extends NameEmail {
 
 	def encodePassword(password) {
 		this.password = (password + passwordSalt + username).encodeAsMD5Hex()
-	}
-
-	def String getName() {
-		return first + " " + last
 	}
 
 	def String getSite() {
@@ -330,10 +358,15 @@ class User extends NameEmail {
 		
 		return retVal
 	}
+	
+	String getShortDescription() {
+		if (virtual) return name
+		else return username
+	}
 
 	String toString() {
 		return "User(id: " + id + " username: " + username + " email: " + email + " remindEmail: " + remindEmail + " password: " + (password ? "set" : "unset") \
-				+ " first: " + first + " last: " + last + " sex: " + sex \
+				+ " name: " + name + " sex: " + sex \
 				+ " birthdate: " + Utils.dateToGMTString(birthdate) \
 				+ " twitterAccountName: " + twitterAccountName \
 				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
@@ -344,6 +377,22 @@ class User extends NameEmail {
 			id: id,
 			virtual: virtual,
 			username: username
+		];
+	}
+	
+	def getJSONDesc() {
+		return [
+			id: id,
+			virtual: virtual,
+			username: username,
+			email: email,
+			remindEmail: remindEmail,
+			name: name,
+			sex: sex,
+			birthdate: birthdate,
+			website: website,
+			notifyOnComments: notifyOnComments,
+			created: created,
 		];
 	}
 }

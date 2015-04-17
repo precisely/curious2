@@ -294,7 +294,7 @@ class DataController extends LoginController {
 
 		debug "user:" + user
 
-		renderJSONGet([user])
+		renderJSONGet([user.getJSONDesc()])
 	}
 
 	// for backwards compatibility with older mobile apps - no longer used
@@ -1041,8 +1041,6 @@ class DataController extends LoginController {
 		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
 
-		elasticSearchService.search()
-		
 		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
 				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 
@@ -1509,8 +1507,7 @@ class DataController extends LoginController {
 				and {
 					or {
 						ilike("username", "%${params.searchString}%")
-						ilike("first", "%${params.searchString}%")
-						ilike("last", "%${params.searchString}%")
+						ilike("name", "%${params.searchString}%")
 						ilike("email", "%${params.searchString}%")
 					}
 					or {

@@ -2180,7 +2180,7 @@ class EntryTests extends CuriousTestCase {
 
 	@Test
 	void "Test canDelete when user has not created the entry"() {
-		Map params = [username: "z", sex: "M", last: "z", email: "z@z.com", birthdate: "01/01/2001", first: "z", password: "z"]
+		Map params = [username: "z", sex: "M", name: "z z", email: "z@z.com", birthdate: "01/01/2001", password: "z"]
 		
 		User user2 = User.create(params)
 		Utils.save(user2, true)
@@ -2202,7 +2202,7 @@ class EntryTests extends CuriousTestCase {
 
 	@Test
 	void "Test canDelete when user has not created the entry and is not an admin of the sprint containing the entry"() {
-		Map params = [username: "z", sex: "M", last: "z", email: "z@z.com", birthdate: "01/01/2001", first: "z", password: "z"]
+		Map params = [username: "z", sex: "M", name: "z z", email: "z@z.com", birthdate: "01/01/2001", password: "z"]
 		
 		User user2 = User.create(params)
 		Utils.save(user2, true)

@@ -38,7 +38,7 @@ class FitBitDataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 		serverTimezone = TimeZone.getDefault()
 		
-		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
 

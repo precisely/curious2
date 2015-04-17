@@ -39,7 +39,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void setUp() {
 		super.setUp()
 		
-		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
 		

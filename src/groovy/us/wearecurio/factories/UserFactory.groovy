@@ -13,8 +13,10 @@ class UserFactory {
 		params['email'] = params['email'] ?: generate_email(params['username'])
 		params['sex'] = params['sex'] ?: 'F'
 		params['birthdate'] = params['birthdate'] ?: '01/01/2001'
-		params['first'] = params['first'] ?: params['username']
-		params['last'] = params['last'] ?: params['username']
+		if ((!params['name']) && (params['first'] || params['last'])) {
+			params['name'] = (params['first'] ?: '') + ' ' + (params['last'] ?: '')
+		}
+		params['name'] = params['name'] ?: params['username']
 		params['password'] = params['password'] ?: params['username']
 
 		def user = User.findByUsername(params['username'])

@@ -49,9 +49,9 @@ class UserFactoryTests extends CuriousTestCase {
 		def user = UserFactory.make()
 		assert user.username == 'y'
 		assert User.countByUsername('y') == 1
-		assert user.first == 'y'
+		assert user.name == 'y'
 		
-		UserFactory.make(username: 'y', first: 'asdf')
-		assert User.last().first == 'asdf'
+		UserFactory.make(username: 'y', name: 'asdf')
+		assert User.last().name == 'asdf'
 	}
 }

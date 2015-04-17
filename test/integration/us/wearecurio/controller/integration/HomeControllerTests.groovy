@@ -33,14 +33,14 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void setUp() {
 		super.setUp()
 
-		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", first: "Mark", last: "Leo",
+		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
 		assert user2.save()
 
 		plotData = PlotData.create(user, "Plot", "{}", true)
 		Utils.save(plotData, true)
 		discussion = Discussion.create(user, "Discussion name")
-		discussion.createPost(DiscussionAuthor.create(user), plotData.getId(), "comment")
+		discussion.createPost(user, plotData.getId(), "comment")
 		Utils.save(discussion, true)
 		String mockedResponseData = """{"status":0,"body":{"updatetime":1385535542,"measuregrps":[{"grpid":162026288,"attrib":2,"date":1385386484,"category":1,"comment":"Hello","measures":[{"value":6500,"type":1,"unit":-2}]},{"grpid":162028086,"attrib":2,"date":1385300615,"category":1,"comment":"Nothing to comment","measures":[{"value":114,"type":9,"unit":0},{"value":113,"type":10,"unit":0},{"value":74,"type":11,"unit":0}]},{"grpid":129575271,"attrib":2,"date":1372931328,"category":1,"comment":"sa","measures":[{"value":170,"type":4,"unit":-2}]},{"grpid":129575311,"attrib":2,"date":1372844945,"category":1,"measures":[{"value":17700,"type":1,"unit":-2}]},{"grpid":129575122,"attrib":2,"date":1372844830,"category":1,"comment":"sa","measures":[{"value":6300,"type":1,"unit":-2}]},{"grpid":128995279,"attrib":0,"date":1372706279,"category":1,"measures":[{"value":84,"type":9,"unit":0},{"value":138,"type":10,"unit":0},{"value":77,"type":11,"unit":0}]},{"grpid":128995003,"attrib":0,"date":1372706125,"category":1,"measures":[{"value":65861,"type":1,"unit":-3}]}]}}"""
 		MockedHttpURLConnection mockedConnection = new MockedHttpURLConnection(mockedResponseData)
@@ -107,7 +107,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		def modelAndView = controller.modelAndView
 
 		assert modelAndView.model.toString().startsWith("[precontroller:home, preaction:index, user:User(")
-		assert modelAndView.model.toString().contains("username: y email: y@y.com remindEmail: null password: set first: y last: y sex: F birthdate:")
+		assert modelAndView.model.toString().contains("username: y email: y@y.com remindEmail: null password: set name: y y sex: F birthdate:")
 		assert modelAndView.model.toString().endsWith("twitterAccountName: null twitterDefaultToNow: true), prefs:[twitterAccountName:null, twitterDefaultToNow:true, displayTimeAfterTag:true, webDefaultToNow:true], templateVer:main]")
 		assert modelAndView.getViewName().equals("/home/userpreferences")
 	}
@@ -125,8 +125,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 			preaction:'index',
 			twitterDefaultToNow:'on',
 			precontroller:'home',
-			first:'x',
-			last:'y',
+			name:'x y',
 			email:'x@x.x',
 			userId:user.getId().toString(),
 			birthdate:'01/01/2001',
@@ -482,7 +481,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 
 		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
-		def discussionPostInstance = discussionInstance.createPost(DiscussionAuthor.create(user), "comment")
+		def discussionPostInstance = discussionInstance.createPost(user, "comment")
 
 		// When the user isn't authorized to delete comment
 		controller.params['discussionId'] = discussionInstance.id
@@ -580,7 +579,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void mockSprintData() {
 		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
 				
-				Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", first: "a", password: "y"]
+				Map params = [username: "a", sex: "F", email: "a@a.com", birthdate: "01/01/2001", name: "a y", password: "y"]
 						dummyUser2 = User.create(params)
 						
 						Utils.save(dummyUser2, true)

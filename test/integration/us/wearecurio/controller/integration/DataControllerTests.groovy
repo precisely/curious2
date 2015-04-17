@@ -82,8 +82,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def c = controller.response.contentAsString
 
-		assert controller.response.contentAsString.startsWith('callback([{"class":"us.wearecurio.model.User","id":' + userId + ',"birthdate"')
-		assert controller.response.contentAsString.contains('"displayTimeAfterTag":true,"email":"y@y.com","first":"y","interestTags":null,"last":"y","notifyOnComments":true,"password":"b0af8f04890269772b57e4702f7cfb3a","remindEmail":null,"sex":"F","twitterAccountName":null,"twitterDefaultToNow":true,"username":"y","virtual":null,"webDefaultToNow":true')
+		assert controller.response.contentAsString.startsWith('callback([{"id":' + userId)
+		assert controller.response.contentAsString.contains(',"virtual":false,"username":"y","email":"y@y.com","remindEmail":null,"name":"y y","sex":"F","birthdate":')
+		assert controller.response.contentAsString.contains('"website":null,"notifyOnComments":true,"created"')
 	}
 
 	@Test
@@ -382,8 +383,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 			preaction:'index',
 			twitterDefaultToNow:'on',
 			precontroller:'home',
-			first:'x',
-			last:'y',
+			name:'x y',
 			email:'x@x.x',
 			userId:userId.toString(),
 			birthdate:'01/01/2001',
@@ -444,7 +444,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		curious.addMember(user)
 
 		Discussion discussion = Discussion.create(user, "Discussion name")
-		discussion.createPost(DiscussionAuthor.create(user), null, "comment")
+		discussion.createPost(user, null, "comment")
 		Utils.save(discussion, true)
 
 		curious.addDiscussion(discussion)
@@ -455,7 +455,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def content = controller.response.contentAsString
 
-		assert content.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":false,"created":')
+		assert content.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":true,"created":')
 	}
 
 	private Discussion setUpForCommentPage() {
@@ -465,12 +465,12 @@ class DataControllerTests extends CuriousControllerTestCase {
 		curious.addMember(user)
 	
 		Discussion discussion = Discussion.create(user, "Discussion name")
-		discussion.createPost(DiscussionAuthor.create(user), "comment1")
-		discussion.createPost(DiscussionAuthor.create(user), "comment2")
-		discussion.createPost(DiscussionAuthor.create(user), "comment3")
-		discussion.createPost(DiscussionAuthor.create(user), "comment4")
-		discussion.createPost(DiscussionAuthor.create(user), "comment5")
-		discussion.createPost(DiscussionAuthor.create(user), "comment6")
+		discussion.createPost(user, "comment1")
+		discussion.createPost(user, "comment2")
+		discussion.createPost(user, "comment3")
+		discussion.createPost(user, "comment4")
+		discussion.createPost(user, "comment5")
+		discussion.createPost(user, "comment6")
 		Utils.save(discussion, true)
 	
 		curious.addDiscussion(discussion)
@@ -773,7 +773,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void mockSprintData() {
 		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
 		
-		Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", first: "a", password: "y"]
+		Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", name: "a", password: "y"]
 		dummyUser2 = User.create(params)
 
 		Utils.save(dummyUser2, true)

@@ -75,7 +75,7 @@ $(function() {
 
 					found = true;
 				}
-				addPerson(this['first'] + ' ' + this['last'],
+				addPerson(this['name'],
 					this['username'], this['id'], this['sex']);
 				return true;
 			});

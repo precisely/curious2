@@ -46,7 +46,7 @@ $(function() {
 	queueJSON("getting login info", "/home/getPeopleData?callback=?",
 		function(data) {
 			if (data == 'login') {
-				data = [{id:-1,first:'',last:'',username:'(anonymous)',sex:''}];
+				data = [{id:-1,name:'',username:'(anonymous)',sex:''}];
 			}
 			if (data != 'login' && (!checkData(data)))
 				return;
@@ -71,7 +71,7 @@ $(function() {
 						}));
 					found = true;
 				}
-				addPerson(this['first'] + ' ' + this['last'],
+				addPerson(this['name'],
 					this['username'], this['id'], this['sex']);
 
 				<g:if test="${firstPost?.getPlotDataId() != null}">

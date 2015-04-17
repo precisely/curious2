@@ -23,7 +23,7 @@ abstract class CuriousTestCase {
 	void setUp() {
 		Utils.resetForTesting()
 
-		Map params = [username: "y", sex: "F", last: "y", email: "y@y.com", birthdate: "01/01/2001", first: "y", password: "y"]
+		Map params = [username: "y", sex: "F", email: "y@y.com", birthdate: "01/01/2001", name: "y y", password: "y"]
 
 		user = User.create(params)
 
