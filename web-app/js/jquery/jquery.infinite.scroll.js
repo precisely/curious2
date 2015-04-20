@@ -81,14 +81,21 @@
 			paused = true;
 			// Clear up any waiting message or icon
 			options.onResume($element);
+			$.removeData($element[0], 'infiniteScroll');
+			$(options.bindTo).off('scroll', function(e) {
+					scrollHandeler(e);
+				}.bind(this));
 		};
 
 		// Bind scroll event to the bindTo element (default to window)
-		$(options.bindTo).scroll(function(e) {
+		$(options.bindTo).on('scroll', function(e) {
+				scrollHandeler(e);
+			}.bind(this));
+
+		var scrollHandeler = function(e) {
 			if (paused) {
 				return;
 			}
-
 			// How many pixels left to reach the bottom
 			var pixelsNearBottom;
 
@@ -105,11 +112,12 @@
 			// Keep a gutter space to pre-fetch the data when user is about to reach the end
 			if (pixelsNearBottom < options.bufferPx) {
 				// Call the function with context of this and pass two arguments
-				options.onScrolledToBottom.call(this, e, $element);
+				var infiniteScroll = $.data($element[0], 'infiniteScroll');
+				options.onScrolledToBottom.call(infiniteScroll, e, $element);
 			}
-		}.bind(this));
+		}
 	};
-
+	
 	var waitingElementSelector = 'div#waiting-msg';
 
 	// Default options

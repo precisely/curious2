@@ -9,7 +9,8 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getDiscussionsDataCSRF, getSprintsDataCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getDiscussionsDataCSRF, getSprintsDataCSRF, getPeopleListDataCSRF, 
+			getAllFeedsDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -30,10 +31,10 @@
 		<div class="main container-fluid">
 		<ul class="nav nav-pills">
 			<li id="feed-all-tab" role="presentation" class="active">
-				<a href="#" data-toggle="pill">ALL</a>
+				<a href="#allFeeds">ALL</a>
 			</li>
 			<li id="feed-people-tab" role="presentation">
-				<a href="#" data-toggle="pill">PEOPLE</a>
+				<a href="#people">PEOPLE</a>
 			</li>
 			<li id="feed-discussions-tab" role="presentation">
 				<a href="#discussions">DISCUSSIONS</a>

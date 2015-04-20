@@ -2,6 +2,7 @@ package us.wearecurio.model
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Locale;
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
@@ -46,9 +47,13 @@ class Sprint {
 	
 	static {
 		TimeZone gmtTimeZone = TimeZoneId.getUTCTimeZone()
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		dateFormat.setTimeZone(gmtTimeZone)
-		sprintBaseDate = dateFormat.parse("January 1, 2001 12:00 am")
+		try {
+			sprintBaseDate = dateFormat.parse("Jan 1, 2001 12:00 am")
+		} catch (Exception e) {
+			log.debug "error:: ${e.dump()}"
+		}
 	}
 	
 	static Date getSprintBaseDate() { return sprintBaseDate }
@@ -305,10 +310,13 @@ class Sprint {
 			id:this.id,
 			name:this.name?:'New Sprint',
 			userId:this.userId,
+			description: this.description,
+			totalParticipants: this.getParticipantsCount(),
+			totalTags: this.getEntriesCount(),
 			virtualUserId:this.virtualUserId,
 			virtualGroupId:this.virtualGroupId,
-			/*created:this.created,
-			updated:this.updated*/
+			created:this.created,
+			updated:this.updated
 		]
 	}
 	
@@ -337,11 +345,33 @@ class Sprint {
 			}
 			firstResult(offset)
 			maxResults(max)
+			order("updated", "desc")
 		}
 		
-		return sprintList
+		return sprintList*.getJSONDesc()
 	}
+
+	List<User> getParticipants(int max, int offset) {
+		if (!userId) {
+			return []
+		}
+		
+		max = max ?: 4;
+		offset = offset ?: 0;
+		List memberReaders = GroupMemberReader.findAllByGroupId(virtualGroupId, [max: max, offset: offset])
+		List participantIdsList = memberReaders.collect {it.memberId}
+
+		List<User> participantsList = User.withCriteria {
+				'in'("id", participantIdsList ?: [0l])
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+			}
 	
+		return participantsList
+	}
+
 	String toString() {
 		return "Sprint(id:" + getId() + ", userId:" + userId + ", name:" + name + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", visibility:" + visibility + ")"

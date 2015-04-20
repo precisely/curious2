@@ -1,6 +1,7 @@
 <html>
 <head>
 <meta name="layout" content="feedLayout" />
+<c:jsCSRFToken keys="getCommentsCSRF" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

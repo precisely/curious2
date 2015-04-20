@@ -2,10 +2,37 @@
 <html>
 <head>
 <meta name="layout" content="feedLayout" />
+<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF"/>
 <script type="text/javascript">
 $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
 });
+var offset = 4;
+function showMoreParticipants(sprintId) {
+	queueJSON("Getting more participants", "/data/getSprintParticipants?id=" + sprintId
+			+ "&offset=" + offset + "&max=" + 4
+			+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
+			function(data) {
+		if (data.success) {
+			if (data.participants.length > 0) {
+				$.each(data.participants, function(index, participant) {
+					$('#participants-list').append('<div class="inline-block">' + 
+							'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
+							'<p>' + participant.username + '</p>');
+				})
+				$('#participants-list').css("width", "+=380");
+				var leftPos = $('.participants-wrapper').scrollLeft();
+				$(".participants-wrapper").scrollLeft(leftPos + 380);
+				if (${sprintInstance.getParticipantsCount()} - offset <= 4) {
+					
+				}
+				offset += 4;
+			}
+		} else {
+			showAlertMessage($('.alert'), data.message);
+		}
+	});
+}
 </script>
 </head>
 <body>
@@ -60,21 +87,19 @@ $(document).ready(function() {
 								<span class="label-default label-participants">PARTICIPANTS</span>
 							</div>
 							<div class="right-content">
-								<g:each in="${participants}" var="participant">
-									<g:if test="${!participant.virtual}">
-										<div class="inline-block">
-											<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
-											<p>${participant.username}</p>
-										</div>
-									</g:if>
-								</g:each>
-								<g:if test="${participants.size() >= 5}">
-									<div class="inline-block">
-										<img src="/images/moreParticipants.png" alt="avatar" id="moreAvatars" onclick="">
-										<p>&nbsp;</p>
+								<i class="nav fa fa-chevron-left fa-3x"></i>
+								<div class="participants-wrapper inline-block">
+									<div id="participants-list" class="inline-block">
+										<g:each in="${participants}" var="participant">
+											<div class="inline-block">
+												<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
+												<p>${participant.username}</p>
+											</div>
+										</g:each>
 									</div>
-								</g:if>
 								</div>
+								<i class="nav fa fa-chevron-right fa-3x" onclick="showMoreParticipants(${sprintInstance.id})"></i>
+							</div>
 						</div>
 					</div>
 					<div class="col-xs-2">

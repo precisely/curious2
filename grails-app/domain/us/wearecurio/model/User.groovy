@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Model.Visibility
 
 class User implements NameEmail {
 
@@ -338,5 +339,30 @@ class User implements NameEmail {
 			virtual: virtual,
 			username: username
 		];
+	}
+
+	def getJSONDesc() {
+		List sprintsOwned = Sprint.findAllByUserIdAndVisibility(id, Visibility.PUBLIC)*.name
+		return [
+			sprints: sprintsOwned,
+			username: username,
+			interestTags: fetchInterestTagsJSON(),
+			updated: created
+		]
+	}
+
+	static List getUsersList(int max, int offset, Long userId) {
+		List usersList = User.withCriteria {
+				ne('id', userId)
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+				maxResults(max)
+				firstResult(offset)
+				order("created", "desc")
+		}
+
+		return usersList*.getJSONDesc()
 	}
 }

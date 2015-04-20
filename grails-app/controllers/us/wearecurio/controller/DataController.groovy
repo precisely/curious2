@@ -1593,4 +1593,15 @@ class DataController extends LoginController {
 		Map model = [questions: questions]
 		render template: "/survey/questions", model: model
 	}
+
+	def getSprintParticipants(Sprint sprint, int offset, int max) {
+		if (!sprint) {
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",                                             
+					args: ["sprint", params.id])])
+			return
+		}
+
+		List<User> participantsList = sprint.getParticipants(max, offset)
+		renderJSONGet([success: true, participants: participantsList])
+	}
 }

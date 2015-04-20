@@ -3,33 +3,111 @@
  */
 var autocompleteWidget;
 var searchList = [];
+function loadPeople() {
+	if (location.href.indexOf('#people') > -1) {
+		return true;
+	}
+	return false;
+}
+
+function loadSprints() {
+	if (location.href.indexOf('#sprints') > -1) {
+		return true;
+	}
+	return false;
+}
+
+function loadDiscussions() {
+	if (location.href.indexOf('#discussions') > -1) {
+		return true;
+	}
+	return false;
+}
+
+function loadAll() {
+	if (location.href.indexOf('#allFeeds') > -1) {
+		return true;
+	}
+	return false;
+}
+
+function registerScroll(){
+	$('#graphList').infiniteScroll({
+		bufferPx: 20,
+		bindTo: $('.main'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			var url;
+			if (loadSprints()) {
+				url = '/search/index?type=sprints&offset=' + this.getOffset() + '&max=5&' +
+						getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?';
+			} else if (loadDiscussions()) {
+				url = '/search/index?type=discussions&offset=' + this.getOffset() + '&max=5&' + 
+						getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?';
+			} else if (loadPeople()) {
+				url = '/search/index?type=people&offset=' + this.getOffset() + '&max=5&' + 
+						getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?';
+			} else if (loadAll()) {
+				url = '/search/index?type=allFeeds&offset=' + this.getOffset() + '&max=5&' + 
+						getCSRFPreventionURI('getAllFeedsDataCSRF') + '&callback=?';
+			}
+
+			queueJSON('Loading data', url,
+					function(data) {
+				if (data.success) {
+					if (data.listItems == false) {
+						this.finish();
+					} else {
+						if (loadPeople()) {
+							$.each(data.listItems, function(index, user) {                                                           
+								var compiledHtml = _.template(_people)({'user': user});                                       
+								$('#graphList').append(compiledHtml);                                                                
+							});                                                                                                      
+						} else if (loadDiscussions()) {
+							$.each(data.listItems.discussionList, function(index, discussionData) {
+								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
+								$('#graphList').append(compiledHtml);
+								showCommentAgeFromDate();
+							});
+						} else if (loadAll()) {
+							addAllFeedItems(data);
+						} else {
+							$.each(data.listItems.sprintList, function(index, sprint) {
+								var compiledHtml = _.template(_sprints)({'sprint': sprint});
+								$('#graphList').append(compiledHtml);
+							});
+							showCommentAgeFromDate();
+						}
+						this.setNextPage();
+						this.resume();
+					}
+				} else {
+					$('.alert').text(data.message);
+				}
+			}.bind(this), function(data) {
+				console.log('error: ', data);
+				showAlert('Internal server error occurred.');
+			});
+		}
+	});
+}
 
 $(window).load(function() {
-	if (location.href.indexOf('#sprints') > -1) {
+	if (loadSprints()) {
 		showSprints();
-	} else if (location.href.indexOf('#discussions') > -1) {
+	} else if (loadDiscussions()) {
 		showDiscussions();
+	} else if (loadPeople()) {
+		showPeople();
+	} else if (loadAll()) {
+		showAllFeeds();
 	}
+
 });
 
 $(document).ready(function() {
-	$('#discussion-topic').keypress(function (e) {
-		var key = e.which;
-		if (key == 13) {
-			$('.input-affordance hr').show();
-			$('input[name = discussionPost]').show();
-			return false;  
-		}
-	});
 	
-	$('#discussion-discription').keypress(function (e) {
-		var key = e.which;
-		if (key == 13) {
-			$('#create-discussion').submit();
-			return false;  
-		}
-	});
-	
+	registerScroll();
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -56,37 +134,6 @@ $(document).ready(function() {
 		var key = e.which;
 		if (key == 13) { // the enter key code
 			return false;
-		}
-	});
-
-	$('#graphList').infiniteScroll({
-		bufferPx: 20,
-		bindTo: $('.main'),
-		onScrolledToBottom: function(e, $element) {
-			this.pause();
-			var url;
-			if (location.href.indexOf('#sprints') > -1) {
-				url = '/home/feed?listSprint=true&offset=' + this.getOffset() + '&' +
-						getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?';
-			} else if (location.href.indexOf('#discussions') > -1) {
-				url = '/home/feed?offset=' + this.getOffset() + '&' + 
-						getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?';
-			}
-
-			queueJSON('Getting discussion data', url,
-					function(data) {
-				if (data.listItems == false) {
-					this.finish();
-				} else {
-					$element.append(data.listItems);
-					showCommentAgeFromDate();
-					this.setNextPage();
-					this.resume();
-				}
-			}.bind(this), function(data) {
-				console.log('error: ', data);
-				showAlert('Internal server error occurred.');
-			});
 		}
 	});
 
@@ -149,41 +196,162 @@ $(document).ready(function() {
 	$('#feed-discussions-tab a').click(function(e) {
 		showDiscussions();
 	})
+
+	$('#feed-people-tab a').click(function(e) {
+		showPeople();
+	});
+
+	$('#feed-all-tab a').click(function(e) {
+		showAllFeeds();
+	})
 });
 
 function showSprints() {
-	queueJSON('Getting sprint list', '/home/feed?listSprint=true&' + 
+	queueJSON('Getting sprint list', '/search/index?type=sprints&' + 
 			getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?',
 			function(data) {
-		if (data.listItems != false) {
-			$('#graphList').html(data.listItems);
-			showCommentAgeFromDate();
-			$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>')
-			$('#queryTitle').text('Curious Sprints');
-			$('#feed-sprints-tab a').tab('show');
+		if (data.success) {
+			if (data.listItems != false) {
+				$('#graphList').html('');
+				$.each(data.listItems.sprintList, function(index, sprint) {
+					var compiledHtml = _.template(_sprints)({'sprint': sprint});
+					$('#graphList').append(compiledHtml);
+				});
+				showCommentAgeFromDate();
+			} else {
+				$('#graphList').html('No sprints to show.');
+			}
+		} else {
+			$('.alert').text(data.message);
 		}
+		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>')
+		$('#queryTitle').text('Curious Sprints');
+		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
 		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
+	registerScroll();
 }
 
 function showDiscussions() {
-	queueJSON('Getting discussion data', '/home/feed?offset=0&' + 
+	queueJSON('Getting discussion data', '/search/index?type=discussions&offset=0&max=5&' + 
 			getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?',
 			function(data) {
-		if (data.listItems == false) {
-			$('#graphList').text('No discussions to show.');
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#graphList').text('No discussions to show.');
+			} else {
+				$('#graphList').html('');
+
+				// Showing create discussion form only once
+				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+				$('#graphList').append(createDiscussionForm);
+
+				// Handlers for discussion form input fields
+				$('#discussion-topic').keypress(function (e) {
+					var key = e.which;
+					if (key == 13) {
+						$('.input-affordance hr').show();
+						$('input[name = discussionPost]').show();
+						return false;  
+					}
+				});
+
+				$('#discussion-discription').keypress(function (e) {
+					var key = e.which;
+					if (key == 13) {
+						$('#create-discussion').submit();
+						return false;  
+					}
+				});
+
+				$.each(data.listItems.discussionList, function(index, discussionData) {
+					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
+					$('#graphList').append(compiledHtml);
+					showCommentAgeFromDate();
+				});
+				$('#feed-discussions-tab a').tab('show');
+				$('#queryTitle').text('Curious Discussions');
+				$('.share-button').popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
+			}
 		} else {
-			$('#graphList').html(data.listItems);
-			showCommentAgeFromDate();
-			$('#feed-discussions-tab a').tab('show');
-			$('#queryTitle').text('Curious Discussions');
+			$('.alert').text(data.message);
 		}
 	}, function(data) {
 		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
+	registerScroll();
+}
+
+function showPeople() {
+	queueJSON('Getting people list', '/search/index?type=people&offset=0&max=5&' + 
+			getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#graphList').text('No people to show.');
+			} else {
+				$('#graphList').html('');
+				$.each(data.listItems, function(index, user) {
+					var compiledHtml = _.template(_people)({'user': user});
+					$('#graphList').append(compiledHtml);
+				});
+				$('#feed-people-tab a').tab('show');
+				$('#queryTitle').text('Curious People');		
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+	}, function(data) {
+		console.log('error: ', data);
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function showAllFeeds() {
+	queueJSON('Getting feeds', '/search/index?type=allFeeds&offset=0&max=5&' + 
+			getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#graphList').text('No feeds to show.');
+			} else {
+				$('#graphList').html('');
+				addAllFeedItems(data);
+				$('#feed-all-tab a').tab('show');
+				$('#queryTitle').text('Curious Feeds');		
+				$(".share-button").popover({html:true});
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+	}, function(data) {
+		console.log('error: ', data);
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function addAllFeedItems(data) {
+	data.listItems.sort(function (a, b){return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)});
+	$.each(data.listItems, function(index, item) {
+		var compiledHtml = '';
+		if (item.virtualUserId) {
+			compiledHtml = _.template(_sprints)({'sprint': item});
+		} else if (item.groupName) {
+			compiledHtml = _.template(_discussions)({'discussionData': item});
+		} else {
+			compiledHtml = _.template(_people)({'user': item});
+		}
+		$('#graphList').append(compiledHtml);
+	});
+	showCommentAgeFromDate();
 }
 
 function clearSprintFormData() {
@@ -494,7 +662,35 @@ function toggleCommentsList(discussionId) {
 	var $element = $('#discussion' + discussionId + '-comment-list');
 	if ($element.is(':visible')) {
 		$element.hide();
+		$('#discussion' + discussionId + '-comment-list .comments').html('');
 	} else {
+		getMoreComments(discussionId, 0);
 		$element.show();
 	}
 }
+
+function getMoreComments(discussionId, offset) {
+
+	var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + offset  + "&max=4&" +
+			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+	
+	var discussionElementId = '#discussion' + discussionId + '-comment-list';
+
+	queueJSON("fetching more comments", url, function(data) {
+		if (!data.posts) {
+			$(discussionElementId + ' .bottom-margin').html('');
+		} else {
+			$(discussionElementId  + ' .comments').append(data.posts);
+			showCommentAgeFromDate();
+			offset = offset + 4;
+			$(discussionElementId + ' .bottom-margin a').off('click');
+			$(discussionElementId + ' .bottom-margin a').on('click', function() {
+					getMoreComments(discussionId, offset);
+				});
+		}
+	});
+	return;
+}
+
+
+

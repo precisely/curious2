@@ -1,19 +1,12 @@
 <g:each in="${posts}" var="discussPostInstance">
 	<div class="discussion-comment multiple-comments">
 		<a name="comment${discussPostInstance.getId()}"></a>
-		<div class="row">
+		<div>
 			<a href="#"><img class="avatar" src="/images/avatar2.png" alt="avatar">
 				<span class="user-name"> 
 					<g:set var="authorName" 
 						value="${(discussPostInstance.author.getUsername() ?: discussPostInstance.author.getName()).encodeAsURL()}" />
-					<g:if test="${discussPostInstance.author.getSite()}">
-						<%--<a href="${discussPostInstance.author.getSite().encodeAsURL()}">
-							${authorName }
-						</a>
-					--%>
-					</g:if> <g:else>
-						${authorName }
-					</g:else>
+					${authorName }
 				</span>
 			</a>
 			<span class="posting-time" data-time="${discussPostInstance.getUpdated().time}"></span>
@@ -28,7 +21,7 @@
 				</g:if>
 			</div>
 		</div>
-		<div class="row">
+		<div>
 			<p class="without-margin">
 				${discussPostInstance.getMessage() ? discussPostInstance.getMessage().encodeAsHTML() : ""}
 			</p>

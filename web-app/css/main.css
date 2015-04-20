@@ -1886,6 +1886,29 @@ div.graph-header-container .red-header {
 	float: right;
 }
 
+.sprint .right-content .participants-wrapper {
+	width: 380px;
+	height: 125px;
+	overflow-x: scroll;
+}
+
+.sprint .right-content #participants-list {
+	width: 380px;
+}
+
+.sprint .right-content .nav {
+	margin: 20px 20px;
+	cursor: pointer;
+}
+
+.sprint .right-content .nav.fa {
+	color: #d8d8d8;
+}
+
+.sprint .right-content .nav.fa:hover {
+	color: #939393;
+}
+
 .sprint .label {
 	width: 85px;
 	display:block;
@@ -2961,13 +2984,23 @@ body {
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 25px 30px 25px 30px;
+	padding: 25px 20px;
 	font-size: 14px;
 }
 
 
 .feed-item .discussion .multiple-comments {
-	padding: 0px 30px 0px 30px;
+	padding: 1px 20px;
+}
+
+.feed-item .discussion .comments .multiple-comments {
+	 padding: 0px 0px;
+	 margin-bottom: 20px;
+}
+
+#postList {
+	padding: 10px;
+	background-color: #eeeeee;
 }
 
 .feed-item .discussion .discussion-comment .view-comment {
@@ -3021,10 +3054,6 @@ body {
 	width: 20px;
 	display: inline-block;
 	vertical-align: top;
-}
-
-.feed-item .discussion .multiple-comments:last-child {
-	padding: 0px 30px 40px 30px;
 }
 
 .feed-item .discussion .discussion-comment p {
@@ -3793,4 +3822,61 @@ body .modal-footer a .navigate-carousel-right {
 
 #feed-right-tab a {
 	color: #ff935f; 
+}
+
+.people-wrapper {
+	background-color: #fff;
+	width: 465px;
+	padding: 15px 15px;
+	margin-bottom: 15px;
+	box-shadow: 0px 4px 5px #dddddd;
+}
+
+.people-wrapper .user-details-header {
+	margin-bottom: 12px;
+}
+
+.people-wrapper .user-details-header a img {
+	height: 42px;
+	width: 42px;
+}
+
+.people-wrapper .user-details-header a .user-name{
+	font-size: 16px;
+	font-weight: 600;
+	color: #474747;
+	margin-left: 15px;
+	vertical-align: middle;
+}
+
+.people-wrapper .user-details-header button {
+	height: 30px;
+	width: 84px;
+	border: #ff935f solid 1px;
+	border-radius: 2px;
+	text-transform: capitalize;
+	font-size: 14px;
+	float: right;
+	margin-top: 5px;
+}
+
+.people-wrapper .user-details-header .follow {
+	background-color: transparent;
+	color: #ff935f;
+} 
+
+.people-wrapper .user-details-header .following {
+	background-color: #ff935f;
+	color: #fff;
+}
+
+.people-wrapper .user-details-content {
+	margin: 5px 7px;
+	font-size: 12px;
+	color: #cacaca;
+}
+
+.people-wrapper .user-details-content .label-value {
+	color: #7e7e7e;
+	font-weight: 500;
 }

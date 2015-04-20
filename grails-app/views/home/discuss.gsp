@@ -349,13 +349,12 @@ $(document).ready(function() {
 							</div>
 						</div>
 						<div class="commentList">
-							<a name="comments"></a>
 							<g:if
 								test="${firstPost != null && firstPost.getPlotDataId() != null}">
 								<h1>Comments</h1>
 							</g:if>
 							<div class="discussion-comment">
-								<div class="row">
+								<div>
 									<div class="add-comment-to-discussion">
 										<form action="/home/discuss?commentForm=true" method="post"
 											id="commentForm">
@@ -392,7 +391,7 @@ $(document).ready(function() {
 										</form>
 									</div>
 								</div>
-								<div class="row">
+								<div>
 									<a href="/home/discuss?discussionId=${discussionId }">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
@@ -402,7 +401,6 @@ $(document).ready(function() {
 							<div id="postList">
 								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
 							</div>
-							<div id="getMoreComments"></div>
 						</div>
 					</div>
 				</div>

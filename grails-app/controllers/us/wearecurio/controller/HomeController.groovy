@@ -621,7 +621,7 @@ class HomeController extends DataController {
 				return
 			}
 			model = [sprintList: sprintList]
-			renderJSONGet([listItems: groovyPageRenderer.render(template: "/sprint/sprints", model: model)])
+			renderJSONGet([listItems: model])
 		} else {
 			if (discussionId) {
 				Discussion discussion = Discussion.get(discussionId)
@@ -647,15 +647,15 @@ class HomeController extends DataController {
 			}
 			
 			def groupMemberships = UserGroup.getGroupsForReader(user)
-					List associatedGroups = UserGroup.getGroupsForWriter(user)
-					def groupName
-					def groupFullname = "Community Feed"
+			List associatedGroups = UserGroup.getGroupsForWriter(user)
+			def groupName
+			def groupFullname = "Community Feed"
 					
-					groupMemberships.each { group ->
-					if (group[0]?.name.equals(params.userGroupNames)) {
-						groupFullname = group[0].fullName ?: group[0].name
-								groupName = group[0].name
-					}
+			groupMemberships.each { group ->
+				if (group[0]?.name.equals(params.userGroupNames)) {
+					groupFullname = group[0].fullName ?: group[0].name
+							groupName = group[0].name
+				}
 			}
 			
 
@@ -668,7 +668,7 @@ class HomeController extends DataController {
 
 			log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
 
-			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request),
+			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request), offset: offset,
 				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 				discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
@@ -678,7 +678,7 @@ class HomeController extends DataController {
 					// render false if there are no more discussions to show.
 					renderJSONGet([listItems: false])
 				} else {
-					renderJSONGet([listItems: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
+					renderJSONGet([listItems: model])
 				}
 				return
 			}
@@ -941,8 +941,7 @@ class HomeController extends DataController {
 		}
 		
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
-		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> participantsList = memberReaders.collect {User.get(it.memberId)}
+		List<User> participantsList = sprintInstance.getParticipants(4, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
 			participants : participants , user: sessionUser()])

@@ -7,9 +7,6 @@
 		<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 	</head>
 	<body>
-		<g:render template="/layouts/alertMessage" />
-		<br>
-		<br>
 		<br>
 		<div class="row">
 			<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">

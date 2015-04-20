@@ -1,4 +1,4 @@
-<g:if test="${parameters.offset == '0' || !parameters.offset}">
+<g:if test="${!parameters.offset}">
 	<div class="new-post">
 		<form id="create-discussion" action="/discussion/createTopic" method="post">
 			<div class="input-affordance left-addon">
@@ -80,31 +80,15 @@
 				</div>
 			</div>
 			<div class="discussion-comment hide" id="discussion${discussionData.id}-comment-list">
+				<div class="comments">
+				</div>
 				<div class="bottom-margin">
-					<a href="/home/discuss?discussionId=${discussionData.id }"> <span class="view-comment">VIEW ALL
-							COMMENTS (${discussionPostData[discussionData.id]?.totalPosts?:0})</span>
+					<a href="#">
+						<span class="view-comment">
+							VIEW MORE COMMENTS
+						</span>
 					</a>
 				</div>
-				<g:if test="${discussionData.firstPost?.message}">
-					<div>
-						<a href="#"><img class="avatar" src="/images/avatar2.png"
-							alt="..."><span class="user-name"> ${discussionData.firstPost?.author.getUsername()}</span></a>
-						<span class="posting-time" data-time="${discussionData.firstPost?.updated.time}"></span>
-					</div>
-					<p>
-						${discussionData.firstPost?.message}
-					</p>
-				</g:if>
-				<g:if test="${discussionPostData[discussionData.id]?.secondPost}">
-					<div>
-						<a href="#"><img class="avatar" src="/images/avatar2.png"
-							alt="..."><span class="user-name"> ${discussionData.userName}</span></a>
-						<span class="posting-time" data-time="${discussionData.updated.time}"></span>
-					</div>
-					<p>
-						${discussionPostData[discussionData.id]?.secondPost }
-					</p>
-				</g:if>
 				<div class="row">
 					<div class="col-md-6 add-comment">
 						<form action="/home/discuss?commentForm=true" method="post" id="commentForm">
