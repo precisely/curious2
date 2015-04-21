@@ -18,7 +18,7 @@ function loadSprints() {
 }
 
 function loadDiscussions() {
-	if (location.href.indexOf('#discussions') > -1) {
+	if (location.href.indexOf('#discussionList') > -1) {
 		return true;
 	}
 	return false;
@@ -31,7 +31,7 @@ function loadAll() {
 	return false;
 }
 
-function registerScroll(){
+function registerScroll() {
 	$('#graphList').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
@@ -50,6 +50,9 @@ function registerScroll(){
 			} else if (loadAll()) {
 				url = '/search/index?type=allFeeds&offset=' + this.getOffset() + '&max=5&' + 
 						getCSRFPreventionURI('getAllFeedsDataCSRF') + '&callback=?';
+			} else {
+				this.finish();
+				return;
 			}
 
 			queueJSON('Loading data', url,
@@ -339,7 +342,9 @@ function showAllFeeds() {
 }
 
 function addAllFeedItems(data) {
-	data.listItems.sort(function (a, b){return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)});
+	data.listItems.sort(function(a, b) {
+			return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
+		});
 	$.each(data.listItems, function(index, item) {
 		var compiledHtml = '';
 		if (item.virtualUserId) {
@@ -627,8 +632,10 @@ function startSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#start-sprint').removeClass('prompted-action').prop('disabled', true);
-			$('#stop-sprint').addClass(' prompted-action').prop('disabled', false);
+			$('#toggle-sprint').text('STOP').off('click');
+			$('#toggle-sprint').on('click', function() {
+				stopSprint(sprintId);
+			});
 		} else {
 			showAlert(data.message);
 		}
@@ -644,8 +651,10 @@ function stopSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#stop-sprint').removeClass('prompted-action').prop('disabled', true);
-			$('#start-sprint').addClass(' prompted-action').prop('disabled', false);
+			$('#toggle-sprint').text('START').off('click');
+			$('#toggle-sprint').on('click', function() {
+				startSprint(sprintId);
+			});
 		} else {
 			showAlert(data.message);
 		}

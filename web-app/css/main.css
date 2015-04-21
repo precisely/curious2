@@ -1889,20 +1889,35 @@ div.graph-header-container .red-header {
 .sprint .right-content .participants-wrapper {
 	width: 380px;
 	height: 125px;
-	overflow-x: scroll;
+	// overflow-x: scroll;
 }
 
 .sprint .right-content #participants-list {
-	width: 380px;
+	width: 100%;
+}
+
+.sprint .right-content #participants-list ul {
+	margin: 10px 0px;
+	height: 120px;
+	width: 100%;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	white-space: nowrap;
+}
+
+.sprint .right-content #participants-list ul li{
+	display: inline-block;
+
 }
 
 .sprint .right-content .nav {
-	margin: 20px 20px;
+	margin: 30px 20px;
 	cursor: pointer;
 }
 
 .sprint .right-content .nav.fa {
 	color: #d8d8d8;
+	vertical-align: top;
 }
 
 .sprint .right-content .nav.fa:hover {
@@ -2126,7 +2141,7 @@ div.graph-header-container .red-header {
 .sprint-button {
 	font-size: 10px;
 	height: 22px;
-	width: 55px;
+	width: 65px;
 	background-color: transparent;
 	border: 1px #656565 solid;
 	padding: 3px;

@@ -356,8 +356,8 @@ class Sprint {
 			return []
 		}
 		
-		max = max ?: 4;
-		offset = offset ?: 0;
+		max = Math.min(max ?: 4, 100)
+		offset = offset ?: 0
 		List memberReaders = GroupMemberReader.findAllByGroupId(virtualGroupId, [max: max, offset: offset])
 		List participantIdsList = memberReaders.collect {it.memberId}
 

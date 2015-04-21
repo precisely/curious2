@@ -83,16 +83,16 @@
 			options.onResume($element);
 			$.removeData($element[0], 'infiniteScroll');
 			$(options.bindTo).off('scroll', function(e) {
-					scrollHandeler(e);
+					scrollHandler(e);
 				}.bind(this));
 		};
 
 		// Bind scroll event to the bindTo element (default to window)
 		$(options.bindTo).on('scroll', function(e) {
-				scrollHandeler(e);
+				scrollHandler(e);
 			}.bind(this));
 
-		var scrollHandeler = function(e) {
+		var scrollHandler = function(e) {
 			if (paused) {
 				return;
 			}

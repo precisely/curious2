@@ -8,30 +8,37 @@ $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
 });
 var offset = 4;
+
+function showPreviousParticipants() {
+	var leftPos = $('#participants-list ul').scrollLeft();                                             
+	$("#participants-list ul").scrollLeft(leftPos - 380);    
+}
+
 function showMoreParticipants(sprintId) {
-	queueJSON("Getting more participants", "/data/getSprintParticipants?id=" + sprintId
-			+ "&offset=" + offset + "&max=" + 4
-			+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
-			function(data) {
-		if (data.success) {
-			if (data.participants.length > 0) {
-				$.each(data.participants, function(index, participant) {
-					$('#participants-list').append('<div class="inline-block">' + 
-							'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
-							'<p>' + participant.username + '</p>');
-				})
-				$('#participants-list').css("width", "+=380");
-				var leftPos = $('.participants-wrapper').scrollLeft();
-				$(".participants-wrapper").scrollLeft(leftPos + 380);
-				if (${sprintInstance.getParticipantsCount()} - offset <= 4) {
-					
+	if ((${sprintInstance.getParticipantsCount()} - offset) > 0) {
+		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintId
+				+ "&offset=" + offset + "&max=" + 4
+				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
+				function(data) {
+			if (data.success) {
+				if (data.participants.length > 0) {
+					$.each(data.participants, function(index, participant) {
+						$('#participants-list ul').append('<li>' + 
+								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
+								'<p>' + participant.username + '</p></li>');
+					})
+					offset += 4;
+					var leftPos = $('#participants-list ul').scrollLeft();
+					$("#participants-list ul").scrollLeft(leftPos + 380);
 				}
-				offset += 4;
+			} else {
+				showAlertMessage($('.alert'), data.message);
 			}
-		} else {
-			showAlertMessage($('.alert'), data.message);
-		}
-	});
+		});
+	} else {
+		var leftPos = $('#participants-list ul').scrollLeft();
+		$("#participants-list ul").scrollLeft(leftPos + 380);
+	}
 }
 </script>
 </head>
@@ -87,36 +94,38 @@ function showMoreParticipants(sprintId) {
 								<span class="label-default label-participants">PARTICIPANTS</span>
 							</div>
 							<div class="right-content">
-								<i class="nav fa fa-chevron-left fa-3x"></i>
+								<i class="nav fa fa-chevron-left fa-4x" onclick="showPreviousParticipants()"></i>
 								<div class="participants-wrapper inline-block">
 									<div id="participants-list" class="inline-block">
+										<ul>
 										<g:each in="${participants}" var="participant">
-											<div class="inline-block">
+											<li>
 												<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
 												<p>${participant.username}</p>
-											</div>
+											</li>
 										</g:each>
+										</ul>
 									</div>
 								</div>
-								<i class="nav fa fa-chevron-right fa-3x" onclick="showMoreParticipants(${sprintInstance.id})"></i>
+								<i class="nav fa fa-chevron-right fa-4x" onclick="showMoreParticipants(${sprintInstance.id})"></i>
 							</div>
 						</div>
 					</div>
 					<div class="col-xs-2">
 						<g:if test="${sprintInstance.hasMember(user.id)}">
-							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Leave</button>
-							<button id="start-sprint" 
-								${(sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date()))? 
-									raw('class="sprint-button" disabled') : raw('class="prompted-action sprint-button"')}
-								onclick="startSprint(${sprintInstance.id })">Start</button>
-							<button id="stop-sprint" 
-								${(sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date()))? 
-									raw('class="sprint-button prompted-action"'): raw('class="sprint-button" disabled')} 
-								onclick="stopSprint(${sprintInstance.id })">Stop</button>
+							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Unfollow</button>
+							<g:if test="${sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date())}">
+								<button id="toggle-sprint" class="sprint-button prompted-action" 
+										onclick="stopSprint(${sprintInstance.id })">Stop</button>
+							</g:if>
+							<g:else>
+								<button id="toggle-sprint" class="prompted-action sprint-button"
+										onclick="startSprint(${sprintInstance.id })">Start</button>
+							</g:else>
 						</g:if>
 						<g:else>
 							<a href="/home/joinSprint?sprintId=${sprintInstance.id }">
-								<button id="join-sprint" class="sprint-button">Join</button>
+								<button id="join-sprint" class="sprint-button">Follow</button>
 							</a>
 						</g:else>
 						<g:if test="${sprintInstance.hasAdmin(user.id)}">

@@ -248,7 +248,7 @@ class Discussion {
 				eq("discussionId", getId())
 			}
 			order("plotDataId", "desc")
-			order("created", "asc")
+			order("created", "desc")
 		}
 
 		return posts

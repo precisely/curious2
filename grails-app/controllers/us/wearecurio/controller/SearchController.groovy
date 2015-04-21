@@ -50,8 +50,8 @@ class SearchController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
 			return
 		}
-		params.max = max?: 5
-		params.offset = offset?: 0
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
 
 		if (type.equalsIgnoreCase("people")) {
 			renderJSONGet(searchService.getPeopleList(user, offset, max))

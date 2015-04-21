@@ -30,14 +30,14 @@
 		<div class="feed-body">
 		<div class="main container-fluid">
 		<ul class="nav nav-pills">
-			<li id="feed-all-tab" role="presentation" class="active">
+			<li id="feed-all-tab" role="presentation">
 				<a href="#allFeeds">ALL</a>
 			</li>
 			<li id="feed-people-tab" role="presentation">
 				<a href="#people">PEOPLE</a>
 			</li>
 			<li id="feed-discussions-tab" role="presentation">
-				<a href="#discussions">DISCUSSIONS</a>
+				<a href="#discussionList">DISCUSSIONS</a>
 			</li>
 			<li id="feed-sprints-tab" role="presentation">
 				<a href="#sprints">SPRINTS</a>

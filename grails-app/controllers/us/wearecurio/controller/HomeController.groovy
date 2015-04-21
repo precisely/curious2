@@ -610,7 +610,7 @@ class HomeController extends DataController {
 		}
 
 		Map model
-		params.max = max ?: 5
+		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 
 		if (listSprint) {
@@ -674,7 +674,7 @@ class HomeController extends DataController {
 
 			model["parameters"] = params
 			if (request.xhr) {
-				if( !model.discussionList ){
+				if (!model.discussionList) {
 					// render false if there are no more discussions to show.
 					renderJSONGet([listItems: false])
 				} else {
