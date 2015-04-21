@@ -330,6 +330,9 @@ function showAllFeeds() {
 				$('#feed-all-tab a').tab('show');
 				$('#queryTitle').text('Curious Feeds');		
 				$(".share-button").popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
 			}
 		} else {
 			$('.alert').text(data.message);
