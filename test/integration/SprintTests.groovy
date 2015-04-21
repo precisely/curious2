@@ -297,20 +297,20 @@ class SprintTests extends CuriousTestCase {
 	@Test
 	void "Test getSprintListForUser when no userId is passed"() {
 		mockSprintData()
-		List<Sprint> sprintList = Sprint.getSprintListForUser(null)
+		List<Sprint> sprintList = Sprint.getSprintListForUser(null, 5, 0)
 		assert sprintList == []
 	}
 	
 	@Test
 	void "Test getSprintListForUser when a user has no sprint"() {
-		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId())
+		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId(), 5, 0)
 		assert sprintList == []
 	}
 	
 	@Test
 	void testGetSprintListForUser() {
 		mockSprintData()
-		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId())
+		List<Sprint> sprintList = Sprint.getSprintListForUser(user2.getId(), 5, 0)
 		assert sprintList.size() == 2
 		assert sprintList[0].id == dummySprint1.id
 		assert sprintList[1].id == dummySprint2.id

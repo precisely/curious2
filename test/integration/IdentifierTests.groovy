@@ -6,6 +6,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.*
 
 import java.text.DateFormat
+import java.util.Locale;
 
 import static org.junit.Assert.*
 import org.junit.*
@@ -38,7 +39,7 @@ class IdentifierTests extends CuriousTestCase {
 	
 	@Test
 	void testSaveEntry() {
-		def dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		def dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		def currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		def timeZone = "America/Los_Angeles"
 		def baseDate = dateFormat.parse("July 1, 2010 12:00 am")
