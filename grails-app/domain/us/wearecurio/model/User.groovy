@@ -344,6 +344,7 @@ class User implements NameEmail {
 	def getJSONDesc() {
 		List sprintsOwned = Sprint.findAllByUserIdAndVisibility(id, Visibility.PUBLIC)*.name
 		return [
+			id: id,
 			sprints: sprintsOwned,
 			username: username,
 			interestTags: fetchInterestTagsJSON(),
@@ -352,6 +353,11 @@ class User implements NameEmail {
 	}
 
 	static List getUsersList(int max, int offset, Long userId) {
+
+		if (!userId) {
+			return []
+		}
+
 		List usersList = User.withCriteria {
 				ne('id', userId)
 				or {

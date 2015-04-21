@@ -334,4 +334,71 @@ class SprintTests extends CuriousTestCase {
 		assert !dummySprint1.hasMember(user.getId())
 		assert dummySprint1.userId == 0l
 	}
+
+	@Test
+	void "Test getParticipants when sprint has no participant"() {
+		mockSprintData()
+		dummySprint1.removeMember(user.id)
+		dummySprint1.removeMember(user2.id)
+		int max = 5
+		int offset = 0
+
+		List participantsList = dummySprint1.getParticipants(max, offset)
+
+		assert !participantsList
+	}
+
+	@Test
+	void "Test getParticipants"() {
+		mockSprintData()
+
+		int max = 5
+		int offset = 0
+		List participantsList = dummySprint1.getParticipants(max, offset)
+
+		assert participantsList.size() == 2
+		assert participantsList[0].id == user.id
+	}
+
+	@Test
+	void "Test getParticipants when offset is more than 0"() {
+		mockSprintData()
+
+		Map params = new HashMap()
+		params.put("username", "testuser3")
+		params.put("email", "test3@test.com")
+		params.put("password", "eiajrvaer")
+		params.put("first", "first3")
+		params.put("last", "last3")
+		params.put("sex", "M")
+		params.put("location", "New York, NY")
+		params.put("birthdate", "12/1/1991")
+
+		User user3 = User.create(params)
+		Utils.save(user3, true)
+
+		params.put("username", "testuser4")
+		params.put("email", "test4@test.com")
+
+		User user4 = User.create(params)
+		Utils.save(user4, true)
+		
+		params.put("username", "testuser5")
+		params.put("email", "test5@test.com")
+
+		User user5 = User.create(params)
+		Utils.save(user5, true)
+	
+		dummySprint1.addMember(user3.id)
+		dummySprint1.addMember(user4.id)
+		dummySprint1.addMember(user5.id)
+
+		int max = 4
+		int offset = 3
+		List participantsList = dummySprint1.getParticipants(max, offset)
+
+		assert participantsList.size() == 3
+		assert participantsList[0].id == user3.id
+		assert participantsList[2].id == user5.id
+	}
 }

@@ -49,11 +49,7 @@ class Sprint {
 		TimeZone gmtTimeZone = TimeZoneId.getUTCTimeZone()
 		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		dateFormat.setTimeZone(gmtTimeZone)
-		try {
-			sprintBaseDate = dateFormat.parse("Jan 1, 2001 12:00 am")
-		} catch (Exception e) {
-			log.debug "error:: ${e.dump()}"
-		}
+		sprintBaseDate = dateFormat.parse("Jan 1, 2001 12:00 am")
 	}
 	
 	static Date getSprintBaseDate() { return sprintBaseDate }

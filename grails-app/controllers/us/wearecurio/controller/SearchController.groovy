@@ -62,7 +62,7 @@ class SearchController extends LoginController {
 		} else if (type.equalsIgnoreCase("sprints")) {
 			renderJSONGet(searchService.getSprintsList(user, offset, max))
 			return
-		} else if (type.equalsIgnoreCase("allFeeds")) {
+		} else if (type.equalsIgnoreCase("all")) {
 			List listItems = []
 
 			Map sprints = searchService.getSprintsList(user, offset, max)

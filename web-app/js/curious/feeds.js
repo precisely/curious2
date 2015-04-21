@@ -48,7 +48,7 @@ function registerScroll() {
 				url = '/search/index?type=people&offset=' + this.getOffset() + '&max=5&' + 
 						getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?';
 			} else if (loadAll()) {
-				url = '/search/index?type=allFeeds&offset=' + this.getOffset() + '&max=5&' + 
+				url = '/search/index?type=all&offset=' + this.getOffset() + '&max=5&' + 
 						getCSRFPreventionURI('getAllFeedsDataCSRF') + '&callback=?';
 			} else {
 				this.finish();
@@ -318,7 +318,7 @@ function showPeople() {
 }
 
 function showAllFeeds() {
-	queueJSON('Getting feeds', '/search/index?type=allFeeds&offset=0&max=5&' + 
+	queueJSON('Getting feeds', '/search/index?type=all&offset=0&max=5&' + 
 			getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
