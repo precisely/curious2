@@ -940,7 +940,7 @@ class HomeController extends DataController {
 		}
 		
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
-		List<User> participantsList = sprintInstance.getParticipants(4, 0)
+		List<User> participantsList = sprintInstance.getParticipants(11, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
 			participants : participants , user: sessionUser()])

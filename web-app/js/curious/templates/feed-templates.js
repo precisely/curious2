@@ -9,11 +9,11 @@ var _people = '\
 	</div>\
 	<div class="user-details-content">\
 		<span>Interest Tags:</span>\
-		<span class="label-value"><%- user.interestTags %></span>\
+		<span class="label-value"><%- user.interestTags.join(", ") %></span>\
 	</div>\
 	<div class="user-details-content">\
 		<span>Public Sprints:</span>\
-		<span class="label-value"><%- user.sprints %></span>\
+		<span class="label-value"><%- user.sprints.join(", ") %></span>\
 	</div>\
 	<div class="user-details-content">\
 		<span>Start Date:</span>\

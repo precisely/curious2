@@ -8,8 +8,9 @@ $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
 
 	$('#participants-list ul>li>ul').infiniteScroll({
-		bufferPx: 20,
+		bufferPx: 15,
 		scrollHorizontally: true,
+		offset: 10,
 		bindTo: $('#participants-list ul'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
@@ -18,17 +19,18 @@ $(document).ready(function() {
 	});
 
 });
-var offset = 4;
+var offset = 10;
 
 function showPreviousParticipants() {
 	var leftPos = $('#participants-list ul').scrollLeft();                                             
-	$("#participants-list ul").scrollLeft(leftPos - 280);    
+	console.log('left: ', leftPos);
+	$("#participants-list ul").scrollLeft(leftPos - 250);    
 }
 
 function showMoreParticipants(sprintId, infiniteScroll) {
 	if ((${sprintInstance.getParticipantsCount()} - offset) > 0) {
 		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintId
-				+ "&offset=" + offset + "&max=" + 4
+				+ "&offset=" + offset + "&max=10&"
 				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
 				function(data) {
 			if (data.success) {
@@ -38,11 +40,11 @@ function showMoreParticipants(sprintId, infiniteScroll) {
 								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
 								'<p>' + participant.username + '</p></li>');
 					})
-					offset += 4;
+					offset += 10;
 					var leftPos = $('#participants-list ul').scrollLeft();
 
 					// Maximum four participants to be displayed at once, 180 is approx. with of div with two participants
-					$("#participants-list ul").scrollLeft(leftPos + 280);
+					$("#participants-list ul").scrollLeft(leftPos + 250);
 					if (infiniteScroll) {
 						infiniteScroll.resume();
 					}
@@ -131,7 +133,7 @@ function showMoreParticipants(sprintId, infiniteScroll) {
 										</ul>
 									</div>
 								</div>
-								<i class="nav fa fa-chevron-right fa-4x" onclick="showMoreParticipants(${sprintInstance.id})"></i>
+								<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants(${sprintInstance.id})"></i>
 							</div>
 						</div>
 					</div>
@@ -139,12 +141,16 @@ function showMoreParticipants(sprintId, infiniteScroll) {
 						<g:if test="${sprintInstance.hasMember(user.id)}">
 							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Unfollow</button>
 							<g:if test="${sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date())}">
-								<button id="toggle-sprint" class="sprint-button prompted-action" 
+								<button id="stop-sprint" class="sprint-button prompted-action" 
 										onclick="stopSprint(${sprintInstance.id })">Stop</button>
+								<button id="start-sprint" class="prompted-action sprint-button hidden"
+										onclick="startSprint(${sprintInstance.id })">Start</button>
 							</g:if>
 							<g:else>
-								<button id="toggle-sprint" class="prompted-action sprint-button"
+								<button id="start-sprint" class="prompted-action sprint-button"
 										onclick="startSprint(${sprintInstance.id })">Start</button>
+								<button id="stop-sprint" class="sprint-button prompted-action hidden"
+										onclick="stopSprint(${sprintInstance.id })">Stop</button>
 							</g:else>
 						</g:if>
 						<g:else>

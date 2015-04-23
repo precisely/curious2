@@ -122,8 +122,7 @@ class Sprint {
 	Long getParticipantsCount() {
 		List participantsIdList = GroupMemberReader.findAllByGroupId(virtualGroupId)*.memberId
 
-		def c = User.createCriteria()
-		Long participantsCount = c.count {
+		Long participantsCount = User.createCriteria().count {
 				'in'("id", participantsIdList ?: [0l])
 				or {
 					isNull("virtual")
@@ -360,7 +359,7 @@ class Sprint {
 			return []
 		}
 		
-		max = Math.min(max ?: 4, 100)
+		max = Math.min(max ?: 10, 100)
 		offset = offset ?: 0
 		List memberReaders = GroupMemberReader.findAllByGroupId(virtualGroupId, [max: max, offset: offset])
 		List participantIdsList = memberReaders.collect {it.memberId}

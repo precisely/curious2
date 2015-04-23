@@ -1888,7 +1888,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint .right-content .participants-wrapper {
-	max-width: 380px;
+	max-width: calc(100% - 180px);
 	height: 125px;
 }
 

@@ -614,10 +614,8 @@ function startSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#toggle-sprint').text('STOP').off('click');
-			$('#toggle-sprint').on('click', function() {
-				stopSprint(sprintId);
-			});
+			$('#start-sprint').hide();
+			$('#stop-sprint').show();
 		} else {
 			showAlert(data.message);
 		}
@@ -633,10 +631,8 @@ function stopSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#toggle-sprint').text('START').off('click');
-			$('#toggle-sprint').on('click', function() {
-				startSprint(sprintId);
-			});
+			$('#stop-sprint').hide();
+			$('#start-sprint').show();
 		} else {
 			showAlert(data.message);
 		}
@@ -674,8 +670,7 @@ function getMoreComments(discussionId, offset) {
 			$(discussionElementId + ' .comments').append(data.posts);
 			showCommentAgeFromDate();
 			offset = offset + 4;
-			$(discussionElementId + ' .bottom-margin span').off('click');
-			$(discussionElementId + ' .bottom-margin span').on('click', function() {
+			$(discussionElementId + ' .bottom-margin span').off('click').on('click', function() {
 				getMoreComments(discussionId, offset);
 			});
 		}
