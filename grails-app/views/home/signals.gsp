@@ -5,7 +5,6 @@
 <meta name="layout" content="main" />
 <title>Curious</title>
 <meta name="description" content="A platform for health hackers" />
-<c:jsCSRFToken keys="getPeopleDataCSRF" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {
@@ -24,29 +23,6 @@ function doLogout() {
 
 function refreshPage() {
 }
-
-$(function() {
-	queueJSON("getting login info", "/home/getPeopleData?callback=?",
-			getCSRFPreventionObject("getPeopleDataCSRF"),
-			function(data){
-				if (!checkData(data))
-					return;
-
-			var found = false;
-
-			jQuery.each(data, function() {
-				if (!found) {
-					// set first user id as the current
-					setUserId(this['id']);
-					found = true;
-				}
-				addPerson(this['name'],
-						this['username'], this['id'], this['sex']);
-				return true;
-			});
-		});
-});
-
 </script>
 
 <script src="/js/mustache.js"></script>

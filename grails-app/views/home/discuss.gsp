@@ -10,6 +10,8 @@
 }
 </style>
 
+<c:jsCSRFToken keys="getCommentsCSRF" />
+
 <script type="text/javascript">
 // list of users to plot
 function refreshPage() {
@@ -176,46 +178,29 @@ $(function() {
 });
 
 $(document).ready(function() {
-	var App = window.App || {};
-	App.comment = {};
-	App.comment.offset = 5;
-	App.comment.lockInfiniteScroll = false;
-	
-	$(window).scroll(function() {
-		if ($("#getMoreComments").length == 0)
-			return false;
+	var discussionId = ${discussionId};
 
-		var $element = $('#getMoreComments');
-		var docViewTop = $(window).scrollTop();
-		var docViewBottom = docViewTop + $(window).innerHeight();
+	$("#postList").infiniteScroll({
+		bufferPx: 360,
+		onFinishedMessage: 'No more comments to show',
+		onScrolledToBottom: function(e, $element) {
+			// Pause the scroll event to not trigger again untill AJAX call finishes
+			// Can be also called as: $("#postList").infiniteScroll("pause")
+			this.pause();
 
-		var elemTop = $element.offset().top;
-		
-		if ((elemTop < docViewBottom) && !App.comment.lockInfiniteScroll) {
-			$element.addClass(" waiting-icon");
-			setTimeout(function() {
-				$.ajax ({
-					type: 'POST',
-					url: '/home/discuss?discussionId=${discussionId}&offset=' + App.comment.offset,
-					success: function(data, textStatus) {
-						if (data == "false") {
-							$("#getMoreComments").text('No more comments to show.');
-							setTimeout(function() {
-								$("#getMoreComments").fadeOut()
-							}, 5000);
-						} else {
-							$('#postList').append(data);
-							showCommentAgeFromDate();
-						}
-						App.comment.offset = App.comment.offset + 5;
-					}
-				});
-				$element.removeClass("waiting-icon");
-			}, 600);
-			App.comment.lockInfiniteScroll = true;
-		} else if (elemTop > docViewBottom) {
-			App.comment.lockInfiniteScroll = false;
-			return;
+			var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + this.getOffset() + "&" +
+					getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+
+			queueJSON("fetching more comments", url, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					$element.append(data.posts);
+					showCommentAgeFromDate();
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				}
+			}.bind(this));
 		}
 	});
 });
@@ -298,7 +283,7 @@ $(document).ready(function() {
 						</div>
 						<div class="messageControls">
 							<g:if
-								test="${(firstPost.getAuthor().getUserId() == userId || isAdmin) && firstPost.getMessage() != null}">
+								test="${(firstPost.getAuthor().getId() == userId || isAdmin) && firstPost.getMessage() != null}">
 								<!--span class="edit"></span-->
 								<span class="delete"><a href="#"
 									onclick="return clearPostMessage(${firstPost.getId()})"><img
@@ -352,25 +337,24 @@ $(document).ready(function() {
 								<p>
 									${firstPost?.message}
 								</p>
-							</div>
-							<hr>
-							<div class="buttons">
-								<button onclick="showShareDialog(${discussionId })">
-									<img src="/images/share.png" alt="share">
-								</button>
-								<button onclick="showCommentDialog(null)">
-									<img src="/images/comment.png" alt="comment">
-								</button>
+								<hr>
+								<div class="buttons">
+									<button class="share-button" onclick="showShareDialog(${discussionId })">
+										<img src="/images/share.png" alt="share"> Share
+									</button>
+									<button onclick="showCommentDialog(null)">
+										<img src="/images/comment.png" alt="comment"> Comment
+									</button>
+								</div>
 							</div>
 						</div>
 						<div class="commentList">
-							<a name="comments"></a>
 							<g:if
 								test="${firstPost != null && firstPost.getPlotDataId() != null}">
 								<h1>Comments</h1>
 							</g:if>
 							<div class="discussion-comment">
-								<div class="row">
+								<div>
 									<div class="add-comment-to-discussion">
 										<form action="/home/discuss?commentForm=true" method="post"
 											id="commentForm">
@@ -407,7 +391,7 @@ $(document).ready(function() {
 										</form>
 									</div>
 								</div>
-								<div class="row">
+								<div>
 									<a href="/home/discuss?discussionId=${discussionId }">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
@@ -417,7 +401,6 @@ $(document).ready(function() {
 							<div id="postList">
 								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
 							</div>
-							<div id="getMoreComments"></div>
 						</div>
 					</div>
 				</div>

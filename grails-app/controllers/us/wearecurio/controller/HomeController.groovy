@@ -593,7 +593,7 @@ class HomeController extends DataController {
 		feed(discussionId, unpublish, publish)
 	}
 	
-	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish) {
+	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
 		debug "HomeController.feed(): $params"
 		def user = sessionUser()
 
@@ -609,68 +609,78 @@ class HomeController extends DataController {
 			return
 		}
 
-		if (discussionId) {
-			Discussion discussion = Discussion.get(discussionId)
-	
-			if (!discussion) {
-				debug "no discussion for discussionId " + discussionId
-				flash.message = "No discussion found"
+		Map model
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+
+		if (listSprint) {
+			// This is to get list of sprints the user belongs to or is admin of
+			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id, params.max, params.offset)
+			if (!sprintList) {
+				renderJSONGet([listItems: false])
 				return
 			}
+			model = [sprintList: sprintList]
+			renderJSONGet([listItems: model])
+		} else {
+			if (discussionId) {
+				Discussion discussion = Discussion.get(discussionId)
 						
-			if (unpublish) {
-				if (UserGroup.canAdminDiscussion(user, discussion)) {
-					discussion.setIsPublic(false)
-					Utils.save(discussion, true)
+						if (!discussion) {
+							debug "no discussion for discussionId " + discussionId
+							flash.message = "No discussion found"
+							return
+						}
+				
+				if (unpublish) {
+					if (UserGroup.canAdminDiscussion(user, discussion)) {
+						discussion.setIsPublic(false)
+						Utils.save(discussion, true)
+					}
+				}
+				if (publish) {
+					if (UserGroup.canAdminDiscussion(user, discussion)) {
+						discussion.setIsPublic(true)
+						Utils.save(discussion, true)
+					}
 				}
 			}
-			if (publish) {
-				if (UserGroup.canAdminDiscussion(user, discussion)) {
-					discussion.setIsPublic(true)
-					Utils.save(discussion, true)
+			
+			List<UserGroup> groupMemberships = UserGroup.getGroupsForReader(user)
+			List associatedGroups = UserGroup.getGroupsForWriter(user)
+			String groupName
+			String groupFullname = "Community Feed"
+					
+			groupMemberships.each { group ->
+				if (group[0]?.name.equals(params.userGroupNames)) {
+					groupFullname = group[0].fullName ?: group[0].name
+							groupName = group[0].name
 				}
 			}
-		}
+			
 
-		def groupMemberships = UserGroup.getGroupsForReader(user)
-		List associatedGroups = UserGroup.getGroupsForWriter(user)
-		def groupName
-		def groupFullname = "Community Feed"
+			List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+			debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
 
-		groupMemberships.each { group ->
-			if (group[0]?.name.equals(params.userGroupNames)) {
-				groupFullname = group[0].fullName ?: group[0].name
-				groupName = group[0].name
+			Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+					userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) :
+					UserGroup.getDiscussionsInfoForUser(user, true, false, params)
+
+			log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
+
+			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request), offset: offset,
+				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
+				discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
+
+			if (request.xhr) {
+				if (!model.discussionList) {
+					// render false if there are no more discussions to show.
+					renderJSONGet([listItems: false])
+				} else {
+					renderJSONGet([listItems: model])
+				}
+				return
 			}
-		}
-
-		params.max = params.max ?: 5
-		params.offset = params.offset ?: 0
-
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
-
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) : 
-				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
-
-		log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
-		
-		// This is to get list of sprints the user belongs to or is admin of
-		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
-		
-		Map model = [prefs: user.getPreferences(), userId: user.getId(), sprintList: sprintList, templateVer: urlService.template(request),
-			groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
-			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
-
-		if (request.xhr) {
-			if( !model.discussionList ){
-				// render false if there are no more discussions to show.
-				render false
-			} else {
-				renderJSONGet([feeds: groovyPageRenderer.render(template: "/feed/discussions", model: model)])
-			}
-			return
 		}
 
 		model
@@ -879,9 +889,9 @@ class HomeController extends DataController {
 			if (request.xhr) {
 				if (!model.posts ){
 					// render false if there are no more comments to show.
-					render false
+					renderJSONGet([posts: false])
 				} else {
-					render (template: "/discussion/posts", model: model)
+					renderJSONGet([posts: groovyPageRenderer.render(template: "/discussion/posts", model: model)])
 				}
 				return
 			}
@@ -913,49 +923,10 @@ class HomeController extends DataController {
 		render(view:"/home/lgmd2iproject", model:model)
 	}
 
-	def saveSurveyData() {
-		log.debug "Home.saveSurveyData()"
-		User currentUserInstance = sessionUser()
-		boolean hasErrors = false
-
-		if (params.answer.size() < 1) {
-			renderJSONPost([success: false])
-			return
-		}
-		// Using any instead of each so as to be able to break the loop when error occurs
-		UserSurveyAnswer.withTransaction { status ->
-			params.answer.any({ questionAnswerMap ->
-				UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
-				if (!userSurveyAnswer) {
-					hasErrors = true
-					status.setRollbackOnly()
-					return true
-				} else {
-					return
-				}
-			})
-		}
-		
-		if (hasErrors) {
-			renderJSONPost([success: false])
-		} else {
-			session.survey = null
-			renderJSONPost([success: true])
-		}
-	}
-
-	def getSurveyData() {
-		log.debug "Home.getSurveyData()"
-		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE, 
-			[max: 50, sort: "priority", order: "desc"])
-		Map model = [questions: questions]
-		render template: "/survey/questions", model: model
-	}
-
 	def sprint() {
 		log.debug "id: $params.id"
 		Sprint sprintInstance = Sprint.get(params.id)
-		if (!sprintInstance) {
+		if (!sprintInstance?.userId) {
 			debug "SprintId not found: $params.id"
 			flash.message = g.message(code: "sprint.not.exist")
 			redirect(url: toUrl(action:'feed'))
@@ -967,14 +938,12 @@ class HomeController extends DataController {
 			redirect(url: toUrl(action:'feed'))
 			return
 		}
-		List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id)
 		
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
-		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> participantsList = memberReaders.collect {User.get(it.memberId)}
+		List<User> participantsList = sprintInstance.getParticipants(10, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
-			participants : participants , user: sessionUser(), sprintList: sprintList])
+			participants : participants , user: sessionUser()])
 	}
 
 	def leaveSprint() {

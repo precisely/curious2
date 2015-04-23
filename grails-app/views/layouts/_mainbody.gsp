@@ -40,23 +40,25 @@ def activeClass = { a ->
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
-			<li><g:link controller='home' action="feed">Feed</g:link></li>
+			<li><a href="/home/feed#all">Feed</a></li>
 			<li><g:link controller='home' action="signals">Signals</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>
-			<li class="dropdown">
-				<a href="#" data-toggle="dropdown" class="dropdown-toggle"><b class="caret"></b></a>
-				<ul class="dropdown-menu" role="menu">
-					<li>
-						<span id="displayUser"></span>
-					</li>
-					<li class="divider"></li>
-					<li>
-						<a href="/home/logout" id="logoutLink">Logout</a>
-					</li>
-				</ul>
-			</li>
+			<c:ifLoggedin>
+				<li class="dropdown">
+					<a href="#" data-toggle="dropdown" class="dropdown-toggle"><b class="caret"></b></a>
+					<ul class="dropdown-menu" role="menu">
+						<li>
+							<span id="displayUser"></span>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="/home/logout" id="logoutLink">Logout</a>
+						</li>
+					</ul>
+				</li>
+			</c:ifLoggedin>
 		</ul>
 	</div>
 </div>
@@ -68,9 +70,9 @@ def activeClass = { a ->
 				function(data) {
 					if (!checkData(data))
 						return;
-				
+			
 				var found = false;
-				
+			
 				jQuery.each(data, function() {
 					if (!found) {
 						// set first user id as the current
@@ -82,7 +84,8 @@ def activeClass = { a ->
 					return true;
 				});
 			});
-	});
+		});
+
 	$(window).load(function () {
 		$('ul.mainLinks a').each(function() {
 			var href = $(this).attr('href');
@@ -97,9 +100,8 @@ def activeClass = { a ->
 				url: '/home/getSurveyData',
 				success: function(data) {
 					if (data != null) {
-						console.log('data success!', data);
-						$('.carousel-inner').html(data);
-						var questionCount = $('.carousel-inner').find('.item').length;
+						$('#survey-carousel-content .carousel-inner').html(data);
+						var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
 						console.log(questionCount)
 						if (questionCount == 1) {
 							console.log('ha ha question count');
@@ -129,6 +131,7 @@ def activeClass = { a ->
 
 <g:render template="/layouts/alertMessage" />
 <g:render template="/survey/takeSurveyModal" /> 
+<g:render template="/help/helpWizardOverlay" /> 
 <g:layoutBody />
 
 <!-- FOOTER -->

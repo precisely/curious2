@@ -65,4 +65,69 @@ class UserTests extends CuriousTestCase {
 		assert user.virtual
 	}
 
+	User user2, user3, user4
+	void createUsers() {
+		Map params = new HashMap()
+		params.put("username", "testuser2")
+		params.put("email", "test2@test.com")
+		params.put("password", "eiajrvaer")
+		params.put("first", "first2")
+		params.put("last", "last2")
+		params.put("sex", "M")
+		params.put("location", "New York, NY")
+		params.put("birthdate", "12/1/1991")
+		
+		// This is to test the order of the users in the list while fetching the users
+		params.put('created', new Date())
+
+		user2 = User.create(params)
+		Utils.save(user2, true)
+
+		params.put("username", "testuser3")
+		params.put("email", "test3@test.com")
+		params.put('created', new Date() - 1)
+
+		user3 = User.create(params)
+		Utils.save(user3, true)
+		
+		params.put("username", "testuser4")
+		params.put("email", "test4@test.com")
+		params.put('created', new Date() - 2)
+
+		user4 = User.create(params)
+		Utils.save(user4, true)
+	}
+
+	@Test
+	void "Test getUsersList when userId is null"() {
+		createUsers()
+		List users = User.getUsersList(5, 0, null)
+
+		assert !users.size()
+	}
+
+	@Test
+	void "Test getUsersList when userId is passed"() {
+		createUsers()
+		List users = User.getUsersList(5, 0, user.id)
+
+		assert users.size() == 3
+		assert users[0].id == user2.id
+		assert users[1].id == user3.id
+		assert users[2].id == user4.id
+	}
+
+	@Test
+	void "Test getUsersList when there are virtual users as well"() {
+		User user5 = User.createVirtual()
+		User user6 = User.createVirtual()
+		createUsers()
+
+		List users = User.getUsersList(5, 0, user.id)
+
+		assert users.size() == 3
+		assert users[0].id == user2.id
+		assert users[1].id == user3.id
+		assert users[2].id == user4.id
+	}
 }

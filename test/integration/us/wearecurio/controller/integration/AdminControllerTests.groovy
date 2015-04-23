@@ -88,7 +88,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not update question, please verify all fields!"
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
+				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
 
@@ -112,7 +113,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not update question, please verify all fields!"
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
+				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
 
@@ -125,7 +127,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not update question, please verify all fields!"
+		assert controller.flash.message == messageSource.getMessage("default.not.updated.message",
+				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
 
@@ -156,7 +159,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 
 		assert SurveyQuestion.count() == 3
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not add question, perhaps code is not unique!"
+		assert controller.flash.message == messageSource.getMessage("not.created.message",
+				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
 
@@ -168,15 +172,17 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["question"] = "Question 1?"
 		controller.createOrUpdateQuestion()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "Could not add question, perhaps code is not unique!"
+		assert controller.flash.message == messageSource.getMessage("not.created.message",
+				["Survey question"] as Object[], null)
 		controller.response.reset()
 	}
 
 	@Test
-	void "Test addPossibleAnswers when question id is not passed"() {
+	void "Test addPossibleAnswers when id is not passed"() {
 		controller.addPossibleAnswers()
 		assert controller.response.redirectUrl.contains("admin/survey")
-		assert controller.flash.message == "You can not add answers to a question that does not exist!"
+		assert controller.flash.message == messageSource.getMessage("default.not.found.message",
+				["Survey question", controller.params.id] as Object[], null)
 		controller.response.reset()
 	}
 
@@ -191,69 +197,79 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test createAnswers when question id is not passed"() {
-		controller.createAnswers()
+	void "Test createAnswersData when question id is not passed"() {
+		controller.createAnswersData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+			["Survey question", controller.params.questionId] as Object[], null)
 	}
 
 	@Test
-	void "Test createAnswers when false question id is passed"() {
+	void "Test createAnswersData when false question id is passed"() {
 		controller.params.questionId = 0
-		controller.createAnswers()
+		controller.createAnswersData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+			["Survey question", controller.params.questionId] as Object[], null)
 	}
 
 	@Test
-	void "Test createAnswers when question id is passed"() {
+	void "Test createAnswersData when question id is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 		assert controller.response.json.success == true
 	}
 
 	@Test
-	void "Test createAnswers when question id is passed and answer code is missing"() {
+	void "Test createAnswersData when question id is passed and answer code is missing"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		SurveyQuestion surveyQuestionInstance = SurveyQuestion.get(surveyQuestionInstance1.id)
 
 		assert surveyQuestionInstance.hasErrors()
 		assert SurveyAnswer.count() == 0
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("not.created.message",
+			["Survey answers"] as Object[], null)
 	}
 
 	@Test
-	void "Test createAnswers when question id is passed and answer text is missing"() {
+	void "Test createAnswersData when question id is passed and answer text is missing"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		SurveyQuestion surveyQuestionInstance = SurveyQuestion.get(surveyQuestionInstance1.id)
 
 		assert surveyQuestionInstance.hasErrors()
 		assert SurveyAnswer.count() == 0
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("not.created.message",
+			["Survey answers"] as Object[], null)
 	}
 
 	@Test
-	void "Test createAnswers when question id is passed and answers type is different"() {
+	void "Test createAnswersData when question id is passed and answers type is different"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "DESCRIPTIVE"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		sessionFactory.currentSession.clear()
 
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("not.created.message",
+				["Survey answers"] as Object[], null)
 		assert SurveyAnswer.findAllByCodeInList(["acode1", "acode2", "acode3"]) == []
 	}
 
@@ -268,8 +284,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	void "Test showSurveyQuestion when id is not passed"() {
 		controller.showSurveyQuestion()
 		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "Could not find the question you are looking for!"
-		controller.response.reset()
+		assert controller.flash.message == messageSource.getMessage("default.not.found.message", 
+				["Survey question", null] as Object[], null)
 	}
 
 	@Test
@@ -277,8 +293,8 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params.id = 0
 		controller.showSurveyQuestion()
 		assert controller.response.redirectUrl.contains("admin/listSurveyQuestions")
-		assert controller.flash.message == "Could not find the question you are looking for!"
-		controller.response.reset()
+		assert controller.flash.message == messageSource.getMessage("default.not.found.message", 
+				["Survey question", controller.params.id] as Object[], null)
 	}
 
 	@Test
@@ -289,77 +305,87 @@ class AdminControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deletePossibleAnswer when no questionId is passed"() {
+	void "Test deletePossibleAnswerData when no questionId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		controller.response.reset()
 
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
 		controller.params["questionId"] = null
-		controller.deletePossibleAnswer()
+		controller.deletePossibleAnswerData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey question", controller.params.questionId] as Object[], null)
 	}
 
 	@Test
-	void "Test deletePossibleAnswer when no answerId is passed"() {
+	void "Test deletePossibleAnswerData when no answerId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
-		controller.deletePossibleAnswer()
+		controller.deletePossibleAnswerData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.null.message",
+				["id", "Answer"] as Object[], null)
 	}
 
 	@Test
-	void "Test deletePossibleAnswer when false questionId is passed"() {
+	void "Test deletePossibleAnswerData when false questionId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		controller.response.reset()
 
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
 		controller.params["questionId"] = 0
-		controller.deletePossibleAnswer()
+		controller.deletePossibleAnswerData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey question", controller.params.questionId] as Object[], null)
 	}
 
 	@Test
-	void "Test deletePossibleAnswer when correct parameters are passed"() {
+	void "Test deletePossibleAnswerData when correct parameters are passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode2", "answer": "Answer no 2.", "priority": 3, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
-		controller.deletePossibleAnswer()
+		controller.deletePossibleAnswerData()
 		assert controller.response.json.success == true
 		assert surveyQuestionInstance1.possibleAnswers.size() == 2
 	}
 
 	@Test
-	void "Test updateSurveyAnswer when no answerId is passed"() {
-		controller.updateSurveyAnswer()
+	void "Test updateSurveyAnswerData when no answerId is passed"() {
+		controller.updateSurveyAnswerData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey answer", null] as Object[], null)
 	}
 
 	@Test
-	void "Test updateSurveyAnswer when false answerId is passed"() {
+	void "Test updateSurveyAnswerData when false answerId is passed"() {
 		controller.params["answerId"] = 0;
-		controller.updateSurveyAnswer()
+		controller.updateSurveyAnswerData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey answer", controller.params.answerId] as Object[], null)
 	}
 
 	@Test
-	void "Test updateSurveyAnswer when correct answerId is passed"() {
+	void "Test updateSurveyAnswerData when correct answerId is passed"() {
 		controller.params["questionId"] = surveyQuestionInstance1.id
 		controller.params["possibleAnswers"] = [["code": "acode1", "answer": "Answer no 1.", "priority": 4, "answerType": "MCQ"],
 			["code": "acode3", "answer": "Answer no 3.", "priority": 5, "answerType": "MCQ"]]
-		controller.createAnswers()
+		controller.createAnswersData()
 
 		controller.response.reset()
 		controller.params["answerId"] = surveyQuestionInstance1.possibleAnswers[0].id
@@ -367,30 +393,34 @@ class AdminControllerTests extends CuriousControllerTestCase {
 		controller.params["answer"] = "Answer no 4?"
 		controller.params["priority"] = 4
 		controller.params["answerType"] = "MCQ"
-		controller.updateSurveyAnswer()
+		controller.updateSurveyAnswerData()
 		assert controller.response.json.success == true
 		assert surveyQuestionInstance1.possibleAnswers[0].code.equals("acode4")
 	}
 
 	@Test
-	void "Test deleteSurveyQuestion when correct questionId is passed"() {
-		controller.params["questionId"] = surveyQuestionInstance1.id
-		controller.deleteSurveyQuestion()
+	void "Test deleteSurveyQuestionData when correct questionId is passed"() {
+		controller.params.id = surveyQuestionInstance1.id
+		controller.deleteSurveyQuestionData()
 
 		assert controller.response.json.success == true
 		assert !SurveyQuestion.get(surveyQuestionInstance1.id)
 	}
 
 	@Test
-	void "Test deleteSurveyQuestion when no questionId is passed"() {
-		controller.deleteSurveyQuestion()
+	void "Test deleteSurveyQuestionData when no questionId is passed"() {
+		controller.deleteSurveyQuestionData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey question", controller.params.id] as Object[], null)
 	}
 
 	@Test
-	void "Test deleteSurveyQuestion when false questionId is passed"() {
-		controller.params["questionId"] = 0
-		controller.deleteSurveyQuestion()
+	void "Test deleteSurveyQuestionData when false questionId is passed"() {
+		controller.params.id = 0
+		controller.deleteSurveyQuestionData()
 		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Survey question", controller.params.id] as Object[], null)
 	}
 }

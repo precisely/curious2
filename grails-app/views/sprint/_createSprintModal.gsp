@@ -18,9 +18,9 @@
 						</div>
 						<div class="col-md-6">
 							<label class="">PRIVACY</label>
-							<input type="radio" class="radio-open" name="visibility" id="open" value="${Visibility.PUBLIC}" checked>
+							<input type="radio" class="radio-open" name="visibility" id="open" value="${Visibility.PUBLIC}">
 							<label for="open" class="radio-label">Open</label>
-							<input type="radio" class="radio-closed" name="visibility" id="closed" value="${Visibility.PRIVATE}">
+							<input type="radio" class="radio-closed" name="visibility" id="closed" value="${Visibility.PRIVATE}" checked>
 							<label for="closed" class="radio-label">Closed</label>
 						</div>
 					</div>
@@ -31,7 +31,7 @@
 						</div>
 						<div class="col-md-6">
 							<label for="sprint-duration">DURATION (DAYS)</label>
-							<input type="text" name="daysDuration" placeholder="Select Duration" id="sprint-duration">
+							<input type="number" name="daysDuration" placeholder="Enter duration in days" min="0" id="sprint-duration">
 						</div>
 					</div>
 					<label for="sprint-details">DETAILS</label>

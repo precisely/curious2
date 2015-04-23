@@ -43,6 +43,56 @@ class SearchController extends LoginController {
 		debug "SearchController constructor()"
 	}
 
+	def index(String type, int max, int offset) {
+		User user = sessionUser()
+
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
+			return
+		}
+
+		if (!type) {
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+			return
+		}
+
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+
+		if (type.equalsIgnoreCase("people")) {
+			renderJSONGet(searchService.getPeopleList(user, params.offset, params.max))
+		} else if (type.equalsIgnoreCase("discussions")) {
+			renderJSONGet(searchService.getDiscussionsList(user, params.offset, params.max))
+		} else if (type.equalsIgnoreCase("sprints")) {
+			renderJSONGet(searchService.getSprintsList(user, params.offset, params.max))
+		} else if (type.equalsIgnoreCase("all")) {
+			List listItems = []
+
+			Map sprints = searchService.getSprintsList(user, params.offset, params.max)
+			if (sprints.listItems) {
+				listItems.addAll(sprints.listItems.sprintList)
+			}
+
+			Map discussions = searchService.getDiscussionsList(user, params.offset, params.max)
+			if (discussions.listItems) {
+				listItems.addAll(discussions.listItems.discussionList)
+			}
+
+			Map peoples = searchService.getPeopleList(user, params.offset, params.max)
+			if (peoples.listItems) {
+				listItems.addAll(peoples.listItems)
+			}
+
+			if (!listItems) {
+				renderJSONGet([success: true, listItems: false])
+				return
+			}
+			renderJSONGet([listItems: listItems, success: true])
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+		}
+	}
+
 	def listData() {
 		debug "SearchController.listData() params:" + params
 

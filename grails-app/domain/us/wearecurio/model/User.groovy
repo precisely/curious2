@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.TagService
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Model.Visibility
 
 class User {
 
@@ -372,6 +373,17 @@ class User {
 				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
 	}
 
+	List getOwnedSprints() {
+		List sprintsOwned = Sprint.withCriteria {
+				projections {
+					property('name')
+				}
+				eq('userId', id)
+				eq('visibility', Visibility.PUBLIC)
+			}
+		return sprintsOwned
+	}
+
 	def getJSONShortDesc() {
 		return [
 			id: id,
@@ -394,5 +406,38 @@ class User {
 			notifyOnComments: notifyOnComments,
 			created: created,
 		];
+	}
+
+	def getPeopleJSONDesc() {
+		return getJSONDesc() + [
+			sprints: getOwnedSprints(),
+			interestTags: fetchInterestTagsJSON()*.description,
+			updated: created
+		]
+	}
+
+	/**
+	 * This method will return list of all actual users except
+	 * the user with id: excludedUserId
+	 */
+
+	static List getUsersList(int max, int offset, Long excludedUserId) {
+
+		if (!excludedUserId) {
+			return []
+		}
+
+		List usersList = User.withCriteria {
+				ne('id', excludedUserId)
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+				maxResults(max)
+				firstResult(offset)
+				order("created", "desc")
+		}
+
+		return usersList*.getPeopleJSONDesc()
 	}
 }

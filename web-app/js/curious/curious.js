@@ -109,6 +109,10 @@ function formatUnits(units) {
  * Curious data json return value check
  */
 function checkData(data, status, errorMessage, successMessage) {
+	if (location.href.indexOf('termsofservice') > -1) {
+		// This is to avoid session time out message when user is not logged in and wants to view terms of service
+		return false;
+	}
 	if (data == 'error') {
 		if (errorMessage && status != 'cached')
 			showAlert(errorMessage);
@@ -167,45 +171,142 @@ function setUserName(userName) {
 
 $(document).ready(function() {
 	$('#navigate-left').prop('disabled', true).children('button').text('');
-	$('#carousel-content').on('slid.bs.carousel', '', function() {
+	$('#survey-carousel-content').on('slid.bs.carousel', '', function() {
 		var $this = $(this);
 		$('#navigate-left').prop('disabled', false).children('button').text('PREVIOUS');
-		$('#navigate-right').prop('href','#carousel-content');
-		$('#navigate-right').html('<button type="button" class="navigate-carousel-right">NEXT</button>');
+		$('#navigate-right').prop('href','#survey-carousel-content')
+		.html('<button type="button" class="navigate-carousel-right">NEXT</button>');
 		
-		if ($('.carousel-inner .item:first').hasClass('active')) {
+		if ($('#survey-carousel-content .carousel-inner .item:first').hasClass('active')) {
 			$('#navigate-left').prop('disabled', true).children('button').text('');
-		} else if ($('.carousel-inner .item:last').hasClass('active')) {
-			$('#navigate-right').prop('href','#');
-			$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
+		} else if ($('#survey-carousel-content .carousel-inner .item:last').hasClass('active')) {
+			$('#navigate-right').prop('href','#')
+			.html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 		}
 	});
 
+	$("#sleep-hour").keyup(function(event) {
+		if (event.which == 13) {
+			nextQuestion();
+			event.preventDefault();
+		} else if ($(this).val() == '') {
+			$('#sleep-entry-label').text('');
+			$('#sleep-hour-entry').val('');
+		} else {
+			$('#sleep-entry-label').text('[sleep ' + $(this).val() + ']');
+			$('#sleep-hour-entry').val('sleep ' + $(this).val());
+		}
+	});
+
+	$('#helpWizardOverlay .exercise-details').keydown(function(event) {
+		if (event.which === 13) {
+			if (this.id === 'metabolic') {
+				$('#helpWizardForm').submit();
+			} else {
+				$(this).nextAll().eq(1).focus();
+			}
+			event.preventDefault();
+		}
+	});
+
+	$('#helpWizardForm').submit(function(event) {
+		$('#helpWizardForm .next-question').hide();
+		$('#helpWizardForm .left-carousel-control').hide();
+		$('#helpWizardForm .right-carousel-control').hide();
+		$('#helpWizardForm .wait-form-submit').show();
+		
+		var now = new Date();
+		$('#current-time-input').val(now.toUTCString());
+		$('#time-zone-name-input').val(jstz.determine().name());
+		now.setHours(0,0,0,0);
+		$('#base-date-input').val(now.toUTCString());
+		var params = $(this).serializeObject();
+		console.log(params);
+		
+		queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
+				function(data) {
+					if (data.success) {
+						$('#helpWizardOverlay').modal('hide');
+						showAlert('Entries created successfully');
+						if (window.location.href.indexOf('/index') > 0) {
+							location.reload();
+						}
+						enableHelpForm();
+						$("#helpWizardOverlay input:hidden").val('');
+					} else {
+						enableHelpForm();
+						showAlertMessage($('#help-alert'), data.message, 6000);
+					}
+				}, function() {});
+		return false;
+	});
 
 	$('#surveyForm').submit(function(event) {
-		console.log('submited....');
-		params = $(this).serializeArray();
+		var params = $(this).serializeObject();
 		
-		$.ajax({
-			type: 'POST',
-			url: '/home/saveSurveyData',
-			data: params,
-			success: function(data) {
-				data = JSON.parse(data);
-				if (data.success) {
-					$('#takeSurveyOverlay').modal('hide');
-					showAlert('Survey completed successfully!');
-				} else {
-					$('#survey-alert').removeClass('hide');
-					setInterval(function() {
-						$('#survey-alert').addClass('hide');
-					}, 6000);
-				}
-			},
-			error: function(xhr) {
-				console.log('xhr:', xhr);
+		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
+				function(data) {
+			if (data.success) {
+				$('#takeSurveyOverlay').modal('hide');
+				showAlert('Survey completed successfully.');
+			} else {
+				showAlertMessage($('#survey-alert'), data.message, 6000);
 			}
+		}, function(xhr) {
+			console.log('xhr:', xhr);
+			showAlert('Internal server error occurred.');
 		});
 		return false;
 	});
+
+	$('#help-carousel-content .left-carousel-control').hide();
+	$('#help-carousel-content .next-question').attr('type', 'button').text('NEXT (1 of 3)');
+	$('#help-carousel-content').on('slid.bs.carousel', '', function() {
+		var $this = $(this);
+		
+		if ($('#help-carousel-content .carousel-inner .item:first').hasClass('active')) {
+			$('.left-carousel-control').hide();
+			$('.next-question').attr('type', 'button').text('NEXT (1 of 3)');
+		} else if ($('#help-carousel-content .carousel-inner .item:last').hasClass('active')) {
+			$('.next-question').attr('type', 'submit').text('FINISH');
+		} else {
+			$('.left-carousel-control').show();
+			$('.next-question').attr('type', 'button').text('NEXT (2 of 3)');
+		}
+	});
 });
+
+function enableHelpForm() {
+	$('#helpWizardForm .next-question').show();
+	$('#helpWizardForm .left-carousel-control').show();
+	$('#helpWizardForm .right-carousel-control').show();
+	$('#helpWizardForm .wait-form-submit').hide();
+}
+
+function setMood() {
+	var value = 'mood ' + $('#mood-range').val();
+	$('#mood-entry-label').text('[' + value + ']');
+	$('#mood-entry').val(value);
+}
+
+function nextQuestion() {
+	if (!$('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
+		// If not at the last question or slide
+		$('#help-carousel-content').carousel('next');
+	}
+}
+
+function skipToNextQuestion() {
+	if ($('#helpWizardOverlay .carousel-inner .item:first').hasClass('active')) {
+		$('#sleep-entry-label').text('');
+		$('#sleep-hour-entry, #sleep-hour').val('');
+	} else if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
+		$('#helpWizardOverlay .exercise-details').val('');
+		$('#helpWizardForm').submit();
+		return;
+	} else {
+		$('#mood-entry-label').text('');
+		$('#mood-entry').val('');
+	}
+	nextQuestion();
+}

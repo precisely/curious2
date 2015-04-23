@@ -447,6 +447,24 @@ class UserGroup {
 		removeReader(User.get(userId))
 	}
 
+	def removeAllParticipants() {
+		removeAllReaders()
+		removeAllWriters()
+		removeAllAdmins()
+	}
+
+	def removeAllReaders() {
+		GroupMemberReader.executeUpdate("DELETE GroupMemberReader gmr WHERE gmr.groupId = :groupId", [groupId: id])
+	}
+
+	def removeAllWriters() {
+		GroupMemberWriter.executeUpdate("DELETE GroupMemberWriter gmw WHERE gmw.groupId = :groupId", [groupId: id])
+	}
+
+	def removeAllAdmins() {
+		GroupMemberAdmin.executeUpdate("DELETE GroupMemberAdmin gma WHERE gma.groupId = :groupId", [groupId: id])
+	}
+
 	def hasReader(User user) {
 		if (!user) return false
 

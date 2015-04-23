@@ -521,7 +521,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				self.latestEntryId = entries[3].id;
 				self.refreshEntries(entries[0]);
 				if (entries[2] != null)
-					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3], entries[2][4]);
 				if (callBack && typeof callBack == 'function') {
 					callBack();
 				}
@@ -643,7 +643,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 10 2 2 2; width: calc(100% - 75px);"></input>'
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input>'
 				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
 				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
 				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');

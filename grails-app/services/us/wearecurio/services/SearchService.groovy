@@ -3,6 +3,8 @@ package us.wearecurio.services
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.UserGroup
 
 class SearchService {
 	
@@ -57,5 +59,43 @@ class SearchService {
 	
 	def listGroups(User user, String searchString, int offset, int max) {
 		
+	}
+
+	Map getSprintsList(User user, int offset, int max) {
+		List sprintList = Sprint.getSprintListForUser(user.id, max, offset)
+		if (!sprintList) {
+			return [listItems: false, success: true]
+		}
+		Map model = [sprintList: sprintList]
+		return [listItems: model, success: true]
+	}
+
+	Map getDiscussionsList(User user, int offset, int max) {
+		def groupMemberships = UserGroup.getGroupsForReader(user)
+		List groupNameList = []
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, [offset: offset, max: max]) :
+			UserGroup.getDiscussionsInfoForUser(user, true, false, [offset: offset, max: max])
+
+		Map discussionPostData = discussionData["discussionPostData"]
+		discussionData["dataList"].each {data ->
+				data.totalComments = discussionPostData[data.id].totalPosts
+			}
+
+		Map model = [userId: user.getId(), groupMemberships: groupMemberships, totalDiscussionCount: discussionData["totalCount"], 
+			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"]]
+
+		if (!model.discussionList) {
+			return [listItems: false, success: true]
+		} else {
+			return [listItems: model, success: true]
+		}
+	}
+
+	Map getPeopleList(User user, int offset, int max) {
+		List usersList = User.getUsersList(max, offset, user.id)
+		if (usersList) {
+			 return [listItems: usersList, success: true]
+		}
+		return [listItems: false, success: true]
 	}
 }
