@@ -70,20 +70,18 @@ class SearchService {
 		return [listItems: model, success: true]
 	}
 
-	Map getDiscussionsList(User user, Map params) {
+	Map getDiscussionsList(User user, int offset, int max) {
 		def groupMemberships = UserGroup.getGroupsForReader(user)
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				params.userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
+		List groupNameList = []
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, [offset: offset, max: max]) :
+			UserGroup.getDiscussionsInfoForUser(user, true, false, [offset: offset, max: max])
 
 		Map discussionPostData = discussionData["discussionPostData"]
-		List discussionList = discussionData["dataList"].collect {
-				it.totalComments = discussionPostData[it.id].totalPosts
-				it
+		discussionData["dataList"].each {data ->
+				data.totalComments = discussionPostData[data.id].totalPosts
 			}
 
-		Map model = [userId: user.getId(), groupMemberships: groupMemberships,totalDiscussionCount: discussionData["totalCount"], 
+		Map model = [userId: user.getId(), groupMemberships: groupMemberships, totalDiscussionCount: discussionData["totalCount"], 
 			discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"]]
 
 		if (!model.discussionList) {

@@ -3,32 +3,14 @@
  */
 var autocompleteWidget;
 var searchList = [];
-function loadPeople() {
-	if (location.href.indexOf('#people') > -1) {
-		return true;
-	}
-	return false;
+
+function isTabActive(anchor) {
+	return location.hash == anchor;
 }
 
-function loadSprints() {
-	if (location.href.indexOf('#sprints') > -1) {
-		return true;
-	}
-	return false;
-}
-
-function loadDiscussions() {
-	if (location.href.indexOf('#discussionList') > -1) {
-		return true;
-	}
-	return false;
-}
-
-function loadAll() {
-	if (location.href.indexOf('#allFeeds') > -1) {
-		return true;
-	}
-	return false;
+function isOnFeedPage() {
+	var anchor = location.hash.slice(1);
+	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
 }
 
 function registerScroll() {
@@ -38,18 +20,11 @@ function registerScroll() {
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
 			var url;
-			if (loadSprints()) {
-				url = '/search/index?type=sprints&offset=' + this.getOffset() + '&max=5&' +
-						getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?';
-			} else if (loadDiscussions()) {
-				url = '/search/index?type=discussions&offset=' + this.getOffset() + '&max=5&' + 
-						getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?';
-			} else if (loadPeople()) {
-				url = '/search/index?type=people&offset=' + this.getOffset() + '&max=5&' + 
-						getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?';
-			} else if (loadAll()) {
-				url = '/search/index?type=all&offset=' + this.getOffset() + '&max=5&' + 
-						getCSRFPreventionURI('getAllFeedsDataCSRF') + '&callback=?';
+			var anchor = location.hash.slice(1);
+
+			if (isOnFeedPage()) {
+				url = '/search/index?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
+						getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?';
 			} else {
 				this.finish();
 				return;
@@ -61,18 +36,18 @@ function registerScroll() {
 					if (data.listItems == false) {
 						this.finish();
 					} else {
-						if (loadPeople()) {
+						if (isTabActive('#people')) {
 							$.each(data.listItems, function(index, user) {                                                           
 								var compiledHtml = _.template(_people)({'user': user});                                       
 								$('#graphList').append(compiledHtml);                                                                
 							});                                                                                                      
-						} else if (loadDiscussions()) {
+						} else if (isTabActive('#discussions')) {
 							$.each(data.listItems.discussionList, function(index, discussionData) {
 								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
 								$('#graphList').append(compiledHtml);
 								showCommentAgeFromDate();
 							});
-						} else if (loadAll()) {
+						} else if (isTabActive('#all')) {
 							addAllFeedItems(data);
 						} else {
 							$.each(data.listItems.sprintList, function(index, sprint) {
@@ -88,7 +63,6 @@ function registerScroll() {
 					$('.alert').text(data.message);
 				}
 			}.bind(this), function(data) {
-				console.log('error: ', data);
 				showAlert('Internal server error occurred.');
 			});
 		}
@@ -96,13 +70,13 @@ function registerScroll() {
 }
 
 $(window).load(function() {
-	if (loadSprints()) {
+	if (isTabActive('#sprints')) {
 		showSprints();
-	} else if (loadDiscussions()) {
+	} else if (isTabActive('#discussions')) {
 		showDiscussions();
-	} else if (loadPeople()) {
+	} else if (isTabActive('#people')) {
 		showPeople();
-	} else if (loadAll()) {
+	} else if (isTabActive('#all')) {
 		showAllFeeds();
 	}
 
@@ -110,7 +84,16 @@ $(window).load(function() {
 
 $(document).ready(function() {
 	
-	registerScroll();
+	if (isOnFeedPage()) {
+		registerScroll();
+	}
+
+	$('html').on('click', function(e) {
+		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
+			$('[data-original-title]').popover('hide');
+		}
+	});
+
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -126,7 +109,6 @@ $(document).ready(function() {
 					showAlert(data.message);
 				}
 			}, function(xhr) {
-				console.log('error:', xhr)
 				showAlert('Internal server error occurred.');
 			});
 		});
@@ -135,6 +117,7 @@ $(document).ready(function() {
 
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
+
 		if (key == 13) { // the enter key code
 			return false;
 		}
@@ -155,7 +138,6 @@ $(document).ready(function() {
 				clearSprintFormData()
 			}
 		}, function(xhr) {
-			console.log('error: ', xhr);
 		});
 		return false;
 	});
@@ -211,7 +193,7 @@ $(document).ready(function() {
 
 function showSprints() {
 	queueJSON('Getting sprint list', '/search/index?type=sprints&' + 
-			getCSRFPreventionURI('getSprintsDataCSRF') + '&callback=?',
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems != false) {
@@ -231,7 +213,6 @@ function showSprints() {
 		$('#queryTitle').text('Curious Sprints');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
-		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
 	registerScroll();
@@ -239,7 +220,7 @@ function showSprints() {
 
 function showDiscussions() {
 	queueJSON('Getting discussion data', '/search/index?type=discussions&offset=0&max=5&' + 
-			getCSRFPreventionURI('getDiscussionsDataCSRF') + '&callback=?',
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
@@ -285,7 +266,6 @@ function showDiscussions() {
 			$('.alert').text(data.message);
 		}
 	}, function(data) {
-		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
 	registerScroll();
@@ -293,7 +273,7 @@ function showDiscussions() {
 
 function showPeople() {
 	queueJSON('Getting people list', '/search/index?type=people&offset=0&max=5&' + 
-			getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?',
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
@@ -311,7 +291,6 @@ function showPeople() {
 			$('.alert').text(data.message);
 		}
 	}, function(data) {
-		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
 	registerScroll();
@@ -319,7 +298,7 @@ function showPeople() {
 
 function showAllFeeds() {
 	queueJSON('Getting feeds', '/search/index?type=all&offset=0&max=5&' + 
-			getCSRFPreventionURI('getPeopleListDataCSRF') + '&callback=?',
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
@@ -338,7 +317,6 @@ function showAllFeeds() {
 			$('.alert').text(data.message);
 		}
 	}, function(data) {
-		console.log('error: ', data);
 		showAlert('Internal server error occurred.');
 	});
 	registerScroll();
@@ -346,8 +324,9 @@ function showAllFeeds() {
 
 function addAllFeedItems(data) {
 	data.listItems.sort(function(a, b) {
-			return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
-		});
+		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
+	});
+
 	$.each(data.listItems, function(index, item) {
 		var compiledHtml = '';
 		if (item.virtualUserId) {
@@ -617,7 +596,7 @@ function deleteSprint(sprintId) {
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
 				} else {
-					location.assign('/home/feed');
+					location.assign('/home/feed#all');
 				}
 			}, function(data) {
 				showAlert(data.message);
@@ -692,13 +671,13 @@ function getMoreComments(discussionId, offset) {
 		if (!data.posts) {
 			$(discussionElementId + ' .bottom-margin').html('');
 		} else {
-			$(discussionElementId  + ' .comments').append(data.posts);
+			$(discussionElementId + ' .comments').append(data.posts);
 			showCommentAgeFromDate();
 			offset = offset + 4;
-			$(discussionElementId + ' .bottom-margin a').off('click');
-			$(discussionElementId + ' .bottom-margin a').on('click', function() {
-					getMoreComments(discussionId, offset);
-				});
+			$(discussionElementId + ' .bottom-margin span').off('click');
+			$(discussionElementId + ' .bottom-margin span').on('click', function() {
+				getMoreComments(discussionId, offset);
+			});
 		}
 	});
 	return;

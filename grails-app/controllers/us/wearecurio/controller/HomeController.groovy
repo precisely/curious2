@@ -646,10 +646,10 @@ class HomeController extends DataController {
 				}
 			}
 			
-			def groupMemberships = UserGroup.getGroupsForReader(user)
+			List<UserGroup> groupMemberships = UserGroup.getGroupsForReader(user)
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
-			def groupName
-			def groupFullname = "Community Feed"
+			String groupName
+			String groupFullname = "Community Feed"
 					
 			groupMemberships.each { group ->
 				if (group[0]?.name.equals(params.userGroupNames)) {
@@ -672,7 +672,6 @@ class HomeController extends DataController {
 				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
 				discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
 
-			model["parameters"] = params
 			if (request.xhr) {
 				if (!model.discussionList) {
 					// render false if there are no more discussions to show.

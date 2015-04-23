@@ -10,9 +10,7 @@ import us.wearecurio.controller.SearchController
 import us.wearecurio.model.*
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
-/**
- *
- */
+
 class SearchControllerTests extends CuriousControllerTestCase {
 
 	SearchController controller
@@ -71,6 +69,32 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("auth.error.message", null, null)
+	}
+
+	@Test
+	void "Test index when no type is passed"() {
+		controller.session.userId = user.getId()
+		controller.params["type"] = null
+		controller.params["max"] = 5
+		controller.params["offset"] = 0
+
+		controller.index()
+
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
+	}
+
+	@Test
+	void "Test index when wrong type is passed"() {
+		controller.session.userId = user.getId()
+		controller.params["type"] = "falseType"
+		controller.params["max"] = 5
+		controller.params["offset"] = 0
+
+		controller.index()
+
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
 	}
 
 	@Test

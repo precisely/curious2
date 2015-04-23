@@ -6,15 +6,26 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
+
+	$('#participants-list ul>li>ul').infiniteScroll({
+		bufferPx: 20,
+		scrollHorizontally: true,
+		bindTo: $('#participants-list ul'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			showMoreParticipants(${sprintInstance.id}, this);
+		}
+	});
+
 });
 var offset = 4;
 
 function showPreviousParticipants() {
 	var leftPos = $('#participants-list ul').scrollLeft();                                             
-	$("#participants-list ul").scrollLeft(leftPos - 380);    
+	$("#participants-list ul").scrollLeft(leftPos - 280);    
 }
 
-function showMoreParticipants(sprintId) {
+function showMoreParticipants(sprintId, infiniteScroll) {
 	if ((${sprintInstance.getParticipantsCount()} - offset) > 0) {
 		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintId
 				+ "&offset=" + offset + "&max=" + 4
@@ -23,13 +34,22 @@ function showMoreParticipants(sprintId) {
 			if (data.success) {
 				if (data.participants.length > 0) {
 					$.each(data.participants, function(index, participant) {
-						$('#participants-list ul').append('<li>' + 
+						$('#participants-list ul li ul').append('<li>' + 
 								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
 								'<p>' + participant.username + '</p></li>');
 					})
 					offset += 4;
 					var leftPos = $('#participants-list ul').scrollLeft();
-					$("#participants-list ul").scrollLeft(leftPos + 380);
+
+					// Maximum four participants to be displayed at once, 180 is approx. with of div with two participants
+					$("#participants-list ul").scrollLeft(leftPos + 280);
+					if (infiniteScroll) {
+						infiniteScroll.resume();
+					}
+				} else {
+					if (infiniteScroll) {
+						infiniteScroll.stop();
+					}	
 				}
 			} else {
 				showAlertMessage($('.alert'), data.message);
@@ -98,12 +118,16 @@ function showMoreParticipants(sprintId) {
 								<div class="participants-wrapper inline-block">
 									<div id="participants-list" class="inline-block">
 										<ul>
-										<g:each in="${participants}" var="participant">
 											<li>
-												<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
-												<p>${participant.username}</p>
+												<ul>
+													<g:each in="${participants}" var="participant">
+														<li>
+															<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
+															<p>${participant.username}</p>
+														</li>
+													</g:each>
+												</ul>
 											</li>
-										</g:each>
 										</ul>
 									</div>
 								</div>

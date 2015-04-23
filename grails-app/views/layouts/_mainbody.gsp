@@ -40,7 +40,7 @@ def activeClass = { a ->
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
-			<li><a href="/home/feed#allFeeds">Feed</a></li>
+			<li><a href="/home/feed#all">Feed</a></li>
 			<li><g:link controller='home' action="signals">Signals</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>

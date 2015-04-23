@@ -114,11 +114,15 @@ class UserTests extends CuriousTestCase {
 
 	@Test
 	void "Test getUsersList when there are virtual users as well"() {
-		user2 = User.createVirtual()
-		user3 = User.createVirtual()
+		User user5 = User.createVirtual()
+		User user6 = User.createVirtual()
+		createUsers()
 
 		List users = User.getUsersList(5, 0, user.id)
 
-		assert !users.size()
+		assert users.size() == 3
+		assert users[0].id == user2.id
+		assert users[1].id == user3.id
+		assert users[2].id == user4.id
 	}
 }

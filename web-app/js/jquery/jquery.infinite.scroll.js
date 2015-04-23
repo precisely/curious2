@@ -19,6 +19,7 @@
 		// Determine if we're operating against a browser window
 		var isWindow = $.isWindow(options.bindTo[0]);
 
+		var scrollHorizontally = options.scrollHorizontally;
 		/*
 		 * Hold the offset for pagination
 		 */
@@ -97,20 +98,26 @@
 				return;
 			}
 			// How many pixels left to reach the bottom
-			var pixelsNearBottom;
+			var pixelsNearEnd;
 
 			// In scroll event has been registered on window object
 			if (isWindow) {
-				pixelsNearBottom = $(document).height() - $(window).height() - $(window).scrollTop();
+				pixelsNearEnd = $(document).height() - $(window).height() - $(window).scrollTop();
 			} else {
 				// If scroll event has been applied for any other element in the page
 				var $scrollElement = options.bindTo;
-				pixelsNearBottom = $scrollElement[0].scrollHeight - $scrollElement.scrollTop() - 
-						$scrollElement.innerHeight();
+				if (scrollHorizontally) {
+					var hwidth = $element.width();
+					pixelsNearEnd = hwidth - $scrollElement.scrollLeft() - 
+							$scrollElement.innerWidth();
+				} else {
+					pixelsNearEnd = $scrollElement[0].scrollHeight - $scrollElement.scrollTop() - 
+							$scrollElement.innerHeight();
+				}
 			}
 
 			// Keep a gutter space to pre-fetch the data when user is about to reach the end
-			if (pixelsNearBottom < options.bufferPx) {
+			if (pixelsNearEnd < options.bufferPx) {
 				// Call the function with context of this and pass two arguments
 				var infiniteScroll = $.data($element[0], 'infiniteScroll');
 				options.onScrolledToBottom.call(infiniteScroll, e, $element);
@@ -126,6 +133,8 @@
 		bindTo: $(window),
 		// Buffer pixel of scrollbar from end to start when user is about to reach the end
 		bufferPx: 50,
+		// Scroll horizontally or virtically(default)
+		scrollHorizontally: false,
 		// Number of items fetched per page
 		max: 5,
 		offset: 5,

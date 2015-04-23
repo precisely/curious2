@@ -342,24 +342,36 @@ class User implements NameEmail {
 	}
 
 	def getJSONDesc() {
-		List sprintsOwned = Sprint.findAllByUserIdAndVisibility(id, Visibility.PUBLIC)*.name
+		List sprintsOwned = Sprint.withCriteria {
+				projections {
+					property('name')
+				}
+				eq('userId', id)
+				eq('visibility', Visibility.PUBLIC)
+			}
+
 		return [
 			id: id,
 			sprints: sprintsOwned,
 			username: username,
-			interestTags: fetchInterestTagsJSON(),
+			interestTags: fetchInterestTagsJSON()*.description,
 			updated: created
 		]
 	}
 
-	static List getUsersList(int max, int offset, Long userId) {
+	/**
+	 * This method will return list of all actual users except
+	 * the user with id: excludedUserId
+	 */
 
-		if (!userId) {
+	static List getUsersList(int max, int offset, Long excludedUserId) {
+
+		if (!excludedUserId) {
 			return []
 		}
 
 		List usersList = User.withCriteria {
-				ne('id', userId)
+				ne('id', excludedUserId)
 				or {
 					isNull("virtual")
 					ne("virtual", true)

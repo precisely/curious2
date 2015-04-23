@@ -50,32 +50,35 @@ class SearchController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
 			return
 		}
+
+		if (!type) {
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+			return
+		}
+
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 
 		if (type.equalsIgnoreCase("people")) {
-			renderJSONGet(searchService.getPeopleList(user, offset, max))
-			return
+			renderJSONGet(searchService.getPeopleList(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("discussions")) {
-			renderJSONGet(searchService.getDiscussionsList(user, params))
-			return
+			renderJSONGet(searchService.getDiscussionsList(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("sprints")) {
-			renderJSONGet(searchService.getSprintsList(user, offset, max))
-			return
+			renderJSONGet(searchService.getSprintsList(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("all")) {
 			List listItems = []
 
-			Map sprints = searchService.getSprintsList(user, offset, max)
+			Map sprints = searchService.getSprintsList(user, params.offset, params.max)
 			if (sprints.listItems) {
 				listItems.addAll(sprints.listItems.sprintList)
 			}
 
-			Map discussions = searchService.getDiscussionsList(user, params)
+			Map discussions = searchService.getDiscussionsList(user, params.offset, params.max)
 			if (discussions.listItems) {
 				listItems.addAll(discussions.listItems.discussionList)
 			}
 
-			Map peoples = searchService.getPeopleList(user, offset, max)
+			Map peoples = searchService.getPeopleList(user, params.offset, params.max)
 			if (peoples.listItems) {
 				listItems.addAll(peoples.listItems)
 			}
@@ -85,7 +88,8 @@ class SearchController extends LoginController {
 				return
 			}
 			renderJSONGet([listItems: listItems, success: true])
-			return
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
 		}
 	}
 

@@ -9,8 +9,7 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getDiscussionsDataCSRF, getSprintsDataCSRF, getPeopleListDataCSRF, 
-			getAllFeedsDataCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -31,54 +30,20 @@
 		<div class="main container-fluid">
 		<ul class="nav nav-pills">
 			<li id="feed-all-tab" role="presentation">
-				<a href="#allFeeds">ALL</a>
+				<a href="/home/feed#all">ALL</a>
 			</li>
 			<li id="feed-people-tab" role="presentation">
-				<a href="#people">PEOPLE</a>
+				<a href="/home/feed#people">PEOPLE</a>
 			</li>
 			<li id="feed-discussions-tab" role="presentation">
-				<a href="#discussionList">DISCUSSIONS</a>
+				<a href="/home/feed#discussions">DISCUSSIONS</a>
 			</li>
 			<li id="feed-sprints-tab" role="presentation">
-				<a href="#sprints">SPRINTS</a>
+				<a href="/home/feed#sprints">SPRINTS</a>
 			</li>
 			<li id="feed-right-tab" role="presentation">
 			<li>
 		</ul>
-		<%--<div class="left-menu">
-				<ul>
-					<li id="recentSearches"><a href="#">RECENT SEARCHES</a>
-						<g:if test="${searchKeywords}">
-							<ul>
-								<g:each in="${searchKeywords}" var="searchInstance">
-									<li>
-										<a href="#">${searchInstance.searchString}</a> 
-									</li>
-								</g:each>
-							</ul>
-						</g:if>
-					</li>
-					<li id="myThreads">
-						<a href="/home/feed?userId=${userId}">MY THREADS</a>
-					</li>
-					<li id="sprints">
-						<a>SPRINTS</a>
-						<button class="sprint-button" onclick="createSprint()">
-							<span class="create-sprint-label">CREATE</span>
-						</button>
-						<g:if test="${sprintList}">
-							<ul>
-								<g:each in="${sprintList}" var="sprint">
-									<li>
-										<a href="/home/sprint/${sprint.id}">${sprint.name}</a> 
-									</li>
-								</g:each>
-							</ul>
-						</g:if>
-					</li>
-				</ul>
-			</div>
-			--%>
 			<div id="graphList">
 				<g:pageProperty name="page.feedContent" />
 			</div>

@@ -266,6 +266,7 @@ function addComment(discussionId) {
 			message: $inputElement.val()
 		},
 		success: function(data) {
+			location.reload();
 		},
 		error: function(xhr) {
 		}
@@ -348,6 +349,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 		if (currentLoginSession != _loginSessionNumber)
 			return; // if current login session is over, cancel callbacks
 		if (failCallback)
+			console.log('error: ', data);
 			failCallback(data);
 		if (!background) {
 			--numJSONCalls;

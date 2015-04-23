@@ -116,12 +116,20 @@ class Sprint {
 	}
 	
 	Long getEntriesCount() {
-		Long entriesCount = Entry.countByUserId(virtualUserId)
-		return entriesCount
+		return Entry.countByUserId(virtualUserId)
 	}
 	
 	Long getParticipantsCount() {
-		Long participantsCount = GroupMemberReader.countByGroupId(virtualGroupId)
+		List participantsIdList = GroupMemberReader.findAllByGroupId(virtualGroupId)*.memberId
+
+		def c = User.createCriteria()
+		Long participantsCount = c.count {
+				'in'("id", participantsIdList ?: [0l])
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+				}
 		return participantsCount
 	}
 
@@ -357,6 +365,7 @@ class Sprint {
 		List memberReaders = GroupMemberReader.findAllByGroupId(virtualGroupId, [max: max, offset: offset])
 		List participantIdsList = memberReaders.collect {it.memberId}
 
+		// Fetch all non-virtual or actual users
 		List<User> participantsList = User.withCriteria {
 				'in'("id", participantIdsList ?: [0l])
 				or {

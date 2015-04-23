@@ -351,7 +351,7 @@ body.discuss-page input#discussTitleInput {
 }
 #recordList {
 	overflow: auto;
-	max-height: 400px
+	max-height: 370px
 }
 /**
  * @Deprecated. Use `.red-header` instead.
@@ -424,10 +424,10 @@ input.textInput {
 	width:100%;
 }
 .startdatepicker, .enddatepicker {
-	height:30px;
-	width:175px;
-	border:0px;
-	font-size:.5em;
+	height: 30px;
+	width: 175px;
+	border: 0px;
+	font-size: 16px;
 }
 .startDate {
 	display:inline-block;
@@ -1532,6 +1532,7 @@ body.discuss-page .red-header {
 	position: absolute;
 	margin: 10px 0px 0px 17px;
 	height: 40px;
+	pointer: cursor;
 }
 
 .input-affordance p {
@@ -1887,9 +1888,8 @@ div.graph-header-container .red-header {
 }
 
 .sprint .right-content .participants-wrapper {
-	width: 380px;
+	max-width: 380px;
 	height: 125px;
-	// overflow-x: scroll;
 }
 
 .sprint .right-content #participants-list {
@@ -1897,10 +1897,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint .right-content #participants-list ul {
-	margin: 10px 0px;
 	height: 120px;
-	width: 100%;
-	overflow-x: scroll;
 	overflow-y: hidden;
 	white-space: nowrap;
 }
@@ -1911,7 +1908,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint .right-content .nav {
-	margin: 30px 20px;
+	margin: 20px 20px;
 	cursor: pointer;
 }
 
@@ -3021,6 +3018,7 @@ body {
 .feed-item .discussion .discussion-comment .view-comment {
 	color: #555555;
 	font-size: 11px;
+	cursor: pointer;
 }
 
 .feed-item .discussion .discussion-comment .add-comment {
@@ -3582,7 +3580,7 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 .ui-autocomplete {
-	z-index: 1045;
+	z-index: 1145;
 }
 
 #createSprintOverlay .modal-body .input-group {

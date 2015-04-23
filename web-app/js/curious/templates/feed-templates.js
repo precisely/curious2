@@ -69,7 +69,7 @@ var _discussions = ' \
 					</div>\
 				</div>\
 				<div class="group"> \
-					<%- discussionData.groupName %>\
+					<%- discussionData.isPublic ? "Open to all" : discussionData.groupName %>\
 				</div>\
 				<div class="row">\
 					<div class="col-xs-7">\
@@ -84,7 +84,7 @@ var _discussions = ' \
 							</button>\
 							<% if (discussionData.isAdmin) {  %>\
 								<button class="share-button" data-toggle="popover" title="Share:" data-placement="top" \
-										data-content="<input class=\'share-link\' type=\'text\' value=\'http://<%- location.hostname %>/home/discuss?discussionId=<%- discussionData.id %>\'>">\
+										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/home/discuss?discussionId=<%- discussionData.id %>\'>">\
 									<img src="/images/share.png" alt="share">Share\
 								</button>\
 							<% } %>\
@@ -106,11 +106,9 @@ var _discussions = ' \
 			<div class="comments">\
 			</div>\
 			<div class="bottom-margin">\
-				<a href="#">\
-					<span class="view-comment">\
-						VIEW MORE COMMENTS\
-					</span>\
-				</a>\
+				<span class="view-comment">\
+					VIEW MORE COMMENTS\
+				</span>\
 			</div>\
 			<div class="row">\
 				<div class="col-md-6 add-comment">\
