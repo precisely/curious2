@@ -78,6 +78,9 @@ $(window).load(function() {
 		showPeople();
 	} else if (isTabActive('#all')) {
 		showAllFeeds();
+	} else if (location.href.indexOf('/feed') > -1) {
+		location.hash = '#all';
+		showAllFeeds();
 	}
 
 });
@@ -102,9 +105,13 @@ $(document).ready(function() {
 					{discussionId: discussionId, deleteDiscussion: true}, 
 					function(data) {
 				if (data.success) {
-					showAlert(data.message, function() {
-						$this.parents('.feed-item').fadeOut();
-					});
+					if (isOnFeedPage()) {
+						showAlert(data.message, function() {
+							$this.parents('.feed-item').fadeOut();
+						});
+					} else {
+						location.href = '/home/feed#all';
+					}
 				} else {
 					showAlert(data.message);
 				}
@@ -209,7 +216,7 @@ function showSprints() {
 		} else {
 			$('.alert').text(data.message);
 		}
-		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>')
+		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>');
 		$('#queryTitle').text('Curious Sprints');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
@@ -256,6 +263,7 @@ function showDiscussions() {
 					showCommentAgeFromDate();
 				});
 				$('#feed-discussions-tab a').tab('show');
+				$('#feed-right-tab').html('');
 				$('#queryTitle').text('Curious Discussions');
 				$('.share-button').popover({html:true});
 				$('.share-button').on('click', function () {
@@ -285,6 +293,7 @@ function showPeople() {
 					$('#graphList').append(compiledHtml);
 				});
 				$('#feed-people-tab a').tab('show');
+				$('#feed-right-tab').html('');
 				$('#queryTitle').text('Curious People');		
 			}
 		} else {
@@ -307,6 +316,7 @@ function showAllFeeds() {
 				$('#graphList').html('');
 				addAllFeedItems(data);
 				$('#feed-all-tab a').tab('show');
+				$('#feed-right-tab').html('');
 				$('#queryTitle').text('Curious Feeds');		
 				$(".share-button").popover({html:true});
 				$('.share-button').on('click', function () {
@@ -678,5 +688,9 @@ function getMoreComments(discussionId, offset) {
 	return;
 }
 
-
-
+function deletePost(discussionId, postId) {
+	showYesNo("Are you sure you want to delete this post?", function() {
+			window.location = "/home/discuss?discussionId=" + discussionId + "&deletePostId=" + postId;
+	});
+	return false;
+}

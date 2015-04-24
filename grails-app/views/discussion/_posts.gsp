@@ -14,7 +14,7 @@
 				<g:if
 					test="${discussPostInstance.getAuthor().getId() == userId || isAdmin}">
 					<span class="delete"> <a href="#"
-						onclick="return deletePost(${discussPostInstance.getId()})"> <img
+							onclick="return deletePost(${discussPostInstance.discussionId}, ${discussPostInstance.getId()})"> <img
 							src="/images/x.gif" width="8" height="8">
 					</a>
 					</span>

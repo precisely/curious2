@@ -10,7 +10,7 @@
 }
 </style>
 
-<c:jsCSRFToken keys="getCommentsCSRF" />
+<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF" />
 
 <script type="text/javascript">
 // list of users to plot
@@ -31,13 +31,6 @@ function doLogout() {
 function clearPostMessage(postId) {
 	showYesNo("Are you sure you want to delete this comment?", function() {
 			window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
-	});
-	return false;
-}
-
-function deletePost(postId) {
-	showYesNo("Are you sure you want to delete this post?", function() {
-			window.location = "/home/discuss?discussionId=${discussionId}&deletePostId=" + postId;
 	});
 	return false;
 }
