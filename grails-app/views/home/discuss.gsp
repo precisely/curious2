@@ -10,7 +10,7 @@
 }
 </style>
 
-<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF" />
+<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF, addCommentCSRF" />
 
 <script type="text/javascript">
 // list of users to plot
@@ -349,7 +349,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/home/discuss?commentForm=true" method="post"
+										<form action="/discussion/addComment?commentForm=true" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
@@ -379,8 +379,7 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="discussionId"
-												value="${discussionId}">
+											<input type="hidden" name="id" value="${discussionId}">
 										</form>
 									</div>
 								</div>

@@ -37,7 +37,12 @@ class UrlService {
 	 * @return
 	 */
 	def make(map, req, boolean usePublicIP = false) {
-		def url = base(req, usePublicIP) + map.controller + '/' + map.action
+		String url = base(req, usePublicIP) + map.controller + '/' + map.action
+		if (map.params.id) {
+			url += "/${map.params.id}"
+			map.params.remove("id")
+		}
+
 		if (map.params) {
 			url = makeQueryString(url, map.params)
 		}

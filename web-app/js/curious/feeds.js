@@ -101,8 +101,8 @@ $(document).ready(function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var discussionId = $this.data('discussionId');
-			queueJSON('Deleting Discussion', '/data/deleteDiscussionData?' + getCSRFPreventionURI('deleteDiscussionDataCSRF') + '&callback=?',
-					{discussionId: discussionId, deleteDiscussion: true}, 
+			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionId,
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
 					function(data) {
 				if (data.success) {
 					if (isOnFeedPage()) {
@@ -117,7 +117,7 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			});
+			}, null, 'delete');
 		});
 		return false;
 	});
@@ -690,7 +690,29 @@ function getMoreComments(discussionId, offset) {
 
 function deletePost(discussionId, postId) {
 	showYesNo("Are you sure you want to delete this post?", function() {
-			window.location = "/home/discuss?discussionId=" + discussionId + "&deletePostId=" + postId;
+			window.location = "/api/discussion/action/deletePost?discussionId=" + discussionId + "&deletePostId=" + postId;
 	});
 	return false;
+}
+
+function addComment(discussionId) {
+	var $inputElement = $('input#userComment');
+	if (discussionId == null) {
+		discussionId = $('input#discussionId').val()
+	}
+	queuePostJSON('Adding comment', '/api/discussion/action/addComment',
+		getCSRFPreventionObject('addCommentCSRF', {id: discussionId, message: $inputElement.val()}),
+		function(data) {
+			if (data.success) {
+				if (location.href.indexOf('/discussion/show') > -1) {
+					location.reload();
+				} else {
+					location.href = '/discussion/show/' + discussionId;
+				}
+			} else {
+				showAlert(data.message);
+			}	
+	}, function(error) {
+		showAlert('Internal server error occurred');
+	});
 }

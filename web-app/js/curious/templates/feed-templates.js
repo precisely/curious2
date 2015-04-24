@@ -24,7 +24,7 @@ var _people = '\
 
 var _createDiscussionForm = '\
 <div class="new-post">\
-	<form id="create-discussion" action="/discussion/createTopic" method="post">\
+	<form id="create-discussion" action="/api/discussion/create" method="post">\
 		<div class="input-affordance left-addon">\
 			<i class="fa fa-pencil"></i> \
 			<input class="full-width discussion-topic-input"\
@@ -73,7 +73,7 @@ var _discussions = ' \
 				</div>\
 				<div class="row">\
 					<div class="col-xs-7">\
-						<a href="/home/discuss?discussionId=<%- discussionData.id %>"> \
+						<a href="/discussion/show/<%- discussionData.id %>"> \
 							<span> <%- discussionData.name ? discussionData.name: \'(No Title)\' %></span>\
 						</a>\
 					</div>\
@@ -112,7 +112,7 @@ var _discussions = ' \
 			</div>\
 			<div class="row">\
 				<div class="col-md-6 add-comment">\
-					<form action="/home/discuss?commentForm=true" method="post" id="commentForm">\
+					<form action="/discussion/addComment?commentForm=true" method="post" id="commentForm">\
 						<% if (false) { %>\
 							<p>Enter your details below</p>\
 								<div id="postname">\
@@ -138,7 +138,7 @@ var _discussions = ' \
 									placeholder="Add Comment..."\
 									id="post-comment" name="message" required>\
 						<% } %>\
-						<input type="hidden" name="discussionId" value="<%- discussionData.id %>">\
+						<input type="hidden" name="id" value="<%- discussionData.id %>">\
 					</form>\
 				</div>\
 				<div class="class-md-6"></div>\
