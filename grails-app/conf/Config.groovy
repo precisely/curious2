@@ -159,9 +159,12 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+
+		elasticSearch.client.mode = 'transport'
 		
-		elasticsearch.client.mode = 'local'
-		
+		elasticSearch.client.hosts = [
+		       [host:'127.0.0.1', port:9300]
+		]
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
@@ -204,11 +207,16 @@ environments {
 		}
     }
     qa {
-		elasticsearch.client.mode = 'local'
-		
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		
+		elasticSearch.client.mode = 'node'
+		
+		elasticSearch.client.hosts = [
+		       [host:'127.0.0.1', port:9300],
+		]
+		
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
@@ -265,12 +273,17 @@ environments {
 		}
     }
     production {
-		elasticsearch.client.mode = 'local'
-		
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+
+		elasticSearch.client.mode = 'node'
+		
+		elasticSearch.client.hosts = [
+		       [host:'127.0.0.1', port:9300],
+		]
+		
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
@@ -330,6 +343,9 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		
+		elasticSearch.client.mode = 'local'
+		
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"

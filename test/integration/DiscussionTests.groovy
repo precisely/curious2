@@ -3,6 +3,8 @@ import static org.junit.Assert.*
 import java.math.MathContext
 import java.text.DateFormat
 
+import org.elasticsearch.index.query.QueryBuilder
+import org.elasticsearch.index.query.QueryBuilders
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.junit.After
 import org.junit.Before
@@ -100,5 +102,49 @@ class DiscussionTests extends CuriousTestCase {
 		}
 		
 		assert results.searchResults[0].id == discussion.id
+	}
+
+	@Test
+	void testCreateDiscussionInGroups() {
+		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
+			[isReadOnly:false, defaultNotify:false])
+		groupA.addMember(user)
+		UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
+			[isReadOnly:false, defaultNotify:true])
+		groupB.addMember(user)
+
+		Discussion discussion = Discussion.create(user, "Topic name", groupA)
+		groupB.addDiscussion(discussion)
+		DiscussionPost post = discussion.createPost(user, "Test post")
+		
+		Utils.save(discussion, true)
+		Utils.save(post, true)
+		
+		def groupIds = discussion.groupIds
+		
+		elasticSearchService.index()
+		
+		Thread.sleep(2000)
+		
+		// test elastic search here
+		
+		def results = Discussion.search(searchType:'query_and_fetch') {
+		  bool {
+		      must {
+				  query_string(query: "name:name bar")
+		          //query_string(query: "groupIds:5")
+		      }
+	          //must {
+	          //    term(name: "name")
+	          //}
+		  }
+		}
+		
+		/* QueryBuilder query = QueryBuilders.termQuery("name", "Topic name")
+		
+		def results = elasticSearchService.search(query)*/
+		
+		System.out.println "RESULT SIZE: " + results.searchResults.size()
+		//assert results.searchResults[0].id == discussion.id
 	}
 }
