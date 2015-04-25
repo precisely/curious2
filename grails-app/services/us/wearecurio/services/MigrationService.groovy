@@ -543,7 +543,7 @@ class MigrationService {
 			sql("update analytics_task set type = 9 where type2='collection-child';")
 			sql("alter table analytics_task drop type2;")
 		}
-		tryMigration("Index elasticsearch") {
+		tryMigration("Index elasticsearch again") {
 			elasticSearchService.index()
 		}
 	}
