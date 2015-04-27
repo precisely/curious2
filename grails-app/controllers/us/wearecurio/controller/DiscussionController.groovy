@@ -140,8 +140,8 @@ class DiscussionController extends LoginController {
 	def delete(Discussion discussion) {
 		User user = sessionUser()
 		if (!discussion) {
-			log.warn "DiscussionId not found: " + discussionId
-			renderJSONGet([success: false, message: "That discussion topic no longer exists."])
+			log.warn "DiscussionId not found: " + params.id
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["That discussion"])])
 		} else {
 			Map result = Discussion.delete(discussion, sessionUser())
 			renderJSONGet(result)
@@ -162,44 +162,45 @@ class DiscussionController extends LoginController {
 		DiscussionPost post = DiscussionPost.get(deletePostId)
 		Discussion discussion = Discussion.get(discussionId)
 		User user = sessionUser()
-		if (post != null && post.getDiscussionId() != discussionId) {
-			flash.message = "Can't delete that post --- mismatching discussion id"
-		} else if (!discussion){
+
+		if (!discussion) {
 			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
+		} else if (post != null && post.getDiscussionId() != discussionId) {
+			flash.message = "Can't delete that post --- mismatching discussion id"
 		} else {
 			if (post != null && (user == null || (post.getUserId() != user.getId() && (!UserGroup.canAdminDiscussion(user, discussion))))) {
-				flash.message = "Can't delete that post"
+				flash.message = g.message(code: "default.permission.denied")
 			} else {
 				discussion.setUpdated(new Date())
 				DiscussionPost.delete(post)
+				Utils.save(discussion, true)
 			}
 		}
-		Utils.save(discussion, true)
 		redirect(url: toUrl(action: "show", params: ["id": discussionId]))
-	}
-
-	def clearPost(Long clearPostId, Long discussionId) {
-		User user = sessionUser()
-		Discussion discussion = Discussion.get(discussionId)
-		if (!discussion){
-			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-		} else {
-			boolean result = DiscussionPost.deleteComment(clearPostId, user, discussion)
-		}
 	}
 
 	@Transactional(readOnly = true)
 	def addComment(Discussion discussion) {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage
+		if (!discussion){
+			if (request.xhr) {
+				renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
+			} else {
+				flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
+				redirect(url:toUrl(controller: "home", action:"feed"))
+			}
+			return
+		}
+
 		User user = sessionUser()
-		def comment = DiscussionPost.createComment(params.message, user, discussion , 
+		def comment = DiscussionPost.createComment(params.message, user, discussion, 
 				params.plotIdMessage, params)
 		if (comment instanceof String) {
 			if (request.xhr) {
 				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
 			} else {
-				flash.message = "You don't have permission to add a comment to this discussion"
-				redirect(url:toUrl(controller: "home", action:"index"))
+				flash.message = message(code: "default.permission.denied")
+				redirect(url:toUrl(action:"show", params: [id: discussion.id]))
 			}
 			return
 		}

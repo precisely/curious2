@@ -38,7 +38,7 @@ class UrlService {
 	 */
 	def make(map, req, boolean usePublicIP = false) {
 		String url = base(req, usePublicIP) + map.controller + '/' + map.action
-		if (map.params.id) {
+		if (map.params?.id) {
 			url += "/${map.params.id}"
 			map.params.remove("id")
 		}

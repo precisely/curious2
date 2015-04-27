@@ -326,7 +326,7 @@ $(document).ready(function() {
 								<div class="group">
 									${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}
 								</div>
-								<a href="/home/discuss?discussionId=${discussionId }"> ${discussionTitle ?: '(No Title)' }</a>
+								<a href="#"> ${discussionTitle ?: '(No Title)' }</a>
 								<p>
 									${firstPost?.message}
 								</p>
