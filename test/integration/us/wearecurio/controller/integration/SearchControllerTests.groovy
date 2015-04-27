@@ -24,6 +24,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 		controller = new SearchController()
 		
+		// TO DO: Implement common method in CuriousControllerTestCase to create users 
 		Map params = new HashMap()
 		params.put("username", "testuser2")
 		params.put("email", "test2@test.com")
