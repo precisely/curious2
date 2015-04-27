@@ -42,7 +42,7 @@
 						if (data.success) {
 							window.location.assign('/admin/listSurveyQuestions');
 						} else {
-							showAlertMessage($('.alert'), data.message);
+							showBootstrapAlert($('.alert'), data.message);
 						}
 					}, function(xhr) {
 						console.log('error: ', xhr);

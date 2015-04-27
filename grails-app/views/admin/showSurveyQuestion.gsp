@@ -18,7 +18,7 @@
 							$('#answer-type-' + params.answerId).text(params.answerType);
 							$('#addAnswerOverlay').hide();
 						} else {
-							showAlertMessage($('.alert'), data.message);
+							showBootstrapAlert($('.alert'), data.message);
 						}
 					}, function(xhr) {
 						console.log('error: ', xhr);
@@ -33,7 +33,7 @@
 					if (data.success) {
 						$("#answer-"+answerId).remove();
 					} else {
-						showAlertMessage($('.alert'), data.message);
+						showBootstrapAlert($('.alert'), data.message);
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);
@@ -59,7 +59,7 @@
 					if (data.success) {
 						window.location.assign('/admin/listSurveyQuestions');
 					} else {
-						showAlertMessage($('.alert'), data.message);
+						showBootstrapAlert($('.alert'), data.message);
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);
