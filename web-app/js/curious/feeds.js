@@ -14,7 +14,7 @@ function isOnFeedPage() {
 }
 
 function registerScroll() {
-	$('#graphList').infiniteScroll({
+	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
 		onScrolledToBottom: function(e, $element) {
@@ -23,7 +23,7 @@ function registerScroll() {
 			var anchor = location.hash.slice(1);
 
 			if (isOnFeedPage()) {
-				url = '/search/index?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
+				url = '/search/indexData?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
 						getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?';
 			} else {
 				this.finish();
@@ -39,12 +39,12 @@ function registerScroll() {
 						if (isTabActive('#people')) {
 							$.each(data.listItems, function(index, user) {                                                           
 								var compiledHtml = _.template(_people)({'user': user});                                       
-								$('#graphList').append(compiledHtml);                                                                
+								$('#feed').append(compiledHtml);                                                                
 							});                                                                                                      
 						} else if (isTabActive('#discussions')) {
 							$.each(data.listItems.discussionList, function(index, discussionData) {
 								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
-								$('#graphList').append(compiledHtml);
+								$('#feed').append(compiledHtml);
 								showCommentAgeFromDate();
 							});
 						} else if (isTabActive('#all')) {
@@ -52,7 +52,7 @@ function registerScroll() {
 						} else {
 							$.each(data.listItems.sprintList, function(index, sprint) {
 								var compiledHtml = _.template(_sprints)({'sprint': sprint});
-								$('#graphList').append(compiledHtml);
+								$('#feed').append(compiledHtml);
 							});
 							showCommentAgeFromDate();
 						}
@@ -199,19 +199,19 @@ $(document).ready(function() {
 });
 
 function showSprints() {
-	queueJSON('Getting sprint list', '/search/index?type=sprints&' + 
+	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems != false) {
-				$('#graphList').html('');
+				$('#feed').html('');
 				$.each(data.listItems.sprintList, function(index, sprint) {
 					var compiledHtml = _.template(_sprints)({'sprint': sprint});
-					$('#graphList').append(compiledHtml);
+					$('#feed').append(compiledHtml);
 				});
 				showCommentAgeFromDate();
 			} else {
-				$('#graphList').html('No sprints to show.');
+				$('#feed').html('No sprints to show.');
 			}
 		} else {
 			$('.alert').text(data.message);
@@ -226,18 +226,18 @@ function showSprints() {
 }
 
 function showDiscussions() {
-	queueJSON('Getting discussion data', '/search/index?type=discussions&offset=0&max=5&' + 
+	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
-				$('#graphList').text('No discussions to show.');
+				$('#feed').text('No discussions to show.');
 			} else {
-				$('#graphList').html('');
+				$('#feed').html('');
 
 				// Showing create discussion form only once
 				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
-				$('#graphList').append(createDiscussionForm);
+				$('#feed').append(createDiscussionForm);
 
 				// Handlers for discussion form input fields
 				$('#discussion-topic').keypress(function (e) {
@@ -259,7 +259,7 @@ function showDiscussions() {
 
 				$.each(data.listItems.discussionList, function(index, discussionData) {
 					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
-					$('#graphList').append(compiledHtml);
+					$('#feed').append(compiledHtml);
 					showCommentAgeFromDate();
 				});
 				$('#feed-discussions-tab a').tab('show');
@@ -280,17 +280,17 @@ function showDiscussions() {
 }
 
 function showPeople() {
-	queueJSON('Getting people list', '/search/index?type=people&offset=0&max=5&' + 
+	queueJSON('Getting people list', '/search/indexData?type=people&offset=0&max=5&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
-				$('#graphList').text('No people to show.');
+				$('#feed').text('No people to show.');
 			} else {
-				$('#graphList').html('');
+				$('#feed').html('');
 				$.each(data.listItems, function(index, user) {
 					var compiledHtml = _.template(_people)({'user': user});
-					$('#graphList').append(compiledHtml);
+					$('#feed').append(compiledHtml);
 				});
 				$('#feed-people-tab a').tab('show');
 				$('#feed-right-tab').html('');
@@ -306,14 +306,14 @@ function showPeople() {
 }
 
 function showAllFeeds() {
-	queueJSON('Getting feeds', '/search/index?type=all&offset=0&max=5&' + 
+	queueJSON('Getting feeds', '/search/indexData?type=all&offset=0&max=5&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
 			if (data.listItems == false) {
-				$('#graphList').text('No feeds to show.');
+				$('#feed').text('No feeds to show.');
 			} else {
-				$('#graphList').html('');
+				$('#feed').html('');
 				addAllFeedItems(data);
 				$('#feed-all-tab a').tab('show');
 				$('#feed-right-tab').html('');
@@ -346,7 +346,7 @@ function addAllFeedItems(data) {
 		} else {
 			compiledHtml = _.template(_people)({'user': item});
 		}
-		$('#graphList').append(compiledHtml);
+		$('#feed').append(compiledHtml);
 	});
 	showCommentAgeFromDate();
 }
@@ -440,7 +440,7 @@ function addSprintMemberOrAdmin(inputId, userName) {
 			$("#" + inputId).val('');
 			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
 		} else {
-			showAlertMessage($('.modal-dialog .alert'), data.message);
+			showBootstrapAlert($('.modal-dialog .alert'), data.message);
 		}
 	}, function(xhr) {
 		console.log('error: ', xhr);
@@ -468,9 +468,9 @@ function deleteSimpleEntry(id, $element) {
 			}
 		} else {
 			if ($element.parents('.modal-dialog').length > 0) {
-				showAlertMessage($('.modal-dialog .alert'), data.message);
+				showBootstrapAlert($('.modal-dialog .alert'), data.message);
 			} else {
-				showAlertMessage($('.alert'), data.message);
+				showBootstrapAlert($('.alert'), data.message);
 			}
 		}
 	});

@@ -132,7 +132,7 @@ class Sprint {
 					isNull("virtual")
 					ne("virtual", true)
 				}
-				}
+			}
 		return participantsCount
 	}
 
