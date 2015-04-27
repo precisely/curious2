@@ -150,10 +150,21 @@ class DiscussionController extends LoginController {
 
 	def publish(Discussion discussion) {
 		User user = sessionUser()
+
+		if (!discussion) {
+			flash.message = g.message(code: "default.blank.message", args: ["Discussion"]) 
+			redirect(url: toUrl(controller: "home", action: "index"))
+			return
+		}
 		def discussionUserId = discussion.getUserId()
 		if ((user != null && user.getId() == discussionUserId) || (discussionUserId == null)) {
 			discussion.setIsPublic(true)
 			Utils.save(discussion, true)
+			flash.message = g.message(code: "default.updated.message", args: ["Discussion"]) 
+			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
+		} else {
+			flash.message = g.message(code: "default.permission.denied") 
+			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
 		}
 	}
 

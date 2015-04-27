@@ -354,4 +354,52 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert controller.response.redirectUrl.contains("show")
 		assert !DiscussionPost.count()
 	}
+
+	@Test
+	void "Test publish when user is not permitted"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		discussion.visibility = Visibility.PRIVATE
+		Utils.save(discussion, true)
+		assert !discussion.isPublic()
+
+		controller = new DiscussionController()
+		controller.session.userId = user.id
+		controller.params.id = discussion.id
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.permission.denied", null, null)
+		assert controller.response.redirectUrl.contains("show")
+		assert !discussion.isPublic()
+	}
+
+	@Test
+	void "Test publish when discussion is null"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		assert discussion
+
+		controller = new DiscussionController()
+		controller.session.userId = user.id
+		controller.params.id = null
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
+		assert controller.response.redirectUrl.contains("index")
+	}
+
+	@Test
+	void "Test publish"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		discussion.visibility = Visibility.PRIVATE
+		Utils.save(discussion, true)
+		assert !discussion.isPublic()
+
+		controller = new DiscussionController()
+		controller.session.userId = user2.id
+		controller.params.id = discussion.id
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
+		assert controller.response.redirectUrl.contains("show")
+		assert discussion.isPublic()
+	}
 }

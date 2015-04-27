@@ -151,6 +151,9 @@ class Discussion {
 		return this.visibility == Model.Visibility.PUBLIC
 	}
 	
+	void setIsPublic(boolean setPublic) {
+		this.visibility = setPublic ? Model.Visibility.PUBLIC : Model.Visibility.PRIVATE
+	}
 	boolean isNew() {
 		return this.name == null
 	}
