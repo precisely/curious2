@@ -4,29 +4,99 @@
 var autocompleteWidget;
 var searchList = [];
 
-$(document).ready(function() {
-	var App = window.App || {};
-	App.discussion = {};
-	App.discussion.lockInfiniteScroll = false;
-	App.discussion.offset = 5;
+function isTabActive(anchor) {
+	return location.hash == anchor;
+}
 
-	$('#discussion-topic').keypress(function (e) {
-		var key = e.which;
-		if (key == 13) {
-			$('.input-affordance hr').show();
-			$('input[name = discussionPost]').show();
-			return false;  
+function isOnFeedPage() {
+	var anchor = location.hash.slice(1);
+	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
+}
+
+function registerScroll() {
+	$('#feed').infiniteScroll({
+		bufferPx: 20,
+		bindTo: $('.main'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			var url;
+			var anchor = location.hash.slice(1);
+
+			if (isOnFeedPage()) {
+				url = '/search/indexData?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
+						getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?';
+			} else {
+				this.finish();
+				return;
+			}
+
+			queueJSON('Loading data', url,
+					function(data) {
+				if (data.success) {
+					if (data.listItems == false) {
+						this.finish();
+					} else {
+						if (isTabActive('#people')) {
+							$.each(data.listItems, function(index, user) {                                                           
+								var compiledHtml = _.template(_people)({'user': user});                                       
+								$('#feed').append(compiledHtml);                                                                
+							});                                                                                                      
+						} else if (isTabActive('#discussions')) {
+							$.each(data.listItems.discussionList, function(index, discussionData) {
+								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
+								$('#feed').append(compiledHtml);
+								showCommentAgeFromDate();
+							});
+						} else if (isTabActive('#all')) {
+							addAllFeedItems(data);
+						} else {
+							$.each(data.listItems.sprintList, function(index, sprint) {
+								var compiledHtml = _.template(_sprints)({'sprint': sprint});
+								$('#feed').append(compiledHtml);
+							});
+							showCommentAgeFromDate();
+						}
+						this.setNextPage();
+						this.resume();
+					}
+				} else {
+					$('.alert').text(data.message);
+				}
+			}.bind(this), function(data) {
+				showAlert('Internal server error occurred.');
+			});
 		}
 	});
+}
+
+$(window).load(function() {
+	if (isTabActive('#sprints')) {
+		showSprints();
+	} else if (isTabActive('#discussions')) {
+		showDiscussions();
+	} else if (isTabActive('#people')) {
+		showPeople();
+	} else if (isTabActive('#all')) {
+		showAllFeeds();
+	} else if (location.href.indexOf('/feed') > -1) {
+		location.hash = '#all';
+		showAllFeeds();
+	}
+
+});
+
+$(document).ready(function() {
 	
-	$('#discussion-discription').keypress(function (e) {
-		var key = e.which;
-		if (key == 13) {
-			$('#create-discussion').submit();
-			return false;  
+	if (isOnFeedPage()) {
+		registerScroll();
+	}
+
+	$('html').on('click', function(e) {
+		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
+			$('[data-original-title]').popover('hide');
 		}
 	});
-	
+
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -35,14 +105,17 @@ $(document).ready(function() {
 					{discussionId: discussionId, deleteDiscussion: true}, 
 					function(data) {
 				if (data.success) {
-					showAlert(data.message, function() {
-						$this.parents('.feed-item').fadeOut();
-					});
+					if (isOnFeedPage()) {
+						showAlert(data.message, function() {
+							$this.parents('.feed-item').fadeOut();
+						});
+					} else {
+						location.href = '/home/feed#all';
+					}
 				} else {
 					showAlert(data.message);
 				}
 			}, function(xhr) {
-				console.log('error:', xhr)
 				showAlert('Internal server error occurred.');
 			});
 		});
@@ -51,51 +124,9 @@ $(document).ready(function() {
 
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
+
 		if (key == 13) { // the enter key code
 			return false;
-		}
-	});
-
-	$('.main').scroll(function() {
-		if (($("#getMoreDiscussions").length == 0) || ($(".feed-item").length == 0))
-			return false;
-
-		var $element = $('#getMoreDiscussions');
-		var docViewTop = $(window).scrollTop();
-		var docViewBottom = docViewTop + $(window).innerHeight();
-
-		var elemTop = $element.offset().top;
-
-		if ((elemTop < docViewBottom) && !App.discussion.lockInfiniteScroll) {
-			$element.addClass(' waiting-icon');
-			setTimeout(function() {
-				var requestUrl = '/home/feed';
-				var parameters = '?offset=' + App.discussion.offset;
-				if (getSearchParams()['userId']) {
-					parameters += '&userId=' + getSearchParams()['userId'];
-				}
-				queueJSON('Getting discussion data', requestUrl + parameters,
-						function(data) {
-					if (data == false) {
-						$('#getMoreDiscussions').text('No more discussions to show.');
-						setTimeout(function() {
-							$('#getMoreDiscussions').fadeOut()
-						}, 5000);
-					} else {
-						$('#discussions').append(data.feeds);
-						showCommentAgeFromDate();
-					}
-					App.discussion.offset = App.discussion.offset + 5;
-				}, function(data) {
-					console.log('error: ', data);
-					showAlert('Internal server error occurred.');
-				});
-				$element.removeClass('waiting-icon');
-			}, 600);
-			App.discussion.lockInfiniteScroll = true;
-		} else if (elemTop > docViewBottom) {
-			App.discussion.lockInfiniteScroll = false;
-			return;
 		}
 	});
 
@@ -114,7 +145,6 @@ $(document).ready(function() {
 				clearSprintFormData()
 			}
 		}, function(xhr) {
-			console.log('error: ', xhr);
 		});
 		return false;
 	});
@@ -150,7 +180,176 @@ $(document).ready(function() {
 		clearSprintFormData();
 		return false;
 	});
+
+	$('#feed-sprints-tab a').click(function(e) {
+		showSprints();
+	});
+
+	$('#feed-discussions-tab a').click(function(e) {
+		showDiscussions();
+	})
+
+	$('#feed-people-tab a').click(function(e) {
+		showPeople();
+	});
+
+	$('#feed-all-tab a').click(function(e) {
+		showAllFeeds();
+	})
 });
+
+function showSprints() {
+	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems != false) {
+				$('#feed').html('');
+				$.each(data.listItems.sprintList, function(index, sprint) {
+					var compiledHtml = _.template(_sprints)({'sprint': sprint});
+					$('#feed').append(compiledHtml);
+				});
+				showCommentAgeFromDate();
+			} else {
+				$('#feed').html('No sprints to show.');
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>');
+		$('#queryTitle').text('Curious Sprints');
+		$('#feed-sprints-tab a').tab('show');
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function showDiscussions() {
+	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#feed').text('No discussions to show.');
+			} else {
+				$('#feed').html('');
+
+				// Showing create discussion form only once
+				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+				$('#feed').append(createDiscussionForm);
+
+				// Handlers for discussion form input fields
+				$('#discussion-topic').keypress(function (e) {
+					var key = e.which;
+					if (key == 13) {
+						$('.input-affordance hr').show();
+						$('input[name = discussionPost]').show();
+						return false;  
+					}
+				});
+
+				$('#discussion-discription').keypress(function (e) {
+					var key = e.which;
+					if (key == 13) {
+						$('#create-discussion').submit();
+						return false;  
+					}
+				});
+
+				$.each(data.listItems.discussionList, function(index, discussionData) {
+					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
+					$('#feed').append(compiledHtml);
+					showCommentAgeFromDate();
+				});
+				$('#feed-discussions-tab a').tab('show');
+				$('#feed-right-tab').html('');
+				$('#queryTitle').text('Curious Discussions');
+				$('.share-button').popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function showPeople() {
+	queueJSON('Getting people list', '/search/indexData?type=people&offset=0&max=5&' + 
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#feed').text('No people to show.');
+			} else {
+				$('#feed').html('');
+				$.each(data.listItems, function(index, user) {
+					var compiledHtml = _.template(_people)({'user': user});
+					$('#feed').append(compiledHtml);
+				});
+				$('#feed-people-tab a').tab('show');
+				$('#feed-right-tab').html('');
+				$('#queryTitle').text('Curious People');		
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function showAllFeeds() {
+	queueJSON('Getting feeds', '/search/indexData?type=all&offset=0&max=5&' + 
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
+			function(data) {
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#feed').text('No feeds to show.');
+			} else {
+				$('#feed').html('');
+				addAllFeedItems(data);
+				$('#feed-all-tab a').tab('show');
+				$('#feed-right-tab').html('');
+				$('#queryTitle').text('Curious Feeds');		
+				$(".share-button").popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+	registerScroll();
+}
+
+function addAllFeedItems(data) {
+	data.listItems.sort(function(a, b) {
+		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
+	});
+
+	$.each(data.listItems, function(index, item) {
+		var compiledHtml = '';
+		if (item.virtualUserId) {
+			compiledHtml = _.template(_sprints)({'sprint': item});
+		} else if (item.groupName) {
+			compiledHtml = _.template(_discussions)({'discussionData': item});
+		} else {
+			compiledHtml = _.template(_people)({'user': item});
+		}
+		$('#feed').append(compiledHtml);
+	});
+	showCommentAgeFromDate();
+}
 
 function clearSprintFormData() {
 	var form = $('#submitSprint');
@@ -191,55 +390,62 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 }
 
 function createAutocomplete(inputId, autocompleteId) {
-	$("#" + inputId).autocomplete({
-		appendTo: "#" + autocompleteId,
+	$('#' + inputId).autocomplete({
+		appendTo: '#' + autocompleteId,
 		minLength: 0,
 		source: []
 	});
 
-	$("#" + inputId).on("keyup", function() {
-		var searchString = $("#" + inputId).val();
+	$('#' + inputId).on('keyup', function() {
+		var searchString = $('#' + inputId).val();
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?", 
 				{searchString: searchString},
 				function(data) {
 			if (data.success) {
-				$("#" + inputId).autocomplete("option", "source", data.usernameList);
+				$('#' + inputId).autocomplete('option', 'source', data.usernameList);
 			}
 		}, function(xhr) {
 			console.log('error: ', xhr);
 		});
 	});
 
-	$("#" + inputId).keypress(function (e) {
-		userName = $("#" + inputId).val();
-		var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
-		var deleteButtonClass = (inputId === 'sprint-participants')?'deleteParticipants':'deleteAdmins';
+	$('#' + inputId).keypress(function (e) {
+		var userName = $(this).val();
 		var key = e.which;
 		if (key == 13) { // the enter key code
-			queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-					{username: userName, sprintId: $('#sprintIdField').val()}),
-					function(data) {
-				if (data.success) {
-					console.log('added persons: ', data);
-					$("#" + inputId).val('');
-					addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
-				} else {
-					$('.modal-dialog .alert').text(data.errorMessage).removeClass('hide');
-					setInterval(function() {
-						$('.modal-dialog .alert').addClass('hide');
-					}, 5000);
-				}
-			}, function(xhr) {
-				console.log('error: ', xhr);
-			});
+			addSprintMemberOrAdmin(inputId, userName);
 			return false;  
 		}
 	});
+
+	$('#' + inputId).on('autocompleteselect', function( event, ui ) {
+		addSprintMemberOrAdmin(inputId, ui.item.value);
+		return false;
+	});
 }
+
 $(document).on("click", ".left-menu ul li a", function() {
 	$('.left-menu ul li .active').removeClass('active');
 	$(this).addClass('active');
 });
+
+function addSprintMemberOrAdmin(inputId, userName) {
+	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
+	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
+	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+			{username: userName, sprintId: $('#sprintIdField').val()}),
+			function(data) {
+		if (data.success) {
+			console.log('added persons: ', data);
+			$("#" + inputId).val('');
+			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+		} else {
+			showBootstrapAlert($('.modal-dialog .alert'), data.message);
+		}
+	}, function(xhr) {
+		console.log('error: ', xhr);
+	});
+}
 
 function deleteSimpleEntry(id, $element) {
 	var now = new Date();
@@ -262,15 +468,9 @@ function deleteSimpleEntry(id, $element) {
 			}
 		} else {
 			if ($element.parents('.modal-dialog').length > 0) {
-				$('.modal-dialog .alert').text(data.message).show();
-				setInterval(function() {
-					$('.modal-dialog .alert').hide();
-				}, 5000);
+				showBootstrapAlert($('.modal-dialog .alert'), data.message);
 			} else {
-				$('.alert').text(data.message).show();
-				setInterval(function() {
-					$('.alert').hide();
-				}, 5000);
+				showBootstrapAlert($('.alert'), data.message);
 			}
 		}
 	});
@@ -406,9 +606,9 @@ function deleteSprint(sprintId) {
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
 				} else {
-					location.assign('/home/feed');
+					location.assign('/home/feed#all');
 				}
-			}, function() {
+			}, function(data) {
 				showAlert(data.message);
 			}
 		);
@@ -424,8 +624,8 @@ function startSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#start-sprint').removeClass('prompted-action').prop('disabled', true);
-			$('#stop-sprint').addClass(' prompted-action').prop('disabled', false);
+			$('#start-sprint').hide();
+			$('#stop-sprint').show();
 		} else {
 			showAlert(data.message);
 		}
@@ -441,8 +641,8 @@ function stopSprint(sprintId) {
 		timeZoneName: timeZoneName
 	}, function(data) {
 		if (data.success) {
-			$('#stop-sprint').removeClass('prompted-action').prop('disabled', true);
-			$('#start-sprint').addClass(' prompted-action').prop('disabled', false);
+			$('#stop-sprint').hide();
+			$('#start-sprint').show();
 		} else {
 			showAlert(data.message);
 		}
@@ -453,4 +653,44 @@ function leaveSprint(sprintId) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	location.assign('/home/leaveSprint?sprintId=' + sprintId + '&timeZoneName=' + timeZoneName + '&now=' + now);
+}
+
+function toggleCommentsList(discussionId) {
+	var $element = $('#discussion' + discussionId + '-comment-list');
+	if ($element.is(':visible')) {
+		$element.hide();
+		$('#discussion' + discussionId + '-comment-list .comments').html('');
+	} else {
+		getMoreComments(discussionId, 0);
+		$element.show();
+	}
+}
+
+function getMoreComments(discussionId, offset) {
+
+	var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + offset  + "&max=4&" +
+			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+	
+	var discussionElementId = '#discussion' + discussionId + '-comment-list';
+
+	queueJSON("fetching more comments", url, function(data) {
+		if (!data.posts) {
+			$(discussionElementId + ' .bottom-margin').html('');
+		} else {
+			$(discussionElementId + ' .comments').append(data.posts);
+			showCommentAgeFromDate();
+			offset = offset + 4;
+			$(discussionElementId + ' .bottom-margin span').off('click').on('click', function() {
+				getMoreComments(discussionId, offset);
+			});
+		}
+	});
+	return;
+}
+
+function deletePost(discussionId, postId) {
+	showYesNo("Are you sure you want to delete this post?", function() {
+			window.location = "/home/discuss?discussionId=" + discussionId + "&deletePostId=" + postId;
+	});
+	return false;
 }

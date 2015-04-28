@@ -3,21 +3,21 @@
 	<head>
 		<meta name="layout" content="main">
 		<title>Survey</title>
+		<c:jsCSRFToken keys="createAnswersDataCSRF"/>
 		<script type="text/javascript">
 		var rowIdToRemove;
 		$(document).ready(function() {
 			var rowNumber = ${(surveyQuestion.possibleAnswers.size() ?: -1) + 1};
+
 			$('#addSurveyAnswerForm').submit(function(event) {
 				$('.add-answer').attr('disabled','disabled');
-				params = $(this).serializeArray();
-				console.log('modal submited....',params);
-				var answerType = (params[3].value == "MCQ")?"MCQ":"DESCRIPTIVE";
+				var params = $(this).serializeObject();		// Defined in base.js file
 
 				var innerHTMLContent = '<div class="row survey-answers" id="' + rowNumber + '"><div class="col-md-3"> ' + 
-					'<input type="text" name="possibleAnswers[' + rowNumber + '].answer" id="answer" readonly value="' + params[0].value + '"/></div>' + 
-					'<div class="col-md-3"><input type="text" class="answer-code" name="possibleAnswers[' + rowNumber + '].code" id="code" readonly value="' + params[1].value + '"/></div>' + 
-					'<div class="col-md-1"><input type="number" class="answer-priority" name="possibleAnswers[' + rowNumber + '].priority" id="priority" value="' + params[2].value + '" readonly/></div>' + 
-					'<div class="col-md-3"><input readonly type="text" class="answer-type" name="possibleAnswers[' + rowNumber + '].answerType" value="' + answerType + '"></div>' + 
+					'<input type="text" name="possibleAnswers[' + rowNumber + '].answer" id="answer" readonly value="' + params.answer + '"/></div>' + 
+					'<div class="col-md-3"><input type="text" class="answer-code" name="possibleAnswers[' + rowNumber + '].code" id="code" readonly value="' + params.code + '"/></div>' + 
+					'<div class="col-md-1"><input type="number" class="answer-priority" name="possibleAnswers[' + rowNumber + '].priority" id="priority" value="' + params.priority + '" readonly/></div>' + 
+					'<div class="col-md-3"><input readonly type="text" class="answer-type" name="possibleAnswers[' + rowNumber + '].answerType" value="' + params.answerType + '"></div>' + 
 					'<div class="col-md-1"> <button class="edit-answer" onclick="editAnswer(' + rowNumber + ')"><i class="fa fa-pencil"></i></button></div>' + 
 					'<div class="col-md-1"><button onclick="deleteAnswer(' + rowNumber + ')" class="delete-answer"> <i class="fa fa-trash"></i></button></div></div>';
 
@@ -33,30 +33,19 @@
 			});
 
 			$('#submitAnswersForm').submit(function(event) {
-				params = $(this).serializeArray();
-				console.log('submited....',params);
+				params = $(this).serializeObject();
 				// If form is in edit mode, final form should not be submitted
 				if (rowIdToRemove == null) {
-					$.ajax({
-						type: 'POST',
-						url: '/admin/createAnswers',
-						data: params,
-						success: function(data) {
-							data = JSON.parse(data);
-							if (data.success) {
-								console.log('success');
-								window.location.assign('/admin/listSurveyQuestions');
-							} else {
-								console.log('error');
-								$('.alert').removeClass('hide').text('Error while adding answers to the question!');
-								setInterval(function() {
-									$('.alert').addClass('hide');
-								}, 5000);
-							}
-						},
-						error: function(xhr) {
-							console.log('xhr:', xhr);
+					queuePostJSON('Adding answer to survey question', '/admin/createAnswersData', 
+							getCSRFPreventionObject('createAnswersDataCSRF', params),
+							function(data) {
+						if (data.success) {
+							window.location.assign('/admin/listSurveyQuestions');
+						} else {
+							showBootstrapAlert($('.alert'), data.message);
 						}
+					}, function(xhr) {
+						console.log('error: ', xhr);
 					});
 				}
 				return false;

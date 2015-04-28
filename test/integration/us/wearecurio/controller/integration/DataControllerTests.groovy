@@ -768,6 +768,47 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.response.text == "success"
 	}
 
+	@Test
+	void "Test createHelpEntriesData when no entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = [0: '', 1: '']
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message",
+				["Entries"] as Object[], null)
+	}
+
+	@Test
+	void "Test createHelpEntriesData when few blank entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = [0: "", 1: "", 2: "sleep 9 hrs"]
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == true
+		assert Entry.count() == 1
+		assert Entry.last().description == "sleep duration"
+	}
+
+	@Test
+	void "Test createHelpEntriesData when no blank entries are passed in params"() {
+		controller.session.userId = user.getId()
+		controller.params['entry'] = [0: 'mood 3', 1: 'sleep 9 hrs']
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == true
+		assert Entry.count() == 2
+	}
+
 	Sprint dummySprint
 	User dummyUser2
 	void mockSprintData() {
@@ -853,7 +894,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user.getId()
 		controller.params["sprintId"] = dummySprint.id
 		controller.deleteSprintData()
+		
 		assert controller.response.json.success == true
+		assert !dummySprint.hasAdmin(user.getId())
+		assert !dummySprint.hasMember(user.getId())
+		assert dummySprint.userId == 0l
 	}
 
 	@Test
@@ -1319,5 +1364,57 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.deleteSprintAdminData()
 		assert controller.response.json.success == true
 		assert dummySprint.hasAdmin(user.getId()) == false
+	}
+
+	@Test
+	void "Test SaveSurveyData"() {
+		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance2 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode3", priority: 3, question: "Question 3?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance3 = SurveyQuestion.create(questionParams)
+
+		controller.session.userId = user.getId()
+
+		// When all questions are answered properly
+		controller.params['answer'] = [qcode1: 'Answer no. 1.', qcode2: 'Answer no. 2.',
+			qcode3: 'Answer no. 3.']
+		controller.saveSurveyData()
+		assert controller.response.json.success == true
+		assert UserSurveyAnswer.count() == 3
+		controller.response.reset()
+
+		// When an answer is missing for a question
+		controller.params['answer'] = ['qcode1': null, 'qcode2': 'Answer no. 2.',
+			'qcode3': 'Answer no. 3.']
+		controller.saveSurveyData()
+		assert UserSurveyAnswer.count() == 3		// 3 answers already created in previous call
+		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("not.saved.message", ["Answers"] as Object[], null)
+
+		controller.response.reset()
+
+		// When blank data is sent
+		controller.params['answer'] = [:]
+		controller.saveSurveyData()
+		assert UserSurveyAnswer.count() == 3
+		assert controller.response.json.success == false
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Answers"] as Object[], null)
+	}
+
+	@Test
+	void "Test testGetSurveyData"() {
+		Map questionParams = [code: "qcode1", priority: 4, question: "Question 1?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance1 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode2", priority: 5, question: "Question 2?", status: "ACTIVE"]
+		SurveyQuestion surveyQuestionInstance2 = SurveyQuestion.create(questionParams)
+		questionParams = [code: "qcode3", priority: 3, question: "Question 3?", status: "INACTIVE"]
+		SurveyQuestion surveyQuestionInstance3 = SurveyQuestion.create(questionParams)
+
+
+		def responseData = controller.getSurveyData()
+		assert controller.response.text.contains("<div class=\"item active\">")
+		assert !controller.response.text.contains("qcode3")
 	}
 }

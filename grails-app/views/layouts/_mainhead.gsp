@@ -19,6 +19,8 @@
 <script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
+<script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
+<script type="text/javascript" src="/js/curious/templates/feed-templates.js?ver=21"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
 <link rel="stylesheet" href="/css/main.css?ver=21"/>
 <%--<link rel="stylesheet" href="/css/sprite.css"/>--%>
@@ -26,10 +28,14 @@
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>
 </g:if>
+<c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, 
+		getInterestTagsDataCSRF"/>
 <script type="text/javascript">
 function makeGetUrl(url) {
 	return "/home/" + url + "?callback=?";
 }
+
+//_.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
 function makeGetArgs(args) {
 	return args;

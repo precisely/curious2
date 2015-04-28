@@ -2,6 +2,7 @@ package us.wearecurio.model
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Locale;
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
@@ -46,9 +47,9 @@ class Sprint {
 	
 	static {
 		TimeZone gmtTimeZone = TimeZoneId.getUTCTimeZone()
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		dateFormat.setTimeZone(gmtTimeZone)
-		sprintBaseDate = dateFormat.parse("January 1, 2001 12:00 am")
+		sprintBaseDate = dateFormat.parse("Jan 1, 2001 12:00 am")
 	}
 	
 	static Date getSprintBaseDate() { return sprintBaseDate }
@@ -118,6 +119,23 @@ class Sprint {
 		return fetchUserGroup()?.addAdmin(userId)
 	}
 	
+	Long getEntriesCount() {
+		return Entry.countByUserId(virtualUserId)
+	}
+	
+	Long getParticipantsCount() {
+		List participantsIdList = GroupMemberReader.findAllByGroupId(virtualGroupId)*.memberId
+
+		Long participantsCount = User.createCriteria().count {
+				'in'("id", participantsIdList ?: [0l])
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+			}
+		return participantsCount
+	}
+
 	def removeAdmin(Long userId) {
 		return fetchUserGroup()?.removeAdmin(userId)
 	}
@@ -133,11 +151,12 @@ class Sprint {
 	
 	static void delete(Sprint sprint) {
 		log.debug "Sprint.delete() id:" + sprint.getId()
-		Sprint.withTransaction {
-			// TODO: remove users from sprint groups, etc.
-			// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
-			sprint.delete()
-		}
+		// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
+		sprint.userId = 0
+		UserGroup sprintUserGroup = sprint.fetchUserGroup()
+		sprintUserGroup?.removeAllParticipants()
+		
+		Utils.save(sprint, true)
 	}
 	
 	static boolean search(Long userId, String searchString) {
@@ -219,7 +238,11 @@ class Sprint {
 	
 	protected String fetchTagName() {
 		if (tagName) return tagName
-		tagName = name.toLowerCase().replaceAll(~/[^a-zA-Z ]+/, '').replaceAll(~/ +/, ' ') + ' sprint'
+		
+		tagName = name.toLowerCase()
+		.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
+		.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
+		.trim() + ' sprint'			// Removes spaces from the start and the end of the string
 		
 		return tagName
 	}
@@ -297,18 +320,24 @@ class Sprint {
 			id:this.id,
 			name:this.name?:'New Sprint',
 			userId:this.userId,
+			description: this.description,
+			totalParticipants: this.getParticipantsCount(),
+			totalTags: this.getEntriesCount(),
 			virtualUserId:this.virtualUserId,
 			virtualGroupId:this.virtualGroupId,
-			/*created:this.created,
-			updated:this.updated*/
+			created:this.created,
+			updated:this.updated
 		]
 	}
 	
-	static List<Sprint> getSprintListForUser(Long userId) {
+	static List<Sprint> getSprintListForUser(Long userId, int max, int offset) {
 		if (!userId) {
 			return []
 		}
 		
+		max = max ?: 5;
+		offset = offset ?: 0;
+
 		List<Long> groupReaderList = new DetachedCriteria(GroupMemberReader).build {
 			projections {
 				property "groupId"
@@ -319,13 +348,48 @@ class Sprint {
 		List<Sprint> sprintList = Sprint.withCriteria {
 			or {
 				'in'("virtualGroupId", groupReaderList ?: [0l]) // When using 'in' clause GORM gives error on passing blank list
-				eq("visibility", Visibility.PUBLIC)
+				and {
+					eq("visibility", Visibility.PUBLIC)
+					ne("userId", 0l)
+				}
 			}
+			firstResult(offset)
+			maxResults(max)
+			order("updated", "desc")
 		}
 		
-		return sprintList
+		return sprintList*.getJSONDesc()
 	}
+
+	List<User> getParticipants(int max, int offset) {
+		if (!userId) {
+			return []
+		}
+		
+		max = Math.min(max ?: 10, 100)
+		offset = offset ?: 0
+
+		List<Long> participantIdsList = new DetachedCriteria(GroupMemberReader).build {
+			projections {
+				property "memberId"
+			}
+			eq "groupId", virtualGroupId
+		}.list()
+
+		// Fetch all non-virtual or actual users
+		List<User> participantsList = User.withCriteria {
+				'in'("id", participantIdsList ?: [0l])
+				or {
+					isNull("virtual")
+					ne("virtual", true)
+				}
+				maxResults(max)
+				firstResult(offset)
+			}
 	
+		return participantsList
+	}
+
 	String toString() {
 		return "Sprint(id:" + getId() + ", userId:" + userId + ", name:" + name + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", visibility:" + visibility + ")"

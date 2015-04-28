@@ -68,7 +68,7 @@
 	}
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
 	.container {
 		width: 960px !important;
 	}

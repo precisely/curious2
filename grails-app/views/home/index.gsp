@@ -8,7 +8,7 @@
 <script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
-showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupDataCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
+showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupDataCSRF, addTagToTagGroupDataCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, removeTagFromTagGroupDataCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, activateGhostEntryDataCSRF, pingDataCSRF,showTagGroupDataCSRF, createTagGroupDataCSRF
 excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
 </head>
@@ -46,13 +46,13 @@ excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF,
 					<div id="addData" class="input-affordance addon">
 						<div class="track-input-modifiers"><img alt="tag" src="/images/tag.png" class="inputTag"></div>
 							<p>choose<br>details:</p>
-							<a href="#" class="track-input-modifiers inputRemindPosition" onclick="entryListWidget.modifyInput('remind')">
+							<a class="track-input-modifiers inputRemindPosition" onclick="entryListWidget.modifyInput('remind')">
 								<img alt="remind" class="inputRemind" src="/images/input-remind.png">
 							</a>
-							<a href="#" class="track-input-modifiers inputRepeatPosition" onclick="entryListWidget.modifyInput('repeat')">
+							<a class="track-input-modifiers inputRepeatPosition" onclick="entryListWidget.modifyInput('repeat')">
 								<img alt="repeat" class="inputRepeat" src="/images/input-repeat.png">
 							</a>
-							<a href="#" class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('pinned')">
+							<a class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('pinned')">
 								<img alt="repeat" class="inputPin" src="/images/input-pin.png">
 							</a>
 							<input class="full-width" type="text" placeholder="Enter tags here: (Example: nap 2pm or sleep quality repeat)"

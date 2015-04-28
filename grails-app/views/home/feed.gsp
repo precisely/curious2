@@ -1,6 +1,7 @@
 <html>
 <head>
 <meta name="layout" content="feedLayout" />
+<c:jsCSRFToken keys="getCommentsCSRF" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {
@@ -44,8 +45,8 @@ function searchFeeds(params) {
 </head>
 <body>
 	<content tag="feedContent">
-		<div id="discussions">
-			<g:render template="/feed/discussions" />
+		<div id="discussions" class="text-center">
+			<i class="fa fa-circle-o-notch fa-spin fa-3x"></i>
 		</div>
 	</content>
 </body>

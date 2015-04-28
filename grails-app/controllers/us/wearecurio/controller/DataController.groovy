@@ -15,14 +15,12 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.springframework.http.HttpStatus
+
 import static org.springframework.http.HttpStatus.*
-
-import us.wearecurio.model.Discussion
-
 import us.wearecurio.model.*
-import us.wearecurio.model.Entry.RepeatType
-import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.model.Entry.ParseAmount
+import us.wearecurio.model.Entry.RepeatType;
+import us.wearecurio.model.Entry.DurationType;
+import us.wearecurio.model.Entry.ParseAmount;
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -1267,6 +1265,35 @@ class DataController extends LoginController {
 		}
 	}
 
+	def createHelpEntriesData() {
+		log.debug "Entries recieved to save: $params"
+		def entries = params.entry.findAll { it.value }
+
+		if (!entries) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ['Entries'])])
+			return
+		}
+		
+		boolean operationSuccess = true;
+		String messageCode = "default.create.label"
+		Entry.withTransaction { status ->
+			// Iterating over all the entries received and creating entries for them
+			entries.any({
+				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
+					it.value, params.baseDate, false)
+				if (!result[0]) {
+					operationSuccess = false
+					messageCode = "not.saved.message"
+					status.setRollbackOnly()
+					return true
+				} else {
+					return
+				}
+			})
+		}
+		renderJSONPost([success: operationSuccess, message: g.message(code: messageCode, args: ['Entries'])])
+	}
+
 	def createNewSprintData() {
 		User currentUser = sessionUser()
 		
@@ -1507,7 +1534,6 @@ class DataController extends LoginController {
 				and {
 					or {
 						ilike("username", "%${params.searchString}%")
-						ilike("name", "%${params.searchString}%")
 						ilike("email", "%${params.searchString}%")
 					}
 					or {
@@ -1533,5 +1559,49 @@ class DataController extends LoginController {
 		Map result = Discussion.delete(discussion, sessionUser())
 		renderJSONGet(result)
 		return
+	}
+
+	def saveSurveyData() {
+		log.debug "Data.saveSurveyData() $params"
+		User currentUserInstance = sessionUser()
+
+		if (!params.answer) {
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Answers"])])
+			return
+		}
+
+		UserSurveyAnswer.withTransaction { status ->
+			try {
+				params.answer.each({ questionAnswerMap ->
+					UserSurveyAnswer userSurveyAnswer = UserSurveyAnswer.create(currentUserInstance, questionAnswerMap.key, questionAnswerMap.value)
+					if (!userSurveyAnswer) {
+						throw new IllegalArgumentException()
+					}
+				})
+				session.survey = null
+				renderJSONPost([success: true])
+			} catch (IllegalArgumentException e) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false, message: g.message(code: "not.saved.message", args: ["Answers"])])
+			}
+		}
+	}
+
+	def getSurveyData() {
+		log.debug "Data.getSurveyData()"
+		List questions = SurveyQuestion.findAllByStatus(SurveyQuestion.QuestionStatus.ACTIVE,
+			[max: 50, sort: "priority", order: "desc"])
+		Map model = [questions: questions]
+		render template: "/survey/questions", model: model
+	}
+
+	def getSprintParticipantsData(Sprint sprint, int offset, int max) {
+		if (!sprint) {
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",                                             
+					args: ["sprint", params.id])])
+			return
+		}
+
+		renderJSONGet([success: true, participants: sprint.getParticipants(max, offset)])
 	}
 }

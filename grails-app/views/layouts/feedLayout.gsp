@@ -9,7 +9,7 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="feed">
@@ -24,71 +24,28 @@
 				<div class="help">
 					<i class="fa fa-question"></i>
 				</div>
-				<div class="search-bar left-addon">
-					<form onsubmit="searchFeeds()">
-						<i class="fa fa-search"></i>
-						<input type="text" id="searchFeed" placeholder="Search Feed" required >
-						<input type="hidden" id="userId" value="${userId}">
-					</form>
-				</div>
 			</div>
 		</div>
 		<div class="feed-body">
-			<div class="left-menu">
-				<ul>
-					<li id="allFeeds"><g:link controller='home' action="feed">FEED</g:link></li>
-					<li id="recentSearches"><a href="#">RECENT SEARCHES</a>
-						<g:if test="${searchKeywords}">
-							<ul>
-								<g:each in="${searchKeywords}" var="searchInstance">
-									<li>
-										<a href="#">${searchInstance.searchString}</a> 
-									</li>
-								</g:each>
-							</ul>
-						</g:if>
-					</li>
-					<li id="myThreads">
-						<a href="/home/feed?userId=${userId}">MY THREADS</a>
-					</li>
-					<li id="sprints">
-						<a>SPRINTS</a>
-						<button class="sprint-button" onclick="createSprint()">
-							<span class="create-sprint-label">CREATE</span>
-						</button>
-						<g:if test="${sprintList}">
-							<ul>
-								<g:each in="${sprintList}" var="sprint">
-									<li>
-										<a href="/home/sprint/${sprint.id}">${sprint.name}</a> 
-									</li>
-								</g:each>
-							</ul>
-						</g:if>
-					</li>
-				</ul>
-			</div>
-			<div class="main container-fluid">
-				<div id="graphList">
-					<div class="new-post">
-						<form id="create-discussion" action="/discussion/createTopic" method="post">
-							<div class="input-affordance left-addon">
-								<i class="fa fa-pencil"></i> 
-								<input class="full-width discussion-topic-input"
-									type="text" placeholder="New question or discussion topic?"
-									name="name" id="discussion-topic" required />
-								<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
-								<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
-								<hr class="hide">
-								<input type="text" id="discussion-discription" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
-									name="discussionPost">
-							</div>
-							<input type="hidden" name="group" value="${groupName}" />
-						</form>
-					</div>
-					<g:pageProperty name="page.feedContent" />
-				</div>
-				<div id="getMoreDiscussions"></div>
+		<div class="main container-fluid">
+		<ul class="nav nav-pills">
+			<li id="feed-all-tab" role="presentation">
+				<a href="/home/feed#all">ALL</a>
+			</li>
+			<li id="feed-people-tab" role="presentation">
+				<a href="/home/feed#people">PEOPLE</a>
+			</li>
+			<li id="feed-discussions-tab" role="presentation">
+				<a href="/home/feed#discussions">DISCUSSIONS</a>
+			</li>
+			<li id="feed-sprints-tab" role="presentation">
+				<a href="/home/feed#sprints">SPRINTS</a>
+			</li>
+			<li id="feed-right-tab" role="presentation">
+			<li>
+		</ul>
+			<div id="feed">
+				<g:pageProperty name="page.feedContent" />
 			</div>
 		</div>
 		<!-- /MAIN -->
