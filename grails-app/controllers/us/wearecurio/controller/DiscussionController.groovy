@@ -13,11 +13,12 @@ class DiscussionController extends LoginController {
 		redirect(action: "list", params: params)
 	}
 
-	def create() {
-		redirect(action: "createTopic", params: params)
+	// Depricated method
+	def createTopic() {
+		redirect(url: toUrl(action: "create", params: params))
 	}
 
-	def createTopic(Long plotDataId, String name, Long id, String discussionPost) {
+	def create(Long plotDataId, String name, Long id, String discussionPost) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
@@ -63,7 +64,7 @@ class DiscussionController extends LoginController {
 				associatedGroups.addAll(otherGroups.sort { it.name })
 				model.put("associatedGroups", associatedGroups)
 
-				render(view: "/home/discuss", model: model)
+				redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
 				// redirect(url:toUrl(controller:'home', action:'feed'))
 				return
 			} else {
@@ -82,11 +83,11 @@ class DiscussionController extends LoginController {
 
 		if (!discussion){
 			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-			redirect(url:toUrl(controller: "home", action: "index"))
+			redirect(url: toUrl(controller: "home", action: "index"))
 			return
 		} else if (!discussion.getIsPublic() && !user) {
-			flash.message = "Must be logged in"
-			redirect(url:toUrl(controller: "home", action: "index"))
+			flash.message = g.message(code: "default.login.message")
+			redirect(url: toUrl(controller: "home", action: "index"))
 			return
 		}
 		params.max = params.max ?: 5
@@ -177,7 +178,7 @@ class DiscussionController extends LoginController {
 		if (!discussion) {
 			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
 		} else if (post != null && post.getDiscussionId() != discussionId) {
-			flash.message = "Can't delete that post --- mismatching discussion id"
+			flash.message = g.message(code: "default.not.deleted.message", args: ["Post"])
 		} else {
 			if (post != null && (user == null || (post.getUserId() != user.getId() && (!UserGroup.canAdminDiscussion(user, discussion))))) {
 				flash.message = g.message(code: "default.permission.denied")
@@ -190,7 +191,6 @@ class DiscussionController extends LoginController {
 		redirect(url: toUrl(action: "show", params: ["id": discussionId]))
 	}
 
-	@Transactional(readOnly = true)
 	def addComment(Discussion discussion) {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage
 		if (!discussion){

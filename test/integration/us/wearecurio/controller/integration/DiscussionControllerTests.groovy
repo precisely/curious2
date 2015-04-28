@@ -52,7 +52,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller = new DiscussionController()
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = 'POST'
+		def retVal = controller.create()
 		assert Discussion.count() == 0 
     }
 
@@ -63,7 +64,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		params.group = 'testgroup'
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = 'POST'
+		def retVal = controller.create()
 		assert Discussion.count() == 1
     }
 
@@ -76,8 +78,9 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller = new DiscussionController()
 		params.group = 'nowrite'
 		controller.params.putAll(params)
+		controller.request.method = 'POST'
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		def retVal = controller.create()
 		assert Discussion.count() == 0
     }
     @Test
@@ -87,7 +90,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		params.remove('group') 
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = 'POST'
+		def retVal = controller.create()
 		assert Discussion.count() == 1
     }
 
@@ -247,7 +251,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		controller.show()
 
-		assert controller.flash.message == "Must be logged in"
+		assert controller.flash.message == messageSource.getMessage("default.login.message", null, null)
 		assert controller.response.redirectUrl.contains("index")
 	}
 
@@ -288,7 +292,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.deletePost()
 
 
-		assert controller.flash.message == "Can't delete that post --- mismatching discussion id"
+		assert controller.flash.message == messageSource.getMessage("default.not.deleted.message", ["Post"] as Object[], null)
 		assert controller.response.redirectUrl.contains("show")
 	}
 

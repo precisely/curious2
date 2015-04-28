@@ -24,7 +24,7 @@ var _people = '\
 
 var _createDiscussionForm = '\
 <div class="new-post">\
-	<form id="create-discussion" action="/api/discussion/create" method="post">\
+	<form id="create-discussion" action="/discussion/create" method="post">\
 		<div class="input-affordance left-addon">\
 			<i class="fa fa-pencil"></i> \
 			<input class="full-width discussion-topic-input"\
