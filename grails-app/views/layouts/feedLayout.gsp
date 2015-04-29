@@ -44,7 +44,7 @@
 			<li id="feed-right-tab" role="presentation">
 			<li>
 		</ul>
-			<div id="graphList">
+			<div id="feed">
 				<g:pageProperty name="page.feedContent" />
 			</div>
 		</div>

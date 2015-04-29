@@ -235,7 +235,7 @@ $(document).ready(function() {
 						$("#helpWizardOverlay input:hidden").val('');
 					} else {
 						enableHelpForm();
-						showAlertMessage($('#help-alert'), data.message, 6000);
+						showBootstrapAlert($('#help-alert'), data.message, 6000);
 					}
 				}, function() {});
 		return false;
@@ -250,7 +250,7 @@ $(document).ready(function() {
 				$('#takeSurveyOverlay').modal('hide');
 				showAlert('Survey completed successfully.');
 			} else {
-				showAlertMessage($('#survey-alert'), data.message, 6000);
+				showBootstrapAlert($('#survey-alert'), data.message, 6000);
 			}
 		}, function(xhr) {
 			console.log('xhr:', xhr);

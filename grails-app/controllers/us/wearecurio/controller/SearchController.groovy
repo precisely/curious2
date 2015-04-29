@@ -43,7 +43,7 @@ class SearchController extends LoginController {
 		debug "SearchController constructor()"
 	}
 
-	def index(String type, int max, int offset) {
+	def indexData(String type, int max, int offset) {
 		User user = sessionUser()
 
 		if (!user) {

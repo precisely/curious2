@@ -24,6 +24,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 		controller = new SearchController()
 		
+		// TO DO: Implement common method in CuriousControllerTestCase to create users 
 		Map params = new HashMap()
 		params.put("username", "testuser2")
 		params.put("email", "test2@test.com")
@@ -60,51 +61,51 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test index when user is not in session"() {
+	void "Test indexData when user is not in session"() {
 		controller.params["type"] = "people"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("auth.error.message", null, null)
 	}
 
 	@Test
-	void "Test index when no type is passed"() {
+	void "Test indexData when no type is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = null
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
 	}
 
 	@Test
-	void "Test index when wrong type is passed"() {
+	void "Test indexData when wrong type is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "falseType"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
 	}
 
 	@Test
-	void "Test index when type is people"() {
+	void "Test indexData when type is people"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "people"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
@@ -113,13 +114,13 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test index when type is discussions"() {
+	void "Test indexData when type is discussions"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "discussions"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems["discussionList"].size() == 2
@@ -130,13 +131,13 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test index when type is sprints"() {
+	void "Test indexData when type is sprints"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "sprints"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.sprintList.size() == 3
@@ -149,13 +150,13 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test index when type is all"() {
+	void "Test indexData when type is all"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "all"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.index()
+		controller.indexData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 7

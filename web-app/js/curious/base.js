@@ -486,7 +486,7 @@ $.datepicker._gotoToday = function(id) {
 	this._adjustDate(target);
 }
 
-function showAlertMessage($element, message, delay) {
+function showBootstrapAlert($element, message, delay) {
 	delay = !delay ? 5000 : delay
 	$element.show().text(message);
 	setInterval(function() {

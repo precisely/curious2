@@ -1534,7 +1534,6 @@ class DataController extends LoginController {
 				and {
 					or {
 						ilike("username", "%${params.searchString}%")
-						ilike("name", "%${params.searchString}%")
 						ilike("email", "%${params.searchString}%")
 					}
 					or {

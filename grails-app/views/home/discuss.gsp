@@ -175,7 +175,7 @@ $(document).ready(function() {
 
 	$("#postList").infiniteScroll({
 		bufferPx: 360,
-		onFinishedMessage: 'No more comments to show',
+		finalMessage: 'No more comments to show',
 		onScrolledToBottom: function(e, $element) {
 			// Pause the scroll event to not trigger again untill AJAX call finishes
 			// Can be also called as: $("#postList").infiniteScroll("pause")

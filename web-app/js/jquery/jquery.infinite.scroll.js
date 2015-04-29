@@ -38,9 +38,9 @@
 		this.finish = function() {
 			this.stop();
 
-			if (options.onFinishedMessage) {
+			if (options.finalMessage) {
 				// Display the stopped 
-				$element.append('<div id="finished-msg">' + options.onFinishedMessage + '</div>');
+				$element.append('<div id="finished-msg">' + options.finalMessage + '</div>');
 
 				setTimeout(function() {
 					$element.find("#finished-msg").fadeOut();
@@ -138,7 +138,7 @@
 		// Number of items fetched per page
 		max: 5,
 		offset: 5,
-		onFinishedMessage: 'No more data to display',
+		finalMessage: 'No more data to display',
 		onPause: function($element) {
 			var waitElement = $element.find(waitingElementSelector);
 

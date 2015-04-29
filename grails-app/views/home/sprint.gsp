@@ -54,7 +54,7 @@ function showMoreParticipants(sprintId, infiniteScroll) {
 					}	
 				}
 			} else {
-				showAlertMessage($('.alert'), data.message);
+				showBootstrapAlert($('.alert'), data.message);
 			}
 		});
 	} else {
