@@ -54,8 +54,8 @@ abstract class CuriousServiceTestCase {
 	void setUp() {
 		Utils.resetForTesting()
 		
-		User.list()*.delete()	// Deleting existing records temporary to create default user.
-		Entry.list()*.delete()
+		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
+		Entry.executeUpdate("delete Entry e")
 		def users = User.list(max:1)
 		if (users.size() == 0) {
 			def params = [username:'y', sex:'F', \
@@ -77,6 +77,7 @@ abstract class CuriousServiceTestCase {
 	
 	@After
 	void tearDown() {
-		user.delete()
+		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
+		Entry.executeUpdate("delete Entry e")
 	}
 }

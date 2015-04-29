@@ -66,7 +66,7 @@ class WildcardTagGroup extends GenericTagGroup {
 		String wildcardTagGroupName = this.description
 
 		List<String> terms = wildcardTagGroupName.tokenize()
-		List<String> spaceTerms = terms.collectAll { " $it" }
+		List<String> spaceTerms = terms.collectNested { " $it" }
 
 		Set<Tag> matchingTags = []
 		List<Long> exclusions = []

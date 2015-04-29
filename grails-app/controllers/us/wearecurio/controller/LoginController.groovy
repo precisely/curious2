@@ -487,7 +487,7 @@ class LoginController extends SessionController {
 			debug "Unable to unregister no push notification found."
 		} else {
 			debug "Unregistering the current device push notification"
-			pushNotificationDeviceInstance.delete()
+			pushNotificationDeviceInstance.delete(flush:true)
 		}
 			
 		debug params.dump()

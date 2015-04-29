@@ -59,7 +59,7 @@ class OAuthAccount {
 	}
 
 	static def delete(OAuthAccount account) {
-		account.delete()
+		account.delete(flush:true)
 	}
 	
 	DataService getDataService() {

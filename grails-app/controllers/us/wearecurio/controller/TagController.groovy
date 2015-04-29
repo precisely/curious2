@@ -147,8 +147,8 @@ class TagController extends LoginController {
 		if(tagGroupInstance instanceof TagGroup && tagGroupInstance.tags) {
 			tagGroupInstance.tags.clear()
 		}
-		List tagGroupPropertiesList = GenericTagGroupProperties.findAllByUserIdAndTagGroupId(session.userId, tagGroupInstance.id)
-		tagGroupPropertiesList*.delete(flush: true)
+		GenericTagGroupProperties.executeUpdate("delete GenericTagGroupProperties g where g.userId = :userId and g.tagGroupId = :tagGroupId",
+				[userId: session.userId, tagGroupId: tagGroupInstance.id])
 		renderJSONGet([success: true])
 	}
 

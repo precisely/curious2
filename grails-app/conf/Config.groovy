@@ -160,11 +160,14 @@ environments {
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 
+		/*
 		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
 		       [host:'127.0.0.1', port:9300]
 		]
+		*/
+		elasticSearch.client.mode = 'local'
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"

@@ -55,13 +55,13 @@ class PlotData {
 	
 	public static delete(PlotData plotData) {
 		log.debug "PlotData.delete() plotDataId:" + plotData.getId()
-		plotData.delete()
+		plotData.delete(flush: true)
 	}
 
 	public static deleteId(long id) {
 		log.debug "PlotData.deleteId() id:" + id
 		PlotData plotData = PlotData.get(id)
-		plotData.delete()
+		plotData.delete(flush: true)
 	}
 
 	public PlotData() {

@@ -231,7 +231,7 @@ class AnalyticsTask {
 		AnalyticsTask.withTransaction {
 			def userId = fetchUserId()
 			if (userId == null || userId < 0) {
-				this.delete()
+				this.delete(flush:true)
 				userId = null
 			}
 		}

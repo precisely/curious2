@@ -142,7 +142,7 @@ class User {
 	public static void delete(User user) {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
-		user.delete()
+		user.delete(flush:true)
 	}
 
 	public setParameters(Map map) {

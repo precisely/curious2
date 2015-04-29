@@ -113,7 +113,7 @@ class DiscussionPost {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
 		Discussion discussion = Discussion.get(post.getDiscussionId())
 		discussion.setUpdated(new Date())
-		post.delete()
+		post.delete(flush:true)
 	}
 	
 	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {

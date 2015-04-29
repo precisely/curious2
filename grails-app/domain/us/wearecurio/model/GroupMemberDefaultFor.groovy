@@ -32,7 +32,7 @@ class GroupMemberDefaultFor {
 	
 	public static delete(GroupMemberDefaultFor item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

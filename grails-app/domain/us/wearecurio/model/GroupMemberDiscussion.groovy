@@ -27,7 +27,7 @@ class GroupMemberDiscussion {
 	
 	public static delete(GroupMemberDiscussion item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

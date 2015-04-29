@@ -51,17 +51,17 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 		compile 'com.ganyo:gcm-server:1.0.2'
-		compile 'com.notnoop.apns:apns:0.1.6'
+		compile 'com.notnoop.apns:apns:1.0.0.Beta6'
         runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
-        test "org.grails:grails-datastore-test-support:1.0.1-grails-2.4"
+        test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
 		runtime 'commons-dbcp:commons-dbcp:1.4' //or 1.3 if java 1.5
 		compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     }
 
     plugins {
         // plugins for the build system only
-        build ":tomcat:7.0.55"
+        build ":tomcat:8.0.21"
 
         // plugins for the compile step
         compile ":scaffolding:2.1.2"
@@ -76,8 +76,8 @@ grails.project.dependency.resolution = {
 		//compile ":searchable:0.6.9"
 		
         // plugins needed at runtime but not for compilation
-        // runtime ":hibernate4:4.3.5.5" // or
-		runtime ":hibernate:3.6.10.19"
+        runtime ":hibernate4:4.3.8.1" // or
+		//runtime ":hibernate:3.6.10.19"
 		//runtime ':hibernate4:4.3.5.5'
         //runtime ":database-migration:1.4.0"
 

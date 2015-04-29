@@ -79,7 +79,7 @@ class Session {
 	}
 	
 	public static delete(Session session) {
-		session.delete()
+		session.delete(flush: true)
 	}
 
 	public static User lookupSessionUser(String sessionId) {

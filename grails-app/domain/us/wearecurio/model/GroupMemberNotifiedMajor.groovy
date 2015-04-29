@@ -32,7 +32,7 @@ class GroupMemberNotifiedMajor {
 	
 	public static delete(GroupMemberNotifiedMajor item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		

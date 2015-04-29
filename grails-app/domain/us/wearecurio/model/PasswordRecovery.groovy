@@ -42,7 +42,7 @@ class PasswordRecovery {
 	}
 	
 	static def delete(PasswordRecovery recovery) {
-		recovery.delete()
+		recovery.delete(flush:true)
 	}
 	
 	public static final long HOURTICKS = 60L * 60000L
@@ -73,12 +73,7 @@ class PasswordRecovery {
 		
 		def hourAgo = new Date(getHourAgoTicks())
 		
-		def results = c {
-			lt("start", hourAgo)
-		}
-		
-		for (PasswordRecovery r in results) {
-			r.delete()
-		}
+		PasswordRecovery.executeUpdate("delete PasswordRecovery p where p.start < :hourAgo",
+				[hourAgo:hourAgo])
 	}
 }

@@ -46,7 +46,7 @@ class EntryGroup {
 	}
 	
 	static void delete(EntryGroup group) {
-		group.delete()
+		group.delete(flush:true)
 	}
 	
 	void add(Entry e) {

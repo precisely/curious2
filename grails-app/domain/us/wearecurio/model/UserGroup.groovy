@@ -128,7 +128,7 @@ class UserGroup {
 		GroupMemberNotified.executeUpdate("delete GroupMemberNotified item where item.groupId = :id", [id:groupId])
 		GroupMemberNotifiedMajor.executeUpdate("delete GroupMemberNotifiedMajor item where item.groupId = :id", [id:groupId])
 		GroupMemberDiscussion.executeUpdate("delete GroupMemberDiscussion item where item.groupId = :id", [id:groupId])
-		group.delete()
+		group.delete(flush:true)
 	}
 
 	/**
@@ -171,8 +171,8 @@ class UserGroup {
 	}
 
 	public static def getPrimaryGroupForDiscussionId(Long discussionId) {
-		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id order by userGroup.created asc limit 1",
-				['id':discussionId])
+		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id order by userGroup.created asc",
+				['id':discussionId], [max:1])
 	}
 
 	/**

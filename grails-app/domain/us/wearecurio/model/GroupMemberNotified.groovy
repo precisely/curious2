@@ -31,7 +31,7 @@ class GroupMemberNotified {
 	
 	public static delete(GroupMemberNotified item) {
 		if (item) {
-			item.delete()
+			item.delete(flush: true)
 			return true
 		}
 		
