@@ -126,6 +126,7 @@ $(document).ready(function() {
 		var key = e.which;
 
 		if (key == 13) { // the enter key code
+			addEntryToSprint('sprint-tags', '');
 			return false;
 		}
 	});
@@ -521,8 +522,9 @@ function addEntryToSprint(inputElement, suffix) {
 }
 
 function addTagsToList(addedEntry) {
-	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + 
-			' (<i>' + addedEntry.comment.capitalizeFirstLetter() + '</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + (addedEntry.comment ?
+			' (<i>' + addedEntry.comment.capitalizeFirstLetter() + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' + 
+			addedEntry.id + '" data-repeat-type="' + 
 			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
