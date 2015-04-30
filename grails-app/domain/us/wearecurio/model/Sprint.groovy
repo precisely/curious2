@@ -9,6 +9,7 @@ import grails.gorm.DetachedCriteria
 
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
@@ -29,6 +30,7 @@ class Sprint {
 	
 	private static def log = LogFactory.getLog(this)
 	
+	String hashid
 	Long userId // user id of creator of sprint
 	Long virtualGroupId // id of UserGroup for keeping track of sprint members and admins
 	Long virtualUserId // user id for virtual user (owner of sprint tags/entries)
@@ -56,6 +58,7 @@ class Sprint {
 	
 	static constraints = {
 		userId(nullable:true)
+		hashid(blank: false, unique: true)
 		name(nullable:true)
 		description(nullable:true, maxSize:10000)
 		daysDuration(nullable:true)
@@ -66,6 +69,7 @@ class Sprint {
 	
 	static mapping = {
 		version false
+		hashid column: 'hashid', index: 'hashid_index'
 		name column: 'name', index:'name_index'
 		userId column: 'user_id', index:'user_id_index'
 		virtualGroupId column: 'virtual_group_id', index:'virtual_group_id_index'
@@ -170,6 +174,7 @@ class Sprint {
 	Sprint(User user, String name, Visibility visibility) {
 		this.userId = user?.getId()
 		this.name = name
+		this.hashid = new DefaultHashIDGenerator().generate(12)
 		this.created = new Date()
 		this.updated = this.created
 		this.visibility = visibility
@@ -317,16 +322,17 @@ class Sprint {
 	 */
 	def getJSONDesc() {
 		return [
-			id:this.id,
-			name:this.name?:'New Sprint',
-			userId:this.userId,
+			id: this.id,
+			hashid: this.hashid,
+			name: this.name?:'New Sprint',
+			userId: this.userId,
 			description: this.description,
 			totalParticipants: this.getParticipantsCount(),
 			totalTags: this.getEntriesCount(),
-			virtualUserId:this.virtualUserId,
-			virtualGroupId:this.virtualGroupId,
-			created:this.created,
-			updated:this.updated
+			virtualUserId: this.virtualUserId,
+			virtualGroupId: this.virtualGroupId,
+			created: this.created,
+			updated: this.updated
 		]
 	}
 	

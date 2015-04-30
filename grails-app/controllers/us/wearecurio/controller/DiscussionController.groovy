@@ -31,14 +31,12 @@ class DiscussionController extends LoginController {
 
 			if (discussion != null) {
 				Utils.save(discussion, true)
-				//flash.message = "Created new discussion: " + name
 
 				if(discussionPost) {
 					discussion.createPost(user, discussionPost)
 				}
 
 				redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
-				return
 			} else {
 				flash.message = "Failed to create new discussion topic: internal error"
 			}
@@ -50,9 +48,10 @@ class DiscussionController extends LoginController {
 	
 	}
 
-	def show(Discussion discussion) {
+	def show() {
 		User user = sessionUser()
 
+		Discussion discussion = Discussion.findByHashid(params.id)
 		if (!discussion){
 			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
 			redirect(url: toUrl(controller: "home", action: "index"))
@@ -72,7 +71,7 @@ class DiscussionController extends LoginController {
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-				templateVer: urlService.template(request)]
+				templateVer: urlService.template(request), discussionHashId: discussion.hashid]
 
 		// If used for pagination
 		if (request.xhr) {
@@ -114,8 +113,9 @@ class DiscussionController extends LoginController {
 	
 	}
 
-	def delete(Discussion discussion) {
+	def delete() {
 		User user = sessionUser()
+		Discussion discussion = Discussion.findByHashid(params.id)
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id
 			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Discussion"])])
@@ -134,7 +134,7 @@ class DiscussionController extends LoginController {
 			return
 		}
 		def discussionUserId = discussion.getUserId()
-		if ((user.id == discussionUserId) || !discussionUserId) {
+		if ((user?.id == discussionUserId) || !discussionUserId) {
 			discussion.setIsPublic(true)
 			Utils.save(discussion, true)
 			flash.message = g.message(code: "default.updated.message", args: ["Discussion"]) 
@@ -144,5 +144,4 @@ class DiscussionController extends LoginController {
 			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
 		}
 	}
-
 }

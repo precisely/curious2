@@ -7,6 +7,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.OAuthAccount
@@ -33,7 +34,7 @@ class Twenty3AndMeDataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hashid: new DefaultHashIDGenerator().generate(12)])
 		assert Utils.save(user2, true)
 
 		// This token may expire.

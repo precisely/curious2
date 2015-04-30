@@ -821,9 +821,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test updateSprintData when wrong sprintId is passed"() {
+	void "Test updateSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
@@ -833,9 +833,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test updateSprintData when null sprintId is passed"() {
+	void "Test updateSprintData when null sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
@@ -845,23 +845,23 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test updateSprintData when correct sprintId is passed"() {
+	void "Test updateSprintData when correct sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.params["name"] = "Sprint1"
 		controller.params["description"] = "Description1"
 		controller.params["durationDays"] = 6
 		
 		controller.updateSprintData()
 		assert controller.response.json.success == true
-		assert controller.response.json.id == dummySprint.id
+		assert controller.response.json.hashid == dummySprint.hashid
 		assert dummySprint.name == "Sprint1"
 	}
 
 	@Test
-	void "test deleteSprintData when wrong sprintId is passed"() {
+	void "test deleteSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
@@ -869,9 +869,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "test deleteSprintData when null sprintId is passed"() {
+	void "test deleteSprintData when null sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
@@ -881,8 +881,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "test deleteSprintData when Non admin user tries to delete the sprint"() {
 		mockSprintData()
-		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.session.userId = dummyUser2.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.deleteSprintData()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == "You don't have permission to delete this sprint."
@@ -891,20 +891,20 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "test deleteSprintData when admin tries to delete the sprint"() {
 		mockSprintData()
-		controller.session.userId = user.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.session.userId = user.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.deleteSprintData()
 		
 		assert controller.response.json.success == true
-		assert !dummySprint.hasAdmin(user.getId())
-		assert !dummySprint.hasMember(user.getId())
+		assert !dummySprint.hasAdmin(user.id)
+		assert !dummySprint.hasMember(user.id)
 		assert dummySprint.userId == 0l
 	}
 
 	@Test
-	void "Test fetchSprintData when wrong sprintId is passed"() {
+	void "Test fetchSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
@@ -912,9 +912,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test fetchSprintData when null sprintId is passed"() {
+	void "Test fetchSprintData when null sprintHashId is passed"() {
 		mockSprintData()
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
@@ -925,7 +925,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test fetchSprintData when non admin user tries to fetch data"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.fetchSprintData()
 		assert controller.response.json.error == true
 		assert controller.response.json.message == "You don't have permission to edit this sprint."
@@ -935,7 +935,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test fetchSprintData when admin tries to fetch data"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		dummySprint.addMember(dummyUser2.getId())
 		controller.fetchSprintData()
 		assert controller.response.json.sprint.id == dummySprint.id
@@ -943,10 +943,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test startSprintData when wrong sprintId is passed"() {
+	void "Test startSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
@@ -955,10 +955,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test startSprintData when null sprintId is passed"() {
+	void "Test startSprintData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
@@ -970,7 +970,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test startSprintData when non member user tries to start the sprint"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
@@ -982,7 +982,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void startSprint() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
 		controller.startSprintData()
@@ -991,10 +991,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test stopSprintData when wrong sprintId is passed"() {
+	void "Test stopSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
@@ -1003,10 +1003,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test stopSprintData when null sprintId is passed"() {
+	void "Test stopSprintData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
@@ -1018,7 +1018,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test stopSprintData when non member user tries to stop the sprint"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
@@ -1030,7 +1030,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test stopSprintData when a member has not started the sprint"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
@@ -1043,7 +1043,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void stopSprintData() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
 		controller.startSprintData()
@@ -1056,10 +1056,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMemberToSprintData when wrong sprintId is passed"() {
+	void "Test addMemberToSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
@@ -1068,10 +1068,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMemberToSprintData when null sprintId is passed"() {
+	void "Test addMemberToSprintData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
@@ -1082,7 +1082,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test addMemberToSprintData when user name is null"() {
 		mockSprintData()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
@@ -1094,7 +1094,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test addMemberToSprintData when user name is wrong"() {
 		mockSprintData()
 		controller.params["username"] = "z"
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
@@ -1107,7 +1107,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
@@ -1120,7 +1120,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.getId()
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.success == true
@@ -1128,10 +1128,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdminToSprintData when wrong sprintId is passed"() {
+	void "Test addAdminToSprintData when wrong sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
@@ -1140,10 +1140,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdminToSprintData when null sprintId is passed"() {
+	void "Test addAdminToSprintData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
@@ -1154,7 +1154,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test addAdminToSprintData when user name is null"() {
 		mockSprintData()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
@@ -1166,7 +1166,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test addAdminToSprintData when user name is wrong"() {
 		mockSprintData()
 		controller.params["username"] = "z"
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
@@ -1179,7 +1179,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
@@ -1192,7 +1192,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.getId()
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.success == true
@@ -1200,10 +1200,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteSprintMemberData when wrong sprintId is passed"() {
+	void "Test deleteSprintMemberData when wrong sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = 0
+		controller.params["sprintHashId"] = 0
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1212,10 +1212,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteSprintMemberData when null sprintId is passed"() {
+	void "Test deleteSprintMemberData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1226,7 +1226,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test deleteSprintMemberData when user name is null"() {
 		mockSprintData()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1238,7 +1238,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test deleteSprintMemberData when user name is wrong"() {
 		mockSprintData()
 		controller.params["username"] = "z"
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1250,7 +1250,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1263,7 +1263,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
@@ -1275,7 +1275,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = dummySprint.getId()
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.success == true
@@ -1295,10 +1295,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteSprintAdminData when null sprintId is passed"() {
+	void "Test deleteSprintAdminData when null sprintHashId is passed"() {
 		mockSprintData()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = null
+		controller.params["sprintHashId"] = null
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
@@ -1309,7 +1309,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test deleteSprintAdminData when user name is null"() {
 		mockSprintData()
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
@@ -1321,7 +1321,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test deleteSprintAdminData when user name is wrong"() {
 		mockSprintData()
 		controller.params["username"] = "z"
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
@@ -1334,7 +1334,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
@@ -1347,7 +1347,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
-		controller.params["sprintId"] = dummySprint.id
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
@@ -1359,7 +1359,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		mockSprintData()
 		controller.session.userId = user.getId()
 		controller.params["username"] = user.username
-		controller.params["sprintId"] = dummySprint.getId()
+		controller.params["sprintHashId"] = dummySprint.hashid
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.success == true

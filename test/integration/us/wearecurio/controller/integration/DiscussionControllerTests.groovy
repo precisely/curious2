@@ -9,6 +9,7 @@ import us.wearecurio.controller.DiscussionController
 import us.wearecurio.model.*
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class DiscussionControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -30,8 +31,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		readOnlyTestGroup = UserGroup.create("testReadOnlyGroup", "Test read only discussions", "Discussion topics for testing users",
 				[isReadOnly:true, defaultNotify:false])
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert user2.save()
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hashid: new DefaultHashIDGenerator().generate(12)])
+		user2.save(flush: true)
 		testGroup.addWriter(user2)
 		params.clear()
 		params.putAll([
@@ -112,8 +113,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert discussion
 
 		controller.session.userId = user.id
-		controller.params.id = discussion.id
-		controller.request.method = "DELETE"
+		controller.params.id = discussion.hashid
+		controller.request.method = 'DELETE'
 		controller.delete()
 
 		assert !controller.response.json.success
@@ -128,8 +129,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert discussion
 
 		controller.session.userId = user.id
-		controller.params.id = discussion.id
-		controller.request.method = "DELETE"
+		controller.params.id = discussion.hashid
+		controller.request.method = 'DELETE'
 		controller.delete()
 
 		assert controller.response.json.success
@@ -155,8 +156,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
 		
-		controller.params.id = discussion.id
-
+		controller.params.id = discussion.hashid
 		controller.show()
 
 		assert controller.flash.message == messageSource.getMessage("default.login.message", null, null)
@@ -168,9 +168,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
-		controller.params.id = discussion.id
+		controller.params.id = discussion.hashid
 		controller.session.userId = user2.id
-
 		controller.show()
 
 		def modelAndView = controller.modelAndView

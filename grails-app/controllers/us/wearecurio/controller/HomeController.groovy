@@ -924,8 +924,8 @@ class HomeController extends DataController {
 	}
 
 	def sprint() {
-		log.debug "id: $params.id"
-		Sprint sprintInstance = Sprint.get(params.id)
+		log.debug "hashid: $params.id"
+		Sprint sprintInstance = Sprint.findByHashid(params.id)
 		if (!sprintInstance?.userId) {
 			debug "SprintId not found: $params.id"
 			flash.message = g.message(code: "sprint.not.exist")
@@ -947,7 +947,7 @@ class HomeController extends DataController {
 	}
 
 	def leaveSprint() {
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHashid(params.sprintHashId)
 		User currentUser = sessionUser()
 		
 		if (!sprintInstance) {
@@ -957,7 +957,7 @@ class HomeController extends DataController {
 		}
 		if (!sprintInstance.hasMember(currentUser.id)) {
 			flash.message = g.message(code: "not.sprint.member")
-			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintHashId]))
 			return
 		}
 		
@@ -968,11 +968,11 @@ class HomeController extends DataController {
 		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
 		sprintInstance.removeMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintHashId]))
 	}
 	
 	def joinSprint() {
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHashid(params.sprintHashId)
 		User currentUser = sessionUser()
 
 		if (!sprintInstance) {
@@ -982,11 +982,11 @@ class HomeController extends DataController {
 		}
 		if (sprintInstance.hasMember(currentUser.id)) {
 			flash.message = g.message(code: "already.joined.sprint")
-			redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+			redirect(url: toUrl(action:'sprint', params: [id: params.sprintHashId]))
 			return
 		}
 
 		sprintInstance.addMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.sprintId]))
+		redirect(url: toUrl(action:'sprint', params: [id: params.sprintHashId]))
 	}
 }

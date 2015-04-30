@@ -314,7 +314,7 @@ $(document).ready(function() {
 												</a>
 												<ul class="dropdown-menu" role="menu">
 													<li>
-														<a href="#" class="delete-discussion" data-discussion-id="${discussionId}"> 
+														<a href="#" class="delete-discussion" data-discussion-hash-id="${discussionHashId}"> 
 															<img src="/images/x.png" width="auto" height="23">Delete
 														</a>
 													</li>
@@ -335,7 +335,7 @@ $(document).ready(function() {
 									<button class="share-button" onclick="showShareDialog(${discussionId })">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
-									<button onclick="showCommentDialog(null)">
+									<button onclick="showCommentDialog('${discussionHashId}')">
 										<img src="/images/comment.png" alt="comment"> Comment
 									</button>
 								</div>
@@ -379,12 +379,12 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="id" value="${discussionId}">
+											<input type="hidden" name="id" value="${discussionHashId}">
 										</form>
 									</div>
 								</div>
 								<div>
-									<a href="/home/discuss?discussionId=${discussionId }">
+									<a href="/discussion/show/${discussionHashId }">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
 									</a>

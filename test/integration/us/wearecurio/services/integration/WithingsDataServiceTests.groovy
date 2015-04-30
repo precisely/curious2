@@ -17,6 +17,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class WithingsDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -40,7 +41,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 		
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hashid: new DefaultHashIDGenerator().generate(12)])
 		assert user2.save()
 		
 		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",

@@ -11,8 +11,7 @@
 			</a>
 			<span class="posting-time" data-time="${discussPostInstance.getUpdated().time}"></span>
 			<div class="pull-right">
-				<g:if
-					test="${discussPostInstance.getAuthor().id == userId || isAdmin}">
+				<g:if test="${discussPostInstance.getAuthor().id == userId || isAdmin}">
 					<span class="delete"> 
 						<a href="#" class="delete-post" data-post-id="${discussPostInstance.id}"> 
 							<img src="/images/x.gif" width="8" height="8">
