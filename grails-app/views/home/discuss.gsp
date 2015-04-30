@@ -349,7 +349,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/discussion/addComment?commentForm=true" method="post"
+										<form action="/discussion/addComment" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>

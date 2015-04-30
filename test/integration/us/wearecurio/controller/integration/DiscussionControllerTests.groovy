@@ -24,6 +24,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
         // Setup logic here
 		super.setUp()
 
+		controller = new DiscussionController()
 		testGroup = UserGroup.create("testgroup", "Test discussions", "Discussion topics for testing users",
 				[isReadOnly:false, defaultNotify:false])
 		readOnlyTestGroup = UserGroup.create("testReadOnlyGroup", "Test read only discussions", "Discussion topics for testing users",
@@ -49,10 +50,9 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
     @Test
     void testCreateReadOnly() {
-		controller = new DiscussionController()
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		controller.request.method = 'POST'
+		controller.request.method = "POST"
 		def retVal = controller.create()
 		assert Discussion.count() == 0 
     }
@@ -60,11 +60,10 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     @Test
     void testCreateWithGroupNameWithWritePermission() {
 		//Adds a new discussion to the specified group
-		controller = new DiscussionController()
-		params.group = 'testgroup'
+		params.group = "testgroup"
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		controller.request.method = 'POST'
+		controller.request.method = "POST"
 		def retVal = controller.create()
 		assert Discussion.count() == 1
     }
@@ -75,10 +74,9 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		// with no write permission
 		def noWritePermissionGroup = UserGroup.create("nowrite", "Test discussions", "Discussion topics for testing users",
 				[isReadOnly:false, defaultNotify:false])
-		controller = new DiscussionController()
-		params.group = 'nowrite'
+		params.group = "nowrite"
 		controller.params.putAll(params)
-		controller.request.method = 'POST'
+		controller.request.method = "POST"
 		controller.session.userId = user2.getId()
 		def retVal = controller.create()
 		assert Discussion.count() == 0
@@ -86,39 +84,36 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     @Test
     void testCreateWithNoGroup() {
 		//Adds a new discussion to the default group
-		controller = new DiscussionController()
-		params.remove('group') 
+		params.remove("group") 
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		controller.request.method = 'POST'
+		controller.request.method = "POST"
 		def retVal = controller.create()
 		assert Discussion.count() == 1
     }
 
 	@Test
 	void "Test delete discussion when discussion is null"() {
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = 0
-		controller.request.method = 'DELETE'
+		controller.request.method = "DELETE"
 		controller.delete()
 
 		assert !controller.response.json.success
-		assert controller.response.json.message == messageSource.getMessage("not.exist.message",
-				["That discussion"] as Object[], null)
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Discussion"] as Object[], null)
 	}
 
 	@Test
-	void "Test deletediscussion when user does not have write permission"() {
+	void "Test delete discussion when user does not have write permission"() {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 
 		assert discussion
 
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.id = discussion.id
-		controller.request.method = 'DELETE'
+		controller.request.method = "DELETE"
 		controller.delete()
 
 		assert !controller.response.json.success
@@ -126,26 +121,24 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deletediscussion when discussion is present"() {
+	void "Test delete discussion when discussion is present"() {
 		testGroup.addWriter(user)
 		Discussion discussion = Discussion.create(user, "test Discussion", testGroup)
 
 		assert discussion
 
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.id = discussion.id
-		controller.request.method = 'DELETE'
+		controller.request.method = "DELETE"
 		controller.delete()
 
 		assert controller.response.json.success
 		assert controller.response.json.message == "Discussion deleted successfully."
-		assert !Discussion.count
+		assert !Discussion.count()
 	}
 
 	@Test
 	void "Test addComment when discussion is null for ajax request"() {
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = 0
@@ -157,11 +150,11 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", 
 			["Discussion"] as Object[], null) 
+		assert !DiscussionPost.count()
 	}
 
 	@Test
 	void "Test addComment when discussion is null for non-ajax request"() {
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = 0
@@ -172,6 +165,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert controller.flash.message == messageSource.getMessage("default.blank.message", 
 			["Discussion"] as Object[], null)
 		assert controller.response.redirectUrl.contains("feed")
+		assert !DiscussionPost.count()
 	}
 
 	@Test
@@ -179,7 +173,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
-		controller = new DiscussionController()
 
 		controller.session.userId = user.id
 		controller.params.id = discussion.id
@@ -189,6 +182,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		assert controller.flash.message == messageSource.getMessage("default.permission.denied", null, null)
 		assert controller.response.redirectUrl.contains("show")
+		assert !DiscussionPost.count()
 	}
 
 	@Test
@@ -196,7 +190,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = discussion.id
@@ -213,7 +206,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = discussion.id
@@ -228,7 +220,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void "Test show when discussion is null"() {
-		controller = new DiscussionController()
 
 		controller.session.userId = user2.id
 		controller.params.id = 0
@@ -244,9 +235,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
-		assert discussion.visibility == Visibility.PRIVATE
 		
-		controller = new DiscussionController()
 		controller.params.id = discussion.id
 
 		controller.show()
@@ -260,7 +249,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
-		controller = new DiscussionController()
 		controller.params.id = discussion.id
 		controller.session.userId = user2.id
 
@@ -268,7 +256,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		def modelAndView = controller.modelAndView
 
-		assert modelAndView.model['discussionId'].toString().equals(discussion.getId().toString())
+		assert modelAndView.model['discussionId'] == discussion.id
 		assert modelAndView.model['username'].equals(user2.getUsername())
 		assert modelAndView.getViewName().equals("/home/discuss")
 	}
@@ -284,13 +272,11 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		assert DiscussionPost.count() == 1
 		
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.deletePostId = post.id
 		controller.params.discussionId = discussion2.id
 
 		controller.deletePost()
-
 
 		assert controller.flash.message == messageSource.getMessage("default.not.deleted.message", ["Post"] as Object[], null)
 		assert controller.response.redirectUrl.contains("show")
@@ -306,7 +292,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		assert DiscussionPost.count() == 1
 		
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.deletePostId = post.id
 		controller.params.discussionId = null
@@ -327,7 +312,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		assert DiscussionPost.count() == 1
 		
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.deletePostId = post.id
 		controller.params.discussionId = discussion.id
@@ -348,7 +332,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		assert DiscussionPost.count() == 1
 		
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.deletePostId = post.id
 		controller.params.discussionId = discussion.id
@@ -364,9 +347,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
  		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
-		assert !discussion.isPublic()
 
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.id = discussion.id
 		controller.publish()
@@ -381,7 +362,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
  		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 
-		controller = new DiscussionController()
 		controller.session.userId = user.id
 		controller.params.id = null
 		controller.publish()
@@ -395,9 +375,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
  		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		discussion.visibility = Visibility.PRIVATE
 		Utils.save(discussion, true)
-		assert !discussion.isPublic()
 
-		controller = new DiscussionController()
 		controller.session.userId = user2.id
 		controller.params.id = discussion.id
 		controller.publish()

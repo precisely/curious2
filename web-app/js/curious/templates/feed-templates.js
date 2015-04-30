@@ -112,7 +112,7 @@ var _discussions = ' \
 			</div>\
 			<div class="row">\
 				<div class="col-md-6 add-comment">\
-					<form action="/discussion/addComment?commentForm=true" method="post" id="commentForm">\
+					<form action="/discussion/addComment" method="post" id="commentForm">\
 						<% if (false) { %>\
 							<p>Enter your details below</p>\
 								<div id="postname">\

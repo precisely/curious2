@@ -13,7 +13,8 @@ class DiscussionController extends LoginController {
 		redirect(action: "list", params: params)
 	}
 
-	// Depricated method
+	// Deprecated method
+	@Deprecated
 	def createTopic() {
 		redirect(url: toUrl(action: "create", params: params))
 	}
@@ -36,36 +37,7 @@ class DiscussionController extends LoginController {
 					discussion.createPost(user, discussionPost)
 				}
 
-				Map model = discussion.getJSONModel(params)
-
-				model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
-					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-					templateVer: urlService.template(request)]
-
-				// If used for pagination
-				if (request.xhr) {
-					render (template: "/discussion/posts", model: model)
-					return
-				}
-
-				// see duplicated code in HomeController.discuss
-				// edits here should be duplicated there
-				List associatedGroups = UserGroup.getGroupsForWriter(user)
-				List alreadySharedGroups = [], otherGroups = []
-
-				associatedGroups.each { userGroup ->
-					if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
-						alreadySharedGroups << userGroup.plus([shared: true])
-					} else {
-						otherGroups << userGroup
-					}
-				}
-				associatedGroups = alreadySharedGroups.sort { it.name }
-				associatedGroups.addAll(otherGroups.sort { it.name })
-				model.put("associatedGroups", associatedGroups)
-
 				redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
-				// redirect(url:toUrl(controller:'home', action:'feed'))
 				return
 			} else {
 				flash.message = "Failed to create new discussion topic: internal error"
@@ -93,8 +65,10 @@ class DiscussionController extends LoginController {
 		params.max = params.max ?: 5
 		params.offset = params.offset ?: 0
 
-		// see duplicated code in DiscussionController.createTopic
-		// edits here should be duplicated there
+		/*
+		 * See duplicate code in create action in the same controller.
+		 * Any change here needs to be duplicated in to that action
+		 */
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
@@ -102,7 +76,7 @@ class DiscussionController extends LoginController {
 
 		// If used for pagination
 		if (request.xhr) {
-			if (!model.posts ){
+			if (!model.posts ) {
 				// render false if there are no more comments to show.
 				render false
 			} else {
@@ -130,11 +104,13 @@ class DiscussionController extends LoginController {
 		render(view: "/home/discuss", model: model)
 	}
 
+	// Used to edit the discussion
 	def edit() {
 	
 	}
 
-	def udate() {
+	// This method will be called to update already created discussion
+	def update() {
 	
 	}
 
@@ -142,7 +118,7 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id
-			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["That discussion"])])
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Discussion"])])
 		} else {
 			Map result = Discussion.delete(discussion, sessionUser())
 			renderJSONGet(result)
@@ -158,7 +134,7 @@ class DiscussionController extends LoginController {
 			return
 		}
 		def discussionUserId = discussion.getUserId()
-		if ((user != null && user.getId() == discussionUserId) || (discussionUserId == null)) {
+		if ((user.id == discussionUserId) || !discussionUserId) {
 			discussion.setIsPublic(true)
 			Utils.save(discussion, true)
 			flash.message = g.message(code: "default.updated.message", args: ["Discussion"]) 
@@ -198,7 +174,7 @@ class DiscussionController extends LoginController {
 				renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			} else {
 				flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-				redirect(url:toUrl(controller: "home", action:"feed"))
+				redirect(url: toUrl(controller: "home", action: "feed"))
 			}
 			return
 		}
@@ -211,7 +187,7 @@ class DiscussionController extends LoginController {
 				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
 			} else {
 				flash.message = message(code: "default.permission.denied")
-				redirect(url:toUrl(action:"show", params: [id: discussion.id]))
+				redirect(url: toUrl(action: "show", params: [id: discussion.id]))
 			}
 			return
 		}
@@ -222,13 +198,13 @@ class DiscussionController extends LoginController {
 				return
 			}
 			flash.message = g.message(code: "not.created.message", args: ["Comment"])
-			redirect(url:toUrl(controller: "home", action: "index"))
+			redirect(url: toUrl(controller: "home", action: "index"))
 		} else {
 			if (request.xhr) {
 				renderJSONPost([success: true])
 				return
 			}
-			redirect(url:toUrl(action: "show", params:[id: discussion.id]))
+			redirect(url: toUrl(action: "show", params: [id: discussion.id]))
 		}
 	}
 
