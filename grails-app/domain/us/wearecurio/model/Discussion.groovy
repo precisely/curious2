@@ -25,7 +25,8 @@ class Discussion {
 
 	static constraints = {
 		userId(nullable:true)
-		hashid(blank: false, unique: true)
+		// This needs to be uncommented once migrations have run on all the systems
+		hashid(/*blank: false, unique: true,*/ nullable: true)
 		name(nullable:true)
 		firstPostId(nullable:true)
 		visibility(nullable:true)

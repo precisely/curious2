@@ -58,7 +58,8 @@ class Sprint {
 	
 	static constraints = {
 		userId(nullable:true)
-		hashid(blank: false, unique: true)
+		// This needs to be uncommented once migrations have run on all the systems
+		hashid(/*blank: false, unique: true,*/ nullable: true)
 		name(nullable:true)
 		description(nullable:true, maxSize:10000)
 		daysDuration(nullable:true)

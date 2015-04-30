@@ -35,7 +35,8 @@ class User {
 	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:70, unique:true)
-		hashid(blank: false, unique: true)
+		// This needs to be uncommented after migrations have run on all the systems
+		hashid(/*blank: false, unique: true,*/ nullable: true)
 		email(maxSize:200, unique:false, blank:false)
 		remindEmail(maxSize:200, nullable:true)
 		name(maxSize:150)
