@@ -45,9 +45,9 @@ class EntryServiceTests extends CuriousServiceTestCase {
 		def entries3 = EntryFactory.makeN(3, { Math.sin(it) },     ['tag_description': 'tag1', 'username': 'b'])
 		def entries4 = EntryFactory.makeN(3, { Math.cos(it) },     ['tag_description': 'tag2', 'username': 'b'])
 		entries2[1].date = EntryFactory.START_DAY - 10
-		entries2[1].save()
+		entries2[1].save(flush:true)
 		entries3[2].date = EntryFactory.START_DAY - 42
-		entries3[2].save()
+		entries3[2].save(flush:true)
 		
 		assert Entry.count() == 12
 		
@@ -67,9 +67,9 @@ class EntryServiceTests extends CuriousServiceTestCase {
 		def entries3 = EntryFactory.makeN(3, { Math.sin(it) },     ['tag_description': 'tag1', 'username': 'b'])
 		def entries4 = EntryFactory.makeN(3, { Math.cos(it) },     ['tag_description': 'tag2', 'username': 'b'])
 		entries2[1].date = EntryFactory.START_DAY + 10
-		entries2[1].save()
+		entries2[1].save(flush:true)
 		entries3[2].date = EntryFactory.START_DAY + 42
-		entries3[2].save()
+		entries3[2].save(flush:true)
 		
 		assert Entry.count() == 12
 		

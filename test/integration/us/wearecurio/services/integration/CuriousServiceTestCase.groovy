@@ -56,21 +56,23 @@ abstract class CuriousServiceTestCase {
 		
 		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
 		Entry.executeUpdate("delete Entry e")
+		def entries = Entry.list(max:1)
+		
+		assert entries.size() == 0
+		
 		def users = User.list(max:1)
-		if (users.size() == 0) {
-			def params = [username:'y', sex:'F', \
-				name:'y y', email:'y@y.com', birthdate:'01/01/2001', \
-				password:'y', action:'doregister', \
-				controller:'home']
+		
+		assert users.size() == 0
+		
+		def params = [username:'y', sex:'F', \
+			name:'y y', email:'y@y.com', birthdate:'01/01/2001', \
+			password:'y', action:'doregister', \
+			controller:'home']
 
-			user = User.create(params)
+		user = User.create(params)
 
-			Utils.save(user, true)
-			println "new user " + user
-		} else {
-			user = users.get(0)
-			println "user " + user
-		}
+		Utils.save(user, true)
+		println "new user " + user
 		
 		userId = user.getId()
 	}

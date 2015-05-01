@@ -49,8 +49,10 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Before
 	void setUp() {
-		super.setUp()
+		Entry.executeUpdate("delete Entry e")
 
+		super.setUp()
+		
 		controller = new DataController()
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 
@@ -71,6 +73,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+		Entry.executeUpdate("delete Entry e")
 	}
 
 	@Test
@@ -534,7 +537,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def retVal = controller.loadPlotDataId()
 
-		assert controller.response.contentAsString.equals('callback({"username":"y","foo":"foo"})')
+		String content = controller.response.contentAsString
+		assert content.contains('"username":"y"') && content.contains('"foo":"foo"})')
 	}
 
 	@Test
