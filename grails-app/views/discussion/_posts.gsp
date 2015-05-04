@@ -12,11 +12,11 @@
 			<span class="posting-time" data-time="${discussPostInstance.getUpdated().time}"></span>
 			<div class="pull-right">
 				<g:if
-					test="${discussPostInstance.getAuthor().getId() == userId || isAdmin}">
-					<span class="delete"> <a href="#"
-							onclick="return deletePost(${discussPostInstance.discussionId}, ${discussPostInstance.getId()})"> <img
-							src="/images/x.gif" width="8" height="8">
-					</a>
+					test="${discussPostInstance.getAuthor().id == userId || isAdmin}">
+					<span class="delete"> 
+						<a href="#" class="delete-post" data-post-id="${discussPostInstance.id}"> 
+							<img src="/images/x.gif" width="8" height="8">
+						</a>
 					</span>
 				</g:if>
 			</div>

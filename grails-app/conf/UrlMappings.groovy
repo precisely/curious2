@@ -48,7 +48,7 @@ class UrlMappings {
 		*              GET     "/api/discussion" will call index action of DiscussionController
 		*              POST    "/api/discussion" will call save action of DiscussionController
 		*              PUT     "/api/discussion/2" will call update action of DiscussionController with id 2
-		*              DELETE  "/api/discussion/2" will call update action of DiscussionController with id 2
+		*              DELETE  "/api/discussion/2" will call delete action of DiscussionController with id 2
 		*              GET     "/api/discussion/2" will call show action of DiscussionController with id 2
 		*              GET     "/api/discussion/action/autocomplete" will call autocomplete action of DiscussionController with null id
 		*/

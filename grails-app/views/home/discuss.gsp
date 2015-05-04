@@ -10,7 +10,7 @@
 }
 </style>
 
-<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF, addCommentCSRF" />
+<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF, addCommentCSRF, deleteDiscussionPostDataCSRF" />
 
 <script type="text/javascript">
 // list of users to plot
@@ -181,10 +181,10 @@ $(document).ready(function() {
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
 
-			var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + this.getOffset() + "&" +
-					getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
-
-			queueJSON("fetching more comments", url, function(data) {
+			var url = "/api/discussionPost";
+			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
+					discussionId: discussionId}), 
+					function(data) {
 				if (!data.posts) {
 					this.finish();
 				} else {
@@ -349,7 +349,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/discussion/addComment" method="post"
+										<form action="/discussionPost/save" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>

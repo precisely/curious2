@@ -122,6 +122,27 @@ $(document).ready(function() {
 		return false;
 	});
 
+	$(document).on("click", "a.delete-post", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var postId = $this.data('postId');
+			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
+					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
+					function(data) {
+				if (data.success) {
+					showAlert(data.message, function() {
+						$this.parent().closest('.discussion-comment').fadeOut();
+					});
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
+		});
+		return false;
+	});
+
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
 
@@ -688,13 +709,6 @@ function getMoreComments(discussionId, offset) {
 		}
 	});
 	return;
-}
-
-function deletePost(discussionId, postId) {
-	showYesNo("Are you sure you want to delete this post?", function() {
-			window.location = "/api/discussion/action/deletePost?discussionId=" + discussionId + "&deletePostId=" + postId;
-	});
-	return false;
 }
 
 function addComment(discussionId) {

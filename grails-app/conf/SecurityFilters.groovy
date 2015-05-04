@@ -43,7 +43,7 @@ class SecurityFilters {
 	] as Set
 
 	def filters = {
-		preCheck(controller:'(home|tag|discussion|mobiledata|data|correlation|search)', action:'*') {
+		preCheck(controller:'(home|tag|discussion|mobiledata|data|correlation|search|discussionPost)', action:'*') {
 			before = {
 				def a = actionName
 				if (params.controller == null) {

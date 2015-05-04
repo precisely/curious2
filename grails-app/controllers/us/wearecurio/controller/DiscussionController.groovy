@@ -9,8 +9,8 @@ class DiscussionController extends LoginController {
 
 	static allowedMethods = [create: "POST", update: "POST", delete: "DELETE"]
 
+	// Not being used right now as all discussion lists are comming form feed
 	def index() {
-		redirect(action: "list", params: params)
 	}
 
 	// Deprecated method
