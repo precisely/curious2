@@ -35,10 +35,10 @@ public class Hashids {
 
 	public Hashids(String salt, int minHashLength, String alphabet) {
 		this.salt = salt;
-	    if (minHashLength < 0)
-		  this.minHashLength = 0;
-	    else
-		  this.minHashLength = minHashLength;
+		if (minHashLength < 0)
+			this.minHashLength = 0;
+		else
+			this.minHashLength = minHashLength;
 		this.alphabet = alphabet;
 
 		String uniqueAlphabet = "";
@@ -145,12 +145,12 @@ public class Hashids {
 		return decodeHex(hash);
 	}
 
-  /**
-   * Encrypt numbers to string
-   *
-   * @param numbers the numbers to encrypt
-   * @return the encrypt string
-   */
+	/**
+	 * Encrypt numbers to string
+	 *
+	 * @param numbers the numbers to encrypt
+	 * @return the encrypt string
+	 */
 	public String encode(long... numbers) {
 		for (long number : numbers) {
 			if (number > 9007199254740992L) {
