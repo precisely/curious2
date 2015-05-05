@@ -466,12 +466,12 @@ class MigrationService {
 			} catch (Throwable t) {
 			}
 		}
-		tryMigration("Update hashid for all instances of discussion, sprint and user") {
+		tryMigration("Update hash for all instances of discussion, sprint and user table") {
 			try {
 				List discussions = Discussion.findAll()
 				
 				for (Discussion discussion : discussions) {
-					discussion.hashid = new DefaultHashIDGenerator().generate(12)
+					discussion.hash = new DefaultHashIDGenerator().generate(12)
 					Utils.save(discussion, true)
 				}
 			} catch (Throwable t) {
@@ -480,7 +480,7 @@ class MigrationService {
 				List users = User.findAll()
 				
 				for (User user : users) {
-					user.hashid = new DefaultHashIDGenerator().generate(12)
+					user.hash = new DefaultHashIDGenerator().generate(12)
 					Utils.save(user, true)
 				}
 			} catch (Throwable t) {
@@ -489,7 +489,7 @@ class MigrationService {
 				List sprints = Sprint.findAll()
 				
 				for (Sprint sprint : sprints) {
-					sprint.hashid = new DefaultHashIDGenerator().generate(12)
+					sprint.hash = new DefaultHashIDGenerator().generate(12)
 					Utils.save(sprint, true)
 				}
 			} catch (Throwable t) {

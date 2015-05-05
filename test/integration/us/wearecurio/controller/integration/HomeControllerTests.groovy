@@ -35,7 +35,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		super.setUp()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hashid: new DefaultHashIDGenerator().generate(12)])
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
 		assert user2.save()
 
 		plotData = PlotData.create(user, "Plot", "{}", true)
@@ -563,7 +563,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 
 		mockSprintData()
-		controller.params["id"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		controller.session.userId = user2.getId()
 		
 		controller.sprint()
@@ -576,7 +576,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 
 		mockSprintData()
-		controller.params["id"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		controller.session.userId = user.getId()
 		
 		controller.sprint()
@@ -588,10 +588,10 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 
 	@Test
-	void "Test leaveSprint when wrong sprintHashId is passed"() {
+	void "Test leaveSprint when wrong id is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintHashId"] = 0
+		controller.params["id"] = 0
 		
 		controller.leaveSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
@@ -599,10 +599,10 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test leaveSprint when null sprintHashId is passed"() {
+	void "Test leaveSprint when null id is passed"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintHashId"] = null
+		controller.params["id"] = null
 		
 		controller.leaveSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
@@ -613,7 +613,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void "Test leaveSprint when non member user tries to leave the sprint"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintHashId"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		
 		controller.leaveSprint()
 		assert controller.flash.message == ("You are not a member of this sprint.")
@@ -624,7 +624,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void "Test leaveSprint when a member leaves the sprint"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintHashId"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		
 		controller.leaveSprint()
 		assert controller.response.redirectUrl.contains("sprint")
@@ -632,10 +632,10 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test joinSprint when wrong sprintHashId is passed"() {
+	void "Test joinSprint when wrong id is passed"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintHashId"] = 0
+		controller.params["id"] = 0
 		
 		controller.joinSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
@@ -643,10 +643,10 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test joinSprint when null sprintHashId is passed"() {
+	void "Test joinSprint when null id is passed"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintHashId"] = null
+		controller.params["id"] = null
 		
 		controller.joinSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
@@ -657,7 +657,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void "Test joinSprint when member user tries to join the sprint"() {
 		mockSprintData()
 		controller.session.userId = user.getId()
-		controller.params["sprintHashId"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		
 		controller.joinSprint()
 		assert controller.flash.message == ("You have already joined this sprint.")
@@ -668,7 +668,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void "Test joinSprint when a non member joins the sprint"() {
 		mockSprintData()
 		controller.session.userId = dummyUser2.getId()
-		controller.params["sprintHashId"] = dummySprint.hashid
+		controller.params["id"] = dummySprint.hash
 		
 		controller.joinSprint()
 		assert controller.response.redirectUrl.contains("sprint")

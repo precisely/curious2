@@ -28,7 +28,7 @@ class User {
 	Boolean displayTimeAfterTag
 	Boolean webDefaultToNow
 	Boolean notifyOnComments
-	String hashid
+	String hash
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
 
@@ -36,7 +36,7 @@ class User {
 	static constraints = {
 		username(maxSize:70, unique:true)
 		// This needs to be uncommented after migrations have run on all the systems
-		hashid(/*blank: false, unique: true,*/ nullable: true)
+		hash(/*blank: false, unique: true,*/ nullable: true)
 		email(maxSize:200, unique:false, blank:false)
 		remindEmail(maxSize:200, nullable:true)
 		name(maxSize:150)
@@ -55,7 +55,7 @@ class User {
 	static mapping = {
 		version false
 		table '_user'
-		hashid column: 'hashid', index: 'hashid_index'
+		hash column: 'hash', index: 'hash_index'
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 		email column:'email', index:'email_idx'
 	}
@@ -83,7 +83,7 @@ class User {
 		User user = new User()
 
 		user.created = new Date()
-		user.hashid = new DefaultHashIDGenerator().generate(12)
+		user.hash = new DefaultHashIDGenerator().generate(12)
 
 		user.setParameters(map)
 
@@ -94,7 +94,7 @@ class User {
 		log.debug "User.createVirtual()"
 		
 		User user = new User()
-		user.hashid = new DefaultHashIDGenerator().generate(12)
+		user.hash = new DefaultHashIDGenerator().generate(12)
 		user.created = new Date()
 		user.username = "_" + UUID.randomUUID().toString()
 		user.email = user.username
@@ -129,7 +129,7 @@ class User {
 			return match
 		
 		User user = new User()
-		user.hashid = new DefaultHashIDGenerator().generate(12)
+		user.hash = new DefaultHashIDGenerator().generate(12)
 		user.created = new Date()
 		user.username = "_" + UUID.randomUUID().toString()
 		user.email = user.username
@@ -403,7 +403,7 @@ class User {
 	def getJSONDesc() {
 		return [
 			id: id,
-			hashid: hashid,
+			hash: hash,
 			virtual: virtual,
 			username: username,
 			email: email,

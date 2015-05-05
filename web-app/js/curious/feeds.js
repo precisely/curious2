@@ -100,8 +100,8 @@ $(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
-			var discussionHashId = $this.data('discussionHashId');
-			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHashId,
+			var discussionHash = $this.data('discussionHashId');
+			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
 					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
 					function(data) {
 				if (data.success) {
@@ -132,6 +132,12 @@ $(document).ready(function() {
 				if (data.success) {
 					showAlert(data.message, function() {
 						$this.parent().closest('.discussion-comment').fadeOut();
+						if (isOnFeedPage()) {
+							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
+							var totalComments = $commentButton.data('totalComments') - 1;
+							$commentButton.data('totalComments', totalComments);
+							$commentButton.text(totalComments);
+						}
 					});
 				} else {
 					showAlert(data.message);
@@ -163,7 +169,7 @@ $(document).ready(function() {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			} else {
-				location.assign('/home/sprint/' + data.hashid);
+				location.assign('/home/sprint/' + data.hash);
 				clearSprintFormData()
 			}
 		}, function(xhr) {
@@ -395,7 +401,7 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
 
 	queuePostJSON('Removing members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-			{username: username, now: new Date().toUTCString(), sprintHashId: $('#sprintIdField').val(), 
+			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(), 
 			timeZoneName: jstz.determine().name()}), 
 			function(data) {
 		if (data.success) {
@@ -455,7 +461,7 @@ function addSprintMemberOrAdmin(inputId, userName) {
 	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
 	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-			{username: userName, sprintHashId: $('#sprintIdField').val()}),
+			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
 		if (data.success) {
 			console.log('added persons: ', data);
@@ -560,7 +566,7 @@ function createSprint() {
 		function(data) {
 			console.log('data: ', data);
 			if (!data.error) {
-				$('#sprintIdField').val(data.hashid);
+				$('#sprintIdField').val(data.hash);
 				$('#sprintVirtualUserId').val(data.virtualUserId);
 				$('#sprintVirtualGroupId').val(data.virtualGroupId);
 				$('#createSprintOverlay').modal({show: true});
@@ -574,9 +580,9 @@ function createSprint() {
 	);
 }
 
-function editSprint(sprintHashId) {
+function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", "/data/fetchSprintData?" + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			{sprintHashId: sprintHashId},
+			{id: sprintHash},
 			function(data) {
 				console.log('data: ', data);
 				if (data.error) {
@@ -585,7 +591,7 @@ function editSprint(sprintHashId) {
 					console.log(data.sprint);
 					//Clearing data from last load
 					clearSprintFormData();
-					$('#sprintIdField').val(data.sprint.hashid);
+					$('#sprintIdField').val(data.sprint.hash);
 					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
 					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
 					$('#sprint-title').val(data.sprint.name);
@@ -620,9 +626,9 @@ function editSprint(sprintHashId) {
 			});
 }
 
-function deleteSprint(sprintHashId) {
+function deleteSprint(sprintHash) {
 	showYesNo('Delete this sprint?', function() {
-		queueJSON('Deleting sprint', '/data/deleteSprintData?sprintHashId=' + sprintHashId + 
+		queueJSON('Deleting sprint', '/data/deleteSprintData?id=' + sprintHash + 
 				'&' + getCSRFPreventionURI('deleteSprintDataCSRF') + '&callback=?', 
 			function(data) {
 				console.log('data: ', data);
@@ -638,11 +644,11 @@ function deleteSprint(sprintHashId) {
 	});
 }
 
-function startSprint(sprintHashId) {
+function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	queueJSON('Starting Sprint', '/data/startSprintData?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
-		sprintHashId: sprintHashId,
+		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
 	}, function(data) {
@@ -655,11 +661,11 @@ function startSprint(sprintHashId) {
 	});
 }
 
-function stopSprint(sprintHashId) {
+function stopSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	queueJSON('Stopping Sprint', '/data/stopSprintData?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
-		sprintHashId: sprintHashId,
+		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
 	}, function(data) {
@@ -672,10 +678,10 @@ function stopSprint(sprintHashId) {
 	});
 }
 
-function leaveSprint(sprintHashId) {
+function leaveSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	location.assign('/home/leaveSprint?sprintHashId=' + sprintHashId + '&timeZoneName=' + timeZoneName + '&now=' + now);
+	location.assign('/home/leaveSprint?id=' + sprintHash + '&timeZoneName=' + timeZoneName + '&now=' + now);
 }
 
 function toggleCommentsList(discussionId) {
@@ -711,19 +717,19 @@ function getMoreComments(discussionId, offset) {
 	return;
 }
 
-function addComment(discussionId) {
+function addComment(discussionHash) {
 	var $inputElement = $('input#userComment');
-	if (discussionId == null) {
-		discussionId = $('input#discussionId').val()
+	if (!discussionHash) {
+		discussionHash = $('input#discussionId').val()
 	}
-	queuePostJSON('Adding comment', '/api/discussion/action/addComment',
-		getCSRFPreventionObject('addCommentCSRF', {id: discussionId, message: $inputElement.val()}),
+	queuePostJSON('Adding comment', '/api/discussionPost',
+		getCSRFPreventionObject('addCommentCSRF', {discussionHash: discussionHash, message: $inputElement.val()}),
 		function(data) {
 			if (data.success) {
 				if (location.href.indexOf('/discussion/show') > -1) {
 					location.reload();
 				} else {
-					location.href = '/discussion/show/' + discussionId;
+					location.href = '/discussion/show/' + discussionHash;
 				}
 			} else {
 				showAlert(data.message);

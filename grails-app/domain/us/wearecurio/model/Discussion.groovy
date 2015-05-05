@@ -18,7 +18,7 @@ class Discussion {
 	String name
 	Date created
 	Date updated
-	String hashid
+	String hash = new DefaultHashIDGenerator().generate(12)
 	Visibility visibility
 	
 	public static final int MAXPLOTDATALENGTH = 1024
@@ -26,7 +26,7 @@ class Discussion {
 	static constraints = {
 		userId(nullable:true)
 		// This needs to be uncommented once migrations have run on all the systems
-		hashid(/*blank: false, unique: true,*/ nullable: true)
+		hash(/*blank: false, unique: true,*/ nullable: true)
 		name(nullable:true)
 		firstPostId(nullable:true)
 		visibility(nullable:true)
@@ -137,13 +137,11 @@ class Discussion {
 	
 	public Discussion() {
 		this.visibility = Model.Visibility.PUBLIC
-		this.hashid = new DefaultHashIDGenerator().generate(12)
 	}
 	
 	public Discussion(User user, String name) {
 		this.userId = user?.getId()
 		this.name = name
-		this.hashid = new DefaultHashIDGenerator().generate(12)
 		this.created = new Date()
 		this.updated = this.created
 		this.visibility = Model.Visibility.PUBLIC
@@ -407,7 +405,7 @@ class Discussion {
 	def getJSONDesc() {
 		return [
 			id: this.id,
-			hashid: this.hashid,
+			hash: this.hash,
 			name: this.name?:'New question or discussion topic?',
 			userId: this.userId,
 			isPublic: this.visibility == Model.Visibility.PUBLIC,

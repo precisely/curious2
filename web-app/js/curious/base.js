@@ -253,7 +253,7 @@ function showShareDialog(discussionId) {
 	});
 }
 
-function showCommentDialog(discussionHashId) {
+function showCommentDialog(discussionHash) {
 	$('div#comment-dialog').dialog({
 		dialogClass: "no-close",
 		modal: false,
@@ -262,8 +262,8 @@ function showCommentDialog(discussionHashId) {
 		buttons: {
 			"Post ": function() {
 				$(this).dialog("close");
-				if (discussionHashId != null) {
-					addComment(discussionHashId);
+				if (discussionHash) {
+					addComment(discussionHash);
 				} else {
 					addComment(null);
 				}

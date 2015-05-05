@@ -97,7 +97,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test save when discussion is null for ajax request"() {
 		controller.session.userId = user2.id
-		controller.params.id = 0
+		controller.params.discussionHash = "0"
 		controller.params.message = "test message"
 		controller.request.makeAjaxRequest()
 		controller.request.method = "POST"
@@ -113,7 +113,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test save when discussion is null for non-ajax request"() {
 		controller.session.userId = user2.id
-		controller.params.id = 0
+		controller.params.discussionHash = "0"
 		controller.params.message = "test message"
 		controller.request.method = "POST"
 
@@ -130,7 +130,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		assert discussion
 
 		controller.session.userId = user.id
-		controller.params.id = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.message = "test message"
 		controller.request.method = "POST"
 
@@ -146,7 +146,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		assert discussion
 
 		controller.session.userId = user2.id
-		controller.params.id = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.message = "test message"
 		controller.request.method = "POST"
 
@@ -161,7 +161,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		assert discussion
 
 		controller.session.userId = user2.id
-		controller.params.id = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.message = "test message"
 		controller.request.makeAjaxRequest()
 		controller.request.method = "POST"

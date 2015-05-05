@@ -25,6 +25,7 @@ class DiscussionController extends LoginController {
 
 		if (!group) {
 			flash.message = "Failed to create new discussion topic: can't post to this group"
+			redirect(url: toUrl(controller: "home", action: "feed"))
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
 			discussion = discussion ?: Discussion.create(user, name, group)
@@ -36,9 +37,10 @@ class DiscussionController extends LoginController {
 					discussion.createPost(user, discussionPost)
 				}
 
-				redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
+				redirect(url: toUrl(action: "show", params: ["id": discussion.hash]))
 			} else {
 				flash.message = "Failed to create new discussion topic: internal error"
+				redirect(url: toUrl(controller: "home", action: "feed"))
 			}
 		}
 
@@ -51,7 +53,7 @@ class DiscussionController extends LoginController {
 	def show() {
 		User user = sessionUser()
 
-		Discussion discussion = Discussion.findByHashid(params.id)
+		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion){
 			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
 			redirect(url: toUrl(controller: "home", action: "index"))
@@ -71,7 +73,7 @@ class DiscussionController extends LoginController {
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-				templateVer: urlService.template(request), discussionHashId: discussion.hashid]
+				templateVer: urlService.template(request), discussionHash: discussion.hash]
 
 		// If used for pagination
 		if (request.xhr) {
@@ -115,7 +117,7 @@ class DiscussionController extends LoginController {
 
 	def delete() {
 		User user = sessionUser()
-		Discussion discussion = Discussion.findByHashid(params.id)
+		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id
 			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Discussion"])])

@@ -29,8 +29,9 @@ class DiscussionPostController extends LoginController{
 	}
 
 	def save() {
-		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage
-		Discussion discussion = Discussion.get(params.id)
+		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
+			"for discussion with hash: ${params.discussionHash}"
+		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion){
 			if (request.xhr) {
 				renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
@@ -51,7 +52,7 @@ class DiscussionPostController extends LoginController{
 				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
 			} else {
 				flash.message = message(code: "default.permission.denied")
-				redirect(url: toUrl(controller: "discussion", action: "show", params: ["id": discussion.id]))
+				redirect(url: toUrl(controller: "discussion", action: "show", params: ["id": discussion.hash]))
 			}
 			return
 		}
@@ -68,7 +69,7 @@ class DiscussionPostController extends LoginController{
 				renderJSONPost([success: true])
 				return
 			}
-			redirect(url: toUrl(controller: "discussion", action: "show", params: [id: discussion.id]))
+			redirect(url: toUrl(controller: "discussion", action: "show", params: [id: discussion.hash]))
 		}
 	}
 
