@@ -66,7 +66,7 @@ class SecurityFilters {
 						flash.precontroller = params.controller
 						flash.preaction = actionName
 						flash.parm = new JSON(parm).toString()
-						redirect(url:urlService.base(request) + params.controller + '/login')
+						redirect(url:urlService.base(request) + 'home/login')
 					}
 					return false
 				}

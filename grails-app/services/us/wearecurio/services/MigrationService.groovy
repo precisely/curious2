@@ -475,7 +475,6 @@ class MigrationService {
 					Utils.save(discussion, true)
 				}
 			} catch (Throwable t) {
-				log.debug "Exception while updating hash field for discussion: ${t}"
 			}
 			try {
 				List users = User.findAll()
@@ -485,7 +484,6 @@ class MigrationService {
 					Utils.save(user, true)
 				}
 			} catch (Throwable t) {
-				log.debug "Exception while updating hash field for user: ${t}"
 			}
 			try {
 				List sprints = Sprint.findAll()
@@ -495,7 +493,6 @@ class MigrationService {
 					Utils.save(sprint, true)
 				}
 			} catch (Throwable t) {
-				log.debug "Exception while updating hash field for sprint: ${t}"
 			}
 		}
 	}

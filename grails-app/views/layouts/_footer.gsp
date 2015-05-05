@@ -61,11 +61,8 @@
     </g:if>
 
     <g:else>
-         <g:if test="${params.action == 'login' && !params.login}">
-         </g:if>
-        <%-- Inner Pages --%>
         <div class="row footer-items"> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
-            <div class="col-xs-2 ">
+            <div class="col-xs-2 col-xs-offset-1">
             	<ul> 
             	<li> <span class="ul-head"> Company </span><br></li>
             		<li ><a href="#">About</a> </li>
@@ -73,7 +70,7 @@
             		<li ><a href="#">Contacts</a> </li>
             	</ul>
             </div>
-            <div class="col-xs-3 col-xs-offset-1">
+            <div class="col-xs-2">
             	<ul> 
             	 <li><span class="ul-head">Policies</span><br></li>
             		<li ><a href="#">Community Guideline</a> </li>
@@ -81,7 +78,7 @@
             		<li ><a href="#">Privacy</a> </li>
             	</ul>
             </div>
-            <div class="col-xs-2 col-xs-offset-1">
+            <div class="col-xs-2">
             	<ul> 
             		<li> <span class="ul-head">Support</span> <br></li>
 					<c:ifLoggedin>
@@ -94,12 +91,20 @@
             		<li><a href="#">Email Help</a> </li>
             	</ul>
             </div>
-            <div class="col-xs-1 col-xs-offset-1">
+            <div class="col-xs-2">
             	<ul>
             	<li> <span class="ul-head">Follow</span><br></li>
             		<li ><a href="#"> Blog </a></li>
             		<li ><a href="#">Twitter</a> </li>
             		<li ><a href="#">Facebook</a> </li>
+            	</ul>
+            </div>
+            <div class="col-xs-2">
+            	<ul>
+					<li> <span class="ul-head">Data</span><br></li>
+					<li ><g:link controller='home' action="upload">Import</g:link></li>
+					<li ><g:link controller='home' action="download">Export</g:link></li>
+					<li ><g:link controller='home' action="polldevices">Poll Devices</g:link></li>
             	</ul>
             </div>
                 <%--<ul class="nav nav-pills" style="margin-left: 20px;">
