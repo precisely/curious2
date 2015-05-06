@@ -17,6 +17,7 @@ import us.wearecurio.services.MovesDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException;
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -32,7 +33,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		super.setUp()
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
 		assert user2.save()
 
 		account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "Z14DRUTWswu66GuptWqQR1b295DikZY77Bfwocqaduku9VKI2t0WTuOJQ7F72DSQ",

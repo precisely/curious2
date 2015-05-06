@@ -4,10 +4,12 @@ import static org.junit.Assert.*
 import org.junit.*
 import org.scribe.model.Response
 
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.controller.DiscussionController
 import us.wearecurio.model.*
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class DiscussionControllerTests extends CuriousControllerTestCase {
 	static transactional = true
@@ -23,13 +25,14 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
         // Setup logic here
 		super.setUp()
 
+		controller = new DiscussionController()
 		testGroup = UserGroup.create("testgroup", "Test discussions", "Discussion topics for testing users",
 				[isReadOnly:false, defaultNotify:false])
 		readOnlyTestGroup = UserGroup.create("testReadOnlyGroup", "Test read only discussions", "Discussion topics for testing users",
 				[isReadOnly:true, defaultNotify:false])
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert user2.save()
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
+		user2.save(flush: true)
 		testGroup.addWriter(user2)
 		params.clear()
 		params.putAll([
@@ -48,21 +51,21 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
     @Test
     void testCreateReadOnly() {
-		controller = new DiscussionController()
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = "POST"
+		def retVal = controller.save()
 		assert Discussion.count() == 0 
     }
 
     @Test
     void testCreateWithGroupNameWithWritePermission() {
 		//Adds a new discussion to the specified group
-		controller = new DiscussionController()
-		params.group = 'testgroup'
+		params.group = "testgroup"
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = "POST"
+		def retVal = controller.save()
 		assert Discussion.count() == 1
     }
 
@@ -72,21 +75,150 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		// with no write permission
 		def noWritePermissionGroup = UserGroup.create("nowrite", "Test discussions", "Discussion topics for testing users",
 				[isReadOnly:false, defaultNotify:false])
-		controller = new DiscussionController()
-		params.group = 'nowrite'
+		params.group = "nowrite"
 		controller.params.putAll(params)
+		controller.request.method = "POST"
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		def retVal = controller.save()
 		assert Discussion.count() == 0
     }
     @Test
     void testCreateWithNoGroup() {
 		//Adds a new discussion to the default group
-		controller = new DiscussionController()
-		params.remove('group') 
+		params.remove("group") 
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
-		def retVal = controller.createTopic()
+		controller.request.method = "POST"
+		def retVal = controller.save()
 		assert Discussion.count() == 1
     }
+
+	@Test
+	void "Test delete discussion when discussion is null"() {
+
+		controller.session.userId = user2.id
+		controller.params.id = 0
+		controller.request.method = "DELETE"
+		controller.delete()
+
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.not.found.message",
+				["Discussion"] as Object[], null)
+	}
+
+	@Test
+	void "Test delete discussion when user does not have write permission"() {
+		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+
+		assert discussion
+
+		controller.session.userId = user.id
+		controller.params.id = discussion.hash
+		controller.request.method = 'DELETE'
+		controller.delete()
+
+		assert !controller.response.json.success
+		assert controller.response.json.message == "You don't have the right to delete this discussion."
+	}
+
+	@Test
+	void "Test delete discussion when discussion is present"() {
+		testGroup.addWriter(user)
+		Discussion discussion = Discussion.create(user, "test Discussion", testGroup)
+
+		assert discussion
+
+		controller.session.userId = user.id
+		controller.params.id = discussion.hash
+		controller.request.method = 'DELETE'
+		controller.delete()
+
+		assert controller.response.json.success
+		assert controller.response.json.message == "Discussion deleted successfully."
+		assert !Discussion.count()
+	}
+
+	@Test
+	void "Test show when discussion is null"() {
+
+		controller.session.userId = user2.id
+		controller.params.id = 0
+
+		controller.show()
+
+		assert controller.flash.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
+		assert controller.response.redirectUrl.contains("index")
+	}
+
+	@Test
+	void "Test show when user is not logged in an disccussion is not public"() {
+		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		discussion.visibility = Visibility.PRIVATE
+		Utils.save(discussion, true)
+		
+		controller.params.id = discussion.hash
+		controller.show()
+
+		assert controller.flash.message == messageSource.getMessage("default.login.message", null, null)
+		assert controller.response.redirectUrl.contains("index")
+	}
+
+	@Test
+	void "Test show"() {
+		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		assert discussion
+		
+		controller.params.id = discussion.hash
+		controller.session.userId = user2.id
+		controller.show()
+
+		def modelAndView = controller.modelAndView
+
+		assert modelAndView.model['discussionId'] == discussion.id
+		assert modelAndView.model['username'].equals(user2.getUsername())
+		assert modelAndView.getViewName().equals("/home/discuss")
+	}
+
+	@Test
+	void "Test publish when user is not permitted"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		discussion.visibility = Visibility.PRIVATE
+		Utils.save(discussion, true)
+
+		controller.session.userId = user.id
+		controller.params.id = discussion.id
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.permission.denied", null, null)
+		assert controller.response.redirectUrl.contains("show")
+		assert !discussion.isPublic()
+	}
+
+	@Test
+	void "Test publish when discussion is null"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		assert discussion
+
+		controller.session.userId = user.id
+		controller.params.id = null
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
+		assert controller.response.redirectUrl.contains("index")
+	}
+
+	@Test
+	void "Test publish"() {
+ 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
+		discussion.visibility = Visibility.PRIVATE
+		Utils.save(discussion, true)
+
+		controller.session.userId = user2.id
+		controller.params.id = discussion.id
+		controller.publish()
+
+		assert controller.flash.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
+		assert controller.response.redirectUrl.contains("show")
+		assert discussion.isPublic()
+	}
 }

@@ -14,7 +14,7 @@ $(document).ready(function() {
 		bindTo: $('#participants-list ul'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			showMoreParticipants(${sprintInstance.id}, this);
+			showMoreParticipants('${sprintInstance.hash}', this);
 		}
 	});
 
@@ -27,9 +27,9 @@ function showPreviousParticipants() {
 	$("#participants-list ul").scrollLeft(leftPos - 250);    
 }
 
-function showMoreParticipants(sprintId, infiniteScroll) {
+function showMoreParticipants(sprintHash, infiniteScroll) {
 	if ((${sprintInstance.getParticipantsCount()} - offset) > 0) {
-		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintId
+		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintHash
 				+ "&offset=" + offset + "&max=10&"
 				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
 				function(data) {
@@ -133,34 +133,34 @@ function showMoreParticipants(sprintId, infiniteScroll) {
 										</ul>
 									</div>
 								</div>
-								<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants(${sprintInstance.id})"></i>
+								<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('${sprintInstance.hash}')"></i>
 							</div>
 						</div>
 					</div>
 					<div class="col-xs-2">
 						<g:if test="${sprintInstance.hasMember(user.id)}">
-							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(${sprintInstance.id })">Unfollow</button>
+							<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('${sprintInstance.hash }')">Unfollow</button>
 							<g:if test="${sprintInstance.hasStarted(user.id, new Date()) && !sprintInstance.hasEnded(user.id, new Date())}">
 								<button id="stop-sprint" class="sprint-button prompted-action" 
-										onclick="stopSprint(${sprintInstance.id })">Stop</button>
+										onclick="stopSprint('${sprintInstance.hash }')">Stop</button>
 								<button id="start-sprint" class="prompted-action sprint-button hidden"
-										onclick="startSprint(${sprintInstance.id })">Start</button>
+										onclick="startSprint('${sprintInstance.hash }')">Start</button>
 							</g:if>
 							<g:else>
 								<button id="start-sprint" class="prompted-action sprint-button"
-										onclick="startSprint(${sprintInstance.id })">Start</button>
+										onclick="startSprint('${sprintInstance.hash }')">Start</button>
 								<button id="stop-sprint" class="sprint-button prompted-action hidden"
-										onclick="stopSprint(${sprintInstance.id })">Stop</button>
+										onclick="stopSprint('${sprintInstance.hash }')">Stop</button>
 							</g:else>
 						</g:if>
 						<g:else>
-							<a href="/home/joinSprint?sprintId=${sprintInstance.id }">
+							<a href="/home/joinSprint/${sprintInstance.hash }">
 								<button id="join-sprint" class="sprint-button">Follow</button>
 							</a>
 						</g:else>
 						<g:if test="${sprintInstance.hasAdmin(user.id)}">
-							<button class="sprint-button" onclick="editSprint(${sprintInstance.id})">Edit</button>
-							<button class="sprint-button" onclick="deleteSprint(${sprintInstance.id})">Delete</button>
+							<button class="sprint-button" onclick="editSprint('${sprintInstance.hash}')">Edit</button>
+							<button class="sprint-button" onclick="deleteSprint('${sprintInstance.hash}')">Delete</button>
 						</g:if>
 					</div>
 				</div>

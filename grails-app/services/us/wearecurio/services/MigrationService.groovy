@@ -13,6 +13,7 @@ import us.wearecurio.model.*
 import us.wearecurio.model.Entry.*
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class MigrationService {
 
@@ -462,6 +463,35 @@ class MigrationService {
 			try {
 				sql("ALTER TABLE _user DROP INDEX email_idx")
 				sql("CREATE INDEX email_idx ON _user(email) USING BTREE")
+			} catch (Throwable t) {
+			}
+		}
+		tryMigration("Update hash for all instances of discussion, sprint and user table") {
+			try {
+				List discussions = Discussion.findAll()
+				
+				for (Discussion discussion : discussions) {
+					discussion.hash = new DefaultHashIDGenerator().generate(12)
+					Utils.save(discussion, true)
+				}
+			} catch (Throwable t) {
+			}
+			try {
+				List users = User.findAll()
+				
+				for (User user : users) {
+					user.hash = new DefaultHashIDGenerator().generate(12)
+					Utils.save(user, true)
+				}
+			} catch (Throwable t) {
+			}
+			try {
+				List sprints = Sprint.findAll()
+				
+				for (Sprint sprint : sprints) {
+					sprint.hash = new DefaultHashIDGenerator().generate(12)
+					Utils.save(sprint, true)
+				}
 			} catch (Throwable t) {
 			}
 		}

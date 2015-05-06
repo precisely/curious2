@@ -65,7 +65,7 @@
 						</div>
 					</div>
 					<input type="hidden" name="error" value="false">
-					<input type="hidden" name="sprintId" id="sprintIdField">
+					<input type="hidden" name="id" id="sprintIdField">
 					<input type="hidden" name="virtualUserId" id="sprintVirtualUserId">
 					<input type="hidden" name="virtualGroupId" id="sprintVirtualGroupId">
 				</div>

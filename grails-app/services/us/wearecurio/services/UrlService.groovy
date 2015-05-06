@@ -37,8 +37,14 @@ class UrlService {
 	 * @return
 	 */
 	def make(map, req, boolean usePublicIP = false) {
-		def url = base(req, usePublicIP) + map.controller + '/' + map.action
+		String url = base(req, usePublicIP) + map.controller + '/' + map.action
+
 		if (map.params) {
+			// Appending ID (if present) as the normal URL pattern of Grails (/discussion/show/10)
+			if (map.params.id) {
+				url += "/${map.params.id}"
+				map.params.remove("id")
+			}
 			url = makeQueryString(url, map.params)
 		}
 		if (map.fragment) {

@@ -100,9 +100,9 @@ $(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
-			var discussionId = $this.data('discussionId');
-			queueJSON('Deleting Discussion', '/data/deleteDiscussionData?' + getCSRFPreventionURI('deleteDiscussionDataCSRF') + '&callback=?',
-					{discussionId: discussionId, deleteDiscussion: true}, 
+			var discussionHash = $this.data('discussionHashId');
+			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
 					function(data) {
 				if (data.success) {
 					if (isOnFeedPage()) {
@@ -117,7 +117,34 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			});
+			}, null, 'delete');
+		});
+		return false;
+	});
+
+	$(document).on("click", "a.delete-post", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var postId = $this.data('postId');
+			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
+					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
+					function(data) {
+				if (data.success) {
+					showAlert(data.message, function() {
+						$this.parent().closest('.discussion-comment').fadeOut();
+						if (isOnFeedPage()) {
+							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
+							var totalComments = $commentButton.data('totalComments') - 1;
+							$commentButton.data('totalComments', totalComments);
+							$commentButton.text(totalComments);
+						}
+					});
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
 		});
 		return false;
 	});
@@ -126,6 +153,7 @@ $(document).ready(function() {
 		var key = e.which;
 
 		if (key == 13) { // the enter key code
+			addEntryToSprint('sprint-tags', '');
 			return false;
 		}
 	});
@@ -141,7 +169,7 @@ $(document).ready(function() {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			} else {
-				location.assign('/home/sprint?id=' + data.id);
+				location.assign('/home/sprint/' + data.hash);
 				clearSprintFormData()
 			}
 		}, function(xhr) {
@@ -373,7 +401,7 @@ function deleteParticipantsOrAdmins($element, username, actionType) {
 	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
 
 	queuePostJSON('Removing members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-			{username: username, now: new Date().toUTCString(), sprintId: $('#sprintIdField').val(), 
+			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(), 
 			timeZoneName: jstz.determine().name()}), 
 			function(data) {
 		if (data.success) {
@@ -433,7 +461,7 @@ function addSprintMemberOrAdmin(inputId, userName) {
 	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
 	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
-			{username: userName, sprintId: $('#sprintIdField').val()}),
+			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
 		if (data.success) {
 			console.log('added persons: ', data);
@@ -521,8 +549,9 @@ function addEntryToSprint(inputElement, suffix) {
 }
 
 function addTagsToList(addedEntry) {
-	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + 
-			' (<i>' + addedEntry.comment.capitalizeFirstLetter() + '</i>) <button type="button" class="deleteSprintEntry" data-id="' + addedEntry.id + '" data-repeat-type="' + 
+	$('#sprint-tag-list').append('<li><div class="' + addedEntry.comment + 'DarkLabelImage"></div> ' + addedEntry.description + (addedEntry.comment ?
+			' (<i>' + addedEntry.comment.capitalizeFirstLetter() + '</i>)' : '') + ' <button type="button" class="deleteSprintEntry" data-id="' + 
+			addedEntry.id + '" data-repeat-type="' + 
 			addedEntry.repeatType + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
@@ -537,7 +566,7 @@ function createSprint() {
 		function(data) {
 			console.log('data: ', data);
 			if (!data.error) {
-				$('#sprintIdField').val(data.id);
+				$('#sprintIdField').val(data.hash);
 				$('#sprintVirtualUserId').val(data.virtualUserId);
 				$('#sprintVirtualGroupId').val(data.virtualGroupId);
 				$('#createSprintOverlay').modal({show: true});
@@ -551,9 +580,9 @@ function createSprint() {
 	);
 }
 
-function editSprint(sprintId) {
+function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", "/data/fetchSprintData?" + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			{sprintId: sprintId},
+			{id: sprintHash},
 			function(data) {
 				console.log('data: ', data);
 				if (data.error) {
@@ -562,7 +591,7 @@ function editSprint(sprintId) {
 					console.log(data.sprint);
 					//Clearing data from last load
 					clearSprintFormData();
-					$('#sprintIdField').val(data.sprint.id);
+					$('#sprintIdField').val(data.sprint.hash);
 					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
 					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
 					$('#sprint-title').val(data.sprint.name);
@@ -597,9 +626,9 @@ function editSprint(sprintId) {
 			});
 }
 
-function deleteSprint(sprintId) {
+function deleteSprint(sprintHash) {
 	showYesNo('Delete this sprint?', function() {
-		queueJSON('Deleting sprint', '/data/deleteSprintData?sprintId=' + sprintId + 
+		queueJSON('Deleting sprint', '/data/deleteSprintData?id=' + sprintHash + 
 				'&' + getCSRFPreventionURI('deleteSprintDataCSRF') + '&callback=?', 
 			function(data) {
 				console.log('data: ', data);
@@ -615,11 +644,11 @@ function deleteSprint(sprintId) {
 	});
 }
 
-function startSprint(sprintId) {
+function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	queueJSON('Starting Sprint', '/data/startSprintData?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
-		sprintId: sprintId,
+		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
 	}, function(data) {
@@ -632,11 +661,11 @@ function startSprint(sprintId) {
 	});
 }
 
-function stopSprint(sprintId) {
+function stopSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
 	queueJSON('Stopping Sprint', '/data/stopSprintData?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
-		sprintId: sprintId,
+		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
 	}, function(data) {
@@ -649,10 +678,10 @@ function stopSprint(sprintId) {
 	});
 }
 
-function leaveSprint(sprintId) {
+function leaveSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	location.assign('/home/leaveSprint?sprintId=' + sprintId + '&timeZoneName=' + timeZoneName + '&now=' + now);
+	location.assign('/home/leaveSprint?id=' + sprintHash + '&timeZoneName=' + timeZoneName + '&now=' + now);
 }
 
 function toggleCommentsList(discussionId) {
@@ -688,9 +717,24 @@ function getMoreComments(discussionId, offset) {
 	return;
 }
 
-function deletePost(discussionId, postId) {
-	showYesNo("Are you sure you want to delete this post?", function() {
-			window.location = "/home/discuss?discussionId=" + discussionId + "&deletePostId=" + postId;
+function addComment(discussionHash) {
+	var $inputElement = $('input#userComment');
+	if (!discussionHash) {
+		discussionHash = $('input#discussionId').val()
+	}
+	queuePostJSON('Adding comment', '/api/discussionPost',
+		getCSRFPreventionObject('addCommentCSRF', {discussionHash: discussionHash, message: $inputElement.val()}),
+		function(data) {
+			if (data.success) {
+				if (location.href.indexOf('/discussion/show') > -1) {
+					location.reload();
+				} else {
+					location.href = '/discussion/show/' + discussionHash;
+				}
+			} else {
+				showAlert(data.message);
+			}	
+	}, function(error) {
+		showAlert('Internal server error occurred');
 	});
-	return false;
 }

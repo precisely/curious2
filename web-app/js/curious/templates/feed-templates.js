@@ -24,7 +24,7 @@ var _people = '\
 
 var _createDiscussionForm = '\
 <div class="new-post">\
-	<form id="create-discussion" action="/discussion/createTopic" method="post">\
+	<form id="create-discussion" action="/discussion/save" method="post">\
 		<div class="input-affordance left-addon">\
 			<i class="fa fa-pencil"></i> \
 			<input class="full-width discussion-topic-input"\
@@ -59,7 +59,7 @@ var _discussions = ' \
 								<a href="#" data-toggle="dropdown"><b class="caret"></b></a>\
 								<ul class="dropdown-menu" role="menu">\
 									<li>\
-										<a href="#" class="delete-discussion" data-discussion-id="<%- discussionData.id %>"> \
+										<a href="#" class="delete-discussion" data-discussion-hash-id="<%- discussionData.hash %>"> \
 											<img src="/images/x.png" width="auto" height="23">Delete\
 										</a>\
 									</li>\
@@ -73,7 +73,7 @@ var _discussions = ' \
 				</div>\
 				<div class="row">\
 					<div class="col-xs-7">\
-						<a href="/home/discuss?discussionId=<%- discussionData.id %>"> \
+						<a href="/discussion/show/<%- discussionData.hash %>"> \
 							<span> <%- discussionData.name ? discussionData.name: \'(No Title)\' %></span>\
 						</a>\
 					</div>\
@@ -84,7 +84,7 @@ var _discussions = ' \
 							</button>\
 							<% if (discussionData.isAdmin) {  %>\
 								<button class="share-button" data-toggle="popover" title="Share:" data-placement="top" \
-										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/home/discuss?discussionId=<%- discussionData.id %>\'>">\
+										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/discussion/show/<%- discussionData.hash %>\'>">\
 									<img src="/images/share.png" alt="share">Share\
 								</button>\
 							<% } %>\
@@ -93,7 +93,8 @@ var _discussions = ' \
 										discussionData.totalComments < 1) {  %>\
 									<img src="/images/comment.png" alt="comment"> Comment</img>\
 								<% } else { %>\
-								<div class="dark-comment"><%- discussionData.totalComments %></div>\
+								<div class="dark-comment comment-button" data-total-comments="<%- discussionData.totalComments %>">\
+									<%- discussionData.totalComments %></div>\
 										Comment\
 								<% } %>\
 							</button>\
@@ -112,7 +113,7 @@ var _discussions = ' \
 			</div>\
 			<div class="row">\
 				<div class="col-md-6 add-comment">\
-					<form action="/home/discuss?commentForm=true" method="post" id="commentForm">\
+					<form action="/discussionPost/save" method="post" id="commentForm">\
 						<% if (false) { %>\
 							<p>Enter your details below</p>\
 								<div id="postname">\
@@ -138,7 +139,7 @@ var _discussions = ' \
 									placeholder="Add Comment..."\
 									id="post-comment" name="message" required>\
 						<% } %>\
-						<input type="hidden" name="discussionId" value="<%- discussionData.id %>">\
+						<input type="hidden" name="discussionHash" value="<%- discussionData.hash %>">\
 					</form>\
 				</div>\
 				<div class="class-md-6"></div>\
@@ -154,7 +155,7 @@ var _sprints = '\
 			<div class="contents">\
 				<div class="row">\
 					<div class="col-xs-9">\
-						<a href="/home/sprint/<%- sprint.id %>">\
+						<a href="/home/sprint/<%- sprint.hash %>">\
 							<span> <%- sprint.name %></span>\
 						</a>\
 					</div>\
@@ -169,15 +170,15 @@ var _sprints = '\
 				</div>\
 				<div class="row">\
 					<div class="col-xs-8 tags-participants-label">\
-						<a href="/home/sprint/<%- sprint.id %>">\
+						<a href="/home/sprint/<%- sprint.hash %>">\
 							TAGS(<%- sprint.totalTags %>)\
 						</a>\
-						<a href="/home/sprint/<%- sprint.id %>">\
+						<a href="/home/sprint/<%- sprint.hash %>">\
 							PARTICIPANTS(<%- sprint.totalParticipants %>)\
 						</a>\
 					</div>\
 					<div class="col-xs-4 align-right read-more">\
-						<a href="/home/sprint/<%- sprint.id %>">\
+						<a href="/home/sprint/<%- sprint.hash %>">\
 							VIEW MORE\
 						</a>\
 					</div>\

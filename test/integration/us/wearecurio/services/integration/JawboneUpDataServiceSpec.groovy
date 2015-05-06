@@ -18,6 +18,7 @@ import us.wearecurio.model.ThirdPartyNotification.Status
 import us.wearecurio.services.JawboneUpDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
+import us.wearecurio.hashids.DefaultHashIDGenerator
 
 class JawboneUpDataServiceSpec extends IntegrationSpec {
 
@@ -50,7 +51,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		Entry.list()*.delete(flush: true)
 
 		user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
-			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
+			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
 		assert user.save()
 
 		userId = user.id

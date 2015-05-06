@@ -43,7 +43,7 @@ class SecurityFilters {
 	] as Set
 
 	def filters = {
-		preCheck(controller:'(home|tag|discussion|mobiledata|data|correlation|search)', action:'*') {
+		preCheck(controller:'(home|tag|discussion|mobiledata|data|correlation|search|discussionPost)', action:'*') {
 			before = {
 				def a = actionName
 				if (params.controller == null) {
@@ -66,7 +66,7 @@ class SecurityFilters {
 						flash.precontroller = params.controller
 						flash.preaction = actionName
 						flash.parm = new JSON(parm).toString()
-						redirect(url:urlService.base(request) + params.controller + '/login')
+						redirect(url:urlService.base(request) + 'home/login')
 					}
 					return false
 				}

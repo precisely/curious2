@@ -253,27 +253,7 @@ function showShareDialog(discussionId) {
 	});
 }
 
-function addComment(discussionId) {
-	var $inputElement = $('input#userComment');
-	if (discussionId == null) {
-		discussionId = $('input#discussionId').val()
-	}
-	$.ajax({
-		type: 'POST',
-		url: '/home/discuss?commentForm=true',
-		data: {
-			discussionId: discussionId,
-			message: $inputElement.val()
-		},
-		success: function(data) {
-			location.reload();
-		},
-		error: function(xhr) {
-		}
-	});
-}
-
-function showCommentDialog(discussionId) {
+function showCommentDialog(discussionHash) {
 	$('div#comment-dialog').dialog({
 		dialogClass: "no-close",
 		modal: false,
@@ -282,8 +262,8 @@ function showCommentDialog(discussionId) {
 		buttons: {
 			"Post ": function() {
 				$(this).dialog("close");
-				if (discussionId != null) {
-					addComment(discussionId);
+				if (discussionHash) {
+					addComment(discussionHash);
 				} else {
 					addComment(null);
 				}
@@ -304,9 +284,14 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 }
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
+	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'post' : 'get', background);
+}
+
+function queueJSONAll(description, url, args, successCallback, failCallback, delay, requestMethod, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
+	requestMethod = requestMethod || 'get';
 	window.setTimeout(function() {
 		if (stillRunning) {
 			alertShown = true;
@@ -376,7 +361,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
 		var jsonCall = function() {
 			$.ajax({
-				type: (post ? "post" : "get"),
+				type: requestMethod,
 				dataType: "json",
 				url: url,
 				data: args,
@@ -391,7 +376,7 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 		if (!background)
 			++numJSONCalls;
 		$.ajax({
-			type: (post ? "post" : "get"),
+			type: requestMethod,
 			dataType: "json",
 			url: url,
 			data: args,

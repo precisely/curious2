@@ -1303,7 +1303,7 @@ class DataController extends LoginController {
 
 	def updateSprintData() {
 		log.debug "parameters recieved to save sprint: ${params}"
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.id)
 
 		if (!sprintInstance) {
 			renderJSONPost([error: true, message: g.message(code: "sprint.not.exist")])
@@ -1319,13 +1319,13 @@ class DataController extends LoginController {
 					return
 				}
 				Utils.save(sprintInstance, true)
-				renderJSONPost([success: true, id: sprintInstance.id])
+				renderJSONPost([success: true, hash: sprintInstance.hash])
 			}
 		}
 	}
 
 	def deleteSprintData() {
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
 		
 		if (!sprintInstance) {
@@ -1344,7 +1344,7 @@ class DataController extends LoginController {
 
 	def fetchSprintData() {
 		log.debug "DataController.editSprintData() $params"
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.id)
 		
 		if (!sprintInstance) {
 			renderJSONGet([error: true, message: g.message(code: "sprint.not.exist")])
@@ -1366,7 +1366,7 @@ class DataController extends LoginController {
 	}
 
 	def startSprintData() {
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.id)
 		
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
@@ -1392,7 +1392,7 @@ class DataController extends LoginController {
 	}
 	
 	def stopSprintData() {
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.id)
 		
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
@@ -1418,7 +1418,7 @@ class DataController extends LoginController {
 
 	def addMemberToSprintData() {
 		User memberInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
 		
 		if (!sprintInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.participant.failed")])
@@ -1446,7 +1446,7 @@ class DataController extends LoginController {
 
 	def addAdminToSprintData() {
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
 		
 		if (!sprintInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.failed")])
@@ -1474,7 +1474,7 @@ class DataController extends LoginController {
 
 	def deleteSprintMemberData() {
 		User memberInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
 		
 		if (!sprintInstance || !memberInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.participant.failed")])
@@ -1503,7 +1503,7 @@ class DataController extends LoginController {
 
 	def deleteSprintAdminData() {
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
-		Sprint sprintInstance = Sprint.get(params.sprintId)
+		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
 		
 		if (!sprintInstance || !adminInstance) {
 			renderJSONPost([error: true, errorMessage:  g.message(code: "delete.sprint.admin.failed")])
@@ -1595,7 +1595,8 @@ class DataController extends LoginController {
 		render template: "/survey/questions", model: model
 	}
 
-	def getSprintParticipantsData(Sprint sprint, int offset, int max) {
+	def getSprintParticipantsData(int offset, int max) {
+		Sprint sprint = Sprint.findByHash(params.id)
 		if (!sprint) {
 			renderJSONGet([success: false, message: g.message(code: "default.not.found.message",                                             
 					args: ["sprint", params.id])])

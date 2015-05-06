@@ -10,7 +10,7 @@
 }
 </style>
 
-<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF" />
+<c:jsCSRFToken keys="getCommentsCSRF, getFeedsDataCSRF, addCommentCSRF, deleteDiscussionPostDataCSRF, deleteDiscussionDataCSRF" />
 
 <script type="text/javascript">
 // list of users to plot
@@ -181,10 +181,10 @@ $(document).ready(function() {
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
 
-			var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + this.getOffset() + "&" +
-					getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
-
-			queueJSON("fetching more comments", url, function(data) {
+			var url = "/api/discussionPost";
+			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
+					discussionId: discussionId}), 
+					function(data) {
 				if (!data.posts) {
 					this.finish();
 				} else {
@@ -314,7 +314,7 @@ $(document).ready(function() {
 												</a>
 												<ul class="dropdown-menu" role="menu">
 													<li>
-														<a href="#" class="delete-discussion" data-discussion-id="${discussionId}"> 
+														<a href="#" class="delete-discussion" data-discussion-hash-id="${discussionHash}"> 
 															<img src="/images/x.png" width="auto" height="23">Delete
 														</a>
 													</li>
@@ -326,7 +326,7 @@ $(document).ready(function() {
 								<div class="group">
 									${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}
 								</div>
-								<a href="/home/discuss?discussionId=${discussionId }"> ${discussionTitle ?: '(No Title)' }</a>
+								<a href="#"> ${discussionTitle ?: '(No Title)' }</a>
 								<p>
 									${firstPost?.message}
 								</p>
@@ -335,7 +335,7 @@ $(document).ready(function() {
 									<button class="share-button" onclick="showShareDialog(${discussionId })">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
-									<button onclick="showCommentDialog(null)">
+									<button onclick="showCommentDialog('${discussionHash}')">
 										<img src="/images/comment.png" alt="comment"> Comment
 									</button>
 								</div>
@@ -349,7 +349,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/home/discuss?commentForm=true" method="post"
+										<form action="/discussionPost/save" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
@@ -379,13 +379,12 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="discussionId"
-												value="${discussionId}">
+											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
 								</div>
 								<div>
-									<a href="/home/discuss?discussionId=${discussionId }">
+									<a href="/discussion/show/${discussionHash }">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
 									</a>

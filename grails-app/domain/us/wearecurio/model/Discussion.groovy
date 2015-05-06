@@ -4,6 +4,7 @@ import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EmailService
@@ -17,12 +18,15 @@ class Discussion {
 	String name
 	Date created
 	Date updated
+	String hash = new DefaultHashIDGenerator().generate(12)
 	Visibility visibility
 	
 	public static final int MAXPLOTDATALENGTH = 1024
 
 	static constraints = {
 		userId(nullable:true)
+		// This needs to be uncommented once migrations have run on all the systems
+		hash(/*blank: false, unique: true,*/ nullable: true)
 		name(nullable:true)
 		firstPostId(nullable:true)
 		visibility(nullable:true)
@@ -151,6 +155,9 @@ class Discussion {
 		return this.visibility == Model.Visibility.PUBLIC
 	}
 	
+	void setIsPublic(boolean setPublic) {
+		this.visibility = setPublic ? Model.Visibility.PUBLIC : Model.Visibility.PRIVATE
+	}
 	boolean isNew() {
 		return this.name == null
 	}
@@ -397,12 +404,13 @@ class Discussion {
 	 */
 	def getJSONDesc() {
 		return [
-			id:this.id,
-			name:this.name?:'New question or discussion topic?',
-			userId:this.userId,
-			isPublic:this.visibility == Model.Visibility.PUBLIC,
-			created:this.created,
-			updated:this.updated
+			id: this.id,
+			hash: this.hash,
+			name: this.name?:'New question or discussion topic?',
+			userId: this.userId,
+			isPublic: this.visibility == Model.Visibility.PUBLIC,
+			created: this.created,
+			updated: this.updated
 		]
 	}
 
