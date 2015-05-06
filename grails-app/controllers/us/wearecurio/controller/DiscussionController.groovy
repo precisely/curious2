@@ -7,7 +7,7 @@ import us.wearecurio.utility.*
 
 class DiscussionController extends LoginController {
 
-	static allowedMethods = [create: "POST", update: "POST", delete: "DELETE"]
+	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -16,10 +16,10 @@ class DiscussionController extends LoginController {
 	// Deprecated method
 	@Deprecated
 	def createTopic() {
-		redirect(url: toUrl(action: "create", params: params))
+		redirect(url: toUrl(action: "save", params: params))
 	}
 
-	def create(Long plotDataId, String name, Long id, String discussionPost) {
+	def save(Long plotDataId, String name, Long id, String discussionPost) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
@@ -46,10 +46,6 @@ class DiscussionController extends LoginController {
 
 	}
 
-	def save() {
-	
-	}
-
 	def show() {
 		User user = sessionUser()
 
@@ -66,10 +62,6 @@ class DiscussionController extends LoginController {
 		params.max = params.max ?: 5
 		params.offset = params.offset ?: 0
 
-		/*
-		 * See duplicate code in create action in the same controller.
-		 * Any change here needs to be duplicated in to that action
-		 */
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),

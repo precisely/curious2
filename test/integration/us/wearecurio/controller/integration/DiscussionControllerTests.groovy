@@ -54,7 +54,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.create()
+		def retVal = controller.save()
 		assert Discussion.count() == 0 
     }
 
@@ -65,7 +65,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.create()
+		def retVal = controller.save()
 		assert Discussion.count() == 1
     }
 
@@ -79,7 +79,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.request.method = "POST"
 		controller.session.userId = user2.getId()
-		def retVal = controller.create()
+		def retVal = controller.save()
 		assert Discussion.count() == 0
     }
     @Test
@@ -89,7 +89,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.create()
+		def retVal = controller.save()
 		assert Discussion.count() == 1
     }
 
