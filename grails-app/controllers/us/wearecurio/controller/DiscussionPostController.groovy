@@ -16,9 +16,14 @@ class DiscussionPostController extends LoginController{
 			return
 		}
 
-		params.max = Math.min(Integer.parseInt(params.max) ?: 5, 100)
+		params.max = Math.min(Integer.parseInt(params.max) ?: 4, 100)
 		params.offset = params.offset ?: 0
-		List posts = discussion.getFollowupPosts([max: params.max, offset: params.offset])
+
+		DiscussionPost firstPostInstance = discussion.getFirstPost()
+		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
+
+		List posts = isFollowUp ? discussion.getFollowupPosts([max: params.max, offset: params.offset]) : 
+			discussion.getPosts([max: params.max, offset: params.offset])
 
 		if (!posts) {
 			renderJSONGet([posts: false])
