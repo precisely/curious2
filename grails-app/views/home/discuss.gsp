@@ -196,6 +196,10 @@ $(document).ready(function() {
 			}.bind(this));
 		}
 	});
+	$('.share-button').popover({html:true});
+	$('.share-button').on('click', function () {
+		$('.share-link').select();
+	});
 });
 </script>
 </head>
@@ -332,7 +336,9 @@ $(document).ready(function() {
 								</p>
 								<hr>
 								<div class="buttons">
-									<button class="share-button" onclick="showShareDialog(${discussionId })">
+									<button class="share-button" data-toggle="popover" data-placement="top" 
+										data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}discussion/show/${discussionHash}'>"
+											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
 									<button onclick="showCommentDialog('${discussionHash}')">
