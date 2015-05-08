@@ -233,7 +233,7 @@ function showSprints() {
 		if (data.success) {
 			if (data.listItems != false) {
 				// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
-				$('#feed').removeClass().addClass(' type-sprints').html('');
+				$('#feed').removeClass().addClass('type-sprints').html('');
 				$.each(data.listItems.sprintList, function(index, sprint) {
 					var compiledHtml = _.template(_sprints)({'sprint': sprint});
 					$('#feed').append(compiledHtml);
@@ -262,7 +262,7 @@ function showDiscussions() {
 			if (data.listItems == false) {
 				$('#feed').text('No discussions to show.');
 			} else {
-				$('#feed').removeClass().addClass(' type-discussions').html('');
+				$('#feed').removeClass().addClass('type-discussions').html('');
 
 				// Showing create discussion form only once
 				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
@@ -316,7 +316,7 @@ function showPeople() {
 			if (data.listItems == false) {
 				$('#feed').text('No people to show.');
 			} else {
-				$('#feed').removeClass().addClass(' type-people').html('');
+				$('#feed').removeClass().addClass('type-people').html('');
 				$.each(data.listItems, function(index, user) {
 					var compiledHtml = _.template(_people)({'user': user});
 					$('#feed').append(compiledHtml);
@@ -342,7 +342,7 @@ function showAllFeeds() {
 			if (data.listItems == false) {
 				$('#feed').text('No feeds to show.');
 			} else {
-				$('#feed').removeClass().addClass(' type-all').html('');
+				$('#feed').removeClass().addClass('type-all').html('');
 				addAllFeedItems(data);
 				$('#feed-all-tab a').tab('show');
 				$('#feed-right-tab').html('');

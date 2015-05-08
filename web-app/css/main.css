@@ -3836,13 +3836,9 @@ body .modal-footer a .navigate-carousel-right {
 	color: #ff935f; 
 }
 
-.type-all .people-wrapper {
-	width: 100%;
-}
-
 .people-wrapper {
 	background-color: #fff;
-	width: 465px;
+	width: 100%;
 	padding: 15px 15px;
 	margin-bottom: 15px;
 	box-shadow: 0px 4px 5px #dddddd;

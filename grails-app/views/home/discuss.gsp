@@ -196,8 +196,7 @@ $(document).ready(function() {
 			}.bind(this));
 		}
 	});
-	$('.share-button').popover({html:true});
-	$('.share-button').on('click', function () {
+	$('.share-button').popover({html: true}).on('click', function() {
 		$('.share-link').select();
 	});
 });
