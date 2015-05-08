@@ -337,7 +337,7 @@ $(document).ready(function() {
 								<hr>
 								<div class="buttons">
 									<button class="share-button" data-toggle="popover" data-placement="top" 
-										data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}discussion/show/${discussionHash}'>"
+											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}discussion/show/${discussionHash}'>"
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
