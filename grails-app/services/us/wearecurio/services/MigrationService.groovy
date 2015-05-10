@@ -494,6 +494,11 @@ class MigrationService {
 				}
 			} catch (Throwable t) {
 			}
+		tryMigration("Drop EntryGroup version") {
+			sql ("alter table entry_group drop column version")
+		}
+		tryMigration("Drop TagProperties isContinuous") {
+			sql ("alter table tag_properties drop column is_continuous")
 		}
 	}
 	

@@ -7,7 +7,6 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.User
-import us.wearecurio.services.TagService
 
 import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA

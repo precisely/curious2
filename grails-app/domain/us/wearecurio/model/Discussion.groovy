@@ -321,7 +321,7 @@ class Discussion {
 	 */
 	def getParticipants() {
 		def results = DiscussionPost.executeQuery(
-				"select distinct post.authorUserId from DiscussionPost post where post.discussionId = ?", getId())
+				"select distinct post.authorUserId from DiscussionPost post where post.discussionId = :discussionId", [discussionId:getId()])
 		
 		def retVal = []
 		for (r in results) {

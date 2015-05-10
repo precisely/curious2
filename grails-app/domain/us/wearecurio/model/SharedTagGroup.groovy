@@ -36,4 +36,20 @@ class SharedTagGroup extends TagGroup {
 			this.save()
 		}
 	}
+	
+	boolean hasEditor(Long userId) {
+		// There can be one single SharedTagGroup per group
+		GenericTagGroupProperties tagGroupProperty = GenericTagGroupProperties.findByTagGroupId(this.id)
+		UserGroup userGroupInstance = tagGroupProperty?.getGroup()
+
+		if (!userGroupInstance) {
+			return true
+		}
+
+		if (UserGroup.hasAdmin(userGroupInstance.id, userId)) {
+			return true
+		}
+
+		return !userGroupInstance.isReadOnly
+	}
 }

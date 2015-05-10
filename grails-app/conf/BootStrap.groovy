@@ -20,7 +20,6 @@ class BootStrap {
 	WithingsDataService withingsDataService
 	RemindEmailService remindEmailService
 	DatabaseService databaseService
-	TagService tagService
 	EmailService emailService
 	AnalyticsService analyticsService
 	EntryService entryService
@@ -32,7 +31,6 @@ class BootStrap {
 		def current = Environment.current
 		
 		DatabaseService.set(databaseService)
-		TagService.set(tagService)
 		EmailService.set(emailService)
 		EntryService.set(entryService)
 		SecurityService.set(securityService)

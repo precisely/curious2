@@ -45,11 +45,13 @@ class Tag implements Serializable, Comparable {
 		return tag
 	}
 
-	static void addToCache(Tag tagInstance) {
+	static Tag addToCache(Tag tagInstance) {
 		synchronized(tagCache) {
 			tagCache.put(tagInstance.description, tagInstance)
 			tagIdCache.put(tagInstance.id, tagInstance)
 		}
+		
+		tagInstance
 	}
 
 	
@@ -61,26 +63,26 @@ class Tag implements Serializable, Comparable {
 		return Tag.get(id)
 	}
 
+	static Tag fetchAndAddToCache(Long id) {
+		Tag tag = tagIdCache.get(id)
+		
+		if (tag != null) return tag
+		
+		tag = Tag.get(id)
+		
+		addToCache(tag)
+		
+		tag
+	}
+
 	static List<Tag> fetchAll(Collection<Long> ids) {
-		Map cachedTagData = tagIdCache.findAll { id, instance ->
-			id in ids
+		List<Tag> retVal = new ArrayList<Tag>()
+		
+		ids.each { id ->
+			retVal.add(Tag.fetchAndAddToCache(id))
 		}
-
-		List<Long> cachedTagIds = cachedTagData.keySet() as List
-		List<Tag> cachedTagInstances = cachedTagData.values() as List
-
-		List<Long> tagIdsNotInCache = (ids - cachedTagIds) as List
-
-		if (tagIdsNotInCache) {
-			Tag.getAll(tagIdsNotInCache).each { tagInstance ->
-				if (tagInstance != null) {
-					addToCache(tagInstance)
-					cachedTagInstances << tagInstance
-				}
-			}
-		}
-
-		cachedTagInstances
+		
+		retVal
 	}
 
 	static Tag look(String d) {

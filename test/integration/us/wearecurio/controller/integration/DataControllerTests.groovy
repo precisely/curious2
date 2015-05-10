@@ -50,7 +50,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Before
 	void setUp() {
 		Entry.executeUpdate("delete Entry e")
-
+		Discussion.executeUpdate("delete Discussion d")
+		DiscussionPost.executeUpdate("delete DiscussionPost p")
+		
 		super.setUp()
 		
 		controller = new DataController()
@@ -74,6 +76,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void tearDown() {
 		super.tearDown()
 		Entry.executeUpdate("delete Entry e")
+		Discussion.executeUpdate("delete Discussion d")
+		DiscussionPost.executeUpdate("delete DiscussionPost p")
 	}
 
 	@Test

@@ -59,7 +59,7 @@ class TagStats {
 			stats = new TagStats(tagId:tagId, userId:userId)
 		}
 		
-		def mostRecent = Entry.executeQuery("select entry.date from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date is not null order by entry.date desc", [tagId, userId], [max:1])
+		def mostRecent = Entry.executeQuery("select entry.date from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date is not null order by entry.date desc", [baseTagId:tagId, userId:userId], [max:1])
 					
 		stats.setDescription(Tag.get(tagId).getDescription())
 		
@@ -84,20 +84,20 @@ class TagStats {
 			}
 			
 			def countLastThreeMonths = Entry.executeQuery(
-				"select count(entry.id) from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date is not null and datediff(now(), entry.date) <= 90",
-				[tagId, userId])
+				"select count(entry.id) from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date is not null and datediff(now(), entry.date) <= 90",
+				[baseTagId:tagId, userId:userId])
 	
 			stats.setCountLastThreeMonths(countLastThreeMonths[0])
 			
 			def countThreeToNineMonths = Entry.executeQuery(
-				"select count(entry.id) from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date is not null and datediff(now(), entry.date) > 90 and datediff(now(), entry.date) < 365",
-				[tagId, userId])
+				"select count(entry.id) from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date is not null and datediff(now(), entry.date) > 90 and datediff(now(), entry.date) < 365",
+				[baseTagId:tagId, userId:userId])
 	
 			stats.setCountLastYear(countThreeToNineMonths[0] + stats.getCountLastThreeMonths())
 			
 			def countPriorToThisYear = Entry.executeQuery(
-				"select count(entry.id) from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date is not null and datediff(now(), entry.date) >= 365",
-				[tagId, userId], [max:1])
+				"select count(entry.id) from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date is not null and datediff(now(), entry.date) >= 365",
+				[baseTagId:tagId, userId:userId], [max:1])
 	
 			stats.setCountAllTime(countPriorToThisYear[0] + stats.getCountLastYear())
 			
@@ -108,8 +108,8 @@ class TagStats {
 			int amountLimit = 5
 			
 			def lastAmounts = Entry.executeQuery(
-				"select entry.amount, entry.amountPrecision, entry.units, entry.repeatType from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeatType IS NOT NULL) order by entry.date desc",
-				[tagId, userId], [max:amountLimit])
+				"select entry.amount, entry.amountPrecision, entry.units, entry.repeatType from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeatType IS NOT NULL) order by entry.date desc",
+				[baseTagId:tagId, userId:userId], [max:amountLimit])
 			
 			int totalCount = lastAmounts.size()
 			def firstAmount = null
@@ -183,8 +183,8 @@ class TagStats {
 			
 			if (stats.getLastUnits() == null) {	
 				def lastUnits = Entry.executeQuery(
-					"select entry.units from Entry as entry where entry.baseTag.id = ? and entry.userId = ? and entry.date IS NOT NULL and entry.units IS NOT NULL and length(entry.units) > 0 order by entry.date desc",
-					[tagId, userId], [max:1])
+					"select entry.units from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and entry.units IS NOT NULL and length(entry.units) > 0 order by entry.date desc",
+					[baseTagId:tagId, userId:userId], [max:1])
 	
 				if (lastUnits && lastUnits.size() > 0) {
 					stats.setLastUnits(lastUnits[0])

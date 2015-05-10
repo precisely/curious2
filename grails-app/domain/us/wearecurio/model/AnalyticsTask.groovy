@@ -177,7 +177,7 @@ class AnalyticsTask {
 		//	saved to the database and have unique ids.
 		def userIds = User.executeQuery('select u.id from User u order by u.id')
 		def childIds = AnalyticsTask.executeQuery('select ac.id from AnalyticsTask ac ' +
-			"where ac.parentId = ? order by ac.id", [getParentId()])
+			"where ac.parentId = :parentId order by ac.id", [parentId:getParentId()])
 		def i = childIds.findIndexOf { it == getId() }
 		if (i < userIds.size) {
 			userIds[i]

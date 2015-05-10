@@ -8,14 +8,12 @@ import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Entry
 import us.wearecurio.model.GenericTagGroupProperties
 import us.wearecurio.model.Tag
+import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.WildcardTagGroup
-import us.wearecurio.services.TagGroupService
 import us.wearecurio.support.EntryStats
 
 class WildcardTagGroupTests extends CuriousTestCase {
-
-	TagGroupService tagGroupService
 
 	Tag tag1, tag2, tag3, tag4, tag5, tag6, tag7
 	Entry entry1, entry2, entry3, entry4, entry5, entry6, entry7
@@ -48,8 +46,8 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag6.description, baseDate, true), stats)
 		entry7 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag7.description, baseDate, true), stats)
 
-		wildcardTagGroupInstance1 = tagGroupService.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
-		wildcardTagGroupInstance2 = tagGroupService.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)
+		wildcardTagGroupInstance1 = TagGroup.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
+		wildcardTagGroupInstance2 = TagGroup.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)
 	}
 
 	@After
@@ -72,7 +70,7 @@ class WildcardTagGroupTests extends CuriousTestCase {
 
 	@Test
 	void "test get tags with tag excluded"() {
-		TagExclusion.createOrLookup(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
+		TagExclusion.addToExclusion(tag7, GenericTagGroupProperties.createOrLookup(userId, "User", wildcardTagGroupInstance1))
 
 		assert wildcardTagGroupInstance1.getTags(userId).size() == 1
 		assert wildcardTagGroupInstance1.getTags(userId)*.description.contains("chicken")

@@ -14,8 +14,6 @@ import us.wearecurio.utility.Utils
 
 class TagControllerTests extends CuriousControllerTestCase{
 
-	def tagGroupService
-
 	TagController controller
 	DateFormat dateFormat
 	Date earlyBaseDate
@@ -34,8 +32,8 @@ class TagControllerTests extends CuriousControllerTestCase{
 
 		tag1 = Tag.create("bread")
 		tag2 = Tag.create("apple")
-		tagGroupInstance = tagGroupService.createTagGroup("Demo tag group", userId, null)
-		tagGroupService.addTags(tagGroupInstance, "$tag1.id, $tag2.id")
+		tagGroupInstance = TagGroup.createTagGroup("Demo tag group", userId, null)
+		tagGroupInstance.addTags("$tag1.id, $tag2.id")
 	}
 
 	@After
@@ -46,7 +44,8 @@ class TagControllerTests extends CuriousControllerTestCase{
 	@Test
 	void "Test removeTagFromTagGroupData"() {
 		
-		assert tagGroupInstance.getTags(userId).size() == 2
+		def tags = tagGroupInstance.getTags(userId)
+		assert tags.size() == 2
 		
 		controller.session.userId = userId
 		controller.params["tagGroupId"] = tagGroupInstance.id

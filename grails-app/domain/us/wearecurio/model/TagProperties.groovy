@@ -7,14 +7,14 @@ class TagProperties {
 
 	public static enum DataType {
 		UNSPECIFIED(0), CONTINUOUS(1), EVENT(2)
-		final Integer id
+		final int id
 		DataType(Integer val) { this.id = val }
 		String toString() { name() }
 		Integer getValue() { id }
 	}
-	public static CONTINUOUS	= DataType.CONTINUOUS
-	public static EVENT				= DataType.EVENT
-	public static UNSPECIFIED = DataType.UNSPECIFIED
+	public static final DataType CONTINUOUS	= DataType.CONTINUOUS
+	public static final DataType EVENT = DataType.EVENT
+	public static final DataType UNSPECIFIED = DataType.UNSPECIFIED
 
 	// The user specified something.
 	//	If set to false, it means that the user wants to have
@@ -42,7 +42,7 @@ class TagProperties {
 		userId column:'user_id', index:'user_id_index'
 		tagId column:'tag_id', index:'tag_id_index'
 		dataTypeManual column: 'data_type_manual', defaultValue: DataType.UNSPECIFIED
-		dataTypeComputed column: 'data_type_computed', defaultValue:	DataType.UNSPECIFIED
+		dataTypeComputed column: 'data_type_computed', defaultValue: DataType.UNSPECIFIED
 	}
 
 	// Put reg. expressions  here so that we don't have to keep recompiling them.
@@ -169,7 +169,7 @@ class TagProperties {
 		return this
 	}
 
-	public static TagProperties lookup(uid, tid) {
+	public static TagProperties lookup(Long uid, Long tid) {
 		return TagProperties.findWhere(tagId:tid, userId:uid)
 	}
 

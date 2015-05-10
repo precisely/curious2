@@ -25,11 +25,6 @@ class TagExclusion {
 		}
 	}
 
-	@Deprecated
-	static TagExclusion createOrLookup(def tagOrTagGroupToExclude, GenericTagGroupProperties tagGroupProperty) {
-		addToExclusion(tagOrTagGroupToExclude, tagGroupProperty)
-	}
-
 	static TagExclusion addToExclusion(def tagOrTagGroupToExclude, GenericTagGroupProperties tagGroupProperty) {
 		ExclusionType type = ExclusionType.TAG
 		Long objectId = tagOrTagGroupToExclude.id

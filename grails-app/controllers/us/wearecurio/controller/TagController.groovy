@@ -12,14 +12,10 @@ import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.User
 import us.wearecurio.model.WildcardTagGroup
-import us.wearecurio.services.TagService
 
 class TagController extends LoginController {
 
 	private static def log = LogFactory.getLog(this)
-
-	TagService tagService
-	def tagGroupService
 
 	static debug(str) {
 		log.debug(str)
@@ -27,15 +23,15 @@ class TagController extends LoginController {
 
 	def wildcardData() {
 		log.debug("Fetching tags for a WildCardTagGroup for graph: ${params.description}")
-		def tagList = tagService.getTagsByDescription(session.userId, params.description)
+		def tagList = User.getTagsByDescription(session.userId, params.description)
 		println(tagList.dump())
 		renderJSONGet(tagList)
 	}
 
 	def listTagsAndTagGroupsData() {
 		log.debug("Fetching tags and tag groups: " + params)
-		def tagAndTagGroupList = tagService.getTagsByUser(session.userId);
-		tagAndTagGroupList.addAll(tagService.getAllTagGroupsForUser(session.userId))
+		def tagAndTagGroupList = User.getTagData(session.userId);
+		tagAndTagGroupList.addAll(TagGroup.getAllTagGroupsForUser(session.userId))
 		tagAndTagGroupList.sort { a,b ->
 			return a.description.compareTo(b.description)
 		}
@@ -45,16 +41,16 @@ class TagController extends LoginController {
 
 	def createTagGroupData() {
 		log.debug("Creating tag group: " + params)
-		def tagGroupInstance = tagGroupService.createTagGroup(params.tagGroupName, session.userId, null)
+		def tagGroupInstance = TagGroup.createTagGroup(params.tagGroupName, session.userId, null)
 		if(params.tagIds) {
-			tagGroupService.addTags(tagGroupInstance, params.tagIds)
+			tagGroupInstance.addTags(params.tagIds)
 		}
 		renderJSONGet(tagGroupInstance)
 	}
 
 	def addWildcardTagGroupData() {
 		log.debug("Adding wildcard tag group: " + params)
-		def wildcardTagGroupInstance = tagGroupService.createOrLookupTagGroup(params.description, session.userId, null, WildcardTagGroup.class)
+		def wildcardTagGroupInstance = TagGroup.createOrLookupTagGroup(params.description, session.userId, null, WildcardTagGroup.class)
 		renderJSONGet(wildcardTagGroupInstance)
 	}
 
@@ -63,14 +59,14 @@ class TagController extends LoginController {
 
 		TagGroup tagGroupInstance = TagGroup.get(params.tagGroupId)
 		if (tagGroupInstance instanceof SharedTagGroup) {
-			if (!tagService.canEdit(tagGroupInstance, session.userId)) {
+			if (!(tagGroupInstance.hasEditor(session.userId))) {
 				log.warn "User can not add tag."
 				renderStringGet("fail")
 				return
 			}
 		}
 
-		tagGroupService.addTags(params.tagGroupId.toLong(), Long.parseLong(params.id))
+		tagGroupInstance.addTagId(Long.parseLong(params.id))
 		renderStringGet("success")
 	}
 
@@ -99,7 +95,7 @@ class TagController extends LoginController {
 		def childTagGroupInstance = GenericTagGroup.get(params.childTagGroupId)
 
 		if (parentTagGroupInstance instanceof SharedTagGroup) {
-			if (!tagService.canEdit(parentTagGroupInstance, session.userId)) {
+			if (!parentTagGroupInstance.hasEditor(session.userId)) {
 				log.warn "User can not add."
 				renderStringGet("fail")
 				return
@@ -158,7 +154,7 @@ class TagController extends LoginController {
 		GenericTagGroup parentTagGroupInstance = tagGroupInstance.parentTagGroup
 
 		if (parentTagGroupInstance instanceof SharedTagGroup) {
-			if (!tagService.canEdit(parentTagGroupInstance, session.userId)) {
+			if (!parentTagGroupInstance.hasEditor(session.userId)) {
 				log.warn "User can not remove tag group."
 				renderStringGet("fail")
 				return
@@ -176,7 +172,7 @@ class TagController extends LoginController {
 		def tagGroupInstance = TagGroup.get(params.tagGroupId)
 
 		if (tagGroupInstance instanceof SharedTagGroup) {
-			if (!tagService.canEdit(tagGroupInstance, session.userId)) {
+			if (!tagGroupInstance.hasEditor(session.userId)) {
 				log.warn "User can not remove tag."
 				renderStringGet("fail")
 				return
@@ -211,7 +207,7 @@ class TagController extends LoginController {
 			return false
 		}
 
-		TagExclusion.createOrLookup(itemToExclude, tagGroupProperty)
+		TagExclusion.addToExclusion(itemToExclude, tagGroupProperty)
 
 		renderJSONGet([success: true])
 	}

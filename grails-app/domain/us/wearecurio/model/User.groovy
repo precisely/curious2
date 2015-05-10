@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.cache.BoundedCache
-import us.wearecurio.services.TagService
+import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
@@ -286,22 +286,45 @@ class User {
 	 * tags associated with the current user & returns the instances of Tag.
 	 */
 	static List<Tag> getTags(Long userId) {
-		if (tagIdCache[userId]) {
-			return Tag.fetchAll(tagIdCache[userId])
-		}
-
-		List<Long> usersTagIds = TagService.get().getTagsByUser(userId)*.id
-
-		getTagGroups(userId).each { tagGroupInstance ->
-			// No need to get tags from wildcard tag group
-			if (!(tagGroupInstance instanceof WildcardTagGroup)) {
-				usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
+		return User.withTransaction {
+			if (tagIdCache[userId]) {
+				return Tag.fetchAll(tagIdCache[userId])
 			}
+	
+			def usersTagIds =
+					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
+						FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
+						[userId:userId]).collect { it.id.toLong() }
+	
+			getTagGroups(userId).each { tagGroupInstance ->
+				// No need to get tags from wildcard tag group
+				if (!(tagGroupInstance instanceof WildcardTagGroup)) {
+					usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
+				}
+			}
+	
+			tagIdCache[userId] = usersTagIds
+	
+			Tag.fetchAll(usersTagIds)
 		}
+	}
 
-		tagIdCache[userId] = usersTagIds
+	static def getTagData(def userId) {
+		return User.withTransaction {
+			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
+					IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL OR prop.data_type_computed = 2, 0, 1), prop.data_type_manual = 1) AS iscontinuous,
+					prop.show_points AS showpoints FROM entry e INNER JOIN tag t ON e.tag_id = t.id
+					LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
+					WHERE e.user_id = :userId AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""",
+					[userId:userId.toLong()])
+		}
+	}
 
-		Tag.fetchAll(usersTagIds)
+	static def getTagsByDescription(def userId, def description) {
+		return User.withTransaction {
+			Entry.executeQuery("select new Map(entry.tag.id as id,entry.tag.description as description) from Entry as entry where entry.userId=:userId "+
+				"and entry.tag.description like :desc group by entry.tag.id", [userId:userId,desc:"%${description}%"])
+		}
 	}
 
 	static void addToCache(Long userId, Tag tagInstance) {
@@ -333,14 +356,16 @@ class User {
 	}
 
 	static List<GenericTagGroup> getTagGroups(Long userId) {
-		if (tagGroupIdCache[userId]) {
-			return GenericTagGroup.getAll(tagGroupIdCache[userId])
+		return User.withTransaction {
+			if (tagGroupIdCache[userId]) {
+				return GenericTagGroup.getAll(tagGroupIdCache[userId])
+			}
+	
+			List<Long> usersTagGroupIds = TagGroup.getAllTagGroupsForUser(userId)*.id
+			tagGroupIdCache[userId] = usersTagGroupIds
+	
+			GenericTagGroup.getAll(usersTagGroupIds)
 		}
-
-		List<Long> usersTagGroupIds = TagService.get().getAllTagGroupsForUser(userId)*.id
-		tagGroupIdCache[userId] = usersTagGroupIds
-
-		GenericTagGroup.getAll(usersTagGroupIds)
 	}
 
 	List<GenericTagGroup> getTagGroups() {

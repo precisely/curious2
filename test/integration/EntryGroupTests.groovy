@@ -158,6 +158,24 @@ class EntryGroupTests extends CuriousTestCase {
 	
 	@Test
 	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
+	void testMultiCreateMinutesSeconds() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "swam 40 minutes 30 seconds", baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.amount
+			x += ":" + e.units
+		}
+		
+		assert x == ":swam duration:swam:40.500000000:minutes"
+	}
+	
+	@Test
+	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
 	void testMultiCreateAddSimilarUnitsListExpansion() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone2, "run 2 hours 30 minutes", baseDate, true), new EntryStats())
 		

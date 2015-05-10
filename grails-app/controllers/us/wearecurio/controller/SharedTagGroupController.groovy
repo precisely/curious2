@@ -8,8 +8,6 @@ class SharedTagGroupController {
 
 	static allowedMethods = [createOrUpdate: "POST", delete: "POST"]
 
-	def tagGroupService
-
 	def create() {
 		[sharedTagGroupInstance: new SharedTagGroup(params)]
 	}
@@ -30,7 +28,7 @@ class SharedTagGroupController {
 			return
 		}
 
-		tagGroupInstance = tagGroupService.createOrLookupSharedTagGroup(description, groupId, params)
+		tagGroupInstance = TagGroup.createOrLookupSharedTagGroup(description, groupId, params)
 		if (!tagGroupInstance || tagGroupInstance.hasErrors()) {
 			log.warn "Unable to save shared taggroup instance. ${tagGroupInstance?.errors}"
 			render(view: "create", model: [sharedTagGroupInstance: tagGroupInstance ?: new SharedTagGroup()])
