@@ -494,6 +494,7 @@ class MigrationService {
 				}
 			} catch (Throwable t) {
 			}
+		}
 		tryMigration("Drop EntryGroup version") {
 			sql ("alter table entry_group drop column version")
 		}
