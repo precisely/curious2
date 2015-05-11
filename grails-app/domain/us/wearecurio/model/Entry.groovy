@@ -842,10 +842,12 @@ class Entry implements Comparable {
 		if (repeatType != null && repeatType.isRepeat()) {
 			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture)
 			
-			if (creationMap != null)
-				creationMap.add(retVal)
-			
-			retVal.refreshSort()
+			if (retVal != null) {
+				if (creationMap != null)
+					creationMap.add(retVal)
+				
+				retVal.refreshSort()
+			}
 			
 			return retVal
 		} else {
