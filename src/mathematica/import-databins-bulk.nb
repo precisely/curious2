@@ -1,0 +1,249 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      7526,        240]
+NotebookOptionsPosition[      6352,        193]
+NotebookOutlinePosition[      6689,        208]
+CellTagsIndexPosition[      6646,        205]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Partitioning large sets of data for DatabinUpload", "Section",
+ CellChangeTimes->{{3.639227813227068*^9, 3.63922781950599*^9}}],
+
+Cell["\<\
+This assumes that the data is already formatted to work with DatabinUpload:
+{entry1, entry2, . . .}
+Each entry should be a list of key/value pairs:
+{key1=value1,key2=value2}\
+\>", "Text",
+ CellChangeTimes->{{3.639245231670351*^9, 3.639245277389192*^9}, {
+  3.639245323717523*^9, 3.639245425425404*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"seriesBinId", " ", "=", " ", "\"\<4FewoDhB\>\""}]}]], "Input",
+ CellChangeTimes->{{3.6398773052592373`*^9, 3.6398773122798567`*^9}}],
+
+Cell[BoxData["\<\"4FewoDhB\"\>"], "Output",
+ CellChangeTimes->{3.639877317115017*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Define original dataset", "Subsubsection",
+ CellChangeTimes->{{3.639227499371805*^9, 3.639227502346313*^9}, {
+  3.639227673631349*^9, 3.639227675566081*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{"--", 
+     RowBox[{"--", " ", 
+      RowBox[{
+       RowBox[{"Functions", " ", "--"}], "--"}]}]}], "-"}], "*)"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Needs", "[", "\"\<DatabaseLink`\>\"", "]"}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"JDBCDrivers", "[", "\"\<MySQL(Connector/J)\>\"", "]"}], ";"}], 
+   "\n", 
+   RowBox[{
+    RowBox[{"conn", " ", "=", " ", 
+     RowBox[{"OpenSQLConnection", "[", 
+      RowBox[{
+       RowBox[{"JDBC", "[", 
+        RowBox[{
+        "\"\<MySQL(Connector/J)\>\"", ",", " ", 
+         "\"\<127.0.0.1:3306/tlb_dev\>\""}], "]"}], ",", " ", 
+       RowBox[{"\"\<Username\>\"", " ", "->", " ", "\"\<curious\>\""}], ",", 
+       " ", 
+       RowBox[{"\"\<Password\>\"", " ", "->", " ", "\"\<734qf7q35\>\""}]}], 
+      "]"}]}], ";"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"allData", "[", "]"}], " ", ":=", " ", 
+     RowBox[{"Map", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"<|", " ", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"\"\<amount\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "4", "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+          RowBox[{"\"\<date\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", 
+             RowBox[{"3", ",", "1"}], "]"}], "]"}]}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"\"\<userId\>\"", " ", "->", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "1", "]"}], "]"}]}], ",", " ", "\[IndentingNewLine]", 
+          RowBox[{"\"\<tagId\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}]}], "  ", "|>"}], " ", "&"}], ",", 
+       RowBox[{"SQLExecute", "[", 
+        RowBox[{
+        "conn", ",", " ", 
+         "\"\<select user_id, tag_id, date, amount from analytics_time_series\
+\>\""}], "]"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{"data", " ", "=", " ", 
+    RowBox[{"allData", "[", "]"}]}]}]}]], "Input",
+ CellChangeTimes->{{3.6392273101544037`*^9, 3.639227321423191*^9}, {
+  3.639245239366498*^9, 3.639245239902383*^9}, {3.639875896468616*^9, 
+  3.639875986390213*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Find out how many partitions are needed", "Subsubsection",
+ CellChangeTimes->{{3.639227508370513*^9, 3.6392275193779697`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"n", "=", 
+  RowBox[{"Ceiling", "[", 
+   RowBox[{
+    RowBox[{"ByteCount", "[", "data", "]"}], "/", "4500000"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.639227324330915*^9, 3.6392273697500553`*^9}, {
+  3.6392274749486303`*^9, 3.639227476322906*^9}, {3.639245214089769*^9, 
+  3.639245215166554*^9}, {3.6392452482877083`*^9, 3.639245248542218*^9}, {
+  3.63924551670529*^9, 3.639245517431473*^9}}],
+
+Cell[BoxData["39"], "Output",
+ CellChangeTimes->{3.639876448493143*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Find length of each partition", "Subsubsection",
+ CellChangeTimes->{{3.639227530258709*^9, 3.6392275334175377`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"partlength", "=", 
+  RowBox[{"Ceiling", "[", 
+   RowBox[{
+    RowBox[{"Length", "[", "data", "]"}], "/", "n"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.639227480784548*^9, 3.639227484971054*^9}, {
+   3.639227535841653*^9, 3.639227584928234*^9}, {3.639245219014373*^9, 
+   3.639245219118874*^9}, {3.639245251270385*^9, 3.639245251549759*^9}, 
+   3.6398764684194803`*^9}],
+
+Cell[BoxData["5408"], "Output",
+ CellChangeTimes->{3.63987646966225*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Partition into smaller sets", "Subsubsection",
+ CellChangeTimes->{{3.639227572561021*^9, 3.639227573488505*^9}, {
+  3.6392276773501387`*^9, 3.639227679125896*^9}}],
+
+Cell[BoxData[
+ RowBox[{"parts", "=", 
+  RowBox[{"Partition", "[", 
+   RowBox[{"data", ",", "partlength", ",", "partlength", ",", "1", ",", 
+    RowBox[{"{", "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.639227575106842*^9, 3.6392275942641993`*^9}, {
+   3.639227639903199*^9, 3.6392276424871693`*^9}, {3.639245254149914*^9, 
+   3.639245254430175*^9}, 3.639876491902525*^9}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.63988386853365*^9, 3.639885616764019*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Upload Data", "Subsubsection",
+ CellChangeTimes->{{3.639227644959036*^9, 3.6392276475907307`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"DatabinUpload", "[", 
+    RowBox[{"seriesBinId", ",", "#"}], "]"}], "&"}], "/@", "parts"}]], "Input",
+ CellChangeTimes->{{3.639227648864826*^9, 3.6392276619505453`*^9}, {
+  3.639877328509818*^9, 3.6398773318184977`*^9}}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{808, 690},
+WindowMargins->{{-10, Automatic}, {Automatic, -10}},
+FrontEndVersion->"10.1 for Linux x86 (64-bit) (March 23, 2015)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 133, 1, 65, "Section"],
+Cell[716, 25, 312, 7, 99, "Text"],
+Cell[CellGroupData[{
+Cell[1053, 36, 190, 3, 55, "Input"],
+Cell[1246, 41, 85, 1, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1368, 47, 163, 2, 35, "Subsubsection"],
+Cell[1534, 51, 2335, 60, 385, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3906, 116, 132, 1, 35, "Subsubsection"],
+Cell[CellGroupData[{
+Cell[4063, 121, 422, 9, 32, "Input"],
+Cell[4488, 132, 71, 1, 32, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4608, 139, 122, 1, 35, "Subsubsection"],
+Cell[CellGroupData[{
+Cell[4755, 144, 394, 8, 32, "Input"],
+Cell[5152, 154, 72, 1, 32, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5273, 161, 169, 2, 35, "Subsubsection"],
+Cell[5445, 165, 376, 7, 32, "Input"],
+Cell[5824, 174, 89, 1, 32, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5950, 180, 104, 1, 35, "Subsubsection"],
+Cell[6057, 183, 267, 6, 32, "Input"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

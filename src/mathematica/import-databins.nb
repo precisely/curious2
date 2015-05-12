@@ -1,0 +1,387 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     15990,        378]
+NotebookOptionsPosition[     15632,        362]
+NotebookOutlinePosition[     15967,        377]
+CellTagsIndexPosition[     15924,        374]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"--", 
+      RowBox[{"--", 
+       RowBox[{"-", " ", "Database"}]}]}], " ", 
+     RowBox[{
+      RowBox[{"Connection", " ", "--"}], "--"}]}], "-"}], "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{"$KernelCount", " ", "<", " ", "1"}], ",", 
+      RowBox[{"LaunchKernels", "[", "]"}]}], "]"}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"Needs", "[", "\"\<DatabaseLink`\>\"", "]"}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"JDBCDrivers", "[", "\"\<MySQL(Connector/J)\>\"", "]"}], ";"}], 
+   "\n", 
+   RowBox[{
+    RowBox[{"conn", " ", "=", " ", 
+     RowBox[{"OpenSQLConnection", "[", 
+      RowBox[{
+       RowBox[{"JDBC", "[", 
+        RowBox[{
+        "\"\<MySQL(Connector/J)\>\"", ",", " ", 
+         "\"\<127.0.0.1:3306/tlb_dev\>\""}], "]"}], ",", " ", 
+       RowBox[{"\"\<Username\>\"", " ", "->", " ", "\"\<curious\>\""}], ",", 
+       " ", 
+       RowBox[{"\"\<Password\>\"", " ", "->", " ", "\"\<734qf7q35\>\""}]}], 
+      "]"}]}], ";"}], "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.6389191510959797`*^9, 3.638919159767954*^9}, {
+   3.638919480990405*^9, 3.638919494833465*^9}, {3.6389195808402843`*^9, 
+   3.638919611427135*^9}, {3.6389196437774677`*^9, 3.638919692865869*^9}, 
+   3.6389217532637863`*^9, {3.6389217952190237`*^9, 3.638921798367241*^9}, {
+   3.638921851143611*^9, 3.638921851597578*^9}, {3.638921882437849*^9, 
+   3.638921883003586*^9}, {3.638921977989819*^9, 3.638922024938077*^9}, {
+   3.638922065090694*^9, 3.6389220829971323`*^9}, {3.638923649387927*^9, 
+   3.638923649589175*^9}, {3.6389304081748943`*^9, 3.638930409333667*^9}, {
+   3.638931723883082*^9, 3.6389317409253387`*^9}, {3.63893266461989*^9, 
+   3.638932712772867*^9}, {3.638932781816204*^9, 3.6389327835450563`*^9}, 
+   3.638932836810629*^9, {3.639101646825861*^9, 3.63910168541607*^9}, 
+   3.639101761609906*^9, {3.6391089747147627`*^9, 3.6391089911193027`*^9}, {
+   3.6391107700975533`*^9, 3.6391107957287283`*^9}, {3.639287965350051*^9, 
+   3.639287976351156*^9}, 3.639288016650236*^9, 3.639288054715028*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{"--", 
+     RowBox[{"--", " ", 
+      RowBox[{
+       RowBox[{"Functions", " ", "--"}], "--"}]}]}], "-"}], "*)"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"localData", "[", 
+      RowBox[{"userId_", ",", " ", "tagId_"}], "]"}], " ", ":=", " ", 
+     RowBox[{"Map", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"<|", " ", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"\"\<amount\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "4", "]"}], "]"}]}], ",", "\[IndentingNewLine]", 
+          RowBox[{"\"\<date\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", 
+             RowBox[{"3", ",", "1"}], "]"}], "]"}]}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"\"\<userId\>\"", " ", "->", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "1", "]"}], "]"}]}], ",", " ", "\[IndentingNewLine]", 
+          RowBox[{"\"\<tagId\>\"", " ", "\[Rule]", " ", 
+           RowBox[{"#", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}]}], "  ", "|>"}], " ", "&"}], ",", 
+       RowBox[{"SQLExecute", "[", 
+        RowBox[{"conn", ",", " ", 
+         RowBox[{
+         "\"\<select user_id, tag_id, date, amount from analytics_time_series \
+where user_id=\>\"", " ", "<>", " ", 
+          RowBox[{"ToString", "[", "userId", "]"}], " ", "<>", " ", 
+          "\"\< and tag_id=\>\"", " ", "<>", " ", 
+          RowBox[{"ToString", "[", "tagId", "]"}]}]}], "]"}]}], "]"}]}], 
+    ";"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"loadBin", "[", "binId_", "]"}], " ", ":=", " ", 
+     RowBox[{"Map", "[", 
+      RowBox[{"KeySort", ",", " ", 
+       RowBox[{"Normal", "[", 
+        RowBox[{"Databin", "[", "binId", "]"}], "]"}]}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"remoteData", "[", 
+     RowBox[{"userId_", ",", " ", "tagId_"}], "]"}], " ", ":=", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Select", "[", 
+     RowBox[{"nBin", ",", " ", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "\"\<userId\>\"", "]"}], "]"}], " ", "\[Equal]", " ", 
+         "userId"}], " ", "&&", " ", 
+        RowBox[{
+         RowBox[{"#", "[", 
+          RowBox[{"[", "\"\<tagId\>\"", "]"}], "]"}], " ", "\[Equal]", " ", 
+         "tagId"}]}], " ", "&"}]}], "]"}]}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"saveRow", "[", "row_", "]"}], " ", ":=", " ", 
+     RowBox[{"DatabinAdd", "[", 
+      RowBox[{"seriesBin", ",", " ", "row"}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"missingData", "[", 
+     RowBox[{"userId_", ",", " ", "tagId_"}], "]"}], " ", ":=", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Complement", "[", 
+     RowBox[{
+      RowBox[{"localData", "[", 
+       RowBox[{"userId", ",", "tagId"}], "]"}], ",", " ", 
+      RowBox[{"remoteData", "[", 
+       RowBox[{"userId", ",", "tagId"}], "]"}]}], "]"}]}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"updateBin", "[", 
+     RowBox[{"userId_", ",", " ", "tagId_"}], "]"}], " ", ":=", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{"diff", ",", "\[IndentingNewLine]", 
+        RowBox[{"local", "=", " ", 
+         RowBox[{"localData", "[", 
+          RowBox[{"userId", ",", " ", "tagId"}], "]"}]}], ",", " ", 
+        RowBox[{"remote", "=", 
+         RowBox[{"remoteData", "[", 
+          RowBox[{"userId", ",", " ", "tagId"}], "]"}]}]}], "}"}], ",", " ", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Length", "[", "local", "]"}], " ", ">", " ", 
+          RowBox[{"Length", "[", "remote", "]"}]}], ",", 
+         RowBox[{"(", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"diff", "=", 
+            RowBox[{"Complement", "[", 
+             RowBox[{"local", ",", " ", "remote"}], "]"}]}], ";", 
+           "\[IndentingNewLine]", 
+           RowBox[{"Do", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"Print", "[", " ", 
+               RowBox[{
+               "\"\<i: \>\"", ",", " ", "i", ",", " ", "\"\< \>\"", ",", " ", 
+                "\[IndentingNewLine]", "             ", "\"\<datum: \>\"", 
+                ",", " ", 
+                RowBox[{"diff", "[", 
+                 RowBox[{"[", "i", "]"}], "]"}]}], "]"}], ";", 
+              "\[IndentingNewLine]", 
+              RowBox[{"Pause", "[", "6", "]"}], ";", "\[IndentingNewLine]", 
+              RowBox[{"saveRow", "[", 
+               RowBox[{"diff", "[", 
+                RowBox[{"[", "i", "]"}], "]"}], "]"}]}], ",", " ", 
+             RowBox[{"{", 
+              RowBox[{"i", ",", " ", 
+               RowBox[{"Length", "[", "diff", "]"}]}], "}"}]}], "]"}]}], 
+          "\[IndentingNewLine]", ")"}]}], "]"}], ";"}]}], 
+     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.638930068478265*^9, 3.638930083702689*^9}, {
+   3.6389301254517527`*^9, 3.638930190777512*^9}, {3.638930259592372*^9, 
+   3.6389302811757927`*^9}, {3.6389303495361977`*^9, 
+   3.6389303851560993`*^9}, {3.638931811061281*^9, 3.638931864481545*^9}, {
+   3.638932093398624*^9, 3.638932190966382*^9}, {3.6389324452796707`*^9, 
+   3.638932636596653*^9}, {3.638932676940983*^9, 3.638932708851087*^9}, {
+   3.6389328017065277`*^9, 3.638932840277204*^9}, {3.638932876163529*^9, 
+   3.638932904033931*^9}, {3.6389336762575073`*^9, 3.638933696800817*^9}, 
+   3.638933820581205*^9, {3.638953583193*^9, 3.6389535836995783`*^9}, {
+   3.63895381834554*^9, 3.638953864273417*^9}, 3.638956642605296*^9, 
+   3.638956712294806*^9, {3.6391008041060047`*^9, 3.6391008248885727`*^9}, {
+   3.6391010205055656`*^9, 3.63910109200731*^9}, {3.6391020658619967`*^9, 
+   3.6391020901302958`*^9}, {3.6391022153931313`*^9, 3.63910221698201*^9}, {
+   3.639102255987774*^9, 3.6391022561104794`*^9}, {3.639102369016295*^9, 
+   3.6391023694979*^9}, {3.639102434251193*^9, 3.639102503452982*^9}, {
+   3.6391025392346373`*^9, 3.6391026355490417`*^9}, {3.639102671862441*^9, 
+   3.639102697698773*^9}, {3.6391027352292833`*^9, 3.639102810646295*^9}, {
+   3.639103152268633*^9, 3.6391031551938143`*^9}, {3.639103356527974*^9, 
+   3.639103404384914*^9}, {3.639103465966463*^9, 3.639103539302236*^9}, {
+   3.639103574142272*^9, 3.639103738480953*^9}, 3.639104486527396*^9, {
+   3.639104950348233*^9, 3.6391049563929033`*^9}, {3.639109029569582*^9, 
+   3.6391090308961763`*^9}, {3.639109323114009*^9, 3.6391093461739683`*^9}, {
+   3.639109418134714*^9, 3.639109558710703*^9}, {3.639112817838255*^9, 
+   3.639112821293313*^9}, 3.639112997185554*^9, {3.639113252063529*^9, 
+   3.639113365241487*^9}, {3.63912164947325*^9, 3.6391216522374*^9}, {
+   3.639121793457938*^9, 3.6391218518792543`*^9}, 3.6391233263668957`*^9, {
+   3.639123748029986*^9, 3.639123825913179*^9}, {3.639124783420738*^9, 
+   3.639124785958428*^9}, {3.639124874288615*^9, 3.639124908160391*^9}, {
+   3.639124948297419*^9, 3.639124951191086*^9}, {3.639125761629879*^9, 
+   3.639125779580763*^9}, {3.639125815755908*^9, 3.639125816097633*^9}, {
+   3.639125854976615*^9, 3.639125954476665*^9}, {3.639126317444962*^9, 
+   3.639126341145417*^9}, 3.639169756290451*^9, {3.639608389481283*^9, 
+   3.6396083951356497`*^9}, {3.6396451954903173`*^9, 3.639645195868258*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{"--", 
+     RowBox[{"--", 
+      RowBox[{"-", " ", 
+       RowBox[{
+        RowBox[{"Variables", " ", "--"}], "--"}]}]}]}], "-"}], "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"seriesBinId", " ", "=", " ", "\"\<4FewoDhB\>\""}], ";"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"seriesBin", " ", "=", " ", 
+     RowBox[{"Databin", "[", "seriesBinId", "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"userIds", " ", "=", " ", 
+     RowBox[{"{", 
+      RowBox[{
+      "1", ",", "4", ",", "51", ",", "101", ",", "113", ",", "115", ",", 
+       "117", ",", "127"}], "}"}]}], ";"}], " ", "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"seriesPairs", "=", " ", 
+     RowBox[{"Flatten", "[", 
+      RowBox[{
+       RowBox[{"Map", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"SQLExecute", "[", 
+           RowBox[{"conn", ",", " ", 
+            RowBox[{
+            "\"\<select user_id, tag_id, count(*) c from \
+analytics_time_series ts where ts.user_id = \>\"", " ", "<>", " ", 
+             RowBox[{"ToString", "[", "#", "]"}], " ", "<>", " ", 
+             "\"\< group by user_id, tag_id having c>= 10\>\""}]}], "]"}], 
+          " ", "&"}], ",", " ", "userIds"}], "]"}], ",", " ", "1"}], "]"}]}], 
+    ";"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.638933640633032*^9, 3.638933652279701*^9}, {
+   3.638933806646929*^9, 3.638933815927087*^9}, {3.6389472191795177`*^9, 
+   3.638947220467902*^9}, {3.638953392053607*^9, 3.6389533928853807`*^9}, 
+   3.638956637996913*^9, 3.638956706654917*^9, {3.6391003009000463`*^9, 
+   3.639100301632719*^9}, 3.6391009003133183`*^9, {3.6391011220183477`*^9, 
+   3.639101140748897*^9}, {3.6391019985016947`*^9, 3.639102023848631*^9}, 
+   3.639102060103047*^9, {3.6391020966229897`*^9, 3.639102122336637*^9}, {
+   3.639106059701859*^9, 3.639106076357696*^9}, {3.639109100188078*^9, 
+   3.6391091165077868`*^9}, {3.639109207947153*^9, 3.639109209220159*^9}, {
+   3.639109668885068*^9, 3.639109720546095*^9}, {3.639110953622558*^9, 
+   3.639111039418975*^9}, {3.6391110928026857`*^9, 3.639111099922632*^9}, 
+   3.6391115397288094`*^9, {3.639122195658313*^9, 3.639122201644828*^9}, {
+   3.6391222662873497`*^9, 3.6391222932923813`*^9}, {3.6391246305575743`*^9, 
+   3.639124636986301*^9}, 3.639124867078478*^9, 3.639124993410965*^9, 
+   3.6391252385180273`*^9, {3.639125269882003*^9, 3.639125276587514*^9}, {
+   3.639644975224658*^9, 3.6396449770244417`*^9}, {3.639645089153706*^9, 
+   3.63964513118522*^9}, {3.639645175498589*^9, 3.639645181387164*^9}, 
+   3.639877280255658*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{"--", 
+     RowBox[{"--", 
+      RowBox[{"-", " ", 
+       RowBox[{
+        RowBox[{"\"\<Main\>\"", " ", "--"}], "--"}]}]}]}], "-"}], "*)"}], 
+  "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+   "Update", " ", "the", " ", "cached", " ", "remote", " ", "data", " ", 
+    RowBox[{"bin", "."}]}], " ", "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"nBin", " ", "=", " ", 
+     RowBox[{"loadBin", "[", "seriesBinId", "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{
+     RowBox[{
+     "Save", " ", "all", " ", "the", " ", "analytics_time", "_series", " ", 
+      "data", " ", "to", " ", "the", " ", 
+      RowBox[{"database", ".", "\[IndentingNewLine]", 
+       RowBox[{"NB", ":", " ", 
+        RowBox[{"For", " ", "a", " ", "given", " ", "user"}]}]}]}], ",", " ", 
+     
+     RowBox[{
+     "only", " ", "tags", " ", "with", " ", "10", " ", "or", " ", "more", " ",
+       "rows", " ", "per", " ", "user", " ", "will", " ", "be", " ", 
+      RowBox[{"used", "."}]}]}], " ", "*)"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"Insert", " ", "3", " ", "rows", " ", "only"}], " ", "*)"}], 
+   "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"Map", "[", 
+     RowBox[{"saveRow", ",", " ", 
+      RowBox[{"Take", "[", 
+       RowBox[{
+        RowBox[{"localData", "[", 
+         RowBox[{"1", ",", "10"}], "]"}], ",", "3"}], "]"}]}], "]"}], " ", 
+    "*)"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"Idempotently", " ", "update", " ", "all", " ", 
+     RowBox[{"{", 
+      RowBox[{"userId", ",", " ", "tagId"}], "}"}], " ", "pairs"}], " ", 
+    "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"Do", "[", 
+    RowBox[{
+     RowBox[{"Apply", "[", 
+      RowBox[{"updateBin", ",", " ", 
+       RowBox[{"seriesPairs", "[", 
+        RowBox[{"[", "i", "]"}], "]"}]}], "]"}], " ", ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", 
+       RowBox[{"Length", "[", "seriesPairs", "]"}]}], "}"}]}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{
+  3.638933703195421*^9, 3.63893379623321*^9, {3.638950115324552*^9, 
+   3.638950122767034*^9}, 3.638951522835971*^9, {3.6391045858575897`*^9, 
+   3.639104589489175*^9}, 3.63910618486075*^9, {3.639125167014565*^9, 
+   3.639125315212542*^9}}]
+},
+WindowSize->{859, 876},
+WindowMargins->{{Automatic, 422}, {Automatic, 9}},
+FrontEndVersion->"10.1 for Linux x86 (64-bit) (March 23, 2015)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 2217, 49, 187, "Input"],
+Cell[2778, 71, 7654, 163, 825, "Input"],
+Cell[10435, 236, 2758, 59, 363, "Input"],
+Cell[13196, 297, 2432, 63, 319, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
