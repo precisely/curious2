@@ -94,11 +94,12 @@ class AnalyticsService {
 	}
 
 	def prepareUser(analyticsTask) {
-		def userId = analyticsTask.userId
-		if (null == userId) {
+		Long userId = analyticsTask.userId
+		if (null == userId)
 			return null
-		}
-		def user = User.get(userId.toLong())
+		def user = User.get(userId)
+		if (user == null)
+			return null
 		def tagIds = user.tags().collect { it.id }
 
 		if (DEBUG) {
