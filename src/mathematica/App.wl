@@ -10,10 +10,14 @@ getUserId::usage = "getUserId[]"
 getTagId::usage = "getTagId[]"
 refresh::usage = "refresh[]"
 
+CSBase = "user:thirdreplicator/CloudSymbol/";
+mode="local";  (* := "local" | "remote" *)
+
 userIds = {};
 tagIds = {};
 boundaryBinId = "";
 bins = {};
+seriesScale = 86400;
 
 Begin["`Private`"]
 
@@ -43,9 +47,17 @@ initConstants[] :=
   markerStartYear=2012;
   markerStartMonth = 1;
   markerStartDay = 1;
+  markerStartHour =0;
+  markerStartMinute = 0;
+  markerStartSecond= 0.;
+
   markerStopYear=2013;
   markerStopMonth = 1;
   markerStopDay = 1;
+  markerStopHour =0;
+  markerStopMinute = 0;
+  markerStopSecond= 0.;
+
   )
 
 initData[] := (
@@ -63,9 +75,9 @@ getTagId[] :=
   tagIds[[userPos, tagPos]]
 
 refresh[] := (
-  bins = Bin`daily[WDD`Series`getDates[getUserId[], getTagId[]]];
+  bins = Bin`binify[WDD`Series`getDates[getUserId[], getTagId[]],App`seriesScale];
   maxHeight = 2*Max[bins[[All, 2]]];
-  DateListPlotUI`initMarkers[];
+  DateListPlotUI`initMarkers[]; 
   )
 
 initUI[] := (

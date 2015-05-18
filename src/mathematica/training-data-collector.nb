@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    106736,       1806]
-NotebookOptionsPosition[    106209,       1785]
-NotebookOutlinePosition[    106545,       1800]
-CellTagsIndexPosition[    106502,       1797]
+NotebookDataLength[    118783,       2006]
+NotebookOptionsPosition[    118206,       1984]
+NotebookOutlinePosition[    118542,       1999]
+CellTagsIndexPosition[    118499,       1996]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -27,11 +27,6 @@ Cell[BoxData[
     RowBox[{"Clear", "[", "\"\<Global`*\>\"", "]"}], ";"}], 
    "\[IndentingNewLine]", 
    RowBox[{
-    RowBox[{
-    "Global`CSBase", " ", "=", " ", 
-     "\"\<user:thirdreplicator/CloudSymbol/\>\""}], ";"}], 
-   "\[IndentingNewLine]", 
-   RowBox[{
     RowBox[{"SetDirectory", "[", 
      RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ";"}], 
    "\[IndentingNewLine]", 
@@ -41,8 +36,10 @@ Cell[BoxData[
     RowBox[{"<<", "\"\<UserTagUI`\>\""}], ";"}], "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"<<", "\"\<DateRangeUI`\>\""}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{
-    RowBox[{"<<", "\"\<BoundaryMarkerUI`\>\""}], ";"}], "\[IndentingNewLine]", 
+    RowBox[{"<<", "\"\<BoundaryMarkerUI`\>\""}], ";"}], " ", 
+   "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"<<", "\"\<DateListPlotUI`\>\""}], ";"}], "\[IndentingNewLine]", 
    RowBox[{
@@ -52,12 +49,24 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"<<", "\"\<WDD`\>\""}], ";"}], "\[IndentingNewLine]", 
    RowBox[{
+    RowBox[{"<<", "\"\<Scale`\>\""}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"<<", "\"\<ScaleSelectorUI`\>\""}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{
     RowBox[{"App`init", "[", "]"}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{"UserTagUI`setUp", "[", "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{"DateRangeUI`setUp", "[", "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"App`refresh", "[", "]"}], ";"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{"Spacer", "[", "10", "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
+   RowBox[{"ScaleSelectorUI`setUp", "[", "]"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{"Grid", "[", 
     RowBox[{
      RowBox[{"{", 
@@ -74,7 +83,7 @@ Cell[BoxData[
    RowBox[{"BoundaryMarkerUI`init", "[", "]"}], "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"Boundary`refreshCache", "[", "]"}], ";"}], "\[IndentingNewLine]", 
-   RowBox[{"BoundaryMarkerUI`setUpMarkerUI", "[", "]"}]}]}]], "Input",
+   RowBox[{"BoundaryMarkerUI`setUpMarkerUI", "[", "]"}], " "}]}]], "Input",
  CellChangeTimes->{{3.639457444652685*^9, 3.639457458055397*^9}, {
    3.639464974706657*^9, 3.639464975385757*^9}, {3.639465205561224*^9, 
    3.6394652505031557`*^9}, {3.639465314256157*^9, 3.639465320272447*^9}, {
@@ -187,13 +196,40 @@ Cell[BoxData[
    3.640412130216941*^9}, {3.6404121662637377`*^9, 3.640412222355812*^9}, 
    3.6404160454812527`*^9, {3.640416146713263*^9, 3.640416156908659*^9}, 
    3.640416196600808*^9, {3.640416432098956*^9, 3.64041643586139*^9}, {
-   3.6404164865478487`*^9, 3.640416494676832*^9}},
- EmphasizeSyntaxErrors->True],
+   3.6404164865478487`*^9, 3.640416494676832*^9}, {3.640909785880065*^9, 
+   3.640909786918494*^9}, {3.640910814455182*^9, 3.640910819034258*^9}, 
+   3.640917740050894*^9, {3.640917890831882*^9, 3.640917912676868*^9}, {
+   3.640917970453371*^9, 3.64091800889051*^9}, {3.6409182099888477`*^9, 
+   3.640918231235677*^9}, {3.64091997634454*^9, 3.640920059638695*^9}, {
+   3.640920274071164*^9, 3.6409202764771347`*^9}, {3.6409216984727783`*^9, 
+   3.640921720126809*^9}, {3.640921798088602*^9, 3.640921816915721*^9}, 
+   3.640922033226616*^9, {3.640922114832718*^9, 3.64092211836623*^9}, {
+   3.64093308291485*^9, 3.640933223995182*^9}, {3.640933299083907*^9, 
+   3.640933299239162*^9}, {3.640933960611726*^9, 3.640933963472621*^9}}],
 
 Cell[BoxData["\<\"Using preloaded series data in WDD`Series`rSeriesBin\"\>"], \
 "Print",
  CellChangeTimes->{
-  3.640416439126219*^9, {3.640416479530732*^9, 3.64041649820413*^9}}],
+  3.640934910370823*^9, 3.64093574727536*^9, 3.640935781751883*^9, 
+   3.6409359393012857`*^9, 3.64093660036091*^9, 3.640936691507666*^9, {
+   3.6409373398437233`*^9, 3.640937365255434*^9}, 3.6409375815876513`*^9, 
+   3.640938119721849*^9, 3.640938507333631*^9, 3.640938556638933*^9, 
+   3.640938888708171*^9, 3.640939166370322*^9, 3.640939272256562*^9, 
+   3.640939307189386*^9, 3.640939408391856*^9, 3.640939553726111*^9, 
+   3.6409397141886253`*^9, 3.6409398320572033`*^9, 3.640939932861265*^9, 
+   3.640939988537599*^9, {3.640941648861862*^9, 3.6409416694734592`*^9}, 
+   3.640941798442902*^9, 3.640941893575378*^9, 3.640942023121045*^9, {
+   3.640942084725595*^9, 3.640942110759747*^9}, 3.640942175489833*^9, 
+   3.640942267554821*^9, 3.640942327338554*^9, 3.640942382654953*^9, 
+   3.6409424520685062`*^9, 3.640942878840569*^9, 3.640943016944715*^9, 
+   3.640943122198588*^9, 3.640943223549808*^9, 3.640943296748301*^9, 
+   3.6409433524960213`*^9, 3.6409436129160557`*^9, 3.6409437214385777`*^9, 
+   3.64094383514962*^9, 3.640943922105522*^9, 3.640944037369343*^9, 
+   3.640944090691784*^9, 3.6409441822990637`*^9, 3.640944355289007*^9, 
+   3.640944393005124*^9, 3.640944945282591*^9, 3.640945039500401*^9, 
+   3.6409451201889963`*^9, 3.640945545105105*^9, 3.640945631521202*^9, 
+   3.6409461146533403`*^9, 3.6409478865403*^9, 3.640947955931364*^9, 
+   3.6409482380601997`*^9, 3.6409485106294117`*^9}],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -1351,18 +1387,29 @@ Cell[BoxData[
    AutoDelete->False,
    GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
   "Grid"]], "Output",
- CellChangeTimes->{
-  3.6402355756837673`*^9, 3.640235698436866*^9, 3.640235963646644*^9, 
-   3.640236008445684*^9, 3.640237067844886*^9, 3.640237773657139*^9, 
-   3.64023864810227*^9, 3.64040721127184*^9, {3.640407394263639*^9, 
-   3.640407411392911*^9}, 3.640407673825264*^9, {3.640408130654805*^9, 
-   3.6404081594360647`*^9}, 3.6404093363367023`*^9, 3.6404097951291323`*^9, 
-   3.6404103291269703`*^9, 3.640411502833688*^9, 3.640411769983942*^9, 
-   3.6404118901663523`*^9, 3.640411947821197*^9, 3.640412091201867*^9, {
-   3.640412184193783*^9, 3.6404122258078547`*^9}, 3.640413502552581*^9, 
-   3.6404136659681387`*^9, 3.64041376460225*^9, 3.6404156909950867`*^9, 
-   3.6404163591786947`*^9, 3.640416440438355*^9, {3.640416480873877*^9, 
-   3.640416499527486*^9}}],
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.640948511908368*^9}],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -1445,18 +1492,29 @@ Cell[BoxData[
    GridBoxAlignment->{"Columns" -> {{Left}}},
    GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
   "Column"]], "Output",
- CellChangeTimes->{
-  3.6402355756837673`*^9, 3.640235698436866*^9, 3.640235963646644*^9, 
-   3.640236008445684*^9, 3.640237067844886*^9, 3.640237773657139*^9, 
-   3.64023864810227*^9, 3.64040721127184*^9, {3.640407394263639*^9, 
-   3.640407411392911*^9}, 3.640407673825264*^9, {3.640408130654805*^9, 
-   3.6404081594360647`*^9}, 3.6404093363367023`*^9, 3.6404097951291323`*^9, 
-   3.6404103291269703`*^9, 3.640411502833688*^9, 3.640411769983942*^9, 
-   3.6404118901663523`*^9, 3.640411947821197*^9, 3.640412091201867*^9, {
-   3.640412184193783*^9, 3.6404122258078547`*^9}, 3.640413502552581*^9, 
-   3.6404136659681387`*^9, 3.64041376460225*^9, 3.6404156909950867`*^9, 
-   3.6404163591786947`*^9, 3.640416440438355*^9, {3.640416480873877*^9, 
-   3.640416499530336*^9}}],
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.640948511915571*^9}],
 
 Cell[BoxData[
  InterpretationBox[
@@ -1466,18 +1524,77 @@ Cell[BoxData[
     ImageSize->{10, 0}],
    CacheGraphics->False],
   Spacer[10]]], "Output",
- CellChangeTimes->{
-  3.6402355756837673`*^9, 3.640235698436866*^9, 3.640235963646644*^9, 
-   3.640236008445684*^9, 3.640237067844886*^9, 3.640237773657139*^9, 
-   3.64023864810227*^9, 3.64040721127184*^9, {3.640407394263639*^9, 
-   3.640407411392911*^9}, 3.640407673825264*^9, {3.640408130654805*^9, 
-   3.6404081594360647`*^9}, 3.6404093363367023`*^9, 3.6404097951291323`*^9, 
-   3.6404103291269703`*^9, 3.640411502833688*^9, 3.640411769983942*^9, 
-   3.6404118901663523`*^9, 3.640411947821197*^9, 3.640412091201867*^9, {
-   3.640412184193783*^9, 3.6404122258078547`*^9}, 3.640413502552581*^9, 
-   3.6404136659681387`*^9, 3.64041376460225*^9, 3.6404156909950867`*^9, 
-   3.6404163591786947`*^9, 3.640416440438355*^9, {3.640416480873877*^9, 
-   3.640416499759536*^9}}],
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.6409485121303663`*^9}],
+
+Cell[BoxData[
+ TemplateBox[{InterpretationBox[
+    StyleBox[
+     GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> Baseline], 
+     "CacheGraphics" -> False], 
+    Spacer[10]],ActionMenuBox[
+   "\"Series scale:\"", {
+    "\"1 hour\"" :> ScaleSelectorUI`setSeriesScale[3600], "\"3 hrs\"" :> 
+     ScaleSelectorUI`setSeriesScale[10800], "\"6 hrs\"" :> 
+     ScaleSelectorUI`setSeriesScale[21600], "\"1 day\"" :> 
+     ScaleSelectorUI`setSeriesScale[86400], "\"3 days\"" :> 
+     ScaleSelectorUI`setSeriesScale[259200], "\"1 week\"" :> 
+     ScaleSelectorUI`setSeriesScale[604800], "\"2 weeks\"" :> 
+     ScaleSelectorUI`setSeriesScale[1209600], "\"1 month\"" :> 
+     ScaleSelectorUI`setSeriesScale[2592000], "\"3 months\"" :> 
+     ScaleSelectorUI`setSeriesScale[7776000], "\"6 months\"" :> 
+     ScaleSelectorUI`setSeriesScale[15552000], "\"1 year\"" :> 
+     ScaleSelectorUI`setSeriesScale[31536000]}],DynamicBox[
+    ToBoxes[
+     ScaleSelectorUI`labels[App`seriesScale], StandardForm]],"\"Num Bins\"",
+   DynamicBox[
+    ToBoxes[
+     Length[App`bins], StandardForm]]},
+  "RowWithSeparator"]], "Output",
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.640948512134055*^9}],
 
 Cell[BoxData[
  TagBox[GridBox[{
@@ -1485,10 +1602,12 @@ Cell[BoxData[
      DynamicBox[ToBoxes[
        DateListPlot[{
         App`bins, DateListPlotUI`startBoundaries, 
-         DateListPlotUI`stopBoundaries}, PlotStyle -> {
+         DateListPlotUI`stopBoundaries, {DateListPlotUI`startMarker}, {
+         DateListPlotUI`stopMarker}}, PlotStyle -> {
           RGBColor[0, 0, 255, 0.5], 
           RGBColor[0, 255, 0, 0.5], 
-          RGBColor[255, 0, 0, 0.5]}, Filling -> Bottom, Joined -> False, 
+          RGBColor[255, 0, 0, 0.5], 
+          Darker[Green], Orange}, Filling -> Bottom, Joined -> False, 
         PlotMarkers -> ".", FillingStyle -> Directive[
           CapForm["Butt"], 
           Thickness[0.001]], AspectRatio -> 1/5, ImageSize -> 1000, 
@@ -1529,7 +1648,7 @@ Cell[BoxData[
               Boundary`getBoundaryDates[
                App`getUserId[], 
                App`getTagId[], Boundary`startType]]]], StandardForm],
-          ImageSizeCache->{254., {25., 33.}}], 
+          ImageSizeCache->{126., {17., 25.}}], 
          DynamicBox[ToBoxes[
            Dataset[
             Map[{
@@ -1543,7 +1662,7 @@ Cell[BoxData[
               Boundary`getBoundaryDates[
                App`getUserId[], 
                App`getTagId[], Boundary`stopType]]]], StandardForm],
-          ImageSizeCache->{254., {25., 33.}}]}
+          ImageSizeCache->{252., {25., 33.}}]}
        },
        AutoDelete->False,
        GridBoxAlignment->{"Columns" -> {Center, Center}, "Rows" -> {Top, Top}},
@@ -1554,49 +1673,50 @@ Cell[BoxData[
    GridBoxAlignment->{"Columns" -> {{Top}}, "Rows" -> {{Top}}},
    GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
   "Grid"]], "Output",
- CellChangeTimes->{
-  3.6402355756837673`*^9, 3.640235698436866*^9, 3.640235963646644*^9, 
-   3.640236008445684*^9, 3.640237067844886*^9, 3.640237773657139*^9, 
-   3.64023864810227*^9, 3.64040721127184*^9, {3.640407394263639*^9, 
-   3.640407411392911*^9}, 3.640407673825264*^9, {3.640408130654805*^9, 
-   3.6404081594360647`*^9}, 3.6404093363367023`*^9, 3.6404097951291323`*^9, 
-   3.6404103291269703`*^9, 3.640411502833688*^9, 3.640411769983942*^9, 
-   3.6404118901663523`*^9, 3.640411947821197*^9, 3.640412091201867*^9, {
-   3.640412184193783*^9, 3.6404122258078547`*^9}, 3.640413502552581*^9, 
-   3.6404136659681387`*^9, 3.64041376460225*^9, 3.6404156909950867`*^9, 
-   3.6404163591786947`*^9, 3.640416440438355*^9, {3.640416480873877*^9, 
-   3.640416499765573*^9}}],
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.640948512296661*^9}],
 
 Cell[BoxData[
  RowBox[{
   TagBox[GridBox[{
      {
-      TagBox[GridBox[{
-         {
-          StyleBox["\<\"Drag start marker: \"\>",
-           StripOnInput->False,
-           LineColor->RGBColor[0, 
-             Rational[2, 3], 0],
-           FrontFaceColor->RGBColor[0, 
-             Rational[2, 3], 0],
-           BackFaceColor->RGBColor[0, 
-             Rational[2, 3], 0],
-           GraphicsColor->RGBColor[0, 
-             Rational[2, 3], 0],
-           FontColor->RGBColor[0, 
-             Rational[2, 3], 0]]},
-         {
-          
-          SliderBox[Dynamic[BoundaryMarkerUI`tStart], {3471292800, 3639427200,
-            1},
-           ImageSize->1000]},
-         {""}
-        },
-        DefaultBaseStyle->"Column",
-        GridBoxAlignment->{"Columns" -> {{Left}}},
-        GridBoxItemSize->{
-         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
-       "Column"]},
+      TemplateBox[{InterpretationBox[
+         StyleBox[
+          GraphicsBox[{}, ImageSize -> {20, 0}, BaselinePosition -> Baseline],
+           "CacheGraphics" -> False], 
+         Spacer[20]],StyleBox[
+        "\"Drag start/stop marker then click on Save.  Fine tune with the \
+input fields.\"", 
+         RGBColor[0, 0, 0], StripOnInput -> False]},
+       "RowWithSeparator"]},
+     {
+      SliderBox[Dynamic[BoundaryMarkerUI`tStart], {
+        Dynamic[
+         AbsoluteTime[{App`startYear, App`startMonth, App`startDay}]], 
+        Dynamic[
+         AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}]], 1},
+       ImageSize->1000]},
      {
       TemplateBox[{InterpretationBox[
          StyleBox[
@@ -1609,77 +1729,96 @@ Cell[BoxData[
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Start Year\"", 
+          StyleBox["\"Marker start year\"", 
            RGBColor[0, 
             Rational[2, 3], 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStartYear]]}, "RowWithSeparator"],TemplateBox[{
+           Dynamic[App`markerStartYear], FieldSize -> {4, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
           InterpretationBox[
            StyleBox[
             
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Start Month\"", 
+          StyleBox["\"month\"", 
            RGBColor[0, 
             Rational[2, 3], 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStartMonth]]}, "RowWithSeparator"],TemplateBox[{
+           Dynamic[App`markerStartMonth], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
           InterpretationBox[
            StyleBox[
             
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Start Day\"", 
+          StyleBox["\"day\"", 
            RGBColor[0, 
             Rational[2, 3], 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStartDay]]}, "RowWithSeparator"]},
+           Dynamic[App`markerStartDay], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"hour\"", 
+           RGBColor[0, 
+            Rational[2, 3], 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStartHour], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"min\"", 
+           RGBColor[0, 
+            Rational[2, 3], 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStartMinute], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"sec\"", 
+           RGBColor[0, 
+            Rational[2, 3], 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStartSecond], FieldSize -> {5, 1}]}, 
+         "RowWithSeparator"]},
        "RowWithSeparator"]},
      {
-      TemplateBox[{
-       ButtonBox[
-        "\"Save Start Boundary\"", 
-         ButtonFunction :> (Boundary`saveStartBoundary[]; 
-          DateListPlotUI`makeStartBoundaries[]; Null), Appearance -> 
-         Automatic, Evaluator -> Automatic, Method -> "Preemptive"]},
-       "RowDefault"]},
+      RowBox[{
+       ButtonBox["\<\"Save Start Boundary\"\>",
+        Appearance->Automatic,
+        ButtonFunction:>(Boundary`saveStartBoundary[]; 
+         DateListPlotUI`makeStartBoundaries[]; Null),
+        Evaluator->Automatic,
+        ImageSize->Large,
+        Method->"Preemptive"], " ", 
+       TemplateBox[{InterpretationBox[
+          StyleBox[
+           
+           GraphicsBox[{}, ImageSize -> {100, 0}, BaselinePosition -> 
+            Baseline], "CacheGraphics" -> False], 
+          Spacer[100]]},
+        "RowDefault"]}]},
      {
-      TemplateBox[{InterpretationBox[
-         StyleBox[
-          
-          GraphicsBox[{}, ImageSize -> {100, 0}, BaselinePosition -> 
-           Baseline], "CacheGraphics" -> False], 
-         Spacer[100]]},
-       "RowDefault"]},
-     {
-      TagBox[GridBox[{
-         {
-          StyleBox["\<\"Drag stop marker: \"\>",
-           StripOnInput->False,
-           LineColor->RGBColor[
-             Rational[2, 3], 0, 0],
-           FrontFaceColor->RGBColor[
-             Rational[2, 3], 0, 0],
-           BackFaceColor->RGBColor[
-             Rational[2, 3], 0, 0],
-           GraphicsColor->RGBColor[
-             Rational[2, 3], 0, 0],
-           FontColor->RGBColor[
-             Rational[2, 3], 0, 0]]},
-         {
-          
-          SliderBox[Dynamic[BoundaryMarkerUI`tStop], {3471292800, 3639427200, 
-           1},
-           ImageSize->1000]},
-         {""}
-        },
-        DefaultBaseStyle->"Column",
-        GridBoxAlignment->{"Columns" -> {{Left}}},
-        GridBoxItemSize->{
-         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
-       "Column"]},
+      SliderBox[Dynamic[BoundaryMarkerUI`tStop], {
+        Dynamic[
+         AbsoluteTime[{App`startYear, App`startMonth, App`startDay}]], 
+        Dynamic[
+         AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}]], 1},
+       ImageSize->1000]},
      {
       TemplateBox[{InterpretationBox[
          StyleBox[
@@ -1692,62 +1831,109 @@ Cell[BoxData[
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Stop Year \"", 
+          StyleBox["\"Marker stop year\"", 
            RGBColor[
             Rational[2, 3], 0, 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStopYear]]}, "RowWithSeparator"],TemplateBox[{
+           Dynamic[App`markerStopYear], FieldSize -> {4, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
           InterpretationBox[
            StyleBox[
             
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Stop Month \"", 
+          StyleBox["\"month\"", 
            RGBColor[
             Rational[2, 3], 0, 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStopMonth]]}, "RowWithSeparator"],TemplateBox[{
+           Dynamic[App`markerStopMonth], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
           InterpretationBox[
            StyleBox[
             
             GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
              Baseline], "CacheGraphics" -> False], 
            Spacer[10]], 
-          StyleBox["\"Marker Stop Day \"", 
+          StyleBox["\"day\"", 
            RGBColor[
             Rational[2, 3], 0, 0], StripOnInput -> False], 
           InputFieldBox[
-           Dynamic[App`markerStopDay]]}, "RowWithSeparator"]},
+           Dynamic[App`markerStopDay], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"hour\"", 
+           RGBColor[
+            Rational[2, 3], 0, 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStopHour], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"min\"", 
+           RGBColor[
+            Rational[2, 3], 0, 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStopMinute], FieldSize -> {2, 1}]}, 
+         "RowWithSeparator"],TemplateBox[{
+          InterpretationBox[
+           StyleBox[
+            
+            GraphicsBox[{}, ImageSize -> {10, 0}, BaselinePosition -> 
+             Baseline], "CacheGraphics" -> False], 
+           Spacer[10]], 
+          StyleBox["\"sec\"", 
+           RGBColor[
+            Rational[2, 3], 0, 0], StripOnInput -> False], 
+          InputFieldBox[
+           Dynamic[App`markerStopSecond], FieldSize -> {5, 1}]}, 
+         "RowWithSeparator"]},
        "RowWithSeparator"]},
      {
-      TemplateBox[{
-       ButtonBox[
-        "\"Save Stop Boundary\"", 
-         ButtonFunction :> (Boundary`saveStopBoundary[]; 
-          DateListPlotUI`makeStopBoundaries[]; Null), Appearance -> Automatic,
-          Evaluator -> Automatic, Method -> "Preemptive"]},
-       "RowDefault"]}
+      ButtonBox["\<\"Save Stop Boundary\"\>",
+       Appearance->Automatic,
+       ButtonFunction:>(Boundary`saveStopBoundary[]; 
+        DateListPlotUI`makeStopBoundaries[]; Null),
+       Evaluator->Automatic,
+       ImageSize->Large,
+       Method->"Preemptive"]}
     },
     DefaultBaseStyle->"Column",
     GridBoxAlignment->{"Columns" -> {{Left}}},
     GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
    "Column"], " ", 
   DynamicBox[ToBoxes[
-    Refresh[App`markerStartYear = Part[
-        DateList[BoundaryMarkerUI`tStart], 1]; App`markerStartMonth = Part[
-        DateList[BoundaryMarkerUI`tStart], 2]; App`markerStartDay = Part[
-        DateList[BoundaryMarkerUI`tStart], 3]; 
-     DateListPlotUI`makeStartBoundaries[]; Null, 
+    Refresh[
+     DynamicModule[{BoundaryMarkerUI`t = DateList[BoundaryMarkerUI`tStart]}, 
+      App`markerStartYear = Part[BoundaryMarkerUI`t, 1]; 
+      App`markerStartMonth = Part[BoundaryMarkerUI`t, 2]; 
+      App`markerStartDay = Part[BoundaryMarkerUI`t, 3]; 
+      App`markerStartHour = Part[BoundaryMarkerUI`t, 4]; 
+      App`markerStartMinute = Part[BoundaryMarkerUI`t, 5]; 
+      App`markerStartSecond = Part[BoundaryMarkerUI`t, 6]; 
+      DateListPlotUI`makeStartBoundaries[]; Null], 
      TrackedSymbols -> {BoundaryMarkerUI`tStart}, UpdateInterval -> 1], 
     StandardForm],
    ImageSizeCache->{37., {0., 10.}}], " ", 
   DynamicBox[ToBoxes[
-    Refresh[App`markerStopYear = Part[
-        DateList[BoundaryMarkerUI`tStop], 1]; App`markerStopMonth = Part[
-        DateList[BoundaryMarkerUI`tStop], 2]; App`markerStopDay = Part[
-        DateList[BoundaryMarkerUI`tStop], 3]; 
-     DateListPlotUI`makeStopBoundaries[]; Null, 
+    Refresh[
+     DynamicModule[{BoundaryMarkerUI`t = DateList[BoundaryMarkerUI`tStop]}, 
+      App`markerStopYear = Part[BoundaryMarkerUI`t, 1]; 
+      App`markerStopMonth = Part[BoundaryMarkerUI`t, 2]; 
+      App`markerStopDay = Part[BoundaryMarkerUI`t, 3]; 
+      App`markerStopHour = Part[BoundaryMarkerUI`t, 4]; 
+      App`markerStopMinute = Part[BoundaryMarkerUI`t, 5]; 
+      App`markerStopSecond = Part[BoundaryMarkerUI`t, 6]; 
+      DateListPlotUI`makeStopBoundaries[]; Null], 
      TrackedSymbols -> {BoundaryMarkerUI`tStop}, UpdateInterval -> 1], 
     StandardForm],
    ImageSizeCache->{37., {0., 10.}}], " ", 
@@ -1755,7 +1941,8 @@ Cell[BoxData[
     Refresh[
     BoundaryMarkerUI`tStart = 
      AbsoluteTime[{
-       App`markerStartYear, App`markerStartMonth, App`markerStartDay}], 
+       App`markerStartYear, App`markerStartMonth, App`markerStartDay, 
+        App`markerStartHour, App`markerStartMinute, App`markerStartSecond}], 
      TrackedSymbols -> {
       App`markerStartYear, App`markerStartMonth, App`markerStartDay}, 
      UpdateInterval -> 1], StandardForm],
@@ -1764,27 +1951,39 @@ Cell[BoxData[
     Refresh[
     BoundaryMarkerUI`tStop = 
      AbsoluteTime[{
-       App`markerStopYear, App`markerStopMonth, App`markerStopDay}], 
+       App`markerStopYear, App`markerStopMonth, App`markerStopDay, 
+        App`markerStopHour, App`markerStopMinute, App`markerStopSecond}], 
      TrackedSymbols -> {
       App`markerStopYear, App`markerStopMonth, App`markerStopDay}, 
      UpdateInterval -> 1], StandardForm],
    ImageSizeCache->{98., {0., 10.}}]}]], "Output",
- CellChangeTimes->{
-  3.6402355756837673`*^9, 3.640235698436866*^9, 3.640235963646644*^9, 
-   3.640236008445684*^9, 3.640237067844886*^9, 3.640237773657139*^9, 
-   3.64023864810227*^9, 3.64040721127184*^9, {3.640407394263639*^9, 
-   3.640407411392911*^9}, 3.640407673825264*^9, {3.640408130654805*^9, 
-   3.6404081594360647`*^9}, 3.6404093363367023`*^9, 3.6404097951291323`*^9, 
-   3.6404103291269703`*^9, 3.640411502833688*^9, 3.640411769983942*^9, 
-   3.6404118901663523`*^9, 3.640411947821197*^9, 3.640412091201867*^9, {
-   3.640412184193783*^9, 3.6404122258078547`*^9}, 3.640413502552581*^9, 
-   3.6404136659681387`*^9, 3.64041376460225*^9, 3.6404156909950867`*^9, 
-   3.6404163591786947`*^9, 3.640416440438355*^9, {3.640416480873877*^9, 
-   3.64041650302337*^9}}]
+ CellChangeTimes->{{3.640933177943321*^9, 3.640933227290278*^9}, 
+   3.6409332609554567`*^9, {3.640933296676654*^9, 3.640933320521366*^9}, {
+   3.640933953661735*^9, 3.64093396567806*^9}, 3.6409347979220324`*^9, 
+   3.640934911688033*^9, 3.640935748560483*^9, 3.640935783064348*^9, 
+   3.640935940638338*^9, 3.640936601644516*^9, 3.640936692781136*^9, {
+   3.6409373411437263`*^9, 3.640937366557774*^9}, 3.640937582879427*^9, 
+   3.640938120994272*^9, 3.640938508676155*^9, 3.6409385579667664`*^9, 
+   3.640938890017288*^9, 3.640939167645752*^9, 3.64093927354077*^9, 
+   3.640939308469129*^9, 3.640939409740705*^9, 3.640939555065893*^9, 
+   3.6409397154857187`*^9, 3.640939833361519*^9, 3.6409399341601543`*^9, 
+   3.6409399898178864`*^9, {3.640941650294799*^9, 3.640941670774353*^9}, 
+   3.640941799798357*^9, 3.640941894858453*^9, 3.640942024486025*^9, {
+   3.640942086047719*^9, 3.640942112079884*^9}, 3.640942176851161*^9, 
+   3.64094226891229*^9, 3.640942328659379*^9, 3.640942383980439*^9, 
+   3.6409424534592533`*^9, 3.640942880191134*^9, 3.64094301830975*^9, 
+   3.640943123529818*^9, 3.64094322491092*^9, 3.640943298067415*^9, 
+   3.640943353858622*^9, 3.6409436142350607`*^9, 3.640943722777067*^9, 
+   3.640943836551804*^9, 3.640943923413033*^9, 3.640944038657283*^9, 
+   3.640944091982811*^9, 3.640944183578738*^9, 3.640944356631795*^9, 
+   3.640944394384156*^9, 3.640944946613552*^9, 3.640945040784872*^9, 
+   3.6409451215104437`*^9, 3.6409455464508944`*^9, 3.640945632851288*^9, 
+   3.6409461159699497`*^9, 3.640947887871559*^9, 3.64094795723031*^9, 
+   3.640948239406349*^9, 3.640948527136033*^9}]
 }, Open  ]]
 },
-WindowSize->{1729, 777},
-WindowMargins->{{Automatic, 33}, {Automatic, 91}},
+WindowSize->{1695, 758},
+WindowMargins->{{6, Automatic}, {Automatic, -10}},
 FrontEndVersion->"10.1 for Linux x86 (64-bit) (March 23, 2015)",
 StyleDefinitions->"Default.nb"
 ]
@@ -1800,13 +1999,14 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 10562, 168, 561, "Input"],
-Cell[11145, 192, 178, 3, 23, "Print"],
-Cell[11326, 197, 78332, 1167, 74, "Output"],
-Cell[89661, 1366, 3774, 92, 68, "Output"],
-Cell[93438, 1460, 943, 19, 32, "Output"],
-Cell[94384, 1481, 3611, 86, 236, "Output"],
-Cell[97998, 1569, 8195, 213, 304, "Output"]
+Cell[580, 22, 11537, 185, 781, "Input"],
+Cell[12120, 209, 1516, 22, 23, "Print"],
+Cell[13639, 233, 79174, 1178, 74, "Output"],
+Cell[92816, 1413, 4616, 103, 68, "Output"],
+Cell[97435, 1518, 1787, 30, 32, "Output"],
+Cell[99225, 1550, 2727, 46, 43, "Output"],
+Cell[101955, 1598, 4556, 99, 236, "Output"],
+Cell[106514, 1699, 11676, 282, 198, "Output"]
 }, Open  ]]
 }
 ]

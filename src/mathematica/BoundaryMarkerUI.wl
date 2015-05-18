@@ -3,6 +3,7 @@
 BeginPackage["BoundaryMarkerUI`"]
 
 
+
   tStart = AbsoluteTime[{2012,1,1}];
   tStop = AbsoluteTime[{2015,1,1}];
 
@@ -19,73 +20,96 @@ BeginPackage["BoundaryMarkerUI`"]
     App`markerStopDay = 1;
     );
 
-  setUpMarkerUI[] := (
-    Column[{
-      (* Row 1 *)
-      Column[{
-        Style["Drag start marker: ", Darker[Green]], 
-        Slider[Dynamic[tStart], {AbsoluteTime[{App`startYear, App`startMonth, App`startDay}], AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}], 1},
-               ImageSize->sliderWidth],
-      }],
-     (* Row 2 *)
-      Row[{
-      Row[{Style["Marker Start Year", Darker[Green]], 
-       InputField@Dynamic[App`markerStartYear] }, Spacer[10]],
-      Row[{Style["Marker Start Month", Darker[Green]], 
-       InputField@Dynamic[App`markerStartMonth] }, Spacer[10]],
-      Row[{Style["Marker Start Day", Darker[Green]], 
-       InputField@Dynamic[App`markerStartDay] }, Spacer[10]]
-      }, Spacer[20]],
-      Row[{
-        Button["Save Start Boundary", (
+  dateElt[label_, color_, v_, width_, space_] := Row[{Style[label, Darker[color]], InputField[v, FieldSize->{width, 1}]}, Spacer[space]];
+
+  instructions[] := Row[{ Style["Drag start/stop marker then click on Save.  Fine tune with the input fields.", Darker[Black]]}, Spacer[20]]
+
+  startMarkerScrubber[] := 
+        Slider[Dynamic[tStart], {Dynamic@AbsoluteTime[{App`startYear, App`startMonth, App`startDay}], Dynamic@AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}], 1},
+               ImageSize->sliderWidth];
+
+  stopMarkerScrubber[] := 
+        Slider[Dynamic[tStop], {Dynamic@AbsoluteTime[{App`startYear, App`startMonth, App`startDay}], Dynamic@AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}], 1},
+                ImageSize-> sliderWidth];
+
+   startMarkerBreakDown[] := Row[{
+        dateElt["Marker start year", Green, Dynamic[App`markerStartYear], 4, 10],
+        dateElt["month", Green, Dynamic[App`markerStartMonth], 2, 10],
+        dateElt["day", Green, Dynamic[App`markerStartDay], 2, 10],
+        dateElt["hour", Green, Dynamic[App`markerStartHour], 2, 10],
+        dateElt["min", Green, Dynamic[App`markerStartMinute], 2, 10],
+        dateElt["sec", Green, Dynamic[App`markerStartSecond], 5, 10]
+      }, Spacer[20]]
+
+  stopMarkerBreakDown[] := Row[{ 
+        dateElt["Marker stop year", Red, Dynamic[App`markerStopYear], 4, 10],
+        dateElt["month", Red, Dynamic[App`markerStopMonth], 2, 10],
+        dateElt["day", Red, Dynamic[App`markerStopDay], 2, 10],
+        dateElt["hour", Red, Dynamic[App`markerStopHour], 2, 10],
+        dateElt["min", Red, Dynamic[App`markerStopMinute], 2, 10],
+        dateElt["sec", Red, Dynamic[App`markerStopSecond], 5, 10]}, Spacer[20]]
+
+  startMarkerSaveButton[] := Button["Save Start Boundary", (
                 Boundary`saveStartBoundary[];
-                DateListPlotUI`makeStartBoundaries[];)]
-      }],
-      (* Row 3 *)
-      Row[{Spacer[100]}],
-      (* Row 4 *)
-      Column[{
-        Style["Drag stop marker: ", Darker[Red]], 
-        Slider[Dynamic[tStop], {AbsoluteTime[{App`startYear, App`startMonth, App`startDay}], AbsoluteTime[{App`stopYear, App`stopMonth, App`stopDay}], 1},
-                ImageSize-> sliderWidth],
-      }],
-      Row[{
-      Row[{Style["Marker Stop Year ", Darker[Red]], 
-       InputField@Dynamic[App`markerStopYear] }, Spacer[10]],
-      Row[{Style["Marker Stop Month ", Darker[Red]], 
-       InputField@Dynamic[App`markerStopMonth] }, Spacer[10]],
-      Row[{Style["Marker Stop Day ", Darker[Red]], 
-       InputField@Dynamic[App`markerStopDay] }, Spacer[10]]
-      },Spacer[20]],
-      Row[{
-        Button["Save Stop Boundary", (
+                DateListPlotUI`makeStartBoundaries[];), ImageSize->Large]
+
+  stopMarkerSaveButton[] := Button["Save Stop Boundary", (
            Boundary`saveStopBoundary[];
-           DateListPlotUI`makeStopBoundaries[];)]
-      }]
-    }]
+           DateListPlotUI`makeStopBoundaries[];), ImageSize->Large]
 
-  Dynamic[Refresh[
-  (App`markerStartYear = DateList[tStart][[1]];
-   App`markerStartMonth = DateList[tStart][[2]];
-   App`markerStartDay = DateList[tStart][[3]];
-   DateListPlotUI`makeStartBoundaries[];),
-     TrackedSymbols->{tStart}, UpdateInterval->1]]
+  updateStartComponents[] :=
+    Dynamic[Refresh[DynamicModule[{t=DateList[tStart]},
+    (App`markerStartYear = t[[1]];
+     App`markerStartMonth = t[[2]];
+     App`markerStartDay = t[[3]];
+     App`markerStartHour = t[[4]];
+     App`markerStartMinute = t[[5]];
+     App`markerStartSecond = t[[6]];
+     DateListPlotUI`makeStartBoundaries[];)],
+       TrackedSymbols->{tStart}, UpdateInterval->1]]
 
-  Dynamic[Refresh[
-  (App`markerStopYear = DateList[tStop][[1]];
-  App`markerStopMonth = DateList[tStop][[2]];
-  App`markerStopDay = DateList[tStop][[3]];
-  DateListPlotUI`makeStopBoundaries[];),
-    TrackedSymbols->{tStop}, UpdateInterval->1]]
+  updateStopComponents[] :=
+    Dynamic[Refresh[DynamicModule[{t=DateList[tStop]},
+    (App`markerStopYear = t[[1]];
+     App`markerStopMonth = t[[2]];
+     App`markerStopDay = t[[3]];
+     App`markerStopHour = t[[4]];
+     App`markerStopMinute = t[[5]];
+     App`markerStopSecond = t[[6]];
+    DateListPlotUI`makeStopBoundaries[];)],
+      TrackedSymbols->{tStop}, UpdateInterval->1]]
 
+  updateSliderVariables[] := (
+    updateStartComponents[]
+    updateStopComponents[]
+  );
+
+
+syncSliderWithInputFields[] := (
   Dynamic[Refresh[
-  (tStart = AbsoluteTime[{App`markerStartYear, App`markerStartMonth, App`markerStartDay}]),
+  (tStart = AbsoluteTime[{App`markerStartYear, App`markerStartMonth, App`markerStartDay, App`markerStartHour, App`markerStartMinute, App`markerStartSecond}]),
     TrackedSymbols->{App`markerStartYear,App`markerStartMonth,App`markerStartDay}, UpdateInterval->1]]
    
   Dynamic[Refresh[
-  (tStop = AbsoluteTime[{App`markerStopYear, App`markerStopMonth, App`markerStopDay}]),
+  (tStop = AbsoluteTime[{App`markerStopYear, App`markerStopMonth, App`markerStopDay, App`markerStopHour, App`markerStopMinute, App`markerStopSecond}]),
     TrackedSymbols->{App`markerStopYear,App`markerStopMonth,App`markerStopDay}, UpdateInterval->1]]
-)
+  );
+
+  setUpMarkerUI[] := (
+    Column[{
+      instructions[],
+      startMarkerScrubber[],
+      startMarkerBreakDown[],
+      startMarkerSaveButton[]
+      Row[{Spacer[100]}],
+      stopMarkerScrubber[],
+      stopMarkerBreakDown[],
+      stopMarkerSaveButton[]
+    }]
+    updateSliderVariables[]
+    syncSliderWithInputFields[]
+  )
+
 
 deleteBoundaryUI[] :=
   Grid[{{

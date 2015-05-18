@@ -13,14 +13,21 @@ savedStopMarkers = {};
 
 
 makeMarker[date_] := {date, App`maxHeight}
-makeStartMarker[] := makeMarker[{App`markerStartYear, App`markerStartMonth, App`markerStartDay}];
-makeStopMarker[]  := makeMarker[{App`markerStopYear, App`markerStopMonth, App`markerStopDay}];
+makeStartMarker[] := makeMarker[DateList[{App`markerStartYear, App`markerStartMonth, App`markerStartDay, App`markerStartHour, App`markerStartMinute, App`markerStartSecond}]];
+makeStopMarker[]  := makeMarker[DateList[{App`markerStopYear, App`markerStopMonth, App`markerStopDay, App`markerStopHour, App`markerStopMinute, App`markerStopSecond}]];
 
-makeStartBoundaries[] :=
-  startBoundaries = Join[{makeStartMarker[]}, Map[makeMarker, Boundary`getBoundaryDays[App`getUserId[], App`getTagId[], Boundary`startType]]];
+nullMarker = {{2012, 1, 1, 2, 2, 0.}, 0}
+nullList = {nullMarker}
 
-makeStopBoundaries[] :=
-  stopBoundaries = Join[{makeStopMarker[]}, Map[makeMarker, Boundary`getBoundaryDays[App`getUserId[], App`getTagId[], Boundary`stopType]]];
+makeStartBoundaries[] := (
+  startMarker = makeStartMarker[];
+  startBoundaries =  Join[nullList, Map[makeMarker, Boundary`getBoundaryDates[App`getUserId[], App`getTagId[], Boundary`startType]]];
+  );
+
+makeStopBoundaries[] := (
+  stopMarker = makeStopMarker[];
+  stopBoundaries = Join[nullList, Map[makeMarker, Boundary`getBoundaryDates[App`getUserId[], App`getTagId[], Boundary`stopType]]];
+  );
 
 Begin["`Private`"];
 
@@ -31,8 +38,8 @@ initMarkers[] := (
 
 setUpPlot[] := (
   initMarkers[];
-  Dynamic[DateListPlot[ {App`bins, startBoundaries, stopBoundaries},
-    PlotStyle->{RGBColor[0,0,255,0.5], RGBColor[0,255,0,0.5], RGBColor[255,0,0,0.5]},
+  Dynamic[DateListPlot[ {App`bins, startBoundaries, stopBoundaries, {startMarker}, {stopMarker}},
+    PlotStyle->{RGBColor[0,0,255,0.5], RGBColor[0,255,0,0.5], RGBColor[255,0,0,0.5], Darker[Green], Orange},
     Filling->Bottom, 
     Joined->False, 
     PlotMarkers->".",

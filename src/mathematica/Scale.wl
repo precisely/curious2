@@ -2,13 +2,14 @@
 
 BeginPackage["Scale`"]
 
-CSBase = "user:thirdreplicator/CloudSymbol/";
 
-v[] := Scale`CSBase <> "scales";
+v[] := App`CSBase <> "scales";
 
-initContainer[] := CloudSymbol[CSBase <> "scales"] = {};
+initContainer[] := CloudSymbol[App`CSBase <> "scales"] = {};
 initCache[] := cache = {};
-init[] := (initCache[]; initContainer[];)
+
+init[] := download[];
+truncate[] := (initCache[]; initContainer[];)
 
 (* Schema summary: userId\[Rule]Number, tagId\[Rule]Number, scale\[Rule]Number *)
 
