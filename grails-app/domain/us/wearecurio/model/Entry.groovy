@@ -3241,7 +3241,7 @@ class Entry implements Comparable {
 			date:date,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
-			description:(durationType?.isStartOrEnd()) ? tag.getDescription() : baseTag.getDescription(),
+			description:((durationType?.isStartOrEnd()) && baseTag != null) ? tag.getDescription() : baseTag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
 			units:units,

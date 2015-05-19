@@ -610,8 +610,25 @@ class MigrationService {
 				
 				Utils.save(entry, true)
 			}
+		}
+		tryMigration("Recompute null base tags") {
+			def rows = sqlRows("select entry.id from entry where entry.base_tag_id is null")
 			
-			rows = rows
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				if (entry.units) {
+					String suffix = UnitGroupMap.theMap.suffixForUnits(entry.units)
+				
+					String description = entry.tag.description
+					
+					entry.baseTag = Tag.look(description.substring(0, description.length() - (suffix.length() + 1)))
+				} else {
+					entry.baseTag = entry.tag
+				}
+				
+				Utils.save(entry, true)
+			}
 		}
 	}
 }
