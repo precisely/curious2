@@ -681,9 +681,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def outString = out.toString()
 
 		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone","Base Tag"\n' \
-				+ '"2010-12-01 20:00:00 GMT","aspirin tablet",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
+				+ '"2010-12-01 20:00:00 GMT","aspirin tablets",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
 				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles","bread"\n' \
-				+ '"2010-12-01 23:30:00 GMT","bread slice",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
+				+ '"2010-12-01 23:30:00 GMT","bread slices",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
 		
 		assert outString.equals(compareStr)
 	}

@@ -7,6 +7,7 @@ import java.sql.ResultSet
 import java.util.TreeSet
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.model.Entry
 
 class TagStats {
 

@@ -10,10 +10,12 @@ import org.joda.time.*
 import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.model.*
+import us.wearecurio.model.Entry
 import us.wearecurio.model.Entry.*
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.units.UnitGroupMap
 
 class MigrationService {
 
@@ -562,6 +564,7 @@ class MigrationService {
 			def users = User.list()
 			for (u in users) {
 				TagStats.updateTagStats(u)
+				TagStats.updateTagValueStats(u)
 			}
 		}
 		tryMigration("Change analytics_task.status and analytics_task.type to integer.") {
@@ -581,6 +584,34 @@ class MigrationService {
 		}
 		tryMigration("Index elasticsearch again") {
 			elasticSearchService.index()
+		}
+		tryMigration("Recompute entry base tags") {
+			sql("update entry e set units = '' where e.units in ('at','am','pm','om','repeat','remind','midnight','noon','start','stop','end','undefined','round','with','while','-')")
+			sql("update entry e set units = 'mU/ul' where e.units in ('m/ul')")
+			
+			def rows = sqlRows("select entry.id from entry where entry.tag_id = entry.base_tag_id and entry.units is not null and length(entry.units) > 0")
+
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				String suffix = UnitGroupMap.theMap.suffixForUnits(entry.units)
+				
+				//if (suffix == entry.units) {
+				//	System.err.println("ANOMALY: " + suffix)
+				//}
+				
+				String description = entry.tag.description
+				
+				if (description.endsWith(' ' + suffix)) {
+					entry.baseTag = Tag.look(description.substring(0, description.length() - (suffix.length() + 1)))
+				} else {
+					entry.tag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.baseTag, entry.units, 0)
+				}
+				
+				Utils.save(entry, true)
+			}
+			
+			rows = rows
 		}
 	}
 }

@@ -90,6 +90,9 @@ class Tag implements Serializable, Comparable {
 		def tag = tagCache.get(d)
 		if (tag) return tagIdCache.get(tag.id)
 		
+		if (d.length() > MAXLENGTH)
+			d = d.substring(0, MAXLENGTH)
+		
 		tag = Tag.findByDescription(d)
 
 		if (tag != null) {

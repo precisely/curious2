@@ -218,7 +218,7 @@ class TagStatsTests extends CuriousTestCase {
 		
 		assert !result.getTypicallyNoAmount()
 		
-		def tabletTag = Tag.look("abcdef tablet")
+		def tabletTag = Tag.look("abcdef tablets")
 		
 		TagValueStats resultV = TagValueStats.createOrUpdate(userId, tabletTag.getId(), null)
 		

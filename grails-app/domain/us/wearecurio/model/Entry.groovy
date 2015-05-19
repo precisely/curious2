@@ -573,20 +573,22 @@ class Entry implements Comparable {
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
-		def tagUnitStats
+		BigDecimal amount = m['amount']
+		
+		if (m['units'] == null)
+			m['units'] = ''
+		
+		TagUnitStats tagUnitStats
 		if ((!m['units']) && (m['amountPrecision'] > 0)) {
 			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0
 			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
 			if (tagUnitStats) {
-				m['units'] = tagUnitStats.unit
+				m['units'] = tagUnitStats.lookupUnitString(amount.compareTo(BigDecimal.ONE) != 0)
 			}
 		} else {
 			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'])
 			TagUnitStats.createOrUpdate(userId, baseTag.getId(), m['units'])
 		}
-		
-		if (!m['units'])
-			m['units'] = ''
 		
 		Entry entry = new Entry(
 				userId:userId,
@@ -595,7 +597,7 @@ class Entry implements Comparable {
 				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
-				amount:m['amount'],
+				amount:amount,
 				repeatType: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,

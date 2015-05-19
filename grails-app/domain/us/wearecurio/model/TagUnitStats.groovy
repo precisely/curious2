@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 class TagUnitStats {
@@ -56,6 +57,17 @@ class TagUnitStats {
 		}
 	}
 	
+	UnitGroup getUnitGroup() {
+		if (unitGroupId)
+			return UnitGroup.get(unitGroupId)
+			
+		return null
+	}
+	
+	String lookupUnitString(boolean plural) {
+		return getUnitGroup().lookupUnitString(unit, plural)
+	}
+	
 	protected static BoundedCache cache = new BoundedCache<UserTagId, TagUnitStats>(10000)
 	
 	protected static def createOrUpdateSingle(Long userId, Long tagId, String unit, Long unitGroupId, boolean increment) {
@@ -91,9 +103,11 @@ class TagUnitStats {
 		cache.putAt(new UserTagId(userId, tagId), tagUnitStats)
 		return tagUnitStats
 	}
+	
+	
 
 	@Transactional
-	public static TagUnitStats createOrUpdate(Long userId, Long tagId, String unit) {
+	static TagUnitStats createOrUpdate(Long userId, Long tagId, String unit) {
 		if (unit == null || unit == '') { // if blank unit, return null
 			return null
 		}
@@ -112,7 +126,7 @@ class TagUnitStats {
 		}
 	}
 	
-	public static def mostUsedTagUnitStats(Long userId, Long tagId) {
+	static def mostUsedTagUnitStats(Long userId, Long tagId) {
 		TagUnitStats stats = cache.getAt(new UserTagId(userId, tagId))
 		if (stats != null) {
 			if (!stats.isAttached()) {
@@ -131,7 +145,7 @@ class TagUnitStats {
 		return tagUnitStats.size() > 0 ? tagUnitStats[0] : null
 	}
 	
-	public static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
+	static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
 		def r = TagUnitStats.executeQuery("select tagStats.unitGroupId, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId group by tagStats.unitGroupId order by s desc",
 				[tagIds: tagIds, userId: userId], [max: 1])
 		if ((!r) || (!r[0]))

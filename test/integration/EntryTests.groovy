@@ -195,6 +195,21 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		// no value
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		
+		// no value with time
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack 4pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		
+		// no value with space between time
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "snack 4 pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:snack, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		
 		// units filled in automatically
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1", baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -222,6 +237,47 @@ class EntryTests extends CuriousTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4:00 pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// make sure at is parsed correctly
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood 7 at 4p", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet at 4pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood 7 @ 4p", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet @ 4pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "mood 7 @4p", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "aspirin 1 tablet @4pm", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "at 4pm mood 7", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "at 4pm aspirin 1 tablet", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "@4pm mood 7", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:mood, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "@4pm aspirin 1 tablet", baseDate, true), new EntryStats())
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 

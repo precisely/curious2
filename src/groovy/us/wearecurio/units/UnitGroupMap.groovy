@@ -5,6 +5,7 @@ import us.wearecurio.model.*
 import us.wearecurio.parse.PatternScanner
 
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -45,7 +46,8 @@ class UnitGroupMap {
 
 	//Weight
 	static final double GRAM = 1
-	static final double MILLIGRAM = 0.001
+	static final double MILLIGRAM = 0.001d
+	static final double MICROGRAM = 0.001d * MILLIGRAM
 	static final double KILOGRAM = GRAM * 1000
 	static final double POUND = GRAM * 453.6d
 	static final double TON = POUND * 2000.0d
@@ -62,8 +64,10 @@ class UnitGroupMap {
 	//Volume
 	static final double CC = 1
 	static final double LITER = 1000.0d
-	static final double GALLON = OUNCE * 16.0d
-	static final double QUART = OUNCE * 4.0d
+	static final double GALLON = OUNCE * 128.0d
+	static final double QUART = OUNCE * 32.0d
+	static final double CUP = OUNCE * 8.0d
+	static final double TEASPOON = LITER * 0.00492892d
 	
 	//Force
 	static final double NEWTON = POUND / 4.44822162825d
@@ -109,10 +113,12 @@ class UnitGroupMap {
 	static final double ATMOSPHERE = 98.0665e3d
 	
 	//Density
-	static final double KGPERM3 = 1
-	static final double MGPERDL = 0.01d
-	static final double KGPERL = 1000.0d
-	static final double GPERML = 1000.0d
+	static final double KGPERM3 = 1.0d/1000.0d
+	static final double GPERM3 = 1/1000000.0d
+	static final double MGPERDL = 0.00001d
+	static final double KGPERL = 1.0d
+	static final double GPERML = 1.0d
+	static final double GPERL = 1.0d/1000.0d
 	// TODO: Finish adding density units
 	
 	//Steps
@@ -137,9 +143,12 @@ class UnitGroupMap {
 	static final double SCALEFOUR = 4
 	static final double SCALETHREE = 4
 	
-	static final int SINGULAR = 1
-	static final int PLURAL = 2
-	static final int BOTH = SINGULAR | PLURAL
+	//Quantity
+	static final double QUANTITYRATIO = 1
+	
+	static final int SINGULAR = 1 // mark unit as a singular sub unit
+	static final int PLURAL = 2 // mark it as a plural sub unit
+	static final int BOTH = SINGULAR | PLURAL // mark it as both singular and plural
 	
 	// other suffixes
 	static Map suffixPriority = ['systolic' : 10, 'diastolic' : 20]
@@ -172,6 +181,8 @@ class UnitGroupMap {
 		'mile':'miles',
 		'kilometer':'km',
 		'gram':'g',
+		'milligram':'mg',
+		'microgram':'mcg',
 		'pound':'lbs',
 		'kilogram':'kg',
 		'ounce':'oz',
@@ -181,6 +192,8 @@ class UnitGroupMap {
 		'acre':'acres',
 		'cubic centimeter':'cc',
 		'liter':'l',
+		'deciliter':'dl',
+		'milliliter':'ml',
 		'gallon':'gal',
 		'quart':'qt',
 		'newton':'n',
@@ -219,68 +232,88 @@ class UnitGroupMap {
 		'inHg':'inHg',
 		'atmosphere':'atm',
 		'percent':'%',
+		'cup':'cups',
 	]
 	
 	enum UnitGroup {
-		
 		DURATION(1, "duration", 100, [
-			'm':[MINUTE,SECOND,1,'minute'], 'min':[MINUTE,SECOND,5,'minute'], 'mins':[MINUTE,SECOND,6,'minute',BOTH], 'minute':[MINUTE,SECOND,10,'minute'],
-			'minutes':[MINUTE,SECOND,10,'minute'], 'h':[HOUR,MINUTE,1,'hour'], 'hours':[HOUR,MINUTE,10,'hour',PLURAL], 'hrs':[HOUR,MINUTE,8,'hour'], 'hour':[HOUR,MINUTE,10,'hour'],
-			'day':[DAY,HOUR,10,'day',SINGULAR], 'days':[DAY,HOUR,10,'day',PLURAL], 'd':[DAY,HOUR,1,'day',SINGULAR], 'week':[WEEK,DAY,10,'week',SINGULAR],
-			'weeks':[WEEK,DAY,10,'week',PLURAL], 'wks':[WEEK,DAY,5,'week'], 'wk':[WEEK,DAY,4,'week'],
-			'month':[MONTH,DAY,10,'month',SINGULAR], 'months':[MONTH,DAY,10,'month',PLURAL], 'mnths':[MONTH,DAY,7,'month'], 'year':[YEAR,DAY,10,'year',SINGULAR],
-			'years':[YEAR,DAY,10,'year',PLURAL], 'y':[YEAR,DAY,1,'year'], 'century':[CENTURY,YEAR,10,'century',SINGULAR], 'centuries':[CENTURY,YEAR,10,'century',PLURAL],
-			'ms':[MILLISECOND,0,6,'millisecond',BOTH],'sec':[SECOND,0,5,'second'], 'secs':[SECOND,0,7,'second',BOTH], 'seconds': [SECOND,0,10,'second'],
-			'second':[SECOND,0,10,'second'], 'millisecond':[MILLISECOND,0,10,'millisecond'], 'ms':[MILLISECOND,0,3,'millisecond'], 'milliseconds':[MILLISECOND,0,10,'millisecond'], 'microsecond':[MICROSECOND,0,10,'microsecond'],
-			'microseconds':[MICROSECOND,0,10,'microsecond',BOTH], 'picosecond':[PICOSECOND,0,10,'picosecond'], 'picoseconds':[PICOSECOND,0,10,'picosecond',BOTH],
+			'm':[MINUTE,SECOND,1,'minute'], 'min':[MINUTE,SECOND,5,'minute'], 'mins':[MINUTE,SECOND,6,'minute',BOTH], 'minute':[MINUTE,SECOND,10,'minute'], 'minutes':[MINUTE,SECOND,10,'minute'],
+			'h':[HOUR,MINUTE,1,'hour'], 'hours':[HOUR,MINUTE,10,'hour'], 'hr':[HOUR,MINUTE,8,'hour',SINGULAR], 'hr.':[HOUR,MINUTE,8,'hour'], 'hrs':[HOUR,MINUTE,8,'hour',PLURAL], 'hrs.':[HOUR,MINUTE,8,'hour'], 'hour':[HOUR,MINUTE,10,'hour'],
+			'day':[DAY,HOUR,10,'day',SINGULAR], 'days':[DAY,HOUR,10,'day',PLURAL], 'd':[DAY,HOUR,1,'day',SINGULAR],
+			'week':[WEEK,DAY,10,'week',SINGULAR], 'weeks':[WEEK,DAY,10,'week',PLURAL], 'wks':[WEEK,DAY,5,'week'], 'wk':[WEEK,DAY,4,'week'],
+			'month':[MONTH,DAY,10,'month',SINGULAR], 'months':[MONTH,DAY,10,'month',PLURAL], 'mon':[MONTH,DAY,2,'month'], 'mo':[MONTH,DAY,2,'month'], 'mo.':[MONTH,DAY,2,'month'], 'mos.':[MONTH,DAY,2,'month'], 'mnths':[MONTH,DAY,7,'month'],
+			'year':[YEAR,DAY,10,'year',SINGULAR], 'years':[YEAR,DAY,10,'year',PLURAL], 'yrs':[YEAR,DAY,10,'year'], 'yrs.':[YEAR,DAY,10,'year'], 'y':[YEAR,DAY,1,'year'],
+			'century':[CENTURY,YEAR,10,'century',SINGULAR], 'centuries':[CENTURY,YEAR,10,'century',PLURAL],
+			'sec':[SECOND,0,5,'second'],'secs':[SECOND,0,7,'second',BOTH], 'seconds': [SECOND,0,10,'second'], 'second':[SECOND,0,10,'second'],
+			'millisecond':[MILLISECOND,0,10,'millisecond'], 'ms':[MILLISECOND,0,3,'millisecond',BOTH], 'milliseconds':[MILLISECOND,0,10,'millisecond'],
+			'us':[MICROSECOND,0,1,'microsecond',BOTH], 'microsecond':[MICROSECOND,0,10,'microsecond'], 'microseconds':[MICROSECOND,0,10,'microsecond',BOTH],
+			'ps':[PICOSECOND,0,2,'picosecond',BOTH], 'picosecond':[PICOSECOND,0,10,'picosecond'], 'picoseconds':[PICOSECOND,0,10,'picosecond',BOTH],
 		]),
 		DISTANCE(2, "distance", 200, [
-			'cm':[CENTIMETER,0,5,'centimeter'], 'mm':[MILLIMETER,0,6,'millimeter'],
+			'cm':[CENTIMETER,0,5,'centimeter',BOTH], 'mm':[MILLIMETER,0,6,'millimeter'],
 			'centimeter':[CENTIMETER,0,10,'centimeter'], 'centimetre':[CENTIMETER,0,10,'centimeter'],
 			'millimeter':[MILLIMETER,0,10,'millimeter'], 'millimetre':[MILLIMETER,0,10,'millimeter'],
-			'm':[METER,0,2,'meter'], 'meters':[METER,0,11,'meter'], 'meter':[METER,0,10,'meter'], 'metre':[METER,0,10,'meter'], 'metres':[METER,0,10,'meter'], 'foot':[FOOT,INCH,10,'foot'], 'feet':[FOOT,INCH,10,'foot'], 'ft':[FOOT,INCH,5,'foot',BOTH],
-			'inch':[INCH,0,10,'inch'], 'in':[INCH,0,10,'inch',BOTH], 'inches':[FOOT,INCH,5,'inch'],
-			'yard':[YARD,INCH,10,'yard'], 'yards':[YARD,INCH,10,'yard'], 'yd':[YARD,INCH,10,'yard',BOTH], 'mi':[MILE,0,7,'mile'], 'mile':[MILE,0,10,'mile',SINGULAR], 'miles':[MILE,0,10,'mile',PLURAL], 'km':[KILOMETER,0,8,'kilometer',BOTH], 'kilometers':[KILOMETER,0,10,'kilometer'],
-			'kilometers':[KILOMETER,0,10,'kilometer'], 'kilometer':[KILOMETER,0,1,'kilometer'],'kilometre':[KILOMETER,0,10,'kilometer'], 'kilometres':[KILOMETER,0,10,'kilometer'],
+			'm':[METER,0,2,'meter',BOTH], 'meters':[METER,0,11,'meter'], 'meter':[METER,0,10,'meter'], 'metre':[METER,0,10,'meter'], 'metres':[METER,0,10,'meter'],
+			'foot':[FOOT,INCH,10,'foot'], 'feet':[FOOT,INCH,10,'foot'], 'ft':[FOOT,INCH,5,'foot',BOTH],
+			'inch':[INCH,0,10,'inch'], 'in':[INCH,0,10,'inch',BOTH], 'inches':[INCH,0,5,'inch'],
+			'yard':[YARD,INCH,10,'yard'], 'yards':[YARD,INCH,10,'yard'], 'yd':[YARD,INCH,10,'yard',BOTH],
+			'mi':[MILE,0,7,'mile',BOTH], 'mile':[MILE,0,10,'mile'], 'miles':[MILE,0,10,'mile'],
+			'km':[KILOMETER,0,8,'kilometer',BOTH], 'kilometers':[KILOMETER,0,10,'kilometer'], 'kilometers':[KILOMETER,0,10,'kilometer'],
+			'kilometer':[KILOMETER,0,1,'kilometer'],'kilometre':[KILOMETER,0,10,'kilometer'], 'kilometres':[KILOMETER,0,10,'kilometer'],
 		]),
 		WEIGHT(3, "weight", 300, [
-			'g':[GRAM,0,2,'gram'], 'grams':[GRAM,0,10,'gram'], 'pound':[POUND,OUNCE,10,'pound'], 'lb':[POUND,OUNCE,5,'pound',SINGULAR], 'pounds':[POUND,OUNCE,10,'pound'], 'lbs':[POUND,OUNCE,10,'pound',PLURAL],
-			'kg':[KILOGRAM,0,8,'kilogram'], 'kgs':[KILOGRAM,0,4,'kilogram'], 'kilograms':[KILOGRAM,0,10,'kilogram'], 'kilogram':[KILOGRAM,0,10,'kilogram'], 'ounce':[OUNCE,0,10,'ounce'], 'oz':[OUNCE,0,4,'ounce'],
-			'ounces':[OUNCE,0,10,'ounce'],
+			'g':[GRAM,0,2,'gram'], 'grams':[GRAM,0,10,'gram'], 'pound':[POUND,OUNCE,10,'pound'], 'lb':[POUND,OUNCE,5,'pound',BOTH], 'pounds':[POUND,OUNCE,10,'pound'], 'lbs':[POUND,OUNCE,10,'pound'],
+			'kg':[KILOGRAM,0,8,'kilogram',BOTH], 'kgs':[KILOGRAM,0,4,'kilogram'], 'kilograms':[KILOGRAM,0,10,'kilogram'], 'kilogram':[KILOGRAM,0,10,'kilogram'],
+			'ounce':[OUNCE,0,10,'ounce'], 'oz':[OUNCE,0,4,'ounce',BOTH], 'ounces':[OUNCE,0,10,'ounce'],
+			'mg':[MILLIGRAM,0,8,'milligram',BOTH], 'mgs':[MILLIGRAM,0,8,'milligram'], 'milligram':[MILLIGRAM,0,8,'milligram'], 'milligrams':[MILLIGRAM,0,8,'milligram'],
+			'ug':[MICROGRAM,0,8,'microgram',BOTH], 'ugs':[MICROGRAM,0,8,'microgram'], 'mcg':[MICROGRAM,0,2,'microgram'], 'mcgs':[MICROGRAM,0,8,'microgram'], 'microgram':[MICROGRAM,0,8,'microgram'], 'micrograms':[MICROGRAM,0,8,'microgram'],
+			'pg':[MICROGRAM / 1000000.0d,0,8,'picogram',BOTH], 'pgs':[MICROGRAM / 1000000.0d,0,8,'picogram'], 'picogram':[MICROGRAM / 1000000.0d,0,8,'picogram'], 'picograms':[MICROGRAM / 1000000.0d,0,8,'picogram'],
+			'ng':[MICROGRAM / 1000.0d,0,8,'nanogram',BOTH], 'ngs':[MICROGRAM / 1000.0d,0,8,'nanogram'], 'nanogram':[MICROGRAM / 1000.0d,0,8,'nanogram'], 'nanograms':[MICROGRAM / 1000.0d,0,8,'nanogram'],
 		]),
 		AREA(4, "area", 400, [
-			'sq m':[SQMETER,0,3,'square meter'], 'sqm':[SQMETER,0,1,'square meter'], 'square meter':[SQMETER,0,10,'square meter'], 'square metre':[SQMETER,0,10,'square meter'], 'sq meter':[SQMETER,0,7,'square meter'],
-			'sq metre':[SQMETER,0,7,'square meter'],
-			'sq ft':[SQFOOT,0,7,'square foot'], 'sqft':[SQFOOT,0,7,'square foot'], 'square foot':[SQFOOT,0,7,'square foot'], 'square feet':[SQFOOT,0,7,'square foot'], 'sq feet':[SQFOOT,0,7,'square foot'], 'sq foot':[SQFOOT,0,7,'square foot'],
-			'hectare':[HECTARE,0,10,'hectare'], 'ha':[HECTARE,0,3,'hectare'], 'h':[HECTARE,0,1,'hectare'], 'hectares':[HECTARE,0,10,'hectare'],
-			'acre':[ACRE,0,10,'acre'], 'acres':[ACRE,0,10,'acre'], 'ac':[ACRE,0,6,'acre'],
+			'sq m':[SQMETER,0,3,'square meter',BOTH], 'sqm':[SQMETER,0,1,'square meter'], 'square meter':[SQMETER,0,10,'square meter'], 'square metre':[SQMETER,0,10,'square meter'], 'sq meter':[SQMETER,0,7,'square meter'],
+			'sq metre':[SQMETER,0,7,'square meter'], 'm2':[SQMETER,0,4,'square meter'], 
+			'sq ft':[SQFOOT,0,7,'square foot',BOTH], 'sqft':[SQFOOT,0,7,'square foot'], 'square foot':[SQFOOT,0,7,'square foot'], 'square feet':[SQFOOT,0,7,'square foot'], 'sq feet':[SQFOOT,0,7,'square foot'], 'sq foot':[SQFOOT,0,7,'square foot'],
+			'hectare':[HECTARE,0,10,'hectare'], 'ha':[HECTARE,0,3,'hectare',BOTH], 'h':[HECTARE,0,1,'hectare'], 'hectares':[HECTARE,0,10,'hectare'],
+			'acre':[ACRE,0,10,'acre',SINGULAR], 'acres':[ACRE,0,10,'acre',PLURAL], 'ac':[ACRE,0,6,'acre'],
 		]),
 		VOLUME(5, "volume", 500, [
-			'cc':[CC,0,7,'cubic centimeter'], 'cubic centimeter':[CC,0,10,'cubic centimeter'], 'cubic centimeters':[CC,0,10,'cubic centimeter'], 'cubic cm':[CC,0,10,'cubic centimeter'], 'cubic centimetre':[CC,0,10,'cubic centimeter'], 'cubic centimetres':[CC,0,10,'cubic centimeter'],
-			'l':[LITER,0,2,'liter'], 'liter':[LITER,0,10,'liter'], 'liters':[LITER,0,10,'liter'], 'litre':[LITER,0,10,'liter'], 'litres':[LITER,0,10,'liter'],
-			'gal':[GALLON,OUNCE,7,'gallon'], 'gl':[GALLON,OUNCE,1,'gallon'], 'g':[GALLON,OUNCE,1,'gallon'], 'gallon':[GALLON,OUNCE,10,'gallon'], 'gallons':[GALLON,OUNCE,10,'gallon'],
-			'qt':[QUART,OUNCE,8,'quart'], 'quart':[QUART,OUNCE,10,'quart'], 'quarts':[QUART,OUNCE,10,'quart'], 'ounce':[OUNCE,0,8,'ounce'], 'oz':[OUNCE,0,2,'ounce'],
-			'ounces':[OUNCE,0,8,'ounce'],
+			'cc':[CC,0,7,'cubic centimeter',BOTH], 'ccs':[CC,0,3,'cubic centimeter'], 'cubic centimeter':[CC,0,10,'cubic centimeter'], 'cubic centimeters':[CC,0,10,'cubic centimeter'], 'cubic cm':[CC,0,10,'cubic centimeter'], 'cubic centimetre':[CC,0,10,'cubic centimeter'], 'cubic centimetres':[CC,0,10,'cubic centimeter'],
+			'mm3':[CC / 1000.0d,0,7,'cubic millimeter',BOTH], 'mm3s':[CC / 1000.0d,0,3,'cubic millimeter'], 'cubic millimeter':[CC / 1000.0d,0,10,'cubic millimeter'], 'cubic millimeters':[CC / 1000.0d,0,10,'cubic millimeter'], 'cubic mm':[CC / 1000.0d,0,10,'cubic millimeter'], 'cubic millimetre':[CC / 1000.0d,0,10,'cubic millimeter'], 'cubic millimetres':[CC / 1000.0d,0,10,'cubic millimeter'],
+			'm3':[CC * 1000000.0d,0,7,'cubic meter',BOTH], 'm3s':[CC * 1000000.0d,0,3,'cubic meter'], 'cubic meter':[CC * 1000000.0d,0,10,'cubic meter'], 'cubic meters':[CC * 1000000.0d,0,3,'cubic meter'], 'cubic m':[CC * 1000000.0d,0,3,'cubic meter'], 'cubic metre':[CC * 1000000.0d,0,3,'cubic meter'], 'cubic metres':[CC * 1000000.0d,0,3,'cubic meter'],
+			'l':[LITER,0,2,'liter',BOTH], 'L':[LITER,0,2,'liter'], 'liter':[LITER,0,10,'liter'], 'liters':[LITER,0,10,'liter'], 'litre':[LITER,0,10,'liter'], 'litres':[LITER,0,10,'liter'],
+			'dl':[LITER/10.0d,0,2,'deciliter',BOTH], 'dL':[LITER/10.0d,0,2,'deciliter'], 'deciliter':[LITER/10.0d,0,10,'deciliter'], 'deciliters':[LITER/10.0d,0,10,'deciliter'], 'decilitre':[LITER/10.0d,0,10,'deciliter'], 'decilitres':[LITER/10.0d,0,10,'deciliter'],
+			'cl':[LITER/100.0d,0,2,'centiliter',BOTH], 'cL':[LITER/100.0d,0,2,'centiliter'], 'centiliter':[LITER/100.0d,0,10,'centiliter'], 'centiliters':[LITER/100.0d,0,10,'centiliter'], 'centilitre':[LITER/100.0d,0,10,'centiliter'], 'centilitres':[LITER/100.0d,0,10,'centiliter'],
+			'ml':[LITER/1000.0d,0,2,'milliliter',BOTH], 'mL':[LITER/1000.0d,0,2,'milliliter'], 'milliliter':[LITER/1000.0d,0,10,'milliliter'], 'milliliters':[LITER/1000.0d,0,10,'milliliter'], 'millilitre':[LITER/1000.0d,0,10,'milliliter'], 'millilitres':[LITER/1000.0d,0,10,'milliliter'],
+			'gal':[GALLON,OUNCE,7,'gallon',BOTH], 'gl':[GALLON,OUNCE,1,'gallon'], 'g':[GALLON,OUNCE,1,'gallon'], 'gallon':[GALLON,OUNCE,10,'gallon'], 'gallons':[GALLON,OUNCE,10,'gallon'],
+			'yd3':[CC * 764554.858d,0,8,'yd3',BOTH], 'cu yd':[CC * 764554.858d,0,8,'yd3'], 'cubic yd':[CC * 764554.858d,0,8,'yd3'], 'cubic yard':[CC * 764554.858d,0,8,'yd3'], 'cubic yards':[CC * 764554.858d,0,8,'yd3'],
+			'ft3':[CC * 28316.8466d,0,8,'ft3',BOTH], 'cu ft':[CC * 28316.8466d,0,8,'ft3'], 'cubic ft':[CC * 28316.8466d,0,8,'ft3'], 'cubic foot':[CC * 28316.8466d,0,8,'ft3'], 'cubic feet':[CC * 28316.8466d,0,8,'ft3'],
+			'in3':[CC * 16.387064d,0,8,'in3',BOTH], 'cu in':[CC * 16.387064d,0,8,'in3'], 'cubic in':[CC * 16.387064d,0,8,'in3'], 'cubic inch':[CC * 16.387064d,0,8,'in3'], 'cubic inches':[CC * 16.387064d,0,8,'in3'],
+			'oz':[OUNCE,0,1,'ounce',BOTH], 'ounce':[OUNCE,0,1,'ounce'], 'ounces':[OUNCE,0,1,'ounce'],
+			'qt':[QUART,OUNCE,8,'quart',BOTH], 'quart':[QUART,OUNCE,10,'quart'], 'quarts':[QUART,OUNCE,10,'quart'],
+			'cup':[CUP,OUNCE,8,'cup',SINGULAR], 'cups':[CUP,OUNCE,10,'cup',PLURAL],
+			'tsp':[TEASPOON,0,8,'tsp',BOTH], 'tsps':[TEASPOON,0,10,'tsp'], 'tbsp':[TEASPOON,0,8,'tsp'], 'tbsp.':[TEASPOON,0,10,'tsp'],
+			'tbs.':[TEASPOON,0,8,'tsp'], 'teaspoon':[TEASPOON,0,8,'tsp'], 'teaspoons':[TEASPOON,0,10,'tsp'],
 		]),
 		FORCE(6, "force", 600, [
-			'n':[NEWTON,0,3,'newton'], 'newton':[NEWTON,0,10,'newton'], 'newtons':[NEWTON,0,10,'newton'],
-			'dyn':[DYNE,0,7,'dyne'], 'dyne':[DYNE,0,10,'dyne'],
-			'kip':[KIP,0,5,'kip'],
+			'n':[NEWTON,0,3,'newton'], 'N':[NEWTON,0,3,'newton',BOTH], 'newton':[NEWTON,0,10,'newton'], 'newtons':[NEWTON,0,10,'newton'],
+			'dyn':[DYNE,0,7,'dyne',BOTH], 'dyne':[DYNE,0,10,'dyne'],
+			'kip':[KIP,0,5,'kip',BOTH],
 		]),
 		POWER(7, "power", 700, [
-			'w':[WATT,0,2,'watt'], 'watt':[WATT,0,10,'watt'], 'watts':[WATT,0,10,'watt'],
-			'kw':[KILOWATT,0,5,'kilowatt'], 'kilowatt':[KILOWATT,0,10,'kilowatt'], 'kilowatts':[KILOWATT,0,10,'kilowatt'],
-			'mw':[MILLIWATT,0,3,'milliwatt'], 'milliwatt':[MILLIWATT,0,10,'milliwatt'], 'milliwatts':[MILLIWATT,0,10,'milliwatt'],
-			'hp':[HORSEPOWER,0,7,'horsepower'], 'horsepower':[HORSEPOWER,0,10,'horsepower'],
+			'w':[WATT,0,2,'watt',BOTH], 'watt':[WATT,0,10,'watt'], 'watts':[WATT,0,10,'watt'],
+			'kw':[KILOWATT,0,5,'kilowatt',BOTH], 'kilowatt':[KILOWATT,0,10,'kilowatt'], 'kilowatts':[KILOWATT,0,10,'kilowatt'],
+			'mw':[MILLIWATT,0,3,'milliwatt',BOTH], 'milliwatt':[MILLIWATT,0,10,'milliwatt'], 'milliwatts':[MILLIWATT,0,10,'milliwatt'],
+			'hp':[HORSEPOWER,0,7,'horsepower',BOTH], 'horsepower':[HORSEPOWER,0,10,'horsepower'],
 		]),
 		ENERGY(8, "energy", 350, [
-			'j':[JOULE,0,3,'joule'], 'joule':[JOULE,0,10,'joule'], 'joules':[JOULE,0,10,'joule'],
-			'erg':[ERG,0,10,'erg'],
-			'ft-lb':[FOOTPOUND,0,8,'foot-pound'], 'ft-lbs':[FOOTPOUND,0,8,'foot-pound'], 'foot-pound':[FOOTPOUND,0,10,'foot-pound'],
+			'j':[JOULE,0,3,'joule',BOTH], 'joule':[JOULE,0,10,'joule'], 'joules':[JOULE,0,10,'joule'],
+			'erg':[ERG,0,10,'erg',BOTH], 'ergs':[ERG,0,10,'erg'],
+			'ft-lb':[FOOTPOUND,0,8,'foot-pound',BOTH], 'ftlb':[FOOTPOUND,0,8,'foot-pound'], 'ft-lbs':[FOOTPOUND,0,8,'foot-pound'], 'foot-pound':[FOOTPOUND,0,10,'foot-pound'],
 			'foot-pounds':[FOOTPOUND,0,10,'foot-pound'], 'foot pound':[FOOTPOUND,0,10,'foot-pound'], 'foot pounds':[FOOTPOUND,0,10,'foot-pound'],
 			'footpound':[FOOTPOUND,0,10,'foot-pound'], 'footpounds':[FOOTPOUND,0,10,'foot-pound'],
-			'btu':[BTU,0,8,'btu'],
-			'hph':[HORSEPOWERHOUR,0,5,'horsepower-hour'], 'horsepower-hour':[HORSEPOWERHOUR,0,10,'horsepower-hour'],
+			'btu':[BTU,0,8,'btu',BOTH], 'BTU':[BTU,0,8,'btu'],
+			'hph':[HORSEPOWERHOUR,0,5,'horsepower-hour',BOTH], 'horsepower-hour':[HORSEPOWERHOUR,0,10,'horsepower-hour'],
 			'horsepower-hours':[HORSEPOWERHOUR,0,10,'horsepower-hour'], 'horsepower hour':[HORSEPOWERHOUR,0,10,'horsepower-hour'],
 			'horsepower hours':[HORSEPOWERHOUR,0,10,'horsepower-hour'], 'horsepowerhour':[HORSEPOWERHOUR,0,10,'horsepower-hour'],
 			'horsepowerhours':[HORSEPOWERHOUR,0,10,'horsepower-hour'],
@@ -329,6 +362,19 @@ class UnitGroupMap {
 		DENSITY(12, "density", 450, [
 			'kg/m3':[KGPERM3,0,10,'kg/m3'], 'mg/dL':[MGPERDL,0,10,'mg/dL'], 'kg/L':[KGPERL,0,10,'kg/L'], 'g/mL':[GPERML,0,10,'g/mL'],
 			'mg/dl':[MGPERDL,0,10,'mg/dL'], 'kg/l':[KGPERL,0,10,'kg/L'], 'g/ml':[GPERML,0,10,'g/mL'],
+			'pg/mL':[GPERL * (1.0e-9d),0,10,'pg/mL'], 'pg/ml':[GPERL * (1.0e-9d),0,10,'pg/mL'],
+			'kg/L':[GPERL * 1000.0d,0,10,'kg/L'], 'kg/l':[GPERL * 1000.0d,0,10,'kg/L'],
+			'mg/m3':[GPERM3 / 1000.0d,0,10,'kg/L'],
+			'g/L':[GPERL,0,10,'g/L'], 'g/l':[GPERL,0,10,'g/L'],
+			'g/m3':[GPERM3,0,10,'g/m3'],
+			'g/cm3':[GPERM3 * (1000000.0d),0,10,'g/cm3'],
+			'mg/L':[GPERL * (1.0e-3d),0,10,'mg/L'], 'mg/l':[GPERL * (1.0e-3d),0,10,'mg/L'],
+			'mg/mL':[GPERL,0,10,'mg/mL'], 'mg/ml':[GPERL,0,10,'mg/mL'],
+			'mg/tsp':[GPERL / TEASPOON,0,10,'mg/tsp'],
+			'ug/uL':[GPERL,0,10,'ug/uL'], 'ug/ul':[GPERL,0,10,'ug/uL'],
+			'pg/uL':[GPERL * (1.0e-6d),0,10,'pg/uL'], 'pg/ul':[GPERL * (1.0e-6d),0,10,'pg/uL'],
+			'ng/uL':[GPERL * (1.0e-3d),0,10,'ng/uL'], 'ng/ul':[GPERL * (1.0e-3d),0,10,'ng/uL'],
+			'ppm':[1.0e-6d,0,10,'ppm'], 'ppb':[1.0e-9d,0,10,'ppb'],
 		]),
 		STEPS(13, "steps", 5, [
 			'steps':[STEPSUNIT,0,10,'steps'],
@@ -364,7 +410,47 @@ class UnitGroupMap {
 			'scale':[SCALETEN,0,10,'to ten'], '':[SCALETEN,0,1,'to ten'], 'to ten':[SCALETEN,0,10,'to ten'],
 			'unity':[SCALEUNITY,0,10,'to one'], 'to one':[SCALEUNITY,0,10,'to one'],
 			'to three':[SCALETHREE,0,10,'to three'], 'to four':[SCALEFOUR,0,10,'to four'], 'to five':[SCALEFIVE,0,10,'to five'],
-		])
+		]),
+		// quantity groups
+		TABLET(14, "tablets", 2, [
+			'tablet':[QUANTITYRATIO,0,10,'tablets',SINGULAR], 'tablets':[QUANTITYRATIO,0,10,'tablets',PLURAL],
+		]),
+		CAPSULE(15, "capsules", 2, [
+			'capsule':[QUANTITYRATIO,0,10,'capsules',SINGULAR], 'capsules':[QUANTITYRATIO,0,10,'capsules',PLURAL], 'cap':[QUANTITYRATIO,0,3,'capsules'], 'caps':[QUANTITYRATIO,0,3,'capsules'],
+		]),
+		SLICE(16, "slices", 2, [
+			'slice':[QUANTITYRATIO,0,10,'slices',SINGULAR], 'slices':[QUANTITYRATIO,0,10,'slices',PLURAL],
+		]),
+		DRINK(17, "drinks", 2, [
+			'drink':[QUANTITYRATIO,0,10,'glasses',SINGULAR], 'drinks':[QUANTITYRATIO,0,10,'glasses',PLURAL],
+		]),
+		GLASS(18, "glasses", 2, [
+			'glass':[QUANTITYRATIO,0,5,'glasses',SINGULAR], 'glasses':[QUANTITYRATIO,0,10,'glasses',PLURAL],
+		]),
+		K(19, "k", 2, [
+			'K':[QUANTITYRATIO,0,2,'k',BOTH], 'k':[QUANTITYRATIO,0,2,'k'],
+		]),
+		CLAW(20, "claws", 2, [
+			'claw':[QUANTITYRATIO,0,10,'claws',SINGULAR], 'claw':[QUANTITYRATIO,0,10,'claws',PLURAL],
+		]),
+		UNIT(21, "units", 2, [
+			'u':[QUANTITYRATIO,0,2,'units'], 'unit':[QUANTITYRATIO,0,10,'units', SINGULAR], 'units':[QUANTITYRATIO,0,10,'units',PLURAL],
+			'mU':[QUANTITYRATIO / 1000.0d,0,2,'milliunits',SINGULAR], 'mu':[QUANTITYRATIO / 1000.0d,0,10,'milliunits',PLURAL],
+			'milliunit':[QUANTITYRATIO / 1000.0d,0,10,'milliunits'], 'milliunits':[QUANTITYRATIO / 1000.0d,0,10,'milliunits'],
+		]),
+		INTERNATIONALUNIT(23, "international unit", 2, [
+			'iu':[QUANTITYRATIO,0,2,'iu', BOTH], 'ius':[QUANTITYRATIO,0,10,'iu'],
+		]),
+		DOLLAR(24, "dollars", 2, [
+			'dollar':[1.0d,0,10,'dollars',SINGULAR], 'dollars':[1.0d,0,10,'dollars',PLURAL],
+			'cent':[0.01d,0,10,'dollars',SINGULAR], 'cents':[0.01d,0,10,'dollars',PLURAL],
+		]),
+		BEER(25, "beers", 2, [
+			'beer':[QUANTITYRATIO,0,5,'beers',SINGULAR], 'beers':[QUANTITYRATIO,0,10,'beers',PLURAL],
+		]),
+		QUANTITY(26, "quantity", 2, [
+			'quantity':[QUANTITYRATIO,0,10,'quantity',BOTH], 'qty':[QUANTITYRATIO,0,10,'quantity'],
+		]),
 		static final double PERSECOND = 1.0d
 		static final double PERMINUTE = 60.0d
 		static final double PERHOUR = 60.0d * PERMINUTE
@@ -380,6 +466,8 @@ class UnitGroupMap {
 		Set<String> units = new HashSet<String>()
 		Map<Double, UnitRatio> singularSubUnit = [:]
 		Map<Double, UnitRatio> pluralSubUnit = [:]
+		Map<String, UnitGroup> numeratorMap = null
+		Map<String, UnitGroup> denominatorMap = null
 		
 		UnitGroup(int id, String name, int priority, def initMap) {
 			this.id = id
@@ -453,13 +541,76 @@ class UnitGroupMap {
 			if (id == null) return null
 			unitGroups.get(id)
 		}
+		
+		static UnitGroup get(long id) {
+			return get((int) id)
+		}
+		
+		void addNumeratorGroups(UnitGroup... groups) {
+			if (numeratorMap == null)
+				numeratorMap = [:]
+			groups.each {
+				numeratorMap.putAll(it.map)
+			}
+		}
+		
+		void addDenominatorGroups(UnitGroup... groups) {
+			if (denominatorMap == null)
+				denominatorMap = [:]
+			groups.each {
+				denominatorMap.putAll(it.map)
+			}
+		}
+		
+		
+		String lookupUnitString(String unit, boolean plural) {
+			UnitRatio unitRatio = lookupUnitRatio(unit)
+			
+			if (!unitRatio)
+				return unit
+			
+			double ratio = unitRatio.ratio
+			
+			if (plural) {
+				UnitRatio pluralRatio = pluralSubUnit?.get(ratio)
+				return (pluralRatio ?: unitRatio).unit
+			}
+			
+			UnitRatio singularRatio = singularSubUnit?.get(ratio)
+			return (singularRatio ?: unitRatio).unit
+		}
 
 		UnitRatio lookupUnitRatio(String unit) {
-			return map[unit]
+			UnitRatio unitRatio = map[unit]
+			if (unitRatio) return unitRatio
+			unitRatio = map[unit.toLowerCase()]
+			if (unitRatio) return unitRatio
+			if (numeratorMap != null && denominatorMap != null) {
+				int slashPosition = unit.indexOf('/')
+				if (slashPosition > 0) {
+					String leftUnits = unit.substring(0, slashPosition)
+					String rightUnits = unit.substring(slashPosition +1)
+					
+					UnitRatio numeratorRatio = numeratorMap.get(leftUnits)
+					UnitRatio denominatorRatio = denominatorMap.get(rightUnits)
+					
+					if (numeratorRatio != null && denominatorRatio != null) {
+						// create new hybrid UnitRatio
+						String unitName = numeratorRatio.canonicalUnitString + '/' + denominatorRatio.canonicalUnitString
+						UnitRatio newDensityRatio = new UnitRatio(this, unit, numeratorRatio.ratio / denominatorRatio.ratio, 10, unitName, unitName, name)
+						map.put(unit, newDensityRatio)
+						map.put(unitName, newDensityRatio)
+						
+						return newDensityRatio
+					}
+				}
+			}
+			
+			return null
 		}
 		
 		UnitRatio lookupBestUnitRatio(String unit, UnitRatio prevUnitRatio) {
-			UnitRatio unitRatio = map[unit]
+			UnitRatio unitRatio = lookupUnitRatio(unit)
 
 			if (unitRatio == null) return prevUnitRatio
 			
@@ -471,6 +622,12 @@ class UnitGroupMap {
 		}
 	}
 	
+	{
+		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
+				UnitGroup.UNIT, UnitGroup.QUANTITY)
+		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
+	}
+
 	static class UnitRatio {
 		UnitGroup unitGroup
 		String unit 
@@ -507,7 +664,6 @@ class UnitGroupMap {
 			this.subRatio = 0.0d
 			this.singularSubUnitRatio = null
 			this.pluralSubUnitRatio = null
-
 		}
 		
 		UnitRatio bestRatio(UnitRatio other) {
@@ -529,7 +685,7 @@ class UnitGroupMap {
 		}
 		
 		UnitRatio lookupUnitRatio(String unit) {
-			return unitGroup.map[unit]
+			return unitGroup.lookupUnitRatio(unit)
 		}
 		
 		BigDecimal conversionRatio(String unit) {
@@ -572,7 +728,7 @@ class UnitGroupMap {
 	static Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	
-	Map<String, UnitRatio> unitsToRatio = new HashMap<String, UnitRatio>()
+	Map<String, UnitRatio> unitsToRatio = new ConcurrentHashMap<String, UnitRatio>()
 
 	def UnitGroupMap() {
 		Set<String> allUnits = new HashSet<String>()
@@ -583,7 +739,7 @@ class UnitGroupMap {
 		}
 		
 		for (String units : allUnits) {
-			unitsToRatio.put(units, calculateUnitRatioForUnits(units))
+			unitsToRatio.put(units.toLowerCase(), lookupUnitRatioForUnits(units))
 		}
 	}
 	
@@ -591,19 +747,25 @@ class UnitGroupMap {
 	 *	Compute which group a given unit falls under, looking through UnitGroups for best match
 	 *
 	 */
-	protected UnitRatio calculateUnitRatioForUnits(String units) {
-		if (!units) return null
+	protected UnitRatio lookupUnitRatioForUnits(String units) {
+		UnitRatio ratio = unitsToRatio.get(units)
 		
-		def unitRatio = null
+		if (ratio)
+			return ratio
+		
 		for (UnitGroup group : UnitGroup.values()) {
-			unitRatio = group.lookupBestUnitRatio(units, unitRatio)
+			ratio = group.lookupBestUnitRatio(units, ratio)
 		}
-		return unitRatio
+		
+		if (ratio)
+			unitsToRatio.put(units, ratio)
+		
+		return ratio
 	}
 	
 	double fetchConversionRatio(String fromUnits, String toUnits) {
-		UnitRatio fromUnitRatio = unitsToRatio.get(fromUnits)
-		UnitRatio toUnitRatio = unitsToRatio.get(toUnits)
+		UnitRatio fromUnitRatio = lookupUnitRatioForUnits(fromUnits.toLowerCase())
+		UnitRatio toUnitRatio = lookupUnitRatioForUnits(toUnits.toLowerCase())
 		
 		double fromRatio = fromUnitRatio == null ? 1.0d : fromUnitRatio.ratio
 		double toRatio = toUnitRatio == null ? 1.0d : toUnitRatio.ratio
@@ -613,9 +775,11 @@ class UnitGroupMap {
 	
 	/**
 	 * Returns generic closest-matching UnitRatio for the given unit string
+	 * 
+	 * Also look for units that contain an additional suffix ("meters climbed") and records it as "miles" plus suffix of "climbed"
 	 */
 	UnitRatio unitRatioForUnits(String units) {
-		UnitRatio ratio = unitsToRatio.get(units)
+		UnitRatio ratio = lookupUnitRatioForUnits(units.toLowerCase())
 		
 		if (ratio != null) return ratio
 		
@@ -623,10 +787,13 @@ class UnitGroupMap {
 		
 		if (matcher.lookingAt()) {
 			String units2 = matcher.group(1)
-			ratio = unitsToRatio.get(units2)
+			ratio = unitsToRatio.get(units2.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(3)
-				return new UnitRatio(ratio, suffix)
+				ratio = new UnitRatio(ratio, suffix)
+				unitsToRatio.put(units, ratio)
+				
+				return ratio
 			}
 		}
 		
@@ -634,10 +801,13 @@ class UnitGroupMap {
 		
 		if (matcher.lookingAt()) {
 			String units1 = matcher.group(1)
-			ratio = unitsToRatio.get(units1)
+			ratio = unitsToRatio.get(units1.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(4)
-				return new UnitRatio(ratio, suffix)
+				ratio = new UnitRatio(ratio, suffix)
+				unitsToRatio.put(units, ratio)
+				
+				return ratio
 			}
 		}
 		
@@ -723,6 +893,24 @@ class UnitGroupMap {
 		}
 		
 		return Tag.look(baseTag.getDescription() + ' ' + suffix)
+	}
+
+	/**
+	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
+	 */
+	String suffixForUnits(String units) {
+		if (!units) {
+			return ""
+		}
+		
+		UnitRatio unitRatio = unitRatioForUnits(units)
+		String suffix
+		if (unitRatio)
+			suffix = unitRatio.getSuffix()
+		else
+			suffix = units
+		
+		return suffix
 	}
 
 	/**
