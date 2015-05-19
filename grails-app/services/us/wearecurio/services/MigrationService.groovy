@@ -585,7 +585,7 @@ class MigrationService {
 		tryMigration("Index elasticsearch again") {
 			elasticSearchService.index()
 		}
-		tryMigration("Recompute entry base tags") {
+		/*tryMigration("Recompute entry base tags") {
 			sql("update entry e set units = '' where e.units in ('at','am','pm','om','repeat','remind','midnight','noon','start','stop','end','undefined','round','with','while','-')")
 			sql("update entry e set units = 'mU/ul' where e.units in ('m/ul')")
 			
@@ -610,7 +610,7 @@ class MigrationService {
 				
 				Utils.save(entry, true)
 			}
-		}
+		}*/
 		tryMigration("Recompute null base tags") {
 			def rows = sqlRows("select entry.id from entry where entry.base_tag_id is null")
 			
@@ -618,11 +618,7 @@ class MigrationService {
 				Entry entry = Entry.get(row['id'])
 				
 				if (entry.units) {
-					String suffix = UnitGroupMap.theMap.suffixForUnits(entry.units)
-				
-					String description = entry.tag.description
-					
-					entry.baseTag = Tag.look(description.substring(0, description.length() - (suffix.length() + 1)))
+					entry.baseTag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.tag, entry.units, 0)
 				} else {
 					entry.baseTag = entry.tag
 				}
