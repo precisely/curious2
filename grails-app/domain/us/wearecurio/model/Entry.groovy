@@ -2207,6 +2207,8 @@ class Entry implements Comparable {
 		def repeaterOrder = { LocalTimeRepeater a, LocalTimeRepeater b ->
 			if (a.getCurrentDateTime() == null) return 1 // sort null repeaters to end
 			if (b.getCurrentDateTime() == null) return -1 // sort null repeaters to end
+			if (!a.isActive()) return 1 // sort inactive repeaters to end
+			if (!b.isActive()) return -1 // sort inactive repeaters to end
 			return a.getCurrentDateTime().getMillis() <=> b.getCurrentDateTime().getMillis()
 		}
 		if (repeaters.size() == 0) return
@@ -2237,6 +2239,7 @@ class Entry implements Comparable {
 				}
 			}
 		}
+		repeaters = repeaters
 	}
 
 	static final double twoPi = 2.0d * Math.PI
