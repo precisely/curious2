@@ -368,11 +368,11 @@ function addAllFeedItems(data) {
 
 	$.each(data.listItems, function(index, item) {
 		var compiledHtml = '';
-		if (item.virtualUserId) {
+		if (item.type == 'sprint') {
 			compiledHtml = _.template(_sprints)({'sprint': item});
-		} else if (item.groupName) {
+		} else if (item.type == 'discussion') {
 			compiledHtml = _.template(_discussions)({'discussionData': item});
-		} else {
+		} else if (item.type == 'people') {
 			compiledHtml = _.template(_people)({'user': item});
 		}
 		$('#feed').append(compiledHtml);

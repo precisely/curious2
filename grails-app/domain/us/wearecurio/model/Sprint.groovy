@@ -333,7 +333,8 @@ class Sprint {
 			virtualUserId: this.virtualUserId,
 			virtualGroupId: this.virtualGroupId,
 			created: this.created,
-			updated: this.updated
+			updated: this.updated,
+			type: "sprint"
 		]
 	}
 	

@@ -439,6 +439,7 @@ class User {
 			website: website,
 			notifyOnComments: notifyOnComments,
 			created: created,
+			type: "people"
 		];
 	}
 
