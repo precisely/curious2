@@ -40,7 +40,7 @@ class LocalTimeRepeater {
 			currentDateTime = localDate.toDateTime(localTime, dateTimeZone)
 		}
 
-		if (currentDateTime.getMillis() >= endDateTimeTicks) {
+		if (currentDateTime.getMillis() > endDateTimeTicks) {
 			return currentDateTime = null
 		}
 
