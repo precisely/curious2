@@ -1210,9 +1210,9 @@ class Entry implements Comparable {
 		 } */ else if (type == BYALPHA) {
 			retVal = databaseService.sqlRows("select t.id, t.description, count(e.id) as c, CASE prop.data_type_computed WHEN 'CONTINUOUS' THEN 1 ELSE 0 END as iscontinuous, prop.show_points as showpoints from entry e inner join tag t on e.base_tag_id = t.id left join tag_properties prop on prop.user_id = e.user_id and prop.tag_id = t.id where e.user_id = :userId and e.date is not null group by t.id order by t.description", [userId:user.getId()])
 		} else if (type == ONLYIDS) {
-			retVal = Entry.executeQuery("select entry.tag.id from Entry as entry where entry.userId = :userId and entry.date is not null group by entry.baseTag.id", [userId:user.getId()])
+			retVal = Entry.executeQuery("select entry.baseTag.id from Entry as entry where entry.userId = :userId and entry.date is not null and entry.baseTag is not null group by entry.baseTag.id", [userId:user.getId()])
 		} else if (type == BYCOUNTONLYDESCRIPTION) {
-			retVal = Entry.executeQuery("select entry.tag.description from Entry as entry where entry.userId = :userId and entry.date is not null group by entry.baseTag.id order by count(entry.id) desc", [userId:user.getId()])
+			retVal = Entry.executeQuery("select entry.baseTag.description from Entry as entry where entry.userId = :userId and entry.date is not null and entry.baseTag is not null group by entry.baseTag.id order by count(entry.id) desc", [userId:user.getId()])
 		}
 
 		//log.debug "Returned:" + retVal
