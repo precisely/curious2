@@ -118,7 +118,7 @@ class TagValueStats {
 		def tags = Entry.getTags(user, Entry.ONLYIDS)
 		
 		for (tagId in tags) {
-			createOrUpdate(userId, tagId)
+			createOrUpdate(userId, tagId, null)
 		}
 	}
 	
