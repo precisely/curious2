@@ -210,8 +210,6 @@ class TagStats {
 		
 		def userId = user.getId()
 
-		TagStats.executeUpdate("delete TagStats t where t.userId = :userId", [userId:userId])
-		
 		def tags = Entry.getBaseTags(user, Entry.ONLYIDS)
 		
 		for (tagId in tags) {

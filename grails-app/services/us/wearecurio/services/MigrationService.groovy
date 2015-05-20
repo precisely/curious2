@@ -621,7 +621,10 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration("Clear and recompute tag stats") {
+		tryMigration("Clear and recompute tag stats again") {
+			sql("delete from tag_stats")
+			sql("delete from tag_value_stats")
+			
 			def users = User.list()
 			
 			for (u in users) {
