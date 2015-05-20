@@ -621,7 +621,7 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration("Clear and recompute tag stats yet again") {
+		tryMigration("Clear and recompute tag stats and yet again") {
 			sql("delete from tag_stats")
 			sql("delete from tag_value_stats")
 			

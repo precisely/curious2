@@ -299,6 +299,9 @@ class TagStats {
 		def allTagStats = c2 {
 			and {
 				eq("userId", userId)
+				not {
+					isNull("mostRecentUsage")
+				}
 			}
 		}
 		
