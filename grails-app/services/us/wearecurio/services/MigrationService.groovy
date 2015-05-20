@@ -560,13 +560,6 @@ class MigrationService {
 		tryMigration("Remove correlation table since we're using analytics_correlation instead.") {
 			sql("DROP TABLE IF EXISTS correlation");
 		}
-		tryMigration("Recompute all tag stats again") {
-			def users = User.list()
-			for (u in users) {
-				TagStats.updateTagStats(u)
-				TagStats.updateTagValueStats(u)
-			}
-		}
 		tryMigration("Change analytics_task.status and analytics_task.type to integer.") {
 			sql("alter table analytics_task drop column status2;");
 			sql("alter table analytics_task change status status2 varchar(255) null default null;")
@@ -585,7 +578,7 @@ class MigrationService {
 		tryMigration("Index elasticsearch again") {
 			elasticSearchService.index()
 		}
-		/*tryMigration("Recompute entry base tags") {
+		tryMigration("Recompute entry base tags") {
 			sql("update entry e set units = '' where e.units in ('at','am','pm','om','repeat','remind','midnight','noon','start','stop','end','undefined','round','with','while','-')")
 			sql("update entry e set units = 'mU/ul' where e.units in ('m/ul')")
 			
@@ -610,7 +603,7 @@ class MigrationService {
 				
 				Utils.save(entry, true)
 			}
-		}*/
+		}
 		tryMigration("Recompute null base tags") {
 			def rows = sqlRows("select entry.id from entry where entry.base_tag_id is null")
 			
@@ -624,6 +617,27 @@ class MigrationService {
 				}
 				
 				Utils.save(entry, true)
+			}
+		}
+		tryMigration("Reverse recomputation of base tags") {
+			def rows = sqlRows("select entry.id from entry")
+			
+			for (row in rows) {
+				Entry entry = Entry.get(row['id'])
+				
+				if (entry.baseTag.description.length() > entry.tag.description.length()) {
+					Tag oldBaseTag = entry.baseTag
+					entry.baseTag = entry.tag
+					entry.tag = oldBaseTag
+					Utils.save(entry, true)
+				}
+			}
+			
+			def users = User.list()
+			
+			for (u in users) {
+				TagStats.updateTagStats(u)
+				TagValueStats.updateTagValueStats(u)
 			}
 		}
 	}
