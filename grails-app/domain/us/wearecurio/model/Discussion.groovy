@@ -411,7 +411,7 @@ class Discussion {
 			isPublic: this.visibility == Model.Visibility.PUBLIC,
 			created: this.created,
 			updated: this.updated,
-			type: "discussion"
+			type: "dis"
 		]
 	}
 
