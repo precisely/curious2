@@ -97,6 +97,8 @@ class MigrationService {
 	def didMigration(Migration migration) {
 		migration.setHasRun(true)
 		Utils.save(migration, true)
+		
+		log.debug("Finished migration" + migration)
 	}
 	
 	public def tryMigration(def code, Closure closure) {
@@ -105,6 +107,8 @@ class MigrationService {
 		migration = shouldDoMigration(code)
 		
 		if (migration) {
+			log.debug("Starting migration: " + migration)
+			
 			def retVal = true
 			
 			try {
@@ -621,13 +625,14 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration("Clear and recompute tag stats and once more") {
+		tryMigration("Clear and recompute tag stats and yet once more") {
 			sql("delete from tag_stats")
 			sql("delete from tag_value_stats")
 			
 			def users = User.list()
 			
 			for (u in users) {
+				log.debug("Recomputing stats for user " + u.id)
 				TagStats.updateTagStats(u)
 				TagValueStats.updateTagValueStats(u)
 			}
