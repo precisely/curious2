@@ -100,6 +100,8 @@ class TagValueStats {
 			}
 		}
 		
+		Utils.save(stats, true)
+		
 		return stats
 	}
 	

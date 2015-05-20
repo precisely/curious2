@@ -98,7 +98,7 @@ class TagUnitStats {
 		
 		tagUnitStats.timesUsed+=1
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
-		tagUnitStats.save()
+		tagUnitStats.save(flush:true)
 		
 		cache.putAt(new UserTagId(userId, tagId), tagUnitStats)
 		return tagUnitStats
