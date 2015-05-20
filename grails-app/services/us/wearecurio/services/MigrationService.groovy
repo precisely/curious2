@@ -611,7 +611,9 @@ class MigrationService {
 				Entry entry = Entry.get(row['id'])
 				
 				if (entry.units) {
-					entry.baseTag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.tag, entry.units, 0)
+					Tag origTag = entry.tag
+					entry.tag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.tag, entry.units, 0)
+					entry.baseTag = origTag
 				} else {
 					entry.baseTag = entry.tag
 				}
@@ -619,20 +621,7 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration("Reverse recomputation of base tags") {
-			def rows = sqlRows("select entry.id from entry")
-			
-			for (row in rows) {
-				Entry entry = Entry.get(row['id'])
-				
-				if (entry.baseTag.description.length() > entry.tag.description.length()) {
-					Tag oldBaseTag = entry.baseTag
-					entry.baseTag = entry.tag
-					entry.tag = oldBaseTag
-					Utils.save(entry, true)
-				}
-			}
-			
+		tryMigration("Clear and recompute tag stats") {
 			def users = User.list()
 			
 			for (u in users) {

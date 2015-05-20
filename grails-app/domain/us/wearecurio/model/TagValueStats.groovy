@@ -112,6 +112,8 @@ class TagValueStats {
 		log.debug "TagStats.updateTagStats() userId:" + user.getId()
 		
 		def userId = user.getId()
+		
+		TagValueStats.executeUpdate("delete TagValueStats t where t.userId = :userId", [userId:userId])
 
 		def tagStats = []
 		

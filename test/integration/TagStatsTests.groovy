@@ -309,6 +309,8 @@ class TagStatsTests extends CuriousTestCase {
 		TagStats result5 = TagStats.createOrUpdate(userId, tag4.getId())
 		
 		assert result5.getTypicallyNoAmount()
+		
+		TagStats.updateTagStats(user)
 	}
 
 	@Test
@@ -356,5 +358,7 @@ class TagStatsTests extends CuriousTestCase {
 		assert resultV2.getMinimum().intValue() == 1
 		
 		assert resultV2.getMaximum().intValue() == 4
+		
+		TagValueStats.updateTagValueStats(user)
 	}
 }
