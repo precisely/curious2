@@ -311,7 +311,7 @@ class TagStats {
 			tagStatsMap[stats.getTagId()] = stats
 		}
 
-		def tags = Entry.getTags(user, Entry.ONLYIDS)
+		def tags = Entry.getBaseTags(user, Entry.ONLYIDS)
 		
 		for (tagId in tags) {
 			/* if (!repeatingTagIds.contains(tagId)) { */
