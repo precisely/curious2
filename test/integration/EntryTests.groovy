@@ -190,6 +190,21 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testBigNumbers() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1000 slices", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1000.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1,000 slices", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1000.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1000000000000000000000000000000 slices", baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1000.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+	}
+	
+	@Test
 	void testParse() {
 		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "bread 1 slice", baseDate, true), new EntryStats())
 		println entry.valueString()

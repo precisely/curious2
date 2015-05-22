@@ -76,8 +76,13 @@ class TagValueStats {
 			UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, [tagId])
 
 			if (mostUsedUnitRatio == null) {
-				stats.minimum = minMax[0][0]
-				stats.maximum = minMax[0][1]
+				BigDecimal min = minMax[0][0]
+				BigDecimal max = minMax[0][1]
+				
+				if (stats.minimum == null || (min != null && min < stats.minimum))
+					stats.minimum = min
+				if (stats.maximum == null || (max != null && max > stats.maximum))
+					stats.maximum = max
 			} else for (int i = 0; i < minMax.size(); ++i) {
 				String units = minMax[i][2]
 				BigDecimal ratio = mostUsedUnitRatio.conversionRatio(units)

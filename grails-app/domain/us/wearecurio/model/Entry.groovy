@@ -2523,7 +2523,7 @@ class Entry implements Comparable {
 	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
 	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)($|\s*)/
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
-	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
+	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
 	
 	protected static Map<String, BigDecimal> numberMap = [
 		'zero' : [new BigDecimal(0, mc), DEFAULT_AMOUNTPRECISION],
