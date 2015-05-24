@@ -381,4 +381,21 @@ class EntryGroupTests extends CuriousTestCase {
 		
 		assert c == 0
 	}
+	
+/*	@Test
+	void testBloodPressure() {
+		def entry = Entry.create(userId, Entry.parse(currentTime, timeZone, "blood pressure 120/80", baseDate, true), new EntryStats())
+
+		Entry.delete(entry, new EntryStats())
+				
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+		}
+		
+		assert c == 0
+	}*/
 }

@@ -50,9 +50,12 @@ class Entry implements Comparable {
 	protected static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
 	protected static final int VAGUE_DATE_PRECISION_SECS = 86400
 	
+	protected static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999.999999999")
+	protected static final BigDecimal MIN_AMOUNT = new BigDecimal("-9999999999.999999999")
+	
 	static constraints = {
 		group(nullable:true)
-		amount(scale:9, nullable:true)
+		amount(scale:9, max:9999999999999999999.999999999, nullable:true)
 		date(nullable:true)
 		datePrecisionSecs(nullable:true)
 		amountPrecision(nullable:true)
@@ -574,6 +577,14 @@ class Entry implements Comparable {
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
 		BigDecimal amount = m['amount']
+		
+		if (amount) {
+			if (amount.compareTo(MAX_AMOUNT) > 0) {
+				amount = MAX_AMOUNT
+			} else if (amount.compareTo(MIN_AMOUNT) < 0) {
+				amount = MIN_AMOUNT
+			}
+		}
 		
 		if (m['units'] == null)
 			m['units'] = ''
@@ -2012,6 +2023,13 @@ class Entry implements Comparable {
 		setTag(m['tag'])
 		setDate(m['date'])
 		setDatePrecisionSecs(m['datePrecisionSecs'])
+		if (amt) {
+			if (amt.compareTo(MAX_AMOUNT) > 0) {
+				amt = MAX_AMOUNT
+			} else if (amt.compareTo(MIN_AMOUNT) < 0) {
+				amt = MIN_AMOUNT
+			}
+		}
 		setAmount(amt)
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
@@ -2521,6 +2539,7 @@ class Entry implements Comparable {
 	 */
 
 	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
+	protected static final Pattern timeWordPattern    = ~/(?i)^(noon|midnight)\b\s*/
 	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)($|\s*)/
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
 	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
@@ -2793,7 +2812,22 @@ class Entry implements Comparable {
 				foundAMPM = true
 			}
 		})
-
+		ScannerPattern timeWordScanPattern = new ScannerPattern(scanner, CONDITION_TIME, timeWordPattern, true, {
+			foundTime = true
+			def noonmid = scanner.group(1)
+			if (noonmid != null) {
+				if (noonmid.equals('noon')) {
+					hours = 12
+					foundAMPM = true
+					return
+				} else if (noonmid.equals('midnight')) {
+					hours = 0
+					foundAMPM = true
+					return
+				}
+			}
+		})
+		
 		LinkedList<String> words = new LinkedList<String>()
 		LinkedList<String> commentWords = new LinkedList<String>()
 		String suffix = ''
@@ -2846,11 +2880,11 @@ class Entry implements Comparable {
 			currentAmountIndex = amounts.size()
 			boolean twoDAmount = false
 			
-			amountStrs.add(scanner.group(2))
+			amountStrs.add(scanner.group(2).replace(",",""))
 			amountStr = scanner.group(4)
 			
 			if (amountStr) {
-				amountStrs.add(amountStr)
+				amountStrs.add(amountStr.replace(",",""))
 				twoDAmount = true
 			}
 			
@@ -2908,22 +2942,24 @@ class Entry implements Comparable {
 
 		// set up structural rules
 		
-		repeatScanPattern.followedBy([ atEndScanPattern, durationScanPattern, timeScanPattern, commentScanPattern ])
-		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, durationStartScanPattern])
-		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, commentScanPattern ])
-		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, repeatStartScanPattern])
-		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern ])
+		timeWordScanPattern.followedBy([ atEndScanPattern, durationScanPattern, commentScanPattern, amountScanPattern, durationScanPattern, repeatScanPattern, durationSynonymScanPattern ])
+		repeatScanPattern.followedBy([ atEndScanPattern, durationScanPattern, timeScanPattern, timeWordScanPattern, commentScanPattern ])
+		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, durationStartScanPattern])
+		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, timeWordScanPattern, commentScanPattern ])
+		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, repeatStartScanPattern])
+		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern ])
 		
-		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
-		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
-		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
-		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
-		unitsFirstScanPatternA.followedBy([atEndScanPattern, timeScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
+		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
+		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
+		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+		unitsFirstScanPatternA.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
 		
 		// start parsing!
 		
 		// time can appear at the beginning, and since it is context-free can just run it at the outset
 		timeScanPattern.match()
+		timeWordScanPattern.match()
 		
 		while (scanner.ready()) {
 			if (words.size() == 0) { // try repeat at start
@@ -2936,6 +2972,7 @@ class Entry implements Comparable {
 			if (matchTag) tagWordScanPattern.match()
 			repeatScanPattern.tryMatch() { matchTag = false }
 			timeScanPattern.tryMatch() { matchTag = false }
+			timeWordScanPattern.tryMatch() { matchTag = false }
 			durationScanPattern.tryMatch() { matchTag = false }
 			amountScanPattern.tryMatch() { matchTag = false }
 			if (!matchTag) {
