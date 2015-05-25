@@ -604,7 +604,7 @@ class Entry implements Comparable {
 			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0
 			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
 			if (tagUnitStats) {
-				m['units'] = tagUnitStats.lookupUnitString(amount.compareTo(BigDecimal.ONE) != 0)
+				m['units'] = tagUnitStats.lookupUnitString(m['amount'].compareTo(BigDecimal.ONE) != 0)
 			}
 		} else {
 			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'])
@@ -618,7 +618,7 @@ class Entry implements Comparable {
 				timeZoneId:timeZoneId,
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
-				amount:amount,
+				amount:m['amount'],
 				repeatType: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,
