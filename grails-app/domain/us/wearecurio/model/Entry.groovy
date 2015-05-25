@@ -555,6 +555,24 @@ class Entry implements Comparable {
 
 		return false
 	}
+	
+	protected static void checkAmount(Map m) {
+		BigDecimal amount = m['amount']
+		
+		if (amount) {
+			if (amount.compareTo(MAX_AMOUNT) > 0) {
+				amount = MAX_AMOUNT
+				if (!m['comment'].endsWith("(amount too large to store)"))
+					m['comment'] += "(amount too large to store)"
+			} else if (amount.compareTo(MIN_AMOUNT) < 0) {
+				amount = MIN_AMOUNT
+				if (!m['comment'].endsWith("(amount too small to store)"))
+					m['comment'] += "(amount too small to store)"
+			}
+		}
+		
+		m['amount'] = amount
+	}
 
 	protected static Entry createSingle(Long userId, Map m, EntryGroup group, EntryStats stats) {
 		log.debug "Entry.createSingle() userId:" + userId + ", m:" + m
@@ -576,15 +594,7 @@ class Entry implements Comparable {
 
 		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
 
-		BigDecimal amount = m['amount']
-		
-		if (amount) {
-			if (amount.compareTo(MAX_AMOUNT) > 0) {
-				amount = MAX_AMOUNT
-			} else if (amount.compareTo(MIN_AMOUNT) < 0) {
-				amount = MIN_AMOUNT
-			}
-		}
+		checkAmount(m)
 		
 		if (m['units'] == null)
 			m['units'] = ''
@@ -2008,8 +2018,7 @@ class Entry implements Comparable {
 
 		def descriptionChanged = tag.getId() != newTag.getId()
 
-		def amt = m['amount']
-		amt = amt == null ? null : new BigDecimal(amt, mc)
+		m['amount'] = m['amount'] == null ? null : new BigDecimal(m['amount'], mc)
 
 		/**
 		 * check to see if entry repeat type has changed. If so, merge and/or create new repeat structure
@@ -2023,14 +2032,8 @@ class Entry implements Comparable {
 		setTag(m['tag'])
 		setDate(m['date'])
 		setDatePrecisionSecs(m['datePrecisionSecs'])
-		if (amt) {
-			if (amt.compareTo(MAX_AMOUNT) > 0) {
-				amt = MAX_AMOUNT
-			} else if (amt.compareTo(MIN_AMOUNT) < 0) {
-				amt = MIN_AMOUNT
-			}
-		}
-		setAmount(amt)
+		checkAmount(m)
+		setAmount(m['amount'])
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
