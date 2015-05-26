@@ -65,10 +65,10 @@ class UnitGroupMapTests extends CuriousTestCase {
 
 	@Test
 	void testDefaultSuffixes() {
-		unitSuffix("miles", "distance")
-		unitSuffix("feet climbing", "climbing")
-		unitSuffix("mg/tsp", "density")
-		unitSuffix("pg/tsp", "density")
+		unitSuffix("miles", "[distance]")
+		unitSuffix("feet climbing", "[climbing]")
+		unitSuffix("mg/tsp", "[density]")
+		unitSuffix("pg/tsp", "[density]")
 	}
 	
 	@Test

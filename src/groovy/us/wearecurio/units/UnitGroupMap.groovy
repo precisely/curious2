@@ -13,6 +13,11 @@ class UnitGroupMap {
 
 	private static def log = LogFactory.getLog(this)
 
+	static final Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
+	static final Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
+	
+	Map<String, UnitRatio> unitsToRatio
+
 	//Index offsets of unit ratio initializer array
 	static final int RATIO = 0
 	static final int SUBRATIO = 1
@@ -583,6 +588,7 @@ class UnitGroupMap {
 		UnitRatio lookupUnitRatio(String unit) {
 			UnitRatio unitRatio = map[unit]
 			if (unitRatio) return unitRatio
+			unit = unit.toLowerCase()
 			unitRatio = map[unit.toLowerCase()]
 			if (unitRatio) return unitRatio
 			if (numeratorMap != null && denominatorMap != null) {
@@ -647,6 +653,8 @@ class UnitGroupMap {
 			this.affinity = affinity
 			this.canonicalUnit = canonicalUnit
 			this.canonicalUnitString = canonicalUnitString ?: canonicalUnit
+			if (!suffix.startsWith('['))
+				suffix = '[' + suffix + ']'
 			this.suffix = suffix
 			this.subRatio = 0.0d
 			this.singularSubUnitRatio = null
@@ -660,6 +668,8 @@ class UnitGroupMap {
 			this.affinity = other.affinity
 			this.canonicalUnit = other.canonicalUnit
 			this.canonicalUnitString = other.canonicalUnitString
+			if (!newSuffix.startsWith('['))
+				newSuffix = '[' + newSuffix + ']'
 			this.suffix = newSuffix
 			this.subRatio = 0.0d
 			this.singularSubUnitRatio = null
@@ -725,11 +735,6 @@ class UnitGroupMap {
 	
 	static final UnitGroupMap theMap = new UnitGroupMap()
 	
-	static Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
-	static Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
-	
-	Map<String, UnitRatio> unitsToRatio = new ConcurrentHashMap<String, UnitRatio>()
-
 	def UnitGroupMap() {
 		Set<String> allUnits = new HashSet<String>()
 		
@@ -738,8 +743,16 @@ class UnitGroupMap {
 			allUnits.addAll(group.fetchUnits())
 		}
 		
+		unitsToRatio = new ConcurrentHashMap<String, UnitRatio>()
+
 		for (String units : allUnits) {
-			unitsToRatio.put(units.toLowerCase(), lookupUnitRatioForUnits(units))
+			UnitRatio baseRatio = simpleLookupUnitRatioForUnits(units)
+			if (baseRatio)
+				unitsToRatio.put(units.toLowerCase(), baseRatio)
+		}
+		
+		for (String units : allUnits) {
+			unitsToRatio.put(units.toLowerCase(), unitRatioForUnits(units))
 		}
 	}
 	
@@ -747,7 +760,7 @@ class UnitGroupMap {
 	 *	Compute which group a given unit falls under, looking through UnitGroups for best match
 	 *
 	 */
-	protected UnitRatio lookupUnitRatioForUnits(String units) {
+	protected UnitRatio simpleLookupUnitRatioForUnits(String units) {
 		UnitRatio ratio = unitsToRatio.get(units)
 		
 		if (ratio)
@@ -763,14 +776,15 @@ class UnitGroupMap {
 		return ratio
 	}
 	
+	protected double lookupRatioForUnits(String units) {
+		UnitRatio unitRatio = unitRatioForUnits(units.toLowerCase())
+		if (unitRatio) return unitRatio.ratio
+		
+		return 1.0d
+	}
+	
 	double fetchConversionRatio(String fromUnits, String toUnits) {
-		UnitRatio fromUnitRatio = lookupUnitRatioForUnits(fromUnits.toLowerCase())
-		UnitRatio toUnitRatio = lookupUnitRatioForUnits(toUnits.toLowerCase())
-		
-		double fromRatio = fromUnitRatio == null ? 1.0d : fromUnitRatio.ratio
-		double toRatio = toUnitRatio == null ? 1.0d : toUnitRatio.ratio
-		
-		return fromRatio / toRatio
+		return lookupRatioForUnits(fromUnits) / lookupRatioForUnits(toUnits)
 	}
 	
 	/**
@@ -779,7 +793,7 @@ class UnitGroupMap {
 	 * Also look for units that contain an additional suffix ("meters climbed") and records it as "miles" plus suffix of "climbed"
 	 */
 	UnitRatio unitRatioForUnits(String units) {
-		UnitRatio ratio = lookupUnitRatioForUnits(units.toLowerCase())
+		UnitRatio ratio = simpleLookupUnitRatioForUnits(units.toLowerCase())
 		
 		if (ratio != null) return ratio
 		
@@ -885,9 +899,9 @@ class UnitGroupMap {
 			
 		if (Entry.bloodPressureTags.contains(baseTag.getDescription())) {
 			if (suffix) {
-				if (suffix.equals("pressure")) {
-					if (index == 0) suffix = "systolic"
-					else suffix = "diastolic"
+				if (suffix.equals("[pressure]")) {
+					if (index == 0) suffix = "[systolic]"
+					else suffix = "[diastolic]"
 				}
 			}
 		}

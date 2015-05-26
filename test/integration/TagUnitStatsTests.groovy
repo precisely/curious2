@@ -108,8 +108,8 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 5 lbs 4pm", baseDate, true), stats)
 		
 		def z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
-			Tag.look("jog distance").getId(),
-			Tag.look("run distance").getId()
+			Tag.look("jog [distance]").getId(),
+			Tag.look("run [distance]").getId()
 		])
 		assert z.unit == 'km'
 		
@@ -121,12 +121,12 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 		entry = Entry.create(userId, Entry.parse(veryLateBaseDate, timeZone, "run 2 miles 3pm", baseDate, true), stats)
 		
 		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [
-			Tag.look("jog distance").getId(),
-			Tag.look("run distance").getId()
+			Tag.look("jog [distance]").getId(),
+			Tag.look("run [distance]").getId()
 		])
 		assert z.unit == 'miles'
 		
-		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog distance").getId()])
+		z = TagUnitStats.mostUsedTagUnitStatsForTags(userId, [Tag.look("jog [distance]").getId()])
 		assert z.unit == 'km'
 		
 	}

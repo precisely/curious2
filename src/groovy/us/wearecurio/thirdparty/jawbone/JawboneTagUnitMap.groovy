@@ -33,7 +33,7 @@ class JawboneTagUnitMap extends TagUnitMap {
 			m_lcit: [tag: "$MOVEMENT", unit: "secs longest idle"],
 			m_steps: [tag: "$MOVEMENT", unit: "steps"],
 			m_workout_count: [tag: "$MOVEMENT workout", suffix: "count", unit: ""],
-			m_workout_time: [tag: "$MOVEMENT workout", suffix: "duration", unit: "hours", convert: true, from: "secs"]
+			m_workout_time: [tag: "$MOVEMENT workout", unit: "hours", convert: true, from: "secs"]
 		]
 
 		sleepUnitMap = [

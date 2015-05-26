@@ -218,7 +218,7 @@ class TagStatsTests extends CuriousTestCase {
 		
 		assert !result.getTypicallyNoAmount()
 		
-		def tabletTag = Tag.look("abcdef tablets")
+		def tabletTag = Tag.look("abcdef [tablets]")
 		
 		TagValueStats resultV = TagValueStats.createOrUpdate(userId, tabletTag.getId(), null)
 		
@@ -343,7 +343,7 @@ class TagStatsTests extends CuriousTestCase {
 
 		stats.finish() // generate new tag stats
 
-		def tag = Tag.look("yoohoo distance")
+		def tag = Tag.look("yoohoo [distance]")
 		
 		TagValueStats resultV = TagValueStats.createOrUpdate(userId, tag.getId(), null)
 		
@@ -351,7 +351,7 @@ class TagStatsTests extends CuriousTestCase {
 		
 		assert resultV.getMaximum().intValue() == 4
 		
-		def tag2 = Tag.look("woohoo distance")
+		def tag2 = Tag.look("woohoo [distance]")
 		
 		TagValueStats resultV2 = TagValueStats.createOrUpdate(userId, tag.getId(), null)
 		

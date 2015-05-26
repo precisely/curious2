@@ -20,7 +20,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 
-class JawboneUpDataServiceSpec extends IntegrationSpec {
+class JawboneUpDataServiceTests extends IntegrationSpec {
 
 	// Example: ./test/integration/test-files/jawboneup/body-data.js		For single data file
 	// Example: ./test/integration/test-files/jawboneup/sleep-data-1.js		For multiple data file
@@ -80,7 +80,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
 		userEntries.size() == 1
 		userEntries[0].baseTag.description == "measurement"
-		userEntries[0].tag.description == "measurement weight"
+		userEntries[0].tag.description == "measurement [weight]"
 		userEntries[0].amount.round(2) == 120.toBigDecimal().round(2)
 	}
 
@@ -121,14 +121,14 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
 		userEntries.size() == 19
 
-		userEntries.find { it.tag.description == "activity distance" } != null
-		userEntries.find { it.tag.description == "activity duration" } != null
-		userEntries.find { it.tag.description == "activity steps" } != null
+		userEntries.find { it.tag.description == "activity [distance]" } != null
+		userEntries.find { it.tag.description == "activity [duration]" } != null
+		userEntries.find { it.tag.description == "activity [steps]" } != null
 
 		/**
 		 * High activity entries. First for timed group of hour 12th & second for 14th, 15th
 		 */
-		List<Entry> highActivityEntries = userEntries.findAll { it.tag.description == "high activity steps" }
+		List<Entry> highActivityEntries = userEntries.findAll { it.tag.description == "high activity [steps]" }
 		// Average of steps
 		// First is for hour 12th
 		highActivityEntries[0].amount.round(0) == 1244.toBigDecimal().round(0)
@@ -138,7 +138,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		highActivityEntries[1].amount.round(0) == 878.toBigDecimal().round(0)
 		highActivityEntries[1].units == "steps"
 
-		List<Entry> highActivityDurationEntry = userEntries.findAll { it.tag.description == "high activity duration" }
+		List<Entry> highActivityDurationEntry = userEntries.findAll { it.tag.description == "high activity [duration]" }
 		// Average of durations
 		// First is for hour 12th
 		highActivityDurationEntry[0].amount.round(2) == (10.80).toBigDecimal().round(2)
@@ -148,7 +148,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		highActivityDurationEntry[1].amount.round(2) == (7.48).toBigDecimal().round(2)
 		highActivityDurationEntry[1].units == "mins"
 
-		List<Entry> highActivityDistanceEntry = userEntries.findAll { it.tag.description == "high activity distance" }
+		List<Entry> highActivityDistanceEntry = userEntries.findAll { it.tag.description == "high activity [distance]" }
 		// Average of distance
 		// First is for hour 12th
 		highActivityDistanceEntry[0].amount.round(3) == (0.566).toBigDecimal().round(3)
@@ -158,7 +158,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		highActivityDistanceEntry[1].amount.round(3) == (0.406).toBigDecimal().round(3)
 		highActivityDistanceEntry[1].units == "miles"
 
-		List<Entry> highActivityCaloriesEntry = userEntries.findAll { it.tag.description == "high activity calories" }
+		List<Entry> highActivityCaloriesEntry = userEntries.findAll { it.tag.description == "high activity [calories]" }
 		// Average of distance
 		// First is for hour 12th
 		highActivityCaloriesEntry[0].amount.round(3) == (1244).toBigDecimal().round(3)
@@ -171,7 +171,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		/**
 		 * Light activities. First for timed group of hours 08th, 09th, 10th, 11th & second for 13th
 		 */
-		List <Entry> lightActivityEntries = userEntries.findAll { it.tag.description == "light activity steps" }
+		List <Entry> lightActivityEntries = userEntries.findAll { it.tag.description == "light activity [steps]" }
 		lightActivityEntries.size() == 2
 
 		// For timed group of hours 08th, 09th, 10th, 11th
@@ -182,7 +182,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		lightActivityEntries[1].amount.round(0) == (82).toBigDecimal().round(0)
 		lightActivityEntries[1].units == "steps"
 
-		List <Entry> lightActivityDurationEntries = userEntries.findAll { it.tag.description == "light activity duration" }
+		List <Entry> lightActivityDurationEntries = userEntries.findAll { it.tag.description == "light activity [duration]" }
 		// Average of durations
 		// For timed group of hours 08th, 09th, 10th, 11th
 		lightActivityDurationEntries[0].amount.round(2) == (1.89).toBigDecimal().round(2)
@@ -192,7 +192,7 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		lightActivityDurationEntries[1].amount.round(4) == (0.7170).toBigDecimal().round(4)
 		lightActivityDurationEntries[1].units == "mins"
 
-		List<Entry> lightActivityDistanceEntries = userEntries.findAll { it.tag.description == "light activity distance" }
+		List<Entry> lightActivityDistanceEntries = userEntries.findAll { it.tag.description == "light activity [distance]" }
 		// Average of distance
 		// For timed group of hours 08th, 09th, 10th, 11th
 		lightActivityDistanceEntries[0].amount.round(4) == (0.0951).toBigDecimal().round(4)
@@ -221,17 +221,17 @@ class JawboneUpDataServiceSpec extends IntegrationSpec {
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
 		userEntries.size() == 4
 
-		userEntries.find { it.tag.description == "sleep duration" } != null
-		userEntries.find { it.tag.description == "sleep duration" }.amount.round(2) == 673
-		userEntries.find { it.tag.description == "sleep duration" }.units == "mins"
+		userEntries.find { it.tag.description == "sleep [duration]" } != null
+		userEntries.find { it.tag.description == "sleep [duration]" }.amount.round(2) == 673
+		userEntries.find { it.tag.description == "sleep [duration]" }.units == "mins"
 
 		userEntries.find { it.tag.description == "sleep interruptions" } != null
 		userEntries.find { it.tag.description == "sleep interruptions" }.amount.round(0) == 2.toBigDecimal()
 		userEntries.find { it.tag.description == "sleep interruptions" }.units == ""
 
-		userEntries.find { it.tag.description == "sleep awake" } != null
-		userEntries.find { it.tag.description == "sleep awake" }.amount.round(2) == (53.30).toBigDecimal()
-		userEntries.find { it.tag.description == "sleep awake" }.units == "mins"
+		userEntries.find { it.tag.description == "sleep [awake]" } != null
+		userEntries.find { it.tag.description == "sleep [awake]" }.amount.round(2) == (53.30).toBigDecimal()
+		userEntries.find { it.tag.description == "sleep [awake]" }.units == "mins awake"
 
 		userEntries.find { it.tag.description == "sleep quality" } != null
 		userEntries.find { it.tag.description == "sleep quality" }.amount.round(2) == 80.toBigDecimal().round(2)

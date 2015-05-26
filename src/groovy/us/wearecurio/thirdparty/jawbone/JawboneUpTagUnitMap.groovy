@@ -10,16 +10,16 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 
 	static {
 		sleepUnitMap = [
-			duration: [tag: SLEEP, suffix: "duration", unit: "mins", convert: true, from: "seconds"],
-			awake: [tag: SLEEP, suffix: "awake", unit: "mins", convert: true, from: "seconds"],
+			duration: [tag: SLEEP, unit: "mins", convert: true, from: "seconds"],
+			awake: [tag: SLEEP, unit: "mins awake", convert: true, from: "secs"],
 			awakeningsCount: [tag: SLEEP, suffix: "interruptions", unit: ""],
 			quality: [tag: SLEEP, suffix: "quality", unit: "%"]
 		]
 
 		activityUnitMap = [
-			miles: [tag: ACTIVITY, suffix: "distance", unit: "miles", convert: true, from: "meters"],
-			minutes: [tag: ACTIVITY, suffix: "", unit: "mins", convert: true, from: "seconds"],
-			steps: [tag: ACTIVITY, suffix: "steps"],
+			miles: [tag: ACTIVITY, unit: "miles", convert: true, from: "meters"],
+			minutes: [tag: ACTIVITY, unit: "mins", convert: true, from: "seconds"],
+			steps: [tag: ACTIVITY, unit: "steps"],
 
 			lightlyActiveDistance: [tag: "light $ACTIVITY", unit: "miles", unit: "miles", convert: true, from: "meters"],
 			lightlyActiveMinutes: [tag: "light $ACTIVITY", unit: "mins", convert: true, from: "seconds"],
@@ -33,7 +33,7 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 		]
 
 		measurementUnitMap = [
-			weight: [tag: MEASUREMENT, suffix: "weight", unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
+			weight: [tag: MEASUREMENT, unit: "lbs", amountPrecision: 2, convert: true, from: "kg"],
 			fatRatio: [tag: MEASUREMENT, suffix: "fat ratio", unit: "%"]
 		]
 

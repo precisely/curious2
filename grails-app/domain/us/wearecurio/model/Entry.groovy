@@ -2024,7 +2024,7 @@ class Entry implements Comparable {
 		 * check to see if entry repeat type has changed. If so, merge and/or create new repeat structure
 		 */
 		boolean updateRepeatType = false
-		if (m['repeatType'] != null && this.date != m['date'] || (!Utils.equals(amt, this.amount))
+		if (m['repeatType'] != null && this.date != m['date'] || (!Utils.equals(m['amount'], this.amount))
 				|| (!Utils.equals(this.repeatType, m['repeatType']))) {
 			updateRepeatType = true
 		}
@@ -2867,7 +2867,7 @@ class Entry implements Comparable {
 			
 			ArrayList<Object> info = durationMap[modifier]
 			retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
-			suffix =  (String) info[DURATIONMAP_SYNONYM]
+			suffix = (String) info[DURATIONMAP_SYNONYM]
 		}
 		
 		ScannerPattern durationScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, durationClosure)
@@ -3165,9 +3165,9 @@ class Entry implements Comparable {
 					
 				if (bloodPressureTags.contains(baseTag.getDescription())) {
 					if (amountSuffix) {
-						if (amountSuffix.equals("pressure")) {
-							if (index == 0) amountSuffix = "systolic"
-							else amountSuffix = "diastolic"
+						if (amountSuffix.equals("[pressure]")) {
+							if (index == 0) amountSuffix = "[systolic]"
+							else amountSuffix = "[diastolic]"
 						}
 					}
 				}

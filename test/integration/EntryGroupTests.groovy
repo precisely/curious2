@@ -1,6 +1,4 @@
-
 import static org.junit.Assert.*
-
 
 import java.math.MathContext
 import java.text.DateFormat
@@ -119,7 +117,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.baseTag.getDescription()
 		}
 		
-		assert x == ":bread slices:bread:bread calories:bread"
+		assert x == ":bread [slices]:bread:bread [calories]:bread"
 	}
 	
 	@Test
@@ -135,7 +133,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run elevation:run:feet elevation:run distance:run:miles"
+		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles"
 	}
 	
 	@Test
@@ -153,7 +151,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run duration:run:2.500000000:hours"
+		assert x == ":run [duration]:run:2.500000000:hours"
 	}
 	
 	@Test
@@ -171,7 +169,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":swam duration:swam:40.500000000:minutes"
+		assert x == ":swam [duration]:swam:40.500000000:minutes"
 	}
 	
 	@Test

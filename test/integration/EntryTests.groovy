@@ -559,7 +559,7 @@ class EntryTests extends CuriousTestCase {
 		
 		int c = 0
 		
-		testPlot(user, [Tag.look("jog distance").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
+		testPlot(user, [Tag.look("jog [distance]").getId()], null, lateBaseDate, veryLateBaseDate, "America/Los_Angeles") {
 			++c
 			assert it[1].intValue() == 2
 		}
