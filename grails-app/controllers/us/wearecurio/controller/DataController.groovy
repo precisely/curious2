@@ -1074,6 +1074,7 @@ class DataController extends LoginController {
 		params.offset = params.offset ?: 0
 
 		Map model = discussion.getJSONModel(params)
+		model.posts = model.posts*.getJSONDesc()
 		model.putAll([isAdmin: UserGroup.canAdminDiscussion(user, discussion)])
 
 		debug "Found Comment data: $model"
