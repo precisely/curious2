@@ -410,7 +410,8 @@ class Discussion {
 			userId: this.userId,
 			isPublic: this.visibility == Model.Visibility.PUBLIC,
 			created: this.created,
-			updated: this.updated
+			updated: this.updated,
+			type: "dis"
 		]
 	}
 
