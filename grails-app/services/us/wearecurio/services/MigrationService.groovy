@@ -645,16 +645,16 @@ class MigrationService {
 				TagValueStats.updateTagValueStats(u)
 			}
 		}
-		tryMigration("Recompute all base tags with new suffix format") {
+		tryMigration("Recompute all base tags with new suffix format again") {
 			def rows = sqlRows("select entry.id from entry where entry.user_id is not null")
 			
 			for (row in rows) {
 				Entry entry = Entry.get(row['id'])
 				
 				if (entry.units) {
-					Tag origTag = entry.tag
-					entry.tag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.tag, entry.units, 0)
-					entry.baseTag = origTag
+					def tags = UnitGroupMap.theMap.baseTagAndTagWithSuffixForUnits(entry.tag, entry.units, 0)
+					entry.baseTag = tags[0]
+					entry.tag = tags[1]
 				} else {
 					entry.baseTag = entry.tag
 				}

@@ -912,6 +912,46 @@ class UnitGroupMap {
 	/**
 	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
 	 */
+	def baseTagAndTagWithSuffixForUnits(Tag baseTag, String units, int index) {
+		if (!units) {
+			return baseTag
+		}
+		
+		UnitRatio unitRatio = unitRatioForUnits(units)
+		String suffix, coreSuffix
+		if (unitRatio)
+			suffix = unitRatio.getSuffix()
+		else
+			suffix = units
+		
+		if (Entry.bloodPressureTags.contains(baseTag.getDescription())) {
+			if (suffix) {
+				if (suffix.equals("[pressure]")) {
+					if (index == 0) suffix = "[systolic]"
+					else suffix = "[diastolic]"
+				}
+			}
+		}
+		
+		if (suffix.startsWith('[') && suffix.endsWith(']'))
+			coreSuffix = suffix.substring(1, suffix.length() - 1)
+		else
+			coreSuffix = suffix
+		
+		String baseDescription = baseTag.getDescription()
+		
+		if (baseDescription.endsWith(' ' + coreSuffix)) {
+			baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length + 1)))
+		}
+			
+		Tag tag = Tag.look(baseTag.getDescription() + ' ' + suffix)
+		
+		return [baseTag, tag]
+	}
+
+	/**
+	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
+	 */
 	String suffixForUnits(String units) {
 		if (!units) {
 			return ""

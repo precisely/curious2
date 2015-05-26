@@ -65,7 +65,7 @@ class TagUnitStats {
 	}
 	
 	String lookupUnitString(boolean plural) {
-		return getUnitGroup().lookupUnitString(unit, plural)
+		return getUnitGroup()?.lookupUnitString(unit, plural)
 	}
 	
 	protected static BoundedCache cache = new BoundedCache<UserTagId, TagUnitStats>(10000)
