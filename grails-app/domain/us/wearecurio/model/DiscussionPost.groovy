@@ -46,6 +46,17 @@ class DiscussionPost {
 		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message']
 	}
 	
+	def getJSONDesc() {
+		return [
+			authorUserId: authorUserId,
+			authorName: User.get(authorUserId).username,
+			discussionId: discussionId,
+			id: id,
+			message: message,
+			updated: updated
+		]
+	}
+
 	def getDiscussion() {
 		return Discussion.get(discussionId)
 	}

@@ -46,6 +46,7 @@ class SearchController extends LoginController {
 	def indexData(String type, int max, int offset) {
 		User user = sessionUser()
 
+		log.debug "params recieved: $params"
 		if (!user) {
 			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
 			return
