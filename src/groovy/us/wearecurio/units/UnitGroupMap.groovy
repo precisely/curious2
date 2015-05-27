@@ -628,12 +628,6 @@ class UnitGroupMap {
 		}
 	}
 	
-	{
-		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
-				UnitGroup.UNIT, UnitGroup.QUANTITY)
-		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
-	}
-
 	static class UnitRatio {
 		UnitGroup unitGroup
 		String unit 
@@ -736,6 +730,10 @@ class UnitGroupMap {
 	static final UnitGroupMap theMap = new UnitGroupMap()
 	
 	def UnitGroupMap() {
+		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
+				UnitGroup.UNIT, UnitGroup.QUANTITY)
+		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
+
 		Set<String> allUnits = new HashSet<String>()
 		
 		// cache best unit ratio for each unit
@@ -938,10 +936,15 @@ class UnitGroupMap {
 		else
 			coreSuffix = suffix
 		
-		String baseDescription = baseTag.getDescription()
+		while (true) {
+			String baseDescription = baseTag.getDescription()
 		
-		if (baseDescription.endsWith(' ' + coreSuffix)) {
-			baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length + 1)))
+			if (baseDescription.endsWith(' ' + suffix)) {
+				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (suffix.length() + 1)))
+			} else if (baseDescription.endsWith(' ' + coreSuffix)) {
+				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length() + 1)))
+			} else
+				break
 		}
 			
 		Tag tag = Tag.look(baseTag.getDescription() + ' ' + suffix)
