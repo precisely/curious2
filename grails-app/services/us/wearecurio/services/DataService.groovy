@@ -333,9 +333,9 @@ abstract class DataService {
 						notification.save(flush: true)
 					}
 				} catch (MissingMethodException e) {
-					log.warn "No method implementation found for collection type: [$account.collectionType] for $provider."
+					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider."
 				} catch (InvalidAccessTokenException e) {
-					log.warn "Token expired while processing notification of type: [$account.collectionType] for $provider."
+					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()

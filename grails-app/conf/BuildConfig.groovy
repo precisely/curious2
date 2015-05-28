@@ -73,6 +73,7 @@ grails.project.dependency.resolution = {
 		compile ":csv:0.3.1"
 		compile ":message-digest:1.1"
 		runtime ':elasticsearch:0.0.4.2'
+		compile ":quartz:1.0.2"
 		//compile ":searchable:0.6.9"
 		
         // plugins needed at runtime but not for compilation

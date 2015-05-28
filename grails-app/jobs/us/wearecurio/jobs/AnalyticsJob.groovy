@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory
 		}
 
 		def execute() {
-			analyticsService.processUsers()
+			//analyticsService.processUsers()
 			log "analyticsJob launched."
 		}
 }

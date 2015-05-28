@@ -2,8 +2,8 @@ package us.wearecurio.jobs
 
 import us.wearecurio.services.*
 
-/*
-class PollTwitterJob extends us.wearecurio.utility.TimerJob {
+
+/* class PollTwitterJob extends us.wearecurio.utility.TimerJob {
 	TwitterDataService twitterDataService
 	
     static triggers = {
@@ -11,7 +11,6 @@ class PollTwitterJob extends us.wearecurio.utility.TimerJob {
     }
 
     def execute() {
-        twitterDataService.poll()
+        //twitterDataService.poll()
     }
-}
-*/
+}*/
