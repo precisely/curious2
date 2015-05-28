@@ -26,7 +26,7 @@ class AppleNotificationService {
 		apnsConfig.pathToCertificate = Holders.getFlatConfig()['pushNotification.apns.pathToCertificate']
 		apnsConfig.environment = Holders.getFlatConfig()['pushNotification.apns.environment']
 		apnsConfig.password = Holders.getFlatConfig()['pushNotification.apns.password']
-		debug "APNS Config" + apnsConfig
+		debug "APNS Config " + apnsConfig.dump()
 		try {
 			ApnsService service 
 			
