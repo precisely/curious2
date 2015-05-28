@@ -41,7 +41,7 @@ class RemindEmailService {
 					log.debug "Error while sending email: " + t
 				}
 			}
-			def notificationMessage = "Reminder to track:" + event.getTag().getDescription() + " " + event.getComment()
+			def notificationMessage = "Reminder to track:" + event.getTag().getDescription() 
 			devices.each { userDevice ->
 				if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
 					googleMessageService.sendMessage(notificationMessage, [userDevice.token])
