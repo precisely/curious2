@@ -2,7 +2,7 @@ package us.wearecurio.services
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.transaction.annotation.Transactional
-
+import grails.util.*
 import com.notnoop.apns.*
 
 class AppleNotificationService {
@@ -21,13 +21,16 @@ class AppleNotificationService {
 			return false
 		}
 		
-		def apnsConfig = grailsApplication.config.pushNotification.apns
-		debug "APNS Certificate" + apnsConfig?.pathToCertificate
-		debug "APNS Environment" + apnsConfig?.environment
+		def apnsConfig = [:]
+		
+		apnsConfig.pathToCertificate = Holders.getFlatConfig()['pushNotification.apns.pathToCertificate']
+		apnsConfig.environment = Holders.getFlatConfig()['pushNotification.apns.environment']
+		apnsConfig.password = Holders.getFlatConfig()['pushNotification.apns.password']
+		debug "APNS Config" + apnsConfig
 		try {
 			ApnsService service 
 			
-			FileInputStream certStream = new FileInputStream(grailsApplication.getMainContext().getResource(apnsConfig.pathToCertificate).getFile())
+			FileInputStream certStream = new FileInputStream(apnsConfig.pathToCertificate)
 		
 			if (apnsConfig.environment?.equals("sandbox")) {
 				service = APNS.newService()

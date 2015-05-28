@@ -23,7 +23,8 @@ class RemindEmailService {
 	
 	@Transactional(readOnly = true)
 	def sendReminderForEvent(long userId, String email, def entryId, def devices) {
-		def event = Entry.get()
+		def event = Entry.get(entryId)
+		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
 		if (event != null) {
 			if (email != null && email.length() > 1) {
 				try {
