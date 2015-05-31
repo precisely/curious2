@@ -507,6 +507,9 @@ class MigrationService {
 		tryMigration("Drop TagProperties isContinuous") {
 			sql ("alter table tag_properties drop column is_continuous")
 		}
+		tryMigration("Drop Discussion isPublic") {
+			sql ("alter table discussion drop column is_public")
+		}
 	}
 	
 	/**
