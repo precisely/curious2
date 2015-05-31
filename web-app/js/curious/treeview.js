@@ -334,6 +334,9 @@ function TreeItemList(options) {
 	this.load = function() {
 		// get top-level list of items, add new or changed ones to list
 		backgroundJSON("loading list of tags", this.options.url, getCSRFPreventionObject("listTagsAndTagGroupsCSRF", {sort: this.options.sort}), function(data) {
+			if (!checkData(data))
+				return;
+
 			this.listItems.each(function(item) {
 				item.state = TREEITEM_UNMARKED; // mark for deletion
 			});
@@ -700,7 +703,10 @@ function TreeWidget(args) {
 				id: $item.data('groupId'),
 				itemId: $item.data('itemId'),
 				type: $item.data('itemType')
-			}), function() {
+			}), function(data) {
+				if (!checkData(data))
+					return;
+
 				var ulElement = $item.parents('ul');
 				if (ulElement.find('li').length == 1) {	// When last element is about to delete
 					$('div#remove-exclusion-dialog').dialog('close');

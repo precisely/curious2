@@ -11,14 +11,16 @@
 					queuePostJSON('Adding answer to survey question', '/admin/updateSurveyAnswerData', 
 							getCSRFPreventionObject('updateSurveyAnswerDataCSRF', params),
 							function(data) {
-						if (data.success) {
-							$('#answer-text-' + params.answerId).text(params.answer);
-							$('#answer-code-' + params.answerId).text(params.code);
-							$('#answer-priority-' + params.answerId).text(params.priority);
-							$('#answer-type-' + params.answerId).text(params.answerType);
-							$('#addAnswerOverlay').hide();
-						} else {
-							showBootstrapAlert($('.alert'), data.message);
+						if (checkData(data)) {
+							if (data.success) {
+								$('#answer-text-' + params.answerId).text(params.answer);
+								$('#answer-code-' + params.answerId).text(params.code);
+								$('#answer-priority-' + params.answerId).text(params.priority);
+								$('#answer-type-' + params.answerId).text(params.answerType);
+								$('#addAnswerOverlay').hide();
+							} else {
+								showBootstrapAlert($('.alert'), data.message);
+							}
 						}
 					}, function(xhr) {
 						console.log('error: ', xhr);
@@ -30,10 +32,12 @@
 				queuePostJSON('Deleting survey answer', '/admin/deletePossibleAnswerData', 
 						getCSRFPreventionObject('deletePossibleAnswerDataCSRF', {answerId: answerId, questionId: questionId}),
 						function(data) {
-					if (data.success) {
-						$("#answer-"+answerId).remove();
-					} else {
-						showBootstrapAlert($('.alert'), data.message);
+					if (checkData(data)) {
+						if (data.success) {
+							$("#answer-"+answerId).remove();
+						} else {
+							showBootstrapAlert($('.alert'), data.message);
+						}
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);
@@ -56,10 +60,12 @@
 				queuePostJSON('Deleting survey questions', '/admin/deleteSurveyQuestionData', 
 						getCSRFPreventionObject('deleteSurveyQuestionDataCSRF', {id: questionId}),
 						function(data) {
-					if (data.success) {
-						window.location.assign('/admin/listSurveyQuestions');
-					} else {
-						showBootstrapAlert($('.alert'), data.message);
+					if (checkData(data)) {
+						if (data.success) {
+							window.location.assign('/admin/listSurveyQuestions');
+						} else {
+							showBootstrapAlert($('.alert'), data.message);
+						}
 					}
 				}, function(xhr) {
 					console.log('error: ', xhr);

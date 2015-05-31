@@ -33,6 +33,9 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 				+ "&offset=" + offset + "&max=10&"
 				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
 				function(data) {
+			if (!checkData(data))
+				return;
+
 			if (data.success) {
 				if (data.participants.length > 0) {
 					$.each(data.participants, function(index, participant) {

@@ -108,8 +108,11 @@ def activeClass = { a ->
 							$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 						}
 
-						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data){ 
-							this.interstTagList = new InterestTagList("interestTagInput", "interestTagList");
+						queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) { 
+							if (!checkData(data))
+								return;
+
+							this.interestTagList = new InterestTagList("interestTagInput", "interestTagList");
 						});
 
 						$('#takeSurveyOverlay').modal({show: true});

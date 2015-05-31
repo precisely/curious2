@@ -225,6 +225,9 @@ $(document).ready(function() {
 		
 		queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
 				function(data) {
+					if (!checkData(data))
+						return;
+		
 					if (data.success) {
 						$('#helpWizardOverlay').modal('hide');
 						showAlert('Entries created successfully');
@@ -246,6 +249,9 @@ $(document).ready(function() {
 		
 		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
 				function(data) {
+			if (!checkData(data))
+				return;
+
 			if (data.success) {
 				$('#takeSurveyOverlay').modal('hide');
 				showAlert('Survey completed successfully.');

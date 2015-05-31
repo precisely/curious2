@@ -214,11 +214,24 @@ environments {
         grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		
-		elasticSearch.client.mode = 'node'
+		elasticSearch.client.mode = 'local'
+		
+		/*elasticSearch.client.mode = 'node'
 		
 		elasticSearch.client.hosts = [
 		       [host:'127.0.0.1', port:9300],
-		]
+		]*/
+		
+		grails.serverURLProtocol = "https"
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+
+		elasticSearch.client.mode = 'local'
+		
+		/*elasticSearch.client.mode = 'node'
+		
+		elasticSearch.client.hosts = [
+		       [host:'127.0.0.1', port:9300],
+		]*/
 		
 		api {
 			weatherunderground {
@@ -248,10 +261,65 @@ environments {
 					secret = "f00f94c857cba5d166463ad6f2c1aab0"
 				}
 				// temporary fix to use development app key
-				/* withings {
+				withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
 					secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+				}
+				/* withings {
+					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
+					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}*/
+				jawboneup {
+					key = "zNg9SWw1G74"
+					secret = "55de868ea52b843d07400c3dc79f5e533a478006"
+				}
+			}
+		}
+		
+		pushNotification {
+			apns {
+				pathToCertificate = "${userHome}/ios-cert/iphone_prod.p12"
+				password = "causecode.11"
+				environment = "production"
+			}
+			
+			gcm {
+				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
+			}
+		}
+		
+/*		api {
+			weatherunderground {
+				key = "0de9ca6314e3b2ee"
+			}
+			bingMapKey {
+				key = "AmyVz6cE2PiwaTJV8fI9a-yxgZnHe3mjALQeL27Llt_S867hN10N7pcA6Y_zYW0n"
+			}
+		}
+		oauth {
+			providers {
+				fitbit {
+					key = "b2610f22a2314bdc804c3463aa666876"
+					secret = "2b7472411c834c4f9b8c8e611d8e6350"
+					apiVersion = "1"
+				}
+				human {
+					key = "6c735bf30082353bab85112a831bb7a9ec7b1154"
+					secret = "6db556720f847133ccdd92ce93224c9fb481010b"
+				}
+				moves {
+					key = "CNhtcT6smpiRts939C84qjUJlS5MJTC6"
+					secret = "Fi4TT55XOFGm6DrOwt189Sk4Oap3cBhWdP1nCMJ8950nSfpjWBa9Ot4kszJxV22X"
+				}
+				twenty3andme {
+					key = "96de99b2227025cacb6807e28df20367"
+					secret = "f00f94c857cba5d166463ad6f2c1aab0"
+				}
+				// temporary fix to use development app key
+				// withings {
+				//	key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
+				//	secret = "767464759048b87ef4d6e4d2f8456010bb085eefbfd83215e5f147626fc24"
+				//}
 				withings {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
@@ -273,7 +341,7 @@ environments {
 			gcm {
 				senderID = "AIzaSyCcKBWFkLYNu-lsJ1lRHNfa0QLV_HTX2Qk"
 			}
-		}
+		}*/
     }
     production {
         grails.logging.jul.usebridge = false

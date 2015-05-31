@@ -11,6 +11,8 @@ import us.wearecurio.model.User;
 import us.wearecurio.thirdparty.InvalidAccessTokenException;
 import us.wearecurio.utility.TimerJob
 
+import grails.util.Environment
+
 class DeviceIntegrationHourlyJob extends TimerJob {
 	static transactional = false
 
@@ -24,6 +26,13 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 
 	def execute() {
 		//humanDataService.poll()
+		log.debug("Started DeviceIntegrationHourlyJob...")
+		
+		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+			log.debug "Aborted DeviceIntegrationHourlyJob.."
+			return // don't send reminders in test or development mode
+		}
+		
 		movesDataService.pollAll()
 		def c = OAuthAccount.createCriteria()
 		def results = c.list {
@@ -55,6 +64,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 			}
 		}
 
+		log.debug("Finished DeviceIntegrationHourlyJob...")
 	}
 
 }

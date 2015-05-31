@@ -32,6 +32,9 @@ function Tag(args) {
 	this.init = function() {
 		$(this).on("updateEvent",function(){
 			backgroundJSON("saving tag information", "/tag/updateData?callback=?", {id:this.id, description:this.description, type:this.type} , function(data) {
+				if (!checkData(data))
+					return;
+
 				console.log(data);
 			});
 		});
@@ -51,6 +54,9 @@ function Tag(args) {
 		backgroundJSON("loading tag information", "/tag/getTagPropertiesData?callback=?",
 		getCSRFPreventionObject("getTagPropertiesCSRF", {id : this.id}),
 		function(data) {
+			if (!checkData(data))
+				return;
+
 			this.isContinuous = data.isContinuous;
 			this.showPoints = data.showPoints;
 			callback(this);
@@ -162,6 +168,9 @@ function TagGroup(args) {
 				id : this.id,
 				description: this.getDescription()
 			}), function(data) {
+				if (!checkData(data))
+					return;
+
 				jQuery.each(data, function(index, tag) {
 					tag.type = tag.class;
 					if (this.isExcluded(tag)) {
@@ -274,6 +283,9 @@ function TagGroup(args) {
 			description: childItem.description,
 			exclusionType: exclusionType
 		}), function(data) {
+			if (!checkData(data))
+				return;
+
 			callback();
 		}.bind(this));
 	};
@@ -289,6 +301,9 @@ function TagGroup(args) {
 			tagGroupId : this.id,
 			id: childItem.id
 		}), function(data) {
+			if (!checkData(data))
+				return;
+
 			callback();
 		}.bind(this));
 		
@@ -513,6 +528,9 @@ function TagList(args) {
 					+ " group"),
 			tagIds : [ sourceTag.id, targetTag.id ].toString()
 		}), function(data) {
+			if (!checkData(data))
+				return;
+
 			var listItem = this.store.createOrUpdate(data)
 			this.addAfter(listItem, targetTag);
 			if ( typeof callback !== 'undefined') {
@@ -527,6 +545,9 @@ function TagList(args) {
 			parentTagGroupId : targetTagGroup.id,
 			childTagGroupId : sourceTagGroup.id
 		}), function(data) {
+			if (!checkData(data))
+				return;
+
 			targetTagGroup.updateChildren(sourceTagGroup);
 			console.log("Debug addTagGroupToTagGroup callback");
 		});
@@ -538,6 +559,9 @@ function TagList(args) {
 			tagGroupId : tagGroup.id,
 			id : tag.id
 		}), function(data) {
+			if (!checkData(data))
+				return;
+
 			console.log("Debug addTagToTagGroup callback");
 			tagGroup.updateChildren(tag);
 		});
@@ -885,6 +909,9 @@ function TagListWidget(args) {
 			backgroundJSON("adding wildcard group", "/tag/addWildcardTagGroupData?callback=?", {
 				description : sourceItem.description,
 			}, function(data) {
+				if (!checkData(data))
+					return;
+
 				data.type = "wildcardTagGroup";
 				
 				this.add(new TagGroup(data));

@@ -5,6 +5,8 @@ import org.springframework.transaction.annotation.Transactional
 import grails.util.*
 import com.notnoop.apns.*
 
+import grails.util.Environment
+
 class AppleNotificationService {
 	
 	private static def log = LogFactory.getLog(this)
@@ -16,6 +18,10 @@ class AppleNotificationService {
 	def grailsApplication
 	
     def sendMessage(def messageTxt, def devices = [], def collapseKey = 'Curious',def customPayload = [:]) {
+		if (Environment.current == Environment.DEVELOPMENT) {
+			return // don't send notifications in development mode
+		}
+		
 		if (devices.size() == 0) {
 			debug ("Need at least one device token to send")
 			return false

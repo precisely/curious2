@@ -4,6 +4,8 @@ import org.apache.commons.logging.LogFactory
 
 import org.springframework.transaction.annotation.Transactional
 
+import grails.util.Environment
+
 import us.wearecurio.server.DateRecord
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.*
@@ -58,6 +60,10 @@ class RemindEmailService {
 	
 	def sendReminders() {
 		log.debug "RemindEmailService.sendReminders()"
+		
+		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+			return // don't send reminders in test or development mode
+		}
 		
 		if (!lhpMemberTag)
 			lhpMemberTag = User.lookupMetaTag("lhpmember", "true")

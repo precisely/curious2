@@ -111,27 +111,34 @@ class SecurityFilters {
 			}
 		}
 		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)") {
-		//adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
 			before = {
-				String adminKey
-				try {
-					adminKey = grailsApplication.config.wearecurious.adminKey
-				} catch (Throwable t) {
-					grailsApplication.config.wearecurious = [:]
-					grailsApplication.config.wearecurious.adminKey = null
-					adminKey = null
-				}
-				if (adminKey != null && params.key && params.key == adminKey)
+				def a = actionName
+				if (params.controller == null) {
+					flash.precontroller = 'home'
+					flash.preaction = 'index'
+					flash.parm = ''
+					redirect(url:urlService.base(request) + 'home/login')
 					return true
-				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
-					redirect(url: urlService.base(request) + 'home/login')
+				}
+				if (!actionName)
+					return false
+				if ((!securityService.isAuthorized(actionName, request, params, flash, session))
+						|| (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId))) {
+					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
+						println "Unauthorized admin page data action " + actionName
+						render "${params.callback}('login')"
+					} else {
+						def parm = params.clone()
+						parm.remove('action')
+						parm.remove('controller')
+						flash.precontroller = params.controller
+						flash.preaction = actionName
+						flash.parm = new JSON(parm).toString()
+						redirect(url:urlService.base(request) + 'home/login')
+					}
 					return false
 				}
-				// User must be admin of default system group.
-				if (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId)) {
-					redirect(url: urlService.base(request) + 'home/login')
-					return false
-				}
+				return true
 			}
 		}
 		/* trialCheck(controller:'trial', action:'*') {

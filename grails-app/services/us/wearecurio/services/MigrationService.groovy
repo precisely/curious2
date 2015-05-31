@@ -645,7 +645,7 @@ class MigrationService {
 				TagValueStats.updateTagValueStats(u)
 			}
 		}
-		/*tryMigration("Recompute all base tags with new suffix format again") {
+		tryMigration("Recompute all base tags with new suffix format again") {
 			def rows = sqlRows("select entry.id from entry where entry.user_id is not null")
 			
 			for (row in rows) {
@@ -661,6 +661,13 @@ class MigrationService {
 					Utils.save(entry, true)
 				}				
 			}
-		}*/
+		}
+		tryMigration("Clear and recompute tag values stats for mitsu 3") {
+			User u = User.findByUsername("x")
+			
+			log.debug("Recomputing value stats for user " + u.id)
+			TagUnitStats.updateTagUnitStats(u)
+			TagValueStats.updateTagValueStats(u)
+		}
 	}
 }

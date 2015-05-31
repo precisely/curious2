@@ -349,9 +349,12 @@ $(function() {
 		var action = 'updateSignalLevel'
 		var url = '/correlation/' + correlationId + '/updateSignalLevel'
 		queuePostJSON(action, url, { _method: 'PATCH', signalLevel: signalLevel},
-										function(data) {
-														log('success', data);
-										});
+			function(data) {
+				if (!checkData(data))
+					return;
+	
+				log('success', data);
+			});
 		$(this).siblings('img').attr('src', "/images/signals/empty_circle.png");
 		$(this).siblings('img').attr('marked', 'empty');
 		$(this).attr('src', "/images/signals/marked_circle.png");
@@ -481,6 +484,9 @@ $(function() {
 
 	var processSearchResults = function(searchId, afterSuccess) {
 		return function(data) {
+			if (!checkData(data))
+				return;
+
 			log( "search results", data.length);
 			C.signalNumSearchResults[searchId] = data.length;
 			for (var i=0; i < data.length; i++) {

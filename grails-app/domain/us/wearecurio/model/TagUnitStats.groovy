@@ -104,6 +104,36 @@ class TagUnitStats {
 		return tagUnitStats
 	}
 	
+	/**
+	 * Updates all TagUnitStats for given user
+	 * @param user
+	 * @return
+	 */
+	static def updateTagUnitStats(User user) {
+		log.debug "TagStats.updateTagStats() userId:" + user.getId()
+		
+		def userId = user.getId()
+		
+		def tagStats = []
+		
+		def tags = Entry.getTags(user, Entry.ONLYIDS)
+		
+		for (tagId in tags) {
+			createOrUpdateAllUnits(userId, tagId)
+		}
+	}
+	
+	@Transactional
+	static TagUnitStats createOrUpdateAllUnits(Long userId, Long tagId) {
+		def results = Entry.executeQuery(
+			"select units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
+			[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
+
+		if (results && results.size() > 0) {
+			String units = results[0]
+			createOrUpdate(userId, tagId, units)
+		}
+	}
 	
 
 	@Transactional

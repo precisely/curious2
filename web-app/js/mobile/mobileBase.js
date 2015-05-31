@@ -142,6 +142,9 @@ function submitForm() {
 				password : password
 			}),
 			function(data) {
+				if (!checkData(data))
+					return;
+	
 				if (data['success']) {
 					localStorage['mobileSessionId'] = data['persistentSessionId'];
 					dataReady = true;
@@ -161,6 +164,9 @@ function submitForm() {
 				username : username
 			}),
 			function(data) {
+				if (!checkData(data))
+					return;
+	
 				if (data['success']) {
 					showAlert('Look for instructions on recovering your account information in your email.');
 					startLogin(0);
@@ -179,6 +185,9 @@ function submitForm() {
 				groups : "['announce','curious','curious announce']"
 			}),
 			function(data) {
+				if (!checkData(data))
+					return;
+	
 				if (data['success']) {
 					localStorage['mobileSessionId'] = data['mobileSessionId'];
 					dataReady = true;
@@ -1062,6 +1071,9 @@ function deleteGhost($entryToDelete, entryId, allFuture) {
 						date : cachedDateUTC,
 						baseDate : cachedDateUTC
 					})), function(ret) {
+				if (!checkData(ret))
+					return;
+		
 				console.log('deleteGhost: Response received' + checkData(ret, 'success', "Error deleting entry"));
 				if (checkData(ret, 'success', "Error deleting entry")) {
 					console.log('deleteGhost: Removing entry from cache as well');
@@ -1188,6 +1200,9 @@ function doUpdateEntry(entryId, text, defaultToNow, allFuture) {
 
 	queueJSON("saving entry", makeGetUrl("updateEntrySData"), makeGetArgs(argsToSend),
 			function(entries) {
+				if (!checkData(entries))
+					return;
+		
 				if (entries == "") {
 					return;
 				}

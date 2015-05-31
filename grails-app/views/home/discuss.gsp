@@ -185,13 +185,15 @@ $(document).ready(function() {
 			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
 					discussionId: discussionId}), 
 					function(data) {
-				if (!data.posts) {
-					this.finish();
-				} else {
-					$element.append(data.posts);
-					showCommentAgeFromDate();
-					this.setNextPage();		// Increment offset for next page
-					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				if (checkData(data)) {
+					if (!data.posts) {
+						this.finish();
+					} else {
+						$element.append(data.posts);
+						showCommentAgeFromDate();
+						this.setNextPage();		// Increment offset for next page
+						this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+					}
 				}
 			}.bind(this));
 		}

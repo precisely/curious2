@@ -1,6 +1,7 @@
 package us.wearecurio.jobs
 
 import us.wearecurio.utility.TimerJob
+import grails.util.Environment
 
 class DeviceIntegrationDailyJob extends TimerJob {
 	static transactional = false
@@ -14,6 +15,10 @@ class DeviceIntegrationDailyJob extends TimerJob {
 
 	def execute() {
 		log.debug "Started executing Daily basis job.."
+		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+			log.debug "Aborted executing Daily basis job.."
+			return // don't send reminders in test or development mode
+		}
 		oauthAccountService.refreshAllToken()
 		withingsDataService.refreshSubscriptions()
 		log.debug "Finished executing Daily basis job.."

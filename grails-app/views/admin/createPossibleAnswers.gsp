@@ -39,14 +39,16 @@
 					queuePostJSON('Adding answer to survey question', '/admin/createAnswersData', 
 							getCSRFPreventionObject('createAnswersDataCSRF', params),
 							function(data) {
-						if (data.success) {
-							window.location.assign('/admin/listSurveyQuestions');
-						} else {
-							showBootstrapAlert($('.alert'), data.message);
-						}
-					}, function(xhr) {
-						console.log('error: ', xhr);
-					});
+								if (checkData(data) {
+									if (data.success) {
+										window.location.assign('/admin/listSurveyQuestions');
+									} else {
+										showBootstrapAlert($('.alert'), data.message);
+									}
+								}
+							}, function(xhr) {
+								console.log('error: ', xhr);
+							});
 				}
 				return false;
 			});

@@ -31,11 +31,13 @@ function searchFeeds(params) {
 			max: 10,
 			offset: params.offset ? params.offset : 0}),
 			function(data) {
-				console.log('data: ', data);
-				if (data.success) {
-					$('#discussions').html(data.searchResults);
-				} else {
-					showAlert(data.message);
+				if (checkData(data)) {
+					console.log('data: ', data);
+					if (data.success) {
+						$('#discussions').html(data.searchResults);
+					} else {
+						showAlert(data.message);
+					}
 				}
 			}, function(xhr) {
 				console.log('error: ', xhr);
