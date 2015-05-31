@@ -74,6 +74,7 @@ class TagStats {
 			stats.setLastAmount(null)
 			stats.setLastAmountPrecision(-1)
 			stats.setLastUnits("")
+			stats.setTypicallyNoAmount(true)
 		} else {
 			stats.setLastUnits(null) // initialize last units to null
 			stats.setMostRecentUsage(mostRecent[0])

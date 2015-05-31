@@ -83,8 +83,6 @@ class UserTests extends CuriousTestCase {
 		user2 = User.create(params)
 		Utils.save(user2, true)
 		
-		Thread.sleep(100)
-
 		params.put("username", "testuser3")
 		params.put("email", "test3@test.com")
 		params.put('created', new Date() - 1)
@@ -92,16 +90,12 @@ class UserTests extends CuriousTestCase {
 		user3 = User.create(params)
 		Utils.save(user3, true)
 		
-		Thread.sleep(100)
-
 		params.put("username", "testuser4")
 		params.put("email", "test4@test.com")
 		params.put('created', new Date() - 2)
 
 		user4 = User.create(params)
 		Utils.save(user4, true)
-		
-		Thread.sleep(100)
 	}
 
 	@Test
@@ -118,24 +112,26 @@ class UserTests extends CuriousTestCase {
 		List users = User.getUsersList(5, 0, user.id)
 
 		assert users.size() == 3
-		assert users[0].id == user2.id
-		assert users[1].id == user3.id
-		assert users[2].id == user4.id
+		
+		def userIds = [user2.id, user3.id, user4.id]
+		assert users[0].id in userIds
+		assert users[1].id in userIds
+		assert users[2].id in userIds
 	}
 
 	@Test
 	void "Test getUsersList when there are virtual users as well"() {
 		User user5 = User.createVirtual()
-		Thread.sleep(100)
 		User user6 = User.createVirtual()
-		Thread.sleep(100)
 		createUsers()
 
 		List users = User.getUsersList(5, 0, user.id)
 
 		assert users.size() == 3
-		assert users[0].id == user2.id
-		assert users[1].id == user3.id
-		assert users[2].id == user4.id
+		
+		def userIds = [user2.id, user3.id, user4.id]
+		assert users[0].id in userIds
+		assert users[1].id in userIds
+		assert users[2].id in userIds
 	}
 }

@@ -625,26 +625,6 @@ class MigrationService {
 				Utils.save(entry, true)
 			}
 		}
-		tryMigration("Clear and recompute tag stats and yet once more X") {
-			sql("delete from tag_stats")
-			
-			def users = User.list()
-			
-			for (u in users) {
-				log.debug("Recomputing stats for user " + u.id)
-				TagStats.updateTagStats(u)
-			}
-		}
-		tryMigration("Clear and recompute tag values stats and yet again") {
-			sql("delete from tag_value_stats")
-			
-			def users = User.list()
-			
-			for (u in users) {
-				log.debug("Recomputing value stats for user " + u.id)
-				TagValueStats.updateTagValueStats(u)
-			}
-		}
 		tryMigration("Recompute all base tags with new suffix format again") {
 			def rows = sqlRows("select entry.id from entry where entry.user_id is not null")
 			
@@ -662,12 +642,19 @@ class MigrationService {
 				}				
 			}
 		}
-		tryMigration("Clear and recompute tag values stats for mitsu 3") {
-			User u = User.findByUsername("x")
+		tryMigration("Clear and recompute tag values stats for everyone") {
+			sql("delete from tag_stats")
+			sql("delete from tag_unit_stats")
+			sql("delete from tag_value_stats")
 			
-			log.debug("Recomputing value stats for user " + u.id)
-			TagUnitStats.updateTagUnitStats(u)
-			TagValueStats.updateTagValueStats(u)
+			def users = User.list()
+			
+			for (u in users) {
+				log.debug("Recomputing value stats for user " + u.id)
+				TagStats.updateTagStats(u)
+				TagUnitStats.updateTagUnitStats(u)
+				TagValueStats.updateTagValueStats(u)
+			}
 		}
 	}
 }

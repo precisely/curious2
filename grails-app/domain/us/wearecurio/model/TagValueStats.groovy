@@ -64,11 +64,11 @@ class TagValueStats {
 		
 		if (startDate == null) {
 			minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
+					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) and entry.amount is not null group by units",
 					[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
 		} else {
 			minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
+					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) and entry.amount is not null group by units",
 					[tagId:tagId, userId:userId, startDate:startDate, ghostIds:Entry.LONG_GHOST_IDS])
 		}
 
