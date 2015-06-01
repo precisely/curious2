@@ -418,7 +418,13 @@ environments {
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
 		elasticSearch.client.mode = 'local'
+		//elasticSearch.client.mode = 'transport'
+        //elasticSearch.cluster.name = 'elasticsearch_murakami'
 		
+		//elasticSearch.client.hosts = [
+		//	   [host:'127.0.0.1', port:9300],
+		//]
+				
 		api {
 			weatherunderground {
 				key = "0de9ca6314e3b2ee"
