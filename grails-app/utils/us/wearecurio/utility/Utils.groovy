@@ -87,6 +87,17 @@ class Utils {
 		}
 	}
 	
+	public static String elasticSearchDate(long ms) {
+		def f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
+		f.setTimeZone(TimeZone.getTimeZone("GMT"))
+		return f.format(1000*((long)((ms+500)/1000)))
+	}
+	
+	//For some reason, there is a compile error whenever I try to call this
+	public static String elasticSearchDate(Date d) {
+		return elasticSearchDate(d.getTime())
+	}
+	
 	/**
 	 * Simple utility method to do equals in a null-safe manner
 	 */

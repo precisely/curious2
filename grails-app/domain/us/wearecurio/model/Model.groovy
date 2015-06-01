@@ -17,6 +17,8 @@ class Model {
 
 	static enum Visibility {
 		PRIVATE(0), UNLISTED(1), PUBLIC(2)
+		
+		static searchable = ['name']
 	
 		final Integer id
 		
