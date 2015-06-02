@@ -98,6 +98,22 @@ class Utils {
 		return elasticSearchDate(d.getTime())
 	}
 	
+    public static listToString( ArrayList values, String sep )
+    {
+        String ret = ""
+        Boolean first = true
+        for (int groupId: values) {
+            if(!first) ret += " " + sep + " "
+            else first = false
+            ret += groupId.toString()
+        }
+        
+        if (values.size() > 1) ret = "(" + ret + ")"
+        
+        return ret
+    }   
+
+    
 	/**
 	 * Simple utility method to do equals in a null-safe manner
 	 */
