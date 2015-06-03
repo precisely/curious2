@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="main">
+		<meta name="layout" content="menu">
 		<title>Create Shared Tag Group</title>
 	</head>
 	<body>

@@ -1,6 +1,6 @@
 <html>
 <head>
-		<meta name="layout" content="main" />
+		<meta name="layout" content="menu" />
 		<title>Curious - Admin Dashboard</title>
 		<meta name="description" content="A platform for health hackers" />
 </head>

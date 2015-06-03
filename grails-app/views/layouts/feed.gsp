@@ -1,4 +1,4 @@
-<g:applyLayout name="main">
+<g:applyLayout name="menu">
 <html>
 	<head>
 	<title>Curious</title>

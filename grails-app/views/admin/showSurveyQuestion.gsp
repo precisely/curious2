@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="main">
+		<meta name="layout" content="menu">
 		<title>Survey</title>
 		<c:jsCSRFToken keys="deleteSurveyQuestionDataCSRF, updateSurveyAnswerDataCSRF, deletePossibleAnswerDataCSRF"/>
 		<script type="text/javascript">

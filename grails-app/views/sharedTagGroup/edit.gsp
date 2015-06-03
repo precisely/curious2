@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="main">
+		<meta name="layout" content="menu">
 		<g:set var="entityName" value="${message(code: 'sharedTagGroup.label', default: 'SharedTagGroup')}" />
 		<title><g:message code="default.edit.label" args="[entityName]" /></title>
 	</head>

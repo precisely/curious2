@@ -2,7 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<meta name="layout" content="public" />
+<meta name="layout" content="logo" />
 <title></title>
 <meta name="description" content="LGMD2I Collaborative Clinical Project" />
 <style type="text/css">

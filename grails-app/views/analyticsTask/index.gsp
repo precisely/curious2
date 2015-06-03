@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="layout" content="main">
+	<meta name="layout" content="menu">
 	<title>Analytics Jobs</title>
 	<script type="text/javascript" src="/js/jquery/jquery-1.7.2.min.js"></script>
 	<script src="/js/mustache.js"></script>

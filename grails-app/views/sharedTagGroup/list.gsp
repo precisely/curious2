@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta name="layout" content="main">
+		<meta name="layout" content="menu">
 		<title>Shared Tag Groups</title>
 	</head>
 	<body>

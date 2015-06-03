@@ -67,7 +67,7 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 }
 </script>
 </head>
-<body>
+<body class="feed">
 	<content tag="feedContent">
 			<div class="sprint">
 				<div class="row">

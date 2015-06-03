@@ -651,7 +651,7 @@ class HomeController extends DataController {
 				}
 			}
 			
-			List<UserGroup> groupMemberships = UserGroup.getGroupsForReader(user)
+			List groupMemberships = UserGroup.getGroupsForReader(user)
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
 			String groupName
 			String groupFullname = "Community Feed"
