@@ -595,11 +595,15 @@ class HomeController extends DataController {
 	}
 
 	def community(Long discussionId, boolean unpublish, boolean publish) {
-		feed(discussionId, unpublish, publish)
+		redirect(url:toUrl(action:'social'))
 	}
 	
-	def feed(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
-		debug "HomeController.feed(): $params"
+	def feed(Long discussionId, boolean unpublish, boolean publish) {
+		redirect(url:toUrl(action:'social'))
+	}
+	
+	def social(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
+		debug "HomeController.social(): $params"
 		def user = sessionUser()
 
 		if (user == null) {
@@ -654,7 +658,7 @@ class HomeController extends DataController {
 			List groupMemberships = UserGroup.getGroupsForReader(user)
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
 			String groupName
-			String groupFullname = "Community Feed"
+			String groupFullname = "Social Activity"
 					
 			groupMemberships.each { group ->
 				if (group[0]?.name.equals(params.userGroupNames)) {
@@ -671,7 +675,7 @@ class HomeController extends DataController {
 					userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) :
 					UserGroup.getDiscussionsInfoForUser(user, true, false, params)
 
-			log.debug("HomeController.feed: User has read memberships for :" + groupMemberships.dump())
+			log.debug("HomeController.social: User has read memberships for :" + groupMemberships.dump())
 
 			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request), offset: offset,
 				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
@@ -772,12 +776,12 @@ class HomeController extends DataController {
 			if (discussion == null) {
 				debug "DiscussionId not found: " + discussionId
 				flash.message = "That discussion topic no longer exists."
-				redirect(url: toUrl(action: 'feed'))
+				redirect(url: toUrl(action: 'social'))
 				return
 			} else if (params.deleteDiscussion) {
 				Map result = Discussion.delete(discussion, user)
 				flash.message = result.message
-				redirect(url: toUrl(action: 'feed'))
+				redirect(url: toUrl(action: 'social'))
 				return
 			}
 		} else if (plotDataId) {
@@ -785,7 +789,7 @@ class HomeController extends DataController {
 			debug "Discussion for plotDataId not found: " + plotDataId
 			if (discussion == null) {
 				flash.message = "That shared graph discussion no longer exists."
-				redirect(url:toUrl(action:'feed'))
+				redirect(url:toUrl(action:'social'))
 				return
 			}
 		}
@@ -934,13 +938,13 @@ class HomeController extends DataController {
 		if (!sprintInstance?.userId) {
 			debug "SprintId not found: $params.id"
 			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'feed'))
+			redirect(url: toUrl(action:'social'))
 			return
 		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
 					!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
 			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
 			flash.message = g.message(code: "not.permitted.to.see.sprint")
-			redirect(url: toUrl(action:'feed'))
+			redirect(url: toUrl(action:'social'))
 			return
 		}
 		
@@ -957,7 +961,7 @@ class HomeController extends DataController {
 		
 		if (!sprintInstance) {
 			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'feed'))
+			redirect(url: toUrl(action:'social'))
 			return
 		}
 		if (!sprintInstance.hasMember(currentUser.id)) {
@@ -982,7 +986,7 @@ class HomeController extends DataController {
 
 		if (!sprintInstance) {
 			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'feed'))
+			redirect(url: toUrl(action:'social'))
 			return
 		}
 		if (sprintInstance.hasMember(currentUser.id)) {

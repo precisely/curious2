@@ -81,12 +81,20 @@ $(window).load(function() {
 		showPeople();
 	} else if (isTabActive('#all')) {
 		showAllFeeds();
-	} else if (location.href.indexOf('/feed') > -1) {
+	} else {
 		location.hash = '#all';
 		showAllFeeds();
 	}
 
 });
+
+function setUrlHash(newHash) {
+	var hashLoc = location.href.indexOf('#')
+	if (hashLoc > -1) {
+		location.href = location.href.substring(0, hashLoc) + newHash;
+	} else
+		location.href = location.href + newHash;
+}
 
 $(document).ready(function() {
 	
@@ -116,7 +124,7 @@ $(document).ready(function() {
 							$this.parents('.feed-item').fadeOut();
 						});
 					} else {
-						location.href = '/home/feed#all';
+						location.href = '/home/social#all';
 					}
 				} else {
 					showAlert(data.message);
@@ -258,7 +266,7 @@ function showSprints() {
 			$('.alert').text(data.message);
 		}
 		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>');
-		$('#queryTitle').text('Curious Sprints');
+		$('#queryTitle').text('Tracking Sprints');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
 		showAlert('Internal server error occurred.');
@@ -308,7 +316,7 @@ function showDiscussions() {
 				});
 				$('#feed-discussions-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('Curious Discussions');
+				$('#queryTitle').text('Discussions');
 				$('.share-button').popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
@@ -341,7 +349,7 @@ function showPeople() {
 				});
 				$('#feed-people-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('Curious People');		
+				$('#queryTitle').text('People');		
 			}
 		} else {
 			$('.alert').text(data.message);
@@ -367,7 +375,7 @@ function showAllFeeds() {
 				addAllFeedItems(data);
 				$('#feed-all-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('Curious Feeds');		
+				$('#queryTitle').text('All Feeds');		
 				$(".share-button").popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
@@ -670,7 +678,7 @@ function deleteSprint(sprintHash) {
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
 				} else {
-					location.assign('/home/feed#all');
+					location.assign('/home/social#all');
 				}
 			}, function(data) {
 				showAlert(data.message);

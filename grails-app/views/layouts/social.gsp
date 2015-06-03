@@ -1,8 +1,7 @@
 <g:applyLayout name="menu">
 <html>
 	<head>
-	<title>Curious</title>
-	<meta name="description" content="A platform for health hackers" />
+	<title><g:layoutTitle/></title>
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
@@ -30,16 +29,16 @@
 		<div class="main container-fluid">
 		<ul class="nav nav-pills">
 			<li id="feed-all-tab" role="presentation">
-				<a href="/home/feed#all">ALL</a>
+				<a href="/home/social#all">ALL</a>
 			</li>
 			<li id="feed-people-tab" role="presentation">
-				<a href="/home/feed#people">PEOPLE</a>
+				<a href="/home/social#people">PEOPLE</a>
 			</li>
 			<li id="feed-discussions-tab" role="presentation">
-				<a href="/home/feed#discussions">DISCUSSIONS</a>
+				<a href="/home/social#discussions">DISCUSSIONS</a>
 			</li>
 			<li id="feed-sprints-tab" role="presentation">
-				<a href="/home/feed#sprints">SPRINTS</a>
+				<a href="/home/social#sprints">SPRINTS</a>
 			</li>
 			<li id="feed-right-tab" role="presentation">
 			<li>

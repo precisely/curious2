@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta name="layout" content="feed" />
+<meta name="layout" content="social" />
 <c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF" />
 <script type="text/javascript">
 

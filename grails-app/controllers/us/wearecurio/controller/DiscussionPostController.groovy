@@ -42,7 +42,7 @@ class DiscussionPostController extends LoginController{
 				renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			} else {
 				flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-				redirect(url: toUrl(controller: "home", action: "feed"))
+				redirect(url: toUrl(controller: "home", action: "social"))
 			}
 			return
 		}

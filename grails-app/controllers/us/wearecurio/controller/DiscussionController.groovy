@@ -25,7 +25,7 @@ class DiscussionController extends LoginController {
 
 		if (!group) {
 			flash.message = "Failed to create new discussion topic: can't post to this group"
-			redirect(url: toUrl(controller: "home", action: "feed"))
+			redirect(url: toUrl(controller: "home", action: "social"))
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
 			discussion = discussion ?: Discussion.create(user, name, group)
@@ -40,7 +40,7 @@ class DiscussionController extends LoginController {
 				redirect(url: toUrl(action: "show", params: ["id": discussion.hash]))
 			} else {
 				flash.message = "Failed to create new discussion topic: internal error"
-				redirect(url: toUrl(controller: "home", action: "feed"))
+				redirect(url: toUrl(controller: "home", action: "social"))
 			}
 		}
 
