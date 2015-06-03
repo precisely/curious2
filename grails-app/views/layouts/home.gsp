@@ -1,8 +1,90 @@
+<g:applyLayout name="base">
 <html>
 <head>
-<g:render template="/layouts/mainhead" model="['templateVer':templateVer]"/>
+<title><g:layoutTitle/></title>
+<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
+    rel="stylesheet">
+<style type="text/css">
+.features-background {
+	position: absolute;
+	height: 100%;
+	width: 105%;
+	background-color: #c04f7f;
+	left: -18px;
+	z-index: -1;
+	-webkit-transform: rotate(13deg) skew(13deg);
+	transform: rotate(13deg) skew(13deg);
+}
+
+.shape-wrapper {
+	position: relative;
+}
+
+.headerLinks {
+	margin-left: 40px;
+	margin-top: 20px;
+	margin-bottom: 30px;
+}
+
+.header-button {
+	color: #9d9d9d;
+	-webkit-border-radius: 0 !important;
+	-moz-border-radius: 0 !important;
+	border-radius: 2px !important;
+	font-size: 14px;
+	font-weight: bold;
+	border-color: #adadad;
+	border-top-right-radius: 0;
+	background-color: white;
+	margin-top: -8px;
+}
+
+.header-button:hover {
+	background-color: #f14a42;
+}
+</style>
+<g:layoutHead/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
-	<g:render template="/layouts/homebody" model="['templateVer':templateVer]"/>
+<%
+
+def activeClass = { a ->
+	if (actionName == a) {
+		'active-nav-link'
+	} else {
+		''
+	}
+}
+
+%>
+<!-- HEADER -->
+<div class="headLinks">
+	<ul class="mainLinks headerLinks">
+		<li><a href="/home/index">HOME</a></li>
+		<li><a href="/home/index/#features">FEATURES</a></li>
+		<li style="display: none;"><a href="#">LEARN</a></li>
+        <li>
+            <g:form url="[controller:'home',action:'login']">
+                <input type="hidden" name="login" value="login"/>
+                <button type="submit" class="btn btn-default header-button">Sign In</button>                
+            </g:form>
+        </li>
+	</ul>
+</div>
+<!-- /HEADER -->
+
+<g:render template="/layouts/alertMessage" />
+<g:layoutBody />
+
+<!-- FOOTER -->
+<g:render template="/layouts/homefooter"/>
+<!-- /FOOTER -->
+
+<div id="alert-message-dialog" class="hide">
+	<p><p>
+	<div id="alert-message-text"></div>
+</div>
+
 </body>
 </html>
+</g:applyLayout>

@@ -1,9 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta name="layout" content="main" />
-<title>Curious</title>
-<meta name="description" content="A platform for health hackers" />
+<meta name="layout" content="menu" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 <script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 

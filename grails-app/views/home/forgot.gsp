@@ -1,7 +1,6 @@
 <html>
 <head>
 <meta name="layout" content="home" />
-<title>Home</title>
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css"
     rel="stylesheet">
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>

@@ -3,7 +3,6 @@
 <html>
 <head>
 <meta name="layout" content="plot" />
-<title>Curious</title>
 <script type="text/javascript">
 function refreshPage() {
 	// TODO: used to reload taglist here, instead do incremental updates on changes

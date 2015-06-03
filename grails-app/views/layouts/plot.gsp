@@ -1,15 +1,16 @@
-<!DOCTYPE html>
+<g:applyLayout name="menu">
 <html>
 <head>
-<g:render template="/layouts/mainhead" model="['templateVer':templateVer]" />
-<script type="text/javascript" src="/js/flot/jquery.flot.js"></script>
-<!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<script type="text/javascript" src="/js/curious/queryplot.js"></script>
-<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, getPeopleDataCSRF, createTagGroupCSRF,
+<title><g:layoutTitle/></title>
+<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, createTagGroupCSRF,
 deleteTagGroupCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
 addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
+<g:layoutHead/>
+<script type="text/javascript" src="/js/flot/jquery.flot.js"></script>
+<!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
+<script type="text/javascript" src="/js/curious/queryplot.js"></script>
 
 <script type="text/javascript">
 
@@ -191,12 +192,17 @@ $(window).resize(function() {
 		adjustTrackingTagHeaderHeight();
 	}
 });
+
+var plot;
 </script>
 
-<g:layoutHead />
-
 </head>
-<body class="${pageProperty(name: 'body.class')}">
-<g:render template="/layouts/mainbody" model="['templateVer':templateVer]" />
+<body class="${pageProperty(name: 'body.class') ?: '' }">
+
+<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
+
+<g:layoutBody/>
+
 </body>
 </html>
+</g:applyLayout>

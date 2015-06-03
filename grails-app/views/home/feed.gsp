@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta name="layout" content="feedLayout" />
+<meta name="layout" content="feed" />
 <c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF" />
 <script type="text/javascript">
 
@@ -45,7 +45,7 @@ function searchFeeds(params) {
 }
 </script>
 </head>
-<body>
+<body class="feed">
 	<content tag="feedContent">
 		<div id="discussions" class="text-center">
 			<i class="fa fa-circle-o-notch fa-spin fa-3x"></i>

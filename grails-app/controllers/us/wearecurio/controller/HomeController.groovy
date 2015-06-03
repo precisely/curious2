@@ -566,6 +566,11 @@ class HomeController extends DataController {
 		[templateVer:urlService.template(request)]
 	}
 
+	def termsofservice_home() {
+		debug "HomeController.termsofservice_home()"
+		[templateVer:urlService.template(request)]
+	}
+
 	def viewgraph() {
 		debug "HomeController.viewgraph()"
 		

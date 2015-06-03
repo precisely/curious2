@@ -71,9 +71,10 @@ class SecurityService {
 		'recover',
 		'dorecover',
 		'notifywithings',
-		'termsofservice',
+		'termsofservice_home',
 		'notifyfitbit',
-		'homepage'
+		'homepage',
+		'getPeopleData'
 	] as Set
 
 	/**

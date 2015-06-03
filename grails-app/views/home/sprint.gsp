@@ -1,7 +1,7 @@
 <%! import grails.converters.JSON %>
 <html>
 <head>
-<meta name="layout" content="feedLayout" />
+<meta name="layout" content="feed" />
 <c:jsCSRFToken keys= "getSprintParticipantsDataCSRF"/>
 <script type="text/javascript">
 $(document).ready(function() {

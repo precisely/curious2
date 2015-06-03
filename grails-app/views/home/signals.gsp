@@ -2,9 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<meta name="layout" content="main" />
-<title>Curious</title>
-<meta name="description" content="A platform for health hackers" />
+<meta name="layout" content="menu" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

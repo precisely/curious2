@@ -2,9 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<title>Curious</title>
-<meta name="layout" content="main" />
-<meta name="description" content="A platform for health hackers" />
+<meta name="layout" content="menu" />
 
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,

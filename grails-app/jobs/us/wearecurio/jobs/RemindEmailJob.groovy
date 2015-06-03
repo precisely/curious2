@@ -1,7 +1,7 @@
 package us.wearecurio.jobs
 
 import us.wearecurio.services.*
-
+import grails.util.Environment
 
 class RemindEmailJob extends us.wearecurio.utility.TimerJob {
 	static transactional = false
@@ -12,6 +12,8 @@ class RemindEmailJob extends us.wearecurio.utility.TimerJob {
 	}
 
 	def execute() {
+		if (Environment.current == Environment.DEVELOPMENT)
+			return
 		log.debug "Started executing RemindEmailJob..."
 		remindEmailService.sendReminders()
 		log.debug "Finished executing RemindEmailJob..."

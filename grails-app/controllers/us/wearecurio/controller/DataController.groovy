@@ -285,8 +285,8 @@ class DataController extends LoginController {
 		def user = sessionUser()
 
 		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
+			debug "auth failure - return empty array"
+			renderStringGet([])
 			return
 		}
 

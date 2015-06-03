@@ -2,9 +2,7 @@
 <g:setProvider library="jquery"/>
 <html>
 <head>
-<meta name="layout" content="main" />
-<title>Curious</title>
-<meta name="description" content="A platform for health hackers" />
+<meta name="layout" content="menu" />
 <style type="text/css">
 #entry0 .ui-selecting { background: #99CCFF; }
 #entry0 .ui-selected { background: #3399FF; color: white; }

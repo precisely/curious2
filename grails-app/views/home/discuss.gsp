@@ -3,7 +3,6 @@
 <html>
 <head>
 <meta name="layout" content="plot" />
-<title>Curious</title>
 <style type="text/css">
 .ui-accordion-header {
 	overflow: hidden;
@@ -37,9 +36,9 @@ function clearPostMessage(postId) {
 
 $(function() {
 	initTagListOnly();
-	
-	queueJSON("getting login info", "/home/getPeopleData?callback=?",
-		function(data) {
+
+	<content tag="processUserData">
+		processUserData = function(data) {
 			if (data == 'login') {
 				data = [{id:-1,name:'',username:'(anonymous)',sex:''}];
 			}
@@ -68,17 +67,17 @@ $(function() {
 				}
 				addPerson(this['name'],
 					this['username'], this['id'], this['sex']);
-
+	
 				<g:if test="${firstPost?.getPlotDataId() != null}">
 					plot.loadSnapshotId(${firstPost.getPlotDataId()});
 				</g:if>
-
+	
 				return true;
 			});
-
+	
 			var discussTitleArea = $("#discussTitleArea");
 			var discussTitle = $("#discussTitleSpan");
-
+	
 			var saveTitle = function(closure) {
 				var discussTitleInput = $("#discussTitleInput");
 				if (discussTitleInput) {
@@ -102,14 +101,14 @@ $(function() {
 						closure();
 				}
 			}
-
+	
 			var renameDiscussionHandler = function(e) {
 				if (e.keyCode == 13) {
 					saveTitle();
 					$("#postcommentarea").focus();
 				}
 			}
-
+	
 			var discussTitleRename = function(e) {
 				discussTitleArea.off('mouseup');
 				discussTitle.html('<input type="text" id="discussTitleInput"></input>');
@@ -121,9 +120,9 @@ $(function() {
 					saveTitle();
 				});
 			}
-
+	
 			discussTitle.data('rename', discussTitleRename);
-
+	
 			<g:if test="${!isNew}">
 			discussTitle.off('mouseup');
 			discussTitle.on('mouseup', discussTitleRename);
@@ -133,7 +132,7 @@ $(function() {
 			discussTitleRename();
 			discussTitleInput.select();
 			</g:else>
-
+	
 			$("#postcommentarea").keyup(function(e) {
 				if (e.keyCode == 13) {
 					saveTitle(function() {
@@ -141,7 +140,7 @@ $(function() {
 					});
 				}
 			});
-
+	
 			$("#commentSubmitButton").click(function() {
 				saveTitle(function() {
 					$("#commentForm").submit();
@@ -149,8 +148,9 @@ $(function() {
 			});
 			
 			refreshPage();
-		});
-
+		};
+	</content>
+	
 	$(document).on("click", "ul#posts-pagination a", function() {
 		var url = $(this).attr('href');
 		$.ajax({

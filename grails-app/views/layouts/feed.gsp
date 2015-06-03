@@ -12,7 +12,7 @@
 			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF" />
 	<g:layoutHead />
 	</head>
-	<body class="feed">
+	<body class="${pageProperty(name: 'body.class') ?: '' }">
 	<!-- MAIN -->
 		<div class="row red-header">
 			<div>

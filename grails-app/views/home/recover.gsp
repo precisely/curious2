@@ -1,7 +1,6 @@
 <html>
 <head>
-<meta name="layout" content="grailsmain" />
-<title>Login</title>
+<meta name="layout" content="home" />
 <script type="text/javascript">
 $(function(){
 	$("input:text:visible:first").focus();

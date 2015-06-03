@@ -2,7 +2,7 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<meta name="layout" content="menu" />
+<meta name="layout" content="logo" />
 <title>Curious Terms of Service</title>
 <style type="text/css">
 ol {
