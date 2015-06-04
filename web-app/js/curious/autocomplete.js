@@ -109,10 +109,12 @@ function TagStatsMap() {
 		return this.add(term, amount, amountPrecision, units, typicallyNoAmount);
 	}
 	
+	// Call this to look up TagStats from tag name
 	this.get = function(term) {
 		return this.map[term];
 	}
 	
+	// Call this ONLY to look up TagStats from tag + typical value (or space)
 	this.getFromText = function(textValue) {
 		return this.textMap[textValue];
 	}

@@ -2,7 +2,6 @@
 <head>
 <meta name="layout" content="social" />
 <c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF" />
-<script type="text/javascript" src="/js/curious/feeds.js?ver=21"></script>
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

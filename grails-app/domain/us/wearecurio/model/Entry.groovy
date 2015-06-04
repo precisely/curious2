@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import java.util.Map
 
 import groovy.time.*
+import grails.compiler.GrailsCompileStatic
 import grails.converters.*
 
 import org.apache.commons.logging.LogFactory
@@ -1290,7 +1291,7 @@ class Entry implements Comparable {
 	}
 
 	static def getAutocompleteTagsWithInfo(User user) {
-		log.debug "Entry.getAutocompleteTagsWithInfo() userID:" + user.getId()
+		log.debug("Entry.getAutocompleteTagsWithInfo() userID:" + user.id)
 
 		def tagStats = TagStats.activeForUser(user)
 
@@ -1298,8 +1299,11 @@ class Entry implements Comparable {
 		def algTagStats = tagStats['alg']
 
 		def allTagStats = []
+		
+		for (TagStats tag in freqTagStats) {
+			if (tag.description.startsWith("headache"))
+				tag = tag
 
-		for (tag in freqTagStats) {
 			allTagStats.add([
 				tag.getDescription(),
 				tag.getLastAmount(),
@@ -1311,12 +1315,12 @@ class Entry implements Comparable {
 		def freqTags = []
 		def algTags = []
 
-		for (tag in freqTagStats) {
-			freqTags.add(tag.getDescription())
+		for (TagStats tag in freqTagStats) {
+			freqTags.add(tag.description)
 		}
 
-		for (tag in algTagStats) {
-			algTags.add(tag.getDescription())
+		for (TagStats tag in algTagStats) {
+			algTags.add(tag.description)
 		}
 
 		def retVal = [all: allTagStats, freq: freqTags, alg: algTags]

@@ -81,20 +81,8 @@ $(window).load(function() {
 		showPeople();
 	} else if (isTabActive('#all')) {
 		showAllFeeds();
-	} else {
-		location.hash = '#all';
-		showAllFeeds();
 	}
-
 });
-
-function setUrlHash(newHash) {
-	var hashLoc = location.href.indexOf('#')
-	if (hashLoc > -1) {
-		location.href = location.href.substring(0, hashLoc) + newHash;
-	} else
-		location.href = location.href + newHash;
-}
 
 $(document).ready(function() {
 	

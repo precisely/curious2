@@ -494,14 +494,15 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	}
 
 	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow) {
-		var tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
-		if (!tagStats.typicallyNoAmount) {
+		var tagStats = this.autocompleteWidget.tagStatsMap.get(text);
+		if (!tagStats) tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
+		if ((!tagStats) || tagStats.typicallyNoAmount) {
+			this.addEntry(userId, text, defaultToNow);
+		} else {
 			this.addEntry(userId, text, defaultToNow, function() {
 				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
 				self.selectEntry($(selectee), false);
 			});
-		} else {
-			this.addEntry(userId, text, defaultToNow);
 		}
 	}
 
