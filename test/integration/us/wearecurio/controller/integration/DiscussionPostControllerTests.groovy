@@ -121,7 +121,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		assert controller.flash.message == messageSource.getMessage("default.blank.message", 
 			["Discussion"] as Object[], null)
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 		assert !DiscussionPost.count()
 	}
 

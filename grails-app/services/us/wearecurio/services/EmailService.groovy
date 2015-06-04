@@ -6,6 +6,8 @@ import org.apache.commons.logging.LogFactory
 
 import grails.plugin.mail.MailService
 
+import grails.util.Environment
+
 class EmailService {
 
 	private static def log = LogFactory.getLog(this)

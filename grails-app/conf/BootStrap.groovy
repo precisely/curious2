@@ -45,7 +45,7 @@ class BootStrap {
 		}
 
 		withingsDataService.refreshSubscriptions()
-		if (current != Environment.TEST) {
+		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {
 			try {
 				new IntraDayDataThread().start()
 			} catch(IllegalStateException ie) {

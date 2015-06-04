@@ -61,7 +61,7 @@ class RemindEmailService {
 	def sendReminders() {
 		log.debug "RemindEmailService.sendReminders()"
 		
-		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+		if (Environment.current != Environment.PRODUCTION) {
 			return // don't send reminders in test or development mode
 		}
 		

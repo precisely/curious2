@@ -28,7 +28,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 		//humanDataService.poll()
 		log.debug("Started DeviceIntegrationHourlyJob...")
 		
-		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted DeviceIntegrationHourlyJob.."
 			return // don't send reminders in test or development mode
 		}

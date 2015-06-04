@@ -211,12 +211,12 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testFeed() {
+	void testSocial() {
 		HomeController controller = new HomeController()
 
 		controller.session.userId = user.getId()
 
-		def model = controller.feed()
+		def model = controller.social()
 
 		assert model.prefs != null
 	}
@@ -542,7 +542,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.sprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -555,7 +555,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.sprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -568,7 +568,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.sprint()
 		assert controller.flash.message == ("You are not permitted to see that sprint.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -595,7 +595,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.leaveSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -606,7 +606,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.leaveSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -639,7 +639,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.joinSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test
@@ -650,7 +650,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		
 		controller.joinSprint()
 		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("feed")
+		assert controller.response.redirectUrl.contains("social")
 	}
 
 	@Test

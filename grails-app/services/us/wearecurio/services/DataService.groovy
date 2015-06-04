@@ -57,7 +57,7 @@ abstract class DataService {
 	static final Date earlyStartDate
 
 	static {
-		if (Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			earlyStartDate = new Date() - 60
 		} else {
 			earlyStartDate = new Date(-5364658800L)
@@ -187,7 +187,7 @@ abstract class DataService {
 			}
 		}
 
-		if (Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "DataService.getResponse() Response data:"
 			log.debug parsedResponse
 		}

@@ -18,7 +18,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 
 	def execute() {
 		log.debug "Started executing ThirdPartyNotificationJob.."
-		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted ThirdPartyNotificationJob.."
 			return // don't send reminders in test or development mode
 		}

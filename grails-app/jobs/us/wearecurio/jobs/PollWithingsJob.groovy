@@ -18,7 +18,7 @@ class PollWithingsJob extends us.wearecurio.utility.TimerJob {
 	def execute() {
 		def timestamp = System.currentTimeMillis()
 		log.debug "PollWithingsJob: Started at ${timestamp}"
-		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted DeviceIntegrationHourlyJob.."
 			return // don't send reminders in test or development mode
 		}

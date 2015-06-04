@@ -60,7 +60,7 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		Response response = request.send()
 
 		JSONObject responseJSON = JSON.parse(response.body)
-		if (Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			println "Received response from ${api.class.simpleName}: $response.body"
 		}
 

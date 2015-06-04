@@ -46,7 +46,7 @@ class HumanDataService {
 		Response apiResponse = oauthService.getHumanResource(tokenInstance, url)
 
 		log.debug "Received response from Human API for type [$type] with code [$apiResponse.code]"
-		if (Environment.current in [Environment.DEVELOPMENT, Environment.TEST]) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Received response from Human API for type [$type] with body [$apiResponse.body]"
 		}
 

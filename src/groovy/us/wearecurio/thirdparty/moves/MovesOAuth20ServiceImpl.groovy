@@ -63,7 +63,7 @@ class MovesOAuth20ServiceImpl extends OAuth20ServiceImpl {
 
 		String responseBody = response.body
 
-		if (Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			println "Received response from moves api: $responseBody"
 		}
 		JSONObject responseJSON = JSON.parse(responseBody)

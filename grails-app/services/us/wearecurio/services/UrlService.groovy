@@ -69,7 +69,7 @@ class UrlService {
 	 */
 	def base(req, boolean usePublicIP = false) {
 		if (req == null) {
-			if(Environment.current == Environment.DEVELOPMENT && usePublicIP) {
+			if (Environment.current != Environment.PRODUCTION && usePublicIP) {
 				log.debug "UrlService.base() NULL REQUEST, RETURNING DEFAULT PUBLIC IP SERVER URL"
 				return grailsApplication.config.grails.other.serverURL ?: (grailsApplication.config.grails.development.serverURL ?: grailsApplication.config.grails.serverURL)
 			}

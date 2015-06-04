@@ -15,9 +15,9 @@ class DeviceIntegrationDailyJob extends TimerJob {
 
 	def execute() {
 		log.debug "Started executing Daily basis job.."
-		if (Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST) {
+		if (Environment.current != Environment.PRODUCTION) {
 			log.debug "Aborted executing Daily basis job.."
-			return // don't send reminders in test or development mode
+			return
 		}
 		oauthAccountService.refreshAllToken()
 		withingsDataService.refreshSubscriptions()

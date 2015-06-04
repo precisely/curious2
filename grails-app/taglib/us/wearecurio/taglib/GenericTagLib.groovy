@@ -36,7 +36,7 @@ class GenericTagLib {
 			throwTagError("Tag [jsCSRFToken] requires a keys attribute.")
 		}
 		String lineSeperator = ""
-		if(Environment.current == Environment.DEVELOPMENT) {
+		if (Environment.current != Environment.PRODUCTION) {
 			lineSeperator = "\n"
 		}
 		SynchronizerTokensHolder tokensHolder = SynchronizerTokensHolder.store(session)
