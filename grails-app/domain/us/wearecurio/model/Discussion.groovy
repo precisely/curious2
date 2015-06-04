@@ -431,7 +431,7 @@ class Discussion {
 			}
 		}
 		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
-			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
+			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
 	}
 

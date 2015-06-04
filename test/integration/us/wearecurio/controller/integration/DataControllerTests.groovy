@@ -786,8 +786,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == messageSource.getMessage("default.blank.message",
-				["Entries"] as Object[], null)
+		assert controller.response.json.message == messageSource.getMessage("all.questions.blank",
+				[] as Object[], null)
 	}
 
 	@Test
