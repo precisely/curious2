@@ -278,7 +278,6 @@ class Sprint {
 		
 		// add start element
 		def m = Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true)
-		m['durationType'] = DurationType.GENERATEDSTART
 		def entry = Entry.create(userId, m, stats)
 		
 		return true
@@ -309,7 +308,6 @@ class Sprint {
 		
 		// add stop element
 		def m = Entry.parse(now, timeZoneName, fetchTagName() + " end", baseDate, true)
-		m['durationType'] = DurationType.GENERATEDEND
 		def entry = Entry.create(userId, m, stats)
 		entry = entry
 	}
