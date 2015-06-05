@@ -1269,9 +1269,10 @@ class DataController extends LoginController {
 	def createHelpEntriesData() {
 		log.debug "Entries recieved to save: $params"
 		def entries = params.entry.findAll { it.value }
+		log.debug "entries recieved is: $entries"
 
 		if (!entries) {
-			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ['Entries'])])
+			renderJSONPost([success: false, message: g.message(code: "all.questions.blank")])
 			return
 		}
 		
