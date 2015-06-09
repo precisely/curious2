@@ -54,6 +54,7 @@
 </content>
 <script>
 	var showModal = ${(session.survey == 'compass')? true: false};
+	var showHelpModal = ${session.registrationSuccessful?: false};
 
 	var processUserData = function(data) {
 		if (!checkData(data))
@@ -122,6 +123,9 @@
 						console.log('xhr:', xhr);
 					}
 				});
+			}
+			if (showHelpModal) {
+				$('#helpWizardOverlay').modal({show: true});
 			}
 		});
 		jQuery.curCSS = jQuery.css;

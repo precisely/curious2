@@ -2,9 +2,9 @@
 <html>
 <head>
 <title><g:layoutTitle/></title>
-<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, createTagGroupCSRF,
-deleteTagGroupCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
-removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
+<c:jsCSRFToken keys="getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF, deleteTagGroupDataCSRF, showTagGroupDataCSRF, 
+getTagPropertiesCSRF, autocompleteDataCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF, removeTagFromTagGroupCSRF, 
+addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF, setTagPropertiesDataCSRF,
 addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF" />
 <script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 <g:layoutHead/>
