@@ -426,7 +426,7 @@ class TagGroup extends GenericTagGroup {
 		tagIds.tokenize(",").each { tagId ->
 			addTag(Tag.get(tagId.trim()))
 		}
-		Utils.save(this)
+		Utils.save(this, true)
 		this
 	}
 }
