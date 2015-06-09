@@ -1293,6 +1293,7 @@ class DataController extends LoginController {
 				}
 			})
 		}
+		session.registrationSuccessful = false
 		renderJSONPost([success: operationSuccess, message: g.message(code: messageCode, args: ['Entries'])])
 	}
 
