@@ -337,6 +337,10 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 }
 
 class Roundable {
+	String toString() {
+		BigDecimal.getMethod('toString').invoke(this.metaClass.owner)
+	}
+
 	BigDecimal round(int n) {
 		return setScale(n, BigDecimal.ROUND_HALF_UP)
 	}
