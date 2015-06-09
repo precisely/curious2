@@ -1044,7 +1044,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "Can not stop this sprint."
+		assert controller.response.json.message == messageSource.getMessage("can.not.stop.sprint", [] as Object[], null) 
 	}
 
 	@Test
@@ -1071,7 +1071,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1083,7 +1083,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -1143,7 +1143,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1155,7 +1155,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not add admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("add.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -1215,7 +1215,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1227,7 +1227,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1238,7 +1238,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -1250,7 +1250,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintMemberData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete participant."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.participant.failed", [] as Object[], null)
 	}
 
 	@Test
@@ -1298,7 +1298,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1310,7 +1310,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1321,7 +1321,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -1333,7 +1333,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteSprintAdminData()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "Can not delete admin."
+		assert controller.response.json.errorMessage == messageSource.getMessage("delete.sprint.admin.failed", [] as Object[], null)
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
