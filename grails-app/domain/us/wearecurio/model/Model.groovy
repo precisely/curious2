@@ -16,7 +16,7 @@ class Model {
 	}
 
 	static enum Visibility {
-		PRIVATE(0), UNLISTED(1), PUBLIC(2)
+		PRIVATE(0), UNLISTED(1), PUBLIC(2), NEW(3)
 	
 		final Integer id
 		

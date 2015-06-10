@@ -2285,7 +2285,7 @@ class EntryTests extends CuriousTestCase {
 
 	@Test
 	void "Test canDelete when user has not created the entry but is admin of the sprint which contains the entry"() {
-		def sprint = Sprint.create(user, "Sprint", Visibility.PUBLIC)
+		def sprint = Sprint.create(new Date(), user, "Sprint", Visibility.PUBLIC)
 		
 		def entry = Entry.create(sprint.getVirtualUserId(), Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, user)
@@ -2299,7 +2299,7 @@ class EntryTests extends CuriousTestCase {
 		User user2 = User.create(params)
 		Utils.save(user2, true)
 		
-		def sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
+		def sprint = Sprint.create(new Date(), user2, "Sprint", Visibility.PUBLIC)
 		
 		def entry = Entry.create(sprint.getVirtualUserId(), Entry.parse(currentTime, timeZone, "testxyz end at 4pm", baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, user)

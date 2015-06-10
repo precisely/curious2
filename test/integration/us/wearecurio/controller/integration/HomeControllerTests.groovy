@@ -524,7 +524,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	Sprint dummySprint
 	User dummyUser2
 	void mockSprintData() {
-		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
+		dummySprint = Sprint.create(new Date(), user, "demo", Model.Visibility.PRIVATE)
 				
 		Map params = [username: "a", sex: "F", email: "a@a.com", birthdate: "01/01/2001", name: "a y", password: "y"]
 		dummyUser2 = User.create(params)

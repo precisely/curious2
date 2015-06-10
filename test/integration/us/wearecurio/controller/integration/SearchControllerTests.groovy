@@ -44,9 +44,11 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		user3 = User.create(params)
 		Utils.save(user3, true)
 		
-		sprint1 = Sprint.create(user, "demo1", Visibility.PRIVATE)
-		sprint2 = Sprint.create(user, "demo2", Visibility.PRIVATE)
-		sprint3 = Sprint.create(user, "demo3", Visibility.PRIVATE)
+		Date now = new Date()
+		
+		sprint1 = Sprint.create(now, user, "demo1", Visibility.PRIVATE)
+		sprint2 = Sprint.create(now, user, "demo2", Visibility.PRIVATE)
+		sprint3 = Sprint.create(now, user, "demo3", Visibility.PRIVATE)
 		sprint1.addMember(user2.getId())
 
 		discussion1 = Discussion.create(user, "Discussion1 name")

@@ -12,6 +12,11 @@
 				<div class="modal-body">
 					<div class="alert alert-danger hide" role="alert">Some error has occurred while performing the operation.</div>
 					<div class="row">
+						<div class="col-md-11" style="font-size:11pt;font-style:italic;margin-bottom:5px;">
+						<p>Sprints are reusable tracking exercises which you do by yourself or with others. Specify which tags you're tracking and how, and invite others to track with you.</p>
+						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6">
 							<label for="sprint-title">TITLE</label>
 							<input type="text" name="name" required placeholder="Enter title here..." id="sprint-title">
@@ -25,31 +30,48 @@
 						</div>
 					</div>
 					<div class="row">
+					<div class="col-md-6">
+					<label for="sprint-details">DETAILS</label>
+					<textarea rows="4" name="description" cols="74" required id="sprint-details" placeholder="Ex.: &quot;Let's track every time we have a headache, with severity 1-10, remind ourselves to take aspirin in the evening, and track our mood (1-10 scale) on an ongoing basis every day.&quot;"></textarea>
+					</div>
+					</div>
+					<div class="row">
+						<div class="col-md-1" style="font-size:11pt;font-style:italic;">
+						<label class="inline-labels" for="sprint-tags" style="clear:both;">TAGS</label>
+						</div>
+						<div class="col-md-9" style="font-size:11pt;font-style:italic;">
+						<p>Pin <span class="pinnedDarkLabelImage"></span> tags that happen at irregular times (&quot;headache&quot;).<br/>
+						Repeat <span class="repeatDarkLabelImage"></span> ongoing tags you edit occasionally (&quot;mood 5&quot;)<br/>
+						Remind <span class="remindDarkLabelImage"></span> timed tags needing confirmation (&quot;aspirin 8pm&quot;)<br/>
+						Or just enter tags which to be counted as part of this sprint's data.<br/>&nbsp;
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-11" style="font-size:11pt;font-style:italic;padding:0px;">
+							<div class="inline-labels" id="autocomplete1"></div>
+							<div class="input-group">
+								<input type="text" placeholder="Ex.: &quot;headache&quot;, &quot;mood&quot;" id="sprint-tags">
+								<span class="input-group-addon pinnedDarkLabelImage" id="basic-addon2" 
+									onclick="addEntryToSprint('sprint-tags', 'pinned')"></span>
+								<span class="input-group-addon repeatDarkLabelImage" id="basic-addon2"
+									onclick="addEntryToSprint('sprint-tags', 'repeat')"></span>
+								<span class="input-group-addon remindDarkLabelImage" id="basic-addon2"
+									onclick="addEntryToSprint('sprint-tags', 'remind')"></span>
+							</div>
+						</div>
+					</div>
+					<ul id="sprint-tag-list">
+					</ul>
+					<!--div class="row">
 						<div class="col-md-6">
 							<label for="sprint-start-date">START DATE</label>
 							<input type="text" name="startDate" placeholder="Pick Date (Optional)" id="sprint-start-date">
 						</div>
 						<div class="col-md-6">
 							<label for="sprint-duration">DURATION (DAYS)</label>
-							<input type="number" name="daysDuration" placeholder="Enter duration in days" min="0" id="sprint-duration">
+							<input type="number" name="daysDuration" placeholder="Enter duration in days (Optional)" min="0" id="sprint-duration">
 						</div>
-					</div>
-					<label for="sprint-details">DETAILS</label>
-					<textarea rows="4" name="description" cols="74" required id="sprint-details" placeholder="Enter details here..."></textarea>
-
-					<label class="inline-labels" for="sprint-tags">TAGS</label>
-					<div class="inline-labels" id="autocomplete1"></div>
-					<div class="input-group">
-						<input type="text" placeholder="click to add a tag" id="sprint-tags">
-						<span class="input-group-addon pinnedDarkLabelImage" id="basic-addon2" 
-							onclick="addEntryToSprint('sprint-tags', 'pinned')"></span>
-						<span class="input-group-addon repeatDarkLabelImage" id="basic-addon2"
-							onclick="addEntryToSprint('sprint-tags', 'repeat')"></span>
-						<span class="input-group-addon remindDarkLabelImage" id="basic-addon2"
-							onclick="addEntryToSprint('sprint-tags', 'remind')"></span>
-					</div>
-					<ul id="sprint-tag-list">
-					</ul>
+					</div -->
 					<div class="row">
 						<div class="col-md-6">
 							<label class="inline-labels" for="sprint-participants">PARTICIPANTS</label>

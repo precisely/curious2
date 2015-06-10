@@ -84,7 +84,7 @@ class Sprint {
 	}
 	
 	static Sprint create(User user) {
-		return create(user, null, null)
+		return create(new Date(), user, null, null)
 	}
 	
 	protected UserGroup fetchUserGroup() {
@@ -145,11 +145,12 @@ class Sprint {
 		return fetchUserGroup()?.removeAdmin(userId)
 	}
 	
-	static Sprint create(User user, String name, Visibility visibility) {
+	static Sprint create(Date now, User user, String name, Visibility visibility) {
 		log.debug "Sprint.create() userId:" + user?.getId() + ", name:" + name
 		return Sprint.withTransaction {
 			def sprint = new Sprint(user, name, visibility)
 			Utils.save(sprint, true)
+			UserActivity.create(new Date(), user.id, UserActivity.SPRINT_BIT | UserActivity.CREATE_ID, sprint.id)
 			return sprint
 		}
 	}
@@ -157,11 +158,13 @@ class Sprint {
 	static void delete(Sprint sprint) {
 		log.debug "Sprint.delete() id:" + sprint.getId()
 		// DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
+		Long userId = sprint.userId
 		sprint.userId = 0
 		UserGroup sprintUserGroup = sprint.fetchUserGroup()
 		sprintUserGroup?.removeAllParticipants()
 		
 		Utils.save(sprint, true)
+		UserActivity.create(new Date(), userId, UserActivity.SPRINT_BIT | UserActivity.DELETE_ID, sprint.id)
 	}
 	
 	static boolean search(Long userId, String searchString) {
@@ -169,7 +172,7 @@ class Sprint {
 	}
 	
 	Sprint() {
-		this.visibility = Visibility.PRIVATE
+		this.visibility = Visibility.NEW
 	}
 	
 	Sprint(User user, String name, Visibility visibility) {
@@ -209,25 +212,24 @@ class Sprint {
 		return hasReader(userId)
 	}
 	
-	boolean hasStarted(Long userId, Date now) {
+	// returns start time if started as of "now", or null if outside sprint
+	Date hasStarted(Long userId, Date now) {
 		if (!hasMember(userId)) 
-			return false
+			return null
 		
-		Entry entry = Entry.fetchPreviousEqualStartOrEndEntry(userId, Tag.look(fetchTagName()), now)
-		if (!entry) {
-			return false
-		}
-		return entry.fetchIsStart()
+		UserActivity start = UserActivity.fetchStart(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		
+		return start?.created
 	}
 	
-	boolean hasEnded(Long userId, Date now) {
+	// returns end time if ended as of "now", or null if outside sprint
+	Date hasEnded(Long userId, Date now) {
 		if (!hasMember(userId))
-			return false
-		Entry entry = Entry.fetchPreviousEqualStartOrEndEntry(userId, Tag.look(fetchTagName()), now)
-		if (!entry) {
-			return false
-		}
-		return entry.fetchIsEnd()
+			return null
+			
+		UserActivity end = UserActivity.fetchEnd(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		
+		return end?.created
 	}
 	
 	protected String entrySetName() {
@@ -280,6 +282,9 @@ class Sprint {
 		def m = Entry.parse(now, timeZoneName, fetchTagName() + " start", baseDate, true)
 		def entry = Entry.create(userId, m, stats)
 		
+		// record activity
+		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.START_ID, this.id)
+		
 		return true
 	}
 	
@@ -288,16 +293,17 @@ class Sprint {
 	// end repeat entries
 	// end remind entries
 	boolean stop(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {
-		if (!hasStarted(userId, now)) {
-			return false
-		}
-		
+		Date startDate = hasStarted(userId, now)
+
+		if (!startDate) return false
+				
 		stats.setBatchCreation(true)
 		
 		String setName = entrySetName()
 		
 		Identifier setIdentifier = Identifier.look(setName)
 		
+		// look for entries marked by sprint set identifier
 		def entries = Entry.findAllByUserIdAndSetIdentifier(userId, setIdentifier)
 		for (Entry entry in entries) {
 			if (!entry.isPrimaryEntry())
@@ -306,10 +312,45 @@ class Sprint {
 			Entry.deleteGhost(entry, stats, baseDate, true)
 		}
 		
+		// look for manually created entries that match sprint template
+		def sprintEntries = Entry.findAllByUserId(virtualUserId)
+		for (Entry entry in sprintEntries) {
+			if (!entry.isPrimaryEntry())
+				continue
+			
+			if (entry.getRepeatType() == null)
+				continue
+			
+			boolean testDate = true
+			if (entry.getRepeatType().isContinuous())
+				testDate = false
+				
+			// search for entry that matches this pattern
+			def c = Entry.createCriteria()
+			def results = c {
+				and {
+					eq("userId", userId)
+					if (testDate) {
+						ge("date", startDate)
+						lt("date", startDate + 1)
+					}
+					eq("tag", entry.getTag())
+					eq("repeatType", entry.getRepeatType())
+					isNull("setIdentifier")
+				}
+			}
+
+			for (Entry e in results) {
+				Entry.deleteGhost(e, stats, baseDate, true)
+			}
+		}
+		
 		// add stop element
 		def m = Entry.parse(now, timeZoneName, fetchTagName() + " end", baseDate, true)
 		def entry = Entry.create(userId, m, stats)
-		entry = entry
+
+		// record activity
+		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.STOP_ID, this.id)
 	}
 	
 	boolean isModified() {
@@ -352,11 +393,16 @@ class Sprint {
 		}.list()
 		
 		List<Sprint> sprintList = Sprint.withCriteria {
-			or {
-				'in'("virtualGroupId", groupReaderList ?: [0l]) // When using 'in' clause GORM gives error on passing blank list
-				and {
-					eq("visibility", Visibility.PUBLIC)
-					ne("userId", 0l)
+			and {
+				or {
+					'in'("virtualGroupId", groupReaderList ?: [0l]) // When using 'in' clause GORM gives error on passing blank list
+					and {
+						eq("visibility", Visibility.PUBLIC)
+						ne("userId", 0l)
+					}
+				}
+				not {
+					eq("visibility", Visibility.NEW)
 				}
 			}
 			firstResult(offset)

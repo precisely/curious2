@@ -253,7 +253,7 @@ function showSprints() {
 		} else {
 			$('.alert').text(data.message);
 		}
-		$('#feed-right-tab').html('<a onclick="createSprint()" href="#">START NEW SPRINT</a>');
+		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
 		$('#queryTitle').text('Tracking Sprints');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {

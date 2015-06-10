@@ -1300,8 +1300,8 @@ class DataController extends LoginController {
 	def createNewSprintData() {
 		User currentUser = sessionUser()
 		
-		Sprint sprintInstsnce = Sprint.create(currentUser, "Untitled Sprint", Model.Visibility.PRIVATE);
-		renderJSONGet(sprintInstsnce.getJSONDesc())
+		Sprint sprintInstance = Sprint.create(new Date(), currentUser, "Untitled Sprint", Model.Visibility.NEW);
+		renderJSONGet(sprintInstance.getJSONDesc())
 	}
 
 	def updateSprintData() {

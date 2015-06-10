@@ -2032,7 +2032,7 @@ div.graph-header-container .red-header {
 
 .feed .modal-body #sprint-tags {
 	border: none;
-	width: 250px;
+	width: 400px;
 	height: 30px;
 	margin-bottom: 0px;
 	font-weight: 500;
@@ -3587,6 +3587,7 @@ body .modal-footer a .navigate-carousel-right {
 	border-radius: 2px;
 	display: inline-block;
 	margin-bottom: 20px;
+	align: left;
 	float: left;
 	display: inline;
 }

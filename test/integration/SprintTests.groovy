@@ -113,7 +113,7 @@ class SprintTests extends CuriousTestCase {
 		def sprint = Sprint.create(user)
 		assert sprint.userId == user.id
 		
-		sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
+		sprint = Sprint.create(currentTime, user2, "Sprint", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Sprint"
 		assert sprint.visibility == Visibility.PUBLIC
@@ -121,7 +121,7 @@ class SprintTests extends CuriousTestCase {
 	
 	@Test
 	void testCreateSprintAdmin() {
-		def sprint = Sprint.create(user2, "Sprint", Visibility.PUBLIC)
+		def sprint = Sprint.create(currentTime, user2, "Sprint", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Sprint"
 		assert sprint.visibility == Visibility.PUBLIC
@@ -139,7 +139,7 @@ class SprintTests extends CuriousTestCase {
 	
 	@Test
 	void testCreateSprintTags() {
-		Sprint sprint = Sprint.create(user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Caffeine + Sugar"
 		assert sprint.visibility == Visibility.PUBLIC
@@ -213,8 +213,91 @@ class SprintTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testCreateSprintTagsDeleteRecreate() {
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar sprint"
+		
+		def entry1 = Entry.create(sprint.getVirtualUserId(), Entry.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), Entry.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), Entry.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", Sprint.getSprintBaseDate(), true), new EntryStats())
+		
+		sprint.addMember(user.id)
+		
+		sprint.start(user.id, baseDate, currentTime, timeZone, new EntryStats())
+		
+		def list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		
+		assert sprint.hasStarted(user.id, currentTime)
+		assert sprint.hasStarted(user.id, tomorrowCurrentTime)
+		
+		boolean sugar = false, aspirin = false, coffee = false, sprintStart = false
+		
+		Long sugarEntryId = null
+		Long aspirinEntryId = null
+		
+		for (record in list) {
+			if (record.description == 'sugar' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT)) {
+				sugar = true
+				sugarEntryId = record.id
+			} else if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT)) {
+				aspirin = true
+				aspirinEntryId = record.id
+			} else if (record.description == 'coffee' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+				coffee = true
+			else if (record.description == 'caffeine sugar sprint start')
+				sprintStart = true
+			else
+				assert false
+		}
+		
+		assert sugar && aspirin && coffee && sprintStart
+
+		Entry.delete(Entry.get(sugarEntryId), new EntryStats())
+		def newSugarEntry = Entry.create(user.id, Entry.parse(baseDate, timeZone, "sugar pinned", baseDate, true), new EntryStats())
+		
+		sprint.stop(user.id, tomorrowBaseDate, tomorrowCurrentTime, timeZone, new EntryStats())
+		
+		assert sprint.hasStarted(user.id, currentTime)
+		assert !sprint.hasStarted(user.id, tomorrowCurrentTime)
+		
+		list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		
+		sprintStart = false
+		aspirin = false
+		
+		for (record in list) {
+			if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+				aspirin = true
+			else if (record.description == 'caffeine sugar sprint start')
+				sprintStart = true
+			else
+				assert false
+		}
+		
+		assert aspirin && sprintStart
+
+		list = Entry.fetchListData(user, timeZone, tomorrowBaseDate, tomorrowCurrentTime)
+		
+		boolean sprintStop = false, sprintDuration = false
+		
+		for (record in list) {
+			if (record.description == 'caffeine sugar sprint end')
+				sprintStop = true
+			else if (record.description == 'caffeine sugar sprint')
+				sprintDuration = true
+			else
+				assert false
+		}
+		
+		assert sprintStop && sprintDuration
+	}
+	
+	@Test
 	void testStartTwice() {
-		Sprint sprint = Sprint.create(user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Caffeine + Sugar"
 		assert sprint.visibility == Visibility.PUBLIC
@@ -287,7 +370,7 @@ class SprintTests extends CuriousTestCase {
 	
 	@Test
 	void testCreateSprintTagsDuplicatePinned() {
-		Sprint sprint = Sprint.create(user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
 		assert sprint.name == "Caffeine + Sugar"
 		assert sprint.visibility == Visibility.PUBLIC
@@ -367,9 +450,9 @@ class SprintTests extends CuriousTestCase {
 	
 	Sprint dummySprint1, dummySprint2, dummySprint3
 	void mockSprintData() {
-		dummySprint1 = Sprint.create(user, "demo1", Visibility.PRIVATE)
-		dummySprint2 = Sprint.create(user, "demo2", Visibility.PRIVATE)
-		dummySprint3 = Sprint.create(user, "demo3", Visibility.PRIVATE)
+		dummySprint1 = Sprint.create(currentTime, user, "demo1", Visibility.PRIVATE)
+		dummySprint2 = Sprint.create(currentTime, user, "demo2", Visibility.PRIVATE)
+		dummySprint3 = Sprint.create(currentTime, user, "demo3", Visibility.PRIVATE)
 		dummySprint1.addMember(user2.getId())
 		dummySprint2.addAdmin(user2.getId())
 	}

@@ -820,7 +820,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Sprint dummySprint
 	User dummyUser2
 	void mockSprintData() {
-		dummySprint = Sprint.create(user, "demo", Model.Visibility.PRIVATE)
+		dummySprint = Sprint.create(new Date(), user, "demo", Model.Visibility.PRIVATE)
 		
 		Map params = [username: "a", sex: "F", last: "y", email: "a@a.com", birthdate: "01/01/2001", name: "a", password: "y"]
 		dummyUser2 = User.create(params)
@@ -958,7 +958,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
@@ -970,7 +970,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
@@ -982,7 +982,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.startSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
 		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
@@ -995,7 +995,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.startSprintData()
 		assert controller.response.json.success == true
-		assert dummySprint.hasStarted(user.getId(), new Date()) == true
+		assert dummySprint.hasStarted(user.getId(), new Date())
 	}
 
 	@Test
@@ -1006,7 +1006,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
@@ -1018,7 +1018,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(user.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
@@ -1030,7 +1030,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == false
-		assert dummySprint.hasStarted(dummyUser2.getId(), new Date()) == false
+		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
 		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
@@ -1043,7 +1043,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
 		controller.stopSprintData()
-		assert controller.response.json.success == false
+		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("can.not.stop.sprint", [] as Object[], null) 
 	}
 
@@ -1060,7 +1060,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.stopSprintData()
 		assert controller.response.json.success == true
-		assert dummySprint.hasEnded(user.getId(), new Date()) == true
+		assert dummySprint.hasEnded(user.getId(), new Date())
 	}
 
 	@Test

@@ -94,7 +94,7 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 								<ul>
 									<g:each in="${entries}" var="entry">
 										<li class="sprintTag">
-											${entry.description } 
+											${entry.description} <g:if test="${entry.comment}">(<i>${entry.comment}</i>)</g:if>
 											<button type="button" class="deleteSprintEntry" data-id="${entry.id}" 
 													data-repeat-type="${entry.repeatType}">
 												<i class="fa fa-times-circle"></i>
