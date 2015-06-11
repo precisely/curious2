@@ -10,7 +10,7 @@
 						</div>
 						<!-- Wrapper for slides -->
 						<div class="carousel-inner" role="listbox">
-							<div class="item active">
+							<div class="item sleep active">
 								<h4>Let's get started with three painless questions.</h4>
 								<p class="sub-heading">
 									These will help illustrate the Curious tracking feature.
@@ -21,7 +21,7 @@
 								</h3>
 								<input type="text" id="sleep-hour"
 										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
-								<h4 id="sleep-entry-label"></h4>
+								<h4 class="entry-label">To track this, enter: <span id="sleep-entry-label"></span></h4>
 								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
@@ -38,8 +38,8 @@
 								<label class="super-day">
 									Super stocked, cheerful frame of mind.
 								</label>
-								<h4 id="mood-entry-label"></h4>
-								<input type="hidden" name="entry.1" id="mood-entry" />
+								<h4 class="entry-label">To track this, enter: <span id="mood-entry-label">mood 5</span></h4>
+								<input type="hidden" name="entry.1" id="mood-entry" value="mood 5"/>
 							</div>
 
 							<div class="item">

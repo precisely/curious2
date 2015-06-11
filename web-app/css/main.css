@@ -8,7 +8,7 @@ input, optgroup, select, textarea {
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
-	padding-right: 155px;
+	padding-right: 160px;
 }
 .discussion-topic-description {
 	color: #A0A0A0;
@@ -983,7 +983,8 @@ body.discuss-page .red-header {
 	width:500px;
 }
 .discusscomments {
-	margin-top:5px;
+	margin: 5px auto;
+	max-width: 800px;
 }
 
 .discusscomments .description {
@@ -2779,8 +2780,12 @@ body {
 .feed-item .discussion .discussion-topic, .feed-item .sprint {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 10px 7px 20px 7px;
+	padding: 10px 7px;
 	font-size: 16px;
+}
+
+.discusscomments .feed-item .discussion .discussion-topic {
+	padding: 10px 7px 20px 7px;
 }
 
 .feed-item .sprint {
@@ -2794,11 +2799,16 @@ body {
 }
 
 .feed-item .discussion .discussion-topic .group {
-	font-weight: 500;
-	color: #a4a4a4;
+	color: #a7a7a7;
 	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
+	font-size: 14px;
+}
+
+.discusscomments .feed-item .discussion .discussion-topic .group {
+	color: #5D5D5D;
 	font-size: 15px;
+	font-weight: 600;
 }
 
 .discussion-header {
@@ -2852,14 +2862,31 @@ body {
 }
 
 .feed-item .discussion .discussion-topic a, .feed-item .sprint a {
-	color: #464646;
-	font-size: 15px;
+	color: #5D5D5D;
+	font-size: 14px;
+}
+
+.feed-item .discussion .discussion-topic a {
+	margin-top: 0px;
 	font-weight: 600;
+}
+
+.feed-item .discussion .discussion-topic .discussion-title-col {
+	max-width: 50%;
+}
+
+.discusscomments .feed-item .discussion .discussion-topic a {
+	font-size: 15px;
+	font-weight: 200;
 }
 
 .feed-item .sprint a {
 	font-size: 15px;
 	font-weight: 800;
+}
+
+.feed-item .discussion .discussion-topic a:hover {
+	text-decoration: underline;
 }
 
 .feed-item .sprint .sprint-description {
@@ -2921,7 +2948,7 @@ body {
 }
 
 .feed-item .discussion .discussion-topic .posting-time, .feed-item .sprint .posting-time {
-	font-size: 14px;
+	font-size: 11px;
 	color: #a8a8a8;
 	margin-right: 20px;
 }
@@ -2956,7 +2983,7 @@ body {
 
 .discussion-topic .button-box {
 	position: absolute;
-	bottom: 0;
+	bottom: -5px;
 	right: 0;
 	min-width: 400px;
 }
@@ -2979,7 +3006,7 @@ body {
 .discussion-topic .buttons button {
 	height: 25px;
 	background-color: transparent;
-	margin: 0px 0px -10px 25px;
+	margin-left: 20px;
 	font-size: 14px;
 }
 
@@ -2991,18 +3018,18 @@ body {
 
 .discussion-topic .contents {
 	margin-bottom: 10px;
-	padding: 5px 14px 5px 10px;
+	padding: 9px 14px 3px 10px;
 }
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 25px 20px;
+	padding: 25px 18px;
 	font-size: 14px;
 }
 
 
 .feed-item .discussion .multiple-comments {
-	padding: 1px 20px;
+	padding: 1px 16px;
 }
 
 .feed-item .discussion .comments .multiple-comments {
@@ -3011,7 +3038,6 @@ body {
 }
 
 #postList {
-	padding: 10px;
 	background-color: #eeeeee;
 }
 
@@ -3031,8 +3057,10 @@ body {
 
 .discussion-comment .add-comment-to-discussion input {
 	width: 100%;
-	height: 52px;
-	padding: 10px;
+	height: 44px;
+	padding: 0px 15px;
+	font-size: 13px;
+	color: #A4A4A4;
 }
 
 .discussion-comment .posting-time {
@@ -3086,8 +3114,8 @@ body {
 }
 
 .feed-item .discussion-topic .user-name {
-	font-size: 16px;
-	font-weight: 700;
+	font-size: 14px;
+	font-weight: 600;
 }
 
 .feed-item .user-name {
@@ -3676,22 +3704,26 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay input {
 	font-weight: 600;
 	border-radius: 2px;
-	color: #999999;
+	color: #8C8C8C;
 	font-style: italic;
 	font-size: 14px;
 }
 
 #helpWizardOverlay label {
-	margin: 15px 0px 10px 65px;
+	margin: 15px 0px 10px 68px;
 	font-weight: 400;
 	font-size: 12px;
 	text-align: left;
 }
+#helpWizardOverlay .entry-label {
+	text-align: left;
+	margin: 20px 0px;
+}
 
 #helpWizardOverlay .exercise-details {
-	padding: 10px;
-	height: 40px;
-	width: 430px;
+	padding: 0px 20px;
+	height: 38px;
+	width: 426px;
 }
 
 #sleep-hour {
@@ -3798,33 +3830,33 @@ body .modal-footer a .navigate-carousel-right {
 	background-color: #F0F0F0;
 }
 
-#sleep-entry-label, #mood-entry-label {
-	text-align: left;
-}
-
-#sleep-entry-label {
+#helpWizardOverlay .sleep .entry-label {
 	margin-left: 45px;
 }
 
+#mood-entry-label, #sleep-entry-label {
+	font-weight: 500;
+}
+
 .feed-body .nav {
-	margin: 10px 0px 25px 35px;
+	margin: 10px 0px 25px 0px;
 }
 
 .feed-body .nav>li>a  {
-	padding: 7px 15px;
+	padding: 5px 15px;
 	height: 30px;
 	color: #5d5d5d;
-	font-weight: 900;
-	font-size: 12px;
+	font-weight: 600;
+	font-size: 14px;
 }
 
 .feed-body .nav-pills>li.active>a, .feed-body .nav-pills>li.active>a:hover, .feed-body .nav-pills>li .active>a:focus {
 	background-color: #ff935f !important;
-	font-weight: 900;
+	font-weight: 700;
 	border-radius: 2px;
-	padding: 7px 10px;
+	padding: 5px 10px;
 	height: 30px;
-	font-size: 12px;
+	font-size: 14px;
 	color: #fff;
 }
 

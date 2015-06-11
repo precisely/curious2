@@ -188,7 +188,7 @@ $(document).ready(function() {
 			$('#sleep-entry-label').text('');
 			$('#sleep-hour-entry').val('');
 		} else {
-			$('#sleep-entry-label').text('[sleep ' + $(this).val() + ']');
+			$('#sleep-entry-label').text('sleep ' + $(this).val());
 			$('#sleep-hour-entry').val('sleep ' + $(this).val());
 		}
 	});
@@ -225,7 +225,6 @@ $(document).ready(function() {
 		
 					if (data.success) {
 						$('#helpWizardOverlay').modal('hide');
-						showAlert('Entries created successfully');
 						if (window.location.href.indexOf('/index') > 0) {
 							location.reload();
 						}
@@ -286,7 +285,7 @@ function enableHelpForm() {
 
 function setMood() {
 	var value = 'mood ' + $('#mood-range').val();
-	$('#mood-entry-label').text('[' + value + ']');
+	$('#mood-entry-label').text(value);
 	$('#mood-entry').val(value);
 }
 

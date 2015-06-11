@@ -72,7 +72,7 @@ var _discussions = ' \
 					<%- discussionData.isPublic ? "Open to all" : discussionData.groupName %>\
 				</div>\
 				<div class="row">\
-					<div class="col-xs-7">\
+					<div class="col-xs-7 discussion-title-col">\
 						<a href="/discussion/show/<%- discussionData.hash %>"> \
 							<span> <%- discussionData.name ? discussionData.name: \'(No Title)\' %></span>\
 						</a>\
