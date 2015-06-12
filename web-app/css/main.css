@@ -966,6 +966,11 @@ body.discuss-page .red-header {
 	text-transform: none;
 }
 
+.discuss-page .container-fluid {
+	padding-left: 116px;
+	padding-right: 116px;
+}
+
 .sharePage h1 .bittext {
 	font-size:10px;
 	font-weight:normal;
@@ -984,7 +989,7 @@ body.discuss-page .red-header {
 }
 .discusscomments {
 	margin: 5px auto;
-	max-width: 800px;
+	width: 100%;
 }
 
 .discusscomments .description {
@@ -1829,7 +1834,7 @@ div.graph-header-container .red-header {
 	height: 726px;
 	overflow-y: auto;
 	width: 100%;
-	padding: 20px 115px;
+	padding: 20px 116px;
 }
 
 .sprint {
