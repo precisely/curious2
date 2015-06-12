@@ -294,6 +294,7 @@ class Discussion {
 		
 		if (firstPostId == null) {
 			firstPostId = post.getId()
+            post.flags |= DiscussionPost.FIRST_POST_BIT
 			if (plotDataId) {
 				PlotData plotData = PlotData.get(plotDataId)
 				if (this.name == null || this.name.length() == 0)
