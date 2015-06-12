@@ -3451,7 +3451,7 @@ body .modal-footer a .navigate-carousel-right {
 
 .carousel-inner .item .section {
 	color: #fc3f28;
-	font-size: 15px;
+	font-size: 14px;
 	margin-bottom: 20px;
 }
 .modal-dialog .carousel-inner input[type="radio"] {
@@ -3473,13 +3473,13 @@ body .modal-footer a .navigate-carousel-right {
 	content: "";
 	position: absolute;
 	display: inline-block; 
-	height: 25px;
-	width: 25px;
-	border-radius: 12px;
+	height: 28px;
+	width: 28px;
+	border-radius: 15px;
 	margin-left: -40px;
 	margin-top: -3px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px #fc3f28, 0px 0px 0px 0px #fc3f28;
+	box-shadow: inset 0px 0px 0px 1px #979797, 0px 0px 0px 0px #979797;
 }
 
 .modal-dialog .carousel-inner input[type=radio]:checked+label {
@@ -3487,13 +3487,14 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 .modal-dialog .carousel-inner input[type=radio]:checked+label:before {
-	background-color: #fc3f28;
+	background-color: #ff5513;
 	box-shadow: none;
+	box-shadow: inset 0px 0px 0px 1px #ff5513, 0px 0px 0px 0px #ff5513;
 }
 .carousel-inner .item p {
 	color: #3b3b3b;
 	font-weight: 500;
-	font-size: 18px;
+	font-size: 20px;
 	margin-bottom: 25px;
 }
 
