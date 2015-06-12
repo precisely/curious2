@@ -3023,12 +3023,17 @@ body {
 
 .discussion-topic .contents {
 	margin-bottom: 10px;
-	padding: 9px 14px 3px 10px;
+	padding: 6px 14px 3px 10px;
 }
+
+.discusscomments .discussion-topic .contents {
+	margin-top: 9px;
+}
+
 .feed-item .discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 25px 18px;
+	padding: 25px 16px;
 	font-size: 14px;
 }
 
@@ -3121,6 +3126,10 @@ body {
 .feed-item .discussion-topic .user-name {
 	font-size: 14px;
 	font-weight: 600;
+}
+
+.discusscomments .feed-item .discussion-topic .user-name {
+	font-size: 16px;
 }
 
 .feed-item .user-name {
@@ -3718,7 +3727,7 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay label {
 	margin: 15px 0px 10px 68px;
 	font-weight: 400;
-	font-size: 12px;
+	font-size: 11px;
 	text-align: left;
 }
 #helpWizardOverlay .entry-label {
