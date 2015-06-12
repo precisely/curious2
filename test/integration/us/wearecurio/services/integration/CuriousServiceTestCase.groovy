@@ -28,6 +28,8 @@ abstract class CuriousServiceTestCase {
 	
 	Long userId
 	User user
+    Long userId2
+    User user2
 		
 	String shouldFail(Class<?> clazz, Closure code) {
 		Throwable th = null
@@ -69,12 +71,20 @@ abstract class CuriousServiceTestCase {
 			password:'y', action:'doregister', \
 			controller:'home']
 
+        def params2 = [username:'z', sex:'M', \
+            name:'z z', email:'z@z.com', birthdate:'01/01/2005', \
+            password:'z', action:'doregister', \
+            controller:'home']
+
 		user = User.create(params)
+        user2 = User.create(params2)
 
 		Utils.save(user, true)
+        Utils.save(user2, true)
 		println "new user " + user
 		
 		userId = user.getId()
+        userId2 = user2.getId()
 	}
 	
 	@After
