@@ -318,7 +318,7 @@ body.graph-page .querycontrols {
 #height-balancer {
 	height: 13px;
 }
-#height-balancer {
+div.graphData.has-plot-data #height-balancer {
 	height: 0px;
 }
 /**
