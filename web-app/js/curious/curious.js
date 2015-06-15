@@ -310,3 +310,8 @@ function skipToNextQuestion() {
 	}
 	nextQuestion();
 }
+
+function isOnFeedPage() {
+	var anchor = location.hash.slice(1);
+	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
+}
