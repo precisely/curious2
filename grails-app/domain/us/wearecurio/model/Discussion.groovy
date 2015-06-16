@@ -91,10 +91,6 @@ class Discussion {
 		discussion.delete(flush: true)
 	}
 	
-	static boolean search(Long userId, String searchString) {
-		
-	}
-	
 	static boolean update(Discussion discussion, def params, User user) {
 		synchronized(Discussion) {
 			log.debug "Trying to update Discussion " + discussion.getName() + " with " + params
@@ -129,7 +125,7 @@ class Discussion {
 			}
 			
 			for (UserGroup group in groups)
-				group.notifyNotifieds("contact@wearecurio.us", discussionSubject, discussionSubject +  " in group '" + group.getName() + "'")
+				group.notifyNotifieds(discussionSubject, discussionSubject +  " in group '" + group.getName() + "'")
 			
 			return true
 		}
@@ -333,14 +329,11 @@ class Discussion {
 		return retVal
 	}
 	
-	def notifyPost(String participantEmail, String authorUsername, String message) {
-		log.debug("Sending discussion notification about '" + this.getName() + "' to " + participantEmail + " about message written by " + authorUsername)
-		EmailService.get().sendMail {
-			to participantEmail
-			from "contact@wearecurio.us"
-			subject "Comment added to discussion " + this.getName()
-			body authorUsername + " wrote:\n\n" + message
-		}
+	def notifyPost(User participant, String authorUsername, String message) {
+		log.debug("Sending notification about '" + this.getName() + "' to " + participant.email + " about message written by " + authorUsername)
+
+		participant.notifyEmail("notifications@wearecurio.us", "Comment added to discussion " + this.getName(),
+				authorUsername + " wrote:\n\n" + message)
 	}
 	
 	def getGroups() {
@@ -373,14 +366,12 @@ class Discussion {
 
 		if (!onlyAdmins) {
 			for (User participant in participants) {
-				if (!participant.getNotifyOnComments())
-					continue // don't notify users who have turned off comment notifications
 				notifiedSet[participant.getId()] = true
 				if (participant.getId() == authorUserId) {
 					continue // don't notify author of this post
 				}
 				if (participant.getEmail() != null) {
-					notifyPost(participant.getEmail(), postUsername, post.getMessage())
+					notifyPost(participant, postUsername, post.getMessage())
 				}
 			}
 		}
@@ -394,7 +385,7 @@ class Discussion {
 				if (notifiedSet[user.getId()])
 					continue
 				notifiedSet[user.getId()] = true
-				notifyPost(user.getEmail(), postUsername, post.getMessage())
+				notifyPost(user, postUsername, post.getMessage())
 			}
 		}
 	}

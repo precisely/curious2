@@ -1,6 +1,6 @@
 package us.wearecurio.controller
 
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat
 
 import grails.converters.JSON
 import grails.util.Environment
@@ -8,6 +8,7 @@ import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 
 /**
@@ -18,6 +19,7 @@ import us.wearecurio.utility.Utils
 class LoginController extends SessionController {
 
 	def HTTPBuilderService
+	EmailService emailService
 
 	static debug(str) {
 		log.debug(str)
@@ -161,12 +163,8 @@ class LoginController extends SessionController {
 		
 		def recoveryLink = toUrl(controller:'home', action:'recover', params:[code:recovery.getCode()])
 		
-		sendMail {
-			to user.getEmail()
-			from "contact@wearecurio.us"
-			subject "Password reset instructions"
-			body "Click here to reset the password for username '" + user.getUsername() + "': " + recoveryLink
-		}
+		emailService.send(user.getEmail(), "Password reset instructions",
+				"Click here to reset the password for username '" + user.getUsername() + "': " + recoveryLink)
 		
 		debug "Password recovery link:" + recoveryLink
 		
@@ -272,11 +270,11 @@ class LoginController extends SessionController {
 		def users = User.findAllByEmailAndVirtual(primeUser.getEmail(), false)
 		
 		for (User user in users) {
-			user.setParameters([password:params.password])
+			user.update([password:params.password])
 			Utils.save(user, true)
 			
 			if (!user.validate()) {
-				flash.message = "Error saving new password, please email contact@wearecurio.us to investigate"
+				flash.message = "Error saving new password, please email curious@wearecurio.us to investigate"
 				
 				redirect(url:toUrl(controller:name(), action:'recover'))
 				return

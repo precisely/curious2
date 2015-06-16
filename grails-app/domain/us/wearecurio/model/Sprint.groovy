@@ -87,7 +87,7 @@ class Sprint {
 		return create(new Date(), user, null, null)
 	}
 	
-	protected UserGroup fetchUserGroup() {
+	UserGroup fetchUserGroup() {
 		return UserGroup.get(virtualGroupId)
 		
 	}
@@ -122,6 +122,32 @@ class Sprint {
 	
 	def addAdmin(Long userId) {
 		return fetchUserGroup()?.addAdmin(userId)
+	}
+	
+	boolean hasInvited(Long userId) {
+		return fetchUserGroup()?.hasInvited(userId)
+	}
+	
+	def addInvited(Long userId) {
+		fetchUserGroup()?.addInvited(userId)
+	}
+	
+	def removeInvited(Long userId) {
+		fetchUserGroup()?.removeInvited(userId)
+	}
+	
+	boolean hasInvitedAdmin(Long userId) {
+		return fetchUserGroup()?.hasInvitedAdmin(userId)
+	}
+	
+	def addInvitedAdmin(Long userId) {
+		return fetchUserGroup()?.addInvitedAdmin(userId)
+	}
+	
+	void clearInvited() {
+		UserGroup group = fetchUserGroup()
+		group?.removeAllInvited()
+		group?.removeAllInvitedAdmin()
 	}
 	
 	Long getEntriesCount() {
@@ -167,12 +193,12 @@ class Sprint {
 		UserActivity.create(new Date(), userId, UserActivity.SPRINT_BIT | UserActivity.DELETE_ID, sprint.id)
 	}
 	
-	static boolean search(Long userId, String searchString) {
-		
-	}
-	
 	Sprint() {
 		this.visibility = Visibility.NEW
+	}
+	
+	protected createUserGroupFullName() {
+		return this.name + " Tracking Sprint"
 	}
 	
 	Sprint(User user, String name, Visibility visibility) {
@@ -183,7 +209,7 @@ class Sprint {
 		this.updated = this.created
 		this.visibility = visibility
 		String uniqueId = UUID.randomUUID().toString()
-		UserGroup virtualUserGroup = UserGroup.createVirtual("Sprint Group " + name + " " + uniqueId)
+		UserGroup virtualUserGroup = UserGroup.createVirtual(createUserGroupFullName())
 		this.virtualGroupId = virtualUserGroup.id
 		User virtualUser = User.createVirtual() // create user who will own sprint entries, etc.
 		addAdmin(user.id)
@@ -238,19 +264,40 @@ class Sprint {
 	
 	void setName(String name) {
 		this.name = name
-		
-		this.tagName = null
-		
-		this.fetchTagName()
 	}
 	
-	protected String fetchTagName() {
+	Sprint update(Map map) {
+		log.debug "Sprint.update() this:" + this + ", map:" + map
+		
+		this.updated = new Date()
+		
+		if (map['name']) {
+			this.name = map['name']
+			this.tagName = null
+			this.fetchTagName()
+			UserGroup group = fetchUserGroup()
+			group.setFullName(createUserGroupFullName())
+			Utils.save(group, true)
+		}
+		if (map['description']) this.description = map['description']
+		if (map['daysDuration']) this.daysDuration = map['daysDuration']
+		if (map['startDate']) this.startDate = map['startDate']
+		if (map['visibility']) this.visibility = map['visibility']
+		
+		Utils.save(this, true)
+		
+		fetchUserGroup()?.acceptAllInvited()
+
+		return this
+	}
+	
+	String fetchTagName() {
 		if (tagName) return tagName
 		
 		tagName = name.toLowerCase()
-		.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
-		.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
-		.trim() + ' sprint'			// Removes spaces from the start and the end of the string
+			.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
+			.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
+			.trim() + ' sprint'			// Removes spaces from the start and the end of the string
 		
 		return tagName
 	}

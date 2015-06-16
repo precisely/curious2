@@ -467,7 +467,7 @@ class HomeController extends DataController {
 			}
 		}
 
-		user.setParameters(p)
+		user.update(p)
 
 		Utils.save(user, true)
 		

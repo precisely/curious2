@@ -28,8 +28,6 @@ import us.wearecurio.utility.Utils
 class DataController extends LoginController {
 
 	def tokenService
-	def grailsWebDataBinder
-
 	static debug(str) {
 		log.debug(str)
 	}
@@ -1313,7 +1311,7 @@ class DataController extends LoginController {
 			return
 		} else {
 			Sprint.withTransaction { status ->
-				grailsWebDataBinder.bind(sprintInstance, params as SimpleMapDataBindingSource)
+				sprintInstance.update(params)
 				sprintInstance.validate()
 				
 				if (sprintInstance.hasErrors()) {
@@ -1442,8 +1440,7 @@ class DataController extends LoginController {
 			renderJSONPost([error: true, errorMessage: g.message(code: "sprint.member.already.added")])
 			return
 		}
-
-		sprintInstance.addMember(memberInstance.id)
+		sprintInstance.addInvited(memberInstance.id)
 		renderJSONPost([success: true])
 	}
 
@@ -1471,7 +1468,7 @@ class DataController extends LoginController {
 			return
 		}
 
-		sprintInstance.addAdmin(adminInstance.id)
+		sprintInstance.addInvitedAdmin(adminInstance.id)
 		renderJSONPost([success: true])
 	}
 

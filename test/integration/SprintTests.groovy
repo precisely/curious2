@@ -138,6 +138,52 @@ class SprintTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testInviteSprintUsers() {
+		def sprint = Sprint.create(currentTime, user2, "Sprint", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Sprint"
+		assert sprint.visibility == Visibility.PUBLIC
+		
+		assert sprint.hasAdmin(user2.id)
+		
+		sprint.addInvited(user.id)
+		assert sprint.hasInvited(user.id)
+		assert !sprint.hasReader(user.id)
+		
+		sprint.update([name:'New Name'])
+		assert !sprint.hasInvited(user.id)
+		assert sprint.hasReader(user.id)
+		assert sprint.hasWriter(user.id)
+		assert !sprint.hasAdmin(user.id)
+		assert sprint.fetchUserGroup().fullName.equals("New Name Tracking Sprint")
+		assert sprint.fetchTagName().equals("new name sprint")
+	}
+	
+	@Test
+	void testInviteSprintAdmin() {
+		def sprint = Sprint.create(currentTime, user2, "Sprint", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Sprint"
+		assert sprint.visibility == Visibility.PUBLIC
+		
+		assert sprint.hasAdmin(user2.id)
+		
+		sprint.addInvitedAdmin(user.id)
+		assert sprint.hasInvitedAdmin(user.id)
+		assert !sprint.hasInvited(user.id)
+		assert !sprint.hasReader(user.id)
+		
+		sprint.update([name:'New Name'])
+		assert !sprint.hasInvitedAdmin(user.id)
+		assert !sprint.hasInvited(user.id)
+		assert sprint.hasReader(user.id)
+		assert sprint.hasWriter(user.id)
+		assert sprint.hasAdmin(user.id)
+		assert sprint.fetchUserGroup().fullName.equals("New Name Tracking Sprint")
+		assert sprint.fetchTagName().equals("new name sprint")
+	}
+	
+	@Test
 	void testCreateSprintTags() {
 		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id

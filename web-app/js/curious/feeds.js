@@ -214,6 +214,22 @@ $(document).ready(function() {
 	$('#close-sprint-modal').click(function() {
 		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
 		clearSprintFormData();
+		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF', 
+				{username: userName, sprintHash: $('#sprintIdField').val()}),
+				function(data) {
+			if (!checkData(data))
+				return;
+
+			if (data.success) {
+				console.log('added persons: ', data);
+				$("#" + inputId).val('');
+				addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+			} else {
+				showBootstrapAlert($('.modal-dialog .alert'), data.message);
+			}
+		}, function(xhr) {
+			console.log('error: ', xhr);
+		});
 		return false;
 	});
 

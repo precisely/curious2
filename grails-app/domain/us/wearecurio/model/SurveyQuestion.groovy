@@ -49,6 +49,23 @@ class SurveyQuestion {
 			return surveyQuestion
 		}
 	}
+	
+	SurveyQuestion update(Map map) {
+		if (map.possibleAnswers) {
+			possibleAnswers.removeAll()
+			for (answerMap in map.possibleAnswers) {
+				possibleAnswers.add(SurveyAnswer.create(answerMap))
+			}
+		} else {
+			this.code = map.code
+			if (map.question) this.question = map.question
+			this.status = map.status
+			this.priority = map.priority
+		}
+		
+		return this
+	}
+	
 	public static enum QuestionStatus {
 		ACTIVE(1),
 		INACTIVE(0)

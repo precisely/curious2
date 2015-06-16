@@ -294,7 +294,7 @@ class MigrationService {
 					Entry.appendComment(map, comment)
 				}
 
-				e.doUpdate(map, null)
+				e.update(map, null)
 			}
 		}
 		tryMigration(REMOVE_VERSION) {

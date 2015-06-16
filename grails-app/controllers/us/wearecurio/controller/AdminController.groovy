@@ -7,8 +7,6 @@ import us.wearecurio.utility.Utils
 
 class AdminController extends LoginController {
 
-	def grailsWebDataBinder
-
 	def dashboard() {
 		
 	}
@@ -25,34 +23,37 @@ class AdminController extends LoginController {
 		log.debug "create or update question: $params"
 		println "$params"
 		if (params.id) {
-			SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
-
-			if (!surveyQuestion) {
-				redirect(uri: "admin/survey/$params.id")
-				flash.message = g.message(code: "default.not.found.message",
-						args: ["Survey question", params.id])
-			}
-
-			grailsWebDataBinder.bind(surveyQuestion, 
-				params as SimpleMapDataBindingSource, ["code", "status", "priority", "question"])
-			surveyQuestion.validate()
+			SurveyQuestion.withTransaction {
+				SurveyQuestion surveyQuestion = SurveyQuestion.get(params.id)
 	
-			if (!surveyQuestion.hasErrors()) {
-				Utils.save(surveyQuestion, true)
-				redirect(uri: "admin/listSurveyQuestions")
-			} else {
-				redirect(uri: "admin/survey?id=" + params.id)
-				flash.message = g.message(code: "default.not.updated.message", args: ["Survey question"])
+				if (!surveyQuestion) {
+					redirect(uri: "admin/survey/$params.id")
+					flash.message = g.message(code: "default.not.found.message",
+							args: ["Survey question", params.id])
+				}
+	
+				surveyQuestion.update(params)
+				surveyQuestion.validate()
+		
+				if (!surveyQuestion.hasErrors()) {
+					Utils.save(surveyQuestion, true)
+					redirect(uri: "admin/listSurveyQuestions")
+				} else {
+					redirect(uri: "admin/survey?id=" + params.id)
+					flash.message = g.message(code: "default.not.updated.message", args: ["Survey question"])
+				}
 			}
 		} else {
-			SurveyQuestion surveyQuestion = SurveyQuestion.create(params)
-			
-			if (surveyQuestion) {
-				Map model = [surveyQuestion: surveyQuestion];
-				redirect(uri: "admin/addPossibleAnswers?id=$surveyQuestion.id")
-			} else {
-				redirect(uri: "admin/survey")
-				flash.message = g.message(code: "not.created.message", args: ['Survey question'])
+			SurveyQuestion.withTransaction {
+				SurveyQuestion surveyQuestion = SurveyQuestion.create(params)
+				
+				if (surveyQuestion) {
+					Map model = [surveyQuestion: surveyQuestion]
+					redirect(uri: "admin/addPossibleAnswers?id=$surveyQuestion.id")
+				} else {
+					redirect(uri: "admin/survey")
+					flash.message = g.message(code: "not.created.message", args: ['Survey question'])
+				}
 			}
 		}
 	}
@@ -63,7 +64,7 @@ class AdminController extends LoginController {
 			flash.message = g.message(code: "default.not.found.message", args: ['Survey question', params.id])
 			return
 		} else {
-			Map model = [surveyQuestion: surveyQuestion];
+			Map model = [surveyQuestion: surveyQuestion]
 			render(view: "/admin/createPossibleAnswers", model: model)
 		}
 	}
@@ -77,7 +78,7 @@ class AdminController extends LoginController {
 		}
 
 		SurveyAnswer.withTransaction { status ->
-			grailsWebDataBinder.bind(surveyQuestion, params as SimpleMapDataBindingSource, ["possibleAnswers"])
+			surveyQuestion.update(['possibleAnswers':params['possibleAnswers']])
 			surveyQuestion.possibleAnswers.removeAll([null])
 			surveyQuestion.possibleAnswers.sort()
 			surveyQuestion.validate()
@@ -119,57 +120,63 @@ class AdminController extends LoginController {
 			return
 		}
 
-		SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
-		if (!surveyQuestion) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
-					args: ["Survey question", questionId])])
-			return
-		}
+		SurveyQuestion.withTransaction {
+			SurveyQuestion surveyQuestion = SurveyQuestion.get(questionId)
+			if (!surveyQuestion) {
+				renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+						args: ["Survey question", questionId])])
+				return
+			}
 
-		SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
-
-		if (!surveyAnswer) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
-					args: ["Survey answer", answerId])])
-			return
+			SurveyAnswer surveyAnswer = surveyQuestion.possibleAnswers.find{ answerInstance-> answerInstance.id == answerId}
+	
+			if (!surveyAnswer) {
+				renderJSONPost([success: false, message: g.message(code: "default.not.found.message",
+						args: ["Survey answer", answerId])])
+				return
+			}
+			surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
+			Utils.save(surveyQuestion, true)
 		}
-		surveyQuestion.removeFromPossibleAnswers(surveyAnswer)
-		Utils.save(surveyQuestion, true)
 		renderJSONPost([success: true])
 	}
 
 	def updateSurveyAnswerData() {
 		log.debug "Admin.updateSurveyAnswerData: params: $params"
 		
-		SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
-		if (!surveyAnswer) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
-					args: ['Survey answer', params.answerId])])
-			return
-		}
-
-		grailsWebDataBinder.bind(surveyAnswer, 
-			params as SimpleMapDataBindingSource, ["code", "answer", "priority", "answerType"])
-		surveyAnswer.validate()
-
-		if (surveyAnswer.hasErrors()) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", 
-					args: ['Survey answer'])])
-		} else {
-			Utils.save(surveyAnswer, true)
-			renderJSONPost([success: true])
+		SurveyAnswer.withTransaction { status ->
+			SurveyAnswer surveyAnswer = SurveyAnswer.get(params.answerId)
+			if (!surveyAnswer) {
+				renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+						args: ['Survey answer', params.answerId])])
+				return
+			}
+	
+			surveyAnswer.update(params)
+			surveyAnswer.validate()
+	
+			if (surveyAnswer.hasErrors()) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", 
+						args: ['Survey answer'])])
+			} else {
+				Utils.save(surveyAnswer, true)
+				renderJSONPost([success: true])
+			}
 		}
 	}
 
 	def deleteSurveyQuestionData(SurveyQuestion surveyQuestion) {
 
-		if (!surveyQuestion) {
-			renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
-					args: ['Survey question', params.id])])
-			return
+		SurveyQuestion.withTransaction {
+			if (!surveyQuestion) {
+				renderJSONPost([success: false, message: g.message(code: "default.not.found.message", 
+						args: ['Survey question', params.id])])
+				return
+			}
+	
+			surveyQuestion.delete(flush: true)
 		}
-
-		surveyQuestion.delete(flush: true)
 		renderJSONPost([success: true])
 	}
 }

@@ -1,5 +1,7 @@
 package us.wearecurio.model
 
+import us.wearecurio.utility.Utils
+
 class SurveyAnswer implements Comparable{
 
 	String code
@@ -19,14 +21,29 @@ class SurveyAnswer implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
+	int compareTo(Object o) {
 		if (!(o instanceof SurveyAnswer))
 			return -1;
 		
 		return ((SurveyAnswer)o).priority.compareTo(priority)
 	}
+	
+	static SurveyAnswer create(Map map) {
+		SurveyAnswer answer = new SurveyAnswer(map)
+		
+		return answer
+	}
+	
+	SurveyAnswer update(Map map) {
+		this.code = map['code']
+		this.answer = map['answer']
+		this.answerType = map['answerType']
+		this.priority = map['priority']
+		
+		return this
+	}
 
-	public static enum SurveyAnswerType {
+	static enum SurveyAnswerType {
 		MCQ(1),
 		DESCRIPTIVE(2)
 		

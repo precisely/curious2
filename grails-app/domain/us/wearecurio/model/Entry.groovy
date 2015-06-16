@@ -833,7 +833,7 @@ class Entry implements Comparable {
 
 		if (isToday) {
 			if (allFuture) {
-				entry.doUpdate(m, stats)
+				entry.update(m, stats)
 
 				return entry // allFuture updates can just edit the entry and return
 			} else {
@@ -844,7 +844,7 @@ class Entry implements Comparable {
 				} else
 					m['repeatEnd'] = entry.getRepeatEnd()
 
-				entry.doUpdate(m, stats)
+				entry.update(m, stats)
 
 				return entry
 			}
@@ -875,7 +875,7 @@ class Entry implements Comparable {
 			
 			return retVal
 		} else {
-			entry.doUpdate(m, stats)
+			entry.update(m, stats)
 			
 			entry.refreshSort()
 			
@@ -1994,16 +1994,16 @@ class Entry implements Comparable {
 	/**
 	 * Update existing entry and save
 	 */
-	protected doUpdate(Map m, EntryStats stats) {
+	protected update(Map m, EntryStats stats) {
 		stats.addEntry(this)
 		
-		doUpdateSingle(m, stats)
+		updateSingle(m, stats)
 		
 		stats.addEntry(this)
 	}
 
-	protected doUpdateSingle(Map m, EntryStats stats) {
-		log.debug "Entry.doUpdateSingle() this:" + this + ", m:" + m
+	protected updateSingle(Map m, EntryStats stats) {
+		log.debug "Entry.updateSingle() this:" + this + ", m:" + m
 
 		if (m == null) return null
 

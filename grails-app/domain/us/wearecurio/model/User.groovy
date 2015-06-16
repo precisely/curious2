@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
@@ -85,7 +86,7 @@ class User {
 		user.created = new Date()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 
-		user.setParameters(map)
+		user.update(map)
 
 		return user
 	}
@@ -153,8 +154,8 @@ class User {
 		user.delete(flush:true)
 	}
 
-	public setParameters(Map map) {
-		log.debug "User.setParameters() this:" + this + ", map:" + map
+	public update(Map map) {
+		log.debug "User.update() this:" + this + ", map:" + map
 
 		def uname = map["username"]
 		def password = map["password"]
@@ -200,11 +201,11 @@ class User {
 		return this
 	}
 
-	public static void setTimeZoneId(Long userId, Integer timeZoneId) {
+	static void setTimeZoneId(Long userId, Integer timeZoneId) {
 		UserTimeZone.createOrUpdate(userId, timeZoneId)
 	}
 
-	public static Integer getTimeZoneId(Long userId) {
+	static Integer getTimeZoneId(Long userId) {
 		UserTimeZone userTimeZoneId = UserTimeZone.lookup(userId)
 
 		if (userTimeZoneId == null)
@@ -212,8 +213,22 @@ class User {
 
 		return (Integer)userTimeZoneId.getTimeZoneId()
 	}
+	
+	boolean notifyEmail(String from, String subject, String message) {
+		if (!notifyOnComments)
+			return false
+		EmailService.get().send(from, this.email, subject, message)
+		return true
+	}
 
-	public updatePreferences(Map map) {
+	boolean notifyEmail(String subject, String message) {
+		if (!notifyOnComments)
+			return false
+		EmailService.get().send(this.email, subject, message)
+		return true
+	}
+
+	def updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
 
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false

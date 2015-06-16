@@ -15,7 +15,7 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.*
 
 class RemindEmailService {
-	def mailService
+	EmailService emailService
 	def googleMessageService
 	def appleNotificationService
 
@@ -33,12 +33,7 @@ class RemindEmailService {
 					log.debug "Trying to send reminder email " + event + " to " + email
 					def messageBody = url + "?entryId=" + event.getId()
 					def messageSubject = "Reminder to track:" + event.getTag().getDescription()
-					mailService.sendMail {
-						to email
-						from "contact@wearecurio.us"
-						subject messageSubject
-						body messageBody
-					}
+					emailService.send(email, messageSubject, messageBody)
 				} catch (Throwable t) {
 					log.debug "Error while sending email: " + t
 				}

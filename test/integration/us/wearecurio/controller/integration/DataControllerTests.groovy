@@ -1132,7 +1132,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMemberToSprintData()
 		assert controller.response.json.success == true
-		assert dummySprint.hasMember(dummyUser2.getId()) == true
+		assert dummySprint.hasInvited(dummyUser2.getId()) == true
 	}
 
 	@Test
@@ -1204,7 +1204,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdminToSprintData()
 		assert controller.response.json.success == true
-		assert dummySprint.hasAdmin(dummyUser2.getId()) == true
+		assert dummySprint.hasInvitedAdmin(dummyUser2.getId()) == true
 	}
 
 	@Test

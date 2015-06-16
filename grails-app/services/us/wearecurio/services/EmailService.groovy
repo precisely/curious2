@@ -26,6 +26,24 @@ class EmailService {
 		return mailService.sendMail(callable)
     }
 
+    MailMessage send(String toString, String subjectString, String bodyString) {
+		sendMail {
+			from "curious@wearecurio.us"
+			to toString
+			subject subjectString
+			body bodyString
+		}
+    }
+
+    MailMessage send(String fromString, String toString, String subjectString, String bodyString) {
+		sendMail {
+			from fromString
+			to toString
+			subject subjectString
+			body bodyString
+		}
+    }
+
     def getMailConfig() {
 		return mailService.getMailConfig()
     }

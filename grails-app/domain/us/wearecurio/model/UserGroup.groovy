@@ -122,6 +122,8 @@ class UserGroup {
 		Long groupId = group.getId()
 		log.debug "UserGroup.delete() groupId:" + groupId
 		GroupMemberReader.executeUpdate("delete GroupMemberReader item where item.groupId = :id", [id:groupId])
+		GroupMemberInvited.executeUpdate("delete GroupMemberInvited item where item.groupId = :id", [id:groupId])
+		GroupMemberInvitedAdmin.executeUpdate("delete GroupMemberInvitedAdmin item where item.groupId = :id", [id:groupId])
 		GroupMemberWriter.executeUpdate("delete GroupMemberWriter item where item.groupId = :id", [id:groupId])
 		GroupMemberDefaultFor.executeUpdate("delete GroupMemberDefaultFor item where item.groupId = :id", [id:groupId])
 		GroupMemberAdmin.executeUpdate("delete GroupMemberAdmin item where item.groupId = :id", [id:groupId])
@@ -151,6 +153,24 @@ class UserGroup {
 
 	static List getGroupsForReader(Long userId) {
 		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberReader item where item.memberId = :id and item.groupId = userGroup.id",
+				[id: userId])
+	}
+
+	static List getGroupsForInvited(User user) {
+		getGroupsForInvited(user.id)
+	}
+
+	static List getGroupsForInvited(Long userId) {
+		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberInvitedAdmin item where item.memberId = :id and item.groupId = userGroup.id",
+				[id: userId])
+	}
+
+	static List getGroupsForInvitedAdmin(User user) {
+		getGroupsForInvitedAdmin(user.id)
+	}
+
+	static List getGroupsForInvitedAdmin(Long userId) {
+		return UserGroup.executeQuery("select userGroup as userGroup, item.created as joined from UserGroup userGroup, GroupMemberInvitedAdmin item where item.memberId = :id and item.groupId = userGroup.id",
 				[id: userId])
 	}
 
@@ -372,7 +392,7 @@ class UserGroup {
 		if (discussion.getUserId() == user.getId())
 			return true
 		def groups = getGroupsForDiscussion(discussion)
-		for (group in groups) {
+		for (UserGroup group in groups) {
 			if (group.hasReader(user))
 				return true
 		}
@@ -416,13 +436,40 @@ class UserGroup {
 
 		return false
 	}
-
+	
+	def acceptAllInvited() {
+		def invitedUserIds = GroupMemberInvited.lookupMemberIds(this.id)
+		
+		for (Long userId in invitedUserIds) {
+			removeInvited(userId)
+			addReader(userId)
+			addWriter(userId)
+			
+			User user = User.get(userId)
+			
+			user.notifyEmail("You've been invited to " + fullName, "You're now a member of " + fullName + " on We Are Curious.")
+		}
+		
+		def invitedAdminIds = GroupMemberInvitedAdmin.lookupMemberIds(this.id)
+		
+		for (Long userId in invitedAdminIds) {
+			removeInvitedAdmin(userId)
+			addReader(userId)
+			addWriter(userId)
+			addAdmin(userId)
+			
+			User user = User.get(userId)
+			
+			user.notifyEmail("You've been invited to be an administrator of " + fullName, "You're now an administrator of " + fullName + " on We Are Curious.")
+		}
+	}
+	
 	def addReader(User user) {
 		if (!user) return;
 
 		GroupMemberReader.create(id, user.getId())
 
-		this.notifyNotifiedMajors("contact@wearecurio.us", "New user '" + user.getUsername() + "' joined group '" + this.description + "'",
+		this.notifyNotifiedMajors("New user '" + user.getUsername() + "' joined group '" + this.description + "'",
 				"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
 	}
 
@@ -437,7 +484,7 @@ class UserGroup {
 
 		GroupMemberReader.delete(id, user.getId())
 
-		this.notifyNotifiedMajors("contact@wearecurio.us", "User '" + user.getUsername() + "' left group '" + this.description + "'",
+		this.notifyNotifiedMajors("User '" + user.getUsername() + "' left group '" + this.description + "'",
 				"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
 	}
 
@@ -447,7 +494,69 @@ class UserGroup {
 		removeReader(User.get(userId))
 	}
 
+	def addInvited(User user) {
+		if (!user) return;
+
+		GroupMemberInvited.create(id, user.getId())
+
+		//this.notifyNotifiedMajors("New user '" + user.getUsername() + "' invited to group '" + this.description + "'",
+		//		"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) invited to group '" + this.description + "'")
+	}
+
+	def addInvited(Long userId) {
+		if (!userId) return;
+		
+		addInvited(User.get(userId))
+	}
+
+	def removeInvited(User user) {
+		if (!user) return
+
+		GroupMemberInvited.delete(id, user.getId())
+
+		//this.notifyNotifiedMajors("contact@wearecurio.us", "User '" + user.getUsername() + "' no longer invited to group '" + this.description + "'",
+		//		"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) no longer invited to group '" + this.description + "'")
+	}
+
+	def removeInvited(Long userId) {
+		if (!userId) return
+		
+		removeInvited(User.get(userId))
+	}
+
+	def addInvitedAdmin(User user) {
+		if (!user) return;
+
+		GroupMemberInvitedAdmin.create(id, user.getId())
+
+		//this.notifyNotifiedMajors("New user '" + user.getUsername() + "' invited to admin group '" + this.description + "'",
+		//		"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) invited to admin group '" + this.description + "'")
+	}
+
+	def addInvitedAdmin(Long userId) {
+		if (!userId) return;
+		
+		addInvitedAdmin(User.get(userId))
+	}
+
+	def removeInvitedAdmin(User user) {
+		if (!user) return
+
+		GroupMemberInvitedAdmin.delete(id, user.getId())
+
+		//this.notifyNotifiedMajors("User '" + user.getUsername() + "' no longer invited to admin group '" + this.description + "'",
+		//		"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) no longer invited to admin group '" + this.description + "'")
+	}
+
+	def removeInvitedAdmin(Long userId) {
+		if (!userId) return
+		
+		removeInvitedAdmin(User.get(userId))
+	}
+
 	def removeAllParticipants() {
+		removeAllInvited()
+		removeAllInvitedAdmin()
 		removeAllReaders()
 		removeAllWriters()
 		removeAllAdmins()
@@ -455,6 +564,14 @@ class UserGroup {
 
 	def removeAllReaders() {
 		GroupMemberReader.executeUpdate("DELETE GroupMemberReader gmr WHERE gmr.groupId = :groupId", [groupId: id])
+	}
+
+	def removeAllInvited() {
+		GroupMemberInvited.executeUpdate("DELETE GroupMemberInvited gm WHERE gm.groupId = :groupId", [groupId: id])
+	}
+
+	def removeAllInvitedAdmin() {
+		GroupMemberInvited.executeUpdate("DELETE GroupMemberInvitedAdmin gm WHERE gm.groupId = :groupId", [groupId: id])
 	}
 
 	def removeAllWriters() {
@@ -475,6 +592,30 @@ class UserGroup {
 		if (!userId) return false
 
 		return GroupMemberReader.lookup(id, userId) != null
+	}
+
+	def hasInvited(User user) {
+		if (!user) return false
+
+		return GroupMemberInvited.lookup(id, user.getId()) != null
+	}
+
+	def hasInvited(Long userId) {
+		if (!userId) return false
+
+		return GroupMemberInvited.lookup(id, userId) != null
+	}
+
+	def hasInvitedAdmin(User user) {
+		if (!user) return false
+
+		return GroupMemberInvitedAdmin.lookup(id, user.getId()) != null
+	}
+
+	def hasInvitedAdmin(Long userId) {
+		if (!userId) return false
+
+		return GroupMemberInvitedAdmin.lookup(id, userId) != null
 	}
 
 	def addWriter(User user) {
@@ -662,6 +803,7 @@ class UserGroup {
 	def removeMember(User user) {
 		if (!user) return
 
+		removeInvited(user)
 		removeReader(user)
 		removeWriter(user)
 		removeAdmin(user)
@@ -771,6 +913,11 @@ class UserGroup {
 				['id':getId()])
 	}
 
+	def getInvitedUsers() {
+		return User.executeQuery("select user from User user, GroupMemberInvited item where item.groupId = :id and user.id = item.memberId",
+				['id':getId()])
+	}
+
 	def getWriterUsers() {
 		return User.executeQuery("select user from User user, GroupMemberWriter item where item.groupId = :id and user.id = item.memberId",
 				['id':getId()])
@@ -781,34 +928,52 @@ class UserGroup {
 				['id':getId()])
 	}
 
-	private sendMessages(people, String fromAddress, String subjectString, String message) {
+	private sendMessages(people, String subjectString, String message) {
 		for (User p in people) {
 			if (p.getEmail() != null) {
 				log.debug("Sending email about '" + subjectString + "' to " + p.getEmail())
-				EmailService.get().sendMail {
-					to p.getEmail()
-					from fromAddress
-					subject subjectString
-					body message
-				}
+				EmailService.get().send(p.getEmail(), subjectString, message)
 			}
 		}
 	}
 
-	def notifyAdmins(String from, String subject, String message) {
-		sendMessages(getAdminUsers(), from, subject, message)
+	private sendMessages(people, Closure subjectClosure, Closure messageClosure) {
+		for (User p in people) {
+			String subjectString = subjectClosure(p, fromAddress)
+			String message = messageClosure(p, fromAddress)
+			if (p.getEmail() != null) {
+				log.debug("Sending email about '" + subjectString + "' to " + p.getEmail())
+				EmailService.get().send(p.getEmail(), subjectString, message)
+			}
+		}
 	}
 
-	def notifyNotifieds(String from, String subject, String message) {
-		sendMessages(getNotifiedUsers(), from, subject, message)
+	def notifyAdmins(String subject, String message) {
+		sendMessages(getAdminUsers(), subject, message)
 	}
 
-	def notifyNotifiedMajors(String from, String subject, String message) {
-		sendMessages(getNotifiedMajorUsers(), from, subject, message)
+	def notifyNotifieds(String subject, String message) {
+		sendMessages(getNotifiedUsers(), subject, message)
 	}
 
-	def notifyReaders(String from, String subject, String message) {
-		sendMessages(getReaderUsers(), from, subject, message)
+	def notifyNotifiedMajors(String subject, String message) {
+		sendMessages(getNotifiedMajorUsers(), subject, message)
+	}
+
+	def notifyReaders(String subject, String message) {
+		sendMessages(getReaderUsers(), subject, message)
+	}
+
+	def notifyReaders(Closure subjectClosure, Closure messageClosure) {
+		sendMessages(getReaderUsers(), subjectClosure, messageClosure)
+	}
+
+	def notifyInvited(String subject, String message) {
+		sendMessages(getInvitedUsers(), subject, message)
+	}
+
+	def notifyInvited(Closure subjectClosure, Closure messageClosure) {
+		sendMessages(getInvitedUsers(), subjectClosure, messageClosure)
 	}
 
 	/**
