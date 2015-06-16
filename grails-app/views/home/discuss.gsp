@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta name="layout" content="plot" />
-<script type="text/javascript" src="/js/curious/discussion.js"></script>
+<script type="text/javascript" src="/js/curious/discussion.js?ver=21"></script>
 <style type="text/css">
 .ui-accordion-header {
 	overflow: hidden;
