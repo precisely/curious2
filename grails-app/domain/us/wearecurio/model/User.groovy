@@ -490,4 +490,22 @@ class User {
 
 		return usersList*.getPeopleJSONDesc()
 	}
+    
+    static List getAdminGroupIds(Long userId) {
+        if (userId == null) { return null }
+        
+        return User.executeQuery(
+            """SELECT item.groupId as groupId 
+             FROM 
+                UserGroup userGroup, 
+                GroupMemberAdmin item 
+             WHERE 
+                item.memberId = :id AND 
+                item.groupId = userGroup.id""",
+            [id: userId])
+    } 
+    
+    List getAdminGroupIds() {
+        return getAdminGroupIds(id)
+    }
 }

@@ -7,8 +7,10 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.*
 import static org.elasticsearch.index.query.QueryBuilders.*
+import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.index.query.QueryBuilders
 import static org.elasticsearch.node.NodeBuilder.*
+import org.elasticsearch.search.sort.*
 import java.util.Arrays;
 import static org.elasticsearch.client.Requests.searchRequest;
 import static org.elasticsearch.index.query.FilterBuilders.termsFilter;
@@ -98,7 +100,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
     {
         UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
           [isReadOnly:false, defaultNotify:false])
-        groupA.addMember(user)
+        groupA.addAdmin(user)
 
         UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
           [isReadOnly:false, defaultNotify:true])
@@ -106,6 +108,9 @@ class SearchServiceTests extends CuriousServiceTestCase {
         
         Discussion discussionReadByUser = Discussion.create(user, "groupA discussion", groupA)
         Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB)
+        DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1")
+        Thread.sleep(1000)
+        DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2")
         
         assert searchService
         searchService.elasticSearchService = elasticSearchService
@@ -117,7 +122,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
         assert Discussion.findByName(discussionNotReadByUser.name).id == discussionNotReadByUser.id
         assert UserGroup.findByName(groupA.name).id == groupA.id
         assert UserGroup.findByName(groupB.name).id == groupB.id
-        
+                
         elasticSearchService.index()
         Thread.sleep(2000)        
         
@@ -128,7 +133,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
         assert result.listItems.totalDiscussionCount == 1
         //groupMemberships should return 1 row. 
         //  first column: UserGroup
-        //  second column: Datetime that GroupMemberReader object was created
+        //  second column: DateTime that GroupMemberReader object was created
         assert result.listItems.groupMemberships
         assert result.listItems.groupMemberships.size() == 1
         assert result.listItems.groupMemberships[0][0].id == groupA.id
@@ -138,9 +143,24 @@ class SearchServiceTests extends CuriousServiceTestCase {
         assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[0][1].getTime()) >= Utils.elasticSearchRoundMs(groupA.created.getTime())
         assert result.listItems.discussionList
         assert result.listItems.discussionList.size() == 1
-        assert result.listItems.discussionList[0].id == discussionReadByUser.id
-        assert result.listItems.discussionList[0].name == discussionReadByUser.name
-        assert !result.listItems.discussionPostData        
+        assert result.listItems.discussionList[discussionReadByUser.id].id == discussionReadByUser.id
+        assert result.listItems.discussionList[discussionReadByUser.id].name == discussionReadByUser.name
+        assert result.listItems.discussionList[discussionReadByUser.id].userId == discussionReadByUser.userId
+        assert result.listItems.discussionList[discussionReadByUser.id].isPublic == discussionReadByUser.isPublic()
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussionReadByUser.id].created) == Utils.elasticSearchDate(discussionReadByUser.created)
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussionReadByUser.id].updated) == Utils.elasticSearchDate(discussionReadByUser.updated)
+        assert result.listItems.discussionList[discussionReadByUser.id].type == "dis"
+        assert result.listItems.discussionList[discussionReadByUser.id].totalComments == 2
+        assert result.listItems.discussionList[discussionReadByUser.id].isPlot == false
+        assert result.listItems.discussionList[discussionReadByUser.id].firstPost
+        assert result.listItems.discussionList[discussionReadByUser.id].firstPost.message == readByUser1.message
+        assert result.listItems.discussionList[discussionReadByUser.id].groupId == groupA.id
+        assert result.listItems.discussionList[discussionReadByUser.id].isAdmin
+        assert result.listItems.discussionList[discussionReadByUser.id].groupName == groupA.fullName
+        assert result.listItems.discussionPostData
+        assert result.listItems.discussionPostData[discussionReadByUser.id].secondPost
+        assert result.listItems.discussionPostData[discussionReadByUser.id].secondPost.message == readByUser2.message
+        assert result.listItems.discussionPostData[discussionReadByUser.id].totalPosts == 2
     }
 
     @Test
@@ -165,37 +185,36 @@ class SearchServiceTests extends CuriousServiceTestCase {
         
         elasticSearchService.index()
         Thread.sleep(2000)
-        
-        //first no offset, max set to 10 so all 2 results are included        
+
+        //first no offset, max set to 10 so all 2 results are included
         Map result = searchService.getDiscussionsList(user, 0, 10)
         assert result
         assert result.success
         assert result.listItems.userId == user.id
         assert result.listItems.totalDiscussionCount == 2
-        //groupMemberships should return 1 row.
-        //  first column: UserGroup
-        //  second column: Datetime that GroupMemberReader object was created
         assert result.listItems.groupMemberships
         assert result.listItems.groupMemberships.size() == 1
         assert result.listItems.groupMemberships[0][0].id == group.id
         assert result.listItems.groupMemberships[0][0].name == group.name
         assert result.listItems.groupMemberships[0][0].fullName == group.fullName
-        //need to round milliseconds
         assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[0][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
         assert result.listItems.discussionList
         assert result.listItems.discussionList.size() == 2
-        assert result.listItems.discussionList[0].id == discussion1.id
-        assert result.listItems.discussionList[0].name == discussion1.name
-        assert result.listItems.discussionList[1].id == discussion2.id
-        assert result.listItems.discussionList[1].name == discussion2.name
-        assert !result.listItems.discussionPostData
-
+        assert result.listItems.discussionList[discussion1.id].id == discussion1.id
+        assert result.listItems.discussionList[discussion1.id].name == discussion1.name
+        assert result.listItems.discussionList[discussion1.id].userId == discussion1.userId
+        assert result.listItems.discussionList[discussion1.id].isPublic == discussion1.isPublic()
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion1.id].created) == Utils.elasticSearchDate(discussion1.created)
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion1.id].updated) == Utils.elasticSearchDate(discussion1.updated)
+        assert result.listItems.discussionList[discussion1.id].type == "dis"
+        assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
+        
         //limit max to 1, no offset
         result = searchService.getDiscussionsList(user, 0, 1)
         assert result
         assert result.success
         assert result.listItems.userId == user.id
-        assert result.listItems.totalDiscussionCount == 1
+        assert result.listItems.totalDiscussionCount == 2
         assert result.listItems.groupMemberships
         assert result.listItems.groupMemberships.size() == 1
         assert result.listItems.groupMemberships[0][0].id == group.id
@@ -204,16 +223,21 @@ class SearchServiceTests extends CuriousServiceTestCase {
         assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[0][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
         assert result.listItems.discussionList
         assert result.listItems.discussionList.size() == 1
-        assert result.listItems.discussionList[0].id == discussion1.id
-        assert result.listItems.discussionList[0].name == discussion1.name
-        assert !result.listItems.discussionPostData
-
+        assert result.listItems.discussionList[discussion1.id].id == discussion1.id
+        assert result.listItems.discussionList[discussion1.id].name == discussion1.name
+        assert result.listItems.discussionList[discussion1.id].userId == discussion1.userId
+        assert result.listItems.discussionList[discussion1.id].isPublic == discussion1.isPublic()
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion1.id].created) == Utils.elasticSearchDate(discussion1.created)
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion1.id].updated) == Utils.elasticSearchDate(discussion1.updated)
+        assert result.listItems.discussionList[discussion1.id].type == "dis"
+        assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
+        
         //limit max to 1, offset to second item (index=1)
         result = searchService.getDiscussionsList(user, 1, 1)
         assert result
         assert result.success
         assert result.listItems.userId == user.id
-        assert result.listItems.totalDiscussionCount == 1
+        assert result.listItems.totalDiscussionCount == 2
         assert result.listItems.groupMemberships
         assert result.listItems.groupMemberships.size() == 1
         assert result.listItems.groupMemberships[0][0].id == group.id
@@ -222,8 +246,62 @@ class SearchServiceTests extends CuriousServiceTestCase {
         assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[0][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
         assert result.listItems.discussionList
         assert result.listItems.discussionList.size() == 1
-        assert result.listItems.discussionList[0].id == discussion2.id
-        assert result.listItems.discussionList[0].name == discussion2.name
-        assert !result.listItems.discussionPostData
+        assert result.listItems.discussionList[discussion2.id].id == discussion2.id
+        assert result.listItems.discussionList[discussion2.id].name == discussion2.name
+        assert result.listItems.discussionList[discussion2.id].userId == discussion2.userId
+        assert result.listItems.discussionList[discussion2.id].isPublic == discussion2.isPublic()
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion2.id].created) == Utils.elasticSearchDate(discussion2.created)
+        assert Utils.elasticSearchDate(result.listItems.discussionList[discussion2.id].updated) == Utils.elasticSearchDate(discussion2.updated)
+        assert result.listItems.discussionList[discussion2.id].type == "dis"
+        assert result.listItems.discussionPostData[discussion2.id].totalPosts == 0
+    }
+            
+    @Test
+    void "Test getDiscussionsList Admin Groups"()
+    {
+        UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
+            [isReadOnly:false, defaultNotify:false])
+        groupA.addAdmin(user)
+        groupA.addWriter(user2)
+          
+        UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
+            [isReadOnly:false, defaultNotify:true])
+        groupB.addMember(user2)
+          
+        Discussion discussionReadByUser = Discussion.create(user2, "groupA discussion", groupA)
+        Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB)
+        DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1")
+        Thread.sleep(1000)
+        DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2")
+          
+        assert searchService  
+        searchService.elasticSearchService = elasticSearchService
+  
+        Utils.save(discussionReadByUser, true)
+        Utils.save(discussionNotReadByUser, true)
+  
+        assert Discussion.findByName(discussionReadByUser.name).id == discussionReadByUser.id
+        assert Discussion.findByName(discussionNotReadByUser.name).id == discussionNotReadByUser.id
+        assert UserGroup.findByName(groupA.name).id == groupA.id
+        assert UserGroup.findByName(groupB.name).id == groupB.id
+                  
+        elasticSearchService.index()
+        Thread.sleep(2000)
+          
+        Map result = searchService.getDiscussionsList(user, 0, 10)
+          
+        assert result.listItems.discussionList[discussionReadByUser.id].isAdmin
+          
+        groupA.removeAdmin(user.id)
+        groupA.addMember(user)
+        Utils.save(discussionReadByUser, true)
+        Utils.save(groupA, true)
+          
+        elasticSearchService.index()
+        Thread.sleep(2000)
+          
+        result = searchService.getDiscussionsList(user, 0, 10)
+          
+        assert !(result.listItems.discussionList[discussionReadByUser.id].isAdmin)
     }
 }
