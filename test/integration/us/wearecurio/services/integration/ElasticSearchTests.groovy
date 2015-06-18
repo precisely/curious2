@@ -143,10 +143,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
         assert results.searchResults
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == container.id
         if (extraFieldNameToCheck) {
             assert results.searchResults[0][extraFieldNameToCheck] == container[extraFieldNameToCheck]
         }
+        
+        System.out.println "container.id: " + container.id + " container.getId(): " + container.getId() + " results.searchResults[0].id: " + results.searchResults[0].id + " results.searchResults[0].getId(): " + results.searchResults[0].getId()
     }
 
     void testSimplePostSearch(String fieldName) {
@@ -185,22 +186,22 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
     @Test
     void "Test Search Discuussion by name"() {
-        testSimpleSearch(Discussion.create(user, "Topic name"), "name", "name")
+        testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByName"), "name", "name")
     }
 
     @Test
     void "Test Search Discuussion by created"() {
-        testSimpleSearch(Discussion.create(user), "created")
+        testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByCreated"), "created", "name")
     }
 
     @Test
     void "Test Search Discuussion by updated"() {
-        testSimpleSearch(Discussion.create(user), "updated")
+        testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByUpdated"), "updated", "name")
     }
 
     @Test
     void "Test Search Discuussion by visibility"() {
-        testSimpleSearch(Discussion.create(user), "visibility")
+        testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByVisibility"), "visibility", "name")
     }
 
     @Test
@@ -212,7 +213,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
             [isReadOnly:false, defaultNotify:true])
         groupB.addMember(user)
 
-        Discussion discussion = Discussion.create(user, "Topic name", groupA)
+        Discussion discussion = Discussion.create(user, "TestSearchDiscussionByBroupIds", groupA)
         groupB.addDiscussion(discussion)
 
         Utils.save(discussion, true)
@@ -231,7 +232,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
         assert results.searchResults
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == discussion.id
         assert results.searchResults[0].name == discussion.name
     }
 
@@ -267,9 +267,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
     
     @Test
     void "Test Search Discussions Created in Past Week"(){
-        Discussion discussionRecent = Discussion.create(user, "common")
-        Discussion discussionRecent2 = Discussion.create(user, "common 2")
-        Discussion discussionOld = Discussion.create(user, "common old")
+        Discussion discussionRecent = Discussion.create(user, "TestSearchDiscussionsCreatedinPastWeek")
+        Discussion discussionRecent2 = Discussion.create(user, "TestSearchDiscussionsCreatedinPastWeek 2")
+        Discussion discussionOld = Discussion.create(user, "TestSearchDiscussionsCreatedinPastWeek old")
     
         use (groovy.time.TimeCategory){
             discussionOld.created = (new Date()) - 8.days
@@ -286,7 +286,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         def results = Discussion.search(searchType:'query_and_fetch') {
             filtered {
                 query {
-                    query_string(query: "name:common")
+                    query_string(query: "name:TestSearchDiscussionsCreatedinPastWeek")
                 }
                 filter {
                     range{
@@ -299,17 +299,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         System.out.println "size: " + results.searchResults.size()
         assert results
         assert results.searchResults.size() == 2
-        assert results.searchResults.find { d -> d.id == discussionRecent.id }
-        assert results.searchResults.find { d -> d.id == discussionRecent.id }.name == discussionRecent.name
-        assert results.searchResults.find { d -> d.id == discussionRecent2.id }
-        assert results.searchResults.find { d -> d.id == discussionRecent2.id }.name == discussionRecent2.name
+        assert results.searchResults.find { d -> d.name == discussionRecent.name }
+        assert results.searchResults.find { d -> d.name == discussionRecent2.name }
     }
     
     @Test
     void "Test Search Discussion Posts Created in Past Week"(){
         Discussion discussion = Discussion.create(user, "test")
-        DiscussionPost postOld = discussion.createPost(user, "common old")
-        DiscussionPost postRecent = discussion.createPost(user, "common recent")
+        DiscussionPost postOld = discussion.createPost(user, "TestSearchDiscussionPostsCreatedInPastWeek old")
+        DiscussionPost postRecent = discussion.createPost(user, "TestSearchDiscussionPostsCreatedInPastWeek recent")
     
         use (groovy.time.TimeCategory){
             postOld.created = (new Date()) - 8.days
@@ -325,7 +323,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         def results = DiscussionPost.search(searchType:'query_and_fetch') {
             filtered {
                 query {
-                    query_string(query: "message:common")
+                    query_string(query: "message:TestSearchDiscussionPostsCreatedInPastWeek")
                 }
                 filter {
                     range{
@@ -338,13 +336,12 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         System.out.println "size: " + results.searchResults.size()
         assert results
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == postRecent.id
         assert results.searchResults[0].message ==  postRecent.message
     }
     
     @Test
     void "Test Search Discussions Updated in Past Week"(){
-        Discussion discussion = Discussion.create(user)
+        Discussion discussion = Discussion.create(user, "TestSearchDiscussionsUpdatedInPastWeek")
         DiscussionPost post = discussion.createPost(user, "Test post")
     
         Utils.save(discussion, true)
@@ -370,7 +367,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
     
             assert results.searchResults
             assert results.searchResults.size() == 1
-            assert results.searchResults[0].id == discussion.id
+            assert results.searchResults[0].name == discussion.name
     }
     
     @Test
@@ -401,20 +398,13 @@ class ElasticSearchTests extends CuriousServiceTestCase {
     
         assert results.searchResults
         assert results.searchResults.size() == 7
-        assert results.searchResults.find { d -> d.id == discussion1.id }
-        assert results.searchResults.find { d -> d.id == discussion1.id }.name == discussion1.name
-        assert results.searchResults.find { d -> d.id == discussion2.id }
-        assert results.searchResults.find { d -> d.id == discussion2.id }.name == discussion2.name
-        assert results.searchResults.find { d -> d.id == discussion3.id }
-        assert results.searchResults.find { d -> d.id == discussion3.id }.name == discussion3.name
-        assert results.searchResults.find { d -> d.id == discussion4.id }
-        assert results.searchResults.find { d -> d.id == discussion4.id }.name == discussion4.name
-        assert results.searchResults.find { d -> d.id == discussion5.id }
-        assert results.searchResults.find { d -> d.id == discussion5.id }.name == discussion5.name
-        assert results.searchResults.find { d -> d.id == discussion6.id }
-        assert results.searchResults.find { d -> d.id == discussion6.id }.name == discussion6.name
-        assert results.searchResults.find { d -> d.id == discussion7.id }
-        assert results.searchResults.find { d -> d.id == discussion7.id }.name == discussion7.name
+        assert results.searchResults.find { d -> d.name == discussion1.name }
+        assert results.searchResults.find { d -> d.name == discussion2.name }
+        assert results.searchResults.find { d -> d.name == discussion3.name }
+        assert results.searchResults.find { d -> d.name == discussion4.name }
+        assert results.searchResults.find { d -> d.name == discussion5.name }
+        assert results.searchResults.find { d -> d.name == discussion6.name }
+        assert results.searchResults.find { d -> d.name == discussion7.name }
         
         System.out.println ""
         System.out.println "keys returned:"
@@ -454,7 +444,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         
         assert results.searchResults
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == discussion1.id
         assert results.searchResults[0].name == discussion1.name
     }
     
@@ -476,9 +465,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
     
         assert results.searchResults
         assert results.searchResults.size() == 2
-        assert results.searchResults[0].id == discussion2.id
         assert results.searchResults[0].name == discussion2.name
-        assert results.searchResults[1].id == discussion1.id
         assert results.searchResults[1].name == discussion1.name
     }
     
@@ -501,9 +488,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
         assert results.searchResults
         assert results.searchResults.size() == 2
-        assert results.searchResults[0].id == discussion1.id
         assert results.searchResults[0].name == discussion1.name
-        assert results.searchResults[1].id == discussion2.id
         assert results.searchResults[1].name == discussion2.name
     }
 
@@ -530,9 +515,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         //results in chronological order by default
         assert results.searchResults
         assert results.searchResults.size() == 2
-        assert results.searchResults[0].id == discussion2.id
         assert results.searchResults[0].name == discussion2.name
-        assert results.searchResults[1].id == discussion1.id
         assert results.searchResults[1].name == discussion1.name
     }
 
@@ -554,7 +537,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
         assert results.searchResults
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == discussion1.id
         assert results.searchResults[0].name == discussion1.name
     }
 
@@ -576,7 +558,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 
         assert results.searchResults
         assert results.searchResults.size() == 1
-        assert results.searchResults[0].id == discussion1.id
         assert results.searchResults[0].name == discussion1.name
     }
     
@@ -606,8 +587,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
             for( SearchHit hit : sr.getHits().getHits() ) {
                 System.out.println "hit: " + hit.getIndex() + ": " + hit.getType() + ": " + hit.getId() + " (score: " + hit.getScore() + ")"
             }
-            assert (sr.getHits().getHits()[0].getId() == discussion2.id.toString())
-            assert (sr.getHits().getHits()[1].getId() == discussion1.id.toString())
+            assert (sr.getHits().getHits()[0].getSource().name == discussion2.name)
+            assert (sr.getHits().getHits()[1].getSource().name == discussion1.name)
             assert (sr.getHits().getHits()[0].getScore() > sr.getHits().getHits()[1].getScore())
         }
     }
@@ -644,7 +625,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         }
         assert discussionResults
         assert discussionResults.searchResults.size() == 1
-        assert discussionResults.searchResults[0].id == discussionReadByUser.id
         assert discussionResults.searchResults[0].name == discussionReadByUser.name
     
         def discussionPostResults = DiscussionPost.search(searchType:'query_and_fetch') {
@@ -653,7 +633,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
     
         assert discussionPostResults
         assert discussionPostResults.searchResults.size() == 1
-        assert discussionPostResults.searchResults[0].id == postA.id
         assert discussionPostResults.searchResults[0].message == postA.message
     
         discussionPostResults = DiscussionPost.search(searchType:'query_and_fetch') {
@@ -1182,7 +1161,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         }
         assert discussionResults
         assert discussionResults.searchResults.size() == 1
-        assert discussionResults.searchResults[0].id == discussionA.id
         assert discussionResults.searchResults[0].name == discussionA.name
     
         elasticSearchHelper.withElasticSearch{ client ->
@@ -1270,10 +1248,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         }
         assert discussionResults
         assert discussionResults.searchResults.size() == 2
-        assert discussionResults.searchResults.find{ d -> d.id == discussionA.id }
-        assert discussionResults.searchResults.find{ d -> d.id == discussionA.id }.name == discussionA.name
-        assert discussionResults.searchResults.find{ d -> d.id == discussionC.id }
-        assert discussionResults.searchResults.find{ d -> d.id == discussionC.id }.name == discussionC.name
+        assert discussionResults.searchResults.find{ d -> d.name == discussionA.name }
+        assert discussionResults.searchResults.find{ d -> d.name == discussionC.name }
 
         elasticSearchHelper.withElasticSearch{ client ->
             SearchResponse sr = client
@@ -1282,7 +1258,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
                 .setQuery(
                     boolQuery()
                         .must(
-                            queryString("discussionId:(" + discussionResults.searchResults.collect{ it.id }.join(" OR ") + ")"))
+                            queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")"))
                         .mustNot(
                             termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
                     )
@@ -1451,9 +1427,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
         def discussionResults = Discussion.search(searchType:'query_and_fetch') {
             query_string(query:  "groupIds:(" + dbGroupIds.iterator().join(" OR ") + ")")
         }
-
-        String discussionIdsOr = discussionResults.searchResults.collect{ it.id }.join(" OR ")
-        if (discussionIdsOr.size() > 1) discussionIdsOr = "(" + discussionIdsOr + ")"
         
         elasticSearchHelper.withElasticSearch{ client ->
             SearchResponse sr = client
@@ -1462,7 +1435,12 @@ class ElasticSearchTests extends CuriousServiceTestCase {
                 .setQuery(
                     boolQuery()
                         .must(
-                            queryString("discussionId:(" + discussionResults.searchResults.collect{ it.id }.join(" OR ") + ")"))
+                            queryString("discussionId:(" + 
+                                discussionA1.id + " OR " +
+                                discussionA2.id + " OR " +
+                                discussionB1.id + " OR " +
+                                discussionB2.id +
+                                ")"))
                         .mustNot(
                             termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
                     )
