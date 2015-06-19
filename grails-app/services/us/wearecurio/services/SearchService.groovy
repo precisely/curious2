@@ -233,7 +233,6 @@ class SearchService {
             return [listItems: model, success: true]  
         }              
 	}
-	
 
 	Map getPeopleList(User user, int offset, int max) {
 		List usersList = User.getUsersList(max, offset, user.id)
