@@ -27,13 +27,14 @@ import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Entry.ParseAmount
+import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
 class SearchController extends LoginController {
 
-	def searchService
+	SearchService searchService
 
 	static debug(str) {
 		log.debug(str)

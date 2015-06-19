@@ -233,4 +233,13 @@ class SearchService {
             return [listItems: model, success: true]  
         }              
 	}
+	
+
+	Map getPeopleList(User user, int offset, int max) {
+		List usersList = User.getUsersList(max, offset, user.id)
+		if (usersList) {
+			 return [listItems: usersList, success: true]
+		}
+		return [listItems: false, success: true]
+	}
 }
