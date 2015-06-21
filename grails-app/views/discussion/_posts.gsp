@@ -5,13 +5,13 @@
 			<a href="#"><img class="avatar" src="/images/avatar2.png" alt="avatar">
 				<span class="user-name"> 
 					<g:set var="authorName" 
-						value="${(discussPostInstance.author.getUsername() ?: discussPostInstance.author.getName()).encodeAsURL()}" />
+						value="${((discussPostInstance.author ? discussPostInstance.author.getUsername() : 'anonymous') ?: discussPostInstance.author.getName()).encodeAsURL()}" />
 					${authorName }
 				</span>
 			</a>
 			<span class="posting-time" data-time="${discussPostInstance.getUpdated().time}"></span>
 			<div class="pull-right">
-				<g:if test="${discussPostInstance.getAuthor().id == userId || isAdmin}">
+				<g:if test="${discussPostInstance.author?.id == userId || isAdmin}">
 					<span class="delete"> 
 						<a href="#" class="delete-post" data-post-id="${discussPostInstance.id}"> 
 							<img src="/images/x.gif" width="8" height="8">
