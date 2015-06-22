@@ -476,7 +476,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		discussion.createPost(user, "comment2")
 		discussion.createPost(user, "comment3")
 		discussion.createPost(user, "comment4")
+		Thread.sleep(100)
 		discussion.createPost(user, "comment5")
+		Thread.sleep(100)
 		discussion.createPost(user, "comment6")
 		Utils.save(discussion, true)
 	
