@@ -63,7 +63,11 @@ class Discussion {
 	public static Discussion create(User user, String name) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name
 		def discussion = new Discussion(user, name)
+
 		Utils.save(discussion, true)
+
+		discussion.addUserVirtualGroup(user)
+				
 		return discussion
 	}
 	
@@ -73,6 +77,11 @@ class Discussion {
 			discussion = create(user, name)
 			group.addDiscussion(discussion)
 		}
+		
+		Utils.save(discussion, true)
+		
+		discussion.addUserVirtualGroup(user)
+		
 		return discussion
 	}
 
@@ -437,5 +446,11 @@ class Discussion {
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
+	}
+	
+	private void addUserVirtualGroup(User user) {
+		if (user?.virtualUserGroupId > 0) {
+			GroupMemberDiscussion.create(user.virtualUserGroupId, id)
+		}
 	}
 }

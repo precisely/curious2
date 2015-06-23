@@ -10,6 +10,8 @@ import us.wearecurio.controller.SearchController
 import us.wearecurio.model.*
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.SearchService
+import org.grails.plugins.elasticsearch.ElasticSearchService
 
 class SearchControllerTests extends CuriousControllerTestCase {
 
@@ -17,6 +19,9 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	Sprint sprint1, sprint2, sprint3
 	User user2, user3
 	Discussion discussion1, discussion2
+	
+	ElasticSearchService elasticSearchService
+	def searchService
 
 	@Before
 	void setUp() {
@@ -78,7 +83,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["type"] = null
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
-
+		
 		controller.indexData()
 
 		assert !controller.response.json.success
@@ -120,6 +125,12 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+		elasticSearchService.index()
+		Thread.sleep(2000)
+
 		controller.indexData()
 
 		assert controller.response.json.success
@@ -155,6 +166,12 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["type"] = "all"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
+
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+        elasticSearchService.index()
+        Thread.sleep(2000)
 
 		controller.indexData()
 
