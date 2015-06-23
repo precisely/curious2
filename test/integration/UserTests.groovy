@@ -37,7 +37,7 @@ class UserTests extends CuriousTestCase {
 		
 		assert !user.getNotifyOnComments()
 
-		assertTrue(Utils.save(user))
+		assert user.id
 	}
 
 	@Test
@@ -55,7 +55,7 @@ class UserTests extends CuriousTestCase {
 		
 		assert user.getNotifyOnComments()
 
-		assertTrue(Utils.save(user))
+		assert user.id
 	}
 	
 	@Test
@@ -88,14 +88,12 @@ class UserTests extends CuriousTestCase {
 		params.put('created', new Date() - 1)
 
 		user3 = User.create(params)
-		Utils.save(user3, true)
 		
 		params.put("username", "testuser4")
 		params.put("email", "test4@test.com")
 		params.put('created', new Date() - 2)
 
 		user4 = User.create(params)
-		Utils.save(user4, true)
 	}
 
 	@Test

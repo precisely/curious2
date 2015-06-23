@@ -32,6 +32,7 @@ class User {
 	String hash
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
+	Long virtualUserGroupId
 
 	static transients = [ 'name', 'site' ]
 	static constraints = {
@@ -51,6 +52,7 @@ class User {
 		virtual(nullable:true)
 		remindEmail(nullable:true)
 		website(nullable:true)
+		virtualUserGroupId(nullable:true)
 	}
 
 	static mapping = {
@@ -62,7 +64,7 @@ class User {
 	}
 	
 	static searchable = {
-		only = ['username', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created']
+		only = ['username', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
 	}
 	
 	SortedSet interestTags
@@ -96,6 +98,17 @@ class User {
 		user.hash = new DefaultHashIDGenerator().generate(12)
 
 		user.update(map)
+
+		Utils.save(user, true)
+		
+		def groupName = "'" + (user.username?:"anonymous" ) + "' virtual group"
+		def virtualUserGroup = UserGroup.create(groupName, groupName, "virtual UserGroup for '" +  (user.username?:"anonymous") + "'", [isReadOnly:false, defaultNotify:false])
+		if (virtualUserGroup) {
+			user.virtualUserGroupId = virtualUserGroup.id
+			virtualUserGroup.addReader(user)
+			virtualUserGroup.addAdmin(user)
+			virtualUserGroup.addWriter(user)
+		}			
 
 		return user
 	}
@@ -499,4 +512,23 @@ class User {
 
 		return usersList*.getPeopleJSONDesc()
 	}
+	
+	static List getAdminGroupIds(Long userId) {
+		if (userId == null) { return null }
+		
+		return User.executeQuery(
+			"""SELECT item.groupId as groupId
+             FROM 
+                UserGroup userGroup, 
+                GroupMemberAdmin item 
+             WHERE 
+                item.memberId = :id AND 
+                item.groupId = userGroup.id""",
+			[id: userId])
+	}
+	
+	List getAdminGroupIds() {
+		return getAdminGroupIds(id)
+	}
+
 }
