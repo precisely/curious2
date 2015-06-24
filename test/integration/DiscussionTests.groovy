@@ -80,8 +80,8 @@ class DiscussionTests extends CuriousTestCase {
 		Discussion discussion = Discussion.create(user, "testCreateDiscussion", testGroup)
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
-		Utils.save(discussion, true)
-		Utils.save(post, true)
+		//Utils.save(discussion, true)
+		//Utils.save(post, true)
 		
 		post = post
 		
@@ -90,20 +90,89 @@ class DiscussionTests extends CuriousTestCase {
 		
 		// test elastic search here
 		def results = elasticSearchService.search(searchType:'query_and_fetch') {
-		  bool {
-		      must {
-		          query_string(query: "name: " + discussion.name)
-		      }
-	          /*must {
-	              term(name: "name")
-	          }*/
-		  }
+		  query_string(query: "name: " + discussion.name)
 		}
 		
 		System.out.println "results.searchResults[0].id: " + results.searchResults[0].id + " discussion.id: " + discussion.id.toString()
+		assert results.searchResults[0].id == discussion.id
 		assert results.searchResults[0].name == discussion.name
 	}
 
+	@Test
+	void testIndexDiscussionId() {
+		Discussion discussion1 = Discussion.create(user, "testIndexDiscussionId1")
+		Thread.sleep(1000)
+		Discussion discussion2 = Discussion.create(user, "testIndexDiscussionId2")
+		Thread.sleep(1000)
+		Discussion discussion3 = Discussion.create(user, "testIndexDiscussionId3")
+		
+		def id1 = 38
+		def id2 = 93
+		def id3 = 4397
+		
+		discussion1.id = id1
+		discussion2.id = id2
+		discussion3.id = id3
+		
+		elasticSearchService.index(discussion2)
+		Thread.sleep(1000)
+
+		def results = elasticSearchService.search(searchType:'query_and_fetch') {
+			ids ( values: [id1, id2, id3] )
+		}
+
+		assert results.searchResults.size() == 1
+		assert results.searchResults.find{ it.id == id1 } == null
+		assert results.searchResults.find{ it.id == id2 }
+		assert results.searchResults.find{ it.id == id2 }.id == id2
+		assert results.searchResults.find{ it.id == id2 }.getId() == id2
+		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
+		assert results.searchResults.find{ it.id == id3 } == null
+				
+		discussion2.id = id3 //changing id has no effect on existing index
+		
+		elasticSearchService.index(discussion3)
+		Thread.sleep(1000)
+
+		results = elasticSearchService.search(searchType:'query_and_fetch') {
+			ids ( values: [id1, id2, id3] )
+		}
+
+		assert results.searchResults.size() == 2
+		assert results.searchResults.find{ it.id == id1 } == null
+		assert results.searchResults.find{ it.id == id2 }
+		assert results.searchResults.find{ it.id == id2 }.id == id2
+		assert results.searchResults.find{ it.id == id2 }.getId() == id2
+		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
+		assert results.searchResults.find{ it.id == id3 }
+		assert results.searchResults.find{ it.id == id3 }.id == id3
+		assert results.searchResults.find{ it.id == id3 }.getId() == id3
+		assert results.searchResults.find{ it.id == id3 }.name == discussion3.name
+		
+		discussion3.id = id1 //changing id has no effect on files already indexed
+		
+		elasticSearchService.index(discussion1)
+		Thread.sleep(1000)
+
+		results = elasticSearchService.search(searchType:'query_and_fetch') {
+			ids ( values: [id1, id2, id3] )
+		}
+
+		assert results.searchResults.size() == 3
+		assert results.searchResults.find{ it.id == id1 }
+		assert results.searchResults.find{ it.id == id1 }.id == id1
+		assert results.searchResults.find{ it.id == id1 }.getId() == id1
+		assert results.searchResults.find{ it.id == id1 }.name == discussion1.name
+		assert results.searchResults.find{ it.id == id2 }
+		assert results.searchResults.find{ it.id == id2 }.id == id2
+		assert results.searchResults.find{ it.id == id2 }.getId() == id2
+		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
+		assert results.searchResults.find{ it.id == id3 }
+		assert results.searchResults.find{ it.id == id3 }.id == id3
+		assert results.searchResults.find{ it.id == id3 }.getId() == id3
+		assert results.searchResults.find{ it.id == id3 }.name == discussion3.name
+	}
+	
 	@Test
 	void testCreateDiscussionInGroups() {
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
