@@ -27,6 +27,7 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
+import us.wearecurio.utility.Utils
 
 class HumanDataService {
 
@@ -335,7 +336,7 @@ class HumanDataService {
 		stats.finish()
 
 		account.lastPolled = lastPolled
-		account.save()
+		Utils.save(account, true)
 		[success: success]
 	}
 

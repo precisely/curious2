@@ -12,6 +12,7 @@ import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagProperties
 import us.wearecurio.model.User
 import us.wearecurio.model.WildcardTagGroup
+import us.wearecurio.utility.Utils
 
 class TagController extends LoginController {
 
@@ -104,7 +105,7 @@ class TagController extends LoginController {
 
 		parentTagGroupInstance.addToSubTagGroups(childTagGroupInstance)
 		parentTagGroupInstance.addToCache(childTagGroupInstance, session.userId)
-		parentTagGroupInstance.save()
+		Utils.save(parentTagGroupInstance, true)
 		renderJSONGet(["dummy"])
 	}
 
@@ -218,7 +219,7 @@ class TagController extends LoginController {
 			println params.dump()
 			GenericTagGroup tagGroupInstance = GenericTagGroup.get(params.id)
 			tagGroupInstance.description = params.description
-			tagGroupInstance.save()
+			Utils.save(tagGroupInstance, true)
 		}
 		renderJSONGet([success: true])
 	}

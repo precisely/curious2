@@ -21,6 +21,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
+import us.wearecurio.utility.Utils
 
 class MovesDataService extends DataService {
 	
@@ -104,7 +105,7 @@ class MovesDataService extends DataService {
 			}
 		}
 		account.lastPolled = new Date()
-		account.save()
+		Utils.save(account, true)
 		
 		stats.finish()
 		

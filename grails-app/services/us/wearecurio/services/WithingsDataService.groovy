@@ -169,7 +169,7 @@ class WithingsDataService extends DataService {
 			DatabaseService.retry(account) {
 				account.setLastPolled(new Date(serverTimestamp))
 				account.merge()
-				account.save()
+				Utils.save(account, true)
 			}
 		}
 		

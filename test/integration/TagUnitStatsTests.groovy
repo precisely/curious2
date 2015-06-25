@@ -43,6 +43,8 @@ class TagUnitStatsTests extends CuriousUserTestCase {
 	void setUp() {
 		super.setUp()
 		
+		TagUnitStats.executeUpdate("delete TagUnitStats tus")
+		
 		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)

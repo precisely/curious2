@@ -472,14 +472,12 @@ class DataControllerTests extends CuriousControllerTestCase {
 		curious.addMember(user)
 	
 		Discussion discussion = Discussion.create(user, "Discussion name")
-		discussion.createPost(user, "comment1")
-		discussion.createPost(user, "comment2")
-		discussion.createPost(user, "comment3")
-		discussion.createPost(user, "comment4")
-		Thread.sleep(100)
-		discussion.createPost(user, "comment5")
-		Thread.sleep(100)
-		discussion.createPost(user, "comment6")
+		discussion.createPost(user, "comment1", currentTime)
+		discussion.createPost(user, "comment2", currentTime + 1)
+		discussion.createPost(user, "comment3", currentTime + 2)
+		discussion.createPost(user, "comment4", currentTime + 3)
+		discussion.createPost(user, "comment5", currentTime + 4)
+		discussion.createPost(user, "comment6", currentTime + 5)
 		Utils.save(discussion, true)
 	
 		curious.addDiscussion(discussion)
@@ -712,7 +710,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 				+ "Entry(date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:-1, comment:repeat daily, repeatType:1, repeatEnd:null)" \
 				+ "Entry(date:2010-07-01T23:32:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat daily, repeatType:1, repeatEnd:null)"
 
-		def c = 0;
+		def c = 0
 
 		for (e in results) {
 			def v = e.contentString()

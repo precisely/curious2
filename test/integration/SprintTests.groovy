@@ -523,6 +523,7 @@ class SprintTests extends CuriousTestCase {
 		assert sprintList.size() == 2
 		assert sprintList[0].id == dummySprint1.id || dummySprint2.id
 		assert sprintList[1].id == dummySprint2.id || dummySprint1.id
+		assert sprintList[0].id != sprintList[1].id
 	}
 
 	@Test
@@ -607,7 +608,9 @@ class SprintTests extends CuriousTestCase {
 		List participantsList = dummySprint1.getParticipants(max, offset)
 
 		assert participantsList.size() == 2
-		assert participantsList[0].id == user4.id
-		assert participantsList[1].id == user5.id
+		def userIds = [user4.id, user5.id]
+		assert participantsList[0].id in userIds
+		assert participantsList[1].id in userIds
+		assert participantsList[0].id != participantsList[1].id
 	}
 }

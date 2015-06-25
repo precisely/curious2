@@ -33,7 +33,7 @@ class SharedTagGroup extends TagGroup {
 	void updateData(String description, Long groupId, Map args = [:]) {
 		if (description) {
 			this.description = description
-			this.save()
+			Utils.save(this, true)
 		}
 	}
 	

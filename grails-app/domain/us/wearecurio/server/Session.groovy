@@ -73,7 +73,7 @@ class Session {
 		session.setExpires(nowTime + EXPIRE_TIME)
 		session.setUserId(user.getId())
 		
-		session.save()
+		Utils.save(session, true)
 
 		return session
 	}

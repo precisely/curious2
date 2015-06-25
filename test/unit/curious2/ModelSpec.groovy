@@ -16,6 +16,8 @@ class ModelSpec extends Specification {
     def cleanup() {
     }
 
+	@Test
     void "test something"() {
+		assert true
     }
 }

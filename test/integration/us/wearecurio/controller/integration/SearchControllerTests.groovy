@@ -36,6 +36,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		params.put("birthdate", "12/1/1991")
 
 		user2 = User.create(params)
+		
 		Utils.save(user2, true)
 
 		params.put("username", "testuser3")
@@ -111,8 +112,8 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
-		assert controller.response.json.listItems[0].id == user2.id
-		assert controller.response.json.listItems[1].id == user3.id
+		assert (controller.response.json.listItems[0].id == user2.id && controller.response.json.listItems[1].id == user3.id) || \
+				(controller.response.json.listItems[0].id == user3.id && controller.response.json.listItems[1].id == user2.id)
 	}
 
 	@Test

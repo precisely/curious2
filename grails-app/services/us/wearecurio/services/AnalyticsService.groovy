@@ -63,7 +63,7 @@ class AnalyticsService {
 			def property = TagProperties.createOrLookup(userId, tagId)
 			// Set the is_event value of the user-tag property.
 			// This will save the property.
-			property.classifyAsEvent().save()
+			Utils.save(property.classifyAsEvent())
 		}
 	}
 

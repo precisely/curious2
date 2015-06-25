@@ -455,7 +455,7 @@ class LoginController extends SessionController {
 			pushNotificationDeviceInstance.deviceType = params.int('deviceType')
 			pushNotificationDeviceInstance.userId = user.id
 			if (pushNotificationDeviceInstance.validate()) {
-				pushNotificationDeviceInstance.save()
+				Utils.save(pushNotificationDeviceInstance, true)
 				debug "Registering device for push notification"
 			}
 			else {

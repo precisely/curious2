@@ -218,10 +218,14 @@ class TagGroupTests extends CuriousTestCase {
 		List tagGroupList = TagGroup.getTagGroupsForUserGroups([curious, announce])
 
 		assert tagGroupList.size() == 2
-		assert tagGroupList[0].id == tagGroupC.id
-		assert tagGroupList[0].description == tagGroupC.description
-		assert tagGroupList[1].id == tagGroupD.id
-		assert tagGroupList[1].description == tagGroupD.description
+		def tagGroupIds = [ tagGroupC.id, tagGroupD.id ]
+		assert tagGroupList[0].id.longValue() in tagGroupIds
+		assert tagGroupList[1].id.longValue() in tagGroupIds
+		assert tagGroupList[0].id != tagGroupList[1].id
+		def tagGroupDescriptions = [ tagGroupC.description, tagGroupD.description ] 
+		assert tagGroupList[0].description in tagGroupDescriptions
+		assert tagGroupList[1].description in tagGroupDescriptions
+		assert tagGroupList[0].description != tagGroupList[1].description
 	}
 
 	@Test
@@ -240,8 +244,10 @@ class TagGroupTests extends CuriousTestCase {
 		List tagGroupList = TagGroup.getTagGroupsByUser(user2.id)
 
 		assert tagGroupList.size() == 2
-		assert tagGroupList[0].id == tagGroupA.id
-		assert tagGroupList[1].id == tagGroupB.id
+		def tagGroupIds = [ tagGroupA.id, tagGroupB.id ]
+		assert tagGroupList[0].id.longValue() in tagGroupIds
+		assert tagGroupList[1].id.longValue() in tagGroupIds
+		assert tagGroupList[0].id != tagGroupList[1].id
 	}
 
 	@Test
@@ -273,8 +279,10 @@ class TagGroupTests extends CuriousTestCase {
 		List systemTagGroups = TagGroup.getSystemTagGroups()
 
 		assert systemTagGroups.size() == 2
-		assert systemTagGroups[0].id == systemTagGroup1.id
-		assert systemTagGroups[1].id == systemTagGroup2.id
+		def tagGroupIds = [ systemTagGroup1.id, systemTagGroup2.id ]
+		assert systemTagGroups[0].id.longValue() in tagGroupIds
+		assert systemTagGroups[1].id.longValue() in tagGroupIds
+		assert systemTagGroups[0].id != systemTagGroups[1].id
 	}
 
 	@Test

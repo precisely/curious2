@@ -266,11 +266,15 @@ class Discussion {
 			and {
 				eq("discussionId", getId())
 			}
-			order("plotDataId", "desc")
-			order("created", "desc")
+			order("created", "asc")
 		}
 
 		return posts
+	}
+
+	def createPost(User user, String message, Date createTime) {
+		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'" + ", createTime:" + createTime
+		return createPost(user, null, message, createTime)
 	}
 
 	def createPost(User user, String message) {
@@ -278,14 +282,15 @@ class Discussion {
 		return createPost(user, null, message)
 	}
 
-	def createPost(String name, String email, String site, Long plotDataId, String comment) {
-		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
-		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment)
+	def createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
+		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", createTime:" + createTime
+		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment, createTime)
 	}
 
-	def createPost(User author, Long plotDataId, String comment) {
-		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment
-		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, null)
+	def createPost(User author, Long plotDataId, String comment, Date createTime = null) {
+		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + ", createTime:" + createTime
+		if (createTime == null) createTime = new Date()
+		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, createTime)
 		Utils.save(this, true) // write new updated state
 		Utils.save(post, true)
 		
@@ -302,7 +307,7 @@ class Discussion {
 			} else {
 				this.notifyParticipants(post, false)
 			}
-			Utils.save(this)
+			Utils.save(this, true)
 		} else {
 			this.notifyParticipants(post, false)
 		}
@@ -405,7 +410,7 @@ class Discussion {
 			type: "dis"
 		]
 	}
-
+	
 	Map getJSONModel(Map args) {
 		Long totalPostCount = 0
 		DiscussionPost firstPostInstance = getFirstPost()

@@ -22,6 +22,7 @@ import java.util.regex.Pattern
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import us.wearecurio.utility.Utils
 
 import org.joda.time.*
 import org.junit.Before
@@ -52,20 +53,20 @@ class EntryGroup {
 	void add(Entry e) {
 		this.addToEntries(e)
 		
-		this.save()
+		Utils.save(this)
 	}
 	
 	void remove(Entry e) {
 		this.removeFromEntries(e)
 			
-		this.save()
+		Utils.save(this)
 	}
 	
 	void resort(Entry e) {
 		this.removeFromEntries(e)
 		this.addToEntries(e)
 		
-		this.save()
+		Utils.save(this)
 	}
 	
 	boolean isEmpty() {

@@ -19,8 +19,8 @@ class Tag implements Serializable, Comparable {
 
 	public static final int MAXLENGTH = 100
 
-	public static BoundedCache<String, Tag> tagCache = new BoundedCache<String, Tag>(100000)
-	public static BoundedCache<String, Tag> tagIdCache = new BoundedCache<Long, Tag>(100000)
+	public static BoundedCache<String, Tag> tagCache = Collections.synchronizedMap(new BoundedCache<String, Tag>(100000))
+	public static BoundedCache<String, Tag> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Tag>(100000))
 	
 	static constraints = { description(maxSize:MAXLENGTH) }
 
@@ -32,8 +32,10 @@ class Tag implements Serializable, Comparable {
 
 	static {
 		Utils.registerTestReset {
-			tagCache = new BoundedCache<String, Tag>()
-			tagIdCache = new BoundedCache<String, Tag>()
+			synchronized(tagCache) {
+				tagCache = Collections.synchronizedMap(new BoundedCache<String, Tag>())
+				tagIdCache = Collections.synchronizedMap(new BoundedCache<String, Tag>())
+			}
 		}
 	}
 
@@ -70,7 +72,8 @@ class Tag implements Serializable, Comparable {
 		
 		tag = Tag.get(id)
 		
-		addToCache(tag)
+		if (tag)
+			addToCache(tag)
 		
 		tag
 	}

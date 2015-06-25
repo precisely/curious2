@@ -23,6 +23,8 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
+import us.wearecurio.utility.Utils
+
 
 class FitBitDataService extends DataService {
 
@@ -302,7 +304,7 @@ class FitBitDataService extends DataService {
 				log.debug("Subscription failed.")
 				result.success = false
 				account.removeAccessToken()			// confirms that subscription is not successful.
-				account.save()
+				Utils.save(account, true)
 		}
 
 		result

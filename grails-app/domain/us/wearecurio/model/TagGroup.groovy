@@ -17,14 +17,14 @@ class TagGroup extends GenericTagGroup {
 	}
 
 	// Cache holder to cache list of tag descriptions for a tag group
-	static BoundedCache<Long, List<String>> tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
+	static BoundedCache<Long, List<String>> tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
 	// Cache holder to cache list of tag ids for a tag group
-	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+	static BoundedCache<Long, List<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
 
 	static {
 		Utils.registerTestReset {
-			tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
-			tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+			tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
+			tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
 		}
 	}
 
@@ -393,7 +393,7 @@ class TagGroup extends GenericTagGroup {
 		return TagGroup.withTransaction {
 			GenericTagGroup tagGroupInstance = type.newInstance()
 			tagGroupInstance.description = tagGroupName
-			tagGroupInstance.save()
+			Utils.save(tagGroupInstance, true)
 			return tagGroupInstance
 		}
 	}

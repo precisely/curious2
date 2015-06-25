@@ -23,7 +23,7 @@ class WildcardTagGroupTests extends CuriousTestCase {
 	@Before
 	void setUp() {
 		super.setUp()
-
+		
 		Date currentTime = new Date()
 		Date baseDate = new Date() - 5
 		String timeZone = "America/Los_Angeles"
