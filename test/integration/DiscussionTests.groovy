@@ -80,9 +80,6 @@ class DiscussionTests extends CuriousTestCase {
 		Discussion discussion = Discussion.create(user, "testCreateDiscussion", testGroup)
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
-		//Utils.save(discussion, true)
-		//Utils.save(post, true)
-		
 		post = post
 		
 		elasticSearchService.index()		
@@ -93,7 +90,6 @@ class DiscussionTests extends CuriousTestCase {
 		  query_string(query: "name: " + discussion.name)
 		}
 		
-		System.out.println "results.searchResults[0].id: " + results.searchResults[0].id + " discussion.id: " + discussion.id.toString()
 		assert results.searchResults[0].id == discussion.id
 		assert results.searchResults[0].name == discussion.name
 	}
@@ -195,8 +191,7 @@ class DiscussionTests extends CuriousTestCase {
 		
 		Thread.sleep(2000)
 		
-		// test elastic search here
-		
+		// test elastic search here		
 		def results = Discussion.search(searchType:'query_and_fetch') {
 		  bool {
 		      must {
