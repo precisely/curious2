@@ -10,13 +10,15 @@ import us.wearecurio.model.Model.Visibility
 class DiscussionPost {
 	
 	private static def log = LogFactory.getLog(this)
-
+	public static final Integer FIRST_POST_BIT = 1
+	
 	Long discussionId
 	Long authorUserId
 	Date created
 	Date updated
 	Long plotDataId
 	String message
+	Integer flags = 0
 	
 	public static final int MAXMESSAGELEN = 50000
 	
@@ -43,7 +45,7 @@ class DiscussionPost {
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message']
+		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
 	}
 	
 	def getJSONDesc() {
