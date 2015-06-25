@@ -50,7 +50,7 @@ class EntryFactory {
 			user: user,
 			amount: entry_params['amount'] ?: DEFAULT_AMOUNT,
 			durationType: durationType,
-			repeatType: repeatType,
+			repeat: repeatType,
 			repeatEnd: entry_params['repeatEnd'] ?: DEFAULT_REPEAT_END,
 			datePrecisionSecs: entry_params['datePrecisionSecs'] ?: Entry.DEFAULT_DATEPRECISION_SECS,
 			units: units,

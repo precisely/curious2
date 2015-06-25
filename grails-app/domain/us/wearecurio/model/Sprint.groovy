@@ -11,7 +11,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
@@ -382,7 +382,7 @@ class Sprint {
 						lt("date", startDate + 1)
 					}
 					eq("tag", entry.getTag())
-					eq("repeatType", entry.getRepeatType())
+					eq("repeat", entry.repeat)
 					isNull("setIdentifier")
 				}
 			}

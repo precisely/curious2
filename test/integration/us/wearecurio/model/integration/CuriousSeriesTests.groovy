@@ -6,12 +6,13 @@ import static org.junit.Assert.*
 
 import us.wearecurio.model.CuriousSeries
 import us.wearecurio.model.Entry
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Stats
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.factories.EntryFactory
 import us.wearecurio.factories.CuriousSeriesFactory
-import us.wearecurio.integration.CuriousTestCase;
+import us.wearecurio.integration.CuriousTestCase
 
 import org.apache.commons.logging.LogFactory
 import java.text.SimpleDateFormat
@@ -419,10 +420,10 @@ class CuriousSeriesTests extends CuriousTestCase {
 	
 	@Test
 	void testDailyRepeat() {
-		// If entry.repeatType == Entry.RepeatType.DAILY copy `amount` from `date` to
+		// If entry.repeat == RepeatType.DAILY copy `amount` from `date` to
 		//	 min(today's date, `repeat_end`).
 		def entry = EntryFactory.make()
-		entry.repeatType = Entry.RepeatType.DAILY
+		entry.repeat = RepeatType.DAILY
 		entry.repeatEnd = EntryFactory.START_DAY + 3
 		def series = CuriousSeries.create([entry])
 		assert series.size() == 4
@@ -439,9 +440,9 @@ class CuriousSeriesTests extends CuriousTestCase {
 	@Test
 	void testRemindDaily() {
 		// If repeatType == REMINDDAILY, treat it like a regular entry.
-		def entries = EntryFactory.makeN(4, { it }, [repeatType: Entry.RepeatType.REMINDDAILY])
+		def entries = EntryFactory.makeN(4, { it }, [repeatType: RepeatType.REMINDDAILY])
 		for (i in [0, 1, 2, 3]) {
-			assert entries[i].repeatType == Entry.RepeatType.REMINDDAILY
+			assert entries[i].repeatType == RepeatType.REMINDDAILY
 		}
 		def series = CuriousSeries.create(entries)
 		assert series.size() == 4
@@ -454,9 +455,9 @@ class CuriousSeriesTests extends CuriousTestCase {
 	@Test
 	void testRepeatTypeConcreteGhostDaily() {
 		// If repeatType == DAILYCONCRETEGHOST, treat it like a regular entry.
-		def entries = EntryFactory.makeN(4, { it }, [repeatType: Entry.RepeatType.DAILYCONCRETEGHOST])
+		def entries = EntryFactory.makeN(4, { it }, [repeatType: RepeatType.DAILYCONCRETEGHOST])
 		for (i in [0, 1, 2, 3]) {
-			assert entries[i].repeatType == Entry.RepeatType.DAILYCONCRETEGHOST
+			assert entries[i].repeatType == RepeatType.DAILYCONCRETEGHOST
 		}
 		def series = CuriousSeries.create(entries)
 		assert series.size() == 4
@@ -471,20 +472,20 @@ class CuriousSeriesTests extends CuriousTestCase {
 		// Generate 10 valid entries, turn 6 of them into ignorable repeat types.
 		//	 Create the series.  Then were should only have 4 valid entries.
 		
-		def entries = EntryFactory.makeN(10, { it }, [repeatType: Entry.RepeatType.DAILYCONCRETEGHOST])
+		def entries = EntryFactory.makeN(10, { it }, [repeatType: RepeatType.DAILYCONCRETEGHOST])
 		assert entries.size() == 10
-		entries[0].repeatType = Entry.RepeatType.DAILYGHOST
-		entries[1].repeatType = Entry.RepeatType.REMINDDAILYGHOST
-		entries[2].repeatType = Entry.RepeatType.REMINDWEEKLYGHOST
-		entries[3].repeatType = Entry.RepeatType.CONTINUOUS
-		entries[4].repeatType = Entry.RepeatType.CONTINUOUSGHOST
-		entries[5].repeatType = Entry.RepeatType.DAILYCONCRETEGHOSTGHOST
+		entries[0].repeat = RepeatType.DAILYGHOST
+		entries[1].repeat = RepeatType.REMINDDAILYGHOST
+		entries[2].repeat = RepeatType.REMINDWEEKLYGHOST
+		entries[3].repeat = RepeatType.CONTINUOUS
+		entries[4].repeat = RepeatType.CONTINUOUSGHOST
+		entries[5].repeat = RepeatType.DAILYCONCRETEGHOSTGHOST
 		
-		entries[6].repeatType = null
-		entries[7].repeatType = Entry.RepeatType.DAILY
+		entries[6].repeat = null
+		entries[7].repeat = RepeatType.DAILY
 		entries[7].repeatEnd = EntryFactory.START_DAY
-		entries[8].repeatType = Entry.RepeatType.REMINDDAILY
-		entries[9].repeatType = Entry.RepeatType.DAILYCONCRETEGHOST
+		entries[8].repeat = RepeatType.REMINDDAILY
+		entries[9].repeat = RepeatType.DAILYCONCRETEGHOST
 		def series = CuriousSeries.create(entries)
 		assert Stats.sizeNotNull(series.values) == 4
 	}

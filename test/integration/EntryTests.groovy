@@ -9,6 +9,7 @@ import org.junit.Test
 
 import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Entry
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
@@ -1017,7 +1018,7 @@ class EntryTests extends CuriousTestCase {
 		
 		assert updated == entry
 		
-		entry.getRepeatType().equals(Entry.RepeatType.CONTINUOUSGHOST)
+		entry.getRepeatType().equals(RepeatType.CONTINUOUSGHOST)
 	}
 	
 	@Test
@@ -1704,12 +1705,12 @@ class EntryTests extends CuriousTestCase {
 		
 		testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
 			assert it.amount.intValue() == 75
-			assert (it.repeatType & Entry.RepeatType.GHOST_BIT) != 0
+			assert (it.repeatType & RepeatType.GHOST_BIT) != 0
 		}
 
 		testEntries(user, timeZone, baseDate, currentTime) {
 			assert it.amount.intValue() == 75
-			assert (it.repeatType & Entry.RepeatType.GHOST_BIT) != 0
+			assert (it.repeatType & RepeatType.GHOST_BIT) != 0
 		}
 	}
 
@@ -1721,12 +1722,12 @@ class EntryTests extends CuriousTestCase {
 		
 		testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
 			assert it.amount.intValue() == 1
-			assert (it.repeatType & Entry.RepeatType.GHOST_BIT) != 0
+			assert (it.repeatType & RepeatType.GHOST_BIT) != 0
 		}
 
 		testEntries(user, timeZone, baseDate, currentTime) {
 			assert it.amount.intValue() == 1
-			assert (it.repeatType & Entry.RepeatType.GHOST_BIT) != 0
+			assert (it.repeatType & RepeatType.GHOST_BIT) != 0
 		}
 	}
 
@@ -1737,7 +1738,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('repeat')
-		assert res['repeatType'] == Entry.RepeatType.DAILYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.DAILYCONCRETEGHOST
 		assert !res['amounts'][0].getUnits()
 
 		res = Entry.parse(currentTime, timeZone, "bread repeat daily at 4pm foo", baseDate, true)
@@ -1745,7 +1746,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('foo repeat')
-		assert res['repeatType'] == Entry.RepeatType.DAILYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.DAILYCONCRETEGHOST
 		assert !res['amounts'][0].getUnits()
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices repeat daily at 4pm", baseDate, true)
@@ -1753,7 +1754,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('repeat')
-		assert res['repeatType'] == Entry.RepeatType.DAILYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.DAILYCONCRETEGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices daily at 4pm", baseDate, true)
@@ -1761,7 +1762,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('repeat')
-		assert res['repeatType'] == Entry.RepeatType.DAILYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.DAILYCONCRETEGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices repeat at 4pm", baseDate, true)
@@ -1769,7 +1770,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('repeat')
-		assert res['repeatType'] == Entry.RepeatType.DAILYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.DAILYCONCRETEGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices weekly at 4pm", baseDate, true)
@@ -1777,7 +1778,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('repeat weekly')
-		assert res['repeatType'] == Entry.RepeatType.WEEKLYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.WEEKLYCONCRETEGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices repeat weekly at 4pm", baseDate, true)
@@ -1785,7 +1786,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('repeat weekly')
-		assert res['repeatType'] == Entry.RepeatType.WEEKLYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.WEEKLYCONCRETEGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread weekly", baseDate, true)
@@ -1793,7 +1794,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('repeat weekly')
-		assert res['repeatType'] == Entry.RepeatType.WEEKLYCONCRETEGHOST
+		assert res['repeatType'] == RepeatType.WEEKLYCONCRETEGHOST
 		assert !res['amounts'][0].getUnits()
 		
 		res = Entry.parse(currentTime, timeZone, "bread remind at 4pm", baseDate, true)
@@ -1801,7 +1802,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('remind')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
+		assert res['repeatType'] == RepeatType.REMINDDAILYGHOST
 		assert !res['amounts'][0].getUnits()
 
 		res = Entry.parse(currentTime, timeZone, "bread remind daily at 4pm foo", baseDate, true)
@@ -1809,7 +1810,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('foo remind')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
+		assert res['repeatType'] == RepeatType.REMINDDAILYGHOST
 		assert !res['amounts'][0].getUnits()
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices remind daily at 4pm", baseDate, true)
@@ -1817,7 +1818,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('remind')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
+		assert res['repeatType'] == RepeatType.REMINDDAILYGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices remind at 4pm", baseDate, true)
@@ -1825,7 +1826,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('remind')
-		assert res['repeatType'] == Entry.RepeatType.REMINDDAILYGHOST
+		assert res['repeatType'] == RepeatType.REMINDDAILYGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 
 		res = Entry.parse(currentTime, timeZone, "bread remind weekly", baseDate, true)
@@ -1833,7 +1834,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 1
 		assert res['comment'].equals('remind weekly')
-		assert res['repeatType'] == Entry.RepeatType.REMINDWEEKLYGHOST
+		assert res['repeatType'] == RepeatType.REMINDWEEKLYGHOST
 		assert !res['amounts'][0].getUnits()
 		
 		res = Entry.parse(currentTime, timeZone, "bread 8 slices remind weekly", baseDate, true)
@@ -1841,7 +1842,7 @@ class EntryTests extends CuriousTestCase {
 		assert res['baseTag'].getDescription().equals('bread')
 		assert res['amounts'][0].getAmount().intValue() == 8
 		assert res['comment'].equals('remind weekly')
-		assert res['repeatType'] == Entry.RepeatType.REMINDWEEKLYGHOST
+		assert res['repeatType'] == RepeatType.REMINDWEEKLYGHOST
 		assert res['amounts'][0].getUnits().equals('slices')
 		
 	}

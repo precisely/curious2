@@ -28,6 +28,7 @@ import us.wearecurio.units.UnitGroupMap.UnitRatio
 import java.util.ArrayList
 import java.util.HashSet;
 import java.util.Map
+import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import java.util.LinkedList
 import java.math.MathContext
@@ -60,7 +61,6 @@ class Entry implements Comparable {
 		date(nullable:true)
 		datePrecisionSecs(nullable:true)
 		amountPrecision(nullable:true)
-		repeatType(nullable:true)
 		repeatEnd(nullable:true)
 		units(maxSize:MAXUNITSLENGTH)
 		comment(maxSize:MAXCOMMENTLENGTH)
@@ -68,7 +68,8 @@ class Entry implements Comparable {
 		durationType(nullable:true)
 		timeZoneId(nullable:true)
 		setIdentifier(nullable:true)
-		userId(nullable: true)
+		userId(nullable:true)
+		repeat(nullable:true)
 	}
 
 	static mapping = {
@@ -78,7 +79,6 @@ class Entry implements Comparable {
 		userId column:'user_id', index:'user_id_index'
 		date column:'date', index:'date_index'
 		tag column:'tag_id', index:'tag_id_index'
-		repeatType column:'repeat_type', index:'repeat_type_index'
 		repeatEnd column:'repeat_end', index:'repeat_end_index'
 		durationType column:'duration_type', index:'duration_type_index'
 		setIdentifier column:'set_identifier', index:'set_identifier_index'
@@ -86,140 +86,6 @@ class Entry implements Comparable {
 	
 	static belongsTo = [ group : EntryGroup ]
 
-	// NOTE: Unghosted repeat entries are repeated in an unghosted manner all
-	// the way until their repeatEnd
-	// but unghosted remind entries are only unghosted on their start date, and
-	// not on subsequent dates
-	
-	// new end-of-entry repeat indicators:
-	// repeat daily
-	// delete repeat indicator to end repeat sequence
-	// OR: repeat end
-	
-	// like a ghost, but it appears in plot data, it is just a repetition of a
-	// prior
-	// entry, must be activated to edit
-	
-	static enum RepeatType { // IMPORTANT: there must be ghost entries
-		// for all non-ghost entries and vice-versa
-		// if you add more remind types, please edit the sql in
-		// RemindEmailService
-		DAILY(DAILY_BIT, 24L * 60L * 60000), WEEKLY(WEEKLY_BIT,
-				7L * 24L * 60L * 60000), DAILYGHOST(DAILY_BIT | GHOST_BIT,
-				24L * 60L * 60000), WEEKLYGHOST(WEEKLY_BIT | GHOST_BIT,
-				7L * 24L * 60L * 60000), REMINDDAILY(REMIND_BIT | DAILY_BIT,
-				24L * 60L * 60000), REMINDWEEKLY(REMIND_BIT | WEEKLY_BIT,
-				7L * 24L * 60L * 60000), REMINDDAILYGHOST(REMIND_BIT
-				| DAILY_BIT | GHOST_BIT, 24L * 60L * 60000), REMINDWEEKLYGHOST(
-				REMIND_BIT | WEEKLY_BIT | GHOST_BIT, 7L * 24L * 60L * 60000),
-		
-		CONTINUOUS(CONTINUOUS_BIT, 1), CONTINUOUSGHOST(CONTINUOUS_BIT
-				| GHOST_BIT, 1),
-		
-		DAILYCONCRETEGHOST(CONCRETEGHOST_BIT | DAILY_BIT, 24L * 60L * 60000), DAILYCONCRETEGHOSTGHOST(
-				CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT, 24L * 60L * 60000), WEEKLYCONCRETEGHOST(
-				CONCRETEGHOST_BIT | WEEKLY_BIT, 7L * 24L * 60L * 60000), WEEKLYCONCRETEGHOSTGHOST(
-				CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT,
-				7L * 24L * 60L * 60000),
-		
-		GHOST(GHOST_BIT, 0), NOTHING(0, 0),
-		
-		DURATIONGHOST(GHOST_BIT | DURATION_BIT, 0);
-		
-		static final int DAILY_BIT = 1
-		static final int WEEKLY_BIT = 2
-		static final int REMIND_BIT = 4
-		static final int CONTINUOUS_BIT = 0x0100
-		static final int GHOST_BIT = 0x0200
-		static final int CONCRETEGHOST_BIT = 0x0400
-		static final int DURATION_BIT = 0x0800
-	
-		final Integer id
-		final long duration
-		
-		private static final Map<Integer, RepeatType> map = new HashMap<Integer, RepeatType>()
-		
-		static {
-			for (RepeatType t : RepeatType.values()) {
-				map.put(t.getId(), t)
-			}
-		}
-		
-		static RepeatType get(int id) {
-			return map.get(id)
-		}
-		
-		RepeatType(int id, long duration) {
-			this.id = id
-			this.duration = duration
-		}
-		
-		int getId() {
-			return id
-		}
-		
-		boolean isGhost() {
-			return (this.id & GHOST_BIT) > 0
-		}
-		
-		boolean isConcreteGhost() {
-			return (this.id & CONCRETEGHOST_BIT) > 0
-		}
-		
-		boolean isAnyGhost() {
-			return (this.id & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
-		}
-		
-		boolean isContinuous() {
-			return (this.id & CONTINUOUS_BIT) > 0
-		}
-		
-		boolean isDaily() {
-			return (this.id & DAILY_BIT) > 0
-		}
-		
-		boolean isWeekly() {
-			return (this.id & WEEKLY_BIT) > 0
-		}
-		
-		boolean isReminder() {
-			return (this.id & REMIND_BIT) > 0
-		}
-		
-		boolean isTimed() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
-		}
-		
-		boolean isRepeat() {
-			return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
-		}
-		
-		RepeatType unGhost() {
-			return RepeatType.get(this.id & (~GHOST_BIT))
-		}
-		
-		RepeatType toggleGhost() {
-			if (isGhost())
-				return RepeatType.get(this.id & (~GHOST_BIT))
-			return RepeatType.get(this.id | GHOST_BIT)
-		}
-		
-		RepeatType makeGhost() {
-			return RepeatType.get(this.id | GHOST_BIT)
-		}
-		
-		RepeatType makeConcreteGhost() {
-			return RepeatType.get(this.id | CONCRETEGHOST_BIT)
-		}
-		
-		RepeatType forUpdate() {
-			if (isReminder())
-				return RepeatType.get(this.id
-						& (~(GHOST_BIT | CONCRETEGHOST_BIT)))
-			return this;
-		}
-	}
-	
 	protected static def DAILY_IDS = [
 		RepeatType.DAILY.getId(),
 		RepeatType.DAILYCONCRETEGHOST.getId(),
@@ -377,8 +243,6 @@ class Entry implements Comparable {
 		DurationType.END, DurationType.GHOSTEND, DurationType.GENERATEDEND, DurationType.GENERATEDSPRINTEND
 	]
 	
-	static transients = [ 'groupEntries' ]
-	
 	Long userId
 	Date date
 	Integer timeZoneId
@@ -388,15 +252,21 @@ class Entry implements Comparable {
 	Integer amountPrecision
 	String units
 	String comment
-	RepeatType repeatType
+	RepeatType repeat
 	Date repeatEnd
 	Tag baseTag
 	DurationType durationType
 	Identifier setIdentifier
 	
+	static embedded = [ 'repeat' ] // store repeatType as integer rather than a reference to an entity
+	
+	static transients = [ 'repeatType', 'groupEntries' ]
+	
+	RepeatType getRepeatType() { repeat }
+	
 	boolean isGhost() {
-		if (repeatType == null) return false
-		return repeatType.isGhost()
+		if (repeat == null) return false
+		return repeat.isGhost()
 	}
 	
 	String fetchSuffix() { 
@@ -522,7 +392,7 @@ class Entry implements Comparable {
 					eq("amount", m.amount)
 					eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
 					eq("units", m.units)
-					eq("repeatType", repeatType)
+					eq("repeat", repeatType)
 				}
 			}
 	
@@ -620,7 +490,7 @@ class Entry implements Comparable {
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
-				repeatType: m['repeatType'],
+				repeat: m['repeatType'],
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,
 				durationType:durationType,
@@ -749,7 +619,7 @@ class Entry implements Comparable {
 			return false
 
 		return m['datePrecisionSecs'] == this.datePrecisionSecs && amount == m['amount'] \
-			&& comment == (m['comment'] ?: '') && repeatType == m['repeatType'] && units == (m['units'] ?: '') \
+			&& comment == (m['comment'] ?: '') && repeat.type == m['repeatType'].type && units == (m['units'] ?: '') \
 			&& amountPrecision == (m['amountPrecision'] ?: 3)
 
 	}
@@ -760,7 +630,7 @@ class Entry implements Comparable {
 		m['tag'] = this.tag
 		m['baseTag'] = this.baseTag
 		m['units'] = this.units
-		m['repeatType'] = this.repeatType
+		m['repeatType'] = this.repeat
 		m['date'] = this.date
 		m['timeZoneName'] = this.fetchTimeZoneName()
 		m['datePrecisionSecs'] = this.datePrecisionSecs
@@ -862,7 +732,7 @@ class Entry implements Comparable {
 	 */
 	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true) {
 		log.debug "Entry.updateSingle() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
-		def repeatType = entry.getRepeatType()
+		RepeatType repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
 			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture)
 			
@@ -1112,7 +982,7 @@ class Entry implements Comparable {
 						// look for entry that already exists one day later
 						// new date is one day after current baseDate
 
-						String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeatType.id in (:repeatIds) order by entry.date desc"
+						String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeat.type in (:repeatIds) order by entry.date desc"
 						def entries = Entry.executeQuery(queryStr, [desc:m['tag'].getDescription(), entryDate:m['date'], userId:entry.getUserId(), repeatIds:repeatTypes], [max: 1])
 
 						Entry e = entries[0]
@@ -1783,9 +1653,9 @@ class Entry implements Comparable {
 	}
 
 	protected createRepeat(EntryStats stats) {
-		if (this.repeatType == null) return
+		if (this.repeat == null) return
 
-		if (this.repeatType.isContinuous()) {
+		if (this.repeat.isContinuous()) {
 			// search for matching continuous tag
 			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.repeat_type in (:repeatIds)"
 
@@ -1819,8 +1689,8 @@ class Entry implements Comparable {
 	}
 
 	protected Entry unGhost(EntryStats stats) {
-		if (this.repeatType?.isGhost()) {
-			this.repeatType = this.repeatType.toggleGhost()
+		if (this.repeat?.isGhost()) {
+			this.repeat = this.repeat.toggleGhost()
 
 			this.durationType = durationType?.unGhost()
 			this.processAndSave(stats)
@@ -1873,10 +1743,10 @@ class Entry implements Comparable {
 		long diff = now - dayStartTime
 		long thisDiff = this.date.getTime() - dayStartTime
 
-		if (this.repeatType == null)
+		if (this.repeat == null)
 			return null
 
-		if (!this.repeatType.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
+		if (!this.repeat.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
 			// activate this entry
 
 			this.unGhost(stats)
@@ -1893,7 +1763,7 @@ class Entry implements Comparable {
 		m['durationType'] = this.durationType?.unGhost()
 		m['baseTag'] = baseTag
 
-		if (this.repeatType.isContinuous()) {
+		if (this.repeat.isContinuous()) {
 			// continuous tags create new tags based on the template
 			m['comment'] = ''
 			m['repeatType'] = null
@@ -1926,7 +1796,7 @@ class Entry implements Comparable {
 	}
 
 	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
-		if (this.repeatType == null)
+		if (this.repeat == null)
 			return null
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
@@ -1958,11 +1828,9 @@ class Entry implements Comparable {
 		m['units'] = this.units
 		m['durationType'] = this.durationType?.unGhost()
 		m['baseTag'] = baseTag
-		m['repeatType'] = this.repeatType
+		m['repeatType'] = this.repeat
 		m['setName'] = setName
-
 		m['comment'] = this.comment
-		m['repeatType'] = this.repeatType
 		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 		log.debug "activateTemplateEntrySingle(), data: ${m['date']} and currentTimeZone Calculated: $currentTimeZone"
 		m['datePrecisionSecs'] = this.datePrecisionSecs
@@ -1974,7 +1842,7 @@ class Entry implements Comparable {
 	}
 
 	Entry activateTemplateEntry(Long forUserId, Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats, String setName) {
-		if (this.repeatType == null)
+		if (this.repeat == null)
 			return null
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
@@ -2029,7 +1897,7 @@ class Entry implements Comparable {
 		 */
 		boolean updateRepeatType = false
 		if (m['repeatType'] != null && this.date != m['date'] || (!Utils.equals(m['amount'], this.amount))
-				|| (!Utils.equals(this.repeatType, m['repeatType']))) {
+				|| (!Utils.equals(this.repeat, m['repeatType']))) {
 			updateRepeatType = true
 		}
 
@@ -2041,7 +1909,7 @@ class Entry implements Comparable {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		setRepeatType(m['repeatType']?.forUpdate())
+		setRepeat(m['repeatType']?.forUpdate())
 		setSetIdentifier(Identifier.look(m['setName']))
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
@@ -2068,7 +1936,7 @@ class Entry implements Comparable {
 	 * Fetch methods - for getting different subsets of entries
 	 */
 	static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
-		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeatType is null) and entry.repeatType.id in (:repeatIds)"
+		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeat is null) and entry.repeat.type in (:repeatIds)"
 
 		def entries = Entry.executeQuery(continuousQuery, [userId:userId, repeatIds:CONTINUOUS_IDS])
 
@@ -2138,27 +2006,27 @@ class Entry implements Comparable {
 
 			// use JodaTime to figure out the correct time in the current time zone
 			desc['timeZoneName'] = timeZoneName
-			if (entry.repeatType != null) { // adjust dateTime for repeat entries
+			if (entry.repeat != null) { // adjust dateTime for repeat entries
 				def date = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
 				if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
 					continue
 				desc['date'] = date
 			}
-			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeatType != null) { // repeat entry on a future date
+			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeat != null) { // repeat entry on a future date
 				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
-					desc['repeatType'] = entry.repeatType.id | RepeatType.GHOST_BIT // no longer ghost repeat entries, but do ghost remind
+					desc['repeatType'] = entry.repeat.type | RepeatType.GHOST_BIT // no longer ghost repeat entries, but do ghost remind
 					/* desc['amount'] = null
 					 desc['amountPrecision'] = -1 */
 				}
-			} else if (entry.repeatType != null) {
-				desc['repeatType'] = entry.repeatType.id
+			} else if (entry.repeat != null) {
+				desc['repeatType'] = entry.repeat.type
 				/* no longer nullify amount for remind entries
-				 if (((entry.repeatType.id & RepeatType.GHOST_BIT) != 0) && ((entry.repeatType.id & RepeatType.REMIND_BIT) != 0)) {
+				 if (((entry.repeat.type & RepeatType.GHOST_BIT) != 0) && ((entry.repeat.type & RepeatType.REMIND_BIT) != 0)) {
 				 desc['amount'] = null
 				 desc['amountPrecision'] = -1
 				 }*/
 			} else
-				desc['repeatType'] = entry.repeatType?.id
+				desc['repeatType'] = entry.repeat?.type
 			desc['setName'] = entry.setIdentifier?.toString()
 			timedResults.add(desc)
 		}
@@ -2184,7 +2052,7 @@ class Entry implements Comparable {
 			if (!resultTagIds.contains(entry.getTag().getId())) {
 				def desc = entry.getJSONDesc()
 				desc['date'] = baseDate
-				desc['repeatType'] = entry.repeatType?.id
+				desc['repeatType'] = entry.repeat?.type
 				desc['timeZoneName'] = timeZoneName
 				results.add(desc)
 			}
@@ -3290,7 +3158,7 @@ class Entry implements Comparable {
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
 			comment:comment,
-			repeatType:repeatType != null ? repeatType.getId() : 0L]
+			repeatType:repeat != null ? repeat.getId() : 0L]
 		
 		Integer index = 0
 		
@@ -3335,7 +3203,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatType:" + repeat?.getId() \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ", setName:" + setIdentifier?.getValue() \
 				+ ")"
@@ -3351,7 +3219,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatType:" + repeat?.getId() \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
@@ -3365,7 +3233,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeatType?.getId() \
+				+ ", repeatType:" + repeat?.getId() \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
@@ -3428,3 +3296,175 @@ class Entry implements Comparable {
 		return result
 	}
 }
+
+// NOTE: Unghosted repeat entries are repeated in an unghosted manner all
+// the way until their repeatEnd
+// but unghosted remind entries are only unghosted on their start date, and
+// not on subsequent dates
+
+// new end-of-entry repeat indicators:
+// repeat daily
+// delete repeat indicator to end repeat sequence
+// OR: repeat end
+
+// like a ghost, but it appears in plot data, it is just a repetition of a
+// prior
+// entry, must be activated to edit
+
+// repeat type is now an integer flag variable
+
+class RepeatType { // IMPORTANT: there must be ghost entries
+	// for all non-ghost entries and vice-versa
+	// if you add more remind types, please edit the sql in
+	// RemindEmailService
+	private static final Map<Long, RepeatType> map = new ConcurrentHashMap<Long, RepeatType>(new HashMap<Integer, RepeatType>())
+	
+	static RepeatType DAILY = new RepeatType(DAILY_BIT)
+	static RepeatType WEEKLY = new RepeatType(WEEKLY_BIT)
+	static RepeatType DAILYGHOST = new RepeatType(DAILY_BIT | GHOST_BIT)
+	static RepeatType WEEKLYGHOST = new RepeatType(WEEKLY_BIT | GHOST_BIT)
+	static RepeatType REMINDDAILY = new RepeatType(REMIND_BIT | DAILY_BIT)
+	static RepeatType REMINDWEEKLY = new RepeatType(REMIND_BIT | WEEKLY_BIT)
+	static RepeatType REMINDDAILYGHOST = new RepeatType(REMIND_BIT | DAILY_BIT | GHOST_BIT)
+	static RepeatType REMINDWEEKLYGHOST = new RepeatType(REMIND_BIT | WEEKLY_BIT | GHOST_BIT)
+	
+	static RepeatType CONTINUOUS = new RepeatType(CONTINUOUS_BIT)
+	static RepeatType CONTINUOUSGHOST = new RepeatType(CONTINUOUS_BIT|  GHOST_BIT)
+	
+	static RepeatType DAILYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | DAILY_BIT)
+	static RepeatType DAILYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT)
+	static RepeatType WEEKLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | WEEKLY_BIT)
+	static RepeatType WEEKLYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT)
+	
+	static RepeatType GHOST = new RepeatType(GHOST_BIT)
+	static RepeatType NOTHING = new RepeatType(0)
+	
+	static RepeatType DURATIONGHOST = new RepeatType(GHOST_BIT | DURATION_BIT)
+	
+	static final int DAILY_BIT = 1
+	static final int WEEKLY_BIT = 2
+	static final int REMIND_BIT = 4
+	static final int HOURLY_BIT = 8
+	static final int MONTHLY_BIT = 0x0010
+	static final int YEARLY_BIT = 0x0020
+	static final int CONTINUOUS_BIT = 0x0100
+	static final int GHOST_BIT = 0x0200
+	static final int CONCRETEGHOST_BIT = 0x0400
+	static final int DURATION_BIT = 0x0800
+
+	static final int SUNDAY_BIT = 0x10000
+	static final int MONDAY_BIT = 0x20000
+	static final int TUESDAY_BIT = 0x40000
+	static final int WEDNESDAY_BIT = 0x80000
+	static final int THURSDAY_BIT = 0x100000
+	static final int FRIDAY_BIT = 0x200000
+	static final int SATURDAY_BIT = 0x400000
+	
+	Long type
+	
+	static constraints = {
+		type(nullable:true)
+	}
+	
+	static RepeatType look(long id) {
+		RepeatType repeatType = map.get(id)
+		if (repeatType == null)
+			return new RepeatType(id)
+		
+		return repeatType
+	}
+	
+	RepeatType(long id) {
+		this.type = id
+		map.put(id, this)
+	}
+	
+	int getId() {
+		return type
+	}
+	
+	static transients = [ 'id', 'ghost', 'concreteGhost', 'anyGhost', 'continuous', 'hourly', 'daily',
+			'weekly', 'monthly', 'yearly', 'reminder', 'timed', 'repeat' ]
+	
+	boolean isGhost() {
+		return (this.type & GHOST_BIT) > 0
+	}
+	
+	boolean isConcreteGhost() {
+		return (this.type & CONCRETEGHOST_BIT) > 0
+	}
+	
+	boolean isAnyGhost() {
+		return (this.type & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
+	}
+	
+	boolean isContinuous() {
+		return (this.type & CONTINUOUS_BIT) > 0
+	}
+	
+	boolean isHourly() {
+		return (this.type & HOURLY_BIT) > 0
+	}
+	
+	boolean isDaily() {
+		return (this.type & DAILY_BIT) > 0
+	}
+	
+	boolean isWeekly() {
+		return (this.type & WEEKLY_BIT) > 0
+	}
+	
+	boolean isMonthly() {
+		return (this.type & MONTHLY_BIT) > 0
+	}
+	
+	boolean isYearly() {
+		return (this.type & YEARLY_BIT) > 0
+	}
+	
+	boolean isReminder() {
+		return (this.type & REMIND_BIT) > 0
+	}
+	
+	boolean isTimed() {
+		return (this.type & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
+	}
+	
+	boolean isRepeat() {
+		return (this.type & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
+	}
+	
+	RepeatType unGhost() {
+		return RepeatType.look(this.type & (~GHOST_BIT))
+	}
+	
+	RepeatType toggleGhost() {
+		if (isGhost())
+			return map.get(this.type & (~GHOST_BIT))
+		return map.get(this.type | GHOST_BIT)
+	}
+	
+	RepeatType makeGhost() {
+		return map.get(this.type | GHOST_BIT)
+	}
+	
+	RepeatType makeConcreteGhost() {
+		return map.get(this.type | CONCRETEGHOST_BIT)
+	}
+	
+	RepeatType forUpdate() {
+		if (isReminder())
+			return map.get(this.type
+					& (~(GHOST_BIT | CONCRETEGHOST_BIT)))
+		return this;
+	}
+	
+	boolean equals(Object other) {
+		if (other instanceof RepeatType) {
+			return ((RepeatType)other).type == this.type
+		}
+		
+		return false
+	}
+}
+

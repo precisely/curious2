@@ -63,7 +63,7 @@ class CuriousSeries {
 		def duration_end_entries = []
 		for (entry in entries) {
 			// PROCESS REPEAT_TYPE entries
-			if (entry.repeatType == Entry.RepeatType.DAILY)  {
+			if (entry.repeatType == RepeatType.DAILY)  {
 				// Make a list of generated values that we'll append later.
 				generated_repeat_entries += createRepeatedEntries(entry)
 
@@ -84,12 +84,12 @@ class CuriousSeries {
 					entry.amount = null
 				}
 
-			} else if ( entry.repeatType == Entry.RepeatType.DAILYGHOST ||
-									entry.repeatType == Entry.RepeatType.REMINDDAILYGHOST ||
-									entry.repeatType == Entry.RepeatType.REMINDWEEKLYGHOST ||
-									entry.repeatType == Entry.RepeatType.CONTINUOUS ||
-									entry.repeatType == Entry.RepeatType.CONTINUOUSGHOST ||
-									entry.repeatType == Entry.RepeatType.DAILYCONCRETEGHOSTGHOST ) {
+			} else if ( entry.repeatType == RepeatType.DAILYGHOST ||
+									entry.repeatType == RepeatType.REMINDDAILYGHOST ||
+									entry.repeatType == RepeatType.REMINDWEEKLYGHOST ||
+									entry.repeatType == RepeatType.CONTINUOUS ||
+									entry.repeatType == RepeatType.CONTINUOUSGHOST ||
+									entry.repeatType == RepeatType.DAILYCONCRETEGHOSTGHOST ) {
 				entry.amount = null
 			}
 		}

@@ -5,6 +5,7 @@ import org.junit.*
 import us.wearecurio.factories.EntryFactory
 import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Entry
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 
@@ -118,9 +119,9 @@ class EntryFactoryTests extends CuriousTestCase {
 
 	@Test
 	void testMakeEntryWithRepeatTypeDaily() {
-		def entry_start = EntryFactory.make(['tag_description': 'my tag', 'username': 'a', 'repeatType': Entry.RepeatType.DAILY, 'repeatEnd': EntryFactory.START_DAY + 1])
+		def entry_start = EntryFactory.make(['tag_description': 'my tag', 'username': 'a', 'repeatType': RepeatType.DAILY, 'repeatEnd': EntryFactory.START_DAY + 1])
 		def entry_stop = EntryFactory.make(['tag_description': 'my tag', 'username': 'a'])
-		assert entry_start.repeatType == Entry.RepeatType.DAILY
+		assert entry_start.repeat == RepeatType.DAILY
 		assert entry_start.repeatEnd == EntryFactory.START_DAY + 1
 	}
 

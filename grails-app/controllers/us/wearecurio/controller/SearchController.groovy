@@ -24,7 +24,7 @@ import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
-import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Entry.DurationType
 import us.wearecurio.model.Entry.ParseAmount
 import us.wearecurio.support.EntryCreateMap

@@ -9,6 +9,7 @@ import us.wearecurio.model.TimeZoneId;
 import us.wearecurio.model.User
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Entry
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.utility.Utils
 import static org.junit.Assert.*
@@ -207,11 +208,11 @@ class SprintTests extends CuriousTestCase {
 		boolean sugar = false, aspirin = false, coffee = false, sprintStart = false
 		
 		for (record in list) {
-			if (record.description == 'sugar' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				sugar = true
-			else if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin = true
-			else if (record.description == 'coffee' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				coffee = true
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart = true
@@ -232,7 +233,7 @@ class SprintTests extends CuriousTestCase {
 		aspirin = false
 		
 		for (record in list) {
-			if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin = true
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart = true
@@ -285,13 +286,13 @@ class SprintTests extends CuriousTestCase {
 		Long aspirinEntryId = null
 		
 		for (record in list) {
-			if (record.description == 'sugar' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT)) {
+			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT)) {
 				sugar = true
 				sugarEntryId = record.id
-			} else if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT)) {
+			} else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT)) {
 				aspirin = true
 				aspirinEntryId = record.id
-			} else if (record.description == 'coffee' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			} else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				coffee = true
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart = true
@@ -315,7 +316,7 @@ class SprintTests extends CuriousTestCase {
 		aspirin = false
 		
 		for (record in list) {
-			if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin = true
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart = true
@@ -364,11 +365,11 @@ class SprintTests extends CuriousTestCase {
 		int sugar = 0, aspirin = 0, coffee = 0, sprintStart = 0
 		
 		for (record in list) {
-			if (record.description == 'sugar' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				sugar++
-			else if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin++
-			else if (record.description == 'coffee' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				coffee++
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart++
@@ -388,7 +389,7 @@ class SprintTests extends CuriousTestCase {
 		aspirin = 0
 		
 		for (record in list) {
-			if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin++
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart++
@@ -441,11 +442,11 @@ class SprintTests extends CuriousTestCase {
 		int sugar = 0, aspirin = 0, coffee = 0, sprintStart = 0
 		
 		for (record in list) {
-			if (record.description == 'sugar' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				sugar++
-			else if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin++
-			else if (record.description == 'coffee' && (record.repeatType & Entry.RepeatType.CONTINUOUS_BIT))
+			else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
 				coffee++
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart++
@@ -468,7 +469,7 @@ class SprintTests extends CuriousTestCase {
 		aspirin = 0
 		
 		for (record in list) {
-			if (record.description == 'aspirin' && (record.repeatType & Entry.RepeatType.DAILY_BIT))
+			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
 				aspirin++
 			else if (record.description == 'caffeine sugar sprint start')
 				sprintStart++

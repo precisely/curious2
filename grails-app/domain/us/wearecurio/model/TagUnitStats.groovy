@@ -126,7 +126,7 @@ class TagUnitStats {
 	@Transactional
 	static TagUnitStats createOrUpdateAllUnits(Long userId, Long tagId) {
 		def results = Entry.executeQuery(
-			"select units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeatType IS NULL or (not entry.repeatType.id in (:ghostIds))) group by units",
+			"select units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat IS NULL or (not entry.repeat.type in (:ghostIds))) group by units",
 			[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
 
 		if (results && results.size() > 0) {

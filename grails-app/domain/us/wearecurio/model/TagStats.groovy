@@ -110,7 +110,7 @@ class TagStats {
 			int amountLimit = 5
 			
 			def lastAmounts = Entry.executeQuery(
-				"select entry.amount, entry.amountPrecision, entry.units, entry.repeatType from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeatType IS NOT NULL) order by entry.date desc",
+				"select entry.amount, entry.amountPrecision, entry.units, entry.repeat from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeat IS NOT NULL) order by entry.date desc",
 				[baseTagId:tagId, userId:userId], [max:amountLimit])
 			
 			int totalCount = lastAmounts.size()
@@ -283,7 +283,7 @@ class TagStats {
 
 		def repeatingEntries = c {
 			and {
-				not { isNull("repeatType") }
+				not { isNull("repeat") }
 				eq("userId", userId)
 				gt("date", monthAgo)
 			}

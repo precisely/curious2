@@ -5,7 +5,7 @@ import grails.converters.JSON
 import java.math.MathContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Date;
+import java.util.Date
 
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.plugins.elasticsearch.ElasticSearchService
@@ -18,9 +18,9 @@ import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.*
 import us.wearecurio.model.*
-import us.wearecurio.model.Entry.RepeatType;
-import us.wearecurio.model.Entry.DurationType;
-import us.wearecurio.model.Entry.ParseAmount;
+import us.wearecurio.model.RepeatType
+import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.Entry.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -168,7 +168,7 @@ class DataController extends LoginController {
 						amount:new BigDecimal(tokens[2], mc), \
 						units:tokens[3], \
 						comment:tokens[4], \
-						repeatType:repeatTypeId >= 0 ? Entry.RepeatType.get((int)repeatTypeId) : null, \
+						repeatType:repeatTypeId >= 0 ? RepeatType.look((long)repeatTypeId) : null, \
 						setName:setName, \
 						amountPrecision:Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
 						datePrecisionSecs:Integer.valueOf(tokens[7].equals("null") ? '180':tokens[7]), \

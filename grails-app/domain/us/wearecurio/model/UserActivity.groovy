@@ -7,7 +7,7 @@ import us.wearecurio.collection.MapList
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.model.Entry.RepeatType
+import us.wearecurio.model.RepeatType
 import us.wearecurio.utility.Utils
 
 /**
