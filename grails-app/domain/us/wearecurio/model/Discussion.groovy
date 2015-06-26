@@ -308,6 +308,7 @@ class Discussion {
 		
 		if (firstPostId == null) {
 			firstPostId = post.getId()
+			post.flags |= DiscussionPost.FIRST_POST_BIT
 			if (plotDataId) {
 				PlotData plotData = PlotData.get(plotDataId)
 				if (this.name == null || this.name.length() == 0)
@@ -317,6 +318,7 @@ class Discussion {
 				this.notifyParticipants(post, false)
 			}
 			Utils.save(this, true)
+			Utils.save(post, true)
 		} else {
 			this.notifyParticipants(post, false)
 		}
