@@ -79,7 +79,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
-		
 		//NOTE: Cannot use elasticSearchAdminService.deleteIndex() as that removes index entirely and an IndexMissingException is thrown
 		//the next time an ES search is attempted. Instead, do a "delete by  query" to remove all data in all indexes, while keeping the
 		//indexes themselves.  Could have used, elasticSearchAdminService to do the refresh, but since have client anyhow, chose to do use
@@ -113,19 +112,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 	
-	private void testSimpleSearch(Object container, String fieldName, String extraFieldNameToCheck) {
-		testSimpleSearch(container, fieldName, true, extraFieldNameToCheck)
-	}
-	
 	private void testSimpleSearch(Object container, String fieldName) {
-		testSimpleSearch(container, fieldName, true, null)
+		testSimpleSearch(container, fieldName, null)
 	}
 	
-	private void testSimpleSearch(Object container, String fieldName, Boolean saveContainer, String extraFieldNameToCheck) {
-		if (saveContainer) {
-			//Utils.save(container, true)
-		}
-		
+	private void testSimpleSearch(Object container, String fieldName, String extraFieldNameToCheck) {
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -164,10 +155,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			f.set(post, fieldValue.class.cast(fieldValue))
 		}
 		
-		//Utils.save(discussion, true)
 		Utils.save(post, true)
 		
-		testSimpleSearch(post, fieldName, false, "message")
+		testSimpleSearch(post, fieldName, "message")
 	}
 	
 	@Test
@@ -179,9 +169,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	void "Test Search Discuussion by firstPostId"() {
 		Discussion discussion = Discussion.create(user)
 		DiscussionPost post = discussion.createPost(user, "Test post")
-		//Utils.save(discussion, true)
+		
 		Utils.save(post, true)
-		testSimpleSearch(discussion, "firstPostId", false, null)
+		testSimpleSearch(discussion, "firstPostId", null)
 	}
 	
 	@Test
@@ -215,8 +205,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		Discussion discussion = Discussion.create(user, "TestSearchDiscussionByBroupIds", groupA)
 		groupB.addDiscussion(discussion)
-		
-		//Utils.save(discussion, true)
 		
 		elasticSearchService.index()
 		
@@ -313,7 +301,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			postOld.created = (new Date()) - 8.days
 		}
 		
-		//Utils.save(discussion, true)
 		Utils.save(postOld, true)
 		Utils.save(postRecent, true)
 		
@@ -344,7 +331,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion = Discussion.create(user, "TestSearchDiscussionsUpdatedInPastWeek")
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
-		//Utils.save(discussion, true)
 		Utils.save(post, true)
 		
 		elasticSearchService.index()
@@ -380,14 +366,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion5 = Discussion.create(user, "word1 word3")
 		Discussion discussion6 = Discussion.create(user, "word2 word3")
 		Discussion discussion7 = Discussion.create(user, "word1 word2 word3")
-		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		//Utils.save(discussion3, true)
-		//Utils.save(discussion4, true)
-		//Utils.save(discussion5, true)
-		//Utils.save(discussion6, true)
-		//Utils.save(discussion7, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -432,9 +410,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word3 word2 word1")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -452,9 +427,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	{
 		Discussion discussion1 = Discussion.create(user, "word1 word2")
 		Discussion discussion2 = Discussion.create(user, "word1 word2 word3")
-		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -476,9 +448,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(2000)
 		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderAscTest 2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -498,9 +467,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "ChonologicalOrderDescTest 1")
 		Thread.sleep(2000)
 		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderDescTest 2")
-		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
 		
 		System.out.println "discussion1.creation: " + discussion1.created
 		System.out.println "discussion2.creation: " + discussion2.created
@@ -525,9 +491,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word1 word2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -545,9 +508,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	{
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word1 word2")
-		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -580,7 +540,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client.prepareSearch("us.wearecurio.model_v0").setTypes("discussion").setQuery(fsqb).execute().actionGet()
-			//          SearchResponse sr = client.prepareSearch("us.wearecurio.model_v0").setTypes("discussion").setQuery(matchQuery("name", "word1 word2")).execute().actionGet()
 			assert sr
 			assert sr.getHits()
 			if (sr.getHits().getTotalHits() == 0) System.out.println "no hits found!"
@@ -608,9 +567,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		DiscussionPost postA = discussionReadByUser.createPost(user, "postA")
 		DiscussionPost postB = discussionNotReadByUser.createPost(user, "postB")
-		
-		//Utils.save(discussionReadByUser, true)
-		//Utils.save(discussionNotReadByUser, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -653,9 +609,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
 		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -692,7 +645,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 		
-		//Utils.save(discussionB, true)
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -736,9 +688,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
 		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -749,14 +698,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+						)
 					)
 					.execute()
 					.actionGet()
@@ -796,14 +745,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(2)  // number of post documents to show PER discussion id
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(2)  // number of post documents to show PER discussion id
+						)
 					)
 					.execute()
 					.actionGet()
@@ -837,8 +786,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			
 			DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 			
-			//Utils.save(discussionB, true)
-			
 			elasticSearchService.index()
 			Thread.sleep(2000)
 			
@@ -848,14 +795,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(2)  // number of post documents to show PER discussion id
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(2)  // number of post documents to show PER discussion id
+						)
 					)
 					.execute()
 					.actionGet()
@@ -903,9 +850,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -916,14 +860,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -953,14 +897,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.DESC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.DESC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1002,9 +946,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1013,22 +954,22 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1071,10 +1012,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postC3 = discussionC.createPost(user, "post3 for discussion C")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1083,24 +1020,24 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")"))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.must(
+							queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")"))
+							.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1146,9 +1083,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postB2 = discussionB.createPost(user2, "postB2")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1170,24 +1104,24 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:" + discussionResults.searchResults[0].id.toString()))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.must(
+							queryString("discussionId:" + discussionResults.searchResults[0].id.toString()))
+							.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1232,10 +1166,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postC2 = discussionC.createPost(user, "postC2")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1259,24 +1189,25 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")"))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.must(
+							queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")")
+						)
+						.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1314,11 +1245,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postB2 = discussionB.createPost(user, "postB2")
 		DiscussionPost postC1 = discussionC.createPost(user, "postC1")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
-		//Utils.save(discussionD, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1327,29 +1253,30 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:("
-					+ discussionA.id.toString() + " OR "
-					+ discussionB.id.toString() + " OR "
-					+ discussionC.id.toString() + " OR "
-					+ discussionD.id.toString()
-					+  ")"))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.must(
+							queryString("discussionId:("
+							+ discussionA.id.toString() + " OR "
+							+ discussionB.id.toString() + " OR "
+							+ discussionC.id.toString() + " OR "
+							+ discussionD.id.toString()
+							+  ")")
+						)
+						.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()
@@ -1412,12 +1339,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postC12 = discussionC1.createPost(user2, "postC12")
 		
-		//Utils.save(discussionA1, true)
-		//Utils.save(discussionA2, true)
-		//Utils.save(discussionB1, true)
-		//Utils.save(discussionB2, true)
-		//Utils.save(discussionC1, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1437,29 +1358,32 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.prepareSearch("us.wearecurio.model_v0")
 					.setTypes("discussionPost")
 					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:(" +
-					discussionA1.id + " OR " +
-					discussionA2.id + " OR " +
-					discussionB1.id + " OR " +
-					discussionB2.id +
-					")"))
-					.mustNot(
-					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
-					)
+						boolQuery()
+						.must(
+							queryString(
+								"discussionId:(" +
+								discussionA1.id + " OR " +
+								discussionA2.id + " OR " +
+								discussionB1.id + " OR " +
+								discussionB2.id +
+								")"
+							)
+						)
+						.mustNot(
+							termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
+						)
 					)
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(1)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+							AggregationBuilders
+							.topHits("top_hits")
+							.setSize(1)  // number of post documents to show PER discussion id
+							.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
 					)
 					.execute()
 					.actionGet()

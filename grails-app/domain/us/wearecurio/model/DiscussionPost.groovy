@@ -138,8 +138,8 @@ class DiscussionPost {
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
 				return "No permissions"
 			}
-			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1 
-				&& post.getPlotDataId() != null && post.getMessage() == null) {
+			if (post && (!plotIdMessage) && discussion.getNumberOfPosts() == 1
+			&& post.getPlotDataId() != null && post.getMessage() == null) {
 				// first comment added to a discussion with a plot data at the top is
 				// assumed to be a caption on the plot data
 				log.debug("DiscussionPost.createComment: 1 post with plotData")
@@ -149,13 +149,13 @@ class DiscussionPost {
 				log.debug("DiscussionPost.createComment: 1st comment")
 				post = discussion.createPost(user, plotIdMessage, message)
 			} else if (params.postname && params.postemail){
-				post = discussion.createPost(params.postname, params.postemail, params.postsite, 
-				plotIdMessage, message)
+				post = discussion.createPost(params.postname, params.postemail, params.postsite,
+						plotIdMessage, message)
 			}
 			return post
 		}
 	}
-
+	
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}

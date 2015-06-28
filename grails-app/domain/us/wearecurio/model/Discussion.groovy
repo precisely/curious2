@@ -10,9 +10,9 @@ import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EmailService
 
 class Discussion {
-
+	
 	private static def log = LogFactory.getLog(this)
-
+	
 	Long userId // user id of first post or creator
 	Long firstPostId // DiscussionPost
 	String name
@@ -22,7 +22,7 @@ class Discussion {
 	Visibility visibility
 	
 	public static final int MAXPLOTDATALENGTH = 1024
-
+	
 	static constraints = {
 		userId(nullable:true)
 		// This needs to be uncommented once migrations have run on all the systems
@@ -52,7 +52,7 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "asc")
 		}
-
+		
 		return post?.getDiscussion()
 	}
 	
@@ -63,11 +63,11 @@ class Discussion {
 	public static Discussion create(User user, String name) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name
 		def discussion = new Discussion(user, name)
-
+		
 		Utils.save(discussion, true)
-
+		
 		discussion.addUserVirtualGroup(user)
-				
+		
 		return discussion
 	}
 	
@@ -84,7 +84,7 @@ class Discussion {
 		
 		return discussion
 	}
-
+	
 	static Map delete(Discussion discussion, User user) {
 		if (!UserGroup.canAdminDiscussion(user, discussion)) {
 			return [success: false, message: "You don't have the right to delete this discussion."]
@@ -93,7 +93,7 @@ class Discussion {
 		return [success: true, message: "Discussion deleted successfully."]
 		
 	}
-
+	
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
@@ -117,7 +117,7 @@ class Discussion {
 			
 			if (discussion.getName().equals(params.name))
 				return true
-				
+			
 			discussion.setName(params.name)
 			discussion.setUpdated(new Date())
 			
@@ -178,16 +178,16 @@ class Discussion {
 	def getNumberOfPosts() {
 		return DiscussionPost.countByDiscussionId(getId())
 	}
-
+	
 	static UserGroup loadGroup(String groupName, User user) {
 		UserGroup group = groupName ? UserGroup.lookup(groupName) : UserGroup.getDefaultGroupForUser(user)
-
+		
 		if (group && !group.hasWriter(user)) {
 			return null
 		}
 		return group
 	}
-
+	
 	static def loadDiscussion(def id, def plotDataId, def user) {
 		def discussion
 		if (id) {
@@ -196,12 +196,12 @@ class Discussion {
 			discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
 			log.debug "Discussion for plotDataId not found: " + plotDataId
 		}
-
+		
 		log.debug "Discussion found: " + discussion?.dump()
 		return discussion
 	}
-
-
+	
+	
 	DiscussionPost fetchFirstPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
@@ -211,27 +211,27 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "asc")
 		}
-
+		
 		if (!post) {
 			return null
 		}
-
+		
 		firstPostId = post.id
 		Utils.save(this)
 		return post
 	}
-
+	
 	DiscussionPost getFirstPost() {
 		if (firstPostId == null) {
 			return fetchFirstPost()
 		}
-
+		
 		return DiscussionPost.get(firstPostId)
 	}
 	
 	def getLastPost() {
 		def c = DiscussionPost.createCriteria()
-
+		
 		def posts = c {
 			and {
 				eq("discussionId", getId())
@@ -240,7 +240,7 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "desc")
 		}
-
+		
 		for (post in posts)
 			return post
 		
@@ -252,7 +252,7 @@ class Discussion {
 		DiscussionPost post = getFirstPost()
 		return post?.getAuthor()?.getUserId()
 	}
-
+	
 	List<DiscussionPost> getFollowupPosts(Map args) {
 		/*
 		 * If no offset or offset is 0, set offset to 1 so that
@@ -261,7 +261,7 @@ class Discussion {
 		if (!args["offset"]) {
 			args["offset"] = 1
 		}
-
+		
 		/*
 		 * If max is given and offset is set to be current step offset + 1
 		 * then increase current offset by one to support proper pagination
@@ -270,10 +270,10 @@ class Discussion {
 		if (args["max"] && (args["offset"].toInteger() % args["max"].toInteger()) == 0) {
 			args["offset"] = args["offset"].toInteger() + 1
 		}
-
+		
 		getPosts(args)
 	}
-
+	
 	List<DiscussionPost> getPosts(Map args) {
 		List posts = DiscussionPost.createCriteria().list(args) {
 			and {
@@ -282,20 +282,20 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "desc")
 		}
-
+		
 		return posts
 	}
-
+	
 	def createPost(User user, String message) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'"
 		return createPost(user, null, message)
 	}
-
+	
 	def createPost(String name, String email, String site, Long plotDataId, String comment) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
 		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment)
 	}
-
+	
 	def createPost(User author, Long plotDataId, String comment) {
 		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment
 		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, null)
@@ -363,7 +363,7 @@ class Discussion {
 		
 		if ((!groups) || groups.size() == 0)
 			return new Long[0]
-			
+		
 		Long[] retVal = new Long[groups.size()]
 		int i = 0
 		for (UserGroup group : groups) {
@@ -381,7 +381,7 @@ class Discussion {
 		def postUsername = (post.getAuthor()?.getShortDescription()) ?: "(unknown)"
 		
 		Long authorUserId = post.getAuthorUserId()
-
+		
 		if (!onlyAdmins) {
 			for (User participant in participants) {
 				if (!participant.getNotifyOnComments())
@@ -424,17 +424,17 @@ class Discussion {
 			updated: this.updated
 		]
 	}
-
+	
 	Map getJSONModel(Map args) {
 		Long totalPostCount = 0
 		DiscussionPost firstPostInstance = getFirstPost()
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
-
+		
 		if (args.max && args.offset.toInteger()  > -1) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
-
+			
 			if (totalPostCount && isFollowUp) {
 				// If first post is available then total count must be one lesser
 				totalPostCount --
@@ -444,7 +444,7 @@ class Discussion {
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
 	}
-
+	
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
