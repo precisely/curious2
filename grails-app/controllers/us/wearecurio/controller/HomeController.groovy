@@ -2,8 +2,10 @@ package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
+import groovy.json.*
 import grails.gorm.DetachedCriteria
 import grails.gsp.PageRenderer
+import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.DataService
+import us.wearecurio.services.SearchService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
@@ -35,6 +38,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 	def oauthService
+	def SearchService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 
@@ -948,11 +952,19 @@ class HomeController extends DataController {
 			return
 		}
 		
+		String sprintGroupName = sprintInstance.fetchUserGroup().name
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participantsList = sprintInstance.getParticipants(10, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
-		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
-			participants : participants , user: sessionUser()])
+		Map sprintDiscussions = SearchService.getDiscussionsList(sessionUser(), 0, 5, [sprintGroupName])
+
+		log.debug "Sprint discussions: ${sprintDiscussions.dump()} and group name: $sprintGroupName"
+		/*JSON.use("jsonDate") {
+			println (sprintDiscussions as JSON).toString()
+		}*/
+
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
+			participants : participants , user: sessionUser(), virtualGroupName: sprintGroupName])
 	}
 
 	def leaveSprint() {

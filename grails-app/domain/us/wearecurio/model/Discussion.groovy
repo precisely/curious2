@@ -412,6 +412,15 @@ class Discussion {
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
 
+		List<Long> discussionGroupId = GroupMemberDiscussion.withCriteria {
+			projections {
+				property "groupId"
+			}
+			eq "memberId", id
+		}
+		
+		String discussionGroupName = UserGroup.get(discussionGroupId[0]).fullName
+
 		if (args.max && args.offset.toInteger()  > -1) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
@@ -423,7 +432,7 @@ class Discussion {
 		}
 		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated, firstPost: firstPostInstance,
-			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC, groupName: discussionGroupName]
 	}
 
 	String toString() {

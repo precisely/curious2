@@ -32,6 +32,8 @@
 		 */
 		var paused = false;
 
+		this.options = options;
+		this.$element = $element;
 		/*
 		 * Mark that there is no more data to load i.e. last page of pagination.
 		 */
@@ -84,16 +86,16 @@
 			options.onResume($element);
 			$.removeData($element[0], 'infiniteScroll');
 			$(options.bindTo).off('scroll', function(e) {
-					scrollHandler(e);
+					this.scrollHandler(e);
 				}.bind(this));
 		};
 
 		// Bind scroll event to the bindTo element (default to window)
 		$(options.bindTo).on('scroll', function(e) {
-				scrollHandler(e);
+				this.scrollHandler(e);
 			}.bind(this));
 
-		var scrollHandler = function(e) {
+		this.scrollHandler = function(e) {
 			if (paused) {
 				return;
 			}
@@ -105,7 +107,7 @@
 				pixelsNearEnd = $(document).height() - $(window).height() - $(window).scrollTop();
 			} else {
 				// If scroll event has been applied for any other element in the page
-				var $scrollElement = options.bindTo;
+				var $scrollElement = this.options.bindTo;
 				if (scrollHorizontally) {
 					var hwidth = $element.width();
 					pixelsNearEnd = hwidth - $scrollElement.scrollLeft() - 
@@ -117,42 +119,15 @@
 			}
 
 			// Keep a gutter space to pre-fetch the data when user is about to reach the end
-			if (pixelsNearEnd < options.bufferPx) {
+			if (pixelsNearEnd < this.options.bufferPx) {
 				// Call the function with context of this and pass two arguments
-				var infiniteScroll = $.data($element[0], 'infiniteScroll');
-				options.onScrolledToBottom.call(infiniteScroll, e, $element);
+				//var infiniteScroll = $.data($element[0], 'infiniteScroll');
+				this.options.onScrolledToBottom.call(this, e, $element);
 			}
 		}
 	};
 	
 	var waitingElementSelector = 'div#waiting-msg';
-
-	// Default options
-	var defaults = {
-		// Default element to bind scroll event to. Can be a element to enable infinite scroll inside it
-		bindTo: $(window),
-		// Buffer pixel of scrollbar from end to start when user is about to reach the end
-		bufferPx: 50,
-		// Scroll horizontally or virtically(default)
-		scrollHorizontally: false,
-		// Number of items fetched per page
-		max: 5,
-		offset: 5,
-		finalMessage: 'No more data to display',
-		onPause: function($element) {
-			var waitElement = $element.find(waitingElementSelector);
-
-			if (waitElement.length === 0) {
-				$element.append('<div id="waiting-msg" class="text-center"></div>');
-			}
-
-			// Display a spinner on pause or while waiting
-			$element.find(waitingElementSelector).html('<i class="fa fa-circle-o-notch fa-spin fa-2x"></i>');
-		},
-		onResume: function($element) {
-			$element.find(waitingElementSelector).remove();
-		}
-	};
 
 	// Register the function in jQuery
 	$.fn.infiniteScroll = function(options) {
@@ -180,7 +155,7 @@
 				}
 
 				// Merge options
-				options = $.extend(defaults, options);
+				options = $.extend({}, $.fn.infiniteScroll.defaults, options);
 
 				instance = new InfiniteScroll($(this), options);
 				$.data(this, 'infiniteScroll', instance);
@@ -188,7 +163,34 @@
 		});
 
 		// Chaining the method calls.
-		return this;
+		return $(this);
+	};
+
+	// Default options
+	$.fn.infiniteScroll.defaults = {
+		// Default element to bind scroll event to. Can be a element to enable infinite scroll inside it
+		bindTo: $(window),
+		// Buffer pixel of scrollbar from end to start when user is about to reach the end
+		bufferPx: 50,
+		// Scroll horizontally or virtically(default)
+		scrollHorizontally: false,
+		// Number of items fetched per page
+		max: 5,
+		offset: 5,
+		finalMessage: 'No more data to display',
+		onPause: function($element) {
+			var waitElement = $element.find(waitingElementSelector);
+
+			if (waitElement.length === 0) {
+				$element.append('<div id="waiting-msg" class="text-center"></div>');
+			}
+
+			// Display a spinner on pause or while waiting
+			$element.find(waitingElementSelector).html('<i class="fa fa-circle-o-notch fa-spin fa-2x"></i>');
+		},
+		onResume: function($element) {
+			$element.find(waitingElementSelector).remove();
+		}
 	};
 
 }(jQuery));

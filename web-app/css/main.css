@@ -1859,6 +1859,11 @@ div.graph-header-container .red-header {
 	padding: 0px 10px 10px 10px;
 }
 
+.discussions-wrapper {
+	max-height: 520px;
+	overflow-y: scroll;
+}
+
 #moreAvatars {
 	height: 80px;
 	width: auto;
@@ -1936,14 +1941,6 @@ div.graph-header-container .red-header {
 
 .sprint ul li {
 	margin-bottom: 10px;
-}
-
-.sprint input {
-	padding: 5px 10px;
-	background-color: #efefef;
-	color: #afafaf;
-	font-style: italic;
-	font-size: 14px;
 }
 
 #addTags {
@@ -2981,6 +2978,8 @@ body {
 	background-color: transparent;
 	margin: 0px 0px -10px 25px;
 	font-size: 14px;
+	font-weight: 100;
+	text-transform: none;
 }
 
 .discussion-topic button img{

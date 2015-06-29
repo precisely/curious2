@@ -2,10 +2,20 @@
 <html>
 <head>
 <meta name="layout" content="social" />
-<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF"/>
+<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, createDiscussionDataCSRF"/>
 <script type="text/javascript">
 $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
+
+	$('#sprint-discussions').infiniteScroll({
+		bufferPx: 25,
+		offset: 5,
+		bindTo: $('.discussions-wrapper'),
+		onScrolledToBottom: function(e, $element) {
+			this.pause();
+			showMoreDiscussions('${sprintInstance.hash}', this);
+		}
+	});
 
 	$('#participants-list ul>li>ul').infiniteScroll({
 		bufferPx: 15,
@@ -18,6 +28,27 @@ $(document).ready(function() {
 		}
 	});
 
+	$('#discussion-topic').keypress(function (e) {
+		var key = e.which;
+		if (key == 13) {
+			$('.input-affordance hr').show();
+			$('input[name = discussionPost]').show();
+			return false;  
+		}
+	});
+
+	$('#discussion-description').keypress(function (e) {
+		var key = e.which;
+		if (key == 13) {
+			$('#create-discussion').submit(submitDiscussion());
+			return false;  
+		}
+	});
+
+	var discussionData = ${discussions.encodeAsRaw()};
+	if (discussionData.listItems) {
+		addAllFeedItems({listItems: discussionData.listItems.discussionList}, '#sprint-discussions');
+	}
 });
 var offset = 10;
 
@@ -64,6 +95,47 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 		var leftPos = $('#participants-list ul').scrollLeft();
 		$("#participants-list ul").scrollLeft(leftPos + 380);
 	}
+}
+
+function showMoreDiscussions(sprintHash, infiniteScroll) {
+	queueJSON("Getting more discussoins", "/api/discussion/action/sprintList?sprintHash=" + sprintHash
+			+ "&offset=" + infiniteScroll.getOffset() + "&max=5&"
+			+ getCSRFPreventionURI("getSprintDiscussionsDataCSRF") + "&callback=?",
+			function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			if (data.listItems) {
+				addAllFeedItems({listItems: data.listItems.discussionList}, '#sprint-discussions');
+				infiniteScroll.setNextPage();
+				infiniteScroll.resume();
+			} else {
+				infiniteScroll.stop();
+			}
+		}
+	}, function(error) {
+		console.log(error);
+	});
+}
+
+
+function submitDiscussion() {
+	// See base.js for implementation details of $.serializeObject()
+	var params = $('#create-discussion').serializeObject();
+	queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
+			function(data) {
+		if (!checkData(data))
+			return;
+		if (data.success) {
+			addAllFeedItems({listItems: [data.discussion]}, '#sprint-discussions', true);
+			$('#create-discussion')[0].reset();
+			$('input[name = discussionPost]').hide();
+		}
+	}, function(xhr) {
+		console.log('Internal server error');
+	});
+	return false;
 }
 </script>
 </head>
@@ -137,6 +209,32 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 									</div>
 								</div>
 								<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('${sprintInstance.hash}')"></i>
+							</div>
+						</div>
+						<div class="row">
+							<div class="right-content">
+								<div class="new-post">
+									<form id="create-discussion">
+										<div class="input-affordance left-addon">
+											<i class="fa fa-pencil"></i> 
+											<input class="full-width discussion-topic-input"
+													type="text" placeholder="New question or discussion topic?"
+													name="name" id="discussion-topic" required />
+											<input type="radio" class="radio-public" name="visibility" id="public" value="public" checked><label for="public" class="radio-public-label">Public</label>
+											<input type="radio" class="radio-private" name="visibility" id="private" value="private"><label for="private" class="radio-private-label">Private</label>
+											<hr class="hide">
+											<input type="text" id="discussion-description" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
+													name="discussionPost">
+										</div>
+										<input type="hidden" name="group" value="${virtualGroupName}" />
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="right-content discussions-wrapper">
+								<div id="sprint-discussions">
+								</div>
 							</div>
 						</div>
 					</div>

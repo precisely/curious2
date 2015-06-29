@@ -69,7 +69,7 @@ var _discussions = ' \
 					</div>\
 				</div>\
 				<div class="group"> \
-					<%- discussionData.isPublic ? "Open to all" : discussionData.groupName %>\
+					<%- discussionData.groupName %>\
 				</div>\
 				<div class="row">\
 					<div class="col-xs-7">\

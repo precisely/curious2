@@ -107,7 +107,7 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage()) {
+					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});
@@ -394,7 +394,8 @@ function showAllFeeds() {
 	registerScroll();
 }
 
-function addAllFeedItems(data) {
+function addAllFeedItems(data, elementId, prepend) {
+	elementId = elementId || '#feed';
 	data.listItems.sort(function(a, b) {
 		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
 	});
@@ -408,7 +409,12 @@ function addAllFeedItems(data) {
 		} else if (item.type == 'usr') {
 			compiledHtml = _.template(_people)({'user': item});
 		}
-		$('#feed').append(compiledHtml);
+
+		if (prepend) {
+			$(elementId).hide().prepend(compiledHtml).fadeIn('slow');
+		} else {
+			$(elementId).append(compiledHtml);
+		}
 	});
 	showCommentAgeFromDate();
 }
