@@ -92,6 +92,65 @@ $(document).ready(function() {
 		}
 	});
 
+	$(document).on("click", "a.delete-discussion", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var discussionHash = $this.data('discussionHashId');
+			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
+					function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
+						showAlert(data.message, function() {
+							$this.parents('.feed-item').fadeOut();
+						});
+					} else {
+						location.href = '/home/social#all';
+					}
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
+		});
+		return false;
+	});
+
+	$(document).on("click", "a.delete-post", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var postId = $this.data('postId');
+			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
+					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
+					function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					showAlert(data.message, function() {
+						$this.parent().closest('.discussion-comment').fadeOut();
+						if (isOnFeedPage()) {
+							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
+							var totalComments = $commentButton.data('totalComments') - 1;
+							$commentButton.data('totalComments', totalComments);
+							$commentButton.text(totalComments);
+						}
+					});
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
+		});
+		return false;
+>>>>>>> c2bc263 Implemented discussions for sprint show page. #586
+	});
+
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
 
@@ -332,7 +391,8 @@ function showAllFeeds() {
 	registerScroll();
 }
 
-function addAllFeedItems(data) {
+function addAllFeedItems(data, elementId, prepend) {
+	elementId = elementId || '#feed';
 	data.listItems.sort(function(a, b) {
 		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
 	});
@@ -346,7 +406,12 @@ function addAllFeedItems(data) {
 		} else if (item.type == 'usr') {
 			compiledHtml = _.template(_people)({'user': item});
 		}
-		$('#feed').append(compiledHtml);
+
+		if (prepend) {
+			$(elementId).hide().prepend(compiledHtml).fadeIn('slow');
+		} else {
+			$(elementId).append(compiledHtml);
+		}
 	});
 	showCommentAgeFromDate();
 }

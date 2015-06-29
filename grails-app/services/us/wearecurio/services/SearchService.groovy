@@ -250,6 +250,19 @@ class SearchService {
 				if (!discussionItem["groupId"]) {
 					discussionItem["groupId"] = anyGid
 					discussionItem['groupName'] = anyGName
+
+	// TODO: Review
+	/*
+	Map getDiscussionsList(User user, int offset, int max, List groupNameList = []) {
+		def groupMemberships = UserGroup.getGroupsForReader(user)
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, [offset: offset, max: max]) :
+			UserGroup.getDiscussionsInfoForUser(user, true, false, [offset: offset, max: max])
+
+		Map discussionPostData = discussionData["discussionPostData"]
+		discussionData["dataList"].each {data ->
+				if (data) {
+					data.totalComments = discussionPostData[data.id].totalPosts
+	*/
 				}
 			}
 			
