@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta name="layout" content="social" />
-<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, createDiscussionDataCSRF"/>
+<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, createDiscussionDataCSRF, addMemberCSRF, 
+addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF, leaveSprintDataCSRF"/>
 <script type="text/javascript">
 $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
@@ -255,9 +256,7 @@ function submitDiscussion() {
 							</g:else>
 						</g:if>
 						<g:else>
-							<a href="/home/joinSprint/${sprintInstance.hash }">
-								<button id="join-sprint" class="sprint-button">Follow</button>
-							</a>
+							<button id="join-sprint" class="sprint-button" onclick="joinSprint('${sprintInstance.hash }')">Follow</button>
 						</g:else>
 						<g:if test="${sprintInstance.hasAdmin(user.id)}">
 							<button class="sprint-button" onclick="editSprint('${sprintInstance.hash}')">Edit</button>

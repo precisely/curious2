@@ -959,55 +959,8 @@ class HomeController extends DataController {
 		Map sprintDiscussions = SearchService.getDiscussionsList(sessionUser(), 0, 5, [sprintGroupName])
 
 		log.debug "Sprint discussions: ${sprintDiscussions.dump()} and group name: $sprintGroupName"
-		/*JSON.use("jsonDate") {
-			println (sprintDiscussions as JSON).toString()
-		}*/
 
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
 			participants : participants , user: sessionUser(), virtualGroupName: sprintGroupName])
-	}
-
-	def leaveSprint() {
-		Sprint sprintInstance = Sprint.findByHash(params.id)
-		User currentUser = sessionUser()
-		
-		if (!sprintInstance) {
-			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'social'))
-			return
-		}
-		if (!sprintInstance.hasMember(currentUser.id)) {
-			flash.message = g.message(code: "not.sprint.member")
-			redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-			return
-		}
-		
-		def now = params.now ? parseDate(params.now) : null
-		def baseDate = Utils.getStartOfDay(now)
-		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		EntryStats stats = new EntryStats()
-		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
-
-		sprintInstance.removeMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-	}
-	
-	def joinSprint() {
-		Sprint sprintInstance = Sprint.findByHash(params.id)
-		User currentUser = sessionUser()
-
-		if (!sprintInstance) {
-			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'social'))
-			return
-		}
-		if (sprintInstance.hasMember(currentUser.id)) {
-			flash.message = g.message(code: "already.joined.sprint")
-			redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-			return
-		}
-
-		sprintInstance.addMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.id]))
 	}
 }
