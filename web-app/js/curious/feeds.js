@@ -166,12 +166,13 @@ $(document).ready(function() {
 	$('#submitSprint').submit(function(event) {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $(this).serializeObject();
-		queuePostJSON('Updating sprint', '/data/updateSprintData', getCSRFPreventionObject('updateSprintDataCSRF', params),
+		var id = $('#sprintIdField').val();
+		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
 				return;
 
-			if (data.error) {
+			if (!data.success) {
 				$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
 				setInterval(function() {
 					$('.modal-dialog .alert').addClass('hide');
@@ -181,7 +182,7 @@ $(document).ready(function() {
 				clearSprintFormData()
 			}
 		}, function(xhr) {
-		});
+		}, null, 'PUT');
 		return false;
 	});
 
@@ -438,9 +439,9 @@ function clearSprintFormData() {
 }
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
-	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
+	var actionName = (actionType === 'participants') ? 'deleteMember' : 'deleteAdmin';
 
-	queuePostJSON('Removing members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+	queuePostJSON('Removing members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
 			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(), 
 			timeZoneName: jstz.determine().name()}), 
 			function(data) {
@@ -499,9 +500,9 @@ function createAutocomplete(inputId, autocompleteId) {
 }
 
 function addSprintMemberOrAdmin(inputId, userName) {
-	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
+	var actionName = (inputId === 'sprint-participants') ? 'addMember' : 'addAdmin';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
-	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
 			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
 		if (!checkData(data))
@@ -609,7 +610,7 @@ function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
 }
 
 function createSprint() {
-	queueJSON('Creating sprint', '/data/createNewSprintData?' + getCSRFPreventionURI('createNewSprintDataCSRF') + '&callback=?', 
+	queuePostJSON('Creating sprint', '/api/sprint', getCSRFPreventionObject('createNewSprintDataCSRF'), 
 		function(data) {
 			console.log('data: ', data);
 			if (!data.error) {
@@ -628,8 +629,7 @@ function createSprint() {
 }
 
 function editSprint(sprintHash) {
-	queueJSON("Getting sprint data", "/data/fetchSprintData?" + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			{id: sprintHash},
+	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
 			function(data) {
 				if (!checkData(data))
 					return;
@@ -678,8 +678,8 @@ function editSprint(sprintHash) {
 
 function deleteSprint(sprintHash) {
 	showYesNo('Delete this sprint?', function() {
-		queueJSON('Deleting sprint', '/data/deleteSprintData?id=' + sprintHash + 
-				'&' + getCSRFPreventionURI('deleteSprintDataCSRF') + '&callback=?', 
+		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash, 
+				getCSRFPreventionObject('deleteSprintDataCSRF'), 
 			function(data) {
 				if (!checkData(data))
 					return;
@@ -692,15 +692,14 @@ function deleteSprint(sprintHash) {
 				}
 			}, function(data) {
 				showAlert(data.message);
-			}
-		);
+			}, null, 'delete');
 	});
 }
 
 function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Starting Sprint', '/data/startSprintData?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
+	queueJSON('Starting Sprint', '/api/sprint/action/startSprint?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -720,7 +719,7 @@ function startSprint(sprintHash) {
 function stopSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Stopping Sprint', '/data/stopSprintData?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
+	queueJSON('Stopping Sprint', '/api/sprint/action/stopSprint?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -740,7 +739,35 @@ function stopSprint(sprintHash) {
 function leaveSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	location.assign('/home/leaveSprint?id=' + sprintHash + '&timeZoneName=' + timeZoneName + '&now=' + now);
+	queueJSON('Unfollow Sprint', '/api/sprint/action/leaveSprint?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
+		id: sprintHash,
+		now: now,
+		timeZoneName: timeZoneName
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			location.reload();
+		} else {
+			showAlert(data.message);
+		}
+	});
+}
+
+function joinSprint(sprintHash) {
+	queueJSON('Follow Sprint', '/api/sprint/action/joinSprint?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
+		id: sprintHash
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			location.reload();
+		} else {
+			showAlert(data.message);
+		}
+	});
 }
 
 function toggleCommentsList(discussionId) {
