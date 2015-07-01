@@ -1532,7 +1532,7 @@ body.discuss-page .red-header {
 	position: absolute;
 	margin: 10px 0px 0px 17px;
 	height: 40px;
-	pointer: cursor;
+	cursor: pointer;
 }
 
 .input-affordance p {
