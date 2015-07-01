@@ -77,6 +77,9 @@ $(window).load(function() {
 		showPeople();
 	} else if (isTabActive('#all')) {
 		showAllFeeds();
+	} else {
+		location.hash = '#all';
+		showAllFeeds();
 	}
 });
 
