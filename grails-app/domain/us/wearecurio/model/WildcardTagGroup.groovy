@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import us.wearecurio.cache.BoundedCache
+import us.wearecurio.utility.Utils
 
 class WildcardTagGroup extends GenericTagGroup {
 
@@ -9,9 +10,18 @@ class WildcardTagGroup extends GenericTagGroup {
 	}
 
 	// Cache holder to cache list of tag descriptions for a wildcard tag group
-	static BoundedCache<Long, List<String>> tagDescriptionCache = new BoundedCache<Long, List<String>>(100000)
+	static Map<Long, List<String>> tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
 	// Cache holder to cache list of tag id's for a wildcard tag group
-	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
+	static Map<Long, List<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+
+	static {
+		Utils.registerTestReset {
+			synchronized(tagDescriptionCache) {
+				tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
+				tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+			}
+		}
+	}
 
 	void addToCache(GenericTagGroup childTagGroupInstance, Long userId) {
 		if (hasCachedData()) {

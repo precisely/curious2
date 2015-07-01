@@ -23,8 +23,10 @@ class TagGroup extends GenericTagGroup {
 
 	static {
 		Utils.registerTestReset {
-			tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
-			tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+			synchronized(tagDescriptionCache) {
+				tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
+				tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+			}
 		}
 	}
 
