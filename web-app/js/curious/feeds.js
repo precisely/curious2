@@ -77,7 +77,7 @@ $(window).load(function() {
 		showPeople();
 	} else if (isTabActive('#all')) {
 		showAllFeeds();
-	} else {
+	} else if (location.href.indexOf('social') > -1) {
 		location.hash = '#all';
 		showAllFeeds();
 	}
