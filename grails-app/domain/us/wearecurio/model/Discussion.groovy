@@ -281,16 +281,11 @@ class Discussion {
 		return posts
 	}
 
-	def createPost(User user, String message, Date createTime) {
+	def createPost(User user, String message, Date createTime = null) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'" + ", createTime:" + createTime
 		return createPost(user, null, message, createTime)
 	}
 	
-	def createPost(User user, String message) {
-		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'"
-		return createPost(user, null, message)
-	}
-
 	def createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", createTime:" + createTime
 		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment, createTime)

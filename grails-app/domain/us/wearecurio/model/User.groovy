@@ -2,6 +2,8 @@ package us.wearecurio.model
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.LogFactory
 

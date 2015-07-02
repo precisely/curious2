@@ -48,11 +48,38 @@ class WildcardTagGroupTests extends CuriousTestCase {
 
 		wildcardTagGroupInstance1 = TagGroup.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
 		wildcardTagGroupInstance2 = TagGroup.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)
+		
+		System.out.println "User.tagIdCache (setUp)"
+		us.wearecurio.model.User.tagIdCache.each{ k, v -> println "${k}:${v}" }
+		System.out.println "User.tagGroupIdCache (setUp)"
+		us.wearecurio.model.User.tagGroupIdCache.each{ k, v -> println "${k}:${v}" }
 	}
 
 	@After
 	void tearDown() {
 		super.tearDown()
+		
+		System.out.println "User.tagIdCache (tearDown--before clear)"
+		us.wearecurio.model.User.tagIdCache.each{ k, v -> println "${k}:${v}" }
+		System.out.println "User.tagGroupIdCache (tearDown--before clear)"
+		us.wearecurio.model.User.tagGroupIdCache.each{ k, v -> println "${k}:${v}" }
+
+		def iterator = us.wearecurio.model.User.tagIdCache.entrySet().iterator()		
+		while (iterator.hasNext()) {
+			iterator.next()
+			iterator.remove()
+		}
+		
+		def iterator2 = us.wearecurio.model.User.tagGroupIdCache.entrySet().iterator()
+		while (iterator2.hasNext()) {
+			iterator2.next()
+			iterator2.remove()
+		}
+		
+		System.out.println "User.tagIdCache (tearDown--after clear)"
+		us.wearecurio.model.User.tagIdCache.each{ k, v -> println "${k}:${v}" }
+		System.out.println "User.tagGroupIdCache (tearDown--after clear)"
+		us.wearecurio.model.User.tagGroupIdCache.each{ k, v -> println "${k}:${v}" }
 	}
 
 	@Test
