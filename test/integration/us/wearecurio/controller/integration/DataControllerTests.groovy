@@ -52,6 +52,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		Entry.executeUpdate("delete Entry e")
 		Discussion.executeUpdate("delete Discussion d")
 		DiscussionPost.executeUpdate("delete DiscussionPost p")
+		TagStats.executeUpdate("delete TagStats t")
+		TagStats.executeUpdate("delete TagUnitStats t")
 		
 		super.setUp()
 		

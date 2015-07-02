@@ -7,6 +7,11 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.User
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagUnitStats
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.IntegrationTestMixin
@@ -24,6 +29,12 @@ abstract class CuriousTestCase {
 	void setUp() {
 		Utils.resetForTesting()
 
+		Entry.executeUpdate("delete Entry e")
+		Discussion.executeUpdate("delete Discussion d")
+		DiscussionPost.executeUpdate("delete DiscussionPost p")
+		TagStats.executeUpdate("delete TagStats t")
+		TagUnitStats.executeUpdate("delete TagUnitStats t")
+		
 		Map params = [username: "y", sex: "F", email: "y@y.com", birthdate: "01/01/2001", name: "y y", password: "y"]
 
 		user = User.create(params)
