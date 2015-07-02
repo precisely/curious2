@@ -79,11 +79,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
-		
 		//NOTE: Cannot use elasticSearchAdminService.deleteIndex() as that removes index entirely and an IndexMissingException is thrown
 		//the next time an ES search is attempted. Instead, do a "delete by  query" to remove all data in all indexes, while keeping the
 		//indexes themselves.  Could have used, elasticSearchAdminService to do the refresh, but since have client anyhow, chose to do use
-		//prepareRefresh with closure client
+		//prepareRefresh with closure client.
 		elasticSearchHelper.withElasticSearch{ client ->
 			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
 			client.admin().indices().prepareRefresh().execute().actionGet()
@@ -113,19 +112,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 	
-	private void testSimpleSearch(Object container, String fieldName, String extraFieldNameToCheck) {
-		testSimpleSearch(container, fieldName, true, extraFieldNameToCheck)
-	}
-	
 	private void testSimpleSearch(Object container, String fieldName) {
-		testSimpleSearch(container, fieldName, true, null)
+		testSimpleSearch(container, fieldName, null)
 	}
 	
-	private void testSimpleSearch(Object container, String fieldName, Boolean saveContainer, String extraFieldNameToCheck) {
-		if (saveContainer) {
-			//Utils.save(container, true)
-		}
-		
+	private void testSimpleSearch(Object container, String fieldName, String extraFieldNameToCheck) {
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -164,10 +155,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			f.set(post, fieldValue.class.cast(fieldValue))
 		}
 		
-		//Utils.save(discussion, true)
 		Utils.save(post, true)
 		
-		testSimpleSearch(post, fieldName, false, "message")
+		testSimpleSearch(post, fieldName, "message")
 	}
 	
 	@Test
@@ -179,9 +169,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	void "Test Search Discuussion by firstPostId"() {
 		Discussion discussion = Discussion.create(user)
 		DiscussionPost post = discussion.createPost(user, "Test post")
-		//Utils.save(discussion, true)
+		
 		Utils.save(post, true)
-		testSimpleSearch(discussion, "firstPostId", false, null)
+		testSimpleSearch(discussion, "firstPostId", null)
 	}
 	
 	@Test
@@ -215,8 +205,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		Discussion discussion = Discussion.create(user, "TestSearchDiscussionByBroupIds", groupA)
 		groupB.addDiscussion(discussion)
-		
-		//Utils.save(discussion, true)
 		
 		elasticSearchService.index()
 		
@@ -285,13 +273,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def results = Discussion.search(searchType:'query_and_fetch') {
 			filtered {
-				query {
-					query_string(query: "name:TestSearchDiscussionsCreatedinPastWeek")
-				}
+				query { query_string(query: "name:TestSearchDiscussionsCreatedinPastWeek") }
 				filter {
-					range{
-						created(gte: "now-7d/d")
-					}
+					range{ created(gte: "now-7d/d") }
 				}
 			}
 		}
@@ -313,7 +297,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			postOld.created = (new Date()) - 8.days
 		}
 		
-		//Utils.save(discussion, true)
 		Utils.save(postOld, true)
 		Utils.save(postRecent, true)
 		
@@ -322,13 +305,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def results = DiscussionPost.search(searchType:'query_and_fetch') {
 			filtered {
-				query {
-					query_string(query: "message:TestSearchDiscussionPostsCreatedInPastWeek")
-				}
+				query { query_string(query: "message:TestSearchDiscussionPostsCreatedInPastWeek") }
 				filter {
-					range{
-						created(gte: "now-7d/d")
-					}
+					range{ created(gte: "now-7d/d") }
 				}
 			}
 		}
@@ -344,7 +323,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion = Discussion.create(user, "TestSearchDiscussionsUpdatedInPastWeek")
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
-		//Utils.save(discussion, true)
 		Utils.save(post, true)
 		
 		elasticSearchService.index()
@@ -381,20 +359,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion6 = Discussion.create(user, "word2 word3")
 		Discussion discussion7 = Discussion.create(user, "word1 word2 word3")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		//Utils.save(discussion3, true)
-		//Utils.save(discussion4, true)
-		//Utils.save(discussion5, true)
-		//Utils.save(discussion6, true)
-		//Utils.save(discussion7, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query: "name:(word3 OR word1 OR word2)")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 OR word1 OR word2)") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 7
@@ -432,15 +400,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word3 word2 word1")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			match_phrase(name:"word1 word2 word3")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch') { match_phrase(name:"word1 word2 word3") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 1
@@ -453,15 +416,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2")
 		Discussion discussion2 = Discussion.create(user, "word1 word2 word3")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query: "name:(word3 OR word1)")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 OR word1)") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 2
@@ -476,15 +434,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(2000)
 		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderAscTest 2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'asc') {
-			query_string(query: "name:ChonologicalOrderAscTest")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'asc') { query_string(query: "name:ChonologicalOrderAscTest") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 2
@@ -499,18 +452,13 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(2000)
 		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderDescTest 2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		System.out.println "discussion1.creation: " + discussion1.created
 		System.out.println "discussion2.creation: " + discussion2.created
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc') {
-			query_string(query: "name:ChonologicalOrderDescTest")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc') { query_string(query: "name:ChonologicalOrderDescTest") }
 		
 		//results in chronological order by default
 		assert results.searchResults
@@ -525,15 +473,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word1 word2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query: "name:(word3 AND word1)")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 AND word1)") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 1
@@ -546,15 +489,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
 		Discussion discussion2 = Discussion.create(user, "word1 word2")
 		
-		//Utils.save(discussion1, true)
-		//Utils.save(discussion2, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-			query_string(query: "name:(word3 AND word1 AND word2)")
-		}
+		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 AND word1 AND word2)") }
 		
 		assert results.searchResults
 		assert results.searchResults.size() == 1
@@ -580,7 +518,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client.prepareSearch("us.wearecurio.model_v0").setTypes("discussion").setQuery(fsqb).execute().actionGet()
-			//          SearchResponse sr = client.prepareSearch("us.wearecurio.model_v0").setTypes("discussion").setQuery(matchQuery("name", "word1 word2")).execute().actionGet()
 			assert sr
 			assert sr.getHits()
 			if (sr.getHits().getTotalHits() == 0) System.out.println "no hits found!"
@@ -608,9 +545,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		DiscussionPost postA = discussionReadByUser.createPost(user, "postA")
 		DiscussionPost postB = discussionNotReadByUser.createPost(user, "postB")
-		
-		//Utils.save(discussionReadByUser, true)
-		//Utils.save(discussionNotReadByUser, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -653,9 +587,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
 		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -692,7 +623,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 		
-		//Utils.save(discussionB, true)
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -733,11 +663,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Discussion discussionB = Discussion.create(user, "discussion B")
 		
 		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
+		Thread.sleep(1000)
 		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
+		Thread.sleep(1000)
 		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
-		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -755,6 +684,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.subAggregation(
 					AggregationBuilders
 					.topHits("top_hits")
+					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
 					.setSize(1)  // number of post documents to show PER discussion id
 					)
 					)
@@ -802,6 +732,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.subAggregation(
 					AggregationBuilders
 					.topHits("top_hits")
+					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
 					.setSize(2)  // number of post documents to show PER discussion id
 					)
 					)
@@ -837,8 +768,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			
 			DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 			
-			//Utils.save(discussionB, true)
-			
 			elasticSearchService.index()
 			Thread.sleep(2000)
 			
@@ -854,6 +783,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.subAggregation(
 					AggregationBuilders
 					.topHits("top_hits")
+					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
 					.setSize(2)  // number of post documents to show PER discussion id
 					)
 					)
@@ -902,9 +832,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 		Thread.sleep(1000)
 		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
-		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -1002,9 +929,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1070,10 +994,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postC2 = discussionC.createPost(user, "post2 for discussion C")
 		Thread.sleep(1000)
 		DiscussionPost postC3 = discussionC.createPost(user, "post3 for discussion C")
-		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -1145,9 +1065,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postB1 = discussionB.createPost(user2, "postB1")
 		Thread.sleep(1000)
 		DiscussionPost postB2 = discussionB.createPost(user2, "postB2")
-		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
 		
 		elasticSearchService.index()
 		Thread.sleep(2000)
@@ -1232,10 +1149,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postC2 = discussionC.createPost(user, "postC2")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1261,7 +1174,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(
 					boolQuery()
 					.must(
-					queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")"))
+					queryString("discussionId:(" + discussionA.id + " OR " + discussionC.id + ")")
+					)
 					.mustNot(
 					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
 					)
@@ -1314,11 +1228,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		DiscussionPost postB2 = discussionB.createPost(user, "postB2")
 		DiscussionPost postC1 = discussionC.createPost(user, "postC1")
 		
-		//Utils.save(discussionA, true)
-		//Utils.save(discussionB, true)
-		//Utils.save(discussionC, true)
-		//Utils.save(discussionD, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1334,7 +1243,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					+ discussionB.id.toString() + " OR "
 					+ discussionC.id.toString() + " OR "
 					+ discussionD.id.toString()
-					+  ")"))
+					+  ")")
+					)
 					.mustNot(
 					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
 					)
@@ -1412,12 +1322,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Thread.sleep(1000)
 		DiscussionPost postC12 = discussionC1.createPost(user2, "postC12")
 		
-		//Utils.save(discussionA1, true)
-		//Utils.save(discussionA2, true)
-		//Utils.save(discussionB1, true)
-		//Utils.save(discussionB2, true)
-		//Utils.save(discussionC1, true)
-		
 		elasticSearchService.index()
 		Thread.sleep(2000)
 		
@@ -1439,12 +1343,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(
 					boolQuery()
 					.must(
-					queryString("discussionId:(" +
+					queryString(
+					"discussionId:(" +
 					discussionA1.id + " OR " +
 					discussionA2.id + " OR " +
 					discussionB1.id + " OR " +
 					discussionB2.id +
-					")"))
+					")"
+					)
+					)
 					.mustNot(
 					termQuery("flags",DiscussionPost.FIRST_POST_BIT.toString())
 					)

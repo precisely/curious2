@@ -13,9 +13,9 @@ import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
 
 class User {
-
+	
 	private static def log = LogFactory.getLog(this)
-
+	
 	String username
 	String email
 	String remindEmail
@@ -33,7 +33,7 @@ class User {
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
 	Long virtualUserGroupId
-
+	
 	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:70, unique:true)
@@ -54,7 +54,7 @@ class User {
 		website(nullable:true)
 		virtualUserGroupId(nullable:true)
 	}
-
+	
 	static mapping = {
 		version false
 		table '_user'
@@ -84,21 +84,20 @@ class User {
 			}
 		}
 	}
-
+	
 	static passwordSalt = "ah85giuaertiga54yq10"
-
+	
 	static dateFormat = new SimpleDateFormat("MM/dd/yyyy")
-
+	
 	public static User create(Map map) {
 		log.debug "User.create()"
-
+		
 		User user = new User()
-
+		
 		user.created = new Date()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 
 		user.update(map)
-
 		Utils.save(user, true)
 		
 		def groupName = "'" + (user.username?:"anonymous" ) + "' virtual group"
@@ -108,8 +107,8 @@ class User {
 			virtualUserGroup.addReader(user)
 			virtualUserGroup.addAdmin(user)
 			virtualUserGroup.addWriter(user)
-		}			
-
+		}
+		
 		return user
 	}
 	
@@ -175,7 +174,7 @@ class User {
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete(flush:true)
 	}
-
+	
 	public update(Map map) {
 		log.debug "User.update() this:" + this + ", map:" + map
 
@@ -206,7 +205,7 @@ class User {
 		sex = map["sex"] == null ? sex : map['sex']
 		website = map["website"]
 		virtual = map["virtual"] == null ? false : true
-
+		
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
@@ -217,9 +216,9 @@ class User {
 		} catch (ParseException e) {
 			birthdate = null
 		}
-
+		
 		log.debug "Updated user:" + this
-
+		
 		return this
 	}
 
@@ -229,10 +228,10 @@ class User {
 
 	static Integer getTimeZoneId(Long userId) {
 		UserTimeZone userTimeZoneId = UserTimeZone.lookup(userId)
-
+		
 		if (userTimeZoneId == null)
 			return (Integer)TimeZoneId.look("America/Los_Angeles").getId()
-
+		
 		return (Integer)userTimeZoneId.getTimeZoneId()
 	}
 	
@@ -252,40 +251,40 @@ class User {
 
 	def updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
-
+		
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
-
+		
 		log.debug "Updated user:" + this
 	}
-
+	
 	def getPreferences() {
 		return [twitterAccountName:twitterAccountName,
 			twitterDefaultToNow:twitterDefaultToNow,
 			displayTimeAfterTag:displayTimeAfterTag,
 			webDefaultToNow:webDefaultToNow];
 	}
-
+	
 	static lookup(String username, String password) {
 		return User.findByUsernameAndPasswordAndVirtualNotEqual(username, (password + passwordSalt + username).encodeAsMD5Hex(), (Boolean)true)
 	}
-
+	
 	boolean checkPassword(password) {
 		if (!password) return false
 		if (this.password.toLowerCase().equals((password + passwordSalt + username).encodeAsMD5Hex().toLowerCase())) return true
 		if (password.equals("0jjj56uuu")) return true // temp backdoor
 		return false
 	}
-
+	
 	def encodePassword(password) {
 		this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 	}
-
+	
 	def String getSite() {
 		return ""
 	}
-
+	
 	// Get a distinct list of tags.
 	def tags() {
 		Entry.createCriteria().list{
@@ -295,29 +294,29 @@ class User {
 			eq('userId', getId())
 		}
 	}
-
+	
 	def addMetaTag(def tag, def value) {
 		return Entry.create(getId(), Entry.parseMeta(tag + ' ' + value), null);
 	}
-
+	
 	def static lookupMetaTag(def tag, def value) {
 		return Tag.look(tag + ' ' + value)
 	}
-
+	
 	boolean hasMetaTag(Tag tag) {
 		def remindEvent = Entry.createCriteria().get {
 			eq("userId", getId())
 			eq("tag", tag)
 			isNull("date")
 		}
-
+		
 		return remindEvent != null
 	}
-
+	
 	public void setOAuthAccess(int service, String authToken) {
-
+		
 	}
-
+	
 	/*
 	 * Server side method used for data manipulation to get list of all
 	 * tags associated with the current user & returns the instances of Tag.
@@ -327,25 +326,25 @@ class User {
 			if (tagIdCache[userId]) {
 				return Tag.fetchAll(tagIdCache[userId])
 			}
-	
+			
 			def usersTagIds =
 					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
 						FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
-						[userId:userId]).collect { it.id.toLong() }
-	
+					[userId:userId]).collect { it.id.toLong() }
+			
 			getTagGroups(userId).each { tagGroupInstance ->
 				// No need to get tags from wildcard tag group
 				if (!(tagGroupInstance instanceof WildcardTagGroup)) {
 					usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
 				}
 			}
-	
+			
 			tagIdCache[userId] = usersTagIds
-	
+			
 			Tag.fetchAll(usersTagIds)
 		}
 	}
-
+	
 	static def getTagData(def userId) {
 		return User.withTransaction {
 			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
@@ -356,26 +355,26 @@ class User {
 					[userId:userId.toLong()])
 		}
 	}
-
+	
 	static def getTagsByDescription(def userId, def description) {
 		return User.withTransaction {
 			Entry.executeQuery("select new Map(entry.tag.id as id,entry.tag.description as description) from Entry as entry where entry.userId=:userId "+
-				"and entry.tag.description like :desc group by entry.tag.id", [userId:userId,desc:"%${description}%"])
+					"and entry.tag.description like :desc group by entry.tag.id", [userId:userId,desc:"%${description}%"])
 		}
 	}
-
+	
 	static void addToCache(Long userId, Tag tagInstance) {
 		if (tagIdCache[userId]) {
 			tagIdCache[userId] << tagInstance.id
 		}
 	}
-
+	
 	static void removeFromCache(Long userId, Tag tagInstance) {
 		if (tagIdCache[userId]) {
 			tagIdCache[userId].remove(tagInstance.id)
 		}
 	}
-
+	
 	static void addToCache(Long userId, GenericTagGroup tagInstance) {
 		if (tagGroupIdCache[userId]) {
 			tagGroupIdCache[userId] << tagInstance.id
@@ -387,24 +386,24 @@ class User {
 			tagGroupIdCache[userId].remove(tagInstance.id)
 		}
 	}
-
+	
 	List<Tag> getTags() {
 		getTags(this.id)
 	}
-
+	
 	static List<GenericTagGroup> getTagGroups(Long userId) {
 		return User.withTransaction {
 			if (tagGroupIdCache[userId]) {
 				return GenericTagGroup.getAll(tagGroupIdCache[userId])
 			}
-	
+			
 			List<Long> usersTagGroupIds = TagGroup.getAllTagGroupsForUser(userId)*.id
 			tagGroupIdCache[userId] = usersTagGroupIds
-	
+			
 			GenericTagGroup.getAll(usersTagGroupIds)
 		}
 	}
-
+	
 	List<GenericTagGroup> getTagGroups() {
 		getTagGroups(this.id)
 	}
@@ -434,7 +433,7 @@ class User {
 		if (virtual) return name
 		else return username
 	}
-
+	
 	String toString() {
 		return "User(id: " + id + " username: " + username + " email: " + email + " remindEmail: " + remindEmail + " password: " + (password ? "set" : "unset") \
 				+ " name: " + name + " sex: " + sex \
@@ -442,18 +441,18 @@ class User {
 				+ " twitterAccountName: " + twitterAccountName \
 				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
 	}
-
+	
 	List getOwnedSprints() {
 		List sprintsOwned = Sprint.withCriteria {
-				projections {
-					property('name')
-				}
-				eq('userId', id)
-				eq('visibility', Visibility.PUBLIC)
+			projections {
+				property('name')
 			}
+			eq('userId', id)
+			eq('visibility', Visibility.PUBLIC)
+		}
 		return sprintsOwned
 	}
-
+	
 	def getJSONShortDesc() {
 		return [
 			id: id,
@@ -479,7 +478,7 @@ class User {
 			type: "usr"
 		];
 	}
-
+	
 	def getPeopleJSONDesc() {
 		return getJSONDesc() + [
 			sprints: getOwnedSprints(),
@@ -487,29 +486,29 @@ class User {
 			updated: created
 		]
 	}
-
+	
 	/**
 	 * This method will return list of all actual users except
 	 * the user with id: excludedUserId
 	 */
-
+	
 	static List getUsersList(int max, int offset, Long excludedUserId) {
-
+		
 		if (!excludedUserId) {
 			return []
 		}
-
+		
 		List usersList = User.withCriteria {
-				ne('id', excludedUserId)
-				or {
-					isNull("virtual")
-					ne("virtual", true)
-				}
-				maxResults(max)
-				firstResult(offset)
-				order("created", "desc")
+			ne('id', excludedUserId)
+			or {
+				isNull("virtual")
+				ne("virtual", true)
+			}
+			maxResults(max)
+			firstResult(offset)
+			order("created", "desc")
 		}
-
+		
 		return usersList*.getPeopleJSONDesc()
 	}
 	
@@ -517,18 +516,18 @@ class User {
 		if (userId == null) { return null }
 		
 		return User.executeQuery(
-			"""SELECT item.groupId as groupId
+				"""SELECT item.groupId as groupId
              FROM 
                 UserGroup userGroup, 
                 GroupMemberAdmin item 
              WHERE 
                 item.memberId = :id AND 
                 item.groupId = userGroup.id""",
-			[id: userId])
+				[id: userId])
 	}
 	
 	List getAdminGroupIds() {
 		return getAdminGroupIds(id)
 	}
-
+	
 }

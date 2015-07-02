@@ -391,6 +391,7 @@ class UserGroup {
 			return discussion.getIsPublic()
 		if (discussion.getUserId() == user.getId())
 			return true
+		
 		def groups = getGroupsForDiscussion(discussion)
 		for (UserGroup group in groups) {
 			if (group.hasReader(user))
@@ -803,7 +804,7 @@ class UserGroup {
 	def removeMember(User user) {
 		if (!user) return
 		
-			removeInvited(user)
+		removeInvited(user)
 		removeReader(user)
 		removeWriter(user)
 		removeAdmin(user)
