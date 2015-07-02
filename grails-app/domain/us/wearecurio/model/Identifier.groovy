@@ -27,7 +27,7 @@ class Identifier {
 	
 	public static final int MAXIDENTIFIERLENGTH = 100
 	
-	public static BoundedCache<String, Identifier> map = new BoundedCache<String, Identifier>(10000)
+	public static Map<String, Identifier> map = Collections.synchronizedMap(new BoundedCache<String, Identifier>(10000))
 	
 	static constraints = {
 		value(maxSize:MAXIDENTIFIERLENGTH, unique:true)
@@ -41,7 +41,7 @@ class Identifier {
 	
 	static {
 		Utils.registerTestReset {
-			map = new BoundedCache<String, Identifier>()
+			map.clear()
 		}
 	}
 

@@ -71,8 +71,17 @@ class User {
 		interestTags: Tag
 	]
 
-	static BoundedCache<Long, List<Long>> tagIdCache = new BoundedCache<Long, List<Long>>(100000)
-	static BoundedCache<Long, List<Long>> tagGroupIdCache = new BoundedCache<Long, List<Long>>(100000)
+	static Map<Long, List<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+	static Map<Long, List<Long>> tagGroupIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+
+	static {
+		Utils.registerTestReset {
+			synchronized(tagIdCache) {
+				tagIdCache.clear()
+				tagGroupIdCache.clear()
+			}
+		}
+	}
 
 	static passwordSalt = "ah85giuaertiga54yq10"
 

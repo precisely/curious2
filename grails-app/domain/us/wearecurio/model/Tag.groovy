@@ -33,8 +33,8 @@ class Tag implements Serializable, Comparable {
 	static {
 		Utils.registerTestReset {
 			synchronized(tagCache) {
-				tagCache = Collections.synchronizedMap(new BoundedCache<String, Tag>())
-				tagIdCache = Collections.synchronizedMap(new BoundedCache<String, Tag>())
+				tagCache.clear()
+				tagIdCache.clear()
 			}
 		}
 	}

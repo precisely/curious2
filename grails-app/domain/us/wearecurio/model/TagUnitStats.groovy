@@ -5,6 +5,7 @@ import org.springframework.aop.aspectj.RuntimeTestWalker.ThisInstanceOfResidueTe
 import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.cache.BoundedCache
+import us.wearecurio.utility.Utils
 import us.wearecurio.units.UnitGroupMap
 import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
@@ -68,8 +69,15 @@ class TagUnitStats {
 		return getUnitGroup()?.lookupUnitString(unit, plural)
 	}
 	
-	protected static BoundedCache cache = new BoundedCache<UserTagId, TagUnitStats>(10000)
+	protected static Map cache = Collections.synchronizedMap(new BoundedCache<UserTagId, TagUnitStats>(10000))
 	
+	static {
+		Utils.registerTestReset {
+			synchronized(cache) {
+				cache.clear()
+			}
+		}
+	}	
 	protected static def createOrUpdateSingle(Long userId, Long tagId, String unit, Long unitGroupId, boolean increment) {
 		def tagUnitStats
 		

@@ -28,13 +28,13 @@ class TimeZoneId {
 	transient DateTimeZone dateTimeZone
 	transient TimeZone timeZone
 	
-	static Map<String, TimeZoneId> nameToTimeZoneId = new HashMap<String, TimeZoneId>()
-	static Map<Integer, TimeZoneId> idToTimeZoneId = new HashMap<Integer, TimeZoneId>()
+	static Map<String, TimeZoneId> nameToTimeZoneId = Collections.synchronizedMap(new HashMap<String, TimeZoneId>())
+	static Map<Integer, TimeZoneId> idToTimeZoneId = Collections.synchronizedMap(new HashMap<Integer, TimeZoneId>())
 	
 	static {
 		Utils.registerTestReset() {
-			nameToTimeZoneId = new HashMap<String, TimeZoneId>()
-			idToTimeZoneId = new HashMap<Integer, TimeZoneId>()	
+			nameToTimeZoneId.clear()
+			idToTimeZoneId.clear()
 		}
 	}
 	

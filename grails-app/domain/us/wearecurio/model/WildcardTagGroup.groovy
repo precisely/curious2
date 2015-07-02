@@ -17,8 +17,8 @@ class WildcardTagGroup extends GenericTagGroup {
 	static {
 		Utils.registerTestReset {
 			synchronized(tagDescriptionCache) {
-				tagDescriptionCache = Collections.synchronizedMap(new BoundedCache<Long, List<String>>(100000))
-				tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+				tagDescriptionCache.clear()
+				tagIdCache.clear()
 			}
 		}
 	}
