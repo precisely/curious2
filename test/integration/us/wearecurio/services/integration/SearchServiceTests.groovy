@@ -139,7 +139,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert result.listItems.groupMemberships[1][0].id == groupA.id
 		assert result.listItems.groupMemberships[1][0].name == groupA.name
 		assert result.listItems.groupMemberships[1][0].fullName == groupA.fullName
-		//need to round milliseconds
+		//need to round milliseconds.
 		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(groupA.created.getTime())
 		assert result.listItems.discussionList
 		assert result.listItems.discussionList.size() == 1
@@ -157,7 +157,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		def defaultUserGroup = UserGroup.findById( user.virtualUserGroupId )
 		assert defaultUserGroup
 		assert defaultUserGroup.id == user.virtualUserGroupId
-		assert result.listItems.discussionList[0].groupId == defaultUserGroup.id //userGroup.virtualUserGroupId //groupA.id
+		assert result.listItems.discussionList[0].groupId == defaultUserGroup.id
 		assert result.listItems.discussionList[0].isAdmin
 		assert result.listItems.discussionList[0].groupName == defaultUserGroup.fullName//groupA.fullName
 		assert result.listItems.discussionPostData

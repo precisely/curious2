@@ -678,27 +678,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 					.setQuery(matchAllQuery())
 					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
 					.addAggregation(
-<<<<<<< Upstream, based on origin/master
 					AggregationBuilders
 					.terms("by_discussionId")
 					.field("discussionId")
 					.subAggregation(
 					AggregationBuilders
 					.topHits("top_hits")
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
 					.setSize(1)  // number of post documents to show PER discussion id
+					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
 					)
-=======
-						AggregationBuilders
-						.terms("by_discussionId")
-						.field("discussionId")
-						.subAggregation(
-							AggregationBuilders
-							.topHits("top_hits")
-							.setSize(1)  // number of post documents to show PER discussion id
-                            .addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-						)
->>>>>>> 79ad5be work in progress...
 					)
 					.execute()
 					.actionGet()

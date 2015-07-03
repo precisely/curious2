@@ -204,7 +204,7 @@ class SearchService {
 				
 				//eventually, this code will need to be refactored to account for discussions with multiple groups
 				//for now, arbitrarily grab first group for which user is an admin and which is associated with this discussion
-				//if user is not admin of any group associated with this discussion, then arbitrarily select first group associated with this discussion
+				//if user is not admin of any group associated with this discussion, then arbitrarily select first group associated with this discussion.
 				//def groupIds = d.groupIds
 				if (d.groupIds == null || d.groupIds.length < 1) {
 					//all discussions should have at least one group
@@ -219,7 +219,7 @@ class SearchService {
 					def groups = userReaderGroups.find{ it[0].id == gid }
 					if (groups && groups.length > 0) {
 						if (firstGroup) {
-							//use first group data, unless admin group is found further down in the list
+							//use first group data, unless admin group is found further down in the list.
 							model["discussionList"].find{ it.id == d.id}["groupId"] = gid
 							model["discussionList"].find{ it.id == d.id}["groupName"] = groups[0].fullName
 							if (model["discussionList"].find{ it.id == d.id}["isAdmin"]) {
