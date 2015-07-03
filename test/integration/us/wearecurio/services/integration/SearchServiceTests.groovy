@@ -6,12 +6,18 @@ import org.elasticsearch.client.Client
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.*
+
 import static org.elasticsearch.index.query.QueryBuilders.*
+
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.index.query.QueryBuilders
+
 import static org.elasticsearch.node.NodeBuilder.*
+
 import org.elasticsearch.search.sort.*
+
 import java.util.Arrays;
+
 import static org.elasticsearch.client.Requests.searchRequest;
 import static org.elasticsearch.index.query.FilterBuilders.termsFilter;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
@@ -20,11 +26,13 @@ import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource;
 
 
 import us.wearecurio.model.OAuthAccount
+
 import java.text.DateFormat;
 import java.util.Date;
 
 import grails.test.mixin.*
 
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService;
 import org.joda.time.DateTimeZone;
 import org.junit.*
@@ -47,7 +55,6 @@ import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.services.SearchService
-
 import grails.test.mixin.integration.Integration
 import grails.transaction.*
 import spock.lang.*
@@ -55,7 +62,7 @@ import spock.lang.*
 @Integration
 @Rollback
 class SearchServiceTests extends CuriousServiceTestCase {
-	static transactional = true
+	static transactional = false
 	
 	DateFormat dateFormat
 	Date currentTime
@@ -67,13 +74,22 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	
 	ElasticSearchService elasticSearchService
 	def searchService
-	
+	ElasticSearchAdminService elasticSearchAdminService
+	def elasticSearchHelper
+
 	@Before
 	void setUp() {
 		super.setUp()
 		
-		Locale.setDefault(Locale.US)	// For to run test case in any country.
-		Utils.resetForTesting()
+		elasticSearchHelper.withElasticSearch{ client ->
+			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
+			client.admin().indices().prepareRefresh().execute().actionGet()
+		}
+		
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
+		UserGroup.executeUpdate("delete UserGroup g")
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
@@ -124,7 +140,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert UserGroup.findByName(groupB.name).id == groupB.id
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		Map result = searchService.getDiscussionsList(user, 0, 10)
 		assert result
@@ -189,7 +205,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert UserGroup.findByName(group.name).id == group.id
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		//first no offset, max set to 10 so all 2 results are included
 		Map result = searchService.getDiscussionsList(user, 0, 10)
@@ -291,7 +307,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert UserGroup.findByName(groupB.name).id == groupB.id
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		Map result = searchService.getDiscussionsList(user, 0, 10)
 		
@@ -303,7 +319,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Utils.save(groupA, true)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		result = searchService.getDiscussionsList(user, 0, 10)
 		

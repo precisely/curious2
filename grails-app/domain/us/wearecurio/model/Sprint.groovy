@@ -217,7 +217,7 @@ class Sprint {
 		virtualUserGroup.addReader(virtualUser)
 		this.virtualUserId = virtualUser.id
 		/*
-		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup)
+		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup, null)
 		this.discussionId = discussion.id
 		*/
 		this.description = null

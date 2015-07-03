@@ -62,7 +62,7 @@ class Discussion {
 	
 	public static Discussion create(User user, String name) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name
-		def discussion = new Discussion(user, name)
+		def discussion = new Discussion(user, name, new Date())
 		
 		Utils.save(discussion, true)
 		
@@ -71,16 +71,18 @@ class Discussion {
 		return discussion
 	}
 	
-	static Discussion create(User user, String name, UserGroup group) {
-		Discussion discussion
+	static Discussion create(User user, String name, UserGroup group, Date createTime = null) {
+		Discussion discussion = null
+		
+		if (group == null)
+			return create(user, name)
+		
 		if (group?.hasWriter(user)) {
-			discussion = create(user, name)
+			discussion = new Discussion(user, name, createTime)
+			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
+			discussion.addUserVirtualGroup(user)
 		}
-		
-		Utils.save(discussion, true)
-		
-		discussion.addUserVirtualGroup(user)
 		
 		return discussion
 	}
@@ -144,10 +146,10 @@ class Discussion {
 		this.visibility = Model.Visibility.PUBLIC
 	}
 	
-	public Discussion(User user, String name) {
+	public Discussion(User user, String name, Date createTime = null) {
 		this.userId = user?.getId()
 		this.name = name
-		this.created = new Date()
+		this.created = createTime ?: new Date()
 		this.updated = this.created
 		this.visibility = Model.Visibility.PUBLIC
 	}

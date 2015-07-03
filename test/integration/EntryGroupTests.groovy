@@ -30,7 +30,7 @@ import grails.test.mixin.integration.IntegrationTestMixin
 
 @TestMixin(IntegrationTestMixin)
 class EntryGroupTests extends CuriousTestCase {
-	static transactional = false
+	static transactional = true
 
 	DateFormat dateFormat
 	Date earlyBaseDate

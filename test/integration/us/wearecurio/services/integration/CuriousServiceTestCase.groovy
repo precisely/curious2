@@ -9,8 +9,12 @@ import org.junit.After
 import org.junit.Before
 
 import us.wearecurio.model.User
-import us.wearecurio.model.Entry
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagUnitStats
 
 /**
  * Superclass for service tests
@@ -54,10 +58,16 @@ abstract class CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
+		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		Utils.resetForTesting()
 		
-		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
 		Entry.executeUpdate("delete Entry e")
+		User.executeUpdate("delete User u")
+		Discussion.executeUpdate("delete Discussion d")
+		DiscussionPost.executeUpdate("delete DiscussionPost p")
+		TagStats.executeUpdate("delete TagStats t")
+		TagUnitStats.executeUpdate("delete TagUnitStats t")
+		
 		def entries = Entry.list(max:1)
 		
 		assert entries.size() == 0

@@ -1224,7 +1224,7 @@ class DataController extends LoginController {
 		debug "DiscussionController.create to group: " + group?.dump()
 		if (group) {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			discussion = discussion ?: Discussion.create(user, name, group)
+			discussion = discussion ?: Discussion.create(user, name, group, null)
 
 			if (discussion != null) {
 				Utils.save(discussion, true)

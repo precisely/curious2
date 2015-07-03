@@ -6,6 +6,7 @@ import org.junit.Before
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Discussion
@@ -27,13 +28,15 @@ abstract class CuriousTestCase {
 
 	@Before
 	void setUp() {
+		Locale.setDefault(Locale.US)	// For to run test case in any country.
 		Utils.resetForTesting()
-
+		
 		Entry.executeUpdate("delete Entry e")
 		Discussion.executeUpdate("delete Discussion d")
 		DiscussionPost.executeUpdate("delete DiscussionPost p")
 		TagStats.executeUpdate("delete TagStats t")
 		TagUnitStats.executeUpdate("delete TagUnitStats t")
+		UserGroup.executeUpdate("delete UserGroup g")
 		
 		Map params = [username: "y", sex: "F", email: "y@y.com", birthdate: "01/01/2001", name: "y y", password: "y"]
 

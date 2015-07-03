@@ -1,7 +1,6 @@
 package us.wearecurio.controller.integration
 
 import static org.junit.Assert.*
-import static us.wearecurio.model.ThirdParty.*
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.junit.*
@@ -10,6 +9,7 @@ import org.scribe.model.Token
 import us.wearecurio.controller.AuthenticationController
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.ThirdParty
 import us.wearecurio.services.WithingsDataService
 
 class AuthenticationControllerTests extends CuriousControllerTestCase {
@@ -86,7 +86,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		controller.session["moves:oasAccessToken"] =  new Token("some-token", "some-secret")
 		controller.checkAuthentication()
 		controller.movesAuth()	// Available raw response for moves authenticated user in token
-		assert OAuthAccount.countByTypeId(MOVES) == 1
+		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
 	}
 
 	@Test
@@ -103,7 +103,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 
 		controller.checkAuthentication()
 		controller.fitbitAuth()
-		assert OAuthAccount.countByTypeId(FITBIT) == 1
+		assert OAuthAccount.countByTypeId(ThirdParty.FITBIT) == 1
 	}
 
 	@Test
@@ -119,7 +119,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		controller.session["twenty3andme:oasAccessToken"] =  new Token("d914a5723ed53e84c58fb376a4cca575", "some-secret", "")
 		controller.checkAuthentication()
 		controller.twenty3andmeAuth()
-		assert OAuthAccount.countByTypeIdAndUserId(TWENTY_THREE_AND_ME, userId) == 1
+		assert OAuthAccount.countByTypeIdAndUserId(ThirdParty.TWENTY_THREE_AND_ME, userId) == 1
 	}
 
 	@Test
@@ -140,7 +140,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		controller.session["withings:oasAccessToken"] =  new Token("some-token", "some-secret", "")
 		controller.checkAuthentication()
 		controller.withingsAuth()
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(WITHINGS, userId)
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.WITHINGS, userId)
 		assert account != null
 		assert account.timeZoneId != null
 		assert account.accountId == "dummy1234"
@@ -168,7 +168,7 @@ class AuthenticationControllerTests extends CuriousControllerTestCase {
 		controller.session["withings:oasAccessToken"] =  new Token("some-token", "some-secret", "")
 		controller.checkAuthentication()
 		controller.withingsAuth()
-		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(WITHINGS, userId)
+		OAuthAccount account = OAuthAccount.findByTypeIdAndUserId(ThirdParty.WITHINGS, userId)
 		assert account != null
 		assert account.timeZoneId != null
 

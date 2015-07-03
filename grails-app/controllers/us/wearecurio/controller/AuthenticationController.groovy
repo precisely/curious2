@@ -1,12 +1,11 @@
 package us.wearecurio.controller
 
-import static us.wearecurio.model.ThirdParty.*
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
 
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.model.ThirdParty
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -91,14 +90,14 @@ class AuthenticationController extends SessionController {
 		JSONObject userInfo =  fitBitDataService.getUserProfile(tokenInstance).user
 		Integer timeZoneId = TimeZoneId.look(userInfo.timezone).id
 
-		oauthAccountService.createOrUpdate(FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(ThirdParty.FITBIT, userInfo.encodedId, tokenInstance, userId, timeZoneId)
 	}
 
 	def humanAuth() {
 		JSONObject userInfo = humanDataService.getUserProfile(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(userInfo.defaultTimeZone.name).id
 
-		oauthAccountService.createOrUpdate(HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(ThirdParty.HUMAN, userInfo.userId, tokenInstance, userId, timeZoneId)
 	}
 
 	def jawboneupAuth() {
@@ -106,20 +105,20 @@ class AuthenticationController extends SessionController {
 		String timezone = jawboneUpDataService.getTimeZoneName(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(timezone).id
 
-		oauthAccountService.createOrUpdate(JAWBONE, userInfo.data.xid, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(ThirdParty.JAWBONE, userInfo.data.xid, tokenInstance, userId, timeZoneId)
 	}
 
 	def movesAuth() {
 		JSONObject userInfo = movesDataService.getUserProfile(tokenInstance)
 		Integer timeZoneId = TimeZoneId.look(userInfo.profile.currentTimeZone.id).id
 
-		oauthAccountService.createOrUpdate(MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(ThirdParty.MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
 	}
 
 	def twenty3andmeAuth() {
 		JSONObject userInfo = twenty3AndMeDataService.getUserProfile(tokenInstance)
 
-		oauthAccountService.createOrUpdate(TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
+		oauthAccountService.createOrUpdate(ThirdParty.TWENTY_THREE_AND_ME, userInfo.id, tokenInstance, userId)
 	}
 
 	/**
@@ -134,7 +133,7 @@ class AuthenticationController extends SessionController {
 	def withingsAuth() {
 		String timezoneFromActivityData = withingsDataService.getUsersTimeZone(tokenInstance, session.withingsUserId)
 		Integer timeZoneId = TimeZoneId.look(timezoneFromActivityData).id
-		oauthAccountService.createOrUpdate(WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
+		oauthAccountService.createOrUpdate(ThirdParty.WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
 }

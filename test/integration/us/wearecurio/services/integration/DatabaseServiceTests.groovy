@@ -8,13 +8,12 @@ import org.scribe.model.Response
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DatabaseService
 
 class DatabaseServiceTests extends CuriousServiceTestCase {
-	static transactional = false
+	static transactional = true
 
 	DatabaseService databaseService
 

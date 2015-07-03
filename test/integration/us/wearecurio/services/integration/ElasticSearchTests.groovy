@@ -1,9 +1,9 @@
 package us.wearecurio.services.integration;
 
-import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.client.Client
-import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.index.query.functionscore.*
@@ -34,7 +34,8 @@ import java.util.Date;
 
 import grails.test.mixin.*
 
-import org.grails.plugins.elasticsearch.ElasticSearchService;
+import org.grails.plugins.elasticsearch.ElasticSearchService
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
 import org.joda.time.DateTimeZone;
 import org.junit.*
 import org.scribe.model.Response
@@ -75,10 +76,13 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	UserGroup testGroup
 	
 	ElasticSearchService elasticSearchService
+	ElasticSearchAdminService elasticSearchAdminService
 	def elasticSearchHelper
 	
 	@Before
 	void setUp() {
+		super.setUp()
+		
 		//NOTE: Cannot use elasticSearchAdminService.deleteIndex() as that removes index entirely and an IndexMissingException is thrown
 		//the next time an ES search is attempted. Instead, do a "delete by  query" to remove all data in all indexes, while keeping the
 		//indexes themselves.  Could have used, elasticSearchAdminService to do the refresh, but since have client anyhow, chose to do use
@@ -88,7 +92,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			client.admin().indices().prepareRefresh().execute().actionGet()
 		}
 		
-		super.setUp()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
+		UserGroup.executeUpdate("delete UserGroup g")
 		
 		Locale.setDefault(Locale.US)    // For to run test case in any country.
 		Utils.resetForTesting()
@@ -118,7 +125,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	private void testSimpleSearch(Object container, String fieldName, String extraFieldNameToCheck) {
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		String fieldValue
 		def val = container[fieldName]
@@ -208,7 +215,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		elasticSearchService.index()
 		
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') {
 			bool {
@@ -269,7 +276,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Utils.save(discussionRecent2, true)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') {
 			filtered {
@@ -301,7 +308,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Utils.save(postRecent, true)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = DiscussionPost.search(searchType:'query_and_fetch') {
 			filtered {
@@ -326,7 +333,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Utils.save(post, true)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		Date dt1, dt2
 		use (groovy.time.TimeCategory){
@@ -351,16 +358,16 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Using List of Keywords"()
 	{
-		Discussion discussion1 = Discussion.create(user, "word1")
-		Discussion discussion2 = Discussion.create(user, "word2")
-		Discussion discussion3 = Discussion.create(user, "word3")
-		Discussion discussion4 = Discussion.create(user, "word1 word2")
-		Discussion discussion5 = Discussion.create(user, "word1 word3")
-		Discussion discussion6 = Discussion.create(user, "word2 word3")
-		Discussion discussion7 = Discussion.create(user, "word1 word2 word3")
+		Discussion discussion1 = Discussion.create(user, "word1", null, currentTime - 6)
+		Discussion discussion2 = Discussion.create(user, "word2", null, currentTime - 5)
+		Discussion discussion3 = Discussion.create(user, "word3", null, currentTime - 4)
+		Discussion discussion4 = Discussion.create(user, "word1 word2", null, currentTime - 3)
+		Discussion discussion5 = Discussion.create(user, "word1 word3", null, currentTime - 2)
+		Discussion discussion6 = Discussion.create(user, "word2 word3", null, currentTime - 1)
+		Discussion discussion7 = Discussion.create(user, "word1 word2 word3", null, currentTime)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 OR word1 OR word2)") }
 		
@@ -397,11 +404,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Using Exact Phrase"()
 	{
-		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
-		Discussion discussion2 = Discussion.create(user, "word3 word2 word1")
+		Discussion discussion1 = Discussion.create(user, "word1 word2 word3", null, currentTime - 2)
+		Discussion discussion2 = Discussion.create(user, "word3 word2 word1", null, currentTime - 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') { match_phrase(name:"word1 word2 word3") }
 		
@@ -413,11 +420,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussion in Order of Most Hits"()
 	{
-		Discussion discussion1 = Discussion.create(user, "word1 word2")
-		Discussion discussion2 = Discussion.create(user, "word1 word2 word3")
+		Discussion discussion1 = Discussion.create(user, "word1 word2", null, currentTime - 2)
+		Discussion discussion2 = Discussion.create(user, "word1 word2 word3", null, currentTime - 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 OR word1)") }
 		
@@ -430,12 +437,12 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Multiple Results in Chronological order"()
 	{
-		Discussion discussion1 = Discussion.create(user, "ChonologicalOrderAscTest 1")
-		Thread.sleep(2000)
-		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderAscTest 2")
+		Discussion discussion1 = Discussion.create(user, "ChonologicalOrderAscTest 1", null, currentTime)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderAscTest 2", null, currentTime + 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'asc') { query_string(query: "name:ChonologicalOrderAscTest") }
 		
@@ -448,15 +455,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Multiple Results in Reverse Chronological order"()
 	{
-		Discussion discussion1 = Discussion.create(user, "ChonologicalOrderDescTest 1")
-		Thread.sleep(2000)
-		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderDescTest 2")
+		Discussion discussion1 = Discussion.create(user, "ChonologicalOrderDescTest 1", null, currentTime)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		Discussion discussion2 = Discussion.create(user, "ChonologicalOrderDescTest 2", null, currentTime + 1)
 		
 		System.out.println "discussion1.creation: " + discussion1.created
 		System.out.println "discussion2.creation: " + discussion2.created
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc') { query_string(query: "name:ChonologicalOrderDescTest") }
 		
@@ -470,11 +477,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Match Two Keywords"()
 	{
-		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
-		Discussion discussion2 = Discussion.create(user, "word1 word2")
+		Discussion discussion1 = Discussion.create(user, "word1 word2 word3", null, currentTime)
+		Discussion discussion2 = Discussion.create(user, "word1 word2", null, currentTime + 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 AND word1)") }
 		
@@ -486,11 +493,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@Test
 	void "Test Search Discussions Match Three Keywords"()
 	{
-		Discussion discussion1 = Discussion.create(user, "word1 word2 word3")
-		Discussion discussion2 = Discussion.create(user, "word1 word2")
+		Discussion discussion1 = Discussion.create(user, "word1 word2 word3", null, currentTime)
+		Discussion discussion2 = Discussion.create(user, "word1 word2", null, currentTime + 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def results = Discussion.search(searchType:'query_and_fetch') { query_string(query: "name:(word3 AND word1 AND word2)") }
 		
@@ -501,8 +508,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Scoring Function"() {
-		Discussion discussion1 = Discussion.create(user, "TestScoringFunction word2 word3")
-		Discussion discussion2 = Discussion.create(user, "TestScoringFunction word4 word5")
+		Discussion discussion1 = Discussion.create(user, "TestScoringFunction word2 word3", null, currentTime)
+		Discussion discussion2 = Discussion.create(user, "TestScoringFunction word4 word5", null, currentTime + 1)
 		
 		discussion1.firstPostId = 30
 		discussion2.firstPostId = 0
@@ -511,7 +518,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		Utils.save(discussion2, true)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchQuery("name","TestScoringFunction"))
 		fsqb.add(ScoreFunctionBuilders.linearDecayFunction("firstPostId", 0, 20))
@@ -540,14 +547,14 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupB.addMember(user2)
 		
-		Discussion discussionReadByUser = Discussion.create(user, "groupA discussion", groupA)
-		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB)
+		Discussion discussionReadByUser = Discussion.create(user, "groupA discussion", groupA, currentTime - 2)
+		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB, currentTime - 1)
 		
-		DiscussionPost postA = discussionReadByUser.createPost(user, "postA")
-		DiscussionPost postB = discussionNotReadByUser.createPost(user, "postB")
+		DiscussionPost postA = discussionReadByUser.createPost(user, "postA", currentTime)
+		DiscussionPost postB = discussionNotReadByUser.createPost(user, "postB", currentTime + 1)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 2
@@ -580,15 +587,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Search Discussion Post Counts"() {
-		Discussion discussionA = Discussion.create(user, "groupA discussion")
-		Discussion discussionB = Discussion.create(user, "groupB discussion")
+		Discussion discussionA = Discussion.create(user, "groupA discussion", null, currentTime - 2)
+		Discussion discussionB = Discussion.create(user, "groupB discussion", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
-		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
-		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
+		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A", currentTime + 1)
+		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B", currentTime + 2)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			CountResponse cr = client
@@ -621,10 +628,10 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			assert sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == discussionB.id.toString() }.docCount == 1
 		}
 		
-		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
+		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B", currentTime + 3)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			CountResponse cr = client
@@ -659,17 +666,15 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Group Discussion Posts and Counts"() {
-		Discussion discussionA = Discussion.create(user, "discussion A")
-		Discussion discussionB = Discussion.create(user, "discussion B")
+		Discussion discussionA = Discussion.create(user, "discussion A", null, currentTime - 2)
+		Discussion discussionB = Discussion.create(user, "discussion B", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
+		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A", currentTime + 1)
+		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B", currentTime + 2)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -769,7 +774,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
 			
 			elasticSearchService.index()
-			Thread.sleep(2000)
+			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 			
 			sr = client
 					.prepareSearch("us.wearecurio.model_v0")
@@ -819,22 +824,18 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Sort Order of Discussion Posts"() {
-		Discussion discussionA = Discussion.create(user, "discussion A")
-		Discussion discussionB = Discussion.create(user, "discussion B")
+		Discussion discussionA = Discussion.create(user, "discussion A", null, currentTime - 2)
+		Discussion discussionB = Discussion.create(user, "discussion B", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A")
-		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
+		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A", currentTime + 1)
+		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A", currentTime + 2)
+		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B", currentTime + 3)
+		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B", currentTime + 4)
+		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B", currentTime + 5)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -915,22 +916,18 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Get Second Discussion Post for All Discussions"() {
-		Discussion discussionA = Discussion.create(user, "discussion A")
-		Discussion discussionB = Discussion.create(user, "discussion B")
+		Discussion discussionA = Discussion.create(user, "discussion A", null, currentTime - 2)
+		Discussion discussionB = Discussion.create(user, "discussion B", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A")
-		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
+		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A", currentTime + 1)
+		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A", currentTime + 2)
+		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B", currentTime + 3)
+		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B", currentTime + 4)
+		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B", currentTime + 5)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -975,28 +972,22 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Get Second Discussion Post for Specific Discussions"() {
-		Discussion discussionA = Discussion.create(user, "discussion A")
-		Discussion discussionB = Discussion.create(user, "discussion B")
-		Discussion discussionC = Discussion.create(user, "discussion C")
+		Discussion discussionA = Discussion.create(user, "discussion A", null, currentTime - 3)
+		Discussion discussionB = Discussion.create(user, "discussion B", null, currentTime - 2)
+		Discussion discussionC = Discussion.create(user, "discussion C", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A")
-		Thread.sleep(1000)
-		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A")
-		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B")
-		Thread.sleep(1000)
-		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B")
-		DiscussionPost postC1 = discussionC.createPost(user, "post1 for discussion C")
-		Thread.sleep(1000)
-		DiscussionPost postC2 = discussionC.createPost(user, "post2 for discussion C")
-		Thread.sleep(1000)
-		DiscussionPost postC3 = discussionC.createPost(user, "post3 for discussion C")
+		DiscussionPost postA1 = discussionA.createPost(user, "post1 for discussion A", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "post2 for discussion A", currentTime + 1)
+		DiscussionPost postA3 = discussionA.createPost(user, "post3 for discussion A", currentTime + 2)
+		DiscussionPost postB1 = discussionB.createPost(user, "post1 for discussion B", currentTime + 3)
+		DiscussionPost postB2 = discussionB.createPost(user, "post2 for discussion B", currentTime + 4)
+		DiscussionPost postB3 = discussionB.createPost(user, "post3 for discussion B", currentTime + 5)
+		DiscussionPost postC1 = discussionC.createPost(user, "post1 for discussion C", currentTime + 6)
+		DiscussionPost postC2 = discussionC.createPost(user, "post2 for discussion C", currentTime + 7)
+		DiscussionPost postC3 = discussionC.createPost(user, "post3 for discussion C", currentTime + 8)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -1054,20 +1045,18 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupB.addMember(user2)
 		
-		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA)
-		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB)
+		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA, currentTime - 2)
+		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB, currentTime - 1)
 		assert discussionA
 		assert discussionB
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "postA1")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "postA2")
-		DiscussionPost postB1 = discussionB.createPost(user2, "postB1")
-		Thread.sleep(1000)
-		DiscussionPost postB2 = discussionB.createPost(user2, "postB2")
+		DiscussionPost postA1 = discussionA.createPost(user, "postA1", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "postA2", currentTime + 1)
+		DiscussionPost postB1 = discussionB.createPost(user2, "postB1", currentTime + 2)
+		DiscussionPost postB2 = discussionB.createPost(user2, "postB2", currentTime + 3)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 2
@@ -1132,25 +1121,22 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupC.addMember(user)
 		
-		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA)
-		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB)
-		Discussion discussionC = Discussion.create(user, "groupC discussion", groupC)
+		Discussion discussionA = Discussion.create(user, "groupA discussion", groupA, currentTime - 3)
+		Discussion discussionB = Discussion.create(user2, "groupB discussion", groupB, currentTime - 2)
+		Discussion discussionC = Discussion.create(user, "groupC discussion", groupC, currentTime - 1)
 		assert discussionA
 		assert discussionB
 		assert discussionC
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "postA1")
-		Thread.sleep(1000)
-		DiscussionPost postA2 = discussionA.createPost(user, "postA2")
-		DiscussionPost postB1 = discussionB.createPost(user2, "postB1")
-		Thread.sleep(1000)
-		DiscussionPost postB2 = discussionB.createPost(user2, "postB2")
-		DiscussionPost postC1 = discussionC.createPost(user, "postC1")
-		Thread.sleep(1000)
-		DiscussionPost postC2 = discussionC.createPost(user, "postC2")
+		DiscussionPost postA1 = discussionA.createPost(user, "postA1", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "postA2", currentTime + 1)
+		DiscussionPost postB1 = discussionB.createPost(user2, "postB1", currentTime + 2)
+		DiscussionPost postB2 = discussionB.createPost(user2, "postB2", currentTime + 3)
+		DiscussionPost postC1 = discussionC.createPost(user, "postC1", currentTime + 4)
+		DiscussionPost postC2 = discussionC.createPost(user, "postC2", currentTime + 5)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 3
@@ -1216,20 +1202,20 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Get Discussion Post Info Including None"() {
-		Discussion discussionA = Discussion.create(user, "discussion A")
-		Discussion discussionB = Discussion.create(user, "discussion B")
-		Discussion discussionC = Discussion.create(user, "discussion C")
-		Discussion discussionD = Discussion.create(user, "discussion D")
+		Discussion discussionA = Discussion.create(user, "discussion A", null, currentTime - 4)
+		Discussion discussionB = Discussion.create(user, "discussion B", null, currentTime - 3)
+		Discussion discussionC = Discussion.create(user, "discussion C", null, currentTime - 2)
+		Discussion discussionD = Discussion.create(user, "discussion D", null, currentTime - 1)
 		
-		DiscussionPost postA1 = discussionA.createPost(user, "postA1")
-		DiscussionPost postA2 = discussionA.createPost(user, "postA2")
-		DiscussionPost postA3 = discussionA.createPost(user, "postA3")
-		DiscussionPost postB1 = discussionB.createPost(user, "postB1")
-		DiscussionPost postB2 = discussionB.createPost(user, "postB2")
-		DiscussionPost postC1 = discussionC.createPost(user, "postC1")
+		DiscussionPost postA1 = discussionA.createPost(user, "postA1", currentTime)
+		DiscussionPost postA2 = discussionA.createPost(user, "postA2", currentTime + 1)
+		DiscussionPost postA3 = discussionA.createPost(user, "postA3", currentTime + 2)
+		DiscussionPost postB1 = discussionB.createPost(user, "postB1", currentTime + 3)
+		DiscussionPost postB2 = discussionB.createPost(user, "postB2", currentTime + 4)
+		DiscussionPost postC1 = discussionC.createPost(user, "postC1", currentTime + 5)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -1300,30 +1286,25 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupC.addMember(user2)
 		
-		Discussion discussionA1 = Discussion.create(user, "groupA discussion 1", groupA)
-		Discussion discussionA2 = Discussion.create(user, "groupA discussion 2", groupA)
-		Discussion discussionB1 = Discussion.create(user, "groupB discussion 1", groupB)
-		Discussion discussionB2 = Discussion.create(user, "groupB discussion 2", groupB)
-		Discussion discussionC1 = Discussion.create(user2, "groupC discussion 1", groupC)
+		Discussion discussionA1 = Discussion.create(user, "groupA discussion 1", groupA, currentTime - 5)
+		Discussion discussionA2 = Discussion.create(user, "groupA discussion 2", groupA, currentTime - 4)
+		Discussion discussionB1 = Discussion.create(user, "groupB discussion 1", groupB, currentTime - 3)
+		Discussion discussionB2 = Discussion.create(user, "groupB discussion 2", groupB, currentTime - 2)
+		Discussion discussionC1 = Discussion.create(user2, "groupC discussion 1", groupC, currentTime - 1)
 		
-		DiscussionPost postA11 = discussionA1.createPost(user, "postA11")
-		Thread.sleep(1000)
-		DiscussionPost postA12 = discussionA1.createPost(user, "postA12")
-		DiscussionPost postA21 = discussionA2.createPost(user, "postA21")
-		Thread.sleep(1000)
-		DiscussionPost postA22 = discussionA2.createPost(user, "postA22")
-		DiscussionPost postB11 = discussionB1.createPost(user, "postB11")
-		Thread.sleep(1000)
-		DiscussionPost postB12 = discussionB1.createPost(user, "postB12")
-		DiscussionPost postB21 = discussionB2.createPost(user, "postB21")
-		Thread.sleep(1000)
-		DiscussionPost postB22 = discussionB2.createPost(user, "postB22")
-		DiscussionPost postC11 = discussionC1.createPost(user2, "postC11")
-		Thread.sleep(1000)
-		DiscussionPost postC12 = discussionC1.createPost(user2, "postC12")
+		DiscussionPost postA11 = discussionA1.createPost(user, "postA11", currentTime)
+		DiscussionPost postA12 = discussionA1.createPost(user, "postA12", currentTime + 1)
+		DiscussionPost postA21 = discussionA2.createPost(user, "postA21", currentTime + 2)
+		DiscussionPost postA22 = discussionA2.createPost(user, "postA22", currentTime + 3)
+		DiscussionPost postB11 = discussionB1.createPost(user, "postB11", currentTime + 4)
+		DiscussionPost postB12 = discussionB1.createPost(user, "postB12", currentTime + 5)
+		DiscussionPost postB21 = discussionB2.createPost(user, "postB21", currentTime + 6)
+		DiscussionPost postB22 = discussionB2.createPost(user, "postB22", currentTime + 7)
+		DiscussionPost postC11 = discussionC1.createPost(user2, "postC11", currentTime + 8)
+		DiscussionPost postC12 = discussionC1.createPost(user2, "postC12", currentTime + 9)
 		
 		elasticSearchService.index()
-		Thread.sleep(2000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 3

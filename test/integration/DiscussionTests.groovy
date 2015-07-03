@@ -5,6 +5,13 @@ import java.text.DateFormat
 
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
+import static org.elasticsearch.index.query.QueryBuilders.*
+import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.sort.*
+
+import static org.elasticsearch.node.NodeBuilder.*
+
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.junit.After
 import org.junit.Before
@@ -48,13 +55,19 @@ class DiscussionTests extends CuriousTestCase {
 	UserGroup testGroup
 	
 	ElasticSearchService elasticSearchService
-	
+	ElasticSearchAdminService elasticSearchAdminService
+	def elasticSearchHelper
+
 	@Before
 	void setUp() {
 		super.setUp()
 		
-		Locale.setDefault(Locale.US)	// For to run test case in any country.
-		Utils.resetForTesting()
+		elasticSearchHelper.withElasticSearch{ client ->
+			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
+			client.admin().indices().prepareRefresh().execute().actionGet()
+		}
+		
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
@@ -77,13 +90,13 @@ class DiscussionTests extends CuriousTestCase {
 
 	@Test
 	void testCreateDiscussion() {
-		Discussion discussion = Discussion.create(user, "testCreateDiscussion", testGroup)
+		Discussion discussion = Discussion.create(user, "testCreateDiscussion", testGroup, null)
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
 		post = post
 		
-		elasticSearchService.index()		
-		Thread.sleep(2000)
+		elasticSearchService.index()	
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		// test elastic search here
 		def results = elasticSearchService.search(searchType:'query_and_fetch') {
@@ -96,11 +109,9 @@ class DiscussionTests extends CuriousTestCase {
 
 	@Test
 	void testIndexDiscussionId() {
-		Discussion discussion1 = Discussion.create(user, "testIndexDiscussionId1")
-		Thread.sleep(1000)
-		Discussion discussion2 = Discussion.create(user, "testIndexDiscussionId2")
-		Thread.sleep(1000)
-		Discussion discussion3 = Discussion.create(user, "testIndexDiscussionId3")
+		Discussion discussion1 = Discussion.create(user, "testIndexDiscussionId1", null, currentTime)
+		Discussion discussion2 = Discussion.create(user, "testIndexDiscussionId2", null, currentTime + 1)
+		Discussion discussion3 = Discussion.create(user, "testIndexDiscussionId3", null, currentTime + 2)
 		
 		def id1 = 38
 		def id2 = 93
@@ -111,7 +122,7 @@ class DiscussionTests extends CuriousTestCase {
 		discussion3.id = id3
 		
 		elasticSearchService.index(discussion2)
-		Thread.sleep(1000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		def results = elasticSearchService.search(searchType:'query_and_fetch') {
 			ids ( values: [id1, id2, id3] )
@@ -128,7 +139,7 @@ class DiscussionTests extends CuriousTestCase {
 		discussion2.id = id3 //changing id has no effect on existing index
 		
 		elasticSearchService.index(discussion3)
-		Thread.sleep(1000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		results = elasticSearchService.search(searchType:'query_and_fetch') {
 			ids ( values: [id1, id2, id3] )
@@ -148,7 +159,7 @@ class DiscussionTests extends CuriousTestCase {
 		discussion3.id = id1 //changing id has no effect on files already indexed
 		
 		elasticSearchService.index(discussion1)
-		Thread.sleep(1000)
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		results = elasticSearchService.search(searchType:'query_and_fetch') {
 			ids ( values: [id1, id2, id3] )
@@ -178,7 +189,7 @@ class DiscussionTests extends CuriousTestCase {
 			[isReadOnly:false, defaultNotify:true])
 		groupB.addMember(user)
 
-		Discussion discussion = Discussion.create(user, "Topic name", groupA)
+		Discussion discussion = Discussion.create(user, "Topic name", groupA, null)
 		groupB.addDiscussion(discussion)
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		

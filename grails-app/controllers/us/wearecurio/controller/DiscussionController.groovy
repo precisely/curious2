@@ -28,7 +28,7 @@ class DiscussionController extends LoginController {
 			redirect(url: toUrl(controller: "home", action: "social"))
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			discussion = discussion ?: Discussion.create(user, name, group)
+			discussion = discussion ?: Discussion.create(user, name, group, null)
 
 			if (discussion != null) {
 				Utils.save(discussion, true)

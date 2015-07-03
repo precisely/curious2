@@ -10,7 +10,7 @@ import org.scribe.model.Response
 import us.wearecurio.integration.CuriousTestCase
 
 class TokenServiceTests extends CuriousTestCase {
-	static transactional = false
+	static transactional = true
 	
 	def simulatedSession
 	def tokenService
