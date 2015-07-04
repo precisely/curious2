@@ -27,8 +27,6 @@ import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource;
 
 import us.wearecurio.model.OAuthAccount
 
-
-
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -59,13 +57,12 @@ import us.wearecurio.model.GroupMemberReader
 
 
 import grails.test.mixin.integration.Integration
-import grails.transaction.*
+import org.springframework.transaction.annotation.*
 import spock.lang.*
 
 @Integration
-@Rollback
 class ElasticSearchTests extends CuriousServiceTestCase {
-	static transactional = true
+	static transactional = false
 	
 	DateFormat dateFormat
 	Date currentTime
@@ -81,8 +78,6 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Before
 	void setUp() {
-		super.setUp()
-		
 		//NOTE: Cannot use elasticSearchAdminService.deleteIndex() as that removes index entirely and an IndexMissingException is thrown
 		//the next time an ES search is attempted. Instead, do a "delete by  query" to remove all data in all indexes, while keeping the
 		//indexes themselves.  Could have used, elasticSearchAdminService to do the refresh, but since have client anyhow, chose to do use
@@ -97,8 +92,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
 		UserGroup.executeUpdate("delete UserGroup g")
 		
-		Locale.setDefault(Locale.US)    // For to run test case in any country.
-		Utils.resetForTesting()
+		super.setUp()
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
@@ -1037,6 +1031,9 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	
 	@Test
 	void "Test Get Discussion Post Info for User Belonging to One Group with One Discussion"() {
+		def groups = UserGroup.list()
+		def groups2 = GroupMemberReader.list()
+		
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
 		groupA.addMember(user)

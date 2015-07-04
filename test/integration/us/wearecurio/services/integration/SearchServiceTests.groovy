@@ -24,16 +24,15 @@ import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.factorFunction;
 import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource;
 
-
 import us.wearecurio.model.OAuthAccount
 
-import java.text.DateFormat;
-import java.util.Date;
+import java.text.DateFormat
+import java.util.Date
 
 import grails.test.mixin.*
 
-import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
-import org.grails.plugins.elasticsearch.ElasticSearchService;
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
+import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.joda.time.DateTimeZone;
 import org.junit.*
 import org.scribe.model.Response
@@ -56,11 +55,10 @@ import us.wearecurio.model.UserGroup
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.services.SearchService
 import grails.test.mixin.integration.Integration
-import grails.transaction.*
+import org.springframework.transaction.annotation.*
 import spock.lang.*
 
 @Integration
-@Rollback
 class SearchServiceTests extends CuriousServiceTestCase {
 	static transactional = false
 	
@@ -79,8 +77,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 
 	@Before
 	void setUp() {
-		super.setUp()
-		
 		elasticSearchHelper.withElasticSearch{ client ->
 			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
 			client.admin().indices().prepareRefresh().execute().actionGet()
@@ -90,6 +86,8 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		
 		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
 		UserGroup.executeUpdate("delete UserGroup g")
+		
+		super.setUp()
 		
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		timeZone = "America/Los_Angeles"
@@ -113,7 +111,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getDiscussionsList"()
 	{
-		Thread.sleep(1000)
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
 		groupA.addAdmin(user)
@@ -122,11 +119,10 @@ class SearchServiceTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupB.addMember(user2)
 		
-		Discussion discussionReadByUser = Discussion.create(user, "groupA discussion", groupA)
-		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB)
-		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1")
-		Thread.sleep(1000)
-		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2")
+		Discussion discussionReadByUser = Discussion.create(user, "groupA discussion", groupA, currentTime)
+		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB, currentTime + 1)
+		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1", currentTime + 2)
+		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2", currentTime + 3)
 		
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService
@@ -185,14 +181,12 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getDiscussionsList with offset and max"()
 	{
-		Thread.sleep(1000)
 		UserGroup group = UserGroup.create("curious", "Group", "Discussion topics for Sprint",
 				[isReadOnly:false, defaultNotify:false])
 		group.addMember(user)
 		
-		Discussion discussion1 = Discussion.create(user, "discussion 1", group)
-		Thread.sleep(1000)
-		Discussion discussion2 = Discussion.create(user, "discussion 2", group)
+		Discussion discussion1 = Discussion.create(user, "discussion 1", group, currentTime)
+		Discussion discussion2 = Discussion.create(user, "discussion 2", group, currentTime + 1)
 		
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService
@@ -289,11 +283,10 @@ class SearchServiceTests extends CuriousServiceTestCase {
 				[isReadOnly:false, defaultNotify:true])
 		groupB.addMember(user2)
 		
-		Discussion discussionReadByUser = Discussion.create(user2, "groupA discussion", groupA)
-		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB)
-		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1")
-		Thread.sleep(1000)
-		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2")
+		Discussion discussionReadByUser = Discussion.create(user2, "groupA discussion", groupA, currentTime)
+		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB, currentTime + 1)
+		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1", currentTime + 2)
+		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2", currentTime + 3)
 		
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService

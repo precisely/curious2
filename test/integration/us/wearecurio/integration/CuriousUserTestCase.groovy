@@ -9,10 +9,11 @@ abstract class CuriousUserTestCase extends CuriousTestCase {
 	User user
 	Long userId
 	
-	void setUp() {
+	void setUp() {		
+		User.executeUpdate("delete User u")	// Deleting existing records temporary to create default user.
+		
 		super.setUp()
 		
-		User.list()*.delete()	// Deleting existing records temporary to create default user.
 		def users = User.list(max:1)
 		if (users.size() == 0) {
 			def params = [username:'y', sex:'F', \

@@ -15,6 +15,8 @@ import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagUnitStats
+import us.wearecurio.model.UserGroup
+import us.wearecurio.model.GroupMemberReader
 
 /**
  * Superclass for service tests
@@ -22,7 +24,6 @@ import us.wearecurio.model.TagUnitStats
  * @author mitsu
  */
 abstract class CuriousServiceTestCase {
-	static transactional = true
 
 	protected static def log = LogFactory.getLog(this)
 
