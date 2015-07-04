@@ -72,10 +72,18 @@ class Discussion {
 	}
 	
 	static Discussion create(User user, String name, UserGroup group, Date createTime = null) {
+		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime
 		Discussion discussion = null
 		
-		if (group == null)
-			return create(user, name)
+		if (group == null) {
+			discussion = new Discussion(user, name, createTime)
+			
+			Utils.save(discussion, true)
+			
+			discussion.addUserVirtualGroup(user)
+			
+			return discussion
+		}
 		
 		if (group?.hasWriter(user)) {
 			discussion = new Discussion(user, name, createTime)
