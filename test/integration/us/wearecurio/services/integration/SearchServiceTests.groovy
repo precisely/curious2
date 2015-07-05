@@ -166,12 +166,10 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert result.listItems.discussionList[0].isPlot == false
 		assert result.listItems.discussionList[0].firstPost
 		assert result.listItems.discussionList[0].firstPost.message == readByUser1.message
-		def defaultUserGroup = UserGroup.findById( user.virtualUserGroupId )
-		assert defaultUserGroup
-		assert defaultUserGroup.id == user.virtualUserGroupId
-		assert result.listItems.discussionList[0].groupId == defaultUserGroup.id
+		// the discussion item should show the non-virtual user group for UI purposes
+		assert result.listItems.discussionList[0].groupId == groupA.id
 		assert result.listItems.discussionList[0].isAdmin
-		assert result.listItems.discussionList[0].groupName == defaultUserGroup.fullName//groupA.fullName
+		assert result.listItems.discussionList[0].groupName == groupA.fullName
 		assert result.listItems.discussionPostData
 		assert result.listItems.discussionPostData[discussionReadByUser.id].secondPost
 		assert result.listItems.discussionPostData[discussionReadByUser.id].secondPost.message == readByUser2.message

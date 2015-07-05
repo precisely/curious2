@@ -103,7 +103,7 @@ class User {
 		Utils.save(user, true)
 		
 		def groupName = "'" + (user.username?:"anonymous" ) + "' virtual group"
-		def virtualUserGroup = UserGroup.create(groupName, groupName, "virtual UserGroup for '" +  (user.username?:"anonymous") + "'", [isReadOnly:false, defaultNotify:false])
+		def virtualUserGroup = UserGroup.create(groupName, groupName, "virtual UserGroup for '" +  (user.username?:"anonymous") + "'", [isReadOnly:false, defaultNotify:false, isHidden:true])
 		if (virtualUserGroup) {
 			user.virtualUserGroupId = virtualUserGroup.id
 			virtualUserGroup.addReader(user)

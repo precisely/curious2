@@ -168,6 +168,8 @@ class SearchService {
 					type: "dis"
 				]
 				
+				def discussionItem = model["discussionList"].find{ it.id == d.id}
+				
 				def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == d.id.toString() }
 				def firstPost
 				if (bucket) {
@@ -188,18 +190,18 @@ class SearchService {
 						secondPost: secondPost,
 						totalPosts: bucket.docCount
 					]
-					model["discussionList"].find{ it.id == d.id}["totalComments"] = bucket.docCount
+					discussionItem["totalComments"] = bucket.docCount
 				} else {
 					model["discussionPostData"][d.id] = [
 						secondPost: null,
 						totalPosts: 0
 					]
-					model["discussionList"].find{ it.id == d.id}["totalComments"] = 0
+					discussionItem["totalComments"] = 0
 				}
 				
 				if (firstPost) {
-					model["discussionList"].find{ it.id == d.id}["isPlot"] = (firstPost.plotDataId != null && firstPost.plotDataId > 0)
-					model["discussionList"].find{ it.id == d.id}["firstPost"] = firstPost
+					discussionItem["isPlot"] = (firstPost.plotDataId != null && firstPost.plotDataId > 0)
+					discussionItem["firstPost"] = firstPost
 				}
 				
 				//eventually, this code will need to be refactored to account for discussions with multiple groups
@@ -211,33 +213,43 @@ class SearchService {
 					return [listItems: false, success: false] // better to throw exception?
 				}
 				
-				model["discussionList"].find{ it.id == d.id}["isAdmin"] = (d.userId == user.id)
-				def firstGroup = true
+				discussionItem["isAdmin"] = (d.userId == user.id)
+				boolean firstGroup = true
+				Long anyGid = null
+				String anyGName = null
 				for (Long gid : d.groupIds) {
 					//NOT ALL of discussion's groups are necessarily included in userReaderGroups
-					//BUT at least ONE of the discussion's groupIds MUST be
+					//BUT at least ONE of the discussion's groupIds MUST be, use first non-hidden user group
 					def groups = userReaderGroups.find{ it[0].id == gid }
 					if (groups && groups.length > 0) {
-						if (firstGroup) {
+						UserGroup group = groups[0]
+						anyGid = gid
+						anyGName = group.fullName
+						if (firstGroup && (!group.isHidden)) {
 							//use first group data, unless admin group is found further down in the list.
-							model["discussionList"].find{ it.id == d.id}["groupId"] = gid
-							model["discussionList"].find{ it.id == d.id}["groupName"] = groups[0].fullName
+							discussionItem["groupId"] = gid
+							discussionItem["groupName"] = group.fullName
 							if (model["discussionList"].find{ it.id == d.id}["isAdmin"]) {
-								break; //admin already true, so no need to continue
+								break //admin already true, so no need to continue
 							}
+							firstGroup = false
 						}
 						if (d.userId == user.id || (adminGroupIds != null && adminGroupIds.contains(gid))) {
 							//found first admin group
 							if (!firstGroup) {
 								//override first group data with current, non-first-group-but-first-admin-group data
-								model["discussionList"].find{ it.id == d.id}["groupId"] = gid
-								model["discussionList"].find{ it.id == d.id}["groupName"] = groups[0].fullName
+								discussionItem["groupId"] = gid
+								discussionItem["groupName"] = groups[0].fullName
 							}
-							model["discussionList"].find{ it.id == d.id}["isAdmin"] = true
-							break; // found admin, so no need to proceed
+							discussionItem["isAdmin"] = true
+							break // found admin, so no need to proceed
 						}
-						firstGroup = false
 					}
+				}
+				// make sure at least one group ID and name are set for discussion even if they are hidden/user-virtual
+				if (!discussionItem["groupId"]) {
+					discussionItem["groupId"] = anyGid
+					discussionItem['groupName'] = anyGName
 				}
 			}
 			

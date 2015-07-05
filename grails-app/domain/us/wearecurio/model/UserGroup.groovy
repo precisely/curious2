@@ -24,6 +24,7 @@ class UserGroup {
 		fullName(nullable:true)
 		description(nullable:true)
 		isVirtual(nullable:true)
+		isHidden(nullable:true)
 	}
 	
 	static mapping = {
@@ -39,6 +40,7 @@ class UserGroup {
 	boolean defaultNotify // notify admins by default
 	boolean isSystemGroup
 	Boolean isVirtual
+	Boolean isHidden // hidden from normal searches (typically used by user virtual groups)
 	String name
 	String fullName
 	String description
@@ -56,6 +58,7 @@ class UserGroup {
 		this.isModerated =  options ? options['isModerated'] : false
 		this.defaultNotify =  options ? options['defaultNotify'] : false
 		this.isSystemGroup =  options ? options['isSystemGroup'] : false
+		this.isHidden =  options ? options['isHidden'] : false
 		this.name = name
 		this.fullName = fullName
 		this.description = description
@@ -65,7 +68,7 @@ class UserGroup {
 		createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
 	}
 	
-	static UserGroup createVirtual(String fullName) {
+	static UserGroup createVirtual(String fullName, boolean isHidden = false) {
 		UserGroup userGroup = new UserGroup()
 		
 		userGroup.name = "__virtual" + UUID.randomUUID().toString()
@@ -77,6 +80,7 @@ class UserGroup {
 		userGroup.isModerated = false
 		userGroup.defaultNotify = false
 		userGroup.isSystemGroup = false
+		userGroup.isHidden = isHidden
 		
 		Utils.save(userGroup, true)
 		
