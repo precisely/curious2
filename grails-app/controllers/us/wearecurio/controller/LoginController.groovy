@@ -121,7 +121,7 @@ class LoginController extends SessionController {
 			flash.message = ""
 			def uuid = session.persistentSession.fetchUuid()
 			def parmMap = parm ? JSON.parse(parm) : [:]
-			parmMap.persistentSessionId = uuid
+			//parmMap.persistentSessionId = uuid
 			redirect(url:toUrl(controller:params.precontroller, action:params.preaction, params:parmMap))
 			return
 		} else {

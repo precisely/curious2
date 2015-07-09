@@ -62,7 +62,6 @@ grails.project.dependency.resolution = {
     plugins {
         // plugins for the build system only
         build ":tomcat:8.0.22"
-		//build ":jetty:3.0.0"
 
         // plugins for the compile step
         compile ":scaffolding:2.1.2"
@@ -75,6 +74,8 @@ grails.project.dependency.resolution = {
 		compile ":message-digest:1.1"
 		runtime ':elasticsearch:0.0.4.2'
 		compile ":quartz:1.0.2"
+		
+		//compile ":spring-security-core:2.0-RC5"
 		//compile ":searchable:0.6.9"
 		
         // plugins needed at runtime but not for compilation

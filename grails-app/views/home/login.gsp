@@ -4,6 +4,34 @@
 		<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
 		rel="stylesheet">
 		<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
+		<script type="text/javascript">
+		$(function() {
+			$("#curiousloginform").submit(function() {
+				var username = $("#username").val();
+				var password = $("#password").val();
+				queueJSON("logging in",
+						makeGetUrl('dologinData'),
+						makeGetArgs({
+							username : username,
+							password : password
+						}),
+						function(data) {
+							if (!checkData(data))
+								return;
+				
+							if (data['success']) {
+								localStorage['mobileSessionId'] = data['persistentSessionId'];
+								localStorage['persistentSessionId'] = data['persistentSessionId'];
+								$("#indexformpersistentsessionid").val(localStorage['persistentSessionId']);
+								$("#curiousindexform").submit();
+							} else {
+								showAlert('Username or password not correct, please try again');
+							}
+						});
+				return false;
+			});
+		});
+		</script>
 	</head>
 	<body>
 		<br>
@@ -117,7 +145,7 @@
 				</g:if>
 				<g:else>
 				<div class="col-sm-2 col-sm-offset-1 text-teal">
-					<form method="post" action="/home/dologin">
+					<form method="post" action="/home/dologin" id="curiousloginform">
 						<input type="hidden" name="precontroller"
 						value="${precontroller.encodeAsHTML()}" />
 						<input type="hidden" name="preaction"
@@ -153,6 +181,15 @@
 						</div>
 
 
+					</form>
+					<form method="post" action="/home/index" id="curiousindexform">
+						<input type="hidden" name="precontroller"
+						value="${precontroller.encodeAsHTML()}" />
+						<input type="hidden" name="preaction"
+						value="${preaction.encodeAsHTML()}" /> <input
+						type="hidden" name="parm"
+						value="${parm.encodeAsHTML()}" />
+						<input type="hidden" name="persistentSessionId" id="indexformpersistentsessionid" />
 					</form>
 				</div>
 				</g:else>

@@ -19,6 +19,14 @@ var _logoutCallbacks = [];
 
 var _loginSessionNumber = 0;
 
+function clearLocalStorage() {
+	if (supportsLocalStorage()) {
+		localStorage.clear();
+		localStorage['mobileSessionId'] = null;
+		localStorage['lastPage'] = 'login';
+	}
+}
+
 function registerLogoutCallback(closure) {
 	_logoutCallbacks.push(closure);
 }
@@ -27,6 +35,7 @@ function callLogoutCallbacks() {
 	for (var i in _logoutCallbacks) {
 		_logoutCallbacks[i]();
 	}
+	clearLocalStorage();
 	clearJSONQueue();
 	++_loginSessionNumber;
 }
