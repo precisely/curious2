@@ -51,6 +51,8 @@ class UrlService {
 			url += '#' + map.fragment
 		}
 		
+		log.debug("Made url: " + url)
+		
 		return url
 	}
 

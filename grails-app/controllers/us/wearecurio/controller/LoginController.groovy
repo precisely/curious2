@@ -116,12 +116,13 @@ class LoginController extends SessionController {
 		debug "LoginController.dologin()"
 		
 		def user = execLogin()
-		def p = params
-		def parm = params.parm
+		String parm = params.parm
 		if (user) {
 			flash.message = ""
 			def uuid = session.persistentSession.fetchUuid()
-			redirect(url:toUrl(controller:params.precontroller, persistentSessionId:uuid, mobileSessionId:uuid, action:params.preaction, params:params.parm ? JSON.parse(params.parm) : [:]))
+			def parmMap = parm ? JSON.parse(parm) : [:]
+			parmMap.persistentSessionId = uuid
+			redirect(url:toUrl(controller:params.precontroller, action:params.preaction, params:parmMap))
 			return
 		} else {
 			flash.message = "Wrong user name or password. Please try again."
@@ -131,7 +132,7 @@ class LoginController extends SessionController {
 			redirect(url:toUrl(controller:"home", action:"login"))
 			return
 		}
-	}
+	} 	
 	
 	def dologinData() {
 		debug "LoginController.dologinData()"
