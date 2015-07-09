@@ -116,10 +116,12 @@ class LoginController extends SessionController {
 		debug "LoginController.dologin()"
 		
 		def user = execLogin()
+		def p = params
 		def parm = params.parm
 		if (user) {
 			flash.message = ""
-			redirect(url:toUrl(controller:params.precontroller, action:params.preaction, params:params.parm ? JSON.parse(params.parm) : [:]))
+			def uuid = session.persistentSession.fetchUuid()
+			redirect(url:toUrl(controller:params.precontroller, persistentSessionId:uuid, mobileSessionId:uuid, action:params.preaction, params:params.parm ? JSON.parse(params.parm) : [:]))
 			return
 		} else {
 			flash.message = "Wrong user name or password. Please try again."
