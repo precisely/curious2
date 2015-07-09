@@ -343,16 +343,6 @@ class UserGroup {
 
 		List result = databaseService.sqlRows(listQuery, namedParameters)
 		List<Long> discussionIdList = result.collect { it.discussionId }*.toLong()
-
-		DataSource dataSource =  Holders.getApplicationContext().dataSource
-		Sql sql = new Sql(dataSource)
-	
-		// Initialize the variable to default value to avoid problem on next query
-		sql.execute("""SET @num := 0, @did := 0""")
-	
-		// Close the connection to avoid memory leak	
-		sql.close()
-	
 		Map discussionPostData = getTotalDiscussionPosts(discussionIdList)
 
 		paginatedData["discussionPostData"] = discussionPostData

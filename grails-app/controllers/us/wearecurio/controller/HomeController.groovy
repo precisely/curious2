@@ -38,7 +38,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 	def oauthService
-	def SearchService
+	SearchService searchService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 
@@ -956,7 +956,7 @@ class HomeController extends DataController {
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participantsList = sprintInstance.getParticipants(10, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
-		Map sprintDiscussions = SearchService.getDiscussionsList(sessionUser(), 0, 5, [sprintGroupName])
+		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintGroupName])
 
 		log.debug "Sprint discussions: ${sprintDiscussions.dump()} and group name: $sprintGroupName"
 

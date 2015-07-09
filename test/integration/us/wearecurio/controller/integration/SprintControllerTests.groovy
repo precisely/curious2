@@ -37,7 +37,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test update when wrong id is passed"() {
+	void "test update when wrong id is passed"() {
 		controller.request.contentType = "text/json"
 		controller.request.content = "{'id': 0, 'name': 'Sprint1', 'description': 'Description'," + 
 			"'durationDays': 6}"
@@ -48,7 +48,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test update when null id is passed"() {
+	void "test update when null id is passed"() {
 		controller.request.contentType = "text/json"
 		controller.request.content = "{'id': null, 'name': 'Sprint1', 'description': 'Description'," + 
 			"'durationDays': 6}"
@@ -59,7 +59,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test update when correct id is passed"() {
+	void "test update when correct id is passed"() {
 		controller.request.contentType = "text/json"
 		controller.request.content = "{'id': ${dummySprint.hash}, 'name': 'Sprint1', 'description': 'Description'," + 
 			"'durationDays': 6}"
@@ -115,149 +115,149 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test show when wrong id is passed"() {
+	void "test show when wrong id is passed"() {
 		controller.params["id"] = 0
 		
 		controller.show()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test show when null id is passed"() {
+	void "test show when null id is passed"() {
 		controller.params["id"] = null
 		
 		controller.show()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test show when non admin user tries to fetch data"() {
+	void "test show when non admin user tries to fetch data"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = dummySprint.hash
 
 		controller.show()
-		assert controller.response.json.error == true
+		assert !controller.response.json.success
 		assert controller.response.json.message == "You don't have permission to edit this sprint."
 	}
 
 	@Test
-	void "Test show when admin tries to fetch data"() {
+	void "test show when admin tries to fetch data"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		dummySprint.addMember(dummyUser2.getId())
 		controller.show()
 		assert controller.response.json.sprint.id == dummySprint.id
-		assert controller.response.json.participants.size() == 3	// Including virtual user
+		assert controller.response.json.participants.size() == 2
 	}
 
 	@Test
-	void "Test startSprint when wrong id is passed"() {
+	void "test start when wrong id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = 0
 		
-		controller.startSprint()
+		controller.start()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test startSprint when null id is passed"() {
+	void "test start when null id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = null
 		
-		controller.startSprint()
+		controller.start()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test startSprint when non member user tries to start the sprint"() {
+	void "test start when non member user tries to start the sprint"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.startSprint()
+		controller.start()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
 		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
 	@Test
-	void startSprint() {
+	void start() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
-		controller.startSprint()
+		controller.start()
 		assert controller.response.json.success == true
 		assert dummySprint.hasStarted(user.getId(), new Date())
 	}
 
 	@Test
-	void "Test stopSprint when wrong id is passed"() {
+	void "test stop when wrong id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = 0
 		
-		controller.stopSprint()
+		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test stopSprint when null id is passed"() {
+	void "test stop when null id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = null
 		
-		controller.stopSprint()
+		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
 	}
 
 	@Test
-	void "Test stopSprint when non member user tries to stop the sprint"() {
+	void "test stop when non member user tries to stop the sprint"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.stopSprint()
+		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
 		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
 	@Test
-	void "Test stopSprint when a member has not started the sprint"() {
+	void "test stop when a member has not started the sprint"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
-		controller.stopSprint()
+		controller.stop()
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("can.not.stop.sprint", [] as Object[], null) 
 	}
 
 	@Test
-	void stopSprint() {
+	void stop() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		controller.params["now"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		
-		controller.startSprint()
+		controller.start()
 		controller.response.reset()
 		controller.params["now"] = "Wed, 25 Feb 2015 11:44:07 GMT"
 		
-		controller.stopSprint()
+		controller.stop()
 		assert controller.response.json.success == true
 		assert dummySprint.hasEnded(user.getId(), new Date())
 	}
 
 	@Test
-	void "Test addMember when wrong sprintHash is passed"() {
+	void "test addMember when wrong sprintHash is passed"() {
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = 0
 		
@@ -268,7 +268,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMember when null sprintHash is passed"() {
+	void "test addMember when null sprintHash is passed"() {
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = null
 		
@@ -279,7 +279,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMember when user name is null"() {
+	void "test addMember when user name is null"() {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addMember()
@@ -289,7 +289,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMember when user name is wrong"() {
+	void "test addMember when user name is wrong"() {
 		controller.params["username"] = "z"
 		controller.params["sprintHash"] = dummySprint.hash
 		
@@ -300,7 +300,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMember when a non admin performs the action"() {
+	void "test addMember when a non admin performs the action"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -312,7 +312,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addMember"() {
+	void "test addMember"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -323,7 +323,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin when wrong sprintHash is passed"() {
+	void "test addAdmin when wrong sprintHash is passed"() {
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = 0
 		
@@ -334,7 +334,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin when null sprintHash is passed"() {
+	void "test addAdmin when null sprintHash is passed"() {
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = null
 		
@@ -345,7 +345,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin when user name is null"() {
+	void "test addAdmin when user name is null"() {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.addAdmin()
@@ -355,7 +355,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin when user name is wrong"() {
+	void "test addAdmin when user name is wrong"() {
 		controller.params["username"] = "z"
 		controller.params["sprintHash"] = dummySprint.hash
 		
@@ -366,7 +366,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin when a non admin performs the action"() {
+	void "test addAdmin when a non admin performs the action"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -378,7 +378,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test addAdmin"() {
+	void "test addAdmin"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -389,7 +389,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when wrong sprintHash is passed"() {
+	void "test deleteMember when wrong sprintHash is passed"() {
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = 0
 		
@@ -400,7 +400,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when null sprintHash is passed"() {
+	void "test deleteMember when null sprintHash is passed"() {
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = null
 		
@@ -411,7 +411,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when user name is null"() {
+	void "test deleteMember when user name is null"() {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteMember()
@@ -421,7 +421,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when user name is wrong"() {
+	void "test deleteMember when user name is wrong"() {
 		controller.params["username"] = "z"
 		controller.params["sprintHash"] = dummySprint.hash
 		
@@ -431,7 +431,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when a non admin performs the action"() {
+	void "test deleteMember when a non admin performs the action"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -443,7 +443,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember when a non member is being deleted"() {
+	void "test deleteMember when a non member is being deleted"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -454,7 +454,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteMember"() {
+	void "test deleteMember"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -465,7 +465,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when wrong sprintId is passed"() {
+	void "test deleteAdmin when wrong sprintId is passed"() {
 		controller.params["username"] = user.username
 		controller.params["sprintId"] = 0
 		
@@ -476,7 +476,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when null sprintHash is passed"() {
+	void "test deleteAdmin when null sprintHash is passed"() {
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = null
 		
@@ -487,7 +487,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when user name is null"() {
+	void "test deleteAdmin when user name is null"() {
 		controller.params["sprintHash"] = dummySprint.hash
 		
 		controller.deleteAdmin()
@@ -497,7 +497,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when user name is wrong"() {
+	void "test deleteAdmin when user name is wrong"() {
 		controller.params["username"] = "z"
 		controller.params["sprintHash"] = dummySprint.hash
 		
@@ -508,7 +508,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when a non admin performs the action"() {
+	void "test deleteAdmin when a non admin performs the action"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -520,7 +520,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin when a non admin is being deleted"() {
+	void "test deleteAdmin when a non admin is being deleted"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = dummyUser2.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -531,7 +531,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test deleteAdmin"() {
+	void "test deleteAdmin"() {
 		controller.session.userId = user.getId()
 		controller.params["username"] = user.username
 		controller.params["sprintHash"] = dummySprint.hash
@@ -542,81 +542,81 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test leaveSprint when wrong id is passed"() {
+	void "test leave when wrong id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = 0
 		
-		controller.leaveSprint()
+		controller.leave()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("sprint.not.exist", [] as Object[], null)
 	}
 
 	@Test
-	void "Test leaveSprint when null id is passed"() {
+	void "test leave when null id is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = null
 		
-		controller.leaveSprint()
+		controller.leave()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("sprint.not.exist", [] as Object[], null)
 	}
 
 	@Test
-	void "Test leaveSprint when non member user tries to leave the sprint"() {
+	void "test leave when non member user tries to leave the sprint"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.leaveSprint()
+		controller.leave()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("not.sprint.member", [] as Object[], null)
 	}
 
 	@Test
-	void "Test leaveSprint when a member leaves the sprint"() {
+	void "test leave when a member leaves the sprint"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.leaveSprint()
+		controller.leave()
 		assert controller.response.json.success == true
 		assert dummySprint.hasMember(user.getId()) == false
 	}
 
 	@Test
-	void "Test joinSprint when wrong id is passed"() {
+	void "test join when wrong id is passed"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = 0
 		
-		controller.joinSprint()
+		controller.join()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("sprint.not.exist", [] as Object[], null)
 	}
 
 	@Test
-	void "Test joinSprint when null id is passed"() {
+	void "test join when null id is passed"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = null
 		
-		controller.joinSprint()
+		controller.join()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("sprint.not.exist", [] as Object[], null)
 	}
 
 	@Test
-	void "Test joinSprint when member user tries to join the sprint"() {
+	void "test join when member user tries to join the sprint"() {
 		controller.session.userId = user.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.joinSprint()
+		controller.join()
 		assert controller.response.json.success == false
 		assert controller.response.json.message == messageSource.getMessage("already.joined.sprint", [] as Object[], null)
 	}
 
 	@Test
-	void "Test joinSprint when a non member joins the sprint"() {
+	void "test join when a non member joins the sprint"() {
 		controller.session.userId = dummyUser2.getId()
 		controller.params["id"] = dummySprint.hash
 		
-		controller.joinSprint()
+		controller.join()
 		assert controller.response.json.success == true
 		assert dummySprint.hasMember(dummyUser2.getId()) == true
 	}

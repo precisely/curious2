@@ -5,10 +5,12 @@ import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 import us.wearecurio.support.EntryStats
+import us.wearecurio.services.SearchService
 
 class SprintController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+	SearchService searchService
 
 	def index() {
 
@@ -24,26 +26,25 @@ class SprintController extends LoginController {
 	}
 
 	def update() {
-		log.debug "request parameters to update sprint for id($params.id) : ${request.JSON}"
-		Map params = request.JSON
-		Sprint sprintInstance = Sprint.findByHash(params.id)
+		Map requestData = request.JSON
+		log.debug "update sprint for id($requestData.id) with data $requestData"
+		Sprint sprintInstance = Sprint.findByHash(requestData.id)
 
 		if (!sprintInstance) {
 			renderJSONPost([success: false, message: g.message(code: "sprint.not.exist")])
 			return
-		} else {
-			Sprint.withTransaction { status ->
-				sprintInstance.update(params)
-				sprintInstance.validate()
+		} 
 
-				if (sprintInstance.hasErrors()) {
-					status.setRollbackOnly()
-					renderJSONPost([success: false, message: g.message(code: "can.not.update.sprint")])
-					return
-				}
-				Utils.save(sprintInstance, true)
-				renderJSONPost([success: true, hash: sprintInstance.hash])
+		Sprint.withTransaction { status ->
+			sprintInstance.update(requestData)
+
+			if (!Utils.save(sprintInstance, true)) {
+				status.setRollbackOnly()
+				renderJSONPost([success: false, message: g.message(code: "can.not.update.sprint")])
+				return
 			}
+			
+			renderJSONPost([success: true, hash: sprintInstance.hash])
 		}
 	}
 
@@ -51,27 +52,28 @@ class SprintController extends LoginController {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 
 		if (!sprintInstance) {
-			renderJSONGet([error: true, message: g.message(code: "sprint.not.exist")])
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 
-		if (!sprintInstance.hasAdmin(sessionUser().id)) {
-			renderJSONGet([error: true, message: g.message(code: "edit.sprint.permission.denied")])
+		if (!sprintInstance.hasMember(sessionUser().id)) {
+			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
 			return
 		}
 
 		List<Entry> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
-		List memberReaders = GroupMemberReader.findAllByGroupId(sprintInstance.virtualGroupId)
-		List<User> participants = memberReaders.collect {User.get(it.memberId)}
+		List<User> participants = sprintInstance.getParticipants(10, 0)
 		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
 
-		renderJSONGet([sprint: sprintInstance, entries: entries, participants: participants, admins: admins])
+		renderJSONGet([success: true, sprint: sprintInstance, entries: entries, participants: participants, admins: admins, 
+			totalParticipants: sprintInstance.getParticipantsCount()])
 	} 
 
 	def delete() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
+		log.debug "$currentUser trying to delete sprint with id [$params.id]"
 
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
@@ -88,14 +90,15 @@ class SprintController extends LoginController {
 	}
 
 	def addMember() {
-		User memberInstance = params.username ? User.findByUsername(params.username) : null
 		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
+		log.debug "Trying to add member [${params.username}] to sprint [$params.sprintHash]"
 
 		if (!sprintInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.participant.failed")])
 			return
 		}
 
+		User memberInstance = params.username ? User.findByUsername(params.username) : null
 		if (!memberInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
 			return
@@ -115,14 +118,15 @@ class SprintController extends LoginController {
 	}
 
 	def addAdmin() {
-		User adminInstance = params.username ? User.findByUsername(params.username) : null
 		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
+		log.debug "Trying to add admin [${params.username}] to sprint [$params.sprintHash]"
 
 		if (!sprintInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "add.sprint.admin.failed")])
 			return
 		}
 
+		User adminInstance = params.username ? User.findByUsername(params.username) : null
 		if (!adminInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "user.not.found")])
 			return
@@ -144,15 +148,17 @@ class SprintController extends LoginController {
 
 
 	def deleteMember() {
-		User memberInstance = params.username ? User.findByUsername(params.username) : null
 		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
+		User memberInstance = params.username ? User.findByUsername(params.username) : null
+		User currentUser = sessionUser()
+		log.debug "$currentUser Trying to detele member [${params.username}] from sprint [$params.sprintHash]"
 
 		if (!sprintInstance || !memberInstance) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.participant.failed")])
 			return
 		}
 
-		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+		if (!sprintInstance.hasAdmin(currentUser.id)) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.member.permission.denied")])
 			return
 		}
@@ -163,9 +169,9 @@ class SprintController extends LoginController {
 		}
 
 		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
-			def now = params.now ? null : parseDate(params.now)
+			Date now = params.now ? null : parseDate(params.now)
 			EntryStats stats = new EntryStats()
-			def baseDate = Utils.getStartOfDay(now)
+			Date baseDate = Utils.getStartOfDay(now)
 			sprintInstance.stop(memberInstance.id, baseDate, now, params.timeZoneName, stats)
 		}
 		sprintInstance.removeMember(memberInstance.id)
@@ -175,13 +181,15 @@ class SprintController extends LoginController {
 	def deleteAdmin() {
 		User adminInstance = params.username ? User.findByUsername(params.username) : null
 		Sprint sprintInstance = Sprint.findByHash(params.sprintHash)
+		User currentUser = sessionUser()
+		log.debug "$currentUser Trying to detele admin [${params.username}] from sprint [$params.sprintHash]"
 
 		if (!sprintInstance || !adminInstance) {
 			renderJSONPost([error: true, errorMessage:  g.message(code: "delete.sprint.admin.failed")])
 			return
 		}
 
-		if (!sprintInstance.hasAdmin(sessionUser().id)) {
+		if (!sprintInstance.hasAdmin(currentUser.id)) {
 			renderJSONPost([error: true, errorMessage: g.message(code: "delete.sprint.admin.permission.denied")])
 			return
 		}
@@ -195,23 +203,24 @@ class SprintController extends LoginController {
 		renderJSONPost([success: true])
 	}
 
-	def startSprint() {
+	def start() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
+		User currentUser = sessionUser()
+		log.debug "Starting sprint[${params.id}] for user $currentUser"
 
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 
-		if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance.hasMember(currentUser.id)) {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
 
-		User currentUser = sessionUser()
-		def now = params.now ? parseDate(params.now) : null
-		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		def baseDate = Utils.getStartOfDay(now)
+		Date now = params.now ? parseDate(params.now) : null
+		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		Date baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
@@ -221,34 +230,37 @@ class SprintController extends LoginController {
 		renderJSONGet([success: false, message: g.message(code: "can.not.start.sprint")])
 	}
 
-	def stopSprint() {
+	def stop() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
+		User currentUser = sessionUser()
+		log.debug "Trying to stop sprint[${params.id}] for user $currentUser"
 
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
 			return
 		}
 
-		if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance.hasMember(currentUser.id)) {
 			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
 			return
 		}
 
-		def now = params.now ? parseDate(params.now) : null
-		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		def baseDate = Utils.getStartOfDay(now)
+		Date now = params.now ? parseDate(params.now) : null
+		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		Date baseDate = Utils.getStartOfDay(now)
 		EntryStats stats = new EntryStats()
 
-		if (sprintInstance.stop(sessionUser().id, baseDate, now, timeZoneName, stats)) {
+		if (sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)) {
 			renderJSONGet([success: true])
 			return
 		}
 		renderJSONGet([success: false, message: g.message(code: "can.not.stop.sprint")])
 	}
 
-	def leaveSprint() {
+	def leave() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
+		log.debug "User $currentUser trying to leave sprint[params.id]"
 		
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
@@ -259,9 +271,9 @@ class SprintController extends LoginController {
 			return
 		}
 		
-		def now = params.now ? parseDate(params.now) : null
-		def baseDate = Utils.getStartOfDay(now)
-		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
+		Date now = params.now ? parseDate(params.now) : null
+		Date baseDate = Utils.getStartOfDay(now)
+		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		EntryStats stats = new EntryStats()
 		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
@@ -269,9 +281,10 @@ class SprintController extends LoginController {
 		renderJSONGet([success: true])
 	}
 	
-	def joinSprint() {
+	def join() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
+		log.debug "User $currentUser trying to join sprint[params.id]"
 
 		if (!sprintInstance) {
 			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
@@ -284,5 +297,25 @@ class SprintController extends LoginController {
 
 		sprintInstance.addMember(currentUser.id)
 		renderJSONGet([success: true])
+	}
+
+	def discussions(String sprintHash, int max, int offset) {
+		Sprint sprint = Sprint.findByHash(sprintHash)
+		User currentUser = sessionUser()
+
+		if (!sprint) {
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
+			return
+		}
+		
+		if (!sprint.hasMember(currentUser.id)) {
+			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
+			return
+		}
+
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		Map sprintDiscussions = searchService.getDiscussionsList(currentUser, params.offset, params.max, [sprint.fetchUserGroup().name])
+		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
 	}
 }
