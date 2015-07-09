@@ -11,7 +11,6 @@ import us.wearecurio.utility.*
 class DiscussionController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
-	def searchService
 
 	// Not being used right now as all discussion lists are comming form feed
 	def index() {
@@ -44,7 +43,7 @@ class DiscussionController extends LoginController {
 				if (request.xhr) {
 					Map model = discussion.getJSONModel([max: 2, offset: 0])
 					DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
-					renderJSONPost([discussion: [name: model.discussionTitle, created: df.format(model.discussionCreatedOn), type: "dis", 
+					renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), type: "dis", 
 						userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName], success: true])
 					return
 				}
@@ -148,26 +147,5 @@ class DiscussionController extends LoginController {
 			flash.message = g.message(code: "default.permission.denied") 
 			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
 		}
-	}
-
-	def sprintList(String sprintHash, int max, int offset) {
-		log.debug "parameters: $params"
-		Sprint sprint = Sprint.findByHash(sprintHash)
-		User currentUser = sessionUser()
-
-		if (!sprint) {
-			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
-			return
-		}
-		
-		if (!sprint.hasMember(currentUser.id)) {
-			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
-			return
-		}
-
-		params.max = Math.min(max ?: 5, 100)
-		params.offset = offset ?: 0
-		Map sprintDiscussions = searchService.getDiscussionsList(currentUser, params.offset, params.max, [sprint.fetchUserGroup().name])
-		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
 	}
 }

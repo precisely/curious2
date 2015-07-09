@@ -1867,7 +1867,11 @@ div.graph-header-container .red-header {
 
 .discussions-wrapper {
 	max-height: 520px;
-	overflow-y: scroll;
+	overflow: auto;
+}
+
+#sprint-discussions {
+	min-width: 500px;
 }
 
 #moreAvatars {

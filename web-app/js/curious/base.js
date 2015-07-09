@@ -384,6 +384,8 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	} else { // first call
 		if (!background)
 			++numJSONCalls;
+
+		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
 		$.ajax({
 			type: requestMethod,
 			dataType: "json",

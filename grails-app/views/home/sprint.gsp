@@ -29,7 +29,7 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#discussion-topic').keypress(function (e) {
+	$('#discussion-topic').keypress(function(e) {
 		var key = e.which;
 		if (key == 13) {
 			$('.input-affordance hr').show();
@@ -99,7 +99,7 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 }
 
 function showMoreDiscussions(sprintHash, infiniteScroll) {
-	queueJSON("Getting more discussoins", "/api/discussion/action/sprintList?sprintHash=" + sprintHash
+	queueJSON("Getting more discussoins", "/api/sprint/action/discussions?sprintHash=" + sprintHash
 			+ "&offset=" + infiniteScroll.getOffset() + "&max=5&"
 			+ getCSRFPreventionURI("getSprintDiscussionsDataCSRF") + "&callback=?",
 			function(data) {

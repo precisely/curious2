@@ -635,7 +635,7 @@ function editSprint(sprintHash) {
 					return;
 
 				console.log('data: ', data);
-				if (data.error) {
+				if (!data.success) {
 					showAlert(data.message);
 				} else {
 					console.log(data.sprint);
@@ -699,7 +699,7 @@ function deleteSprint(sprintHash) {
 function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Starting Sprint', '/api/sprint/action/startSprint?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
+	queueJSON('Starting Sprint', '/api/sprint/action/start?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -719,7 +719,7 @@ function startSprint(sprintHash) {
 function stopSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Stopping Sprint', '/api/sprint/action/stopSprint?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
+	queueJSON('Stopping Sprint', '/api/sprint/action/stop?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -739,7 +739,7 @@ function stopSprint(sprintHash) {
 function leaveSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Unfollow Sprint', '/api/sprint/action/leaveSprint?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
+	queueJSON('Unfollow Sprint', '/api/sprint/action/leave?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -756,7 +756,7 @@ function leaveSprint(sprintHash) {
 }
 
 function joinSprint(sprintHash) {
-	queueJSON('Follow Sprint', '/api/sprint/action/joinSprint?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
+	queueJSON('Follow Sprint', '/api/sprint/action/join?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
 		id: sprintHash
 	}, function(data) {
 		if (!checkData(data))

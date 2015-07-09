@@ -454,7 +454,7 @@ class Discussion {
 				totalPostCount --
 			}
 		}
-		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated, firstPost: firstPostInstance,
 			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC, groupName: discussionGroupName ?: '']
 	}

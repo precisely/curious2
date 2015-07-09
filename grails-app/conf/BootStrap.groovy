@@ -44,9 +44,18 @@ class BootStrap {
 			migrationService.doBackgroundMigrations()
 		}
 
+		/**
+		 * This marshaller is implemented to parse date into javascript date format
+		 * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
+		 * Usage: 
+		 *  JSON.use("jsonDate") {
+		 *		sampleInstance as JSON
+		 *  }
+		 */
+
 		JSON.createNamedConfig("jsonDate") {
 			it.registerObjectMarshaller(Date) {
-				return it?.format("yyyy-MM-dd'T'HH:mm:ssZ")
+				return it.format("yyyy-MM-dd'T'HH:mm:ssZ")
 			}
 		}
 

@@ -348,6 +348,7 @@ class UserGroup {
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 		
 		List result = databaseService.sqlRows(listQuery, namedParameters)
+
 		List<Long> discussionIdList = result.collect { it.discussionId.toLong() }
 
 		DataSource dataSource =  Holders.getApplicationContext().dataSource

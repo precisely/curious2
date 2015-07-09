@@ -13,7 +13,12 @@ var _people = '\
 	</div>\
 	<div class="user-details-content">\
 		<span>Public Sprints:</span>\
-		<span class="label-value"><%- user.sprints.join(", ") %></span>\
+		<span class="label-value">\
+			<% user.sprints.forEach(function(sprint, index) { %>\
+				<%- sprint.name %>\
+				<% if(index < user.sprints.length - 1) { print(", ") }; %>\
+			<% }) %>\
+		</span>\
 	</div>\
 	<div class="user-details-content">\
 		<span>Start Date:</span>\
