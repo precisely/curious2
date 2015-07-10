@@ -111,21 +111,6 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test save when discussion is null for non-ajax request"() {
-		controller.session.userId = user2.id
-		controller.params.discussionHash = "0"
-		controller.params.message = "test message"
-		controller.request.method = "POST"
-
-		controller.save()
-
-		assert controller.flash.message == messageSource.getMessage("default.blank.message", 
-			["Discussion"] as Object[], null)
-		assert controller.response.redirectUrl.contains("social")
-		assert !DiscussionPost.count()
-	}
-
-	@Test
 	void "Test save when user does not have write permission for that discussion"() {
 		assert discussion
 
@@ -136,24 +121,9 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		controller.save()
 
-		assert controller.flash.message == messageSource.getMessage("default.permission.denied", null, null)
-		assert controller.response.redirectUrl.contains("show")
+		assert controller.response.json.message == messageSource.getMessage("default.permission.denied", null, null)
+		assert !controller.response.json.success
 		assert !DiscussionPost.count()
-	}
-
-	@Test
-	void "Test save for non-ajax request"() {
-		assert discussion
-
-		controller.session.userId = user2.id
-		controller.params.discussionHash = discussion.hash
-		controller.params.message = "test message"
-		controller.request.method = "POST"
-
-		controller.save()
-
-		assert controller.response.redirectUrl.contains("show")
-		assert DiscussionPost.count() == 1
 	}
 
 	@Test

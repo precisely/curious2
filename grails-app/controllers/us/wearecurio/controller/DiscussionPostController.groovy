@@ -23,58 +23,41 @@ class DiscussionPostController extends LoginController{
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 
 		List posts = isFollowUp ? discussion.getFollowupPosts([max: params.max, offset: params.offset]) : 
-			discussion.getPosts([max: params.max, offset: params.offset])
+		discussion.getPosts([max: params.max, offset: params.offset])
 
 		if (!posts) {
 			renderJSONGet([posts: false])
 		} else {
 			renderJSONGet([posts: groovyPageRenderer.render(template: "/discussion/posts", model: [posts: posts, userId: sessionUser().id, 
-				isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion)])])
+			isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion)])])
 		}
 	}
 
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
-			"for discussion with hash: ${params.discussionHash}"
+		"for discussion with hash: ${params.discussionHash}"
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion){
-			if (request.xhr) {
-				renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
-			} else {
-				flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-				redirect(url: toUrl(controller: "home", action: "social"))
-			}
+			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			return
 		}
 
 		User user = sessionUser()
 		def comment = DiscussionPost.createComment(params.message, user, discussion, 
-			params.plotIdMessage, params)
+		params.plotIdMessage, params)
 
 		// If user does not have permission to add comment response will be 'false'
 		if (comment instanceof String) {
-			if (request.xhr) {
-				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
-			} else {
-				flash.message = message(code: "default.permission.denied")
-				redirect(url: toUrl(controller: "discussion", action: "show", params: ["id": discussion.hash]))
-			}
+			renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
 			return
 		}
 
 		if (!comment) {
-			if (request.xhr) {
-				renderJSONPost([success: false, message: g.message(code: "not.created.message", args: ["Comment"])])
-				return
-			}
-			flash.message = g.message(code: "not.created.message", args: ["Comment"])
-			redirect(url: toUrl(controller: "home", action: "index"))
+			renderJSONPost([success: false, message: g.message(code: "not.created.message", args: ["Comment"])])
+			return
 		} else {
-			if (request.xhr) {
-				renderJSONPost([success: true])
-				return
-			}
-			redirect(url: toUrl(controller: "discussion", action: "show", params: [id: discussion.hash]))
+			renderJSONPost([success: true])
+			return
 		}
 	}
 
