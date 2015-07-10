@@ -315,7 +315,7 @@ class SprintController extends LoginController {
 
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
-		Map sprintDiscussions = searchService.getDiscussionsList(currentUser, params.offset, params.max, [sprint.fetchUserGroup().name])
+		Map sprintDiscussions = searchService.getDiscussionsListMobile(currentUser, params.offset, params.max, [sprint.fetchUserGroup().name])
 		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
 	}
 }
