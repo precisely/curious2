@@ -799,7 +799,7 @@ class HomeController extends DataController {
 		}
 		
 		if (discussion == null) {
-			def name = "New question or discussion title?"
+			def name = params.name ?: "New question or discussion title?"
 			if (plotIdMessage != null) {
 				def plot = PlotData.get(plotIdMessage)
 				if (plot)
@@ -813,13 +813,18 @@ class HomeController extends DataController {
 				}
 			}
 			discussion = Discussion.create(user, name)
-			if (discussion != null)
+			if (discussion != null) {
 				Utils.save(discussion, true)
+				if(params.discussionPost) {
+					discussion.createPost(user, params.discussionPost)
+				}
+			}
 			else {
 				flash.message = "Failed to create new discussion topic: internal error"
 				redirect(url:toUrl(action:'index'))
 				return
 			}
+
 			if (group) group.addDiscussion(discussion)
 		}
 		if (!discussion.getIsPublic()) {

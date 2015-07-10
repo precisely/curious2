@@ -73,6 +73,16 @@ class SecurityFilters {
 				return true
 			}
 		}
+		uriFilter(uri: "/api/**") {
+			before = {
+				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
+					println "Unauthorized data action " + actionName
+					render "${params.callback}('login')"
+					return false
+				}
+				return true
+			}
+		}
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId')) && !idempotentActions.contains(actionName)) {

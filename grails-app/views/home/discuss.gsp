@@ -338,7 +338,7 @@ $(document).ready(function() {
 								<hr>
 								<div class="buttons">
 									<button class="share-button" data-toggle="popover" data-placement="top" 
-											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}discussion/show/${discussionHash}'>"
+											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}home/discuss?discussionId=${discussionId}'>"
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
@@ -356,7 +356,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/discussionPost/save" method="post"
+										<form action="/home/discuss" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
@@ -386,7 +386,7 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="discussionHash" value="${discussionHash}">
+											<input type="hidden" name="discussionId" value="${discussionId}">
 										</form>
 									</div>
 								</div>
