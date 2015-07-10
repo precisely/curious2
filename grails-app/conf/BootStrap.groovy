@@ -25,17 +25,17 @@ class BootStrap {
 	EntryService entryService
 	SecurityService securityService
 	SearchService searchService
-	
+
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
-		
+
 		DatabaseService.set(databaseService)
 		EmailService.set(emailService)
 		EntryService.set(entryService)
 		SecurityService.set(securityService)
 		SearchService.set(searchService)
-		
+
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
@@ -43,6 +43,22 @@ class BootStrap {
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
+
+		/**
+		 * This marshaller is implemented to parse date into javascript date format
+		 * when rendering response for a POST request. Default Date format in config is javascript this marshaller will override it.
+		 * Usage: 
+		 *  JSON.use("jsonDate") {
+		 *		sampleInstance as JSON
+		 *  }
+		 */
+
+		JSON.createNamedConfig("jsonDate") {
+			it.registerObjectMarshaller(Date) {
+				return it.format("yyyy-MM-dd'T'HH:mm:ssZ")
+			}
+		}
+
 
 		withingsDataService.refreshSubscriptions()
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {

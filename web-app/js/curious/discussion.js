@@ -37,7 +37,7 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage()) {
+					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});
@@ -83,5 +83,6 @@ $(document).ready(function() {
 		});
 		return false;
 	});
+
 });
 

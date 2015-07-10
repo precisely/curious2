@@ -146,8 +146,9 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 
 		controller.show()
 
-		assert controller.flash.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
-		assert controller.response.redirectUrl.contains("index")
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
+
 	}
 
 	@Test
@@ -159,12 +160,12 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.id = discussion.hash
 		controller.show()
 
-		assert controller.flash.message == messageSource.getMessage("default.login.message", null, null)
-		assert controller.response.redirectUrl.contains("index")
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.login.message", null, null)
 	}
 
 	@Test
-	void "Test show"() {
+	void Testshow() {
 		Discussion discussion = Discussion.create(user2, "test Discussion", testGroup)
 		assert discussion
 		
@@ -172,11 +173,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user2.id
 		controller.show()
 
-		def modelAndView = controller.modelAndView
-
-		assert modelAndView.model['discussionId'] == discussion.id
-		assert modelAndView.model['username'].equals(user2.getUsername())
-		assert modelAndView.getViewName().equals("/home/discuss")
+		assert controller.response.json.success
+		assert controller.response.json.discussionDetails.discussionHash == discussion.hash
 	}
 
 	@Test
@@ -189,8 +187,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.id = discussion.id
 		controller.publish()
 
-		assert controller.flash.message == messageSource.getMessage("default.permission.denied", null, null)
-		assert controller.response.redirectUrl.contains("show")
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.permission.denied", null, null)
 		assert !discussion.isPublic()
 	}
 
@@ -203,8 +201,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.id = null
 		controller.publish()
 
-		assert controller.flash.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
-		assert controller.response.redirectUrl.contains("index")
+		assert !controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Discussion"] as Object[], null)
 	}
 
 	@Test
@@ -217,8 +215,8 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.id = discussion.id
 		controller.publish()
 
-		assert controller.flash.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
-		assert controller.response.redirectUrl.contains("show")
+		assert controller.response.json.success
+		assert controller.response.json.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
 		assert discussion.isPublic()
 	}
 }

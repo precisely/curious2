@@ -1,5 +1,8 @@
 package us.wearecurio.controller
 
+import java.text.SimpleDateFormat
+import java.text.DateFormat
+import grails.converters.JSON
 import org.springframework.transaction.annotation.Transactional	 
 import org.springframework.dao.DataIntegrityViolationException
 import us.wearecurio.model.*
@@ -24,8 +27,7 @@ class DiscussionController extends LoginController {
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
 		if (!group) {
-			flash.message = "Failed to create new discussion topic: can't post to this group"
-			redirect(url: toUrl(controller: "home", action: "social"))
+			renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
 			discussion = discussion ?: Discussion.create(user, name, group, null)
@@ -37,10 +39,13 @@ class DiscussionController extends LoginController {
 					discussion.createPost(user, discussionPost)
 				}
 
-				redirect(url: toUrl(action: "show", params: ["id": discussion.hash]))
+				Map model = discussion.getJSONModel([max: 2, offset: 0])
+				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
+				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), type: "dis", 
+				userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName], success: true])
+				return
 			} else {
-				flash.message = "Failed to create new discussion topic: internal error"
-				redirect(url: toUrl(controller: "home", action: "social"))
+				renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 			}
 		}
 
@@ -51,12 +56,10 @@ class DiscussionController extends LoginController {
 
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion){
-			flash.message = g.message(code: "default.blank.message", args: ["Discussion"])
-			redirect(url: toUrl(controller: "home", action: "index"))
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			return
 		} else if (!discussion.getIsPublic() && !user) {
-			flash.message = g.message(code: "default.login.message")
-			redirect(url: toUrl(controller: "home", action: "index"))
+			renderJSONGet([success: false, message: g.message(code: "default.login.message")])
 			return
 		}
 		params.max = params.max ?: 5
@@ -64,19 +67,9 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-				templateVer: urlService.template(request), discussionHash: discussion.hash]
+		username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+		templateVer: urlService.template(request), discussionHash: discussion.hash]
 
-		// If used for pagination
-		if (request.xhr) {
-			if (!model.posts ) {
-				// render false if there are no more comments to show.
-				render false
-			} else {
-				render (template: "/discussion/posts", model: model)
-			}
-			return
-		}
 		if (user == null) {
 			model.put("associatedGroups", []) // public discussion
 		} else {
@@ -94,17 +87,17 @@ class DiscussionController extends LoginController {
 			associatedGroups.addAll(otherGroups.sort { it.name })
 			model.put("associatedGroups", associatedGroups)
 		}
-		render(view: "/home/discuss", model: model)
+		renderJSONGet([success: true, discussionDetails: model])
 	}
 
 	// Used to edit the discussion
 	def edit() {
-	
+
 	}
 
 	// This method will be called to update already created discussion
 	def update() {
-	
+
 	}
 
 	def delete() {
@@ -123,19 +116,16 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 
 		if (!discussion) {
-			flash.message = g.message(code: "default.blank.message", args: ["Discussion"]) 
-			redirect(url: toUrl(controller: "home", action: "index"))
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])]) 
 			return
 		}
 		def discussionUserId = discussion.getUserId()
 		if ((user?.id == discussionUserId) || !discussionUserId) {
 			discussion.setIsPublic(true)
 			Utils.save(discussion, true)
-			flash.message = g.message(code: "default.updated.message", args: ["Discussion"]) 
-			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
+			renderJSONGet([success: true, message: g.message(code: "default.updated.message", args: ["Discussion"])]) 
 		} else {
-			flash.message = g.message(code: "default.permission.denied") 
-			redirect(url: toUrl(action: "show", params: ["id": discussion.id]))
+			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])]) 
 		}
 	}
 }
