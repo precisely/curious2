@@ -132,4 +132,49 @@ class UserTests extends CuriousTestCase {
 		assert users[1].id in userIds
 		assert users[2].id in userIds
 	}
+	
+	@Test
+	void "Test create creates virtualUserGroupId"() {
+		Map params = new HashMap()
+		params.put("username", "testuser")
+		params.put("email", "test@test.com")
+		params.put("password", "eiajrvaer")
+		params.put("first", "first")
+		params.put("last", "last")
+		params.put("sex", "F")
+		params.put("birthdate", "12/1/1990")
+		
+		def user = User.create(params)
+		
+		assert user.virtualUserGroupId
+		assert user.virtualUserGroupId > 0
+		assert UserGroup.get(user.virtualUserGroupId)
+	}
+	
+	@Test
+	void "Test createVirtualUserGroup"() {
+		Map params = new HashMap()
+		params.put("username", "testuser")
+		params.put("email", "test@test.com")
+		params.put("password", "eiajrvaer")
+		params.put("first", "first")
+		params.put("last", "last")
+		params.put("sex", "F")
+		params.put("birthdate", "12/1/1990")
+		
+		def user = User.create(params)
+		
+		def originalGroupId = user.virtualUserGroupId
+		
+		User.createVirtualUserGroup(user)
+		assert user.virtualUserGroupId == originalGroupId
+		
+		user.virtualUserGroupId = null
+		User.createVirtualUserGroup(user)
+		
+		assert user.virtualUserGroupId
+		assert user.virtualUserGroupId > 0
+		assert user.virtualUserGroupId != originalGroupId
+		assert UserGroup.get(user.virtualUserGroupId)
+	}
 }

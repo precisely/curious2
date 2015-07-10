@@ -102,6 +102,15 @@ class User {
 		user.update(map)
 		Utils.save(user, true)
 		
+		createVirtualUserGroup(user)
+		
+		return user
+	}
+	
+	public static createVirtualUserGroup(User user)
+	{
+		if (user.virtualUserGroupId != null && user.virtualUserGroupId > 0) return
+		
 		def groupName = "'" + (user.username?:"anonymous" ) + "' virtual group"
 		def virtualUserGroup = UserGroup.createVirtual(groupName, true)
 		if (virtualUserGroup) {
@@ -110,9 +119,7 @@ class User {
 			virtualUserGroup.addAdmin(user)
 			virtualUserGroup.addWriter(user)
 		}
-		
-		return user
-	}
+	} 
 	
 	public static User createVirtual() {
 		log.debug "User.createVirtual()"

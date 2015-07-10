@@ -510,6 +510,18 @@ class MigrationService {
 		tryMigration("Drop Discussion isPublic") {
 			sql ("alter table discussion drop column is_public")
 		}
+		tryMigration("Create Virtual User GroupId for all Users") {
+			migrateUserVirtualUserGroupId()
+		}
+	}
+	
+	//write functionality separate from tryMigration so that it can be tested in integration test
+	static void migrateUserVirtualUserGroupId()
+	{
+		def users = User.withCriteria{ isNull "virtualUserGroupId" }
+		users.each {
+			User.createVirtualUserGroup( it )
+		}
 	}
 	
 	/**
