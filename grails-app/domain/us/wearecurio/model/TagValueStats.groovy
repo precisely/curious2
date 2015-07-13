@@ -63,31 +63,31 @@ class TagValueStats {
 		def minMax
 		
 		if (startDate == null) {
-			minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.repeat IS NULL or (not entry.repeat.type in (:ghostIds))) and entry.amount is not null group by units",
-					[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
+			minMax = DatabaseService.get().sqlRows(
+					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
+					[tagId:tagId, userId:userId, ghostBit:RepeatType.GHOST_BIT])
 		} else {
-			minMax = Entry.executeQuery(
-					"select min(entry.amount), max(entry.amount), units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeat IS NULL or (not entry.repeat.type in (:ghostIds))) and entry.amount is not null group by units",
-					[tagId:tagId, userId:userId, startDate:startDate, ghostIds:Entry.LONG_GHOST_IDS])
+			minMax = DatabaseService.get().sqlRows(
+					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
+					[tagId:tagId, userId:userId, startDate:startDate, ghostBit:RepeatType.GHOST_BIT])
 		}
 
 		if (minMax && minMax.size() > 0) {
 			UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, [tagId])
 
 			for (int i = 0; i < minMax.size(); ++i) {
-				String units = minMax[i][2]
+				String units = minMax[i]['units']
 				BigDecimal ratio = mostUsedUnitRatio == null ? BigDecimal.ONE : mostUsedUnitRatio.conversionRatio(units)
 				
 				BigDecimal min
 				BigDecimal max
 				
 				if (ratio == null) {
-					min = minMax[i][0]
-					max = minMax[i][1]
+					min = minMax[i]['minAmount']
+					max = minMax[i]['maxAmount']
 				} else {
-					min = minMax[i][0].multiply(ratio).round(mc)
-					max = minMax[i][1].multiply(ratio).round(mc)
+					min = minMax[i]['minAmount'].multiply(ratio).round(mc)
+					max = minMax[i]['maxAmount'].multiply(ratio).round(mc)
 				}
 				
 				if (stats.minimum == null || (min != null && min < stats.minimum))

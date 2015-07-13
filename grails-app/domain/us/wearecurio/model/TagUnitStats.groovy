@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.DatabaseService
 import us.wearecurio.units.UnitGroupMap
 import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
@@ -133,12 +134,12 @@ class TagUnitStats {
 	
 	@Transactional
 	static TagUnitStats createOrUpdateAllUnits(Long userId, Long tagId) {
-		def results = Entry.executeQuery(
-			"select units from Entry as entry where entry.tag.id = :tagId and entry.userId = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat IS NULL or (not entry.repeat.type in (:ghostIds))) group by units",
-			[tagId:tagId, userId:userId, ghostIds:Entry.LONG_GHOST_IDS])
+		def results = DatabaseService.get().sqlRows(
+			"select units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) group by units",
+			[tagId:tagId, userId:userId, ghostIds:RepeatType.GHOST_BIT])
 
 		if (results && results.size() > 0) {
-			String units = results[0]
+			String units = results[0]['units']
 			createOrUpdate(userId, tagId, units)
 		}
 	}

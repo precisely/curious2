@@ -41,7 +41,7 @@ class Discussion {
 	static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
-		only = ['userId', 'firstPostId', 'name', 'created', 'updated', 'visibility', 'groupIds']
+		only = ['userId', 'firstPostId', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {

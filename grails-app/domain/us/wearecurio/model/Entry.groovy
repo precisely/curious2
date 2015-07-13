@@ -86,70 +86,6 @@ class Entry implements Comparable {
 	
 	static belongsTo = [ group : EntryGroup ]
 
-	protected static def DAILY_IDS = [
-		RepeatType.DAILY.getId(),
-		RepeatType.DAILYCONCRETEGHOST.getId(),
-		RepeatType.REMINDDAILY.getId(),
-		RepeatType.REMINDDAILYGHOST.getId()
-	]
-
-	protected static def WEEKLY_IDS = [
-		RepeatType.WEEKLY.getId(),
-		RepeatType.WEEKLYCONCRETEGHOST.getId(),
-		RepeatType.REMINDWEEKLY.getId(),
-		RepeatType.REMINDWEEKLYGHOST.getId()
-	]
-
-	protected static def REPEAT_IDS = [
-		RepeatType.DAILY.getId(),
-		RepeatType.DAILYCONCRETEGHOST.getId(),
-		RepeatType.WEEKLY.getId(),
-		RepeatType.WEEKLYCONCRETEGHOST.getId()
-	]
-
-	protected static def REMIND_IDS = [
-		RepeatType.REMINDDAILY.getId(),
-		RepeatType.REMINDWEEKLY.getId(),
-		RepeatType.REMINDWEEKLY.getId(),
-		RepeatType.REMINDDAILYGHOST.getId(),
-		RepeatType.REMINDWEEKLYGHOST.getId()
-	]
-
-	protected static def CONTINUOUS_IDS = [
-		RepeatType.CONTINUOUS.getId(),
-		RepeatType.CONTINUOUSGHOST.getId()
-	]
-
-	protected static def GHOST_IDS = [
-		RepeatType.CONTINUOUSGHOST.getId(),
-		RepeatType.DAILYCONCRETEGHOST.getId(),
-		RepeatType.WEEKLYCONCRETEGHOST.getId(),
-		RepeatType.REMINDDAILYGHOST.getId(),
-		RepeatType.REMINDWEEKLYGHOST.getId(),
-		RepeatType.DURATIONGHOST.getId()
-	]
-
-	protected static def LONG_GHOST_IDS = [
-		(long)RepeatType.CONTINUOUSGHOST.getId(),
-		(long)RepeatType.DAILYCONCRETEGHOST.getId(),
-		(long)RepeatType.WEEKLYCONCRETEGHOST.getId(),
-		(long)RepeatType.REMINDDAILYGHOST.getId(),
-		(long)RepeatType.REMINDWEEKLYGHOST.getId()
-	]
-
-	protected static def DURATIONGHOST_IDS = [
-		RepeatType.DURATIONGHOST.getId()
-	]
-
-	protected static def DAILY_UNGHOSTED_IDS = [
-		RepeatType.DAILY.getId(),
-		RepeatType.DAILYCONCRETEGHOST.getId(),
-	]
-
-	protected static def UNGHOSTED_SINGULAR_IDS = [
-		RepeatType.REMINDDAILY.getId(),
-	]
-
 	static enum DurationType {
 		NONE(0), START(DURATIONSTART_BIT), END(DURATIONEND_BIT),
 				GHOSTSTART(DURATIONSTART_BIT | DURATIONGHOST_BIT),
@@ -1643,13 +1579,13 @@ class Entry implements Comparable {
 
 	protected findPreviousRepeatEntry() {
 		return findNeighboringDailyRepeatEntry(
-		"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date desc limit 1",
-		[desc:this.tag.getDescription(), userId:this.userId, repeatIds:DAILY_IDS])
+		"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type & :dailyBit) <> 0) order by entry.date desc limit 1",
+		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
 	}
 
 	protected findNextRepeatEntry() {
-		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and (entry.repeat_type in (:repeatIds)) order by entry.date asc limit 1",
-		[desc:this.tag.getDescription(), userId:this.userId, repeatIds:DAILY_IDS])
+		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type & :dailyBit) <> 0) order by entry.date asc limit 1",
+		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
 	}
 
 	protected createRepeat(EntryStats stats) {
@@ -1657,9 +1593,9 @@ class Entry implements Comparable {
 
 		if (this.repeat.isContinuous()) {
 			// search for matching continuous tag
-			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and entry.repeat_type in (:repeatIds)"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type & :continuousBit <> 0)"
 
-			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, repeatIds:CONTINUOUS_IDS])
+			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
 			for (def v in entries) {
 				if (v != null) {
@@ -1936,9 +1872,9 @@ class Entry implements Comparable {
 	 * Fetch methods - for getting different subsets of entries
 	 */
 	static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
-		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeat is null) and entry.repeat.type in (:repeatIds)"
+		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeat is null) and (entry.repeat.type & :continuousBit <> 0)"
 
-		def entries = Entry.executeQuery(continuousQuery, [userId:userId, repeatIds:CONTINUOUS_IDS])
+		def entries = Entry.executeQuery(continuousQuery, [userId:userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
 		return entries
 	}
@@ -1981,14 +1917,14 @@ class Entry implements Comparable {
 
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds)))) or " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (not entry.repeat_type in (:continuousIds)))) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (entry.repeat_type & :continuousBit = 0))) or " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :continuousBit = 0))) " \
 				+ "and entry.tag_id = tag.id " \
-				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (not entry.repeat_type in (:continuousIds))) " \
+				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (entry.repeat_type & :continuousBit = 0)) " \
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
 				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
 
-		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousIds:CONTINUOUS_IDS]
+		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousBit:RepeatType.CONTINUOUS_BIT]
 
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
@@ -2034,11 +1970,11 @@ class Entry implements Comparable {
 		// get continuous repeating elements
 		String continuousQueryStr = "select distinct entry.id as id, tag.description " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "entry.repeat_end is null and (not entry.repeat_type is null) and (entry.repeat_type in (:continuousIds)) " \
+				+ "entry.repeat_end is null and (not entry.repeat_type is null) and (entry.repeat_type & :continuousBit <> 0) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
 
-		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), continuousIds:CONTINUOUS_IDS])
+		def continuousResults = DatabaseService.get().sqlRows(continuousQueryStr, [userId:user.getId(), continuousBit:RepeatType.CONTINUOUS_BIT])
 
 		def results = []
 
@@ -2073,12 +2009,12 @@ class Entry implements Comparable {
 		def results = []
 
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (not entry.repeat_type in (:ghostIds))) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (entry.repeat_type & :ghostBit = 0)) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 " \
 				+ "then unix_timestamp(entry.date) else 0 end desc, tag.description asc"
 
-		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, ghostIds:GHOST_IDS])
+		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), startDate:date, endDate:date + 1, ghostBit:RepeatType.GHOST_BIT])
 
 		for (result in rawResults) {
 			Entry entry = Entry.get(result['id'])
@@ -2153,11 +2089,12 @@ class Entry implements Comparable {
 		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
 
 		// fetch sum of non-repeat entries
+		
 		queryStr = "select count(*) as c, sum(sin((time_to_sec(entry.date) / 43200.0) * pi())) as y, sum(cos((time_to_sec(entry.date) / 43200.0) * pi())) as x " \
-				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_type in (:unghostedSingularIds)) " \
+				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or (entry.repeat_type & :ghostBit = 0)) " \
 				+ "and entry.tag_id in (:tagIds) and entry.date >= :startDate and entry.date < :endDate"
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds, ghostBit:RepeatType.GHOST_BIT]
 
 		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
 
@@ -2165,10 +2102,10 @@ class Entry implements Comparable {
 		queryStr = "select sum(datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as c, " \
 				+ "sum(sin((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as y, " \
 				+ "sum(cos((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as x " \
-				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and ((entry.repeat_end is not null and entry.repeat_end > :startDate) or entry.repeat_end is null) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and ((entry.repeat_end is not null and entry.repeat_end > :startDate) or entry.repeat_end is null) and entry.date < :endDate and (entry.repeat_type & :dailyBit <> 0) and (entry.repeat_type & :ghostBit = 0)" \
 				+ "and entry.tag_id in (:tagIds)"
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, dailyBit:RepeatType.DAILY_BIT, tagIds:tagIds]
 
 		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
 
@@ -2234,10 +2171,10 @@ class Entry implements Comparable {
 		// get timed daily repeats (not ghosted)
 
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and entry.repeat_type in (:repeatIds) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type & :ghostBit = 0) " \
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
-		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, repeatIds:DAILY_UNGHOSTED_IDS, tagIds:tagIds]
+		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, tagIds:tagIds]
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []
@@ -2272,10 +2209,10 @@ class Entry implements Comparable {
 		
 		queryStr = "select e.date, e.amount, e.tag_id, e.units " \
 				+ "from entry e where e.user_id = :userId " \
-				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type is null or e.repeat_type in (:unghostedSingularIds)) " \
+				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type is null or (e.repeat_type & :concreteRepeatBits = 0)) " \
 				+ "and e.tag_id in (:tagIds) order by e.date asc"
 
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, unghostedSingularIds:UNGHOSTED_SINGULAR_IDS, tagIds:tagIds ]
+		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.GHOST_BIT), tagIds:tagIds ]
 
 		log.debug("Finding plot data for tag ids: " + tagIds)
 		
@@ -3351,7 +3288,7 @@ class RepeatType { // IMPORTANT: there must be ghost entries
 	static final int GHOST_BIT = 0x0200
 	static final int CONCRETEGHOST_BIT = 0x0400
 	static final int DURATION_BIT = 0x0800
-
+	
 	static final int SUNDAY_BIT = 0x10000
 	static final int MONDAY_BIT = 0x20000
 	static final int TUESDAY_BIT = 0x40000
@@ -3360,6 +3297,9 @@ class RepeatType { // IMPORTANT: there must be ghost entries
 	static final int FRIDAY_BIT = 0x200000
 	static final int SATURDAY_BIT = 0x400000
 	
+	static final int WEEKDAY_BITS = SUNDAY_BIT | MONDAY_BIT | TUESDAY_BIT | WEDNESDAY_BIT | THURSDAY_BIT | FRIDAY_BIT | SATURDAY_BIT
+	static final int REPEAT_BITS = HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT | WEEKDAY_BITS
+
 	Long type
 	
 	static constraints = {

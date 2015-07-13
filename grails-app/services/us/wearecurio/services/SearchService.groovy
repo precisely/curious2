@@ -159,7 +159,7 @@ class SearchService {
 				System.out.println "readerGroupDiscussion: " + d.toString()
 				model["discussionList"] << [
 					id: d.id,
-					hash: null,
+					hash: d.hash,
 					name: d.name,
 					userId: d.userId,
 					isPublic: d.isPublic(),
