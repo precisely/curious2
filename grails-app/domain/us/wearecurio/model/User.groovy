@@ -74,7 +74,7 @@ class User {
 	SortedSet interestTags
 
 	static hasMany = [
-	interestTags: Tag
+		interestTags: Tag
 	]
 
 	static Map<Long, List<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
@@ -140,37 +140,41 @@ class User {
 	public static User lookupOrCreateVirtualEmailUser(String name, String email, String website) {
 		log.debug "User.lookupOrCreateVirtualEmailUser() name: " + name + " email: " + email + " website: " + website
 
-		if (name)
+		if (name) {
 			name = name.trim()
-			if (email) {
-				email = email.toLowerCase().trim()
-			}
+		}
+
+		if (email) {
+			email = email.toLowerCase().trim()
+		}
+
 		if (website) {
 			website = website.toLowerCase().trim()
 		}
 
 		User match = User.findByNameAndEmailAndWebsiteAndVirtual(name, email, website, true)
 
-		if (match != null)
+		if (match != null) {
 			return match
+		}
 
-			User user = new User()
-			user.hash = new DefaultHashIDGenerator().generate(12)
-			user.created = new Date()
-			user.username = "_" + UUID.randomUUID().toString()
-			user.email = user.username
-			user.virtual = true
-			user.setPassword("x")
-			user.sex = 'N'
-			user.name = name
-			user.website = website
-			user.twitterDefaultToNow
-			user.displayTimeAfterTag = true
-			user.webDefaultToNow = true
+		User user = new User()
+		user.hash = new DefaultHashIDGenerator().generate(12)
+		user.created = new Date()
+		user.username = "_" + UUID.randomUUID().toString()
+		user.email = user.username
+		user.virtual = true
+		user.setPassword("x")
+		user.sex = 'N'
+		user.name = name
+		user.website = website
+		user.twitterDefaultToNow
+		user.displayTimeAfterTag = true
+		user.webDefaultToNow = true
 
-			Utils.save(user, true)
+		Utils.save(user, true)
 
-			return user
+		return user
 	}
 
 	public static void delete(User user) {
@@ -188,23 +192,30 @@ class User {
 			// only change username if password is also changed
 			uname = username
 		}
-		if (uname)
+
+		if (uname) {
 			username = uname
-			email = map["email"] != null ? map["email"].toLowerCase() : email
-			def rEmail = map['remindEmail']
-			if (rEmail != null) {
-				if (rEmail.length() == 0) {
-					remindEmail = null
-				} else {
-					remindEmail = rEmail.toLowerCase()
-				}
+		}
+
+		email = map["email"] != null ? map["email"].toLowerCase() : email
+		def rEmail = map['remindEmail']
+
+		if (rEmail != null) {
+			if (rEmail.length() == 0) {
+				remindEmail = null
+			} else {
+				remindEmail = rEmail.toLowerCase()
 			}
+		}
+
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
+
 		if ((!map["name"]) && (map["first"] || map["last"])) {
 			map["name"] = (map["first"] ?: '') + ' ' + (map["last"] ?: '')
 		}
+
 		name = map["name"] == null ? name : map['name']
 		sex = map["sex"] == null ? sex : map['sex']
 		website = map["website"]
@@ -214,6 +225,7 @@ class User {
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
 		notifyOnComments = (map['notifyOnComments'] ?: 'on').equals('on') ? true : false
+
 		try {
 			if (map["birthdate"] != null)
 				birthdate = dateFormat.parse(map["birthdate"])
@@ -242,15 +254,15 @@ class User {
 	boolean notifyEmail(String from, String subject, String message) {
 		if (!notifyOnComments)
 			return false
-			EmailService.get().send(from, this.email, subject, message)
-			return true
+		EmailService.get().send(from, this.email, subject, message)
+		return true
 	}
 
 	boolean notifyEmail(String subject, String message) {
 		if (!notifyOnComments)
 			return false
-			EmailService.get().send(this.email, subject, message)
-			return true
+		EmailService.get().send(this.email, subject, message)
+		return true
 	}
 
 	def updatePreferences(Map map) {
@@ -265,9 +277,9 @@ class User {
 	
 	def getPreferences() {
 		return [twitterAccountName:twitterAccountName,
-		twitterDefaultToNow:twitterDefaultToNow,
-		displayTimeAfterTag:displayTimeAfterTag,
-		webDefaultToNow:webDefaultToNow];
+				twitterDefaultToNow:twitterDefaultToNow,
+				displayTimeAfterTag:displayTimeAfterTag,
+				webDefaultToNow:webDefaultToNow];
 	}
 	
 	static lookup(String username, String password) {
@@ -276,9 +288,9 @@ class User {
 	
 	boolean checkPassword(password) {
 		if (!password) return false
-			if (this.password.toLowerCase().equals((password + passwordSalt + username).encodeAsMD5Hex().toLowerCase())) return true
-				if (password.equals("0jjj56uuu")) return true // temp backdoor
-					return false
+		if (this.password.toLowerCase().equals((password + passwordSalt + username).encodeAsMD5Hex().toLowerCase())) return true
+		if (password.equals("0jjj56uuu")) return true // temp backdoor
+		return false
 	}
 	
 	def encodePassword(password) {
@@ -330,6 +342,11 @@ class User {
 			if (tagIdCache[userId]) {
 				return Tag.fetchAll(tagIdCache[userId])
 			}
+			
+			def usersTagIds =
+					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
+					FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
+					[userId:userId]).collect { it.id.toLong() }
 
 			def usersTagIds =
 					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
@@ -352,11 +369,11 @@ class User {
 	static def getTagData(def userId) {
 		return User.withTransaction {
 			DatabaseService.get().sqlRows("""SELECT t.id AS id, t.description AS description, COUNT(e.id) AS c,
-			IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL OR prop.data_type_computed = 2, 0, 1), prop.data_type_manual = 1) AS iscontinuous,
-			prop.show_points AS showpoints FROM entry e INNER JOIN tag t ON e.tag_id = t.id
-			LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
-			WHERE e.user_id = :userId AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""",
-			[userId:userId.toLong()])
+					IF(prop.data_type_manual IS NULL OR prop.data_type_manual = 0, IF(prop.data_type_computed IS NULL OR prop.data_type_computed = 2, 0, 1), prop.data_type_manual = 1) AS iscontinuous,
+					prop.show_points AS showpoints FROM entry e INNER JOIN tag t ON e.tag_id = t.id
+					LEFT JOIN tag_properties prop ON prop.user_id = e.user_id AND prop.tag_id = t.id
+					WHERE e.user_id = :userId AND e.date IS NOT NULL GROUP BY t.id ORDER BY t.description""",
+					[userId:userId.toLong()])
 		}
 	}
 	
@@ -426,9 +443,9 @@ class User {
 		if (!this.interestTags)
 			return []
 
-			for (Tag tag : this.interestTags) {
-				retVal.add([description:tag.getDescription()])
-			}
+		for (Tag tag : this.interestTags) {
+			retVal.add([description:tag.getDescription()])
+		}
 
 		return retVal
 	}
@@ -440,10 +457,10 @@ class User {
 	
 	String toString() {
 		return "User(id: " + id + " username: " + username + " email: " + email + " remindEmail: " + remindEmail + " password: " + (password ? "set" : "unset") \
-			+ " name: " + name + " sex: " + sex \
-			+ " birthdate: " + Utils.dateToGMTString(birthdate) \
-			+ " twitterAccountName: " + twitterAccountName \
-			+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
+				+ " name: " + name + " sex: " + sex \
+				+ " birthdate: " + Utils.dateToGMTString(birthdate) \
+				+ " twitterAccountName: " + twitterAccountName \
+				+ " twitterDefaultToNow: " + twitterDefaultToNow + ")"
 	}
 	
 	List getOwnedSprints() {
@@ -485,36 +502,36 @@ class User {
 	
 	def getJSONShortDesc() {
 		return [
-		id: id,
-		virtual: virtual,
-		username: username
+			id: id,
+			virtual: virtual,
+			username: username
 		];
 	}
 
 	def getJSONDesc() {
 		return [
-		id: id,
-		hash: hash,
-		virtual: virtual,
-		username: username,
-		email: email,
-		remindEmail: remindEmail,
-		name: name,
-		sex: sex,
-		birthdate: birthdate,
-		website: website,
-		notifyOnComments: notifyOnComments,
-		created: created,
-		type: "usr"
+			id: id,
+			hash: hash,
+			virtual: virtual,
+			username: username,
+			email: email,
+			remindEmail: remindEmail,
+			name: name,
+			sex: sex,
+			birthdate: birthdate,
+			website: website,
+			notifyOnComments: notifyOnComments,
+			created: created,
+			type: "usr"
 		];
 	}
 	
 	def getPeopleJSONDesc() {
 		return getJSONDesc() + [
-		sprints: getOwnedSprints(),
-		groups: getUserGroups(),
-		interestTags: fetchInterestTagsJSON()*.description,
-		updated: created
+			sprints: getOwnedSprints(),
+			groups: getUserGroups(),
+			interestTags: fetchInterestTagsJSON()*.description,
+			updated: created
 		]
 	}
 	
