@@ -299,7 +299,7 @@ class UserGroup {
 		
 		List result = databaseService.sqlRows(listQuery, map)
 
-		List discussionIdList = result.collect { it.discussionId }*.toLong()
+		List discussionIdList = result.collect { it.discussionId.toLong() }
 
 		paginatedData["discussionPostData"] = getTotalDiscussionPosts(discussionIdList)
 		paginatedData["dataList"] = addAdminPermissions(user, result)
@@ -346,7 +346,7 @@ class UserGroup {
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 		
 		List result = databaseService.sqlRows(listQuery, namedParameters)
-		List<Long> discussionIdList = result.collect { it.discussionId }*.toLong()
+		List<Long> discussionIdList = result.collect { it.discussionId.toLong() }
 		Map discussionPostData = getTotalDiscussionPosts(discussionIdList)
 
 		paginatedData["discussionPostData"] = discussionPostData

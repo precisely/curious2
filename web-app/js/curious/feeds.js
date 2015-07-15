@@ -75,12 +75,10 @@ $(window).load(function() {
 		showDiscussions();
 	} else if (isTabActive('#people')) {
 		showPeople();
-	} else if (isTabActive('#all')) {
+	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
+		//if the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
-	} else if (location.href.indexOf('social') > -1) {
-		location.hash = '#all';
-		showAllFeeds();
-	}
+	} 
 });
 
 $(document).ready(function() {

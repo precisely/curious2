@@ -29,21 +29,15 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#discussion-topic').keypress(function(e) {
-		var key = e.which;
-		if (key == 13) {
-			$('.input-affordance hr').show();
-			$('input[name = discussionPost]').show();
-			return false;  
-		}
+	$('#discussion-topic').onEnter(function(e) {
+		$('.input-affordance hr').show();
+		$('input[name = discussionPost]').show();
+		return false;  
 	});
 
-	$('#discussion-description').keypress(function (e) {
-		var key = e.which;
-		if (key == 13) {
-			$('#create-discussion').submit(submitDiscussion());
-			return false;  
-		}
+	$('#discussion-description').onEnter(function (e) {
+		$('#create-discussion').submit(submitDiscussion());
+		return false;  
 	});
 
 	var discussionData = ${discussions.encodeAsRaw()};
