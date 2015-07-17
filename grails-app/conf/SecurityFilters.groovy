@@ -73,7 +73,7 @@ class SecurityFilters {
 				return true
 			}
 		}
-		uriFilter(uri: "/api/**") {
+		apiFilter(uri: "/api/**") {
 			before = {
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					println "Unauthorized data action " + actionName
