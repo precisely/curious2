@@ -121,7 +121,6 @@
 			// Keep a gutter space to pre-fetch the data when user is about to reach the end
 			if (pixelsNearEnd < this.options.bufferPx) {
 				// Call the function with context of this and pass two arguments
-				//var infiniteScroll = $.data($element[0], 'infiniteScroll');
 				this.options.onScrolledToBottom.call(this, e, $element);
 			}
 		}
