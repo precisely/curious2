@@ -40,6 +40,14 @@ function callLogoutCallbacks() {
 	++_loginSessionNumber;
 }
 
+//Create custom onEnter event
+$(document).ready(function() {
+	$(document.body).on('keyup', ':input', function(e) {
+		if(e.which == 13)
+			$(this).trigger("enter");
+	});
+});
+
 /*
  * Add universal startsWith method to all String classes
  */

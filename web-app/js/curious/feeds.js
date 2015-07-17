@@ -231,41 +231,41 @@ function showDiscussions() {
 			} else {
 				$('#feed').removeClass().addClass('type-discussions').html('');
 
-				// Showing create discussion form only once
-				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
-				$('#feed').append(createDiscussionForm);
-
-				// Handlers for discussion form input fields
-				$('#discussion-topic').keypress(function (e) {
-					var key = e.which;
-					if (key == 13) {
-						$('.input-affordance hr').show();
-						$('input[name = discussionPost]').show();
-						return false;  
-					}
-				});
-
-				$('#discussion-discription').keypress(function (e) {
-					var key = e.which;
-					if (key == 13) {
-						$('#create-discussion').submit();
-						return false;  
-					}
-				});
 
 				$.each(data.listItems.discussionList, function(index, discussionData) {
 					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
 					$('#feed').append(compiledHtml);
 					showCommentAgeFromDate();
 				});
-				$('#feed-discussions-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('Discussions');
 				$('.share-button').popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
 				});
 			}
+			$('#queryTitle').text('Discussions');
+			$('#feed-discussions-tab a').tab('show');
+			// Showing create discussion form only once
+			var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+			$('#feed').prepend(createDiscussionForm);
+
+			// Handlers for discussion form input fields
+			$('#discussion-topic').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('.input-affordance hr').show();
+					$('input[name = discussionPost]').show();
+					return false;  
+				}
+			});
+
+			$('#discussion-discription').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('#create-discussion').submit();
+					return false;  
+				}
+			});
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -291,10 +291,10 @@ function showPeople() {
 					var compiledHtml = _.template(_people)({'user': user});
 					$('#feed').append(compiledHtml);
 				});
-				$('#feed-people-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('People');		
 			}
+			$('#queryTitle').text('People');		
+			$('#feed-people-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -317,14 +317,14 @@ function showAllFeeds() {
 			} else {
 				$('#feed').removeClass().addClass('type-all').html('');
 				addAllFeedItems(data);
-				$('#feed-all-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('All Feeds');		
 				$(".share-button").popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
 				});
 			}
+			$('#queryTitle').text('All Feeds');		
+			$('#feed-all-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -687,7 +687,9 @@ function leaveSprint(sprintHash) {
 			return;
 
 		if (data.success) {
-			location.reload();
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
+				sprintHash + '\')">Follow</button>');
 		} else {
 			showAlert(data.message);
 		}
@@ -702,7 +704,13 @@ function joinSprint(sprintHash) {
 			return;
 
 		if (data.success) {
-			location.reload();
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
+				sprintHash + '\')">Unfollow</button>');
+			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
+				sprintHash + '\')">Start</button>');
+			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
+				sprintHash + '\')">Stop</button>');
 		} else {
 			showAlert(data.message);
 		}

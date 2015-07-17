@@ -29,13 +29,13 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#discussion-topic').onEnter(function(e) {
+	$('#discussion-topic').bind('enter', function() {
 		$('.input-affordance hr').show();
 		$('input[name = discussionPost]').show();
 		return false;  
 	});
 
-	$('#discussion-description').onEnter(function (e) {
+	$('#discussion-description').bind('enter', function () {
 		$('#create-discussion').submit(submitDiscussion());
 		return false;  
 	});
@@ -169,15 +169,6 @@ function submitDiscussion() {
 										</li>
 									</g:each>
 								</ul>
-							</div>
-						</div>
-						<hr>
-						<div class="row">
-							<div class=" left-content">
-								<span class="label label-default">DATA</span>
-							</div>
-							<div class="right-content">
-								<p>TBD</p>
 							</div>
 						</div>
 						<hr>
