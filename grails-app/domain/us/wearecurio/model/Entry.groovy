@@ -1,7 +1,6 @@
 package us.wearecurio.model
 
 import java.math.BigDecimal
-import java.util.Map
 
 import groovy.time.*
 import grails.compiler.GrailsCompileStatic
@@ -26,8 +25,7 @@ import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 import java.util.ArrayList
-import java.util.HashSet;
-import java.util.Map
+import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import java.util.LinkedList
@@ -583,6 +581,9 @@ class Entry implements Comparable {
 		return m
 	}
 
+	/*
+	 * Create a new repeat entry on the baseDate + addDays, if needed, and cut the current entry at the next base date
+	 */
 	protected Entry createRepeatOnBaseDate(Date baseDate, Map m, EntryCreateMap creationMap, EntryStats stats, int addDays) {
 		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
 			return null
@@ -594,25 +595,28 @@ class Entry implements Comparable {
 		DateTime repeatEndDateTime = new DateTime(this.repeatEnd, dateTimeZone)
 		LocalTime repeatEndLocalTime = repeatEndDateTime.toLocalTime()
 		LocalDate repeatEndLocalDate = repeatEndDateTime.toLocalDate()
-		Date tomorrowRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime, dateTimeZone).toDate()
+		Date oneDayAfterCurrentRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime, dateTimeZone).toDate()
 
 		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
 
-		Date newDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
+		Date newRepeatEntryDateOnThisBaseDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
 
 		// compute previous repeatEnd time by keeping original local time but subtracting a day
 		DateTime currentDateTime = fetchDateTime()
 		LocalTime currentLocalTime = currentDateTime.toLocalTime()
 		DateTimeZone currentDateTimeZone = fetchDateTimeZone()
 		Date prevDate = baseLocalDate.minusDays(2).toDateTime(currentLocalTime, currentDateTimeZone).toDate()
-		while (newDate.getTime() - prevDate.getTime() > DAYTICKS)
+		
+		while (newRepeatEntryDateOnThisBaseDate.getTime() - prevDate.getTime() > DAYTICKS)
 			prevDate = prevDate + 1
 
-		if (this.repeatEnd == null || newDate < tomorrowRepeatEnd) {
-			m['date'] = newDate
+		// if no repeat end or the new repeat entry date is earlier than one day after the current repeat end, create new repeat entry
+		// and change the end of this repeat entry.
+		if (this.repeatEnd == null || newRepeatEntryDateOnThisBaseDate < oneDayAfterCurrentRepeatEnd) {
+			m['date'] = newRepeatEntryDateOnThisBaseDate
 			m['repeatEnd'] = this.repeatEnd
 
-			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newDate), stats)
+			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newRepeatEntryDateOnThisBaseDate), stats)
 			
 			creationMap.add(newEntry)
 
@@ -630,19 +634,25 @@ class Entry implements Comparable {
 
 		return null
 	}
-
-	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture) {
+	
+	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture, boolean unGhost) {
 		boolean isToday = isToday(entry.getDate(), baseDate)
 
-		if (entry.repeatParametersMatch(m))
+		if (entry.repeatParametersMatch(m) && ((!entry.isGhost()) || (!unGhost)))
 			return entry // no need to update when entry doesn't change
 
 		if (isToday) {
 			if (allFuture) {
-				entry.update(m, stats)
+				entry.doUpdate(m, stats)
 
-				return entry // allFuture updates can just edit the entry and return
+				if (entry.isGhost() && unGhost) {
+					// create an entry a day after the baseDate with the new entry data
+					entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
+					entry.unGhost(stats)
+				}				
+				return entry // allFuture updates can just edit the entry and return if the entry is today
 			} else {
+				// create an entry a day after the baseDate with the old entry data
 				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
 
 				if (entry.getRepeatEnd() == entry.getDate()) {
@@ -650,27 +660,34 @@ class Entry implements Comparable {
 				} else
 					m['repeatEnd'] = entry.getRepeatEnd()
 
-				entry.update(m, stats)
+				entry.doUpdate(m, stats)
+				
+				if (unGhost) entry.unGhost(stats)
 
 				return entry
 			}
 		} else {
-			if (!allFuture) { // create another entry after the base date
+			if ((!allFuture) || (unGhost && entry.isGhost())) { // create another entry after the base date
 				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
 			}
 
-			return entry.createRepeatOnBaseDate(baseDate, m, creationMap, stats, 0)
+			Entry newEntry = entry.createRepeatOnBaseDate(baseDate, m, creationMap, stats, 0)
+			
+			if (unGhost && newEntry.isGhost())
+				newEntry.unGhost()
+			
+			return newEntry
 		}
 	}
 
 	/**
 	 * Update entry, possibly updating multiple entries, given map of parameters (output of the parse method or manually created)
 	 */
-	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true) {
+	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true, boolean unGhost = true) {
 		log.debug "Entry.updateSingle() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		RepeatType repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
-			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture)
+			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture, unGhost)
 			
 			if (retVal != null) {
 				if (creationMap != null)
@@ -681,7 +698,7 @@ class Entry implements Comparable {
 			
 			return retVal
 		} else {
-			entry.update(m, stats)
+			entry.doUpdate(m, stats)
 			
 			entry.refreshSort()
 			
@@ -700,22 +717,35 @@ class Entry implements Comparable {
 
 	/**
 	 * Update entry, possibly updating multiple entries, given map of parameters (output of the parse method or manually created)
+	 * 
+	 * allFuture - if repeat entry, update this entry and all future entries
+	 * unGhost - if ghost entry, make baseDate's entry unghosted, but future entries will still be ghosted
+	 * 
 	 */
-	static Entry update(Entry entry, Map m, EntryStats stats, Date baseDate, boolean allFuture = true) {
-		log.debug "Entry.update() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
-		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
-		amounts.addAll(m['amounts'])
-		ArrayList<ParseAmount> unmatchedEntries = new ArrayList<ParseAmount>()
+	Entry update(Map m, EntryStats stats, Date baseDate, boolean allFuture = true, boolean unGhost = true) {
+		log.debug "Entry.update() entry:" + this + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		
 		EntryCreateMap creationMap = new EntryCreateMap()
-		
-		Long userId = entry.getUserId()
 		
 		Entry retVal = null
 		Entry firstUpdated = null
 		
+		if (m == null) {
+			for (Entry e : this.fetchGroupEntries()) {
+				Entry updated = updateSingle(e, e.entryMap(), creationMap, stats, baseDate, allFuture, unGhost)
+				if (firstUpdated == null)
+					firstUpdated = updated
+			}
+			
+			return firstUpdated
+		}
+		
+		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
+		if (m != null && m['amounts'] != null) amounts.addAll(m['amounts'])
+		ArrayList<ParseAmount> unmatchedEntries = new ArrayList<ParseAmount>()
+		
 		// first, update entries that match the amounts already specified
-		for (Entry e : entry.fetchGroupEntries()) {
+		for (Entry e : this.fetchGroupEntries()) {
 			boolean foundMatch = false
 			for (ParseAmount a : amounts) {
 				if (!a.isActive()) continue
@@ -723,8 +753,8 @@ class Entry implements Comparable {
 					foundMatch = true
 					amounts.remove(a)
 					a.copyToMap(m)
-					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
-					if (e.is(entry))
+					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture, unGhost)
+					if (e.is(this))
 						retVal = updated
 					if (firstUpdated == null)
 						firstUpdated = updated
@@ -737,8 +767,8 @@ class Entry implements Comparable {
 					foundMatch = true
 					amounts.remove(a)
 					a.copyToMap(m)
-					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
-					if (e.is(entry))
+					Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture, unGhost)
+					if (e.is(this))
 						retVal = updated
 					if (firstUpdated == null)
 						firstUpdated = updated
@@ -763,8 +793,8 @@ class Entry implements Comparable {
 			}
 			if (a != null) {
 				a.copyToMap(m)
-				Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture)
-				if (e.is(entry))
+				Entry updated = updateSingle(e, m, creationMap, stats, baseDate, allFuture, unGhost)
+				if (e.is(this))
 					retVal = updated
 				if (firstUpdated == null)
 					firstUpdated = updated
@@ -1672,23 +1702,12 @@ class Entry implements Comparable {
 		return new DateTime(tryDateTime.getMillis(), currentTimeZone)
 	}
 	
-	protected Entry activateGhostEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
+	protected Entry activateContinuousEntrySingle(Date currentBaseDate, Date nowDate, String timeZoneName, DateTimeZone currentTimeZone, EntryCreateMap creationMap,
 			EntryStats stats) {
 		long dayStartTime = currentBaseDate.getTime()
 		def now = nowDate.getTime()
 		long diff = now - dayStartTime
 		long thisDiff = this.date.getTime() - dayStartTime
-
-		if (this.repeat == null)
-			return null
-
-		if (!this.repeat.isContinuous() && (thisDiff >=0 && thisDiff < DAYTICKS)) {
-			// activate this entry
-
-			this.unGhost(stats)
-
-			return this
-		}
 
 		def m = [:]
 		m['timeZoneName'] = timeZoneName
@@ -1698,42 +1717,27 @@ class Entry implements Comparable {
 		m['units'] = this.units
 		m['durationType'] = this.durationType?.unGhost()
 		m['baseTag'] = baseTag
-
-		if (this.repeat.isContinuous()) {
-			// continuous tags create new tags based on the template
-			m['comment'] = ''
-			m['repeatType'] = null
-			if (diff >= 0 && diff < DAYTICKS) {
-				m['date'] = nowDate
-				m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
-			} else {
-				m['date'] = new Date(dayStartTime + HALFDAYTICKS)
-				m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
-			}
-			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
-			
-			creationMap.add(retVal)
-
-			Utils.save(retVal, true)
-			return retVal
-		} else { // this repeat element isn't continuous
-			m['comment'] = this.comment
-			m['repeatType'] = this.repeatType
-			m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
-			m['datePrecisionSecs'] = this.datePrecisionSecs
-			def retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
-			
-			creationMap.add(retVal)
-
-			retVal.unGhost(stats)
-
-			return retVal
+		// continuous tags create new tags based on the template
+		m['comment'] = ''
+		m['repeatType'] = null
+		if (diff >= 0 && diff < DAYTICKS) {
+			m['date'] = nowDate
+			m['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
+		} else {
+			m['date'] = new Date(dayStartTime + HALFDAYTICKS)
+			m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 		}
+		Entry retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
+		
+		creationMap.add(retVal)
+
+		Utils.save(retVal, true)
+		return retVal
 	}
 
-	Entry activateGhostEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
-		if (this.repeat == null)
-			return null
+	Entry activateContinuousEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
+		if ((this.repeat == null) || (!this.repeat.isContinuous()))
+			return this
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
 		
@@ -1742,7 +1746,7 @@ class Entry implements Comparable {
 		Entry firstActivated = null
 		
 		for (Entry e : fetchGroupEntries()) {
-			Entry activated = e.activateGhostEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats)
+			Entry activated = e.activateContinuousEntrySingle(currentBaseDate, nowDate, timeZoneName, currentTimeZone, creationMap, stats)
 			if (firstActivated == null) firstActivated = activated
 		}
 		
@@ -1798,18 +1802,20 @@ class Entry implements Comparable {
 	/**
 	 * Update existing entry and save
 	 */
-	protected update(Map m, EntryStats stats) {
+	protected void doUpdate(Map m, EntryStats stats) {
+		if (m == null) return
+		
 		stats.addEntry(this)
 		
-		updateSingle(m, stats)
+		doUpdateSingle(m, stats)
 		
 		stats.addEntry(this)
 	}
 
-	protected updateSingle(Map m, EntryStats stats) {
+	protected void doUpdateSingle(Map m, EntryStats stats) {
 		log.debug "Entry.updateSingle() this:" + this + ", m:" + m
 
-		if (m == null) return null
+		if (m == null) return
 
 		def newTag = m['tag']
 
@@ -1845,7 +1851,7 @@ class Entry implements Comparable {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		setRepeat(m['repeatType']?.forUpdate())
+		setRepeat(m['repeatType'])
 		setSetIdentifier(Identifier.look(m['setName']))
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
@@ -1947,22 +1953,9 @@ class Entry implements Comparable {
 				if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
 					continue
 				desc['date'] = date
-			}
-			if ((entry.getDate().getTime() != desc['date'].getTime()) && entry.repeat != null) { // repeat entry on a future date
-				if ((desc['repeatType'] & RepeatType.REMIND_BIT) != 0) {
-					desc['repeatType'] = entry.repeat.type | RepeatType.GHOST_BIT // no longer ghost repeat entries, but do ghost remind
-					/* desc['amount'] = null
-					 desc['amountPrecision'] = -1 */
-				}
-			} else if (entry.repeat != null) {
 				desc['repeatType'] = entry.repeat.type
-				/* no longer nullify amount for remind entries
-				 if (((entry.repeat.type & RepeatType.GHOST_BIT) != 0) && ((entry.repeat.type & RepeatType.REMIND_BIT) != 0)) {
-				 desc['amount'] = null
-				 desc['amountPrecision'] = -1
-				 }*/
 			} else
-				desc['repeatType'] = entry.repeat?.type
+				desc['repeatType'] = null
 			desc['setName'] = entry.setIdentifier?.toString()
 			timedResults.add(desc)
 		}
@@ -3390,13 +3383,6 @@ class RepeatType { // IMPORTANT: there must be ghost entries
 	
 	RepeatType makeConcreteGhost() {
 		return map.get(this.type | CONCRETEGHOST_BIT)
-	}
-	
-	RepeatType forUpdate() {
-		if (isReminder())
-			return map.get(this.type
-					& (~(GHOST_BIT | CONCRETEGHOST_BIT)))
-		return this;
 	}
 	
 	boolean equals(Object other) {

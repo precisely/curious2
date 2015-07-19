@@ -90,9 +90,9 @@ class DataController extends LoginController {
 		EntryStats stats = new EntryStats(entry.getUserId())
 		
 		// activate repeat entry if it has a repeat type
-		if (entry.getRepeatType() != null && (entry.getRepeatType().isReminder() || entry.getRepeatType().isContinuous())) {
-			debug "Activating ghost entry " + entry
-			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName, stats)
+		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
+			debug "Activating continuous entry " + entry
+			Entry newEntry = entry.activateContinuousEntry(baseDate, currentTime, timeZoneName, stats)
 			if (newEntry != null) {
 				entry = newEntry
 				debug "New activated entry " + newEntry
@@ -103,7 +103,7 @@ class DataController extends LoginController {
 		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
 		if (entry != null) {
-			entry = Entry.update(entry, m, stats, baseDate, allFuture)
+			entry = entry.update(m, stats, baseDate, allFuture)
 			def tagStats = stats.finish()
 			return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
 		} else {
@@ -311,47 +311,6 @@ class DataController extends LoginController {
 		renderJSONGet(entries)
 	}
 	
-	// legacy support for obsolete call
-	def activateGhostEntry() {
-		activateGhostEntryData()
-	}
-
-	def activateGhostEntryData() {
-		debug "DataController.activateGhostEntryData()"
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		Entry entry = Entry.get(params.entryId.toLong());
-		def userId = entry.getUserId();
-
-		if (!tokenService.acquire(session, "activateGhost:" + userId + ":" + params.entryId + ":" + params.date)) {
-			renderStringGet("error") // silently fail
-		} else {
-			Date baseDate = parseDate(params.baseDate)
-			Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-			String timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
-
-			if (entry.getUserId() != sessionUser().getId()) {
-				renderStringGet('You do not have permission to activate this entry.')
-				return
-			}
-			EntryStats stats = new EntryStats(user.getId())
-			Entry newEntry = entry.activateGhostEntry(baseDate, currentTime, timeZoneName, stats)
-			stats.finish()
-			if (newEntry != null) {
-				renderJSONGet(newEntry.getJSONDesc())
-				return
-			} else
-				renderStringGet("Failed to activate entry due to internal server error.")
-		}
-	}
-
 	// legacy support for obsolete call
 	def deleteGhostEntry() {
 		deleteGhostEntryData()

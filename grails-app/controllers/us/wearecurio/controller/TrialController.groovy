@@ -57,7 +57,7 @@ class TrialController extends LoginController {
 		def m = Entry.parseMeta(textStr);
 
 		if (entry != null) {
-			Entry.update(entry, m, null)
+			entry.update(m, null)
 			return entry;
 		} else {
 			return null;
