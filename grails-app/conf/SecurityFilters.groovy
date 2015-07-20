@@ -85,7 +85,7 @@ class SecurityFilters {
 		}
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
-				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.indexOf('/api/') == 0) && !idempotentActions.contains(actionName)) {
+				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					println "duplicate filter: " + actionName
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime) {
