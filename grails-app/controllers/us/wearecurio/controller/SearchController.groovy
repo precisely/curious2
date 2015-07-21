@@ -63,7 +63,7 @@ class SearchController extends LoginController {
 		if (type.equalsIgnoreCase("people")) {
 			renderJSONGet(searchService.getPeopleList(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("discussions")) {
-			renderJSONGet(searchService.getDiscussionsList(user, params.offset, params.max))
+			renderJSONGet(searchService.getDiscussionsListMobile(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("sprints")) {
 			renderJSONGet(searchService.getSprintsList(user, params.offset, params.max))
 		} else if (type.equalsIgnoreCase("all")) {
@@ -74,7 +74,7 @@ class SearchController extends LoginController {
 				listItems.addAll(sprints.listItems.sprintList)
 			}
 
-			Map discussions = searchService.getDiscussionsList(user, params.offset, params.max)
+			Map discussions = searchService.getDiscussionsListMobile(user, params.offset, params.max)
 			if (discussions.listItems) {
 				listItems.addAll(discussions.listItems.discussionList)
 			}

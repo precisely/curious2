@@ -43,7 +43,7 @@ class SecurityFilters {
 	] as Set
 
 	def filters = {
-		preCheck(controller:'(home|tag|discussion|mobiledata|data|correlation|search|discussionPost)', action:'*') {
+		preCheck(controller:'(home|tag|mobiledata|data|correlation|search)', action:'*') {
 			before = {
 				def a = actionName
 				if (params.controller == null) {
@@ -73,9 +73,19 @@ class SecurityFilters {
 				return true
 			}
 		}
+		apiFilter(controller: '(sprint|user|discussion|discussionPost)', action: '*') {
+			before = {
+				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
+					println "Unauthorized data action " + actionName
+					render "${params.callback}('login')"
+					return false
+				}
+				return true
+			}
+		}
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
-				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId')) && !idempotentActions.contains(actionName)) {
+				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					println "duplicate filter: " + actionName
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime) {

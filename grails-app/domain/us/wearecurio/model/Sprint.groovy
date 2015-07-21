@@ -418,6 +418,7 @@ class Sprint {
 			totalTags: this.getEntriesCount(),
 			virtualUserId: this.virtualUserId,
 			virtualGroupId: this.virtualGroupId,
+			virtualGroupName: this.fetchUserGroup().name,
 			created: this.created,
 			updated: this.updated,
 			type: "spr"

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.LogFactory
+import grails.gorm.DetachedCriteria
+import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.services.DatabaseService
@@ -64,13 +66,13 @@ class User {
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 		email column:'email', index:'email_idx'
 	}
-	
+
 	static searchable = {
 		only = ['username', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
 	}
-	
+
 	SortedSet interestTags
-	
+
 	static hasMany = [
 		interestTags: Tag
 	]
@@ -113,10 +115,10 @@ class User {
 		
 		return user
 	}
-	
+
 	public static User createVirtual() {
 		log.debug "User.createVirtual()"
-		
+
 		User user = new User()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 		user.created = new Date()
@@ -129,29 +131,33 @@ class User {
 		user.twitterDefaultToNow
 		user.displayTimeAfterTag = true
 		user.webDefaultToNow = true
-		
+
 		Utils.save(user, true)
-		
+
 		return user
 	}
-	
+
 	public static User lookupOrCreateVirtualEmailUser(String name, String email, String website) {
 		log.debug "User.lookupOrCreateVirtualEmailUser() name: " + name + " email: " + email + " website: " + website
-		
-		if (name)
+
+		if (name) {
 			name = name.trim()
+		}
+
 		if (email) {
 			email = email.toLowerCase().trim()
 		}
+
 		if (website) {
 			website = website.toLowerCase().trim()
 		}
-		
+
 		User match = User.findByNameAndEmailAndWebsiteAndVirtual(name, email, website, true)
-		
-		if (match != null)
+
+		if (match != null) {
 			return match
-		
+		}
+
 		User user = new User()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 		user.created = new Date()
@@ -165,12 +171,12 @@ class User {
 		user.twitterDefaultToNow
 		user.displayTimeAfterTag = true
 		user.webDefaultToNow = true
-		
+
 		Utils.save(user, true)
-		
+
 		return user
 	}
-	
+
 	public static void delete(User user) {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
@@ -186,10 +192,14 @@ class User {
 			// only change username if password is also changed
 			uname = username
 		}
-		if (uname)
+
+		if (uname) {
 			username = uname
+		}
+
 		email = map["email"] != null ? map["email"].toLowerCase() : email
 		def rEmail = map['remindEmail']
+
 		if (rEmail != null) {
 			if (rEmail.length() == 0) {
 				remindEmail = null
@@ -197,12 +207,15 @@ class User {
 				remindEmail = rEmail.toLowerCase()
 			}
 		}
+
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
+
 		if ((!map["name"]) && (map["first"] || map["last"])) {
 			map["name"] = (map["first"] ?: '') + ' ' + (map["last"] ?: '')
 		}
+
 		name = map["name"] == null ? name : map['name']
 		sex = map["sex"] == null ? sex : map['sex']
 		website = map["website"]
@@ -212,6 +225,7 @@ class User {
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
 		notifyOnComments = (map['notifyOnComments'] ?: 'on').equals('on') ? true : false
+
 		try {
 			if (map["birthdate"] != null)
 				birthdate = dateFormat.parse(map["birthdate"])
@@ -236,7 +250,7 @@ class User {
 		
 		return (Integer)userTimeZoneId.getTimeZoneId()
 	}
-	
+
 	boolean notifyEmail(String from, String subject, String message) {
 		if (!notifyOnComments)
 			return false
@@ -263,9 +277,9 @@ class User {
 	
 	def getPreferences() {
 		return [twitterAccountName:twitterAccountName,
-			twitterDefaultToNow:twitterDefaultToNow,
-			displayTimeAfterTag:displayTimeAfterTag,
-			webDefaultToNow:webDefaultToNow];
+				twitterDefaultToNow:twitterDefaultToNow,
+				displayTimeAfterTag:displayTimeAfterTag,
+				webDefaultToNow:webDefaultToNow];
 	}
 	
 	static lookup(String username, String password) {
@@ -331,18 +345,17 @@ class User {
 			
 			def usersTagIds =
 					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
-						FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
+					FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
 					[userId:userId]).collect { it.id.toLong() }
-			
+
 			getTagGroups(userId).each { tagGroupInstance ->
 				// No need to get tags from wildcard tag group
 				if (!(tagGroupInstance instanceof WildcardTagGroup)) {
 					usersTagIds.addAll(tagGroupInstance.getTagsIds(userId))
 				}
 			}
-			
+
 			tagIdCache[userId] = usersTagIds
-			
 			Tag.fetchAll(usersTagIds)
 		}
 	}
@@ -382,7 +395,7 @@ class User {
 			tagGroupIdCache[userId] << tagInstance.id
 		}
 	}
-	
+
 	static void removeFromCache(Long userId, GenericTagGroup tagInstance) {
 		if (tagGroupIdCache[userId]) {
 			tagGroupIdCache[userId].remove(tagInstance.id)
@@ -401,7 +414,6 @@ class User {
 			
 			List<Long> usersTagGroupIds = TagGroup.getAllTagGroupsForUser(userId)*.id
 			tagGroupIdCache[userId] = usersTagGroupIds
-			
 			GenericTagGroup.getAll(usersTagGroupIds)
 		}
 	}
@@ -409,28 +421,28 @@ class User {
 	List<GenericTagGroup> getTagGroups() {
 		getTagGroups(this.id)
 	}
-	
+
 	void addInterestTag(Tag tag) {
 		this.addToInterestTags(tag)
 	}
-	
+
 	void deleteInterestTag(Tag tag) {
 		this.removeFromInterestTags(tag)
 	}
-	
+
 	def fetchInterestTagsJSON() {
 		def retVal = []
-		
+
 		if (!this.interestTags)
 			return []
-		
+
 		for (Tag tag : this.interestTags) {
 			retVal.add([description:tag.getDescription()])
 		}
-		
+
 		return retVal
 	}
-	
+
 	String getShortDescription() {
 		if (virtual) return name
 		else return username
@@ -446,15 +458,40 @@ class User {
 	
 	List getOwnedSprints() {
 		List sprintsOwned = Sprint.withCriteria {
+			resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
 			projections {
-				property('name')
+				property('name', 'name')
+				property('description', 'description')
 			}
 			eq('userId', id)
 			eq('visibility', Visibility.PUBLIC)
 		}
 		return sprintsOwned
 	}
-	
+
+	List getUserGroups() {
+		List<Long> groupIds = new DetachedCriteria(GroupMemberReader).build {
+			projections {
+				property "groupId"
+			}
+			eq "memberId", this.id
+		}.list()
+
+		List groups = UserGroup.withCriteria {
+			resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+			projections {
+				property('fullName', 'name')
+				property('description', 'description')
+			}
+			'in'('id', groupIds ?: [0l])
+			or {
+				isNull("isVirtual")
+				ne("isVirtual", true)
+			}
+		}
+		return groups
+	}
+
 	def getJSONShortDesc() {
 		return [
 			id: id,
@@ -462,7 +499,7 @@ class User {
 			username: username
 		];
 	}
-	
+
 	def getJSONDesc() {
 		return [
 			id: id,
@@ -484,6 +521,7 @@ class User {
 	def getPeopleJSONDesc() {
 		return getJSONDesc() + [
 			sprints: getOwnedSprints(),
+			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
 			updated: created
 		]

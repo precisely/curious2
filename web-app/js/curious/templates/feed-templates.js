@@ -2,7 +2,7 @@ var _people = '\
 <div class="people-wrapper">\
 	<div class="user-details-header">\
 		<a href="#">\
-			<img class="avatar" src="/images/avatar.png" alt="avatar">\
+			<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">\
 			<span class="user-name"><%- user.username %></span>\
 		</a>\
 		<button class="follow">FOLLOW</button>\
@@ -13,7 +13,12 @@ var _people = '\
 	</div>\
 	<div class="user-details-content">\
 		<span>Public Sprints:</span>\
-		<span class="label-value"><%- user.sprints.join(", ") %></span>\
+		<span class="label-value">\
+			<% user.sprints.forEach(function(sprint, index) { %>\
+				<%- sprint.name %>\
+				<% if(index < user.sprints.length - 1) { print(", ") }; %>\
+			<% }) %>\
+		</span>\
 	</div>\
 	<div class="user-details-content">\
 		<span>Start Date:</span>\
@@ -24,7 +29,7 @@ var _people = '\
 
 var _createDiscussionForm = '\
 <div class="new-post">\
-	<form id="create-discussion" action="/discussion/save" method="post">\
+	<form id="create-discussion" action="/home/discuss?createTopic=true" method="post">\
 		<div class="input-affordance left-addon">\
 			<i class="fa fa-pencil"></i> \
 			<input class="full-width discussion-topic-input"\
@@ -48,7 +53,7 @@ var _discussions = ' \
 				<div class="row">\
 					<div class="col-xs-9 discussion-header">\
 						<a href="#">\
-							<img class="avatar" src="/images/avatar.png" alt="avatar">\
+							<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">\
 							<span class="user-name"> <%- discussionData.userName %></span>\
 						</a>\
 					</div>\
@@ -69,11 +74,11 @@ var _discussions = ' \
 					</div>\
 				</div>\
 				<div class="group"> \
-					<%- discussionData.isPublic ? "Open to all" : discussionData.groupName %>\
+					<%- discussionData.groupName %>\
 				</div>\
 				<div class="row">\
 					<div class="col-xs-7">\
-						<a href="/discussion/show/<%- discussionData.hash %>"> \
+						<a href="/home/discuss?discussionId=<%- discussionData.id %>"> \
 							<span> <%- discussionData.name ? discussionData.name: \'(No Title)\' %></span>\
 						</a>\
 					</div>\
@@ -84,7 +89,7 @@ var _discussions = ' \
 							</button>\
 							<% if (discussionData.isAdmin) {  %>\
 								<button class="share-button" data-toggle="popover" title="Share:" data-placement="top" \
-										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/discussion/show/<%- discussionData.hash %>\'>">\
+										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/home/discuss?discussionId=<%- discussionData.id %>\'>">\
 									<img src="/images/share.png" alt="share">Share\
 								</button>\
 							<% } %>\
@@ -113,7 +118,7 @@ var _discussions = ' \
 			</div>\
 			<div class="row">\
 				<div class="col-md-6 add-comment">\
-					<form action="/discussionPost/save" method="post" id="commentForm">\
+					<form action="/home/discuss" method="post" id="commentForm">\
 						<% if (false) { %>\
 							<p>Enter your details below</p>\
 								<div id="postname">\
@@ -139,7 +144,7 @@ var _discussions = ' \
 									placeholder="Add Comment..."\
 									id="post-comment" name="message" required>\
 						<% } %>\
-						<input type="hidden" name="discussionHash" value="<%- discussionData.hash %>">\
+						<input type="hidden" name="discussionId" value="<%- discussionData.id %>">\
 					</form>\
 				</div>\
 				<div class="class-md-6"></div>\

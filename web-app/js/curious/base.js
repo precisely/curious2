@@ -40,6 +40,14 @@ function callLogoutCallbacks() {
 	++_loginSessionNumber;
 }
 
+//Create custom onEnter event
+$(document).ready(function() {
+	$(document.body).on('keyup', ':input', function(e) {
+		if(e.which == 13)
+			$(this).trigger("enter");
+	});
+});
+
 /*
  * Add universal startsWith method to all String classes
  */
@@ -293,14 +301,14 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 }
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
-	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'post' : 'get', background);
+	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'POST' : 'GET', background);
 }
 
 function queueJSONAll(description, url, args, successCallback, failCallback, delay, requestMethod, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	requestMethod = requestMethod || 'get';
+	requestMethod = requestMethod || 'GET';
 	window.setTimeout(function() {
 		if (stillRunning) {
 			alertShown = true;
@@ -384,9 +392,12 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	} else { // first call
 		if (!background)
 			++numJSONCalls;
+
+		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
 		$.ajax({
 			type: requestMethod,
 			dataType: "json",
+			contentType: (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8',
 			url: url,
 			data: args,
 			timeout: 20000 + (delay > 0 ? delay : 0)

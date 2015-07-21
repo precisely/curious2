@@ -292,16 +292,16 @@ class UserGroup {
 		
 		String countQuery = String.format(discussionQuery, "COUNT(d.id) as count", argument2)
 		paginatedData["totalCount"] = databaseService.sqlRows(countQuery, map)[0]?.count
-		log.debug "paginated data count: ${paginatedData['totalCount']}"
 		
 		argument2 += " GROUP BY d.id"
 		String listQuery = String.format(discussionQuery, argument1, argument2)
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 		
 		List result = databaseService.sqlRows(listQuery, map)
-		
-		log.debug "data: ${result.dump()}"
-		//info["discussionId"]
+
+		List discussionIdList = result.collect { it.discussionId.toLong() }
+
+		paginatedData["discussionPostData"] = getTotalDiscussionPosts(discussionIdList)
 		paginatedData["dataList"] = addAdminPermissions(user, result)
 		
 		paginatedData
@@ -346,9 +346,18 @@ class UserGroup {
 		listQuery += " limit ${args.max.toInteger()} offset ${args.offset.toInteger()}"
 		
 		List result = databaseService.sqlRows(listQuery, namedParameters)
-		List discussionIdList = result.collect { it.discussionId }*.toLong()
-		
+		List<Long> discussionIdList = result.collect { it.discussionId.toLong() }
+		Map discussionPostData = getTotalDiscussionPosts(discussionIdList)
+
+		paginatedData["discussionPostData"] = discussionPostData
+		paginatedData["dataList"] = addAdminPermissions(user, result)
+
+		paginatedData
+	}
+
+	static def getTotalDiscussionPosts(List discussionIdList) {
 		List allPostCountOrderdByDiscussion
+
 		if (discussionIdList) {
 			allPostCountOrderdByDiscussion = DiscussionPost.withCriteria {
 				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
@@ -360,34 +369,12 @@ class UserGroup {
 			}
 		}
 		
-		String getSecondPostQuery = """select id, message, discussion_id,
-				@num := if(@did = discussion_id, @num + 1, 1) as row_num, 
-				@did := discussion_id as discussionId from discussion_post force index(discussion_id)
-				group by discussion_id, message having row_num = 2"""
-		
-		DataSource dataSource =  Holders.getApplicationContext().dataSource
-		Sql sql = new Sql(dataSource)
-		
-		// Initialize the variable to default value to avoid problem on next query
-		sql.execute("""SET @num := 0, @did := 0""")
-		
-		List secondPostsList = sql.rows(getSecondPostQuery)
-		
-		// Close the connection to avoid memory leak
-		sql.close()
-		
 		Map discussionPostData = [:]
-		
 		//separating & populating required data for every discussion
 		discussionIdList.each() { discussionId ->
-			discussionPostData[discussionId] = ["secondPost": secondPostsList.find{ it.discussion_id == discussionId }?.message,
-				"totalPosts": allPostCountOrderdByDiscussion.find{ it.discussionId == discussionId }?.totalPosts]
+			discussionPostData[discussionId] = ["totalPosts": allPostCountOrderdByDiscussion.find{ it.discussionId == discussionId }?.totalPosts]
 		}
-		
-		paginatedData["discussionPostData"] = discussionPostData
-		paginatedData["dataList"] = addAdminPermissions(user, result)
-		
-		paginatedData
+		return discussionPostData
 	}
 	
 	static def canReadDiscussion(User user, Discussion discussion) {

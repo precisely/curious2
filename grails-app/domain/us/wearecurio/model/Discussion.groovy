@@ -8,6 +8,7 @@ import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.EmailService
+import us.wearecurio.services.DatabaseService
 
 class Discussion {
 	
@@ -432,7 +433,13 @@ class Discussion {
 		DiscussionPost firstPostInstance = getFirstPost()
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
+
+		String groupNameQuery = "SELECT ug.full_name FROM user_group ug INNER JOIN group_member_discussion gmd on ug.id = gmd.group_id where gmd.member_id = :id ORDER BY gmd.created DESC"
+		DatabaseService databaseService = DatabaseService.get()
 		
+		List result = databaseService.sqlRows(groupNameQuery, [id: id])
+		String discussionGroupName = result[0].full_name
+
 		if (args.max && args.offset.toInteger()  > -1) {
 			// A total count will be available if pagination parameter is passed
 			totalPostCount = postList.getTotalCount()
@@ -442,9 +449,9 @@ class Discussion {
 				totalPostCount --
 			}
 		}
-		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?',
+		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
 			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated, firstPost: firstPostInstance,
-			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC]
+			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC, groupName: discussionGroupName ?: '']
 	}
 	
 	String toString() {

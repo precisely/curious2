@@ -3,6 +3,7 @@
 <html>
 <head>
 <meta name="layout" content="plot" />
+<script type="text/javascript" src="/js/curious/discussion.js?ver=21"></script>
 <style type="text/css">
 .ui-accordion-header {
 	overflow: hidden;
@@ -304,13 +305,13 @@ $(document).ready(function() {
 						<div class="discussion-topic">
 							<div class="contents">
 								<div class="row">
-									<div class="col-md-9 discussion-header">
+									<div class="col-xs-9 discussion-header">
 										<a href="#">
-											<img class="avatar" src="/images/avatar.png" alt="...">
+											<img class="avatar img-circle" src="/images/avatar.png" alt="...">
 											<span class="user-name"> ${discussionOwner}</span>
 										</a>
 									</div>
-									<div class="col-md-3 discussion-topic-span discussion-header">
+									<div class="col-xs-3 discussion-topic-span discussion-header">
 										<span class="posting-time" data-time="${discussionCreatedOn.time}"></span>
 										<g:if test="${isAdmin }">
 											<li class="dropdown">
@@ -338,7 +339,7 @@ $(document).ready(function() {
 								<hr>
 								<div class="buttons">
 									<button class="share-button" data-toggle="popover" data-placement="top" 
-											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}discussion/show/${discussionHash}'>"
+											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}home/discuss?discussionId=${discussionId}'>"
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
@@ -356,7 +357,7 @@ $(document).ready(function() {
 							<div class="discussion-comment">
 								<div>
 									<div class="add-comment-to-discussion">
-										<form action="/discussionPost/save" method="post"
+										<form action="/home/discuss" method="post"
 											id="commentForm">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
@@ -386,12 +387,12 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="discussionHash" value="${discussionHash}">
+											<input type="hidden" name="discussionId" value="${discussionId}">
 										</form>
 									</div>
 								</div>
 								<div>
-									<a href="/discussion/show/${discussionHash }">
+									<a href="#">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
 									</a>

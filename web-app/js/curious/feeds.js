@@ -8,10 +8,6 @@ function isTabActive(anchor) {
 	return location.hash == anchor;
 }
 
-function isOnFeedPage() {
-	var anchor = location.hash.slice(1);
-	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
-}
 
 function registerScroll() {
 	$('#feed').infiniteScroll({
@@ -79,9 +75,10 @@ $(window).load(function() {
 		showDiscussions();
 	} else if (isTabActive('#people')) {
 		showPeople();
-	} else if (isTabActive('#all')) {
+	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
+		//if the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
-	}
+	} 
 });
 
 $(document).ready(function() {
@@ -96,64 +93,6 @@ $(document).ready(function() {
 		}
 	});
 
-	$(document).on("click", "a.delete-discussion", function() {
-		var $this = $(this);
-		showYesNo('Are you sure want to delete this?', function() {
-			var discussionHash = $this.data('discussionHashId');
-			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
-					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
-					function(data) {
-				if (!checkData(data))
-					return;
-
-				if (data.success) {
-					if (isOnFeedPage()) {
-						showAlert(data.message, function() {
-							$this.parents('.feed-item').fadeOut();
-						});
-					} else {
-						location.href = '/home/social#all';
-					}
-				} else {
-					showAlert(data.message);
-				}
-			}, function(xhr) {
-				showAlert('Internal server error occurred.');
-			}, null, 'delete');
-		});
-		return false;
-	});
-
-	$(document).on("click", "a.delete-post", function() {
-		var $this = $(this);
-		showYesNo('Are you sure want to delete this?', function() {
-			var postId = $this.data('postId');
-			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
-					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
-					function(data) {
-				if (!checkData(data))
-					return;
-
-				if (data.success) {
-					showAlert(data.message, function() {
-						$this.parent().closest('.discussion-comment').fadeOut();
-						if (isOnFeedPage()) {
-							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
-							var totalComments = $commentButton.data('totalComments') - 1;
-							$commentButton.data('totalComments', totalComments);
-							$commentButton.text(totalComments);
-						}
-					});
-				} else {
-					showAlert(data.message);
-				}
-			}, function(xhr) {
-				showAlert('Internal server error occurred.');
-			}, null, 'delete');
-		});
-		return false;
-	});
-
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
 
@@ -166,12 +105,13 @@ $(document).ready(function() {
 	$('#submitSprint').submit(function(event) {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $(this).serializeObject();
-		queuePostJSON('Updating sprint', '/data/updateSprintData', getCSRFPreventionObject('updateSprintDataCSRF', params),
+		var id = $('#sprintIdField').val();
+		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
 				return;
 
-			if (data.error) {
+			if (!data.success) {
 				$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
 				setInterval(function() {
 					$('.modal-dialog .alert').addClass('hide');
@@ -181,7 +121,7 @@ $(document).ready(function() {
 				clearSprintFormData()
 			}
 		}, function(xhr) {
-		});
+		}, null, 'PUT');
 		return false;
 	});
 
@@ -291,41 +231,41 @@ function showDiscussions() {
 			} else {
 				$('#feed').removeClass().addClass('type-discussions').html('');
 
-				// Showing create discussion form only once
-				var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
-				$('#feed').append(createDiscussionForm);
-
-				// Handlers for discussion form input fields
-				$('#discussion-topic').keypress(function (e) {
-					var key = e.which;
-					if (key == 13) {
-						$('.input-affordance hr').show();
-						$('input[name = discussionPost]').show();
-						return false;  
-					}
-				});
-
-				$('#discussion-discription').keypress(function (e) {
-					var key = e.which;
-					if (key == 13) {
-						$('#create-discussion').submit();
-						return false;  
-					}
-				});
 
 				$.each(data.listItems.discussionList, function(index, discussionData) {
 					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
 					$('#feed').append(compiledHtml);
 					showCommentAgeFromDate();
 				});
-				$('#feed-discussions-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('Discussions');
 				$('.share-button').popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
 				});
 			}
+			$('#queryTitle').text('Discussions');
+			$('#feed-discussions-tab a').tab('show');
+			// Showing create discussion form only once
+			var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+			$('#feed').prepend(createDiscussionForm);
+
+			// Handlers for discussion form input fields
+			$('#discussion-topic').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('.input-affordance hr').show();
+					$('input[name = discussionPost]').show();
+					return false;  
+				}
+			});
+
+			$('#discussion-discription').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('#create-discussion').submit();
+					return false;  
+				}
+			});
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -351,10 +291,10 @@ function showPeople() {
 					var compiledHtml = _.template(_people)({'user': user});
 					$('#feed').append(compiledHtml);
 				});
-				$('#feed-people-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('People');		
 			}
+			$('#queryTitle').text('People');		
+			$('#feed-people-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -377,14 +317,14 @@ function showAllFeeds() {
 			} else {
 				$('#feed').removeClass().addClass('type-all').html('');
 				addAllFeedItems(data);
-				$('#feed-all-tab a').tab('show');
 				$('#feed-right-tab').html('');
-				$('#queryTitle').text('All Feeds');		
 				$(".share-button").popover({html:true});
 				$('.share-button').on('click', function () {
 					$('.share-link').select();
 				});
 			}
+			$('#queryTitle').text('All Feeds');		
+			$('#feed-all-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -394,7 +334,8 @@ function showAllFeeds() {
 	registerScroll();
 }
 
-function addAllFeedItems(data) {
+function addAllFeedItems(data, elementId, prepend) {
+	elementId = elementId || '#feed';
 	data.listItems.sort(function(a, b) {
 		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
 	});
@@ -408,7 +349,12 @@ function addAllFeedItems(data) {
 		} else if (item.type == 'usr') {
 			compiledHtml = _.template(_people)({'user': item});
 		}
-		$('#feed').append(compiledHtml);
+
+		if (prepend) {
+			$(elementId).hide().prepend(compiledHtml).fadeIn('slow');
+		} else {
+			$(elementId).append(compiledHtml);
+		}
 	});
 	showCommentAgeFromDate();
 }
@@ -432,9 +378,9 @@ function clearSprintFormData() {
 }
 
 function deleteParticipantsOrAdmins($element, username, actionType) {
-	var actionName = (actionType === 'participants') ? 'deleteSprintMemberData' : 'deleteSprintAdminData';
+	var actionName = (actionType === 'participants') ? 'deleteMember' : 'deleteAdmin';
 
-	queuePostJSON('Removing members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+	queuePostJSON('Removing members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
 			{username: username, now: new Date().toUTCString(), sprintHash: $('#sprintIdField').val(), 
 			timeZoneName: jstz.determine().name()}), 
 			function(data) {
@@ -493,9 +439,9 @@ function createAutocomplete(inputId, autocompleteId) {
 }
 
 function addSprintMemberOrAdmin(inputId, userName) {
-	var actionName = (inputId === 'sprint-participants') ? 'addMemberToSprintData' : 'addAdminToSprintData';
+	var actionName = (inputId === 'sprint-participants') ? 'addMember' : 'addAdmin';
 	var deleteButtonClass = (inputId === 'sprint-participants') ? 'deleteParticipants' : 'deleteAdmins';
-	queuePostJSON('Adding members', '/data/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
+	queuePostJSON('Adding members', '/api/sprint/action/' + actionName, getCSRFPreventionObject(actionName + 'CSRF', 
 			{username: userName, sprintHash: $('#sprintIdField').val()}),
 			function(data) {
 		if (!checkData(data))
@@ -603,7 +549,7 @@ function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
 }
 
 function createSprint() {
-	queueJSON('Creating sprint', '/data/createNewSprintData?' + getCSRFPreventionURI('createNewSprintDataCSRF') + '&callback=?', 
+	queuePostJSON('Creating sprint', '/api/sprint', getCSRFPreventionObject('createNewSprintDataCSRF'), 
 		function(data) {
 			console.log('data: ', data);
 			if (!data.error) {
@@ -622,14 +568,13 @@ function createSprint() {
 }
 
 function editSprint(sprintHash) {
-	queueJSON("Getting sprint data", "/data/fetchSprintData?" + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
-			{id: sprintHash},
+	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
 			function(data) {
 				if (!checkData(data))
 					return;
 
 				console.log('data: ', data);
-				if (data.error) {
+				if (!data.success) {
 					showAlert(data.message);
 				} else {
 					console.log(data.sprint);
@@ -672,8 +617,8 @@ function editSprint(sprintHash) {
 
 function deleteSprint(sprintHash) {
 	showYesNo('Delete this sprint?', function() {
-		queueJSON('Deleting sprint', '/data/deleteSprintData?id=' + sprintHash + 
-				'&' + getCSRFPreventionURI('deleteSprintDataCSRF') + '&callback=?', 
+		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash, 
+				getCSRFPreventionObject('deleteSprintDataCSRF'), 
 			function(data) {
 				if (!checkData(data))
 					return;
@@ -686,15 +631,14 @@ function deleteSprint(sprintHash) {
 				}
 			}, function(data) {
 				showAlert(data.message);
-			}
-		);
+			}, null, 'delete');
 	});
 }
 
 function startSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Starting Sprint', '/data/startSprintData?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
+	queueJSON('Starting Sprint', '/api/sprint/action/start?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -714,7 +658,7 @@ function startSprint(sprintHash) {
 function stopSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	queueJSON('Stopping Sprint', '/data/stopSprintData?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
+	queueJSON('Stopping Sprint', '/api/sprint/action/stop?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
 		id: sprintHash,
 		now: now,
 		timeZoneName: timeZoneName
@@ -734,7 +678,43 @@ function stopSprint(sprintHash) {
 function leaveSprint(sprintHash) {
 	var timeZoneName = jstz.determine().name();
 	var now = new Date().toUTCString();
-	location.assign('/home/leaveSprint?id=' + sprintHash + '&timeZoneName=' + timeZoneName + '&now=' + now);
+	queueJSON('Unfollow Sprint', '/api/sprint/action/leave?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
+		id: sprintHash,
+		now: now,
+		timeZoneName: timeZoneName
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
+				sprintHash + '\')">Follow</button>');
+		} else {
+			showAlert(data.message);
+		}
+	});
+}
+
+function joinSprint(sprintHash) {
+	queueJSON('Follow Sprint', '/api/sprint/action/join?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
+		id: sprintHash
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
+				sprintHash + '\')">Unfollow</button>');
+			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
+				sprintHash + '\')">Start</button>');
+			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
+				sprintHash + '\')">Stop</button>');
+		} else {
+			showAlert(data.message);
+		}
+	});
 }
 
 function toggleCommentsList(discussionId) {
@@ -773,24 +753,3 @@ function getMoreComments(discussionId, offset) {
 	return;
 }
 
-function addComment(discussionHash) {
-	var $inputElement = $('input#userComment');
-	if (!discussionHash) {
-		discussionHash = $('input#discussionId').val()
-	}
-	queuePostJSON('Adding comment', '/api/discussionPost',
-		getCSRFPreventionObject('addCommentCSRF', {discussionHash: discussionHash, message: $inputElement.val()}),
-		function(data) {
-			if (data.success) {
-				if (location.href.indexOf('/discussion/show') > -1) {
-					location.reload();
-				} else {
-					location.href = '/discussion/show/' + discussionHash;
-				}
-			} else {
-				showAlert(data.message);
-			}	
-	}, function(error) {
-		showAlert('Internal server error occurred');
-	});
-}

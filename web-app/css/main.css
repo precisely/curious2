@@ -8,7 +8,7 @@ input, optgroup, select, textarea {
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
-	padding-right: 155px;
+	padding-right: 160px;
 }
 .discussion-topic-description {
 	color: #A0A0A0;
@@ -292,7 +292,7 @@ a,a:link,a:hover,a:visited {
 body.graph-page .body1 {
 	position: relative;
 }
-body.graph-page #tagListWrapper ul#tagList {
+#tagListWrapper ul#tagList {
 	height: 550px;
 }
 body.graph-page .querymain {
@@ -302,23 +302,23 @@ body.graph-page .querymain {
 #plotLeftNav {
 	width: 100%;
 }
-body.graph-page .querymain #plotArea {
+ #plotArea {
 	height:530px;
 }
-body.graph-page .querymain #plotArea canvas {
+#plotArea canvas {
 	z-index: 2;
 }
-body.graph-page #plotArea canvas, body.discuss-page #plotDiscussArea canvas {
+#plotArea canvas, #plotDiscussArea canvas {
 	width: 100%;
 	height: 100%;
 }
 body.graph-page .querycontrols {
 	margin:0px;
 }
-body.graph-page div.graphData div#height-balancer {
+#height-balancer {
 	height: 13px;
 }
-body.graph-page div.graphData.has-plot-data div#height-balancer {
+div.graphData.has-plot-data #height-balancer {
 	height: 0px;
 }
 /**
@@ -966,6 +966,11 @@ body.discuss-page .red-header {
 	text-transform: none;
 }
 
+.discuss-page .container-fluid {
+	padding-left: 116px;
+	padding-right: 116px;
+}
+
 .sharePage h1 .bittext {
 	font-size:10px;
 	font-weight:normal;
@@ -983,7 +988,8 @@ body.discuss-page .red-header {
 	width:500px;
 }
 .discusscomments {
-	margin-top:5px;
+	margin: 5px auto;
+	width: 100%;
 }
 
 .discusscomments .description {
@@ -1532,7 +1538,7 @@ body.discuss-page .red-header {
 	position: absolute;
 	margin: 10px 0px 0px 17px;
 	height: 40px;
-	pointer: cursor;
+	cursor: pointer;
 }
 
 .input-affordance p {
@@ -1828,7 +1834,7 @@ div.graph-header-container .red-header {
 	height: 726px;
 	overflow-y: auto;
 	width: 100%;
-	padding: 20px 115px;
+	padding: 20px 116px;
 }
 
 .sprint {
@@ -1857,6 +1863,15 @@ div.graph-header-container .red-header {
 	height: 80px;
 	width: auto;
 	padding: 0px 10px 10px 10px;
+}
+
+.discussions-wrapper {
+	max-height: 520px;
+	overflow: auto;
+}
+
+#sprint-discussions {
+	min-width: 500px;
 }
 
 #moreAvatars {
@@ -1936,14 +1951,6 @@ div.graph-header-container .red-header {
 
 .sprint ul li {
 	margin-bottom: 10px;
-}
-
-.sprint input {
-	padding: 5px 10px;
-	background-color: #efefef;
-	color: #afafaf;
-	font-style: italic;
-	font-size: 14px;
 }
 
 #addTags {
@@ -2762,7 +2769,7 @@ body {
 	margin-bottom: 20px;
 }
 
-.feed-item .discussion .dark-comment {
+.discussion .dark-comment {
 	background-image: url('/images/comment-dark.png');
 	text-align: center;
 	vertical-align: middle;
@@ -2776,11 +2783,19 @@ body {
 	margin-right: 7px;
 }
 
-.feed-item .discussion .discussion-topic, .feed-item .sprint {
+.discussion-topic, .feed-item .sprint {
 	background-color: white;
 	color: #5d5d5d;
-	padding: 10px 7px 20px 7px;
+	padding: 10px 7px;
 	font-size: 16px;
+}
+
+.discusscomments .discussion-topic {
+	padding: 10px 7px 43px 7px;
+}
+
+.discusscomments .buttons {
+	margin-top: 5px;
 }
 
 .feed-item .sprint {
@@ -2788,17 +2803,22 @@ body {
 	margin-right: 0px;
 }
 
-.feed-item .discussion .discussion-topic .top-left-margin {
+.discussion-topic .top-left-margin {
 	margin-top: 10px;
 	margin-left: 0px;
 }
 
-.feed-item .discussion .discussion-topic .group {
-	font-weight: 500;
-	color: #a4a4a4;
+.discussion-topic .group {
+	color: #a7a7a7;
 	margin-top: 10px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
+	font-size: 14px;
+}
+
+.discusscomments .group {
+	color: #5D5D5D;
 	font-size: 15px;
+	font-weight: 600;
 }
 
 .discussion-header {
@@ -2846,20 +2866,37 @@ body {
 	margin-right: 10px;
 }
 
-.feed-item .discussion .discussion-topic .title {
+.discussion-topic .title {
 	margin-top: 15px;
 	margin-left: 0px;
 }
 
-.feed-item .discussion .discussion-topic a, .feed-item .sprint a {
-	color: #464646;
-	font-size: 15px;
+.discussion .discussion-topic a, .feed-item .sprint a {
+	color: #5D5D5D;
+	font-size: 14px;
+}
+
+.discussion .discussion-topic a {
+	margin-top: 0px;
 	font-weight: 600;
+}
+
+.discussion-topic .discussion-title-col {
+	max-width: 50%;
+}
+
+.discusscomments .discussion .discussion-topic a {
+	font-size: 15px;
+	font-weight: 200;
 }
 
 .feed-item .sprint a {
 	font-size: 15px;
 	font-weight: 800;
+}
+
+.discussion-topic a:hover {
+	text-decoration: underline;
 }
 
 .feed-item .sprint .sprint-description {
@@ -2870,20 +2907,20 @@ body {
 	overflow: hidden;
 }
 
-.feed-item .sprint .sprint-description:before {
+.sprint .sprint-description:before {
 	content: "";
 	float: left;
 	width: 5px;
 	height: 40px;
 }
 
-.feed-item .sprint .sprint-description > *:first-child {
+.sprint .sprint-description > *:first-child {
 	float: right;
 	width: 100%;
 	margin-left: -5px;
 }
 
-.feed-item .sprint .sprint-description:after {
+.sprint .sprint-description:after {
 	content: "\02026";  
 
 	box-sizing: content-box;
@@ -2901,13 +2938,13 @@ body {
 	text-align: right;
 }
 
-.feed-item .sprint .read-more a {
+.sprint .read-more a {
 	font-size: 14px;
 	font-weight: 600;
 	margin-top: 10px;
 }
 
-.feed-item .sprint .tags-participants-label a {
+.sprint .tags-participants-label a {
 	margin-top: 10px;
 	margin-right: 15px;
 	font-size: 14px;
@@ -2915,13 +2952,13 @@ body {
 	font-weight: 500;
 }
 
-.feed-item .discussion .discussion-topic .avatar {
+.discussion-topic .avatar {
 	height: 38px;
 	width: 38px;
 }
 
-.feed-item .discussion .discussion-topic .posting-time, .feed-item .sprint .posting-time {
-	font-size: 14px;
+.discussion-topic .posting-time, .feed-item .sprint .posting-time {
+	font-size: 11px;
 	color: #a8a8a8;
 	margin-right: 20px;
 }
@@ -2930,7 +2967,7 @@ body {
 	margin-right: 0px;
 }
 
-.feed-item .discussion .discussion-topic p {
+.discussion .discussion-topic p {
 	font-style: normal;
 	font-size: 14px;
 	margin: 5px 0px 10px 0px;
@@ -2938,7 +2975,7 @@ body {
 	text-align: justify;
 }
 
-.feed-item .discussion .discussion-topic hr {
+.discussion .discussion-topic hr {
 	margin-bottom: 10px;
 	border-width: 2px;
 	border-color: #e9e9e9;
@@ -2956,7 +2993,7 @@ body {
 
 .discussion-topic .button-box {
 	position: absolute;
-	bottom: 0;
+	bottom: -5px;
 	right: 0;
 	min-width: 400px;
 }
@@ -2979,8 +3016,10 @@ body {
 .discussion-topic .buttons button {
 	height: 25px;
 	background-color: transparent;
-	margin: 0px 0px -10px 25px;
+	margin-left: 20px;
 	font-size: 14px;
+	font-weight: 100;
+	text-transform: none;
 }
 
 .discussion-topic button img{
@@ -2991,37 +3030,41 @@ body {
 
 .discussion-topic .contents {
 	margin-bottom: 10px;
-	padding: 5px 14px 5px 10px;
+	padding: 6px 14px 3px 10px;
 }
-.feed-item .discussion .discussion-comment {
+
+.discusscomments .discussion-topic .contents {
+	margin-top: 9px;
+}
+
+.discussion .discussion-comment {
 	background-color: #eeeeee;
 	color: #5d5d5d;
-	padding: 25px 20px;
+	padding: 25px 16px;
 	font-size: 14px;
 }
 
 
-.feed-item .discussion .multiple-comments {
-	padding: 1px 20px;
+.discussion .multiple-comments {
+	padding: 1px 16px;
 }
 
-.feed-item .discussion .comments .multiple-comments {
+.comments .multiple-comments {
 	 padding: 0px 0px;
 	 margin-bottom: 20px;
 }
 
 #postList {
-	padding: 10px;
 	background-color: #eeeeee;
 }
 
-.feed-item .discussion .discussion-comment .view-comment {
+.discussion-comment .view-comment {
 	color: #555555;
 	font-size: 11px;
 	cursor: pointer;
 }
 
-.feed-item .discussion .discussion-comment .add-comment {
+.discussion-comment .add-comment {
 	margin-left: 32px;
 }
 
@@ -3031,8 +3074,10 @@ body {
 
 .discussion-comment .add-comment-to-discussion input {
 	width: 100%;
-	height: 52px;
-	padding: 10px;
+	height: 44px;
+	padding: 0px 15px;
+	font-size: 13px;
+	color: #A4A4A4;
 }
 
 .discussion-comment .posting-time {
@@ -3057,19 +3102,19 @@ body {
 
 
 
-.feed-item .discussion .discussion-comment .avatar {
+.discussion-comment .avatar {
 	height: 25px;
 	width: 25px;
 	margin: 5px 0px 0px 0px;
 }
 
-.feed-item .discussion .discussion-comment .comment-controll {
+.discussion-comment .comment-controll {
 	width: 20px;
 	display: inline-block;
 	vertical-align: top;
 }
 
-.feed-item .discussion .discussion-comment p {
+.discussion-comment p {
 	text-align: justify;
 	margin-left: 32px;
 	margin-bottom: 20px;
@@ -3077,17 +3122,21 @@ body {
 	color: #5d5d5d;
 }
 
-.feed-item .discussion .discussion-comment .without-margin {
+.discussion-comment .without-margin {
 	margin-bottom: 10px;
 }
 
-.feed-item .discussion .discussion-comment .bottom-margin {
+.discussion-comment .bottom-margin {
 	margin-bottom: 10px;
 }
 
-.feed-item .discussion-topic .user-name {
+.discussion-topic .user-name {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.discusscomments .discussion-topic .user-name {
 	font-size: 16px;
-	font-weight: 700;
 }
 
 .feed-item .user-name {
@@ -3245,26 +3294,26 @@ body {
 .signals .red-header span {
 }
 
-.signals #sort-by-row {
+#sort-by-row {
 	padding: 0px 10px;
 	padding-top: 15px;
 }
 
-.signals #sort-by-row li {
+#sort-by-row li {
 	margin-right: 30px;
 }
 
-.signals #sort-by-row li.signal-order {
+#sort-by-row li.signal-order {
 	color: #999;
 	font-weight: bold;
 	cursor: pointer;
 }
 
-.signals #sort-by-row li.signal-order.active {
+#sort-by-row li.signal-order.active {
 	color: #c04f7f;
 }
 
-.signals #sort-by-row li.label {
+#sort-by-row li.label {
 	color: #bbb;
 }
 
@@ -3378,7 +3427,7 @@ body .modal-header button {
 	font-size: 18px;
 }
 
-body .modal-footer a .navigate-carousel-left {
+.navigate-carousel-left {
 	background-color: #fc3f28;
 	color: white;
 	width: 50%;
@@ -3388,7 +3437,7 @@ body .modal-footer a .navigate-carousel-left {
 	font-size: 18px;
 }
 
-body .modal-footer a .navigate-carousel-right {
+.navigate-carousel-right {
 	background-color: #fc3f28;
 	color: white;
 	width: 50%;
@@ -3418,7 +3467,7 @@ body .modal-footer a .navigate-carousel-right {
 
 .carousel-inner .item .section {
 	color: #fc3f28;
-	font-size: 15px;
+	font-size: 14px;
 	margin-bottom: 20px;
 }
 .modal-dialog .carousel-inner input[type="radio"] {
@@ -3440,13 +3489,13 @@ body .modal-footer a .navigate-carousel-right {
 	content: "";
 	position: absolute;
 	display: inline-block; 
-	height: 25px;
-	width: 25px;
-	border-radius: 12px;
+	height: 28px;
+	width: 28px;
+	border-radius: 15px;
 	margin-left: -40px;
 	margin-top: -3px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px #fc3f28, 0px 0px 0px 0px #fc3f28;
+	box-shadow: inset 0px 0px 0px 1px #979797, 0px 0px 0px 0px #979797;
 }
 
 .modal-dialog .carousel-inner input[type=radio]:checked+label {
@@ -3454,13 +3503,14 @@ body .modal-footer a .navigate-carousel-right {
 }
 
 .modal-dialog .carousel-inner input[type=radio]:checked+label:before {
-	background-color: #fc3f28;
+	background-color: #ff5513;
 	box-shadow: none;
+	box-shadow: inset 0px 0px 0px 1px #ff5513, 0px 0px 0px 0px #ff5513;
 }
 .carousel-inner .item p {
 	color: #3b3b3b;
 	font-weight: 500;
-	font-size: 18px;
+	font-size: 20px;
 	margin-bottom: 25px;
 }
 
@@ -3548,11 +3598,11 @@ body .modal-footer a .navigate-carousel-right {
 	margin-left: 5px;
 }
 
-.feed .deleteSprintEntry .fa , .feed .deleteParticipants .fa, .feed .deleteAdmins .fa {
+.deleteSprintEntry .fa , .deleteParticipants .fa, .deleteAdmins .fa {
 	color: #d8d8d8;
 }
 
-.feed .modal-body .deleteSprintEntry .fa, .feed .modal-body .deleteParticipants .fa, .feed .modal-body .deleteAdmins .fa {
+.deleteSprintEntry .fa, .deleteParticipants .fa, .deleteAdmins .fa {
 	font-size: 14px !important;
 }
 
@@ -3598,7 +3648,7 @@ body .modal-footer a .navigate-carousel-right {
 	opacity: 0.4;
 }
 
-.feed .modal-body #sprint-tags:focus ~ .input-group-addon {
+#sprint-tags:focus ~ .input-group-addon {
 	opacity: 1 !important;
 }
 
@@ -3633,7 +3683,7 @@ body .modal-footer a .navigate-carousel-right {
 	width: 160px;
 }
 
-#participantsAutocomplete ul li, #adminsAutocomplete ul li {
+#participantsAutocomplete li, #adminsAutocomplete li {
 	color: black;
 	display: block;
 	width: 160px;
@@ -3676,22 +3726,26 @@ body .modal-footer a .navigate-carousel-right {
 #helpWizardOverlay input {
 	font-weight: 600;
 	border-radius: 2px;
-	color: #999999;
+	color: #8C8C8C;
 	font-style: italic;
 	font-size: 14px;
 }
 
 #helpWizardOverlay label {
-	margin: 15px 0px 10px 65px;
+	margin: 15px 0px 10px 68px;
 	font-weight: 400;
-	font-size: 12px;
+	font-size: 11px;
 	text-align: left;
+}
+#helpWizardOverlay .entry-label {
+	text-align: left;
+	margin: 20px 0px;
 }
 
 #helpWizardOverlay .exercise-details {
-	padding: 10px;
-	height: 40px;
-	width: 430px;
+	padding: 0px 20px;
+	height: 38px;
+	width: 426px;
 }
 
 #sleep-hour {
@@ -3798,33 +3852,33 @@ body .modal-footer a .navigate-carousel-right {
 	background-color: #F0F0F0;
 }
 
-#sleep-entry-label, #mood-entry-label {
-	text-align: left;
-}
-
-#sleep-entry-label {
+#helpWizardOverlay .sleep .entry-label {
 	margin-left: 45px;
 }
 
+#mood-entry-label, #sleep-entry-label {
+	font-weight: 500;
+}
+
 .feed-body .nav {
-	margin: 10px 0px 25px 35px;
+	margin: 10px 0px 25px 0px;
 }
 
 .feed-body .nav>li>a  {
-	padding: 7px 15px;
+	padding: 5px 15px;
 	height: 30px;
 	color: #5d5d5d;
-	font-weight: 900;
-	font-size: 12px;
+	font-weight: 600;
+	font-size: 14px;
 }
 
 .feed-body .nav-pills>li.active>a, .feed-body .nav-pills>li.active>a:hover, .feed-body .nav-pills>li .active>a:focus {
 	background-color: #ff935f !important;
-	font-weight: 900;
+	font-weight: 700;
 	border-radius: 2px;
-	padding: 7px 10px;
+	padding: 5px 10px;
 	height: 30px;
-	font-size: 12px;
+	font-size: 14px;
 	color: #fff;
 }
 
@@ -3845,16 +3899,16 @@ body .modal-footer a .navigate-carousel-right {
 	box-shadow: 0px 4px 5px #dddddd;
 }
 
-.people-wrapper .user-details-header {
+.user-details-header {
 	margin-bottom: 12px;
 }
 
-.people-wrapper .user-details-header a img {
+.user-details-header a img {
 	height: 42px;
 	width: 42px;
 }
 
-.people-wrapper .user-details-header a .user-name{
+.user-details-header a .user-name{
 	font-size: 16px;
 	font-weight: 600;
 	color: #474747;
@@ -3862,7 +3916,7 @@ body .modal-footer a .navigate-carousel-right {
 	vertical-align: middle;
 }
 
-.people-wrapper .user-details-header button {
+.user-details-header button {
 	height: 30px;
 	width: 84px;
 	border: #ff935f solid 1px;
@@ -3873,23 +3927,23 @@ body .modal-footer a .navigate-carousel-right {
 	margin-top: 5px;
 }
 
-.people-wrapper .user-details-header .follow {
+.user-details-header .follow {
 	background-color: transparent;
 	color: #ff935f;
 } 
 
-.people-wrapper .user-details-header .following {
+.user-details-header .following {
 	background-color: #ff935f;
 	color: #fff;
 }
 
-.people-wrapper .user-details-content {
+.user-details-content {
 	margin: 5px 7px;
 	font-size: 12px;
 	color: #cacaca;
 }
 
-.people-wrapper .user-details-content .label-value {
+.user-details-content .label-value {
 	color: #7e7e7e;
 	font-weight: 500;
 }

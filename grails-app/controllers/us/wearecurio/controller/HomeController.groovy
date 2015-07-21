@@ -2,8 +2,10 @@ package us.wearecurio.controller
 
 import static org.springframework.http.HttpStatus.*
 import grails.converters.*
+import groovy.json.*
 import grails.gorm.DetachedCriteria
 import grails.gsp.PageRenderer
+import grails.converters.JSON
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.joda.time.DateTime
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus
 import us.wearecurio.exceptions.*
 import us.wearecurio.model.*
 import us.wearecurio.services.DataService
+import us.wearecurio.services.SearchService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
@@ -35,6 +38,7 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 	def oauthService
+	SearchService searchService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
 
@@ -795,7 +799,7 @@ class HomeController extends DataController {
 		}
 		
 		if (discussion == null) {
-			def name = "New question or discussion title?"
+			def name = params.name ?: "New question or discussion title?"
 			if (plotIdMessage != null) {
 				def plot = PlotData.get(plotIdMessage)
 				if (plot)
@@ -809,13 +813,18 @@ class HomeController extends DataController {
 				}
 			}
 			discussion = Discussion.create(user, name)
-			if (discussion != null)
+			if (discussion != null) {
 				Utils.save(discussion, true)
+				if(params.discussionPost) {
+					discussion.createPost(user, params.discussionPost)
+				}
+			}
 			else {
 				flash.message = "Failed to create new discussion topic: internal error"
 				redirect(url:toUrl(action:'index'))
 				return
 			}
+
 			if (group) group.addDiscussion(discussion)
 		}
 		if (!discussion.getIsPublic()) {
@@ -892,7 +901,7 @@ class HomeController extends DataController {
 
 			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
 					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-					templateVer: urlService.template(request)]
+					templateVer: urlService.template(request), discussionHash: discussion.hash]
 			log.debug "overall model: ${model.dump()}"
 			// If used for pagination
 			if (request.xhr) {
@@ -948,54 +957,15 @@ class HomeController extends DataController {
 			return
 		}
 		
+		String sprintGroupName = sprintInstance.fetchUserGroup().name
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participantsList = sprintInstance.getParticipants(10, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
-		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, 
-			participants : participants , user: sessionUser()])
-	}
+		Map sprintDiscussions = searchService.getDiscussionsListMobile(sessionUser(), 0, 5, [sprintGroupName])
 
-	def leaveSprint() {
-		Sprint sprintInstance = Sprint.findByHash(params.id)
-		User currentUser = sessionUser()
-		
-		if (!sprintInstance) {
-			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'social'))
-			return
-		}
-		if (!sprintInstance.hasMember(currentUser.id)) {
-			flash.message = g.message(code: "not.sprint.member")
-			redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-			return
-		}
-		
-		def now = params.now ? parseDate(params.now) : null
-		def baseDate = Utils.getStartOfDay(now)
-		def timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		EntryStats stats = new EntryStats()
-		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
+		log.debug "Sprint discussions: ${sprintDiscussions.dump()} and group name: $sprintGroupName"
 
-		sprintInstance.removeMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-	}
-	
-	def joinSprint() {
-		Sprint sprintInstance = Sprint.findByHash(params.id)
-		User currentUser = sessionUser()
-
-		if (!sprintInstance) {
-			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'social'))
-			return
-		}
-		if (sprintInstance.hasMember(currentUser.id)) {
-			flash.message = g.message(code: "already.joined.sprint")
-			redirect(url: toUrl(action:'sprint', params: [id: params.id]))
-			return
-		}
-
-		sprintInstance.addMember(currentUser.id)
-		redirect(url: toUrl(action:'sprint', params: [id: params.id]))
+		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
+			participants : participants , user: sessionUser(), virtualGroupName: sprintGroupName])
 	}
 }
