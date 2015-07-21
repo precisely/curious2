@@ -41,9 +41,9 @@ class DiscussionController extends LoginController {
 
 				Map model = discussion.getJSONModel([max: 2, offset: 0])
 				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
+
 				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), type: "dis", 
-				userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName], success: true])
-				return
+						userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
 			} else {
 				renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 			}

@@ -2791,7 +2791,11 @@ body {
 }
 
 .discusscomments .discussion-topic {
-	padding: 10px 7px 20px 7px;
+	padding: 10px 7px 43px 7px;
+}
+
+.discusscomments .buttons {
+	margin-top: 5px;
 }
 
 .feed-item .sprint {
