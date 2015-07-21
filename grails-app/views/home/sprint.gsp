@@ -43,6 +43,10 @@ $(document).ready(function() {
 	var discussionData = ${discussions.encodeAsRaw()};
 	if (discussionData.listItems) {
 		addAllFeedItems({listItems: discussionData.listItems.discussionList}, '#sprint-discussions');
+		$(".share-button").popover({html:true});
+		$('.share-button').on('click', function () {
+			$('.share-link').select();
+		});
 	}
 });
 var offset = 10;
