@@ -307,7 +307,7 @@ $(document).ready(function() {
 								<div class="row">
 									<div class="col-xs-9 discussion-header">
 										<a href="#">
-											<img class="avatar" src="/images/avatar.png" alt="...">
+											<img class="avatar img-circle" src="/images/avatar.png" alt="...">
 											<span class="user-name"> ${discussionOwner}</span>
 										</a>
 									</div>
@@ -392,7 +392,7 @@ $(document).ready(function() {
 									</div>
 								</div>
 								<div>
-									<a href="/discussion/show/${discussionHash }">
+									<a href="#">
 										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
 									</span>
 									</a>

@@ -2,7 +2,7 @@ var _people = '\
 <div class="people-wrapper">\
 	<div class="user-details-header">\
 		<a href="#">\
-			<img class="avatar" src="/images/avatar.png" alt="avatar">\
+			<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">\
 			<span class="user-name"><%- user.username %></span>\
 		</a>\
 		<button class="follow">FOLLOW</button>\
@@ -53,7 +53,7 @@ var _discussions = ' \
 				<div class="row">\
 					<div class="col-xs-9 discussion-header">\
 						<a href="#">\
-							<img class="avatar" src="/images/avatar.png" alt="avatar">\
+							<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">\
 							<span class="user-name"> <%- discussionData.userName %></span>\
 						</a>\
 					</div>\
