@@ -3,6 +3,7 @@
 <html>
 <head>
 <meta name="layout" content="plot" />
+<script type="text/javascript" src="/js/curious/discussion.js?ver=21"></script>
 <style type="text/css">
 .ui-accordion-header {
 	overflow: hidden;
@@ -304,13 +305,13 @@ $(document).ready(function() {
 						<div class="discussion-topic">
 							<div class="contents">
 								<div class="row">
-									<div class="col-md-9 discussion-header">
+									<div class="col-xs-9 discussion-header">
 										<a href="#">
 											<img class="avatar" src="/images/avatar.png" alt="...">
 											<span class="user-name"> ${discussionOwner}</span>
 										</a>
 									</div>
-									<div class="col-md-3 discussion-topic-span discussion-header">
+									<div class="col-xs-3 discussion-topic-span discussion-header">
 										<span class="posting-time" data-time="${discussionCreatedOn.time}"></span>
 										<g:if test="${isAdmin }">
 											<li class="dropdown">
