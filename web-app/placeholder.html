@@ -18,7 +18,7 @@
 				});
 				$(".headerLinks li a").each(function () {
 					var href = $(this).attr('href');
-					if (location.hash.indexOf(href) > -1) {
+					if (location.hash == href) {
 						$('.headerLinks').children().removeClass('active');
 						$(this).closest('li').addClass('active');
 					}
@@ -34,14 +34,8 @@
 				<li class="active"><a href="#">HOME</a></li>
 				<li><a href="#story">STORY</a></li>
 				<li><a href="#team">TEAM</a></li>
+				<li><a href="#">BLOG</a></li>
 				<li><a href="#about">ABOUT</a></li>
-				<!-- <li>
-					<form action="/home/login" method="post" >
-						<input type="hidden" name="login" value="login"/>
-						<button type="submit" class="btn btn-default header-button">Sign In</button>                
-					</form>
-				</li>
-				--!>
 			</ul>
 		</div>
 		<!-- /HEADER -->
@@ -52,23 +46,21 @@
 		</div>
 
 		<br>
-		<div class="row">
-			<div class="col-sm-push-4 text-right col-sm-6 logo">
-				<img class="" src="images/home/home-logo.jpg" />
-				<p class="light-caption">
-					Track data, chart experience, find meaning.
-				</p>
-				<p class="bold-caption">
-					We&#8217ve got questions.
-				</p>
-				<br>
-				<a class="do-you" href="/home/register?precontroller=home&amp;preaction=index">
-					<u>Do you?</u>
-				</a>
-			</div>
+		<div class="text-right logo">
+			<img class="" src="images/home/home-logo.jpg" />
+			<p class="light-caption">
+				Track data, chart experience, find meaning.
+			</p>
+			<p class="bold-caption">
+				We&#8217ve got questions.
+			</p>
+			<br>
+			<a class="do-you" href="/home/register?precontroller=home&amp;preaction=index">
+				<u>Do you?</u>
+			</a>
 		</div>
 		<div class="story-wrapper" id="story">
-			<div class="caption" style="color: white; width: 850px;">
+			<div class="caption" style="color: white; max-width: 850px;">
 				<h3>STORY (Written by Linda about the Oura collaboration)</h3>
 				<p>
 					Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
@@ -79,7 +71,7 @@
 			</div>
 		</div>
 		<div class="row questions-wrapper">
-			<div class="col-md-5 col-sm-5">
+			<div class="col-md-5 col-xs-5">
 				<div id="sidebar">
 					<p>
 						<a href="#" data-toggle="modal" data-target="#earlyInvitationModal">Tell us </a>
@@ -94,7 +86,7 @@
 					</p>
 				</div>
 			</div>
-			<div class="col-md-7 col-sm-7">
+			<div class="col-md-7 col-xs-7">
 				<div class="caroufredsel_wrapper">
 					<div id="questions">
 						<div class="question">
@@ -293,10 +285,10 @@
 				<div class="modal-content">
 					<form class="form-horizontal" id="helpWizardForm">
 						<div class="form-group">
-							<label for="inputQuestion" class="col-sm-3 control-label">Im wondering:</label>
+							<label for="inputQuestion" class="col-sm-3 control-label">I&#8217m wondering:</label>
 							<div class="col-sm-9">
-								<textarea class="form-control" id="inputQuestion" placeholder="Ask us a question!" rows="10"></textarea>
-								<p>&nbsp;&nbsp;New questions are posted weekly...</p>
+								<textarea class="form-control" id="inputQuestion" placeholder="Ask us a question!" rows="7"></textarea>
+								<p>&nbsp;&nbsp;New questions are posted weekly...<br><br></p>
 							</div>
 						</div>
 						<div class="form-group">
@@ -307,7 +299,7 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button class="btn btn-clear" type="button">Cancel</button>
+							<button class="btn btn-clear" type="button" data-dismiss="modal">Cancel</button>
 							<button class="btn btn-warning" type="button">SUBMIT</button>
 						</div>
 					</form>
