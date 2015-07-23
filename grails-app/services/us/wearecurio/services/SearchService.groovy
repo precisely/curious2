@@ -253,7 +253,6 @@ class SearchService {
 				}
 			}
 			
-			println ">>>>>>>>>>>>>>${model.dump()}"
 			return [listItems: model, success: true]
 		}
 	}
