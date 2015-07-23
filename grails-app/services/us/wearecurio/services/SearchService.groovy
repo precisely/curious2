@@ -162,6 +162,7 @@ class SearchService {
 					hash: d.hash,
 					name: d.name,
 					userId: d.userId,
+					userName: User.get(d.userId).username,
 					isPublic: d.isPublic(),
 					created: d.created,
 					updated: d.updated,
@@ -253,6 +254,7 @@ class SearchService {
 				}
 			}
 			
+			println ">>>>>>>>>>>>>>${model.dump()}"
 			return [listItems: model, success: true]
 		}
 	}
