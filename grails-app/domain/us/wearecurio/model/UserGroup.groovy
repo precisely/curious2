@@ -400,19 +400,10 @@ class UserGroup {
 		
 		Map discussionPostData = [:]
 
-	// TODO: Review
-
 		//separating & populating required data for every discussion
 		discussionIdList.each() { discussionId ->
 			discussionPostData[discussionId] = ["totalPosts": allPostCountOrderdByDiscussion.find{ it.discussionId == discussionId }?.totalPosts]
 		}
-
-		/*
-		paginatedData["discussionPostData"] = discussionPostData
-		paginatedData["dataList"] = addAdminPermissions(user, result)
-		
-		paginatedData
-		*/
 
 		return discussionPostData
 	}

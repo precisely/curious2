@@ -149,7 +149,6 @@ $(document).ready(function() {
 			}, null, 'delete');
 		});
 		return false;
->>>>>>> c2bc263 Implemented discussions for sprint show page. #586
 	});
 
 	$('#sprint-tags').keypress(function (e) {

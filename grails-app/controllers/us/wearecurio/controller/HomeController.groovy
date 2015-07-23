@@ -957,15 +957,14 @@ class HomeController extends DataController {
 			return
 		}
 		
-		String sprintGroupName = sprintInstance.fetchUserGroup().name
 		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
 		List<User> participantsList = sprintInstance.getParticipants(10, 0)
 		List<Map> participants = participantsList*.getJSONShortDesc()
-		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintGroupName])
+		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintInstance.virtualGroupId])
 
-		log.debug "Sprint discussions: ${sprintDiscussions.dump()} and group name: $sprintGroupName"
+		log.debug "Sprint discussions: ${sprintDiscussions.dump()}"
 
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
-			participants : participants , user: sessionUser(), virtualGroupName: sprintGroupName])
+			participants : participants , user: sessionUser(), virtualGroupName: sprintInstance.fetchUserGroup().name])
 	}
 }

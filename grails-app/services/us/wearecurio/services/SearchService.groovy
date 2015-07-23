@@ -86,13 +86,13 @@ class SearchService {
 		return [listItems: model, success: true]
 	}
 	
-	Map getDiscussionsList(User user, int offset, int max) {
+	Map getDiscussionsList(User user, int offset, int max, def groupIds = null) {
 		def userReaderGroups = UserGroup.getGroupsForReader(user)
 		if (userReaderGroups == null || userReaderGroups.size() < 1) {
 			return [listItems: false, success: false]
 		}
 		
-		String groupIdsOr = userReaderGroups.collect{ it[0].id }.join(" OR ")
+		String groupIdsOr = userReaderGroups.collect{ it[0].id }.findAll{ groupIds == null ? true : it in groupIds }.join(" OR ")
 		if (userReaderGroups.size() > 1) {
 			groupIdsOr = "(" + groupIdsOr + ")"
 		}
@@ -250,19 +250,6 @@ class SearchService {
 				if (!discussionItem["groupId"]) {
 					discussionItem["groupId"] = anyGid
 					discussionItem['groupName'] = anyGName
-
-	// TODO: Review
-	/*
-	Map getDiscussionsList(User user, int offset, int max, List groupNameList = []) {
-		def groupMemberships = UserGroup.getGroupsForReader(user)
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, [offset: offset, max: max]) :
-			UserGroup.getDiscussionsInfoForUser(user, true, false, [offset: offset, max: max])
-
-		Map discussionPostData = discussionData["discussionPostData"]
-		discussionData["dataList"].each {data ->
-				if (data) {
-					data.totalComments = discussionPostData[data.id].totalPosts
-	*/
 				}
 			}
 			

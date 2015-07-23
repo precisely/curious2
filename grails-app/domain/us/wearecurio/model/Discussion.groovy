@@ -434,21 +434,8 @@ class Discussion {
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
 
-		// TODO: Review
-		List<Long> discussionGroupIds = GroupMemberDiscussion.withCriteria {
-			projections {
-				property "groupId"
-			}
-			eq "memberId", id
-			maxResults(1)
-			order("created", "desc")
-		}
-
-		// TODO: Review
-		/*
 		String groupNameQuery = "SELECT ug.full_name FROM user_group ug INNER JOIN group_member_discussion gmd on ug.id = gmd.group_id where gmd.member_id = :id ORDER BY gmd.created DESC"
 		DatabaseService databaseService = DatabaseService.get()
-		*/
 		
 		List result = databaseService.sqlRows(groupNameQuery, [id: id])
 		String discussionGroupName = result[0].full_name

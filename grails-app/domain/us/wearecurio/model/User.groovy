@@ -345,11 +345,6 @@ class User {
 			
 			def usersTagIds =
 					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
-					FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
-					[userId:userId]).collect { it.id.toLong() }
-
-			def usersTagIds =
-					DatabaseService.get().sqlRows("""SELECT DISTINCT t.id as id
 						FROM entry e INNER JOIN tag t ON e.tag_id = t.id AND e.user_id = :userId AND e.date IS NOT NULL ORDER BY t.description""",
 					[userId:userId]).collect { it.id.toLong() }
 			
@@ -476,7 +471,6 @@ class User {
 		return sprintsOwned
 	}
 
-	// TODO: Review
 	List getUserGroups() {
 		List<Long> groupIds = new DetachedCriteria(GroupMemberReader).build {
 			projections {
