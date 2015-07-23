@@ -12,9 +12,39 @@ a {
 	list-style-type: none;
 }
 
+.main-links .active a {
+	color: #f14a42;
+}
+
+.logo {
+	margin-left: 20px;
+	margin-bottom: 150px;
+}
+
+.light-caption {
+	font-size: 25px;
+	font-weight: 400;
+	color: #f14a42;
+	text-align: right;
+	margin-bottom: 0px;
+	white-space: nowrap;
+}
+
+.bold-caption {
+	font-size: 25px;
+	color: #f14a42;
+	text-align: right;
+	font-weight: 600;
+}
+
 .story-wrapper {
 	position: relative;
 	background-color: #c04f7f;
+}
+
+.story-wrapper p {
+	font-size: 15px;
+	margin: 40px 0px;
 }
 
 .story-wrapper .row {
@@ -70,6 +100,7 @@ a {
 	color: #4c4c4c;
 	font-weight: 600;
 	font-size: 22px;
+	margin-bottom: 20px;
 }
 
 .thumbnail h4 {
@@ -128,6 +159,7 @@ a {
 .do-you {
 	font-size: 25px;
 	color: #f14a42;
+	font-weight: 600;
 }
 
 #sidebar {
@@ -174,8 +206,8 @@ a {
 
 .question {
 	margin: 0px 0px 40px 40px;
-	font-size: 20px;
-	font-weight: 500;
+	font-size: 22px;
+	font-weight: 600;
 	cursor: pointer;
 	line-height: 1.15em;
 }
@@ -223,8 +255,14 @@ a {
 	padding-left: 0px;
 }
 
-.footerLinks a {
+.social-links {
 	float: right;
+	margin-top: -80px;
+	color: #fff;
+	text-align: center;
+}
+
+.footerLinks a {
 	color: #b35930;
 }
 

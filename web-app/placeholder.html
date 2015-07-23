@@ -10,13 +10,28 @@
 		<script type="text/javascript" src="js/jquery/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
 
+		<script>
+			$(document).ready(function() {
+				$('.headerLinks').click( function(e) {
+					$(this).children().removeClass('active');
+					$(e.target).closest('li').addClass('active');
+				});
+				$(".headerLinks li a").each(function () {
+					var href = $(this).attr('href');
+					if (location.hash.indexOf(href) > -1) {
+						$('.headerLinks').children().removeClass('active');
+						$(this).closest('li').addClass('active');
+					}
+				});
+			});
+		</script>
 	</head>
 	<body class="">
 
 		<!-- HEADER -->
 		<div class="headLinks">
 			<ul class="main-links headerLinks">
-				<li><a href="/home/index">HOME</a></li>
+				<li class="active"><a href="#">HOME</a></li>
 				<li><a href="#story">STORY</a></li>
 				<li><a href="#team">TEAM</a></li>
 				<li><a href="#about">ABOUT</a></li>
@@ -38,12 +53,12 @@
 
 		<br>
 		<div class="row">
-			<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px; margin-bottom: 150px;">
+			<div class="col-sm-push-4 text-right col-sm-6 logo">
 				<img class="" src="images/home/home-logo.jpg" />
-				<p style=" font-size: 25px; font-weight: 400; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+				<p class="light-caption">
 					Track data, chart experience, find meaning.
 				</p>
-				<p style="font-size: 25px; color: #f14a42; text-align: right; font-weight: 600;">
+				<p class="bold-caption">
 					We&#8217ve got questions.
 				</p>
 				<br>
@@ -55,7 +70,7 @@
 		<div class="story-wrapper" id="story">
 			<div class="caption" style="color: white; width: 850px;">
 				<h3>STORY (Written by Linda about the Oura collaboration)</h3>
-				<p style="font-size: 15px; margin: 40px 0px">
+				<p>
 					Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
 					totam, rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta
 					sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia 
@@ -87,17 +102,17 @@
 							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
 							<span id="count121" class="count">+ 25</span>
 						</div>
-						<div class="question" style="margin-bottom: 34.766336px;">
+						<div class="question">
 							<div class="q">What triggers my bad back?</div>
 							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
 							<span id="count121" class="count">+ 25</span>
 						</div>
-						<div class="question" style="margin-bottom: 34.766336px;">
+						<div class="question">
 							<div class="q">What are long term effects of distance running?</div>
 							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
 							<span id="count121" class="count">+ 25</span>
 						</div>
-						<div class="question" style="margin-bottom: 34.766336px;">
+						<div class="question">
 							<div class="q">What is the best time of the day to exercise?</div>
 							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
 							<span id="count121" class="count">+ 25</span>
@@ -110,8 +125,12 @@
 			<div class="team-title-bar">
 				<h3>TEAM</h3>
 				<ul class="nav nav-tabs">
-					<li role="presentation" class="active"><a data-toggle="tab" href="#founders">Founders</a></li>
-					<li role="presentation"><a data-toggle="tab" href="#advisors">Advisors</a></li>
+					<li role="presentation" class="active">
+						<a data-toggle="tab" href="#founders">Founders</a>
+					</li>
+					<li role="presentation">
+						<a data-toggle="tab" href="#advisors">Advisors</a>
+					</li>
 				</ul>
 			</div>
 			<div class="tab-content">
@@ -250,14 +269,21 @@
 			<br>
 			<div class="footerLinks">
 				<ul>
-					<li style="font-size: 16px;"><a href="#"><i class="fa fa-long-arrow-up"></i>&nbsp;&nbsp;BACK TO THE TOP</a></li>
+					<li style="font-size: 16px;">
+						<a href="#">
+							<i class="fa fa-long-arrow-up"></i>&nbsp;&nbsp;BACK TO THE TOP
+						</a>
+					</li>
 				</ul>
-				<a href="https://facebook.com/wearecurious">
-					<img src="images/home/facebook.png" style="height: 60px;"/>
-				</a>
-				<a href="https://twitter.com/wearecurious"> 
-					<img class="" src="images/home/twitter.png"	style="padding-right: 15px; height: 60px;"/>
-				</a> 
+				<div class="social-links">
+					<h2><i>Say Hi!</i></h2>
+					<a href="https://twitter.com/wearecurious"> 
+						<img class="" src="images/home/twitter.png"	style="padding-right: 15px; height: 60px;"/>
+					</a> 
+					<a href="https://facebook.com/wearecurious">
+						<img src="images/home/facebook.png" style="height: 60px;"/>
+					</a>
+				</div>
 			</div>
 		</div>
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans:300normal,300italic,400normal,400italic,600normal,600italic,700normal,700italic,800normal,800italic|Roboto:400normal|Oswald:400normal|Open+Sans+Condensed:300normal|Lato:400normal|Source+Sans+Pro:400normal|Lato:400normal|Gloria+Hallelujah:400normal|Pacifico:400normal|Raleway:400normal|Merriweather:400normal&subset=all' rel='stylesheet' type='text/css'>
@@ -274,7 +300,7 @@
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="inputEmail" class="col-sm-3 control-label">Sign me up to be an early tester:</label>
+							<label for="inputEmail" style="padding-top: 10px;" class="col-sm-3 control-label">Sign me up to be an early tester:</label>
 							<div class="col-sm-9">
 								<input type="email" class="form-control" id="inputEmail" placeholder="enter email address">
 								<p>&nbsp;&nbsp;We keep your email safe and spamless.</p>
