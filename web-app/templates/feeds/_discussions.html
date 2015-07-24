@@ -34,7 +34,7 @@
 								<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
 								<ul class="dropdown-menu" role="menu">
 									<li>
-										<a href="#" class="delete-discussion" data-discussion-id="<%- discussionData.id %>"> 
+										<a href="#" class="delete-discussion" data-discussion-hash="<%- discussionData.hash %>"> 
 											<img src="/images/x.png" width="auto" height="23">Delete
 										</a>
 									</li>
@@ -48,21 +48,21 @@
 				</div>
 				<div class="row">
 					<div class="col-xs-7">
-						<a href="/home/discuss?discussionId=<% discussionData.id %>"> 
+						<a href="/home/discuss?discussionHash=<% discussionData.hash %>"> 
 							<span> <% discussionData.name ? discussionData.name: '(No Title)' %></span>
 						</a>
 					</div>
 					<div class="col-xs-5 button-box">
 						<div class="buttons">
-							<button onclick="showShareDialog(<%- discussionData.hash %>)">
+							<button onclick="showShareDialog('<%- discussionData.hash %>')">
 								<img src="/images/follow.png" alt="follow">Follow
 							</button>
 							<% if (discussionData.isAdmin) {  %>
-								<button class="share-button" onclick="showShareDialog(<%- discussionData.hash %>)">
+								<button class="share-button" onclick="showShareDialog('<%- discussionData.hash %>')">
 									<img src="/images/share.png" alt="share">Share
 								</button>
 							<% } %>
-							<button onclick="toggleCommentsList(<%- discussionData.id %>)">
+							<button onclick="toggleCommentsList('<%- discussionData.hash %>')">
 								<% if (!discussionPostData[discussionData.id] || 
 										discussionPostData[discussionData.id].totalPosts < 1) {  %>
 									<img src="/images/comment.png" alt="comment"> Comment</img>
@@ -76,7 +76,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="discussion-comment hide" id="discussion<%- discussionData.id %>-comment-list">
+		<div class="discussion-comment hide" id="discussion<%- discussionData.hash %>-comment-list">
 			<div class="comments">
 			</div>
 			<div class="bottom-margin">
@@ -114,7 +114,7 @@
 									placeholder="Add Comment..."
 									id="post-comment" name="message" required>
 						<% } %>
-						<input type="hidden" name="discussionId" value="<%- discussionData.id %>">
+						<input type="hidden" name="discussionHash" value="<%- discussionData.hash %>">
 					</form>
 				</div>
 				<div class="class-md-6"></div>

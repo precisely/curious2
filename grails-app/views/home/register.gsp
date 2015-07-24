@@ -66,7 +66,7 @@
                             value="${fieldValue(bean:flash.user,field:'name')}" />
                     </div>
 
-                    <div class="form-group">
+                    <!-- div class="form-group">
                         <label for="birthdate"
                             class="${hasErrors(bean:flash.user,field:'birthdate','registererror')}">Birthdate
                             (MM/DD/YYYY):</label> <input class="form-control" type="text"
@@ -84,7 +84,7 @@
                             ${it.label}
                             ${it.radio}
                         </g:radioGroup>
-                    </div>
+                    </div  -->
 
                     <g:if test="${templateVer == 'lhp'}">
                         <div class="form-group">

@@ -320,7 +320,7 @@ $(document).ready(function() {
 												</a>
 												<ul class="dropdown-menu" role="menu">
 													<li>
-														<a href="#" class="delete-discussion" data-discussion-hash-id="${discussionHash}"> 
+														<a href="#" class="delete-discussion" data-discussion-hash="${discussionHash}"> 
 															<img src="/images/x.png" width="auto" height="23">Delete
 														</a>
 													</li>

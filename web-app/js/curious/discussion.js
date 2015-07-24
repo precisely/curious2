@@ -91,7 +91,7 @@ $(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
-			var discussionHash = $this.data('discussionHashId');
+			var discussionHash = $this.data('discussionHash');
 			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
 					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
 					function(data) {

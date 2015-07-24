@@ -775,23 +775,23 @@ function joinSprint(sprintHash) {
 	});
 }
 
-function toggleCommentsList(discussionId) {
-	var $element = $('#discussion' + discussionId + '-comment-list');
+function toggleCommentsList(discussionHash) {
+	var $element = $('#discussion' + discussionHash + '-comment-list');
 	if ($element.is(':visible')) {
 		$element.hide();
-		$('#discussion' + discussionId + '-comment-list .comments').html('');
+		$('#discussion' + discussionHash + '-comment-list .comments').html('');
 	} else {
-		getMoreComments(discussionId, 0);
+		getMoreComments(discussionHash, 0);
 		$element.show();
 	}
 }
 
-function getMoreComments(discussionId, offset) {
+function getMoreComments(discussionHash, offset) {
 
-	var url = "/home/discuss?discussionId=" + discussionId + "&offset=" + offset  + "&max=4&" +
+	var url = "/home/discuss?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=4&" +
 			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
 	
-	var discussionElementId = '#discussion' + discussionId + '-comment-list';
+	var discussionElementId = '#discussion' + discussionHash + '-comment-list';
 
 	queueJSON("fetching more comments", url, function(data) {
 		if (!checkData(data))
@@ -804,7 +804,7 @@ function getMoreComments(discussionId, offset) {
 			showCommentAgeFromDate();
 			offset = offset + 4;
 			$(discussionElementId + ' .bottom-margin span').off('click').on('click', function() {
-				getMoreComments(discussionId, offset);
+				getMoreComments(discussionHash, offset);
 			});
 		}
 	});

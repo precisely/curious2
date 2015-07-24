@@ -64,7 +64,7 @@ var _discussions = ' \
 								<a href="#" data-toggle="dropdown"><b class="caret"></b></a>\
 								<ul class="dropdown-menu" role="menu">\
 									<li>\
-										<a href="#" class="delete-discussion" data-discussion-hash-id="<%- discussionData.hash %>"> \
+										<a href="#" class="delete-discussion" data-discussion-hash="<%- discussionData.hash %>"> \
 											<img src="/images/x.png" width="auto" height="23">Delete\
 										</a>\
 									</li>\
@@ -84,7 +84,7 @@ var _discussions = ' \
 					</div>\
 					<div class="col-xs-5 button-box">\
 						<div class="buttons">\
-							<button onclick="showShareDialog(<%- discussionData.hash %>)">\
+							<button onclick="showShareDialog(\'<%- discussionData.hash %>\')">\
 								<img src="/images/follow.png" alt="follow">Follow\
 							</button>\
 							<% if (discussionData.isAdmin) {  %>\
@@ -93,7 +93,7 @@ var _discussions = ' \
 									<img src="/images/share.png" alt="share">Share\
 								</button>\
 							<% } %>\
-							<button onclick="toggleCommentsList(<%- discussionData.id %>)">\
+							<button onclick="toggleCommentsList(\'<%- discussionData.hash %>\')">\
 								<% if (!discussionData.totalComments || \
 										discussionData.totalComments < 1) {  %>\
 									<img src="/images/comment.png" alt="comment"> Comment</img>\
@@ -108,7 +108,7 @@ var _discussions = ' \
 				</div>\
 			</div>\
 		</div>\
-		<div class="discussion-comment hide" id="discussion<%- discussionData.id %>-comment-list">\
+		<div class="discussion-comment hide" id="discussion<%- discussionData.hash %>-comment-list">\
 			<div class="comments">\
 			</div>\
 			<div class="bottom-margin">\

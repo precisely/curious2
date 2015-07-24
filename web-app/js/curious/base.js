@@ -288,9 +288,10 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 			closeAlert();
 		if (currentLoginSession != _loginSessionNumber)
 			return; // if current login session is over, cancel callbacks
-		if (failCallback)
-			console.log('error: ', data);
+		console.log('error: ', data);
+		if (failCallback) {
 			failCallback(data);
+		}
 		if (!background) {
 			--numJSONCalls;
 			if (numJSONCalls < 0)

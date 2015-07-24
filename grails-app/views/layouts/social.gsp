@@ -4,8 +4,8 @@
 	<title><g:layoutTitle/></title>
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
-	<script type="text/javascript" src="/js/curious/feeds.js?ver=21"></script>
-	<script type="text/javascript" src="/js/curious/discussion.js?ver=21"></script>
+	<script type="text/javascript" src="/js/curious/feeds.js?ver=22"></script>
+	<script type="text/javascript" src="/js/curious/discussion.js?ver=22"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 

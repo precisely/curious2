@@ -109,7 +109,9 @@ class SearchService {
 			totalDiscussionCount = cr.count
 		}
 		
-		def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', size: max.toString(), from: offset.toString() ) {
+		def createdSort = SortBuilders.fieldSort("created").order(SortOrder.DESC)
+		
+		def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', size: max.toString(), from: offset.toString(), sort: createdSort) {
 			query_string(query:  "groupIds:" + groupIdsOr)
 		}
 		
