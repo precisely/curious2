@@ -329,6 +329,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll([
 			username:'q',
 			email:'q@q.com',
+			confirm_email: 'q@q.com',
 			password:'q',
 			name:'q q',
 			sex:'F',
@@ -377,6 +378,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll([
 			username:'q',
 			email:'q@q.com',
+			confirm_email: 'q@q.com',
 			password:'q',
 			name:'q q',
 			sex:'F'
@@ -402,6 +404,30 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.doregisterData()
 		
 		assert controller.response.contentAsString.startsWith('{"success":false')
+	}
+
+	@Test
+	void testDoregisterDifferentEmailIds() {
+		LoginController controller = new LoginController()
+		
+		controller.session.userId = null
+		
+		controller.params.clear()
+		controller.params.putAll([
+			username: 'q',
+			email: 'q@q.com',
+			confirm_email: 'qq@q.com',
+			password: 'q',
+			name: 'q q',
+			sex:' F',
+			groups: "['curious','announce']"
+		])
+		
+		controller.doregister()
+		
+		def rU = controller.response.redirectedUrl
+		
+		assert rU.endsWith('/login/register')
 	}
 
 	@Test

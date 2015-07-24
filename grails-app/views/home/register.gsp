@@ -4,6 +4,8 @@
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css"
     rel="stylesheet">
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery.validate.js"></script>
+<script type="text/javascript" src="/js/jquery/signupForm.js"></script>
 </head>
 </head>
 <body>
@@ -33,7 +35,7 @@
         </div>
         <div class="row">
             <div class="col-sm-3 col-sm-offset-1 text-teal">
-                <form action="doregister" method="post" role="form">
+                <form action="doregister" method="post" role="form" id="signupForm">
                     <input class="form-control" type="hidden" name="precontroller"
                         value="${precontroller}" /> <input
                         type="hidden" name="preaction"
@@ -42,27 +44,35 @@
                     <div class="form-group">
                         <label for="username"
                             class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Username*:</label>
-                        <input class="form-control" type="text" name="username"
+                        <input class="form-control" type="text" name="username" id="username"
                             value="${fieldValue(bean:flash.user,field:'username')}" />
                     </div>
 
                     <div class="form-group">
                         <label for="password"
                             class="registerlabel ${flash.user?.hasErrors() ? 'registererror':''}">Password*:</label>
-                        <input class="form-control"  type="password" name="password" value="" />
+                        <input class="form-control"  type="password" name="password" id="password" value="" />
                     </div>
 
                     <div class="form-group">
                         <label for="email"
                             class="registerlabel ${hasErrors(bean:flash.user,field:'email','registererror')}">Email*:</label>
-                        <input class="form-control" type="text" name="email"
+                        <input class="form-control" type="email" name="email" id="email"
                             value="${fieldValue(bean:flash.user,field:'email')}" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_email"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'confirm_email','registererror')}">Confirm
+                            Email*:</label> 
+                        <input class="form-control" type="email" name="confirm_email" id="confirm_email"
+                            value="${fieldValue(bean:flash.user,field:'confirm_email')}" />
                     </div>
 
                     <div class="form-group">
                         <label for="name"
                             class="registerlabel ${hasErrors(bean:flash.user,field:'name','registererror')}">Full
-                            Name:</label> <input class="form-control" type="text" name="name"
+                            Name:</label> <input class="form-control" type="text" name="name" id="name"
                             value="${fieldValue(bean:flash.user,field:'name')}" />
                     </div>
 
@@ -70,14 +80,14 @@
                         <label for="birthdate"
                             class="${hasErrors(bean:flash.user,field:'birthdate','registererror')}">Birthdate
                             (MM/DD/YYYY):</label> <input class="form-control" type="text"
-                            name="birthdate"
+                            name="birthdate" id="birthdate"
                             value="${fieldValue(bean:flash.user,field:'birthdate')}" />
                     </div>
 
                     <div class="form-group">
                         <label for="sex"
                             class="${hasErrors(bean:flash.user,field:'sex','registererror')}">Sex:</label>
-                        <g:radioGroup name="sex"
+                        <g:radioGroup name="sex" id="sex"
                             labels="['Male','Female']"
                             values="['M','F']"
                             value="${fieldValue(bean:flash.user,field:'sex')}">
