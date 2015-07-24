@@ -54,11 +54,11 @@
 					</div>
 					<div class="col-xs-5 button-box">
 						<div class="buttons">
-							<button onclick="showShareDialog(<%- discussionData.id %>)">
+							<button onclick="showShareDialog(<%- discussionData.hash %>)">
 								<img src="/images/follow.png" alt="follow">Follow
 							</button>
 							<% if (discussionData.isAdmin) {  %>
-								<button class="share-button" onclick="showShareDialog(<%- discussionData.id %>)">
+								<button class="share-button" onclick="showShareDialog(<%- discussionData.hash %>)">
 									<img src="/images/share.png" alt="share">Share
 								</button>
 							<% } %>

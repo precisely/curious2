@@ -598,15 +598,15 @@ class HomeController extends DataController {
 		render(view: "/home/signals")
 	}
 
-	def community(Long discussionId, boolean unpublish, boolean publish) {
+	def community(String discussionHash, boolean unpublish, boolean publish) {
 		redirect(url:toUrl(action:'social'))
 	}
 	
-	def feed(Long discussionId, boolean unpublish, boolean publish) {
+	def feed(String discussionHash, boolean unpublish, boolean publish) {
 		redirect(url:toUrl(action:'social'))
 	}
 	
-	def social(Long discussionId, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
+	def social(String discussionHash, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
 		debug "HomeController.social(): $params"
 		def user = sessionUser()
 
@@ -636,14 +636,13 @@ class HomeController extends DataController {
 			model = [sprintList: sprintList]
 			renderJSONGet([listItems: model])
 		} else {
-			if (discussionId) {
-				Discussion discussion = Discussion.get(discussionId)
-						
-						if (!discussion) {
-							debug "no discussion for discussionId " + discussionId
-							flash.message = "No discussion found"
-							return
-						}
+			if (discussionHash) {
+				Discussion discussion = Discussion.findByHash(discussionHash)
+				if (!discussion) {
+					debug "no discussion for discussionHash " + discussionHash
+					flash.message = "No discussion found"
+					return
+				}
 				
 				if (unpublish) {
 					if (UserGroup.canAdminDiscussion(user, discussion)) {
@@ -670,7 +669,6 @@ class HomeController extends DataController {
 							groupName = group[0].name
 				}
 			}
-			
 
 			List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
 			debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
@@ -699,18 +697,18 @@ class HomeController extends DataController {
 		model
 	}
 
-	def shareDiscussion(Long discussionId) {
+	def shareDiscussion(String discussionHash) {
 		User currentUserInstance = sessionUser()
 
-		Discussion discussionInstance = Discussion.get(discussionId)
+		Discussion discussionInstance = Discussion.findByHash(discussionHash)
 		if (!discussionInstance) {
-			debug "DiscussionId not found: " + discussionId
+			debug "DiscussionId not found: " + discussionHash
 			renderJSONPost([message: "Discussion not found."], NOT_FOUND)
 			return
 		}
 
 		if (!UserGroup.canAdminDiscussion(currentUserInstance, discussionInstance)) {
-			debug "DiscussionId not found: " + discussionId
+			debug "DiscussionId not found: " + discussionHash
 			renderJSONPost([message: "You don't have admin rights to modify share preference for this discussion"], UNAUTHORIZED)
 			return
 		}
@@ -749,11 +747,9 @@ class HomeController extends DataController {
 		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
 	}
 
-	def discuss(Long discussionId, Long plotDataId, Long deletePostId, Long clearPostId, Long plotIdMessage) {
+	def discuss(String discussionHash, Long deletePostId, Long clearPostId, Long plotIdMessage) {
 		/*
-		 * Old discussion format used plotDataId to identify discussions (maintain compatibility)
-		 * 
-		 * New discussion format uses discussionId to identify discussions
+		 * New discussion format uses discussionHash to identify discussions
 		 * 
 		 * plotIdMessage contains the plotId of the plot to be added to the discussion
 		 * 
@@ -761,11 +757,13 @@ class HomeController extends DataController {
 		 */
 		debug "HomeController.discuss()"
 		
+		def p = params
+		
 		def user = sessionUser()
 		
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
 		
-		if (plotIdMessage == null && plotDataId==null && discussionId==null && params.createTopic == null) {
+		if (plotIdMessage == null && discussionHash==null && params.createTopic == null) {
 			flash.message = "Blank discussion call"
 			redirect(url:toUrl(action:'index'))
 			return
@@ -775,10 +773,10 @@ class HomeController extends DataController {
 		HttpStatus status
 		Discussion discussion
 
-		if (discussionId) {
-			discussion = Discussion.get(discussionId)
+		if (discussionHash) {
+			discussion = Discussion.findByHash(discussionHash)
 			if (discussion == null) {
-				debug "DiscussionId not found: " + discussionId
+				debug "DiscussionHash not found: " + discussionHash
 				flash.message = "That discussion topic no longer exists."
 				redirect(url: toUrl(action: 'social'))
 				return
@@ -786,14 +784,6 @@ class HomeController extends DataController {
 				Map result = Discussion.delete(discussion, user)
 				flash.message = result.message
 				redirect(url: toUrl(action: 'social'))
-				return
-			}
-		} else if (plotDataId) {
-			discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
-			debug "Discussion for plotDataId not found: " + plotDataId
-			if (discussion == null) {
-				flash.message = "That shared graph discussion no longer exists."
-				redirect(url:toUrl(action:'social'))
 				return
 			}
 		}
@@ -841,14 +831,6 @@ class HomeController extends DataController {
 				Utils.save(discussion, true)
 			}
 		}
-		/*
-		if (!discussion.getIsPublished()) {
-			if ((!user) || (discussion.getUserId() != user.getId())) {
-				flash.message = "Don't have permission to access this discussion"
-				redirect(url:toUrl(action:'index'))
-				return
-			}
-		}*/
 		if (deletePostId) {
 			debug "Attemtping to delete post id " + deletePostId
 			DiscussionPost post = DiscussionPost.get(deletePostId)
@@ -886,7 +868,7 @@ class HomeController extends DataController {
 				return
 			} else {
 				redirect(url:toUrl(action:'discuss', 
-					params:[discussionId:discussion.getId()],
+					params:[discussionHash:discussion.hash],
 					fragment:'comment' + comment.id))
 				return
 			}

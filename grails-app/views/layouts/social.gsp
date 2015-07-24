@@ -64,7 +64,7 @@
 		</div>
 		<div id="comment-dialog" class="hide" title="Comment">
 			<input type="text" name="comment" id="userComment" required placeholder="Add Comment..."> 
-			<input type="hidden" name="discussionId" value="${discussionId}">
+			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
 		<g:render template="/sprint/createSprintModal" />
 	</body>

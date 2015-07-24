@@ -3,6 +3,68 @@
  *
  */
 
+function modifyShare(discussionHash) {
+	var $selectElement = $('select#shareOptions');
+	if (discussionHash == null) {
+		discussionHash = $('input#discussionHash').val()
+	}
+	$.ajax({
+		type: 'POST',
+		url: '/home/shareDiscussion',
+		data: {
+			discussionHash: discussionHash,
+			shareOptions: $selectElement.val().join(',')
+		},
+		success: function(data) {
+			showAlert(JSON.parse(data).message);
+		},
+		error: function(xhr) {
+			showAlert(JSON.parse(xhr.responseText).message);
+		}
+	});
+}
+
+function showShareDialog(discussionHash) {
+	$('div#share-dialog').dialog({
+		dialogClass: "no-close",
+		modal: false,
+		resizable: false,
+		title: "Query",
+		buttons: {
+			"Yes ": function() {
+				$(this).dialog("close");
+				if (discussionHash != null) {
+					modifyShare(discussionHash);
+				} else {
+					modifyShare(null);
+				}
+			},
+			No: function() {
+				$(this).dialog("close");
+			}
+		}
+	});
+}
+
+function showCommentDialog(discussionHash) {
+	$('div#comment-dialog').dialog({
+		dialogClass: "no-close",
+		modal: false,
+		resizable: false,
+		title: "Comment",
+		buttons: {
+			"Post ": function() {
+				$(this).dialog("close");
+				if (discussionHash) {
+					addComment(discussionHash);
+				} else {
+					addComment(null);
+				}
+			}
+		}
+	});
+}
+
 function addComment(discussionHash) {
 	var $inputElement = $('input#userComment');
 	if (!discussionHash) {

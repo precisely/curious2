@@ -500,7 +500,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		String contentAsString = controller.response.contentAsString
 		assert contentAsString.contains('Blank discussion call')
 
-		controller.params.discussionId = discussion.id
+		controller.params.discussionHash = discussion.hash
 
 		// Test pagination with first page
 		controller.listCommentData()
@@ -518,7 +518,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = userId
 		controller.params.callback = 'callback'
-		controller.params.discussionId = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.offset = 5
 
 		// Test pagination with second page
@@ -747,14 +747,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
 
 		// Test for invalid params
-		controller.params['discussionId'] = discussionInstance.id
+		controller.params['discussionHash'] = discussionInstance.hash
 		controller.params['clearPostId'] = 23
 		controller.deleteCommentData()
 		controller.response.text == "fail"
 		
 		// Test for valid params
 		discussionPostInstance.save(flush: true)
-		controller.params['discussionId'] = discussionInstance.id
+		controller.params['discussionHash'] = discussionInstance.hash
 		controller.params['clearPostId'] = discussionPostInstance.id
 		controller.deleteCommentData()
 		controller.response.text == "success"
@@ -766,13 +766,13 @@ class DataControllerTests extends CuriousControllerTestCase {
 		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
 		
 		// Test for invalid params
-		controller.params['discussionId'] = 23
+		controller.params['discussionHash'] = 23
 		controller.params['message'] = 'dummyMessage'
 		controller.createCommentData()
 		controller.response.text == "fail"
 
 		// Test for valid params
-		controller.params['discussionId'] = discussionInstance.id
+		controller.params['discussionHash'] = discussionInstance.hash
 		controller.params['message'] = 'dummyMessage'
 		controller.createCommentData()
 		controller.response.text == "success"

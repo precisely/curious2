@@ -215,7 +215,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		HomeController controller = new HomeController()
 
 		controller.session.userId = user.getId()
-
+		controller.params.discussionHash = discussion.hash
+		
 		def model = controller.social()
 
 		assert model.prefs != null
@@ -265,13 +266,13 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.session.userId = user.getId()
 
-		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['discussionHash'] = discussion.hash.toString()
 
 		controller.discuss()
 
 		def modelAndView = controller.modelAndView
 
-		assert modelAndView.model['discussionId'].toString().equals(discussion.getId().toString())
+		assert modelAndView.model['discussionHash'].toString().equals(discussion.hash.toString())
 		assert modelAndView.model['username'].equals(user.getUsername())
 		assert modelAndView.getViewName().equals("/home/discuss")
 	}
@@ -485,7 +486,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		def discussionPostInstance = discussionInstance.createPost(user, "comment")
 
 		// When the user isn't authorized to delete comment
-		controller.params['discussionId'] = discussionInstance.id
+		controller.params['discussionHash'] = discussionInstance.hash
 		controller.params['clearPostId'] = discussionPostInstance.getId()
 		controller.session.userId = user2.getId()
 		controller.discuss()
@@ -493,7 +494,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.flash.message = null
 
 		//When user is authorized
-		controller.params['discussionId'] = discussionInstance.id
+		controller.params['discussionHash'] = discussionInstance.hash
 		controller.params['clearPostId'] = discussionPostInstance.getId()
 		controller.session.userId = user.getId()
 		controller.discuss()
@@ -506,7 +507,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = user.getId()
 		
 		// When the user doesn't have the write permission
-		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['discussionHash'] = discussion.hash.toString()
 		controller.params['message'] = "dummyMessage"
 		controller.session.userId = user2.getId()
 		controller.discuss()
@@ -514,7 +515,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 		
 		// When the user have the write permission
-		controller.params['discussionId'] = discussion.getId().toString()
+		controller.params['discussionHash'] = discussion.hash.toString()
 		controller.params['message'] = "dummyMessage"
 		controller.session.userId = user.getId()
 		controller.discuss()

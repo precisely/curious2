@@ -263,7 +263,7 @@ class SearchController extends LoginController {
 		renderJSONGet(discussionData)
 	}
 
-	def listCommentData(Long discussionId, Long plotDataId) {
+	def listCommentData(String discussionHash) {
 		debug "DataController.listCommentData() params: $params"
 
 		def user = sessionUser()
@@ -274,14 +274,14 @@ class SearchController extends LoginController {
 			return
 		}
 
-		if (!discussionId && !plotDataId) {
+		if (!discussionHash) {
 			renderStringGet("Blank discussion call")
 			return
 		}
-		Discussion discussion = discussionId ? Discussion.get(discussionId) : Discussion.getDiscussionForPlotDataId(plotDataId)
+		Discussion discussion = discussionHash ? Discussion.findByHash(discussionHash) : null
 
 		if (!discussion) {
-			debug "Discussion not found for id [$discussionId] or plot data id [$plotDataId]."
+			debug "Discussion not found for hash [$discussionHash]."
 			renderStringGet "That discussion topic no longer exists."
 			return
 		}
@@ -395,10 +395,10 @@ class SearchController extends LoginController {
 
 		debug "Trying to set discussion name " + params.name
 
-		def discussion = Discussion.get(Long.valueOf(params.discussionId))
+		def discussion = Discussion.findByHash(Long.valueOf(params.discussionHash))
 
 		if (discussion == null) {
-			renderStringGet('No such discussion id ' + params.discussionId)
+			renderStringGet('No such discussion id ' + params.discussionHash)
 			return;
 		}
 
@@ -453,11 +453,11 @@ class SearchController extends LoginController {
 		}
 	}
 	
-	def deleteCommentData(Long discussionId, Long clearPostId) {
+	def deleteCommentData(String discussionHash, Long clearPostId) {
 		def user = sessionUser()
 		Discussion discussion
-		if (discussionId && clearPostId) {
-			discussion = Discussion.get(discussionId)
+		if (discussionHash && clearPostId) {
+			discussion = Discussion.findByHash(discussionHash)
 			DiscussionPost.deleteComment(clearPostId, user, discussion)
 			renderStringGet('success')
 		} else {
@@ -465,10 +465,10 @@ class SearchController extends LoginController {
 		}
 	}
 
-	def createCommentData(Long discussionId, String message, Long plotIdMessage) {
+	def createCommentData(String discussionHash, String message, Long plotIdMessage) {
 		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
 		def user = sessionUser()
-		Discussion discussion = Discussion.get(discussionId)
+		Discussion discussion = Discussion.findByHash(discussionHash)
 		if (discussion) {
 			def result = DiscussionPost.createComment(message, user, discussion, plotIdMessage, params)
 			if (result && !(result instanceof String)) {

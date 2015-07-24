@@ -227,68 +227,6 @@ DateUtil.prototype.getDateRangeForToday = function() {
 	}
 }
 
-function modifyShare(discussionId) {
-	var $selectElement = $('select#shareOptions');
-	if (discussionId == null) {
-		discussionId = $('input#discussionId').val()
-	}
-	$.ajax({
-		type: 'POST',
-		url: '/home/shareDiscussion',
-		data: {
-			discussionId: discussionId,
-			shareOptions: $selectElement.val().join(',')
-		},
-		success: function(data) {
-			showAlert(JSON.parse(data).message);
-		},
-		error: function(xhr) {
-			showAlert(JSON.parse(xhr.responseText).message);
-		}
-	});
-}
-
-function showShareDialog(discussionId) {
-	$('div#share-dialog').dialog({
-		dialogClass: "no-close",
-		modal: false,
-		resizable: false,
-		title: "Query",
-		buttons: {
-			"Yes ": function() {
-				$(this).dialog("close");
-				if (discussionId != null) {
-					modifyShare(discussionId);
-				} else {
-					modifyShare(null);
-				}
-			},
-			No: function() {
-				$(this).dialog("close");
-			}
-		}
-	});
-}
-
-function showCommentDialog(discussionHash) {
-	$('div#comment-dialog').dialog({
-		dialogClass: "no-close",
-		modal: false,
-		resizable: false,
-		title: "Comment",
-		buttons: {
-			"Post ": function() {
-				$(this).dialog("close");
-				if (discussionHash) {
-					addComment(discussionHash);
-				} else {
-					addComment(null);
-				}
-			}
-		}
-	});
-}
-
 var numJSONCalls = 0;
 var pendingJSONCalls = [];
 

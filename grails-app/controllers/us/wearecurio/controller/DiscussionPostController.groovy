@@ -10,7 +10,7 @@ class DiscussionPostController extends LoginController{
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
 	def index() {
-		Discussion discussion = Discussion.get(params.discussionId)
+		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
 			renderJSONGet([posts: false])
 			return

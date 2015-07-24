@@ -150,7 +150,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		Utils.save(post, true)
 
 		controller.session.userId = user.id
-		controller.params.discussionId = null
+		controller.params.discussionHash = null
 
 		controller.index()
 
@@ -164,7 +164,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		assert !DiscussionPost.count()
 
 		controller.session.userId = user.id
-		controller.params.discussionId = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.max = "5"
 		controller.params.offset = 0
 
@@ -183,7 +183,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		Utils.save(post2, true)
 
 		controller.session.userId = user.id
-		controller.params.discussionId = discussion.id
+		controller.params.discussionHash = discussion.hash
 		controller.params.max = "5"
 		controller.params.offset = 0
 

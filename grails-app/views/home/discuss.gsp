@@ -30,7 +30,7 @@ function doLogout() {
 
 function clearPostMessage(postId) {
 	showYesNo("Are you sure you want to delete this comment?", function() {
-			window.location = "/home/discuss?discussionId=${discussionId}&clearPostId=" + postId;
+			window.location = "/home/discuss?discussionHash=${discussionHash}&clearPostId=" + postId;
 	});
 	return false;
 }
@@ -86,7 +86,7 @@ $(function() {
 					if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
 						alreadySentName = newName;
 						preventCommentSubmit = true; // for some reason, comment submission happening twice?
-						backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionId:${discussionId}, name:newName }), function(data) {
+						backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash:"${discussionHash}", name:newName }), function(data) {
 							if (checkData(data)) {
 								preventCommentSubmit = false;
 								discussionTitle = newName;
@@ -172,7 +172,7 @@ $(function() {
 });
 
 $(document).ready(function() {
-	var discussionId = ${discussionId};
+	var discussionHash = "${discussionHash}";
 
 	$("#postList").infiniteScroll({
 		bufferPx: 360,
@@ -184,7 +184,7 @@ $(document).ready(function() {
 
 			var url = "/api/discussionPost";
 			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
-					discussionId: discussionId}), 
+					discussionHash: discussionHash}), 
 					function(data) {
 				if (checkData(data)) {
 					if (!data.posts) {
@@ -214,7 +214,7 @@ $(document).ready(function() {
 					<ul>
 						<li id="share-discussion"><a href="#">Change Visibility</a></li>
 						<li class="${isAdmin ? '' : 'disabled text-muted' }"><g:link
-								params="[discussionId: params.discussionId, deleteDiscussion: true]"
+								params="[discussionHash: params.discussionHash, deleteDiscussion: true]"
 								action="discuss">Delete</g:link></li>
 					</ul>
 				</span>--!><h1 class="clearfix">
@@ -339,7 +339,7 @@ $(document).ready(function() {
 								<hr>
 								<div class="buttons">
 									<button class="share-button" data-toggle="popover" data-placement="top" 
-											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}home/discuss?discussionId=${discussionId}'>"
+											data-content="<input class='share-link' type='text' value='${grailsApplication.config.grails.serverURL}home/discuss?discussionHash=${discussionHash}'>"
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
@@ -387,7 +387,7 @@ $(document).ready(function() {
 												<input type="text" placeholder="Add Comment to this discussion..."
 													id="post-comment" name="message" required>
 											</g:else>
-											<input type="hidden" name="discussionId" value="${discussionId}">
+											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
 								</div>
@@ -412,7 +412,7 @@ $(document).ready(function() {
 
 		<div style="clear: both;"></div>
 
-		<g:hiddenField name="discussionId" value="${discussionId }" />
+		<g:hiddenField name="discussionHash" value="${discussionHash }" />
 
 		<div id="share-dialog" class="hide" title="Share">
 			<select name="shareOptions" id="shareOptions" multiple="multiple"
@@ -429,7 +429,7 @@ $(document).ready(function() {
 		</div>
 		<div id="comment-dialog" class="hide" title="Comment">
 			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
-			<input type="hidden" name="discussionId" value="${discussionId}">
+			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
 </div>
 </body>

@@ -77,19 +77,19 @@ var _discussions = ' \
 					<%- discussionData.groupName %>\
 				</div>\
 				<div class="row">\
-					<div class="col-xs-7 discussion-title-col">\
-						<a href="/discussion/show/<%- discussionData.hash %>"> \
+					<div class="col-xs-7">\
+						<a href="/home/discuss?discussionHash=<%- discussionData.hash %>"> \
 							<span> <%- discussionData.name ? discussionData.name: \'(No Title)\' %></span>\
 						</a>\
 					</div>\
 					<div class="col-xs-5 button-box">\
 						<div class="buttons">\
-							<button onclick="showShareDialog(<%- discussionData.id %>)">\
+							<button onclick="showShareDialog(<%- discussionData.hash %>)">\
 								<img src="/images/follow.png" alt="follow">Follow\
 							</button>\
 							<% if (discussionData.isAdmin) {  %>\
 								<button class="share-button" data-toggle="popover" title="Share:" data-placement="top" \
-										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/home/discuss?discussionId=<%- discussionData.id %>\'>">\
+										data-content="<input class=\'share-link\' type=\'text\' value=\'<%- location.protocol+\'//\'+location.hostname+(location.port ? \':\' + location.port : \'\') %>/home/discuss?discussionHash=<%- discussionData.hash %>\'>">\
 									<img src="/images/share.png" alt="share">Share\
 								</button>\
 							<% } %>\
@@ -144,7 +144,7 @@ var _discussions = ' \
 									placeholder="Add Comment..."\
 									id="post-comment" name="message" required>\
 						<% } %>\
-						<input type="hidden" name="discussionId" value="<%- discussionData.id %>">\
+						<input type="hidden" name="discussionHash" value="<%- discussionData.hash %>">\
 					</form>\
 				</div>\
 				<div class="class-md-6"></div>\
