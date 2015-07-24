@@ -427,6 +427,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		
 		def rU = controller.response.redirectedUrl
 		
+		assert controller.flash.message == "Error registering user - email and confirm email fields have different values"
 		assert rU.endsWith('/login/register')
 	}
 
