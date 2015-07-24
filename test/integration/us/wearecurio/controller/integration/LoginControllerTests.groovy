@@ -390,6 +390,27 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "test doregisterData when email and confirm email fields are different"() {
+		LoginController controller = new LoginController()
+		
+		controller.session.userId = null
+		
+		controller.params.clear()
+		controller.params.putAll([
+			username:'q',
+			email:'q@q.com',
+			confirm_email: 'qq@q.com',
+			password:'q',
+			name:'q q',
+			sex:'F'
+		])
+		
+		controller.doregisterData()
+		
+		assert !controller.response.json.success
+		assert controller.response.json.message == "Email and confirm email fields do not match"
+	}
+	@Test
 	void testDoregisterDataNoUsername() {
 		LoginController controller = new LoginController()
 		

@@ -447,6 +447,8 @@ class LoginController extends SessionController {
 			renderJSONPost([success:false, message:"All fields are required."])
 		} else if (retVal['errorCode'] == REGISTER_DUPLICATE_EMAIL) {
 			renderJSONPost([success:false, message:"Email '" + params.email + "' already in use"])
+		} else if (retVal['errorCode'] == REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT) {
+			renderJSONPost([success:false, message:"Email and confirm email fields do not match"])
 		} else {
 			renderJSONPost([success:false, message:"Error registering user. Try different values."])
 		}
