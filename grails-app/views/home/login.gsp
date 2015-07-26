@@ -81,7 +81,7 @@
 				<br>
 				<div
 					class="col-sm-2 col-sm-offset-1 text-center text-teal">
-					<div class="thumbnail">
+					<div class="">
 						<img class="img-responsive"
 						style="margin: 0 auto;"
 						src="/images/home/home-second-icon.png" />
@@ -97,7 +97,7 @@
 				<div
 					class="col-sm-2 col-sm-offset-1 text-center text-teal"
 					style="margin-left: 60px;">
-					<div class="thumbnail">
+					<div class="">
 						<img class="img-responsive"
 						style="margin: 0 auto;"
 						src="/images/home/home-third-icon.png" />
@@ -115,7 +115,7 @@
 				<div
 					class="col-sm-2 col-sm-offset-1 text-center text-teal"
 					style="margin-left: 60px;">
-					<div class="thumbnail">
+					<div class="">
 						<img class="img-responsive"
 						style="margin: 0 auto;"
 						src="/images/home/home-first-icon.png" />
@@ -130,7 +130,7 @@
 				<div
 					class="col-sm-2 col-sm-offset-1 text-center text-teal"
 					style="margin-left: 60px;">
-					<div class="thumbnail">
+					<div class="">
 						<img class="img-responsive"
 						style="margin: 0 auto;"
 						src="/images/home/home-fourth-icon.png" />

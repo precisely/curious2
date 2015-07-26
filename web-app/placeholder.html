@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>We Are Curious</title>
+		<meta name="description" content="A platform for health hackers"/>
+		<meta name="viewport" content="width=device-width">
+		<link type="text/css" href="css/bootstrap/bootstrap.min.css" rel="stylesheet">
+		<link type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		<link type="text/css" href="css/placeholder.css" rel="stylesheet">
+		<script type="text/javascript" src="js/jquery/jquery-2.1.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.min.js"></script>
+
+		<script>
+			$(document).ready(function() {
+				$('.headerLinks').click( function(e) {
+					$(this).children().removeClass('active');
+					$(e.target).closest('li').addClass('active');
+				});
+				$(".headerLinks li a").each(function () {
+					var href = $(this).attr('href');
+					if (location.hash == href) {
+						$('.headerLinks').children().removeClass('active');
+						$(this).closest('li').addClass('active');
+					}
+				});
+			});
+		</script>
+	</head>
+	<body class="">
+
+		<!-- HEADER -->
+		<div class="headLinks">
+			<ul class="main-links headerLinks">
+				<li class="active"><a href="#">HOME</a></li>
+				<li><a href="#story">STORY</a></li>
+				<li><a href="#team">TEAM</a></li>
+				<li><a href="#">BLOG</a></li>
+				<li><a href="#about">ABOUT</a></li>
+			</ul>
+		</div>
+		<!-- /HEADER -->
+
+		<div id="alert-message" class="alert alert-info hide">
+			<button type="button" class="close" onclick="$(this).parent().fadeOut()">&times;</button>
+			<strong></strong>
+		</div>
+
+		<br>
+		<div class="text-right logo">
+			<img class="" src="images/home/home-logo.jpg" />
+			<p class="light-caption">
+				Track data, chart experience, find meaning.
+			</p>
+			<p class="bold-caption">
+				We&#8217ve got questions.
+			</p>
+			<br>
+			<a class="do-you" href="#">
+				<u>Do you?</u>
+			</a>
+		</div>
+		<div class="story-wrapper" id="story">
+			<div class="caption" style="color: white; max-width: 850px;">
+				<h3>STORY (Written by Linda about the Oura collaboration)</h3>
+				<p>
+					Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
+					totam, rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta
+					sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia 
+					consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+				</p>
+			</div>
+		</div>
+		<div class="row questions-wrapper">
+			<div class="col-md-5 col-xs-5">
+				<div id="sidebar">
+					<p>
+						<a href="#" data-toggle="modal" data-target="#earlyInvitationModal">Tell us </a>
+						what you're wondering and leave <br>us your email for an early invitation.
+					</p>
+					<br><br>
+					<p>
+						Follow us on Twitter: <a href="http://twitter.com/wearecurious">@wearecurious</a>
+					</p>
+					<p>
+						Or just say <a href="mailto:contact@wearecurio.us">hi.</a>
+					</p>
+				</div>
+			</div>
+			<div class="col-md-7 col-xs-7">
+				<div class="caroufredsel_wrapper">
+					<div id="questions">
+						<div class="question">
+							<div class="q">Is caffeine good for me, bad for me, or neither?</div>
+							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
+							<span id="count121" class="count">+ 25</span>
+						</div>
+						<div class="question">
+							<div class="q">What triggers my bad back?</div>
+							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
+							<span id="count121" class="count">+ 25</span>
+						</div>
+						<div class="question">
+							<div class="q">What are long term effects of distance running?</div>
+							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
+							<span id="count121" class="count">+ 25</span>
+						</div>
+						<div class="question">
+							<div class="q">What is the best time of the day to exercise?</div>
+							<a class="voteUp hide" href="javascript:increment(121)">I'd like to know</a>
+							<span id="count121" class="count">+ 25</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="team-wrapper" id="team">
+			<div class="team-title-bar">
+				<h3>TEAM</h3>
+				<ul class="nav nav-tabs">
+					<li role="presentation" class="active">
+						<a data-toggle="tab" href="#founders">Founders</a>
+					</li>
+					<li role="presentation">
+						<a data-toggle="tab" href="#advisors">Advisors</a>
+					</li>
+				</ul>
+			</div>
+			<div class="tab-content">
+				<div id="founders" class="tab-pane fade in active">
+					<div class="thumbnail">
+						<img src="images/founders/linda-avey.png" alt="linda" class="img-circle">
+						<div class="caption">
+							<h3>Linda Avey</h3>
+							<h4>Chief Executive Officer</h4>
+							<hr>
+							<ul>
+								<li>  Co-founder and former Co-President of 23andMe</li>
+								<li>  25 years in biopharma BD/sales at Applied Biosystems, Chemdex, Spotfire, Periegen and Affymetrix</li>
+								<li>  BA in Biology, minor in chemistry, Augustana College</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/founders/mitsu-hadeishi.png" alt="mitsu" class="img-circle">
+						<div class="caption">
+							<h3>Mitsu Hadeishi</h3>
+							<h4>Chief Technology Officer</h4>
+							<hr>
+							<ul>
+								<li>  24 years in software architecture, programming, product design, and technical direction</li>
+								<li>  Tech Director at DonorsChoose.org, CTO of temboo, Inc.</li>
+								<li>  BA in Physics, Harvard University </li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/founders/heather-anne.png" alt="heather" class="img-circle">
+						<div class="caption">
+							<h3>Heather Anne Halpert</h3>
+							<h4>Creative Director</h4>
+							<hr>
+							<ul>
+								<li>  15 years product and user experience design</li>
+								<li>  National Geographic, Hasbro, MTV, Encylopedia Britannica, Nokia, Guardian, DonorsChoose.org</li>
+								<li>  BArch, University of Texas at Austin, School of Architecture</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div id="advisors" class="tab-pane fade">
+					<div class="thumbnail">
+						<img src="images/advisors/laurie-yoler.png" alt="linda" class="img-circle">
+						<div class="caption">
+							<h3>Laurie Yoler</h3>
+							<h4>Business Strategy</h4>
+							<hr>
+							<ul>
+								<li>  Qualcomm</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/advisors/anne-diaz.png" alt="mitsu" class="img-circle">
+						<div class="caption">
+							<h3>Anne Diaz</h3>
+							<h4>User Research</h4>
+							<hr>
+							<ul>
+								<li>  The Hunt</li>
+								<li>  Causes</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/advisors/john-wilbanks.png" alt="heather" class="img-circle">
+						<div class="caption">
+							<h3>John Wilbanks</h3>
+							<h4>User Consent</h4>
+							<hr>
+							<ul>
+								<li> Sage Bionetworks</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/advisors/stephen-wolfarm.png" alt="linda" class="img-circle">
+						<div class="caption">
+							<h3>Stephen Wolfarm</h3>
+							<h4>Analytics</h4>
+							<hr>
+							<ul>
+								<li>  PhD Wolfarm Research</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/advisors/christopher-ahlberg.png" alt="mitsu" class="img-circle">
+						<div class="caption">
+							<h3>Christopher Ahlberg</h3>
+							<h4>Data viz, Business Strateg</h4>
+							<hr>
+							<ul>
+								<li>  PhD Recorded Future</li>
+								<li>  Spotfire</li>
+							</ul>
+						</div>
+					</div>
+					<div class="thumbnail">
+						<img src="images/advisors/jerry-kram.png" alt="heather" class="img-circle">
+						<div class="caption">
+							<h3>Jerry Karm</h3>
+							<h4>Sleep Tracking</h4>
+							<hr>
+							<ul>
+								<li> MD CA Center</li>
+								<li> Sleep Disorders</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- FOOTER -->
+		<div class="about-wrapper" id="about">
+			<div class="row">
+				<div class="col-sm-1" style="color: white; padding-bottom: 50px;">
+					<h3>ABOUT</h3>
+				</div>
+			</div>
+			<p>At Curious, we believe
+				in the power of personal data and that it should be
+				owned and controlled by you. We will never
+				intentionally expose it, share it, or sell it
+				without your explicit consent. We are the stewards
+				of your data&#8212; we&#8217ll hold it securely for you but also
+				make it easy to share, when you&#8217re ready. We&#8217re
+				excited to take this journey of personal discovery
+				together
+			</p>
+			<br>
+			<br>
+			<div class="footerLinks">
+				<ul>
+					<li style="font-size: 16px;">
+						<a href="#">
+							<i class="fa fa-long-arrow-up"></i>&nbsp;&nbsp;BACK TO THE TOP
+						</a>
+					</li>
+				</ul>
+				<div class="social-links">
+					<h2><i>Say Hi!</i></h2>
+					<a href="https://twitter.com/wearecurious"> 
+						<img class="" src="images/home/twitter.png"	style="padding-right: 15px; height: 60px;"/>
+					</a> 
+					<a href="https://facebook.com/wearecurious">
+						<img src="images/home/facebook.png" style="height: 60px;"/>
+					</a>
+				</div>
+			</div>
+		</div>
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:300normal,300italic,400normal,400italic,600normal,600italic,700normal,700italic,800normal,800italic|Roboto:400normal|Oswald:400normal|Open+Sans+Condensed:300normal|Lato:400normal|Source+Sans+Pro:400normal|Lato:400normal|Gloria+Hallelujah:400normal|Pacifico:400normal|Raleway:400normal|Merriweather:400normal&subset=all' rel='stylesheet' type='text/css'>
+		<!-- /FOOTER -->
+		<div class="modal fade" id="earlyInvitationModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<form class="form-horizontal" id="helpWizardForm">
+						<div class="form-group">
+							<label for="inputQuestion" class="col-sm-3 control-label">I&#8217m wondering:</label>
+							<div class="col-sm-9">
+								<textarea class="form-control" id="inputQuestion" placeholder="Ask us a question!" rows="7"></textarea>
+								<p>&nbsp;&nbsp;New questions are posted weekly...<br><br></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputEmail" style="padding-top: 10px;" class="col-sm-3 control-label">Sign me up to be an early tester:</label>
+							<div class="col-sm-9">
+								<input type="email" class="form-control" id="inputEmail" placeholder="enter email address">
+								<p>&nbsp;&nbsp;We keep your email safe and spamless.</p>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-clear" type="button" data-dismiss="modal">Cancel</button>
+							<button class="btn btn-warning" type="button">SUBMIT</button>
+						</div>
+					</form>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+	</body>
+</html>
+
