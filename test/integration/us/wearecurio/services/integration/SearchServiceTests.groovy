@@ -215,40 +215,17 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
 		assert result.listItems.discussionList
 		assert result.listItems.discussionList.size() == 2
-		assert result.listItems.discussionList[0].id == discussion1.id
-		assert result.listItems.discussionList[0].name == discussion1.name
-		assert result.listItems.discussionList[0].userId == discussion1.userId
-		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
+		assert result.listItems.discussionList[0].id == discussion2.id
+		assert result.listItems.discussionList[0].name == discussion2.name
+		assert result.listItems.discussionList[0].userId == discussion2.userId
+		assert result.listItems.discussionList[0].isPublic == discussion2.isPublic()
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion2.created)
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
 		assert result.listItems.discussionList[0].type == "dis"
-		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
+		assert result.listItems.discussionPostData[discussion2.id].totalPosts == 0
 		
 		//limit max to 1, no offset
 		result = searchService.getDiscussionsList(user, 0, 1)
-		assert result
-		assert result.success
-		assert result.listItems.userId == user.id
-		assert result.listItems.totalDiscussionCount == 2
-		assert result.listItems.groupMemberships
-		assert result.listItems.groupMemberships.size() == 2
-		assert result.listItems.groupMemberships[1][0].id == group.id
-		assert result.listItems.groupMemberships[1][0].name == group.name
-		assert result.listItems.groupMemberships[1][0].fullName == group.fullName
-		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
-		assert result.listItems.discussionList
-		assert result.listItems.discussionList.size() == 1
-		assert result.listItems.discussionList[0].id == discussion1.id
-		assert result.listItems.discussionList[0].name == discussion1.name
-		assert result.listItems.discussionList[0].userId == discussion1.userId
-		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
-		assert result.listItems.discussionList[0].type == "dis"
-		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
-		
-		//limit max to 1, offset to second item (index=1)
-		result = searchService.getDiscussionsList(user, 1, 1)
 		assert result
 		assert result.success
 		assert result.listItems.userId == user.id
@@ -269,6 +246,29 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
 		assert result.listItems.discussionList[0].type == "dis"
 		assert result.listItems.discussionPostData[discussion2.id].totalPosts == 0
+		
+		//limit max to 1, offset to second item (index=1)
+		result = searchService.getDiscussionsList(user, 1, 1)
+		assert result
+		assert result.success
+		assert result.listItems.userId == user.id
+		assert result.listItems.totalDiscussionCount == 2
+		assert result.listItems.groupMemberships
+		assert result.listItems.groupMemberships.size() == 2
+		assert result.listItems.groupMemberships[1][0].id == group.id
+		assert result.listItems.groupMemberships[1][0].name == group.name
+		assert result.listItems.groupMemberships[1][0].fullName == group.fullName
+		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
+		assert result.listItems.discussionList
+		assert result.listItems.discussionList.size() == 1
+		assert result.listItems.discussionList[0].id == discussion1.id
+		assert result.listItems.discussionList[0].name == discussion1.name
+		assert result.listItems.discussionList[0].userId == discussion1.userId
+		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
+		assert result.listItems.discussionList[0].type == "dis"
+		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
 	}
 	
 	@Test
