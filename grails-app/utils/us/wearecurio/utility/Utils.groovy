@@ -174,7 +174,6 @@ class Utils {
 	 * 			the total count for matching queries existing the database.
 	 * 
 	 * @see http://grails.org/doc/2.2.x/ref/Domain%20Classes/executeQuery.html
-	 * @see <code>getDiscussionsInfoForUser()</code> in <strong>UserGroup.groovy</strong>
 	 */
 	static Map paginateHQLs(List<Map> hqlDataList, def maxResults, def firstResult) {
 		List dataList = []

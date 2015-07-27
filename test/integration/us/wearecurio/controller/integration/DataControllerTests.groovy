@@ -443,30 +443,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('["success"')
 	}
 
-	@Test
-	void testListDiscussionData() {
-		controller.session.userId = userId
-
-		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
-				[isReadOnly:false, defaultNotify:false])
-
-		curious.addMember(user)
-
-		Discussion discussion = Discussion.create(user, "Discussion name")
-		discussion.createPost(user, null, "comment")
-		Utils.save(discussion, true)
-
-		curious.addDiscussion(discussion)
-
-		controller.params.callback = 'callback'
-
-		def retVal = controller.listDiscussionData()
-
-		def content = controller.response.contentAsString
-
-		assert content.contains('"name":"Discussion name","userId":' + userId + ',"isPublic":true,"created":')
-	}
-
 	private Discussion setUpForCommentPage() {
 		UserGroup curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
 			[isReadOnly:false, defaultNotify:false])

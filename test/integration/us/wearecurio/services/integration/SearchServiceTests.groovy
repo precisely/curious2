@@ -186,6 +186,8 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "discussion 1", group, currentTime)
 		Discussion discussion2 = Discussion.create(user, "discussion 2", group, currentTime + 1)
 		
+		System.out.println "discussion1.created: " + discussion1.created
+		System.out.println "discussion2.created: " + discussion2.created
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService
 		

@@ -238,6 +238,7 @@ class SearchController extends LoginController {
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
 
+<<<<<<< Upstream, based on origin/master
 	def listDiscussionData() {
 		debug "DataController.listDiscussionData() params:" + params
 
@@ -264,6 +265,9 @@ class SearchController extends LoginController {
 	}
 
 	def listCommentData(String discussionHash) {
+=======
+	def listCommentData(Long discussionId, Long plotDataId) {
+>>>>>>> 70d93ee 1) Removed methods (and associated tests) that are no longer in use: 	a) listDiscussionData (part of a couple of controllers) 	b) UserGroup.getDiscussionsInfoForGroupNameList 	c) UserGroup.getDiscussionsForUser 	d) UserGroup.addAdminPermissions 2) Changed SearchService.getDiscussionsList to sort the discussions it returns by discussion created date
 		debug "DataController.listCommentData() params: $params"
 
 		def user = sessionUser()

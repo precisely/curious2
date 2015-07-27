@@ -136,11 +136,6 @@ class UserGroupTests extends CuriousTestCase {
 
 		assert curious.hasDiscussion(discussion)
 
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']).dataList, discussion.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(user, false, false).dataList, discussion.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true, false).dataList, discussion.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['curious']).dataList, discussion.getId())
-
 		assert UserGroup.canReadDiscussion(user, discussion)
 		assert UserGroup.canReadDiscussion(admin, discussion)
 		assert !UserGroup.canReadDiscussion(schmoe, discussion)
@@ -160,13 +155,6 @@ class UserGroupTests extends CuriousTestCase {
 
 		assert announce.hasDiscussion(announcement)
 
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['announce']).dataList, announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(user, ['curious']).dataList, announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(schmoe, ['announce']).dataList, announcement.getId())
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(schmoe, true, false).dataList, announcement.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForGroupNameList(anon, ['announce']).dataList, announcement.getId())
-		assert discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true, false).dataList, announcement.getId())
-
 		assert UserGroup.canReadDiscussion(user, announcement)
 		assert UserGroup.canReadDiscussion(admin, announcement)
 		assert !UserGroup.canReadDiscussion(schmoe, announcement)
@@ -183,35 +171,8 @@ class UserGroupTests extends CuriousTestCase {
 		announce.removeMember(anon)
 
 		assert !UserGroup.canReadDiscussion(anon, announcement)
-		assert !discussionsContains(UserGroup.getDiscussionsInfoForUser(anon, true, false).dataList, announcement.getId())
 	}
 
-	@Test
-	void testDiscussPagination() {
-		curious.addMember(user)
-
-		Discussion discussion1 = Discussion.create(user, "Discussion 1")
-		Discussion discussion2 = Discussion.create(user, "Discussion 2")
-		Discussion discussion3 = Discussion.create(user, "Discussion 3")
-		Discussion discussion4 = Discussion.create(user, "Discussion 4")
-		Discussion discussion5 = Discussion.create(user, "Discussion 5")
-		Discussion discussion6 = Discussion.create(user, "Discussion 6")
-
-		curious.addDiscussion(discussion3)
-		curious.addDiscussion(discussion4)
-
-		Map paginationData = UserGroup.getDiscussionsInfoForUser(user, true, false, [max: 3, offset: 0])
-		List discussions = paginationData.dataList
-
-		assert paginationData.totalCount == 6
-		assert discussions.size() == 3
-
-		paginationData = UserGroup.getDiscussionsInfoForUser(user, true, false, [max: 3, offset: 3])
-		assert paginationData.dataList.size() == 3
-
-		assert paginationData.totalCount == 6
-	}
-	
 	@Test
 	void testVirtualUserGroup() {
 		UserGroup group = UserGroup.createVirtual("Test full name")
