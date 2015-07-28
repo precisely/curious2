@@ -94,36 +94,6 @@ class SearchController extends LoginController {
 		}
 	}
 
-	def listData() {
-		debug "SearchController.listData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		debug "Trying to load list of search results " + user.getId()
-
-		def c = PlotData.createCriteria()
-
-		def entries = c {
-			eq("userId", user.getId())
-			not {
-				eq("isSnapshot", true)
-			}
-			order("created", "asc")
-		}
-
-		for (entry in entries) {
-			debug "Found " + entry
-		}
-
-		renderJSONGet(Utils.listJSONDesc(entries))
-	}
-
 	def savePlotData() {
 		debug "DataController.savePlotData() params:" + params
 
