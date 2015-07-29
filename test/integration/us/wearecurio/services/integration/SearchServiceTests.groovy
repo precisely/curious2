@@ -1,28 +1,10 @@
 package us.wearecurio.services.integration
 
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.search.SearchHit
-import org.elasticsearch.client.Client
-import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
-import org.elasticsearch.action.search.SearchResponse
-import org.elasticsearch.index.query.functionscore.*
-
-import static org.elasticsearch.index.query.QueryBuilders.*
-
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.index.query.QueryBuilders
-
-import static org.elasticsearch.node.NodeBuilder.*
-
-import org.elasticsearch.search.sort.*
-
 import java.util.Arrays;
 
-import static org.elasticsearch.client.Requests.searchRequest;
-import static org.elasticsearch.index.query.FilterBuilders.termsFilter;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.factorFunction;
-import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource;
+import static org.elasticsearch.index.query.QueryBuilders.*
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
+import org.grails.plugins.elasticsearch.ElasticSearchService
 
 import us.wearecurio.model.OAuthAccount
 
@@ -77,7 +59,10 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	def elasticSearchHelper
 
 	@Before
-	void setUp() {
+	void setUp() {		
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
 		elasticSearchHelper.withElasticSearch{ client ->
 			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
 			client.admin().indices().prepareRefresh().execute().actionGet()
@@ -102,6 +87,8 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		testGroup = UserGroup.create("group", "Curious Group", "Discussion topics for test users",
 				[isReadOnly:false, defaultNotify:false])
 		testGroup.addWriter(user)
+		
+		elasticSearchService.index()
 	}
 	
 	@After
@@ -112,9 +99,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getSprintsList"()
 	{
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-
 		def sprint = Sprint.create(new Date(), user, "Test getSprintsList", Model.Visibility.PUBLIC)
 		Utils.save(sprint, true)
 		
@@ -134,9 +118,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getSprintsList with offset and max"()
 	{
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-
 		def sprint1 = Sprint.create(currentTime + 1, user, "Test getSprintsList 1", Model.Visibility.PUBLIC)
 		def sprint2 = Sprint.create(currentTime, user, "Test getSprintsList 2", Model.Visibility.PUBLIC)
 		Utils.save(sprint1, true)
@@ -178,9 +159,9 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getPeopleList"()
 	{
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
 		def result = searchService.getPeopleList(user, 0, 10)
 		
 		assert result
@@ -195,9 +176,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 	@Test
 	void "Test getPeopleList with offset and max"()
 	{
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-		
 		def params = [username:'third', sex:'F', \
 			name:'third third', email:'third@third.com', birthdate:'01/01/1990', \
 			password:'third', action:'doregister', \
@@ -258,9 +236,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1", currentTime + 2)
 		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2", currentTime + 3)
 		
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-		
 		Utils.save(discussionReadByUser, true)
 		Utils.save(discussionNotReadByUser, true)
 		
@@ -275,6 +250,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Map result = searchService.getDiscussionsList(user, 0, 10)
 		assert result
 		assert result.success
+		assert result.listItems
 		assert result.listItems.userId == user.id
 		assert result.listItems.totalDiscussionCount == 1
 		//groupMemberships should return 1 row.
@@ -322,8 +298,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		
 		System.out.println "discussion1.created: " + discussion1.created
 		System.out.println "discussion2.created: " + discussion2.created
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
 		
 		Utils.save(discussion1, true)
 		Utils.save(discussion2, true)
@@ -339,6 +313,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Map result = searchService.getDiscussionsList(user, 0, 10)
 		assert result
 		assert result.success
+		assert result.listItems
 		assert result.listItems.userId == user.id
 		assert result.listItems.totalDiscussionCount == 2
 		assert result.listItems.groupMemberships
@@ -362,6 +337,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		result = searchService.getDiscussionsList(user, 0, 1)
 		assert result
 		assert result.success
+		assert result.listItems
 		assert result.listItems.userId == user.id
 		assert result.listItems.totalDiscussionCount == 2
 		assert result.listItems.groupMemberships
@@ -385,6 +361,7 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		result = searchService.getDiscussionsList(user, 1, 1)
 		assert result
 		assert result.success
+		assert result.listItems
 		assert result.listItems.userId == user.id
 		assert result.listItems.totalDiscussionCount == 2
 		assert result.listItems.groupMemberships
@@ -421,9 +398,6 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Discussion discussionNotReadByUser = Discussion.create(user2, "groupB discussion", groupB, currentTime + 1)
 		DiscussionPost readByUser1 = discussionReadByUser.createPost(user, "readByUser1", currentTime + 2)
 		DiscussionPost readByUser2 = discussionReadByUser.createPost(user, "readByUser2", currentTime + 3)
-		
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
 		
 		Utils.save(discussionReadByUser, true)
 		Utils.save(discussionNotReadByUser, true)

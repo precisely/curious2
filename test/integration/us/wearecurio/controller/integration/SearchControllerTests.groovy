@@ -12,6 +12,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.SearchService
 
+import static org.elasticsearch.index.query.QueryBuilders.*
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
 
@@ -25,9 +26,18 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	ElasticSearchService elasticSearchService
 	def searchService
 	ElasticSearchAdminService elasticSearchAdminService
+	def elasticSearchHelper
 	
 	@Before
 	void setUp() {
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+		elasticSearchHelper.withElasticSearch{ client ->
+			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
+			client.admin().indices().prepareRefresh().execute().actionGet()
+		}
+		
 		super.setUp()
 
 		controller = new SearchController()
@@ -44,14 +54,11 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		params.put("birthdate", "12/1/1991")
 
 		user2 = User.create(params)
-		
-		Utils.save(user2, true)
 
 		params.put("username", "testuser3")
 		params.put("email", "test3@test.com")
 
 		user3 = User.create(params)
-		Utils.save(user3, true)
 		
 		Date now = new Date()
 		
@@ -121,6 +128,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 		controller.indexData()
 
+		println "json.listItems after index: " + controller.response.json.listItems.toString()
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
 		assert (controller.response.json.listItems[0].id == user2.id && controller.response.json.listItems[1].id == user3.id) || \
@@ -133,12 +141,6 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["type"] = "discussions"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
-
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-
-		elasticSearchService.index()
-		Thread.sleep(2000)
 
 		controller.indexData()
 
@@ -176,14 +178,15 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		assert searchService
-		searchService.elasticSearchService = elasticSearchService
-
-        elasticSearchService.index()
-        Thread.sleep(2000)
-
 		controller.indexData()
 
+		println ""
+		for( def i : controller.response.json.listItems) {
+			println ""
+			println i.toString()
+		}
+		println ""
+		
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 7
 		assert controller.response.json.listItems[0].id == sprint3.id ||

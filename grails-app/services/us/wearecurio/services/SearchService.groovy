@@ -235,10 +235,27 @@ class SearchService {
 	}
 	
 	Map getPeopleList(User user, int offset, int max) {
-		List usersList = User.getUsersList(max, offset, user.id)
-		if (usersList) {
-			return [listItems: usersList, success: true]
+		try {
+			def results = User.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
+				bool {
+					must {
+						query_string(query: "virtual:false")
+					}
+					must_not {
+						ids(values: [user.id.toString()])
+					}
+				}
+			}
+			
+			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
+				return [listItems: false, success: true]
+			}
+			
+			return [listItems: results.searchResults, success: true]
+		
+		} catch (RuntimeException e) {
+			log.debug(e.message)
+			return [istItems: false, success: false]
 		}
-		return [listItems: false, success: true]
 	}
 }

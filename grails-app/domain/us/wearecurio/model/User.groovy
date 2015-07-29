@@ -117,7 +117,7 @@ class User {
 
 	public static User createVirtual() {
 		log.debug "User.createVirtual()"
-
+		
 		User user = new User()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 		user.created = new Date()
