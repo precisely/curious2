@@ -317,6 +317,7 @@ function nextQuestion() {
 function skipQuestions() {
 	createHelpEntry(function() {
 		$('#helpWizardOverlay').modal('toggle');
+		window.location.href = '/home/index'
 	});
 }
 
