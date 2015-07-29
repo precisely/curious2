@@ -137,8 +137,8 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService
 
-		def sprint1 = Sprint.create(currentTime, user, "Test getSprintsList 1", Model.Visibility.PUBLIC)
-		def sprint2 = Sprint.create(currentTime + 1, user, "Test getSprintsList 2", Model.Visibility.PUBLIC)
+		def sprint1 = Sprint.create(currentTime + 1, user, "Test getSprintsList 1", Model.Visibility.PUBLIC)
+		def sprint2 = Sprint.create(currentTime, user, "Test getSprintsList 2", Model.Visibility.PUBLIC)
 		Utils.save(sprint1, true)
 		Utils.save(sprint2, true)
 		

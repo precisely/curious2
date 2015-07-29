@@ -38,7 +38,6 @@ class User {
 	Date created
 	Long virtualUserGroupId
 	
-	static transients = [ 'name', 'site' ]
 	static constraints = {
 		username(maxSize:70, unique:true)
 		// This needs to be uncommented after migrations have run on all the systems

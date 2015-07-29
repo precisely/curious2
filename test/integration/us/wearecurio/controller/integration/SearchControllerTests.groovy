@@ -11,6 +11,8 @@ import us.wearecurio.model.*
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.SearchService
+
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
 
 class SearchControllerTests extends CuriousControllerTestCase {
@@ -22,7 +24,8 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	
 	ElasticSearchService elasticSearchService
 	def searchService
-
+	ElasticSearchAdminService elasticSearchAdminService
+	
 	@Before
 	void setUp() {
 		super.setUp()
@@ -61,6 +64,9 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		Utils.save(discussion1, true)
 		discussion2 = Discussion.create(user, "Discussion2 name")
 		Utils.save(discussion2, true)
+		
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 	}
 
 	@After

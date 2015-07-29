@@ -174,9 +174,9 @@ class Sprint {
 	static Sprint create(Date now, User user, String name, Visibility visibility) {
 		log.debug "Sprint.create() userId:" + user?.getId() + ", name:" + name
 		return Sprint.withTransaction {
-			def sprint = new Sprint(user, name, visibility)
+			def sprint = new Sprint(now, user, name, visibility)
 			Utils.save(sprint, true)
-			UserActivity.create(new Date(), user.id, UserActivity.SPRINT_BIT | UserActivity.CREATE_ID, sprint.id)
+			UserActivity.create(now, user.id, UserActivity.SPRINT_BIT | UserActivity.CREATE_ID, sprint.id)
 			return sprint
 		}
 	}
@@ -201,11 +201,11 @@ class Sprint {
 		return this.name + " Tracking Sprint"
 	}
 	
-	Sprint(User user, String name, Visibility visibility) {
+	Sprint(Date now, User user, String name, Visibility visibility) {
 		this.userId = user?.getId()
 		this.name = name
 		this.hash = new DefaultHashIDGenerator().generate(12)
-		this.created = new Date()
+		this.created = now
 		this.updated = this.created
 		this.visibility = visibility
 		String uniqueId = UUID.randomUUID().toString()
