@@ -15,6 +15,7 @@ import org.elasticsearch.search.sort.*
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 
+
 class SearchService {
 	
 	def elasticSearchService
@@ -31,231 +32,205 @@ class SearchService {
 	static SearchService get() {
 		service
 	}
-	
-	// params has the structure:
-	// [ key:[offset:<offset>, max:<max>], ... ]
-	//
-	// returns:
-	// [ key:[<json description of item>, ... ], ... ]
-	
-	def list(Long userId, String searchString, Map params) {
-		def retVal = [:]
-		for (e in params) {
-			String k = e.key
-			Map v = e.value
-			int offset = v['offset']
-			int max = v['max']
-			
-			def results
-			
-			if (k.equals('discussions')) {
-				retVal[k] = this.listDiscussions(searchString, offset, max)
-			} else if (k.equals('users')) {
-				retVal[k] = this.listUsers(searchString, offset, max)
-			} else if (k.equals('sprints')) {
-				retVal[k] = this.listSprints(searchString, offset, max)
-			} else if (k.equals('groups')) {
-				// not searching groups for now
-				// retVal[k] = this.listGroups(searchString, offset, max)
-			}
-		}
-	}
-	
-	def listDiscussions(User user, String searchString, int offset, int max) {
 		
-	}
-	
-	def listUsers(User user, String searchString, int offset, int max) {
-		
-	}
-	
-	def listSprints(User user, String searchString, int offset, int max) {
-		
-	}
-	
-	def listGroups(User user, String searchString, int offset, int max) {
-		
-	}
-	
 	Map getSprintsList(User user, int offset, int max) {
-		List sprintList = Sprint.getSprintListForUser(user.id, max, offset)
-		if (!sprintList) {
-			return [listItems: false, success: true]
+		try {
+						
+			def results = Sprint.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
+				query_string(query:  "userId:" + user.id)
+			}
+	
+			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
+				return [listItems: false, success: true]
+			}
+			
+			Map model = [sprintList: results.searchResults]
+			return [listItems: model, success: true]
+			
+		} catch (RuntimeException e) {
+			log.debug(e.message)
+			return [istItems: false, success: false]
 		}
-		Map model = [sprintList: sprintList]
-		return [listItems: model, success: true]
 	}
 	
 	Map getDiscussionsList(User user, int offset, int max, def groupIds = null) {
-		def userReaderGroups = UserGroup.getGroupsForReader(user)
-		if (userReaderGroups == null || userReaderGroups.size() < 1) {
-			return [listItems: false, success: false]
-		}
-		
-		String groupIdsOr = userReaderGroups.collect{ it[0].id }.findAll{ groupIds == null ? true : it in groupIds }.join(" OR ")
-		if (userReaderGroups.size() > 1) {
-			groupIdsOr = "(" + groupIdsOr + ")"
-		}
-		
-		def totalDiscussionCount = 0
-		elasticSearchHelper.withElasticSearch{ client ->
-			CountResponse cr = client
-					.prepareCount("us.wearecurio.model_v0")
-					.setTypes("discussion")
-					.setQuery(queryString("groupIds:" + groupIdsOr))
-					.execute()
-					.actionGet()
+		try {
+			def userReaderGroups = UserGroup.getGroupsForReader(user)
+			if (userReaderGroups == null || userReaderGroups.size() < 1) {
+				return [listItems: false, success: false]
+			}
 			
-			totalDiscussionCount = cr.count
-		}
-		
-		def createdSort = SortBuilders.fieldSort("created").order(SortOrder.DESC)
-		
-		def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', size: max.toString(), from: offset.toString(), sort: createdSort) {
-			query_string(query:  "groupIds:" + groupIdsOr)
-		}
-		
-		if (readerGroupDiscussions.searchResults == null || readerGroupDiscussions.searchResults.size() < 1) {
-			return [listItems: false, success: false]
-		}
-		
-		String discussionIdsOr = readerGroupDiscussions.searchResults.collect{ it.id }.join(" OR ")
-		if (discussionIdsOr.size() > 1) discussionIdsOr = "(" + discussionIdsOr + ")"
-		
-		def adminGroupIds = user.getAdminGroupIds()
-		
-		elasticSearchHelper.withElasticSearch{ client ->
-			SearchResponse sr = client
-					.prepareSearch("us.wearecurio.model_v0")
-					.setTypes("discussionPost")
-					.setQuery(
-					boolQuery()
-					.must(
-					queryString("discussionId:" + discussionIdsOr)
-					)
-					)
-					.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
-					.addAggregation(
-					AggregationBuilders
-					.terms("by_discussionId")
-					.field("discussionId")
-					.subAggregation(
-					AggregationBuilders
-					.topHits("top_hits")
-					.setSize(2)  // number of post documents to show PER discussion id
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-					)
-					)
-					.execute()
-					.actionGet()
+			String groupIdsOr = userReaderGroups.collect{ it[0].id }.findAll{ groupIds == null ? true : it in groupIds }.join(" OR ")
+			if (userReaderGroups.size() > 1) {
+				groupIdsOr = "(" + groupIdsOr + ")"
+			}
 			
-			Map model = [
-				userId: user.id,
-				groupMemberships: userReaderGroups,
-				totalDiscussionCount: totalDiscussionCount,
-				discussionList: [],
-				discussionPostData: [:]
-			]
+			def totalDiscussionCount = 0
+			elasticSearchHelper.withElasticSearch{ client ->
+				CountResponse cr = client
+						.prepareCount("us.wearecurio.model_v0")
+						.setTypes("discussion")
+						.setQuery(queryString("groupIds:" + groupIdsOr))
+						.execute()
+						.actionGet()
+				
+				totalDiscussionCount = cr.count
+			}
 			
-			for (def d : readerGroupDiscussions.searchResults ) {
-				System.out.println "readerGroupDiscussion: " + d.toString()
-				model["discussionList"] << [
-					id: d.id,
-					hash: d.hash,
-					name: d.name,
-					userId: d.userId,
-					isPublic: d.isPublic(),
-					created: d.created,
-					updated: d.updated,
-					type: "dis"
+			if (totalDiscussionCount < 1) {
+				return [listItems: false, success: true]
+			}
+			
+			def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
+				query_string(query:  "groupIds:" + groupIdsOr)
+			}
+			
+			if (readerGroupDiscussions == null || readerGroupDiscussions.searchResults == null || readerGroupDiscussions.searchResults.size() < 1) {
+				return [listItems: false, success: false]
+			}
+			
+			String discussionIdsOr = readerGroupDiscussions.searchResults.collect{ it.id }.join(" OR ")
+			if (discussionIdsOr.size() > 1) discussionIdsOr = "(" + discussionIdsOr + ")"
+			
+			def adminGroupIds = user.getAdminGroupIds()
+			
+			elasticSearchHelper.withElasticSearch{ client ->
+				SearchResponse sr = client
+						.prepareSearch("us.wearecurio.model_v0")
+						.setTypes("discussionPost")
+						.setQuery(
+						boolQuery()
+						.must(
+						queryString("discussionId:" + discussionIdsOr)
+						)
+						)
+						.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
+						.addAggregation(
+						AggregationBuilders
+						.terms("by_discussionId")
+						.field("discussionId")
+						.subAggregation(
+						AggregationBuilders
+						.topHits("top_hits")
+						.setSize(2)  // number of post documents to show PER discussion id
+						.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
+						)
+						)
+						.execute()
+						.actionGet()
+				
+				Map model = [
+					userId: user.id,
+					groupMemberships: userReaderGroups,
+					totalDiscussionCount: totalDiscussionCount,
+					discussionList: [],
+					discussionPostData: [:]
 				]
 				
-				def discussionItem = model["discussionList"].find{ it.id == d.id}
-				
-				def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == d.id.toString() }
-				def firstPost
-				if (bucket) {
-					def secondPost
-					def hits = bucket.getAggregations().get("top_hits").getHits().getHits()
-					if (hits.size() < 1 || hits.size() > 2 || (d.firstPostId == null || hits[0].id != d.firstPostId.toString())) {
-						//should always have either 1 or 2 hits in agg list
-						//first hit should always match first postid of this discussion
+				for (def d : readerGroupDiscussions.searchResults ) {
+					System.out.println "readerGroupDiscussion: " + d.toString()
+					model["discussionList"] << [
+						id: d.id,
+						hash: d.hash,
+						name: d.name,
+						userId: d.userId,
+						isPublic: d.isPublic(),
+						created: d.created,
+						updated: d.updated,
+						type: "dis"
+					]
+					
+					def discussionItem = model["discussionList"].find{ it.id == d.id}
+					
+					def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == d.id.toString() }
+					def firstPost
+					if (bucket) {
+						def secondPost
+						def hits = bucket.getAggregations().get("top_hits").getHits().getHits()
+						if (hits.size() < 1 || hits.size() > 2 || (d.firstPostId == null || hits[0].id != d.firstPostId.toString())) {
+							//should always have either 1 or 2 hits in agg list
+							//first hit should always match first postid of this discussion
+							return [listItems: false, success: false] // better to throw exception?
+						}
+						
+						firstPost = hits[0].getSource()
+						if (hits.size() > 1 ) {
+							secondPost = hits[1].getSource()
+						}
+						
+						model["discussionPostData"][d.id] = [
+							secondPost: secondPost,
+							totalPosts: bucket.docCount
+						]
+						discussionItem["totalComments"] = bucket.docCount
+					} else {
+						model["discussionPostData"][d.id] = [
+							secondPost: null,
+							totalPosts: 0
+						]
+						discussionItem["totalComments"] = 0
+					}
+					
+					if (firstPost) {
+						discussionItem["isPlot"] = (firstPost.plotDataId != null && firstPost.plotDataId > 0)
+						discussionItem["firstPost"] = firstPost
+					}
+					
+					//eventually, this code will need to be refactored to account for discussions with multiple groups
+					//for now, arbitrarily grab first group for which user is an admin and which is associated with this discussion
+					//if user is not admin of any group associated with this discussion, then arbitrarily select first group associated with this discussion.
+					//def groupIds = d.groupIds
+					if (d.groupIds == null || d.groupIds.length < 1) {
+						//all discussions should have at least one group
 						return [listItems: false, success: false] // better to throw exception?
 					}
 					
-					firstPost = hits[0].getSource()
-					if (hits.size() > 1 ) {
-						secondPost = hits[1].getSource()
-					}
-					
-					model["discussionPostData"][d.id] = [
-						secondPost: secondPost,
-						totalPosts: bucket.docCount
-					]
-					discussionItem["totalComments"] = bucket.docCount
-				} else {
-					model["discussionPostData"][d.id] = [
-						secondPost: null,
-						totalPosts: 0
-					]
-					discussionItem["totalComments"] = 0
-				}
-				
-				if (firstPost) {
-					discussionItem["isPlot"] = (firstPost.plotDataId != null && firstPost.plotDataId > 0)
-					discussionItem["firstPost"] = firstPost
-				}
-				
-				//eventually, this code will need to be refactored to account for discussions with multiple groups
-				//for now, arbitrarily grab first group for which user is an admin and which is associated with this discussion
-				//if user is not admin of any group associated with this discussion, then arbitrarily select first group associated with this discussion.
-				//def groupIds = d.groupIds
-				if (d.groupIds == null || d.groupIds.length < 1) {
-					//all discussions should have at least one group
-					return [listItems: false, success: false] // better to throw exception?
-				}
-				
-				discussionItem["isAdmin"] = (d.userId == user.id)
-				boolean firstGroup = true
-				Long anyGid = null
-				String anyGName = null
-				for (Long gid : d.groupIds) {
-					//NOT ALL of discussion's groups are necessarily included in userReaderGroups
-					//BUT at least ONE of the discussion's groupIds MUST be, use first non-hidden user group
-					def groups = userReaderGroups.find{ it[0].id == gid }
-					if (groups && groups.length > 0) {
-						UserGroup group = groups[0]
-						anyGid = gid
-						anyGName = group.fullName
-						if (firstGroup && (!group.isHidden)) {
-							//use first group data, unless admin group is found further down in the list.
-							discussionItem["groupId"] = gid
-							discussionItem["groupName"] = group.fullName
-							if (model["discussionList"].find{ it.id == d.id}["isAdmin"]) {
-								break //admin already true, so no need to continue
-							}
-							firstGroup = false
-						}
-						if (d.userId == user.id || (adminGroupIds != null && adminGroupIds.contains(gid))) {
-							//found first admin group
-							if (!firstGroup) {
-								//override first group data with current, non-first-group-but-first-admin-group data
+					discussionItem["isAdmin"] = (d.userId == user.id)
+					boolean firstGroup = true
+					Long anyGid = null
+					String anyGName = null
+					for (Long gid : d.groupIds) {
+						//NOT ALL of discussion's groups are necessarily included in userReaderGroups
+						//BUT at least ONE of the discussion's groupIds MUST be, use first non-hidden user group
+						def groups = userReaderGroups.find{ it[0].id == gid }
+						if (groups && groups.length > 0) {
+							UserGroup group = groups[0]
+							anyGid = gid
+							anyGName = group.fullName
+							if (firstGroup && (!group.isHidden)) {
+								//use first group data, unless admin group is found further down in the list.
 								discussionItem["groupId"] = gid
-								discussionItem["groupName"] = groups[0].fullName
+								discussionItem["groupName"] = group.fullName
+								if (model["discussionList"].find{ it.id == d.id}["isAdmin"]) {
+									break //admin already true, so no need to continue
+								}
+								firstGroup = false
 							}
-							discussionItem["isAdmin"] = true
-							break // found admin, so no need to proceed
+							if (d.userId == user.id || (adminGroupIds != null && adminGroupIds.contains(gid))) {
+								//found first admin group
+								if (!firstGroup) {
+									//override first group data with current, non-first-group-but-first-admin-group data
+									discussionItem["groupId"] = gid
+									discussionItem["groupName"] = groups[0].fullName
+								}
+								discussionItem["isAdmin"] = true
+								break // found admin, so no need to proceed
+							}
 						}
 					}
+					// make sure at least one group ID and name are set for discussion even if they are hidden/user-virtual
+					if (!discussionItem["groupId"]) {
+						discussionItem["groupId"] = anyGid
+						discussionItem['groupName'] = anyGName
+					}
 				}
-				// make sure at least one group ID and name are set for discussion even if they are hidden/user-virtual
-				if (!discussionItem["groupId"]) {
-					discussionItem["groupId"] = anyGid
-					discussionItem['groupName'] = anyGName
-				}
+				
+				return [listItems: model, success: true]
 			}
-			
-			return [listItems: model, success: true]
+		
+		} catch (RuntimeException e) {
+			log.debug(e.message)
+			return [istItems: false, success: false]
 		}
 	}
 	

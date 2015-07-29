@@ -94,36 +94,6 @@ class SearchController extends LoginController {
 		}
 	}
 
-	def listData() {
-		debug "SearchController.listData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		debug "Trying to load list of search results " + user.getId()
-
-		def c = PlotData.createCriteria()
-
-		def entries = c {
-			eq("userId", user.getId())
-			not {
-				eq("isSnapshot", true)
-			}
-			order("created", "asc")
-		}
-
-		for (entry in entries) {
-			debug "Found " + entry
-		}
-
-		renderJSONGet(Utils.listJSONDesc(entries))
-	}
-
 	def savePlotData() {
 		debug "DataController.savePlotData() params:" + params
 
@@ -236,31 +206,6 @@ class SearchController extends LoginController {
 		}
 
 		renderJSONGet(Utils.listJSONDesc(entries))
-	}
-
-	def listDiscussionData() {
-		debug "DataController.listDiscussionData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		params.max = params.max ?: 10
-		params.offset = params.offset ?: 0
-
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
-
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, params)
-
-		debug "Found $discussionData"
-
-		renderJSONGet(discussionData)
 	}
 
 	def listCommentData(String discussionHash) {

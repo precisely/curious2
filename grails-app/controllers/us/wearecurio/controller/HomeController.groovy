@@ -670,28 +670,18 @@ class HomeController extends DataController {
 				}
 			}
 
-			List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-			debug "Trying to load list of discussions for " + user.getId() + " and list:" + groupMemberships.dump()
-
-			Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-					userId ? UserGroup.getDiscussionsInfoForUser(user, false, true, params) :
-					UserGroup.getDiscussionsInfoForUser(user, true, false, params)
-
 			log.debug("HomeController.social: User has read memberships for :" + groupMemberships.dump())
 
-			model = [prefs: user.getPreferences(), userId: user.getId(), templateVer: urlService.template(request), offset: offset,
-				groupMemberships: groupMemberships, associatedGroups: associatedGroups, groupName: groupName, groupFullname: groupFullname,
-				discussionList: discussionData["dataList"], discussionPostData: discussionData["discussionPostData"], totalDiscussionCount: discussionData["totalCount"]]
-
-			if (request.xhr) {
-				if (!model.discussionList) {
-					// render false if there are no more discussions to show.
-					renderJSONGet([listItems: false])
-				} else {
-					renderJSONGet([listItems: model])
-				}
-				return
-			}
+			model = [
+				prefs: user.getPreferences(), 
+				userId: user.getId(), 
+				templateVer: urlService.template(request), 
+				offset: offset,
+				groupMemberships: groupMemberships, 
+				associatedGroups: associatedGroups, 
+				groupName: groupName, 
+				groupFullname: groupFullname
+				]
 		}
 
 		model

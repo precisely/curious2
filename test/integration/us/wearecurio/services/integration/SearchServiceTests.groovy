@@ -53,6 +53,7 @@ import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.GroupMemberReader
+import us.wearecurio.model.Sprint
 import us.wearecurio.services.SearchService
 import grails.test.mixin.integration.Integration
 import org.springframework.transaction.annotation.*
@@ -108,6 +109,139 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 	
+	@Test
+	void "Test getSprintsList"()
+	{
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+		def sprint = Sprint.create(new Date(), user, "Test getSprintsList", Model.Visibility.PUBLIC)
+		Utils.save(sprint, true)
+		
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		Map result = searchService.getSprintsList(user, 0, 10)
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.sprintList
+		assert result.listItems.sprintList.size() == 1
+		assert result.listItems.sprintList[0].id == sprint.id
+		assert result.listItems.sprintList[0].name == sprint.name
+	}
+
+	@Test
+	void "Test getSprintsList with offset and max"()
+	{
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+		def sprint1 = Sprint.create(currentTime, user, "Test getSprintsList 1", Model.Visibility.PUBLIC)
+		def sprint2 = Sprint.create(currentTime + 1, user, "Test getSprintsList 2", Model.Visibility.PUBLIC)
+		Utils.save(sprint1, true)
+		Utils.save(sprint2, true)
+		
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		Map result = searchService.getSprintsList(user, 0, 10)
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.sprintList
+		assert result.listItems.sprintList.size() == 2
+		assert result.listItems.sprintList[0].id == sprint1.id
+		assert result.listItems.sprintList[0].name == sprint1.name
+		assert result.listItems.sprintList[1].id == sprint2.id
+		assert result.listItems.sprintList[1].name == sprint2.name
+		
+		result = searchService.getSprintsList(user, 0, 1)
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.sprintList
+		assert result.listItems.sprintList.size() == 1
+		assert result.listItems.sprintList[0].id == sprint1.id
+		assert result.listItems.sprintList[0].name == sprint1.name
+
+		result = searchService.getSprintsList(user, 1, 1)
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.sprintList
+		assert result.listItems.sprintList.size() == 1
+		assert result.listItems.sprintList[0].id == sprint2.id
+		assert result.listItems.sprintList[0].name == sprint2.name
+	}
+
+	@Test
+	void "Test getPeopleList"()
+	{
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+
+		def result = searchService.getPeopleList(user, 0, 10)
+		
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.size() == 1
+		assert result.listItems[0].id == user2.id
+		assert result.listItems[0].username == user2.username
+		assert result.listItems[0].name == user2.name
+	}
+	
+	@Test
+	void "Test getPeopleList with offset and max"()
+	{
+		assert searchService
+		searchService.elasticSearchService = elasticSearchService
+		
+		def params = [username:'third', sex:'F', \
+			name:'third third', email:'third@third.com', birthdate:'01/01/1990', \
+			password:'third', action:'doregister', \
+			controller:'home']
+
+		def user3 = User.create(params)
+
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		def result = searchService.getPeopleList(user, 0, 10)
+		
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.size() == 2
+		assert result.listItems.find{ u -> u.id == user2.id } 
+		assert result.listItems.find{ u -> u.id == user2.id }.username == user2.username
+		assert result.listItems.find{ u -> u.id == user2.id }.name == user2.name
+		assert result.listItems.find{ u -> u.id == user3.id }
+		assert result.listItems.find{ u -> u.id == user3.id }.username == user3.username
+		assert result.listItems.find{ u -> u.id == user3.id }.name == user3.name
+
+		result = searchService.getPeopleList(user, 0, 1)
+		
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.size() == 1
+		assert (result.listItems.find{ u -> u.id == user2.id } || result.listItems.find{ u -> u.id == user3.id })
+		assert (result.listItems.find{ u -> u.username == user2.username } || result.listItems.find{ u -> u.username == user3.username })
+		assert (result.listItems.find{ u -> u.name == user2.name } || result.listItems.find{ u -> u.name == user3.name })
+
+		result = searchService.getPeopleList(user, 1, 1)
+		
+		assert result
+		assert result.success
+		assert result.listItems
+		assert result.listItems.size() == 1
+		assert (result.listItems.find{ u -> u.id == user2.id } || result.listItems.find{ u -> u.id == user3.id })
+		assert (result.listItems.find{ u -> u.username == user2.username } || result.listItems.find{ u -> u.username == user3.username })
+		assert (result.listItems.find{ u -> u.name == user2.name } || result.listItems.find{ u -> u.name == user3.name })
+	}
+
 	@Test
 	void "Test getDiscussionsList"()
 	{
@@ -186,6 +320,8 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		Discussion discussion1 = Discussion.create(user, "discussion 1", group, currentTime)
 		Discussion discussion2 = Discussion.create(user, "discussion 2", group, currentTime + 1)
 		
+		System.out.println "discussion1.created: " + discussion1.created
+		System.out.println "discussion2.created: " + discussion2.created
 		assert searchService
 		searchService.elasticSearchService = elasticSearchService
 		
@@ -213,40 +349,17 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
 		assert result.listItems.discussionList
 		assert result.listItems.discussionList.size() == 2
-		assert result.listItems.discussionList[0].id == discussion1.id
-		assert result.listItems.discussionList[0].name == discussion1.name
-		assert result.listItems.discussionList[0].userId == discussion1.userId
-		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
+		assert result.listItems.discussionList[0].id == discussion2.id
+		assert result.listItems.discussionList[0].name == discussion2.name
+		assert result.listItems.discussionList[0].userId == discussion2.userId
+		assert result.listItems.discussionList[0].isPublic == discussion2.isPublic()
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion2.created)
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
 		assert result.listItems.discussionList[0].type == "dis"
-		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
+		assert result.listItems.discussionPostData[discussion2.id].totalPosts == 0
 		
 		//limit max to 1, no offset
 		result = searchService.getDiscussionsList(user, 0, 1)
-		assert result
-		assert result.success
-		assert result.listItems.userId == user.id
-		assert result.listItems.totalDiscussionCount == 2
-		assert result.listItems.groupMemberships
-		assert result.listItems.groupMemberships.size() == 2
-		assert result.listItems.groupMemberships[1][0].id == group.id
-		assert result.listItems.groupMemberships[1][0].name == group.name
-		assert result.listItems.groupMemberships[1][0].fullName == group.fullName
-		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
-		assert result.listItems.discussionList
-		assert result.listItems.discussionList.size() == 1
-		assert result.listItems.discussionList[0].id == discussion1.id
-		assert result.listItems.discussionList[0].name == discussion1.name
-		assert result.listItems.discussionList[0].userId == discussion1.userId
-		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
-		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
-		assert result.listItems.discussionList[0].type == "dis"
-		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
-		
-		//limit max to 1, offset to second item (index=1)
-		result = searchService.getDiscussionsList(user, 1, 1)
 		assert result
 		assert result.success
 		assert result.listItems.userId == user.id
@@ -267,6 +380,29 @@ class SearchServiceTests extends CuriousServiceTestCase {
 		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
 		assert result.listItems.discussionList[0].type == "dis"
 		assert result.listItems.discussionPostData[discussion2.id].totalPosts == 0
+		
+		//limit max to 1, offset to second item (index=1)
+		result = searchService.getDiscussionsList(user, 1, 1)
+		assert result
+		assert result.success
+		assert result.listItems.userId == user.id
+		assert result.listItems.totalDiscussionCount == 2
+		assert result.listItems.groupMemberships
+		assert result.listItems.groupMemberships.size() == 2
+		assert result.listItems.groupMemberships[1][0].id == group.id
+		assert result.listItems.groupMemberships[1][0].name == group.name
+		assert result.listItems.groupMemberships[1][0].fullName == group.fullName
+		assert Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
+		assert result.listItems.discussionList
+		assert result.listItems.discussionList.size() == 1
+		assert result.listItems.discussionList[0].id == discussion1.id
+		assert result.listItems.discussionList[0].name == discussion1.name
+		assert result.listItems.discussionList[0].userId == discussion1.userId
+		assert result.listItems.discussionList[0].isPublic == discussion1.isPublic()
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
+		assert Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
+		assert result.listItems.discussionList[0].type == "dis"
+		assert result.listItems.discussionPostData[discussion1.id].totalPosts == 0
 	}
 	
 	@Test
