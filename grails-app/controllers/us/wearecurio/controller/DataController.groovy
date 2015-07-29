@@ -611,8 +611,17 @@ class DataController extends LoginController {
 			return
 		}
 
+		if (session.registrationSuccessful) {
+			session.registrationSuccessful = false
+		}
+
+
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
+		if (params.text == "") {
+			renderJSONGet([listEntries(userId, params.timeZoneName, baseDate, currentTime)])
+			return
+		}
 		
 		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
 				params.defaultToNow == '1' ? true : false)
@@ -1230,7 +1239,10 @@ class DataController extends LoginController {
 		log.debug "entries recieved is: $entries"
 
 		if (!entries) {
-			renderJSONPost([success: false, message: g.message(code: "all.questions.blank")])
+			if (session.registrationSuccessful) {
+				session.registrationSuccessful = false
+			}
+			renderJSONPost([success: true])
 			return
 		}
 		
@@ -1240,7 +1252,7 @@ class DataController extends LoginController {
 			// Iterating over all the entries received and creating entries for them
 			entries.any({
 				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
-					it.value, params.baseDate, false)
+					it.value, params.baseDate, true)
 				if (!result[0]) {
 					operationSuccess = false
 					messageCode = "not.saved.message"

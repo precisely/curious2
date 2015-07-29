@@ -13,8 +13,8 @@ function supportsLocalStorage() {
 }
 
 /*
- * Logout callbacks; register callbacks to be called when user logs out
- */
+* Logout callbacks; register callbacks to be called when user logs out
+*/
 var _logoutCallbacks = [];
 
 var _loginSessionNumber = 0;
@@ -49,41 +49,49 @@ $(document).ready(function() {
 });
 
 /*
- * Add universal startsWith method to all String classes
- */
+* Add universal startsWith method to all String classes
+*/
 String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
 String.prototype.endsWith = function (str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
 
-/* 
- * This function will capitalize first letter of a String
- * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+/**
+ * Universal indexOf method to get index by passing regex as argument
  */
+String.prototype.indexOfRegex = function(regex){
+	var match = this.match(regex);
+	return match ? this.indexOf(match[0]) : -1;
+}
+
+/* 
+* This function will capitalize first letter of a String
+* Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+*/
 String.prototype.capitalizeFirstLetter = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 /*
- * Simple, clean Javascript inheritance scheme
- * 
- * Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
- * 
- * Usage:
- * 
- * function Person(age) {
- * 	this.age = age;
- * }
- * 
- * function Fireman(age, station) {
- * 	Person.call(this, age);
- * 	this.station = station;
- * }
- * inherit(Fireman, Person);
- * 
- * var fireman = new Fireman(35, 1001);
- * assert(fireman.age == 35);
- * 
- * 
- */
+* Simple, clean Javascript inheritance scheme
+* 
+* Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
+* 
+* Usage:
+* 
+* function Person(age) {
+* 	this.age = age;
+* }
+* 
+* function Fireman(age, station) {
+* 	Person.call(this, age);
+* 	this.station = station;
+* }
+* inherit(Fireman, Person);
+* 
+* var fireman = new Fireman(35, 1001);
+* assert(fireman.age == 35);
+* 
+* 
+*/
 function inherit(subclass, superclass) {
 	function TempClass() {}
 	TempClass.prototype = superclass.prototype;
@@ -93,13 +101,13 @@ function inherit(subclass, superclass) {
 }
 
 /*
- * Low-level utility methods
- */
+* Low-level utility methods
+*/
 function arrayEmpty(arr) {
 	for (var i in arr) {
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -114,7 +122,7 @@ function removeElem(arr, elem) {
 function getSearchParams() {
 	var vars = {};
 	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
-			function(m,key,value) {
+	function(m,key,value) {
 		vars[key] = value;
 	}
 	);
@@ -122,9 +130,9 @@ function getSearchParams() {
 }
 
 /*
- * This method will return javascript object by mapping form input fields as name: value
- * See this for reference: http://stackoverflow.com/a/17784656/4395233
- */
+* This method will return javascript object by mapping form input fields as name: value
+* See this for reference: http://stackoverflow.com/a/17784656/4395233
+*/
 jQuery.fn.serializeObject = function() {
 	var params = {};
 	$(this).serializeArray().map(function(x) {params[x.name] = x.value;});
@@ -132,15 +140,15 @@ jQuery.fn.serializeObject = function() {
 }
 
 /*
- * Number/date formatting
- */
+* Number/date formatting
+*/
 function isNumeric(str) {
 	var chars = "0123456789.+-";
 
 	for (i = 0; i < str.length; i++)
 		if (chars.indexOf(str.charAt(i)) == -1)
 			return false;
-	return true;
+		return true;
 }
 
 function dateToTime(date) {
@@ -197,18 +205,18 @@ function dateToTimeStr(d, shortForm) {
 		hour = 12;
 	if (hour > 12)
 		hour = hour - 12;
-	
+
 	var min = d.getMinutes();
-	
+
 	if (shortForm && min == 0) {
 		return hour + ap;
 	}
-	
+
 	min = min + "";
-	
+
 	if (min.length == 1)
 		min = "0" + min;
-	
+
 	return hour + ":" + min + ap;
 }
 
@@ -362,12 +370,12 @@ App.CSRF.SyncTokenKeyName = "SYNCHRONIZER_TOKEN"; // From org.codehaus.groovy.gr
 App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_URI
 
 /**
- * A method which returns an string representation of an url containing parameters
- * related to CSRF prevention. This is useful to concate url in any url string of ajax call,
- * @param key unique string which is passed in jqCSRFToken tag to create token.
- * @param prefix any string to append before generated url like: <b>&</b>.
- * @returns string representation of CSRF parameters.
- */
+* A method which returns an string representation of an url containing parameters
+* related to CSRF prevention. This is useful to concate url in any url string of ajax call,
+* @param key unique string which is passed in jqCSRFToken tag to create token.
+* @param prefix any string to append before generated url like: <b>&</b>.
+* @returns string representation of CSRF parameters.
+*/
 function getCSRFPreventionURI(key) {
 	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
 	if(App.CSRF[key] == undefined) {
@@ -377,13 +385,13 @@ function getCSRFPreventionURI(key) {
 }
 
 /**
- * A method which returns an object containing key & its token based on given key.
- * This is useful to be easily passed in some jQuery methods like <b>getJSON</b>,
- * which accepts parameters to be passed as Object.
- * @param key unique string which is passed in jqCSRFToken tag to create token.
- * @param data optional object to attach to new object using jQuery's extend method.
- * @returns the object containing parameters for CSRF prevention.
- */
+* A method which returns an object containing key & its token based on given key.
+* This is useful to be easily passed in some jQuery methods like <b>getJSON</b>,
+* which accepts parameters to be passed as Object.
+* @param key unique string which is passed in jqCSRFToken tag to create token.
+* @param data optional object to attach to new object using jQuery's extend method.
+* @returns the object containing parameters for CSRF prevention.
+*/
 function getCSRFPreventionObject(key, data) {
 	var CSRFPreventionObject = new Object();
 	if(App.CSRF[key]) {

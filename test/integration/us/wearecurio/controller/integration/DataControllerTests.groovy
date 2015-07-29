@@ -777,15 +777,15 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createHelpEntriesData when no entries are passed in params"() {
 		controller.session.userId = user.getId()
+		controller.session.registrationSuccessful = true
 		controller.params['entry'] = [0: '', 1: '']
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
 		
 		controller.createHelpEntriesData()
-		assert controller.response.json.success == false
-		assert controller.response.json.message == messageSource.getMessage("all.questions.blank",
-				[] as Object[], null)
+		assert controller.response.json.success
+		assert !controller.session.registrationSuccessful
 	}
 
 	@Test

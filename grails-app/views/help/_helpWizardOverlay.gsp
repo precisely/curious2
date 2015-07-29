@@ -3,7 +3,6 @@
 		<div class="modal-content">
 			<div id="help-carousel-content" class="carousel slide"
 					data-ride="carousel" data-interval="false" data-wrap="false">
-				<form id="helpWizardForm">
 					<div class="modal-body">
 						<div class="alert alert-danger hide" id="help-alert" role="alert">
 							Some error has occurred while performing the operation.
@@ -21,49 +20,55 @@
 								</h3>
 								<input type="text" id="sleep-hour"
 										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
-								<h4 class="entry-label">To track this, enter: <span id="sleep-entry-label"></span></h4>
+								<h4 class="entry-label"><span id="sleep-entry-label"></span></h4>
 								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
-							<div class="item range-box">
+							<div class="item mood">
 								<h3 class="questions">How's your mood right now?</h3>
-								<input type="range" id="mood-range" min="1" max="10" 
-										value="5" onchange="setMood()" /> 
-								<label class="good-day">
-									Oh dear,<br>what a day.
-								</label> 
-								<label class="calm-day">
-									Pretty calm, even-keeled.
-								</label> 
-								<label class="super-day">
-									Super stocked, cheerful frame of mind.
-								</label>
-								<h4 class="entry-label">To track this, enter: <span id="mood-entry-label">mood 5</span></h4>
-								<input type="hidden" name="entry.1" id="mood-entry" value="mood 5"/>
+								<p>
+									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Oh dear, what a day'<br>
+									5 would mean 'Pretty calm, even-keeled'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
+								</p>
+								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter a number from 1 to 10"/> 
+								<h4 class="entry-label"><span id="mood-entry-label"></span></h4>
+								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
 
 							<div class="item">
 								<h3 class="questions">Have you exercised today?</h3>
-								<label for="cardio">
-									CARDIO
-								</label>
-								<input type="text" class="exercise-details" name="entry.2" id="cardio"
-										placeholder="e.g. running 45 minutes, zumba 60 min" /> 
-								<label for="resistance">
-									RESISTANCE
-								</label>
-								<input type="text" class="exercise-details" name="entry.3" id="resistance"
-										placeholder="e.g. weight lifting 2  hrs" />
-								<label for="stretch">
-									STRETCH
-								</label>
-								<input type="text" class="exercise-details" name="entry.4" id="stretch"
-										placeholder="e.g. 90 mins bikram yoga" />
-								<label for="metabolic">
-									METABOLIC TRAINING
-								</label>
-								<input type="text" class="exercise-details" name="entry.5" id="metabolic"
-										placeholder="e.g. crossfit 1 hour 15 min" />
+								<form id="helpWizardExerciseForm">
+									<label for="cardio">
+										CARDIO
+									</label>
+									<input type="text" class="exercise-details" name="entry.2" id="cardio"
+											placeholder="e.g. running 45 minutes, zumba 60 min" /> 
+									<label for="resistance">
+										RESISTANCE
+									</label>
+									<input type="text" class="exercise-details" name="entry.3" id="resistance"
+											placeholder="e.g. weight lifting 2  hrs" />
+									<label for="stretch">
+										STRETCH
+									</label>
+									<input type="text" class="exercise-details" name="entry.4" id="stretch"
+											placeholder="e.g. 90 mins bikram yoga" />
+									<label for="metabolic">
+										METABOLIC TRAINING
+									</label>
+									<input type="text" class="exercise-details" name="entry.5" id="metabolic"
+											placeholder="e.g. crossfit 1 hour 15 min" />
+									<input type="hidden" name="currentTime" id="current-time-input" />
+									<input type="hidden" name="baseDate" id="base-date-input" />
+									<input type="hidden" name="timeZoneName" id="time-zone-name-input" />
+								</form>
+							</div>
+							<div class="item get-started">
+								<h3 class="questions">Now, get started tracking on your own!</h3>
+								<h4>
+									On the next screen, we'll put you on the calender day July 7, 2015.<br>
+									Track by entering tags and numbers in the input field at the top of the screen.<br><br>
+								</h4>
 							</div>
 						</div>
 						<br>
@@ -73,19 +78,14 @@
 								role="button" data-slide="prev"> 
 							<span>Back</span>
 						</a>
-						<a class="right-carousel-control" href="#help-carousel-content"
-								role="button" onclick="skipToNextQuestion()">
-							<span>Skip Questions</span>
+						<a class="right-carousel-control" href="#help-carousel-content" role="button" onclick="skipQuestions()">
+							<span>Skip Rest of Tutorial</span>
 						</a>
 					</div>
 					<div class="modal-footer">
 						<div class="wait-form-submit waiting-icon" hidden="true"></div>
 						<button class="next-question" onclick="nextQuestion()">ADD</button>
 					</div>
-					<input type="hidden" name="currentTime" id="current-time-input" />
-					<input type="hidden" name="baseDate" id="base-date-input" />
-					<input type="hidden" name="timeZoneName" id="time-zone-name-input" />
-				</form>
 			</div>
 		</div>
 		<!-- /.modal-content -->
