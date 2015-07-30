@@ -251,7 +251,7 @@ class SearchService {
 				return [listItems: false, success: true]
 			}
 			
-			return [listItems: results.searchResults, success: true]
+			return [listItems: results.searchResults*.getPeopleJSONDesc(), success: true]
 		
 		} catch (RuntimeException e) {
 			log.debug(e.message)
