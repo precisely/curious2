@@ -133,6 +133,8 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.listItems.size() == 2
 		assert (controller.response.json.listItems[0].id == user2.id && controller.response.json.listItems[1].id == user3.id) || \
 				(controller.response.json.listItems[0].id == user3.id && controller.response.json.listItems[1].id == user2.id)
+		assert controller.response.json.listItems[0].type == "usr"
+		assert controller.response.json.listItems[1].type == "usr"
 	}
 
 	@Test
@@ -150,6 +152,8 @@ class SearchControllerTests extends CuriousControllerTestCase {
 				controller.response.json.listItems["discussionList"][0].id == discussion1.id
 		assert controller.response.json.listItems["discussionList"][1].id == discussion2.id ||
 				controller.response.json.listItems["discussionList"][1].id == discussion1.id
+		assert controller.response.json.listItems["discussionList"][0].type == "dis"
+		assert controller.response.json.listItems["discussionList"][1].type == "dis"
 	}
 
 	@Test
@@ -169,6 +173,9 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.listItems.sprintList[1].id == sprint1.id ||
 				controller.response.json.listItems.sprintList[1].id == sprint2.id ||
 				controller.response.json.listItems.sprintList[1].id == sprint3.id
+		assert controller.response.json.listItems.sprintList[0].type == "spr"
+		assert controller.response.json.listItems.sprintList[1].type == "spr"
+		assert controller.response.json.listItems.sprintList[2].type == "spr"
 	}
 
 	@Test

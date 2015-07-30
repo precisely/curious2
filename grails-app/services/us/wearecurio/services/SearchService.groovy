@@ -44,7 +44,7 @@ class SearchService {
 				return [listItems: false, success: true]
 			}
 			
-			Map model = [sprintList: results.searchResults]
+			Map model = [sprintList: results.searchResults*.getJSONDesc()]
 			return [listItems: model, success: true]
 			
 		} catch (RuntimeException e) {
