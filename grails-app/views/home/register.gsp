@@ -43,7 +43,7 @@
 
                     <div class="form-group">
                         <label for="username"
-                            class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Username*:</label>
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Social username*:</label>
                         <input class="form-control" type="text" name="username" id="username"
                             value="${fieldValue(bean:flash.user,field:'username')}" />
                     </div>
