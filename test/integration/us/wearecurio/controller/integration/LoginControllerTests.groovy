@@ -329,6 +329,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll([
 			username:'q',
 			email:'q@q.com',
+			confirm_email: 'q@q.com',
 			password:'q',
 			name:'q q',
 			sex:'F',
@@ -377,6 +378,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll([
 			username:'q',
 			email:'q@q.com',
+			confirm_email: 'q@q.com',
 			password:'q',
 			name:'q q',
 			sex:'F'
@@ -387,6 +389,27 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.startsWith('{"success":true')
 	}
 
+	@Test
+	void "test doregisterData when email and confirm email fields are different"() {
+		LoginController controller = new LoginController()
+		
+		controller.session.userId = null
+		
+		controller.params.clear()
+		controller.params.putAll([
+			username:'q',
+			email:'q@q.com',
+			confirm_email: 'qq@q.com',
+			password:'q',
+			name:'q q',
+			sex:'F'
+		])
+		
+		controller.doregisterData()
+		
+		assert !controller.response.json.success
+		assert controller.response.json.message == "Email and confirm email fields do not match"
+	}
 	@Test
 	void testDoregisterDataNoUsername() {
 		LoginController controller = new LoginController()
@@ -402,6 +425,31 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		controller.doregisterData()
 		
 		assert controller.response.contentAsString.startsWith('{"success":false')
+	}
+
+	@Test
+	void testDoregisterDifferentEmailIds() {
+		LoginController controller = new LoginController()
+		
+		controller.session.userId = null
+		
+		controller.params.clear()
+		controller.params.putAll([
+			username: 'q',
+			email: 'q@q.com',
+			confirm_email: 'qq@q.com',
+			password: 'q',
+			name: 'q q',
+			sex:' F',
+			groups: "['curious','announce']"
+		])
+		
+		controller.doregister()
+		
+		def rU = controller.response.redirectedUrl
+		
+		assert controller.flash.message == "Error registering user - email and confirm email fields have different values"
+		assert rU.endsWith('/login/register')
 	}
 
 	@Test

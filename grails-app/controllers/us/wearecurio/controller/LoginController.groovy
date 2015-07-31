@@ -299,6 +299,7 @@ class LoginController extends SessionController {
 	protected static final int REGISTER_ERROR_USER_ALREADY_EXISTS = 1
 	protected static final int REGISTER_MISSING_FIELDS = 2
 	protected static final int REGISTER_DUPLICATE_EMAIL = 3
+	protected static final int REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT = 4
 	
 	protected def execRegister(params) {
 		def retVal = [:]
@@ -330,6 +331,11 @@ class LoginController extends SessionController {
 		
 		if (User.findByEmailAndVirtual(p.email, false) != null) {
 			retVal['errorCode'] = REGISTER_DUPLICATE_EMAIL
+			return retVal
+		}
+		
+		if (!(p.email.equals(p.confirm_email))) {
+			retVal['errorCode'] = REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT
 			return retVal
 		}
 
@@ -406,6 +412,10 @@ class LoginController extends SessionController {
 			flash.message = "Error registering user - email address already registered"
 			flash.user = retVal['user']
 			redirect(url:toUrl(action:"register"))
+		} else if (retVal['errorCode'] == REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT) {
+			flash.message = "Error registering user - email and confirm email fields have different values"
+			flash.user = retVal['user']
+			redirect(url: toUrl(action: "register"))
 		} else {
 			flash.message = "Error registering user - try different values"
 			flash.user = retVal['user']
@@ -437,6 +447,8 @@ class LoginController extends SessionController {
 			renderJSONPost([success:false, message:"All fields are required."])
 		} else if (retVal['errorCode'] == REGISTER_DUPLICATE_EMAIL) {
 			renderJSONPost([success:false, message:"Email '" + params.email + "' already in use"])
+		} else if (retVal['errorCode'] == REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT) {
+			renderJSONPost([success:false, message:"Email and confirm email fields do not match"])
 		} else {
 			renderJSONPost([success:false, message:"Error registering user. Try different values."])
 		}
