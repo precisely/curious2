@@ -507,6 +507,23 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "test set discussion name"() {
+		Discussion discussion = setUpForCommentPage()
+
+		controller.session.userId = userId
+		controller.params.callback = 'callback'
+		controller.params.discussionHash = discussion.hash
+		controller.params.name = "foo"
+		
+		// Test pagination with second page
+		controller.setDiscussionNameData()
+		String contentAsString = controller.response.contentAsString
+
+		assert contentAsString == "callback('success')"
+		assert discussion.name == "foo"
+	}
+
+	@Test
 	void testLoadPlotDataId() {
 		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
 

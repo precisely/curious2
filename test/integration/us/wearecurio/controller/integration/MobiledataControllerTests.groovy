@@ -112,6 +112,7 @@ class MobiledataControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll([
 			username:'q',
 			email:'q@q.com',
+			confirm_email:'q@q.com',
 			password:'q',
 			groups:"['curious','announce']"
 		])

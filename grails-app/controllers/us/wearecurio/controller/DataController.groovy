@@ -1137,7 +1137,7 @@ class DataController extends LoginController {
 
 		debug "Trying to set discussion name " + params.name
 
-		def discussion = Discussion.findByHash(Long.valueOf(params.discussionHash))
+		def discussion = Discussion.findByHash(params.discussionHash)
 
 		if (discussion == null) {
 			renderStringGet('No such discussion hash ' + params.discussionHash)
