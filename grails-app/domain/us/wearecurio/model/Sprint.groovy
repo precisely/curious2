@@ -80,7 +80,7 @@ class Sprint {
 	}
 	
 	static searchable = {
-		only = [ 'userId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
+		only = [ 'hash', 'userId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
 	}
 	
 	static Sprint create(User user) {
@@ -418,7 +418,7 @@ class Sprint {
 			totalTags: this.getEntriesCount(),
 			virtualUserId: this.virtualUserId,
 			virtualGroupId: this.virtualGroupId,
-			virtualGroupName: this.fetchUserGroup().name,
+			virtualGroupName: this.fetchUserGroup()?.name,
 			created: this.created,
 			updated: this.updated,
 			type: "spr"

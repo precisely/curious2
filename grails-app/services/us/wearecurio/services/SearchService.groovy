@@ -49,7 +49,7 @@ class SearchService {
 			
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 	
@@ -231,7 +231,7 @@ class SearchService {
 		
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 	
@@ -256,7 +256,7 @@ class SearchService {
 		
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 }
