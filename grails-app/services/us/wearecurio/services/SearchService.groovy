@@ -49,7 +49,7 @@ class SearchService {
 			
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 	
@@ -134,6 +134,7 @@ class SearchService {
 						hash: d.hash,
 						name: d.name,
 						userId: d.userId,
+						userName: User.get(d.userId).username,
 						isPublic: d.isPublic(),
 						created: d.created,
 						updated: d.updated,
@@ -230,7 +231,7 @@ class SearchService {
 		
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 	
@@ -255,7 +256,7 @@ class SearchService {
 		
 		} catch (RuntimeException e) {
 			log.debug(e.message)
-			return [istItems: false, success: false]
+			return [listItems: false, success: false]
 		}
 	}
 }

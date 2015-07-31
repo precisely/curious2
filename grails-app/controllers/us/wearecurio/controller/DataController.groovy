@@ -1164,7 +1164,7 @@ class DataController extends LoginController {
 
 		debug "Trying to delete discussion data " + params.hash
 
-		def discussion = Discussion.findByHash(Long.valueOf(params.hash))
+		def discussion = Discussion.findByHash(params.hash)
 
 		if (discussion == null) {
 			renderStringGet('No such discussion hash ' + params.hash)
