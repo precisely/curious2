@@ -67,7 +67,7 @@ class User {
 	}
 
 	static searchable = {
-		only = ['username', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
+		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
 	}
 
 	SortedSet interestTags
