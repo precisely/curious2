@@ -4,8 +4,8 @@
 <link type="text/css" href="/css/bootstrap/bootstrap.min.css"
     rel="stylesheet">
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
-<script type="text/javascript" src="/js/jquery/jquery.validate.js"></script>
-<script type="text/javascript" src="/js/jquery/signupForm.js"></script>
+<script type="text/javascript" src="/js/jquery/jquery.validate.min.js"></script>
+<script type="text/javascript" src="/js/jquery/signup.form.js"></script>
 </head>
 </head>
 <body>
@@ -43,21 +43,21 @@
 
                     <div class="form-group">
                         <label for="username"
-                            class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Social username*:</label>
-                        <input class="form-control" type="text" name="username" id="username"
+                            class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Social Username*:</label>
+                        <input class="form-control" type="text" name="username" id="username" required
                             value="${fieldValue(bean:flash.user,field:'username')}" />
                     </div>
 
                     <div class="form-group">
                         <label for="password"
                             class="registerlabel ${flash.user?.hasErrors() ? 'registererror':''}">Password*:</label>
-                        <input class="form-control"  type="password" name="password" id="password" value="" />
+                        <input class="form-control"  type="password" name="password" id="password" value="" required/>
                     </div>
 
                     <div class="form-group">
                         <label for="email"
                             class="registerlabel ${hasErrors(bean:flash.user,field:'email','registererror')}">Email*:</label>
-                        <input class="form-control" type="email" name="email" id="email"
+                        <input class="form-control" type="email" name="email" id="email" required
                             value="${fieldValue(bean:flash.user,field:'email')}" />
                     </div>
 
