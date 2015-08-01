@@ -64,11 +64,11 @@ class TagValueStats {
 		
 		if (startDate == null) {
 			minMax = DatabaseService.get().sqlRows(
-					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
+					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
 					[tagId:tagId, userId:userId, ghostBit:RepeatType.GHOST_BIT])
 		} else {
 			minMax = DatabaseService.get().sqlRows(
-					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
+					"select min(entry.amount) as minAmount, max(entry.amount) as maxAmount, entry.units as units from entry where entry.tag_id = :tagId and entry.user_id = :userId and entry.date IS NOT NULL and (entry.date >= :startDate) and entry.amount IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) and entry.amount is not null group by units",
 					[tagId:tagId, userId:userId, startDate:startDate, ghostBit:RepeatType.GHOST_BIT])
 		}
 
