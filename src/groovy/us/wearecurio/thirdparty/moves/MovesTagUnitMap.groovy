@@ -2,7 +2,7 @@ package us.wearecurio.thirdparty.moves
 
 import java.util.Map;
 
-import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.DurationType
 
 import us.wearecurio.thirdparty.TagUnitMap
 

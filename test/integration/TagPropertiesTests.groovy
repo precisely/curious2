@@ -7,6 +7,7 @@ import us.wearecurio.model.TagProperties
 import us.wearecurio.model.Entry
 import us.wearecurio.model.User
 import us.wearecurio.model.Tag
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 
@@ -16,6 +17,8 @@ import grails.test.mixin.*
 
 class TagPropertiesTests extends CuriousUserTestCase {
 	static transactional = true
+	
+	EntryParserService entryParserService
 	
 	DateFormat dateFormat
 	Date baseDate
@@ -42,9 +45,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testDefaultValueOfIsManuallySet() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -62,9 +65,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testPercentEntriesWith3Values() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -79,9 +82,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testPercentEntriesWith2Values() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -96,9 +99,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testPercentEntriesWith1Value() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -113,9 +116,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testPercentEntriesWith0Values() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -164,9 +167,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testClassifyAsEventSetByUser() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -186,9 +189,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testClassifyAsEventDeterminedByPercentOfNoValues() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "bread 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "bread", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "bread 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "bread 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "bread", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "bread 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -209,9 +212,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testClassifyAsEventDeterminedByEventWordPattern() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "head ache 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "head ache 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "head ache 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "head ache 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "head ache 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "head ache 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -232,9 +235,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testClassifyAsEventDeterminedByContinuousWordPattern() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "heart rate 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "heart rate 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "heart rate 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "heart rate 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -255,9 +258,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 
 	@Test
 	void testSetContinuous() {
-		def parsedEntry1 = Entry.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "heart rate 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "heart rate 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "heart rate 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "heart rate 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "heart rate 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)
@@ -285,9 +288,9 @@ class TagPropertiesTests extends CuriousUserTestCase {
 	void testClassifyAsEventDeterminedByDefaultValue() {
 		// Series that have values and not in the list of word patterns are
 		//	classified as CONTINUOUS by default.
-		def parsedEntry1 = Entry.parse(time1, timeZone, "foobar 0.0", baseDate, true)
-		def parsedEntry2 = Entry.parse(time2, timeZone, "foobar 42", baseDate, true)
-		def parsedEntry3 = Entry.parse(time3, timeZone, "foobar 500", baseDate, true)
+		def parsedEntry1 = entryParserService.parse(time1, timeZone, "foobar 0.0", baseDate, true)
+		def parsedEntry2 = entryParserService.parse(time2, timeZone, "foobar 42", baseDate, true)
+		def parsedEntry3 = entryParserService.parse(time3, timeZone, "foobar 500", baseDate, true)
 		EntryStats stats = new EntryStats(userId)
 		def entry1 = Entry.create(userId, parsedEntry1, stats)
 		def entry2 = Entry.create(userId, parsedEntry2, stats)

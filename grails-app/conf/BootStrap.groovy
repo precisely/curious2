@@ -22,9 +22,9 @@ class BootStrap {
 	DatabaseService databaseService
 	EmailService emailService
 	AnalyticsService analyticsService
-	EntryService entryService
 	SecurityService securityService
 	SearchService searchService
+	EntryParserService entryParserService
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
@@ -32,10 +32,10 @@ class BootStrap {
 
 		DatabaseService.set(databaseService)
 		EmailService.set(emailService)
-		EntryService.set(entryService)
 		SecurityService.set(securityService)
 		SearchService.set(searchService)
-
+		EntryParserService.set(entryParserService)
+		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )

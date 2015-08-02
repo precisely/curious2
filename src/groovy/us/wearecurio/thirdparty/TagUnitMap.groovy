@@ -9,7 +9,6 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
-import us.wearecurio.model.Entry.ParseAmount
 import us.wearecurio.services.*
 import us.wearecurio.units.UnitGroupMap
 

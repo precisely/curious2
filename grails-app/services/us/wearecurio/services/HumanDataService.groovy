@@ -25,7 +25,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
-import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.DurationType
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 import us.wearecurio.utility.Utils
 

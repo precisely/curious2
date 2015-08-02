@@ -2,8 +2,7 @@ package us.wearecurio.model
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.List;
-import java.util.Map;
+import java.util.List
 
 import org.apache.commons.logging.LogFactory
 import grails.gorm.DetachedCriteria
@@ -311,7 +310,7 @@ class User {
 	}
 	
 	def addMetaTag(def tag, def value) {
-		return Entry.create(getId(), Entry.parseMeta(tag + ' ' + value), null);
+		return Entry.create(getId(), EntryParserService.get().parseMeta(tag + ' ' + value), null);
 	}
 	
 	def static lookupMetaTag(def tag, def value) {

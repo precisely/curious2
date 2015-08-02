@@ -11,6 +11,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.TagGroup
 import us.wearecurio.model.TagExclusion
 import us.wearecurio.model.WildcardTagGroup
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 
 class WildcardTagGroupTests extends CuriousTestCase {
@@ -19,6 +20,8 @@ class WildcardTagGroupTests extends CuriousTestCase {
 	Entry entry1, entry2, entry3, entry4, entry5, entry6, entry7
 
 	WildcardTagGroup wildcardTagGroupInstance1, wildcardTagGroupInstance2
+	
+	EntryParserService entryParserService
 
 	@Before
 	void setUp() {
@@ -38,13 +41,13 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		
 		EntryStats stats = new EntryStats(userId)
 
-		entry1 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag1.description, baseDate, true), stats)
-		entry2 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag2.description, baseDate, true), stats)
-		entry3 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag3.description, baseDate, true), stats)
-		entry4 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag4.description, baseDate, true), stats)
-		entry5 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag5.description, baseDate, true), stats)
-		entry6 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag6.description, baseDate, true), stats)
-		entry7 = Entry.create(userId, Entry.parse(currentTime, timeZone, tag7.description, baseDate, true), stats)
+		entry1 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag1.description, baseDate, true), stats)
+		entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag2.description, baseDate, true), stats)
+		entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag3.description, baseDate, true), stats)
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag4.description, baseDate, true), stats)
+		entry5 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag5.description, baseDate, true), stats)
+		entry6 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag6.description, baseDate, true), stats)
+		entry7 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag7.description, baseDate, true), stats)
 
 		wildcardTagGroupInstance1 = TagGroup.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
 		wildcardTagGroupInstance2 = TagGroup.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)

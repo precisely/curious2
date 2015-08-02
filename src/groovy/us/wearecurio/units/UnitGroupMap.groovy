@@ -2,9 +2,10 @@ package us.wearecurio.units
 
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.model.*
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.parse.PatternScanner
 
-import java.util.HashSet;
+import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -895,7 +896,7 @@ class UnitGroupMap {
 		else
 			suffix = units
 			
-		if (Entry.bloodPressureTags.contains(baseTag.getDescription())) {
+		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
 			if (suffix) {
 				if (suffix.equals("[pressure]")) {
 					if (index == 0) suffix = "[systolic]"
@@ -922,7 +923,7 @@ class UnitGroupMap {
 		else
 			suffix = units
 		
-		if (Entry.bloodPressureTags.contains(baseTag.getDescription())) {
+		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
 			if (suffix) {
 				if (suffix.equals("[pressure]")) {
 					if (index == 0) suffix = "[systolic]"

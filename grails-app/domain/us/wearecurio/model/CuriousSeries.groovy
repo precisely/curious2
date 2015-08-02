@@ -2,7 +2,6 @@ package us.wearecurio.model
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Stats
-import us.wearecurio.services.EntryService
 
 class CuriousSeries {
 	// This class is mainly to massage and normalize Tag or TagGroup entries into a form that is
@@ -11,7 +10,6 @@ class CuriousSeries {
 	// If it's a duration entry, it will sum multiple values on a given day.
 	// Another example of what this class can do is take multiple tags can combine them into a
 	//	single series in a reasonable way.
-	private static def entryService = new EntryService()
 
 	static mapping = {
 		version false
@@ -130,7 +128,7 @@ class CuriousSeries {
 	}
 
 	public static CuriousSeries create(tag, userId) {
-		def entries = CuriousSeries.entryService.getEntriesByUserAndTag(userId, tag.description)
+		def entries = Entry.fetchByUserAndTag(userId, tag.description)
 		CuriousSeries.create(entries, Tag, tag.id, tag.description, userId)
 	}
 

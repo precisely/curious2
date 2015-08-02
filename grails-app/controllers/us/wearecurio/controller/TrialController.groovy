@@ -4,6 +4,7 @@ import grails.converters.*
 import us.wearecurio.model.*
 import us.wearecurio.exceptions.*
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.TwitterDataService
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -11,7 +12,8 @@ import java.util.SimpleTimeZone
 import org.apache.commons.logging.LogFactory
 
 class TrialController extends LoginController {
-	TwitterDataService twitterDataService;
+	TwitterDataService twitterDataService
+	EntryParserService entryParserService
 
 	private static def log = LogFactory.getLog(this)
 	
@@ -40,7 +42,7 @@ class TrialController extends LoginController {
 				'illegal attempt to access user'
 			]
 
-		def parsedEntry = Entry.parseMeta(textStr);
+		def parsedEntry = entryParserService.parseMeta(textStr);
 		def entry = Entry.create(user.getId(), parsedEntry);
 
 		println("created " + entry)
@@ -54,7 +56,7 @@ class TrialController extends LoginController {
 		if (entry.getUserId() != sessionUser().getId())
 			return null;
 
-		def m = Entry.parseMeta(textStr);
+		def m = entryParserService.parseMeta(textStr);
 
 		if (entry != null) {
 			entry.update(m, null)

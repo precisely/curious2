@@ -2,7 +2,7 @@ package us.wearecurio.thirdparty.jawbone
 
 import us.wearecurio.thirdparty.TagUnitMap
 
-import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.DurationType
 
 class JawboneTagUnitMap extends TagUnitMap {
 	

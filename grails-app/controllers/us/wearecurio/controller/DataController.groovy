@@ -18,9 +18,8 @@ import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.*
 import us.wearecurio.model.*
-import us.wearecurio.model.RepeatType
-import us.wearecurio.model.Entry.DurationType
-import us.wearecurio.model.Entry.ParseAmount
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -28,6 +27,8 @@ import us.wearecurio.utility.Utils
 class DataController extends LoginController {
 
 	def tokenService
+	EntryParserService entryParserService
+	
 	static debug(str) {
 		log.debug(str)
 	}
@@ -49,7 +50,7 @@ class DataController extends LoginController {
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
-		def parsedEntry = Entry.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
+		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
 		EntryStats stats = new EntryStats()
 		def entry = Entry.create(user.getId(), parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
@@ -100,7 +101,7 @@ class DataController extends LoginController {
 				debug "No entry activation"
 		}
 
-		def m = Entry.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
+		def m = entryParserService.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
 		if (entry != null) {
 			entry = entry.update(m, stats, baseDate, allFuture)

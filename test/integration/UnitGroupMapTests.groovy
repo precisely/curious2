@@ -11,7 +11,7 @@ import org.junit.Test
 
 import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Entry
-import us.wearecurio.model.Entry.DurationType
+import us.wearecurio.model.DurationType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
 import us.wearecurio.model.TimeZoneId

@@ -33,7 +33,8 @@ class TwitterDataService {
 	static String curiousDataToken = "297564720-I2lqE8a3zVVbQlnmAI7suLviyaVFuel9kiAyaOcZ"
 	static String curiousDataSecret = "pN2HFeBdTluBgJVDslWu7YBo2sUIxADcGFHyj9qUVo"
 
-	TwitterData twitterData;
+	TwitterData twitterData
+	EntryParserService entryParserService
 
 	def fetchTwitterData() {
 		if (twitterData == null) {
@@ -242,7 +243,7 @@ class TwitterDataService {
 				if (users == null)
 					log.debug "No user found for account " + twitterAccountName + ", skipping message"
 				else for (User user in users) {
-						def parsedEntry = Entry.parse(message.getCreatedAt(), tz, entryStr, baseDate, user.getTwitterDefaultToNow())
+						def parsedEntry = entryParserService.parse(message.getCreatedAt(), tz, entryStr, baseDate, user.getTwitterDefaultToNow())
 
 						if (parsedEntry == null) {
 							log.debug "Failed to parse tweet, skipping"
