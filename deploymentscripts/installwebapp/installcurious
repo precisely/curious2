@@ -1,0 +1,39 @@
+cd ~
+mkdir .ssh
+chmod 700 .ssh
+rm -f .ssh/authorized_keys
+cp ~/installcurious/authorized_keys ./.ssh
+chmod 400 .ssh/authorized_keys
+
+# install gvmtool and grails
+
+curl -s get.gvmtool.net | bash
+source "/home/curious/.gvm/bin/gvm-init.sh"
+gvm install grails 2.5.0
+if grep "gvm use" .bashrc >/dev/null;
+then
+	sed "s/gvm use.*/gvm use grails 2.5.0/" .bashrc > newbashrc
+	rm .bashrc
+	mv newbashrc .bashrc
+else
+	echo "gvm use grails 2.5.0">>.bashrc
+fi
+gvm use grails 2.5.0
+
+ssh-keygen -b 2048 -t rsa -f .ssh/id_rsa
+
+echo "Copy the following into GitHub as an ssh key for the curiousdeploy GitHub account"
+
+cat .ssh/id_rsa.pub
+
+read -p "Press [Enter] key to continue installing Curious app..."
+
+git clone git@github.com:syntheticzero/curious2.git
+mv curious2 curious
+chmod 750 curious
+
+mkdir ~/bin
+rm -f ~/bin/buildwar
+cp ~/installcurious/buildwar ~/bin/buildwar
+chmod +x ~/bin/buildwar
+

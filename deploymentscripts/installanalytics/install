@@ -29,6 +29,7 @@ adduser curious
 chmod o-rwx /home/curious
 mkdir /home/curious/installcurious
 mkdir /home/curious/log
+rm -f /home/curious/installcurious/install
 cp $INSTALLDIR/installcurious /home/curious/installcurious/install
 chmod 700 /home/curious/installcurious
 cp $INSTALLDIR/authorized_keys /home/curious/installcurious
@@ -48,6 +49,7 @@ alternatives --install /usr/bin/java java /opt/jdk1.8.0_51/bin/java 1
 alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_51/bin/javac 1
 alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_51/bin/jar 1
 rm -f jdk-8u51-linux-x64.tar.gz
+ln -s /opt/jdk1.8.0_51 /opt/jdk
 
 # install git
 

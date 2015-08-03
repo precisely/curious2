@@ -1,5 +1,6 @@
 cd ~
 mkdir .ssh
 chmod 700 .ssh
+rm -f .ssh/authorized_keys
 cp ~/installcurious/authorized_keys ./.ssh
 chmod 400 .ssh/authorized_keys

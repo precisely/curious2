@@ -1,0 +1,93 @@
+echo "Enter the hostname of this server, i.e., 'www.wearecurio.us'"
+
+read APPHOSTNAME
+
+cd ~
+mkdir .ssh
+chmod 700 .ssh
+INSTALLDIR=~/installwebapp
+chmod 700 $INSTALLDIR
+chmod 600 .ssh/authorized_keys
+rm -f .ssh/authorized_keys
+cp -f $INSTALLDIR/authorized_keys ./.ssh
+chmod 400 .ssh/authorized_keys
+yum -y update
+yum -y install yum-cron
+cp /usr/share/zoneinfo/UTC /etc/localtime
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+iptables -i eth1 -I INPUT -p tcp --dport 8080 -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 9200 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 9201 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 9300 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 9301 -m state --state ESTABLISHED -j ACCEPT
+service iptables save
+yum -y install lynx
+yum -y install zip
+yum -y install unzip
+
+# install java
+
+cd /opt
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz"
+tar xvf jdk-8u51-linux-x64.tar.gz
+chown -R root.root jdk1.8.0_51
+alternatives --install /usr/bin/java java /opt/jdk1.8.0_51/bin/java 1
+alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_51/bin/javac 1
+alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_51/bin/jar 1
+rm -f jdk-8u51-linux-x64.tar.gz
+ln -s /opt/jdk1.8.0_51 /opt/jdk
+
+# install git, apache
+
+yum -y install git
+yum -y install httpd
+yum -y install mod_ssl openssl
+systemctl enable httpd.service
+#echo 'Redirect / https://'$APPHOSTNAME'/home/index' > $INSTALLDIR/curious.conf
+#rm -rf /etc/httpd/conf.d/curious.conf
+#cp $INSTALLDIR/curious.conf /etc/httpd/conf.d/curious.conf
+mkdir /etc/httpd/certs
+chown root.apache /etc/httpd/certs
+rm -f /etc/httpd/certs/wearecurious.*
+chmod o-rwx ~/certs/*
+cp -rpv ~/certs/wearecurious.* /etc/httpd/certs
+chown -R root.apache /etc/httpd/certs
+rm -f /etc/httpd/conf.d/httpd-vhosts.conf
+sed "s/CURIOUSHOSTNAME/$APPHOSTNAME/g" $INSTALLDIR/httpd-vhosts.conf > /etc/httpd/conf.d/httpd-vhosts.conf
+
+# install jetty
+
+wget http://download.eclipse.org/jetty/stable-9/dist/jetty-distribution-9.3.1.v20150714.tar.gz
+rm -rf /opt/jetty
+tar zxvf jetty-distribution-9.3.1.v20150714.tar.gz -C /opt/
+mv /opt/jetty-distribution-9.3.1.v20150714 /opt/jetty
+mkdir /opt/jetty/work
+chown -R curious:curious /opt/jetty/
+ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty
+chkconfig --add jetty
+chkconfig --level 345 jetty on
+rm -f /etc/default/jetty
+cp $INSTALLDIR/etcdefaultjetty /etc/default/jetty
+mkdir /root/bin
+cp $INSTALLDIR/deploycur /root/bin
+chmod 700 /root/bin/deploycur
+
+# install curious user
+
+adduser curious
+chmod o-rwx /home/curious
+rm -f /home/curious/installcurious
+mkdir /home/curious/installcurious
+cp $INSTALLDIR/installcurious /home/curious/installcurious/install
+chmod 700 /home/curious/installcurious
+cp $INSTALLDIR/authorized_keys /home/curious/installcurious
+cp $INSTALLDIR/buildwar /home/curious/installcurious
+chown -R curious.curious /home/curious/installcurious
+chmod 500 /home/curious/installcurious/install
+su -l curious -c /home/curious/installcurious/install
+
+mkdir /home/curious/www
+chmod 750 /home/curious/www
+chown curious.apache /home/curious/www

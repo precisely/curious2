@@ -1,0 +1,13 @@
+JETTY_HOME=/opt/jetty
+JETTY_USER=curious
+JETTY_PORT=8080
+JETTY_HOST=127.0.0.1
+JETTY_LOGS=/opt/jetty/logs/
+
+JAVA_OPTIONS="-XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC -XX:MaxPermSize=256m"
+JAVA_HOME=/opt/jdk
+ANT_OPTS="-Xms128m -Xmx512m"
+GRAILS_OPTS="-server -Xmx3000M -XX:MaxPermSize=256m -Dfile.encoding=UTF-8 -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
+VISUAL=vi
+
+PATH=$PATH:/home/curious/grails/bin:/home/curious/bin:/usr/share/java/bin

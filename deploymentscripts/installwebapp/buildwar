@@ -1,0 +1,4 @@
+cd ~/curious
+git pull origin master
+grails prod clean
+grails prod war

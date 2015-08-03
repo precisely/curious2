@@ -1,0 +1,5 @@
+export LD_ASSUME_KERNEL=
+service jetty stop
+cp -rpv /home/curious/curious/target/curious2-0.1.war /opt/jetty/webapps/root.war
+service jetty start
+service httpd restart
