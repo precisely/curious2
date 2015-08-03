@@ -2112,11 +2112,11 @@ class Entry implements Comparable {
 
 		// get timed daily repeats (not ghosted)
 
-		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type & :ghostBit = 0) " \
+		String queryStr = "select entry.id " \
+				+ "from entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type & :ghostBit = 0) and (entry.repeat_type & :repeatBit <> 0) " \
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
-		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, tagIds:tagIds]
+		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.DAILY_BIT, tagIds:tagIds]
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
 		def timedResults = []

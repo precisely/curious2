@@ -11,8 +11,6 @@ dataSource {
 	//driverClassName = "org.postgresql.Driver"
 	driverClassName = "com.mysql.jdbc.Driver"
 	// IMPORTANT: If you edit these credentials, you must also edit src/clojure/analytics/profiles.clj
-	username = "curious"
-	password = "734qf7q35"
 	properties {
 		testOnBorrow = true
 		testWhileIdle = true
@@ -38,6 +36,8 @@ environments {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
 			url = "jdbc:mysql://localhost/tlb_dev?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
+			username = "curious"
+			password = "734qf7q35"
 			//url = "jdbc:postgresql:tlb"
 			//url = "jdbc:hsqldb:file:devDB;shutdown=true"
 			//loggingSql = true
@@ -48,13 +48,17 @@ environments {
 			dbCreate = "create-drop" // one of 'create', 'create-drop','update'
 			url = "jdbc:mysql://localhost/tlb_test?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
+			username = "curious"
+			password = "734qf7q35"
 		}
 	}
 	qa {
 		dataSource {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
-			url = "jdbc:mysql://localhost/tlb?zeroDateTimeBehavior=convertToNull"
+			url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
+			username = "curious"
+			// password must be set in grailsconf/LocalConfig.groovy
 		}
 	}
 	production {
@@ -62,6 +66,8 @@ environments {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
 			url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
+			username = "curious"
+			// password must be set in grailsconf/LocalConfig.groovy
 		}
 	}
 	/*

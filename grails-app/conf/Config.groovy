@@ -216,7 +216,8 @@ environments {
     }
     qa {
         grails.logging.jul.usebridge = false
-        grails.serverURL = "https://qa.wearecurio.us/"
+		// serverUrl now must be specified in grailsconf/LocalConfig.groovy
+        //grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		
 		curiousanalytics.servers = [
@@ -233,15 +234,15 @@ environments {
 		]*/
 		
 		grails.serverURLProtocol = "https"
-		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		def extConfig = System.properties.getProperty('GRAILSCONF');
+		if (!extConfig) extConfig = "~/grailsconf"
+		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
-		elasticSearch.client.mode = 'local'
-		
-		/*elasticSearch.client.mode = 'node'
+		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'127.0.0.1', port:9300],
-		]*/
+		       [host:'curiouselastic', port:9300],
+		]
 		
 		api {
 			weatherunderground {
@@ -355,9 +356,11 @@ environments {
     }
     production {
         grails.logging.jul.usebridge = false
-        grails.serverURL = "https://dev.wearecurio.us/"
+        //grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
-		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
+		def extConfig = System.properties.getProperty('GRAILSCONF');
+		if (!extConfig) extConfig = "~/grailsconf"
+		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
