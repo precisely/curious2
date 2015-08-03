@@ -308,14 +308,14 @@ function nextQuestion() {
 		window.location.href = '/home/index'
 		return true;
 	} else {
-		createHelpEntry(function() {
+		createHelpEntry(true, function() {
 			$('#help-carousel-content').carousel('next');
 		});
 	}
 }
 
 function skipQuestions() {
-	createHelpEntry(function() {
+	createHelpEntry(false, function() {
 		$('#helpWizardOverlay').modal('toggle');
 		window.location.href = '/home/index'
 	});
@@ -326,7 +326,7 @@ function isOnFeedPage() {
 	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
 }
 
-function createHelpEntry(callback) {
+function createHelpEntry(skipCallOnBlankEntry, callback) {
 	$('#helpWizardForm .next-question').hide();
 	$('#helpWizardForm .wait-form-submit').show();
 	var entryText;
@@ -342,6 +342,11 @@ function createHelpEntry(callback) {
 		}
 	}  else {
 		entryText = $('#mood-entry').val();
+	}
+
+	if (entryText == '' && skipCallOnBlankEntry) {
+		callback();
+		return false;
 	}
 
 	var now = new Date();
