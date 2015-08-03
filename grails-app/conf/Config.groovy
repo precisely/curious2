@@ -235,7 +235,7 @@ environments {
 		
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('GRAILSCONF');
-		if (!extConfig) extConfig = "~/grailsconf"
+		if (!extConfig) extConfig = "/home/curious/grailsconf"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
 		elasticSearch.client.mode = 'transport'
@@ -359,7 +359,7 @@ environments {
         //grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('GRAILSCONF');
-		if (!extConfig) extConfig = "~/grailsconf"
+		if (!extConfig) extConfig = "/home/curious/grailsconf"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
 		curiousanalytics.servers = [
