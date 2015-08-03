@@ -216,7 +216,7 @@ environments {
     }
     qa {
         grails.logging.jul.usebridge = false
-		// serverUrl now must be specified in grailsconf/LocalConfig.groovy
+		// serverUrl now must be specified in LocalConfig.groovy
         //grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		
@@ -234,9 +234,7 @@ environments {
 		]*/
 		
 		grails.serverURLProtocol = "https"
-		def extConfig = System.properties.getProperty('GRAILSCONF');
-		if (!extConfig) extConfig = "/home/curious/grailsconf"
-		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 
 		elasticSearch.client.mode = 'transport'
 		
@@ -358,9 +356,7 @@ environments {
         grails.logging.jul.usebridge = false
         //grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
-		def extConfig = System.properties.getProperty('GRAILSCONF');
-		if (!extConfig) extConfig = "/home/curious/grailsconf"
-		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
+		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 
 		curiousanalytics.servers = [
 			'http://curiousanalytics:8090',
