@@ -4,9 +4,6 @@
 			<div id="help-carousel-content" class="carousel slide"
 					data-ride="carousel" data-interval="false" data-wrap="false">
 					<div class="modal-body">
-						<div class="alert alert-danger hide" id="help-alert" role="alert">
-							Some error has occurred while performing the operation.
-						</div>
 						<!-- Wrapper for slides -->
 						<div class="carousel-inner" role="listbox">
 							<div class="item sleep active">
@@ -18,9 +15,12 @@
 								<h3 class="questions">
 									How many hours did you sleep last night?
 								</h3>
+								<div class="alert alert-danger hide help-alert" role="alert">
+									Some error has occurred while performing the operation.
+								</div>
 								<input type="text" id="sleep-hour"
 										placeholder="e.g. 8 hours 10 minutes or 8hrs 10 mins" />
-								<h4 class="entry-label"><span id="sleep-entry-label"></span></h4>
+								<h4 class="entry-label"><span id="sleep-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.0" id="sleep-hour-entry" />
 							</div>
 
@@ -30,12 +30,18 @@
 									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Oh dear, what a day'<br>
 									5 would mean 'Pretty calm, even-keeled'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
 								</p>
+								<div class="alert alert-danger hide help-alert" role="alert">
+									Some error has occurred while performing the operation.
+								</div>
 								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter a number from 1 to 10"/> 
-								<h4 class="entry-label"><span id="mood-entry-label"></span></h4>
+								<h4 class="entry-label"><span id="mood-entry-label" class="label"></span></h4>
 								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
 
 							<div class="item">
+								<div class="alert alert-danger hide help-alert" role="alert">
+									Some error has occurred while performing the operation.
+								</div>
 								<h3 class="questions">Have you exercised today?</h3>
 								<form id="helpWizardExerciseForm">
 									<label for="cardio">

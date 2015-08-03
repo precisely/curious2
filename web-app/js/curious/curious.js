@@ -180,6 +180,17 @@ $(document).ready(function() {
 		}
 	});
 
+	$('#helpWizardOverlay').on('hidden.bs.modal', function () {
+		$('#helpWizardOverlay :input').each(function (index, element) {
+			$(element).val('');
+		});
+		$('#helpWizardOverlay .label').each(function (index, element) {
+			$(element).text('');
+		});
+		$('#help-carousel-content').carousel(0);
+
+	});
+
 	$("#sleep-hour").keyup(function(event) {
 		if (event.which == 13) {
 			nextQuestion();
@@ -241,7 +252,7 @@ $(document).ready(function() {
 				enableHelpForm();
 			} else {
 				enableHelpForm();
-				showBootstrapAlert($('#help-alert'), data.message, 6000);
+				showBootstrapAlert($('.help-alert'), data.message, 4000);
 			}
 		}, function() {});
 		return false;
@@ -259,7 +270,7 @@ $(document).ready(function() {
 				$('#takeSurveyOverlay').modal('hide');
 				showAlert('Survey completed successfully.');
 			} else {
-				showBootstrapAlert($('#survey-alert'), data.message, 6000);
+				showBootstrapAlert($('#survey-alert'), data.message, 4000);
 			}
 		}, function(xhr) {
 			console.log('xhr:', xhr);
@@ -279,10 +290,11 @@ $(document).ready(function() {
 			$('.next-question').attr('type', 'button').text('NEXT (1 of 3)');
 		} else if ($('#help-carousel-content .carousel-inner .item:last').hasClass('active')) {
 			$('.next-question').attr('type', 'submit').text('FINISH');
-			$('#help-carousel-content .right-carousel-control').hide();
+			$('.right-carousel-control').hide();
+			$('.left-carousel-control').hide();
 		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(2)').hasClass('active')) {
 			$('.left-carousel-control').show();
-			$('#help-carousel-content .right-carousel-control').show();
+			$('.right-carousel-control').show();
 			$('.next-question').attr('type', 'button').text('NEXT (2 of 3)');
 		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(3)')) {
 			$('.left-carousel-control').show();
@@ -329,19 +341,25 @@ function isOnFeedPage() {
 function createHelpEntry(skipCallOnBlankEntry, callback) {
 	$('#helpWizardForm .next-question').hide();
 	$('#helpWizardForm .wait-form-submit').show();
+	var entryInputElement;
 	var entryText;
+	var entryId;
 
 	if ($('#helpWizardOverlay .carousel-inner .item:first').hasClass('active')) {
-		entryText = $('#sleep-hour-entry').val();
+		entryInputElement = $('#sleep-hour-entry');
+		entryText = entryInputElement.val();
+		entryId = entryInputElement.data('id');
 		entryText = entryText.substring(entryText.indexOfRegex(/[0-9]/g));
 		if (entryText != '' && isNaN(entryText.charAt(0))) {
-			showBootstrapAlert($('#help-alert'), "Please enter a duration such as '8 hours'", 6000);
+			showBootstrapAlert($('.help-alert'), "Please enter a duration such as '8 hours'", 4000);
 			return false;
 		} else if (entryText != '') {
 			entryText = 'sleep ' + entryText;
 		}
 	}  else {
-		entryText = $('#mood-entry').val();
+		entryInputElement = $('#mood-entry');
+		entryText = entryInputElement.val();
+		entryId = entryInputElement.data('id');
 	}
 
 	if (entryText == '' && skipCallOnBlankEntry) {
@@ -361,23 +379,30 @@ function createHelpEntry(skipCallOnBlankEntry, callback) {
 		defaultToNow: 1
 	};
 	console.log(params);
+	var actionName = 'addEntrySData';
+	if (entryId) {
+		$.extend(params, {entryId: entryId})
+		actionName = 'updateEntrySData';
+	}
+	queueJSON('Creating help entries', '/data/' + actionName + '?'+ getCSRFPreventionURI('createHelpEntriesDataCSRF') + '&callback=?', 
+		params,
+		function(data) {
+			if (!checkData(data))
+				return;
 
-	queueJSON('Creating help entries', '/data/addEntrySData?'+ getCSRFPreventionURI('createHelpEntriesDataCSRF') + '&callback=?', 
-	params,
-	function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data[0] != null) {
-			enableHelpForm();
-			//$("#helpWizardOverlay input:hidden").val('');
-			if (callback) {
-				callback();
+			if (data[0] != null) {
+				enableHelpForm();
+				if (data[3]) {
+					entryInputElement.data('id', data[3].id);
+				}
+				if (callback) {
+					callback();
+				}
+			} else {
+				enableHelpForm();
+				showBootstrapAlert($('.help-alert'), data.message, 4000);
 			}
-		} else {
-			enableHelpForm();
-			showBootstrapAlert($('#help-alert'), data.message, 6000);
-		}
 	}, function() {});
+	
 	return false;
 }
