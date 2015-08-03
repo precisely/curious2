@@ -60,7 +60,7 @@ environments {
 	production {
 		dataSource {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
-			url = "jdbc:mysql://localhost/tlb?zeroDateTimeBehavior=convertToNull"
+			url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
 		}
 	}

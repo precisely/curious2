@@ -5,23 +5,15 @@ import groovyx.net.http.Method.*
 import groovyx.net.http.ContentType.*
 import static groovyx.net.http.ContentType.URLENC
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.services.AnalyticsService
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicIntegerArray
 import java.text.SimpleDateFormat
 
 class AnalyticsTask {
-	public static def SERVERS = [
-		'http://127.0.0.1:8090',
-		'http://127.0.0.1:8091'
-	]
-
 	private static def log = LogFactory.getLog(this)
-
-	// For counting the number of ready analytics servers.
-	//	Need to use thread-safe data structures, because AsyncHTTPBuilder uses
-	//	threaads to make the HTTP requests asynchronous.
-	public static AtomicInteger numWebServersBusy = new AtomicInteger(0)
-	public static AtomicIntegerArray responses = new AtomicIntegerArray(SERVERS.size())
+	
+	static AnalyticsService analyticsService
 
 	// Possible values for status.
 	//If you make changes, make sure these match the status codes in
@@ -282,8 +274,8 @@ class AnalyticsTask {
 	public static makeHttp(baseAddr) {
 		def http = new AsyncHTTPBuilder( poolSize:5, uri: baseAddr )
 		http.handler.failure = { resp ->
-			def i = SERVERS.findIndexOf { it == baseAddr }
-			responses.set(i, fetchStatus(resp.status)	)
+			def i = analyticsService.servers.findIndexOf { it == baseAddr }
+			analyticsService.responses.set(i, fetchStatus(resp.status)	)
 			resp.status
 		}
 		http
@@ -291,13 +283,13 @@ class AnalyticsTask {
 
 	public static makeRequest(http, numServers, i) {
 		http.get( path: '/status', query: [:] ) { resp, json ->
-			responses.set(i, fetchStatus(json.state))
+			analyticsService.responses.set(i, fetchStatus(json.state))
 		}
 	}
 
 	public static makeServerList(responses) {
 		def objArr = []
-		SERVERS.eachWithIndex { server, i ->
+		analyticsService.servers.eachWithIndex { server, i ->
 			def obj =  ['url': server,
 									'status': fetchStatus2En(responses.get(i))]
 			objArr[i] = obj
@@ -306,7 +298,7 @@ class AnalyticsTask {
 	}
 
 	public static webServerStatus() {
-		if (0 == AnalyticsTask.numWebServersBusy.get()) {
+		if (0 == analyticsService.numWebServersBusy.get()) {
 			"READY"
 		} else {
 			"BUSY"
@@ -314,15 +306,15 @@ class AnalyticsTask {
 	}
 
 	public static incBusy() {
-		if (null == numWebServersBusy.get()) {
-			numWebServersBusy = new AtomicInteger()
-			numWebServersBusy.set(0)
+		if (null == analyticsService.numWebServersBusy.get()) {
+			analyticsService.numWebServersBusy = new AtomicInteger()
+			analyticsService.numWebServersBusy.set(0)
 		}
-		numWebServersBusy.getAndIncrement();
+		analyticsService.numWebServersBusy.getAndIncrement();
 	}
 
 	public static decBusy() {
-		numWebServersBusy.getAndDecrement();
+		analyticsService.numWebServersBusy.getAndDecrement();
 	}
 
 	public static pingWebServers() {
@@ -331,17 +323,17 @@ class AnalyticsTask {
 
 	public static pingAnalyticsServers() {
 		def clients = []
-		SERVERS.eachWithIndex { server, i ->
+		analyticsService.servers.eachWithIndex { server, i ->
 			clients[i] = makeHttp(server)
 		}
 
 		// Initialize response counts and response Array.
-		responses = new AtomicIntegerArray(SERVERS.size())
+		analyticsService.responses = new AtomicIntegerArray(analyticsService.servers.size())
 		def requests = []
 
 		// Make simultaneous requests to all servers.
 		clients.eachWithIndex { http, i ->
-			requests[i] = makeRequest(http, SERVERS.size(), i)
+			requests[i] = makeRequest(http, analyticsService.servers.size(), i)
 		}
 
 		requests.eachWithIndex { request, i ->
@@ -349,18 +341,18 @@ class AnalyticsTask {
 				request.get()
 			} catch(e) {
 				if (e.message =~ /refused/) {
-					responses.set(i, OFF.intValue())
+					analyticsService.responses.set(i, OFF.intValue())
 					//println "\nCould not connect to analytics server.  Maybe it's not running."
 					//println "Cause: ${e.getCause()}"
 				} else {
-					responses.set(i, ERROR.intValue())
+					analyticsService.responses.set(i, ERROR.intValue())
 					println "\nUnknown error ${e.class}"
 					println "Cause: ${e.getCause()}"
 					println "Message: ${e.message}"
 				}
 			}
 		}
-		def serverList = makeServerList(responses)
+		def serverList = makeServerList(analyticsService.responses)
 		serverList
 	}
 

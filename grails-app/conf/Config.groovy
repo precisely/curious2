@@ -159,7 +159,12 @@ environments {
         grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
-
+		
+		curiousanalytics.servers = [
+			'http://127.0.0.1:8090',
+			'http://127.0.0.1:8091'
+		]
+		
 		/*
 		elasticSearch.client.mode = 'transport'
 		
@@ -213,6 +218,11 @@ environments {
         grails.logging.jul.usebridge = false
         grails.serverURL = "https://qa.wearecurio.us/"
 		grails.serverURLProtocol = "https"
+		
+		curiousanalytics.servers = [
+			'http://curiousanalytics:8090',
+			'http://curiousanalytics:8091'
+		]
 		
 		elasticSearch.client.mode = 'local'
 		
@@ -349,13 +359,16 @@ environments {
 		grails.serverURLProtocol = "https"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 
-		elasticSearch.client.mode = 'local'
+		curiousanalytics.servers = [
+			'http://curiousanalytics:8090',
+			'http://curiousanalytics:8091'
+		]
 		
-		/*elasticSearch.client.mode = 'node'
+		elasticSearch.client.mode = 'transport'
 		
 		elasticSearch.client.hosts = [
-		       [host:'127.0.0.1', port:9300],
-		]*/
+		       [host:'curiouselastic', port:9300],
+		]
 		
 		api {
 			weatherunderground {
@@ -417,6 +430,10 @@ environments {
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
+		curiousanalytics.servers = [
+			'http://127.0.0.1:8090'
+		]
+				
 		elasticSearch.client.mode = 'local'
 		
 		api {

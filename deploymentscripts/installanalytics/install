@@ -1,0 +1,56 @@
+cd ~
+mkdir .ssh
+chmod 700 .ssh
+INSTALLDIR=~/installanalytics
+chmod 700 $INSTALLDIR
+chmod 600 .ssh/authorized_keys
+rm -f .ssh/authorized_keys
+cp -f $INSTALLDIR/authorized_keys ./.ssh
+chmod 400 .ssh/authorized_keys
+yum -y update
+yum -y install yum-cron
+cp /usr/share/zoneinfo/UTC /etc/localtime
+#iptables -i eth1 -I INPUT -p tcp --dport 80 -j ACCEPT
+#iptables -i eth1 -I INPUT -p tcp --dport 443 -j ACCEPT
+iptables -i eth1 -I INPUT -p tcp --dport 8090 -j ACCEPT
+iptables -i eth1 -I INPUT -p tcp --dport 8091 -j ACCEPT
+iptables -i eth1 -I INPUT -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 8080 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+service iptables save
+yum -y install lynx
+yum -y install zip
+yum -y install unzip
+
+# install curious user and analytics code
+
+adduser curious
+chmod o-rwx /home/curious
+mkdir /home/curious/installcurious
+mkdir /home/curious/log
+cp $INSTALLDIR/installcurious /home/curious/installcurious/install
+chmod 700 /home/curious/installcurious
+cp $INSTALLDIR/authorized_keys /home/curious/installcurious
+cp -r $INSTALLDIR/bin /home/curious/bin
+cp -r $INSTALLDIR/curious /home/curious/curious
+chown -R curious.curious /home/curious
+chmod 500 /home/curious/installcurious/install
+su - curious -c /home/curious/installcurious/install
+
+# install java
+
+cd /opt
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz"
+tar xvf jdk-8u51-linux-x64.tar.gz
+chown -R root.root jdk1.8.0_51
+alternatives --install /usr/bin/java java /opt/jdk1.8.0_51/bin/java 1
+alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_51/bin/javac 1
+alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_51/bin/jar 1
+rm -f jdk-8u51-linux-x64.tar.gz
+
+# install git
+
+yum -y install git
+
+echo "IMPORTANT: Update /etc/hosts with the local addresses for the hosts curiouswebapp and curiousdb"

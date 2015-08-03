@@ -35,6 +35,7 @@ class BootStrap {
 		SecurityService.set(securityService)
 		SearchService.set(searchService)
 		EntryParserService.set(entryParserService)
+		AnalyticsService.set(analyticsService)
 		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())

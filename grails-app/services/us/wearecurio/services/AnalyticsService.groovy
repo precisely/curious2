@@ -1,9 +1,11 @@
 package us.wearecurio.services
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
 import groovy.time.*
 import groovyx.net.http.*
 import groovyx.net.http.Method.*
-
 import us.wearecurio.model.AnalyticsTimeSeries
 import us.wearecurio.model.AnalyticsTagMembership
 import us.wearecurio.model.AnalyticsTask
@@ -21,9 +23,23 @@ import grails.util.Environment
 class AnalyticsService {
 
 	private static DEBUG = false
+	
+	static def service
+	
+	static def set(s) {
+		service = s
+		AnalyticsTask.analyticsService = s
+	}
+
+	static EmailService get() { return service }
+	
+	def grailsApplication
+	
+	def servers
 
 	private static def log = LogFactory.getLog(this)
 	static transactional = false
+	
 	//public static def LOG_FILE_NAME = "/tmp/analytics.${(new Date()).format("YYYY-MM-DD_HH:mm")}.log".toString()
 	//public static def LOG_FILE = new File( LOG_FILE_NAME )
 	//public static def log(text) {
@@ -32,6 +48,19 @@ class AnalyticsService {
 	//		writer.write( "AnalyticsService ${logline_now.format("YYYY-MM-DD_HH:mm:ss")}: ${text}\n")
 	//	})
 	//}
+	
+	// For counting the number of ready analytics servers.
+	//	Need to use thread-safe data structures, because AsyncHTTPBuilder uses
+	//	threaads to make the HTTP requests asynchronous.
+	public AtomicInteger numWebServersBusy = new AtomicInteger(0)
+	public AtomicIntegerArray responses
+
+	AnalyticsService() {
+		if (!grailsApplication)
+			grailsApplication = new org.codehaus.groovy.grails.commons.DefaultGrailsApplication()
+		servers = grailsApplication.config.curiousanalytics.servers
+		responses = new AtomicIntegerArray(servers.size())
+	}
 
 	def refreshSeriesCache(userId, tagId) {
 		AnalyticsTask.withTransaction {
