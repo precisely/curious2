@@ -234,7 +234,7 @@ environments {
 		]*/
 		
 		grails.serverURLProtocol = "https"
-		def extConfig = System.properties.getProperty('CURIOUSLOCALCONFIG');
+		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
@@ -358,7 +358,7 @@ environments {
         grails.logging.jul.usebridge = false
         //grails.serverURL = "https://dev.wearecurio.us/"
 		grails.serverURLProtocol = "https"
-		def extConfig = System.properties.getProperty('CURIOUSLOCALCONFIG');
+		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"
 		grails.config.locations = [ "file:${extConfig}/LocalConfig.groovy" ]
 
