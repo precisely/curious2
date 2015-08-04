@@ -396,6 +396,7 @@ function createHelpEntry(skipCallOnBlankEntry, callback) {
 	var actionName = 'addEntrySData';
 	if (entryId) {
 		$.extend(params, {entryId: entryId})
+		params.text += ' ' + dateToTimeStr(new Date(), false);
 		actionName = 'updateEntrySData';
 	}
 	queueJSON('Creating help entries', '/data/' + actionName + '?'+ getCSRFPreventionURI('createHelpEntriesDataCSRF') + '&callback=?', 
