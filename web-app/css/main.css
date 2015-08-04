@@ -3718,6 +3718,13 @@ body .modal-header button {
 	font-weight: 500;
 	font-size: 14px;
 }
+#helpWizardOverlay .alert-danger {
+	margin-left: 35px;
+	border: none;
+	background-color: transparent;
+	text-align: left;
+	margin-bottom: 0px;
+}
 
 #helpWizardOverlay .questions {
 	font-weight: 600;
@@ -3763,18 +3770,19 @@ body .modal-header button {
 	float: left;
 	color: #fff;
 	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 #helpWizardOverlay .right-carousel-control {
 	float: right;
 	color: #fff;
 	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 #helpWizardOverlay .modal-footer {
 	border-top: none;
 	height: 50px;
-	margin-top: 40px;
 }
 
 #helpWizardOverlay .next-question {

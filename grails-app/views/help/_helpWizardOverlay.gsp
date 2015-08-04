@@ -30,7 +30,7 @@
 									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Oh dear, what a day'<br>
 									5 would mean 'Pretty calm, even-keeled'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
 								</p>
-								<div class="alert alert-danger hide help-alert" role="alert">
+								<div class="alert alert-danger hide mood-help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
 								<input type="number" min="1" max="10" id="mood-box" placeholder="Click to enter a number from 1 to 10"/> 

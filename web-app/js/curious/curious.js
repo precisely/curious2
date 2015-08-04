@@ -187,6 +187,7 @@ $(document).ready(function() {
 		$('#helpWizardOverlay .label').each(function (index, element) {
 			$(element).text('');
 		});
+		$('#helpWizardOverlay .alert').hide();
 		$('#help-carousel-content').carousel(0);
 
 	});
@@ -199,6 +200,9 @@ $(document).ready(function() {
 			$('#sleep-entry-label').text('');
 			$('#sleep-hour-entry').val('');
 		} else {
+			if (event.which > 47 && event.which < 58) {
+				$('#helpWizardOverlay .alert').hide();
+			}
 			$('#sleep-entry-label').text('You have just tracked: \'sleep ' + $(this).val() + '\'');
 			$('#sleep-hour-entry').val('sleep ' + $(this).val());
 		}
@@ -211,9 +215,19 @@ $(document).ready(function() {
 		} else if ($(this).val() == '') {
 			$('#mood-entry-label').text('');
 			$('#mood-entry').val('');
+			if (!(event.which > 47 && event.which < 58)) {
+				showBootstrapAlert($('.mood-help-alert'), "Please enter a value between 1 and 10", 0);
+			}
 		} else {
-			$('#mood-entry-label').text('You have just tracked: \'mood ' + $(this).val() + '\'');
-			$('#mood-entry').val('mood ' + $(this).val());
+			var value = $(this).val();
+			if (value > 10) {
+				value = 10;
+			} else if (value < 0) {
+				value = 0;
+			}
+			$('#mood-entry-label').text('You have just tracked: \'mood ' + value + '\'');
+			$('#mood-entry').val('mood ' + value);
+			$('#helpWizardOverlay .alert').hide();
 		}
 	});
 
@@ -252,7 +266,7 @@ $(document).ready(function() {
 				enableHelpForm();
 			} else {
 				enableHelpForm();
-				showBootstrapAlert($('.help-alert'), data.message, 4000);
+				showBootstrapAlert($('.help-alert'), data.message, 0);
 			}
 		}, function() {});
 		return false;
@@ -351,7 +365,7 @@ function createHelpEntry(skipCallOnBlankEntry, callback) {
 		entryId = entryInputElement.data('id');
 		entryText = entryText.substring(entryText.indexOfRegex(/[0-9]/g));
 		if (entryText != '' && isNaN(entryText.charAt(0))) {
-			showBootstrapAlert($('.help-alert'), "Please enter a duration such as '8 hours'", 4000);
+			showBootstrapAlert($('.help-alert'), "Please enter a duration such as '8 hours'", 0);
 			return false;
 		} else if (entryText != '') {
 			entryText = 'sleep ' + entryText;
@@ -400,7 +414,7 @@ function createHelpEntry(skipCallOnBlankEntry, callback) {
 				}
 			} else {
 				enableHelpForm();
-				showBootstrapAlert($('.help-alert'), data.message, 4000);
+				showBootstrapAlert($('.help-alert'), data.message, 0);
 			}
 	}, function() {});
 	

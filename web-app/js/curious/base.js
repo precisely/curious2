@@ -456,7 +456,9 @@ $.datepicker._gotoToday = function(id) {
 function showBootstrapAlert($element, message, delay) {
 	delay = !delay ? 5000 : delay
 	$element.show().text(message);
-	setInterval(function() {
-		$element.hide();
-	}, delay);
+	if (delay == 0) {
+		setInterval(function() {
+			$element.hide();
+		}, delay);
+	}
 }
