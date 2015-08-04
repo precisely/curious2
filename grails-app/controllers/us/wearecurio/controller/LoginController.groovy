@@ -397,7 +397,7 @@ class LoginController extends SessionController {
 		}
 		def retVal = execRegister(params)
 		if (retVal['success']) {
-			session.registrationSuccessful = true
+			session.showHelp = true
 			redirect(url:toUrl(controller: params.precontroller ?: 'home', action: params.preaction ?: 'index'))
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			flash.message = "User " + params.username + " already exists"

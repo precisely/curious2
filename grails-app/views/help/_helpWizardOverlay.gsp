@@ -47,22 +47,22 @@
 									<label for="cardio">
 										CARDIO
 									</label>
-									<input type="text" class="exercise-details" name="entry.2" id="cardio"
+									<input type="text" class="exercise-details" name="entry" id="cardio"
 											placeholder="e.g. running 45 minutes, zumba 60 min" /> 
 									<label for="resistance">
 										RESISTANCE
 									</label>
-									<input type="text" class="exercise-details" name="entry.3" id="resistance"
+									<input type="text" class="exercise-details" name="entry" id="resistance"
 											placeholder="e.g. weight lifting 2  hrs" />
 									<label for="stretch">
 										STRETCH
 									</label>
-									<input type="text" class="exercise-details" name="entry.4" id="stretch"
+									<input type="text" class="exercise-details" name="entry" id="stretch"
 											placeholder="e.g. 90 mins bikram yoga" />
 									<label for="metabolic">
 										METABOLIC TRAINING
 									</label>
-									<input type="text" class="exercise-details" name="entry.5" id="metabolic"
+									<input type="text" class="exercise-details" name="entry" id="metabolic"
 											placeholder="e.g. crossfit 1 hour 15 min" />
 									<input type="hidden" name="currentTime" id="current-time-input" />
 									<input type="hidden" name="baseDate" id="base-date-input" />

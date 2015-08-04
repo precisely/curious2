@@ -180,6 +180,51 @@ $(document).ready(function() {
 		}
 	});
 
+	$('#surveyForm').submit(function(event) {
+		var params = $(this).serializeObject();
+
+		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
+		function(data) {
+			if (!checkData(data))
+				return;
+
+			if (data.success) {
+				$('#takeSurveyOverlay').modal('hide');
+				showAlert('Survey completed successfully.');
+			} else {
+				showBootstrapAlert($('#survey-alert'), data.message, 4000);
+			}
+		}, function(xhr) {
+			console.log('xhr:', xhr);
+			showAlert('Internal server error occurred.');
+		});
+		return false;
+	});
+
+	$('#help-carousel-content .left-carousel-control').hide();
+	$('#help-carousel-content .next-question').attr('type', 'button').text('NEXT (1 of 3)');
+	$('#help-carousel-content').on('slid.bs.carousel', '', function() {
+		var $this = $(this);
+
+		if ($('#help-carousel-content .carousel-inner .item:first').hasClass('active')) {
+			$('.left-carousel-control').hide();
+			$('#help-carousel-content .right-carousel-control').show();
+			$('.next-question').attr('type', 'button').text('NEXT (1 of 3)');
+		} else if ($('#help-carousel-content .carousel-inner .item:last').hasClass('active')) {
+			$('.next-question').attr('type', 'submit').text('FINISH');
+			$('.right-carousel-control').hide();
+			$('.left-carousel-control').hide();
+		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(2)').hasClass('active')) {
+			$('.left-carousel-control').show();
+			$('.right-carousel-control').show();
+			$('.next-question').attr('type', 'button').text('NEXT (2 of 3)');
+		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(3)')) {
+			$('.left-carousel-control').show();
+			$('.right-carousel-control').hide();
+			$('.next-question').attr('type', 'button').text('NEXT (3 of 3)');
+		}
+	});
+
 	$('#helpWizardOverlay').on('hidden.bs.modal', function () {
 		$('#helpWizardOverlay :input').each(function (index, element) {
 			$(element).val('');
@@ -234,7 +279,7 @@ $(document).ready(function() {
 	$('#helpWizardOverlay .exercise-details').keydown(function(event) {
 		if (event.which === 13) {
 			if (this.id === 'metabolic') {
-				$('#helpWizardForm').submit();
+				submitExerciseForm();
 			} else {
 				$(this).nextAll().eq(1).focus();
 			}
@@ -242,81 +287,56 @@ $(document).ready(function() {
 		}
 	});
 
-	$('#helpWizardExerciseForm').submit(function(event) {
-		$('#helpWizardForm .next-question').hide();
-		$('#helpWizardForm .left-carousel-control').hide();
-		$('#helpWizardForm .right-carousel-control').hide();
-		$('#helpWizardForm .wait-form-submit').show();
+});
 
-		var now = new Date();
-		$('#current-time-input').val(now.toUTCString());
-		$('#time-zone-name-input').val(jstz.determine().name());
-		now.setHours(0,0,0,0);
-		$('#base-date-input').val(now.toUTCString());
-		var params = $(this).serializeObject();
-		console.log(params);
+function submitExerciseForm() {
+	$('#helpWizardForm .next-question').hide();
+	$('#helpWizardForm .left-carousel-control').hide();
+	$('#helpWizardForm .right-carousel-control').hide();
+	$('#helpWizardForm .wait-form-submit').show();
+	var entries = [];
+	$('.exercise-details').each(function(index, element) {
+		if ($(element).val() != '') {
+			entries.push($(element).val());
+		}
+	});
+	if (entries.length == 0) {
+		$('#help-carousel-content').carousel('next');
+		return false;
+	}
+	$('#helpWizardWxerciseForm').submit(submitHelpEntryForm({entries: entries}, function(resp) {
+		$('#help-carousel-content').carousel('next');
+		enableHelpForm();
+	}));
+}
 
-		queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
+function submitHelpEntryForm(params, callback) {
+	var now = new Date();
+	params.currentDate = now.toUTCString();
+	now.setHours(0,0,0,0);
+	params.baseDate = now.toUTCString();
+	params.timeZoneName = jstz.determine().name();
+	var actionName = '';
+	console.log(params);
+
+	if (params.entryId) {
+		params.entries[0] += ' ' + dateToTimeStr(new Date(), false);
+	}
+	queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
 		function(data) {
 			if (!checkData(data))
 				return;
 
 			if (data.success) {
-				$('#help-carousel-content').carousel('next');
-				enableHelpForm();
+				callback(data);
 			} else {
 				enableHelpForm();
 				showBootstrapAlert($('.help-alert'), data.message, 0);
 			}
-		}, function() {});
-		return false;
-	});
-
-	$('#surveyForm').submit(function(event) {
-		var params = $(this).serializeObject();
-
-		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
-		function(data) {
-			if (!checkData(data))
-				return;
-
-			if (data.success) {
-				$('#takeSurveyOverlay').modal('hide');
-				showAlert('Survey completed successfully.');
-			} else {
-				showBootstrapAlert($('#survey-alert'), data.message, 4000);
-			}
-		}, function(xhr) {
-			console.log('xhr:', xhr);
-			showAlert('Internal server error occurred.');
-		});
-		return false;
-	});
-
-	$('#help-carousel-content .left-carousel-control').hide();
-	$('#help-carousel-content .next-question').attr('type', 'button').text('NEXT (1 of 3)');
-	$('#help-carousel-content').on('slid.bs.carousel', '', function() {
-		var $this = $(this);
-
-		if ($('#help-carousel-content .carousel-inner .item:first').hasClass('active')) {
-			$('.left-carousel-control').hide();
-			$('#help-carousel-content .right-carousel-control').show();
-			$('.next-question').attr('type', 'button').text('NEXT (1 of 3)');
-		} else if ($('#help-carousel-content .carousel-inner .item:last').hasClass('active')) {
-			$('.next-question').attr('type', 'submit').text('FINISH');
-			$('.right-carousel-control').hide();
-			$('.left-carousel-control').hide();
-		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(2)').hasClass('active')) {
-			$('.left-carousel-control').show();
-			$('.right-carousel-control').show();
-			$('.next-question').attr('type', 'button').text('NEXT (2 of 3)');
-		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(3)')) {
-			$('.left-carousel-control').show();
-			$('#help-carousel-content .right-carousel-control').hide();
-			$('.next-question').attr('type', 'button').text('NEXT (3 of 3)');
-		}
-	});
-});
+		}, function() {}
+	);
+	return false;
+}
 
 function enableHelpForm() {
 	$('#helpWizardForm .next-question').show();
@@ -327,21 +347,21 @@ function enableHelpForm() {
 
 function nextQuestion() {
 	if ($('#helpWizardOverlay .carousel-inner .item:nth-child(3)').hasClass('active')) {
-		$('#helpWizardExerciseForm').submit();
+		submitExerciseForm();
 		return true;
 	} else if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
 		$('#helpWizardOverlay').modal('hide');
 		window.location.href = '/home/index'
 		return true;
 	} else {
-		createHelpEntry(true, function() {
+		createHelpEntry(function() {
 			$('#help-carousel-content').carousel('next');
 		});
 	}
 }
 
 function skipQuestions() {
-	createHelpEntry(false, function() {
+	createHelpEntry(function() {
 		$('#helpWizardOverlay').modal('toggle');
 		window.location.href = '/home/index'
 	});
@@ -352,7 +372,7 @@ function isOnFeedPage() {
 	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
 }
 
-function createHelpEntry(skipCallOnBlankEntry, callback) {
+function createHelpEntry(callback) {
 	$('#helpWizardForm .next-question').hide();
 	$('#helpWizardForm .wait-form-submit').show();
 	var entryInputElement;
@@ -376,48 +396,27 @@ function createHelpEntry(skipCallOnBlankEntry, callback) {
 		entryId = entryInputElement.data('id');
 	}
 
-	if (entryText == '' && skipCallOnBlankEntry) {
-		callback();
+	if (entryText == '') {
+		queueJSON('Skipping questions', '/data/hideHelpData?' + getCSRFPreventionURI('hideHelpDataCSRF') + '&callback=?', 
+			function(resp) {
+				callback();
+			});
 		return false;
 	}
 
-	var now = new Date();
-	var currentTimeStr = now.toUTCString();
-	now.setHours(0,0,0,0);
 	var params = {
-		timeZoneName: jstz.determine().name(),
-		text: entryText,
-		baseDate: now.toUTCString(),
-		currentTime: currentTimeStr,
-		userId: currentUserId + '',
-		defaultToNow: 1
-	};
-	console.log(params);
-	var actionName = 'addEntrySData';
+		entries: [entryText]
+	}
 	if (entryId) {
 		$.extend(params, {entryId: entryId})
-		params.text += ' ' + dateToTimeStr(new Date(), false);
-		actionName = 'updateEntrySData';
 	}
-	queueJSON('Creating help entries', '/data/' + actionName + '?'+ getCSRFPreventionURI('createHelpEntriesDataCSRF') + '&callback=?', 
-		params,
-		function(data) {
-			if (!checkData(data))
-				return;
-
-			if (data[0] != null) {
-				enableHelpForm();
-				if (data[3]) {
-					entryInputElement.data('id', data[3].id);
-				}
-				if (callback) {
-					callback();
-				}
-			} else {
-				enableHelpForm();
-				showBootstrapAlert($('.help-alert'), data.message, 0);
-			}
-	}, function() {});
-	
+	submitHelpEntryForm(params, function(data) {
+		if (data.createdEntries.length != 0) {
+			entryInputElement.data('id', data.createdEntries[0].id);
+		}
+		if (callback) {
+			callback();
+		}
+	});
 	return false;
 }

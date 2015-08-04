@@ -777,35 +777,21 @@ class DataControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test createHelpEntriesData when no entries are passed in params"() {
 		controller.session.userId = user.getId()
-		controller.session.registrationSuccessful = true
-		controller.params['entry'] = [0: '', 1: '']
+		controller.session.showHelp = true
+		controller.params['entries[]'] = []
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"
 		
 		controller.createHelpEntriesData()
 		assert controller.response.json.success
-		assert !controller.session.registrationSuccessful
-	}
-
-	@Test
-	void "Test createHelpEntriesData when few blank entries are passed in params"() {
-		controller.session.userId = user.getId()
-		controller.params['entry'] = [0: "", 1: "", 2: "sleep 9 hrs"]
-		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
-		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
-		controller.params["timeZoneName"] = "Asia/Kolkata"
-		
-		controller.createHelpEntriesData()
-		assert controller.response.json.success == true
-		assert Entry.count() == 1
-		assert Entry.last().description == "sleep [duration]"
+		assert !controller.session.showHelp
 	}
 
 	@Test
 	void "Test createHelpEntriesData when no blank entries are passed in params"() {
 		controller.session.userId = user.getId()
-		controller.params['entry'] = [0: 'mood 3', 1: 'sleep 9 hrs']
+		controller.params['entries[]'] = ['mood 3', 'sleep 9 hrs']
 		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
 		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
 		controller.params["timeZoneName"] = "Asia/Kolkata"

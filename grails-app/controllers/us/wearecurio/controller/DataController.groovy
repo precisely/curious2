@@ -611,17 +611,8 @@ class DataController extends LoginController {
 			return
 		}
 
-		if (session.registrationSuccessful) {
-			session.registrationSuccessful = false
-		}
-
-
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
-		if (params.text == "") {
-			renderJSONGet([listEntries(userId, params.timeZoneName, baseDate, currentTime)])
-			return
-		}
 		
 		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
 				params.defaultToNow == '1' ? true : false)
@@ -1234,37 +1225,62 @@ class DataController extends LoginController {
 	}
 
 	def createHelpEntriesData() {
-		log.debug "Entries recieved to save: $params"
-		def entries = params.entry.findAll { it.value }
-		log.debug "entries recieved is: $entries"
+		log.debug "Entries recieved to save: $params and entries: ${params['entries[]']}"
 
-		if (!entries) {
-			if (session.registrationSuccessful) {
-				session.registrationSuccessful = false
-			}
-			renderJSONPost([success: true])
-			return
+		if (session.showHelp) {
+			session.showHelp = null
+		}
+
+		List entries = []
+		if (params['entries[]'] instanceof String) {
+			entries.push(params['entries[]'])
+		} else {
+			entries = params['entries[]']
 		}
 		
 		boolean operationSuccess = true;
 		String messageCode = "default.create.label"
-		Entry.withTransaction { status ->
-			// Iterating over all the entries received and creating entries for them
-			entries.any({
-				def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
-					it.value, params.baseDate, true)
-				if (!result[0]) {
-					operationSuccess = false
-					messageCode = "not.saved.message"
-					status.setRollbackOnly()
-					return true
-				} else {
-					return
-				}
-			})
+		List createdEntries = []
+
+		if (params.entryId) {
+			List result = doUpdateEntry(params.entryId, params.currentTime, params['entries[]'], params.baseDate, params.timeZoneName,
+				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
+
+			if (result[0]) {
+				createdEntries.push(result[0])
+			} else {
+				operationSuccess = false
+				messageCode = "not.saved.message"
+			}
+		} else {
+			Entry.withTransaction { status ->
+				// Iterating over all the entries received and creating entries for them
+				entries.any({
+					def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
+						it, params.baseDate, true)
+					if (!result[0]) {
+						operationSuccess = false
+						messageCode = "not.saved.message"
+						status.setRollbackOnly()
+						return true
+					} else {
+						createdEntries.push(result[0])
+						return
+					}
+				})
+			}
 		}
-		session.registrationSuccessful = false
-		renderJSONPost([success: operationSuccess, message: g.message(code: messageCode, args: ['Entries'])])
+		JSON.use("jsonDate") {
+			renderJSONPost([success: operationSuccess, createdEntries: createdEntries, 
+				message: g.message(code: messageCode, args: ['Entries'])])
+		}
+	}
+
+	def hideHelpData() {
+		if (session.showHelp) {
+			session.showHelp = null
+		}
+		renderJSONGet(success: true)
 	}
 
 	def getAutocompleteParticipantsData() {
