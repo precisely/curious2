@@ -35,6 +35,8 @@ class User {
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
 	Long virtualUserGroupId
+	Long virtualUserGroupIdFollowers
+	Long virtualUserGroupIdDiscussions
 	
 	static constraints = {
 		username(maxSize:70, unique:true)
