@@ -12,8 +12,9 @@ chmod 400 .ssh/authorized_keys
 yum -y update
 yum -y install yum-cron
 cp /usr/share/zoneinfo/UTC /etc/localtime
+iptables -i eth1 -I INPUT -p tcp --dport 22 -j ACCEPT
 #iptables -i eth1 -I INPUT -p tcp --dport 3306 -j ACCEPT
-#service iptables save
+service iptables save
 yum -y install lynx
 yum -y install zip
 yum -y install unzip
@@ -35,5 +36,6 @@ rm -f /etc/cron.daily/backuprotate
 cp $INSTALLDIR/backuprotate /etc/cron.daily/
 chmod 700 /etc/cron.daily/backuprotate
 
-echo "Remember to ssh as backup user and add public key of database server to ~/.ssh/authorized_keys"
+systemctl daemon-reload
 
+echo "Remember to ssh as backup user and add public key of database server to ~/.ssh/authorized_keys"

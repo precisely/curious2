@@ -1,3 +1,6 @@
+INSTALLDIR=~/installwebapp
+chmod +x ~/deploymentbin/*
+
 #!/bin/bash
 echo "Enter the hostname of this server, i.e., 'www.wearecurio.us'"
 
@@ -18,9 +21,6 @@ read ADMINKEY
 echo "Enter database curious user password"
 
 read DBPASSWORD
-
-INSTALLDIR=~/installwebapp
-chmod +x ~/deploymentbin/*
 
 cd ~
 mkdir .ssh
@@ -121,5 +121,7 @@ cp $INSTALLDIR/localconfig/LocalConfig_template.groovy /home/curious/localconfig
 ~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "ADMINKEY" "$ADMINKEY"
 ~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBPASSWORD" "$DBPASSWORD"
 chown -R curious.apache /home/curious/localconfig
+
+systemctl daemon-reload
 
 echo "IMPORTANT: Update /etc/hosts with the local addresses for curiousdb, curiousanalytics, and curiouselastic."

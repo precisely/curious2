@@ -1,9 +1,9 @@
+INSTALLDIR=~/installdb
+chmod +x ~/deploymentbin/*
+
 echo "Enter backup local IP address"
 
 read BACKUPIP
-
-INSTALLDIR=~/installdb
-chmod +x ~/deploymentbin/*
 
 cd ~
 mkdir .ssh
@@ -50,5 +50,7 @@ mysql_secure_installation
 chkconfig --level 345 mariadb on
 
 ~/deploymentbin/replaceline /etc/hosts "curiousbackup" "$BACKUPIP curiousbackup"
+
+systemctl daemon-reload
 
 bash $INSTALLDIR/newdb

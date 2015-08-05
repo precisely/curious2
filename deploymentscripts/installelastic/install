@@ -1,7 +1,9 @@
+INSTALLDIR=~/installanalytics
+chmod +x ~/deploymentbin/*
+
 cd ~
 mkdir .ssh
 chmod 700 .ssh
-INSTALLDIR=~/installanalytics
 chmod 700 $INSTALLDIR
 chmod 600 .ssh/authorized_keys
 rm -f .ssh/authorized_keys
@@ -57,6 +59,6 @@ ln -s /opt/jdk1.8.0_51 /opt/jdk
 yum -y install git
 
 rpm -Uvh https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.1.noarch.rpm
-systemctl enable elasticsearch
-systemctl start elasticsearch
-
+systemctl daemon-reload
+systemctl enable elasticsearch.service
+systemctl start elasticsearch.service

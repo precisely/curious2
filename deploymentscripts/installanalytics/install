@@ -1,3 +1,6 @@
+INSTALLDIR=~/installanalytics
+chmod +x ~/deploymentbin/*
+
 echo "Enter database name, i.e. 'curious'"
 
 read DBNAME
@@ -25,7 +28,6 @@ read ADMINKEY
 cd ~
 mkdir .ssh
 chmod 700 .ssh
-INSTALLDIR=~/installanalytics
 chmod 700 $INSTALLDIR
 chmod 600 .ssh/authorized_keys
 rm -f .ssh/authorized_keys
@@ -54,10 +56,13 @@ chmod o-rwx /home/curious
 rm -rf /home/curious/installcurious
 mkdir /home/curious/installcurious
 mkdir /home/curious/log
-rm -f /home/curious/installcurious/install
 chmod 700 /home/curious/installcurious
 cp $INSTALLDIR/* /home/curious/installcurious
-cp -r $INSTALLDIR/bin /home/curious/bin
+mkdir /home/curious/bin
+chown -R curious.curious /home/curious/bin
+chmod 700 /home/curious/bin
+cp $INSTALLDIR/bin/* /home/curious/bin
+chmod +x /home/curious/bin/*
 rm -rf /home/curious/curiousanalytics
 cp -r $INSTALLDIR/curious /home/curious/curiousanalytics
 CLOJUREDIR=/home/curious/curiousanalytics/src/clojure/analytics
@@ -87,5 +92,10 @@ ln -s /opt/jdk1.8.0_51 /opt/jdk
 
 yum -y install git
 
+systemctl daemon-reload
+
 ~/deploymentbin/replaceline /etc/hosts "curiousdb" "$DATABASEIP curiousdb"
 ~/deploymentbin/replaceline /etc/hosts "curiouswebapp" "$WEBIP curiouswebapp"
+
+echo "Log in as curious and run startanalytics to start analytics job"
+
