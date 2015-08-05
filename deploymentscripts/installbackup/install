@@ -27,7 +27,7 @@ mkdir /home/backup/installbackup
 chmod 700 /home/backup/installbackup
 cp $INSTALLDIR/* /home/backup/installbackup
 chown -R backup.backup /home/backup/installbackup
-chmod +x /home/curious/installbackup/installbackup
+chmod +x /home/backup/installbackup/installbackup
 su -l backup -c /home/backup/installbackup/installbackup
 
 # create backup rotation cron job

@@ -1,30 +1,6 @@
-echo "Enter the database name for this server, i.e., 'curious'"
-
-read DBNAME
-
-echo "Enter database curious userna e"
-
-read DBUSERNAME
-
-echo "Enter database curious user password"
-
-read DBPASSWORD
-
-echo "Enter web app server local IP address"
-
-read WEBIP
-
-echo "Enter analytics local IP address"
-
-read ANALYTICSIP
-
 echo "Enter backup local IP address"
 
 read BACKUPIP
-
-echo "Enter unique name for backup identification"
-
-read DBBACKUPNAME
 
 INSTALLDIR=~/installdb
 chmod +x ~/deploymentbin/*
@@ -63,9 +39,6 @@ cp -rpv ~/deploymentbin /home/curious/deploymentbin
 chmod +x /home/curious/installcurious/installcurious
 chown -R curious.curious /home/curious/installcurious
 chown -R curious.curious /home/curious/deploymentbin
-mkdir /home/curious/www
-chmod 750 /home/curious/www
-chown -R curious.apache /home/curious/www
 su -l curious -c /home/curious/installcurious/installcurious
 
 # install database
@@ -74,38 +47,8 @@ yum -y install mariadb-server
 service mariadb start
 echo "Set the root password and answer yes to all other questions"
 mysql_secure_installation
-chkconfig --level 345 marisdb on
-rm -f $INSTALLDIR/curiousinit.sql
-cp $INSTALLDIR/curiousinit_template.sql $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBNAME" "$DBNAME" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBUSERNAME" "$DBUSERNAME" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "WEBIP" "$WEBIP" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "ANALYTICSIP" "$ANALYTICSIP" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBPASSWORD" "$DBPASSWORD" $INSTALLDIR/curiousinit.sql
-echo "Please reenter the root password you just entered"
-mysql -u root -p <$INSTALLDIR/curiousinit.sql
-
-# create my.cnf for curious user
-
-if [ -f /home/curious/.my.cnf ];
-then
-	chmod 600 /home/curious/.my.cnf
-	~/deploymentbin/replaceline /home/curious/.my.cnf "password=" "password=$DBPASSWORD"
-else
-	cp $INSTALLDIR/my.cnf /home/curious/.my.cnf
-	chmod 600 /home/curious/.my.cnf
-	chown curious.curious /home/curious/.my.cnf
-	~/deploymentbin/replaceline /home/curious/.my.cnf "password=" "password=$DBPASSWORD"
-fi
-
-rm -f /home/curious/bin/backup
-cp $INSTALLDIR/backup_template /home/curious/bin/backup
-chmod 700 /home/curious/bin/backup
-chown curious.curious /home/curious/bin/backup
-~/deploymentbin/replaceword /home/curious/bin/backup "DBNAME" "$DBNAME"
-~/deploymentbin/replaceword /home/curious/bin/backup "DBUSERNAME" "$DBUSERNAME"
-~/deploymentbin/replaceword /home/curious/bin/backup "DBBACKUPNAME" "$DBBACKUPNAME"
-rm -f /etc/cron.daily/backupcurious
-cp $INSTALLDIR/backupcurious /etc/cron.daily
+chkconfig --level 345 mariadb on
 
 ~/deploymentbin/replaceline /etc/hosts "curiousbackup" "$BACKUPIP curiousbackup"
+
+bash $INSTALLDIR/newdb

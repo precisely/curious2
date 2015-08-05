@@ -38,9 +38,6 @@ cp -rpv ~/deploymentbin /home/curious/deploymentbin
 chmod +x /home/curious/installcurious/installcurious
 chown -R curious.curious /home/curious/installcurious
 chown -R curious.curious /home/curious/deploymentbin
-mkdir /home/curious/www
-chmod 750 /home/curious/www
-chown -R curious.apache /home/curious/www
 su -l curious -c /home/curious/installcurious/installcurious
 
 # install java

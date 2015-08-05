@@ -1,0 +1,1 @@
+su curious -c "/home/curious/bin/backup_DBBACKUPNAME"

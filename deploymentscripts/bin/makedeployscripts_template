@@ -1,14 +1,16 @@
 #!/bin/bash
 YOURGRAILSWORKSPACE=[your grails workspace path]
-cd ~/$YOURGRAILSWORKSPACE/curious2/deploymentscripts
+cd $YOURGRAILSWORKSPACE/curious2/deploymentscripts
 zip -r installanalytics.zip installanalytics
 zip -r installelastic.zip installelastic
 zip -r installwebapp.zip installwebapp
 zip -r installdb.zip installdb
+zip -r installbackup.zip installbackup
 zip -rg installanalytics.zip deploymentbin
 zip -rg installelastic.zip deploymentbin
 zip -rg installwebapp.zip deploymentbin
 zip -rg installdb.zip deploymentbin
+zip -rg installbackup.zip deploymentbin
 mv *.zip ~/curiousdeploy
 cd ~/curiousdeploy
 zip -rg installwebapp.zip deploymentcerts

@@ -21,4 +21,8 @@ echo "Copy the following into backup server authorized_keys"
 
 cat ~/.ssh/id_rsa_backup.pub
 
+echo "Hit [ENTER] to continue"
+
+read X
+
 cd ~

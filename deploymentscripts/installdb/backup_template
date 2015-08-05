@@ -1,4 +1,4 @@
 cd /home/curious/backup/
-mysqldump -u DBUSERNAME -h localhost DBNAME >DBBACKUPNAME_DBUSERNAME_DBNAME_mysqlbackup.sql
+mysqldump --defaults-extra-file="/home/curious/backupoptions/DBBACKUPNAME_my.cnf" -u DBUSERNAME -h localhost DBNAME >DBBACKUPNAME_DBUSERNAME_DBNAME_mysqlbackup.sql
 gzip -f DBBACKUPNAME_DBUSERNAME_DBNAME_mysqlbackup.sql
 scp -i ~/.ssh/id_rsa_backup -p DBBACKUPNAME_DBUSERNAME_DBNAME_mysqlbackup.sql.gz backup@curiousbackup:/home/backup/backup/DBBACKUPNAME_DBUSERNAME_DBNAME_mysqlbackup.sql.gz

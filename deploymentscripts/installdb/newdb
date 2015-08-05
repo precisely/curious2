@@ -1,4 +1,4 @@
-echo "Enter the database name for this server, i.e., 'curious'"
+echo "Enter the database name, i.e., 'curious'"
 
 read DBNAME
 
@@ -12,84 +12,62 @@ read DBPASSWORD
 
 echo "Enter unique name for backup identification"
 
-read DBACKUPNAME
+read DBBACKUPNAME
+
+echo "Enter local IP address of web server"
+
+read WEBIP
+
+echo "Enter local IP address of analytics server"
+
+read ANALYTICSIP
 
 INSTALLDIR=~/installdb
 chmod +x ~/deploymentbin/*
 
-cd ~
-mkdir .ssh
-chmod 700 .ssh
-chmod 700 $INSTALLDIR
-chmod 600 .ssh/authorized_keys
-rm -f .ssh/authorized_keys
-cp -f $INSTALLDIR/authorized_keys ./.ssh
-chmod 400 .ssh/authorized_keys
-yum -y update
-yum -y install yum-cron
-cp /usr/share/zoneinfo/UTC /etc/localtime
-iptables -i eth1 -I INPUT -p tcp --dport 3306 -j ACCEPT
-service iptables save
-yum -y install lynx
-yum -y install zip
-yum -y install unzip
+# configure database
 
-# install git
-
-yum -y install git
-
-# install curious user
-
-adduser curious
-chmod o-rwx /home/curious
-rm -rf /home/curious/installcurious
-mkdir /home/curious/installcurious
-chmod 700 /home/curious/installcurious
-cp $INSTALLDIR/* /home/curious/installcurious
-rm -rf /home/curious/deploymentbin
-cp -rpv ~/deploymentbin /home/curious/deploymentbin
-chmod +x /home/curious/installcurious/installcurious
-chown -R curious.curious /home/curious/installcurious
-chown -R curious.curious /home/curious/deploymentbin
-mkdir /home/curious/www
-chmod 750 /home/curious/www
-chown -R curious.apache /home/curious/www
-su -l curious -c /home/curious/installcurious/installcurious
-
-# install database
-
-yum -y install mariadb-server
-service mariadb start
-echo "Set the root password and answer yes to all other questions"
-mysql_secure_installation
-chkconfig --level 345 marisdb on
 rm -f $INSTALLDIR/curiousinit.sql
 cp $INSTALLDIR/curiousinit_template.sql $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBNAME" "$DBNAME" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBPASSWORD" "$DBPASSWORD" $INSTALLDIR/curiousinit.sql
-echo "Please reenter the root password you just entered"
-mysql -u root -p <$INSTALLDIR/curiousinit.sql
+~/deploymentbin/replaceword $INSTALLDIR/curiousinit.sql "DBNAME" "$DBNAME"
+~/deploymentbin/replaceword $INSTALLDIR/curiousinit.sql "DBUSERNAME" "$DBUSERNAME"
+~/deploymentbin/replaceword $INSTALLDIR/curiousinit.sql "WEBIP" "$WEBIP"
+~/deploymentbin/replaceword $INSTALLDIR/curiousinit.sql "ANALYTICSIP" "$ANALYTICSIP"
+~/deploymentbin/replaceword $INSTALLDIR/curiousinit.sql "DBPASSWORD" "$DBPASSWORD"
+echo "Please enter the root password for the db"
+mysql --force -u root -p <$INSTALLDIR/curiousinit.sql
 
-# create my.cnf for curious user
+# create options file for the database
 
-if [ -f /home/curious/.my.cnf ];
-then
-	chmod 600 /home/curious/.my.cnf
-	~/deploymentbin/replaceline /home/curious/.my.cnf "password=" "password=$DBPASSWORD"
-else
-	cp $INSTALLDIR/my.cnf /home/curious/.my.cnf
-	chmod 600 /home/curious/.my.cnf
-	chown curious.curious /home/curious/.my.cnf
-	~/deploymentbin/replaceline /home/curious/.my.cnf "password=" "password=$DBPASSWORD"
-fi
+mkdir /home/curious/backupoptions
+chmod 700 /home/curious/backupoptions
+rm -f /home/curious/backupoptions/$DBBACKUPNAME_my.cnf
+cp "$INSTALLDIR/my.cnf" "/home/curious/backupoptions/${DBBACKUPNAME}_my.cnf"
+~/deploymentbin/replaceline "/home/curious/backupoptions/${DBBACKUPNAME}_my.cnf" "password" "password=$DBPASSWORD"
+chmod 600 "/home/curious/backupoptions/${DBBACKUPNAME}_my.cnf"
+chown -R curious.curious /home/curious/backupoptions
 
-rm -f /home/curious/bin/backup
-cp $INSTALLDIR/backup_template /home/curious/bin/backup
-chmod 700 /home/curious/bin/backup
-chown curious.curious /home/curious/bin/backup
-~/deploymentbin/replaceword /home/curious/bin/backup "DBNAME" "$DBNAME"
-~/deploymentbin/replaceword /home/curious/bin/backup "DBBACKUPNAME" "$DBBACKUPNAME"
-rm -f /etc/cron.daily/backupcurious
-cp $INSTALLDIR/backupcurious /etc/cron.daily
+# create ssh key for backup job
 
-echo "Remember to edit /etc/hosts to add the local IP address for curiousbackup."
+# create backup cron job for this database
+
+mkdir /home/curious/bin
+chmod 700 /home/curious/bin
+chown curious.curious /home/curious/bin
+rm -f /home/curious/bin/backup_$DBBACKUPNAME
+cp $INSTALLDIR/backup_template /home/curious/bin/backup_$DBBACKUPNAME
+chmod 700 /home/curious/bin/backup_$DBBACKUPNAME
+~/deploymentbin/replaceword "/home/curious/bin/backup_$DBBACKUPNAME" "DBNAME" "$DBNAME"
+~/deploymentbin/replaceword "/home/curious/bin/backup_$DBBACKUPNAME" "DBUSERNAME" "$DBUSERNAME"
+~/deploymentbin/replaceword "/home/curious/bin/backup_$DBBACKUPNAME" "DBBACKUPNAME" "$DBBACKUPNAME"
+chmod 700 /home/curious/bin/backup_$DBBACKUPNAME
+chown curious.curious /home/curious/bin/backup_$DBBACKUPNAME
+rm -f $INSTALLDIR/backupcurious_$DBBACKUPNAME
+cp $INSTALLDIR/backupcurious_template $INSTALLDIR/backupcurious_$DBBACKUPNAME
+~/deploymentbin/replaceword $INSTALLDIR/backupcurious_$DBBACKUPNAME "DBBACKUPNAME" "$DBBACKUPNAME"
+rm -f /etc/cron.daily/backupcurious_$DBBACKUPNAME
+cp $INSTALLDIR/backupcurious_$DBBACKUPNAME /etc/cron.daily/backupcurious_$DBBACKUPNAME
+chmod 700 /etc/cron.daily/backupcurious_$DBBACKUPNAME
+
+echo "Run test backup once... be sure to hit yes when asked about authentication"
+su -l curious -c /home/curious/bin/backup_$DBBACKUPNAME
