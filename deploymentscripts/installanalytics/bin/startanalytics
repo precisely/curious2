@@ -1,3 +1,3 @@
-cd ~/curious/src/clojure/analytics
+cd ~/curiousanalytics/src/clojure/analytics
 lein with-profile production trampoline run -p 8090 > ~/log/curiousanalyticsjob1 2>~/log/curiousanalyticsjob1error &
 lein with-profile production trampoline run -p 8091 > ~/log/curiousanalyticsjob2 2>~/log/curiousanalyticsjob2error &

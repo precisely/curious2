@@ -1,0 +1,20 @@
+cd ~
+mkdir .ssh
+chmod 700 .ssh
+rm -f .ssh/authorized_keys
+cp ~/installbackup/authorized_keys ./.ssh
+chmod 400 .ssh/authorized_keys
+
+# create backup directories
+
+mkdir ~/backup
+mkdir ~/backup.daily
+mkdir ~/backup.weekly
+mkdir ~/backup.monthly
+chmod 700 ~/backup*
+
+# create backup rotation shell script
+mkdir ~/bin
+rm -f ~/bin/backuprotate.sh
+cp ~/installbackup/backuprotate.sh ~/bin
+chmod 700 ~/bin/backuprotate.sh

@@ -1,0 +1,15 @@
+#!/bin/bash
+TARGETFILE=${4-$1}
+if grep "$2" $1 >/dev/null;
+then
+	rm -f $1.tempxyzzy9
+	sed "s/$2/$3/g" $1 > $1.tempxyzzy9
+	rm -f $TARGETFILE
+	mv $1.tempxyzzy9 $TARGETFILE
+else
+	rm -f $1.tempxyzzy9 $1.tempxyzzy99
+	echo "$2" > $1.tempxyzzy9
+	cat $1 $1.tempxyzzy9 > $1.tempxyzzy99
+	mv $1.tempxyzzy99 $TARGETFILE
+	rm -f $1.tempxyzzy9
+fi

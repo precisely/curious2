@@ -1,7 +1,9 @@
+INSTALLDIR=~/installbackup
+chmod +x ~/deploymentbin/*
+
 cd ~
 mkdir .ssh
 chmod 700 .ssh
-INSTALLDIR=~/installanalytics
 chmod 700 $INSTALLDIR
 chmod 600 .ssh/authorized_keys
 rm -f .ssh/authorized_keys
@@ -10,51 +12,28 @@ chmod 400 .ssh/authorized_keys
 yum -y update
 yum -y install yum-cron
 cp /usr/share/zoneinfo/UTC /etc/localtime
-#iptables -i eth1 -I INPUT -p tcp --dport 80 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9200 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9201 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9202 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9300 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9301 -j ACCEPT
-iptables -i eth1 -I INPUT -p tcp --dport 9302 -j ACCEPT
-#iptables -i eth1 -I INPUT -p tcp --dport 443 -j ACCEPT
-#iptables -i eth1 -I INPUT -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
-#iptables -I OUTPUT -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
-service iptables save
+#iptables -i eth1 -I INPUT -p tcp --dport 3306 -j ACCEPT
+#service iptables save
 yum -y install lynx
 yum -y install zip
 yum -y install unzip
 
-# install curious user
+# install backup user
 
-adduser curious
-chmod o-rwx /home/curious
-mkdir /home/curious/installcurious
-rm -f /home/curious/installcurious/install
-cp $INSTALLDIR/installcurious /home/curious/installcurious/install
-chmod 700 /home/curious/installcurious
-cp $INSTALLDIR/authorized_keys /home/curious/installcurious
-chown -R curious.curious /home/curious/installcurious
-chmod 500 /home/curious/installcurious/install
-su - curious -c /home/curious/installcurious/install
+adduser backup
+chmod o-rwx /home/backup
+rm -rf /home/backup/installbackup
+mkdir /home/backup/installbackup
+chmod 700 /home/backup/installbackup
+cp $INSTALLDIR/* /home/backup/installbackup
+chown -R backup.backup /home/backup/installbackup
+chmod +x /home/curious/installbackup/installbackup
+su -l backup -c /home/backup/installbackup/installbackup
 
-# install java
+# create backup rotation cron job
+rm -f /etc/cron.daily/backuprotate
+cp $INSTALLDIR/backuprotate /etc/cron.daily/
+chmod 700 /etc/cron.daily/backuprotate
 
-cd /opt
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u51-b16/jdk-8u51-linux-x64.tar.gz"
-tar xvf jdk-8u51-linux-x64.tar.gz
-chown -R root.root jdk1.8.0_51
-alternatives --install /usr/bin/java java /opt/jdk1.8.0_51/bin/java 1
-alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_51/bin/javac 1
-alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_51/bin/jar 1
-rm -f jdk-8u51-linux-x64.tar.gz
-ln -s /opt/jdk1.8.0_51 /opt/jdk
-
-# install git
-
-yum -y install git
-
-rpm -Uvh https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.1.noarch.rpm
-systemctl enable elasticsearch
-systemctl start elasticsearch
+echo "Remember to ssh as backup user and add public key of database server to ~/.ssh/authorized_keys"
 

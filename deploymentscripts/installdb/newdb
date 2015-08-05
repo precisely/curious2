@@ -2,7 +2,7 @@ echo "Enter the database name for this server, i.e., 'curious'"
 
 read DBNAME
 
-echo "Enter database curious userna e"
+echo "Enter the database user name, i.e., 'curious'"
 
 read DBUSERNAME
 
@@ -10,21 +10,9 @@ echo "Enter database curious user password"
 
 read DBPASSWORD
 
-echo "Enter web app server local IP address"
-
-read WEBIP
-
-echo "Enter analytics local IP address"
-
-read ANALYTICSIP
-
-echo "Enter backup local IP address"
-
-read BACKUPIP
-
 echo "Enter unique name for backup identification"
 
-read DBBACKUPNAME
+read DBACKUPNAME
 
 INSTALLDIR=~/installdb
 chmod +x ~/deploymentbin/*
@@ -78,9 +66,6 @@ chkconfig --level 345 marisdb on
 rm -f $INSTALLDIR/curiousinit.sql
 cp $INSTALLDIR/curiousinit_template.sql $INSTALLDIR/curiousinit.sql
 ~/deploymentbin/replaceword "DBNAME" "$DBNAME" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "DBUSERNAME" "$DBUSERNAME" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "WEBIP" "$WEBIP" $INSTALLDIR/curiousinit.sql
-~/deploymentbin/replaceword "ANALYTICSIP" "$ANALYTICSIP" $INSTALLDIR/curiousinit.sql
 ~/deploymentbin/replaceword "DBPASSWORD" "$DBPASSWORD" $INSTALLDIR/curiousinit.sql
 echo "Please reenter the root password you just entered"
 mysql -u root -p <$INSTALLDIR/curiousinit.sql
@@ -103,9 +88,8 @@ cp $INSTALLDIR/backup_template /home/curious/bin/backup
 chmod 700 /home/curious/bin/backup
 chown curious.curious /home/curious/bin/backup
 ~/deploymentbin/replaceword /home/curious/bin/backup "DBNAME" "$DBNAME"
-~/deploymentbin/replaceword /home/curious/bin/backup "DBUSERNAME" "$DBUSERNAME"
 ~/deploymentbin/replaceword /home/curious/bin/backup "DBBACKUPNAME" "$DBBACKUPNAME"
 rm -f /etc/cron.daily/backupcurious
 cp $INSTALLDIR/backupcurious /etc/cron.daily
 
-~/deploymentbin/replaceline /etc/hosts "curiousbackup" "$BACKUPIP curiousbackup"
+echo "Remember to edit /etc/hosts to add the local IP address for curiousbackup."

@@ -1,5 +1,7 @@
-wearecurious.adminKey = "[fill in unique key for admin pages]"
+wearecurious.adminKey = "ADMINKEY"
 dataSource {
-	password = "[fill in password]"
+	url = "jdbc:mysql://curiousdb/DBNAME?zeroDateTimeBehavior=convertToNull"
+	username = "DBUSERNAME"
+	password = "DBPASSWORD"
 }
-grails.serverURL = "https://www.wearecurio.us/"
+grails.serverURL = "https://APPHOSTNAME/"

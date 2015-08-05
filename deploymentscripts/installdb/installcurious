@@ -4,3 +4,21 @@ chmod 700 .ssh
 rm -f .ssh/authorized_keys
 cp ~/installcurious/authorized_keys ./.ssh
 chmod 400 .ssh/authorized_keys
+
+# create backup job
+
+mkdir ~/backup
+
+# create ssh key for backup job
+
+echo "Create RSA key for backup job"
+
+cd ~/.ssh
+
+ssh-keygen -b 2048 -t rsa -f id_rsa_backup
+
+echo "Copy the following into backup server authorized_keys"
+
+cat ~/.ssh/id_rsa_backup.pub
+
+cd ~

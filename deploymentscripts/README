@@ -1,0 +1,8 @@
+Edit bin/makedeployscripts.template and copy to your development machine on the path.
+In the ~/curiousdeploy/certs folder put the wearecurious.crt and wearecurious.key files to be copied to the
+Apache certificates folder on the web server.
+
+Each folder is meant to be copied to /root on the server in question and the install script should be run inside bash.
+
+You may run multiple install scripts on the same server, they are designed to set up a fresh CentOS 7 server or
+a server that has already had one or more scripts run on it.

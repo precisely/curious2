@@ -1,11 +1,30 @@
+#!/bin/bash
 echo "Enter the hostname of this server, i.e., 'www.wearecurio.us'"
 
 read APPHOSTNAME
 
+echo "Enter the database user name for this server, i.e., 'curious'"
+
+read DBUSERNAME
+
+echo "Enter the database name for this server, i.e., 'curious'"
+
+read DBNAME
+
+echo "Enter analytics administrator key, i.e., very long randomized string"
+
+read ADMINKEY
+
+echo "Enter database curious user password"
+
+read DBPASSWORD
+
+INSTALLDIR=~/installwebapp
+chmod +x ~/deploymentbin/*
+
 cd ~
 mkdir .ssh
 chmod 700 .ssh
-INSTALLDIR=~/installwebapp
 chmod 700 $INSTALLDIR
 chmod 600 .ssh/authorized_keys
 rm -f .ssh/authorized_keys
@@ -45,24 +64,21 @@ yum -y install git
 yum -y install httpd
 yum -y install mod_ssl openssl
 systemctl enable httpd.service
-#echo 'Redirect / https://'$APPHOSTNAME'/home/index' > $INSTALLDIR/curious.conf
-#rm -rf /etc/httpd/conf.d/curious.conf
-#cp $INSTALLDIR/curious.conf /etc/httpd/conf.d/curious.conf
 mkdir /etc/httpd/certs
 chown root.apache /etc/httpd/certs
 rm -f /etc/httpd/certs/wearecurious.*
-chmod o-rwx ~/certs/*
-cp -rpv ~/certs/wearecurious.* /etc/httpd/certs
+chmod o-rwx ~/deploymentcerts/*
+cp -rpv ~/deploymentcerts/wearecurious.* /etc/httpd/certs
 chown -R root.apache /etc/httpd/certs
 rm -f /etc/httpd/conf.d/httpd-vhosts.conf
 sed "s/CURIOUSHOSTNAME/$APPHOSTNAME/g" $INSTALLDIR/httpd-vhosts.conf > /etc/httpd/conf.d/httpd-vhosts.conf
 
 # install jetty
 
-wget http://download.eclipse.org/jetty/stable-9/dist/jetty-distribution-9.3.1.v20150714.tar.gz
+wget http://download.eclipse.org/jetty/9.3.2.v20150730/dist/jetty-distribution-9.3.2.v20150730.zip
 rm -rf /opt/jetty
-tar zxvf jetty-distribution-9.3.1.v20150714.tar.gz -C /opt/
-mv /opt/jetty-distribution-9.3.1.v20150714 /opt/jetty
+tar zxvf jetty-distribution-9.3.2.v20150730.tar.gz -C /opt/
+mv /opt/jetty-distribution-9.3.2.v20150730 /opt/jetty
 mkdir /opt/jetty/work
 chown -R curious:curious /opt/jetty/
 ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty
@@ -71,6 +87,7 @@ chkconfig --level 345 jetty on
 rm -f /etc/default/jetty
 cp $INSTALLDIR/etcdefaultjetty /etc/default/jetty
 mkdir /root/bin
+rm -f /root/bin/deploycur
 cp $INSTALLDIR/deploycur /root/bin
 chmod 700 /root/bin/deploycur
 
@@ -78,16 +95,31 @@ chmod 700 /root/bin/deploycur
 
 adduser curious
 chmod o-rwx /home/curious
-rm -f /home/curious/installcurious
+rm -rf /home/curious/installcurious
 mkdir /home/curious/installcurious
-cp $INSTALLDIR/installcurious /home/curious/installcurious/install
 chmod 700 /home/curious/installcurious
-cp $INSTALLDIR/authorized_keys /home/curious/installcurious
-cp $INSTALLDIR/buildwar /home/curious/installcurious
+cp $INSTALLDIR/* /home/curious/installcurious
+rm -rf /home/curious/deploymentbin
+cp -rpv ~/deploymentbin /home/curious/deploymentbin
+chmod +x /home/curious/installcurious/installcurious
 chown -R curious.curious /home/curious/installcurious
-chmod 500 /home/curious/installcurious/install
-su -l curious -c /home/curious/installcurious/install
-
+chown -R curious.curious /home/curious/deploymentbin
 mkdir /home/curious/www
 chmod 750 /home/curious/www
-chown curious.apache /home/curious/www
+chown -R curious.apache /home/curious/www
+su -l curious -c /home/curious/installcurious/installcurious
+
+# create localconfig
+
+mkdir /home/curious/localconfig
+chmod 750 /home/curious/localconfig
+rm -f /home/curious/localconfig/LocalConfig.groovy
+cp $INSTALLDIR/localconfig/LocalConfig_template.groovy /home/curious/localconfig/LocalConfig.groovy
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "APPHOSTNAME" "$APPHOSTNAME"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBNAME" "$DBNAME"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBUSERNAME" "$DBUSERNAME"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "ADMINKEY" "$ADMINKEY"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBPASSWORD" "$DBPASSWORD"
+chown -R curious.apache /home/curious/localconfig
+
+echo "IMPORTANT: Update /etc/hosts with the local addresses for curiousdb, curiousanalytics, and curiouselastic."

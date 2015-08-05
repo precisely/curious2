@@ -10,21 +10,18 @@ chmod 400 .ssh/authorized_keys
 curl -s get.gvmtool.net | bash
 source "/home/curious/.gvm/bin/gvm-init.sh"
 gvm install grails 2.5.0
-if grep "gvm use" .bashrc >/dev/null;
-then
-	sed "s/gvm use.*/gvm use grails 2.5.0/" .bashrc > newbashrc
-	rm .bashrc
-	mv newbashrc .bashrc
-else
-	echo "gvm use grails 2.5.0">>.bashrc
-fi
 gvm use grails 2.5.0
+~/deploymentbin/replaceline .bashrc "gvm use" "gvm use grails 2.5.0" .bashrc
 
-ssh-keygen -b 2048 -t rsa -f .ssh/id_rsa
+cd ~/.ssh
+
+ssh-keygen -b 2048 -t rsa -f id_rsa
 
 echo "Copy the following into GitHub as an ssh key for the curiousdeploy GitHub account"
 
-cat .ssh/id_rsa.pub
+cat ~/.ssh/id_rsa.pub
+
+cd ~
 
 read -p "Press [Enter] key to continue installing Curious app..."
 
@@ -36,4 +33,3 @@ mkdir ~/bin
 rm -f ~/bin/buildwar
 cp ~/installcurious/buildwar ~/bin/buildwar
 chmod +x ~/bin/buildwar
-

@@ -1,0 +1,1 @@
+su backup -c "/home/backup/bin/backuprotate.sh"

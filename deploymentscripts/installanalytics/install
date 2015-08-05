@@ -1,3 +1,27 @@
+echo "Enter database name, i.e. 'curious'"
+
+read DBNAME
+
+echo "Enter database username, i.e., 'curious'"
+
+read DBUSERNAME
+
+echo "Enter database password for that user"
+
+read DBPASSWORD
+
+echo "Enter web app server local IP address"
+
+read WEBIP
+
+echo "Enter database server local IP address"
+
+read DATABASEIP
+
+echo "Enter analytics administrator key, same as used in web app installation"
+
+read ADMINKEY
+
 cd ~
 mkdir .ssh
 chmod 700 .ssh
@@ -27,17 +51,25 @@ yum -y install unzip
 
 adduser curious
 chmod o-rwx /home/curious
+rm -rf /home/curious/installcurious
 mkdir /home/curious/installcurious
 mkdir /home/curious/log
 rm -f /home/curious/installcurious/install
-cp $INSTALLDIR/installcurious /home/curious/installcurious/install
 chmod 700 /home/curious/installcurious
-cp $INSTALLDIR/authorized_keys /home/curious/installcurious
+cp $INSTALLDIR/* /home/curious/installcurious
 cp -r $INSTALLDIR/bin /home/curious/bin
-cp -r $INSTALLDIR/curious /home/curious/curious
+rm -rf /home/curious/curiousanalytics
+cp -r $INSTALLDIR/curious /home/curious/curiousanalytics
+CLOJUREDIR=/home/curious/curiousanalytics/src/clojure/analytics
+rm -f $CLOJUREDIR/profiles.clj
+cp $CLOJUREDIR/profiles_template.clj $CLOJUREDIR/profiles.clj
+~/deploymentbin/replaceword $CLOJUREDIR/profiles.clj "DBNAME" "$DBNAME"
+~/deploymentbin/replaceword $CLOJUREDIR/profiles.clj "DBUSERNAME" "$DBUSERNAME"
+~/deploymentbin/replaceword $CLOJUREDIR/profiles.clj "DBPASSWORD" "$DBPASSWORD"
+~/deploymentbin/replaceword $CLOJUREDIR/profiles.clj "ADMINKEY" "$ADMINKEY"
 chown -R curious.curious /home/curious
-chmod 500 /home/curious/installcurious/install
-su - curious -c /home/curious/installcurious/install
+chmod +x /home/curious/installcurious/installcurious
+su - curious -c /home/curious/installcurious/installcurious
 
 # install java
 
@@ -55,4 +87,5 @@ ln -s /opt/jdk1.8.0_51 /opt/jdk
 
 yum -y install git
 
-echo "IMPORTANT: Update /etc/hosts with the local addresses for the hosts curiouswebapp and curiousdb"
+~/deploymentbin/replaceline /etc/hosts "curiousdb" "$DATABASEIP curiousdb"
+~/deploymentbin/replaceline /etc/hosts "curiouswebapp" "$WEBIP curiouswebapp"

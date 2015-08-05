@@ -55,10 +55,9 @@ environments {
 	qa {
 		dataSource {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
-			url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
-			username = "curious"
-			// password must be set in grailsconf/LocalConfig.groovy
+			// url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
+			// url and password must be set in grailsconf/LocalConfig.groovy
 		}
 	}
 	production {
@@ -66,8 +65,8 @@ environments {
 			dbCreate = "update" // one of 'create', 'create-drop','update'
 			url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
 			dialect = 'org.hibernate.dialect.MySQL5InnoDBDialect'
-			username = "curious"
-			// password must be set in grailsconf/LocalConfig.groovy
+			// url = "jdbc:mysql://curiousdb/tlb?zeroDateTimeBehavior=convertToNull"
+			// url and password must be set in grailsconf/LocalConfig.groovy
 		}
 	}
 	/*
