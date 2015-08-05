@@ -124,8 +124,8 @@
                             value="['announce','curious','curious announce']">
                     </g:else>
 
-                    <input type="submit" name="cancel" class="btn pull-right" 
-                        value="Cancel" /> <input class="btn pull-right" style="margin-right:5px;"
+					<button class="btn pull-right">Cancel</button> 
+					<input class="btn pull-right" style="margin-right:5px;"
                         type="submit" name="register" value="Register" />
                 </form>
             </div>

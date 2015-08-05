@@ -1232,6 +1232,8 @@ class DataController extends LoginController {
 		}
 
 		List entries = []
+
+		// Jquery sends list in parameters with '[]' suffix added to the keyname in the map hence using params['entries[]']
 		if (params['entries[]'] instanceof String) {
 			entries.push(params['entries[]'])
 		} else {
