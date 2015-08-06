@@ -3,6 +3,7 @@ package us.wearecurio.model.integration
 import grails.test.spock.IntegrationSpec
 
 import us.wearecurio.model.Discussion
+import us.wearecurio.model.GroupMemberDiscussion
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
@@ -34,61 +35,90 @@ class UserIntegrationSpec extends IntegrationSpec {
 		User.get(shane.id).username == shane.username
     }
 	
-//	void "Virtual user group is created for followers"() {
-//		when: "given a newly created user"
-//		def shane = User.create(user1Params)
-//		
-//		then: "user's virtual UserGroup for followers is successfully created and can be found in the database"
-//		def forFollowers = UserGroup.get(shane.virtualUserGroupIdFollowers)
-//		forFollowers.isVirtual
-//	}
-//
-//	void "Virtual user created for discussions"() {
-//		when: "given a newly created user"
-//		def shane = User.create(user1Params)
-//		
-//		then: "user's virtual UserGroup for discussions is successfully created and can be found in the database"
-//		def forDiscussions = UserGroup.get(shane.virtualUserGroupIdDiscussions)
-//		forDiscussions.isVirtual
-//	}
-//
-//	void "User can be followed"() {
-//		given: "users, shane and spider"
-//		def shane = User.create(user1Params)
-//		def spider = User.create(user2Params)
-//		
-//		when: "spider follows shane"
-//		shane.FollowMe(spider)
-//		Utils.save(shane, true)
-//		
-//		then: "the following relationship is stored in the database"
-//		UserGroup.get(User.get(shane.id).virtualUserGroupIdFollowers).find{ it -> it.id == spider.id }
-//	}
-//	
-//	void "Users can follow each other"() {
-//		given: "users, shane and spider"
-//		def shane = User.create(user1Params)
-//		def spider = User.create(user2Params)
-//		
-//		when: "spider follows shane and shane follows spider"
-//		shane.FollowMe(spider)
-//		Utils.save(shane, true)
-//		spider.FollowMe(shane)
-//		Utils.save(spider, true)
-//		
-//		then: "both following relationships are stored in the database"
-//		UserGroup.get(User.get(shane.id).virtualUserGroupIdFollowers).find{ it -> it.id == spider.id }
-//		UserGroup.get(User.get(spider.id).virtualUserGroupIdFollowers).find{ it -> it.id == shane.id }
-//	}
-//
-//	void "User's virtual group can read discussion created by user"() {
-//		given: "A newly created user"
-//		def shane = User.create(user1Params)
-//		
-//		when: "a discussion is created by user"
-//		def discussion = Discussion.create(shane)
-//		
-//		then: "the user's virtual group has reader permissions for the discussion and the information is in the database"
-//		GroupMemberReader.lookupGroupIds(shane.id).find{ it -> it.memberId == discussion.id && it.groupId == shane.virtualUserGroupIdDiscussions }
-//	}
+	void "Virtual user group is created for followers"() {
+		when: "given a newly created user"
+		def shane = User.create(user1Params)
+		
+		then: "user's virtual UserGroup for followers is successfully created and can be found in the database"
+		def forFollowers = UserGroup.get(shane.virtualUserGroupIdFollowers)
+		forFollowers.isVirtual
+	}
+
+	void "Virtual user created for discussions"() {
+		when: "given a newly created user"
+		def shane = User.create(user1Params)
+		
+		then: "user's virtual UserGroup for discussions is successfully created and can be found in the database"
+		def forDiscussions = UserGroup.get(shane.virtualUserGroupIdDiscussions)
+		forDiscussions.isVirtual
+	}
+
+	void "User can be followed"() {
+		given: "users, shane and spider"
+		def shane = User.create(user1Params)
+		def spider = User.create(user2Params)
+		
+		when: "spider follows shane"
+		shane.follow(spider)
+		Utils.save(shane, true)
+		
+		then: "in the database, spider is a reader of shane's virtual followers group"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
+	}
+	
+	void "User can be unfollowed"() {
+		given: "users, shane and spider"
+		def shane = User.create(user1Params)
+		def spider = User.create(user2Params)
+		
+		when: "spider follows shane"
+		shane.follow(spider)
+		Utils.save(shane, true)
+		
+		then: "in the database, spider is a reader of shane's virtual followers group"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
+		
+		when: "spider stops following shane"
+		shane.unFollow(spider)
+		Utils.save(shane, true)
+		
+		then: "in the database, spider is not a reader of shane's virtual followers group"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id) == null
+	}
+	
+	void "User does not automatically follow themselves"() {
+		when: "given a newly created user"
+		def shane = User.create(user1Params)
+		
+		then: "in the database, user is not reader of its own virtual followers group"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, shane.id) == null
+	}
+	
+	void "Users can follow each other"() {
+		given: "users, shane and spider"
+		def shane = User.create(user1Params)
+		def spider = User.create(user2Params)
+		
+		when: "spider follows shane and shane follows spider"
+		shane.follow(spider)
+		Utils.save(shane, true)
+		spider.follow(shane)
+		Utils.save(spider, true)
+		
+		then: "in the database, spider and shane are readers of each other's virtual followers group"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
+		GroupMemberReader.lookup(spider.virtualUserGroupIdFollowers, shane.id)
+	}
+
+	void "User can read discussion that it created"() {
+		given: "A newly created user"
+		def shane = User.create(user1Params)
+		
+		when: "a discussion is created by user"
+		def discussion = Discussion.create(shane)
+		
+		then: "user is reader of virtual group that is member of discussion group and the information is in the database"
+		GroupMemberReader.lookup(shane.virtualUserGroupIdDiscussions, shane.id)
+		GroupMemberDiscussion.lookup(shane.virtualUserGroupIdDiscussions, discussion.id)		
+	}
 }
