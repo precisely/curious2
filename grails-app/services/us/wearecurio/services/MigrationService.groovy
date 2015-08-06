@@ -510,6 +510,9 @@ class MigrationService {
 		tryMigration("Drop Discussion isPublic") {
 			sql ("alter table discussion drop column is_public")
 		}
+		tryMigration("Remove user group unique constraint") {
+			sql('alter table user_group drop index full_name')
+		}
 	}
 	
 	/**
