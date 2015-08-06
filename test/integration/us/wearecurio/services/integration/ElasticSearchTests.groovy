@@ -552,7 +552,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 2
-		assert dbGroupIds.contains(user.virtualUserGroupId)
+		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
 		assert dbGroupIds.contains(groupA.id)
 		assert !dbGroupIds.contains(groupB.id)
 		
@@ -1057,7 +1057,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 2
-		assert dbGroupIds.contains(user.virtualUserGroupId)
+		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
 		assert dbGroupIds.contains(groupA.id)
 		assert !dbGroupIds.contains(groupB.id)
 		
@@ -1137,7 +1137,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 3
-		assert dbGroupIds.contains(user.virtualUserGroupId)
+		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
 		assert dbGroupIds.contains(groupA.id)
 		assert !dbGroupIds.contains(groupB.id)
 		assert dbGroupIds.contains(groupC.id)
@@ -1305,7 +1305,7 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
 		assert dbGroupIds.size() == 3
-		assert dbGroupIds.contains(user.virtualUserGroupId)
+		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
 		assert dbGroupIds.contains(groupA.id)
 		assert dbGroupIds.contains(groupB.id)
 		assert !dbGroupIds.contains(groupC.id)

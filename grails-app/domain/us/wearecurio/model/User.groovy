@@ -34,9 +34,8 @@ class User {
 	String hash
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
-	Long virtualUserGroupId
-	Long virtualUserGroupIdFollowers
 	Long virtualUserGroupIdDiscussions
+	Long virtualUserGroupIdFollowers
 	
 	static constraints = {
 		username(maxSize:70, unique:true)
@@ -55,7 +54,8 @@ class User {
 		virtual(nullable:true)
 		remindEmail(nullable:true)
 		website(nullable:true)
-		virtualUserGroupId(nullable:true)
+		virtualUserGroupIdFollowers(nullable:true)
+		virtualUserGroupIdDiscussions(nullable:true)
 	}
 	
 	static mapping = {
@@ -67,7 +67,7 @@ class User {
 	}
 
 	static searchable = {
-		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
+		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdDiscussions']
 	}
 
 	SortedSet interestTags
@@ -103,13 +103,21 @@ class User {
 		user.update(map)
 		Utils.save(user, true)
 		
-		def groupName = "'" + (user.username?:"anonymous" ) + "' virtual group"
-		def virtualUserGroup = UserGroup.createVirtual(groupName, true)
+		def groupNameDiscussions = "'" + (user.username?:"anonymous" ) + "' virtual group for discussions"
+		def virtualUserGroup = UserGroup.createVirtual(groupNameDiscussions, true)
 		if (virtualUserGroup) {
-			user.virtualUserGroupId = virtualUserGroup.id
-			virtualUserGroup.addReader(user)
+			user.virtualUserGroupIdDiscussions = virtualUserGroup.id
+			//addAdmin also adds as reader and writer
 			virtualUserGroup.addAdmin(user)
-			virtualUserGroup.addWriter(user)
+		}
+
+		def groupNameFollowers = "'" + (user.username?:"anonymous" ) + "' virtual group for followers"
+		virtualUserGroup = UserGroup.createVirtual(groupNameFollowers, true)
+		if (virtualUserGroup) {
+			user.virtualUserGroupIdFollowers = virtualUserGroup.id
+			virtualUserGroup.addAdmin(user)
+			virtualUserGroup.removeReader(user)
+			virtualUserGroup.removeWriter(user)
 		}
 		
 		return user
@@ -180,6 +188,30 @@ class User {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete(flush:true)
+	}
+
+	public static boolean follow(User followed, User follower) {
+		return followed.follow(follower)
+	}
+	
+	public static unFollow(User followed, User follower) {
+		followed.unFollow(follower)
+	}
+	
+	public boolean follow(User follower) {
+		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
+		if (r) return true
+		
+		r = GroupMemberReader.create(virtualUserGroupIdFollowers, follower.id)
+		
+		return r != null
+	}
+	
+	public unFollow(User follower) {
+		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
+		if (r == null) return
+		
+		GroupMemberReader.delete(virtualUserGroupIdFollowers, follower.id)
 	}
 	
 	public update(Map map) {
