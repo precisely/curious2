@@ -27,7 +27,7 @@ $.fn.isUnderEvent = function(e) {
 	var width = this.width();
 
 	return e.pageX >= pos.left && e.pageX < pos.left + width
-	&& e.pageY >= pos.top && e.pageY < pos.top + height;
+			&& e.pageY >= pos.top && e.pageY < pos.top + height;
 }
 
 $.fn.selectRange = function(start, end) {
