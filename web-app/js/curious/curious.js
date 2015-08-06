@@ -1,8 +1,8 @@
-// Base Curious functionality
+//Base Curious functionality
 
 /*
-* jQuery extensions
-*/
+ * jQuery extensions
+ */
 $.fn.setAbsolute = function(options) {
 	return this.each(function() {
 		var el = $(this);
@@ -27,7 +27,7 @@ $.fn.isUnderEvent = function(e) {
 	var width = this.width();
 
 	return e.pageX >= pos.left && e.pageX < pos.left + width
-			&& e.pageY >= pos.top && e.pageY < pos.top + height;
+	&& e.pageY >= pos.top && e.pageY < pos.top + height;
 }
 
 $.fn.selectRange = function(start, end) {
@@ -52,20 +52,20 @@ $.extend({
 });
 
 /*
-* HTML escape utility methods
-*/
+ * HTML escape utility methods
+ */
 function escapehtml(str) {
 	return (''+str).replace(/&/g,'&amp;').replace(/>/g,'&gt;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/  /g,'&nbsp;&nbsp;');
 }
 
 function addslashes(str) {
 	return str.replace(/\'/g,'\\\'').replace(/\"/g,'\\"')
-			.replace(/\\/g,'\\\\').replace(/\0/g,'\\0');
+	.replace(/\\/g,'\\\\').replace(/\0/g,'\\0');
 }
 
 /*
-* Text field highlighting methods
-*/
+ * Text field highlighting methods
+ */
 function resetTextField(field) {
 	if (!field.data('textFieldAlreadyReset')) {
 		field.css('color','#000000');
@@ -106,8 +106,8 @@ function formatUnits(units) {
 }
 
 /*
-* Curious data json return value check
-*/
+ * Curious data json return value check
+ */
 function checkData(data, status, errorMessage, successMessage) {
 	if (data == 'error') {
 		if (errorMessage && status != 'cached')
@@ -142,8 +142,8 @@ function checkData(data, status, errorMessage, successMessage) {
 }
 
 /*
-* Curious user id/name methods
-*/
+ * Curious user id/name methods
+ */
 var currentUserId;
 var currentUserName;
 
@@ -323,7 +323,7 @@ function submitHelpEntryForm(params, callback) {
 		params.entries[0] += ' ' + dateToTimeStr(new Date(), false);
 	}
 	queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
-	function(data) {
+			function(data) {
 		if (!checkData(data))
 			return;
 
@@ -352,7 +352,7 @@ function nextQuestion() {
 	} else if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
 		$('#helpWizardOverlay').modal('hide');
 		window.location.href = '/home/index'
-		return true;
+			return true;
 	} else {
 		createHelpEntry(function() {
 			$('#help-carousel-content').carousel('next');
@@ -398,14 +398,14 @@ function createHelpEntry(callback) {
 
 	if (entryText == '') {
 		queueJSON('Skipping questions', '/data/hideHelpData?' + getCSRFPreventionURI('hideHelpDataCSRF') + '&callback=?', 
-		function(resp) {
+				function(resp) {
 			callback();
 		});
 		return false;
 	}
 
 	var params = {
-		entries: [entryText]
+			entries: [entryText]
 	}
 	if (entryId) {
 		$.extend(params, {entryId: entryId})

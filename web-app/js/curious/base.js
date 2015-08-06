@@ -1,4 +1,4 @@
-// Base Javascript library extensions
+//Base Javascript library extensions
 
 function isOnline() {
 	return window.navigator.onLine;
@@ -13,8 +13,8 @@ function supportsLocalStorage() {
 }
 
 /*
-* Logout callbacks; register callbacks to be called when user logs out
-*/
+ * Logout callbacks; register callbacks to be called when user logs out
+ */
 var _logoutCallbacks = [];
 
 var _loginSessionNumber = 0;
@@ -49,8 +49,8 @@ $(document).ready(function() {
 });
 
 /*
-* Add universal startsWith method to all String classes
-*/
+ * Add universal startsWith method to all String classes
+ */
 String.prototype.startsWith = function(str) { return this.substring(0, str.length) === str; }
 String.prototype.endsWith = function (str) { return this.length >= str.length && this.substr(this.length - str.length) == str; }
 
@@ -63,35 +63,35 @@ String.prototype.indexOfRegex = function(regex){
 }
 
 /* 
-* This function will capitalize first letter of a String
-* Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
-*/
+ * This function will capitalize first letter of a String
+ * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+ */
 String.prototype.capitalizeFirstLetter = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 /*
-* Simple, clean Javascript inheritance scheme
-* 
-* Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
-* 
-* Usage:
-* 
-* function Person(age) {
-* 	this.age = age;
-* }
-* 
-* function Fireman(age, station) {
-* 	Person.call(this, age);
-* 	this.station = station;
-* }
-* inherit(Fireman, Person);
-* 
-* var fireman = new Fireman(35, 1001);
-* assert(fireman.age == 35);
-* 
-* 
-*/
+ * Simple, clean Javascript inheritance scheme
+ * 
+ * Based on: http://kevinoncode.blogspot.com/2011/04/understanding-javascript-inheritance.html
+ * 
+ * Usage:
+ * 
+ * function Person(age) {
+ * 	this.age = age;
+ * }
+ * 
+ * function Fireman(age, station) {
+ * 	Person.call(this, age);
+ * 	this.station = station;
+ * }
+ * inherit(Fireman, Person);
+ * 
+ * var fireman = new Fireman(35, 1001);
+ * assert(fireman.age == 35);
+ * 
+ * 
+ */
 function inherit(subclass, superclass) {
 	function TempClass() {}
 	TempClass.prototype = superclass.prototype;
@@ -101,8 +101,8 @@ function inherit(subclass, superclass) {
 }
 
 /*
-* Low-level utility methods
-*/
+ * Low-level utility methods
+ */
 function arrayEmpty(arr) {
 	for (var i in arr) {
 		return false;
@@ -118,11 +118,11 @@ function removeElem(arr, elem) {
 }
 
 
-// This function returns url parameters as key value pair
+//This function returns url parameters as key value pair
 function getSearchParams() {
 	var vars = {};
 	var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,
-	function(m,key,value) {
+			function(m,key,value) {
 		vars[key] = value;
 	}
 	);
@@ -130,9 +130,9 @@ function getSearchParams() {
 }
 
 /*
-* This method will return javascript object by mapping form input fields as name: value
-* See this for reference: http://stackoverflow.com/a/17784656/4395233
-*/
+ * This method will return javascript object by mapping form input fields as name: value
+ * See this for reference: http://stackoverflow.com/a/17784656/4395233
+ */
 jQuery.fn.serializeObject = function() {
 	var params = {};
 	$(this).serializeArray().map(function(x) {params[x.name] = x.value;});
@@ -140,15 +140,15 @@ jQuery.fn.serializeObject = function() {
 }
 
 /*
-* Number/date formatting
-*/
+ * Number/date formatting
+ */
 function isNumeric(str) {
 	var chars = "0123456789.+-";
 
 	for (i = 0; i < str.length; i++)
 		if (chars.indexOf(str.charAt(i)) == -1)
 			return false;
-		return true;
+	return true;
 }
 
 function dateToTime(date) {
@@ -171,14 +171,14 @@ function prettyDate(time) {
 	}
 
 	return day_diff == 0 && (
-		diff < 60 && "just now" ||
-		diff < 120 && "1 minute ago" ||
-		diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
-		diff < 7200 && "1 hour ago" ||
-		diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
-		day_diff == 1 && "Yesterday" ||
-		day_diff < 7 && day_diff + " days ago" ||
-		day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
+			diff < 60 && "just now" ||
+			diff < 120 && "1 minute ago" ||
+			diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
+			diff < 7200 && "1 hour ago" ||
+			diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
+			day_diff == 1 && "Yesterday" ||
+			day_diff < 7 && day_diff + " days ago" ||
+			day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
 }
 
 function showCommentAgeFromDate() {
@@ -345,9 +345,9 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 			type: requestMethod,
 			dataType: "json",
 			contentType: (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8',
-			url: url,
-			data: args,
-			timeout: 20000 + (delay > 0 ? delay : 0)
+					url: url,
+					data: args,
+					timeout: 20000 + (delay > 0 ? delay : 0)
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
@@ -370,12 +370,12 @@ App.CSRF.SyncTokenKeyName = "SYNCHRONIZER_TOKEN"; // From org.codehaus.groovy.gr
 App.CSRF.SyncTokenUriName = "SYNCHRONIZER_URI"; // From org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder.TOKEN_URI
 
 /**
-* A method which returns an string representation of an url containing parameters
-* related to CSRF prevention. This is useful to concate url in any url string of ajax call,
-* @param key unique string which is passed in jqCSRFToken tag to create token.
-* @param prefix any string to append before generated url like: <b>&</b>.
-* @returns string representation of CSRF parameters.
-*/
+ * A method which returns an string representation of an url containing parameters
+ * related to CSRF prevention. This is useful to concate url in any url string of ajax call,
+ * @param key unique string which is passed in jqCSRFToken tag to create token.
+ * @param prefix any string to append before generated url like: <b>&</b>.
+ * @returns string representation of CSRF parameters.
+ */
 function getCSRFPreventionURI(key) {
 	var preventionURI = App.CSRF.SyncTokenKeyName + "=" + App.CSRF[key] + "&" + App.CSRF.SyncTokenUriName + "=" + key;
 	if(App.CSRF[key] == undefined) {
@@ -385,13 +385,13 @@ function getCSRFPreventionURI(key) {
 }
 
 /**
-* A method which returns an object containing key & its token based on given key.
-* This is useful to be easily passed in some jQuery methods like <b>getJSON</b>,
-* which accepts parameters to be passed as Object.
-* @param key unique string which is passed in jqCSRFToken tag to create token.
-* @param data optional object to attach to new object using jQuery's extend method.
-* @returns the object containing parameters for CSRF prevention.
-*/
+ * A method which returns an object containing key & its token based on given key.
+ * This is useful to be easily passed in some jQuery methods like <b>getJSON</b>,
+ * which accepts parameters to be passed as Object.
+ * @param key unique string which is passed in jqCSRFToken tag to create token.
+ * @param data optional object to attach to new object using jQuery's extend method.
+ * @returns the object containing parameters for CSRF prevention.
+ */
 function getCSRFPreventionObject(key, data) {
 	var CSRFPreventionObject = new Object();
 	if(App.CSRF[key]) {
@@ -404,7 +404,7 @@ function getCSRFPreventionObject(key, data) {
 	return $.extend(CSRFPreventionObject, data);
 }
 
-// Singleton Class function.
+//Singleton Class function.
 var RepeatType = new function() {
 	this.CONTINUOUS_BIT = 0x100;
 	this.GHOST_BIT = 0x200;
@@ -455,7 +455,7 @@ $.datepicker._gotoToday = function(id) {
 
 function showBootstrapAlert($element, message, delay) {
 	delay = !delay ? 5000 : delay
-	$element.show().text(message);
+			$element.show().text(message);
 	if (delay == 0) {
 		setInterval(function() {
 			$element.hide();
