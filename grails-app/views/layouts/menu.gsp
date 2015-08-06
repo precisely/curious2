@@ -10,7 +10,7 @@
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <script type="text/javascript" src="/js/curious/templates/feed-templates.js?ver=21"></script>
-<c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, 
+<c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
 		getInterestTagsDataCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
@@ -54,7 +54,7 @@
 </content>
 <script>
 	var showModal = ${(session.survey == 'compass')? true: false};
-	var showHelpModal = ${session.registrationSuccessful?: false};
+	var showHelpModal = ${session.showHelp?: false};
 
 	var processUserData = function(data) {
 		if (!checkData(data))
