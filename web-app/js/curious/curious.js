@@ -14,7 +14,7 @@ $.fn.setAbsolute = function(options) {
 		}, options);
 		el.css({ position: "absolute",
 			marginLeft: 0, marginTop: 0,
-		top: settings.y, left: settings.x });
+			top: settings.y, left: settings.x });
 		if (settings.rebase)
 			el.remove().appendTo("body");
 	});
@@ -60,7 +60,7 @@ function escapehtml(str) {
 
 function addslashes(str) {
 	return str.replace(/\'/g,'\\\'').replace(/\"/g,'\\"')
-	.replace(/\\/g,'\\\\').replace(/\0/g,'\\0');
+			.replace(/\\/g,'\\\\').replace(/\0/g,'\\0');
 }
 
 /*
@@ -184,7 +184,7 @@ $(document).ready(function() {
 		var params = $(this).serializeObject();
 
 		queuePostJSON('Completing survey', '/data/saveSurveyData', getCSRFPreventionObject('saveSurveyDataCSRF', params),
-		function(data) {
+				function(data) {
 			if (!checkData(data))
 				return;
 
@@ -323,17 +323,17 @@ function submitHelpEntryForm(params, callback) {
 		params.entries[0] += ' ' + dateToTimeStr(new Date(), false);
 	}
 	queuePostJSON('Creating help entries', '/data/createHelpEntriesData', getCSRFPreventionObject('createHelpEntriesDataCSRF', params),
-		function(data) {
-			if (!checkData(data))
-				return;
+	function(data) {
+		if (!checkData(data))
+			return;
 
-			if (data.success) {
-				callback(data);
-			} else {
-				enableHelpForm();
-				showBootstrapAlert($('.help-alert'), data.message, 0);
-			}
-		}, function() {}
+		if (data.success) {
+			callback(data);
+		} else {
+			enableHelpForm();
+			showBootstrapAlert($('.help-alert'), data.message, 0);
+		}
+	}, function() {}
 	);
 	return false;
 }
@@ -398,9 +398,9 @@ function createHelpEntry(callback) {
 
 	if (entryText == '') {
 		queueJSON('Skipping questions', '/data/hideHelpData?' + getCSRFPreventionURI('hideHelpDataCSRF') + '&callback=?', 
-			function(resp) {
-				callback();
-			});
+		function(resp) {
+			callback();
+		});
 		return false;
 	}
 
