@@ -472,8 +472,8 @@ class Discussion {
 	}
 	
 	private void addUserVirtualGroup(User user) {
-		if (user?.virtualUserGroupId > 0) {
-			GroupMemberDiscussion.create(user.virtualUserGroupId, id)
+		if (user?.virtualUserGroupIdDiscussions > 0) {
+			GroupMemberDiscussion.create(user.virtualUserGroupIdDiscussions, id)
 		}
 	}
 }
