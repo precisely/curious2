@@ -103,26 +103,45 @@ class User {
 		user.update(map)
 		Utils.save(user, true)
 		
-		def groupNameDiscussions = "'" + (user.username?:"anonymous" ) + "' virtual group for discussions"
-		def virtualUserGroup = UserGroup.createVirtual(groupNameDiscussions, true)
-		if (virtualUserGroup) {
-			user.virtualUserGroupIdDiscussions = virtualUserGroup.id
-			//addAdmin also adds as reader and writer
-			virtualUserGroup.addAdmin(user)
-		}
-
-		def groupNameFollowers = "'" + (user.username?:"anonymous" ) + "' virtual group for followers"
-		virtualUserGroup = UserGroup.createVirtual(groupNameFollowers, true)
-		if (virtualUserGroup) {
-			user.virtualUserGroupIdFollowers = virtualUserGroup.id
-			virtualUserGroup.addAdmin(user)
-			virtualUserGroup.removeReader(user)
-			virtualUserGroup.removeWriter(user)
-		}
+		user.createDiscussionsVirtualGroup()
+		user.createFollowersVirtualGroup()
 		
 		return user
 	}
 
+	//make virtual groups public so can be used by migration service
+	public createDiscussionsVirtualGroup()
+	{ 
+		if (virtualUserGroupIdDiscussions != null) {
+			return
+		}
+		
+		def groupNameDiscussions = "'" + (username?:"anonymous" ) + "' virtual group for discussions"
+		def virtualUserGroup = UserGroup.createVirtual(groupNameDiscussions, true)
+		if (virtualUserGroup) {
+			virtualUserGroupIdDiscussions = virtualUserGroup.id
+			//addAdmin also adds as reader and writer
+			virtualUserGroup.addAdmin(this)
+		}
+	}
+	
+	public createFollowersVirtualGroup()
+	{
+		if (virtualUserGroupIdFollowers != null) {
+			return
+		}
+		
+		def groupNameFollowers = "'" + (username?:"anonymous" ) + "' virtual group for followers"
+		def virtualUserGroup = UserGroup.createVirtual(groupNameFollowers, true)
+		if (virtualUserGroup) {
+			virtualUserGroupIdFollowers = virtualUserGroup.id
+			virtualUserGroup.addAdmin(this)
+			//do not want to automatically follow yourself
+			virtualUserGroup.removeReader(this)
+			virtualUserGroup.removeWriter(this)
+		}
+	}
+	
 	public static User createVirtual() {
 		log.debug "User.createVirtual()"
 		

@@ -60,7 +60,6 @@ class UserIntegrationSpec extends IntegrationSpec {
 		
 		when: "spider follows shane"
 		shane.follow(spider)
-		Utils.save(shane, true)
 		
 		then: "in the database, spider is a reader of shane's virtual followers group"
 		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
@@ -73,14 +72,12 @@ class UserIntegrationSpec extends IntegrationSpec {
 		
 		when: "spider follows shane"
 		shane.follow(spider)
-		Utils.save(shane, true)
 		
 		then: "in the database, spider is a reader of shane's virtual followers group"
 		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
 		
 		when: "spider stops following shane"
 		shane.unFollow(spider)
-		Utils.save(shane, true)
 		
 		then: "in the database, spider is not a reader of shane's virtual followers group"
 		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id) == null
@@ -101,9 +98,7 @@ class UserIntegrationSpec extends IntegrationSpec {
 		
 		when: "spider follows shane and shane follows spider"
 		shane.follow(spider)
-		Utils.save(shane, true)
 		spider.follow(shane)
-		Utils.save(spider, true)
 		
 		then: "in the database, spider and shane are readers of each other's virtual followers group"
 		GroupMemberReader.lookup(shane.virtualUserGroupIdFollowers, spider.id)
