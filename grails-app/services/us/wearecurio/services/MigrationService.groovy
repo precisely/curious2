@@ -512,6 +512,7 @@ class MigrationService {
 		}
 		tryMigration("Remove user group unique constraint") {
 			sql('alter table user_group drop index full_name')
+		}
 		tryMigration("Update Virtual UserGroups for User") {
 			def hasVirtualGroupId = sqlRows ("SELECT 'x' FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'tlb_dev' AND TABLE_NAME = '_user' AND COLUMN_NAME = 'virtual_user_group_id'")
 			if (hasVirtualGroupId.size() >= 1) {
