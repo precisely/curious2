@@ -2,9 +2,25 @@ input, optgroup, select, textarea {
 	color: black;
 }
 #addData input {
-	color: #c04f7f;
+	color: #474747;
+	font-family: OpenSans;
+	font-size: 14px;
 }
-
+input[type="text"] {
+	width: 190px;
+	height:40px;
+	border-radius: 3px;
+}
+#addData textarea {
+	color: #5D5D5D;
+	font-family: OpenSans-Light;
+	font-size: 14px;
+}
+textarea[name=data] {
+	resize: none;
+	width: 337px;
+	height: 95px;
+}
 .discussion-topic-input {
 	color: #fc3f28;
 	padding-left: 85px;
@@ -158,7 +174,7 @@ input:focus::-webkit-input-placeholder, input:focus::-moz-placeholder, input:foc
 	border: 1px solid;
 }
 a,a:link,a:hover,a:visited {
-	color: #949494;
+	color: #000000;
 	text-decoration:none;
 }
 .body1 {
@@ -171,7 +187,10 @@ a,a:link,a:hover,a:visited {
 .main {
 	border:1px solid #c6c6c6;
 	background-color: #f6f6f6;
-	padding: 15px;
+	padding-left: 108px;
+	padding-right: 108px;
+	padding-top: 30px;
+	padding-bottom: 108px;
 }
 .main h1 {
 	padding:7px 10px;
@@ -468,7 +487,7 @@ ul.ui-autocomplete {
 }
 #addData label {
 	font-size:.8em;
-	padding:8px 0px 0px 10px;
+	padding:8px 0px 10px 0px;
 	color:#999999;
 	display:inline-block;
 }
@@ -855,7 +874,7 @@ div.plotLine:hover {
 span.plotLine {
 	float:right;
 	padding-left:10px;
-				padding-top:4px;
+	padding-top:4px;
 	display:none;
 }
 div.plotLine:hover span {
@@ -1315,8 +1334,7 @@ body.discuss-page .red-header {
 .red-strip {
 	background-color: #EF4B3A;
 	width: 100%;
-	height: 3px;
-	margin-bottom: 20px;
+	height: 58px;
 }
 .table {
 	display: table;
@@ -1458,7 +1476,7 @@ body.discuss-page .red-header {
 
 .input-affordance {
 	position: relative;
-	margin-bottom: 15px; 
+	margin-bottom: 15px;
 }
 
 .input-affordance input[type="radio"] {
@@ -1478,6 +1496,10 @@ body.discuss-page .red-header {
 	color:#FC3F28;
 }
 
+.user-name-radio .input-affordance input[type=radio]:checked + label { 
+	color:#787878;
+}
+
 .feed-body .input-affordance label:after { 
 	content: "";
 	position: absolute;
@@ -1485,7 +1507,33 @@ body.discuss-page .red-header {
 	height: 16px;
 	width: 16px;
 	margin-left: 10px;
-	margin-top: 2px;
+	margin-top: 1px;
+	border-radius: 8px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+}
+
+.user-name-radio .input-affordance label:after { 
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 16px;
+	width: 16px;
+	margin-left: 10px;
+	margin-top: 1px;
+	border-radius: 8px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+}
+
+.bio-radio .input-affordance label:after { 
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 16px;
+	width: 16px;
+	margin-left: 10px;
+	margin-top: 1px;
 	border-radius: 8px;
 	background-color: white;
 	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
@@ -1493,6 +1541,11 @@ body.discuss-page .red-header {
 
 .input-affordance input[type=radio]:checked+label:after {
 	background-color: #FC3F28;
+	box-shadow: none;
+}
+
+.profile-container #addData .input-affordance input[type=radio]:checked+label:after , .user-name-radio .input-affordance input[type=radio]:checked+label:after{
+	background-color: #575757;
 	box-shadow: none;
 }
 
@@ -1515,6 +1568,26 @@ body.discuss-page .red-header {
 .input-affordance .radio-public-label {
 	right: 122px;
 	top: 25px;
+}
+
+.profile-container #addData .input-affordance .radio-public-label {
+	right: 312px;
+	top: 18px;
+}
+
+.user-name-radio .input-affordance .radio-public-label {
+	right: 770px;
+	top: 87px;
+}
+
+.profile-container #addData .input-affordance .radio-private-label {
+	right: 240px;
+	top: 18px;
+}
+
+.user-name-radio .input-affordance .radio-private-label {
+	right: 696px;
+	top: 87px;
 }
 
 .input-affordance .radio-private-label {
@@ -3969,4 +4042,106 @@ input[type = "number"] {
 
 .logindialog .save {
 	background-color: #ddd;
+}
+
+.save-user-details {
+	background-color: #c04f7f;
+	text-transform: uppercase;
+	color: #ffffff;
+	height: 30px;
+	width: 98px;
+	font-size: 12px;
+	font-weight: bold;
+	border-radius: 2px;
+	line-height: 0px;
+	position: absolute;
+	right: 69px;
+	margin-top: -27px;
+}
+
+.edit-image-button {
+	background-color: #ffffff;
+	text-transform: uppercase;
+	color: #474747;
+	height: 30px;
+	width: 78px;
+	font-size: 12px;
+	font-weight:bold;
+	border: #474747;
+	border-style: solid;
+	border-width: 1px; 
+	line-height: 0px;
+}
+
+.email-radio {
+	position: relative; 
+	margin-bottom: 15px;
+}
+
+.email-radio input[type="radio"] {
+	position: absolute;
+	display: none;
+	height: 16px;
+	width: 16px;
+	border-radius: 5px;
+}
+
+.email-radio input[type="radio"] + label {
+	font-weight: normal;
+	color: #787878;
+}
+
+.email-radio input[type=radio]:checked + label { 
+	color:#787878;
+}
+
+.email-radio label:before { 
+	content: "";
+	position: absolute;
+	display: inline-block; 
+	height: 16px;
+	width: 16px;
+	margin-left: -20px;
+	margin-right:10px;
+	margin-top: 0px;
+	border-radius: 8px;
+	background-color: white;
+	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+}
+
+.email-radio input[type=radio]:checked+label:before {
+	background-color: #FC3F28;
+	box-shadow: none;
+}
+
+.email-radio input[type=radio]:checked+label:before , .email-radio input[type=radio]:checked+label:before{
+	background-color: #575757;
+	box-shadow: none;
+}
+
+.email-radio .radio-public {
+	right: 397px;
+	top: 5px;
+}
+
+.email-radio .radio-private {
+	right: 18px;
+	top: 115px;
+}
+
+.email-radio .radio-public-label, .email-radio .radio-private-label {
+	position: absolute;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.email-radio .radio-public-label {
+	right: 142px;
+	top: -6px;
+}
+
+
+.email-radio .radio-private-label {
+	right: 112px;
+	top: 19px;
 }

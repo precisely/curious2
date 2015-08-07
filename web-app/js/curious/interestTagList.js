@@ -53,10 +53,11 @@ function InterestTagList(editId, listId) {
 	};
 	
 	this.displayTags = function(tags) {
-		jQuery.each(tags, function() {
+/*		jQuery.each(tags, function() {
 			interestList.displayTag(this);
 			return true;
-		});
+		});*/
+		$( ".interest-list" ).append(displayEntry(tags));
 	};
 	
 	this.refreshTags = function(tags) {
