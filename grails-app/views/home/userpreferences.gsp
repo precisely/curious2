@@ -219,14 +219,6 @@ $(function() {
 								</div>
 
 								<div class="form-group">
-								<!-- div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div  -->
-									<label class="control-label" for="interests">Interest Tags</label>
-									<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
-									<br/>&nbsp;<br/>
-									<ol id="interestTagsList" class="form-control" style=padding:3px;height:10em;list-style:none;overflow:auto;width:345px;"></ol>
-								</div>
-
-								<div class="form-group">
 									<label class="control-label">External Accounts</label><br>
 									<!--
 									<g:if test="${!user.twitterAccountName}">
