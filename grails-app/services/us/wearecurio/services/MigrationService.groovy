@@ -133,10 +133,10 @@ class MigrationService {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
 		
-		/*try {
+		try {
 			sql ("ALTER TABLE `migration` CHANGE COLUMN `code` code bigint(20) DEFAULT NULL")
 		} catch (Throwable t) {
-		}*/
+		}
 		tryMigration(SKIP_INITIAL_MIGRATIONS_ID) {
 			// if this is running on a brand new instance, skip initial migrations
 			skipMigrations = true
@@ -513,6 +513,29 @@ class MigrationService {
 		}
 		tryMigration("Remove user group unique constraint") {
 			sql('alter table user_group drop index full_name')
+		tryMigration("Update Virtual UserGroups for User") {
+			def hasVirtualGroupId = sqlRows ("SELECT 'x' FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'tlb_dev' AND TABLE_NAME = '_user' AND COLUMN_NAME = 'virtual_user_group_id'")
+			if (hasVirtualGroupId.size() >= 1) {
+				// has virtualUserGroupId
+				def userData = sqlRows ("SELECT id, virtual_user_group_id FROM _user WHERE virtual_user_group_id IS NOT NULL")
+				def users = User.findAllByVirtualNotEqual(true)
+				for (def user : users) {
+					if (user.virtualUserGroupIdDiscussions == null) {
+						def ids = userData.find{ it2 -> it2.id.mag[0] == user.id }
+						if (ids) {
+							user.virtualUserGroupIdDiscussions = ids.virtual_user_group_id.mag[0]
+						} else {
+							user.createDiscussionsVirtualGroup()
+							Utils.save(user, true)
+						}
+					}
+					if (user.virtualUserGroupIdFollowers == null) {
+						user.createFollowersVirtualGroup()
+						Utils.save(user, true)
+					}
+				}
+				sql ("alter table _user drop column virtual_user_group_id")
+			}			
 		}
 		tryMigration("Change repeat type column") {
 			if (sql('select * from entry where repeat_type is null limit 1')) {
