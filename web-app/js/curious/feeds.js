@@ -468,7 +468,7 @@ function createAutocomplete(inputId, autocompleteId) {
 	$('#' + inputId).on('keyup', function() {
 		var searchString = $('#' + inputId).val();
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?", 
-				{searchString: searchString},
+				{searchString: searchString, max: 10},
 				function(data) {
 			if (!checkData(data))
 				return;
