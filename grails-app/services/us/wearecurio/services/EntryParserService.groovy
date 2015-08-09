@@ -280,7 +280,7 @@ class EntryParserService {
 		GMTMIDNIGHTSECS = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000
 	}
 	
-	static HashSet<String> bloodPressureTags = new HashSet<String>()
+	static protected HashSet<String> bloodPressureTags = new HashSet<String>()
 	
 	static {
 		bloodPressureTags.add("blood pressure")
@@ -288,6 +288,78 @@ class EntryParserService {
 		bloodPressureTags.add("blood")
 	}
 	
+	/**
+	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
+	 */
+	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
+		if (!units) {
+			return baseTag
+		}
+		
+		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
+		String suffix
+		if (unitRatio)
+			suffix = unitRatio.getSuffix()
+		else
+			suffix = units
+			
+		if (bloodPressureTags.contains(baseTag.getDescription())) {
+			if (suffix) {
+				if (suffix.equals("[pressure]")) {
+					if (index == 0) suffix = "[systolic]"
+					else suffix = "[diastolic]"
+				}
+			}
+		}
+		
+		return Tag.look(baseTag.getDescription() + ' ' + suffix)
+	}
+
+	/**
+	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
+	 */
+	def baseTagAndTagWithSuffixForUnits(Tag baseTag, String units, int index) {
+		if (!units) {
+			return baseTag
+		}
+		
+		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
+		String suffix, coreSuffix
+		if (unitRatio)
+			suffix = unitRatio.getSuffix()
+		else
+			suffix = units
+		
+		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
+			if (suffix) {
+				if (suffix.equals("[pressure]")) {
+					if (index == 0) suffix = "[systolic]"
+					else suffix = "[diastolic]"
+				}
+			}
+		}
+		
+		if (suffix.startsWith('[') && suffix.endsWith(']'))
+			coreSuffix = suffix.substring(1, suffix.length() - 1)
+		else
+			coreSuffix = suffix
+		
+		while (true) {
+			String baseDescription = baseTag.getDescription()
+		
+			if (baseDescription.endsWith(' ' + suffix)) {
+				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (suffix.length() + 1)))
+			} else if (baseDescription.endsWith(' ' + coreSuffix)) {
+				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length() + 1)))
+			} else
+				break
+		}
+			
+		Tag tag = Tag.look(baseTag.getDescription() + ' ' + suffix)
+		
+		return [baseTag, tag]
+	}
+
 	static final int CONDITION_TAGWORD = 1
 	static final int CONDITION_TAGSEPARATOR = 2
 	static final int CONDITION_DURATION = 3

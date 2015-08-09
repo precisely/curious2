@@ -124,6 +124,10 @@ class Tag implements Serializable, Comparable {
 	}
 
 	String description
+	
+	String getDescription() {
+		return description;
+	}
 
 	String toString() {
 		return "Tag(id:" + id + ", description:" + description + ")"

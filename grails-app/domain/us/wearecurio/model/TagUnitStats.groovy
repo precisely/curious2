@@ -10,8 +10,9 @@ import us.wearecurio.services.DatabaseService
 import us.wearecurio.units.UnitGroupMap
 import us.wearecurio.units.UnitGroupMap.UnitGroup
 import us.wearecurio.units.UnitGroupMap.UnitRatio
+import us.wearecurio.units.TagUnitStatsInterface
 
-class TagUnitStats {
+class TagUnitStats implements TagUnitStatsInterface {
 	
 	private static def log = LogFactory.getLog(this)
 	
@@ -64,6 +65,10 @@ class TagUnitStats {
 			return UnitGroup.get(unitGroupId)
 			
 		return null
+	}
+	
+	String getUnit() {
+		return unit
 	}
 	
 	String lookupUnitString(boolean plural) {
@@ -165,7 +170,7 @@ class TagUnitStats {
 		}
 	}
 	
-	static def mostUsedTagUnitStats(Long userId, Long tagId) {
+	static TagUnitStats mostUsedTagUnitStats(Long userId, Long tagId) {
 		TagUnitStats stats = cache.getAt(new UserTagId(userId, tagId))
 		if (stats != null) {
 			if (!stats.isAttached()) {
@@ -184,7 +189,20 @@ class TagUnitStats {
 		return tagUnitStats.size() > 0 ? tagUnitStats[0] : null
 	}
 	
-	static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
+	static class UnitGroupUnit implements TagUnitStatsInterface {
+		UnitGroup unitGroup
+		String unit
+		
+		UnitGroupUnit(UnitGroup unitGroup, String unit) {
+			this.unitGroup = unitGroup
+			this.unit = unit
+		}
+		
+		public UnitGroup getUnitGroup() { unitGroup }
+		public String getUnit() { unit }
+	}
+	
+	static UnitGroupUnit mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
 		def r = TagUnitStats.executeQuery("select tagStats.unitGroupId, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId group by tagStats.unitGroupId order by s desc",
 				[tagIds: tagIds, userId: userId], [max: 1])
 		if ((!r) || (!r[0]))
@@ -200,7 +218,7 @@ class TagUnitStats {
 		
 		if ((!r) || (!r[0]))
 			return null
-		
-		return [unitGroupId: unitGroupId, unit: r[0][0]]
+			
+		return new UnitGroupUnit(UnitGroup.get(unitGroupId), r[0][0])
 	}
 }

@@ -65,6 +65,7 @@ class MigrationService {
 	DatabaseService databaseService
 	WithingsDataService withingsDataService
 	ElasticSearchService elasticSearchService
+	EntryParserService entryParserService
 	
 	boolean skipMigrations = false
 	
@@ -608,7 +609,7 @@ class MigrationService {
 				if (description.endsWith(' ' + suffix)) {
 					entry.baseTag = Tag.look(description.substring(0, description.length() - (suffix.length() + 1)))
 				} else {
-					entry.tag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.baseTag, entry.units, 0)
+					entry.tag = entryParserService.tagWithSuffixForUnits(entry.baseTag, entry.units, 0)
 				}
 				
 				Utils.save(entry, true)
@@ -622,7 +623,7 @@ class MigrationService {
 				
 				if (entry.units) {
 					Tag origTag = entry.tag
-					entry.tag = UnitGroupMap.theMap.tagWithSuffixForUnits(entry.tag, entry.units, 0)
+					entry.tag = entryParserService.tagWithSuffixForUnits(entry.tag, entry.units, 0)
 					entry.baseTag = origTag
 				} else {
 					entry.baseTag = entry.tag
@@ -638,7 +639,7 @@ class MigrationService {
 				Entry entry = Entry.get(row['id'])
 				
 				if (entry.units) {
-					def tags = UnitGroupMap.theMap.baseTagAndTagWithSuffixForUnits(entry.tag, entry.units, 0)
+					def tags = entryParserService.baseTagAndTagWithSuffixForUnits(entry.tag, entry.units, 0)
 					entry.baseTag = tags[0]
 					entry.tag = tags[1]
 					Utils.save(entry, true)

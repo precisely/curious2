@@ -1,9 +1,7 @@
 package us.wearecurio.units
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.model.*
 import us.wearecurio.services.EntryParserService
-import us.wearecurio.parse.PatternScanner
 
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
@@ -11,9 +9,15 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class UnitGroupMap {
-
+	
 	private static def log = LogFactory.getLog(this)
-
+	
+	static TagUnitStatsServiceInterface tagUnitStatsService
+	
+	static void setTagUnitStatsService(TagUnitStatsServiceInterface _tagUnitStatsService) {
+		tagUnitStatsService = _tagUnitStatsService;
+	}
+	
 	static final Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static final Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	
@@ -828,12 +832,11 @@ class UnitGroupMap {
 	}
 	
 	UnitRatio unitRatioForTagIdUnits(Long userId, Long tagId, String units) {
-		TagUnitStats mostUsed = TagUnitStats.mostUsedTagUnitStats(userId, tagId)
+		TagUnitStatsInterface mostUsed = tagUnitStatsService.mostUsedTagUnitStats(userId, tagId)
 		
-		if (mostUsed != null && mostUsed.unitGroupId) {
-			UnitGroup unitGroup = UnitGroup.get((int)mostUsed.unitGroupId)
-			if (unitGroup != null)
-				return unitGroup.lookupUnitRatio(units)
+		UnitGroup unitGroup = mostUsed?.getUnitGroup()
+		if (unitGroup != null) {
+			return unitGroup.lookupUnitRatio(units)
 		}
 		
 		// lookup generic unit ratio for the unit
@@ -853,106 +856,20 @@ class UnitGroupMap {
 	 * Look through UnitGroups, or just use most used UnitGroup
 	 */
 	UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
-		TagUnitStats mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(userId, tagIds)
+		TagUnitStatsInterface mostUsed = tagUnitStatsService.mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
-		if (mostUsed.unitGroupId) {
-			UnitGroup unitGroup = UnitGroup.get((int)mostUsed.unitGroupId)
-			if (unitGroup)
-				return unitGroup.lookupUnitRatio(mostUsed.unit)
+			
+		UnitGroup unitGroup = mostUsed?.getUnitGroup()
+		if (unitGroup != null) {
+			return unitGroup.lookupUnitRatio(mostUsed.getUnit())
 		}
+		
+
 		// lookup cached unit ratio for the unit
-		return unitRatioForUnits(mostUsed.unit)
+		return unitRatioForUnits(mostUsed.getUnit())
 	}
 	
-	/**
-	 * Look through UnitGroups, or just use most used UnitGroup
-	 */
-	UnitRatio unitRatioForTagAndUnits(Long userId, Long tagId, String units) {
-		def mostUsed = TagUnitStats.mostUsedTagUnitStatsForTags(userId, tagIds)
-		if (mostUsed == null)
-			return null
-		if (mostUsed.unitGroupId) {
-			UnitGroup unitGroup = UnitGroup.get((int)mostUsed.unitGroupId)
-			if (unitGroup)
-				return unitGroup.lookupUnitRatio(mostUsed.unit)
-		}
-		// lookup cached unit ratio for the unit
-		return unitsToRatio.get(mostUsed.unit)
-	}
-	
-	/**
-	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
-	 */
-	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
-		if (!units) {
-			return baseTag
-		}
-		
-		UnitRatio unitRatio = unitRatioForUnits(units)
-		String suffix
-		if (unitRatio)
-			suffix = unitRatio.getSuffix()
-		else
-			suffix = units
-			
-		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
-			if (suffix) {
-				if (suffix.equals("[pressure]")) {
-					if (index == 0) suffix = "[systolic]"
-					else suffix = "[diastolic]"
-				}
-			}
-		}
-		
-		return Tag.look(baseTag.getDescription() + ' ' + suffix)
-	}
-
-	/**
-	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
-	 */
-	def baseTagAndTagWithSuffixForUnits(Tag baseTag, String units, int index) {
-		if (!units) {
-			return baseTag
-		}
-		
-		UnitRatio unitRatio = unitRatioForUnits(units)
-		String suffix, coreSuffix
-		if (unitRatio)
-			suffix = unitRatio.getSuffix()
-		else
-			suffix = units
-		
-		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
-			if (suffix) {
-				if (suffix.equals("[pressure]")) {
-					if (index == 0) suffix = "[systolic]"
-					else suffix = "[diastolic]"
-				}
-			}
-		}
-		
-		if (suffix.startsWith('[') && suffix.endsWith(']'))
-			coreSuffix = suffix.substring(1, suffix.length() - 1)
-		else
-			coreSuffix = suffix
-		
-		while (true) {
-			String baseDescription = baseTag.getDescription()
-		
-			if (baseDescription.endsWith(' ' + suffix)) {
-				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (suffix.length() + 1)))
-			} else if (baseDescription.endsWith(' ' + coreSuffix)) {
-				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length() + 1)))
-			} else
-				break
-		}
-			
-		Tag tag = Tag.look(baseTag.getDescription() + ' ' + suffix)
-		
-		return [baseTag, tag]
-	}
-
 	/**
 	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
 	 */

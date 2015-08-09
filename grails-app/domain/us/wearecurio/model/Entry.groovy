@@ -145,7 +145,7 @@ class Entry implements Comparable {
 		]
 		
 		m['baseTag'] = Tag.look(description.toLowerCase())
-		m['tag'] = UnitGroupMap.theMap.tagWithSuffixForUnits(m['baseTag'], units, 0)
+		m['tag'] = EntryParserService.get().tagWithSuffixForUnits(m['baseTag'], units, 0)
 		
 		Entry e = createSingle(userId, m, creationMap.groupForDate(date), stats)
 		creationMap.add(e)

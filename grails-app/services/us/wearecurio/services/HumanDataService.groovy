@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
+import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.units.UnitGroupMap
 
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -37,8 +38,9 @@ class HumanDataService {
 	static final String COMMENT = "(Human-%s)"
 	static final String SET_NAME = "human %s import"
 
-	def movesDataService
+	MovesDataService movesDataService
 	def oauthService
+	EntryParserService entryParserService
 
 	def doWithURL(Token tokenInstance, String url, String type, Map args = [:]) {
 		if (args.createdSince) {
@@ -120,7 +122,7 @@ class HumanDataService {
 		if (suffix)
 			tag = Tag.look(baseTagDescription + ' ' + suffix)
 		else
-			tag = UnitGroupMap.theMap.tagWithSuffixForUnits(baseTag, units, 0)
+			tag = entryParserService.tagWithSuffixForUnits(baseTag, units, 0)
 		
 		def m = [
 			tag: tag,

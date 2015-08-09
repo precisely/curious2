@@ -31,7 +31,7 @@ class AnalyticsService {
 		AnalyticsTask.analyticsService = s
 	}
 
-	static EmailService get() { return service }
+	static AnalyticsService get() { return service }
 	
 	def grailsApplication
 	

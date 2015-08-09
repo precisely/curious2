@@ -25,6 +25,7 @@ class BootStrap {
 	SecurityService securityService
 	SearchService searchService
 	EntryParserService entryParserService
+	TagUnitStatsService tagUnitStatsService
 
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
@@ -36,6 +37,7 @@ class BootStrap {
 		SearchService.set(searchService)
 		EntryParserService.set(entryParserService)
 		AnalyticsService.set(analyticsService)
+		TagUnitStatsService.set(tagUnitStatsService)
 		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())

@@ -120,7 +120,7 @@ abstract class TagUnitMap {
 		if (currentMapping["suffix"]) {
 			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
-			tag = unitGroupMap.tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
+			tag = EntryParserService.get().tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
 		}
 		
 		if (args["isSummary"]) {
