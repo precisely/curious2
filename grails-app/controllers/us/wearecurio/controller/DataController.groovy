@@ -23,6 +23,7 @@ import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
+import us.wearecurio.data.RepeatType
 
 class DataController extends LoginController {
 

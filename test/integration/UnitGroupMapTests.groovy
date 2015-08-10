@@ -19,7 +19,7 @@ import us.wearecurio.model.User
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.services.DatabaseService
-import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.data.UnitGroupMap
 
 import groovy.transform.TypeChecked
 

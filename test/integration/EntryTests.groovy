@@ -9,7 +9,7 @@ import org.junit.Test
 
 import us.wearecurio.integration.CuriousTestCase
 import us.wearecurio.model.Entry
-import us.wearecurio.model.RepeatType
+import us.wearecurio.data.RepeatType
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagStats
@@ -1335,7 +1335,7 @@ class EntryTests extends CuriousTestCase {
 	@Test
 	void testRepeatGhostNonContinuous() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm repeat daily", earlyBaseDate, true), new EntryStats())
-		entry.setRepeat(RepeatType.DAILYGHOST)
+		entry.setRepeatType(RepeatType.DAILYGHOST)
 		String v = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat, repeatType:513, repeatEnd:null)")
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)

@@ -16,9 +16,12 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.model.EntryGroup
-import us.wearecurio.units.UnitGroupMap
-import us.wearecurio.units.UnitGroupMap.UnitGroup
-import us.wearecurio.units.UnitGroupMap.UnitRatio
+import us.wearecurio.data.RepeatType
+import us.wearecurio.data.TagUnitStatsInterface
+import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.data.UnitGroupMap.UnitGroup
+import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.DataRetriever
 
 import java.util.ArrayList
 import java.util.HashSet
@@ -67,7 +70,7 @@ class Entry implements Comparable {
 		timeZoneId(nullable:true)
 		setIdentifier(nullable:true)
 		userId(nullable:true)
-		repeat(nullable:true)
+		repeatTypeId(nullable:true)
 	}
 
 	static mapping = {
@@ -93,21 +96,23 @@ class Entry implements Comparable {
 	Integer amountPrecision
 	String units
 	String comment
-	RepeatType repeat
+	Long repeatTypeId
 	Date repeatEnd
 	Tag baseTag
 	DurationType durationType
 	Identifier setIdentifier
 	
-	static embedded = [ 'repeat' ] // store repeatType as integer rather than a reference to an entity
-	
 	static transients = [ 'repeatType' ]
 	
-	RepeatType getRepeatType() { repeat }
+	RepeatType getRepeatType() { repeatTypeId == null ? null : RepeatType.look(repeatTypeId) }
+	
+	void setRepeatType(RepeatType repeatType) {
+		this.repeatTypeId = repeatType?.id
+	}
 	
 	boolean isGhost() {
-		if (repeat == null) return false
-		return repeat.isGhost()
+		if (repeatTypeId == null) return false
+		return getRepeatType().isGhost()
 	}
 	
 	String fetchSuffix() { 
@@ -231,7 +236,7 @@ class Entry implements Comparable {
 					eq("amount", m.amount)
 					eq("amountPrecision", m.amountPrecision == null ? 3 : m.amountPrecision)
 					eq("units", m.units)
-					eq("repeat", repeatType)
+					eq("repeatTypeId", repeatType?.id)
 				}
 			}
 	
@@ -309,12 +314,12 @@ class Entry implements Comparable {
 		if (m['units'] == null)
 			m['units'] = ''
 		
-		TagUnitStats tagUnitStats
+		TagUnitStatsInterface tagUnitStats
 		if ((!m['units']) && (m['amountPrecision'] > 0)) {
 			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0
 			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
 			if (tagUnitStats) {
-				m['units'] = tagUnitStats.lookupUnitString(m['amount'].compareTo(BigDecimal.ONE) != 0)
+				m['units'] = tagUnitStats.getUnitGroup()?.lookupUnitString(tagUnitStats.unit, (m['amount'].compareTo(BigDecimal.ONE) != 0))
 			}
 		} else {
 			TagUnitStats.createOrUpdate(userId, tag.getId(), m['units'])
@@ -329,7 +334,7 @@ class Entry implements Comparable {
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
-				repeat: m['repeatType'],
+				repeatTypeId: m['repeatType']?.id,
 				repeatEnd: m['repeatEnd'],
 				baseTag:baseTag,
 				durationType:durationType,
@@ -458,7 +463,7 @@ class Entry implements Comparable {
 			return false
 
 		return m['datePrecisionSecs'] == this.datePrecisionSecs && amount == m['amount'] \
-			&& comment == (m['comment'] ?: '') && repeat.type == m['repeatType'].type && units == (m['units'] ?: '') \
+			&& comment == (m['comment'] ?: '') && repeatTypeId == m['repeatType']?.id && units == (m['units'] ?: '') \
 			&& amountPrecision == (m['amountPrecision'] ?: 3)
 
 	}
@@ -469,7 +474,7 @@ class Entry implements Comparable {
 		m['tag'] = this.tag
 		m['baseTag'] = this.baseTag
 		m['units'] = this.units
-		m['repeatType'] = this.repeat
+		m['repeatType'] = this.repeatType
 		m['date'] = this.date
 		m['timeZoneName'] = this.fetchTimeZoneName()
 		m['datePrecisionSecs'] = this.datePrecisionSecs
@@ -853,7 +858,7 @@ class Entry implements Comparable {
 						// look for entry that already exists one day later
 						// new date is one day after current baseDate
 
-						String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeat.type in (:repeatIds) order by entry.date desc"
+						String queryStr = "from Entry entry where entry.tag.description = :desc and entry.date = :entryDate and entry.userId = :userId and entry.repeatTypeId in (:repeatIds) order by entry.date desc"
 						def entries = Entry.executeQuery(queryStr, [desc:m['tag'].getDescription(), entryDate:m['date'], userId:entry.getUserId(), repeatIds:repeatTypes], [max: 1])
 
 						Entry e = entries[0]
@@ -1527,21 +1532,21 @@ class Entry implements Comparable {
 
 	protected findPreviousRepeatEntry() {
 		return findNeighboringDailyRepeatEntry(
-		"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type & :dailyBit) <> 0) order by entry.date desc limit 1",
+		"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type_id & :dailyBit) <> 0) order by entry.date desc limit 1",
 		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
 	}
 
 	protected findNextRepeatEntry() {
-		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type & :dailyBit) <> 0) order by entry.date asc limit 1",
+		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type_id & :dailyBit) <> 0) order by entry.date asc limit 1",
 		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
 	}
 
 	protected createRepeat(EntryStats stats) {
-		if (this.repeat == null) return
+		if (this.repeatTypeId == null) return
 
-		if (this.repeat.isContinuous()) {
+		if (this.repeatType.isContinuous()) {
 			// search for matching continuous tag
-			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type & :continuousBit <> 0)"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type_id & :continuousBit <> 0)"
 
 			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
@@ -1573,8 +1578,8 @@ class Entry implements Comparable {
 	}
 
 	protected Entry unGhost(EntryStats stats) {
-		if (this.repeat?.isGhost()) {
-			this.repeat = this.repeat.toggleGhost()
+		if (this.repeatType?.isGhost()) {
+			this.repeatTypeId = this.repeatType.toggleGhost().id
 
 			this.durationType = durationType?.unGhost()
 			this.processAndSave(stats)
@@ -1654,7 +1659,7 @@ class Entry implements Comparable {
 	}
 
 	Entry activateContinuousEntry(Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats) {
-		if ((this.repeat == null) || (!this.repeat.isContinuous()))
+		if ((this.repeatTypeId == null) || (!this.repeatType.isContinuous()))
 			return this
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
@@ -1686,7 +1691,7 @@ class Entry implements Comparable {
 		m['units'] = this.units
 		m['durationType'] = this.durationType?.unGhost()
 		m['baseTag'] = baseTag
-		m['repeatType'] = this.repeat
+		m['repeatType'] = this.repeatType
 		m['setName'] = setName
 		m['comment'] = this.comment
 		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
@@ -1700,7 +1705,7 @@ class Entry implements Comparable {
 	}
 
 	Entry activateTemplateEntry(Long forUserId, Date currentBaseDate, Date nowDate, String timeZoneName, EntryStats stats, String setName) {
-		if (this.repeat == null)
+		if (this.repeatTypeId == null)
 			return null
 			
 		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
@@ -1757,7 +1762,7 @@ class Entry implements Comparable {
 		 */
 		boolean updateRepeatType = false
 		if (m['repeatType'] != null && this.date != m['date'] || (!Utils.equals(m['amount'], this.amount))
-				|| (!Utils.equals(this.repeat, m['repeatType']))) {
+				|| (this.repeatTypeId != m['repeatType']?.id)) {
 			updateRepeatType = true
 		}
 
@@ -1769,7 +1774,7 @@ class Entry implements Comparable {
 		setAmountPrecision(m['amountPrecision']?:DEFAULT_AMOUNTPRECISION)
 		setUnits(m['units']?:'')
 		setComment(m['comment']?:'')
-		setRepeat(m['repeatType'])
+		setRepeatTypeId(m['repeatType']?.id)
 		setSetIdentifier(Identifier.look(m['setName']))
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
@@ -1796,7 +1801,7 @@ class Entry implements Comparable {
 	 * Fetch methods - for getting different subsets of entries
 	 */
 	static def fetchContinuousRepeats(Long userId, Date now, Date currentDate) {
-		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeat is null) and (entry.repeat.type & :continuousBit <> 0)"
+		String continuousQuery = "from Entry entry where entry.userId = :userId and entry.repeatEnd is null and (not entry.repeatTypeId is null) and (entry.repeatTypeId & :continuousBit <> 0)"
 
 		def entries = Entry.executeQuery(continuousQuery, [userId:userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
@@ -1808,7 +1813,7 @@ class Entry implements Comparable {
 
 		String queryStr = "select distinct entry.id " \
 		+ "from entry entry where entry.user_id = :userId and " \
-		+ "entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :remindBit <> 0) " \
+		+ "entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :remindBit <> 0) " \
 		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :interval"
 
 		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), endDate:endDate, startDate:startDate, interval:intervalSecs, remindBit:RepeatType.REMIND_BIT])
@@ -1872,12 +1877,12 @@ class Entry implements Comparable {
 
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (entry.repeat_type & :continuousBit = 0))) or " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type is null) and (entry.repeat_type & :continuousBit = 0))) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type_id is null or (entry.repeat_type_id & :continuousBit = 0))) or " \
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :continuousBit = 0))) " \
 				+ "and entry.tag_id = tag.id " \
-				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type is null or (entry.repeat_type & :continuousBit = 0)) " \
+				+ "order by case when entry.date_precision_secs < 1000 and (entry.repeat_type_id is null or (entry.repeat_type_id & :continuousBit = 0)) " \
 				+ "then unix_timestamp(timestampadd(second, (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400, :startDate)) else " \
-				+ "(case when entry.repeat_type is null then 99999999999 else 0 end) end desc, tag.description asc"
+				+ "(case when entry.repeat_type_id is null then 99999999999 else 0 end) end desc, tag.description asc"
 
 		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousBit:RepeatType.CONTINUOUS_BIT]
 
@@ -1897,12 +1902,12 @@ class Entry implements Comparable {
 
 			// use JodaTime to figure out the correct time in the current time zone
 			desc['timeZoneName'] = timeZoneName
-			if (entry.repeat != null) { // adjust dateTime for repeat entries
+			if (entry.repeatTypeId != null) { // adjust dateTime for repeat entries
 				def date = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
 				if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
 					continue
 				desc['date'] = date
-				desc['repeatType'] = entry.repeat.type
+				desc['repeatType'] = entry.repeatTypeId
 			} else
 				desc['repeatType'] = null
 			desc['setName'] = entry.setIdentifier?.toString()
@@ -1912,7 +1917,7 @@ class Entry implements Comparable {
 		// get continuous repeating elements
 		String continuousQueryStr = "select distinct entry.id as id, tag.description " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and " \
-				+ "entry.repeat_end is null and (not entry.repeat_type is null) and (entry.repeat_type & :continuousBit <> 0) " \
+				+ "entry.repeat_end is null and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :continuousBit <> 0) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by tag.description asc"
 
@@ -1930,7 +1935,7 @@ class Entry implements Comparable {
 			if (!resultTagIds.contains(entry.getTag().getId())) {
 				def desc = entry.getJSONDesc()
 				desc['date'] = baseDate
-				desc['repeatType'] = entry.repeat?.type
+				desc['repeatType'] = entry.repeatTypeId
 				desc['timeZoneName'] = timeZoneName
 				results.add(desc)
 			}
@@ -1951,7 +1956,7 @@ class Entry implements Comparable {
 		def results = []
 
 		String queryStr = "select distinct entry.id " \
-				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type is null or (entry.repeat_type & :ghostBit = 0)) " \
+				+ "from entry entry, tag tag where entry.user_id = :userId and (entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type_id is null or (entry.repeat_type_id & :ghostBit = 0)) " \
 				+ "and entry.tag_id = tag.id " \
 				+ "order by case when entry.date_precision_secs < 1000 " \
 				+ "then unix_timestamp(entry.date) else 0 end desc, tag.description asc"
@@ -1971,109 +1976,6 @@ class Entry implements Comparable {
 		return Utils.listJSONDesc(results)
 	}
 
-	// limit repeat generation to 300 entries, for now
-	protected static final int MAX_PLOT_REPEAT = 300
-
-	protected static def generateRepeaterEntries(def repeaters, long endTimestamp, def results) {
-		def repeaterOrder = { LocalTimeRepeater a, LocalTimeRepeater b ->
-			if (a.getCurrentDateTime() == null) return 1 // sort null repeaters to end
-			if (b.getCurrentDateTime() == null) return -1 // sort null repeaters to end
-			if (!a.isActive()) return 1 // sort inactive repeaters to end
-			if (!b.isActive()) return -1 // sort inactive repeaters to end
-			return a.getCurrentDateTime().getMillis() <=> b.getCurrentDateTime().getMillis()
-		}
-		if (repeaters.size() == 0) return
-
-		// sort repeaters by next date time
-		repeaters.sort(repeaterOrder)
-
-		// if current entry time is later than or equal to next repeater timestamp, iterate through repeaters adding new repeat entries
-		LocalTimeRepeater repeater = repeaters[0]
-		Date nextDate = null
-		if (repeaters.size() > 1) {
-			nextDate = repeaters[1].getDate()
-		}
-		int c = 0
-		while (repeater.isActive() && repeater.getDate().getTime() <= endTimestamp) {
-			Entry entry = repeater.getPayload()
-			def desc = entry.getJSONShortDesc()
-			desc[SHORT_DESC_DATE] = repeater.getDate()
-			repeater.incrementDate()
-			results.add(desc)
-			if (++c > MAX_PLOT_REPEAT)
-				break
-			if (nextDate != null && (repeater.getDate() > nextDate || (!repeater.isActive()))) {
-				repeaters.sort(repeaterOrder)
-				repeater = repeaters[0]
-				if (repeaters.size() > 1) {
-					nextDate = repeaters[1].getDate()
-				}
-			}
-		}
-		repeaters = repeaters
-	}
-
-	static final double twoPi = 2.0d * Math.PI
-
-	protected static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime, DateTimeZone currentTimeZone) {
-		DateTime startDateTime = new DateTime((Date)(startDate ?: currentTime), currentTimeZone) // calculate midnight relative to current time
-		// set time to zero
-		Date dateMidnight = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
-
-		// figure out the angle of the startDate
-		String queryStr = "select (time_to_sec(:dateMidnight) / 43200.0) * pi() as angle"
-
-		def queryMap = [dateMidnight:dateMidnight]
-
-		double startDateAngle = DatabaseService.get().sqlRows(queryStr, queryMap)[0]['angle']
-
-		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
-		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
-
-		// fetch sum of non-repeat entries
-		
-		queryStr = "select count(*) as c, sum(sin((time_to_sec(entry.date) / 43200.0) * pi())) as y, sum(cos((time_to_sec(entry.date) / 43200.0) * pi())) as x " \
-				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or (entry.repeat_type & :ghostBit = 0)) " \
-				+ "and entry.tag_id in (:tagIds) and entry.date >= :startDate and entry.date < :endDate"
-
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, tagIds:tagIds, ghostBit:RepeatType.GHOST_BIT]
-
-		def nonRepeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
-
-		// fetch sum of repeat entries
-		queryStr = "select sum(datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as c, " \
-				+ "sum(sin((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as y, " \
-				+ "sum(cos((time_to_sec(entry.date) / 43200.0) * pi()) * datediff(if(entry.repeat_end is null, :endDate, if(entry.repeat_end < :endDate, entry.repeat_end, :endDate)), if(entry.date > :startDate, entry.date, :startDate))) as x " \
-				+ "from entry entry where entry.user_id = :userId and entry.amount is not null and ((entry.repeat_end is not null and entry.repeat_end > :startDate) or entry.repeat_end is null) and entry.date < :endDate and (entry.repeat_type & :dailyBit <> 0) and (entry.repeat_type & :ghostBit = 0)" \
-				+ "and entry.tag_id in (:tagIds)"
-
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, dailyBit:RepeatType.DAILY_BIT, tagIds:tagIds]
-
-		def repeatSum = DatabaseService.get().sqlRows(queryStr, queryMap)[0]
-
-		int c = (nonRepeatSum['c'] ?: 0) + (repeatSum['c'] ?: 0)
-		if (c == 0)
-			return HALFDAYSECS
-
-		double x = ((nonRepeatSum['x'] ?: 0.0) + (repeatSum['x'] ?: 0.0)) / c
-		double y = ((nonRepeatSum['y'] ?: 0.0) + (repeatSum['y'] ?: 0.0)) / c
-
-		double averageAngle
-
-		if (Math.abs(x) < 1E-8d) x = 0.0d
-		if (Math.abs(y) < 1E-8d) y = 0.0d
-
-		if ((x == 0.0d) && (y == 0.0d))
-			averageAngle = Math.PI
-		else {
-			averageAngle = Math.atan2(y, x)
-			averageAngle -= startDateAngle
-			averageAngle = ((averageAngle % twoPi) + twoPi) % twoPi
-		}
-
-		return (int) (Math.round((averageAngle / twoPi) * 86400.0d)) % 86400
-	}
-	
 	/**
 	 * return [min, max] for list of tagIds for given user
 	 */
@@ -2095,173 +1997,28 @@ class Entry implements Comparable {
 		
 		return [min, max]
 	}
-
+	
 	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
 				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
-				
-		if (!tagIds.size()) {
-			log.error "Entry.fetchPlotData() ERROR: No tag ids specified!"
-			return []
-		}
-
-		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
-
-		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
-		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
-
-		// get timed daily repeats (not ghosted)
-
-		String queryStr = "select entry.id " \
-				+ "from entry where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type & :ghostBit = 0) and (entry.repeat_type & :repeatBit <> 0) " \
-				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
-
-		def queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.DAILY_BIT, tagIds:tagIds]
-		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
-
-		def timedResults = []
-
-		Set resultTagIds = new HashSet<Long>()
-
-		// make this repeater list ordered by current timestamp
-
-		def repeaters = []
-
-		Long nextRepeaterTimestamp = null
-
-		for (result in rawResults) {
-			Entry entry = Entry.get(result['id'])
-
-			RepeatType repeatType = entry.getRepeatType()
-			if (repeatType != null) { // generate repeat values for query
-				Date repeatEnd = entry.getRepeatEnd()
-				if (repeatEnd == null)
-					repeatEnd = endDate
-				else if (repeatEnd.getTime() > endDate.getTime())
-					repeatEnd = endDate
-				LocalTimeRepeater repeater = new LocalTimeRepeater(entry, entry.fetchDateTime(), repeatEnd.getTime())
-				repeaters.add(repeater)
-			}
-		}
-		// get regular results
 		
-		Long userId = user.getId()
-		
-		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
-		
-		queryStr = "select e.date, e.amount, e.tag_id, e.units " \
-				+ "from entry e where e.user_id = :userId " \
-				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type is null or (e.repeat_type & :concreteRepeatBits = 0)) " \
-				+ "and e.tag_id in (:tagIds) order by e.date asc"
-
-		queryMap = [userId:user.getId(), startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.GHOST_BIT), tagIds:tagIds ]
-
-		log.debug("Finding plot data for tag ids: " + tagIds)
-		
-		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
-		
-		log.debug("Number of results: " + rawResults.size())
-		
-		def results = []
-		
-		double mostUsedUnitRatio = mostUsedUnitRatioForTags ? mostUsedUnitRatioForTags.ratio : 1.0d
-
-		for (result in rawResults) {
-			Date date = result['date']
-			BigDecimal amount = result['amount']
-			def entryJSON = [date, amount, Tag.fetch(result['tag_id'].longValue())?.getDescription()]
-			UnitRatio unitRatio = mostUsedUnitRatioForTags?.lookupUnitRatio(result['units'])
-			if (unitRatio) {
-				entryJSON[1] = (amount * unitRatio.ratio) / mostUsedUnitRatio
-			}
-			long entryTimestamp = date.getTime()
-			generateRepeaterEntries(repeaters, entryTimestamp, results)
-			results.add(entryJSON)
-		}
-		// keep generating remaining repeaters until endDate
-		generateRepeaterEntries(repeaters, endDate.getTime(), results)
-		
-		if (plotInfo != null) {
-			plotInfo['unitRatio'] = mostUsedUnitRatioForTags
-			plotInfo['unitGroupId'] = mostUsedUnitRatioForTags == null ? -1 : mostUsedUnitRatioForTags.unitGroup.id
-			plotInfo['valueScale'] = mostUsedUnitRatio
-		}
-		
-		return results
-	}
-
-	static final long HALFDAYTICKS = 12 * 60 * 60 * 1000L
-	static final int DAYSECS = 24 * 60 * 60
-	static final int HALFDAYSECS = 12 * 60 * 60
-	static final int HOURSECS = 60 * 60
-
-	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Map plotInfo = null) {
-		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
-
-		if (endDate == null) endDate = new Date() // don't query past now if endDate isn't specified
-
-		int averageSecs = fetchAverageTime(user, tagIds, startDate, endDate, currentDate, currentTimeZone)
-
-		if (averageSecs > HALFDAYSECS + HOURSECS * 9) { // if the average time is after 9pm, do a "night sum"
-			averageSecs -= DAYSECS
-		}
-
-		long offset = (averageSecs * 1000L) - HALFDAYTICKS
-		if (startDate != null)
-			startDate = new Date(startDate.getTime() + offset)
-		else if (endDate != null)
-			endDate = new Date(endDate.getTime() + offset)
-
-		def rawResults = fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
-
-		Long startTime = startDate?.getTime()
-		Long startDayTime = startTime
-		Long endDayTime = startDayTime != null ? startDayTime + DAYTICKS : null
-
-		def currentResult = null
-		def summedResults = []
-		
-		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(user.getId(), tagIds)
-
-		for (result in rawResults) {
-			Date resultDate = result[SHORT_DESC_DATE]
-			if (startDate == null) { // no start date, start a date at midnight
-				DateTime startDateTime = new DateTime(resultDate, currentTimeZone) // set start date to 1000 AD if startDate isn't specified
-				// set time to zero
-				startDate = startDateTime.toLocalDate().toDateTime(LocalTime.MIDNIGHT, currentTimeZone).toDate()
-				startDate = new Date(startDate.getTime() + offset)
-				startDayTime = startDate.getTime()
-				endDayTime = startDayTime + DAYTICKS
-			}
-			Long resultTime = resultDate.getTime()
-			if (resultTime < startDayTime || resultTime > endDayTime) { // switch to new day
-				currentResult = null
-				startDayTime = resultTime - ((resultTime - startDayTime) % DAYTICKS) // start of next day
-				endDayTime = startDayTime + DAYTICKS
-			}
-			if (resultTime < endDayTime) {
-				if (currentResult == null) {
-					currentResult = result
-					result[SHORT_DESC_DATE] = new Date(startDayTime + HALFDAYTICKS)
-					summedResults.add(currentResult)
-				} else {
-					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT] + result[SHORT_DESC_AMOUNT]
-				}
-			}
-
-		}
-		
-		double valueScale = mostUsedUnitRatio ? mostUsedUnitRatio.ratio : 1.0d
-
-		if (plotInfo != null) {
-			plotInfo['unitRatio'] = mostUsedUnitRatio
-			plotInfo['unitGroupId'] = mostUsedUnitRatio == null ? -1 : mostUsedUnitRatio.unitGroup.id
-			plotInfo['valueScale'] = valueScale
-		}
-
-		return summedResults
+		return DataRetriever.get().fetchPlotData(user.id, tagIds, startDate, endDate, currentTime, timeZoneName, plotInfo)
 	}
 	
+	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Map plotInfo = null) {
+		log.debug "Entry.fetchSumPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
+				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
+
+		return DataRetriever.get().fetchSumPlotData(user.id, tagIds, startDate, endDate, currentDate, timeZoneName, plotInfo)
+	}
+	
+	static def fetchAverageTime(User user, def tagIds, Date startDate, Date endDate, Date currentTime, DateTimeZone currentTimeZone) {
+		log.debug "Entry.fetchAverageTime() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
+				+ ", endDate:" + endDate + ", currentTimeZone:" + currentTimeZone
+		
+		return DataRetriever.get().fetchAverageTime(user.id, tagIds, startDate, endDate, currentTime, currentTimeZone)
+	}
+
 	Integer fetchDatePrecisionSecs() {
 		return datePrecisionSecs == null ? 60 : datePrecisionSecs;
 	}
@@ -2316,7 +2073,7 @@ class Entry implements Comparable {
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
 			comment:comment,
-			repeatType:repeat != null ? repeat.getId() : 0L]
+			repeatType:repeatTypeId]
 		
 		Integer index = 0
 		
@@ -2329,21 +2086,6 @@ class Entry implements Comparable {
 		retVal['amounts'] = amounts
 		
 		return retVal
-	}
-
-	/**
-	 * Get minimal data
-	 */
-	protected static final int SHORT_DESC_DATE = 0
-	protected static final int SHORT_DESC_AMOUNT = 1
-	protected static final int SHORT_DESC_DESCRIPTION = 2
-
-	def getJSONShortDesc() {
-		return [
-			date,
-			amount,
-			getDescription()
-		];
 	}
 
 	String getDateString() {
@@ -2361,7 +2103,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeat?.getId() \
+				+ ", repeatType:" + repeatTypeId \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ", setName:" + setIdentifier?.getValue() \
 				+ ")"
@@ -2377,7 +2119,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeat?.getId() \
+				+ ", repeatType:" + repeatTypeId \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
@@ -2391,7 +2133,7 @@ class Entry implements Comparable {
 				+ ", units:" + units \
 				+ ", amountPrecision:" + fetchAmountPrecision() \
 				+ ", comment:" + comment \
-				+ ", repeatType:" + repeat?.getId() \
+				+ ", repeatType:" + repeatTypeId \
 				+ ", repeatEnd:" + Utils.dateToGMTString(repeatEnd) \
 				+ ")"
 	}
@@ -2452,173 +2194,6 @@ class Entry implements Comparable {
 		}
 
 		return result
-	}
-}
-
-// NOTE: Unghosted repeat entries are repeated in an unghosted manner all
-// the way until their repeatEnd
-// but unghosted remind entries are only unghosted on their start date, and
-// not on subsequent dates
-
-// new end-of-entry repeat indicators:
-// repeat daily
-// delete repeat indicator to end repeat sequence
-// OR: repeat end
-
-// like a ghost, but it appears in plot data, it is just a repetition of a
-// prior
-// entry, must be activated to edit
-
-// repeat type is now an integer flag variable
-
-class RepeatType { // IMPORTANT: there must be ghost entries
-	// for all non-ghost entries and vice-versa
-	// if you add more remind types, please edit the sql in
-	// RemindEmailService
-	private static final Map<Long, RepeatType> map = new ConcurrentHashMap<Long, RepeatType>(new HashMap<Integer, RepeatType>())
-	
-	static RepeatType DAILY = new RepeatType(DAILY_BIT)
-	static RepeatType WEEKLY = new RepeatType(WEEKLY_BIT)
-	static RepeatType DAILYGHOST = new RepeatType(DAILY_BIT | GHOST_BIT)
-	static RepeatType WEEKLYGHOST = new RepeatType(WEEKLY_BIT | GHOST_BIT)
-	static RepeatType REMINDDAILY = new RepeatType(REMIND_BIT | DAILY_BIT)
-	static RepeatType REMINDWEEKLY = new RepeatType(REMIND_BIT | WEEKLY_BIT)
-	static RepeatType REMINDDAILYGHOST = new RepeatType(REMIND_BIT | DAILY_BIT | GHOST_BIT)
-	static RepeatType REMINDWEEKLYGHOST = new RepeatType(REMIND_BIT | WEEKLY_BIT | GHOST_BIT)
-	
-	static RepeatType CONTINUOUS = new RepeatType(CONTINUOUS_BIT)
-	static RepeatType CONTINUOUSGHOST = new RepeatType(CONTINUOUS_BIT|  GHOST_BIT)
-	
-	static RepeatType DAILYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | DAILY_BIT)
-	static RepeatType DAILYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT)
-	static RepeatType WEEKLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | WEEKLY_BIT)
-	static RepeatType WEEKLYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT)
-	
-	static RepeatType GHOST = new RepeatType(GHOST_BIT)
-	static RepeatType NOTHING = new RepeatType(0)
-	
-	static RepeatType DURATIONGHOST = new RepeatType(GHOST_BIT | DURATION_BIT)
-	
-	static final int DAILY_BIT = 1
-	static final int WEEKLY_BIT = 2
-	static final int REMIND_BIT = 4
-	static final int HOURLY_BIT = 8
-	static final int MONTHLY_BIT = 0x0010
-	static final int YEARLY_BIT = 0x0020
-	static final int CONTINUOUS_BIT = 0x0100
-	static final int GHOST_BIT = 0x0200
-	static final int CONCRETEGHOST_BIT = 0x0400
-	static final int DURATION_BIT = 0x0800
-	
-	static final int SUNDAY_BIT = 0x10000
-	static final int MONDAY_BIT = 0x20000
-	static final int TUESDAY_BIT = 0x40000
-	static final int WEDNESDAY_BIT = 0x80000
-	static final int THURSDAY_BIT = 0x100000
-	static final int FRIDAY_BIT = 0x200000
-	static final int SATURDAY_BIT = 0x400000
-	
-	static final int WEEKDAY_BITS = SUNDAY_BIT | MONDAY_BIT | TUESDAY_BIT | WEDNESDAY_BIT | THURSDAY_BIT | FRIDAY_BIT | SATURDAY_BIT
-	static final int REPEAT_BITS = HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT | WEEKDAY_BITS
-
-	Long type
-	
-	static constraints = {
-		type(nullable:true)
-	}
-	
-	static RepeatType look(long id) {
-		RepeatType repeatType = map.get(id)
-		if (repeatType == null)
-			return new RepeatType(id)
-		
-		return repeatType
-	}
-	
-	RepeatType(long id) {
-		this.type = id
-		map.put(id, this)
-	}
-	
-	int getId() {
-		return type
-	}
-	
-	static transients = [ 'id', 'ghost', 'concreteGhost', 'anyGhost', 'continuous', 'hourly', 'daily',
-			'weekly', 'monthly', 'yearly', 'reminder', 'timed', 'repeat' ]
-	
-	boolean isGhost() {
-		return (this.type & GHOST_BIT) > 0
-	}
-	
-	boolean isConcreteGhost() {
-		return (this.type & CONCRETEGHOST_BIT) > 0
-	}
-	
-	boolean isAnyGhost() {
-		return (this.type & (GHOST_BIT | CONCRETEGHOST_BIT)) > 0
-	}
-	
-	boolean isContinuous() {
-		return (this.type & CONTINUOUS_BIT) > 0
-	}
-	
-	boolean isHourly() {
-		return (this.type & HOURLY_BIT) > 0
-	}
-	
-	boolean isDaily() {
-		return (this.type & DAILY_BIT) > 0
-	}
-	
-	boolean isWeekly() {
-		return (this.type & WEEKLY_BIT) > 0
-	}
-	
-	boolean isMonthly() {
-		return (this.type & MONTHLY_BIT) > 0
-	}
-	
-	boolean isYearly() {
-		return (this.type & YEARLY_BIT) > 0
-	}
-	
-	boolean isReminder() {
-		return (this.type & REMIND_BIT) > 0
-	}
-	
-	boolean isTimed() {
-		return (this.type & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
-	}
-	
-	boolean isRepeat() {
-		return (this.type & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
-	}
-	
-	RepeatType unGhost() {
-		return RepeatType.look(this.type & (~GHOST_BIT))
-	}
-	
-	RepeatType toggleGhost() {
-		if (isGhost())
-			return map.get(this.type & (~GHOST_BIT))
-		return map.get(this.type | GHOST_BIT)
-	}
-	
-	RepeatType makeGhost() {
-		return map.get(this.type | GHOST_BIT)
-	}
-	
-	RepeatType makeConcreteGhost() {
-		return map.get(this.type | CONCRETEGHOST_BIT)
-	}
-	
-	boolean equals(Object other) {
-		if (other instanceof RepeatType) {
-			return ((RepeatType)other).type == this.type
-		}
-		
-		return false
 	}
 }
 

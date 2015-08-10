@@ -9,7 +9,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.data.UnitGroupMap
 
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject

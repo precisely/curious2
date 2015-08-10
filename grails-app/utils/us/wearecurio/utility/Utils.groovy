@@ -40,15 +40,6 @@ class Utils {
 		return retVal;
 	}
 
-	static def listJSONShortDesc(list) {
-		def retVal = []
-		for (obj in list) {
-			retVal.add(obj.getJSONShortDesc())
-		}
-
-		return retVal;
-	}
-
 	static def save(obj) {
 		return save(obj, false)
 	}

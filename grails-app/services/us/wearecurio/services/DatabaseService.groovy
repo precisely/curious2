@@ -1,12 +1,15 @@
 package us.wearecurio.services
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import javax.persistence.TemporalType
 
 import org.springframework.transaction.annotation.Transactional
-
 import org.hibernate.StaleObjectStateException
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+
 import java.lang.reflect.UndeclaredThrowableException
 
 import org.apache.commons.logging.LogFactory
@@ -15,14 +18,14 @@ import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.transform.AliasToEntityMapResultTransformer
 
-import us.wearecurio.server.Migration;
-import us.wearecurio.utility.Utils;
-import us.wearecurio.model.*;
+import us.wearecurio.server.Migration
+import us.wearecurio.utility.Utils
+import us.wearecurio.model.*
 import grails.util.Environment
-
+import us.wearecurio.data.DatabaseServiceInterface
 import groovy.sql.Sql
 
-class DatabaseService {
+class DatabaseService implements DatabaseServiceInterface {
 
 	private static def log = LogFactory.getLog(this)
 
@@ -118,10 +121,15 @@ class DatabaseService {
 		return true
 	}
 	
-	def sqlRows(String statement, args = []) {
+	@Override
+	List<Map<String, Object>> sqlRows(String statement, Map<String, Object> args) {
 		return sqlQuery(statement, args).list()
 	}
 
+	List<Map<String, Object>> sqlRows(String statement) {
+		return sqlQuery(statement, []).list()
+	}
+	
 	def eachRow(String statement, Closure c) {
 		sqlQuery(statement).list().each(c)
 	}

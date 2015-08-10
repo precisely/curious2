@@ -5,16 +5,14 @@ import java.text.DateFormat
 import java.util.ArrayList
 import java.util.Date
 import java.util.HashSet
-import java.util.Map
 import java.util.regex.Pattern
 
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
-import us.wearecurio.units.UnitGroupMap.UnitRatio
 import us.wearecurio.model.DurationType
-import us.wearecurio.model.RepeatType
+import us.wearecurio.data.RepeatType
 import static us.wearecurio.model.Entry.DAYTICKS
 import static us.wearecurio.model.Entry.HALFDAYTICKS
 import static us.wearecurio.model.Entry.HOURTICKS
@@ -37,9 +35,9 @@ import static us.wearecurio.parse.PatternScanner.CONDITION_ATEND
 import static us.wearecurio.parse.PatternScanner.CONDITION_ANY
 import static us.wearecurio.model.Entry.mc
 
-import us.wearecurio.units.UnitGroupMap
-import us.wearecurio.units.UnitGroupMap.UnitGroup
-import us.wearecurio.units.UnitGroupMap.UnitRatio
+import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.data.UnitGroupMap.UnitGroup
+import us.wearecurio.data.UnitGroupMap.UnitRatio
 
 import java.text.SimpleDateFormat
 import us.wearecurio.utility.Utils

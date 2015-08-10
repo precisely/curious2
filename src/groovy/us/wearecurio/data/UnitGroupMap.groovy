@@ -1,4 +1,4 @@
-package us.wearecurio.units
+package us.wearecurio.data
 
 import org.apache.commons.logging.LogFactory
 import us.wearecurio.services.EntryParserService
@@ -8,15 +8,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+import us.wearecurio.data.DataRetriever
+
 class UnitGroupMap {
 	
 	private static def log = LogFactory.getLog(this)
-	
-	static TagUnitStatsServiceInterface tagUnitStatsService
-	
-	static void setTagUnitStatsService(TagUnitStatsServiceInterface _tagUnitStatsService) {
-		tagUnitStatsService = _tagUnitStatsService;
-	}
 	
 	static final Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static final Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
@@ -832,7 +828,7 @@ class UnitGroupMap {
 	}
 	
 	UnitRatio unitRatioForTagIdUnits(Long userId, Long tagId, String units) {
-		TagUnitStatsInterface mostUsed = tagUnitStatsService.mostUsedTagUnitStats(userId, tagId)
+		TagUnitStatsInterface mostUsed = DataRetriever.get().mostUsedTagUnitStats(userId, tagId)
 		
 		UnitGroup unitGroup = mostUsed?.getUnitGroup()
 		if (unitGroup != null) {
@@ -856,7 +852,7 @@ class UnitGroupMap {
 	 * Look through UnitGroups, or just use most used UnitGroup
 	 */
 	UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
-		TagUnitStatsInterface mostUsed = tagUnitStatsService.mostUsedTagUnitStatsForTags(userId, tagIds)
+		TagUnitStatsInterface mostUsed = DataRetriever.get().mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
 			

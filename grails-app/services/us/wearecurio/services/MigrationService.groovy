@@ -15,7 +15,7 @@ import us.wearecurio.model.Entry.*
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
-import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.data.UnitGroupMap
 
 class MigrationService {
 
@@ -513,6 +513,10 @@ class MigrationService {
 		}
 		tryMigration("Remove user group unique constraint") {
 			sql('alter table user_group drop index full_name')
+		}
+		tryMigration("Rename repeat type column") {
+			sql('alter table entry drop column repeat_type_id')
+			sql('alter table entry repeat_type repeat_type_id int(11)')
 		}
 	}
 	

@@ -10,7 +10,7 @@ import us.wearecurio.model.TimeZoneId;
 import us.wearecurio.model.User
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Entry
-import us.wearecurio.model.RepeatType
+import us.wearecurio.data.RepeatType
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.utility.Utils
 import static org.junit.Assert.*
