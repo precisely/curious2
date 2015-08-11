@@ -519,7 +519,7 @@ class MigrationService {
 				sql('alter table entry drop column repeat_type_id')
 			} catch (Exception e) {
 			}
-			sql('alter table entry repeat_type repeat_type_id int(11)')
+			sql('alter table entry change repeat_type repeat_type_id int(11)')
 		}
 	}
 	
