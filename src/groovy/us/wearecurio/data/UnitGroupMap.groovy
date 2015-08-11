@@ -548,7 +548,8 @@ class UnitGroupMap {
 			unitGroups.get(id)
 		}
 		
-		static UnitGroup get(long id) {
+		static UnitGroup get(Long id) {
+			if (id == null) return null
 			return get((int) id)
 		}
 		
