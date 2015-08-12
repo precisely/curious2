@@ -10,7 +10,7 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF, createDiscussionDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="${pageProperty(name: 'body.class') ?: '' }">
@@ -48,6 +48,7 @@
 			<div id="feed">
 				<g:pageProperty name="page.feedContent" />
 			</div>
+		</div>
 		</div>
 		<!-- /MAIN -->
 		<div style="clear: both;"></div>
