@@ -745,10 +745,8 @@ class HomeController extends DataController {
 		 * 
 		 * Should support both modes
 		 */
-		debug "HomeController.discuss()"
-		
-		def p = params
-		
+		debug "HomeController.discuss() $params"
+
 		def user = sessionUser()
 		
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
