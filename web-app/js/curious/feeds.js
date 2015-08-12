@@ -36,12 +36,12 @@ function registerScroll() {
 					} else {
 						if (isTabActive('#people')) {
 							$.each(data.listItems, function(index, user) {                                                           
-								var compiledHtml = _.template(_people)({'user': user});                                       
+								var compiledHtml = compileTemplate("_people", {'user': user});                                       
 								$('#feed').append(compiledHtml);                                                                
 							});                                                                                                      
 						} else if (isTabActive('#discussions')) {
 							$.each(data.listItems.discussionList, function(index, discussionData) {
-								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
+								var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData, 'groupName': data.listItems.groupName});
 								$('#feed').append(compiledHtml);
 								showCommentAgeFromDate();
 							});
@@ -49,7 +49,7 @@ function registerScroll() {
 							addAllFeedItems(data);
 						} else {
 							$.each(data.listItems.sprintList, function(index, sprint) {
-								var compiledHtml = _.template(_sprints)({'sprint': sprint});
+								var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
 								$('#feed').append(compiledHtml);
 							});
 							showCommentAgeFromDate();
@@ -285,7 +285,7 @@ function showSprints() {
 				// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 				$('#feed').removeClass().addClass('type-sprints').html('');
 				$.each(data.listItems.sprintList, function(index, sprint) {
-					var compiledHtml = _.template(_sprints)({'sprint': sprint});
+					var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
 					$('#feed').append(compiledHtml);
 				});
 				showCommentAgeFromDate();
@@ -318,7 +318,7 @@ function showDiscussions() {
 				$('#feed').removeClass().addClass('type-discussions').html('');
 
 				$.each(data.listItems.discussionList, function(index, discussionData) {
-					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
+					var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
 					$('#feed').append(compiledHtml);
 					showCommentAgeFromDate();
 				});
@@ -331,7 +331,7 @@ function showDiscussions() {
 			$('#queryTitle').text('Discussions');
 			$('#feed-discussions-tab a').tab('show');
 			// Showing create discussion form only once
-			var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+			var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.listItems.groupName});
 			$('#feed').prepend(createDiscussionForm);
 
 		} else {
@@ -356,7 +356,7 @@ function showPeople() {
 			} else {
 				$('#feed').removeClass().addClass('type-people').html('');
 				$.each(data.listItems, function(index, user) {
-					var compiledHtml = _.template(_people)({'user': user});
+					var compiledHtml = compileTemplate("_people", {'user': user});
 					$('#feed').append(compiledHtml);
 				});
 				$('#feed-right-tab').html('');
@@ -431,11 +431,11 @@ function addAllFeedItems(data, elementId, prepend) {
 	$.each(data.listItems, function(index, item) {
 		var compiledHtml = '';
 		if (item.type == 'spr') {
-			compiledHtml = _.template(_sprints)({'sprint': item});
+			compiledHtml = compileTemplate("_sprints", {'sprint': item});
 		} else if (item.type == 'dis') {
-			compiledHtml = _.template(_discussions)({'discussionData': item});
+			compiledHtml = compileTemplate("_discussions", {'discussionData': item});
 		} else if (item.type == 'usr') {
-			compiledHtml = _.template(_people)({'user': item});
+			compiledHtml = compileTemplate("_people", {'user': item});
 		}
 
 		if (prepend) {
