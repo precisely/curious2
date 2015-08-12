@@ -516,10 +516,6 @@ class MigrationService {
 		}
 		tryMigration("Drop repeat type column") {
 			try {
-				sql('alter table entry drop column repeat_type_id')
-			} catch (Exception e) {
-			}
-			try {
 				sql('alter table entry change repeat_type repeat_type_id int(11)')
 			} catch (Exception e) {
 			}
