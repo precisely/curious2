@@ -68,6 +68,10 @@
 			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
 		<g:render template="/sprint/createSprintModal" />
+		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />
+		<c:renderJSTemplate template="/discussion/instance" id="_discussions" />
+		<c:renderJSTemplate template="/people/instance" id="_people" />
+		<c:renderJSTemplate template="/sprint/instance" id="_sprints" />
 	</body>
 </html>
 </g:applyLayout>

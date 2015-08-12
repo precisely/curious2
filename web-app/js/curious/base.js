@@ -1,5 +1,25 @@
 //Base Javascript library extensions
 
+/*
+ * Using {{ }} to escape/evaluate/interpolate template using Loadash instead of <% %>
+ * 
+ * https://lodash.com/docs#templateSettings
+ * http://stackoverflow.com/a/15625454/2405040
+ */
+_.templateSettings.escape = /\{\{-(.+?)\}\}/g;
+_.templateSettings.evaluate = /\{\{(.+?)\}\}/g;
+_.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
+
+/*
+ * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
+ * data is passed to the compile the HTML template.
+ */
+function compileTemplate(id, data) {
+	var rawTemplate = $("script#" + id).html();
+
+	return _.template(rawTemplate)(data);
+}
+
 function isOnline() {
 	return window.navigator.onLine;
 }
