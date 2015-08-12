@@ -113,7 +113,7 @@ class TagUnitStats implements TagUnitStatsInterface {
 	static TagUnitStats createOrUpdateAllUnits(Long userId, Long tagId) {
 		def results = DatabaseService.get().sqlRows(
 			"select units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat_type_id IS NULL or (entry.repeat_type_id & :ghostBit = 0)) group by units",
-			[tagId:tagId, userId:userId, ghostIds:RepeatType.GHOST_BIT])
+			[tagId:tagId, userId:userId, ghostBit:RepeatType.GHOST_BIT])
 
 		if (results && results.size() > 0) {
 			String units = results[0]['units']
