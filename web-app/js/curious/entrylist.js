@@ -218,13 +218,13 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>'
 		}
 		
+		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
 				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br><div class="comment-label "> <div class="' +
 				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') ? 
 				'repeatLabelImage' : (comment.startsWith('remind')? 'remindLabelImage':'')) + '"></div> <span class="' +
 				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span></div>' : '')
-				+ '</div><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
-
+				+ '</div><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
 		var entryEditItem;
 		
@@ -246,6 +246,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			console.log('deleting....');
 			self.deleteEntryId(id);
 		});
+		$('#' + this.editId + "entryid" + id + ' .track-input-dropdown').hide();
 		
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
@@ -539,6 +540,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.processInput = function() {
 		var $field = $("#" + this.editId);
 		$field.autocomplete("close");
+		$('.entry-details-form').trigger('reset');
+		$('.repeat-modifiers').addClass('hide');
 		var text = $field.val();
 		if (text == "") return; // no entry data
 		$field.val("");
@@ -579,9 +582,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$button.addClass("edit");
 		$button.text("Edit");
 
-		$('#recordList .track-input-dropdown').parent().removeClass("open");
-		$('#recordList .track-input-dropdown').remove();
-		$('#recordList .dropdown-menu').remove();
+		$unselectee.removeClass("open");
+		$('#' + $unselectee.attr('id') + ' .track-input-dropdown').hide();
 
 		$contentWrapper.html(displayText);
 		$contentWrapper.show();
@@ -638,23 +640,22 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		var repeatType = $contentWrapper.find(".entryRepeat").text();
 		
-		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
 
-		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'update-'});
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + 
-				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>' + entryDetailsPopover);
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>');
+		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
 		if (repeatType.indexOf("remind") > -1) {
-			$('#update-remind-checkbox').prop('checked', true);
+			$('#' + currentEntryId + '-remind-checkbox').prop('checked', true);
 		} else if (repeatType.indexOf("repeat") > -1) {
-			$('#update-repeat-checkbox').prop('checked', true);
-			$('#recordList .repeat-modifiers').toggleClass('hide');
+			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
+			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
 		} 
 
-		$('#recordList .repeat-entry-checkbox').change(function() {
-			$('.repeat-modifiers').toggleClass('hide');
+		$('#' + $selectee.attr('id') + ' .repeat-entry-checkbox').change(function() {
+			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
 			return;
 		});
 		$(".choose-date-input").datepicker();
@@ -744,8 +745,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
 			$('.entry-details-dropdown-menu').parent().removeClass('open');
-			$('.entry-details-form').trigger('reset');
-			$('.repeat-modifiers').addClass('hide');
 		} else {
 			return;
 		}
