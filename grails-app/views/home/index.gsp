@@ -129,10 +129,6 @@
 			$('#addData .repeat-entry-checkbox').change(function() {
 				$('#addData .repeat-modifiers').toggleClass('hide');
 			});
-
-			$('#addData').on('hidden.bs.dropdown', function () {
-				$('#addData .entry-details-form').reset();
-			});
 		});
 	</script>
 	<g:render template="/templates/track/entryDetailsPopover" />
