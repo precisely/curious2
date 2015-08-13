@@ -26,8 +26,7 @@ function registerScroll() {
 				return;
 			}
 
-			queueJSON('Loading data', url,
-					function(data) {
+			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
 
@@ -76,7 +75,7 @@ $(window).load(function() {
 	} else if (isTabActive('#people')) {
 		showPeople();
 	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
-		//if the all tab is active or the user is on the social page without a hash
+		// If the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
 	} 
 });
@@ -150,42 +149,45 @@ $(document).ready(function() {
 		return false;
 	});
 
+	/**
+	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of disucssion and their
+	 * comments.
+	 */
 	$(document).on("click", ".discussion .view-comment", function() {
-		var offset = $(this).data("offset") || 0;
+		var offset = $(this).data("offset") || 4;
 
 		getComments($(this).data("discussionHash"), maxCommentsPerDiscussion, offset, function() {
 			$(this).data("offset", offset + maxCommentsPerDiscussion);
 		}.bind(this));
 	});
 
-	$(document).on("click", ".share-button", function() {
-		$('.share-link').select();
-	});
-
 	// Handlers for discussion form input fields
 	$(document).on('keypress', '#discussion-topic', function(e) {
 		var key = e.which;
 		if (key == 13) {
-			var title, value = $(this).val();
+			var value = $(this).val();
 			if (!value) {
 				return false;
 			}
 
-			// Try to get the first sentence i.e. a line ending with either "." "?" or "!"
-			var firstSentenceData = /^.*?[\.!\?](?:\s|$)/.exec(value);
+			var data = extractDiscussionNameAndPost(value);
 
-			if (firstSentenceData) {
-				title = firstSentenceData[0].trim();
-			} else {	// If user has not used any of the above punctuations
-				title = value;
-			}
+			// See base.js for implementation details of $.serializeObject()
+			var params = $('#create-discussion').serializeObject();
+			params.name = data.name
+			params.discussionPost = data.post;
 
-			// Trim the entered text max upto the 100 characters and use it as the discussion name/title
-			var discussionName = shorten(title, 100).trim();		// See base.js for "shorten" method
-			// And the rest of the string (if any) will be used as first discussion comment message
-			var discussionPost = value.substring(discussionName.length).trim();
-
-			submitDiscussion(discussionName, discussionPost);
+			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
+					function(data) {
+				if (!checkData(data))
+					return;
+				if (data.success) {
+					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
+					$('#create-discussion')[0].reset();
+				}
+			}, function(xhr) {
+				console.log('Internal server error');
+			});
 
 			return false;
 		}
@@ -229,6 +231,26 @@ $(document).ready(function() {
 		showAllFeeds();
 	})
 });
+
+function extractDiscussionNameAndPost(value) {
+	var discussionName, discussionPost;
+
+	// Try to get the first sentence i.e. a line ending with either "." "?" or "!"
+	var firstSentenceData = /^.*?[\.!\?](?:\s|$)/.exec(value);
+
+	if (firstSentenceData) {
+		discussionName = firstSentenceData[0].trim();
+	} else {	// If user has not used any of the above punctuations
+		discussionName = value;
+	}
+
+	// Trim the entered text max upto the 100 characters and use it as the discussion name/title
+	discussionName = shorten(discussionName, 100).trim();		// See base.js for "shorten" method
+	// And the rest of the string (if any) will be used as first discussion comment message
+	discussionPost = value.substring(discussionName.length).trim();
+
+	return {name: discussionName, post: discussionPost};
+}
 
 function showSprints() {
 	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
@@ -331,26 +353,6 @@ function showPeople() {
 		showAlert('Internal server error occurred.');
 	});
 	registerScroll();
-}
-
-function submitDiscussion(name, discussionPost) {
-	// See base.js for implementation details of $.serializeObject()
-	var params = $('#create-discussion').serializeObject();
-	params.name = name
-	params.discussionPost = discussionPost;
-
-	queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
-			function(data) {
-		if (!checkData(data))
-			return;
-		if (data.success) {
-			addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
-			$('#create-discussion')[0].reset();
-		}
-	}, function(xhr) {
-		console.log('Internal server error');
-	});
-	return false;
 }
 
 function showAllFeeds() {

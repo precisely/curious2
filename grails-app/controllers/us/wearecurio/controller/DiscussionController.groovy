@@ -102,6 +102,8 @@ class DiscussionController extends LoginController {
 
 	def delete() {
 		User user = sessionUser()
+		debug("$user attempting to delete discussion $params")
+
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id

@@ -66,35 +66,35 @@
 	<div class="discussion-comments-wrapper hide">
 		<div class="comments"></div>
 		<div class="bottom-margin">
-			<span class="view-comment" data-discussion-hash="{{discussionData.hash}}"> VIEW MORE COMMENTS </span>
+			<span class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</span>
 		</div>
 		<div class="row">
 			<div class="col-md-6 add-comment">
-				<form action="/home/discuss" method="post" id="commentForm">
+				<form class="comment-form">
 					{{ if (false) { }}
 						<p>Enter your details below</p>
 						<div id="postname">
-							<input type="text" id="postname" name="postname" value="" class="postInput" />Name</div>
-							<div id="postemail">
-								<input type="text" id="postemail" name="postemail" value="" class="postInput" />
-								Email (not publicly visible)
-							</div>
-							<div id="posturl">
-								<input type="text" id="postsite" name="postsite" value="" class="postInput" />
-								Website URL (optional)
-							</div>
-							<div id="postcomment">
-								<textarea rows="20" cols="100" style="border-style: solid" id="postcommentarea" name="message"></textarea>
-							</div><br />
-							<input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
-							<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
-						{{ } else { }}
-							<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required>
-						{{ } }}
+							<input type="text" id="postname" name="postname" value="" class="postInput" />Name
+						</div>
+						<div id="postemail">
+							<input type="text" id="postemail" name="postemail" value="" class="postInput" />
+							Email (not publicly visible)
+						</div>
+						<div id="posturl">
+							<input type="text" id="postsite" name="postsite" value="" class="postInput" />
+							Website URL (optional)
+						</div>
+						<div id="postcomment">
+							<textarea rows="20" cols="100" style="border-style: solid" id="postcommentarea" name="message"></textarea>
+						</div><br />
+						<input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
+						<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
+					{{ } else { }}
+						<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required autofocus>
+					{{ } }}
 					<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 				</form>
 			</div>
-			<div class="class-md-6"></div>
 		</div>
 	</div>
 </div>

@@ -478,50 +478,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
-	@Test
-	void testDeleteComment() {
-		HomeController controller = new HomeController()
-
-		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
-		def discussionPostInstance = discussionInstance.createPost(user, "comment")
-
-		// When the user isn't authorized to delete comment
-		controller.params['discussionHash'] = discussionInstance.hash
-		controller.params['clearPostId'] = discussionPostInstance.getId()
-		controller.session.userId = user2.getId()
-		controller.discuss()
-		assert controller.flash.message == ("Can't delete that post")
-		controller.flash.message = null
-
-		//When user is authorized
-		controller.params['discussionHash'] = discussionInstance.hash
-		controller.params['clearPostId'] = discussionPostInstance.getId()
-		controller.session.userId = user.getId()
-		controller.discuss()
-		assert controller.flash.message == null
-	}
-
-	@Test
-	void testCreateComment() {
-		HomeController controller = new HomeController()
-		controller.session.userId = user.getId()
-		
-		// When the user doesn't have the write permission
-		controller.params['discussionHash'] = discussion.hash.toString()
-		controller.params['message'] = "dummyMessage"
-		controller.session.userId = user2.getId()
-		controller.discuss()
-		assert controller.flash.message == ("You don't have permission to add a comment to this discussion")
-		controller.response.reset()
-		
-		// When the user have the write permission
-		controller.params['discussionHash'] = discussion.hash.toString()
-		controller.params['message'] = "dummyMessage"
-		controller.session.userId = user.getId()
-		controller.discuss()
-		assert controller.response.redirectUrl.contains("home/discuss")
-	}
-
 	Sprint dummySprint
 	User dummyUser2
 	void mockSprintData() {
