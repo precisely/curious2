@@ -1,6 +1,5 @@
 /**
- *
- *
+ * Script contains Discussion & DiscussionPost (comment) related code.
  */
 
 function modifyShare(discussionHash) {
@@ -87,6 +86,37 @@ function addComment(discussionHash) {
 	});
 }
 
+function getComments(discussionHash, max, offset, callback) {
+	var url = "/api/discussionPost?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=" + max + "&" +
+			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+
+	var discussionElementID = '#discussion-' + discussionHash;
+
+	queueJSON("fetching more comments", url, function(data) {
+		if (!checkData(data)) {
+			return;
+		}
+
+		if (!data.posts) {
+			$(' .view-comment', discussionElementID).html('');
+		} else {
+			var compiledHTML = "";
+
+			$.each(data.posts, function(index, item) {
+				compiledHTML += compileTemplate("_comments", {discussionPost: item, isAdmin: data.isAdmin,
+						userId: data.userId});
+			});
+
+			$('.comments', discussionElementID).append(compiledHTML);
+			showCommentAgeFromDate();
+		}
+
+		if (callback) {
+			callback(data);
+		}
+	});
+}
+
 $(document).ready(function() {
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
@@ -99,7 +129,7 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage()) {
+					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});
@@ -146,4 +176,3 @@ $(document).ready(function() {
 		return false;
 	});
 });
-

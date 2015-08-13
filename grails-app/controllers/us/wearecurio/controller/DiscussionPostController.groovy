@@ -1,7 +1,7 @@
 package us.wearecurio.controller
 
-import us.wearecurio.model.*
 import grails.gsp.PageRenderer
+import us.wearecurio.model.*
 import us.wearecurio.utility.*
 
 class DiscussionPostController extends LoginController{
@@ -22,20 +22,21 @@ class DiscussionPostController extends LoginController{
 		DiscussionPost firstPostInstance = discussion.getFirstPost()
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 
-		List posts = isFollowUp ? discussion.getFollowupPosts([max: params.max, offset: params.offset]) : 
-		discussion.getPosts([max: params.max, offset: params.offset])
+		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts([max: params.max, offset: params.offset]) : 
+				discussion.getPosts([max: params.max, offset: params.offset])
 
 		if (!posts) {
 			renderJSONGet([posts: false])
 		} else {
-			renderJSONGet([posts: groovyPageRenderer.render(template: "/discussion/posts", model: [posts: posts, userId: sessionUser().id, 
-			isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion)])])
+			renderJSONGet([posts: posts*.getJSONDesc(), userId: sessionUser().id, isAdmin:
+					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
 		}
 	}
 
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
-		"for discussion with hash: ${params.discussionHash}"
+				"for discussion with hash: ${params.discussionHash}"
+
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion){
 			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
@@ -43,8 +44,7 @@ class DiscussionPostController extends LoginController{
 		}
 
 		User user = sessionUser()
-		def comment = DiscussionPost.createComment(params.message, user, discussion, 
-		params.plotIdMessage, params)
+		def comment = DiscussionPost.createComment(params.message, user, discussion, params.plotIdMessage, params)
 
 		// If user does not have permission to add comment response will be 'false'
 		if (comment instanceof String) {

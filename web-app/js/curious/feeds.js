@@ -3,6 +3,7 @@
  */
 var autocompleteWidget;
 var searchList = [];
+var maxCommentsPerDiscussion = 4;
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
@@ -81,7 +82,6 @@ $(window).load(function() {
 });
 
 $(document).ready(function() {
-	
 	if (isOnFeedPage()) {
 		registerScroll();
 	}
@@ -90,64 +90,6 @@ $(document).ready(function() {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
 		}
-	});
-
-	$(document).on("click", "a.delete-discussion", function() {
-		var $this = $(this);
-		showYesNo('Are you sure want to delete this?', function() {
-			var discussionHash = $this.data('discussionHashId');
-			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
-					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
-					function(data) {
-				if (!checkData(data))
-					return;
-
-				if (data.success) {
-					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
-						showAlert(data.message, function() {
-							$this.parents('.feed-item').fadeOut();
-						});
-					} else {
-						location.href = '/home/social#all';
-					}
-				} else {
-					showAlert(data.message);
-				}
-			}, function(xhr) {
-				showAlert('Internal server error occurred.');
-			}, null, 'delete');
-		});
-		return false;
-	});
-
-	$(document).on("click", "a.delete-post", function() {
-		var $this = $(this);
-		showYesNo('Are you sure want to delete this?', function() {
-			var postId = $this.data('postId');
-			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
-					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
-					function(data) {
-				if (!checkData(data))
-					return;
-
-				if (data.success) {
-					showAlert(data.message, function() {
-						$this.parent().closest('.discussion-comment').fadeOut();
-						if (isOnFeedPage()) {
-							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
-							var totalComments = $commentButton.data('totalComments') - 1;
-							$commentButton.data('totalComments', totalComments);
-							$commentButton.text(totalComments);
-						}
-					});
-				} else {
-					showAlert(data.message);
-				}
-			}, function(xhr) {
-				showAlert('Internal server error occurred.');
-			}, null, 'delete');
-		});
-		return false;
 	});
 
 	$('#sprint-tags').keypress(function (e) {
@@ -206,6 +148,18 @@ $(document).ready(function() {
 		var username = $(this).data('username');
 		deleteParticipantsOrAdmins($element, username, 'admins');
 		return false;
+	});
+
+	$(document).on("click", ".discussion .view-comment", function() {
+		var offset = $(this).data("offset") || 0;
+
+		getComments($(this).data("discussionHash"), maxCommentsPerDiscussion, offset, function() {
+			$(this).data("offset", offset + maxCommentsPerDiscussion);
+		}.bind(this));
+	});
+
+	$(document).on("click", ".share-button", function() {
+		$('.share-link').select();
 	});
 
 	// Handlers for discussion form input fields
@@ -305,37 +259,44 @@ function showSprints() {
 }
 
 function showDiscussions() {
+	// Change the red bar title
+	$('#queryTitle').text('Discussions');
+
+	// Select the tab
+	$('#feed-discussions-tab a').tab('show');
+
+	// Clear the tab content and display a spinner
+	$('#feed').html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
+
+	$('#feed-right-tab').html('');
+
+	// Get the discussion data
 	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
-		if (!checkData(data))
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?', function(data) {
+
+		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.listItems.groupName});
+		$('#feed').removeClass().addClass('type-discussions')
+				.html(createDiscussionForm)		// Reset the main container with create discussion form
+				.append('<div class="discussions"></div>')	// And append one container for holding all discussions
+
+		if (!checkData(data)) {
 			return;
+		}
 
-		if (data.success) {
-			if (data.listItems == false) {
-				$('#feed').text('No discussions to show.');
-			} else {
-				$('#feed').removeClass().addClass('type-discussions').html('');
-
-				$.each(data.listItems.discussionList, function(index, discussionData) {
-					var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
-					$('#feed').append(compiledHtml);
-					showCommentAgeFromDate();
-				});
-				$('#feed-right-tab').html('');
-				$('.share-button').popover({html: true});
-				$('.share-button').on('click', function () {
-					$('.share-link').select();
-				});
-			}
-			$('#queryTitle').text('Discussions');
-			$('#feed-discussions-tab a').tab('show');
-			// Showing create discussion form only once
-			var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.listItems.groupName});
-			$('#feed').prepend(createDiscussionForm);
-
-		} else {
+		if (!data.success) {
 			$('.alert').text(data.message);
+			return;
+		}
+
+		if (data.listItems == false) {
+			$('#feed').text('No discussions to show.');
+		} else {
+
+			$.each(data.listItems.discussionList, function(index, discussionData) {
+				var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
+				$('.discussions').append(compiledHtml);
+			});
+			showCommentAgeFromDate();
 		}
 	}, function(data) {
 		showAlert('Internal server error occurred.');
@@ -406,10 +367,6 @@ function showAllFeeds() {
 				$('#feed').removeClass().addClass('type-all').html('');
 				addAllFeedItems(data);
 				$('#feed-right-tab').html('');
-				$(".share-button").popover({html:true});
-				$('.share-button').on('click', function () {
-					$('.share-link').select();
-				});
 			}
 			$('#queryTitle').text('All Feeds');		
 			$('#feed-all-tab a').tab('show');
@@ -429,19 +386,20 @@ function addAllFeedItems(data, elementId, prepend) {
 	});
 
 	$.each(data.listItems, function(index, item) {
-		var compiledHtml = '';
+		var compiledHTML = '';
+
 		if (item.type == 'spr') {
-			compiledHtml = compileTemplate("_sprints", {'sprint': item});
+			compiledHTML = compileTemplate("_sprints", {'sprint': item});
 		} else if (item.type == 'dis') {
-			compiledHtml = compileTemplate("_discussions", {'discussionData': item});
+			compiledHTML = compileTemplate("_discussions", {'discussionData': item});
 		} else if (item.type == 'usr') {
-			compiledHtml = compileTemplate("_people", {'user': item});
+			compiledHTML = compileTemplate("_people", {'user': item});
 		}
 
 		if (prepend) {
-			$(elementId).hide().prepend(compiledHtml).fadeIn('slow');
+			$(elementId).hide().prepend(compiledHTML).fadeIn('slow');
 		} else {
-			$(elementId).append(compiledHtml);
+			$(elementId).append(compiledHTML);
 		}
 	});
 	showCommentAgeFromDate();
@@ -806,38 +764,13 @@ function joinSprint(sprintHash) {
 }
 
 function toggleCommentsList(discussionHash) {
-	var $element = $('#discussion' + discussionHash + '-comment-list');
+	var $element = $('.discussion-comments-wrapper', '#discussion-' + discussionHash);
+
 	if ($element.is(':visible')) {
 		$element.hide();
-		$('#discussion' + discussionHash + '-comment-list .comments').html('');
+		$('.comments', $element).html('');
 	} else {
-		getMoreComments(discussionHash, 0);
+		getComments(discussionHash, maxCommentsPerDiscussion, 0);
 		$element.show();
 	}
 }
-
-function getMoreComments(discussionHash, offset) {
-
-	var url = "/home/discuss?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=4&" +
-			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
-	
-	var discussionElementId = '#discussion' + discussionHash + '-comment-list';
-
-	queueJSON("fetching more comments", url, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (!data.posts) {
-			$(discussionElementId + ' .bottom-margin').html('');
-		} else {
-			$(discussionElementId + ' .comments').append(data.posts);
-			showCommentAgeFromDate();
-			offset = offset + 4;
-			$(discussionElementId + ' .bottom-margin span').off('click').on('click', function() {
-				getMoreComments(discussionHash, offset);
-			});
-		}
-	});
-	return;
-}
-
