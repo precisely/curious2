@@ -579,6 +579,10 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$button.addClass("edit");
 		$button.text("Edit");
 
+		$('#recordList .track-input-dropdown').parent().removeClass("open");
+		$('#recordList .track-input-dropdown').remove();
+		$('#recordList .dropdown-menu').remove();
+
 		$contentWrapper.html(displayText);
 		$contentWrapper.show();
 		if (displaySpinner) {
@@ -633,21 +637,27 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 		var repeatType = $contentWrapper.find(".entryRepeat").text();
-		var repeatImgSrc = "/images/repeat.png";
-		var remindImgSrc = "/images/remind.png";
 		
-		if (repeatType.indexOf("remind") > -1) {
-			remindImgSrc = "/images/remind-active.png"
-		} else if (repeatType.indexOf("repeat") > -1) {
-			repeatImgSrc = "/images/repeat-active.png";
-		} 
 		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
-				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
-				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');
+
+		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'update-'});
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + 
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>' + entryDetailsPopover);
+
+		if (repeatType.indexOf("remind") > -1) {
+			$('#update-remind-checkbox').prop('checked', true);
+		} else if (repeatType.indexOf("repeat") > -1) {
+			$('#update-repeat-checkbox').prop('checked', true);
+			$('#recordList .repeat-modifiers').toggleClass('hide');
+		} 
+
+		$('#recordList .repeat-entry-checkbox').change(function() {
+			$('.repeat-modifiers').toggleClass('hide');
+			return;
+		});
+		$(".choose-date-input").datepicker();
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -729,6 +739,21 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var isEntryModify = $target.closest("img.entryModify").length > 0;
 		
 		if (isEventToCancel) {
+			return;
+		}
+
+		if ($target.closest('.dropdown-menu').length == 0) {
+			$('.entry-details-dropdown-menu').parent().removeClass('open');
+		} else {
+			return;
+		}
+
+		if ($($target.context).hasClass('track-input-dropdown')) {
+			$($target.context).parent().toggleClass("open");
+			return;
+		} else if ($target.is('.track-input-dropdown img')) {
+			// get parent of enclosing dropdown button
+			$target.parents().eq(1).toggleClass("open");
 			return;
 		}
 
@@ -828,3 +853,4 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	
 	self.refresh();
 }
+

@@ -521,3 +521,8 @@ function shorten(text, maxLength, includeLastWord) {
 		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" "))) + ' ...';
 	}
 }
+
+_.templateSettings = {
+	evaluate: /\{\{(.+?)\}\}/g,
+	interpolate: /\{\{=(.+?)\}\}/g
+};
