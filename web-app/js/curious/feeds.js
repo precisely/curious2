@@ -776,3 +776,24 @@ function toggleCommentsList(discussionHash) {
 		$element.show();
 	}
 }
+
+function showUserDetails(hash) {
+	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
+			function(data) { 
+		if (data.success) { 
+			if (data.listItems != false) {
+				var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
+				$('#feed').html(compiledHTML);
+			} else {
+				$('#feed').html('No details to show.');
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+		$('.nav').html('');
+		$('#queryTitle').text('Go Back');
+		$('#feed-sprints-tab a').tab('show');
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+}

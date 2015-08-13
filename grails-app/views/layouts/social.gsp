@@ -74,6 +74,7 @@
 		<c:renderJSTemplate template="/discussionPost/instance" id="_comments" />
 		<c:renderJSTemplate template="/people/instance" id="_people" />
 		<c:renderJSTemplate template="/sprint/instance" id="_sprints" />
+		<c:renderJSTemplate template="/people/show" id="_peopleDetails" />
 	</body>
 </html>
 </g:applyLayout>

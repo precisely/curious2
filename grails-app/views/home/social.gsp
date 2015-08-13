@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta name="layout" content="social" />
-<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF" />
+<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF, getUserDataCSRF" />
 <script type="text/javascript">
 
 function deleteDiscussionId(id) {

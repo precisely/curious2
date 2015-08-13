@@ -38,32 +38,27 @@ $(function() {
         });
     });
     this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
-    
-    // defeat the damn browser autofill
-    $("#username").val("${user.username}");
-    $("#oldPassword").val("");
-    $("#password").val("");
-    $("#verify_password").val("");
-	$("#updateUserPreferences").submit(function(e) {
-		e.preventDefault();
-		var form = this;
-		var newUsername = $("#username").val();
-		var newPw = $("#password").val();
-		if (origUsername != newUsername) {
-			if (newPw.length == 0) {
-				showAlert("If you change the username, you must set the password as well");
-				return;
-			}
-		}
-		if (newPw.length > 0) {
-			if (newPw != $("#verify_password").val()) {
-				showAlert("New password and verification do not match");
-				return;
-			}
-		}
-		form.submit();
-	});
 });
+
+function editUserDetails() {
+    var updatedName = $("#name").val();
+    var newUsername = $("#username").val();
+    var newPw = $("#password").val();
+    var bio = $("#bio").val();
+    if (origUsername != newUsername) {
+        if (newPw.length == 0) {
+            showAlert("If you change the username, you must set the password as well");
+            return;
+        }
+    }
+    if (newPw.length > 0) {
+        if (newPw != $("#verify_password").val()) {
+            showAlert("New password and verification do not match");
+            return;
+        }
+    }
+    document.getElementById("updateUserPreferences").submit();
+}
 </script>
 
 <% randTag = "" + ((java.lang.System.currentTimeMillis() * 0x5DEECE66DL + 0xBL) & ((1L << 48) - 1)) %>
@@ -78,7 +73,7 @@ $(function() {
 		font-size: 10pt;
 	}
 	#addData .form-group {
-		margin-bottom: 20px;
+		margin-bottom: 30px;
 	}
 	#addData .form-group label.control-label {
 		padding-right: 10px;
@@ -87,7 +82,7 @@ $(function() {
 		color: #B6B6B6;
 		font-weight: 300;
 	}
-	#user-name{
+	#user-name-label{
 		padding-right: 10px;
 		text-transform: uppercase;
 		font-size: 14px;
@@ -108,6 +103,7 @@ $(function() {
 	.user-details {
 		background-color: #ffffff;
 		padding-top: 30px;
+		border: 1px solid #e0e0e0;
 	}
 </style>
 </head>
@@ -115,79 +111,82 @@ $(function() {
 	<div class="red-strip"></div>
 	<div class="main container-fluid ">
 		<div class = "user-details">
-			<div class="row" style="margin-left:45px; margin-bottom:15px;">
-				<div class="col-md-2" align="right">
-					<img src="/images/avatar.png" alt="" class="img-circle" width="100px" height="100px">
+			<div class="row">
+				<div class="pull-right">
+					<button class="save-user-details" onclick="editUserDetails()">Save Profile</button>
 				</div>
-				<div class="col-md-3">
-					<label class="control-label" for="name" id="user-name" placeholder="Enter name here">Name</label>
-					<g:textField class="form-control" name="name" value="${user.name.encodeAsHTML()}"/>
-				</div>
-				<div class="user-name-radio">
-					<div class="input-affordance">
-						<input type="radio" class="radio-public" name="name-visibility" id="name-public" value="public" checked="">
-						<label for="name-public" class="radio-public-label">Public</label> <br>
-						<input type="radio" class="radio-private" name="name-visibility" id="name-private" value="private">
-						<label for="name-private" class="radio-private-label">Private</label>
+				<div class="user-image pull-left">
+					<img src="/images/avatar.png" alt="" class="img-circle">
+					<div class="form-group">
+						<button class="edit-image-button">Edit Image</button>
 					</div>
 				</div>
-				<div class="col-md-2"></div>
-				<div class="col-md-2"></div>
-				<div class="col-md-3 text-right">
-					<button class="save-user-details">Save Profile</button>
+				<div class="user-name">
+					<label class="control-label" for="name" id="user-name-label">Name</label>
+					<g:textField class="form-control" name="name" placeholder="Enter name here" value="${user.name}"/>
+					<div class="user-name-radio">
+						<div class="input-affordance">
+							<input type="radio" class="radio-public" name="name-visibility" id="name-public" value="public" checked="">
+							<label for="name-public" class="radio-public-label">Public</label> <br>
+							<input type="radio" class="radio-private" name="name-visibility" id="name-private" value="private">
+							<label for="name-private" class="radio-private-label">Private</label>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="profile-container">
 				<div class="row">
 					<div id="addData">
-						<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" class="form-horizontal" autocomplete="off">
-							<div class="col-md-4" style="margin-left:120px;">
+						<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" id="updateUserPreferences" class="form-horizontal" autocomplete="off">
+							<div class="col-xs-4" style="margin-left:80px;">
 								<g:hiddenField name="precontroller" value="${precontroller}" />
 								<g:hiddenField name="preaction" value="${preaction}" />
 								<g:hiddenField name="userId" value="${user.id}" />
 								<div class="form-group">
-									<button class="edit-image-button">Edit Image</button>
-								</div>
-								<div class="form-group">
 									<label class="control-label" for="Username">Username</label>
 									<div class="input-group">
-										<input type="text" class="form-control" name="username" value="${user.username}" autofocus="" required="" autocomplete="off">
+										<g:textField type="text" class="form-control" name="username" value="${user.username}" autofocus="" required="" autocomplete="off"/>
 									</div>
 								</div>
 
 								<div class="form-group">
 									<label class="control-label" for="Email">Email</label><br>
 									<div class="input-group">
-										<input type="text" class="form-control" type="email" required="" name="email" value="${user.email}">
+										<g:textField type="text" class="form-control" type="email" required="" name="email" value="${user.email}"/>
 									</div>
 								</div>
 
 								<div class="form-group">
-									<label class="control-label" for="Password">Password</label><br>
+									<label class="control-label" for="oldPassword">Old password</label>
 									<div class="input-group">
-										<input type="password" class="form-control" name="password" value="z" autocomplete="off">
+										<g:passwordField class="form-control" name="oldPassword" value="${user.password}" autocomplete="off" />
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="control-label" for="New Password">New Password</label><br>
+									<div class="input-group">
+										<g:passwordField type="password" class="form-control" name="password" value="${user.password}" autocomplete="off"/>
 									</div>
 								</div>
 
 								<div class="form-group">
 									<label class="control-label" for="Verify Password">Verify password</label><br>
 									<div class="input-group">
-										<input type="password" class="form-control" name="verify_password" value="">
+										<g:passwordField type="password" class="form-control" name="verify_password" value=""/>
 									</div>
 								</div>
 							</div>
-							<div class="col-md-1"></div>
-							<div class="col-md-4">
+							<div class="col-xs-1"></div>
+							<div class="col-xs-4" style="margin-top: -75px">
 								<div class="form-group">
 									<label class="control-label" for="bio">BIO</label>
-									<textarea id="bio" name="data" class="form-control" value=""></textarea>
+									<textarea id="bio" name="bio" class="form-control" value="${user.bio}"></textarea>
 									<div class="bio-radio">
-										<div class="input-affordance">
-											<input type="radio" class="radio-public" name="bio-visibility" id="bio-public" value="public" checked="">
-											<label for="bio-public" class="radio-public-label">Public</label> <br>
-											<input type="radio" class="radio-private" name="bio-visibility" id="bio-private" value="private">
-											<label for="bio-private" class="radio-private-label">Private</label>
-										</div>
+										<input type="radio" class="radio-public" name="bio-visibility" id="bio-public" value="public" checked="">
+										<label for="bio-public" class="radio-public-label">Public</label>
+										<input type="radio" class="radio-private" name="bio-visibility" id="bio-private" value="private">
+										<label for="bio-private" class="radio-private-label">Private</label>
 									</div>
 								</div>
 
@@ -277,10 +276,10 @@ $(function() {
 									<g:link action="register23andme">
 										<oauth:checkSubscription userId="${user.id}" typeId="TWENTY_THREE_AND_ME">
 											<g:if test="${it }">
-												Re-import from 23andMe
+												Re-import from 23andMe Account
 											</g:if>
 											<g:else>
-												Import from 23andme
+												Import from 23andme Account
 											</g:else>
 										</oauth:checkSubscription>
 									</g:link>
@@ -301,13 +300,10 @@ $(function() {
 				</div>
 			</div><!-- .col-sm-9 ends -->
 		</div>
-<br><br>
 	<div class="interest-list">
 		<!-- div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div  -->
 		<label class="control-label" for="interests">Interest Tags</label>
 		<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
-		<br/>&nbsp;<br/>
-		<ol id="interestTagsList" class="form-control" style=padding:3px;height:10em;list-style:none;overflow:auto;width:345px;"></ol>
 	</div>
 </body>
 </html>

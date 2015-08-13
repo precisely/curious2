@@ -524,5 +524,5 @@ function shorten(text, maxLength, includeLastWord) {
 
 var interestList = [];
 function displayEntry(interestList) {
-	return "<div>Interest tags</div>";
+	return "<div class=\"interest-tags-container\">Interest Tags</div>";
 }
