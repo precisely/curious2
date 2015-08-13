@@ -280,9 +280,38 @@ a,a:link,a:hover,a:visited {
 	font-weight:normal;
 	padding-left:2px;
 }
+
 #trackmain {
 	max-height: 633px;
 }
+
+#trackmain .dropdown-menu {
+	background-color: #fff;
+	left: auto;
+	right: 10px;
+	text-align: center;
+	width: 290px;
+	padding: 0px 15px 5px 15px;
+	-webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.175);
+	box-shadow: 0 1px 5px rgba(0,0,0,0.175);
+}
+
+#trackmain .dropdown-menu::before {
+	position: absolute;
+	top: -23px;
+	right: 15px;
+	display: inline-block;
+	border-right: 7px solid transparent;
+	border-bottom: 26px solid #fff;
+	border-left: 7px solid transparent;
+	border-bottom-color: #fff;
+	content: '';
+}
+
+#recordList .dropdown-menu {
+	right: 135px;
+}
+
 /**
  * Styles for graph page starts here.
  */
@@ -936,10 +965,12 @@ body.tags-displayed .floating-column {
 }
 #entry0 li {
 	position: relative;
-	margin-bottom: 10px;
+	margin-bottom: 2px;
 	padding: 10px;
 	font-size: 18px;
 	background-color: #FFFFFF;
+	border-radius: 0px;
+	box-shadow: 0px 3px 2px 0px #E4E2E2;
 }
 .swatch {
 	padding-left:20px;
@@ -1578,6 +1609,185 @@ body.discuss-page .red-header {
 .addon input {
 	padding-left: 70px;
 	padding-right: 340px;
+}
+
+.track-page .track-input-dropdown {
+	right: 10px;
+	background-color: #8a8a8a;
+	border-radius: 4px;
+	border-bottom: 2px solid #5d5d5d;
+	color: #fff;
+	width: 110px;
+}
+
+.track-page .track-input-dropdown img {
+	margin-top: -4px;
+	margin-right: 10px;
+}
+
+#recordList .track-input-dropdown {
+	position: absolute;
+	top: 15px;
+	height: 30px;
+	right: 135px;
+	padding: 0px;
+}
+
+#addData .dropdown-menu .divider, #recordList .dropdown-menu .divider {
+	width: 288px;
+	background-color: #e4e4e4;
+	margin-left: -15px;
+}
+
+#addData ul {
+	list-style-type: none;
+}
+
+.track-page .choose-date-input {
+	width: 100%;
+	height: 33px;
+	background-color: #f8f8f8;
+	font-weight: 600;
+	color: #656565 !important;
+	padding: 5px;
+	text-align: center;
+}
+
+
+.track-page .choose-date-input::-webkit-input-placeholder, .track-page .choose-date-input::-moz-placeholder, 
+.track-page .choose-date-input:-ms-input-placeholder {
+	color: #656565 !important;
+	font-size: 10px;
+}
+
+.track-page .input-group {
+	border: 1px solid #d1d1d1;
+	border-radius: 2px;
+}
+
+.track-page .input-group-addon {
+	background-color: #f8f8f8;
+	border: none;
+}
+
+.calander-addon {
+	background: url(/images/calander-dark.png) no-repeat;
+	width: 52px;
+	background-size: 24px;
+	background-position: 15px;
+}
+
+.repeat-frequency-radio-group input[type="radio"] {
+	display: none;	
+}
+
+#addData .repeat-frequency-radio-group label , #recordList .repeat-frequency-radio-group label {
+	color: #818181;
+	font-size: 12px;
+	margin-right: 10px;
+}
+
+.repeat-frequency-radio-group input[type="radio"]:checked + label span {
+	background-color: #f48d5b;
+}
+
+.repeat-frequency-radio-group input[type="radio"] + label span {
+	border: 1px solid #e4e4e4;
+	display: inline-block;
+	width: 19px;
+	height: 19px;
+	margin: -1px 4px 0 0;
+	vertical-align: middle;
+	cursor: pointer;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+}
+
+.track-page .make-pin-button {
+	height: 33px;
+	border: 1px solid #c04f7f;
+	border-radius: 2px;
+	box-shadow: 0px 2px 2px 0px #c04f7f;
+	color: #c04f7f;
+	font-weight: 600;
+	background-color: #fff;
+}
+
+.entry-checkbox {
+	display: inline-block;
+	position: relative;
+	vertical-align: text-bottom;
+	width: 22px;
+	height: 22px;
+}
+
+.input-affordance .dropdown-menu li, #recordList .dropdown-menu li {
+	margin-bottom: 15px;
+	margin-top: 15px;
+}
+
+.entry-checkbox label {
+	width: 22px;
+	height: 22px;
+	cursor: pointer;
+	position: absolute;
+	border-radius: 2px;
+	top: 2px;
+	left: 2px;
+	padding: 0px !important;
+	background: #f8f8f8;
+	border: 1px solid #d1d1d1;
+}
+
+.entry-checkbox input[type=checkbox]:checked + label {
+	border: 1px solid #F48D5B;
+}
+
+.entry-checkbox input[type=checkbox]:checked + label:after {
+	opacity: 3;
+}
+
+.entry-checkbox label:after {
+	content: '';
+	width: 15px;
+	height: 8px;
+	border: 3px solid #f48d5b;
+	border-top: none;
+	border-right: none;
+	border-radius: 2px;
+	position: absolute;
+	top: 4px;
+	left: 2px;
+	background: transparent;
+	opacity: 0;
+	-webkit-transform: rotate(-55deg);
+	-ms-transform: rotate(-55deg);
+	transform: rotate(-55deg);
+}
+
+.entry-checkbox input[type="checkbox"] {
+	display: none;
+}
+
+#addData .instructions, #recordList .instructions {
+	font-size: 12px;
+	font-style: italic;
+	color: #5F5F5F;
+	font-weight: 100;
+}
+
+#addData li, #recordList .dropdown-menu li {
+	box-shadow: none;
+	font-size: 12px;
+	padding: 0px;
+}
+
+#addData .label-bold, #recordList .label-bold {
+	font-size: 12px;
+	font-weight: 600;
+	color: #656565;
+	padding: 0px;
+	margin-right: 10px;
 }
 
 .align-middle {
