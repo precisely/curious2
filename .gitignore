@@ -32,3 +32,4 @@ JavaImp
 grails-console
 /data/
 /.settings/
+.vagrant/
