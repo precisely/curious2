@@ -171,10 +171,12 @@ $(function() {
 
 });
 
-$(document).ready(function() {
-	var discussionHash = "${discussionHash}";
+var discussionHash = "${discussionHash}";
 
-	$("#postList").infiniteScroll({
+$(document).ready(function() {
+	getComments(discussionHash, 5, 0);
+
+	$(".comments").infiniteScroll({
 		bufferPx: 360,
 		finalMessage: 'No more comments to show',
 		onScrolledToBottom: function(e, $element) {
@@ -182,19 +184,12 @@ $(document).ready(function() {
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
 
-			var url = "/api/discussionPost";
-			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
-					discussionHash: discussionHash}), 
-					function(data) {
-				if (checkData(data)) {
-					if (!data.posts) {
-						this.finish();
-					} else {
-						$element.append(data.posts);
-						showCommentAgeFromDate();
-						this.setNextPage();		// Increment offset for next page
-						this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
-					}
+			getComments(discussionHash, 5, this.getOffset(), function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
 				}
 			}.bind(this));
 		}
@@ -274,8 +269,7 @@ $(document).ready(function() {
 		<!-- COMMENTS -->
 		<div class="main container-fluid">
 			<div class="discusscomments">
-				<g:if
-					test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
+				<g:if test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
 					<div class="description">
 						<div class="comment">
 							${firstPost ? (firstPost.getMessage() ? firstPost.getMessage().encodeAsHTML() : "") : ""}
@@ -300,8 +294,7 @@ $(document).ready(function() {
 					</div>
 				</g:if>
 
-				<div class="feed-item">
-					<div class="discussion">
+				<div class="feed-item discussion" id="discussion-${discussionHash }">
 						<div class="discussion-topic">
 							<div class="contents">
 								<div class="row">
@@ -350,12 +343,10 @@ $(document).ready(function() {
 							</div>
 						</div>
 						<div class="commentList">
-							<g:if
-								test="${firstPost != null && firstPost.getPlotDataId() != null}">
+							<g:if test="${firstPost != null && firstPost.getPlotDataId() != null}">
 								<h1>Comments</h1>
 							</g:if>
-							<div class="discussion-comment">
-								<div>
+							<div class="discussion-comments-wrapper">
 									<div class="add-comment-to-discussion">
 										<form action="/home/discuss" method="post"
 											id="commentForm">
@@ -390,16 +381,10 @@ $(document).ready(function() {
 											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
-								</div>
-								<div>
 									<a href="#">
-										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
-									</span>
+										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})</span>
 									</a>
-								</div>
-							</div>
-							<div id="postList">
-								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+									<div class="comments"></div>
 							</div>
 						</div>
 					</div>
@@ -431,6 +416,8 @@ $(document).ready(function() {
 			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
 			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
+		<c:renderJSTemplate template="/discussionPost/instance" id="_comments" />
+	</div>
 </div>
 </body>
 </html>

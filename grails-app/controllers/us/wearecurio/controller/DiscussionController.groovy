@@ -67,8 +67,8 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
-		username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-		templateVer: urlService.template(request), discussionHash: discussion.hash]
+				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+				templateVer: urlService.template(request), discussionHash: discussion.hash]
 
 		if (user == null) {
 			model.put("associatedGroups", []) // public discussion

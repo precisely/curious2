@@ -55,6 +55,7 @@ class DiscussionPost {
 			discussionId: discussionId,
 			id: id,
 			message: message,
+			created: created,
 			updated: updated
 		]
 	}
