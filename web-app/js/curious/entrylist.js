@@ -742,8 +742,10 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return;
 		}
 
-		if ($target.closest('.dropdown-menu').length == 0) {
+		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
 			$('.entry-details-dropdown-menu').parent().removeClass('open');
+			$('.entry-details-form').trigger('reset');
+			$('.repeat-modifiers').addClass('hide');
 		} else {
 			return;
 		}
