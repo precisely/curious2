@@ -36,6 +36,7 @@ class User {
 	Boolean virtual // not a real user, a "virtual" user for creating/storing entries not associated with a real physical user
 	Date created
 	Long virtualUserGroupId
+	String bio
 	
 	static constraints = {
 		username(maxSize:70, unique:true)
@@ -209,7 +210,12 @@ class User {
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
-
+		
+		def userBio = map['bio']
+		if (userBio != null) {
+			bio = userBio
+		}
+		
 		if ((!map["name"]) && (map["first"] || map["last"])) {
 			map["name"] = (map["first"] ?: '') + ' ' + (map["last"] ?: '')
 		}
@@ -523,6 +529,7 @@ class User {
 			sprints: getOwnedSprints(),
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
+			bio: bio,
 			updated: created
 		]
 	}
