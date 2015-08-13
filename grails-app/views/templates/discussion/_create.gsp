@@ -1,5 +1,5 @@
 <div class="new-post">
-	<form id="create-discussion" action="/home/discuss?createTopic=true" method="post">
+	<form id="create-discussion">
 		<div class="input-affordance left-addon">
 			<i class="fa fa-pencil"></i> 
 			<input class="full-width discussion-topic-input" type="text" placeholder="New question or discussion topic?"

@@ -45,47 +45,13 @@ function showShareDialog(discussionHash) {
 	});
 }
 
-function showCommentDialog(discussionHash) {
-	$('div#comment-dialog').dialog({
-		dialogClass: "no-close",
-		modal: false,
-		resizable: false,
-		title: "Comment",
-		buttons: {
-			"Post ": function() {
-				$(this).dialog("close");
-				if (discussionHash) {
-					addComment(discussionHash);
-				} else {
-					addComment(null);
-				}
-			}
-		}
-	});
-}
-
-function addComment(discussionHash) {
-	var $inputElement = $('input#userComment');
-	if (!discussionHash) {
-		discussionHash = $('input#discussionId').val();
-	}
-	queuePostJSON('Adding comment', '/api/discussionPost',
-		getCSRFPreventionObject('addCommentCSRF', {discussionHash: discussionHash, message: $inputElement.val()}),
-		function(data) {
-			if (data.success) {
-				if (location.href.indexOf('/discussion/show') > -1) {
-					location.reload();
-				} else {
-					location.href = '/discussion/show/' + discussionHash;
-				}
-			} else {
-				showAlert(data.message);
-			}	
-	}, function(error) {
-		showAlert('Internal server error occurred');
-	});
-}
-
+/**
+ * Used to get the DiscussionPost/comments data associated with a Discussion of given hash.
+ * @param discussionHash 
+ * @param max
+ * @param offset
+ * @param callback Callback to execute when response are rendered in the DOM.
+ */
 function getComments(discussionHash, max, offset, callback) {
 	var url = "/api/discussionPost?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=" + max + "&" +
 			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
@@ -118,13 +84,17 @@ function getComments(discussionHash, max, offset, callback) {
 }
 
 $(document).ready(function() {
+	/**
+	 * Click handler to execute when user clicks on the button to delete a Discussion.
+	 */
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var discussionHash = $this.data('discussionHash');
+
 			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
-					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
-					function(data) {
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'), function(data) {
+
 				if (!checkData(data))
 					return;
 
@@ -146,6 +116,9 @@ $(document).ready(function() {
 		return false;
 	});
 
+	/**
+	 * Click handler to execute when user clicks on the button to delete a DiscussionPost/comment.
+	 */
 	$(document).on("click", "a.delete-post", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -174,5 +147,33 @@ $(document).ready(function() {
 			}, null, 'delete');
 		});
 		return false;
+	});
+
+	/**
+	 * Click handler to execute when user hit enter i.e. submits the form of adding new DiscussionPost/comment.
+	 */
+	$(document).on("submit", ".comment-form", function() {
+		// See base.js for implementation details of $.serializeObject()
+		var params = $(this).serializeObject();
+
+		queuePostJSON('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
+				function(data) {
+			if (!checkData(data)) {
+				return;
+			}
+
+			if (data.success) {
+				location.reload();
+			}
+		}, function(xhr) {
+			console.log('Internal server error');
+		});
+
+		return false;
+	});
+
+	$(document).on("click", ".share-button", function() {
+		$(this).popover({html: true});
+		$('.share-link').select();
 	});
 });

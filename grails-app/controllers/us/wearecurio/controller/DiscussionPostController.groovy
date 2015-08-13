@@ -55,10 +55,9 @@ class DiscussionPostController extends LoginController{
 		if (!comment) {
 			renderJSONPost([success: false, message: g.message(code: "not.created.message", args: ["Comment"])])
 			return
-		} else {
-			renderJSONPost([success: true])
-			return
 		}
+
+		renderJSONPost([success: true])
 	}
 
 	def delete(DiscussionPost post) {

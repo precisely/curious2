@@ -2,8 +2,8 @@
 <html>
 <head>
 <meta name="layout" content="social" />
-<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, addMemberCSRF, 
-addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF, leaveSprintDataCSRF"/>
+<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, addMemberCSRF, addCommentCSRF,
+addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF, leaveSprintDataCSRF, deleteDiscussionPostDataCSRF"/>
 
 <script type="text/javascript">
 $(document).ready(function() {

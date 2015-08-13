@@ -137,14 +137,14 @@ $(function() {
 			$("#postcommentarea").keyup(function(e) {
 				if (e.keyCode == 13) {
 					saveTitle(function() {
-						$("#commentForm").submit();
+						$(".comment-form").submit();
 					});
 				}
 			});
 	
 			$("#commentSubmitButton").click(function() {
 				saveTitle(function() {
-					$("#commentForm").submit();
+					$(".comment-form").submit();
 				});
 			});
 			
@@ -152,23 +152,10 @@ $(function() {
 		};
 	</content>
 	
-	$(document).on("click", "ul#posts-pagination a", function() {
-		var url = $(this).attr('href');
-		$.ajax({
-			url: url,
-			success: function(data) {
-				$('div#postList').html(data);
-				wrapPagination();
-			}
-		});
-		return false;
-	});
-
 	$('li#share-discussion').on('click', function() {
 		showShareDialog(null);
 		return false;
 	});
-
 });
 
 var discussionHash = "${discussionHash}";
@@ -193,9 +180,6 @@ $(document).ready(function() {
 				}
 			}.bind(this));
 		}
-	});
-	$('.share-button').popover({html: true}).on('click', function() {
-		$('.share-link').select();
 	});
 });
 </script>
@@ -336,9 +320,6 @@ $(document).ready(function() {
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
-									<button onclick="showCommentDialog('${discussionHash}')">
-										<img src="/images/comment.png" alt="comment"> Comment
-									</button>
 								</div>
 							</div>
 						</div>
@@ -348,8 +329,7 @@ $(document).ready(function() {
 							</g:if>
 							<div class="discussion-comments-wrapper">
 									<div class="add-comment-to-discussion">
-										<form action="/home/discuss" method="post"
-											id="commentForm">
+										<form method="post" class="comment-form">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
 
@@ -376,22 +356,17 @@ $(document).ready(function() {
 											</g:if>
 											<g:else>
 												<input type="text" placeholder="Add Comment to this discussion..."
-													id="post-comment" name="message" required>
+													id="post-comment" name="message" required autofocus>
 											</g:else>
 											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
-									<a href="#">
-										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})</span>
-									</a>
 									<div class="comments"></div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<!-- /COMMENTS -->
-
 		</div>
 		<!-- /TOTAL PAGE -->
 
