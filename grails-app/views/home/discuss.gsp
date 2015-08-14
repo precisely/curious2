@@ -256,7 +256,7 @@ $(document).ready(function() {
 									<div class="col-xs-9 discussion-header">
 										<a href="#">
 											<img class="avatar img-circle" src="/images/avatar.png" alt="...">
-											<span class="username">&nbsp; ${discussionOwner}</span>
+											&nbsp; <span class="username">${discussionOwner}</span>
 										</a>
 									</div>
 									<div class="col-xs-3 discussion-topic-span discussion-header">

@@ -9,7 +9,7 @@
 				<div class="col-xs-9 discussion-header">
 					<a href="#">
 						<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
-						<span class="username">{{- discussionData.userName }}</span>
+						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>
 				<div class="col-xs-3 discussion-topic-span discussion-header">
