@@ -1,6 +1,6 @@
 <div class="people-wrapper">
 	<div class="user-details-header">
-		<a href="#" onclick="showUserDetails("{{- user.hash }}")">
+		<a href="#" onclick="showUserDetails('{{- user.hash }}')">
 			<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
 			<span class="user-name">{{- user.username }}</span>
 		</a>
