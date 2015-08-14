@@ -9,7 +9,7 @@
 				<div class="col-xs-9 discussion-header">
 					<a href="#">
 						<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
-						<span class="user-name">{{- discussionData.userName }}</span>
+						<span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>
 				<div class="col-xs-3 discussion-topic-span discussion-header">
@@ -50,7 +50,7 @@
 						{{ } }}
 						<button onclick="toggleCommentsList('{{- discussionData.hash }}')">
 							{{ if (!discussionData.totalComments || discussionData.totalComments < 1) {  }}
-								<img src="/images/comment.png" alt="comment"> Comment</img>
+								<img src="/images/comment.png" alt="comment"> Comment
 							{{ } else { }}
 								<div class="dark-comment comment-button" data-total-comments="{{- discussionData.totalComments }}">
 									{{- discussionData.totalComments }}
@@ -64,10 +64,8 @@
 		</div>
 	</div>
 	<div class="discussion-comments-wrapper hide">
-		<div class="comments"></div>
-		<div class="bottom-margin">
-			<span class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</span>
-		</div>
+		<div class="view-comment bottom-margin" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
+		<div class="comments media-list bottom-margin"></div>
 		<div class="row">
 			<div class="col-md-6 add-comment">
 				<form class="comment-form">

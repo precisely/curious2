@@ -1,23 +1,21 @@
-<div class="discussion-comment">
-	<div>
+<div class="discussion-comment media">
+	<div class="media-left">
 		<a href="#">
 			<img class="avatar" src="/images/avatar2.png" alt="avatar">
-			<span class="user-name"> 
-				{{- discussionPost.authorName || 'anonymous'}}
-			</span>
 		</a>
+	</div>
+	<div class="media-body">
+		<span class="username"> 
+			{{- discussionPost.authorName || 'anonymous'}}
+		</span>
 		<span class="posting-time" data-time="{{- discussionPost.created || discussionPost.updated}}"></span>
-		<div class="pull-right">
-			{{ if (discussionPost.authorUserId == userId || isAdmin) { }}
-				<span class="delete"> 
-					<a href="#" class="delete-post" data-post-id="{{-discussionPost.id}}"> 
-						<img src="/images/x.gif" width="8" height="8">
-					</a>
-				</span>
-			{{ } }}
+		{{ if (discussionPost.authorUserId == userId || isAdmin) { }}
+			<a href="#" class="delete-post pull-right" data-post-id="{{-discussionPost.id}}"> 
+				<i class="fa fa-times-circle"></i>
+			</a>
+		{{ } }}
+		<div class="message">
+			{{- discussionPost.message }}
 		</div>
 	</div>
-	<p class="without-margin">
-		{{- discussionPost.message }}
-	</p>
 </div>

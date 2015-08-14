@@ -158,10 +158,12 @@ $(function() {
 	});
 });
 
+window.isDiscussionSinglePage = true;
 var discussionHash = "${discussionHash}";
 
 $(document).ready(function() {
-	getComments(discussionHash, 5, 0);
+	commentsArgs.max = 5;
+	getComments(discussionHash, commentsArgs);		// See discussion.js for "commentsArgs"
 
 	$(".comments").infiniteScroll({
 		bufferPx: 360,
@@ -170,8 +172,9 @@ $(document).ready(function() {
 			// Pause the scroll event to not trigger again untill AJAX call finishes
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
+			commentsArgs.offset = this.getOffset();
 
-			getComments(discussionHash, 5, this.getOffset(), function(data) {
+			getComments(discussionHash, commentsArgs, function(data) {
 				if (!data.posts) {
 					this.finish();
 				} else {
@@ -185,20 +188,13 @@ $(document).ready(function() {
 </script>
 </head>
 <body class="discuss-page">
-	<!-- SHARE PAGE -->
 	<div id="container" class="sharePage">
 		<div class="row red-header">
-				<!-- <span id="actions"> <span
-					class="icon-triangle icon-triangle-right toggle"></span>
-					<ul>
-						<li id="share-discussion"><a href="#">Change Visibility</a></li>
-						<li class="${isAdmin ? '' : 'disabled text-muted' }"><g:link
-								params="[discussionHash: params.discussionHash, deleteDiscussion: true]"
-								action="discuss">Delete</g:link></li>
-					</ul>
-				</span>--!><h1 class="clearfix">
-                               			 <span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>	 			   </h1>
+			<h1 class="clearfix">
+				<span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>
+			</h1>
 		</div>
+
 		<div id="plotLeftNav">
 			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
 		</div>
@@ -253,31 +249,6 @@ $(document).ready(function() {
 		<!-- COMMENTS -->
 		<div class="main container-fluid">
 			<div class="discusscomments">
-				<g:if test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
-					<div class="description">
-						<div class="comment">
-							${firstPost ? (firstPost.getMessage() ? firstPost.getMessage().encodeAsHTML() : "") : ""}
-						</div>
-						<div class="messageControls">
-							<g:if
-								test="${(firstPost.getAuthor().getId() == userId || isAdmin) && firstPost.getMessage() != null}">
-								<!--span class="edit"></span-->
-								<span class="delete"><a href="#"
-									onclick="return clearPostMessage(${firstPost.getId()})"><img
-										src="/images/x.gif" width="8" height="8"></a></span>
-							</g:if>
-						</div>
-						<!--<g:if test="${firstPost}">
-			<div class="messageInfo">
-				<div class="username"><g:if test="${firstPost.author.getSite()}"><a href="${firstPost.author.getSite().encodeAsURL()}"></g:if><g:if test="${firstPost.author.getUsername()}">${firstPost.author.getUsername().encodeAsHTML()}</g:if><g:else>${description.author.getName().encodeAsHTML()}</g:else><g:if test="${firstPost.author.getSite()}"></a></g:if></div>
-				<div class="date"><g:formatDate date="${firstPost.getCreated()}" type="datetime" style="MEDIUM"/></div>
-			</div>
-		</g:if>-->
-						<!--div class="button"><a href="#">Try it out. Track the same tags.</a></div -->
-						<br />&nbsp;
-					</div>
-				</g:if>
-
 				<div class="feed-item discussion" id="discussion-${discussionHash }">
 						<div class="discussion-topic">
 							<div class="contents">
@@ -285,7 +256,7 @@ $(document).ready(function() {
 									<div class="col-xs-9 discussion-header">
 										<a href="#">
 											<img class="avatar img-circle" src="/images/avatar.png" alt="...">
-											<span class="user-name"> ${discussionOwner}</span>
+											<span class="username">&nbsp; ${discussionOwner}</span>
 										</a>
 									</div>
 									<div class="col-xs-3 discussion-topic-span discussion-header">
@@ -320,13 +291,13 @@ $(document).ready(function() {
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
+									<button class="comment-button">
+										<img src="/images/comment.png" alt="comment"> Comment
+									</button>
 								</div>
 							</div>
 						</div>
 						<div class="commentList">
-							<g:if test="${firstPost != null && firstPost.getPlotDataId() != null}">
-								<h1>Comments</h1>
-							</g:if>
 							<div class="discussion-comments-wrapper">
 									<div class="add-comment-to-discussion">
 										<form method="post" class="comment-form">
@@ -356,19 +327,18 @@ $(document).ready(function() {
 											</g:if>
 											<g:else>
 												<input type="text" placeholder="Add Comment to this discussion..."
-													id="post-comment" name="message" required autofocus>
+													id="post-comment" name="message" required>
 											</g:else>
 											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
-									<div class="comments"></div>
+									<div class="comments media-list"></div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<!-- /TOTAL PAGE -->
 
 		<div style="clear: both;"></div>
 

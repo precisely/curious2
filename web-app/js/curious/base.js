@@ -514,10 +514,10 @@ function shorten(text, maxLength, includeLastWord) {
 	if (includeLastWord) {
 		var regex = new RegExp("^(.{" + maxLength + "}[^\s]*).*");
 
-		return text.replace(regex, "$1");
+		return text.replace(regex, "$1") + ' ...';
 	} else {
 		var trimmedText = text.substring(0, maxLength + 1);
 
-		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" ")));
+		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" "))) + ' ...';
 	}
 }

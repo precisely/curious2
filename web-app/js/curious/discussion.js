@@ -1,6 +1,7 @@
 /**
  * Script contains Discussion & DiscussionPost (comment) related code.
  */
+var commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
 function modifyShare(discussionHash) {
 	var $selectElement = $('select#shareOptions');
@@ -47,40 +48,62 @@ function showShareDialog(discussionHash) {
 
 /**
  * Used to get the DiscussionPost/comments data associated with a Discussion of given hash.
- * @param discussionHash 
- * @param max
- * @param offset
+ * @param discussionHash
+ * @param args Supported values: max, offset, sort, order 
  * @param callback Callback to execute when response are rendered in the DOM.
  */
-function getComments(discussionHash, max, offset, callback) {
-	var url = "/api/discussionPost?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=" + max + "&" +
-			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
-
-	var discussionElementID = '#discussion-' + discussionHash;
+function getComments(discussionHash, args, callback) {
+	args.discussionHash = discussionHash;
+	var url = "/api/discussionPost?" + $.param(getCSRFPreventionObject("getCommentsCSRF", args)) + "&callback=?";
 
 	queueJSON("fetching more comments", url, function(data) {
 		if (!checkData(data)) {
 			return;
 		}
 
-		if (!data.posts) {
-			$(' .view-comment', discussionElementID).html('');
-		} else {
-			var compiledHTML = "";
-
-			$.each(data.posts, function(index, item) {
-				compiledHTML += compileTemplate("_comments", {discussionPost: item, isAdmin: data.isAdmin,
-						userId: data.userId});
-			});
-
-			$('.comments', discussionElementID).append(compiledHTML);
-			showCommentAgeFromDate();
-		}
+		renderComments(discussionHash, data.posts, data, window.isDiscussionSinglePage);
 
 		if (callback) {
 			callback(data);
 		}
 	});
+}
+
+/**
+ * This method is used to render the new comments data to the DOM/UI using the Lodash template.
+ * 
+ * @param discussionHash Hash ID of the discussion to render comments for.
+ * @param posts list of posts to render
+ * @param data {isAdmin: true/false, userId: 1234}
+ * @param append Whether to append the new discussion posts should be added to the last of the comments list.
+ */
+function renderComments(discussionHash, posts, data, append) {
+	var discussionElementID = '#discussion-' + discussionHash;
+
+	if (!posts) {
+		$('.view-comment', discussionElementID).html('');
+		return;
+	}
+
+	var compiledHTML = "";
+
+	// If we are in discussion listing page (i.e. feeds page)
+	if (!window.isDiscussionSinglePage) {
+		// Then reverse the comments to display the most recent comment at last
+		posts = posts.reverse();
+	}
+
+	$.each(posts, function(index, post) {
+		compiledHTML += compileTemplate("_comments", {discussionPost: post, isAdmin: data.isAdmin, userId: data.userId});
+	});
+
+	if (append) {
+		$('.comments', discussionElementID).append(compiledHTML);
+	} else {
+		$('.comments', discussionElementID).prepend(compiledHTML);
+	}
+
+	showCommentAgeFromDate();
 }
 
 $(document).ready(function() {
@@ -131,7 +154,9 @@ $(document).ready(function() {
 
 				if (data.success) {
 					showAlert(data.message, function() {
-						$this.parent().closest('.discussion-comment').fadeOut();
+						$this.parent().closest('.discussion-comment').fadeOut(null, function() {
+							$(this).remove();
+						});
 						if (isOnFeedPage()) {
 							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
 							var totalComments = $commentButton.data('totalComments') - 1;
@@ -153,8 +178,9 @@ $(document).ready(function() {
 	 * Click handler to execute when user hit enter i.e. submits the form of adding new DiscussionPost/comment.
 	 */
 	$(document).on("submit", ".comment-form", function() {
+		var $form = $(this);
 		// See base.js for implementation details of $.serializeObject()
-		var params = $(this).serializeObject();
+		var params = $form.serializeObject();
 
 		queuePostJSON('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
 				function(data) {
@@ -162,9 +188,8 @@ $(document).ready(function() {
 				return;
 			}
 
-			if (data.success) {
-				location.reload();
-			}
+			renderComments(params.discussionHash, [data.post], data, !window.isDiscussionSinglePage);
+			$form[0].reset();
 		}, function(xhr) {
 			console.log('Internal server error');
 		});
@@ -175,5 +200,12 @@ $(document).ready(function() {
 	$(document).on("click", ".share-button", function() {
 		$(this).popover({html: true});
 		$('.share-link').select();
+	});
+
+	// On click of comment button in the single discussion page
+	$(document).on("click", ".comment-button", function() {
+		// Just put focus on the comment box
+		$(this).parents(".discussion").find("input[name=message]").focus();
+		return false;
 	});
 });

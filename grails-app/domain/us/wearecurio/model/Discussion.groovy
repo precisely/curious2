@@ -235,11 +235,9 @@ class Discussion {
 		
 		return DiscussionPost.get(firstPostId)
 	}
-	
-	def getLastPost() {
-		def c = DiscussionPost.createCriteria()
-		
-		def posts = c {
+
+	DiscussionPost getLastPost() {
+		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("discussionId", getId())
 			}
@@ -247,11 +245,8 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "desc")
 		}
-		
-		for (post in posts)
-			return post
-		
-		return null
+
+		return post
 	}
 	
 	def fetchUserId() {
@@ -282,13 +277,13 @@ class Discussion {
 	}
 	
 	List<DiscussionPost> getPosts(Map args) {
+		args.sort = args.sort ?: "created"
+		args.order = args.order ?: "asc"
+
 		List posts = DiscussionPost.createCriteria().list(args) {
-			and {
-				eq("discussionId", getId())
-			}
-			order("created", "asc")
+			eq("discussionId", this.id)
 		}
-		
+
 		return posts
 	}
 
