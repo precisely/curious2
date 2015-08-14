@@ -55,7 +55,8 @@ class SprintTests extends CuriousTestCase {
 	@Before
 	void setUp() {
 		super.setUp()
-		
+		Sprint.list()*.delete(flush: true)		// For some reason, Sprint list is not getting flushed after tests
+
 		Map params = new HashMap()
 		params.put("username", "testuser2")
 		params.put("email", "test2@test.com")
