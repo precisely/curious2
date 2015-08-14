@@ -2,7 +2,7 @@
 	<div class="user-details-header">
 		<a href="#">
 			<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
-			<span class="user-name">{{- user.username }}</span>
+			<span class="username">{{- user.username }}</span>
 		</a>
 		<button class="follow">FOLLOW</button>
 	</div>

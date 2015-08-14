@@ -1,12 +1,11 @@
 package us.wearecurio.controller
 
-import grails.gsp.PageRenderer
+import grails.converters.JSON
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 
 class DiscussionPostController extends LoginController{
 
-	PageRenderer groovyPageRenderer
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
 	def index() {
@@ -22,8 +21,7 @@ class DiscussionPostController extends LoginController{
 		DiscussionPost firstPostInstance = discussion.getFirstPost()
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 
-		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts([max: params.max, offset: params.offset]) : 
-				discussion.getPosts([max: params.max, offset: params.offset])
+		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts(params) : discussion.getPosts(params)
 
 		if (!posts) {
 			renderJSONGet([posts: false])
@@ -57,7 +55,10 @@ class DiscussionPostController extends LoginController{
 			return
 		}
 
-		renderJSONPost([success: true])
+		JSON.use("jsonDate") {
+			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser().id, idAdmin:
+					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
+		}
 	}
 
 	def delete(DiscussionPost post) {

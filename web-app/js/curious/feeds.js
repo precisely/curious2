@@ -3,7 +3,7 @@
  */
 var autocompleteWidget;
 var searchList = [];
-var maxCommentsPerDiscussion = 4;
+var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
@@ -156,7 +156,9 @@ $(document).ready(function() {
 	$(document).on("click", ".discussion .view-comment", function() {
 		var offset = $(this).data("offset") || 4;
 
-		getComments($(this).data("discussionHash"), maxCommentsPerDiscussion, offset, function() {
+		commentsArgs.offset = offset;
+
+		getComments($(this).data("discussionHash"), commentsArgs, function() {
 			$(this).data("offset", offset + maxCommentsPerDiscussion);
 		}.bind(this));
 	});
@@ -772,7 +774,10 @@ function toggleCommentsList(discussionHash) {
 		$element.hide();
 		$('.comments', $element).html('');
 	} else {
-		getComments(discussionHash, maxCommentsPerDiscussion, 0);
+		commentsArgs.offset = 0;
+		commentsArgs.max = maxCommentsPerDiscussion;
+
+		getComments(discussionHash, commentsArgs);
 		$element.show();
 	}
 }

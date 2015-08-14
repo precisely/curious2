@@ -15,9 +15,6 @@ input, optgroup, select, textarea {
 	padding-left: 30px;
 }
 
-.add-comment input, .add-comment-to-discussion input {
-	color: #a4a4a4;
-}
 .btn {
 	display: inline-block;
 	margin-bottom: 0;
@@ -2180,10 +2177,6 @@ div.graph-header-container .red-header {
 	padding: 0 0 20 0;
 	text-align: right;
 }
-.feed .media {
-	padding: 10px;
-	border: 1px solid #F1F1F1;
-}
 .new-post textarea {
 	padding: 3px;
 }
@@ -3045,15 +3038,6 @@ body {
 	font-size: 14px;
 }
 
-.discussion .multiple-comments {
-	padding: 1px 16px;
-}
-
-.comments .multiple-comments {
-	 padding: 0px;
-	 margin-bottom: 20px;
-}
-
 #postList {
 	background-color: #eeeeee;
 }
@@ -3068,10 +3052,6 @@ body {
 	margin-left: 32px;
 }
 
-.discussion-comments-wrapper .add-comment-to-discussion {
-	margin: 0px 0px 38px 0px;
-}
-
 .discussion-comments-wrapper .add-comment-to-discussion input {
 	width: 100%;
 	height: 44px;
@@ -3080,8 +3060,25 @@ body {
 	color: #A4A4A4;
 }
 
-.discussion-comments-wrapper .posting-time {
-	margin:12px 0px 0px 10px;
+.discussion-comments-wrapper #finished-msg {
+	margin-top: 15px;
+	margin-left: 35px;
+}
+
+.comments {
+	margin-top: 25px;
+}
+
+.discussions .comments {
+	margin-top: 0;
+}
+
+.comments:empty {
+	display: none;
+}
+
+.discussion-comment .posting-time {
+	margin: 12px 0px 0px 10px;
 	font-size: 11px;
 	color: #a8a8a8;
 }
@@ -3100,48 +3097,37 @@ body {
 	color: #a4a4a4;
 }
 
-
-
-.discussion-comments-wrapper .avatar {
+.discussion-comment .avatar {
 	height: 25px;
 	width: 25px;
-	margin: 5px 0px 0px 0px;
 }
 
-.discussion-comments-wrapper .comment-controll {
-	width: 20px;
-	display: inline-block;
-	vertical-align: top;
-}
-
-.discussion-comments-wrapper p {
+.discussion-comment .message {
+	margin-top: 5px;
 	text-align: justify;
-	margin-left: 32px;
-	margin-bottom: 20px;
 	font-size: 13px;
 	color: #2d2d2d;
 }
 
-.discussion-comments-wrapper .without-margin {
-	margin-bottom: 10px;
+.bottom-margin {
+	margin-bottom: 15px;
 }
 
-.discussion-comments-wrapper .bottom-margin {
-	margin-bottom: 10px;
+.bottom-margin:empty {
+	display: none;
 }
 
-.discussion-topic .user-name {
+.discussion-topic .username {
 	font-size: 14px;
 	font-weight: 600;
 }
 
-.discusscomments .discussion-topic .user-name {
+.discusscomments .discussion-topic .username {
 	font-size: 16px;
 }
 
-.feed-item .user-name {
+.feed-item .username {
 	color: #c04f7f;
-	margin-left: 5px;
 	font-size: 13px;
 }
 
@@ -3921,7 +3907,7 @@ body .modal-header button {
 	width: 42px;
 }
 
-.user-details-header a .user-name{
+.user-details-header a .username {
 	font-size: 16px;
 	font-weight: 600;
 	color: #474747;

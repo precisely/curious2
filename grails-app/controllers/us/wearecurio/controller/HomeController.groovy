@@ -741,7 +741,8 @@ class HomeController extends DataController {
 	 * TODO This action is going to be removed in the upcoming pull request that will use JSON  data to render a
 	 * particular discussion. Do not change or alter code here instead use the DiscussionController for this.
 	 */
-	def discuss(String discussionHash, Long deletePostId, Long clearPostId, Long plotIdMessage) {
+	@Deprecated
+	def discuss(String discussionHash, Long plotIdMessage) {
 		/*
 		 * New discussion format uses discussionHash to identify discussions
 		 * 
@@ -753,7 +754,37 @@ class HomeController extends DataController {
 
 		def user = sessionUser()
 
-		Discussion discussion = Discussion.findByHash(discussionHash)
+		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
+
+		Discussion discussion
+
+		if (discussionHash) {
+			discussion = Discussion.findByHash(discussionHash)
+		}
+
+		if (discussion == null && plotIdMessage) {
+			def name = params.name ?: "New question or discussion title?"
+			if (plotIdMessage != null) {
+				def plot = PlotData.get(plotIdMessage)
+				if (plot)
+					name = plot.getName()
+			}
+			if (group) {
+				if (!group.hasWriter(user)) {
+					flash.message = "Failed to create new discussion topic: can't post to this group"
+					redirect(url:toUrl(action:'index'))
+					return
+				}
+			}
+			discussion = Discussion.create(user, name)
+
+			if (discussion) {
+				if (group) group.addDiscussion(discussion)
+				DiscussionPost.createComment(params.message, user, discussion, plotIdMessage, params)
+			}
+			redirect(url: toUrl(action: "discuss", params: [discussionHash: discussion.hash]))
+			return
+		}
 
 		if (!discussion) {
 			debug "DiscussionHash not found: " + discussionHash

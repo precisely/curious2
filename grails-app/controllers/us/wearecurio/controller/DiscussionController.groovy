@@ -35,7 +35,7 @@ class DiscussionController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 
-				if(discussionPost) {
+				if (discussionPost) {
 					discussion.createPost(user, discussionPost)
 				}
 
