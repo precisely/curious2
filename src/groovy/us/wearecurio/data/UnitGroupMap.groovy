@@ -1,7 +1,6 @@
 package us.wearecurio.data
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.services.EntryParserService
 
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
