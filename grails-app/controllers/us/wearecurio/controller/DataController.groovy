@@ -1173,6 +1173,7 @@ class DataController extends LoginController {
 
 	def getAutocompleteParticipantsData() {
 		if (params.searchString) {
+			params.max = params.max ? Math.min(params.int('max'), 50) : 4
 			List searchResults = User.withCriteria {
 				projections{
 					property("username")
@@ -1188,7 +1189,7 @@ class DataController extends LoginController {
 						isNull("virtual")
 					}
 				}
-				maxResults(10)
+				maxResults(params.max)
 			}
 			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
 		} else {
