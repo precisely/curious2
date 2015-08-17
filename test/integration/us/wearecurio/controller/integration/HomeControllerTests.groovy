@@ -143,6 +143,24 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "test update user preferences to update name and bio privacy setting"() {
+		controller.session.userId = user.getId()
+		controller.params.putAll([
+			userId: user.id.toString(),
+			name: "x y",
+			bioPrivacy: "public",
+			namePrivacy: "private"
+		])
+
+		controller.doupdateuserpreferences()
+
+		assert user.refresh().settings.isBioPublic() == true
+		assert user.settings.isNamePublic() == false
+
+		assert user.settings.getValue() == 1
+	}
+
+	@Test
 	void testDoUpload() {
 		HomeController controller = new HomeController()
 

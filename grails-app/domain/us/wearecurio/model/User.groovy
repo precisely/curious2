@@ -5,10 +5,13 @@ import java.text.SimpleDateFormat
 import java.util.List
 
 import org.apache.commons.logging.LogFactory
+
 import grails.gorm.DetachedCriteria
+
 import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
+import us.wearecurio.data.UserSettings
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
@@ -37,8 +40,10 @@ class User {
 	Date created
 	Long virtualUserGroupId
 	String bio
+	UserSettings settings = new UserSettings()
 	
 	static constraints = {
+		bio(nullable: true)
 		username(maxSize:70, unique:true)
 		// This needs to be uncommented after migrations have run on all the systems
 		hash(/*blank: false, unique: true,*/ nullable: true)
@@ -65,6 +70,8 @@ class User {
 		twitterAccountName column:'twitter_account_name', index:'twitter_account_name_idx'
 		email column:'email', index:'email_idx'
 	}
+
+	static embedded = ["settings"]
 
 	static searchable = {
 		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
@@ -229,6 +236,15 @@ class User {
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
 		notifyOnComments = (map['notifyOnComments'] ?: 'on').equals('on') ? true : false
+
+		["name", "bio"].each { privacyField ->
+			String paramName = privacyField + "Privacy"
+
+			if (map[paramName] == "public" || map[paramName] == "private") {
+				String methodName = "make" + privacyField.capitalize() + map[paramName].capitalize()
+				settings."${methodName}"()
+			}
+		}
 
 		try {
 			if (map["birthdate"] != null)

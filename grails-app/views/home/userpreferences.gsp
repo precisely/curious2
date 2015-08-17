@@ -110,34 +110,36 @@ function editUserDetails() {
 <body class="user-preference">
 	<div class="red-strip"></div>
 	<div class="main container-fluid ">
-		<div class = "user-details">
-			<div class="row">
-				<div class="pull-right">
-					<button class="save-user-details" onclick="editUserDetails()">Save Profile</button>
-				</div>
-				<div class="user-image pull-left">
-					<img src="/images/avatar.png" alt="" class="img-circle">
-					<div class="form-group">
-						<button class="edit-image-button">Edit Image</button>
+		<div class="user-details">
+			<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" class="form-horizontal" autocomplete="off">
+				<div class="row">
+					<div class="pull-right">
+						<button class="save-user-details" onclick="editUserDetails()">Save Profile</button>
 					</div>
-				</div>
-				<div class="user-name">
-					<label class="control-label" for="name" id="user-name-label">Name</label>
-					<g:textField class="form-control" name="name" placeholder="Enter name here" value="${user.name}"/>
-					<div class="user-name-radio">
-						<div class="input-affordance">
-							<input type="radio" class="radio-public" name="name-visibility" id="name-public" value="public" checked="">
-							<label for="name-public" class="radio-public-label">Public</label> <br>
-							<input type="radio" class="radio-private" name="name-visibility" id="name-private" value="private">
-							<label for="name-private" class="radio-private-label">Private</label>
+					<div class="user-image pull-left">
+						<img src="/images/avatar.png" alt="" class="img-circle">
+						<div class="form-group">
+							<button class="edit-image-button">Edit Image</button>
+						</div>
+					</div>
+					<div class="user-name">
+						<label class="control-label" for="name" id="user-name-label">Name</label>
+						<g:textField class="form-control" name="name" placeholder="Enter name here" value="${user.name}"/>
+						<div class="user-name-radio">
+							<div class="input-affordance">
+								<input type="radio" class="radio-public" name="namePrivacy" id="name-public" value="public"
+									${user.settings.isNamePublic() ? 'checked="checked"' : '' }>
+								<label for="name-public" class="radio-public-label">Public</label> <br>
+								<input type="radio" class="radio-private" name="namePrivacy" id="name-private" value="private"
+									${!user.settings.isNamePublic() ? 'checked="checked"' : '' }>
+								<label for="name-private" class="radio-private-label">Private</label>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="profile-container">
-				<div class="row">
-					<div id="addData">
-						<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" id="updateUserPreferences" class="form-horizontal" autocomplete="off">
+				<div class="profile-container">
+					<div class="row">
+						<div id="addData">
 							<div class="col-xs-4" style="margin-left:80px;">
 								<g:hiddenField name="precontroller" value="${precontroller}" />
 								<g:hiddenField name="preaction" value="${preaction}" />
@@ -159,14 +161,14 @@ function editUserDetails() {
 								<div class="form-group">
 									<label class="control-label" for="oldPassword">Old password</label>
 									<div class="input-group">
-										<g:passwordField class="form-control" name="oldPassword" value="${user.password}" autocomplete="off" />
+										<g:passwordField class="form-control" name="oldPassword" autocomplete="off" />
 									</div>
 								</div>
 
 								<div class="form-group">
 									<label class="control-label" for="New Password">New Password</label><br>
 									<div class="input-group">
-										<g:passwordField type="password" class="form-control" name="password" value="${user.password}" autocomplete="off"/>
+										<g:passwordField type="password" class="form-control" name="password" autocomplete="off"/>
 									</div>
 								</div>
 
@@ -183,29 +185,14 @@ function editUserDetails() {
 									<label class="control-label" for="bio">BIO</label>
 									<textarea id="bio" name="bio" class="form-control" value="${user.bio}"></textarea>
 									<div class="bio-radio">
-										<input type="radio" class="radio-public" name="bio-visibility" id="bio-public" value="public" checked="">
+										<input type="radio" class="radio-public" name="bioPrivacy" id="bio-public" value="public"
+											${user.settings.isBioPublic() ? 'checked="checked"' : '' }>
 										<label for="bio-public" class="radio-public-label">Public</label>
-										<input type="radio" class="radio-private" name="bio-visibility" id="bio-private" value="private">
+										<input type="radio" class="radio-private" name="bioPrivacy" id="bio-private" value="private"
+											${!user.settings.isBioPublic() ? 'checked="checked"' : '' }>
 										<label for="bio-private" class="radio-private-label">Private</label>
 									</div>
 								</div>
-
-								<!-- 
-								<div class="form-group">
-									<label class="control-label col-sm-3" for="birthdate">Birthdate (MM/DD/YYYY)</label>
-									<div class="col-sm-5">
-										<g:textField name="birthdate"
-										value="${user.birthdate ? new java.text.SimpleDateFormat("MM/dd/yyyy").format(user.birthdate) : ''}" />
-									</div>
-								</div>
-								-->
-
-								<!--div class="form-group">
-									<label class="control-label col-sm-3" for="Notify Email">Email to send reminders to</label>
-									<div class="col-sm-5">
-										<g:textField name="remindEmail" value="${user.remindEmail ? user.remindEmail.encodeAsHTML() : ""}" />
-									</div>
-								</div -->
 
 								<div class="form-group">
 									<label class="control-label" for="email notifications">Email Notifications</label><br>
@@ -219,15 +206,6 @@ function editUserDetails() {
 
 								<div class="form-group">
 									<label class="control-label">External Accounts</label><br>
-									<!--
-									<g:if test="${!user.twitterAccountName}">
-									<g:link action="registertwitter">Link Twitter Account</g:link>
-									</g:if>
-									<g:else>
-										Twitter Account: ${user.twitterAccountName}<br>
-										<g:link action="registertwitter">Link Other Twitter Account</g:link>
-									</g:else><br>
-									 -->
 									<oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
 										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
@@ -284,26 +262,16 @@ function editUserDetails() {
 										</oauth:checkSubscription>
 									</g:link>
 								</div>
-
-								<!-- 
-								<div class="form-group">
-									<label class="control-label col-sm-3" for="default twitter to now">Default Twitter to Now</label>
-									<div class="col-sm-5">
-										<input type="checkbox" name="twitterDefaultToNow" style="border: none; width: 20px;"
-										<g:if test="${user.getTwitterDefaultToNow()}"> checked</g:if>> Default Twitter timestamp to now
-									</div>
-								</div>
-								 -->
 							</div>
-						</g:form>
+						</div>
 					</div>
 				</div>
-			</div><!-- .col-sm-9 ends -->
+			</g:form>
 		</div>
-	<div class="interest-list">
-		<!-- div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div  -->
-		<label class="control-label" for="interests">Interest Tags</label>
-		<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+		<div class="interest-list">
+			<label class="control-label" for="interests">Interest Tags</label>
+			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+		</div>
 	</div>
 </body>
 </html>
