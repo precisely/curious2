@@ -67,6 +67,14 @@ class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecB
 			unrelated.deleteInterestTag(tag)
 	}
 	
+	static Closure removeSprintDiscussion = {
+		user = null, sprint ->
+			def discussionIds = GroupMemberDiscussion.lookupMemberIds(sprint.virtualGroupId)
+			for (Long discussionId in discussionIds) {
+				GroupMemberDiscussion.delete(sprint.virtualGroupId, discussionId)
+			}
+	}
+	
 	static def data = [
 	//		visibility			otherUser	expectedResult					otherUserCode	expectedSize expectedResult	
 	[Model.Visibility.PUBLIC 	, 	1	, 	"self sees"						,	{d, u2, u1 ->}	,	1	,	"sees"],
@@ -432,58 +440,22 @@ class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecB
 		results.listItems.size() == 0
 		
 		where:
-		visibility					|	followType		|	followCode		|	unFollowCode	
-		Model.Visibility.PUBLIC		|	"user follower"	|	addFollower		|	removeFollower
-		Model.Visibility.PRIVATE	|	"user follower"	|	addFollower		|	removeFollower
-		Model.Visibility.UNLISTED	|	"user follower"	|	addFollower		|	removeFollower
-		Model.Visibility.NEW		|	"user follower"	|	addFollower		|	removeFollower
-		Model.Visibility.PUBLIC		|	"sprint reader"	|	addSprintReader	|	removeSprintReader
-		Model.Visibility.PRIVATE	|	"sprint reader"	|	addSprintReader	|	removeSprintReader
-		Model.Visibility.UNLISTED	|	"sprint reader"	|	addSprintReader	|	removeSprintReader
-		Model.Visibility.NEW		|	"sprint reader"	|	addSprintReader	|	removeSprintReader
-		Model.Visibility.PUBLIC		|	"user tags"		|	addUserTags		|	removeUserTags
-		Model.Visibility.PRIVATE	|	"user tags"		|	addUserTags		|	removeUserTags
-		Model.Visibility.UNLISTED	|	"user tags"		|	addUserTags		|	removeUserTags
-		Model.Visibility.NEW		|	"user tags"		|	addUserTags		|	removeUserTags
-	}
-	
-	@spock.lang.Unroll
-	void "Test sprint reader does not see #visibility discussion removed from sprint"() {
-		given: "a new discussion"
-		def discussion = Discussion.create(user1, getUniqueName())
-		discussion.visibility = visibility
-
-		and: "sprint is created for discussion by user1 with user2 as reader"
-		def sprint = addSprintReader( discussion, user2, user1 )		
-
-		when: "a post is added"
-		def post = discussion.createPost(user1, getUniqueName())
-		
-		and: "elasticsearch service is indexed"
-		elasticSearchService.index()
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-		
-		then: "discussion has post"
-		DiscussionPost.get(post.id).discussionId == discussion.id
-		
-		when: "discussion is removed from sprint"
-		GroupMemberDiscussion.delete(sprint.fetchUserGroup()?.id, discussion.id)
-		
-		and: "elasticsearch service is indexed"
-		elasticSearchService.index()
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-				
-		then: "getActivity for user2 returns no discussion activities"
-		def results = searchService.getDiscussionActivity(user2)
-		results.success
-		results.listItems.size() == 0
-		
-		where:
-		visibility	<< [
-			Model.Visibility.PUBLIC,
-			Model.Visibility.PRIVATE,
-			Model.Visibility.UNLISTED,
-			Model.Visibility.NEW
-		]
+		visibility					|	followType						|	followCode		|	unFollowCode	
+		Model.Visibility.PUBLIC		|	"user follower"					|	addFollower		|	removeFollower
+		Model.Visibility.PRIVATE	|	"user follower"					|	addFollower		|	removeFollower
+		Model.Visibility.UNLISTED	|	"user follower"					|	addFollower		|	removeFollower
+		Model.Visibility.NEW		|	"user follower"					|	addFollower		|	removeFollower
+		Model.Visibility.PUBLIC		|	"sprint reader"					|	addSprintReader	|	removeSprintReader
+		Model.Visibility.PRIVATE	|	"sprint reader"					|	addSprintReader	|	removeSprintReader
+		Model.Visibility.UNLISTED	|	"sprint reader"					|	addSprintReader	|	removeSprintReader
+		Model.Visibility.NEW		|	"sprint reader"					|	addSprintReader	|	removeSprintReader
+		Model.Visibility.PUBLIC		|	"user tags"						|	addUserTags		|	removeUserTags
+		Model.Visibility.PRIVATE	|	"user tags"						|	addUserTags		|	removeUserTags
+		Model.Visibility.UNLISTED	|	"user tags"						|	addUserTags		|	removeUserTags
+		Model.Visibility.NEW		|	"user tags"						|	addUserTags		|	removeUserTags
+		Model.Visibility.PUBLIC		|	"sprint reader w/o discussion"	|	addSprintReader	|	removeSprintDiscussion
+		Model.Visibility.PRIVATE	|	"sprint reader w/o discussion"	|	addSprintReader	|	removeSprintDiscussion
+		Model.Visibility.UNLISTED	|	"sprint reader w/o discussion"	|	addSprintReader	|	removeSprintDiscussion
+		Model.Visibility.NEW		|	"sprint reader w/o discussion"	|	addSprintReader	|	removeSprintDiscussion
 	}
 }
