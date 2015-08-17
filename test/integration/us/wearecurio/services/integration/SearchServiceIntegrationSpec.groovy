@@ -10,7 +10,6 @@ import static org.elasticsearch.index.query.QueryBuilders.*
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.joda.time.DateTimeZone;
-import org.junit.Test;
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost

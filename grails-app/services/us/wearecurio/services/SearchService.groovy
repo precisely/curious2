@@ -41,6 +41,50 @@ class SearchService {
 		elasticSearchService.index(obj)
 	}
 	
+	Map getDiscussionsCreated(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getSprintsCreated(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getAllCreated(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getDiscussionsFollowed(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getSprintsFollowed(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getUsersFollowed(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getAllFollowed(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getDiscussionActivity(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getSprintActivity(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getUserActivity(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+	
+	Map getAllActivity(User user, int offset = 0, int max = 10) {
+		return [listItems: false, success: false]
+	}
+			
 	Map getSprintsList(User user, int offset, int max) {
 		try {
 						
