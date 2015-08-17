@@ -46,7 +46,7 @@ class IdentifierTests extends CuriousTestCase {
 		def currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		def timeZone = "America/Los_Angeles"
 		def baseDate = dateFormat.parse("July 1, 2010 12:00 am")
-		def parsed = entryParserService.parse(currentTime, timeZone, "bread 5 repeat", baseDate, true)
+		def parsed = entryParserService.parse(currentTime, timeZone, "bread 5 repeat", null, null, baseDate, true)
 		def entry = Entry.create(userId, parsed, new EntryStats())
 		
 		entry.save(flush:true)

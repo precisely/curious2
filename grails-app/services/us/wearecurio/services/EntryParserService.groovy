@@ -59,7 +59,7 @@ class EntryParserService {
 	}
 
 	def parseMeta(String entryStr) {
-		return parse(null, null, entryStr, null, false)
+		return parse(null, null, entryStr, null, null, null, false)
 	}
 
 	protected static boolean isSameDay(Date time1, Date time2) {
@@ -368,7 +368,7 @@ class EntryParserService {
 	static final int CONDITION_TIME = 8
 	static final int CONDITION_COMMENT = 9
 	
-	def parse(Date time, String timeZoneName, String entryStr, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
+	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
 		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
@@ -389,7 +389,9 @@ class EntryParserService {
 			retVal['datePrecisionSecs'] = 0
 		else
 			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
-
+			
+		retVal['repeatType'] = RepeatType.get(repeatTypeId)
+		retVal['repeatEnd'] = repeatEnd
 		retVal['timeZoneName'] = timeZoneName
 		retVal['today'] = today
 

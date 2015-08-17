@@ -39,19 +39,26 @@ class DataController extends LoginController {
 		systemFormat.setTimeZone(TimeZone.getDefault());
 	}
 
-	protected def doAddEntry(currentTimeStr, timeZoneName, userIdStr, textStr, baseDateStr, defaultToNow) {
-		debug "DataController.doAddEntry() currentTimeStr:" + currentTimeStr + ", timeZoneName:" + timeZoneName + ", userIdStr:" + userIdStr \
-				+ ", baseDateStr:" + baseDateStr + ", defaultToNow:" + defaultToNow
+	protected def doAddEntry(Map parms) {
+		def p = [defaultToNow:'1']
+		p.putAll(parms)
+		
+		boolean defaultToNow = (p.defaultToNow == '1')
+		
+		debug "DataController.doAddEntry() params:" + p
+		
+		User user = userFromIdStr(p.userId)
 
-		def user = userFromIdStr(userIdStr)
-
-		def currentTime = parseDate(currentTimeStr)
-		def baseDate = parseDate(baseDateStr)
-		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
+		Date currentTime = parseDate(p.currentTime)
+		Date baseDate = parseDate(p.baseDate)
+		Long repeatTypeId = parseLong(p.repeatTypeId)
+		Date repeatEnd = parseDate(p.repeatEnd)
+		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(p.baseDate) : p.timeZoneName
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
-		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, textStr, baseDate, defaultToNow)
+		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow)
+		
 		EntryStats stats = new EntryStats()
 		def entry = Entry.create(user.getId(), parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
@@ -61,14 +68,18 @@ class DataController extends LoginController {
 		return [entry, parsedEntry['status'], tagStats.get(0)]
 	}
 
-	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow, allFuture) {
-		debug "DataController.doUpdateEntry() entryIdStr:" + entryIdStr + ", currentTimeStr:" + currentTimeStr \
-				+ ", textStr:" + textStr + ", baseDateStr:" + baseDateStr + ", timeZoneName:" + timeZoneName \
-				+ ", defaultToNow:" + defaultToNow
+	protected def doUpdateEntry(Map parms) {
+		debug "DataController.doUpdateEntry() params:" + parms
 
-		def entry = Entry.get(Long.parseLong(entryIdStr))
+		def p = [defaultToNow:'1', allFuture:'1']
+		p.putAll(parms)
+				
+		boolean defaultToNow = (p.defaultToNow == '1')
+		boolean allFuture = (p.allFuture == '1')
+		
+		Entry entry = Entry.get(Long.parseLong(p.entryId))
 
-		def oldEntry = entry
+		Entry oldEntry = entry
 
 		if (entry.getUserId() == 0L) {
 			debug "Attempting to edit a deleted entry."
@@ -79,17 +90,22 @@ class DataController extends LoginController {
 			debug "No permission to edit this entry"
 			return [null, 'You do not have permission to edit this entry.', null, null]
 		}
+		
+		Long userId = entry.getUserId()
 
 		if (entry.fetchIsGenerated()) {
 			debug "Can't edit a generated entry"
 			return [null, 'You cannot edit a generated entry.', null, null]
 		}
 
-		def currentTime = parseDate(currentTimeStr)
-		def baseDate = parseDate(baseDateStr)
-		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
+		Date currentTime = parseDate(p.currenTime)
+		Date baseDate = parseDate(p.baseDate)
+		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : p.timeZoneName
+		
+		Long repeatTypeId = parseLong(p.repeatTypeId)
+		Date repeatEnd = parseDate(p.repeatEnd)
 
-		EntryStats stats = new EntryStats(entry.getUserId())
+		EntryStats stats = new EntryStats(userId)
 		
 		// activate repeat entry if it has a repeat type
 		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
@@ -101,18 +117,24 @@ class DataController extends LoginController {
 			} else
 				debug "No entry activation"
 		}
+		
+		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
 
-		def m = entryParserService.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
+		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, true)
 
-		if (entry != null) {
-			entry = entry.update(m, stats, baseDate, allFuture)
-			def tagStats = stats.finish()
-			return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
-		} else {
+		if (!m) {
 			debug "Parse error"
 			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
+		} else if (m['repeatType']?.isContinuous() && (!wasContinuous)) {
+			// if creating a new continuous (button) entry and the previous entry was not continuous, create a new entry instead
+			entry = Entry.create(userId, m, stats)
+		} else if (entry != null) {
+			entry = entry.update(m, stats, baseDate, allFuture)
 		}
+		
+		ArrayList<TagStats> tagStats = stats.finish()
+		return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
 	}
 
 	// find entries including those with null events
@@ -615,8 +637,7 @@ class DataController extends LoginController {
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
-		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
-				params.defaultToNow == '1' ? true : false)
+		def result = doAddEntry(params)
 		if (result[0] != null) {
 			renderJSONGet([
 				listEntries(userId, params.timeZoneName, baseDate, currentTime),
@@ -631,12 +652,11 @@ class DataController extends LoginController {
 
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() params:" + params)
-
+		
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
-		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneName,
-				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
+		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params)
 		if (entry != null) {
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
@@ -1231,6 +1251,8 @@ class DataController extends LoginController {
 		if (session.showHelp) {
 			session.showHelp = null
 		}
+		
+		String userIdStr = sessionUser().id.toString()
 
 		List entries = []
 
@@ -1246,8 +1268,10 @@ class DataController extends LoginController {
 		List createdEntries = []
 
 		if (params.entryId) {
-			List result = doUpdateEntry(params.entryId, params.currentTime, params['entries[]'], params.baseDate, params.timeZoneName,
-				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
+			Map p = [:]
+			p.putAll(params)
+			p.text = params['entries[]']
+			List result = doUpdateEntry(p)
 
 			if (result[0]) {
 				createdEntries.push(result[0])
@@ -1256,11 +1280,13 @@ class DataController extends LoginController {
 				messageCode = "not.saved.message"
 			}
 		} else {
+			Map p = [userId:userIdStr]
+			p.putAll(params)
 			Entry.withTransaction { status ->
 				// Iterating over all the entries received and creating entries for them
 				entries.any({
-					def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
-						it, params.baseDate, true)
+					p.text = it
+					def result = doAddEntry(p)
 					if (!result[0]) {
 						operationSuccess = false
 						messageCode = "not.saved.message"

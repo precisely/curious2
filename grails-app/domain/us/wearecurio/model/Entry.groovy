@@ -97,7 +97,7 @@ class Entry implements Comparable {
 	String units
 	String comment
 	Long repeatTypeId
-	Date repeatEnd
+	Date repeatEnd // the end of the repeat cycle, inclusive
 	Tag baseTag
 	DurationType durationType
 	Identifier setIdentifier
@@ -140,7 +140,8 @@ class Entry implements Comparable {
 		
 		Map<String,Object> m = [
 			'date':date,
-			'timeZoneId':(Integer) timeZoneId.getId(),
+			'timeZoneId':(Integer) timeZoneId.id,
+			'timeZoneName': timeZoneId.name,
 			'datePrecisionSecs':DEFAULT_DATEPRECISION_SECS,
 			'amount':amount,
 			'units':units,
@@ -185,9 +186,15 @@ class Entry implements Comparable {
 		}
 
 		Tag tag = m.tag
-		DateTimeZone userTimezone = TimeZoneId.fromId(m.timeZoneId)?.toDateTimeZone()
+		TimeZoneId timeZoneId
+		if (!m.timeZoneId) {
+			timeZoneId = TimeZoneId.look(m.timeZoneName)
+		} else
+			timeZoneId = TimeZoneId.fromId(m.timeZoneId)
+		Integer timeZoneIdId = (Integer) timeZoneId.id
+		DateTimeZone userTimezone = timeZoneId.toDateTimeZone()
+			
 		DateTime userDateTime = new DateTime(m.date.getTime()).withZone(userTimezone)
-
 		DateTime startOfDay = userDateTime.withTime(0, 0, 0, 0).minusMinutes(1)
 		DateTime endOfDay = startOfDay.plusHours(24)
 		log.debug("Entry.lookForPartialEntry: m.date " + m.date)
@@ -206,7 +213,7 @@ class Entry implements Comparable {
 				if (setId) {
 					eq("setIdentifier", setId)
 				}
-				eq("timeZoneId", m.timeZoneId)
+				eq("timeZoneId", timeZoneIdId)
 				between("date", startOfDay.toDate(), endOfDay.toDate())
 			}
 		}
@@ -306,8 +313,10 @@ class Entry implements Comparable {
 			durationType = durationType.makeGhost()
 			
 		Tag tag = m['tag']
-
-		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
+		
+		TimeZoneId timeZoneId
+		if (m['timeZoneId']) timeZoneId = TimeZoneId.fromId(m['timeZoneId'])
+		else timeZoneId = TimeZoneId.look(m['timeZoneName'])
 
 		checkAmount(m)
 		
@@ -326,11 +335,15 @@ class Entry implements Comparable {
 			TagUnitStats.createOrUpdate(userId, baseTag.getId(), m['units'])
 		}
 		
+		if (m['repeatType'] != null && m['repeatEnd'] != null) {
+			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId)
+		}
+		
 		Entry entry = new Entry(
 				userId:userId,
 				group:group,
 				date:m['date'],
-				timeZoneId:timeZoneId,
+				timeZoneId:timeZoneId.getId(),
 				datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 				tag:tag,
 				amount:m['amount'],
@@ -383,8 +396,6 @@ class Entry implements Comparable {
 		
 		if (m['tag'] == null) return null
 
-		Integer timeZoneId = (Integer) m['timeZoneId'] ?: (Integer)TimeZoneId.look(m['timeZoneName']).getId()
-		
 		def amounts = m['amounts']
 		
 		EntryGroup entryGroup = null
@@ -1757,6 +1768,11 @@ class Entry implements Comparable {
 
 		m['amount'] = m['amount'] == null ? null : new BigDecimal(m['amount'], mc)
 
+		TimeZoneId timeZoneId = TimeZoneId.look(m['timeZoneName'])
+		if (timeZoneId == null) {
+			timeZoneId = TimeZoneId.fromId(m['timeZoneId'])
+		}
+		
 		/**
 		 * check to see if entry repeat type has changed. If so, merge and/or create new repeat structure
 		 */
@@ -1766,6 +1782,10 @@ class Entry implements Comparable {
 			updateRepeatType = true
 		}
 
+		if (m['repeatType'] != null && m['repeatEnd'] != null) {
+			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId)
+		}
+		
 		setTag(m['tag'])
 		setDate(m['date'])
 		setDatePrecisionSecs(m['datePrecisionSecs'])
@@ -1778,7 +1798,7 @@ class Entry implements Comparable {
 		setSetIdentifier(Identifier.look(m['setName']))
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
-		setTimeZoneId((Integer)TimeZoneId.look(m['timeZoneName']).getId())
+		setTimeZoneId((Integer)timeZoneId.getId())
 		setRepeatEnd(m['repeatEnd'] ? m['repeatEnd'] : this.repeatEnd)
 
 		Utils.save(this, true)
@@ -2073,7 +2093,8 @@ class Entry implements Comparable {
 			amountPrecision:fetchAmountPrecision(),
 			units:units,
 			comment:comment,
-			repeatType:repeatTypeId]
+			repeatType:repeatTypeId,
+			repeatEnd:repeatEnd]
 		
 		Integer index = 0
 		
@@ -2096,7 +2117,7 @@ class Entry implements Comparable {
 		return "Entry(id: ${id ?: 'un-saved'}, userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
-				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", timeZoneName:" + fetchTimeZoneName() \
 				+ ", baseTag:" + getBaseTag().getDescription() \
 				+ ", description:" + getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
@@ -2113,7 +2134,7 @@ class Entry implements Comparable {
 		return "Entry(userId:" + userId \
 				+ ", date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
-				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", timeZoneName:" + fetchTimeZoneName() \
 				+ ", description:" + getBaseTag().getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
@@ -2127,7 +2148,7 @@ class Entry implements Comparable {
 	String contentString() {
 		return "Entry(date:" + Utils.dateToGMTString(date) \
 				+ ", datePrecisionSecs:" + fetchDatePrecisionSecs() \
-				+ ", timeZoneName:" + TimeZoneId.fromId(timeZoneId).getName() \
+				+ ", timeZoneName:" + fetchTimeZoneName() \
 				+ ", description:" + getBaseTag().getDescription() \
 				+ ", amount:" + (amount == null ? 'null' : amount.toPlainString()) \
 				+ ", units:" + units \
