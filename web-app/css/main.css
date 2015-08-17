@@ -15,9 +15,6 @@ input, optgroup, select, textarea {
 	padding-left: 30px;
 }
 
-.add-comment input, .add-comment-to-discussion input {
-	color: #a4a4a4;
-}
 .btn {
 	display: inline-block;
 	margin-bottom: 0;
@@ -2180,10 +2177,6 @@ div.graph-header-container .red-header {
 	padding: 0 0 20 0;
 	text-align: right;
 }
-.feed .media {
-	padding: 10px;
-	border: 1px solid #F1F1F1;
-}
 .new-post textarea {
 	padding: 3px;
 }
@@ -2765,7 +2758,7 @@ body {
 	box-shadow: 0px 4px 5px #dddddd;
 }
 
-.feed-item .discussion {
+.feed-item.discussion {
 	margin-bottom: 20px;
 }
 
@@ -3023,7 +3016,7 @@ body {
 	text-transform: none;
 }
 
-.discussion-topic button img{
+.discussion-topic button img {
 	height: 24px;
 	width: auto;
 	margin-right: 10px;
@@ -3038,42 +3031,28 @@ body {
 	margin-top: 9px;
 }
 
-.discussion .discussion-comment {
+.discussion-comments-wrapper {
 	background-color: #eeeeee;
 	color: #2d2d2d;
 	padding: 25px 16px;
 	font-size: 14px;
 }
 
-
-.discussion .multiple-comments {
-	padding: 1px 16px;
-}
-
-.comments .multiple-comments {
-	 padding: 0px 0px;
-	 margin-bottom: 20px;
-}
-
 #postList {
 	background-color: #eeeeee;
 }
 
-.discussion-comment .view-comment {
+.discussion-comments-wrapper .view-comment {
 	color: #555555;
 	font-size: 11px;
 	cursor: pointer;
 }
 
-.discussion-comment .add-comment {
+.discussion-comments-wrapper .add-comment {
 	margin-left: 32px;
 }
 
-.discussion-comment .add-comment-to-discussion {
-	margin: 0px 0px 38px 0px;
-}
-
-.discussion-comment .add-comment-to-discussion input {
+.discussion-comments-wrapper .add-comment-to-discussion input {
 	width: 100%;
 	height: 44px;
 	padding: 0px 15px;
@@ -3081,13 +3060,30 @@ body {
 	color: #A4A4A4;
 }
 
+.discussion-comments-wrapper #finished-msg {
+	margin-top: 15px;
+	margin-left: 35px;
+}
+
+.comments {
+	margin-top: 25px;
+}
+
+.discussions .comments {
+	margin-top: 0;
+}
+
+.comments:empty {
+	display: none;
+}
+
 .discussion-comment .posting-time {
-	margin:12px 0px 0px 10px;
+	margin: 12px 0px 0px 10px;
 	font-size: 11px;
 	color: #a8a8a8;
 }
 
-.discussion-comment .add-comment input {
+.discussion-comments-wrapper .add-comment input {
 	width: 100%;
 	max-width: 320px;
 	height: 34px;
@@ -3101,48 +3097,37 @@ body {
 	color: #a4a4a4;
 }
 
-
-
 .discussion-comment .avatar {
 	height: 25px;
 	width: 25px;
-	margin: 5px 0px 0px 0px;
 }
 
-.discussion-comment .comment-controll {
-	width: 20px;
-	display: inline-block;
-	vertical-align: top;
-}
-
-.discussion-comment p {
+.discussion-comment .message {
+	margin-top: 5px;
 	text-align: justify;
-	margin-left: 32px;
-	margin-bottom: 20px;
 	font-size: 13px;
 	color: #2d2d2d;
 }
 
-.discussion-comment .without-margin {
-	margin-bottom: 10px;
+.bottom-margin {
+	margin-bottom: 15px;
 }
 
-.discussion-comment .bottom-margin {
-	margin-bottom: 10px;
+.bottom-margin:empty {
+	display: none;
 }
 
-.discussion-topic .user-name {
+.discussion-topic .username {
 	font-size: 14px;
 	font-weight: 600;
 }
 
-.discusscomments .discussion-topic .user-name {
+.discusscomments .discussion-topic .username {
 	font-size: 16px;
 }
 
-.feed-item .user-name {
+.feed-item .username {
 	color: #c04f7f;
-	margin-left: 5px;
 	font-size: 13px;
 }
 
@@ -3922,7 +3907,7 @@ body .modal-header button {
 	width: 42px;
 }
 
-.user-details-header a .user-name{
+.user-details-header a .username {
 	font-size: 16px;
 	font-weight: 600;
 	color: #474747;

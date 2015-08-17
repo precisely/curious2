@@ -1,5 +1,25 @@
 //Base Javascript library extensions
 
+/*
+ * Using {{ }} to escape/evaluate/interpolate template using Loadash instead of <% %>
+ * 
+ * https://lodash.com/docs#templateSettings
+ * http://stackoverflow.com/a/15625454/2405040
+ */
+_.templateSettings.escape = /\{\{-(.+?)\}\}/g;
+_.templateSettings.evaluate = /\{\{(.+?)\}\}/g;
+_.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
+
+/*
+ * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
+ * data is passed to the compile the HTML template.
+ */
+function compileTemplate(id, data) {
+	var rawTemplate = $("script#" + id).html();
+
+	return _.template(rawTemplate)(data);
+}
+
 function isOnline() {
 	return window.navigator.onLine;
 }
@@ -460,5 +480,44 @@ function showBootstrapAlert($element, message, delay) {
 		setInterval(function() {
 			$element.hide();
 		}, delay);
+	}
+}
+
+/**
+ * A method used to trim a given text upto the given length including or excluding the last word at boundary.
+ * For example: Trimming a string "The quick brown fox jumps over the lazy dog" with following max length should result
+ * something (consider includeLastWord = false}
+ * 
+ * Max 1:	""
+ * Max 2:	""
+ * Max 5:	"The"
+ * Max 15:	"The quick brown"
+ * Max 21:	"The quick brown fox"
+ * Max 70:	"The quick brown fox jumps over the lazy dog"
+ * 
+ * (Now consider includeLastWord = true}
+ * 
+ * Max 1:	"The"
+ * Max 2:	"The"
+ * Max 5:	"The quick"
+ * Max 15:	"The quick brown"
+ * Max 21:	"The quick brown fox jumps"
+ * Max 70:	"The quick brown fox jumps over the lazy dog"
+ * 
+ * http://stackoverflow.com/questions/5454235/javascript-shorten-string-without-cutting-words
+ */
+function shorten(text, maxLength, includeLastWord) {
+	if (text.length <= maxLength) {
+		return text;
+	}
+
+	if (includeLastWord) {
+		var regex = new RegExp("^(.{" + maxLength + "}[^\s]*).*");
+
+		return text.replace(regex, "$1") + ' ...';
+	} else {
+		var trimmedText = text.substring(0, maxLength + 1);
+
+		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" "))) + ' ...';
 	}
 }

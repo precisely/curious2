@@ -466,50 +466,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "test list comment data for no id & for for first page"() {
-		controller.session.userId = userId
-
-		Discussion discussion = setUpForCommentPage()
-
-		controller.params.callback = 'callback'
-
-		// Test no discussion id
-		controller.listCommentData()
-
-		String contentAsString = controller.response.contentAsString
-		assert contentAsString.contains('Blank discussion call')
-
-		controller.params.discussionHash = discussion.hash
-
-		// Test pagination with first page
-		controller.listCommentData()
-		contentAsString = controller.response.contentAsString
-
-		assert contentAsString.contains('"message":"comment1"')
-		assert contentAsString.contains('"message":"comment2"')
-		assert contentAsString.contains('"message":"comment3"')
-		assert !contentAsString.contains('"message":"comment6"')
-	}
-
-	@Test
-	void "test list discussion data for second page in pagination"() {
-		Discussion discussion = setUpForCommentPage()
-
-		controller.session.userId = userId
-		controller.params.callback = 'callback'
-		controller.params.discussionHash = discussion.hash
-		controller.params.offset = 5
-
-		// Test pagination with second page
-		controller.listCommentData()
-		String contentAsString = controller.response.contentAsString
-
-		assert contentAsString.contains('"message":"comment1"')		// Will be available as first post
-		assert !contentAsString.contains('"message":"comment5"')
-		assert contentAsString.contains('"message":"comment6"')
-	}
-
-	@Test
 	void "test set discussion name"() {
 		Discussion discussion = setUpForCommentPage()
 
@@ -717,61 +673,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		}
 
 		assert c == 5
-	}
-
-	@Test
-	void testCreateDiscussion() {
-		controller.session.userId = user.getId()
-
-		// Test for invalid params
-		controller.params['name'] = 'dummyDiscussion'
-		controller.createDiscussionData()
-		controller.response.text == "fail"
-
-		// Test for valid params
-		controller.params['name'] = 'dummyDiscussion'
-		controller.params['discussionPost'] = 'dummyPost'
-		controller.createDiscussionData()
-		controller.response.text == "success"
-
-	}
-	
-	@Test
-	void testDeleteComment() {
-		controller.session.userId = user.getId()
-		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
-		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
-
-		// Test for invalid params
-		controller.params['discussionHash'] = discussionInstance.hash
-		controller.params['clearPostId'] = 23
-		controller.deleteCommentData()
-		controller.response.text == "fail"
-		
-		// Test for valid params
-		discussionPostInstance.save(flush: true)
-		controller.params['discussionHash'] = discussionInstance.hash
-		controller.params['clearPostId'] = discussionPostInstance.id
-		controller.deleteCommentData()
-		controller.response.text == "success"
-	}
-	
-	@Test
-	void testCreateComment() {
-		controller.session.userId = user.getId()
-		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
-		
-		// Test for invalid params
-		controller.params['discussionHash'] = 23
-		controller.params['message'] = 'dummyMessage'
-		controller.createCommentData()
-		controller.response.text == "fail"
-
-		// Test for valid params
-		controller.params['discussionHash'] = discussionInstance.hash
-		controller.params['message'] = 'dummyMessage'
-		controller.createCommentData()
-		controller.response.text == "success"
 	}
 
 	@Test

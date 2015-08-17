@@ -35,7 +35,7 @@ class DiscussionController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 
-				if(discussionPost) {
+				if (discussionPost) {
 					discussion.createPost(user, discussionPost)
 				}
 
@@ -67,8 +67,8 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONModel(params)
 		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
-		username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-		templateVer: urlService.template(request), discussionHash: discussion.hash]
+				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+				templateVer: urlService.template(request), discussionHash: discussion.hash]
 
 		if (user == null) {
 			model.put("associatedGroups", []) // public discussion
@@ -102,6 +102,8 @@ class DiscussionController extends LoginController {
 
 	def delete() {
 		User user = sessionUser()
+		debug("$user attempting to delete discussion $params")
+
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id

@@ -137,14 +137,14 @@ $(function() {
 			$("#postcommentarea").keyup(function(e) {
 				if (e.keyCode == 13) {
 					saveTitle(function() {
-						$("#commentForm").submit();
+						$(".comment-form").submit();
 					});
 				}
 			});
 	
 			$("#commentSubmitButton").click(function() {
 				saveTitle(function() {
-					$("#commentForm").submit();
+					$(".comment-form").submit();
 				});
 			});
 			
@@ -152,74 +152,49 @@ $(function() {
 		};
 	</content>
 	
-	$(document).on("click", "ul#posts-pagination a", function() {
-		var url = $(this).attr('href');
-		$.ajax({
-			url: url,
-			success: function(data) {
-				$('div#postList').html(data);
-				wrapPagination();
-			}
-		});
-		return false;
-	});
-
 	$('li#share-discussion').on('click', function() {
 		showShareDialog(null);
 		return false;
 	});
-
 });
 
-$(document).ready(function() {
-	var discussionHash = "${discussionHash}";
+window.isDiscussionSinglePage = true;
+var discussionHash = "${discussionHash}";
 
-	$("#postList").infiniteScroll({
+$(document).ready(function() {
+	commentsArgs.max = 5;
+	getComments(discussionHash, commentsArgs);		// See discussion.js for "commentsArgs"
+
+	$(".comments").infiniteScroll({
 		bufferPx: 360,
 		finalMessage: 'No more comments to show',
 		onScrolledToBottom: function(e, $element) {
 			// Pause the scroll event to not trigger again untill AJAX call finishes
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
+			commentsArgs.offset = this.getOffset();
 
-			var url = "/api/discussionPost";
-			queueJSON("fetching more comments", url, getCSRFPreventionObject('getCommentsCSRF', {offset: this.getOffset(), max: 5, 
-					discussionHash: discussionHash}), 
-					function(data) {
-				if (checkData(data)) {
-					if (!data.posts) {
-						this.finish();
-					} else {
-						$element.append(data.posts);
-						showCommentAgeFromDate();
-						this.setNextPage();		// Increment offset for next page
-						this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
-					}
+			getComments(discussionHash, commentsArgs, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
 				}
 			}.bind(this));
 		}
-	});
-	$('.share-button').popover({html: true}).on('click', function() {
-		$('.share-link').select();
 	});
 });
 </script>
 </head>
 <body class="discuss-page">
-	<!-- SHARE PAGE -->
 	<div id="container" class="sharePage">
 		<div class="row red-header">
-				<!-- <span id="actions"> <span
-					class="icon-triangle icon-triangle-right toggle"></span>
-					<ul>
-						<li id="share-discussion"><a href="#">Change Visibility</a></li>
-						<li class="${isAdmin ? '' : 'disabled text-muted' }"><g:link
-								params="[discussionHash: params.discussionHash, deleteDiscussion: true]"
-								action="discuss">Delete</g:link></li>
-					</ul>
-				</span>--!><h1 class="clearfix">
-                               			 <span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>	 			   </h1>
+			<h1 class="clearfix">
+				<span id="queryTitle">${associatedGroups[0]?.shared ? associatedGroups[0].fullName : 'Open to all'}</span>
+			</h1>
 		</div>
+
 		<div id="plotLeftNav">
 			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
 		</div>
@@ -274,41 +249,14 @@ $(document).ready(function() {
 		<!-- COMMENTS -->
 		<div class="main container-fluid">
 			<div class="discusscomments">
-				<g:if
-					test="${firstPost?.getPlotDataId() != null && firstPost.getMessage() != null}">
-					<div class="description">
-						<div class="comment">
-							${firstPost ? (firstPost.getMessage() ? firstPost.getMessage().encodeAsHTML() : "") : ""}
-						</div>
-						<div class="messageControls">
-							<g:if
-								test="${(firstPost.getAuthor().getId() == userId || isAdmin) && firstPost.getMessage() != null}">
-								<!--span class="edit"></span-->
-								<span class="delete"><a href="#"
-									onclick="return clearPostMessage(${firstPost.getId()})"><img
-										src="/images/x.gif" width="8" height="8"></a></span>
-							</g:if>
-						</div>
-						<!--<g:if test="${firstPost}">
-			<div class="messageInfo">
-				<div class="username"><g:if test="${firstPost.author.getSite()}"><a href="${firstPost.author.getSite().encodeAsURL()}"></g:if><g:if test="${firstPost.author.getUsername()}">${firstPost.author.getUsername().encodeAsHTML()}</g:if><g:else>${description.author.getName().encodeAsHTML()}</g:else><g:if test="${firstPost.author.getSite()}"></a></g:if></div>
-				<div class="date"><g:formatDate date="${firstPost.getCreated()}" type="datetime" style="MEDIUM"/></div>
-			</div>
-		</g:if>-->
-						<!--div class="button"><a href="#">Try it out. Track the same tags.</a></div -->
-						<br />&nbsp;
-					</div>
-				</g:if>
-
-				<div class="feed-item">
-					<div class="discussion">
+				<div class="feed-item discussion" id="discussion-${discussionHash }">
 						<div class="discussion-topic">
 							<div class="contents">
 								<div class="row">
 									<div class="col-xs-9 discussion-header">
 										<a href="#">
 											<img class="avatar img-circle" src="/images/avatar.png" alt="...">
-											<span class="user-name"> ${discussionOwner}</span>
+											&nbsp; <span class="username">${discussionOwner}</span>
 										</a>
 									</div>
 									<div class="col-xs-3 discussion-topic-span discussion-header">
@@ -343,22 +291,16 @@ $(document).ready(function() {
 											title="Share:">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
-									<button onclick="showCommentDialog('${discussionHash}')">
+									<button class="comment-button">
 										<img src="/images/comment.png" alt="comment"> Comment
 									</button>
 								</div>
 							</div>
 						</div>
 						<div class="commentList">
-							<g:if
-								test="${firstPost != null && firstPost.getPlotDataId() != null}">
-								<h1>Comments</h1>
-							</g:if>
-							<div class="discussion-comment">
-								<div>
+							<div class="discussion-comments-wrapper">
 									<div class="add-comment-to-discussion">
-										<form action="/home/discuss" method="post"
-											id="commentForm">
+										<form method="post" class="comment-form">
 											<g:if test="${notLoggedIn}">
 												<p>Enter your details below</p>
 
@@ -390,25 +332,13 @@ $(document).ready(function() {
 											<input type="hidden" name="discussionHash" value="${discussionHash}">
 										</form>
 									</div>
-								</div>
-								<div>
-									<a href="#">
-										<span class="view-comment">VIEW LESS COMMENTS (${totalPostCount})
-									</span>
-									</a>
-								</div>
-							</div>
-							<div id="postList">
-								<g:render template="/discussion/posts" model="[posts: posts]"></g:render>
+									<div class="comments media-list"></div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<!-- /COMMENTS -->
-
 		</div>
-		<!-- /TOTAL PAGE -->
 
 		<div style="clear: both;"></div>
 
@@ -431,6 +361,8 @@ $(document).ready(function() {
 			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
 			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
+		<c:renderJSTemplate template="/discussionPost/instance" id="_comments" />
+	</div>
 </div>
 </body>
 </html>

@@ -1,29 +1,22 @@
 package us.wearecurio.controller
 
+import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
 
 import java.math.MathContext
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Date
 
-import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import org.springframework.http.HttpStatus
 
-import static org.springframework.http.HttpStatus.*
+import us.wearecurio.data.RepeatType
 import us.wearecurio.model.*
 import us.wearecurio.services.EntryParserService
-import us.wearecurio.services.EntryParserService.ParseAmount
-import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
-import us.wearecurio.data.RepeatType
 
 class DataController extends LoginController {
 
@@ -979,68 +972,6 @@ class DataController extends LoginController {
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
 	
-	ElasticSearchService elasticSearchService
-
-	def listDiscussionData() {
-		debug "DataController.listDiscussionData() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		params.max = params.max ?: 10
-		params.offset = params.offset ?: 0
-
-		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
-		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
-
-		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
-				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
-
-		debug "Found $discussionData"
-
-		renderJSONGet(discussionData)
-	}
-
-	def listCommentData(String discussionHash) {
-		debug "DataController.listCommentData() params: $params"
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		if (!discussionHash) {
-			renderStringGet("Blank discussion call")
-			return
-		}
-		Discussion discussion = discussionHash ? Discussion.findByHash(discussionHash) : null
-
-		if (!discussion) {
-			debug "Discussion not found for hash [$discussionHash]."
-			renderStringGet "That discussion topic no longer exists."
-			return
-		}
-
-		params.max = params.max ?: 5
-		params.offset = params.offset ?: 0
-
-		Map model = discussion.getJSONModel(params)
-		model.posts = model.posts*.getJSONDesc()
-		model.putAll([isAdmin: UserGroup.canAdminDiscussion(user, discussion)])
-
-		debug "Found Comment data: $model"
-
-		renderJSONGet(model)
-	}
-
 	def saveSnapshotData() {
 		debug "DataController.saveSnapshotData() params:" + params
 
@@ -1150,78 +1081,6 @@ class DataController extends LoginController {
 			renderStringGet('success')
 		} else {
 			renderStringGet('Failed to update discussion name')
-		}
-	}
-
-	def deleteDiscussionHash() {
-		debug "DataController.deleteDiscussionHash() params:" + params
-
-		def user = sessionUser()
-
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		debug "Trying to delete discussion data " + params.hash
-
-		def discussion = Discussion.findByHash(params.hash)
-
-		if (discussion == null) {
-			renderStringGet('No such discussion hash ' + params.hash)
-			return;
-		}
-
-		Discussion.delete(discussion)
-
-		renderStringGet('success')
-	}
-	
-	def createDiscussionData(Long plotDataId, String name, Long id, String discussionPost) {
-		def user = sessionUser()
-		UserGroup group = Discussion.loadGroup(params.group, user)
-
-		debug "DiscussionController.create to group: " + group?.dump()
-		if (group) {
-			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			discussion = discussion ?: Discussion.create(user, name, group, null)
-
-			if (discussion != null) {
-				Utils.save(discussion, true)
-				discussion.createPost(user, discussionPost)
-				renderStringGet('success')
-			} else {
-				renderStringGet('fail')
-			}
-		}
-	}
-	
-	def deleteCommentData(String discussionHash, Long clearPostId) {
-		def user = sessionUser()
-		Discussion discussion
-		if (discussionHash && clearPostId) {
-			discussion = Discussion.findByHash(discussionHash)
-			DiscussionPost.deleteComment(clearPostId, user, discussion)
-			renderStringGet('success')
-		} else {
-			renderStringGet('fail')
-		}
-	}
-
-	def createCommentData(String discussionHash, String message, Long plotIdMessage) {
-		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
-		def user = sessionUser()
-		Discussion discussion = Discussion.findByHash(discussionHash)
-		if (discussion) {
-			def result = DiscussionPost.createComment(message, user, discussion, plotIdMessage, params)
-			if (result && !(result instanceof String)) {
-				renderStringGet('success')
-			} else {
-				renderStringGet('fail')
-			}
-		} else {
-			renderStringGet('fail')
 		}
 	}
 

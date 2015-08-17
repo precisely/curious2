@@ -47,7 +47,7 @@ function searchFeeds(params) {
 </head>
 <body class="feed">
 	<content tag="feedContent">
-		<div id="discussions" class="text-center">
+		<div class="text-center">
 			<i class="fa fa-circle-o-notch fa-spin fa-3x"></i>
 		</div>
 	</content>
