@@ -11,7 +11,7 @@ class DiscussionPostController extends LoginController{
 	def index() {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
-			renderJSONGet([posts: false])
+			renderJSONGet([posts: false, success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			return
 		}
 
@@ -23,11 +23,17 @@ class DiscussionPostController extends LoginController{
 
 		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts(params) : discussion.getPosts(params)
 
-		if (!posts) {
-			renderJSONGet([posts: false])
+		Map discussionDetails 
+		if (Integer.parseInt(params.offset + "") == 0) {
+			discussionDetails = discussion.getJSONModel(params)
+			discussionDetails["isAdmin"] = UserGroup.canAdminDiscussion(sessionUser(), discussion)
 		} else {
-			renderJSONGet([posts: posts*.getJSONDesc(), userId: sessionUser().id, isAdmin:
-					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
+			discussionDetails = [:]
+		}
+
+		JSON.use("jsonDate") {
+			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser().id, success: true,
+					discussionDetails: discussionDetails])
 		}
 	}
 
