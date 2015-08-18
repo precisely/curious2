@@ -103,7 +103,7 @@ class SearchService {
 			
 			def adminGroupIds = user.getAdminGroupIds()
 			
-			elasticSearchHelper.withElasticSearch{ client ->
+			return elasticSearchHelper.withElasticSearch{ client ->
 				SearchResponse sr = client
 						.prepareSearch("us.wearecurio.model_v0")
 						.setTypes("discussionPost")
