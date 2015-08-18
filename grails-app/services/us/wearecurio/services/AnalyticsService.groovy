@@ -1,7 +1,7 @@
 package us.wearecurio.services
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicIntegerArray
 
 import groovy.time.*
 import groovyx.net.http.*
@@ -81,7 +81,7 @@ class AnalyticsService {
 					dataType: prop.fetchDataType().toString()
 				]
 				def ts = new AnalyticsTimeSeries(init)
-				ts.save(flush:true)
+				Utils.save(ts, true)
 			} // data_points.each
 		}
 	}
@@ -108,7 +108,7 @@ class AnalyticsService {
 						tagGroupId: tagGroupId,
 						tagId: tag.id ]
 					def atm = new AnalyticsTagMembership(init)
-					atm.save(flush: true)
+					Utils.save(atm, true)
 				} // iterate over tags in tagGroup
 			}// iterate over tagGroup
 		}
@@ -118,7 +118,7 @@ class AnalyticsService {
 		// Set the is_event value of the user-tag property.
 		// This will save the property.
 		AnalyticsTask.withTransaction {
-			property.classifyAsEvent().save(flush:true)
+			Utils.save(property.classifyAsEvent(), true)
 		}
 	}
 

@@ -1473,7 +1473,7 @@ class Entry implements Comparable {
 			} else {
 				DatabaseService.retry(durationEntry) {
 					durationEntry.setAmount(amount)
-					durationEntry.save(flush:true)
+					Utils.save(durationEntry, true)
 					return durationEntry
 				}
 			}

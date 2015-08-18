@@ -11,6 +11,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.utility.Utils
 
 class DatabaseServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -48,7 +49,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 						DatabaseService.retry(user2) {
 							user2.setFirst("hooboy")
 						
-							user2.save(flush:true)
+							Utils.save(user2, true)
 						}
 						success = true
 						done = true
@@ -94,7 +95,7 @@ class DatabaseServiceTests extends CuriousServiceTestCase {
 				DatabaseService.retry(user) {
 					user.setName("voodoo")
 					
-					user.save(flush:true)
+					Utils.save(user, true)
 				}
 				while (!done) try { sync.wait() } catch (InterruptedException e) {}
 			}

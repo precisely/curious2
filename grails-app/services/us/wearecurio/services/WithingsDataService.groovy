@@ -535,7 +535,7 @@ class WithingsDataService extends DataService {
 			if (withingsResponseStatus == 0) {
 				log.debug "Subscription successful for account: $account"
 				account.lastSubscribed = new Date()
-				account.save(flush:true)
+				Utils.save(account, true)
 				return [success: true, account: account]
 			}
 			log.warn "Subscription failed for account: $account with status: " + withingsResponseStatus
@@ -552,7 +552,7 @@ class WithingsDataService extends DataService {
 			}
 	
 			account.removeAccessToken()		// confirms that subscription is not successful.
-			account.save(flush:true)
+			Utils.save(account, true)
 			
 			return result
 		}

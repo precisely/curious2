@@ -16,6 +16,7 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
+import us.wearecurio.utility.Utils
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
@@ -533,7 +534,7 @@ class JawboneUpDataService extends DataService {
 			params["date"] = new Date(notification["timestamp"].toLong() * 1000)
 
 			ThirdPartyNotification.withTransaction {
-				new ThirdPartyNotification(params).save(failOnError: true)
+				Utils.save(new ThirdPartyNotification(params), true)
 			}
 
 			return false	// continue looping

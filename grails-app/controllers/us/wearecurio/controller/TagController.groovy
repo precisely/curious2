@@ -164,7 +164,7 @@ class TagController extends LoginController {
 
 		parentTagGroupInstance.removeFromCache(tagGroupInstance, session.userId)
 		tagGroupInstance.parentTagGroup = null
-		tagGroupInstance.save(flush: true)
+		Utils.save(tagGroupInstance, true)
 		renderJSONGet([success: true])
 	}
 
@@ -183,7 +183,7 @@ class TagController extends LoginController {
 		def tagInstance = Tag.get(params.id)
 		tagGroupInstance.removeFromTags(tagInstance)
 		tagGroupInstance.removeFromCache(tagInstance)
-		tagGroupInstance.save(flush: true)
+		Utils.save(tagGroupInstance, true)
 		renderJSONGet([success: true])
 	}
 

@@ -14,10 +14,14 @@ import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.sort.*
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
+import us.wearecurio.utility.Utils
 
+import org.apache.commons.logging.LogFactory
 
 class SearchService {
 	
+	private static def log = LogFactory.getLog(this)
+
 	def elasticSearchService
 	def elasticSearchHelper
 	
@@ -32,7 +36,11 @@ class SearchService {
 	static SearchService get() {
 		service
 	}
-		
+	
+	void index(Object obj) {
+		elasticSearchService.index(obj)
+	}
+	
 	Map getSprintsList(User user, int offset, int max) {
 		try {
 						
@@ -54,6 +62,7 @@ class SearchService {
 	}
 	
 	Map getDiscussionsList(User user, int offset, int max, def groupIds = null) {
+		log.debug "getDiscussionsList: user:" + user + " offset:" + offset + " max:" + max + " groupIds:" + groupIds
 		try {
 			def userReaderGroups = UserGroup.getGroupsForReader(user)
 			if (userReaderGroups == null || userReaderGroups.size() < 1) {
@@ -128,7 +137,7 @@ class SearchService {
 				]
 				
 				for (def d : readerGroupDiscussions.searchResults ) {
-					System.out.println "readerGroupDiscussion: " + d.toString()
+					log.debug "readerGroupDiscussion: " + d.toString()
 					model["discussionList"] << [
 						id: d.id,
 						hash: d.hash,
@@ -225,6 +234,8 @@ class SearchService {
 						discussionItem['groupName'] = anyGName
 					}
 				}
+				
+				log.debug "Done processing search result information: " + model
 				
 				return [listItems: model, success: true]
 			}

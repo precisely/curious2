@@ -1,6 +1,7 @@
 package us.wearecurio.thirdparty
 
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.utility.Utils
 
 /**
  * Thrown when an access token is missing
@@ -27,7 +28,6 @@ class InvalidAccessTokenException extends Exception {
 		log.debug "Token expired for [$account]. Old token was: [$account.accessToken]"
 		this.provider = provider
 		account.accessToken = ""
-		account.save(flush: true)
+		Utils.save(account, true)
 	}
-
 }

@@ -32,7 +32,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 				[isReadOnly:true, defaultNotify:false])
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert user2.save()
+		Utils.save(user2, true)
 		testGroup.addWriter(user2)
 		params.clear()
  		discussion = Discussion.create(user2, "test Discussion", testGroup)

@@ -83,7 +83,7 @@ class TagUnitStats implements TagUnitStatsInterface {
 		
 		tagUnitStats.timesUsed+=1
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
-		tagUnitStats.save(flush:true)
+		Utils.save(tagUnitStats, true)
 		
 		DataRetriever.addToTagUnitStatsCache(tagUnitStats)
 		
