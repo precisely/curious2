@@ -8,7 +8,7 @@ class DiscussionPostController extends LoginController{
 
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
-	def index() {
+	def index(Integer offset) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
 			renderJSONGet([posts: false, success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
@@ -16,24 +16,22 @@ class DiscussionPostController extends LoginController{
 		}
 
 		params.max = Math.min(Integer.parseInt(params.max) ?: 4, 100)
-		params.offset = params.offset ?: 0
+		params.offset = offset ?: 0
 
 		DiscussionPost firstPostInstance = discussion.getFirstPost()
 		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
 
 		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts(params) : discussion.getPosts(params)
 
-		Map discussionDetails 
-		if (Integer.parseInt(params.offset + "") == 0) {
-			discussionDetails = discussion.getJSONModel(params)
-			discussionDetails["isAdmin"] = UserGroup.canAdminDiscussion(sessionUser(), discussion)
-		} else {
-			discussionDetails = [:]
+		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion)]
+
+		// Discussion details are only needed for the first page
+		if (params.offset == 0) {
+			discussionDetails.putAll(discussion.getJSONModel(params))
 		}
 
 		JSON.use("jsonDate") {
 			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser().id, success: true,
-					isAdmin:UserGroup.canAdminDiscussion(sessionUser(), discussion),
 					discussionDetails: discussionDetails])
 		}
 	}
