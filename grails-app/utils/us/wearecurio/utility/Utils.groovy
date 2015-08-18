@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import org.joda.time.DateTime
 
 import us.wearecurio.services.EmailService
-
+import us.wearecurio.services.SearchService;
 import grails.util.GrailsUtil
 
 /**
@@ -59,6 +59,7 @@ class Utils {
 			return false
 		} else {
 			log.debug "Object saved successfully $obj."
+			SearchService.get().index(obj)
 		}
 
 		return true

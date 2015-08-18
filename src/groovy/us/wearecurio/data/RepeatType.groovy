@@ -6,11 +6,15 @@ import java.util.concurrent.ConcurrentHashMap
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
+import org.joda.time.LocalTime
+import org.joda.time.Days
+import org.joda.time.Months
+import org.joda.time.Years
 
 import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.datetime.LocalTimeRepeater
-
-
+import us.wearecurio.model.TimeZoneId
 
 // NOTE: Unghosted repeat entries are repeated in an unghosted manner all
 // the way until their repeatEnd
@@ -123,6 +127,10 @@ class RepeatType {
 		return (this.id & DAILY_BIT) > 0
 	}
 	
+	boolean isHourlyOrDaily() {
+		return (this.id & (HOURLY_BIT | DAILY_BIT)) > 0
+	}
+	
 	boolean isWeekly() {
 		return (this.id & WEEKLY_BIT) > 0
 	}
@@ -175,5 +183,59 @@ class RepeatType {
 		}
 		
 		return false
+	}
+	
+	Date makeRepeatEnd(Date repeatEnd, Date entryTime, TimeZoneId timeZoneId) {
+		if (repeatEnd == null)
+			return null
+			
+		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
+		
+		DateTime endDateTime = new DateTime(repeatEnd, dateTimeZone)
+		LocalDate endLocalDate = endDateTime.toLocalDate()
+		LocalTime endLocalTime = endDateTime.toLocalTime()
+		
+		// figure out if proposed repeatEnd is later than or before current entry date time transposed to repeatEnd day
+
+		DateTime entryDateTime = new DateTime(entryTime, dateTimeZone)
+		LocalTime entryLocalTime = entryDateTime.toLocalTime()
+		LocalDate entryLocalDate = entryDateTime.toLocalDate()
+
+		DateTime entryTimeOnEndDate = endLocalDate.toDateTime(entryLocalTime, dateTimeZone)
+
+		// if end date is earlier than entry time, go for an earlier repeat boundary, otherwise go for a later boundary
+		boolean previousRepeatBoundary = endDateTime.getMillis() < entryTimeOnEndDate.getMillis()
+		
+		Date retVal = null
+		
+		if (isHourlyOrDaily()) {
+			if (previousRepeatBoundary) endLocalDate = endLocalDate.minusDays(1)
+			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
+		} else if (isWeekly()) { // end date is smallest whole week after current date before new end local date
+			int daysDifference = Days.daysBetween(endLocalDate, entryLocalDate)
+			int weeksDifference = daysDifference / 7
+			if (previousRepeatBoundary) --weeksDifference
+			endLocalDate = entryLocalDate.plusDays(weeksDifference * 7)
+			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
+		} else if (isMonthly()) {
+			int monthsDifference = Months.monthsBetween(endLocalDate, entryLocalDate)
+			if (previousRepeatBoundary) --monthsDifference
+			endLocalDate = entryLocalDate.plusMonths(monthsDifference)
+			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
+		} else if (isYearly()) {
+			int yearsDifference = Years.yearsBetween(endLocalDate, entryLocalDate)
+			if (previousRepeatBoundary) --yearsDifference
+			endLocalDate = entryLocalDate.plusYears(yearsDifference)
+			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
+		}
+		
+		if (retVal != null && retVal < entryTime)
+			retVal = entryTime
+		
+		return retVal
+	}
+	
+	String toString() {
+		return "RepeatType(id:" + id + ")"
 	}
 }

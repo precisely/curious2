@@ -130,7 +130,8 @@ class SessionController {
 		}
 	}
 
-	def static parseLong(numStr) {
+	static Long parseLong(numStr) {
+		if (!numStr) return null
 		return Long.parseLong(numStr)
 	}
 
@@ -142,7 +143,7 @@ class SessionController {
 		return users
 	}
 
-	protected def parseDate(String dateStr) {
+	static Date parseDate(String dateStr) {
 		if (dateStr == null) return null
 		return Date.parse("EEE, dd MMM yyyy HH:mm:ss z", dateStr)
 	}

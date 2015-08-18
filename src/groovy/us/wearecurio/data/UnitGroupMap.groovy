@@ -1,7 +1,6 @@
 package us.wearecurio.data
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.services.EntryParserService
 
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
@@ -548,7 +547,8 @@ class UnitGroupMap {
 			unitGroups.get(id)
 		}
 		
-		static UnitGroup get(long id) {
+		static UnitGroup get(Long id) {
+			if (id == null) return null
 			return get((int) id)
 		}
 		

@@ -18,6 +18,7 @@ import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException;
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.utility.Utils
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -34,11 +35,11 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		assert user2.save()
+		assert Utils.save(user2, true)
 
 		account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "Z14DRUTWswu66GuptWqQR1b295DikZY77Bfwocqaduku9VKI2t0WTuOJQ7F72DSQ",
 			accessSecret: "6b76f2ebd6e16b5bb5e1672d421241e4d9d1ce37122532f68b30dd735098", accountId: "65828076742279775", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
-		assert account.save()
+		assert Utils.save(account, true)
 	}
 
 	@After
@@ -126,7 +127,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 
 		// Testing live after token expires
 		account.accessToken = "expired-token"
-		account.save()
+		Utils.save(account, true)
 
 		movesDataService.oauthService = oauthService
 		try {

@@ -327,7 +327,7 @@ class Sprint {
 		}
 		
 		// add start element
-		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " start", baseDate, true)
+		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " start", null, null, baseDate, true)
 		def entry = Entry.create(userId, m, stats)
 		
 		// record activity
@@ -394,7 +394,7 @@ class Sprint {
 		}
 		
 		// add stop element
-		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " end", baseDate, true)
+		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " end", null, null, baseDate, true)
 		def entry = Entry.create(userId, m, stats)
 
 		// record activity

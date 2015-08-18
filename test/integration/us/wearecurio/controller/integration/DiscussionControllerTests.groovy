@@ -32,7 +32,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 				[isReadOnly:true, defaultNotify:false])
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		user2.save(flush: true)
+		Utils.save(user2, true)
 		testGroup.addWriter(user2)
 		params.clear()
 		params.putAll([
@@ -54,7 +54,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.save()
+		controller.save()
 		assert Discussion.count() == 0 
     }
 
@@ -65,7 +65,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.save()
+		controller.save()
 		assert Discussion.count() == 1
     }
 
@@ -79,7 +79,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.request.method = "POST"
 		controller.session.userId = user2.getId()
-		def retVal = controller.save()
+		controller.save()
 		assert Discussion.count() == 0
     }
     @Test
@@ -89,7 +89,7 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.params.putAll(params)
 		controller.session.userId = user2.getId()
 		controller.request.method = "POST"
-		def retVal = controller.save()
+		controller.save()
 		assert Discussion.count() == 1
     }
 

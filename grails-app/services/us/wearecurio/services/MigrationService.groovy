@@ -514,9 +514,13 @@ class MigrationService {
 		tryMigration("Remove user group unique constraint") {
 			sql('alter table user_group drop index full_name')
 		}
-		tryMigration("Rename repeat type column") {
-			sql('alter table entry drop column repeat_type_id')
-			sql('alter table entry repeat_type repeat_type_id int(11)')
+		tryMigration("Change repeat type column") {
+			if (sql('select * from entry where repeat_type is null limit 1')) {
+				if (!sql('alter table entry change repeat_type repeat_type_id int(11)')) {
+					sql('alter table entry drop column repeat_type_id')
+					sql('alter table entry change repeat_type repeat_type_id int(11)')
+				}
+			}
 		}
 	}
 	

@@ -3,6 +3,7 @@ package us.wearecurio.thirdparty.withings
 import org.scribe.builder.api.DefaultApi10a
 import org.scribe.model.Token
 import org.scribe.model.Verb
+import us.wearecurio.utility.Utils
 
 class WithingsApi extends DefaultApi10a {
 

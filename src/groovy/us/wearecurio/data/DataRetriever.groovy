@@ -77,7 +77,15 @@ class DataRetriever {
 		}
 	}
 
-	def fetchPlotData(Long userId, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
+	def interpolateTagIds(queryStr, queryMap) {
+		def interpolated = queryStr.replace(/:tagIds/, queryMap.tagIds.join(','))
+		if (queryMap['tagIds']) {
+			queryMap.remove('tagIds')
+		}
+		[interpolated, queryMap]
+	}
+
+	def fetchPlotData(Long userId, List tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
 		if (!tagIds.size()) {
 			return []
 		}
@@ -94,6 +102,7 @@ class DataRetriever {
 				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
 
 		def queryMap = [userId:userId, startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.DAILY_BIT, tagIds:tagIds]
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		def rawResults = databaseService.sqlRows(queryStr, queryMap)
 
 		def timedResults = []
@@ -101,7 +110,6 @@ class DataRetriever {
 		Set resultTagIds = new HashSet<Long>()
 
 		// make this repeater list ordered by current timestamp
-
 		def repeaters = []
 
 		Long nextRepeaterTimestamp = null
@@ -122,7 +130,6 @@ class DataRetriever {
 			}
 		}
 		// get regular results
-
 		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
 
 		queryStr = "select e.date, e.amount, e.tag_id, t.description, e.units " \
@@ -130,8 +137,10 @@ class DataRetriever {
 				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type_id is null or (e.repeat_type_id & :concreteRepeatBits = 0)) " \
 				+ "and e.tag_id in (:tagIds) order by e.date asc"
 
+
 		queryMap = [userId:userId, startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.GHOST_BIT), tagIds:tagIds ]
 
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		rawResults = databaseService.sqlRows(queryStr, queryMap)
 
 		def results = []
@@ -189,6 +198,7 @@ class DataRetriever {
 
 		queryMap = [userId:userId, startDate:startDate, endDate:endDate, tagIds:tagIds, ghostBit:RepeatType.GHOST_BIT]
 
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		def nonRepeatSum = databaseService.sqlRows(queryStr, queryMap)[0]
 
 		// fetch sum of repeat entries
@@ -200,6 +210,7 @@ class DataRetriever {
 
 		queryMap = [userId:userId, startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, dailyBit:RepeatType.DAILY_BIT, tagIds:tagIds]
 
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		def repeatSum = databaseService.sqlRows(queryStr, queryMap)[0]
 
 		int c = (nonRepeatSum['c'] ?: 0) + (repeatSum['c'] ?: 0)
@@ -388,9 +399,10 @@ class DataRetriever {
 		
 		if (unitGroupId == null)
 			return null
-			
-		r = databaseService.sqlRows("select ts.unit, sum(ts.times_used) as s from tag_unit_stats ts where ts.tag_id in (:tagIds) and ts.user_id = :userId and ts.unit_group_id = :unitGroupId group by ts.unit order by s desc limit 2",
-				[tagIds: tagIds, userId: userId, unitGroupId: unitGroupId])
+		def queryStr = "select ts.unit, sum(ts.times_used) as s from tag_unit_stats ts where ts.tag_id in (:tagIds) and ts.user_id = :userId and ts.unit_group_id = :unitGroupId group by ts.unit order by s desc limit 2"
+		def queryMap = [tagIds: tagIds, userId: userId, unitGroupId: unitGroupId]
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
+		r = databaseService.sqlRows(queryStr, queryMap)
 		
 		if ((!r) || (!r[0]))
 			return null

@@ -32,7 +32,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 				[isReadOnly:true, defaultNotify:false])
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true])
-		assert user2.save()
+		Utils.save(user2, true)
 		testGroup.addWriter(user2)
 		params.clear()
  		discussion = Discussion.create(user2, "test Discussion", testGroup)
@@ -154,7 +154,10 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		controller.index()
 
+		assert !controller.response.json.success
 		assert !controller.response.json.posts
+		assert controller.response.json.message == messageSource.getMessage("default.blank.message", 
+			["Discussion"] as Object[], null) 
 	}
 
 	@Test
@@ -171,6 +174,42 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		controller.index()
 
 		assert !controller.response.json.posts
+		assert controller.response.json.success
+	}
+
+	@Test
+	void "Test index when offset is 0"() {
+		assert discussion
+		
+		assert !DiscussionPost.count()
+
+		controller.session.userId = user.id
+		controller.params.discussionHash = discussion.hash
+		controller.params.max = "5"
+
+		controller.index()
+
+		assert !controller.response.json.posts
+		assert controller.response.json.success
+		assert controller.response.json.discussionDetails.hash == discussion.hash
+	}
+
+	@Test
+	void "Test index when offset is not 0"() {
+		assert discussion
+		
+		assert !DiscussionPost.count()
+
+		controller.session.userId = user.id
+		controller.params.discussionHash = discussion.hash
+		controller.params.max = "5"
+		controller.params.offset = 5
+
+		controller.index()
+
+		assert !controller.response.json.posts
+		assert controller.response.json.success
+		assert !controller.response.json.discussionDetails.hash
 	}
 
 	@Test

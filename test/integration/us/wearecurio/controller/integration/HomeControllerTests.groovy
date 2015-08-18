@@ -36,7 +36,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		assert user2.save()
+		assert Utils.save(user2, true)
 
 		plotData = PlotData.create(user, "Plot", "{}", true)
 		Utils.save(plotData, true)
@@ -306,7 +306,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegisterwithings() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		account.save()
+		Utils.save(account, true)
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.WITHINGS)
 
 		controller.session.userId = user2.id
@@ -331,7 +331,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		account.accessToken = "some-token"
-		account.save()
+		Utils.save(account, true)
 
 		withingsDataService.oauthService = [
 			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
@@ -344,7 +344,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		account.accessToken = "some-token"
-		account.save()
+		Utils.save(account, true)
 
 		controller.response.reset()
 
@@ -377,7 +377,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegisterfitbit() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		account.save()
+		Utils.save(account, true)
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.FITBIT)
 
 		controller.session.userId = user2.id
@@ -402,7 +402,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		account.accessToken = "some-token"
-		account.save()
+		Utils.save(account, true)
 
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, h ->
@@ -417,7 +417,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 
 		account.accessToken = "some-token"
-		account.save()
+		Utils.save(account, true)
 
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, h ->
@@ -447,7 +447,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegistermoves() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		account.save()
+		Utils.save(account, true)
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.MOVES)
 
 		controller.session.userId = user2.id

@@ -87,7 +87,9 @@ class DiscussionController extends LoginController {
 			associatedGroups.addAll(otherGroups.sort { it.name })
 			model.put("associatedGroups", associatedGroups)
 		}
-		renderJSONGet([success: true, discussionDetails: model])
+		JSON.use("jsonDate") {
+			renderJSONGet([success: true, discussionDetails: model])
+		}
 	}
 
 	// Used to edit the discussion

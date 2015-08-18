@@ -243,7 +243,7 @@ class TwitterDataService {
 				if (users == null)
 					log.debug "No user found for account " + twitterAccountName + ", skipping message"
 				else for (User user in users) {
-						def parsedEntry = entryParserService.parse(message.getCreatedAt(), tz, entryStr, baseDate, user.getTwitterDefaultToNow())
+						def parsedEntry = entryParserService.parse(message.getCreatedAt(), tz, entryStr, null, null, baseDate, user.getTwitterDefaultToNow())
 
 						if (parsedEntry == null) {
 							log.debug "Failed to parse tweet, skipping"

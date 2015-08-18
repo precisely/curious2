@@ -195,9 +195,9 @@ class SprintTests extends CuriousTestCase {
 		assert sprint.visibility == Visibility.PUBLIC
 		assert sprint.fetchTagName() == "caffeine sugar sprint"
 		
-		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
 		
 		sprint.addMember(user.id)
 		
@@ -270,9 +270,9 @@ class SprintTests extends CuriousTestCase {
 		assert sprint.visibility == Visibility.PUBLIC
 		assert sprint.fetchTagName() == "caffeine sugar sprint"
 		
-		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
 		
 		sprint.addMember(user.id)
 		
@@ -306,7 +306,7 @@ class SprintTests extends CuriousTestCase {
 		assert sugar && aspirin && coffee && sprintStart
 
 		Entry.delete(Entry.get(sugarEntryId), new EntryStats())
-		def newSugarEntry = Entry.create(user.id, entryParserService.parse(baseDate, timeZone, "sugar pinned", baseDate, true), new EntryStats())
+		def newSugarEntry = Entry.create(user.id, entryParserService.parse(baseDate, timeZone, "sugar pinned", null, null, baseDate, true), new EntryStats())
 		
 		sprint.stop(user.id, tomorrowBaseDate, tomorrowCurrentTime, timeZone, new EntryStats())
 		
@@ -353,9 +353,9 @@ class SprintTests extends CuriousTestCase {
 		assert sprint.visibility == Visibility.PUBLIC
 		assert sprint.fetchTagName() == "caffeine sugar sprint"
 		
-		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
 		
 		sprint.addMember(user.id)
 		
@@ -426,12 +426,12 @@ class SprintTests extends CuriousTestCase {
 		assert sprint.visibility == Visibility.PUBLIC
 		assert sprint.fetchTagName() == "caffeine sugar sprint"
 		
-		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry4 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "exercise 1pm", Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry4 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "exercise 1pm", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
 		
-		def entryP = Entry.create(user.id, entryParserService.parse(baseDate, "UTC", "coffee pinned", currentTime, true), new EntryStats())
+		def entryP = Entry.create(user.id, entryParserService.parse(baseDate, "UTC", "coffee pinned", null, null, currentTime, true), new EntryStats())
 		
 		sprint.addMember(user.id)
 		
