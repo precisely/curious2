@@ -8,7 +8,7 @@ $(function(){
 </script>
 </head>
 <body>
-<div class="body">
+<div class="body" style="margin: 20px;">
 <h1>Update your password</h1>
 <g:if test="${flash.message}">
 	<div class="loginmessage">${flash.message.encodeAsHTML()}</div>
