@@ -187,7 +187,7 @@ $(function() {
 			dataType: 'json',
 			data: {parentId: taskId},
 			error: function(e) {
-				console.log("FAILURE (signals.js): rerunParent()");
+				console.log("FAILURE (curiosities.js): rerunParent()");
 			},
 			success: function(data) {
 				makeParentActive(taskId);

@@ -6,7 +6,7 @@
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/signals.js?ver=21"></script>
+<script type="text/javascript" src="/js/curious/curiosities.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
@@ -30,7 +30,7 @@
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><a href="/home/social#all">Social</a></li>
-			<li><g:link controller='home' action="signals">Signals</g:link></li>
+			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
 			</c:ifAdmin>

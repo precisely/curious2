@@ -102,10 +102,10 @@
 						style="margin: 0 auto;"
 						src="/images/home/home-third-icon.png" />
 						<div class="caption" style="color: white;">
-							<p style="font-size: 26px;">Signals</p>
+							<p style="font-size: 26px;">Curiosities</p>
 							Our software detects patterns and
-							correlations, or 'signals'—you decide what's
-							a valid signal and what's noise. Graph it
+							correlations, or 'curiosities'—you decide what's
+							interesting or not. Graph it
 							yourself to explore and map your own
 							intuitions. Plot, share, explore with
 							others.
@@ -137,7 +137,7 @@
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Community</p>
 							Find others who share your questions, tags,
-							interests. Post your stories, signals, and
+							interests. Post your stories, curiosities, and
 							graphs. Initiate group tracking studies.
 						</div>
 					</div>

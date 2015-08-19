@@ -2462,22 +2462,22 @@ body {
 	left: -10px;
 }
 
-.signals {
+.curiosities {
 	color: #777;
 }
 .mainLinks .active a {
 	color: #f14a42;
 }
 
-.signals .mainLinks .new-signal-count {
+.curiosities .mainLinks .new-curiosities-count {
 	color: #08BBF1;
 }
 
-.signals img.flip-horizontally {
+.curiosities img.flip-horizontally {
 	transform: scaleX(-1);
 }
 
-.signals .nav-box {
+.curiosities .nav-box {
 	display: inline-block;
 	vertical-align:top;
 	width: 200px;
@@ -2485,103 +2485,103 @@ body {
 	margin: 0px 10px;
 }
 
-.signals .nav-box img {
+.curiosities .nav-box img {
 	margin-bottom: 5px;
 }
 
-.signals .nav-box-edge {
+.curiosities .nav-box-edge {
 	width:40px;
 }
 
-.signals .nav-arrow {
+.curiosities .nav-arrow {
 	height: 80px;
 	width: 10px;
 }
 
-.signals .arrow {
+.curiosities .arrow {
 	width: 0;
 	height: 0;
 	border-style: solid;
 	cursor: pointer;
 }
 
-.signals .arrow-left {
+.curiosities .arrow-left {
 	border-width: 60px 25px 60px 0;
 	border-color: transparent #aaa transparent transparent;
 }
 
-.signals .arrow-right {
+.curiosities .arrow-right {
 	border-width: 60px 0 60px 25px;
 	border-color: transparent transparent transparent #aaa;
 }
 
-.signals .arrow-down {
+.curiosities .arrow-down {
 	border-width:  12px 6px 0 6px;
 	border-color: #aaa transparent transparent transparent;
 	position: relative;
 	top: 14px;
 }
 
-.signals .small-arrow-down {
+.curiosities .small-arrow-down {
 	border-width:  12px 6px 0 6px;
 	border-color: #aaa transparent transparent transparent;
 	position: relative;
 	top: 14px;
 }
 
-.signals .saved-carousel-layout {
+.curiosities .saved-carousel-layout {
 	margin-top: 20px;
 	margin-bottom: 20px;
 }
 
-.signals .toggle-arrow {
+.curiosities .toggle-arrow {
 	z-index: 1;
 }
 
-.signals .nav-carousel-container {
+.curiosities .nav-carousel-container {
 	width: 2000px;
 	overflow: hidden;
 	position:relative;
 }
 
-.signals .right-icon {
+.curiosities .right-icon {
 	position:absolute;
 	right: 0px;
 }
 
-.signals .right-icon a {
+.curiosities .right-icon a {
 	position:absolute;
 	right: 0px;
 }
 
-.signals td.nav-carousel-container {
+.curiosities td.nav-carousel-container {
 	vertical-align:top;
 }
 
-.signals .nav-box img.comment-icon {
+.curiosities .nav-box img.comment-icon {
 	position: relative;
 	left: 15px;
 }
 
-.signals .nav-box img.nav-box-icon {
+.curiosities .nav-box img.nav-box-icon {
 	height: 60px;
 }
 
-.signals .carousel-caption {
+.curiosities .carousel-caption {
 	font-size: 0.9em;
 	line-height: 1.3em;
 }
 
-.signals .carousel-item-title {
+.curiosities .carousel-item-title {
 	font-weight: bold;
 	display:block;
 	text-transform: uppercase;
 }
 
-.signals .signal-row {
+.curiosities .curiosities-row {
 }
 
-.signals .signal-row-top {
+.curiosities .curiosities-row-top {
 	margin-top: 0px;
 	border-top: 6px solid #f48d5b;
 	cursor: pointer;
@@ -2589,42 +2589,42 @@ body {
 
 }
 
-.signals .signal-row-top:hover {
+.curiosities .curiosities-row-top:hover {
 	background-color: #eee;
 }
 
-.signals .signal-row.signal-row-bottom {
+.curiosities .curiosities-row.curiosities-row-bottom {
 	margin-left: 20px;
 	margin-right: 20px;
 	padding-top: 15px;
 	border-top: 3px solid #eee;
 }
 
-.signals .signal-description {
+.curiosities .curiosities-description {
 	padding: 15px;
 	line-height: 0.9em;
 }
 
-.signals .signal-category {
+.curiosities .curiosities-category {
 	width: 150px;
 	text-align:center;
 	font-size: 14px;
 	color: #aaa;
 }
 
-.signals .signal-section-question {
+.curiosities .curiosities-section-question {
 	font-weight: bold;
 }
 
-.signals .signal-section-mark-noise-or-signal {
+.curiosities .curiosities-section-mark-no-or-yes {
 }
 
-.signals .signal-section-mark-noise-or-signal img {
+.curiosities .curiosities-section-mark-no-or-yes img {
 	width: 70px;
 	cursor: pointer;
 }
 
-.signals .x-button {
+.curiosities .x-button {
 		background-color: #ccc;
 		border-radius: 12px; /* one half of ( (border * 2) + height + padding ) */
 		color: white;
@@ -2641,25 +2641,25 @@ body {
 		cursor: pointer;
 }
 
-.signals .x-button span {
+.curiosities .x-button span {
 	font-size: 12px;
 	position:relative;
 	top: -4px;
 }
 
-.signal-action-button {
+.curiosities-action-button {
 	line-height: 1.5em;
 	cursor: pointer;
 }
 
-.signals .signal-action {
+.curiosities .curiosities-action {
 	padding: 15px;
 	text-transform: uppercase;
 	font-weight: bold;
 	font-size: 14px;
 }
 
-.signals .arrow-box {
+.curiosities .arrow-box {
 	position: absolute;
 
 	width: 400px;
@@ -2673,7 +2673,7 @@ body {
 	z-index: 10000;
 }
 
-.signals .arrow-box:after {
+.curiosities .arrow-box:after {
 	left: 100%;
 	top: 50%;
 	border: solid transparent;
@@ -2689,23 +2689,23 @@ body {
 
 }
 
-.signals .arrow-box h3 {
+.curiosities .arrow-box h3 {
 	font-size:18px;
 	color: #222;
 	margin-bottom: 20px;
 }
 
-.signals .arrow-box p {
+.curiosities .arrow-box p {
 	font-weight: bold;
 	line-height: 1.2em;
 }
 
-.signals .arrow-box .buttons {
+.curiosities .arrow-box .buttons {
 	text-align: center;
 	margin-top: 20px;
 }
 
-.signals .arrow-box .buttons button {
+.curiosities .arrow-box .buttons button {
 	font-weight: bold;
 	border-radius: 20px;
 	margin-right: 10px;
@@ -2713,7 +2713,7 @@ body {
 	border-width: 0px;
 }
 
-.signals #garbage-can-icon {
+.curiosities #garbage-can-icon {
 	position: absolute;
 	top: -30px;
 	left: -80px;
@@ -2721,14 +2721,14 @@ body {
 	transition: all 0.2s ease-out 0s;
 }
 
-.signals .saved-action {
+.curiosities .saved-action {
 	text-transform: uppercase;
 	font-weight: bold;
 	margin-right: 10px;
 	cursor:pointer;
 }
 
-.signals #secret-container {
+.curiosities #secret-container {
 	position:absolute;
 	width: 20000px;
 	overflow: hidden;
@@ -2736,12 +2736,12 @@ body {
 	transition: left 0.8s ease-out 0s;
 }
 
-.signals .row {
+.curiosities .row {
 	margin-left: 0px;
 	margin-right: 0px;
 }
 
-.signals .signal-name {
+.curiosities .curiosities-name {
 	margin-top: 20px;
 }
 
@@ -3234,25 +3234,25 @@ body {
 	background-size: contain;
 }
 
-.signals .signal-or-noise {
+.curiosities .yes-or-no {
 	text-align: center;
 	padding-top: 9px;
 	cursor: pointer;
 	padding: 15px;
 }
 
-.signals .signal-or-noise.active {
+.curiosities .yes-or-no.active {
 	padding: 14px;
 	background-color: #ff6531;
 }
 
-.signals .red-header .search-area  li {
+.curiosities .red-header .search-area  li {
 	text-align: right;
 	float: right;
 	padding-right: 20px;
 }
 
-.signals .red-header .search-input {
+.curiosities .red-header .search-input {
 	color: white;
 	padding: 3px;
 	font-weight: normal;
@@ -3261,11 +3261,11 @@ body {
 	min-height: 33px;
 }
 
-.signals .red-header .search-input::-webkit-input-placeholder {
+.curiosities .red-header .search-input::-webkit-input-placeholder {
 	color: white;
 }
 
-.signals .red-header {
+.curiosities .red-header {
 	background-color: #fc3f28;
 	vertical-align: middle;
 	color: #ffffff;
@@ -3277,7 +3277,7 @@ body {
 	padding: 0px 15px 0px 20px;
 }
 
-.signals .red-header span {
+.curiosities .red-header span {
 }
 
 #sort-by-row {
@@ -3289,13 +3289,13 @@ body {
 	margin-right: 30px;
 }
 
-#sort-by-row li.signal-order {
+#sort-by-row li.curiosities-order {
 	color: #999;
 	font-weight: bold;
 	cursor: pointer;
 }
 
-#sort-by-row li.signal-order.active {
+#sort-by-row li.curiosities-order.active {
 	color: #c04f7f;
 }
 
@@ -3303,7 +3303,7 @@ body {
 	color: #bbb;
 }
 
-.signals nav ul li {
+.curiosities nav ul li {
 	float:left;
 	display:list-item;
 	list-style: none;
@@ -3316,18 +3316,18 @@ body {
 	user-select: none;
 }
 
-.signals #marked {
+.curiosities #marked {
 	text-transform: capitalize;
 }
 
-.signals #search-input {
+.curiosities #search-input {
 	display:inline;
 	clear: both;
 	margin:0;
 	margin-top: 9px;
 }
 
-.signals #search-image {
+.curiosities #search-image {
 	display:inline;
 	background-color: #de3723;
 	height: 33px;
@@ -3336,7 +3336,7 @@ body {
 	margin-top: 9px;
 }
 
-.signals .signal-row-container {
+.curiosities .curiosities-row-container {
 	background-color: white;
 	margin-bottom: 20px;
 }

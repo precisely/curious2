@@ -4,9 +4,9 @@ class UrlMappings {
 
 	static mappings = {
 
-		"/home/graph/signals/$description1/$description2" {
+		"/home/graph/curiosities/$description1/$description2" {
 			controller = "home"
-			action = "graphSignals"
+			action = "graphCuriosities"
 		}
 
 		"/correlation/index/$flavor" {

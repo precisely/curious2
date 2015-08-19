@@ -8,25 +8,25 @@ C.correlationIndex = {};
 C.pageIds = [];
 
 // Each combination of search terms has a different page number.
-C.signalPageNumber = {};
+C.curiositiesPageNumber = {};
 
 // Collect numbr of search results for a given set of search parameters / filter / sortBy combinations
 //	 so that we'll know ahead of time whether or noth there will be any results.	If the last search had 0
 //	 results then there will always be no more results since we're storing past results in C.correlationIndex.
-C.signalNumSearchResults = {};
+C.curiositiesNumSearchResults = {};
 
 $(function() {
 
 	var loadedPositive = false;
 	var loadedNegative = false;
 	var loadedTrigger  = false;
-	C.signalScrollReady = true;
+	C.curiositiesScrollReady = true;
 
 	// Possible sort orders include:
 	// 'natural', 'alpha asc', 'alpha desc', 'marked asc', 'marked desc',
 	// 'score asc', score desc', 'type positive', 'type negative', 'type triggered'
 	// We will store the last 5 sort orders.	If no orders are found in in
-	// localStorage['signalSortOrder'] or if localStorage is not available, then it
+	// localStorage['curiositiesSortOrder'] or if localStorage is not available, then it
 	// will be initialized to 'natural'.
 	//
 	var possibleSortOrders = ['natural', 'alpha asc', 'alpha desc', 'marked asc', 'marked desc', 'score asc', 'score desc', 'type positive', 'type negative', 'type triggered'];
@@ -40,9 +40,9 @@ $(function() {
 		}
 	}
 
-	// Save the last clicked signal filter in localStorage['signalFilter'].
-	// Possible signal filters are: 'all', 'signal', 'noise'.
-	var possibleFilters = ['all', 'signal', 'noise'];
+	// Save the last clicked curiosities filter in localStorage['curiositiesFilter'].
+	// Possible curiosities filters are: 'all', 'yes', 'no'.
+	var possibleFilters = ['all', 'yes', 'no'];
 
 	var getDomIdFromOrder = function(order) {
 		return _.first(order.split(" "));
@@ -56,17 +56,17 @@ $(function() {
 		return success;
 	};
 
-	var initSignalFilter = function() {
+	var initCuriositiesFilter = function() {
 		try {
-			C.signalFilter = JSON.parse(localStorage['signalFilter']);
-			if (!validateFilterValue(C.signalFilter)) {
-				C.signalFilter = 'all';
+			C.curiositiesFilter = JSON.parse(localStorage['curiositiesFilter']);
+			if (!validateFilterValue(C.curiositiesFilter)) {
+				C.curiositiesFilter = 'all';
 			}
 		} catch(e) {
-			C.signalFilter = 'all';
-			log('Could not load signal filter from localStorage.');
+			C.curiositiesFilter = 'all';
+			log('Could not load curiosities filter from localStorage.');
 		}
-		return C.signalFilter;
+		return C.curiositiesFilter;
 	}
 
 	var validateSortOrderValue = function(order) {
@@ -79,31 +79,31 @@ $(function() {
 
 	var initSortOrder = function() {
 		try {
-			C.signalSortOrder = JSON.parse(localStorage['signalSortOrder']);
+			C.curiositiesSortOrder = JSON.parse(localStorage['curiositiesSortOrder']);
 			// Make sure every element is one of the possible values.
-			if (! _.isArray(C.signalSortOrder)) {
-				log('C.signalSortOrder is not an array.', C.signalSortOrder);
-			} else if ( ! _.every(C.signalSortOrder, function(x) { return _.contains(possibleSortOrders, x)})) {
-				log('C.signalSortOrder contains an invalid value.');
-				C.signalSortOrder = ['natural'];
+			if (! _.isArray(C.curiositiesSortOrder)) {
+				log('C.curiositiesSortOrder is not an array.', C.curiositiesSortOrder);
+			} else if ( ! _.every(C.curiositiesSortOrder, function(x) { return _.contains(possibleSortOrders, x)})) {
+				log('C.curiositiesSortOrder contains an invalid value.');
+				C.curiositiesSortOrder = ['natural'];
 				saveSortOrder();
 			}
 		} catch(e) {
-			C.signalSortOrder = ['natural'];
+			C.curiositiesSortOrder = ['natural'];
 			log('Could not load sort order from localStorage.', e.message);
 		}
 		updateUISortOrder();
 		updateUIFilter();
-		return C.signalSortOrder;
+		return C.curiositiesSortOrder;
 	}
 
-	var saveSignalFilter = function() {
+	var saveCuriositiesFilter = function() {
 		var success = false;
 		try {
-			localStorage['signalFilter'] = JSON.stringify(C.signalFilter);
+			localStorage['curiositiesFilter'] = JSON.stringify(C.curiositiesFilter);
 			success = true;
 		} catch(e) {
-			log('Could not save signal filter.');
+			log('Could not save curiosities filter.');
 		}
 		return success;
 	};
@@ -111,7 +111,7 @@ $(function() {
 	var saveSortOrder = function() {
 		var success = false;
 		try {
-			localStorage['signalSortOrder'] = JSON.stringify(C.signalSortOrder);
+			localStorage['curiositiesSortOrder'] = JSON.stringify(C.curiositiesSortOrder);
 			success = true;
 		} catch(e) {
 			log('Could not save sort order.');
@@ -123,33 +123,33 @@ $(function() {
 		if (! validateSortOrderValue(order)) {
 			return false;
 		}
-		C.signalSortOrder.unshift(order);
-		if (C.signalSortOrder.length > 5) {
-			C.signalSortOrder = _.first(C.signalSortOrder,	5);
+		C.curiositiesSortOrder.unshift(order);
+		if (C.curiositiesSortOrder.length > 5) {
+			C.curiositiesSortOrder = _.first(C.curiositiesSortOrder,	5);
 		}
 		saveSortOrder();
-		return C.signalSortOrder;
+		return C.curiositiesSortOrder;
 	};
 
 	var replaceFirstSortOrder = function(order) {
-		C.signalSortOrder.shift();
+		C.curiositiesSortOrder.shift();
 		return appendSortOrder(order);
 	};
 
-	var setSignalFilter = function(filter) {
+	var setCuriositiesFilter = function(filter) {
 		if (! validateFilterValue(filter)) {
 			return false;
 		}
-		C.signalFilter = filter;
-		saveSignalFilter();
-		return C.signalFilter;
+		C.curiositiesFilter = filter;
+		saveCuriositiesFilter();
+		return C.curiositiesFilter;
 	};
 
-	// Only execute this code on the /home/signals page.
-	if ($('body.signals').length < 1 ) { return undefined; }
+	// Only execute this code on the /home/curiosities page.
+	if ($('body.curiosities').length < 1 ) { return undefined; }
 
 	var reRenderCorrelations = function(ids) {
-		$('.signal-row-container').remove();
+		$('.curiosities-row-container').remove();
 		_.forEach(ids, function(id, i) {
 			// e stands for element, which is the raw data for a correlation row, stored in C.correlationIndex.
 			var e = C.correlationIndex[id];
@@ -220,7 +220,7 @@ $(function() {
 
 	var resortAll = function(ids) {
 		var sortedIds = ids;
-		var reverseOrder = C.signalSortOrder.slice();
+		var reverseOrder = C.curiositiesSortOrder.slice();
 		reverseOrder.reverse(); // reverse() mutates order of array.
 		_.forEach(reverseOrder, function(order) {
 			sortedIds = resort(sortedIds, order);
@@ -230,13 +230,13 @@ $(function() {
 
 	var viewGraph = function(correlation_id) {
 		var c = C.correlationIndex[correlation_id];
-		var new_uri = '/home/graph/signals/' + c.description1 + '/' + c.description2;
+		var new_uri = '/home/graph/curiosities/' + c.description1 + '/' + c.description2;
 		window.location = new_uri;
 	};
 
 /* // Marked for deletion...
 	var deleteCorrelationRowUI = function(correlation_id) {
-		$('.signal-row[data-id=' + correlation_id + ']').fadeOut(300, function() {
+		$('.curiosities-row[data-id=' + correlation_id + ']').fadeOut(300, function() {
 			$(this).remove();
 		});
 	};
@@ -288,11 +288,11 @@ $(function() {
 
 	var renderCorrelationRow = function(id, type, description1, description2, score, signalLevel, marked) {
 		var display = 'block';
-		if (C.signalFilter == "noise") {
+		if (C.curiositiesFilter == "noise") {
 			if (signalLevel != 0) {
 				display = "none";
 			}
-		} else if (C.signalFilter == "signal") {
+		} else if (C.curiositiesFilter == "yes") {
 			if (signalLevel != 4) {
 				display = "none";
 			}
@@ -320,13 +320,13 @@ $(function() {
 
 	$('#correlation-container').on('mouseenter', '.bubble', function() {
 		if ($(this).attr('src').match(/empty/)) {
-			$(this).attr('src', "/images/signals/hover_circle.png")
+			$(this).attr('src', "/images/curiosities/hover_circle.png")
 		}
 	});
 
 	$('#correlation-container').on('mouseleave', '.bubble', function() {
 		if ($(this).attr('src').match(/hover/)) {
-			$(this).attr('src', "/images/signals/empty_circle.png")
+			$(this).attr('src', "/images/curiosities/empty_circle.png")
 		}
 	});
 
@@ -355,38 +355,38 @@ $(function() {
 	
 				log('success', data);
 			});
-		$(this).siblings('img').attr('src', "/images/signals/empty_circle.png");
+		$(this).siblings('img').attr('src', "/images/curiosities/empty_circle.png");
 		$(this).siblings('img').attr('marked', 'empty');
-		$(this).attr('src', "/images/signals/marked_circle.png");
+		$(this).attr('src', "/images/curiosities/marked_circle.png");
 		$(this).attr('marked', 'marked');
 		C.correlationIndex[correlationId].marked = 'marked';
 	});
 
-	// Click on signal filter.
-	$('#signal').on('click', function() {
-		setSignalFilter('signal');
-		$('.signal-row-container:not(:has(img[signal-level=4][marked=marked]))').hide();
-		$('.signal-row-container:has(img[signal-level=4][marked=marked])').show();
+	// Click on curiosities filter.
+	$('#curiosities').on('click', function() {
+		setCuriositiesFilter('yes');
+		$('.curiosities-row-container:not(:has(img[signal-level=4][marked=marked]))').hide();
+		$('.curiosities-row-container:has(img[signal-level=4][marked=marked])').show();
 	});
 
 	// Click on noise filter.
 	$('#noise').on('click', function() {
-		setSignalFilter('noise');
-		$('.signal-row-container:not(:has(img[signal-level=0][marked=marked]))').hide();
-		$('.signal-row-container:has(img[signal-level=0][marked=marked])').show();
+		setCuriositiesFilter('no');
+		$('.curiosities-row-container:not(:has(img[signal-level=0][marked=marked]))').hide();
+		$('.curiosities-row-container:has(img[signal-level=0][marked=marked])').show();
 	});
 
 	// Click on 'all' filter.
 	$('#all').on('click', function() {
-		setSignalFilter('all');
-		$('.signal-row-container').show();
+		setCuriositiesFilter('all');
+		$('.curiosities-row-container').show();
 	});
 
 	var incPageNumber = function(searchId) {
-		if (undefined == C.signalPageNumber[searchId]) {
-			C.signalPageNumber[searchId] = 0;
+		if (undefined == C.curiositiesPageNumber[searchId]) {
+			C.curiositiesPageNumber[searchId] = 0;
 		}
-		C.signalPageNumber[searchId] += 1;
+		C.curiositiesPageNumber[searchId] += 1;
 	};
 
 	performSearch = function(q) {
@@ -394,8 +394,8 @@ $(function() {
 			var q = $('#search-input').val();
 		}
 		var searchId = getSearchId(q);
-		C.signalLastSearch = q;
-		searchWithDefaults(afterSearch(q), q, C.signalPageNumber[searchId]);
+		C.curiositiesLastSearch = q;
+		searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber[searchId]);
 	};
 
 	// search
@@ -424,34 +424,34 @@ $(function() {
 		var idReg = new RegExp(id);
 		var order = $(this).attr('data-order');
 		var newOrder = order;
-		if (_.first(C.signalSortOrder).match(idReg)) {
+		if (_.first(C.curiositiesSortOrder).match(idReg)) {
 			newOrder = toggleSortOrder(order);
 		}
 		$(this).attr('data-order', newOrder);
-		C.signalSortOrder = _.filter(C.signalSortOrder, function(sortOrder) { return !sortOrder.match(idReg); });
+		C.curiositiesSortOrder = _.filter(C.curiositiesSortOrder, function(sortOrder) { return !sortOrder.match(idReg); });
 		appendSortOrder(newOrder);
 
-		log("C.signalSortOrder", C.signalSortOrder);
+		log("C.curiositiesSortOrder", C.curiositiesSortOrder);
 
 		C.pageIds = resort(C.pageIds, newOrder);
 		reRenderCorrelations(C.pageIds);
 	});
 
 	// Click on row to view graph.
-	$('#correlation-container').on('click', '.signal-row-top', function() {
+	$('#correlation-container').on('click', '.curiosities-row-top', function() {
 		var correlationId = $(this).parent().attr('data-id');
 		viewGraph(correlationId);
 	});
 
 	var getSearchId = function(q) {
-		return [q.replace(/,/g, ' '), C.signalFilter, C.order1, C.order2].join(",");
+		return [q.replace(/,/g, ' '), C.curiositiesFilter, C.order1, C.order2].join(",");
 	};
 
 	descriptionFilter = function(q) {
 		var reg = new RegExp(q);
 		_.forEach(C.pageIds, function(id) {
 			var obj = C.correlationIndex[id];
-			var $row = $('.signal-row-container[data-id=' + id + ']');
+			var $row = $('.curiosities-row-container[data-id=' + id + ']');
 			if (obj.description1.match(reg) || obj.description2.match(reg)) {
 				$row.show();
 			} else {
@@ -465,18 +465,18 @@ $(function() {
 	var searchWithDefaults = function(afterSuccess, q) {
 		var searchId = getSearchId(q);
 		incPageNumber(searchId);
-		var pageNumber = C.signalPageNumber[searchId];
-		var filter = C.signalFilter;
-		var order1 = C.signalSortOrder[0];
+		var pageNumber = C.curiositiesPageNumber[searchId];
+		var filter = C.curiositiesFilter;
+		var order1 = C.curiositiesSortOrder[0];
 		var order2 = undefined;
-		if (C.signalSortOrder.length > 1) {
-			order2 = C.signalSortOrder[1];
+		if (C.curiositiesSortOrder.length > 1) {
+			order2 = C.curiositiesSortOrder[1];
 		}
 
 		// There are no more search results for the current search parameters/filter so no need to do the
 		//	 search on the server.
 		if (noMoreSearchResults(searchId)) {
-			log("no more search results for the filter:", "q:", q, "filter:", C.signalFilter, "order1:", C.order1, "order2", C.order2);
+			log("no more search results for the filter:", "q:", q, "filter:", C.curiositiesFilter, "order1:", C.order1, "order2", C.order2);
 			return 0;
 		}
 		search(afterSuccess, q, pageNumber, filter, order1, order2);
@@ -488,7 +488,7 @@ $(function() {
 				return;
 
 			log( "search results", data.length);
-			C.signalNumSearchResults[searchId] = data.length;
+			C.curiositiesNumSearchResults[searchId] = data.length;
 			for (var i=0; i < data.length; i++) {
 				// Aliases for readability.
 				var id = data[i].id;
@@ -548,17 +548,17 @@ $(function() {
 	};
 
 	var updateUISortOrder = function() {
-		var domId = getDomIdFromOrder(_.first(C.signalSortOrder));
+		var domId = getDomIdFromOrder(_.first(C.curiositiesSortOrder));
 		makeActiveById(domId);
 	};
 
 	var updateUIFilter = function() {
-		var domId = C.signalFilter;
+		var domId = C.curiositiesFilter;
 		makeActiveById(domId);
 	};
 
 	var resetScrollReady = function() {
-		C.signalScrollReady = true;
+		C.curiositiesScrollReady = true;
 	};
 
 	var afterSearch  =	function(q) {
@@ -569,14 +569,14 @@ $(function() {
 	};
 
 	var noMoreSearchResults = function(searchId) {
-		return (undefined != C.signalNumSearchResults[searchId] && C.signalNumSearchResults[searchId] == 0);
+		return (undefined != C.curiositiesNumSearchResults[searchId] && C.curiositiesNumSearchResults[searchId] == 0);
 	};
 
 	var shouldLoad = function () {
 		var scrollPos = $(window).scrollTop();
 		var pageHeight = $(window).height();
 		var docHeight = $(document).height();
-		return (C.signalScrollReady && (docHeight - (scrollPos + pageHeight) < 800) && C.signalScrollReady);
+		return (C.curiositiesScrollReady && (docHeight - (scrollPos + pageHeight) < 800) && C.curiositiesScrollReady);
 	};
 
 	var handleScroll = function() {
@@ -588,15 +588,15 @@ $(function() {
 				log("no more search results:", searchId);
 				return 0;
 			}
-			C.signalScrollReady = false;
-			searchWithDefaults(afterSearch(q), q, C.signalPageNumber);
-			log('infinite scroll!', C.signalPageNumber);
+			C.curiositiesScrollReady = false;
+			searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber);
+			log('infinite scroll!', C.curiositiesPageNumber);
 		}
 	};
 
 	$(window).on('scroll', handleScroll);
 
-	initSignalFilter();
+	initCuriositiesFilter();
 	initSortOrder();
 	performSearch();
 });

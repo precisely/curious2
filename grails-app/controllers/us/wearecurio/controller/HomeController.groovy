@@ -533,8 +533,8 @@ class HomeController extends DataController {
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
 
-	def graphSignals() {
-		debug "HomeController.graphSignals()" + params.description1 + " - " + params.description2
+	def graphCuriosities() {
+		debug "HomeController.graphCuriosities()" + params.description1 + " - " + params.description2
 		def user = sessionUser()
 		[prefs:user.getPreferences(), templateVer:urlService.template(request)]
 	}
@@ -594,8 +594,8 @@ class HomeController extends DataController {
 		render(view:"/home/homepage")
 	}
 
-	def signals() {
-		render(view: "/home/signals")
+	def curiosities() {
+		render(view: "/home/curiosities")
 	}
 
 	def community(String discussionHash, boolean unpublish, boolean publish) {

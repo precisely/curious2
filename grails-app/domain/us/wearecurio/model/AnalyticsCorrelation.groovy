@@ -163,9 +163,9 @@ class AnalyticsCorrelation {
 
 	public static addFilter(criteria, filter) {
 		def criterion = criteria
-		if (filter == 'signal') {
+		if (filter == 'yes') {
 			criterion = criteria.add( R.eq('signalLevel', new Double(4.0) ) )
-		} else if (filter == 'noise') {
+		} else if (filter == 'no') {
 			criterion = criteria.add( R.eq('signalLevel', new Double(0.0) ) )
 		}
 		criterion
@@ -184,7 +184,7 @@ class AnalyticsCorrelation {
 			criteria = criteria.add( queryRestriction )
 		}
 
-		// Add filter ('all', 'signal', 'noise').
+		// Add filter ('all', 'yes', 'no').
 		if (filter && filter.size() > 0) {
 			criteria = addFilter(criteria, filter)
 		}
