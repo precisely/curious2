@@ -11,8 +11,6 @@
     });
 </script>
 <body>
-	<g:render template="/layouts/alertMessage" />
-    <br>
     <br>
     <br>
     <div class="row">

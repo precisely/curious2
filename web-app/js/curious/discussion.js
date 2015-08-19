@@ -74,7 +74,7 @@ function getComments(discussionHash, args, callback) {
  * 
  * @param discussionHash Hash ID of the discussion to render comments for.
  * @param posts list of posts to render
- * @param data {isAdmin: true/false, userId: 1234}
+ * @param data {discussionDetails: {isAdmin: true/false}, userId: 1234}}
  * @param append Whether to append the new discussion posts should be added to the last of the comments list.
  */
 function renderComments(discussionHash, posts, data, append) {
@@ -94,7 +94,7 @@ function renderComments(discussionHash, posts, data, append) {
 	}
 
 	$.each(posts, function(index, post) {
-		compiledHTML += compileTemplate("_comments", {discussionPost: post, isAdmin: data.isAdmin, userId: data.userId});
+		compiledHTML += compileTemplate("_comments", {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
 	});
 
 	if (append) {
