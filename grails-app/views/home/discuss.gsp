@@ -20,7 +20,6 @@ function refreshPage() {
 var plot = null;
 var tagList = null;
 var discussionTitle = "${discussionTitle}";
-var blankPost = <g:if test="${firstPost == null}">true</g:if><g:else>false</g:else>;
 var alreadySentName = null;
 var preventCommentSubmit = false;
 
@@ -69,8 +68,8 @@ $(function() {
 				addPerson(this['name'],
 					this['username'], this['id'], this['sex']);
 	
-				<g:if test="${firstPost?.getPlotDataId() != null}">
-					plot.loadSnapshotId(${firstPost.getPlotDataId()});
+				<g:if test="${firstPost?.plotDataId}">
+					plot.loadSnapshotId(${firstPost.plotDataId});
 				</g:if>
 	
 				return true;
@@ -200,7 +199,7 @@ $(document).ready(function() {
 		</div>
 
 		<!-- MAIN -->
-		<g:if test="${firstPost?.getPlotDataId() != null}">
+		<g:if test="${firstPost?.plotDataId}">
 			<div class="row row-custom">
 				<div class="col-xs-12">
 					<!-- /LEFT NAV-->
