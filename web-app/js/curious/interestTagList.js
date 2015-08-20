@@ -97,13 +97,12 @@ function InterestTagList(editId, listId) {
 	};
 
 	this.setText = function(text) {
-		var $inp = interestList.editDiv;
+		var $interestInput = interestList.editDiv;
 		//$inp.autocomplete("close");
-		$inp.val(text);
+		$interestInput.val(text);
 		interestList.origText = text;
-		$inp.css('color','#000000');
-		$inp.focus();
-		$inp.data("entryTextSet", true);
+		$interestInput.css('color','#000000');
+		$interestInput.data("entryTextSet", true);
 	};
 	
 	this.processInput = function() {

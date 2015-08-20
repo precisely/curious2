@@ -87,6 +87,7 @@ $(document).ready(function() {
 	/**
 	 * Click handler to execute when user clicks on the button to delete a Discussion.
 	 */
+	var httpArgs ={requestMethod:'delete'};
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -111,7 +112,7 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			}, null, 'delete');
+			}, null, httpArgs);
 		});
 		return false;
 	});
@@ -120,6 +121,7 @@ $(document).ready(function() {
 	 * Click handler to execute when user clicks on the button to delete a DiscussionPost/comment.
 	 */
 	$(document).on("click", "a.delete-post", function() {
+		var httpArgs ={requestMethod:'delete'};
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var postId = $this.data('postId');
@@ -144,7 +146,7 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			}, null, 'delete');
+			}, null, httpArgs);
 		});
 		return false;
 	});

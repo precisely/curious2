@@ -104,6 +104,7 @@ $(document).ready(function() {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $(this).serializeObject();
 		var id = $('#sprintIdField').val();
+		var httpArgs ={requestMethod:'PUT'};
 		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
@@ -119,7 +120,7 @@ $(document).ready(function() {
 				clearSprintFormData()
 			}
 		}, function(xhr) {
-		}, null, 'PUT');
+		}, null, httpArgs);
 		return false;
 	});
 
@@ -664,6 +665,7 @@ function editSprint(sprintHash) {
 }
 
 function deleteSprint(sprintHash) {
+	var httpArgs ={requestMethod:'delete'};
 	showYesNo('Delete this sprint?', function() {
 		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash, 
 				getCSRFPreventionObject('deleteSprintDataCSRF'), 
@@ -679,7 +681,7 @@ function deleteSprint(sprintHash) {
 				}
 			}, function(data) {
 				showAlert(data.message);
-			}, null, 'delete');
+			}, null, httpArgs);
 	});
 }
 
