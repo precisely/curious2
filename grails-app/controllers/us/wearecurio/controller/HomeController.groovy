@@ -26,6 +26,8 @@ import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
+import com.lucastex.grails.fileuploader.UFile
+import com.lucastex.grails.fileuploader.FileUploaderService
 
 class HomeController extends DataController {
 
@@ -41,6 +43,7 @@ class HomeController extends DataController {
 	SearchService searchService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
+	FileUploaderService fileUploaderService
 
 	static debug(str) {
 		log.debug(str)
@@ -454,7 +457,7 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'upload'))
 			return
 		}
-		
+
 		def p = processPrefs(params)
 
 		if (p.twitterDefaultToNow != 'on')
@@ -852,5 +855,36 @@ class HomeController extends DataController {
 
 		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
 			participants : participants , user: sessionUser(), virtualGroupName: sprintInstance.fetchUserGroup().name])
+	}
+
+	/**
+	 * Used to update the avatar for current logged in user.
+	 */
+	def saveAvatar() {
+		debug ("HomeController.saveAvatar() params:" + params)
+		UFile avatar
+		try {
+			avatar = fileUploaderService.saveFile("avatar", params.avatar)
+		} catch (FileNotFoundException|IOException e) {		// https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
+			renderJSONPost([success: false])
+			return
+		}
+
+		if (!avatar) {
+			renderJSONPost([success: false])
+			return
+		}
+		User currentUserInstance = sessionUser()
+
+		try {
+			currentUserInstance.avatar?.delete()
+			currentUserInstance.avatar = avatar
+			Utils.save(currentUserInstance, true)
+			renderJSONPost([success: true, avatarURL: avatar.path])
+		} catch (Exception e) {
+			log.error "Unable to change or add avatar for ${currentUserInstance}", e
+			renderJSONPost([success: false])
+			return
+		}
 	}
 }

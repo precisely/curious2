@@ -17,6 +17,7 @@ import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
+import com.lucastex.grails.fileuploader.UFile
 
 class User {
 	
@@ -41,6 +42,7 @@ class User {
 	Long virtualUserGroupId
 	String bio
 	UserSettings settings = new UserSettings()
+	UFile avatar
 	
 	static constraints = {
 		bio(nullable: true)
@@ -61,6 +63,7 @@ class User {
 		remindEmail(nullable:true)
 		website(nullable:true)
 		virtualUserGroupId(nullable:true)
+		avatar(nullable: true)
 	}
 	
 	static mapping = {

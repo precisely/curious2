@@ -7,57 +7,120 @@
 <c:jsCSRFToken keys="addEntryCSRF, getPeopleDataCSRF, getListDataCSRF, autocompleteDataCSRF, listTagsAndTagGroupsCSRF,
 showTagGroupCSRF, createTagGroupCSRF, deleteTagGroupCSRF, addTagToTagGroupCSRF, deleteGhostEntryDataCSRF, deleteEntryDataCSRF, updateEntrySDataCSRF,
 removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroupCSRF, pingDataCSRF,
-excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF" />
+excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF, updateAvatarCSRF" />
 
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
+<script src="/js/jquery/jquery.cropit.js"></script>
 <script>
 function refreshPage() {
 }
 function doLogout() {
-    callLogoutCallbacks();
+	callLogoutCallbacks();
 }
+
+$(window).load(function() {
+	function readURL(input) {
+		var httpArgs ={processData: false, contentType: false, requestMethod:'POST'};
+
+		if (input.files && input.files[0]) {
+			var reader = new FileReader();
+			reader.onload = function (e) {
+				$('.image-editor').cropit({
+					imageState: {
+					src: e.target.result
+					},
+				});
+
+				$('.export').click(function() {
+					var imageData = $('.image-editor').cropit('export');
+					var blob = dataURItoBlob(imageData);
+					console.log('blob' + blob);
+					var formData = new FormData();
+					formData.append("avatar", blob, "avatar.png");
+					formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
+					formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
+
+					queueJSONAll('updating avatar', '/home/saveAvatar', 
+							formData, function(data) {
+						if (data.success) {
+							console.log(data);
+							$('.img-circle').attr('src', data.avatarURL);
+						} else {
+							showAlert('Error updating avatar. Please try again.');
+						}
+							$('#avatarModal').modal('hide');
+					}, function(data) {
+						showAlert('Internal server error occurred.');
+					}, 0, httpArgs);
+				});
+			}
+			reader.readAsDataURL(input.files[0]);
+		}
+	}
+	$("#cropit-image-input").change(function() {
+		readURL(this);
+	});
+});
+
+function dataURItoBlob(dataURI) {
+	// convert base64/URLEncoded data component to raw binary data held in a string
+	var byteString;
+	if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+		byteString = atob(dataURI.split(',')[1]);
+	} else {
+		byteString = unescape(dataURI.split(',')[1]);
+	}
+	// separate out the mime component
+	var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+	// write the bytes of the string to a typed array
+	var ia = new Uint8Array(byteString.length);
+	for (var i = 0; i < byteString.length; i++) {
+		ia[i] = byteString.charCodeAt(i);
+	}
+	return new Blob([ia], {type:mimeString});
+}
+
 var origUsername = "${user.username}";
 
 var interestTagList;
 
 $(function() {
-    queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) {
-        if (!checkData(data))
-            return;
+	queueJSON("getting login info", "/home/getPeopleData?callback=?", function(data) {
+		if (!checkData(data))
+			return;
 
-        found = false;
+		found = false;
 
-        jQuery.each(data, function() {
-            if (!found) {
-                // set first user id as the current
-                setUserId(this['id']);
-                found = true;
-            }
-            addPerson(this['name'], this['username'], this['id'], this['sex']);
-            return true;
-        });
-    });
-    this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
+		jQuery.each(data, function() {
+			if (!found) {
+				// set first user id as the current
+				setUserId(this['id']);
+				found = true;
+			}
+			addPerson(this['name'], this['username'], this['id'], this['sex']);
+			return true;
+		});
+	});
+	this.interestTagList = new InterestTagList("interestTagInputField", "interestTagsList");
 });
 
 function editUserDetails() {
-    var updatedName = $("#name").val();
-    var newUsername = $("#username").val();
-    var newPw = $("#password").val();
-    var bio = $("#bio").val();
-    if (origUsername != newUsername) {
-        if (newPw.length == 0) {
-            showAlert("If you change the username, you must set the password as well");
-            return;
-        }
-    }
-    if (newPw.length > 0) {
-        if (newPw != $("#verify_password").val()) {
-            showAlert("New password and verification do not match");
-            return;
-        }
-    }
-    document.getElementById("updateUserPreferences").submit();
+	var newUsername = $("#username").val();
+	var newPw = $("#password").val();
+	if (origUsername != newUsername) {
+		if (newPw.length == 0) {
+			showAlert("If you change the username, you must set the password as well");
+			return;
+		}
+	}
+	if (newPw.length > 0) {
+		if (newPw != $("#verify_password").val()) {
+			showAlert("New password and verification do not match");
+			return;
+		}
+	}
+	document.getElementById("updateUserPreferences").submit();
 }
 </script>
 
@@ -109,17 +172,17 @@ function editUserDetails() {
 </head>
 <body class="user-preference">
 	<div class="red-strip"></div>
-	<div class="main container-fluid ">
+	<div class="main container-fluid">
 		<div class="user-details">
-			<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" class="form-horizontal" autocomplete="off">
+			<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" id="updateUserPreferences" class="form-horizontal" autocomplete="off">
 				<div class="row">
 					<div class="pull-right">
 						<button class="save-user-details" onclick="editUserDetails()">Save Profile</button>
 					</div>
 					<div class="user-image pull-left">
-						<img src="/images/avatar.png" alt="" class="img-circle">
+						<img src="${user.avatar?.path ?: '/images/avatar.png'}" alt="" class="img-circle">
 						<div class="form-group">
-							<button class="edit-image-button">Edit Image</button>
+							<button class="edit-image-button" data-toggle="modal" data-target="#avatarModal">Edit Image</button>
 						</div>
 					</div>
 					<div class="user-name">
@@ -268,9 +331,35 @@ function editUserDetails() {
 				</div>
 			</g:form>
 		</div>
-		<div class="interest-list">
-			<label class="control-label" for="interests">Interest Tags</label>
-			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+	</div>
+	<div class="interest-list">
+		<label class="control-label" for="interests">Interest Tags</label>
+		<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+	</div>
+
+	<div class="modal fade" id="avatarModal" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					Add/Edit Avatar
+				</div>
+				<div class="modal-body text-center">
+					<div class="image-editor">
+						<g:uploadForm name="saveAvatar" id="saveAvatar" class="form-horizontal" autocomplete="off">
+							<g:hiddenField name="userId" value="${user.id}" />
+							<input type="file" class="cropit-image-input" id="cropit-image-input">
+							<div class="cropit-image-preview"></div>
+							<div class="image-size-label">
+								Resize image
+							</div>
+							<input type="range" class="cropit-image-zoom-input">
+						</g:uploadForm>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="export btn btn-danger" type="button">Upload</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </body>

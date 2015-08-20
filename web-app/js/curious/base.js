@@ -270,11 +270,26 @@ function queueJSON(description, url, args, successCallback, failCallback, delay,
 	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'POST' : 'GET', background);
 }
 
-function queueJSONAll(description, url, args, successCallback, failCallback, delay, requestMethod, background) {
+function queueJSONAll(description, url, args, successCallback, failCallback, delay, httpArgs, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	requestMethod = requestMethod || 'GET';
+	requestMethod = httpArgs.requestMethod || 'GET';
+	var contentType;
+	var processData;
+
+	if (httpArgs.contentType == false) {
+		contentType = httpArgs.contentType;
+	} else {
+		contentType = (httpArgs.requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
+	}
+
+	if (httpArgs.processData == false) {
+		processData = httpArgs.processData;
+	} else {
+		processData = true;
+	}
+
 	window.setTimeout(function() {
 		if (stillRunning) {
 			alertShown = true;
@@ -345,7 +360,7 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
 		var jsonCall = function() {
 			$.ajax({
-				type: requestMethod,
+				type: httpArgs.requestMethod,
 				dataType: "json",
 				url: url,
 				data: args,
@@ -359,15 +374,15 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	} else { // first call
 		if (!background)
 			++numJSONCalls;
-
 		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
 		$.ajax({
-			type: requestMethod,
+			type: httpArgs.requestMethod,
 			dataType: "json",
-			contentType: (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8',
-					url: url,
-					data: args,
-					timeout: 20000 + (delay > 0 ? delay : 0)
+			contentType: contentType,
+			processData: processData,
+			url: url,
+			data: args,
+			timeout: 20000 + (delay > 0 ? delay : 0)
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
