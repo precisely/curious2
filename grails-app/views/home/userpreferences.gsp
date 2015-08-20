@@ -144,6 +144,7 @@ function editUserDetails() {
 		font-size: 14px;
 		color: #B6B6B6;
 		font-weight: 300;
+		margin-left: -7px;
 	}
 	#user-name-label{
 		padding-right: 10px;
@@ -151,7 +152,9 @@ function editUserDetails() {
 		font-size: 14px;
 		color: #B6B6B6;
 		font-weight: 300;
-		margin-top: 14px;
+		margin-top: 4px;
+		margin-left: 8px;
+		padding-bottom: 5px;
 	}
 	.profile-container input:not([type=radio]):not([type=checkbox]):not([type=submit]), .profile-container text-area {
 		padding: 6px;
@@ -182,7 +185,7 @@ function editUserDetails() {
 					<div class="user-image pull-left">
 						<img src="${user.avatar?.path ?: '/images/avatar.png'}" alt="" class="img-circle">
 						<div class="form-group">
-							<button class="edit-image-button" data-toggle="modal" data-target="#avatarModal">Edit Image</button>
+							<button class="edit-image-button" type="button" data-toggle="modal" data-target="#avatarModal">Edit Image</button>
 						</div>
 					</div>
 					<div class="user-name">
@@ -331,33 +334,32 @@ function editUserDetails() {
 				</div>
 			</g:form>
 		</div>
-	</div>
-	<div class="interest-list">
-		<label class="control-label" for="interests">Interest Tags</label>
-		<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
-	</div>
-
-	<div class="modal fade" id="avatarModal" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<div class="modal-content">
-				<div class="modal-header">
-					Add/Edit Avatar
-				</div>
-				<div class="modal-body text-center">
-					<div class="image-editor">
-						<g:uploadForm name="saveAvatar" id="saveAvatar" class="form-horizontal" autocomplete="off">
-							<g:hiddenField name="userId" value="${user.id}" />
-							<input type="file" class="cropit-image-input" id="cropit-image-input">
-							<div class="cropit-image-preview"></div>
-							<div class="image-size-label">
-								Resize image
-							</div>
-							<input type="range" class="cropit-image-zoom-input">
-						</g:uploadForm>
+		<div class="interest-list">
+			<label class="control-label" for="interests">Interest Tags</label>
+			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+		</div>
+		<div class="modal fade" id="avatarModal" role="dialog">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						Add/Edit Avatar
 					</div>
-				</div>
-				<div class="modal-footer">
-					<button class="export btn btn-danger" type="button">Upload</button>
+					<div class="modal-body text-center">
+						<div class="image-editor">
+							<g:uploadForm name="saveAvatar" id="saveAvatar" class="form-horizontal" autocomplete="off">
+								<g:hiddenField name="userId" value="${user.id}" />
+								<input type="file" class="cropit-image-input" id="cropit-image-input">
+								<div class="cropit-image-preview"></div>
+								<div class="image-size-label">
+									Resize image
+								</div>
+								<input type="range" class="cropit-image-zoom-input">
+							</g:uploadForm>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="export btn btn-danger" type="button">Upload</button>
+					</div>
 				</div>
 			</div>
 		</div>

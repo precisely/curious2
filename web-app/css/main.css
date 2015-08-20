@@ -15,6 +15,7 @@ input, optgroup, select, textarea {
 	-moz-box-shadow: none;
 	box-shadow: none;
 	font-style: italic;
+	margin-left: 9px;
 }
 .profile-container #addData input[type="text"] {
 	width: 190px;
@@ -25,6 +26,7 @@ input, optgroup, select, textarea {
 	-moz-box-shadow: none;
 	box-shadow: none;
 	margin-bottom: -11px;
+	margin-left: -7px;
 }
 .profile-container #addData input[type="password"] {
 	width: 190px;
@@ -35,6 +37,7 @@ input, optgroup, select, textarea {
 	-moz-box-shadow: none;
 	box-shadow: none;
 	margin-bottom: -11px;
+	margin-left: -7px;
 }
 .interest-list input[type="text"] {
 	width: 190px;
@@ -59,6 +62,7 @@ input, optgroup, select, textarea {
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
+	margin-left: -5px;
 }
 .discussion-topic-input {
 	color: #fc3f28;
@@ -1586,6 +1590,7 @@ body.discuss-page .red-header {
 	font-weight: normal;
 	color: #787878;
 	font-size: 10px;
+	margin-left: -6px;
 }
 
 .bio-radio label:after { 
@@ -1661,8 +1666,8 @@ body.discuss-page .red-header {
 }
 
 .user-name-radio .input-affordance .radio-public-label {
-	left: -1px;
-	top: 5px;
+	left: 7px;
+	top: 10px;
 }
 
 .profile-container #addData .input-affordance .radio-private-label {
@@ -1671,8 +1676,8 @@ body.discuss-page .red-header {
 }
 
 .user-name-radio .input-affordance .radio-private-label {
-	left: 71px;
-	top: 5px;
+	left: 76px;
+	top: 10px;
 }
 
 .input-affordance .radio-private-label {
@@ -4063,8 +4068,9 @@ body .modal-header button {
 .user-image img {
 	width: 108px;
 	height: 105px;
-	margin-left:54px;
+	margin-left:60px;
 	margin-bottom: 10px;
+	margin-top: -2px;
 }
 
 .user-details-header {
@@ -4166,8 +4172,8 @@ input[type = "number"] {
 	border-style: solid;
 	border-width: 1px; 
 	line-height: 0px;
-	margin-left: 71px;
-	margin-bottom: 19px;
+	margin-left: 84px;
+	margin-bottom: 11px;
 }
 
 .email-radio {
@@ -4223,13 +4229,13 @@ input[type = "number"] {
 }
 
 .email-radio .radio-public-label {
-	margin-left: 28px;
-	margin-bottom: -18px;
+	margin-left: 22px;
+	margin-bottom: -8px;
 }
 
 
 .email-radio .radio-private-label {
-	margin-left: 28px;
+	margin-left: 22px;
 }
 
 .red-strip .help .fa {
