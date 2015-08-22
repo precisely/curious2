@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.joda.time.*;
 
-class LocalTimeRepeater<T> {
+public class LocalTimeRepeater<T> {
 
 	DateTime currentDateTime;
 	long endDateTimeTicks;
