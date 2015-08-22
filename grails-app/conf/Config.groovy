@@ -161,8 +161,7 @@ environments {
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
 		curiousanalytics.servers = [
-			'http://127.0.0.1:8090',
-			'http://127.0.0.1:8091'
+			'http://127.0.0.1:8090'
 		]
 		
 		/*

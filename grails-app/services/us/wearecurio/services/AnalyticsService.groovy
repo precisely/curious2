@@ -224,7 +224,7 @@ class AnalyticsService {
 
 		def incompleteTasks = AnalyticsTask.childrenIncomplete(parentId)
 		AnalyticsTask childTask
-		AnalyticsTask.SERVERS.eachWithIndex { serverAddress, i ->
+		servers.eachWithIndex { serverAddress, i ->
 			boolean successfulLaunch = false
 			while (!successfulLaunch) {
 				childTask = null

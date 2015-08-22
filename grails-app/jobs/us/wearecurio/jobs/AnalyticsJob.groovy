@@ -2,8 +2,9 @@ package us.wearecurio.jobs
 
 import us.wearecurio.services.AnalyticsService
 import org.apache.commons.logging.LogFactory
+import grails.util.Environment
 
-/*class AnalyticsJob extends us.wearecurio.utility.TimerJob {
+class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 		AnalyticsService analyticsService
 		private static def log = LogFactory.getLog(this)
 
@@ -12,8 +13,9 @@ import org.apache.commons.logging.LogFactory
 		}
 
 		def execute() {
-			//analyticsService.processUsers()
-			log "analyticsJob launched."
+			if (Environment.current != Environment.DEVELOPMENT) {
+				analyticsService.processUsers()
+				log "analyticsJob launched."
+			}
 		}
 }
-*/
