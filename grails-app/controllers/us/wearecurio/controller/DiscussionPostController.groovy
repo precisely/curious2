@@ -18,16 +18,13 @@ class DiscussionPostController extends LoginController{
 		params.max = Math.min(Integer.parseInt(params.max) ?: 4, 100)
 		params.offset = offset ?: 0
 
-		DiscussionPost firstPostInstance = discussion.getFirstPost()
-		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
-
-		List<DiscussionPost> posts = isFollowUp ? discussion.getFollowupPosts(params) : discussion.getPosts(params)
+		List<DiscussionPost> posts = discussion.getFollowupPosts(params)
 
 		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion)]
 
 		// Discussion details are only needed for the first page
 		if (params.offset == 0) {
-			discussionDetails.putAll(discussion.getJSONModel(params))
+			discussionDetails.putAll(discussion.getJSONDesc())
 		}
 
 		JSON.use("jsonDate") {

@@ -794,21 +794,15 @@ class HomeController extends DataController {
 		}
 
 		if (true) {		// TODO remove this if condition and fix indentation
-			params.max = params.max ?: 5
-			params.offset = params.offset ?: 0
+			Map model = discussion.getJSONDesc()
 
-			// see duplicated code in DiscussionController.createTopic
-			// edits here should be duplicated there
-			Map model = discussion.getJSONModel(params)
-
-			model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
+			model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],
 					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-					templateVer: urlService.template(request), discussionHash: discussion.hash]
-			log.debug "overall model: ${model.dump()}"
+					templateVer: urlService.template(request), discussionHash: discussion.hash])
 
-			if (user == null) {
-				model.put("associatedGroups", []) // public discussion
-			} else {
+			log.debug "Overall model: $model"
+
+			if (user) {
 				List associatedGroups = UserGroup.getGroupsForWriter(user)
 				List alreadySharedGroups = [], otherGroups = []
 	

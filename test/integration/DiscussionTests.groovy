@@ -1,49 +1,28 @@
-import static org.junit.Assert.*
-
-import java.math.MathContext
-import java.text.DateFormat
-
-import org.elasticsearch.index.query.QueryBuilder
-import org.elasticsearch.index.query.QueryBuilders
 import static org.elasticsearch.index.query.QueryBuilders.*
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.sort.*
-
 import static org.elasticsearch.node.NodeBuilder.*
+import grails.test.mixin.TestMixin
+import grails.test.mixin.integration.IntegrationTestMixin
+
+import java.text.DateFormat
 
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService
 import org.grails.plugins.elasticsearch.ElasticSearchService
+import org.joda.time.DateTimeZone
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 import us.wearecurio.integration.CuriousTestCase
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagStats
-import us.wearecurio.model.TagValueStats;
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
-import us.wearecurio.model.Sprint
-import us.wearecurio.model.UserGroup;
-import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
-import us.wearecurio.support.EntryStats
-import us.wearecurio.support.EntryCreateMap
-import us.wearecurio.services.DatabaseService
-import groovy.transform.TypeChecked
-
-import org.joda.time.DateTimeZone
-import org.junit.*
-import org.joda.time.*
-
-import grails.test.mixin.*
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
-import grails.test.mixin.TestMixin
-import grails.test.mixin.integration.IntegrationTestMixin
 
 @TestMixin(IntegrationTestMixin)
 class DiscussionTests extends CuriousTestCase {
+
 	static transactional = true
 
 	DateFormat dateFormat
@@ -221,5 +200,41 @@ class DiscussionTests extends CuriousTestCase {
 		
 		System.out.println "RESULT SIZE: " + results.searchResults.size()
 		//assert results.searchResults[0].id == discussion.id
+	}
+
+	@Test
+	void "test getFollowupPosts when there is first post but that is not associated with any graph"() {
+		Discussion discussion = Discussion.create(user, "First discussion", testGroup, null)
+		DiscussionPost post1 = discussion.createPost(user, "Post 1")
+		DiscussionPost post2 = discussion.createPost(user, "Post 2")
+		DiscussionPost post3 = discussion.createPost(user, "Post 3")
+
+		assert discussion.firstPostId == post1.id
+
+		List<DiscussionPost> posts = discussion.getFollowupPosts([max: 2])
+		assert posts*.id == [post1.id, post2.id]
+
+		Map discussionModel = discussion.getJSONDesc()
+		assert discussionModel.totalPostCount == 3		// Including first post
+		assert discussionModel.firstPost != null
+		assert discussionModel.firstPost.id == post1.id
+	}
+
+	@Test
+	void "test getFollowupPosts when there is a first post which is associated with a graph or plot ID"() {
+		Discussion discussion = Discussion.create(user, "First discussion", testGroup, null)
+		DiscussionPost post1 = DiscussionPost.createComment("Post 1", user, discussion, 1, [:])
+		DiscussionPost post2 = discussion.createPost(user, "Post 2")
+		DiscussionPost post3 = discussion.createPost(user, "Post 3")
+
+		assert discussion.firstPostId == post1.id
+
+		List<DiscussionPost> posts = discussion.getFollowupPosts([max: 2])
+		assert posts*.id == [post2.id, post3.id]
+
+		Map discussionModel = discussion.getJSONDesc()
+		assert discussionModel.totalPostCount == 2		// Excluding first post
+		assert discussionModel.firstPost != null
+		assert discussionModel.firstPost.id == post1.id
 	}
 }

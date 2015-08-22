@@ -5,10 +5,9 @@ import grails.converters.*
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.hashids.DefaultHashIDGenerator
-import us.wearecurio.utility.Utils
 import us.wearecurio.model.Model.Visibility
-import us.wearecurio.services.EmailService
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.utility.Utils
 
 class Discussion {
 	
@@ -174,6 +173,7 @@ class Discussion {
 	void setIsPublic(boolean setPublic) {
 		this.visibility = setPublic ? Model.Visibility.PUBLIC : Model.Visibility.PRIVATE
 	}
+
 	boolean isNew() {
 		return this.name == null
 	}
@@ -195,7 +195,7 @@ class Discussion {
 		return group
 	}
 	
-	static def loadDiscussion(def id, def plotDataId, def user) {
+	static Discussion loadDiscussion(def id, def plotDataId, def user) {
 		def discussion
 		if (id) {
 			discussion = Discussion.get(id)
@@ -207,13 +207,10 @@ class Discussion {
 		log.debug "Discussion found: " + discussion?.dump()
 		return discussion
 	}
-	
-	
+
 	DiscussionPost fetchFirstPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
-			and {
-				eq("discussionId", getId())
-			}
+			eq("discussionId", this.id)
 			maxResults(1)
 			order("plotDataId", "desc")
 			order("created", "asc")
@@ -238,9 +235,7 @@ class Discussion {
 
 	DiscussionPost getLastPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
-			and {
-				eq("discussionId", getId())
-			}
+			eq("discussionId", this.id)
 			maxResults(1)
 			order("plotDataId", "desc")
 			order("created", "desc")
@@ -248,43 +243,72 @@ class Discussion {
 
 		return post
 	}
-	
-	def fetchUserId() {
+
+	Long fetchUserId() {
 		if (userId != null) return userId
 		DiscussionPost post = getFirstPost()
 		return post?.getAuthor()?.getUserId()
 	}
-	
+
+	/**
+	 * Constructs a common criteria closure which can be applied on {@link us.wearecurio.model.DiscussionPost}
+	 * using <code>createCriteria().list()</code> or <code>withCriteria</code> method to perform various operations.
+	 * Keeping this method separate to get the criteria only so that we can re-use the same criteria to get all
+	 * associated posts or just count of all posts.
+	 * 
+	 * @param args See {@link #getFollowupPosts(Map) getFollowupPosts(Map)} method for details
+	 * @return Criteria closure as descibed above.
+	 */
+	Closure getPostsCriteria(Map args) {
+		return {
+			eq("discussionId", this.id)
+
+			// If first post ID is available
+			if (args.firstPostID) {
+				// Then we need to exclude the first post from being fetched
+				ne("id", args.firstPostID)
+			}
+		}
+	}
+
+	/**
+	 * Get the list of {@link us.wearecurio.model.DiscussionPost posts} excluding the very first post "X" of the
+	 * discussion if the discussion is associated with a graph and the post "X" is having plot ID of that graph.
+	 * 
+	 * @param args.max OPTIONAL Pagination parameter to limit the returning results.
+	 * @param args.offset OPTIONAL Pagination parameter to get the results after given position
+	 * @param args.sort OPTIONAL Sorting parameter to sort list of posts
+	 * @param args.order OPTIONAL Sorting parameter to change order of posts based on sorting parameter
+	 * 
+	 * @return Return the list of posts as described above.
+	 */
 	List<DiscussionPost> getFollowupPosts(Map args) {
-		/*
-		 * If no offset or offset is 0, set offset to 1 so that
-		 * first post is not fetched.
-		 */
-		if (!args["offset"]) {
-			args["offset"] = 1
+		DiscussionPost firstPostInstance = getFirstPost()
+
+		// If first post of this discussion is associated with a Graph
+		if (firstPostInstance?.plotDataId) {
+			args.firstPostID = firstPostInstance.id
 		}
-		
-		/*
-		 * If max is given and offset is set to be current step offset + 1
-		 * then increase current offset by one to support proper pagination
-		 * skipping always the first post.
-		 */
-		if (args["max"] && (args["offset"].toInteger() % args["max"].toInteger()) == 0) {
-			args["offset"] = args["offset"].toInteger() + 1
-		}
-		
+
 		getPosts(args)
 	}
-	
+
+	/**
+	 * Get the list of all {@link us.wearecurio.model.DiscussionPost posts} associated with the current discussion.
+	 * 
+	 * @param args.max OPTIONAL Pagination parameter to limit the returning results.
+	 * @param args.offset OPTIONAL Pagination parameter to get the results after given position
+	 * @param args.sort OPTIONAL Sorting parameter to sort list of posts
+	 * @param args.order OPTIONAL Sorting parameter to change order of posts based on sorting parameter
+	 * @param args.firstPostID OPTIONAL See {@link #getFollowupPosts(Map) getFollowupPosts(Map)} method for detail
+	 * 
+	 * @return Return the list of posts/comments as described above.
+	 */
 	List<DiscussionPost> getPosts(Map args) {
 		args.sort = args.sort ?: "created"
 		args.order = args.order ?: "asc"
 
-		List posts = DiscussionPost.createCriteria().list(args) {
-			eq("discussionId", this.id)
-		}
-
-		return posts
+		return DiscussionPost.createCriteria().list(args, getPostsCriteria(args))
 	}
 
 	def createPost(User user, String message, Date createTime = null) {
@@ -406,49 +430,42 @@ class Discussion {
 			}
 		}
 	}
-	
-	/**
-	 * Get data for the discussion data lists
-	 */
-	def getJSONDesc() {
-		return [
-			id: this.id,
-			hash: this.hash,
-			name: this.name?:'New question or discussion topic?',
-			userId: this.userId,
-			isPublic: this.visibility == Model.Visibility.PUBLIC,
-			created: this.created,
-			updated: this.updated,
-			type: "dis"
-		]
-	}
-	
-	Map getJSONModel(Map args) {
-		Long totalPostCount = 0
+
+	static String GROUP_NAME_QUERY = "SELECT ug.full_name FROM user_group ug INNER JOIN group_member_discussion gmd" +
+			" on ug.id = gmd.group_id where gmd.member_id = :id ORDER BY gmd.created DESC"
+
+	Map getJSONDesc() {
 		DiscussionPost firstPostInstance = getFirstPost()
-		boolean isFollowUp = firstPostInstance?.getPlotDataId() != null
-		List postList = isFollowUp ? getFollowupPosts(args) : getPosts(args)
 
-		String groupNameQuery = "SELECT ug.full_name FROM user_group ug INNER JOIN group_member_discussion gmd on ug.id = gmd.group_id where gmd.member_id = :id ORDER BY gmd.created DESC"
-		DatabaseService databaseService = DatabaseService.get()
-		
-		List result = databaseService.sqlRows(groupNameQuery, [id: id])
-		String discussionGroupName = result[0].full_name
+		Map args = [:]
+		if (firstPostInstance?.plotDataId) {
+			args.firstPostID = firstPostInstance.id
+		}
 
-		if (args.max && args.offset.toInteger()  > -1) {
-			// A total count will be available if pagination parameter is passed
-			totalPostCount = postList.getTotalCount()
-			
-			if (totalPostCount && isFollowUp) {
-				// If first post is available then total count must be one lesser
-				totalPostCount --
+		Closure criteria = getPostsCriteria(args)
+
+		// Merge the above posts criteria closure with another criteria closure to only get the total count of posts
+		criteria = criteria << {
+			projections {
+				count()
 			}
 		}
-		[discussionId: getId(), discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
-			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated, firstPost: firstPostInstance,
-			posts: postList, isNew: isNew(), totalPostCount: totalPostCount, isPublic: this.visibility == Model.Visibility.PUBLIC, groupName: discussionGroupName ?: '']
+
+		Long totalPostCount = DiscussionPost.createCriteria().get(criteria)
+
+		DatabaseService databaseService = DatabaseService.get()
+
+		List result = databaseService.sqlRows(GROUP_NAME_QUERY, [id: id])
+		String groupName = result[0].full_name ?: ""
+
+		// TODO Remove the word "discussion" from all keys since we are passing data for discussion only
+		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
+			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated,
+			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount,
+			isPublic: isPublic(), groupName: groupName]
 	}
-	
+
+	@Override
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"

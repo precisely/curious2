@@ -16,12 +16,6 @@ class DiscussionController extends LoginController {
 	def index() {
 	}
 
-	// Deprecated method
-	@Deprecated
-	def createTopic() {
-		redirect(url: toUrl(action: "save", params: params))
-	}
-
 	def save(Long plotDataId, String name, Long id, String discussionPost) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
@@ -39,7 +33,7 @@ class DiscussionController extends LoginController {
 					discussion.createPost(user, discussionPost)
 				}
 
-				Map model = discussion.getJSONModel([max: 2, offset: 0])
+				Map model = discussion.getJSONDesc()
 				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
 
 				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), type: "dis", 
@@ -58,21 +52,19 @@ class DiscussionController extends LoginController {
 		if (!discussion){
 			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			return
-		} else if (!discussion.getIsPublic() && !user) {
+		}
+
+		if (!discussion.getIsPublic() && !user) {
 			renderJSONGet([success: false, message: g.message(code: "default.login.message")])
 			return
 		}
-		params.max = params.max ?: 5
-		params.offset = params.offset ?: 0
 
-		Map model = discussion.getJSONModel(params)
-		model = model << [notLoggedIn: user ? false : true, userId: user?.getId(),
+		Map model = discussion.getJSONDesc()
+		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-				templateVer: urlService.template(request), discussionHash: discussion.hash]
+				templateVer: urlService.template(request), discussionHash: discussion.hash])
 
-		if (user == null) {
-			model.put("associatedGroups", []) // public discussion
-		} else {
+		if (user) {
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
 			List alreadySharedGroups = [], otherGroups = []
 
@@ -87,6 +79,7 @@ class DiscussionController extends LoginController {
 			associatedGroups.addAll(otherGroups.sort { it.name })
 			model.put("associatedGroups", associatedGroups)
 		}
+
 		JSON.use("jsonDate") {
 			renderJSONGet([success: true, discussionDetails: model])
 		}
