@@ -17,28 +17,14 @@ class UserActivity {
 	
 	private static def log = LogFactory.getLog(this)
 	
-	Date created
-	Long userId
-	Long typeId
-	Long objectId
-	Long otherId
-	
-	static final long CREATE_ID = 0L
-	static final long DELETE_ID = 1L
-	static final long FOLLOW_ID = 2L
-	static final long UNFOLLOW_ID = 3L
-	static final long START_ID = 4L
-	static final long END_ID = 5L
-	static final long STOP_ID = 5L
-	static final long COMMENT_ID = 6L
-	static final long UNCOMMENT_ID = 7L
-	static final long INVITE_ID = 8L
-	static final long UNINVITE_ID = 9L
-	
-	static final long SPRINT_BIT = 1L<<8
-	static final long DISCUSSION_BIT = 1L<<9
-	static final long DISCUSSIONPOST_BIT = 1L<<10
-	static final long USER_BIT = 1L<<11
+	Date 			created
+	Long 			userId			//REQUIRED - the actor, will always capture via UI
+	Long			typeId			//TEMP--need to change this, but first need mainline code to compare to.
+	ActivityType 	activityType	//REQUIRED
+	ObjectType		objectType		//REQUIRED
+	Long 			objectId		//REQUIRED
+	ObjectType		otherType		//OPTIONAL
+	Long 			otherId			//OPTIONAL
 	
 	static mapping = {
 		version false
