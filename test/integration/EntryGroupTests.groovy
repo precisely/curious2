@@ -108,7 +108,7 @@ class EntryGroupTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
-	@Test
+	/*@Test
 	void testMultiCreate() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
@@ -381,22 +381,22 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert c == 0
-	}
+	}*/
 	
-/*	@Test
+	@Test
 	void testBloodPressure() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "blood pressure 120/80", null, null, baseDate, true), new EntryStats())
 
-		Entry.delete(entry, new EntryStats())
-				
 		Iterable<Entry> group = entry.fetchGroupEntries()
 		
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		int c = 0
 		for (entryDesc in entries) {
+			entryDesc = entryDesc
+			assert entryDesc.amounts.size() == 2
 			++c
 		}
 		
-		assert c == 0
-	}*/
+		assert c == 1
+	}
 }

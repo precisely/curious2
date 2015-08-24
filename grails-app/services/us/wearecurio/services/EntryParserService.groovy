@@ -772,8 +772,14 @@ class EntryParserService {
 		
 		Map<String, ParseAmount> suffixToParseAmount = new HashMap<String, ParseAmount>()
 		
+		boolean bloodPressure = bloodPressureTags.contains(baseTag.getDescription())
+		
 		for (ParseAmount amount : amounts) {
+			if (bloodPressure && (!amount.units))
+				amount.units = "mmHg"
+				
 			String units = amount.getUnits()
+			String amountSuffix
 			
 			if (!units) {
 				if (foundDuration)
@@ -782,14 +788,13 @@ class EntryParserService {
 					amount.setTags(baseTag, baseTag)
 			} else {
 				UnitRatio unitRatio = unitGroupMap.unitRatioForUnits(units)
-				String amountSuffix
 				if (unitRatio) {
 					amountSuffix = unitRatio.getSuffix()
 					amount.setUnitRatio(unitRatio)
 				} else
 					amountSuffix = units
 					
-				if (bloodPressureTags.contains(baseTag.getDescription())) {
+				if (bloodPressure) {
 					if (amountSuffix) {
 						if (amountSuffix.equals("[pressure]")) {
 							if (index == 0) amountSuffix = "[systolic]"

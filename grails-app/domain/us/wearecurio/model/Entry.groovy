@@ -354,7 +354,7 @@ class Entry implements Comparable {
 				setIdentifier:Identifier.look(m['setName']),
 				amountPrecision:m['amountPrecision']==null?3:m['amountPrecision']
 				)
-		
+
 		entry.setUnits(m['units']?:'')
 		entry.setComment(m['comment']?:'')
 
@@ -362,7 +362,6 @@ class Entry implements Comparable {
 		
 		if (group != null) {
 			group.add(entry)
-			Utils.save(group, false)
 		}
 
 		entry.processAndSave(stats)
@@ -2173,7 +2172,10 @@ class Entry implements Comparable {
 			if (eUnits) {
 				return -1 // no units always comes first
 			}
-			return this.valueString().compareTo(obj.valueString())
+			int v = this.valueString().compareTo(obj.valueString())
+			if (v == 0)
+				return -1
+			return v
 		}
 		
 		if (!eUnits) {
@@ -2186,7 +2188,16 @@ class Entry implements Comparable {
 		if (thisPri < thatPri) return -1
 		else if (thisPri > thatPri) return 1
 		
-		return this.units.compareTo(obj.units)
+		int v = this.units.compareTo(obj.units)
+		
+		if (v == 0)
+			return this.valueString().compareTo(obj.valueString())
+		
+		return v
+	}
+	
+	int hashCode() {
+		return ((int)userId?:0) + ((int)date.getTime()) + ((int)tag.id) + (amount.toString().hashCode()) + ((int)repeatTypeId?:0)
 	}
 
 	boolean equals(Object o) {
