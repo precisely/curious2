@@ -5,21 +5,26 @@ import us.wearecurio.model.AnalyticsTask
 import us.wearecurio.utility.Utils
 import us.wearecurio.server.BackgroundTask
 import us.wearecurio.services.AnalyticsService
+import org.apache.commons.logging.LogFactory
 
 class AnalyticsTaskController {
 
+	private static def log = LogFactory.getLog(this)
+	
 	def securityService
 	def analyticsService
 
 	static allowedMethods = [index: "GET", processUsers: "POST", runNext: "POST", pingServers: "GET", children: "POST", parentSummary: "POST"]
 
 	def index() {
+		log.debug("index()")
 		def parentTaskList = AnalyticsTask.findAll("FROM AnalyticsTask at WHERE at.parentId is NULL ORDER by at.id DESC")
 
 		[analyticsTasks: parentTaskList, analyticsTaskCount: AnalyticsTask.count(), servers: AnalyticsTask.pingServers()]
 	}
 
 	def processUsers() {
+		log.debug("processUsers()")
 		def message = "servers busy"
 		def servers = AnalyticsTask.pingServers()
 		if (AnalyticsTask.allReady(servers)){
@@ -32,6 +37,7 @@ class AnalyticsTaskController {
 	}
 
 	def runNext() {
+		log.debug("runNext()")
 		def userId = null
 		// This controller action expects params['id'] to be set to a completed task's id.
 		def id = params.id.toLong()
@@ -69,6 +75,7 @@ class AnalyticsTaskController {
 			}
 			taskList = AnalyticsTask.getAll(list)
 		}
+		log.debug("Current analytics tasks:" + taskList)
 		render(contentType: "text/json") { taskList }
 	}
 
@@ -89,6 +96,7 @@ class AnalyticsTaskController {
 		} else if (!ready) {
 			message = "servers not ready"
 		}
+		log.debug "result of re-running parent, message:" + message + ", userIds:" + userIds
 		render(contentType: "text/json") { ['message': message, 'userIds': userIds ]}
 	}
 }

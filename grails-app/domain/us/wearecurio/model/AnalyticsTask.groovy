@@ -63,6 +63,11 @@ class AnalyticsTask {
 	Date updatedAt
 	Long parentId
 	Long maxNumSubtasks
+	
+	String toString() {
+		return "AnalyticsTask(name:" + name + ", type:" + type + ", serverAddress:" + serverAddress + ", status:" + status + ", userId:" + userId + ", error:" + error \
+				+ ", notes:" + notes + ", createdAt:" + createdAt + ", updatedAt:" + updatedAt + ", parentId:" + parentId + ", maximumNumSubtasks:" + maximumNumSubtasks + ")"
+	}
 
 	static constraints = {
 		name nullable: true
@@ -106,6 +111,7 @@ class AnalyticsTask {
 	}
 
 	public static def createChild(serverAddress, parentTask) {
+		log.debug "createChild() serverAddress:" + serverAddress + ", parentTask:" + parentTask
 		return AnalyticsTask.withTransaction {
 			def childTask = new AnalyticsTask()
 			childTask.name = "cluster intervals & compute correlation for a single user."
@@ -120,6 +126,7 @@ class AnalyticsTask {
 	}
 
 	public static def createSibling(childTask) {
+		log.debug "createSibling() childTask:" + childTask
 		return AnalyticsTask.withTransaction {
 			def parentTask = AnalyticsTask.get(childTask.parentId)
 			if (AnalyticsTask.numChildren(childTask.parentId) >= parentTask.maxNumSubtasks){
@@ -138,6 +145,7 @@ class AnalyticsTask {
 	}
 
 	public static def createParent() {
+		log.debug "createParent()"
 		return AnalyticsTask.withTransaction {
 			def parentTask = new AnalyticsTask()
 			parentTask.name = "Collection of analytics jobs: cluster intervals & compute correlation"
@@ -151,6 +159,7 @@ class AnalyticsTask {
 	}
 	
 	public static def createOneOff(userId, serverAddress) {
+		log.debug "createOneOff() userId:" + userId + ", serverAddress:" + serverAddress
 		return AnalyticsTask.withTransaction {
 			// For tasks that are just run once.
 			def task = new AnalyticsTask()
@@ -200,26 +209,29 @@ class AnalyticsTask {
 	}
 
 	def httpPost(url, path, params) {
+		log.debug "httpPost() url:" + url + ", path:" + path + ", params" + params
 		def http = new HTTPBuilder(url)
 		log.debug "DEBUG: ${url}"
 		log.debug "DEBUG: ${path}"
 		log.debug "DEBUG: ${params}"
 
 		http.post(path: path, body: params, requestContentType: URLENC) { resp, json ->
-			System.out << json
+			log.debug "returned from post: " + json
 			json
 		}
 	}
 
 	def httpGet(url, path, params) {
+		log.debug "httpGet() url:" + url + ", path:" + path + ", params" + params
 		def http = new HTTPBuilder(url)
 		http.get( path: path, contentType: JSON, query: params) { resp, json ->
-			System.out << json
+			log.debug "returned from get: " + json
 			json
 		}
 	}
 
 	def startProcessing() {
+		log.debug "startProcessing()"
 		AnalyticsTask.withTransaction {
 			def userId = fetchUserId()
 			if (userId == null || userId < 0) {
@@ -238,11 +250,12 @@ class AnalyticsTask {
 	}
 
 	def httpGetStatus() {
+		log.debug("httpGetStatus()")
 		httpGet(baseUrl(), statusUri(), null)
-		println "\n\nDONE getStatus"
 	}
 
 	def markAsCompleted() {
+		log.debug "markAsCompleted()"
 		AnalyticsTask.withTransaction {
 			status = COMPLETED
 			Utils.save(this, true)

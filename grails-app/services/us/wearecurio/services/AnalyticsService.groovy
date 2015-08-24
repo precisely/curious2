@@ -81,7 +81,7 @@ class AnalyticsService {
 					dataType: prop.fetchDataType().toString()
 				]
 				def ts = new AnalyticsTimeSeries(init)
-				Utils.save(ts, true)
+				Utils.save(ts, false)
 			} // data_points.each
 		}
 	}
@@ -97,6 +97,7 @@ class AnalyticsService {
 	}
 
 	def saveTagMembership(userId) {
+		log.debug "saveTagMembership() userId:" + userId
 		AnalyticsTask.withTransaction {
 			def user = User.get(userId.toLong())
 			log.debug("saveTagMembership: " + userId + ", numgroups: " + user.getTagGroups().size)
@@ -108,7 +109,7 @@ class AnalyticsService {
 						tagGroupId: tagGroupId,
 						tagId: tag.id ]
 					def atm = new AnalyticsTagMembership(init)
-					Utils.save(atm, true)
+					Utils.save(atm, false)
 				} // iterate over tags in tagGroup
 			}// iterate over tagGroup
 		}
@@ -118,11 +119,12 @@ class AnalyticsService {
 		// Set the is_event value of the user-tag property.
 		// This will save the property.
 		AnalyticsTask.withTransaction {
-			Utils.save(property.classifyAsEvent(), true)
+			Utils.save(property.classifyAsEvent(), false)
 		}
 	}
 
 	def prepareUser(analyticsTask) {
+		log.debug "preapreUser() analyticsTask:" + analyticsTask
 		Long userId = analyticsTask.userId
 		if (null == userId)
 			return null
@@ -149,7 +151,7 @@ class AnalyticsService {
 		// Delete the user's realizations of fetchPlotData.
 		log.debug "user id ${userId}: delete table analytics_time_series"
 		if (!DEBUG) {
-			AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId=?', [userId])
+			AnalyticsTimeSeries.executeUpdate('delete from AnalyticsTimeSeries at where at.userId = :userId', [userId:userId])
 
 			// Refresh the analytics_time_series dump for the user.
 			log.debug "user id ${userId}: refreshSeriesCache(${userId})"
@@ -163,6 +165,7 @@ class AnalyticsService {
 	}
 
 	boolean processOneOfManyUsers(AnalyticsTask childTask) {
+		log.debug "processOneOfManyUsers() childTask:" + childTask
 		try {
 			log.debug "AnalyticsTask processOneOfManyUsers @ ${childTask.serverAddress}: start"
 			AnalyticsTask.incBusy()
@@ -180,11 +183,13 @@ class AnalyticsService {
 	
 	// mark given task as finished and process next one
 	Long processNextTask(AnalyticsTask prevTask) {
+		log.debug "processNextTask() prevTask:" + prevTask
 		if (!prevTask) {
 			return null
 		}
 		
 		// This means the previous task was completed.
+		log.debug "Mark prevTask completed: " + prevTask
 		prevTask.markAsCompleted()
 	
 		// Update the parentTask status.
@@ -213,6 +218,8 @@ class AnalyticsService {
 	}
 
 	def processUsers(parentId=null) {
+		log.debug "processUsers: parentId " + parentId
+		
 		def parentTask
 		if (parentId) {
 			parentTask = AnalyticsTask.get(parentId)

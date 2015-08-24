@@ -15,7 +15,7 @@ class AnalyticsJob extends us.wearecurio.utility.TimerJob {
 		def execute() {
 			if (Environment.current != Environment.DEVELOPMENT) {
 				analyticsService.processUsers()
-				log "analyticsJob launched."
+				log.debug "analyticsJob launched."
 			}
 		}
 }
