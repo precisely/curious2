@@ -66,7 +66,7 @@ class AnalyticsTask {
 	
 	String toString() {
 		return "AnalyticsTask(name:" + name + ", type:" + type + ", serverAddress:" + serverAddress + ", status:" + status + ", userId:" + userId + ", error:" + error \
-				+ ", notes:" + notes + ", createdAt:" + createdAt + ", updatedAt:" + updatedAt + ", parentId:" + parentId + ", maximumNumSubtasks:" + maximumNumSubtasks + ")"
+				+ ", notes:" + notes + ", createdAt:" + createdAt + ", updatedAt:" + updatedAt + ", parentId:" + parentId + ", maxNumSubtasks:" + maxNumSubtasks + ")"
 	}
 
 	static constraints = {
