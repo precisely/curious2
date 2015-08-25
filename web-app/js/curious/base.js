@@ -267,7 +267,8 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 }
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
-	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'POST' : 'GET', background);
+	var requestMethod = post ? 'POST' : 'GET';
+	queueJSONAll(description, url, args, successCallback, failCallback, delay, {requestMethod: requestMethod}, background);
 }
 
 function queueJSONAll(description, url, args, successCallback, failCallback, delay, httpArgs, background) {

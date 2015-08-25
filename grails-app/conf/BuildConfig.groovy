@@ -40,7 +40,7 @@ grails.project.dependency.resolution = {
     repositories {
         inherits true // Whether to inherit repository definitions from plugins
 
-        mavenRepo ([id: "ccRepo", url: "http://maven.causecode.com"])
+        mavenRepo ([id: "curiousRepo", url: "http://curious-maven.causecode.com"])
         grailsPlugins()
         grailsHome()
         mavenLocal()

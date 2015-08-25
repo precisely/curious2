@@ -68,17 +68,33 @@ function registerScroll() {
 }
 
 $(window).load(function() {
-	if (isTabActive('#sprints')) {
+	checkAndDisplayTabData();
+});
+
+$(window).on('hashchange', function() {
+	checkAndDisplayTabData();
+});
+
+function checkAndDisplayTabData() {
+	var hash = window.location.hash;
+	var hashData = hash.split("/");
+	if (hash == "#sprints") {
 		showSprints();
-	} else if (isTabActive('#discussions')) {
+	} else if (hash == '#discussions') {
 		showDiscussions();
-	} else if (isTabActive('#people')) {
+	} else if (hash == '#people') {
 		showPeople();
-	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
+	} else if (!hash || hash == '#all') {
 		// If the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
-	} 
-});
+	} else if (hash == "#sprints/" + hashData[1]) { 
+		sprintShow(hashData[1]);
+	} else if (hash == "#discussions/" + hashData[1]) { 
+		discussionShow(hashData[1]);
+	} else if (hash == "#people/" + hashData[1]) { 
+		showUserDetails(hashData[1]);
+	}
+}
 
 $(document).ready(function() {
 	if (isOnFeedPage()) {
@@ -165,7 +181,7 @@ $(document).ready(function() {
 	});
 
 	// Handlers for discussion form input fields
-	$(document).on('keypress', '#discussion-topic', function(e) {
+	$(document).on('keypress', '#discussion-topic', function(e) { 
 		var key = e.which;
 		if (key == 13) {
 			var value = $(this).val();
@@ -277,6 +293,7 @@ function showSprints() {
 		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
 		$('#queryTitle').text('Tracking Sprints');
 		$('#feed-sprints-tab a').tab('show');
+		$('.nav').show();
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
@@ -287,6 +304,8 @@ function showDiscussions() {
 	// Change the red bar title
 	$('#queryTitle').text('Discussions');
 
+	$('.nav').show();
+	
 	// Select the tab
 	$('#feed-discussions-tab a').tab('show');
 
@@ -341,6 +360,7 @@ function showPeople() {
 				$('#feed').text('No people to show.');
 			} else {
 				$('#feed').removeClass().addClass('type-people').html('');
+				$('.nav').show();
 				$.each(data.listItems, function(index, user) {
 					var compiledHtml = compileTemplate("_people", {'user': user});
 					$('#feed').append(compiledHtml);
@@ -375,6 +395,7 @@ function showAllFeeds() {
 			}
 			$('#queryTitle').text('All Feeds');		
 			$('#feed-all-tab a').tab('show');
+			$('.nav').show();
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -794,10 +815,11 @@ function showUserDetails(hash) {
 			} else {
 				$('#feed').html('No details to show.');
 			}
+			window.location.hash = 'people/' + hash;
 		} else {
 			$('.alert').text(data.message);
 		}
-		$('.nav').html('');
+		$('.nav').hide();
 		$('#queryTitle').text('Go Back');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {

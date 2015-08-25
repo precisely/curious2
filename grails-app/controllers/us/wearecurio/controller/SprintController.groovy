@@ -65,9 +65,13 @@ class SprintController extends LoginController {
 		List<User> participants = sprintInstance.getParticipants(10, 0)
 		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
+		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintInstance.virtualGroupId])
 
 		renderJSONGet([success: true, sprint: sprintInstance, entries: entries, participants: participants, admins: admins, 
-			totalParticipants: sprintInstance.getParticipantsCount()])
+			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions, 
+			virtualGroupName: sprintInstance.fetchUserGroup().name, hasMember : sprintInstance.hasMember(sessionUser().id),
+			hasStarted : sprintInstance.hasStarted(sessionUser().id, new Date()), hasEnded : sprintInstance.hasEnded(sessionUser().id, new Date()),
+			hasAdmin : sprintInstance.hasAdmin(sessionUser().id)])
 	} 
 
 	def delete() {

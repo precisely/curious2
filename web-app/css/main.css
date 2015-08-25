@@ -4254,7 +4254,7 @@ input[type = "number"] {
 	margin-left: 32px;
 	margin-right: 32px;
 	position: relative;
-	margin-top: -31px;
+	margin-top: 0px;
 	padding-top: 24px;
 }
 

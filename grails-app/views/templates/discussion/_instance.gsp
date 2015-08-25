@@ -33,7 +33,7 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-7">
-					<a href="/home/discuss?discussionHash={{- discussionData.hash }}">
+					<a onclick="discussionShow('{{- discussionData.hash }}');" href="javascript:void(0);">
 						<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 					</a>
 				</div>

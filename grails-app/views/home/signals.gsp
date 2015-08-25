@@ -2,28 +2,16 @@
 <g:setProvider library="jquery" />
 <html>
 <head>
-<meta name="layout" content="menu" />
-<script type="text/javascript">
-
-function deleteDiscussionId(id) {
-	showYesNo("Are you sure you want to delete the saved discussion?", function() {
-			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
-				function(entries) {
-					if (checkData(entries))
-						location.reload(true);
-			});
-	});
-}
-
-function doLogout() {
-	callLogoutCallbacks();
-}
-
-function refreshPage() {
-}
-</script>
-
-<script src="/js/mustache.js"></script>
+	<meta name="layout" content="menu" />
+	<script type="text/javascript">
+		function doLogout() {
+			callLogoutCallbacks();
+		}
+		function refreshPage() {
+		}
+	</script>
+	
+	<script src="/js/mustache.js"></script>
 </head>
 
 <body class="signals">

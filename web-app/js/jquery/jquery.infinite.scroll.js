@@ -145,6 +145,8 @@
 				if (!$.isFunction(instance[options])) {
 					return $.error('No such method ' + options + ' for InfiniteScroll');
 				}
+
+				instance[options]();
 			} else if (methodCallType === 'object') {	// Means function is to be initialized for this element
 				var instance = $.data(this, 'infiniteScroll');
 

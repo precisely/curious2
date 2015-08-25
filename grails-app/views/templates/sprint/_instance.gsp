@@ -3,7 +3,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
-					<a href="/home/sprint/{{- sprint.hash }}">
+					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
 						<span> {{- sprint.name }}</span>
 					</a>
 				</div>

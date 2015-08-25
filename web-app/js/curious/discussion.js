@@ -211,3 +211,158 @@ $(document).ready(function() {
 		return false;
 	});
 });
+
+//list of users to plot
+function refreshPage() {
+}
+
+var plot = null;
+var tagList = null;
+var discussionTitle = "${discussionTitle}";
+var alreadySentName = null;
+var preventCommentSubmit = false;
+
+function doLogout() {
+	callLogoutCallbacks();
+}
+
+function clearPostMessage(postId) {
+	showYesNo("Are you sure you want to delete this comment?", function() {
+			window.location = "/home/discuss?discussionHash=${discussionHash}&clearPostId=" + postId;
+	});
+	return false;
+}
+
+$(function() {
+	initTagListOnly();
+
+	// plot.loadSnapshotId(${firstPost.plotDataId});
+	var discussTitleArea = $("#discussTitleArea");
+	var discussTitle = $("#discussTitleSpan");
+
+	var saveTitle = function(closure) {
+		var discussTitleInput = $("#discussTitleInput");
+		if (discussTitleInput) {
+			var newName = discussTitleInput.val();
+			if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
+				alreadySentName = newName;
+				preventCommentSubmit = true; // for some reason, comment submission happening twice?
+				backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash:"${discussionHash}", name:newName }), function(data) {
+					if (checkData(data)) {
+						preventCommentSubmit = false;
+						discussionTitle = newName;
+						discussTitle.html(newName);
+						discussTitle.off('mouseup');
+						discussTitle.on('mouseup', discussTitle.data('rename'));
+						if (closure) closure();
+					} else {
+						showAlert('Failed to set name');
+					}
+				});
+			} else if (closure && (!preventCommentSubmit))
+				closure();
+		}
+	}
+
+	var renameDiscussionHandler = function(e) {
+		if (e.keyCode == 13) {
+			saveTitle();
+			$("#postcommentarea").focus();
+		}
+	}
+
+	var discussTitleRename = function(e) {
+		discussTitleArea.off('mouseup');
+		discussTitle.html('<input type="text" id="discussTitleInput"></input>');
+		var discussTitleInput = $("#discussTitleInput");
+		discussTitleInput.val(discussionTitle);
+		discussTitleInput.keyup(renameDiscussionHandler);
+		discussTitleInput.focus();
+		discussTitleInput.blur(function() {
+			saveTitle();
+		});
+	}
+
+	discussTitle.data('rename', discussTitleRename);
+
+	/*<g:if test="${!isNew}">
+		discussTitle.off('mouseup');
+		discussTitle.on('mouseup', discussTitleRename);
+		$("#postcommentarea").focus();
+	</g:if>
+	<g:else>
+		discussTitleRename();
+		discussTitleInput.select();
+	</g:else>*/
+
+	$("#postcommentarea").keyup(function(e) {
+		if (e.keyCode == 13) {
+			saveTitle(function() {
+				$(".comment-form").submit();
+			});
+		}
+	});
+
+	$("#commentSubmitButton").click(function() {
+		saveTitle(function() {
+			$(".comment-form").submit();
+		});
+	});
+
+	$('li#share-discussion').on('click', function() {
+		showShareDialog(null);
+		return false;
+	});
+});
+
+window.isDiscussionSinglePage = true;
+//var discussionHash = "${discussionHash}";
+
+function infiniteScrollComments(discussionHash) {
+	commentsArgs.max = 5;
+	
+	$(".comments").infiniteScroll({
+		bufferPx: 360,
+		finalMessage: 'No more comments to show',
+		onScrolledToBottom: function(e, $element) {
+			// Pause the scroll event to not trigger again untill AJAX call finishes
+			// Can be also called as: $("#postList").infiniteScroll("pause")
+			this.pause();
+			commentsArgs.offset = this.getOffset();
+
+			getComments(discussionHash, commentsArgs, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				}
+			}.bind(this));
+		}
+	});
+}
+
+function discussionShow(hash) {
+	$('#feed').infiniteScroll("stop");
+
+	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
+			function(data) { 
+		if (data.success) { 
+			var discussionDetails = data.discussionDetails;
+			discussionDetails.serverURL = window.location.host;
+			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
+			$('#feed').html(compiledHTML);
+			infiniteScrollComments(hash);
+			getComments(hash, commentsArgs);		// See discussion.js for "commentsArgs"
+			window.location.hash = 'discussions/' + hash;
+		} else {
+			$('.alert').text(data.message);
+		}
+		
+		$('.nav').hide();
+		$('#queryTitle').text('Curious Discussions');
+		//$('#feed-sprints-tab a').tab('show');
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+}

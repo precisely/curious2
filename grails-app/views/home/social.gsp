@@ -1,22 +1,50 @@
 <html>
 <head>
-<meta name="layout" content="social" />
-<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF, getUserDataCSRF" />
-<script type="text/javascript">
+	<meta name="layout" content="social" />
+	<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF, getUserDataCSRF" />
+	<script type="text/javascript">
+		function doLogout() {
+			callLogoutCallbacks();
+		}
 
-function deleteDiscussionId(id) {
-	showYesNo("Are you sure you want to delete the saved discussion?", function() {
-			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
-				function(entries) {
-					if (checkData(entries))
-						location.reload(true);
-			});
-	});
-}
+		<content tag="processUserData">
+			processUserData = function(data) {
+				if (data == 'login') {
+					data = [{id:-1,name:'',username:'(anonymous)',sex:''}];
+				}
+				if (data != 'login' && (!checkData(data)))
+					return;
+				
+				found = false;
+				
+				jQuery.each(data, function() {
+					if (!found) {
+						// set first user id as the current
+						setUserId(this['id']);
+						setUserName(this['username']);
+						plot = new Plot(tagList, this['id'], this['username'], "#plotDiscussArea", true, true, new PlotProperties({
+							'startDate':'#startdatepicker1',
+							'startDateInit':'start date and/or tag',
+							'endDate':'#enddatepicker1',
+							'endDateInit':'end date and/or tag',
+							'cycleTag':'#cycleTag1',
+							'zoomControl':'#zoomcontrol1',
+							'username':'#queryUsername',
+							'name':'',
+							'logout':'#logoutLink'
+							}));
+						found = true;
+					}
+					addPerson(this['name'],
+						this['username'], this['id'], this['sex']);
+					
+						//plot.loadSnapshotId(179);
 
-function doLogout() {
-	callLogoutCallbacks();
-}
+	
+				return true;
+				});
+			}
+		</content> 
 
 function searchFeeds(params) {
 	if (!params) {

@@ -1,4 +1,5 @@
-<g:applyLayout name="menu">
+<g:applyLayout name="plot">
+<g:setProvider library="jquery" />
 <html>
 	<head>
 	<title><g:layoutTitle/></title>
@@ -6,14 +7,29 @@
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<script type="text/javascript" src="/js/curious/feeds.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/discussion.js?ver=22"></script>
+	<script type="text/javascript" src="/js/curious/sprint.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF ,
+			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
+			deleteTagGroupDataCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
+			removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF,
+			setTagPropertiesDataCSRF, addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF, getSprintParticipantsDataCSRF,
+			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
+			leaveSprintDataCSRF, showsprintCSRF" />
+	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<g:layoutHead />
+
+	<style type="text/css">
+		.ui-accordion-header {
+			overflow: hidden;
+		}
+	</style>
 	</head>
 	<body class="${pageProperty(name: 'body.class') ?: '' }">
+		<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
 	<!-- MAIN -->
 		<div class="row red-header">
 			<div>
@@ -75,6 +91,8 @@
 		<c:renderJSTemplate template="/people/instance" id="_people" />
 		<c:renderJSTemplate template="/sprint/instance" id="_sprints" />
 		<c:renderJSTemplate template="/people/show" id="_peopleDetails" />
+		<c:renderJSTemplate template="/discussion/show" id="_showDiscussion" />
+		<c:renderJSTemplate template="/sprint/show" id="_showSprints" />
 	</body>
 </html>
 </g:applyLayout>
