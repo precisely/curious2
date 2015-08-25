@@ -27,11 +27,11 @@
 							Set repeat frequency
 						</span>
 						<div class="repeat-frequency-radio-group">
-							<input type="radio" id="{{= editType  }}daily" name="repeat-frequency"/>
+							<input type="radio" id="{{= editType  }}daily" checked value="daily" name="{{= editType }}repeat-frequency"/>
 							<label for="{{= editType  }}daily"><span></span>Daily</label>
-							<input type="radio" id="{{= editType  }}weekly" name="repeat-frequency"/>
+							<input type="radio" id="{{= editType  }}weekly" value="weekly" name="{{= editType }}repeat-frequency"/>
 							<label for="{{= editType  }}weekly"><span></span>Weekly</label>
-							<input type="radio" id="{{= editType  }}monthly" name="repeat-frequency"/>
+							<input type="radio" id="{{= editType  }}monthly" value="monthly" name="{{= editType }}repeat-frequency"/>
 							<label for="{{= editType  }}monthly"><span></span>Monthly</label>
 						</div>
 					</li>
