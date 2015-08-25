@@ -59,7 +59,9 @@
 							</a>
 							--!>
 							<input class="full-width" type="text" placeholder="Enter tags here: (Example: nap 2pm or sleep quality repeat)"
-							name="data" id="input0" required />
+									name="data" id="input0" required />
+							<input type="hidden" name="repeatTypeId" id="input0RepeatTypeId" />
+							<input type="hidden" name="repeatEnd" id="inpiut0RepeatEnd" />
 					</div>
 					<div style="clear: both"></div>
 				</div>
@@ -125,7 +127,7 @@
 			var newEntryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'new'});
 			
 			$('#addData').prepend(newEntryDetailsPopover);
-			$(".choose-date-input").datepicker();
+			$("#addData .choose-date-input").datepicker();
 			$('#addData .repeat-entry-checkbox').change(function() {
 				$('#addData .repeat-modifiers').toggleClass('hide');
 			});
