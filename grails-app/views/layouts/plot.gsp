@@ -194,6 +194,13 @@ $(window).resize(function() {
 });
 
 var plot;
+
+var WeAreCurious = {};
+
+WeAreCurious.getPlot = function() {
+	return plot;
+}
+
 </script>
 
 </head>

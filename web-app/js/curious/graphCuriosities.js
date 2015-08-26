@@ -16,8 +16,8 @@ $(function() {
 			return;
 		}
 		elt2 = getUIFromDescription(description2);
-		if (Curious.getPlot()) {
-			plot = Curious.getPlot();
+		if (WeAreCurious.getPlot()) {
+			plot = WeAreCurious.getPlot();
 			clearInterval(plotReady);
 
 			plot.drawLine(elt1);

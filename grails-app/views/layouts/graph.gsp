@@ -12,6 +12,7 @@ function refreshPage() {
 var plot = null;
 var tagListWidget;
 var tagList;
+
 function doLogout() {
 	callLogoutCallbacks();
 }
