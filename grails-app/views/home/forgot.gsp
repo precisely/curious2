@@ -15,7 +15,7 @@
     <br>
     <div class="row">
         <div class="col-sm-push-8 text-right col-sm-3 thumbnails">
-            <img class="" src="/images/home/home-logo.jpg" />
+            <img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
             <p
                 style="font-family: Tahoma; font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
                 We've got questions.</p>

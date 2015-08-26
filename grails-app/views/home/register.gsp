@@ -15,7 +15,7 @@
 	<br>
 	<div class="row">
 		<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
-			<img class="" src="/images/home/home-logo.jpg" />
+			<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88" />
 			<p
 				style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
 				Track data, chart experience, find meaning.</p>
