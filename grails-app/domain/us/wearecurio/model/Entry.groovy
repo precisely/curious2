@@ -2182,12 +2182,21 @@ class Entry implements Comparable {
 			return 1 // no units always comes first
 		}
 		
-    	int thisPri = UnitGroupMap.theMap.unitRatioForUnits(units)?.getGroupPriority() ?: -1
-		int thatPri = UnitGroupMap.theMap.unitRatioForUnits(eUnits)?.getGroupPriority() ?: -1
+		UnitRatio thisUnitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
+		UnitRatio thatUnitRatio = UnitGroupMap.theMap.unitRatioForUnits(eUnits)
+		
+    	int thisPri = (thisUnitRatio?.getGroupPriority()) ?: -1
+		int thatPri = (thatUnitRatio?.getGroupPriority()) ?: -1
 		
 		if (thisPri < thatPri) return -1
 		else if (thisPri > thatPri) return 1
-		
+
+		thisPri = (thisUnitRatio?.affinity) ?: -1
+		thatPri = (thatUnitRatio?.affinity) ?: -1
+				
+		if (thisPri < thatPri) return -1
+		else if (thisPri > thatPri) return 1
+
 		int v = this.units.compareTo(obj.units)
 		
 		if (v == 0)

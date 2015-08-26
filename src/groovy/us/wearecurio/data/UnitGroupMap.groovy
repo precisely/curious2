@@ -360,6 +360,7 @@ class UnitGroupMap {
 			'kbar':[KILOBAR,0,6,'kilobar'], 'kbars':[KILOBAR,0,7,'kilobar'], 'kilobar':[KILOBAR,0,10,'kilobar'],
 			'kilobars':[KILOBAR,0,10,'kilobar'],
 			'mmHg':[MMHG,0,7,'mmHg'],
+			'over':[MMHG,0,5,'over'],
 			'inHg':[INCHHG,0,6,'inHg'],
 			'atm':[ATMOSPHERE,0,5,'atmosphere'], 'atmosphere':[ATMOSPHERE,0,10,'atmosphere'],
 			'atmospheres':[ATMOSPHERE,0,1,'atmosphere'],

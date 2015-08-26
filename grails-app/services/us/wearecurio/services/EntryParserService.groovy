@@ -578,7 +578,7 @@ class EntryParserService {
 		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, repeatStartScanPattern])
 		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern ])
 		
-		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternA, anyScanPattern])
+		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsScanPatternA, anyScanPattern])
 		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
 		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
 		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
@@ -775,8 +775,10 @@ class EntryParserService {
 		boolean bloodPressure = bloodPressureTags.contains(baseTag.getDescription())
 		
 		for (ParseAmount amount : amounts) {
-			if (bloodPressure && (!amount.units))
-				amount.units = "mmHg"
+			if (bloodPressure && (!amount.units)) {
+				if (index == 0) amount.units = "over"
+				else amount.units = "mmHg"
+			}
 				
 			String units = amount.getUnits()
 			String amountSuffix
