@@ -14,9 +14,13 @@ import us.wearecurio.model.User
 import us.wearecurio.server.Session
 import grails.compiler.GrailsTypeChecked
 
+import org.apache.commons.logging.LogFactory
+
 class SecurityService {
 
 	static transactional = true
+	
+	private static def log = LogFactory.getLog(this)
 	
 	static SecurityService service
 	
@@ -79,21 +83,22 @@ class SecurityService {
 	 * Checks whether the CSRF token in the request is valid.
 	 */
 	protected boolean checkCSRF(HttpServletRequest request, params, def session, def user, boolean resetToken = false) {
+		log.debug "checkCSRF() params:" + params
 		if (params.mobileSessionId) {
 			User mobileUser = Session.lookupSessionUser(params.mobileSessionId)
 			if (mobileUser != null) {
 				if (user == null) {
-					println "Opening mobile session with user " + mobileUser
+					log.debug "Opening mobile session with user " + mobileUser
 					session.userId = mobileUser.getId()
 					return true
 				} else if (user.getId() != mobileUser.getId()) {
-					println "Mobile user id " + mobileUser.getId() + " does not conform to current user session with user " + user
+					log.debug "Mobile user id " + mobileUser.getId() + " does not conform to current user session with user " + user
 					return false
 				} else {
 					return true
 				}
 			} else {
-				println "Failed to find mobile session with id " + params.mobileSessionId
+				log.debug "Failed to find mobile session with id " + params.mobileSessionId
 				return false
 			}
 		}
@@ -120,21 +125,21 @@ class SecurityService {
 	}
 
 	protected def checkLogin(actionName, HttpServletRequest request, params, flash, def session) {
-		println "login security filter: " + actionName
+		log.debug "login security filter: " + actionName
 		if (params.mobileSessionId != null)
 			params.persistentSessionId = params.mobileSessionId
 		if (!session.userId && !noauthActions.contains(actionName)) {
 			if (params.persistentSessionId != null) {
 				User user = Session.lookupSessionUser(params.persistentSessionId)
 				if (user != null) {
-					println "Opening persistent session with user " + user
+					log.debug "Opening persistent session with user " + user
 					session.userId = user.getId()
 					return [true, user]
 				} else {
-					println "Failed to find persistent session with id " + params.persistentSessionId
+					log.debug "Failed to find persistent session with id " + params.persistentSessionId
 				}
 			} else {
-				println "No persistent session id"
+				log.debug "No persistent session id"
 			}
 			return [false, null]
 		}
@@ -149,6 +154,7 @@ class SecurityService {
 	 * TODO: Write test for this method
 	 */
 	boolean isAuthorized(actionName, HttpServletRequest request, params, flash, def session) {
+		log.debug "isAuthorized() actionName:" + actionName
 		def (boolean authorized, User user) = checkLogin(actionName, request, params, flash, session)
 		if (!authorized)
 			return false
@@ -273,6 +279,7 @@ class SecurityService {
 	}
 	
 	def logout() {
+		log.debug "logout()"
 		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
 		
 		setLoginUser(null)

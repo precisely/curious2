@@ -120,7 +120,25 @@ class SecurityFilters {
 				}
 			}
 		}
-		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)") {
+		analyticsTaskCheck(controller:'analyticsTask', action:'*') {
+			before = {
+				def a = actionName
+				if (!actionName)
+					return false
+				String adminKey
+				try {
+					adminKey = grailsApplication.config.wearecurious.adminKey
+				} catch (Throwable t) {
+					grailsApplication.config.wearecurious = [:]
+					grailsApplication.config.wearecurious.adminKey = "nethgoau9er8gih5q78q9u3iyq84f98q38gq7t9qthqethqtj" // only used for dev deploys
+					adminKey = grailsApplication.config.wearecurious.adminKey
+				}
+				if (adminKey != null && params.key && params.key == adminKey)
+					return true
+				return false
+			}
+		}
+		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
 			before = {
 				def a = actionName
 				if (params.controller == null) {
