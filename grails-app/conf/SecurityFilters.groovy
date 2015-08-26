@@ -4,6 +4,7 @@ import us.wearecurio.model.UserGroup
 import us.wearecurio.services.SecurityService
 import us.wearecurio.services.TokenService
 import us.wearecurio.services.UrlService
+import org.apache.commons.logging.LogFactory
 
 /*
  * To change this template, choose Tools | Templates
@@ -16,6 +17,8 @@ import us.wearecurio.services.UrlService
  * @author mitsu
  */
 class SecurityFilters {
+	private static def log = LogFactory.getLog(this)
+	
 	UrlService urlService
 	TokenService tokenService
 	SecurityService securityService
@@ -57,7 +60,7 @@ class SecurityFilters {
 					return false
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
-						println "Unauthorized data action " + actionName
+						log.debug "Unauthorized data action " + actionName
 						render "${params.callback}('login')"
 					} else {
 						def parm = params.clone()
@@ -76,7 +79,7 @@ class SecurityFilters {
 		apiFilter(controller: '(sprint|user|discussion|discussionPost)', action: '*') {
 			before = {
 				if (!securityService.isAuthorized(actionName, request, params, flash, session)) {
-					println "Unauthorized data action " + actionName
+					log.debug "Unauthorized data action " + actionName
 					render "${params.callback}('login')"
 					return false
 				}
@@ -86,7 +89,7 @@ class SecurityFilters {
 		duplicateCheck(controller:'*', action:'*') {
 			before = {
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
-					println "duplicate filter: " + actionName
+					log.debug "duplicate filter: " + actionName
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime) {
 						p.remove('_')
@@ -95,11 +98,11 @@ class SecurityFilters {
 						def token = p.toString()
 		
 						if (!tokenService.acquire(session, token)) {
-							println "token not acquired"
+							log.debug "token not acquired"
 							render "${params.callback}('refresh')"
 							return false
 						} else {
-							println "token acquired"
+							log.debug "token acquired"
 							return true
 						}
 					}
@@ -109,12 +112,12 @@ class SecurityFilters {
 		}
 		mobileCheck(controller:'mobile', action:'*') {
 			before = {
-				println "mobile security filter: " + actionName
+				log.debug "mobile security filter: " + actionName
 				if (params.controller == null && (!params.action.equals('index'))) {
 					flash.precontroller = 'mobile'
 					flash.preaction = 'index'
 					flash.parm = new JSON(params).toString()
-					println "serverURL:" + UrlService.base(request)
+					log.debug "serverURL:" + UrlService.base(request)
 					redirect(url:urlService.base(request) + 'mobile/index')
 					return true
 				}
@@ -122,6 +125,7 @@ class SecurityFilters {
 		}
 		analyticsTaskCheck(controller:'analyticsTask', action:'*') {
 			before = {
+				log.debug "Checking analytics task"
 				def a = actionName
 				if (!actionName)
 					return false
@@ -129,12 +133,19 @@ class SecurityFilters {
 				try {
 					adminKey = grailsApplication.config.wearecurious.adminKey
 				} catch (Throwable t) {
+					log.debug "No admin key in config file"
+					adminKey = null
+				}
+				if (!adminKey) {
 					grailsApplication.config.wearecurious = [:]
 					grailsApplication.config.wearecurious.adminKey = "nethgoau9er8gih5q78q9u3iyq84f98q38gq7t9qthqethqtj" // only used for dev deploys
 					adminKey = grailsApplication.config.wearecurious.adminKey
 				}
-				if (adminKey != null && params.key && params.key == adminKey)
+				if (adminKey != null && params.key && params.key == adminKey) {
+					log.debug "Admin key does match"
 					return true
+				}
+				log.debug "Admin key does not match"
 				return false
 			}
 		}
@@ -152,8 +163,8 @@ class SecurityFilters {
 					return false
 				if ((!securityService.isAuthorized(actionName, request, params, flash, session))
 						|| (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId))) {
+					log.debug "Unauthorized admin page data action " + actionName
 					if (actionName.endsWith('Data') || actionName.endsWith('DataId')) {
-						println "Unauthorized admin page data action " + actionName
 						render "${params.callback}('login')"
 					} else {
 						def parm = params.clone()
@@ -164,6 +175,7 @@ class SecurityFilters {
 						flash.parm = new JSON(parm).toString()
 						redirect(url:urlService.base(request) + 'home/login')
 					}
+					log.debug "Authorized admin page action"
 					return false
 				}
 				return true

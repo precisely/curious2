@@ -163,6 +163,8 @@ environments {
 		curiousanalytics.servers = [
 			'http://127.0.0.1:8090'
 		]
+
+		wearecurious.adminKey = "nethgoau9er8gih5q78q9u3iyq84f98q38gq7t9qthqethqtj"
 		
 		/*
 		elasticSearch.client.mode = 'transport'
@@ -510,7 +512,8 @@ log4j.main = {
 		   'grails.app.conf',
 		   'grails.app.controllers',
 		   'grails.app.services.us.wearecurio',
-		   'grails.app.jobs.us.wearecurio.jobs'
+		   'grails.app.jobs.us.wearecurio.jobs',
+		   'SecurityFilters'
 	
 
 	warn   'us.wearecurio.parse'
