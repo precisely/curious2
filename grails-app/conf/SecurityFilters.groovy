@@ -123,33 +123,7 @@ class SecurityFilters {
 				}
 			}
 		}
-		analyticsTaskCheck(controller:'analyticsTask', action:'*') {
-			before = {
-				log.debug "Checking analytics task"
-				def a = actionName
-				if (!actionName)
-					return false
-				String adminKey
-				try {
-					adminKey = grailsApplication.config.wearecurious.adminKey
-				} catch (Throwable t) {
-					log.debug "No admin key in config file"
-					adminKey = null
-				}
-				if (!adminKey) {
-					grailsApplication.config.wearecurious = [:]
-					grailsApplication.config.wearecurious.adminKey = "nethgoau9er8gih5q78q9u3iyq84f98q38gq7t9qthqethqtj" // only used for dev deploys
-					adminKey = grailsApplication.config.wearecurious.adminKey
-				}
-				if (adminKey != null && params.key && params.key == adminKey) {
-					log.debug "Admin key does match"
-					return true
-				}
-				log.debug "Admin key does not match"
-				return false
-			}
-		}
-		adminPages(controller: "(admin|sharedTagGroup|userGroup)") {
+		adminPages(controller: "(admin|sharedTagGroup|userGroup|analyticsTask)", action:'*') {
 			before = {
 				def a = actionName
 				if (params.controller == null) {
@@ -161,6 +135,26 @@ class SecurityFilters {
 				}
 				if (!actionName)
 					return false
+				if (params.controller == 'analyticsTask') {
+					log.debug "Checking analytics task"
+					String adminKey
+					try {
+						adminKey = grailsApplication.config.wearecurious.adminKey
+					} catch (Throwable t) {
+						log.debug "No admin key in config file"
+						adminKey = null
+					}
+					if (!adminKey) {
+						grailsApplication.config.wearecurious = [:]
+						grailsApplication.config.wearecurious.adminKey = "nethgoau9er8gih5q78q9u3iyq84f98q38gq7t9qthqethqtj" // only used for dev deploys
+						adminKey = grailsApplication.config.wearecurious.adminKey
+					}
+					if (adminKey != null && params.key && params.key == adminKey) {
+						log.debug "Admin key does match"
+						return true
+					}
+					log.debug "Admin key does not match"
+				}
 				if ((!securityService.isAuthorized(actionName, request, params, flash, session))
 						|| (!UserGroup.hasAdmin(UserGroup.lookup(UserGroup.SYSTEM_USER_GROUP_NAME).id, session.userId))) {
 					log.debug "Unauthorized admin page data action " + actionName
