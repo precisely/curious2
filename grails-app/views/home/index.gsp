@@ -126,6 +126,7 @@
 			var newEntryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'new'});
 			
 			$('#addData').prepend(newEntryDetailsPopover);
+			$('#addData .track-input-dropdown').show();
 			$("#addData .choose-date-input").datepicker();
 			$('#newremind-checkbox').change(function() {
 				if ($('#newrepeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
