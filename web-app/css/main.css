@@ -1699,7 +1699,7 @@ body.discuss-page .red-header {
 	display: none;	
 }
 
-#addData .repeat-frequency-radio-group label , #recordList .repeat-frequency-radio-group label {
+.repeat-frequency-radio-group label , .repeat-frequency-radio-group label {
 	color: #818181;
 	font-size: 12px;
 	margin-right: 10px;

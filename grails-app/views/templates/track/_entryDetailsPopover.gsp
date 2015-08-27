@@ -1,5 +1,5 @@
 <script type="text/html" id="entry-details-popover">
-	<button class="btn btn-default track-input-modifiers track-input-dropdown" type="button" aria-haspopup="true" aria-expanded="true"> 
+	<button class="btn btn-default track-input-modifiers track-input-dropdown hide" type="button" aria-haspopup="true" aria-expanded="true"> 
 		<img src="/images/calander-light.png" alt="calander" height="22"> Details
 	</button>
 	<ul class="entry-details-dropdown-menu dropdown-menu">

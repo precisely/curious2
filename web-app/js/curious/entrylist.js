@@ -255,23 +255,30 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			console.log('deleting....');
 			self.deleteEntryId(id);
 		});
-		$('#' + this.editId + "entryid" + id + ' .track-input-dropdown').hide();
+
+		$('#' + id + '-remind-checkbox').change(function() {
+			if ($('#' + id + '-repeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
+				$('#' + id + '-each-repeat-checkbox').prop('checked', true);
+			}
+		});
 		
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
 		entryEditItem.data(data);
 	}
 
+	/*
+	 * This method iterates through list of entries and displays them
+	 * @param entries list of entries to display
+	 * @param onlyPinned to display only pinned entries 
+	 */
 	this.displayEntries = function(entries, onlyPinned) {
 		self.entrySelectData = {};
 		jQuery.each(entries, function() {
-			if (onlyPinned) {
-				if (RepeatType.isContinuous(this.repeatType)) {
-					self.displayEntry(this, false);
-				}
-			} else {
-				self.displayEntry(this, false);
-			}
+			if (onlyPinned && !RepeatType.isContinuous(this.repeatType)) {
+				return;
+			} 
+			self.displayEntry(this, false);
 			return true;
 		});
 		$('#pinned-tag-list').children('div').each(function () {
@@ -548,9 +555,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 	this.getRepeatTypeId = function(idSelector) {
 		var isRepeat = $('#' + idSelector + 'repeat-checkbox').is(':checked');
-		var isRemind = $('#' + idSelector + 'remind-checkbox').is(':checked');
+		var setAlert = $('#' + idSelector + 'remind-checkbox').is(':checked');
 
-		if (!isRepeat && !isRemind) {
+		if (!isRepeat && !setAlert) {
 			return false;
 		}
 
@@ -559,18 +566,17 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var repeatTypeBit;
 		var frequency = $('input[name=' + idSelector + 'repeat-frequency]:checked').val();
 
-		if (frequency == 'daily') {
-			frequencyBit = RepeatType.DAILY_BIT;
-		} else if (frequency == 'monthly') {
-			frequencyBit = RepeatType.MONTHLY_BIT;
-		} else if (frequency == 'weekly') {
-			frequencyBit = RepeatType.WEEKLY_BIT;
-		}
-
 		if (isRepeat) {
-			repeatTypeBit = (RepeatType.CONCRETEGHOST_BIT | frequencyBit);
+			if (frequency == 'daily') {
+				frequencyBit = RepeatType.DAILY_BIT;
+			} else if (frequency == 'monthly') {
+				frequencyBit = RepeatType.MONTHLY_BIT;
+			} else if (frequency == 'weekly') {
+				frequencyBit = RepeatType.WEEKLY_BIT;
+			}
+			repeatTypeBit = RepeatType.CONCRETEGHOST_BIT | frequencyBit;
 		}
-		if (isRemind) {
+		if (setAlert) {
 			if (repeatTypeBit) {
 				repeatTypeBit = (RepeatType.REMIND_BIT | repeatTypeBit);
 			} else {
@@ -698,28 +704,23 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
-		if (RepeatType.isRemind(repeatType) && RepeatType.isRepeat(repeatType)) {
-			$('#' + currentEntryId + '-remind-checkbox').prop('checked', true);
-			$('#' + entry.id + '-each-repeat-checkbox').prop('checked', true);
-		} else if (RepeatType.isRemind(repeatType)) {
+		if (RepeatType.isRemind(repeatType)) {
 			$('#' + currentEntryId + '-remind-checkbox').prop('checked', true);
 		}
+		if (RepeatType.isRepeat(repeatType)) {
+			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
+			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
+		}
 		if (RepeatType.isDaily(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
 			$('#' + currentEntryId + '-daily').prop('checked', true);
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
 		} else if (RepeatType.isWeekly(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
 			$('#' + currentEntryId + '-weekly').prop('checked', true);
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
 		} else if (RepeatType.isMonthly(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
 			$('#' + currentEntryId + '-monthly').prop('checked', true);
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
-		} else if (RepeatType.isRepeat(repeatType)) {
-			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
-			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
 		} 
+		if (RepeatType.isGhost(repeatType)) {
+			$('#' + entry.id + '-each-repeat-checkbox').prop('checked', true);
+		}
 
 		$(".choose-date-input").datepicker();
 		if (entry.repeatEnd) {
@@ -731,11 +732,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return;
 		});
 
-		$('#' + entry.id + '-remind-checkbox').change(function() {
-			if ($('#' + entry.id + '-repeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
-				$('#' + entry.id + '-each-repeat-checkbox').prop('checked', true);
-			}
-		});
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
