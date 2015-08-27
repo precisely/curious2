@@ -77,7 +77,6 @@
 				<a href="#" id="sort-by-time" onclick="entryListWidget.sortByTime()" class="sort-entry">TIME
 					<img class="sort-arrow hide" src="" alt="sort"/> 
 				</a>
-				<hr>
 				<div id="recordList">
 					<ol id="entry0"></ol>
 				</div>
@@ -128,6 +127,11 @@
 			
 			$('#addData').prepend(newEntryDetailsPopover);
 			$("#addData .choose-date-input").datepicker();
+			$('#newremind-checkbox').change(function() {
+				if ($('#newrepeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
+					$('#neweach-repeat-checkbox').prop('checked', true);
+				}
+			});
 			$('#addData .repeat-entry-checkbox').change(function() {
 				$('#addData .repeat-modifiers').toggleClass('hide');
 			});
