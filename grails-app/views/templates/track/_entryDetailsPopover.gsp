@@ -58,7 +58,7 @@
 				Click below for on-the-go one click tracking. <br>This button will be under the 'Enter Tags' section
 			</li>
 			<li>
-				<button class="make-pin-button">MAKE A BUTTON</button>
+				<button class="make-pin-button" type="button">MAKE A BUTTON</button>
 			</li>
 		</form>
 	</ul>

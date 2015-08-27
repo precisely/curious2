@@ -281,10 +281,6 @@ a,a:link,a:hover,a:visited {
 	padding-left:2px;
 }
 
-#trackmain {
-	max-height: 633px;
-}
-
 #trackmain .dropdown-menu {
 	background-color: #fff;
 	left: auto;
@@ -296,7 +292,7 @@ a,a:link,a:hover,a:visited {
 	box-shadow: 0 1px 5px rgba(0,0,0,0.175);
 }
 
-#trackmain .dropdown-menu::before {
+.entry-details-dropdown-menu ::before {
 	position: absolute;
 	top: -23px;
 	right: 15px;
@@ -306,6 +302,10 @@ a,a:link,a:hover,a:visited {
 	border-left: 7px solid transparent;
 	border-bottom-color: #fff;
 	content: '';
+}
+
+.entry-details-dropdown-menu form ::before {
+	display: none;
 }
 
 #recordList .dropdown-menu {
@@ -375,10 +375,13 @@ body.discuss-page input#discussTitleInput {
 #dashmain {
 	width:800px;
 }
+
 #recordList {
 	overflow: auto;
-	max-height: 370px
+	max-height: 500px;
+	margin-top: 10px;
 }
+
 /**
  * @Deprecated. Use `.red-header` instead.
  */
@@ -536,20 +539,25 @@ ul.ui-autocomplete {
 	font-size:.8em;
 }
 .unstyled {
-		list-style: none;
+	list-style: none;
 }
 .hide, .hid {
-		display: none;
+	display: none;
 }
+
+.hide-important {
+	display: none !important;
+}
+
 ul.tags {
-		list-style: none;
+	list-style: none;
 }
 ul.tags li {
-		margin-bottom: 4px;
+	margin-bottom: 4px;
 }
 ul.tags li.tagGroup, ul.tags li.wildCardTagGroup {
-		cursor: pointer;
-		overflow: hidden;
+	cursor: pointer;
+	overflow: hidden;
 }
 
 ul.tags li.tag {
@@ -945,40 +953,47 @@ body.tags-displayed .floating-column {
 	margin: 15 0;
 	color: #d8d8d8;
 }
-#entry0 {
-	width: 100%;
-	height: 400px;
-}
+
 #entry0 .ui-selecting {
 	background: #99CCFF;
 }
+
 #entry0 .ui-selected {
 	color: white;
 }
+
 .ui-menu-item a {
 	white-space: pre-wrap;
 }
+
 #entry0 {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
+	width: 100%;
+	height: 505px;
+	background: url(/images/track-list-bg.png);
 }
+
 #entry0 li {
 	position: relative;
-	margin-bottom: 2px;
+	margin-bottom: 1px;
 	padding: 10px;
 	font-size: 18px;
 	background-color: #FFFFFF;
 	border-radius: 0px;
-	box-shadow: 0px 3px 2px 0px #E4E2E2;
+	box-shadow: 0px 1px 0px 0px #E4E2E2;
 }
+
 .swatch {
 	padding-left:20px;
 	list-style-type:square;
 }
+
 .swatch li {
 	margin:10px 0px;
 }
+
 .swatch li span {
 	color:#000000;
 }
@@ -1156,8 +1171,7 @@ body.discuss-page .red-header {
 }
 .entryRepeat {
 	vertical-align: baseline;
-	color: #C0C8C9;
-	text-transform: uppercase;
+	color: #A9A9A9;
 	font-size: 12px;
 }
 .entryAmount {
@@ -1677,6 +1691,10 @@ body.discuss-page .red-header {
 	background-position: 15px;
 }
 
+#recordList .repeat-frequency-radio-group {
+	margin-top: 10px;
+}
+
 .repeat-frequency-radio-group input[type="radio"] {
 	display: none;	
 }
@@ -1703,7 +1721,7 @@ body.discuss-page .red-header {
 	border-radius: 50%;
 }
 
-.track-page .make-pin-button {
+.track-page .make-pin-button, .track-page .pin-entry {
 	height: 33px;
 	border: 1px solid #c04f7f;
 	border-radius: 2px;
@@ -1711,6 +1729,15 @@ body.discuss-page .red-header {
 	color: #c04f7f;
 	font-weight: 600;
 	background-color: #fff;
+	margin-top: 10px;
+}
+
+.track-page .pin-entry:hover {
+	box-shadow: inset 0 0 5px #c04f7f;
+}
+
+.pin-button {
+	margin-right: 10px;
 }
 
 .entry-checkbox {
@@ -1898,11 +1925,11 @@ li.pinned, li.pinned input {
 }
 
 li.remind, li.repeat.remind, li.repeat.remind input {
-	color: #f48d5b;
+	color: #c35785;
 }
 
 li.repeat, li.repeat input {
-	color: #c35785;
+	color: #f48d5b;
 }
 
 li.no-tag input {
@@ -1919,17 +1946,14 @@ li.entry.continuousghost {
 li.entry.pinned {
 	border-left: 5px solid #f14a42;
 }
-li.entry.concreteghost {
-	border-left: 5px solid: #C04F7F;
-}
 li.entry.repeat.remind {
-	border-left: 5px solid #f48d5b;
+	border-left: 5px solid #c35785;
 }
-li.entry.remind.ghost {
+li.entry.ghost {
 	opacity: 0.5;
 }
 li.entry.repeat {
-	border-left: 5px solid #c35785;
+	border-left: 5px solid #f48d5b;
 }
 li.entry.no-tag, li.entry.plain {
 	border-left: 5px solid #f14a42;
@@ -1950,17 +1974,6 @@ body.track-page ol#entry0 li button.save {
 	top: 15px;
 }
 
-.track-page .pin-entry {
-	color: #ffffff;
-	background-color: #d1d1d1;
-	background-image: url(/images/pin-button.png);
-	background-repeat: no-repeat;
-	background-position: 5px;
-	padding-left: 25px;
-	font-weight: 600;
-	border-radius: 1px;
-	vertical-align: top;
-}
 .pin-entry .fa {
 	margin-left: 10px;
 	margin-right: -5px;
@@ -1975,9 +1988,6 @@ body.track-page ol#entry0 li button.edit {
 body.track-page ol#entry0 li.entry.ghost span {
 /*	color: #D9D9D9; */
 }
-body.track-page ol#entry0 li.entry.ghost:not(.remind) a.entryDelete {
-	display: inline;
-}
 body.track-page ol#entry0 li.entry.continuous a.entryDelete {
 	display: none !important;
 }
@@ -1991,7 +2001,8 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 
 #pinned-tags .pin-header {
 	height: 22px;
-	margin: 5 10 5 0;
+	display: block;
+	margin: -5px 0px 5px 0px;
 }
 
 .hidden {
@@ -3724,11 +3735,10 @@ body .modal-header button {
 
 #pinned-tag-list li {
 	display: inline-block;
-	height: 30px;
-	margin-right: 10px;
+	height: 33px;
 	padding: 0px 5px;
-	background-color: #d1d1d1;
-	vertical-align: middle;
+	background-color: #c04f7f;
+	vertical-align: bottom;
 }
 
 #pinned-tag-list .dropdown .caret {
@@ -3737,12 +3747,10 @@ body .modal-header button {
 
 #pinned-tag-list .dropdown-menu {
 	left: -45px;
-	top: 28px;
-	height: 30px;
+	top: 30px;
 	min-width: 0px;
 	max-width: 65px;
 	padding: 0px;
-	background-color: #d1d1d1;
 	border-radius: 0px;
 	text-align: left;
 	box-shadow: none;
@@ -3761,7 +3769,7 @@ body .modal-header button {
 }
 
 #pinned-tag-list .dropdown-menu li a:HOVER {
-	background-color: #d1d1d1;
+	background-color: #c04f7f;
 }
 
 #pinned-tag-list .dropdown-menu li a img {
