@@ -1479,6 +1479,10 @@ class EntryTests extends CuriousTestCase {
 		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
+
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, dayAfterTomorrowBaseDate, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:2010-07-02T19:00:00)")
 	}
 	
 	@Test
@@ -1647,6 +1651,36 @@ class EntryTests extends CuriousTestCase {
 		assert result.messageCode == "delete.entry.permission.denied"
 	}
 
+	@Test
+	void "Test create repeat daily entry when end date is before repeat date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime2, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, currentTime, baseDate2, true), new EntryStats())
+		assert entry.repeatEnd == entry.date
+	}
+
+	@Test
+	void "Test create repeat weekly entry when end date is before repeat date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 4, 2010 1:58 pm"), baseDate, true), new EntryStats())
+		assert entry.repeatEnd == entry.date
+	}
+
+	@Test
+	void "Test create repeat monthly entry when end date is before repeat date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.MONTHLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 1:58 pm"), baseDate, true), new EntryStats())
+		assert entry.repeatEnd == entry.date
+	}
+
+	@Test
+	void "Test create repeat monthly entry for end date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.MONTHLYCONCRETEGHOST.id, dateFormat.parse("Aug 25, 2010 12:00 am"), earlyBaseDate, true), new EntryStats())
+		assert entry.repeatEnd == dateFormat.parse("July 25, 2010 4:00 pm")
+	}
+
+	@Test
+	void "Test create repeat weekly entry for end date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
+		assert entry.repeatEnd == dateFormat.parse("July 15, 2010 4:00 pm")
+	}
+	
 	/*@Test
 	void testRepeatAgain() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm repeat daily", null, null, baseDate, true), new EntryStats())
