@@ -380,17 +380,30 @@ class UserActivity {
 		return false
 	}
 	
-	static UserActivity create(Date created, Long userId, Long typeId, Long objectId, Long otherId = null) {	
-		return UserActivity.withTransaction {
-			UserActivity item = new UserActivity(created, userId, typeId, objectId, otherId)
-			
-			Utils.save(item, true)
-			
-			return item
-		}
+	static UserActivity create(Date created, Long userId, ActivityType activityType, ObjectType objectType, Long objectId, ObjectType otherType = null, Long otherId = null) {
+		Long type = toType(activityType, objectType, otherType)
+		if (type == INVALID_TYPE) return null
+		
+		UserActivity item = new UserActivity(created, userId, type, objectId, otherId)
+		
+		Utils.save(item, true)
+		
+		return item
 	}
 	
-	static UserActivity fetchStart(Long userId, Long objectId, Long typeId) {
+//	static UserActivity create(Date created, Long userId, Long typeId, Long objectId, Long otherId = null) {	
+//		return UserActivity.withTransaction {
+//			UserActivity item = new UserActivity(created, userId, typeId, objectId, otherId)
+//			
+//			Utils.save(item, true)
+//			
+//			return item
+//		}
+//	}
+	
+	//static UserActivity fetchStart(Long userId, Long objectId, Long typeId) {
+	static UserActivity fetchStart(Long userId, Long objectId, ActivityType activityType, ObjectType objectType) {
+		Long typeId = toType(activityType, objectType)
 		typeId = typeId & (~1L) // select the start member of the pair (starts are even, ends are odd)
 		def c = UserActivity.createCriteria()
 		def results = c {
@@ -416,7 +429,9 @@ class UserActivity {
 		return null
 	}
 	
-	static UserActivity fetchEnd(Long userId, Long objectId, Long typeId) {
+	//static UserActivity fetchEnd(Long userId, Long objectId, Long typeId) {
+	static UserActivity fetchEnd(Long userId, Long objectId, ActivityType activityType, ObjectType objectType) {
+		Long typeId = toType(activityType, objectType)
 		typeId = typeId & (~1L) // select the start member of the pair (starts are even, ends are odd)
 		def c = UserActivity.createCriteria()
 		def results = c {
@@ -441,7 +456,9 @@ class UserActivity {
 		return null
 	}
 	
-	static UserActivity fetchStart(Long userId, Long objectId, Long typeId, Date before) {
+	//static UserActivity fetchStart(Long userId, Long objectId, Long typeId, Date before) {
+	static UserActivity fetchStart(Long userId, Long objectId, ActivityType activityType, ObjectType objectType, Date before) {
+		Long typeId = toType(activityType, objectType)
 		typeId = typeId & (~1L) // select the start member of the pair (starts are even, ends are odd)
 		def c = UserActivity.createCriteria()
 		def results = c {
@@ -468,7 +485,9 @@ class UserActivity {
 		return null
 	}
 	
-	static UserActivity fetchEnd(Long userId, Long objectId, Long typeId, Date before) {
+	//static UserActivity fetchEnd(Long userId, Long objectId, Long typeId, Date before) {
+	static UserActivity fetchEnd(Long userId, Long objectId, ActivityType activityType, ObjectType objectType, Date before) {
+		Long typeId = toType(activityType, objectType)
 		typeId = typeId & (~1L) // select the start member of the pair (starts are even, ends are odd)
 		def c = UserActivity.createCriteria()
 		def results = c {
@@ -502,10 +521,7 @@ class UserActivity {
 		this.created = created
 		this.userId = userId
 		this.typeId = typeId
-		this.activityType = toActivityType(typeId)
-		this.objectType = toObjectType(typeId)
 		this.objectId = objectId
-		this.otherType = toObjectType(typeId)
 		this.otherId = otherId
 	}
 	

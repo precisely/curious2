@@ -177,7 +177,7 @@ class Sprint {
 		return Sprint.withTransaction {
 			def sprint = new Sprint(now, user, name, visibility)
 			Utils.save(sprint, true)
-			UserActivity.create(now, user.id, UserActivity.SPRINT_BIT | UserActivity.CREATE_ID, sprint.id)
+			UserActivity.create(now, user.id, UserActivity.ActivityType.CREATE, UserActivity.ObjectType.SPRINT, sprint.id)
 			return sprint
 		}
 	}
@@ -191,7 +191,7 @@ class Sprint {
 		sprintUserGroup?.removeAllParticipants()
 		
 		Utils.save(sprint, true)
-		UserActivity.create(new Date(), userId, UserActivity.SPRINT_BIT | UserActivity.DELETE_ID, sprint.id)
+		UserActivity.create(new Date(), userId, UserActivity.ActivityType.DELETE, UserActivity.ObjectType.SPRINT, sprint.id)
 	}
 	
 	Sprint() {
@@ -244,7 +244,7 @@ class Sprint {
 		if (!hasMember(userId)) 
 			return null
 		
-		UserActivity start = UserActivity.fetchStart(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		UserActivity start = UserActivity.fetchStart(userId, this.id, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, now)
 		
 		return start?.created
 	}
@@ -254,7 +254,7 @@ class Sprint {
 		if (!hasMember(userId))
 			return null
 			
-		UserActivity end = UserActivity.fetchEnd(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		UserActivity end = UserActivity.fetchEnd(userId, this.id, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, now)
 		
 		return end?.created
 	}
@@ -331,7 +331,7 @@ class Sprint {
 		def entry = Entry.create(userId, m, stats)
 		
 		// record activity
-		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.START_ID, this.id)
+		UserActivity.create(now, userId, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, this.id)
 		
 		return true
 	}
@@ -398,7 +398,7 @@ class Sprint {
 		def entry = Entry.create(userId, m, stats)
 
 		// record activity
-		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.STOP_ID, this.id)
+		UserActivity.create(now, userId, UserActivity.ActivityType.STOP, UserActivity.ObjectType.SPRINT, this.id)
 	}
 	
 	boolean isModified() {
