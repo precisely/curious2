@@ -14,35 +14,7 @@
 				}
 				if (data != 'login' && (!checkData(data)))
 					return;
-				
-				found = false;
-				
-				jQuery.each(data, function() {
-					if (!found) {
-						// set first user id as the current
-						setUserId(this['id']);
-						setUserName(this['username']);
-						plot = new Plot(tagList, this['id'], this['username'], "#plotDiscussArea", true, true, new PlotProperties({
-							'startDate':'#startdatepicker1',
-							'startDateInit':'start date and/or tag',
-							'endDate':'#enddatepicker1',
-							'endDateInit':'end date and/or tag',
-							'cycleTag':'#cycleTag1',
-							'zoomControl':'#zoomcontrol1',
-							'username':'#queryUsername',
-							'name':'',
-							'logout':'#logoutLink'
-							}));
-						found = true;
-					}
-					addPerson(this['name'],
-						this['username'], this['id'], this['sex']);
-					
-						//plot.loadSnapshotId(179);
-
-	
 				return true;
-				});
 			}
 		</content> 
 

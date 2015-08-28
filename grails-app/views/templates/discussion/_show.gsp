@@ -3,7 +3,7 @@
 		<div id="plotLeftNav">
 			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
 		</div>
-		{{ if (firstPost != null) { }}
+		{{ if (firstPost && firstPost.plotDataId) { }}
 			<div class="row row-custom">
 				<div class="col-xs-12">
 					<!-- /LEFT NAV-->

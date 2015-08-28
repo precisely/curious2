@@ -355,6 +355,20 @@ function discussionShow(hash) {
 			infiniteScrollComments(hash);
 			getComments(hash, commentsArgs);		// See discussion.js for "commentsArgs"
 			window.location.hash = 'discussions/' + hash;
+			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
+				plot = new Plot(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
+					'startDate':'#startdatepicker1',
+					'startDateInit':'start date and/or tag',
+					'endDate':'#enddatepicker1',
+					'endDateInit':'end date and/or tag',
+					'cycleTag':'#cycleTag1',
+					'zoomControl':'#zoomcontrol1',
+					'username':'#queryUsername',
+					'name':'',
+					'logout':'#logoutLink'
+				}));
+				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId);
+			}
 		} else {
 			$('.alert').text(data.message);
 		}

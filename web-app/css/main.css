@@ -227,14 +227,21 @@ a,a:link,a:hover,a:visited {
 .body2 {
 	padding: 0px 4px;
 }
-.main {
+
+.main, #feed .graphData .main {
 	border:1px solid #c6c6c6;
 	background-color: #f6f6f6;
-	padding-left: 108px;
-	padding-right: 108px;
-	padding-top: 30px;
-	padding-bottom: 108px;
+	padding: 15px;
 }
+
+#feed .discussmain {
+	padding: 0px;
+}
+
+#feed .graphData .main, #feed .discussmain {
+	height: auto;
+}
+
 .main h1 {
 	padding:7px 10px;
 	vertical-align:middle;
@@ -4248,11 +4255,16 @@ input[type = "number"] {
 	font-size: 93px;
 }
 
+.people-detail {
+	padding-left: 50px;
+	padding-right: 50px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
 .people-detail .upper-body {
 	background-color: #f6f6f6;
 	padding: 15px 0px;
-	margin-left: 32px;
-	margin-right: 32px;
 	position: relative;
 	margin-top: 0px;
 	padding-top: 24px;
@@ -4261,8 +4273,6 @@ input[type = "number"] {
 .people-detail .lower-body {
 	padding: 40px 105px 50px 80px;
 	background-color: #fff;
-	margin-left: 32px;
-	margin-right: 32px;
 	margin-top: 2px;
 	border: 1px solid #e0e0e0;
 }
@@ -4316,6 +4326,10 @@ input[type = "number"] {
 	margin-left: -7px;
 }
 
+.public-groups .media {
+	margin-left: -3px;
+}
+
 .public-sprints p {
 	line-height: 1.2;
 	-webkit-line-clamp: 2;
@@ -4356,7 +4370,6 @@ input[type = "number"] {
 
 .people-detail .media-left .fa{
 	margin-top: -1px;
-	margin-left: -3px;
 	color: #ce2e40;
 }
 
