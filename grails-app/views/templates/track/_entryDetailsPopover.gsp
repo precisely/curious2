@@ -38,8 +38,8 @@
 					<li>
 						<label class="label-bold">Confirm Each Repeat</label>
 						<span class="entry-checkbox">
-							<input type="checkbox" name="repeat" value="repeat" id="{{= editType  }}each-repeat-checkbox">
-							<label for="{{= editType  }}each-repeat-checkbox"></label>
+							<input type="checkbox" name="repeat" value="repeat" id="{{= editType  }}confirm-each-repeat">
+							<label for="{{= editType  }}confirm-each-repeat"></label>
 						</span>
 					</li>
 				</ul>

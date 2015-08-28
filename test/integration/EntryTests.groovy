@@ -1652,19 +1652,19 @@ class EntryTests extends CuriousTestCase {
 	}
 
 	@Test
-	void "Test create repeat daily entry when end date is before repeat date"() {
+	void "Test create repeat daily entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime2, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, currentTime, baseDate2, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}
 
 	@Test
-	void "Test create repeat weekly entry when end date is before repeat date"() {
+	void "Test create repeat weekly entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 4, 2010 1:58 pm"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}
 
 	@Test
-	void "Test create repeat monthly entry when end date is before repeat date"() {
+	void "Test create repeat monthly entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.MONTHLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 1:58 pm"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}

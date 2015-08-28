@@ -130,7 +130,7 @@
 			$("#addData .choose-date-input").datepicker();
 			$('#newremind-checkbox').change(function() {
 				if ($('#newrepeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
-					$('#neweach-repeat-checkbox').prop('checked', true);
+					$('#newconfirm-each-repeat').prop('checked', true);
 				}
 			});
 			$('#addData .repeat-entry-checkbox').change(function() {
