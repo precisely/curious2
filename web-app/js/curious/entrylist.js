@@ -258,7 +258,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		$('#' + id + '-remind-checkbox').change(function() {
 			if ($('#' + id + '-repeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
-				$('#' + id + '-each-repeat-checkbox').prop('checked', true);
+				$('#' + id + '-confirm-each-repeat').prop('checked', true);
 			}
 		});
 		
@@ -561,7 +561,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return false;
 		}
 
-		var confirmRepeat = $('#' + idSelector + 'each-repeat-checkbox').is(':checked');
+		var confirmRepeat = $('#' + idSelector + 'confirm-each-repeat').is(':checked');
 		var frequencyBit = RepeatType.DAILY_BIT;	// Repeat daily by default
 		var repeatTypeBit;
 		var frequency = $('input[name=' + idSelector + 'repeat-frequency]:checked').val();
@@ -585,9 +585,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 		if (confirmRepeat) {
 			return (repeatTypeBit | RepeatType.GHOST_BIT);
-		} else {
-			return (repeatTypeBit);
-		}
+		} 
+		return (repeatTypeBit);
 	}
 
 	this.createPinnedEntry = function(editId) {
@@ -719,7 +718,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			$('#' + currentEntryId + '-monthly').prop('checked', true);
 		} 
 		if (RepeatType.isGhost(repeatType)) {
-			$('#' + entry.id + '-each-repeat-checkbox').prop('checked', true);
+			$('#' + entry.id + '-confirm-each-repeat').prop('checked', true);
 		}
 
 		$(".choose-date-input").datepicker();
@@ -784,6 +783,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
 		}
+		$('.entry-details-form').trigger('reset');
 	}
 
 	/**

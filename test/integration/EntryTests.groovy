@@ -1638,31 +1638,31 @@ class EntryTests extends CuriousTestCase {
 	}
 
 	@Test
-	void "Test cerate repeat daily entry when end date is before repeat date"() {
+	void "Test create repeat daily entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime2, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, currentTime, baseDate2, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}
 
 	@Test
-	void "Test cerate repeat weekly entry when end date is before repeat date"() {
+	void "Test create repeat weekly entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 4, 2010 1:58 pm"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}
 
 	@Test
-	void "Test cerate repeat monthly entry when end date is before repeat date"() {
+	void "Test create repeat monthly entry when end date is before entry date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.MONTHLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 1:58 pm"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == entry.date
 	}
 
 	@Test
-	void "Test cerate repeat monthly entry for end date"() {
+	void "Test create repeat monthly entry for end date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.MONTHLYCONCRETEGHOST.id, dateFormat.parse("Aug 25, 2010 12:00 am"), earlyBaseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 25, 2010 4:00 pm")
 	}
 
 	@Test
-	void "Test cerate repeat weekly entry for end date"() {
+	void "Test create repeat weekly entry for end date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 15, 2010 4:00 pm")
 	}
