@@ -447,6 +447,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			if (checkData(entries, 'success', "Error updating entry")) {
 				self.tagList.load();
 				self.refreshEntries(entries[0]);
+				if (self.nextSelectionId) {
+					var nextSelection = $('#' + self.nextSelectionId);
+					self.nextSelectionId = null;
+					self.selectEntry(nextSelection);
+				}
 				if (entries[1] != null)
 					self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null) {
@@ -479,7 +484,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		} else {
 			this.addEntry(userId, text, defaultToNow, null, null, function() {
 				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
-				self.selectEntry($(selectee), false);
+				self.selectEntry($(selectee));
 			});
 		}
 	}
@@ -766,16 +771,23 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			console.warn("Undefined new text");
 			return;
 		}
-		var currentEntryId = $unselectee.data("entryId");
-		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-') || $unselectee.data("entry").repeatType;
+		var currentEntryId = $unselectee.data('entryId');
+		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-') || $unselectee.data('entry').repeatType;
 		var repeatEnd = $('#' + this.editId + 'entryid' + currentEntryId + ' .choose-date-input').val();
+		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
+		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
+		var isOldRepeatEndChanged = false;
+
+		if (oldRepeatEndMidnightTime || !isNaN(new Date(repeatEnd).getTime())) {
+			isOldRepeatEndChanged = !(oldRepeatEndMidnightTime == new Date(repeatEnd).getTime());
+		}
 
 		if ($unselectee.data('isContinuous')) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
 			this.unselectEntry($unselectee, true, true);
 			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
-		} else if (!$unselectee.data('isRemind') && ($unselectee.data('originalText') == newText && 
-				$unselectee.data("entry").repeatType == repeatTypeId && $unselectee.data("entry").repeatEnd == repeatEnd)) {
+		} else if (!$unselectee.data('isGhost') && ($unselectee.data('originalText') == newText && 
+				$unselectee.data("entry").repeatType == repeatTypeId && !isOldRepeatEndChanged)) {
 			console.debug('Is not remind & no change in entry.');
 			this.unselectEntry($unselectee);
 		} else {
@@ -848,7 +860,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			// parents() method returns all anscestors as list. So element at 0th position will be li.entry
 			var selectee = $target.parents("li.entry").andSelf()[0];
 			console.debug('Mousedown: Clicked on an entry. Will now select.');
-			self.selectEntry($(selectee), false);
+			self.selectEntry($(selectee));
 			return false;
 		}
 	});
@@ -921,7 +933,8 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			$selectee = $unselectee.prev();
 		}
 		if ($selectee) {
-			self.unselectEntry($unselectee, false, false);
+			self.nextSelectionId  = $selectee.attr('id');
+			self.checkAndUpdateEntry($unselectee);
 			self.selectEntry($selectee, false);
 		}
 		return false;
