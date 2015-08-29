@@ -1810,11 +1810,16 @@ body.discuss-page .red-header {
 }
 
 #addData .label-bold, #recordList .label-bold {
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: 600;
 	color: #656565;
 	padding: 0px;
 	margin-right: 10px;
+}
+
+.orange-bell {
+	margin-top: -5px;
+    margin-right: 5px;
 }
 
 .align-middle {
@@ -2615,6 +2620,7 @@ body.load-graph #graphList .summary .close {
 	margin-right: 30px;
 	color: #999999 !important;
 	font-size: 12px;
+	font-weight: 600;
 }
 
 .sort-entry.active {

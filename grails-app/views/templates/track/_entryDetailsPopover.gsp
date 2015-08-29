@@ -8,7 +8,7 @@
 				Check the box below to repeat this tag.
 			</li>
 			<li>
-				<img src="/images/orange-repeat.png" alt="repeat" height="18"> 
+				<img src="/images/orange-repeat.png" class="orange-bell" alt="repeat" height="18" />
 				<label class="label-bold">Repeat Tag</label>
 				<span class="entry-checkbox">
 					<input type="checkbox" name="repeat" class="repeat-entry-checkbox" value="repeat" id="{{= editType  }}repeat-checkbox">
