@@ -16,8 +16,8 @@ import us.wearecurio.utility.Utils
 class UserActivity {
 	private static def log = LogFactory.getLog(this)
 	
-	Date 					created
-	Long 					userId			//REQUIRED - the actor, will always capture via UI
+	Date 					created			//REQUIRED
+	Long 					userId			//OPTIONAL - not always provided
 	Long					typeId			//REQUIRED
 	Long 					objectId		//REQUIRED
 	Long 					otherId			//OPTIONAL
@@ -31,12 +31,12 @@ class UserActivity {
 	}
 	
 	static constraints = {
-		created(nullable:true)
-		objectId(nullable:true)
+		created(nullable:false)
+		typeId(nullable:false)
+		userId(nullable:true)
+		objectId(nullable:false)
 		otherId(nullable:true)
 	}
-	
-	// static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
 		only = ['id', 'created', 'userId', 'typeId', 'activityType', 'objectType', 'otherType', 'objectId', 'otherId']
@@ -52,18 +52,16 @@ class UserActivity {
 	static ActivityType toActivityType(Long typeIdParam) {
 		if (typeIdParam == INVALID_TYPE) return null
 		
-		if ((typeIdParam & 12L) == 12L) {
+		if ((typeIdParam & 11L) == 11L) {
 			return ActivityType.UNINVITE
-		} else if ((typeIdParam & 11L) == 11L) {
-			return ActivityType.INVITE
 		} else if ((typeIdParam & 10L) == 10L) {
-			return ActivityType.UNCOMMENT
+			return ActivityType.INVITE
 		} else if ((typeIdParam & 9L) == 9L) {
-			return ActivityType.COMMENT
+			return ActivityType.UNCOMMENT
 		} else if ((typeIdParam & 8L) == 8L) {
-			return ActivityType.STOP
+			return ActivityType.COMMENT
 		} else if ((typeIdParam & 7L) == 7L) {
-			return ActivityType.END
+			return ActivityType.STOP
 		} else if ((typeIdParam & 6L) == 6L) {
 			return ActivityType.START
 		} else if ((typeIdParam & 5L) == 5L) {
@@ -149,12 +147,11 @@ class UserActivity {
 		ADD(4),
 		REMOVE(5),
 		START(6),
-		END(7),
-		STOP(8),
-		COMMENT(9),
-		UNCOMMENT(10),
-		INVITE(11),
-		UNINVITE(12)
+		STOP(7),
+		COMMENT(8),
+		UNCOMMENT(9),
+		INVITE(10),
+		UNINVITE(11)
 		
 		final Integer id
 		
@@ -175,16 +172,14 @@ class UserActivity {
 				case 6:
 					return START
 				case 7:
-					return END
-				case 8:
 					return STOP
-				case 9:
+				case 8:
 					return COMMENT
-				case 10:
+				case 9:
 					return UNCOMMENT
-				case 11:
+				case 10:
 					return INVITE
-				case 12:
+				case 11:
 					return UNINVITE
 				default:
 					return null
@@ -215,8 +210,6 @@ class UserActivity {
 					return "removed"
 				case ActivityType.START:
 					return "started"
-				case ActivityType.END:
-					return "ended"
 				case ActivityType.STOP:
 					return "stopped"
 				case ActivityType.COMMENT:
@@ -311,60 +304,63 @@ class UserActivity {
 		return ret
 	}
 	
-	static boolean isValid(ActivityType activityType, ObjectType primaryType, ObjectType secondaryType=null) {
-		if (activityType == null || primaryType == null) return false
+	static boolean isValid(ActivityType activityType, ObjectType objectType, ObjectType otherType=null) {
+		if (activityType == null || objectType == null) return false
 		
 		switch (activityType) {
 			case ActivityType.CREATE:
 			case ActivityType.DELETE:
 				return ( 
-					(
-						primaryType == ObjectType.SPRINT
-						|| primaryType == ObjectType.DISCUSSION
-					)
-					&& secondaryType == null
+						(
+							objectType == ObjectType.SPRINT
+							|| objectType == ObjectType.DISCUSSION_POST
+							|| objectType == ObjectType.DISCUSSION
+							|| objectType == ObjectType.USER
+						) && otherType == null
 				)
 			case ActivityType.FOLLOW:
 			case ActivityType.UNFOLLOW:
 				return (
 					(
-						primaryType == ObjectType.SPRINT
-						|| primaryType == ObjectType.USER
-					)
-					&& secondaryType == null
+						objectType == ObjectType.USER
+						|| objectType == ObjectType.SPRINT
+					) && otherType == ObjectType.USER
 				)
 			case ActivityType.ADD:
 			case ActivityType.REMOVE:
 				return (
-					( 
-						primaryType == ObjectType.DISCUSSION
-						&& secondaryType == ObjectType.SPRINT
+					(
+						otherType == ObjectType.SPRINT
+						&& (
+							objectType == ObjectType.ADMIN
+							|| objectType == ObjectType.READER
+							|| objectType == ObjectType.DISCUSSION
+						)
 					) || (
-						primaryType == ObjectType.ADMIN
-						&& secondaryType == ObjectType.DISCUSSION
-					) || (
-						primaryType == ObjectType.READER
-						&& secondaryType == ObjectType.DISCUSSION
+						otherType == ObjectType.DISCUSSION
+						&& (
+							objectType == ObjectType.ADMIN
+							|| objectType == ObjectType.READER
+						)
 					)
 				)
 			case ActivityType.START:
-			case ActivityType.END:
 			case ActivityType.STOP:
 				return (
-					primaryType == ObjectType.SPRINT
-					&& secondaryType == null
+					objectType == ObjectType.SPRINT
+					&& otherType == null
 				)
 			case ActivityType.COMMENT:
 			case ActivityType.UNCOMMENT:
 				return (
-					primaryType == ObjectType.DISCUSSION_POST
-					&& secondaryType == ObjectType.DISCUSSION
+					objectType == ObjectType.DISCUSSION
+					&& otherType == ObjectType.DISCUSSION_POST
 				)
 			case ActivityType.INVITE:
 			case ActivityType.UNINVITE:
 				return (
-					primaryType == ObjectType.USER
-					&& secondaryType == ObjectType.SPRINT
+					otherType == ObjectType.SPRINT
+					&& (objectType == ObjectType.ADMIN || objectType == ObjectType.USER)
 				)
 		}
 		
@@ -380,14 +376,22 @@ class UserActivity {
 		return false
 	}
 	
+	static UserActivity create(ActivityType activityType, ObjectType objectType, Long objectId, ObjectType otherType = null, Long otherId = null) {
+		return create(null, activityType, objectType, objectId, otherType, otherId)	
+	}
+	
+	static UserActivity create(Long userId, ActivityType activityType, ObjectType objectType, Long objectId, ObjectType otherType = null, Long otherId = null) {
+		return create(new Date(), userId, activityType, objectType, objectId, otherType, otherId)
+	}
+	
 	static UserActivity create(Date created, Long userId, ActivityType activityType, ObjectType objectType, Long objectId, ObjectType otherType = null, Long otherId = null) {
 		Long type = toType(activityType, objectType, otherType)
 		if (type == INVALID_TYPE) return null
-		
+		println "UserActivity.create(" + created + ", " + userId + ", " + activityType + ", " + objectType + ", " + objectId + ", " + otherType + ", " + otherId + ")"
 		UserActivity item = new UserActivity(created, userId, type, objectId, otherId)
 		
 		Utils.save(item, true)
-		
+		println "item: " + item
 		return item
 	}
 	

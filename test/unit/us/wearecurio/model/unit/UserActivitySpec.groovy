@@ -17,24 +17,33 @@ class UserActivitySpec extends Specification {
 	static def validTypes = [
 		[UserActivity.ActivityType.CREATE, UserActivity.ObjectType.SPRINT, null],
 		[UserActivity.ActivityType.CREATE, UserActivity.ObjectType.DISCUSSION, null],
+		[UserActivity.ActivityType.CREATE, UserActivity.ObjectType.USER, null],
+		[UserActivity.ActivityType.CREATE, UserActivity.ObjectType.DISCUSSION_POST, UserActivity.ObjectType.DISCUSSION],
 		[UserActivity.ActivityType.DELETE, UserActivity.ObjectType.SPRINT, null],
 		[UserActivity.ActivityType.DELETE, UserActivity.ObjectType.DISCUSSION, null],
-		[UserActivity.ActivityType.FOLLOW, UserActivity.ObjectType.SPRINT, null],
-		[UserActivity.ActivityType.FOLLOW, UserActivity.ObjectType.USER, null],
-		[UserActivity.ActivityType.UNFOLLOW, UserActivity.ObjectType.SPRINT, null],
-		[UserActivity.ActivityType.UNFOLLOW, UserActivity.ObjectType.USER, null],
+		[UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, null],
+		[UserActivity.ActivityType.DELETE, UserActivity.ObjectType.DISCUSSION_POST, UserActivity.ObjectType.DISCUSSION],
+		[UserActivity.ActivityType.FOLLOW, UserActivity.ObjectType.SPRINT, UserActivity.ObjectType.USER],
+		[UserActivity.ActivityType.FOLLOW, UserActivity.ObjectType.USER, UserActivity.ObjectType.USER],
+		[UserActivity.ActivityType.UNFOLLOW, UserActivity.ObjectType.SPRINT, UserActivity.ObjectType.USER],
+		[UserActivity.ActivityType.UNFOLLOW, UserActivity.ObjectType.USER, UserActivity.ObjectType.USER],
+		[UserActivity.ActivityType.ADD, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
+		[UserActivity.ActivityType.ADD, UserActivity.ObjectType.READER, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.ADD, UserActivity.ObjectType.DISCUSSION, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.ADD, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.DISCUSSION],
 		[UserActivity.ActivityType.ADD, UserActivity.ObjectType.READER, UserActivity.ObjectType.DISCUSSION],
+		[UserActivity.ActivityType.REMOVE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
+		[UserActivity.ActivityType.REMOVE, UserActivity.ObjectType.READER, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.REMOVE, UserActivity.ObjectType.DISCUSSION, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.REMOVE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.DISCUSSION],
 		[UserActivity.ActivityType.REMOVE, UserActivity.ObjectType.READER, UserActivity.ObjectType.DISCUSSION],
 		[UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, null],
-		[UserActivity.ActivityType.END, UserActivity.ObjectType.SPRINT, null],
 		[UserActivity.ActivityType.STOP, UserActivity.ObjectType.SPRINT, null],
-		[UserActivity.ActivityType.COMMENT, UserActivity.ObjectType.DISCUSSION_POST, UserActivity.ObjectType.DISCUSSION],
-		[UserActivity.ActivityType.UNCOMMENT, UserActivity.ObjectType.DISCUSSION_POST, UserActivity.ObjectType.DISCUSSION],
+		[UserActivity.ActivityType.COMMENT, UserActivity.ObjectType.DISCUSSION, UserActivity.ObjectType.DISCUSSION_POST],
+		[UserActivity.ActivityType.UNCOMMENT, UserActivity.ObjectType.DISCUSSION, UserActivity.ObjectType.DISCUSSION_POST],
+		[UserActivity.ActivityType.INVITE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.INVITE, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT],
+		[UserActivity.ActivityType.UNINVITE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.UNINVITE, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT]
 	]
 	static String expectedTypeStringPart = "act"
@@ -49,12 +58,11 @@ class UserActivitySpec extends Specification {
 		4 : "added",
 		5 : "removed",
 		6 : "started",
-		7 : "ended",
-		8 : "stopped",
-		9 : "commented",
-		10 : "uncommented",
-		11 : "invited",
-		12 : "uninvited"
+		7 : "stopped",
+		8 : "commented",
+		9 : "uncommented",
+		10 : "invited",
+		11 : "uninvited"
 	]
 	
 	static def expectedObjectTypeStringPart = [
@@ -156,7 +164,6 @@ class UserActivitySpec extends Specification {
 		UserActivity.ActivityType.ADD		|	"added"
 		UserActivity.ActivityType.REMOVE	|	"removed"
 		UserActivity.ActivityType.START		|	"started"
-		UserActivity.ActivityType.END		|	"ended"
 		UserActivity.ActivityType.STOP		|	"stopped"
 		UserActivity.ActivityType.COMMENT	|	"commented"
 		UserActivity.ActivityType.UNCOMMENT	|	"uncommented"
@@ -272,7 +279,6 @@ class UserActivitySpec extends Specification {
 		UserActivity.ActivityType.ADD,
 		UserActivity.ActivityType.REMOVE,
 		UserActivity.ActivityType.START,
-		UserActivity.ActivityType.END,
 		UserActivity.ActivityType.STOP,
 		UserActivity.ActivityType.COMMENT,
 		UserActivity.ActivityType.UNCOMMENT,

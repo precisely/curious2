@@ -60,6 +60,10 @@ class Discussion {
 		return create(user, null)
 	}
 	
+	private static createUserActivity(Long userId, UserActivity.ActivityType activityType, Long objectId) {
+		UserActivity.create(userId, activityType, UserActivity.ObjectType.DISCUSSION, objectId)
+	}
+	
 	public static Discussion create(User user, String name) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name
 		def discussion = new Discussion(user, name, new Date())
@@ -67,6 +71,8 @@ class Discussion {
 		Utils.save(discussion, true)
 		
 		discussion.addUserVirtualGroup(user)
+		
+		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
 		
 		return discussion
 	}
@@ -82,6 +88,8 @@ class Discussion {
 			
 			discussion.addUserVirtualGroup(user)
 			
+			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
+		
 			return discussion
 		}
 		
@@ -92,6 +100,10 @@ class Discussion {
 			discussion.addUserVirtualGroup(user)
 		}
 		
+		if (discussion != null) {
+			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
+		}
+		
 		return discussion
 	}
 	
@@ -99,15 +111,23 @@ class Discussion {
 		if (!UserGroup.canAdminDiscussion(user, discussion)) {
 			return [success: false, message: "You don't have the right to delete this discussion."]
 		}
+		def discussionId = discussion.id
+		
 		Discussion.delete(discussion)
+		
+		createUserActivity(user.id, UserActivity.ActivityType.DELETE, discussionId)
+		
 		return [success: true, message: "Discussion deleted successfully."]
 		
 	}
 	
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
+		def discussionId = discussion.id
+		def userId = discussion.userId
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
 		discussion.delete(flush: true)
+		createUserActivity(null, UserActivity.ActivityType.DELETE, discussionId)
 	}
 	
 	static boolean update(Discussion discussion, def params, User user) {
@@ -348,6 +368,15 @@ class Discussion {
 			this.notifyParticipants(post, false)
 		}
 		
+		UserActivity.create(
+			post.authorUserId, 
+			UserActivity.ActivityType.COMMENT, 
+			UserActivity.ObjectType.DISCUSSION, 
+			id,
+			UserActivity.ObjectType.DISCUSSION_POST,
+			post.id
+		)
+				
 		return post
 	}
 	

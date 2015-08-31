@@ -697,7 +697,7 @@ class MigrationService {
 		}
 		tryMigration("Update UserActivity typeid") {
 			sql("update user_activity set type_id = 262 where type_id = 260")
-			sql("update user_activity set type_id = 264 where type_id = 261")
+			sql("update user_activity set type_id = 263 where type_id = 261")
 		}
 	}
 }
