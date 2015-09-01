@@ -230,11 +230,12 @@ class User {
 		
 		if (r != null) {
 			UserActivity.create(
+				follower.id,
 				UserActivity.ActivityType.FOLLOW, 
 				UserActivity.ObjectType.USER, 
-				id, 
+				follower.id, 
 				UserActivity.ObjectType.USER,
-				follower.id
+				id
 			)
 		}
 		return r != null
@@ -247,11 +248,12 @@ class User {
 		GroupMemberReader.delete(virtualUserGroupIdFollowers, follower.id)
 		
 		UserActivity.create(
+			follower.id,
 			UserActivity.ActivityType.UNFOLLOW, 
 			UserActivity.ObjectType.USER, 
-			id, 
+			follower.id, 
 			UserActivity.ObjectType.USER,
-			follower.id
+			id
 		)
 	}
 	

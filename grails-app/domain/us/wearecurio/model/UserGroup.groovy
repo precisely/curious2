@@ -9,6 +9,7 @@ import javax.sql.DataSource
 import org.apache.commons.logging.LogFactory
 import org.hibernate.criterion.CriteriaSpecification
 
+import us.wearecurio.model.UserActivity
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
@@ -323,8 +324,23 @@ class UserGroup {
 
 		GroupMemberReader.create(id, user.getId())
 
-		this.notifyNotifiedMajors("New user '" + user.getUsername() + "' joined group '" + this.description + "'",
+		def n = this.notifyNotifiedMajors("New user '" + user.getUsername() + "' joined group '" + this.description + "'",
 						"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) joined group '" + this.description + "'")
+
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
+		if (discussionIds != null) {
+			for (def discussionId : discussionIds) {
+				UserActivity.create (
+					null,
+					UserActivity.ActivityType.ADD,
+					UserActivity.ObjectType.READER,
+					user.id,
+					UserActivity.ObjectType.DISCUSSION,
+					discussionId,
+				)
+			}
+		}
+		n
 	}
 
 	def addReader(Long userId) {
@@ -338,8 +354,23 @@ class UserGroup {
 
 		GroupMemberReader.delete(id, user.getId())
 
-		this.notifyNotifiedMajors("User '" + user.getUsername() + "' left group '" + this.description + "'",
+		def n = this.notifyNotifiedMajors("User '" + user.getUsername() + "' left group '" + this.description + "'",
 						"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
+
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
+		if (discussionIds != null) {
+			for (def discussionId : discussionIds) {
+				UserActivity.create (
+					null,
+					UserActivity.ActivityType.REMOVE,
+					UserActivity.ObjectType.READER,
+					user.id,
+					UserActivity.ObjectType.DISCUSSION,
+					discussionId,
+				)
+			}
+		}
+		n
 	}
 
 	def removeReader(Long userId) {
@@ -516,20 +547,23 @@ class UserGroup {
 
 	def addAdmin(User user) {
 		if (!user) return;
-
-		addReader(user)
-		addWriter(user)
-		if (defaultNotify) {
-			addNotified(user)
-			addNotifiedMajor(user)
-		}
-		GroupMemberAdmin.create(id, user.getId())
+		return addAdmin(user.id)
+//
+//		addReader(user)
+//		addWriter(user)
+//		if (defaultNotify) {
+//			addNotified(user)
+//			addNotifiedMajor(user)
+//		}
+//		GroupMemberAdmin.create(id, user.getId())
 	}
 
 	def removeAdmin(User user) {
 		if (!user) return;
-
-		GroupMemberAdmin.delete(id, user.getId())
+		
+		removeAdmin(user.id)
+//
+//		GroupMemberAdmin.delete(id, user.getId())
 	}
 
 	boolean hasAdmin(User user) {
@@ -547,12 +581,39 @@ class UserGroup {
 			addNotified(userId)
 			addNotifiedMajor(userId)
 		}
-		GroupMemberAdmin.create(id, userId)
+		def a = GroupMemberAdmin.create(id, userId)
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
+		if (discussionIds != null) {
+			for (def discussionId : discussionIds) {
+				UserActivity.create (
+					null,
+					UserActivity.ActivityType.ADD,
+					UserActivity.ObjectType.ADMIN,
+					userId,
+					UserActivity.ObjectType.DISCUSSION,
+					discussionId,
+				)
+			}
+		}
+		a
 	}
 
 	def removeAdmin(Long userId) {
 		if (!userId) return;
 
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
+		if (discussionIds != null) {
+			for (def discussionId : discussionIds) {
+				UserActivity.create (
+					null,
+					UserActivity.ActivityType.REMOVE,
+					UserActivity.ObjectType.ADMIN,
+					userId,
+					UserActivity.ObjectType.DISCUSSION,
+					discussionId,
+				)
+			}
+		}
 		GroupMemberAdmin.delete(id, userId)
 	}
 

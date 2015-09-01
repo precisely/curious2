@@ -387,11 +387,10 @@ class UserActivity {
 	static UserActivity create(Date created, Long userId, ActivityType activityType, ObjectType objectType, Long objectId, ObjectType otherType = null, Long otherId = null) {
 		Long type = toType(activityType, objectType, otherType)
 		if (type == INVALID_TYPE) return null
-		println "UserActivity.create(" + created + ", " + userId + ", " + activityType + ", " + objectType + ", " + objectId + ", " + otherType + ", " + otherId + ")"
 		UserActivity item = new UserActivity(created, userId, type, objectId, otherId)
 		
 		Utils.save(item, true)
-		println "item: " + item
+		
 		return item
 	}
 	
