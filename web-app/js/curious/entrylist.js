@@ -527,13 +527,13 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			repeatTypeParam = "&repeatTypeId=" + repeatTypeId;
 		}
 		if (repeatEnd && typeof repeatEnd == 'string') {
-			repeatEnd = new Date(repeatEnd);
+			repeatEnd = new Date(repeatEnd).setHours(23, 59, 59, 0);
 			var now = new Date();
-			if(repeatEnd < now) {
-				now.setHours(23,59,59,0);
+			if(new Date(repeatEnd) < now) {
+				now.setHours(23, 59, 59, 0);
 				repeatEnd = now;
 			}
-			repeatEndParam = "&repeatEnd=" + repeatEnd.toUTCString();
+			repeatEndParam = "&repeatEnd=" + new Date(repeatEnd).toUTCString();
 		}
 		return repeatEndParam + repeatTypeParam;	
 	}
