@@ -11,7 +11,6 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
-import us.wearecurio.utility.Utils
 
 class Twenty3AndMeDataService extends DataService {
 
@@ -66,7 +65,7 @@ class Twenty3AndMeDataService extends DataService {
 			dataChunkList.eachWithIndex { dataChunk, index ->
 				Twenty3AndMeData twenty3AndMeDataInstance = Twenty3AndMeData.findOrCreateByAccountAndProfileIdAndSequence(account, profileId, index)
 				twenty3AndMeDataInstance.data = dataChunk as byte[]
-				Utils.save(twenty3AndMeDataInstance, true)
+				twenty3AndMeDataInstance.save(flush: true)
 				if (twenty3AndMeDataInstance.hasErrors()) {
 					log.warn "Error saving $twenty3AndMeDataInstance: $twenty3AndMeDataInstance.errors"
 				}

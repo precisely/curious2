@@ -13,7 +13,6 @@ import uk.co.desirableobjects.oauth.scribe.OauthService
 import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.services.HumanDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
@@ -36,7 +35,7 @@ class HumanDataServiceTests extends CuriousServiceTestCase {
 		accessToken = "demo"
 		account1 = new OAuthAccount([typeId: HUMAN, userId: userId, accessToken: accessToken,
 			accessSecret: "Dummy-secret", accountId: "529edac229619a013a005434", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
-		Utils.save(account1, true)
+		account1.save()
 	}
 
 	@After

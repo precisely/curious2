@@ -6,11 +6,11 @@
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<script type="text/javascript" src="/js/curious/feeds.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/discussion.js?ver=22"></script>
-	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
+	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, 
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF" />
+			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF" />
 	<g:layoutHead />
 	</head>
 	<body class="${pageProperty(name: 'body.class') ?: '' }">
@@ -49,7 +49,6 @@
 				<g:pageProperty name="page.feedContent" />
 			</div>
 		</div>
-		</div>
 		<!-- /MAIN -->
 		<div style="clear: both;"></div>
 		<div id="share-dialog" class="hide" title="Share">
@@ -68,12 +67,6 @@
 			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
 		<g:render template="/sprint/createSprintModal" />
-
-		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />
-		<c:renderJSTemplate template="/discussion/instance" id="_discussions" />
-		<c:renderJSTemplate template="/discussionPost/instance" id="_comments" />
-		<c:renderJSTemplate template="/people/instance" id="_people" />
-		<c:renderJSTemplate template="/sprint/instance" id="_sprints" />
 	</body>
 </html>
 </g:applyLayout>

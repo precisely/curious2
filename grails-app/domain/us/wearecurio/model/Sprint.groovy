@@ -11,7 +11,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
-import us.wearecurio.data.RepeatType
+import us.wearecurio.model.RepeatType
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
@@ -482,7 +482,7 @@ class Sprint {
 		}
 		
 		// add start element
-		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " start", null, null, baseDate, true)
+		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " start", baseDate, true)
 		def entry = Entry.create(userId, m, stats)
 		
 		// record activity
@@ -538,7 +538,7 @@ class Sprint {
 						lt("date", startDate + 1)
 					}
 					eq("tag", entry.getTag())
-					eq("repeatTypeId", entry.repeatTypeId)
+					eq("repeat", entry.repeat)
 					isNull("setIdentifier")
 				}
 			}
@@ -549,7 +549,7 @@ class Sprint {
 		}
 		
 		// add stop element
-		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " end", null, null, baseDate, true)
+		def m = EntryParserService.get().parse(now, timeZoneName, fetchTagName() + " end", baseDate, true)
 		def entry = Entry.create(userId, m, stats)
 
 		// record activity

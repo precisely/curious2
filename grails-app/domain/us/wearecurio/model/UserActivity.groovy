@@ -38,6 +38,8 @@ class UserActivity {
 		otherId(nullable:true)
 	}
 	
+	// static transients = [ 'groups', 'groupIds', 'isPublic' ]
+	
 	static searchable = {
 		only = ['id', 'created', 'userId', 'typeId', 'activityType', 'objectType', 'otherType', 'objectId', 'otherId']
 	}

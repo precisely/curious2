@@ -29,7 +29,7 @@ class DiscussionController extends LoginController {
 			if (discussion != null) {
 				Utils.save(discussion, true)
 
-				if (discussionPost) {
+				if(discussionPost) {
 					discussion.createPost(user, discussionPost)
 				}
 
@@ -97,8 +97,6 @@ class DiscussionController extends LoginController {
 
 	def delete() {
 		User user = sessionUser()
-		debug("$user attempting to delete discussion $params")
-
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion) {
 			log.warn "DiscussionId not found: " + params.id

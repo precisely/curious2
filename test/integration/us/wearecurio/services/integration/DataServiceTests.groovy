@@ -79,7 +79,7 @@ class DataServiceTests extends CuriousServiceTestCase {
 
 		account.accessToken = ""
 		account.accessSecret = ""
-		Utils.save(account, true)	// Will mimic new Token("", "")
+		account.save()	// Will mimic new Token("", "")
 
 		try {
 			// Testing directly with API with no token.

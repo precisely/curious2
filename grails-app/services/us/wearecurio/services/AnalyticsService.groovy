@@ -1,7 +1,7 @@
 package us.wearecurio.services
 
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicIntegerArray
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import groovy.time.*
 import groovyx.net.http.*
@@ -31,7 +31,7 @@ class AnalyticsService {
 		AnalyticsTask.analyticsService = s
 	}
 
-	static AnalyticsService get() { return service }
+	static EmailService get() { return service }
 	
 	def grailsApplication
 	

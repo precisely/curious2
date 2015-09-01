@@ -1,11 +1,12 @@
 package us.wearecurio.controller
 
-import grails.converters.JSON
 import us.wearecurio.model.*
+import grails.gsp.PageRenderer
 import us.wearecurio.utility.*
 
 class DiscussionPostController extends LoginController{
 
+	PageRenderer groovyPageRenderer
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
 	def index(Integer offset) {
@@ -35,8 +36,7 @@ class DiscussionPostController extends LoginController{
 
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
-				"for discussion with hash: ${params.discussionHash}"
-
+		"for discussion with hash: ${params.discussionHash}"
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion){
 			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
@@ -44,7 +44,8 @@ class DiscussionPostController extends LoginController{
 		}
 
 		User user = sessionUser()
-		def comment = DiscussionPost.createComment(params.message, user, discussion, params.plotIdMessage, params)
+		def comment = DiscussionPost.createComment(params.message, user, discussion, 
+		params.plotIdMessage, params)
 
 		// If user does not have permission to add comment response will be 'false'
 		if (comment instanceof String) {
@@ -55,11 +56,9 @@ class DiscussionPostController extends LoginController{
 		if (!comment) {
 			renderJSONPost([success: false, message: g.message(code: "not.created.message", args: ["Comment"])])
 			return
-		}
-
-		JSON.use("jsonDate") {
-			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser().id, idAdmin:
-					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
+		} else {
+			renderJSONPost([success: true])
+			return
 		}
 	}
 

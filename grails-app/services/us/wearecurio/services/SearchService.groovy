@@ -20,8 +20,6 @@ import org.apache.commons.logging.LogFactory
 
 class SearchService {
 	
-	private static def log = LogFactory.getLog(this)
-
 	def elasticSearchService
 	def elasticSearchHelper
 	
@@ -35,10 +33,6 @@ class SearchService {
 	
 	static SearchService get() {
 		service
-	}
-	
-	void index(Object obj) {
-		elasticSearchService.index(obj)
 	}
 	
 	Map getDiscussionsCreated(User user, int offset = 0, int max = 10) {
@@ -106,7 +100,6 @@ class SearchService {
 	}
 	
 	Map getDiscussionsList(User user, int offset, int max, def groupIds = null) {
-		log.debug "getDiscussionsList: user:" + user + " offset:" + offset + " max:" + max + " groupIds:" + groupIds
 		try {
 			def userReaderGroups = UserGroup.getGroupsForReader(user)
 			if (userReaderGroups == null || userReaderGroups.size() < 1) {
@@ -147,7 +140,7 @@ class SearchService {
 			
 			def adminGroupIds = user.getAdminGroupIds()
 			
-			return elasticSearchHelper.withElasticSearch{ client ->
+			elasticSearchHelper.withElasticSearch{ client ->
 				SearchResponse sr = client
 						.prepareSearch("us.wearecurio.model_v0")
 						.setTypes("discussionPost")
@@ -181,7 +174,7 @@ class SearchService {
 				]
 				
 				for (def d : readerGroupDiscussions.searchResults ) {
-					log.debug "readerGroupDiscussion: " + d.toString()
+					System.out.println "readerGroupDiscussion: " + d.toString()
 					model["discussionList"] << [
 						id: d.id,
 						hash: d.hash,
@@ -278,8 +271,6 @@ class SearchService {
 						discussionItem['groupName'] = anyGName
 					}
 				}
-				
-				log.debug "Done processing search result information: " + model
 				
 				return [listItems: model, success: true]
 			}

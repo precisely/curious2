@@ -1,14 +1,13 @@
-package us.wearecurio.model
+package us.wearecurio.model;
 
 import org.apache.commons.logging.LogFactory
 
-import java.math.MathContext
+import java.math.MathContext;
 import java.sql.ResultSet
 import java.util.TreeSet
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.model.Entry
-import us.wearecurio.data.RepeatType
 
 class TagStats {
 
@@ -111,7 +110,7 @@ class TagStats {
 			int amountLimit = 5
 			
 			def lastAmounts = Entry.executeQuery(
-				"select entry.amount, entry.amountPrecision, entry.units, entry.repeatTypeId from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeatTypeId IS NOT NULL) order by entry.date desc",
+				"select entry.amount, entry.amountPrecision, entry.units, entry.repeat from Entry as entry where entry.baseTag.id = :baseTagId and entry.userId = :userId and entry.date IS NOT NULL and (entry.amount IS NOT NULL OR entry.repeat IS NOT NULL) order by entry.date desc",
 				[baseTagId:tagId, userId:userId], [max:amountLimit])
 			
 			int totalCount = lastAmounts.size()
@@ -126,7 +125,6 @@ class TagStats {
 			int countUsesAmount = 0
 			
 			for (def amount in lastAmounts) {
-				amount[3] = RepeatType.get(amount[3])
 				if (amount[1] > 0) {
 					++countUsesAmount
 				}

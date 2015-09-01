@@ -3,11 +3,11 @@
  */
 var autocompleteWidget;
 var searchList = [];
-var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
 }
+
 
 function registerScroll() {
 	$('#feed').infiniteScroll({
@@ -26,7 +26,8 @@ function registerScroll() {
 				return;
 			}
 
-			queueJSON('Loading data', url, function(data) {
+			queueJSON('Loading data', url,
+					function(data) {
 				if (!checkData(data))
 					return;
 
@@ -36,12 +37,12 @@ function registerScroll() {
 					} else {
 						if (isTabActive('#people')) {
 							$.each(data.listItems, function(index, user) {                                                           
-								var compiledHtml = compileTemplate("_people", {'user': user});                                       
+								var compiledHtml = _.template(_people)({'user': user});                                       
 								$('#feed').append(compiledHtml);                                                                
 							});                                                                                                      
 						} else if (isTabActive('#discussions')) {
 							$.each(data.listItems.discussionList, function(index, discussionData) {
-								var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData, 'groupName': data.listItems.groupName});
+								var compiledHtml = _.template(_discussions)({'discussionData': discussionData, 'groupName': data.listItems.groupName});
 								$('#feed').append(compiledHtml);
 								showCommentAgeFromDate();
 							});
@@ -49,7 +50,7 @@ function registerScroll() {
 							addAllFeedItems(data);
 						} else {
 							$.each(data.listItems.sprintList, function(index, sprint) {
-								var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
+								var compiledHtml = _.template(_sprints)({'sprint': sprint});
 								$('#feed').append(compiledHtml);
 							});
 							showCommentAgeFromDate();
@@ -75,12 +76,13 @@ $(window).load(function() {
 	} else if (isTabActive('#people')) {
 		showPeople();
 	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
-		// If the all tab is active or the user is on the social page without a hash
+		//if the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
 	} 
 });
 
 $(document).ready(function() {
+	
 	if (isOnFeedPage()) {
 		registerScroll();
 	}
@@ -89,6 +91,64 @@ $(document).ready(function() {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
 		}
+	});
+
+	$(document).on("click", "a.delete-discussion", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var discussionHash = $this.data('discussionHashId');
+			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
+					function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
+						showAlert(data.message, function() {
+							$this.parents('.feed-item').fadeOut();
+						});
+					} else {
+						location.href = '/home/social#all';
+					}
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
+		});
+		return false;
+	});
+
+	$(document).on("click", "a.delete-post", function() {
+		var $this = $(this);
+		showYesNo('Are you sure want to delete this?', function() {
+			var postId = $this.data('postId');
+			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
+					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
+					function(data) {
+				if (!checkData(data))
+					return;
+
+				if (data.success) {
+					showAlert(data.message, function() {
+						$this.parent().closest('.discussion-comment').fadeOut();
+						if (isOnFeedPage()) {
+							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
+							var totalComments = $commentButton.data('totalComments') - 1;
+							$commentButton.data('totalComments', totalComments);
+							$commentButton.text(totalComments);
+						}
+					});
+				} else {
+					showAlert(data.message);
+				}
+			}, function(xhr) {
+				showAlert('Internal server error occurred.');
+			}, null, 'delete');
+		});
+		return false;
 	});
 
 	$('#sprint-tags').keypress(function (e) {
@@ -149,52 +209,6 @@ $(document).ready(function() {
 		return false;
 	});
 
-	/**
-	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of disucssion and their
-	 * comments.
-	 */
-	$(document).on("click", ".discussion .view-comment", function() {
-		var offset = $(this).data("offset") || 4;
-
-		commentsArgs.offset = offset;
-
-		getComments($(this).data("discussionHash"), commentsArgs, function() {
-			$(this).data("offset", offset + maxCommentsPerDiscussion);
-		}.bind(this));
-	});
-
-	// Handlers for discussion form input fields
-	$(document).on('keypress', '#discussion-topic', function(e) {
-		var key = e.which;
-		if (key == 13) {
-			var value = $(this).val();
-			if (!value) {
-				return false;
-			}
-
-			var data = extractDiscussionNameAndPost(value);
-
-			// See base.js for implementation details of $.serializeObject()
-			var params = $('#create-discussion').serializeObject();
-			params.name = data.name
-			params.discussionPost = data.post;
-
-			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
-					function(data) {
-				if (!checkData(data))
-					return;
-				if (data.success) {
-					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
-					$('#create-discussion')[0].reset();
-				}
-			}, function(xhr) {
-				console.log('Internal server error');
-			});
-
-			return false;
-		}
-	});
-
 	$('#close-sprint-modal').click(function() {
 		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
 		clearSprintFormData();
@@ -234,26 +248,6 @@ $(document).ready(function() {
 	})
 });
 
-function extractDiscussionNameAndPost(value) {
-	var discussionName, discussionPost;
-
-	// Try to get the first sentence i.e. a line ending with either "." "?" or "!"
-	var firstSentenceData = /^.*?[\.!\?](?:\s|$)/.exec(value);
-
-	if (firstSentenceData) {
-		discussionName = firstSentenceData[0].trim();
-	} else {	// If user has not used any of the above punctuations
-		discussionName = value;
-	}
-
-	// Trim the entered text max upto the 100 characters and use it as the discussion name/title
-	discussionName = shorten(discussionName, 100).trim();		// See base.js for "shorten" method
-	// And the rest of the string (if any) will be used as first discussion comment message
-	discussionPost = value.substring(discussionName.length).trim();
-
-	return {name: discussionName, post: discussionPost};
-}
-
 function showSprints() {
 	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
@@ -263,7 +257,7 @@ function showSprints() {
 				// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 				$('#feed').removeClass().addClass('type-sprints').html('');
 				$.each(data.listItems.sprintList, function(index, sprint) {
-					var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
+					var compiledHtml = _.template(_sprints)({'sprint': sprint});
 					$('#feed').append(compiledHtml);
 				});
 				showCommentAgeFromDate();
@@ -283,44 +277,55 @@ function showSprints() {
 }
 
 function showDiscussions() {
-	// Change the red bar title
-	$('#queryTitle').text('Discussions');
-
-	// Select the tab
-	$('#feed-discussions-tab a').tab('show');
-
-	// Clear the tab content and display a spinner
-	$('#feed').html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
-
-	$('#feed-right-tab').html('');
-
-	// Get the discussion data
 	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?', function(data) {
-
-		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.listItems.groupName});
-		$('#feed').removeClass().addClass('type-discussions')
-				.html(createDiscussionForm)		// Reset the main container with create discussion form
-				.append('<div class="discussions"></div>')	// And append one container for holding all discussions
-
-		if (!checkData(data)) {
+			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
+			function(data) {
+		if (!checkData(data))
 			return;
-		}
 
-		if (!data.success) {
-			$('.alert').text(data.message);
-			return;
-		}
+		if (data.success) {
+			if (data.listItems == false) {
+				$('#feed').text('No discussions to show.');
+			} else {
+				$('#feed').removeClass().addClass('type-discussions').html('');
 
-		if (data.listItems == false) {
-			$('#feed').text('No discussions to show.');
-		} else {
 
-			$.each(data.listItems.discussionList, function(index, discussionData) {
-				var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
-				$('.discussions').append(compiledHtml);
+				$.each(data.listItems.discussionList, function(index, discussionData) {
+					var compiledHtml = _.template(_discussions)({'discussionData': discussionData});
+					$('#feed').append(compiledHtml);
+					showCommentAgeFromDate();
+				});
+				$('#feed-right-tab').html('');
+				$('.share-button').popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
+			}
+			$('#queryTitle').text('Discussions');
+			$('#feed-discussions-tab a').tab('show');
+			// Showing create discussion form only once
+			var createDiscussionForm = _.template(_createDiscussionForm)({'groupName': data.listItems.groupName});
+			$('#feed').prepend(createDiscussionForm);
+
+			// Handlers for discussion form input fields
+			$('#discussion-topic').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('.input-affordance hr').show();
+					$('input[name = discussionPost]').show();
+					return false;  
+				}
 			});
-			showCommentAgeFromDate();
+
+			$('#discussion-discription').keypress(function (e) {
+				var key = e.which;
+				if (key == 13) {
+					$('#create-discussion').submit();
+					return false;  
+				}
+			});
+		} else {
+			$('.alert').text(data.message);
 		}
 	}, function(data) {
 		showAlert('Internal server error occurred.');
@@ -341,7 +346,7 @@ function showPeople() {
 			} else {
 				$('#feed').removeClass().addClass('type-people').html('');
 				$.each(data.listItems, function(index, user) {
-					var compiledHtml = compileTemplate("_people", {'user': user});
+					var compiledHtml = _.template(_people)({'user': user});
 					$('#feed').append(compiledHtml);
 				});
 				$('#feed-right-tab').html('');
@@ -371,6 +376,10 @@ function showAllFeeds() {
 				$('#feed').removeClass().addClass('type-all').html('');
 				addAllFeedItems(data);
 				$('#feed-right-tab').html('');
+				$(".share-button").popover({html:true});
+				$('.share-button').on('click', function () {
+					$('.share-link').select();
+				});
 			}
 			$('#queryTitle').text('All Feeds');		
 			$('#feed-all-tab a').tab('show');
@@ -390,20 +399,19 @@ function addAllFeedItems(data, elementId, prepend) {
 	});
 
 	$.each(data.listItems, function(index, item) {
-		var compiledHTML = '';
-
+		var compiledHtml = '';
 		if (item.type == 'spr') {
-			compiledHTML = compileTemplate("_sprints", {'sprint': item});
+			compiledHtml = _.template(_sprints)({'sprint': item});
 		} else if (item.type == 'dis') {
-			compiledHTML = compileTemplate("_discussions", {'discussionData': item});
+			compiledHtml = _.template(_discussions)({'discussionData': item});
 		} else if (item.type == 'usr') {
-			compiledHTML = compileTemplate("_people", {'user': item});
+			compiledHtml = _.template(_people)({'user': item});
 		}
 
 		if (prepend) {
-			$(elementId).hide().prepend(compiledHTML).fadeIn('slow');
+			$(elementId).hide().prepend(compiledHtml).fadeIn('slow');
 		} else {
-			$(elementId).append(compiledHTML);
+			$(elementId).append(compiledHtml);
 		}
 	});
 	showCommentAgeFromDate();
@@ -460,7 +468,7 @@ function createAutocomplete(inputId, autocompleteId) {
 	$('#' + inputId).on('keyup', function() {
 		var searchString = $('#' + inputId).val();
 		queueJSON('Getting autocomplete', '/data/getAutocompleteParticipantsData?' + getCSRFPreventionURI("getAutocompleteParticipantsDataCSRF") + "&callback=?", 
-				{searchString: searchString, max: 10},
+				{searchString: searchString},
 				function(data) {
 			if (!checkData(data))
 				return;
@@ -768,16 +776,38 @@ function joinSprint(sprintHash) {
 }
 
 function toggleCommentsList(discussionHash) {
-	var $element = $('.discussion-comments-wrapper', '#discussion-' + discussionHash);
-
+	var $element = $('#discussion' + discussionHash + '-comment-list');
 	if ($element.is(':visible')) {
 		$element.hide();
-		$('.comments', $element).html('');
+		$('#discussion' + discussionHash + '-comment-list .comments').html('');
 	} else {
-		commentsArgs.offset = 0;
-		commentsArgs.max = maxCommentsPerDiscussion;
-
-		getComments(discussionHash, commentsArgs);
+		getMoreComments(discussionHash, 0);
 		$element.show();
 	}
 }
+
+function getMoreComments(discussionHash, offset) {
+
+	var url = "/home/discuss?discussionHash=" + discussionHash + "&offset=" + offset  + "&max=4&" +
+			getCSRFPreventionURI("getCommentsCSRF") + "&callback=?";
+	
+	var discussionElementId = '#discussion' + discussionHash + '-comment-list';
+
+	queueJSON("fetching more comments", url, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (!data.posts) {
+			$(discussionElementId + ' .bottom-margin').html('');
+		} else {
+			$(discussionElementId + ' .comments').append(data.posts);
+			showCommentAgeFromDate();
+			offset = offset + 4;
+			$(discussionElementId + ' .bottom-margin span').off('click').on('click', function() {
+				getMoreComments(discussionHash, offset);
+			});
+		}
+	});
+	return;
+}
+

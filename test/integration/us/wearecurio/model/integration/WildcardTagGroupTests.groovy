@@ -41,13 +41,13 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		
 		EntryStats stats = new EntryStats(userId)
 
-		entry1 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag1.description, null, null, baseDate, true), stats)
-		entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag2.description, null, null, baseDate, true), stats)
-		entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag3.description, null, null, baseDate, true), stats)
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag4.description, null, null, baseDate, true), stats)
-		entry5 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag5.description, null, null, baseDate, true), stats)
-		entry6 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag6.description, null, null, baseDate, true), stats)
-		entry7 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag7.description, null, null, baseDate, true), stats)
+		entry1 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag1.description, baseDate, true), stats)
+		entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag2.description, baseDate, true), stats)
+		entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag3.description, baseDate, true), stats)
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag4.description, baseDate, true), stats)
+		entry5 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag5.description, baseDate, true), stats)
+		entry6 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag6.description, baseDate, true), stats)
+		entry7 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, tag7.description, baseDate, true), stats)
 
 		wildcardTagGroupInstance1 = TagGroup.createOrLookupTagGroup("chicken", userId, 0, WildcardTagGroup.class)
 		wildcardTagGroupInstance2 = TagGroup.createOrLookupTagGroup("grilled chicken", userId, 0, WildcardTagGroup.class)

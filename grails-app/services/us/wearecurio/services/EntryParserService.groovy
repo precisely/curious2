@@ -13,8 +13,9 @@ import org.apache.commons.logging.Log
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 import us.wearecurio.model.DurationType
-import us.wearecurio.data.RepeatType
+import us.wearecurio.model.RepeatType
 import static us.wearecurio.model.Entry.DAYTICKS
 import static us.wearecurio.model.Entry.HALFDAYTICKS
 import static us.wearecurio.model.Entry.HOURTICKS
@@ -37,9 +38,9 @@ import static us.wearecurio.parse.PatternScanner.CONDITION_ATEND
 import static us.wearecurio.parse.PatternScanner.CONDITION_ANY
 import static us.wearecurio.model.Entry.mc
 
-import us.wearecurio.data.UnitGroupMap
-import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitGroup
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
 import java.text.SimpleDateFormat
 import us.wearecurio.utility.Utils
@@ -64,7 +65,7 @@ class EntryParserService {
 	}
 
 	def parseMeta(String entryStr) {
-		return parse(null, null, entryStr, null, null, null, false)
+		return parse(null, null, entryStr, null, false)
 	}
 
 	protected static boolean isSameDay(Date time1, Date time2) {
@@ -282,7 +283,7 @@ class EntryParserService {
 		GMTMIDNIGHTSECS = (new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000L).longValue()
 	}
 	
-	static protected HashSet<String> bloodPressureTags = new HashSet<String>()
+	static HashSet<String> bloodPressureTags = new HashSet<String>()
 	
 	static {
 		bloodPressureTags.add("blood pressure")
@@ -290,78 +291,6 @@ class EntryParserService {
 		bloodPressureTags.add("blood")
 	}
 	
-	/**
-	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
-	 */
-	Tag tagWithSuffixForUnits(Tag baseTag, String units, int index) {
-		if (!units) {
-			return baseTag
-		}
-		
-		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
-		String suffix
-		if (unitRatio)
-			suffix = unitRatio.getSuffix()
-		else
-			suffix = units
-			
-		if (bloodPressureTags.contains(baseTag.getDescription())) {
-			if (suffix) {
-				if (suffix.equals("[pressure]")) {
-					if (index == 0) suffix = "[systolic]"
-					else suffix = "[diastolic]"
-				}
-			}
-		}
-		
-		return Tag.look(baseTag.getDescription() + ' ' + suffix)
-	}
-
-	/**
-	 * Return tag with suffix for given units and offset. Hack blood pressure for now.
-	 */
-	def baseTagAndTagWithSuffixForUnits(Tag baseTag, String units, int index) {
-		if (!units) {
-			return baseTag
-		}
-		
-		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
-		String suffix, coreSuffix
-		if (unitRatio)
-			suffix = unitRatio.getSuffix()
-		else
-			suffix = units
-		
-		if (EntryParserService.bloodPressureTags.contains(baseTag.getDescription())) {
-			if (suffix) {
-				if (suffix.equals("[pressure]")) {
-					if (index == 0) suffix = "[systolic]"
-					else suffix = "[diastolic]"
-				}
-			}
-		}
-		
-		if (suffix.startsWith('[') && suffix.endsWith(']'))
-			coreSuffix = suffix.substring(1, suffix.length() - 1)
-		else
-			coreSuffix = suffix
-		
-		while (true) {
-			String baseDescription = baseTag.getDescription()
-		
-			if (baseDescription.endsWith(' ' + suffix)) {
-				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (suffix.length() + 1)))
-			} else if (baseDescription.endsWith(' ' + coreSuffix)) {
-				baseTag = Tag.look(baseDescription.substring(0, baseDescription.length() - (coreSuffix.length() + 1)))
-			} else
-				break
-		}
-			
-		Tag tag = Tag.look(baseTag.getDescription() + ' ' + suffix)
-		
-		return [baseTag, tag]
-	}
-
 	static final int CONDITION_TAGWORD = 1
 	static final int CONDITION_TAGSEPARATOR = 2
 	static final int CONDITION_DURATION = 3

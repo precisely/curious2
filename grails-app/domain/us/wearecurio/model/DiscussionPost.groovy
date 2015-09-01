@@ -56,9 +56,13 @@ class DiscussionPost {
 			discussionId: discussionId,
 			id: id,
 			message: message,
+<<<<<<< Upstream, based on origin/master
 			created: created,
 			updated: updated,
 			plotDataId: plotDataId
+=======
+			updated: updated
+>>>>>>> f5ca2d0 Undo origin/master merge
 		]
 	}
 

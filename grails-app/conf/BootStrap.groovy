@@ -2,15 +2,15 @@ import grails.converters.JSON
 import grails.util.Environment
 
 import org.joda.time.DateTimeZone
-import us.wearecurio.thirdparty.withings.IntraDayDataThread
+import us.wearecurio.thirdparty.withings.*
 
 import us.wearecurio.server.BackgroundTask
 
 import us.wearecurio.marshaller.EnumMarshaller
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.*
+import us.wearecurio.thirdparty.withings.*
 import us.wearecurio.utility.Utils
-import us.wearecurio.data.DataRetriever
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 
@@ -37,8 +37,6 @@ class BootStrap {
 		EntryParserService.set(entryParserService)
 		AnalyticsService.set(analyticsService)
 		
-		DataRetriever.setDatabaseService(databaseService)
-		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
 		def springContext = WebApplicationContextUtils.getWebApplicationContext( servletContext )
@@ -46,8 +44,6 @@ class BootStrap {
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
-		
-		Utils.registerTestReset({ DataRetriever.resetCache() })
 
 		/**
 		 * This marshaller is implemented to parse date into javascript date format

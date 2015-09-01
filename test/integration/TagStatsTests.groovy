@@ -151,49 +151,49 @@ class TagStatsTests extends CuriousTestCase {
 		
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(now, timeZone, "abcdef 3 tablet", null, null, now, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(now, timeZone, "abcdef 3 tablet", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "abcdef 1 toblet", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "abcdef 1 toblet", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "abcdef 1 tablet", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "abcdef 1 tablet", twoMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(nineMonthsAgo, timeZone, "abcdef 1 tablet", null, null, nineMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(nineMonthsAgo, timeZone, "abcdef 1 tablet", nineMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoYearsAgo, timeZone, "abcdef 1 tablet", null, null, twoYearsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoYearsAgo, timeZone, "abcdef 1 tablet", twoYearsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "qwerty 1 mg", null, null, now, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "qwerty 1 mg", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "qwerty 1.5 mg", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "qwerty 1.5 mg", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "qwerty 1 mg", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "qwerty 1 mg", yesterday, true), stats)
 		
-		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "sando 1 mg", null, null, now, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "sando 1 mg", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "sando 1.5 mg", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "sando 1.5 mg", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "sando 3 mg", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "sando 3 mg", yesterday, true), stats)
 		
-		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "whaat 24", null, null, now, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "whaat 24", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "whaat 14", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "whaat 14", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "whaat 11", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "whaat 11", yesterday, true), stats)
 		
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "gorby", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "gorby", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "gorby", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "gorby", yesterday, true), stats)
 		
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "gorby 12", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "gorby 12", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "poiguj", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "poiguj", yesterday, true), stats)
 		
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "poiguj", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "whoa 1 gee repeat daily", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "whoa 1 gee repeat daily", yesterday, true), stats)
 		
 		stats.finish() // generate new tag stats
 
@@ -326,23 +326,23 @@ class TagStatsTests extends CuriousTestCase {
 		
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(now, timeZone, "yoohoo 3 km", null, null, now, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(now, timeZone, "yoohoo 3 km", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "yoohoo 1 km", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "yoohoo 1 km", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "yoohoo 1000 meters", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "yoohoo 1000 meters", twoMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "yoohoo 4000 meters", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "yoohoo 4000 meters", twoMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "woohoo 3 km", null, null, now, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(now, timeZone, "woohoo 3 km", now, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "woohoo 1 km", null, null, yesterday, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(yesterday, timeZone, "woohoo 1 km", yesterday, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 10000 eggs", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 10000 eggs", twoMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 1000 meters", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 1000 meters", twoMonthsAgo, true), stats)
 
-		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 4000 meters", null, null, twoMonthsAgo, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(twoMonthsAgo, timeZone, "woohoo 4000 meters", twoMonthsAgo, true), stats)
 
 		stats.finish() // generate new tag stats
 

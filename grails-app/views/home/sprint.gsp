@@ -2,9 +2,8 @@
 <html>
 <head>
 <meta name="layout" content="social" />
-<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, addMemberCSRF, addCommentCSRF,
-addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF, leaveSprintDataCSRF, deleteDiscussionPostDataCSRF"/>
-
+<c:jsCSRFToken keys= "getSprintParticipantsDataCSRF, getSprintDiscussionsDataCSRF, createDiscussionDataCSRF, addMemberCSRF, 
+addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF, leaveSprintDataCSRF"/>
 <script type="text/javascript">
 $(document).ready(function() {
 	$('#queryTitle').text('Tracking Sprint');
@@ -28,6 +27,17 @@ $(document).ready(function() {
 			this.pause();
 			showMoreParticipants('${sprintInstance.hash}', this);
 		}
+	});
+
+	$('#discussion-topic').bind('enter', function() {
+		$('.input-affordance hr').show();
+		$('input[name = discussionPost]').show();
+		return false;  
+	});
+
+	$('#discussion-description').bind('enter', function () {
+		$('#create-discussion').submit(submitDiscussion());
+		return false;  
 	});
 
 	var discussionData = ${discussions.encodeAsRaw()};
@@ -106,6 +116,25 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 	}, function(error) {
 		console.log(error);
 	});
+}
+
+
+function submitDiscussion() {
+	// See base.js for implementation details of $.serializeObject()
+	var params = $('#create-discussion').serializeObject();
+	queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
+			function(data) {
+		if (!checkData(data))
+			return;
+		if (data.success) {
+			addAllFeedItems({listItems: [data.discussion]}, '#sprint-discussions', true);
+			$('#create-discussion')[0].reset();
+			$('input[name = discussionPost]').hide();
+		}
+	}, function(xhr) {
+		console.log('Internal server error');
+	});
+	return false;
 }
 </script>
 </head>
@@ -194,7 +223,8 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 						</div>
 						<div class="row">
 							<div class="right-content discussions-wrapper">
-								<div id="sprint-discussions" class="discussions"></div>
+								<div id="sprint-discussions">
+								</div>
 							</div>
 						</div>
 					</div>

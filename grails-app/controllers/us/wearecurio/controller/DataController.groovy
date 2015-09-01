@@ -1,20 +1,26 @@
 package us.wearecurio.controller
 
-import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
 
 import java.math.MathContext
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.Date
 
+import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.springframework.http.HttpStatus
 
-import us.wearecurio.data.RepeatType
+import static org.springframework.http.HttpStatus.*
 import us.wearecurio.model.*
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
+import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
@@ -32,21 +38,15 @@ class DataController extends LoginController {
 		systemFormat.setTimeZone(TimeZone.getDefault());
 	}
 
-	protected def doAddEntry(Map parms) {
-		def p = [defaultToNow:'1']
-		p.putAll(parms)
-		
-		boolean defaultToNow = (p.defaultToNow == '1')
-		
-		debug "DataController.doAddEntry() params:" + p
-		
-		User user = userFromIdStr(p.userId)
+	protected def doAddEntry(currentTimeStr, timeZoneName, userIdStr, textStr, baseDateStr, defaultToNow) {
+		debug "DataController.doAddEntry() currentTimeStr:" + currentTimeStr + ", timeZoneName:" + timeZoneName + ", userIdStr:" + userIdStr \
+				+ ", baseDateStr:" + baseDateStr + ", defaultToNow:" + defaultToNow
 
-		Date currentTime = parseDate(p.currentTime)
-		Date baseDate = parseDate(p.baseDate)
-		Long repeatTypeId = parseLong(p.repeatTypeId)
-		Date repeatEnd = parseDate(p.repeatEnd)
-		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(p.baseDate) : p.timeZoneName
+		def user = userFromIdStr(userIdStr)
+
+		def currentTime = parseDate(currentTimeStr)
+		def baseDate = parseDate(baseDateStr)
+		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
@@ -64,18 +64,14 @@ class DataController extends LoginController {
 		return [entry, parsedEntry['status'], tagStats.get(0)]
 	}
 
-	protected def doUpdateEntry(Map parms) {
-		debug "DataController.doUpdateEntry() params:" + parms
+	protected def doUpdateEntry(entryIdStr, currentTimeStr, textStr, baseDateStr, timeZoneName, defaultToNow, allFuture) {
+		debug "DataController.doUpdateEntry() entryIdStr:" + entryIdStr + ", currentTimeStr:" + currentTimeStr \
+				+ ", textStr:" + textStr + ", baseDateStr:" + baseDateStr + ", timeZoneName:" + timeZoneName \
+				+ ", defaultToNow:" + defaultToNow
 
-		def p = [defaultToNow:'1', allFuture:'1']
-		p.putAll(parms)
-				
-		boolean defaultToNow = (p.defaultToNow == '1')
-		boolean allFuture = (p.allFuture == '1')
-		
-		Entry entry = Entry.get(Long.parseLong(p.entryId))
+		def entry = Entry.get(Long.parseLong(entryIdStr))
 
-		Entry oldEntry = entry
+		def oldEntry = entry
 
 		if (entry.getUserId() == 0L) {
 			debug "Attempting to edit a deleted entry."
@@ -86,22 +82,17 @@ class DataController extends LoginController {
 			debug "No permission to edit this entry"
 			return [null, 'You do not have permission to edit this entry.', null, null]
 		}
-		
-		Long userId = entry.getUserId()
 
 		if (entry.fetchIsGenerated()) {
 			debug "Can't edit a generated entry"
 			return [null, 'You cannot edit a generated entry.', null, null]
 		}
 
-		Date currentTime = parseDate(p.currenTime)
-		Date baseDate = parseDate(p.baseDate)
-		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : p.timeZoneName
-		
-		Long repeatTypeId = parseLong(p.repeatTypeId)
-		Date repeatEnd = parseDate(p.repeatEnd)
+		def currentTime = parseDate(currentTimeStr)
+		def baseDate = parseDate(baseDateStr)
+		timeZoneName = timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : timeZoneName
 
-		EntryStats stats = new EntryStats(userId)
+		EntryStats stats = new EntryStats(entry.getUserId())
 		
 		// activate repeat entry if it has a repeat type
 		if (entry.getRepeatType() != null && entry.getRepeatType().isContinuous()) {
@@ -113,24 +104,18 @@ class DataController extends LoginController {
 			} else
 				debug "No entry activation"
 		}
-		
-		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
 
-		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, true)
+		def m = entryParserService.parse(currentTime, timeZoneName, textStr, baseDate, false, true)
 
-		if (!m) {
+		if (entry != null) {
+			entry = entry.update(m, stats, baseDate, allFuture)
+			def tagStats = stats.finish()
+			return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
+		} else {
 			debug "Parse error"
 			stats.finish()
 			return [null, 'Cannot interpret entry text.', null, null];
-		} else if (m['repeatType']?.isContinuous() && (!wasContinuous)) {
-			// if creating a new continuous (button) entry and the previous entry was not continuous, create a new entry instead
-			entry = Entry.create(userId, m, stats)
-		} else if (entry != null) {
-			entry = entry.update(m, stats, baseDate, allFuture)
 		}
-		
-		ArrayList<TagStats> tagStats = stats.finish()
-		return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
 	}
 
 	// find entries including those with null events
@@ -633,7 +618,8 @@ class DataController extends LoginController {
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
-		def result = doAddEntry(params)
+		def result = doAddEntry(params.currentTime, params.timeZoneName, params.userId, params.text, params.baseDate,
+				params.defaultToNow == '1' ? true : false)
 		if (result[0] != null) {
 			renderJSONGet([
 				listEntries(userId, params.timeZoneName, baseDate, currentTime),
@@ -648,11 +634,12 @@ class DataController extends LoginController {
 
 	def updateEntrySData() { // new API
 		debug("DataController.updateEntrySData() params:" + params)
-		
+
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
-		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params)
+		def (entry, message, oldTagStats, newTagStats) = doUpdateEntry(params.entryId, params.currentTime, params.text, params.baseDate, params.timeZoneName,
+				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
 		if (entry != null) {
 			renderJSONGet([listEntries(userFromId(entry.getUserId()), params.timeZoneName, baseDate, currentTime),
 					oldTagStats?.getJSONDesc(), newTagStats?.getJSONDesc()])
@@ -995,6 +982,68 @@ class DataController extends LoginController {
 		renderJSONGet(Utils.listJSONDesc(entries))
 	}
 	
+	ElasticSearchService elasticSearchService
+
+	def listDiscussionData() {
+		debug "DataController.listDiscussionData() params:" + params
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		params.max = params.max ?: 10
+		params.offset = params.offset ?: 0
+
+		List groupNameList = params.userGroupNames ? params.list("userGroupNames") : []
+		debug "Trying to load list of discussions for  $user.id and list:" + params.userGroupNames
+
+		Map discussionData = groupNameList ? UserGroup.getDiscussionsInfoForGroupNameList(user, groupNameList, params) :
+				UserGroup.getDiscussionsInfoForUser(user, true, false, params)
+
+		debug "Found $discussionData"
+
+		renderJSONGet(discussionData)
+	}
+
+	def listCommentData(String discussionHash) {
+		debug "DataController.listCommentData() params: $params"
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		if (!discussionHash) {
+			renderStringGet("Blank discussion call")
+			return
+		}
+		Discussion discussion = discussionHash ? Discussion.findByHash(discussionHash) : null
+
+		if (!discussion) {
+			debug "Discussion not found for hash [$discussionHash]."
+			renderStringGet "That discussion topic no longer exists."
+			return
+		}
+
+		params.max = params.max ?: 5
+		params.offset = params.offset ?: 0
+
+		Map model = discussion.getJSONModel(params)
+		model.posts = model.posts*.getJSONDesc()
+		model.putAll([isAdmin: UserGroup.canAdminDiscussion(user, discussion)])
+
+		debug "Found Comment data: $model"
+
+		renderJSONGet(model)
+	}
+
 	def saveSnapshotData() {
 		debug "DataController.saveSnapshotData() params:" + params
 
@@ -1107,14 +1156,84 @@ class DataController extends LoginController {
 		}
 	}
 
+	def deleteDiscussionHash() {
+		debug "DataController.deleteDiscussionHash() params:" + params
+
+		def user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		debug "Trying to delete discussion data " + params.hash
+
+		def discussion = Discussion.findByHash(params.hash)
+
+		if (discussion == null) {
+			renderStringGet('No such discussion hash ' + params.hash)
+			return;
+		}
+
+		Discussion.delete(discussion)
+
+		renderStringGet('success')
+	}
+	
+	def createDiscussionData(Long plotDataId, String name, Long id, String discussionPost) {
+		def user = sessionUser()
+		UserGroup group = Discussion.loadGroup(params.group, user)
+
+		debug "DiscussionController.create to group: " + group?.dump()
+		if (group) {
+			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
+			discussion = discussion ?: Discussion.create(user, name, group, null)
+
+			if (discussion != null) {
+				Utils.save(discussion, true)
+				discussion.createPost(user, discussionPost)
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
+			}
+		}
+	}
+	
+	def deleteCommentData(String discussionHash, Long clearPostId) {
+		def user = sessionUser()
+		Discussion discussion
+		if (discussionHash && clearPostId) {
+			discussion = Discussion.findByHash(discussionHash)
+			DiscussionPost.deleteComment(clearPostId, user, discussion)
+			renderStringGet('success')
+		} else {
+			renderStringGet('fail')
+		}
+	}
+
+	def createCommentData(String discussionHash, String message, Long plotIdMessage) {
+		debug "Attemping to add comment '" + message + "', plotIdMessage: " + plotIdMessage
+		def user = sessionUser()
+		Discussion discussion = Discussion.findByHash(discussionHash)
+		if (discussion) {
+			def result = DiscussionPost.createComment(message, user, discussion, plotIdMessage, params)
+			if (result && !(result instanceof String)) {
+				renderStringGet('success')
+			} else {
+				renderStringGet('fail')
+			}
+		} else {
+			renderStringGet('fail')
+		}
+	}
+
 	def createHelpEntriesData() {
 		log.debug "Entries recieved to save: $params and entries: ${params['entries[]']}"
 
 		if (session.showHelp) {
 			session.showHelp = null
 		}
-		
-		String userIdStr = sessionUser().id.toString()
 
 		List entries = []
 
@@ -1130,10 +1249,8 @@ class DataController extends LoginController {
 		List createdEntries = []
 
 		if (params.entryId) {
-			Map p = [:]
-			p.putAll(params)
-			p.text = params['entries[]']
-			List result = doUpdateEntry(p)
+			List result = doUpdateEntry(params.entryId, params.currentTime, params['entries[]'], params.baseDate, params.timeZoneName,
+				params.defaultToNow == '1' ? true : false, (params.allFuture ?: '0') == '1' ? true : false)
 
 			if (result[0]) {
 				createdEntries.push(result[0])
@@ -1142,13 +1259,11 @@ class DataController extends LoginController {
 				messageCode = "not.saved.message"
 			}
 		} else {
-			Map p = [userId:userIdStr]
-			p.putAll(params)
 			Entry.withTransaction { status ->
 				// Iterating over all the entries received and creating entries for them
 				entries.any({
-					p.text = it
-					def result = doAddEntry(p)
+					def result = doAddEntry(params.currentTime, params.timeZoneName, sessionUser().id.toString(), 
+						it, params.baseDate, true)
 					if (!result[0]) {
 						operationSuccess = false
 						messageCode = "not.saved.message"
@@ -1176,7 +1291,6 @@ class DataController extends LoginController {
 
 	def getAutocompleteParticipantsData() {
 		if (params.searchString) {
-			params.max = params.max ? Math.min(params.int('max'), 50) : 4
 			List searchResults = User.withCriteria {
 				projections{
 					property("username")
@@ -1192,7 +1306,7 @@ class DataController extends LoginController {
 						isNull("virtual")
 					}
 				}
-				maxResults(params.max)
+				maxResults(10)
 			}
 			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
 		} else {

@@ -273,7 +273,7 @@ class FitBitDataService extends DataService {
 			formatter.setTimeZone(timeZone)
 			notification.date = formatter.parse(notification.date)
 			ThirdPartyNotification.withTransaction {
-				Utils.save(new ThirdPartyNotification(notification), true)
+				new ThirdPartyNotification(notification).save(failOnError: true)
 			}
 		}
 	}

@@ -4,8 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BoundedCache<Key, Value> extends LinkedHashMap<Key, Value> {
-	private static final long serialVersionUID = -8693356386725827354L;
-
 	private static final int DEFAULT_INITIAL_CAPACITY = 1000;
  
     private static final float DEFAULT_LOAD_FACTOR = (float) 0.75;

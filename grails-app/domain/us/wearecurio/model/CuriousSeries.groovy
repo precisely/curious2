@@ -2,7 +2,6 @@ package us.wearecurio.model
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Stats
-import us.wearecurio.data.RepeatType
 
 class CuriousSeries {
 	// This class is mainly to massage and normalize Tag or TagGroup entries into a form that is

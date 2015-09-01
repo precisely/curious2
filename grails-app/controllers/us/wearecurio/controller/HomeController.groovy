@@ -737,12 +737,7 @@ class HomeController extends DataController {
 		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
 	}
 
-	/**
-	 * TODO This action is going to be removed in the upcoming pull request that will use JSON  data to render a
-	 * particular discussion. Do not change or alter code here instead use the DiscussionController for this.
-	 */
-	@Deprecated
-	def discuss(String discussionHash, Long plotIdMessage) {
+	def discuss(String discussionHash, Long deletePostId, Long clearPostId, Long plotIdMessage) {
 		/*
 		 * New discussion format uses discussionHash to identify discussions
 		 * 
@@ -750,19 +745,40 @@ class HomeController extends DataController {
 		 * 
 		 * Should support both modes
 		 */
-		debug "HomeController.discuss() $params"
-
+		debug "HomeController.discuss()"
+		
+		def p = params
+		
 		def user = sessionUser()
-
+		
 		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
+		
+		if (plotIdMessage == null && discussionHash==null && params.createTopic == null) {
+			flash.message = "Blank discussion call"
+			redirect(url:toUrl(action:'index'))
+			return
+		}
 
+		String message
+		HttpStatus status
 		Discussion discussion
 
 		if (discussionHash) {
 			discussion = Discussion.findByHash(discussionHash)
+			if (discussion == null) {
+				debug "DiscussionHash not found: " + discussionHash
+				flash.message = "That discussion topic no longer exists."
+				redirect(url: toUrl(action: 'social'))
+				return
+			} else if (params.deleteDiscussion) {
+				Map result = Discussion.delete(discussion, user)
+				flash.message = result.message
+				redirect(url: toUrl(action: 'social'))
+				return
+			}
 		}
-
-		if (discussion == null && plotIdMessage) {
+		
+		if (discussion == null) {
 			def name = params.name ?: "New question or discussion title?"
 			if (plotIdMessage != null) {
 				def plot = PlotData.get(plotIdMessage)
@@ -777,21 +793,64 @@ class HomeController extends DataController {
 				}
 			}
 			discussion = Discussion.create(user, name)
-
-			if (discussion) {
-				if (group) group.addDiscussion(discussion)
-				DiscussionPost.createComment(params.message, user, discussion, plotIdMessage, params)
+			if (discussion != null) {
+				Utils.save(discussion, true)
+				if(params.discussionPost) {
+					discussion.createPost(user, params.discussionPost)
+				}
 			}
-			redirect(url: toUrl(action: "discuss", params: [discussionHash: discussion.hash]))
-			return
-		}
+			else {
+				flash.message = "Failed to create new discussion topic: internal error"
+				redirect(url:toUrl(action:'index'))
+				return
+			}
 
-		if (!discussion) {
-			debug "DiscussionHash not found: " + discussionHash
-			flash.message = "That discussion topic no longer exists."
-			redirect(url: toUrl(action: 'social'))
-			return
+			if (group) group.addDiscussion(discussion)
 		}
+		if (!discussion.getIsPublic()) {
+			if (!user) {
+				flash.message = "Must be logged in"
+				redirect(url:toUrl(action:'index'))
+				return
+			}
+		}
+		if (params.publish && params.publish.equals("true")) {
+			def discussionUserId = discussion.getUserId()
+			if ((user != null && user.getId() == discussionUserId) || (discussionUserId == null)) {
+				discussion.setIsPublic(true)
+				Utils.save(discussion, true)
+			}
+		}
+		if (deletePostId) {
+			debug "Attemtping to delete post id " + deletePostId
+			DiscussionPost post = DiscussionPost.get(deletePostId)
+			if (post != null && post.getDiscussionId() != discussion.getId()) {
+				flash.message = "Can't delete that post --- mismatching discussion id"
+			} else {
+				if (post != null && (user == null || (post.getUserId() != user.getId() && (!UserGroup.canAdminDiscussion(user, discussion))))) {
+					flash.message = "Can't delete that post"
+				} else {
+					discussion.setUpdated(new Date())
+					DiscussionPost.delete(post)
+				}
+			}
+			Utils.save(discussion, true)
+		}
+		if (clearPostId) {
+			boolean result = DiscussionPost.deleteComment(clearPostId, user, discussion)
+			if (result == false) {
+				flash.message = "Can't delete that post"
+			}
+		}
+		if (params.message || plotIdMessage) {
+			debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + plotIdMessage
+			def comment = DiscussionPost.createComment(params.message, user, discussion , 
+				plotIdMessage, params)
+			if (comment instanceof String) {
+				flash.message = "You don't have permission to add a comment to this discussion"
+				redirect(url:toUrl(action:'index'))
+				return
+			}
 
 		if (true) {		// TODO remove this if condition and fix indentation
 			Map model = discussion.getJSONDesc()

@@ -18,7 +18,6 @@ import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
-import us.wearecurio.utility.Utils
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 
@@ -228,7 +227,7 @@ abstract class DataService {
 				timeZoneId = TimeZoneId.look(timeZoneName).id
 			}
 			account.timeZoneId = timeZoneId
-			Utils.save(account, true)
+			account.save(flush: true)
 		} else {
 			log.debug "Found timeZoneId [${account.timeZoneId}] in account itself for account [$account]"
 		}
@@ -331,7 +330,7 @@ abstract class DataService {
 					DatabaseService.retry(notification) {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
 						notification.status = ThirdPartyNotification.Status.PROCESSED
-						Utils.save(notification, true)
+						notification.save(flush: true)
 					}
 				} catch (MissingMethodException e) {
 					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider."

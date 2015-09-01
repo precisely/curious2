@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.SimpleTimeZone
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.utility.Utils
 
 class TrialController extends LoginController {
 	TwitterDataService twitterDataService
@@ -230,7 +229,7 @@ class TrialController extends LoginController {
 			redirect(url:toUrl(action:"register",
 					model:[precontroller:params.precontroller, preaction:params.preaction]))
 		} else {
-			Utils.save(user)
+			user.save()
 			setLoginUser(user)
 			redirect(url:toUrl(controller:params.precontroller, action:params.preaction))
 		}

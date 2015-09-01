@@ -52,7 +52,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 
 		user = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		assert Utils.save(user, true)
+		assert user.save()
 
 		userId = user.id
 

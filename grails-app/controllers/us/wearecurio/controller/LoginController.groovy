@@ -96,7 +96,7 @@ class LoginController extends SessionController {
 		debug "LoginController.login()"
 		
 		def message = flash.message
-		/*if (Environment.current == Environment.DEVELOPMENT && !session.myip) {
+		if (Environment.current == Environment.DEVELOPMENT && !session.myip) {
 			// Fetching public IP to be used in withings/fitbit/facebook/linkedin.
 			try {
 				session.myip = HTTPBuilderService.performRestRequest("http://gt-tests.appspot.com/ip", "GET").readLines()[0]
@@ -105,7 +105,7 @@ class LoginController extends SessionController {
 			} catch (Exception e) {
 				log.error "Fetching public ip exception: ", e
 			}
-		}*/
+		}
 		
 		execLogout()
 		render(view:loginView(),

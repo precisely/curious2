@@ -105,7 +105,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		stats.finish()
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
@@ -128,11 +128,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		entry = Entry.create(userId, entryParserService.parse(tomorrowCurrentTime, timeZone, "bread 7", null, null, tomorrowBaseDate, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(tomorrowCurrentTime, timeZone, "bread 7", tomorrowBaseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:7.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
@@ -161,7 +161,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
@@ -185,9 +185,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
 		
 		stats.finish()
 
@@ -211,9 +211,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
 		
 		stats.finish()
 
@@ -236,9 +236,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		entry = Entry.create(userId, entryParserService.parse(endTime, timeZone, "bread 1", baseDate, true), stats)
 		
 		stats.finish()
 
@@ -284,7 +284,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "updatetest 2 units (comment)", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "updatetest 2 units (comment)", baseDate, true), stats)
 		stats.finish()
 
 		controller.params['entryId'] = entry.getId().toString()
@@ -311,7 +311,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread repeat daily", null, null, earlyBaseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread repeat daily", earlyBaseDate, true), stats)
 		
 		stats.finish()
 
@@ -336,7 +336,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
 		stats.finish()
@@ -363,7 +363,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 repeat", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 repeat", baseDate, true), stats)
 
 		stats.finish()
 		
@@ -415,7 +415,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", baseDate, true), stats)
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
@@ -463,6 +463,50 @@ class DataControllerTests extends CuriousControllerTestCase {
 	
 		curious.addDiscussion(discussion)
 		return discussion
+	}
+
+	@Test
+	void "test list comment data for no id & for for first page"() {
+		controller.session.userId = userId
+
+		Discussion discussion = setUpForCommentPage()
+
+		controller.params.callback = 'callback'
+
+		// Test no discussion id
+		controller.listCommentData()
+
+		String contentAsString = controller.response.contentAsString
+		assert contentAsString.contains('Blank discussion call')
+
+		controller.params.discussionHash = discussion.hash
+
+		// Test pagination with first page
+		controller.listCommentData()
+		contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')
+		assert contentAsString.contains('"message":"comment2"')
+		assert contentAsString.contains('"message":"comment3"')
+		assert !contentAsString.contains('"message":"comment6"')
+	}
+
+	@Test
+	void "test list discussion data for second page in pagination"() {
+		Discussion discussion = setUpForCommentPage()
+
+		controller.session.userId = userId
+		controller.params.callback = 'callback'
+		controller.params.discussionHash = discussion.hash
+		controller.params.offset = 5
+
+		// Test pagination with second page
+		controller.listCommentData()
+		String contentAsString = controller.response.contentAsString
+
+		assert contentAsString.contains('"message":"comment1"')		// Will be available as first post
+		assert !contentAsString.contains('"message":"comment5"')
+		assert contentAsString.contains('"message":"comment6"')
 	}
 
 	@Test
@@ -622,9 +666,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		EntryStats stats = new EntryStats(userId)
 		
-		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1", null, null, winterBaseDate, true), stats)
-		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1 slice", null, null, winterBaseDate, true), stats)
-		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, winterBaseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1", winterBaseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1 slice", winterBaseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", winterBaseDate, true), stats)
 		
 		stats.finish()
 
@@ -676,6 +720,61 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testCreateDiscussion() {
+		controller.session.userId = user.getId()
+
+		// Test for invalid params
+		controller.params['name'] = 'dummyDiscussion'
+		controller.createDiscussionData()
+		controller.response.text == "fail"
+
+		// Test for valid params
+		controller.params['name'] = 'dummyDiscussion'
+		controller.params['discussionPost'] = 'dummyPost'
+		controller.createDiscussionData()
+		controller.response.text == "success"
+
+	}
+	
+	@Test
+	void testDeleteComment() {
+		controller.session.userId = user.getId()
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		DiscussionPost discussionPostInstance = new DiscussionPost([discussionId: discussionInstance.id])
+
+		// Test for invalid params
+		controller.params['discussionHash'] = discussionInstance.hash
+		controller.params['clearPostId'] = 23
+		controller.deleteCommentData()
+		controller.response.text == "fail"
+		
+		// Test for valid params
+		discussionPostInstance.save(flush: true)
+		controller.params['discussionHash'] = discussionInstance.hash
+		controller.params['clearPostId'] = discussionPostInstance.id
+		controller.deleteCommentData()
+		controller.response.text == "success"
+	}
+	
+	@Test
+	void testCreateComment() {
+		controller.session.userId = user.getId()
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		
+		// Test for invalid params
+		controller.params['discussionHash'] = 23
+		controller.params['message'] = 'dummyMessage'
+		controller.createCommentData()
+		controller.response.text == "fail"
+
+		// Test for valid params
+		controller.params['discussionHash'] = discussionInstance.hash
+		controller.params['message'] = 'dummyMessage'
+		controller.createCommentData()
+		controller.response.text == "success"
+	}
+
+	@Test
 	void "Test createHelpEntriesData when no entries are passed in params"() {
 		controller.session.userId = user.getId()
 		controller.session.showHelp = true
@@ -693,7 +792,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	void "Test createHelpEntriesData when entryId passed in parameters"() {
 		EntryStats stats = new EntryStats(userId)
 		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", null, null, baseDate, true), stats)
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", baseDate, true), stats)
 		stats.finish()
 
 		assert Entry.get(entry.id).amount == 2

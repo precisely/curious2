@@ -31,7 +31,7 @@ class IdentifierTests extends CuriousTestCase {
 	@Test
 	void testCreate() {
 		Identifier ident = Identifier.look("foo")
-		Utils.save(ident, true)
+		ident.save()
 		
 		assert ident.getId() != null
 		
@@ -46,10 +46,10 @@ class IdentifierTests extends CuriousTestCase {
 		def currentTime = dateFormat.parse("July 1, 2010 3:30 pm")
 		def timeZone = "America/Los_Angeles"
 		def baseDate = dateFormat.parse("July 1, 2010 12:00 am")
-		def parsed = entryParserService.parse(currentTime, timeZone, "bread 5 repeat", null, null, baseDate, true)
+		def parsed = entryParserService.parse(currentTime, timeZone, "bread 5 repeat", baseDate, true)
 		def entry = Entry.create(userId, parsed, new EntryStats())
 		
-		Utils.save(entry, true)
+		entry.save(flush:true)
 		
 		assert entry.getId() != null
 		

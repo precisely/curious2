@@ -9,7 +9,7 @@ import grails.util.Environment
 import us.wearecurio.server.DateRecord
 import us.wearecurio.utility.Utils
 import us.wearecurio.model.*
-import us.wearecurio.data.RepeatType
+import us.wearecurio.model.RepeatType
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.*

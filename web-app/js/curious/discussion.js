@@ -1,7 +1,7 @@
 /**
- * Script contains Discussion & DiscussionPost (comment) related code.
+ *
+ *
  */
-var commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
 function modifyShare(discussionHash) {
 	var $selectElement = $('select#shareOptions');
@@ -46,25 +46,21 @@ function showShareDialog(discussionHash) {
 	});
 }
 
-/**
- * Used to get the DiscussionPost/comments data associated with a Discussion of given hash.
- * @param discussionHash
- * @param args Supported values: max, offset, sort, order 
- * @param callback Callback to execute when response are rendered in the DOM.
- */
-function getComments(discussionHash, args, callback) {
-	args.discussionHash = discussionHash;
-	var url = "/api/discussionPost?" + $.param(getCSRFPreventionObject("getCommentsCSRF", args)) + "&callback=?";
-
-	queueJSON("fetching more comments", url, function(data) {
-		if (!checkData(data)) {
-			return;
-		}
-
-		renderComments(discussionHash, data.posts, data, window.isDiscussionSinglePage);
-
-		if (callback) {
-			callback(data);
+function showCommentDialog(discussionHash) {
+	$('div#comment-dialog').dialog({
+		dialogClass: "no-close",
+		modal: false,
+		resizable: false,
+		title: "Comment",
+		buttons: {
+			"Post ": function() {
+				$(this).dialog("close");
+				if (discussionHash) {
+					addComment(discussionHash);
+				} else {
+					addComment(null);
+				}
+			}
 		}
 	});
 }
@@ -96,33 +92,21 @@ function renderComments(discussionHash, posts, data, append) {
 	$.each(posts, function(index, post) {
 		compiledHTML += compileTemplate("_comments", {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
 	});
-
-	if (append) {
-		$('.comments', discussionElementID).append(compiledHTML);
-	} else {
-		$('.comments', discussionElementID).prepend(compiledHTML);
-	}
-
-	showCommentAgeFromDate();
 }
 
 $(document).ready(function() {
-	/**
-	 * Click handler to execute when user clicks on the button to delete a Discussion.
-	 */
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var discussionHash = $this.data('discussionHash');
-
 			queueJSONAll('Deleting Discussion', '/api/discussion/' + discussionHash,
-					getCSRFPreventionObject('deleteDiscussionDataCSRF'), function(data) {
-
+					getCSRFPreventionObject('deleteDiscussionDataCSRF'),
+					function(data) {
 				if (!checkData(data))
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
+					if (isOnFeedPage()) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});
@@ -139,9 +123,6 @@ $(document).ready(function() {
 		return false;
 	});
 
-	/**
-	 * Click handler to execute when user clicks on the button to delete a DiscussionPost/comment.
-	 */
 	$(document).on("click", "a.delete-post", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -154,9 +135,7 @@ $(document).ready(function() {
 
 				if (data.success) {
 					showAlert(data.message, function() {
-						$this.parent().closest('.discussion-comment').fadeOut(null, function() {
-							$(this).remove();
-						});
+						$this.parent().closest('.discussion-comment').fadeOut();
 						if (isOnFeedPage()) {
 							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
 							var totalComments = $commentButton.data('totalComments') - 1;
@@ -173,39 +152,5 @@ $(document).ready(function() {
 		});
 		return false;
 	});
-
-	/**
-	 * Click handler to execute when user hit enter i.e. submits the form of adding new DiscussionPost/comment.
-	 */
-	$(document).on("submit", ".comment-form", function() {
-		var $form = $(this);
-		// See base.js for implementation details of $.serializeObject()
-		var params = $form.serializeObject();
-
-		queuePostJSON('Adding Comment', '/api/discussionPost', getCSRFPreventionObject('addCommentCSRF', params),
-				function(data) {
-			if (!checkData(data)) {
-				return;
-			}
-
-			renderComments(params.discussionHash, [data.post], data, !window.isDiscussionSinglePage);
-			$form[0].reset();
-		}, function(xhr) {
-			console.log('Internal server error');
-		});
-
-		return false;
-	});
-
-	$(document).on("click", ".share-button", function() {
-		$(this).popover({html: true});
-		$('.share-link').select();
-	});
-
-	// On click of comment button in the single discussion page
-	$(document).on("click", ".comment-button", function() {
-		// Just put focus on the comment box
-		$(this).parents(".discussion").find("input[name=message]").focus();
-		return false;
-	});
 });
+

@@ -10,6 +10,7 @@ import us.wearecurio.http.*
 class WeatherService {
 	def grailsApplication
 	
+	
 	def fetchConditions(def city="San_Francisco", def state ="CA") {
 		def key = grailsApplication.config.api.weatherunderground.key
 		def url = "http://api.wunderground.com/api/${key}/conditions/q/${state}/${city}.json"

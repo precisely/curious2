@@ -260,8 +260,11 @@ class Discussion {
 			order("plotDataId", "desc")
 			order("created", "desc")
 		}
-
-		return post
+		
+		for (post in posts)
+			return post
+		
+		return null
 	}
 
 	Long fetchUserId() {

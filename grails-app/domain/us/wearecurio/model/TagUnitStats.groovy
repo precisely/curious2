@@ -7,14 +7,11 @@ import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
-import us.wearecurio.data.UnitGroupMap
-import us.wearecurio.data.DataRetriever
-import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
-import us.wearecurio.data.RepeatType
-import us.wearecurio.data.TagUnitStatsInterface
+import us.wearecurio.units.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap.UnitGroup
+import us.wearecurio.units.UnitGroupMap.UnitRatio
 
-class TagUnitStats implements TagUnitStatsInterface {
+class TagUnitStats {
 	
 	private static def log = LogFactory.getLog(this)
 	
@@ -40,6 +37,28 @@ class TagUnitStats implements TagUnitStatsInterface {
 		this.timesUsed += increment
 	}
 	
+	static class UserTagId {
+		Long userId
+		Long tagId
+		
+		UserTagId(Long userId, Long tagId) {
+			this.userId = userId
+			this.tagId = tagId
+		}
+		
+		int hashCode() {
+			return (int) (this.userId + this.tagId)
+		}
+		
+		boolean equals(Object o) {
+			if (o instanceof UserTagId) {
+				return (((UserTagId)o).userId == this.userId) && (((UserTagId)o).tagId == this.tagId)
+			}
+			
+			return false
+		}
+	}
+	
 	UnitGroup getUnitGroup() {
 		if (unitGroupId)
 			return UnitGroup.get(unitGroupId)
@@ -47,14 +66,19 @@ class TagUnitStats implements TagUnitStatsInterface {
 		return null
 	}
 	
-	String getUnit() {
-		return unit
-	}
-	
 	String lookupUnitString(boolean plural) {
 		return getUnitGroup()?.lookupUnitString(unit, plural)
 	}
 	
+	protected static Map cache = Collections.synchronizedMap(new BoundedCache<UserTagId, TagUnitStats>(10000))
+	
+	static {
+		Utils.registerTestReset {
+			synchronized(cache) {
+				cache.clear()
+			}
+		}
+	}	
 	protected static def createOrUpdateSingle(Long userId, Long tagId, String unit, Long unitGroupId, boolean increment) {
 		def tagUnitStats
 		
@@ -83,10 +107,9 @@ class TagUnitStats implements TagUnitStatsInterface {
 		
 		tagUnitStats.timesUsed+=1
 		log.debug ("TagUnitStats.createOrUpdate():" + tagUnitStats.dump())
-		Utils.save(tagUnitStats, true)
+		tagUnitStats.save(flush:true)
 		
-		DataRetriever.addToTagUnitStatsCache(tagUnitStats)
-		
+		cache.putAt(new UserTagId(userId, tagId), tagUnitStats)
 		return tagUnitStats
 	}
 	
@@ -112,8 +135,8 @@ class TagUnitStats implements TagUnitStatsInterface {
 	@Transactional
 	static TagUnitStats createOrUpdateAllUnits(Long userId, Long tagId) {
 		def results = DatabaseService.get().sqlRows(
-			"select units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat_type_id IS NULL or (entry.repeat_type_id & :ghostBit = 0)) group by units",
-			[tagId:tagId, userId:userId, ghostBit:RepeatType.GHOST_BIT])
+			"select units from Entry entry where entry.tag_id = :tagId and entry.user_id = :userId and units IS NOT NULL and length(units) > 0 and entry.date IS NOT NULL and (entry.repeat_type IS NULL or (entry.repeat_type & :ghostBit = 0)) group by units",
+			[tagId:tagId, userId:userId, ghostIds:RepeatType.GHOST_BIT])
 
 		if (results && results.size() > 0) {
 			String units = results[0]['units']
@@ -141,12 +164,43 @@ class TagUnitStats implements TagUnitStatsInterface {
 			return stats
 		}
 	}
-
-	static TagUnitStatsInterface mostUsedTagUnitStats(Long userId, Long tagId) {
-		return DataRetriever.get().mostUsedTagUnitStats(userId, tagId)
+	
+	static def mostUsedTagUnitStats(Long userId, Long tagId) {
+		TagUnitStats stats = cache.getAt(new UserTagId(userId, tagId))
+		if (stats != null) {
+			if (!stats.isAttached()) {
+				stats.attach()
+			}
+			
+			return stats
+		}
+		def tagUnitStats = TagUnitStats.withCriteria {
+			and {
+				eq ('tagId', tagId)
+				eq ('userId', userId)
+			}
+			order ('timesUsed', 'desc')
+		}
+		return tagUnitStats.size() > 0 ? tagUnitStats[0] : null
 	}
 	
-	static TagUnitStatsInterface mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
-		return DataRetriever.get().mostUsedTagUnitStatsForTags(userId, tagIds)
+	static def mostUsedTagUnitStatsForTags(Long userId, def tagIds) {
+		def r = TagUnitStats.executeQuery("select tagStats.unitGroupId, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId group by tagStats.unitGroupId order by s desc",
+				[tagIds: tagIds, userId: userId], [max: 1])
+		if ((!r) || (!r[0]))
+			return null
+			
+		def unitGroupId = r[0][0]
+		
+		if (unitGroupId == null)
+			return null
+			
+		r = TagUnitStats.executeQuery("select tagStats.unit, sum(tagStats.timesUsed) as s from TagUnitStats tagStats where tagStats.tagId in (:tagIds) and tagStats.userId = :userId and tagStats.unitGroupId = :unitGroupId group by tagStats.unit order by s desc",
+				[tagIds: tagIds, userId: userId, unitGroupId: unitGroupId], [max: 2])
+		
+		if ((!r) || (!r[0]))
+			return null
+		
+		return [unitGroupId: unitGroupId, unit: r[0][0]]
 	}
 }

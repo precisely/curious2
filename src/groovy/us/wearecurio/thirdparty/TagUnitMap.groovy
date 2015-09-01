@@ -10,7 +10,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.services.*
-import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.units.UnitGroupMap
 
 abstract class TagUnitMap {
 
@@ -120,7 +120,7 @@ abstract class TagUnitMap {
 		if (currentMapping["suffix"]) {
 			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
-			tag = EntryParserService.get().tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
+			tag = unitGroupMap.tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
 		}
 		
 		if (args["isSummary"]) {

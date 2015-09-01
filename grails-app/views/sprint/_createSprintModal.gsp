@@ -13,7 +13,7 @@
 					<div class="alert alert-danger hide" role="alert">Some error has occurred while performing the operation.</div>
 					<div class="row">
 						<div class="col-md-11" style="font-size:11pt;font-style:italic;margin-bottom:5px;">
-						<p>Sprints are reusable tracking experiments</p>
+						<p>Sprints are reusable tracking exercises which you do by yourself or with others. Specify which tags you're tracking and how, and invite others to track with you.</p>
 						</div>
 					</div>
 					<div class="row">
@@ -31,8 +31,8 @@
 					</div>
 					<div class="row">
 					<div class="col-md-6">
-					<label for="sprint-details">INSTRUCTIONS (What to do)</label>
-					<textarea rows="4" name="description" cols="74" required id="sprint-details" placeholder="Ex.: &quot;Let's walk 2 miles every day&quot; or &quot;We'll put cinnamon on our coffee each morning&quot"></textarea>
+					<label for="sprint-details">DETAILS</label>
+					<textarea rows="4" name="description" cols="74" required id="sprint-details" placeholder="Ex.: &quot;Let's track every time we have a headache, with severity 1-10, remind ourselves to take aspirin in the evening, and track our mood (1-10 scale) on an ongoing basis every day.&quot;"></textarea>
 					</div>
 					</div>
 					<div class="row">
@@ -40,10 +40,10 @@
 						<label class="inline-labels" for="sprint-tags" style="clear:both;">TAGS</label>
 						</div>
 						<div class="col-md-9" style="font-size:11pt;font-style:italic;">
-						<p>Enter all the tags users should track ("sleep quality", "exercise"), or:<br/>
-						Pin: make a button for one-tap tracking (&quot;headache <span class="pinnedDarkLabelImage"></span>&quot;).<br/>
-						Repeat: makes the tag show up every day (&quot;mood 5 <span class="repeatDarkLabelImage"></span>&quot;)<br/>
-						Remind: pop up a reminder alert (&quot;aspirin 8pm <span class="remindDarkLabelImage"></span>&quot;)<br/>&nbsp;
+						<p>Pin <span class="pinnedDarkLabelImage"></span> tags that happen at irregular times (&quot;headache&quot;).<br/>
+						Repeat <span class="repeatDarkLabelImage"></span> ongoing tags you edit occasionally (&quot;mood 5&quot;)<br/>
+						Remind <span class="remindDarkLabelImage"></span> timed tags needing confirmation (&quot;aspirin 8pm&quot;)<br/>
+						Or just enter tags which to be counted as part of this sprint's data.<br/>&nbsp;
 						</div>
 					</div>
 					<div class="row">
@@ -76,7 +76,7 @@
 						<div class="col-md-6">
 							<label class="inline-labels" for="sprint-participants">PARTICIPANTS</label>
 							<div id="participantsAutocomplete"></div>
-							<input type="text" placeholder="Invite Participant" id="sprint-participants">
+							<input type="text" placeholder="Add Participant" id="sprint-participants">
 							<ul id="sprint-participants-list"></ul>
 						</div>
 						<div class="col-md-6">

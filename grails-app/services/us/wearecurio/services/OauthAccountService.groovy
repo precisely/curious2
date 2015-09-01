@@ -60,7 +60,7 @@ class OauthAccountService {
 			account.refreshToken = refreshToken
 			account.expiresOn = expiresOn
 			
-			Utils.save(account, true)
+			account.save(flush:true)
 			
 			return account
 		}

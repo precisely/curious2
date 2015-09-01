@@ -42,12 +42,12 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		assert Utils.save(user2, true)
+		assert user2.save()
 		
 		account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
 			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/Los_Angeles").id])
 		
-		Utils.save(account, true)
+		account.save()
 		withingsDataService.oauthService = [
 			getWithingsResource: 0,
 			getWithingsResourceWithQuerystringParams: 0
@@ -77,7 +77,7 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 	void testRefreshSubscription() {
 		Date now = new Date()
 		account.lastSubscribed = new Date(now.getTime() - 10L * 24 * 60 * 60 * 1000)
-		Utils.save(account, true)
+		account.save()
 		
 		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 0, "body": {"activities": []}}"""))
 		

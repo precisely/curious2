@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import org.joda.time.DateTime
 
 import us.wearecurio.services.EmailService
-import us.wearecurio.services.SearchService;
+
 import grails.util.GrailsUtil
 
 /**
@@ -40,6 +40,15 @@ class Utils {
 		return retVal;
 	}
 
+	static def listJSONShortDesc(list) {
+		def retVal = []
+		for (obj in list) {
+			retVal.add(obj.getJSONShortDesc())
+		}
+
+		return retVal;
+	}
+
 	static def save(obj) {
 		return save(obj, false)
 	}
@@ -59,7 +68,6 @@ class Utils {
 			return false
 		} else {
 			log.debug "Object saved successfully $obj."
-			SearchService.get().index(obj)
 		}
 
 		return true

@@ -36,7 +36,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		user2 = new User([username: "dummy2", email: "dummy2@curious.test", sex: "M", name: "Mark Leo",
 			password: "Dummy password", displayTimeAfterTag: false, webDefaultToNow: true, hash: new DefaultHashIDGenerator().generate(12)])
-		assert Utils.save(user2, true)
+		assert user2.save()
 
 		plotData = PlotData.create(user, "Plot", "{}", true)
 		Utils.save(plotData, true)
@@ -306,7 +306,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegisterwithings() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		Utils.save(account, true)
+		account.save()
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.WITHINGS)
 
 		controller.session.userId = user2.id
@@ -331,7 +331,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		account.accessToken = "some-token"
-		Utils.save(account, true)
+		account.save()
 
 		withingsDataService.oauthService = [
 			getWithingsResourceWithQuerystringParams: { token, url, method, p ->
@@ -344,7 +344,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		account.accessToken = "some-token"
-		Utils.save(account, true)
+		account.save()
 
 		controller.response.reset()
 
@@ -377,7 +377,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegisterfitbit() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		Utils.save(account, true)
+		account.save()
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.FITBIT)
 
 		controller.session.userId = user2.id
@@ -402,7 +402,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		controller.response.reset()
 		account.accessToken = "some-token"
-		Utils.save(account, true)
+		account.save()
 
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, h ->
@@ -417,7 +417,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 
 		account.accessToken = "some-token"
-		Utils.save(account, true)
+		account.save()
 
 		fitBitDataService.oauthService = [
 			postFitBitResource: { token, url, p, h ->
@@ -447,7 +447,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	void testRegistermoves() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.MOVES, userId: userId, accessToken: "token",
 			accessSecret: "secret", accountId: "id"])
-		Utils.save(account, true)
+		account.save()
 		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.MOVES)
 
 		controller.session.userId = user2.id
@@ -476,6 +476,50 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.unregistermoves()
 		assert controller.flash.message == "thirdparty.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
+	void testDeleteComment() {
+		HomeController controller = new HomeController()
+
+		Discussion discussionInstance = Discussion.create(user, "dummyDiscussion")
+		def discussionPostInstance = discussionInstance.createPost(user, "comment")
+
+		// When the user isn't authorized to delete comment
+		controller.params['discussionHash'] = discussionInstance.hash
+		controller.params['clearPostId'] = discussionPostInstance.getId()
+		controller.session.userId = user2.getId()
+		controller.discuss()
+		assert controller.flash.message == ("Can't delete that post")
+		controller.flash.message = null
+
+		//When user is authorized
+		controller.params['discussionHash'] = discussionInstance.hash
+		controller.params['clearPostId'] = discussionPostInstance.getId()
+		controller.session.userId = user.getId()
+		controller.discuss()
+		assert controller.flash.message == null
+	}
+
+	@Test
+	void testCreateComment() {
+		HomeController controller = new HomeController()
+		controller.session.userId = user.getId()
+		
+		// When the user doesn't have the write permission
+		controller.params['discussionHash'] = discussion.hash.toString()
+		controller.params['message'] = "dummyMessage"
+		controller.session.userId = user2.getId()
+		controller.discuss()
+		assert controller.flash.message == ("You don't have permission to add a comment to this discussion")
+		controller.response.reset()
+		
+		// When the user have the write permission
+		controller.params['discussionHash'] = discussion.hash.toString()
+		controller.params['message'] = "dummyMessage"
+		controller.session.userId = user.getId()
+		controller.discuss()
+		assert controller.response.redirectUrl.contains("home/discuss")
 	}
 
 	Sprint dummySprint
