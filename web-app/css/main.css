@@ -292,6 +292,10 @@ a,a:link,a:hover,a:visited {
 	box-shadow: 0 1px 5px rgba(0,0,0,0.175);
 }
 
+.entry-details-dropdown-menu {
+	opacity: 1 !important;
+}
+
 .entry-details-dropdown-menu ::before {
 	position: absolute;
 	top: -23px;
@@ -1819,7 +1823,7 @@ body.discuss-page .red-header {
 
 .orange-bell {
 	margin-top: -5px;
-    margin-right: 5px;
+	margin-right: 5px;
 }
 
 .align-middle {
@@ -1954,11 +1958,20 @@ li.entry.pinned {
 li.entry.repeat.remind {
 	border-left: 5px solid #c35785;
 }
-li.entry.ghost {
-	opacity: 0.5;
-}
 li.entry.repeat {
 	border-left: 5px solid #f48d5b;
+}
+li.entry.ghost.repeat.remind {
+	border-left: 5px solid rgba(195, 87, 133, 0.5);
+}
+li.entry.ghost.repeat {
+	border-left: 5px solid rgba(244, 141, 91, 0.5);
+}
+li.entry.ghost {
+	background: rgba(255, 255, 255, 0.2);
+}
+.ghost div, .ghost button, .ghost img {
+	opacity: 0.5;
 }
 li.entry.no-tag, li.entry.plain {
 	border-left: 5px solid #f14a42;
