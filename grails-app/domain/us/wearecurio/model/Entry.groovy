@@ -40,21 +40,20 @@ class Entry implements Comparable {
 	
 	private static def log = LogFactory.getLog(this)
 
-	protected static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
-	protected static final int VAGUE_DATE_PRECISION_SECS = 86400
-	
 	static final MathContext mc = new MathContext(9)
 
-	protected static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999.999999999")
-	protected static final BigDecimal MIN_AMOUNT = new BigDecimal("-9999999999.999999999")
+	static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999.999999999")
+	static final BigDecimal MIN_AMOUNT = new BigDecimal("-9999999999.999999999")
 	
-	protected static final int MAXCOMMENTLENGTH = 100000
-	protected static final int MAXUNITSLENGTH = 50
-	protected static final int MAXSETNAMELENGTH = 50
-	protected static final long HOURTICKS = 60L * 60000
-	protected static final long DAYTICKS = HOURTICKS * 24
-	protected static final long HALFDAYTICKS = HOURTICKS * 12
-	protected static final long WEEKTICKS = DAYTICKS * 7
+	static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
+	static final int VAGUE_DATE_PRECISION_SECS = 86400	
+	static final int MAXCOMMENTLENGTH = 100000
+	static final int MAXUNITSLENGTH = 50
+	static final int MAXSETNAMELENGTH = 50
+	static final long HOURTICKS = 60L * 60000
+	static final long DAYTICKS = HOURTICKS * 24
+	static final long HALFDAYTICKS = HOURTICKS * 12
+	static final long WEEKTICKS = DAYTICKS * 7
 	
 	static constraints = {
 		group(nullable:true)
@@ -325,9 +324,9 @@ class Entry implements Comparable {
 		
 		TagUnitStatsInterface tagUnitStats
 		if ((!m['units']) && (m['amountPrecision'] > 0)) {
-			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0
+			// Using the most used unit in case the unit is unknown, if the amountPrecision is > 0 and used more than 2 times
 			tagUnitStats = TagUnitStats.mostUsedTagUnitStats(userId, tag.getId())
-			if (tagUnitStats) {
+			if (tagUnitStats && tagUnitStats.timesUsed > 2) {
 				m['units'] = tagUnitStats.getUnitGroup()?.lookupUnitString(tagUnitStats.unit, (m['amount'].compareTo(BigDecimal.ONE) != 0))
 			}
 		} else {

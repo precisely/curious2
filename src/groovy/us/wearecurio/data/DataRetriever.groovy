@@ -350,18 +350,21 @@ class DataRetriever {
 		Long tagId
 		UnitGroup unitGroup
 		String unit
+		Long timesUsed
 		
-		TagUnitStatsInfo(Long userId, Long tagId, UnitGroup unitGroup, String unit) {
+		TagUnitStatsInfo(Long userId, Long tagId, UnitGroup unitGroup, String unit, Long timesUsed) {
 			this.userId = userId
 			this.tagId = tagId
 			this.unitGroup = unitGroup
 			this.unit = unit
+			this.timesUsed = timesUsed
 		}
 		
 		Long getUserId() { userId }
 		Long getTagId() { tagId }
 		UnitGroup getUnitGroup() { unitGroup }
 		String getUnit() { unit }
+		Long getTimesUsed() { timesUsed }
 	}
 	
 	TagUnitStatsInterface mostUsedTagUnitStats(Long userId, Long tagId) {
@@ -369,7 +372,7 @@ class DataRetriever {
 		if (stats != null)
 			return stats
 		
-		def results = databaseService.sqlRows("select t.unit_group_id, t.unit from tag_unit_stats t where t.tag_id = :tagId and t.user_id = :userId limit 1",
+		def results = databaseService.sqlRows("select t.unit_group_id, t.unit, t.times_used from tag_unit_stats t where t.tag_id = :tagId and t.user_id = :userId limit 1",
 				[tagId: tagId, userId: userId])
 		
 		if (!results) {
@@ -380,8 +383,9 @@ class DataRetriever {
 		
 		Long unitGroupId = result['unit_group_id']
 		String unit = result['unit']
+		Long timesUsed = result['times_used']
 
-		stats = new TagUnitStatsInfo(userId, tagId, UnitGroup.get(unitGroupId), unit)
+		stats = new TagUnitStatsInfo(userId, tagId, UnitGroup.get(unitGroupId), unit, timesUsed)
 		
 		addToTagUnitStatsCache(stats)
 		
@@ -407,7 +411,7 @@ class DataRetriever {
 		if ((!r) || (!r[0]))
 			return null
 			
-		return new TagUnitStatsInfo(userId, null, UnitGroup.get(unitGroupId), r[0]['unit'])
+		return new TagUnitStatsInfo(userId, null, UnitGroup.get(unitGroupId), r[0]['unit'], r[0]['s'])
 	}
 	
 }

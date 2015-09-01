@@ -108,7 +108,9 @@ class Tag implements Serializable, Comparable {
 
 		return Tag.create(d)
 	}
-
+	
+	Long fetchId() { return this.id }
+	
 	// Checks if a user has an entry for this tag.
 	boolean hasEntry(Long userId) {
 		Entry.withCriteria {

@@ -7,4 +7,5 @@ public interface TagUnitStatsInterface {
 	Long getTagId();
 	UnitGroup getUnitGroup();
 	String getUnit();
+	Long getTimesUsed();
 }

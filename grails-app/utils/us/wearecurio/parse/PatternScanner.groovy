@@ -15,26 +15,32 @@ import java.util.regex.Matcher
 
 import javax.swing.text.Segment
 
+import us.wearecurio.util.ListNode
+import us.wearecurio.util.ListNodeList
+
+import grails.compiler.GrailsCompileStatic
+
 /**
  *
  * @author mitsu
  */
-@TypeChecked
-class PatternScanner {
+@GrailsCompileStatic
+class PatternScanner<T> {
 	char[] text
 	int lastStateCount
 	int stateCount
 	int begin
 	int endMatch
+	T context
 	Matcher matcher // current matcher
-	LinkedList<ScannerTry> tryStack = new LinkedList<ScannerTry>() // pending tries
+	ListNodeList<ScannerTry> tryStack = new ListNodeList<ScannerTry>() // pending tries
 	LinkedList<ScannerTry> backtrackStack = new LinkedList<ScannerTry>() // failed tries, don't retry
 	Set<Integer> alreadyFired = new HashSet<Integer>()
 	
 	static final int CONDITION_ANY = -1
 	static final int CONDITION_ATEND = 0
 	
-	static class ScannerTry {
+	static class ScannerTry extends ListNode {
 		PatternScanner scanner
 		
 		// this is the condition ID that is fired if this state is matched
@@ -78,7 +84,7 @@ class PatternScanner {
 		
 		void fire() {
 			if (fireClosure != null)
-				fireClosure()
+				fireClosure(scanner, scanner.context)
 			this.fired = true
 			scanner.setConditionFired(conditionId)
 		}
@@ -109,13 +115,14 @@ class PatternScanner {
 		}
 	}
 
-	PatternScanner(String string) {
+	PatternScanner(String string, T context) {
 		this.text = string.toCharArray()
 		begin = 0
 		endMatch = 0
 		// store match counts to determine whether pattern scanner has modified its state since the last call to ready()
 		this.lastStateCount = -1
 		this.stateCount = 0
+		this.context = context
 	}
 	
 	boolean ready() {
@@ -170,7 +177,7 @@ class PatternScanner {
 		return false
 	}
 	
-	protected ScannerTry pushTry(int conditionId, List<ScannerPattern> nextPatterns, Closure c) {
+	protected ScannerTry pushTry(int conditionId, List<ScannerPattern> nextPatterns, Closure fireClosure) {
 		++this.stateCount
 			
 		if (!tryStack.isEmpty()) {
@@ -182,14 +189,14 @@ class PatternScanner {
 			}
 		}
 		
-		ScannerTry t = new ScannerTry(this, conditionId, begin, endMatch, matcher, nextPatterns, c)
+		ScannerTry t = new ScannerTry(this, conditionId, begin, endMatch, matcher, nextPatterns, fireClosure)
 		tryStack.addFirst(t)
 		
 		return t
 	}
 	
 	public boolean trying(int conditionId) {
-		for (ScannerTry b : tryStack) {
+		for (ScannerTry b = tryStack.first; b != null; b = (ScannerTry) b.next) {
 			if (b.conditionId == conditionId)
 				return true
 		}
@@ -206,11 +213,11 @@ class PatternScanner {
 		return false
 	}
 	
-	protected Closure fireTry(ScannerTry t) {
+	protected void fireTry(ScannerTry t) {
 		this.begin = t.begin
 		this.endMatch = t.endMatch
 		this.matcher = t.matcher
-		return t.fire()
+		t.fire()
 	}
 	
 	protected CharSequence nextString() {
@@ -275,9 +282,9 @@ class PatternScanner {
 			
 		if (this.match(pattern.pattern)) {
 			ScannerTry t = pushTry(pattern.conditionId, pattern.nextPatterns,
-					additionalFireClosure == null ? pattern.fireClosure : {
-						pattern.fire()
-						additionalFireClosure()
+					additionalFireClosure == null ? pattern.fireClosure : { PatternScanner scanner, T context ->
+						pattern.fire(scanner)
+						additionalFireClosure(scanner, context)
 					})
 			
 			if (t == null) {
@@ -296,7 +303,7 @@ class PatternScanner {
 			}
 			
 			for (ScannerPattern nextPattern : pattern.nextPatterns) {
-				if (nextPattern.tryMatch(null))
+				if (nextPattern.tryMatch(this, null))
 					break
 			}
 			
@@ -316,7 +323,7 @@ class PatternScanner {
 		if (tryStack.isEmpty()) return true
 		
 		// check to see if all conditions have been met
-		for (ScannerTry t in tryStack) {
+		for (ScannerTry t = tryStack.first; t != null; t = (ScannerTry) t.next) {
 			if (!t.hasPostcondition(conditionId)) {
 				backtrackTo(t)
 				
@@ -357,9 +364,9 @@ class PatternScanner {
 		if (tryStack.isEmpty()) {
 			setConditionFired(pattern.conditionId)
 		
-			pattern.fire()
+			pattern.fire(this)
 			if (additionalFireClosure != null)
-				additionalFireClosure()
+				additionalFireClosure(this, this.context)
 			
 			return true
 		}
@@ -369,9 +376,9 @@ class PatternScanner {
 		
 			fireTries()
 			
-			pattern.fire()				
+			pattern.fire(this)				
 			if (additionalFireClosure != null)
-				additionalFireClosure()
+				additionalFireClosure(this, this.context)
 				
 			return true
 		} else {

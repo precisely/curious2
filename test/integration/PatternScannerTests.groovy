@@ -51,7 +51,7 @@ class PatternScannerTests extends CuriousTestCase {
 	static final int CONDITION_COMMENT = 9
 	
 	static def matchStartPattern(String text) {
-		PatternScanner scanner = new PatternScanner(text)
+		PatternScanner scanner = new PatternScanner(text, [:])
 		
 		def retVal = [:]
 
@@ -63,28 +63,28 @@ class PatternScannerTests extends CuriousTestCase {
 		boolean matchTag = true
 		boolean inComment = false
 
-		ScannerPattern atEndScanPattern = new ScannerPattern(scanner, CONDITION_ATEND)
-		ScannerPattern anyScanPattern = new ScannerPattern(scanner, CONDITION_ANY)
-		ScannerPattern tagWordScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, tagWordPattern, false, {
+		ScannerPattern atEndScanPattern = new ScannerPattern(CONDITION_ATEND)
+		ScannerPattern anyScanPattern = new ScannerPattern(CONDITION_ANY)
+		ScannerPattern tagWordScanPattern = new ScannerPattern(CONDITION_TAGWORD, tagWordPattern, false, {
 			words.add(scanner.group(1))
 		})
-		ScannerPattern durationScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, {
+		ScannerPattern durationScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, {
 			retVal['suffix'] = scanner.group(1)
 		})
-		ScannerPattern repeatScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, {
+		ScannerPattern repeatScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, {
 			retVal['repeat'] = scanner.group(1)
 		})
-		ScannerPattern repeatStartScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, {
+		ScannerPattern repeatStartScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, {
 			retVal['repeat'] = scanner.group(1)
 		})
-		ScannerPattern timeScanPattern = new ScannerPattern(scanner, CONDITION_TIME, timePattern, true, {
+		ScannerPattern timeScanPattern = new ScannerPattern(CONDITION_TIME, timePattern, true, {
 			retVal['time'] = scanner.group(0)
 		})
-		ScannerPattern commentScanPattern = new ScannerPattern(scanner, CONDITION_COMMENT, commentWordPattern, false, {
+		ScannerPattern commentScanPattern = new ScannerPattern(CONDITION_COMMENT, commentWordPattern, false, {
 			commentWords.add(scanner.group(1))
 			inComment = true
 		}, { (!matchTag) || scanner.trying(CONDITION_AMOUNT) })
-		ScannerPattern amountScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, {
+		ScannerPattern amountScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountPattern, false, {
 			String amountStr
 			boolean twoDAmount = false
 			
@@ -98,12 +98,12 @@ class PatternScannerTests extends CuriousTestCase {
 		})
 		
 		// first word of units
-		ScannerPattern unitsScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, {
+		ScannerPattern unitsScanPatternA = new ScannerPattern(CONDITION_UNITSA, tagWordPattern, false, {
 			units.add(scanner.group(1))
 		})
 		
 		// second word of units
-		ScannerPattern unitsScanPatternB = new ScannerPattern(scanner, CONDITION_UNITSB, tagWordPattern, false, {
+		ScannerPattern unitsScanPatternB = new ScannerPattern(CONDITION_UNITSB, tagWordPattern, false, {
 			units.add(scanner.group(1))
 		})
 
@@ -117,25 +117,25 @@ class PatternScannerTests extends CuriousTestCase {
 		
 		while (scanner.ready()) {
 			if (words.size() == 0) { // try repeat at start
-				repeatStartScanPattern.tryMatch()
+				repeatStartScanPattern.tryMatch(scanner)
 			}
 			
-			if (matchTag) tagWordScanPattern.match()
-			repeatScanPattern.tryMatch() { matchTag = false }
-			timeScanPattern.tryMatch() { matchTag = false }
-			durationScanPattern.tryMatch() { matchTag = false }
-			amountScanPattern.tryMatch() { matchTag = false }
+			if (matchTag) tagWordScanPattern.match(scanner)
+			repeatScanPattern.tryMatch(scanner) { matchTag = false }
+			timeScanPattern.tryMatch(scanner) { matchTag = false }
+			durationScanPattern.tryMatch(scanner) { matchTag = false }
+			amountScanPattern.tryMatch(scanner) { matchTag = false }
 			if (!matchTag) {
-				repeatScanPattern.tryMatch() { matchTag = false }
-				timeScanPattern.tryMatch() { matchTag = false }
-				durationScanPattern.tryMatch() { matchTag = false }
-				commentScanPattern.match() { inComment = true }
+				repeatScanPattern.tryMatch(scanner) { matchTag = false }
+				timeScanPattern.tryMatch(scanner) { matchTag = false }
+				durationScanPattern.tryMatch(scanner) { matchTag = false }
+				commentScanPattern.match(scanner) { inComment = true }
 			}
 			if (inComment) break
 		}
 		
 		if (scanner.resetReady()) while (scanner.ready()) {
-			commentScanPattern.match()
+			commentScanPattern.match(scanner)
 		}
 		
 		retVal['remainder'] = scanner.remainder()

@@ -17,14 +17,14 @@ import java.util.regex.Matcher
 
 import javax.swing.text.Segment
 
+import grails.compiler.GrailsCompileStatic
+
 /**
  *
  * @author mitsu
  */
-@TypeChecked
+@GrailsCompileStatic
 class ScannerPattern {
-	PatternScanner scanner
-	
 	int conditionId
 	Pattern pattern
 	boolean unique
@@ -32,8 +32,7 @@ class ScannerPattern {
 	Closure preconditionClosure
 	Closure fireClosure
 	
-	ScannerPattern(PatternScanner scanner, int conditionId) {
-		this.scanner = scanner
+	ScannerPattern(int conditionId) {
 		this.conditionId = conditionId
 		this.pattern = null
 		this.unique = false
@@ -41,13 +40,12 @@ class ScannerPattern {
 		this.fireClosure = null
 	}
 	
-	ScannerPattern(PatternScanner scanner, int conditionId, Pattern pattern, boolean unique, Closure fireClosure, Closure preconditionClosure = null) {
-		this.scanner = scanner
+	ScannerPattern(int conditionId, Pattern pattern, boolean unique, Closure fireClosure, Closure preconditionClosure = null) {
 		this.conditionId = conditionId
 		this.pattern = pattern
 		this.unique = unique
-		this.fireClosure = fireClosure
 		this.preconditionClosure = preconditionClosure
+		this.fireClosure = fireClosure
 	}
 	
 	ScannerPattern followedBy(List<ScannerPattern> nextPatterns) {
@@ -65,9 +63,9 @@ class ScannerPattern {
 		return this
 	}
 	
-	boolean tryMatch(Closure fireClosure = null) {
+	boolean tryMatch(PatternScanner scanner, Closure fireClosure = null) {
 		if (this.preconditionClosure != null) {
-			if (!(this.preconditionClosure)())
+			if (!(this.preconditionClosure)(scanner, scanner.context))
 				return false
 		}
 		if (this.nextPatterns == null) {
@@ -76,13 +74,13 @@ class ScannerPattern {
 		return scanner.tryMatch(this, fireClosure)
 	}
 	
-	boolean match(Closure fireClosure = null) {
+	boolean match(PatternScanner scanner, Closure fireClosure = null) {
 		return scanner.match(this, fireClosure)
 	}
 	
-	void fire() {
+	void fire(PatternScanner scanner) {
 		if (fireClosure != null)
-			fireClosure()
+			fireClosure(scanner, scanner.context)
 	}
 }
-	
+

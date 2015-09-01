@@ -5,9 +5,11 @@ import java.text.DateFormat
 import java.util.ArrayList
 import java.util.Date
 import java.util.HashSet
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 import org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.Log
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
@@ -42,15 +44,18 @@ import us.wearecurio.data.UnitGroupMap.UnitRatio
 import java.text.SimpleDateFormat
 import us.wearecurio.utility.Utils
 
+import grails.compiler.GrailsCompileStatic
+
+@GrailsCompileStatic
 class EntryParserService {
 
-	private static def log = LogFactory.getLog(this)
+	private static Log log = LogFactory.getLog(this)
 
     static transactional = false
 
-	static def service
+	static EntryParserService service
 	
-	static def set(s) { service = s }
+	static def set(EntryParserService s) { service = s }
 
 	static EntryParserService get() { return service }
 	
@@ -63,8 +68,8 @@ class EntryParserService {
 	}
 
 	protected static boolean isSameDay(Date time1, Date time2) {
-		def t1 = time1.getTime()
-		def t2 = time2.getTime()
+		long t1 = time1.getTime()
+		long t2 = time2.getTime()
 		if (t1 < t2) return false
 		if (t2 - t1 > DAYTICKS) return false
 
@@ -84,13 +89,15 @@ class EntryParserService {
 	 *
 	 */
 
-	protected static final Pattern timePattern    = ~/(?i)^(@\s*|at )(noon|midnight|([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
-	protected static final Pattern timeWordPattern    = ~/(?i)^(noon|midnight)\b\s*/
-	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.:=][^\(\)@\s:=]*)($|\s*)/
+	protected static final Pattern timePattern    = ~/(?i)^(at )(([012]?[0-9])((:|h)([0-5]\d))?\s?((a|p)m?)?)\b\s*|([012]?[0-9])(:|h)([0-5]\d)\s?((a|p)m?)?\b\s*|([012]?[0-9])((:|h)([0-5]\d))?\s?(am|pm|a|p)\b\s*/
+	protected static final Pattern timeWordPattern    = ~/(?i)^(at noon|at midnight|noon|midnight)\b\s*/
+	protected static final Pattern tagWordPattern = ~/(?i)^([^0-9\(\)@\s\.=][^\(\)@\s=]*)($|\s*)/
 	protected static final Pattern commentWordPattern = ~/^([^\s]+)($|\s*)/
-	protected static final Pattern amountPattern = ~/(?i)^([:=]\s*)?(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+|-|_\b|__\b|___\b|none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|-|_\b|-\b|__\b|___\b|zero\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b))?\s*/
+	protected static final Pattern commentPattern = ~/^(\(.*\)|;.*|\/\/.*)$/
+	protected static final Pattern amountPattern = ~/(?i)^(=?\s*)(-?\.\d+|-?\d+[\d,]*\.\d+|-?\d[\d,]*+|_\b)(\s*\/\s*(-?\.\d+|-?\d+\.\d+|-?\d+|_\b))?\s*/
+	protected static final Pattern amountWordPattern = ~/(?i)^(none\b|zero\b|yes\b|no\b|one\b|two\b|three\b|four\b|five\b|six\b|seven\b|eight\b|nine\b)\s*/
 	
-	protected static Map<String, BigDecimal> numberMap = [
+	protected static Map<String, List> numberMap = [
 		'zero' : [new BigDecimal(0, mc), DEFAULT_AMOUNTPRECISION],
 		'one' : [new BigDecimal(1, mc), DEFAULT_AMOUNTPRECISION],
 		'two' : [new BigDecimal(2, mc), DEFAULT_AMOUNTPRECISION],
@@ -104,10 +111,7 @@ class EntryParserService {
 		'yes' : [new BigDecimal(1, mc), 0],
 		'no' : [new BigDecimal(0, mc), 0],
 		'none' : [ null, -1],
-		'-' : [ null, -1],
 		'_' : [ null, -1],
-		'__' : [ null, -1],
-		'___' : [ null, -1],
 	]
 
 	/**
@@ -120,7 +124,7 @@ class EntryParserService {
 	protected static final int REPEATMAP_SYNONYM = 0
 	protected static final int REPEATMAP_TYPE = 1
 	
-	protected static Map<String, ArrayList<Object>> repeatMap = [
+	protected static Map<String, List> repeatMap = [
 		'repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
@@ -153,7 +157,7 @@ class EntryParserService {
 	protected static final int DURATIONMAP_SYNONYM = 0
 	protected static final int DURATIONMAP_TYPE = 1
 	
-	protected static final Map<String, ArrayList<Object>> durationMap = [
+	protected static final Map<String, List> durationMap = [
 		'start':['start', DurationType.START],
 		'starts':['start', DurationType.START],
 		'begin':['start', DurationType.START],
@@ -187,7 +191,7 @@ class EntryParserService {
 	protected static final int DURATIONSYNONYM_SUFFIX = 1
 	protected static final int DURATIONSYNONYM_TYPE = 2
 	
-	protected static final Map<String, ArrayList<Object>> durationSynonymMap = [
+	protected static final Map<String, List> durationSynonymMap = [
 		'wake':['sleep', 'end', DurationType.END],
 		'wake up':['sleep', 'end', DurationType.END],
 		'woke':['sleep', 'end', DurationType.END],
@@ -246,7 +250,7 @@ class EntryParserService {
 		}
 		
 		boolean matches(Entry e) {
-			return e.getTag().getId() == tag.getId()
+			return e.getTag().id == tag.id
 		}
 		
 		boolean matchesWeak(Entry e) {
@@ -275,7 +279,7 @@ class EntryParserService {
 	static {
 		gmtFormat = new SimpleDateFormat("k:mm")
 		gmtFormat.setTimeZone(Utils.createTimeZone(0, "GMT", false))
-		GMTMIDNIGHTSECS = new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000
+		GMTMIDNIGHTSECS = (new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000L).longValue()
 	}
 	
 	static protected HashSet<String> bloodPressureTags = new HashSet<String>()
@@ -365,97 +369,19 @@ class EntryParserService {
 	static final int CONDITION_AMOUNT = 5
 	static final int CONDITION_UNITSA = 6
 	static final int CONDITION_UNITSB = 7
-	static final int CONDITION_TIME = 8
-	static final int CONDITION_COMMENT = 9
+	static final int CONDITION_STRICTUNITSA = 8
+	static final int CONDITION_STRICTUNITSB = 9
+	static final int CONDITION_TIME = 10
+	static final int CONDITION_COMMENT = 11
 	
-	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
-		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
-
-		if (entryStr == '') return null // no input
-		
-		// truncate time to hours:minutes
-		
-		time = new DateTime(time).withField(DateTimeFieldType.secondOfMinute(), 0).toDate()
-		
-		Date date = baseDate
-		Long baseDateTime = baseDate?.getTime()
-		Integer hours = null
-		Integer minutes = null
-		boolean today = isToday(time, date)
-
-		// start by giving the time a precision of 3 minutes
-		def retVal = [:]
-		if (date == null)
-			retVal['datePrecisionSecs'] = 0
-		else
-			retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
-			
-		retVal['repeatType'] = RepeatType.get(repeatTypeId)
-		retVal['repeatEnd'] = repeatEnd
-		retVal['timeZoneName'] = timeZoneName
-		retVal['today'] = today
-
-		def matcher
-		def parts
-
-		// [time] [tag] <[amount] <[units]>>... <repeat|remind|button> (<[comment]>)
-		//
-		// OR
-		//
-		// [tag] <[amount] <[units]>>... <[time]> <repeat|remind|button> (<[comment]>)
-		//
-		// <repeat|remind|button> ahead of the above
-
-		PatternScanner scanner = new PatternScanner(entryStr)
-
-		ScannerPattern atEndScanPattern = new ScannerPattern(scanner, CONDITION_ATEND)
-		ScannerPattern anyScanPattern = new ScannerPattern(scanner, CONDITION_ANY)		
-
+	static class ParserContext {
 		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
-		boolean ghostAmount = false
-		boolean foundTime = false
-		boolean foundAMPM = false
-
-		ScannerPattern timeScanPattern = new ScannerPattern(scanner, CONDITION_TIME, timePattern, true, {
-			foundTime = true
-			def noonmid = scanner.group(2)
-			if (noonmid != null) {
-				if (noonmid.equals('noon')) {
-					hours = 12
-					foundAMPM = true
-					return
-				} else if (noonmid.equals('midnight')) {
-					hours = 0
-					foundAMPM = true
-					return
-				}
-			}
-			hours = parseInt(scanner.group(14) ?: (scanner.group(9) ?: (scanner.group(3) ?: '0')))
-			if (hours == 12) hours = 0
-			minutes = parseInt(scanner.group(11) ?: (scanner.group(6) ?: '0'))
-			def g18 = scanner.group(18)
-			if (scanner.group(8).equals('p') || scanner.group(13).equals('p') || scanner.group(18).equals('p') || scanner.group(18).equals('pm')) {
-				foundAMPM = true
-				hours += 12
-			} else if (scanner.group(8).equals('a') || scanner.group(13).equals('a') || scanner.group(18).equals('a') || scanner.group(18).equals('am')) {
-				foundAMPM = true
-			}
-		})
-		ScannerPattern timeWordScanPattern = new ScannerPattern(scanner, CONDITION_TIME, timeWordPattern, true, {
-			foundTime = true
-			def noonmid = scanner.group(1)
-			if (noonmid != null) {
-				if (noonmid.equals('noon')) {
-					hours = 12
-					foundAMPM = true
-					return
-				} else if (noonmid.equals('midnight')) {
-					hours = 0
-					foundAMPM = true
-					return
-				}
-			}
-		})
+		
+		boolean ghostAmount
+		boolean foundTime
+		boolean foundAMPM
+		Integer hours
+		Integer minutes
 		
 		LinkedList<String> words = new LinkedList<String>()
 		LinkedList<String> commentWords = new LinkedList<String>()
@@ -467,208 +393,334 @@ class EntryParserService {
 		boolean foundTag = false
 		boolean matchTag = true
 		boolean inComment = false
-
-		ScannerPattern tagWordScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, tagWordPattern, false, {
-			words.add(scanner.group(1))
-			foundTag = true
-		})
-
-		Closure repeatClosure = {
-			foundRepeat = true
-			
-			String modifier = scanner.group(1)
-			
-			ArrayList<Object> info = repeatMap[modifier]
-			retVal['repeatType'] = (RepeatType) info[REPEATMAP_TYPE]
-			repeatSuffix = (String) info[REPEATMAP_SYNONYM]
-		}
-		
-		ScannerPattern repeatScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, repeatClosure)
-		ScannerPattern repeatStartScanPattern = new ScannerPattern(scanner, CONDITION_REPEAT, repeatPattern, true, repeatClosure)
-		
-		Closure durationClosure = {
-			foundDuration = true
-			
-			String modifier = scanner.group(1)
-			
-			ArrayList<Object> info = durationMap[modifier]
-			retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
-			suffix = (String) info[DURATIONMAP_SYNONYM]
-		}
-		
-		ScannerPattern durationScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, durationClosure)
-		ScannerPattern durationStartScanPattern = new ScannerPattern(scanner, CONDITION_DURATION, durationPattern, true, durationClosure)
 		
 		int currentAmountIndex = 0
 		String currentUnits = null
 		
+		Map retVal = [:]
+	}
+	
+	ScannerPattern atEndScanPattern
+	ScannerPattern anyScanPattern
+	ScannerPattern timeScanPattern
+	ScannerPattern timeWordScanPattern
+	ScannerPattern tagWordScanPattern
+	ScannerPattern repeatScanPattern
+	ScannerPattern repeatStartScanPattern
+	ScannerPattern durationScanPattern
+	ScannerPattern durationStartScanPattern
+	ScannerPattern amountFirstScanPattern
+	ScannerPattern amountScanPattern
+	ScannerPattern amountWordScanPattern
+	ScannerPattern unitsScanPatternA
+	ScannerPattern unitsFirstScanPatternA
+	ScannerPattern unitsScanPatternB
+	ScannerPattern unitsSingleScanPattern
+	ScannerPattern durationSynonymScanPattern
+	ScannerPattern fillerScanPattern
+	ScannerPattern commentScanPattern
+
+	EntryParserService() {
+		atEndScanPattern = new ScannerPattern(CONDITION_ATEND)
+		anyScanPattern = new ScannerPattern(CONDITION_ANY)		
+
+		timeScanPattern = new ScannerPattern(CONDITION_TIME, timePattern, true, { PatternScanner scanner, ParserContext context ->
+			context.foundTime = true
+			context.hours = parseInt(scanner.group(14) ?: (scanner.group(9) ?: (scanner.group(3) ?: '0')))
+			if (context.hours == 12) context.hours = 0
+			context.minutes = parseInt(scanner.group(11) ?: (scanner.group(6) ?: '0'))
+			if (scanner.group(8)?.equals('p') || scanner.group(13)?.equals('p') || scanner.group(18)?.equals('p') || scanner.group(18)?.equals('pm')) {
+				context.foundAMPM = true
+				context.hours += 12
+			} else if (scanner.group(8)?.equals('a') || scanner.group(13)?.equals('a') || scanner.group(18)?.equals('a') || scanner.group(18)?.equals('am')) {
+				context.foundAMPM = true
+			}
+		})
+		
+		timeWordScanPattern = new ScannerPattern(CONDITION_TIME, timeWordPattern, true, { PatternScanner scanner, ParserContext context ->
+			context.foundTime = true
+			String noonmid = scanner.group(1)
+			if (noonmid != null) {
+				if (noonmid.equals('noon') || noonmid.equals('at noon')) {
+					context.hours = 12
+					context.minutes = 0
+					context.foundAMPM = true
+					return
+				} else if (noonmid.equals('midnight') || noonmid.equals('at midnight')) {
+					context.hours = 0
+					context.minutes = 0
+					context.foundAMPM = true
+					return
+				}
+			}
+		})
+		
+		tagWordScanPattern = new ScannerPattern(CONDITION_TAGWORD, tagWordPattern, false, { PatternScanner scanner, ParserContext context ->
+			context.words.add(scanner.group(1))
+			context.foundTag = true
+		})
+
+		Closure repeatClosure = { PatternScanner scanner, ParserContext context ->
+			context.foundRepeat = true
+			
+			String modifier = scanner.group(1)
+			
+			def info = repeatMap[modifier]
+			context.retVal['repeatType'] = (RepeatType) info[REPEATMAP_TYPE]
+			context.repeatSuffix = (String) info[REPEATMAP_SYNONYM]
+		}
+		
+		repeatScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, repeatClosure)
+		repeatStartScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, repeatClosure)
+		
+		Closure durationClosure = { PatternScanner scanner, ParserContext context ->
+			context.foundDuration = true
+			
+			String modifier = scanner.group(1)
+			
+			List info = durationMap[modifier]
+			context.retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
+			context.suffix = (String) info[DURATIONMAP_SYNONYM]
+		}
+		
+		durationScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, durationClosure)
+		durationStartScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, durationClosure)
+		
 		// amount
-		Closure amountClosure = {
+		Closure amountClosure = { PatternScanner scanner, ParserContext context ->
 			String amountStr
 			ArrayList<String> amountStrs = []
-			currentAmountIndex = amounts.size()
+			context.currentAmountIndex = context.amounts.size()
 			boolean twoDAmount = false
 			
-			amountStrs.add(scanner.group(2).replace(",",""))
+			amountStrs.add(scanner.group(2)?.replace(",",""))
 			amountStr = scanner.group(4)
 			
-			if (amountStr) {
+			if (amountStr != null) {
 				amountStrs.add(amountStr.replace(",",""))
 				twoDAmount = true
 			}
 			
 			for (String amount in amountStrs) {
 				if (numberMap.containsKey(amount)) {
-					ArrayList num = numberMap.get(amount)
-					amounts.add(new ParseAmount(num[0], num[1]))
+					List num = numberMap.get(amount)
+					context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1]))
 				} else {
-					amounts.add(new ParseAmount(new BigDecimal(amount, mc), DEFAULT_AMOUNTPRECISION)) 
+					context.amounts.add(new ParseAmount(new BigDecimal(amount, mc), (int)DEFAULT_AMOUNTPRECISION)) 
 				}
+			}
+		}
+		
+		Closure amountWordClosure = { PatternScanner scanner, ParserContext context ->
+			String amountStr
+			context.currentAmountIndex = context.amounts.size()
+			boolean twoDAmount = false
+			
+			amountStr = scanner.group(1).replace(",","")
+			
+			if (numberMap.containsKey(amountStr)) {
+				List num = numberMap.get(amountStr)
+				context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1]))
 			}
 		}
 		
 		// amountFirst is used before a tag has appeared in the text
 		// amount is the scan pattern to use after the tag has appeared in the text
-		ScannerPattern amountFirstScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, amountClosure)
-		ScannerPattern amountScanPattern = new ScannerPattern(scanner, CONDITION_AMOUNT, amountPattern, false, amountClosure)
+		amountFirstScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountPattern, false, amountClosure)
+		amountScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountPattern, false, amountClosure)
+		amountWordScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountWordPattern, false, amountWordClosure)
 		
 		// units
-		Closure unitsAClosure = {
-			currentUnits = scanner.group(1)
-			for (int i = currentAmountIndex; i < amounts.size(); ++i) {
-				((ParseAmount)amounts[i]).setUnits(currentUnits)
+		Closure unitsAClosure = { PatternScanner scanner, ParserContext context ->
+			context.currentUnits = scanner.group(1)
+			for (int i = context.currentAmountIndex; i < context.amounts.size(); ++i) {
+				((ParseAmount)context.amounts[i]).setUnits(context.currentUnits)
 			}
 		}
 		
 		// first word of units if a tag has appeared
 		// unitsFirst - if a tag has not appeared, only parse one word of units
-		ScannerPattern unitsScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
-		ScannerPattern unitsFirstScanPatternA = new ScannerPattern(scanner, CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
+		unitsScanPatternA = new ScannerPattern(CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
+		unitsFirstScanPatternA = new ScannerPattern(CONDITION_UNITSA, tagWordPattern, false, unitsAClosure)
 		
 		// second word of units
-		ScannerPattern unitsScanPatternB = new ScannerPattern(scanner, CONDITION_UNITSB, tagWordPattern, false, {
-			currentUnits = currentUnits + ' ' + scanner.group(1)
-			for (int i = currentAmountIndex; i < amounts.size(); ++i) {
-				((ParseAmount)amounts[i]).setUnits(currentUnits)
+		ScannerPattern unitsScanPatternB = new ScannerPattern(CONDITION_UNITSB, tagWordPattern, false, { PatternScanner scanner, ParserContext context ->
+			context.currentUnits = context.currentUnits + ' ' + scanner.group(1)
+			for (int i = context.currentAmountIndex; i < context.amounts.size(); ++i) {
+				((ParseAmount)context.amounts[i]).setUnits(context.currentUnits)
 			}
 		})
-
-		ScannerPattern durationSynonymScanPattern = new ScannerPattern(scanner, CONDITION_TAGWORD, durationSynonymPattern, false, {
-			foundDuration = true
+		
+		// this scanner pattern includes a check to see if the units are actually a standard unit in the database or not. If not, the scanner pattern doesn't match and
+		// the pattern will backtrack (fail)
+		ScannerPattern unitsSingleScanPattern = new ScannerPattern(CONDITION_STRICTUNITSA, tagWordPattern, false, unitsAClosure)
+		
+		durationSynonymScanPattern = new ScannerPattern(CONDITION_TAGWORD, durationSynonymPattern, false, { PatternScanner scanner, ParserContext context ->
+			context.foundDuration = true
 			
 			String modifier = scanner.group(1)
 			
-			ArrayList<Object> info = durationSynonymMap[modifier]
-			retVal['durationType'] = (DurationType) info[DURATIONSYNONYM_TYPE]
-			suffix = (String) info[DURATIONSYNONYM_SUFFIX]
-			words.add((String) info[DURATIONSYNONYM_TAG])
+			List info = durationSynonymMap[modifier]
+			context.retVal['durationType'] = (DurationType) info[DURATIONSYNONYM_TYPE]
+			context.suffix = (String) info[DURATIONSYNONYM_SUFFIX]
+			context.words.add((String) info[DURATIONSYNONYM_TAG])
 		})
 		
-		ScannerPattern commentScanPattern = new ScannerPattern(scanner, CONDITION_COMMENT, commentWordPattern, false, {
-			commentWords.add(scanner.group(1))
-			inComment = true
-		}, { (!foundTag) && ((!matchTag) || scanner.trying(CONDITION_AMOUNT)) })
+		fillerScanPattern = new ScannerPattern(CONDITION_COMMENT, commentWordPattern, false, { PatternScanner scanner, ParserContext context ->
+			context.commentWords.add(scanner.group(1))
+			context.inComment = true
+		}, {  PatternScanner scanner, ParserContext context -> (!context.foundTag) && ((!context.matchTag) || scanner.trying(CONDITION_AMOUNT)) })
+
+		commentScanPattern = new ScannerPattern(CONDITION_COMMENT, commentPattern, false, { PatternScanner scanner, ParserContext context ->
+			context.commentWords.add(scanner.group(1))
+			context.inComment = true
+		})
 
 		// set up structural rules
 		
-		timeWordScanPattern.followedBy([ atEndScanPattern, durationScanPattern, commentScanPattern, amountScanPattern, durationScanPattern, repeatScanPattern, durationSynonymScanPattern ])
-		repeatScanPattern.followedBy([ atEndScanPattern, durationScanPattern, timeScanPattern, timeWordScanPattern, commentScanPattern ])
+		timeWordScanPattern.followedBy([ atEndScanPattern, commentScanPattern, durationScanPattern, fillerScanPattern, amountScanPattern, amountWordScanPattern, durationScanPattern, repeatScanPattern, durationSynonymScanPattern ])
+		repeatScanPattern.followedBy([ atEndScanPattern, commentScanPattern, durationScanPattern, timeScanPattern, timeWordScanPattern, fillerScanPattern ])
 		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, durationStartScanPattern])
-		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, timeWordScanPattern, commentScanPattern ])
+		durationScanPattern.followedBy([ atEndScanPattern, commentScanPattern, repeatScanPattern, timeScanPattern, timeWordScanPattern, fillerScanPattern ])
 		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, repeatStartScanPattern])
-		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern ])
+		durationSynonymScanPattern.followedBy([ atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, amountWordScanPattern, repeatScanPattern ])
 		
-		amountScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsScanPatternA, anyScanPattern])
-		amountFirstScanPattern.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
-		unitsScanPatternA.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
-		unitsScanPatternB.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
-		unitsFirstScanPatternA.followedBy([atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+		amountScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsScanPatternA, anyScanPattern])
+		amountWordScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsSingleScanPattern])
+		amountFirstScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, unitsFirstScanPatternA, anyScanPattern])
+		unitsScanPatternA.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, unitsScanPatternB, anyScanPattern])
+		unitsScanPatternB.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
+		unitsSingleScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern])
+		unitsFirstScanPatternA.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, repeatScanPattern, durationScanPattern, anyScanPattern])
 		
+		commentScanPattern.followedBy([atEndScanPattern])
+	}
+		
+	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
+		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
+
+		if (entryStr == '') return null // no input
+		
+		// truncate time to hours:minutes
+		
+		time = new DateTime(time).withField(DateTimeFieldType.secondOfMinute(), 0).toDate()
+		
+		Date date = baseDate
+		Long baseDateTime = baseDate?.getTime()
+		boolean today = isToday(time, date)
+
+		// [time] [tag] <[amount] <[units]>>... <repeat|remind|button> (<[comment]>)
+		//
+		// OR
+		//
+		// [tag] <[amount] <[units]>>... <[time]> <repeat|remind|button> (<[comment]>)
+		//
+		// <repeat|remind|button> ahead of the above
+
+		ParserContext context = new ParserContext()
+		PatternScanner<ParserContext> scanner = new PatternScanner<ParserContext>(entryStr, context)
+		
+		// start by giving the time a precision of 3 minutes
+		if (date == null)
+			context.retVal['datePrecisionSecs'] = 0
+		else
+			context.retVal['datePrecisionSecs'] = DEFAULT_DATEPRECISION_SECS
+			
+		context.retVal['repeatType'] = RepeatType.get(repeatTypeId)
+		context.retVal['repeatEnd'] = repeatEnd
+		context.retVal['timeZoneName'] = timeZoneName
+		context.retVal['today'] = today
+
 		// start parsing!
 		
 		// time can appear at the beginning, and since it is context-free can just run it at the outset
-		timeScanPattern.match()
-		timeWordScanPattern.match()
+		timeScanPattern.match(scanner)
+		timeWordScanPattern.match(scanner)
+		
+		Closure stopMatchingTag = { PatternScanner patternScanner, ParserContext parserContext ->
+			parserContext.matchTag = false
+		}
 		
 		while (scanner.ready()) {
-			if (words.size() == 0) { // try repeat at start
-				amountFirstScanPattern.tryMatch()
-				repeatStartScanPattern.tryMatch()
-				durationStartScanPattern.tryMatch()
-				durationSynonymScanPattern.tryMatch() { matchTag = false }
+			if (context.words.size() == 0) { // try repeat at start
+				amountFirstScanPattern.tryMatch(scanner)
+				repeatStartScanPattern.tryMatch(scanner)
+				durationStartScanPattern.tryMatch(scanner)
+				durationSynonymScanPattern.tryMatch(scanner, stopMatchingTag)
 			}
 			
-			if (matchTag) tagWordScanPattern.match()
-			repeatScanPattern.tryMatch() { matchTag = false }
-			timeScanPattern.tryMatch() { matchTag = false }
-			timeWordScanPattern.tryMatch() { matchTag = false }
-			durationScanPattern.tryMatch() { matchTag = false }
-			amountScanPattern.tryMatch() { matchTag = false }
-			if (!matchTag) {
-				repeatScanPattern.tryMatch() { matchTag = false }
-				timeScanPattern.tryMatch() { matchTag = false }
-				durationScanPattern.tryMatch() { matchTag = false }
-				commentScanPattern.match() { inComment = true }
+			if (context.matchTag) tagWordScanPattern.match(scanner)
+			repeatScanPattern.tryMatch(scanner, stopMatchingTag)
+			timeScanPattern.tryMatch(scanner, stopMatchingTag)
+			timeWordScanPattern.tryMatch(scanner, stopMatchingTag)
+			durationScanPattern.tryMatch(scanner, stopMatchingTag)
+			amountScanPattern.tryMatch(scanner, stopMatchingTag)
+			amountWordScanPattern.tryMatch(scanner, stopMatchingTag)
+			if (!context.matchTag) {
+				repeatScanPattern.tryMatch(scanner, stopMatchingTag)
+				timeScanPattern.tryMatch(scanner, stopMatchingTag)
+				durationScanPattern.tryMatch(scanner, stopMatchingTag)
+				fillerScanPattern.match(scanner) { PatternScanner patternScanner, ParserContext parserContext -> parserContext.inComment = true }
 			}
-			if (inComment) break
+			if (context.inComment) break
 		}
 
 		if (scanner.resetReady()) while (scanner.ready()) {
-			commentScanPattern.match()
+			fillerScanPattern.match(scanner)
 		}
 		
-		String description = ParseUtils.implode(words).toLowerCase()
+		String description = ParseUtils.implode(context.words).toLowerCase()
 		
-		if (amounts.size() == 0) {
-			amounts.add(new ParseAmount(new BigDecimal(1, mc), -1))
+		if (context.amounts.size() == 0) {
+			context.amounts.add(new ParseAmount(new BigDecimal(1, mc), -1))
 		}
 
 		// Duration (start/stop) only when amount(s) not specified		
-		if (amounts.size() > 1 || (amounts[0].getPrecision() != -1)) {
-			retVal['durationType'] = DurationType.NONE
-			suffix = ''
+		if (context.amounts.size() > 1 || (context.amounts[0].getPrecision() != -1)) {
+			context.retVal['durationType'] = DurationType.NONE
+			context.suffix = ''
 		}
 
 		String comment = ''
-		if (commentWords.size() > 0) {
-			comment = ParseUtils.implode(commentWords)
+		if (context.commentWords.size() > 0) {
+			comment = ParseUtils.implode(context.commentWords)
 		}
 		
-		if (repeatSuffix)
+		if (context.repeatSuffix)
 			if (comment)
-				comment += ' ' + repeatSuffix
+				comment += ' ' + context.repeatSuffix
 			else
-				comment = repeatSuffix
+				comment = context.repeatSuffix
 		
-		if (!foundTime) {
+		if (!context.foundTime) {
 			if (date != null) {
 				date = time;
 				if (!(defaultToNow && today && (!forUpdate))) { // only default to now if entry is for today and not editing
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
-					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
+					context.retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else {
 					if (!isSameDay(time, baseDate)) {
-						retVal['status'] = "Entering event for today, not displayed";
+						context.retVal['status'] = "Entering event for today, not displayed";
 					}
 				}
 			}
 		} else if (date != null) {
-			if (hours == null && date != null) {
+			if (context.hours == null && date != null) {
 				date = time;
 				if ((!defaultToNow) || forUpdate) {
 					date = new Date(date.getTime() + 12 * 3600000L);
-					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
+					context.retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				} else if (!isSameDay(time, baseDate)) {
-					retVal['status'] = "Entering event for today, not displayed";
+					context.retVal['status'] = "Entering event for today, not displayed";
 				}
 			} else {
 				long ts = date.getTime();
-				if (hours >= 0 && hours < 24) {
-					ts += hours * 3600000L;
+				if (context.hours >= 0 && context.hours < 24) {
+					ts += context.hours * 3600000L;
 				}
-				if (minutes == null) minutes = 0;
-				if (minutes >=0 && minutes < 60) {
-					ts += minutes * 60000L;
+				if (context.minutes == null) context.minutes = 0;
+				if (context.minutes >=0 && context.minutes < 60) {
+					ts += context.minutes * 60000L;
 				}
 				date = new Date(ts);
 			}
@@ -676,12 +728,12 @@ class EntryParserService {
 			date = null;
 		}
 
-		for (int i = 0; i < amounts.size(); ++i) {
-			if (amounts[i].getUnits()?.equals("at"))
-				amounts[i].setUnits('')
-			String units = amounts[i].getUnits()
+		for (int i = 0; i < context.amounts.size(); ++i) {
+			if (context.amounts[i].getUnits()?.equals("at"))
+				context.amounts[i].setUnits('')
+			String units = context.amounts[i].getUnits()
 			if (units?.length() > MAXUNITSLENGTH) {
-				amounts[i].setUnits(units.substring(0, MAXUNITSLENGTH))
+				context.amounts[i].setUnits(units.substring(0, MAXUNITSLENGTH))
 			}
 		}
 		
@@ -712,19 +764,19 @@ class EntryParserService {
 			comment = comment.substring(0, MAXCOMMENTLENGTH)
 		}
 		
-		retVal['comment'] = comment
+		context.retVal['comment'] = comment
 
-		if (retVal['setName']?.length() > MAXSETNAMELENGTH) {
-			retVal['setName'] = retVal['setName'].substring(0, MAXSETNAMELENGTH)
+		if (((String)context.retVal['setName'])?.length() > MAXSETNAMELENGTH) {
+			context.retVal['setName'] = ((String)context.retVal['setName']).substring(0, MAXSETNAMELENGTH)
 		}
 
-		log.debug("retVal: parse " + retVal)
+		log.debug("retVal: parse " + context.retVal)
 
-		if (retVal['repeatType'] != null) {
-			if (!retVal['repeatType'].isReminder()) {
-				if (retVal['repeatType'].isContinuous()) { // continuous repeat are always vague date precision
+		if (context.retVal['repeatType'] != null) {
+			if (!((RepeatType)context.retVal['repeatType']).isReminder()) {
+				if (((RepeatType)context.retVal['repeatType']).isContinuous()) { // continuous repeat are always vague date precision
 					date = new Date(baseDate.getTime() + HALFDAYTICKS);
-					retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
+					context.retVal['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS;
 				}
 			}
 		}
@@ -732,49 +784,49 @@ class EntryParserService {
 		if (today && (!forUpdate)) {
 			// if base date is today and time is greater than one hour from now, assume
 			// user meant yesterday, unless the element is a ghost
-			if (retVal['repeatType'] == null || (!retVal['repeatType'].isRepeat())) {
+			if (context.retVal['repeatType'] == null || (!((RepeatType)context.retVal['repeatType']).isRepeat())) {
 				if (date.getTime() > time.getTime() + HOURTICKS) {
 					// if am/pm is not specified, then assume user meant half a day ago
-					if (!foundAMPM) {
+					if (!context.foundAMPM) {
 						date = new Date(date.getTime() - HALFDAYTICKS)
-						retVal['status'] = "Entering event a half day ago";
+						context.retVal['status'] = "Entering event a half day ago";
 					} else {
 						date = new Date(date.getTime() - DAYTICKS);
-						retVal['status'] = "Entering event for yesterday";
+						context.retVal['status'] = "Entering event for yesterday";
 					}
 				} else
 				// if base date is today and AM/PM isn't specified and time is more than 12 hours ago,
 				// enter as just 12 hours ago
-				if ((!foundAMPM) && (time.getTime() - date.getTime() > HALFDAYTICKS)) {
+				if ((!context.foundAMPM) && (time.getTime() - date.getTime() > HALFDAYTICKS)) {
 					date = new Date(date.getTime() + HALFDAYTICKS)
 				}
 			}
 		}
 
-		retVal['date'] = date
+		context.retVal['date'] = date
 
-		if (ghostAmount) {
-			if (retVal['repeatType'] == null)
-				retVal['repeatType'] = RepeatType.GHOST
+		if (context.ghostAmount) {
+			if (context.retVal['repeatType'] == null)
+				context.retVal['repeatType'] = RepeatType.GHOST
 			else
-				retVal['repeatType'] = retVal['repeatType'].makeGhost()
+				context.retVal['repeatType'] = ((RepeatType)context.retVal['repeatType']).makeGhost()
 		}
 
 		if (!description) description = "unknown"
-		retVal['baseTag'] = Tag.look(description)
+		context.retVal['baseTag'] = Tag.look(description)
 		String tagDescription = description
-		if (suffix) tagDescription += ' ' + suffix
-		retVal['tag'] = Tag.look(tagDescription)
+		if (context.suffix) tagDescription += ' ' + context.suffix
+		context.retVal['tag'] = Tag.look(tagDescription)
 		
 		int index = 0
-		Tag baseTag = retVal['baseTag']
+		Tag baseTag = (Tag) context.retVal['baseTag']
 		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
 		
 		Map<String, ParseAmount> suffixToParseAmount = new HashMap<String, ParseAmount>()
 		
 		boolean bloodPressure = bloodPressureTags.contains(baseTag.getDescription())
 		
-		for (ParseAmount amount : amounts) {
+		for (ParseAmount amount : context.amounts) {
 			if (bloodPressure && (!amount.units)) {
 				if (index == 0) amount.units = "over"
 				else amount.units = "mmHg"
@@ -784,8 +836,8 @@ class EntryParserService {
 			String amountSuffix
 			
 			if (!units) {
-				if (foundDuration)
-					amount.setTags(retVal['tag'], baseTag)
+				if (context.foundDuration)
+					amount.setTags((Tag)context.retVal['tag'], baseTag)
 				else
 					amount.setTags(baseTag, baseTag)
 			} else {
@@ -829,8 +881,8 @@ class EntryParserService {
 			index++
 		}
 		
-		retVal['amounts'] = amounts
+		context.retVal['amounts'] = context.amounts
 
-		return retVal
+		return context.retVal
 	}
 }

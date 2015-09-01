@@ -51,7 +51,10 @@ class DataController extends LoginController {
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
 		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow)
-		
+
+		if (parsedEntry == null)
+			return 'Syntax error trying to parse entry'
+				
 		EntryStats stats = new EntryStats()
 		def entry = Entry.create(user.getId(), parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
