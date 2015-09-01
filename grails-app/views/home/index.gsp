@@ -44,8 +44,10 @@
 				<div id="autocomplete" style="position: absolute; top: 10px; right: 10px;"></div>
 				<div id="area0">
 					<div id="addData" class="input-affordance addon">
-						<div class="track-input-modifiers"><img alt="tag" src="/images/tag.png" class="inputTag"></div>
-							<p>choose<br>details:</p>
+						<div class="track-input-modifiers">
+							<img alt="tag" src="/images/tag.png" class="inputTag">
+						</div>
+							<!-- <p>choose<br>details:</p>
 							<a class="track-input-modifiers inputRemindPosition" onclick="entryListWidget.modifyInput('remind')">
 								<img alt="remind" class="inputRemind" src="/images/input-remind.png">
 							</a>
@@ -55,10 +57,13 @@
 							<a class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('pinned')">
 								<img alt="repeat" class="inputPin" src="/images/input-pin.png">
 							</a>
+							--!>
 							<input class="full-width" type="text" placeholder="Enter tags here: (Example: nap 2pm or sleep quality repeat)"
-							name="data" id="input0" required />
-						</div>
-						<div style="clear: both"></div>
+									name="data" id="input0" required />
+							<input type="hidden" name="repeatTypeId" id="input0RepeatTypeId" />
+							<input type="hidden" name="repeatEnd" id="inpiut0RepeatEnd" />
+					</div>
+					<div style="clear: both"></div>
 				</div>
 				<div id="pinned-tags">
 					<img alt="Pinned Tags" class="pin-header" src="/images/pinned-tags.png">
@@ -72,7 +77,6 @@
 				<a href="#" id="sort-by-time" onclick="entryListWidget.sortByTime()" class="sort-entry">TIME
 					<img class="sort-arrow hide" src="" alt="sort"/> 
 				</a>
-				<hr>
 				<div id="recordList">
 					<ol id="entry0"></ol>
 				</div>
@@ -117,6 +121,23 @@
 				entryListWidget = new EntryListWidget(initTagListWidget());				
 			});
 		});
+
+		$(document).ready(function() {
+			var newEntryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': 'new'});
+			
+			$('#addData').prepend(newEntryDetailsPopover);
+			$('#addData .track-input-dropdown').show();
+			$("#addData .choose-date-input").datepicker();
+			$('#newremind-checkbox').change(function() {
+				if ($('#newrepeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
+					$('#newconfirm-each-repeat').prop('checked', true);
+				}
+			});
+			$('#addData .repeat-entry-checkbox').change(function() {
+				$('#addData .repeat-modifiers').toggleClass('hide');
+			});
+		});
 	</script>
-</body>
+	<g:render template="/templates/track/entryDetailsPopover" />
+	</body>
 </html>

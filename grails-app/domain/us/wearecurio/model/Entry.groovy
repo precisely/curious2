@@ -474,7 +474,7 @@ class Entry implements Comparable {
 
 		return m['datePrecisionSecs'] == this.datePrecisionSecs && amount == m['amount'] \
 			&& comment == (m['comment'] ?: '') && repeatTypeId == m['repeatType']?.id && units == (m['units'] ?: '') \
-			&& amountPrecision == (m['amountPrecision'] ?: 3)
+			&& amountPrecision == (m['amountPrecision'] ?: 3) && m['repeatEnd'] == this.repeatEnd
 
 	}
 	
@@ -558,8 +558,9 @@ class Entry implements Comparable {
 	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture, boolean unGhost) {
 		boolean isToday = EntryParserService.isToday(entry.getDate(), baseDate)
 
-		if (entry.repeatParametersMatch(m) && ((!entry.isGhost()) || (!unGhost)))
+		if (entry.repeatParametersMatch(m) && ((!entry.isGhost()) || (!unGhost))) {
 			return entry // no need to update when entry doesn't change
+		}
 
 		if (isToday) {
 			if (allFuture) {

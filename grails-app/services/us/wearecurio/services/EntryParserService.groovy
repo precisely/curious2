@@ -369,7 +369,8 @@ class EntryParserService {
 	static final int CONDITION_COMMENT = 9
 	
 	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
-		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
+		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + 
+				", repeatType:" + repeatTypeId + " defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
 		

@@ -55,6 +55,7 @@ class RepeatType {
 	static RepeatType DAILYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT)
 	static RepeatType WEEKLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | WEEKLY_BIT)
 	static RepeatType WEEKLYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT)
+	static RepeatType MONTHLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | MONTHLY_BIT)
 	
 	static RepeatType GHOST = new RepeatType(GHOST_BIT)
 	static RepeatType NOTHING = new RepeatType(0)
@@ -189,6 +190,7 @@ class RepeatType {
 		if (repeatEnd == null)
 			return null
 			
+		println ">>>>>>repeatend: $repeatEnd"
 		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
 		
 		DateTime endDateTime = new DateTime(repeatEnd, dateTimeZone)
@@ -212,18 +214,18 @@ class RepeatType {
 			if (previousRepeatBoundary) endLocalDate = endLocalDate.minusDays(1)
 			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
 		} else if (isWeekly()) { // end date is smallest whole week after current date before new end local date
-			int daysDifference = Days.daysBetween(endLocalDate, entryLocalDate)
+			int daysDifference = Days.daysBetween(entryLocalDate, endLocalDate, ).getDays()
 			int weeksDifference = daysDifference / 7
 			if (previousRepeatBoundary) --weeksDifference
 			endLocalDate = entryLocalDate.plusDays(weeksDifference * 7)
 			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
 		} else if (isMonthly()) {
-			int monthsDifference = Months.monthsBetween(endLocalDate, entryLocalDate)
+			int monthsDifference = Months.monthsBetween(entryLocalDate, endLocalDate).getMonths()
 			if (previousRepeatBoundary) --monthsDifference
 			endLocalDate = entryLocalDate.plusMonths(monthsDifference)
 			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
 		} else if (isYearly()) {
-			int yearsDifference = Years.yearsBetween(endLocalDate, entryLocalDate)
+			int yearsDifference = Years.yearsBetween(entryLocalDate, endLocalDate).getYears()
 			if (previousRepeatBoundary) --yearsDifference
 			endLocalDate = entryLocalDate.plusYears(yearsDifference)
 			retVal = endLocalDate.toDateTime(entryLocalTime, dateTimeZone).toDate()
