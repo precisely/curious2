@@ -1009,7 +1009,13 @@ class DataController extends LoginController {
 
 		Utils.save(plotDataObj, true)
 
-		renderJSONPost([plotDataId:plotDataObj.getId()])
+		String name = plotDataObj.getName()
+		Discussion discussion = Discussion.create(user, name)
+
+		if (discussion) {
+			DiscussionPost.createComment(null, user, discussion, plotDataObj.id, null)
+		}
+		renderJSONPost([discussionHash: discussion.hash])
 	}
 
 	def loadSnapshotDataId() {
