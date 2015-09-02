@@ -85,6 +85,15 @@ class Utils {
 		return f.format(elasticSearchRoundMs(ms))
 	}
 	
+	public static String orifyList(def l) {
+		String orified = l?.collect{ it.toString() }?.join(" OR ")
+		if (l?.size() > 1) {
+			orified = "(" + orified + ")"
+		}
+
+		return orified
+	}
+	
 	//For some reason, there is a compile error whenever I try to call this
 	public static String elasticSearchDate(Date d) {
 		return elasticSearchDate(d.getTime())

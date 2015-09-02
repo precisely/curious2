@@ -1,15 +1,20 @@
-package us.wearecurio.services.integration
+package us.wearecurio.services.integration.SearchService
 
 import grails.test.spock.IntegrationSpec
 
-class SearchServiceSprintsIntegrationSpec extends IntegrationSpec {
+class GetSprintsCreatedIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
-    def setup() {
-    }
+	def setup() {
+	}
 
-    def cleanup() {
-    }
+	def cleanup() {
+	}
 
-    void "test something"() {
-    }
+	void "test something"() {
+		when: "nothing"
+		int i = 5
+		
+		then: "nothing"
+		i == 5
+	}
 }

@@ -250,5 +250,5 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		results01[0].id != results11[0].id
 		results01[0].id != results21[0].id
 		results11[0].id != results21[0].id
-	}	
+	}
 }

@@ -1,9 +1,29 @@
 package us.wearecurio.services
 
+//import us.wearecurio.model.Entry
+//import us.wearecurio.model.Tag
+//import us.wearecurio.model.User
+//import us.wearecurio.model.Sprint
+//import us.wearecurio.model.UserGroup
+//import us.wearecurio.model.GroupMemberReader
+//import us.wearecurio.model.Discussion
+//import org.elasticsearch.action.search.SearchResponse
+//import static org.elasticsearch.index.query.QueryBuilders.*
+//import org.elasticsearch.search.aggregations.AggregationBuilders
+//import org.elasticsearch.index.query.QueryBuilders
+//import org.elasticsearch.search.sort.*
+//import org.elasticsearch.action.count.CountResponse
+//import org.elasticsearch.search.aggregations.AggregationBuilders
+
+import us.wearecurio.model.Discussion
 import us.wearecurio.model.Entry
+import us.wearecurio.model.GroupMemberReader
+import us.wearecurio.model.Model
+import us.wearecurio.model.Model.Visibility;
+import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
-import us.wearecurio.model.Sprint
+import us.wearecurio.model.UserActivity
 import us.wearecurio.model.UserGroup
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.model.Discussion
@@ -16,7 +36,18 @@ import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import us.wearecurio.utility.Utils
 
+import us.wearecurio.utility.Utils
+
 import org.apache.commons.logging.LogFactory
+
+import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.count.CountResponse
+import org.elasticsearch.index.query.QueryBuilders
+
+import static org.elasticsearch.index.query.QueryBuilders.*
+
+import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.sort.*
 
 class SearchService {
 	
@@ -69,7 +100,120 @@ class SearchService {
 		return [listItems: false, success: false]
 	}
 	
+	static enum Role {
+		SPRINT_READER(0),
+		SPRINT_ADMIN(1),
+		DISCUSSION_OWNER(2),
+		DISCUSSION_ADMIN(3),
+		DISCUSSION_READER(4),
+		USER_FOLLOWER(5)
+		
+		final Integer id
+		
+		static Role get(int id) {
+			switch(id) {
+				case 0:
+					return SPRINT_READER
+				case 1:
+					return SPRINT_ADMIN
+				case 2:
+					return DISCUSSION_OWNER
+				case 3:
+					return DISCUSSION_ADMIN
+				case 4:
+					return DISCUSSION_READER
+				case 5:
+					return USER_FOLLOWER
+				default:
+					return DISCUSSION_READER
+			}
+		}
+		
+		Role(int id) {
+			this.id = id
+		}
+		
+		int getId() {
+			return id
+		}
+	}
+	
+	Boolean checkVisibility( Role role, Model.Visibility visibility ) {
+		switch(role) {
+			case Role.SPRINT_READER:
+				return (visibility == Model.Visibility.PUBLIC)
+			case Role.SPRINT_ADMIN:
+				return (visibility == Model.Visibility.PUBLIC)
+			case Role.DISCUSSION_ADMIN:
+				return true
+			case Role.DISCUSSION_READER:
+				return (visibility == Model.Visibility.PUBLIC)
+			case Role.USER_FOLLOWER:
+				return (visibility == Model.Visibility.PUBLIC)
+		}
+		
+		return false
+	}
+	
+	static def getVisibilityRequirements( Role role ) {
+		def visibility = []
+		visibility << Model.Visibility.PUBLIC
+		
+		switch (role) {
+			case Role.DISCUSSION_ADMIN:
+				visibility << Model.Visibility.UNLISTED
+				visibility << Model.Visibility.NEW
+				break;
+			case Role.DISCUSSION_OWNER:
+				visibility << Model.Visibility.PRIVATE
+				visibility << Model.Visibility.UNLISTED
+				visibility << Model.Visibility.NEW
+				break;
+		}
+		
+		return visibility
+	}
+	
 	Map getDiscussionActivity(User user, int offset = 0, int max = 10) {
+		def visibilitiesOr = Utils.orifyList(getVisibilityRequirements(Role.DISCUSSION_ADMIN).collect{ it.toString()})
+		def groupIdsOr = Utils.orifyList(UserGroup.getGroupsForAdmin(user.id).collect{ it[0].id })
+
+		def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc') {
+			query_string(query:  "groupIds:" + groupIdsOr + " AND visibility:" + visibilitiesOr)
+		}
+		
+		def discussionIdsOr = Utils.orifyList(readerGroupDiscussions.results.collect{it.id.toString()})
+		println "discussionIdsOr: " + discussionIdsOr
+		println "results: " + readerGroupDiscussions.results
+		if (discussionIdsOr != null && discussionIdsOr == "") {
+			return [listItems: false, success: false]
+		}
+		
+		def userAcivities = UserActivity.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
+			query_string(query:  "objectId:" + discussionIdsOr + " AND typeId:DISCUSSION" )
+		}
+		
+				
+		//get ids of all discussions user is reader of
+		//get virtual group ids for all sprints user is reader of
+		//get ids of all discussions virtual group belongs to
+		//get ids of all users user is following
+		
+		//get discussion activity for all discussionid's collected above and/or 
+//		Map model = []
+//		for (def activity : userActivities.searchResults) {
+//			switch (activity.)
+//			model << [
+//				type: 
+//				expectedSize == 0 || results.listItems[0].type == "act-dis-created"
+//				expectedSize == 0 || results.listItems[0].activity == user1.name + " created discussion '" + discussion.name + "'"
+//				expectedSize == 0 || results.listItems[0].id == discussion.id
+//				expectedSize == 0 || results.listItems[0].name == discussion.name
+//				expectedSize == 0 || results.listItems[0].activityDetail == null || results.listItems[0].activityDetail.trim().isEmpty()
+//		
+//			]
+//		}
+		
 		return [listItems: false, success: false]
 	}
 	
