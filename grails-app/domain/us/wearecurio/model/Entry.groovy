@@ -1098,7 +1098,8 @@ class Entry implements Comparable {
 				tag.getDescription(),
 				tag.getLastAmount(),
 				tag.getLastAmountPrecision(),
-				tag.getLastUnits()
+				tag.getLastUnits(),
+				tag.getTypicallyNoAmount()
 			])
 		}
 
