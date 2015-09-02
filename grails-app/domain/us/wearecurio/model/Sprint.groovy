@@ -109,11 +109,45 @@ class Sprint {
 	}
 	
 	def addReader(Long userId) {
-		fetchUserGroup()?.addReader(userId)
+		def r = fetchUserGroup()?.addReader(userId)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.FOLLOW,
+			UserActivity.ObjectType.SPRINT,
+			this.id,
+			UserActivity.ObjectType.USER,
+			userId
+		)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.ADD,
+			UserActivity.ObjectType.READER,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		r
 	}
 	
 	def removeReader(Long userId) {
-		fetchUserGroup()?.removeReader(userId)
+		def r = fetchUserGroup()?.removeReader(userId)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.UNFOLLOW,
+			UserActivity.ObjectType.SPRINT,
+			this.id,
+			UserActivity.ObjectType.USER,
+			userId
+		)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.REMOVE,
+			UserActivity.ObjectType.READER,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		r
 	}
 	
 	boolean hasAdmin(Long userId) {
@@ -121,7 +155,16 @@ class Sprint {
 	}
 	
 	def addAdmin(Long userId) {
-		return fetchUserGroup()?.addAdmin(userId)
+		def a = fetchUserGroup()?.addAdmin(userId)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.ADD,
+			UserActivity.ObjectType.ADMIN,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		a
 	}
 	
 	boolean hasInvited(Long userId) {
@@ -130,10 +173,26 @@ class Sprint {
 	
 	def addInvited(Long userId) {
 		fetchUserGroup()?.addInvited(userId)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.INVITE,
+			UserActivity.ObjectType.USER,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
 	}
 	
 	def removeInvited(Long userId) {
 		fetchUserGroup()?.removeInvited(userId)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.UNINVITE,
+			UserActivity.ObjectType.USER,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
 	}
 	
 	boolean hasInvitedAdmin(Long userId) {
@@ -141,13 +200,65 @@ class Sprint {
 	}
 	
 	def addInvitedAdmin(Long userId) {
-		return fetchUserGroup()?.addInvitedAdmin(userId)
+		def a = fetchUserGroup()?.addInvitedAdmin(userId)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.INVITE,
+			UserActivity.ObjectType.ADMIN,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		return a
+	}
+	
+	def removeInvitedAdmin(Long userId) {
+		def a = fetchUserGroup()?.removeInvitedAdmin(userId)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.UNINVITE,
+			UserActivity.ObjectType.ADMIN,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		return a
 	}
 	
 	void clearInvited() {
 		UserGroup group = fetchUserGroup()
+		
+		def userIds = GroupMemberInvited.lookupMemberIds(group.id)
+		def adminUserIds = GroupMemberInvitedAdmin.lookupMemberIds(group.id)
+		
 		group?.removeAllInvited()
 		group?.removeAllInvitedAdmin()
+		
+		if (userIds != null) {
+			for (def userId : userIds) {
+				UserActivity.create(
+					null,
+					UserActivity.ActivityType.UNINVITE,
+					UserActivity.ObjectType.USER,
+					userId,
+					UserActivity.ObjectType.SPRINT,
+					this.id
+				)
+			}
+		}
+		
+		if (adminUserIds != null) {
+			for (def adminUserId : adminUserIds) {
+				UserActivity.create(
+					null,
+					UserActivity.ActivityType.UNINVITE,
+					UserActivity.ObjectType.ADMIN,
+					adminUserId,
+					UserActivity.ObjectType.SPRINT,
+					this.id
+				)
+			}
+		}
 	}
 	
 	Long getEntriesCount() {
@@ -168,7 +279,50 @@ class Sprint {
 	}
 
 	def removeAdmin(Long userId) {
-		return fetchUserGroup()?.removeAdmin(userId)
+		def a = fetchUserGroup()?.removeAdmin(userId)
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.REMOVE,
+			UserActivity.ObjectType.ADMIN,
+			userId,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		a
+	}
+	
+	def hasDiscussion(Discussion discussion) {
+		return fetchUserGroup()?.hasDiscussion(discussion)
+	}
+	
+	def addDiscussion(Discussion discussion) {
+		if (hasDiscussion(discussion)) return null
+		
+		def r = fetchUserGroup()?.addDiscussion(discussion)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.ADD,
+			UserActivity.ObjectType.DISCUSSION,
+			discussion.id,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		r
+	}
+	
+	def removeDiscussion(Discussion discussion) {
+		if (!hasDiscussion(discussion)) return null
+		
+		def r = fetchUserGroup()?.removeDiscussion(discussion)
+		UserActivity.create(
+			null,
+			UserActivity.ActivityType.REMOVE,
+			UserActivity.ObjectType.DISCUSSION,
+			discussion.id,
+			UserActivity.ObjectType.SPRINT,
+			this.id
+		)
+		r
 	}
 	
 	static Sprint create(Date now, User user, String name, Visibility visibility) {
@@ -176,7 +330,7 @@ class Sprint {
 		return Sprint.withTransaction {
 			def sprint = new Sprint(now, user, name, visibility)
 			Utils.save(sprint, true)
-			UserActivity.create(now, user.id, UserActivity.SPRINT_BIT | UserActivity.CREATE_ID, sprint.id)
+			UserActivity.create(now, user.id, UserActivity.ActivityType.CREATE, UserActivity.ObjectType.SPRINT, sprint.id)
 			return sprint
 		}
 	}
@@ -190,7 +344,7 @@ class Sprint {
 		sprintUserGroup?.removeAllParticipants()
 		
 		Utils.save(sprint, true)
-		UserActivity.create(new Date(), userId, UserActivity.SPRINT_BIT | UserActivity.DELETE_ID, sprint.id)
+		UserActivity.create(new Date(), userId, UserActivity.ActivityType.DELETE, UserActivity.ObjectType.SPRINT, sprint.id)
 	}
 	
 	Sprint() {
@@ -243,7 +397,7 @@ class Sprint {
 		if (!hasMember(userId)) 
 			return null
 		
-		UserActivity start = UserActivity.fetchStart(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		UserActivity start = UserActivity.fetchStart(userId, this.id, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, now)
 		
 		return start?.created
 	}
@@ -253,7 +407,7 @@ class Sprint {
 		if (!hasMember(userId))
 			return null
 			
-		UserActivity end = UserActivity.fetchEnd(userId, this.id, UserActivity.SPRINT_BIT | UserActivity.START_ID, now)
+		UserActivity end = UserActivity.fetchEnd(userId, this.id, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, now)
 		
 		return end?.created
 	}
@@ -330,7 +484,7 @@ class Sprint {
 		def entry = Entry.create(userId, m, stats)
 		
 		// record activity
-		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.START_ID, this.id)
+		UserActivity.create(now, userId, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, this.id)
 		
 		return true
 	}
@@ -397,7 +551,7 @@ class Sprint {
 		def entry = Entry.create(userId, m, stats)
 
 		// record activity
-		UserActivity.create(now, userId, UserActivity.SPRINT_BIT | UserActivity.STOP_ID, this.id)
+		UserActivity.create(now, userId, UserActivity.ActivityType.STOP, UserActivity.ObjectType.SPRINT, this.id)
 	}
 	
 	boolean isModified() {

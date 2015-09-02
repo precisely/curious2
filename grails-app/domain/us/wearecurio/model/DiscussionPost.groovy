@@ -110,29 +110,55 @@ class DiscussionPost {
 	}
 	
 	static def create(Discussion discussion, Long authorUserId, String message) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", message:'" + message + "'"
-		return new DiscussionPost(discussion, authorUserId, null, message, new Date())
+		return create(discussion, authorUserId, null, message)
 	}
 	
 	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'"
-		return new DiscussionPost(discussion, authorUserId, plotDataId, comment, new Date())
+		return create(discussion, authorUserId, plotDataId, comment, new Date())
 	}
 	
 	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
-		log.debug "DiscussionPost.create() discussionId:" + discussion.getId() + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
-		return new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date())
+		log.debug "DiscussionPost.create() discussionId:" + discussion.id + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
+		def post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date())
+		Utils.save(post, true)
+		UserActivity.create(
+			post.authorUserId, 
+			UserActivity.ActivityType.CREATE, 
+			UserActivity.ObjectType.DISCUSSION_POST, 
+			post.id
+		)
+		return post
 	}
-	
+
+	private static void unComment(Long authorUserId, Long discussionId, Long postId) {
+		UserActivity.create(
+			authorUserId,
+			UserActivity.ActivityType.DELETE,
+			UserActivity.ObjectType.DISCUSSION_POST,
+			postId
+		)
+		UserActivity.create(
+			authorUserId,
+			UserActivity.ActivityType.UNCOMMENT,
+			UserActivity.ObjectType.DISCUSSION,
+			discussionId,
+			UserActivity.ObjectType.DISCUSSION_POST,
+			postId
+		)
+	}
+
 	public static void delete(DiscussionPost post) {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
 		Discussion discussion = Discussion.get(post.getDiscussionId())
 		discussion.setUpdated(new Date())
+		def postId = post.id
 		post.delete(flush:true)
+		unComment(null, discussion.id, postId)
 	}
 	
 	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
 		DiscussionPost post = DiscussionPost.get(clearPostId)
+		def postId = post.id
 		if (post != null && (user == null || post.getUserId() != user.getId())) {
 			return false
 		} else if (post == null) {
@@ -141,6 +167,7 @@ class DiscussionPost {
 			DiscussionPost.delete(post)
 		}
 		Utils.save(discussion, true)
+		unComment(user.id, discussion.id, postId)
 		return true
 	}
 	
@@ -158,6 +185,14 @@ class DiscussionPost {
 				log.debug("DiscussionPost.createComment: 1 post with plotData")
 				post.setMessage(message)
 				Utils.save(post)
+				UserActivity.create(
+					user.id, 
+					UserActivity.ActivityType.COMMENT, 
+					UserActivity.ObjectType.DISCUSSION, 
+					discussion.id,
+					UserActivity.ObjectType.DISCUSSION_POST,
+					post.id
+				)
 			} else if (user) {
 				log.debug("DiscussionPost.createComment: 1st comment")
 				post = discussion.createPost(user, plotIdMessage, message)
