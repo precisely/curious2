@@ -1,19 +1,15 @@
 package us.wearecurio.services
 
-//import us.wearecurio.model.Entry
-//import us.wearecurio.model.Tag
-//import us.wearecurio.model.User
-//import us.wearecurio.model.Sprint
-//import us.wearecurio.model.UserGroup
-//import us.wearecurio.model.GroupMemberReader
-//import us.wearecurio.model.Discussion
-//import org.elasticsearch.action.search.SearchResponse
-//import static org.elasticsearch.index.query.QueryBuilders.*
-//import org.elasticsearch.search.aggregations.AggregationBuilders
-//import org.elasticsearch.index.query.QueryBuilders
-//import org.elasticsearch.search.sort.*
-//import org.elasticsearch.action.count.CountResponse
-//import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.apache.commons.logging.LogFactory
+
+import org.elasticsearch.action.count.CountResponse
+import org.elasticsearch.action.search.SearchResponse
+
+import static org.elasticsearch.index.query.QueryBuilders.*
+import org.elasticsearch.index.query.QueryBuilders
+
+import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.sort.*
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.Entry
@@ -25,29 +21,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.User
 import us.wearecurio.model.UserActivity
 import us.wearecurio.model.UserGroup
-import us.wearecurio.model.GroupMemberReader
-import us.wearecurio.model.Discussion
-import org.elasticsearch.action.search.SearchResponse
-import static org.elasticsearch.index.query.QueryBuilders.*
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.index.query.QueryBuilders
-import org.elasticsearch.search.sort.*
-import org.elasticsearch.action.count.CountResponse
-import org.elasticsearch.search.aggregations.AggregationBuilders
 import us.wearecurio.utility.Utils
-
-import us.wearecurio.utility.Utils
-
-import org.apache.commons.logging.LogFactory
-
-import org.elasticsearch.action.search.SearchResponse
-import org.elasticsearch.action.count.CountResponse
-import org.elasticsearch.index.query.QueryBuilders
-
-import static org.elasticsearch.index.query.QueryBuilders.*
-
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.sort.*
 
 class SearchService {
 	
