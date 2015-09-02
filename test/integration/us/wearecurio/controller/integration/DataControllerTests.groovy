@@ -543,14 +543,15 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.saveSnapshotData()
 
 		def content = controller.response.contentAsString
-		assert content.startsWith('{"plotDataId":')
+		assert content.startsWith('{"discussionHash":')
 
 		def responseData = JSON.parse(content)
 
-		def plotData = PlotData.get(responseData.plotDataId)
+		def discussion = Discussion.findByHash(responseData.discussionHash)
 
-		assert plotData != null
-		assert plotData.getIsSnapshot()
+		assert discussion != null
+		Long plotDataId = DiscussionPost.get(discussion.firstPostId).plotDataId
+		assert PlotData.get(plotDataId).getIsSnapshot()
 	}
 
 	@Test

@@ -1,6 +1,10 @@
 <div class="people-detail">
 	<div class="upper-body">
-		<i class="fa fa-circle fa-4x"></i>
+		{{ if (user.avatarURL) { }}
+			<img src="{{- user.avatarURL }}" alt="avatar" class="img-circle">
+		{{ } else { }}
+			<i class="fa fa-circle fa-4x"></i>
+		{{ } }}
 		<h2>{{- user.username }}</h2>
 		<button>FOLLOW</button>
 	</div>

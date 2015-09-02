@@ -226,13 +226,6 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-function clearPostMessage(postId) {
-	showYesNo("Are you sure you want to delete this comment?", function() {
-			window.location = "/home/discuss?discussionHash=${discussionHash}&clearPostId=" + postId;
-	});
-	return false;
-}
-
 $(function() {
 	initTagListOnly();
 

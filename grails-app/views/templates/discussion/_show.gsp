@@ -20,14 +20,14 @@
 									<div class="dateline row">
 										<div class="col-xs-4">
 											<span class="startDate"><input id="startdatepicker1"
-												type="text" value="" class="startdatepicker cycleInput" /></span>
+													type="text" value="" class="startdatepicker cycleInput" /></span>
 										</div>
 										<div class="col-xs-4">
 											<!-- span class="cycleTag" id="cycleTag1"><input type="text" class="cycleTagInput" name="cycletag" value="" class="cycleInput" /></span -->
 										</div>
 										<div class="col-xs-4">
 											<span class="endDate"><input id="enddatepicker1"
-												type="text" value="" class="enddatepicker cycleInput" /></span>
+													type="text" value="" class="enddatepicker cycleInput" /></span>
 										</div>
 									</div>
 								</div>
@@ -86,8 +86,8 @@
 							<hr>
 							<div class="buttons">
 								<button class="share-button" data-toggle="popover" data-placement="top" 
-										data-content="<input class='share-link' type='text' value='{{- serverURL}}home/discuss?discussionHash={{- discussionHash }}'>"
-										title="Share:">
+											data-content="<input class='share-link' type='text' value='{{- serverURL}}home/social#discussions/{{- discussionHash }}'>"
+											title="Share:">
 									<img src="/images/share.png" alt="share"> Share
 								</button>
 								<button class="comment-button">
@@ -105,27 +105,27 @@
 
 											<div id="postname">
 												<input type="text" id="postname" name="postname" value=""
-													class="postInput" /> Name
+														class="postInput" /> Name
 											</div>
 											<div id="postemail">
 												<input type="text" id="postemail" name="postemail" value=""
-													class="postInput" /> Email (not publicly visible)
+														class="postInput" /> Email (not publicly visible)
 											</div>
 											<div id="posturl">
 												<input type="text" id="postsite" name="postsite" value=""
-													class="postInput" /> Website URL (optional)
+														class="postInput" /> Website URL (optional)
 											</div>
 											<div id="postcomment">
 												<textarea rows="20" cols="100" style="border-style: solid"
-													id="postcommentarea" name="message"></textarea>
+														id="postcommentarea" name="message"></textarea>
 											</div>
 											<br />
 											<input type="button" class="submitButton"
-												id="commentSubmitButton" value="submit" />
-											<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
+													id="commentSubmitButton" value="submit" />
+													<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
 										{{ } else { }}
 											<input type="text" placeholder="Add Comment to this discussion..."
-												id="post-comment" name="message" required>
+													id="post-comment" name="message" required>
 										{{ } }}
 										<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 									</form>
@@ -144,7 +144,7 @@
 
 		<div id="share-dialog" class="hide" title="Share">
 			<select name="shareOptions" id="shareOptions" multiple="multiple"
-				class="form-control" size="8">
+					class="form-control" size="8">
 				<option value="isPublic" {{- isPublic ? 'selected="selected"' : '' }}>Visible
 					to the world</option>
 				{{ _.each(associatedGroups, function(userGroup) { }}

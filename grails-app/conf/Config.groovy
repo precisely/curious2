@@ -594,7 +594,7 @@ fileuploader {
 
 	avatar {
 		maxSize = 1024 * 1024 * 2 //256 kbytes
-		allowedExtensions = ["jpg","jpeg","gif","png"]
+		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
 		storageTypes = "CDN"
 		container = "curious"
 	}

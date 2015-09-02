@@ -1,7 +1,11 @@
 <div class="people-wrapper">
 	<div class="user-details-header">
 		<a href="#" onclick="showUserDetails('{{- user.hash }}')">
-			<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+			{{ if (user.avatarURL) { }}
+				<img src="{{- user.avatarURL }}" alt="avatar" class="avatar img-circle">
+			{{ } else { }}
+				<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+			{{ } }}
 			<span class="username">{{- user.username }}</span>
 		</a>
 		<button class="follow">FOLLOW</button>

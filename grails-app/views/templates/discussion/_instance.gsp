@@ -44,7 +44,7 @@
 						</button>
 						{{ if (discussionData.isAdmin) {  }}
 							<button class="share-button" data-toggle="popover" title="Share:"
-								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/discuss?discussionHash={{- discussionData.hash }}'>">
+								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/social#discussions/{{- discussionData.hash }}'>">
 								<img src="/images/share.png" alt="share">Share
 							</button>
 						{{ } }}

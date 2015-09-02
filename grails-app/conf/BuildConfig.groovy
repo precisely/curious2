@@ -54,12 +54,12 @@ grails.project.dependency.resolution = {
     }
 
     dependencies {
-		// Dependency for file-uploader plugin
-		compile "org.apache.jclouds:jclouds-core:1.7.2"
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
+		// specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 		compile 'com.ganyo:gcm-server:1.0.2'
 		compile 'com.notnoop.apns:apns:1.0.0.Beta6'
         runtime 'mysql:mysql-connector-java:5.1.29'
+		// Dependency for file-uploader plugin
+		compile "org.apache.jclouds:jclouds-core:1.7.2"
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
         test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
 		runtime 'commons-dbcp:commons-dbcp:1.4' //or 1.3 if java 1.5

@@ -77,7 +77,8 @@ class User {
 	static embedded = ["settings"]
 
 	static searchable = {
-		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupId']
+		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 
+				'created', 'virtualUserGroupId']
 	}
 
 	SortedSet interestTags
@@ -221,7 +222,7 @@ class User {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
 		
-		def userBio = map['bio']
+		String userBio = map['bio']
 		if (userBio != null) {
 			bio = userBio
 		}
@@ -539,7 +540,8 @@ class User {
 			website: website,
 			notifyOnComments: notifyOnComments,
 			created: created,
-			type: "usr"
+			type: "usr",
+			avatarURL: avatar?.path
 		];
 	}
 	

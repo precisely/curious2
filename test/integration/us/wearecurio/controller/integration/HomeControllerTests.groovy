@@ -279,23 +279,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testDiscuss() {
-		HomeController controller = new HomeController()
-
-		controller.session.userId = user.getId()
-
-		controller.params['discussionHash'] = discussion.hash.toString()
-
-		controller.discuss()
-
-		def modelAndView = controller.modelAndView
-
-		assert modelAndView.model['discussionHash'].toString().equals(discussion.hash.toString())
-		assert modelAndView.model['username'].equals(user.getUsername())
-		assert modelAndView.getViewName().equals("/home/discuss")
-	}
-
-	@Test
 	void testPollDevices() {
 		def account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
 			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
@@ -505,59 +488,5 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		dummyUser2 = User.create(params)
 	
 		Utils.save(dummyUser2, true)
-	}
-
-	@Test 
-	void "Test sprint when wrong id is passed"() {
-		HomeController controller = new HomeController()
-		
-		mockSprintData()
-		controller.params["id"] = 0
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint when null id is passed"() {
-		HomeController controller = new HomeController()
-		
-		mockSprintData()
-		controller.params["id"] = null
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint when a non member tries to open the private sprint"() {
-		HomeController controller = new HomeController()
-
-		mockSprintData()
-		controller.params["id"] = dummySprint.hash
-		controller.session.userId = user2.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("You are not permitted to see that sprint.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint"() {
-		HomeController controller = new HomeController()
-
-		mockSprintData()
-		controller.params["id"] = dummySprint.hash
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-
-		def modelAndView = controller.modelAndView
-		assert modelAndView.model['participants'][0].id == user.getId()
-		assert modelAndView.getViewName().equals("/home/sprint")
 	}
 }

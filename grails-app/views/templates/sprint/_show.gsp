@@ -103,7 +103,7 @@
 				{{ } else { }}
 					<button id="join-sprint" class="sprint-button" onclick="joinSprint('{{- sprintInstance.hash }}')">Follow</button>
 				{{ } }}
-				{{ if (sprintInstance.hasAdmin) { }}">
+				{{ if (sprintInstance.hasAdmin) { }}
 					<button class="sprint-button" onclick="editSprint('{{- sprintInstance.hash }}')">Edit</button>
 					<button class="sprint-button" onclick="deleteSprint('{{- sprintInstance.hash }}')">Delete</button>
 				{{ } }}

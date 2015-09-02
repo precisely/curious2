@@ -103,7 +103,7 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 
 function sprintShow(hash) {
 
-	queueJSON('Getting discussion list', '/api/sprint/' + hash + '?' + getCSRFPreventionURI('showsprintCSRF') + '&callback=?',
+	queueJSON('Getting sprint details', '/api/sprint/' + hash + '?' + getCSRFPreventionURI('showsprintCSRF') + '&callback=?',
 			function(data) { 
 		if (data.success) { 
 				sprintInstance = data.sprint;
@@ -114,10 +114,93 @@ function sprintShow(hash) {
 				showDiscussionData(data.discussions);
 				window.location.hash = 'sprints/' + hash;
 		} else {
-			$('.alert').text(data.message);
+			showAlert(data.message);
+			window.location.hash = 'sprints';
 		}
 		$('#queryTitle').text('Tracking Sprint');
 	}, function(data) {
 		showAlert('Internal server error occurred.');
+	});
+}
+
+function startSprint(sprintHash) {
+	var timeZoneName = jstz.determine().name();
+	var now = new Date().toUTCString();
+	queueJSON('Starting Sprint', '/api/sprint/action/start?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
+		id: sprintHash,
+		now: now,
+		timeZoneName: timeZoneName
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('#start-sprint').hide();
+			$('#stop-sprint').show();
+		} else {
+			showAlert(data.message);
+		}
+	});
+}
+
+function stopSprint(sprintHash) {
+	var timeZoneName = jstz.determine().name();
+	var now = new Date().toUTCString();
+	queueJSON('Stopping Sprint', '/api/sprint/action/stop?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
+		id: sprintHash,
+		now: now,
+		timeZoneName: timeZoneName
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('#stop-sprint').hide();
+			$('#start-sprint').show();
+		} else {
+			showAlert(data.message);
+		}
+	});
+}
+
+function leaveSprint(sprintHash) {
+	var timeZoneName = jstz.determine().name();
+	var now = new Date().toUTCString();
+	queueJSON('Unfollow Sprint', '/api/sprint/action/leave?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
+		id: sprintHash,
+		now: now,
+		timeZoneName: timeZoneName
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
+				sprintHash + '\')">Follow</button>');
+		} else {
+			showAlert(data.message);
+		}
+	});
+}
+
+function joinSprint(sprintHash) {
+	queueJSON('Follow Sprint', '/api/sprint/action/join?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
+		id: sprintHash
+	}, function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			$('.sprint-button').remove();
+			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
+				sprintHash + '\')">Unfollow</button>');
+			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
+				sprintHash + '\')">Start</button>');
+			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
+				sprintHash + '\')">Stop</button>');
+		} else {
+			showAlert(data.message);
+		}
 	});
 }

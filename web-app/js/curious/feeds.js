@@ -58,7 +58,10 @@ function registerScroll() {
 						this.resume();
 					}
 				} else {
-					$('.alert').text(data.message);
+					this.finish();
+					if (data.message) {
+						$('.alert').text(data.message);
+					}
 				}
 			}.bind(this), function(data) {
 				showAlert('Internal server error occurred.');
@@ -132,8 +135,13 @@ $(document).ready(function() {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			} else {
-				location.assign('/home/sprint/' + data.hash);
+				if (isTabActive('#sprints/' + data.hash)) {
+					sprintShow(data.hash);
+				} else {
+					location.assign('/home/social#sprints/' + data.hash);
+				}
 				clearSprintFormData()
+				$('#createSprintOverlay').modal('hide');
 			}
 		}, function(xhr) {
 		}, null, httpArgs);
@@ -642,49 +650,50 @@ function createSprint() {
 function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
 			function(data) {
-				if (!checkData(data))
-					return;
+		if (!checkData(data))
+			return;
 
-				console.log('data: ', data);
-				if (!data.success) {
-					showAlert(data.message);
-				} else {
-					console.log(data.sprint);
-					//Clearing data from last load
-					clearSprintFormData();
-					$('#sprintIdField').val(data.sprint.hash);
-					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
-					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
-					$('#sprint-title').val(data.sprint.name);
-					$('#sprint-duration').val(data.sprint.daysDuration);
-					$('#sprint-details').val(data.sprint.description);
-					$('.submit-sprint').text('Update Sprint');
-					$('#createSprintOverlay .modal-title').text('Edit Sprint');
-					if (data.sprint.visibility === 'PRIVATE') {
-						$('#closed').prop('checked', true);
-					} else {
-						$('#open').prop('checked', true);
-					}
+		console.log('data: ', data);
+		if (!data.success) {
+			showAlert(data.message);
+		} else {
+			console.log(data.sprint);
+			//Clearing data from last load
+			clearSprintFormData();
+			$('#sprintIdField').val(data.sprint.hash);
+			$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
+			$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
+			$('#sprint-title').val(data.sprint.name);
+			$('#sprint-duration').val(data.sprint.daysDuration);
+			$('#sprint-details').val(data.sprint.description);
+			$('.submit-sprint').text('Update Sprint');
+			$('#createSprintOverlay .modal-title').text('Edit Sprint');
 
-					$.each(data.entries, function(index, value) {
-						addTagsToList(value);
-					});
-					$.each(data.participants, function(index, participant) {
-						if (!participant.virtual) {
-							addParticipantsAndAdminsToList($("#sprint-participants-list"), 
-									'deleteParticipants', participant.username);
-						}
-					});
-					$.each(data.admins, function(index, admin) {
-						if (!admin.virtual) {
-							addParticipantsAndAdminsToList($("#sprint-admins-list"), 
-									'deleteAdmins', admin.username);
-						}
-					});
-					$('#createSprintOverlay').modal({show: true});
-				}
-				autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
+			if (data.sprint.visibility === 'PRIVATE') {
+				$('#closed').prop('checked', true);
+			} else {
+				$('#open').prop('checked', true);
+			}
+
+			$.each(data.entries, function(index, value) {
+				addTagsToList(value);
 			});
+			$.each(data.participants, function(index, participant) {
+				if (!participant.virtual) {
+					addParticipantsAndAdminsToList($("#sprint-participants-list"), 
+							'deleteParticipants', participant.username);
+				}
+			});
+			$.each(data.admins, function(index, admin) {
+				if (!admin.virtual) {
+					addParticipantsAndAdminsToList($("#sprint-admins-list"), 
+							'deleteAdmins', admin.username);
+				}
+			});
+			$('#createSprintOverlay').modal({show: true});
+		}
+		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
+	});
 }
 
 function deleteSprint(sprintHash) {
@@ -705,88 +714,6 @@ function deleteSprint(sprintHash) {
 			}, function(data) {
 				showAlert(data.message);
 			}, null, httpArgs);
-	});
-}
-
-function startSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Starting Sprint', '/api/sprint/action/start?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#start-sprint').hide();
-			$('#stop-sprint').show();
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function stopSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Stopping Sprint', '/api/sprint/action/stop?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#stop-sprint').hide();
-			$('#start-sprint').show();
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function leaveSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Unfollow Sprint', '/api/sprint/action/leave?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
-				sprintHash + '\')">Follow</button>');
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function joinSprint(sprintHash) {
-	queueJSON('Follow Sprint', '/api/sprint/action/join?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
-		id: sprintHash
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
-				sprintHash + '\')">Unfollow</button>');
-			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
-				sprintHash + '\')">Start</button>');
-			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
-				sprintHash + '\')">Stop</button>');
-		} else {
-			showAlert(data.message);
-		}
 	});
 }
 

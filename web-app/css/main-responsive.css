@@ -116,6 +116,9 @@
 		.signals .arrow-box {
 			display: none;
 		}
+		.user-details {
+			min-width: 500px;
+		}
 		.bugs a {
 				right: -10px;
 		}

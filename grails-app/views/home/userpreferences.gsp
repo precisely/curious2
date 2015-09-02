@@ -18,47 +18,54 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-$(window).load(function() {
-	function readURL(input) {
-		var httpArgs ={processData: false, contentType: false, requestMethod:'POST'};
+function readURL(input) {
+	var httpArgs ={processData: false, contentType: false, requestMethod:'POST'};
 
-		if (input.files && input.files[0]) {
-			var reader = new FileReader();
-			reader.onload = function (e) {
-				$('.image-editor').cropit({
-					imageState: {
-					src: e.target.result
-					},
-				});
+	if (input.files && input.files[0]) {
+		var reader = new FileReader();
+		reader.onload = function (e) {
+			$('.image-editor').cropit({
+				imageState: {
+				src: e.target.result
+				},
+			});
 
-				$('.export').click(function() {
-					var imageData = $('.image-editor').cropit('export');
-					var blob = dataURItoBlob(imageData);
-					console.log('blob' + blob);
-					var formData = new FormData();
-					formData.append("avatar", blob, "avatar.png");
-					formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
-					formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
+			$('.export').click(function() {
+				var imageData = $('.image-editor').cropit('export');
+				var blob = dataURItoBlob(imageData);
+				console.log('blob' + blob);
+				var formData = new FormData();
+				formData.append("avatar", blob, "avatar.png");
+				formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
+				formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
 
-					queueJSONAll('updating avatar', '/home/saveAvatar', 
-							formData, function(data) {
-						if (data.success) {
-							console.log(data);
-							$('.img-circle').attr('src', data.avatarURL);
-						} else {
-							showAlert('Error updating avatar. Please try again.');
-						}
-							$('#avatarModal').modal('hide');
-					}, function(data) {
-						showAlert('Internal server error occurred.');
-					}, 0, httpArgs);
-				});
-			}
-			reader.readAsDataURL(input.files[0]);
+				queueJSONAll('updating avatar', '/user/saveAvatar', 
+						formData, function(data) {
+					if (data.success) {
+						console.log(data);
+						$('.img-circle').attr('src', data.avatarURL);
+					} else {
+						showAlert('Error updating avatar. Please try again.');
+					}
+						$('#avatarModal').modal('hide');
+				}, function(data) {
+					showAlert('Internal server error occurred.');
+				}, 0, httpArgs);
+			});
 		}
+		reader.readAsDataURL(input.files[0]);
 	}
+}
+
+$(window).load(function() {
 	$("#cropit-image-input").change(function() {
 		readURL(this);
+	});
+
+	$( "#updateUserPreferences" ).keyup(function(e) {
+		if (e.which == 13) {
+			editUserDetails();
+		}
 	});
 });
 
@@ -108,18 +115,14 @@ $(function() {
 function editUserDetails() {
 	var newUsername = $("#username").val();
 	var newPw = $("#password").val();
-	if (origUsername != newUsername) {
-		if (newPw.length == 0) {
-			showAlert("If you change the username, you must set the password as well");
-			return;
-		}
+	if (origUsername != newUsername && newPw.length == 0) {
+		showAlert("If you change the username, you must set the password as well");
+		return false;
 	}
-	if (newPw.length > 0) {
-		if (newPw != $("#verify_password").val()) {
-			showAlert("New password and verification do not match");
-			return;
-		}
-	}
+	if (newPw.length > 0 && newPw != $("#verify_password").val()) {
+		showAlert("New password and verification do not match");
+		return false;
+	} 
 	document.getElementById("updateUserPreferences").submit();
 }
 </script>
@@ -180,7 +183,7 @@ function editUserDetails() {
 			<g:form url="/home/doupdateuserpreferences" name="updateUserPreferences" id="updateUserPreferences" class="form-horizontal" autocomplete="off">
 				<div class="row">
 					<div class="pull-right">
-						<button class="save-user-details" onclick="editUserDetails()">Save Profile</button>
+						<button class="save-user-details" type="button" onclick="editUserDetails()">Save Profile</button>
 					</div>
 					<div class="user-image pull-left">
 						<img src="${user.avatar?.path ?: '/images/avatar.png'}" alt="" class="img-circle">
@@ -194,10 +197,10 @@ function editUserDetails() {
 						<div class="user-name-radio">
 							<div class="input-affordance">
 								<input type="radio" class="radio-public" name="namePrivacy" id="name-public" value="public"
-									${user.settings.isNamePublic() ? 'checked="checked"' : '' }>
+										${user.settings.isNamePublic() ? 'checked="checked"' : '' }>
 								<label for="name-public" class="radio-public-label">Public</label> <br>
 								<input type="radio" class="radio-private" name="namePrivacy" id="name-private" value="private"
-									${!user.settings.isNamePublic() ? 'checked="checked"' : '' }>
+										${!user.settings.isNamePublic() ? 'checked="checked"' : '' }>
 								<label for="name-private" class="radio-private-label">Private</label>
 							</div>
 						</div>
@@ -252,10 +255,10 @@ function editUserDetails() {
 									<textarea id="bio" name="bio" class="form-control" value="${user.bio}"></textarea>
 									<div class="bio-radio">
 										<input type="radio" class="radio-public" name="bioPrivacy" id="bio-public" value="public"
-											${user.settings.isBioPublic() ? 'checked="checked"' : '' }>
+												${user.settings.isBioPublic() ? 'checked="checked"' : '' }>
 										<label for="bio-public" class="radio-public-label">Public</label>
 										<input type="radio" class="radio-private" name="bioPrivacy" id="bio-private" value="private"
-											${!user.settings.isBioPublic() ? 'checked="checked"' : '' }>
+												${!user.settings.isBioPublic() ? 'checked="checked"' : '' }>
 										<label for="bio-private" class="radio-private-label">Private</label>
 									</div>
 								</div>

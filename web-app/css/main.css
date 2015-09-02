@@ -55,10 +55,8 @@ input, optgroup, select, textarea {
 	font-size: 14px;
 	resize: none;
 	height: 95px;
-	padding-top: 20px;
-	padding-right: 30px;
 	border-radius: 2px;
-	padding-left: 10px;
+	padding: 18px;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -1597,7 +1595,10 @@ body.discuss-page .red-header {
 	font-weight: normal;
 	color: #787878;
 	font-size: 10px;
-	margin-left: -6px;
+}
+
+#addData .bio-radio .radio-private-label {
+	margin-left: 37px;
 }
 
 .bio-radio label:after { 
@@ -1622,7 +1623,7 @@ body.discuss-page .red-header {
 	box-shadow: none;
 }
 
-.profile-container #addData .bio-radio input[type=radio]:checked+label:after , .user-name-radio .bio-radio input[type=radio]:checked+label:after{
+#addData .bio-radio input[type=radio]:checked+label:after , .user-name-radio .bio-radio input[type=radio]:checked+label:after{
 	background-color: #575757;
 	box-shadow: none;
 }
@@ -1632,16 +1633,12 @@ body.discuss-page .red-header {
 	cursor: pointer;
 }
 
-.profile-container #addData .bio-radio .radio-private-label {
-	margin-left: 37px;
-}
-
 .input-affordance input[type=radio]:checked+label:after {
 	background-color: #FC3F28;
 	box-shadow: none;
 }
 
-.profile-container #addData .input-affordance input[type=radio]:checked+label:after , .user-name-radio .input-affordance input[type=radio]:checked+label:after{
+.profile-container .input-affordance input[type=radio]:checked+label:after , .user-name-radio .input-affordance input[type=radio]:checked+label:after {
 	background-color: #575757;
 	box-shadow: none;
 }
@@ -1667,7 +1664,7 @@ body.discuss-page .red-header {
 	top: 25px;
 }
 
-.profile-container #addData .input-affordance .radio-public-label {
+.profile-container .input-affordance .radio-public-label {
 	right: 312px;
 	top: 9px;
 }
@@ -1677,7 +1674,7 @@ body.discuss-page .red-header {
 	top: 10px;
 }
 
-.profile-container #addData .input-affordance .radio-private-label {
+.profile-container .input-affordance .radio-private-label {
 	right: 240px;
 	top: 9px;
 }
@@ -4069,7 +4066,7 @@ body .modal-header button {
 }
 
 .user-preference .container-fluid {
-	min-width: 500px;
+	padding: 30px 108px;
 }
 
 .user-image img {
@@ -4362,10 +4359,15 @@ input[type = "number"] {
 	height: 30px;
 }
 
-.people-detail .upper-body .fa{
+.people-detail .upper-body .fa, .people-detail .upper-body img {
 	margin-top: -8px;
 	margin-left: 30px;
 	position: absolute;
+}
+
+.people-detail .upper-body img {
+	width: 85px;
+	height: 85px;
 }
 
 .people-detail .media-left .fa{

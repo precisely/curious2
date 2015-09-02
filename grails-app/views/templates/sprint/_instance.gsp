@@ -18,15 +18,15 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-8 tags-participants-label">
-					<a href="/home/sprint/{{- sprint.hash }}">
+					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
 						TAGS({{- sprint.totalTags }})
 					</a>
-					<a href="/home/sprint/{{- sprint.hash }}">
+					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
 						PARTICIPANTS({{- sprint.totalParticipants }})
 					</a>
 				</div>
 				<div class="col-xs-4 align-right read-more">
-					<a href="/home/sprint/{{- sprint.hash }}">
+					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
 						VIEW MORE
 					</a>
 				</div>
