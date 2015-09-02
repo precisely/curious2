@@ -14,7 +14,7 @@ import us.wearecurio.model.UserGroup
 class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
 	static Closure addAdmin = {
-		discussion, admin, user = null -> 
+		discussion, admin, user = null ->
 			def userGroup = UserGroup.create(getUniqueName(), getUniqueName(), getUniqueName(), null)
 			userGroup.addDiscussion(discussion)
 			userGroup.addAdmin(admin)
@@ -22,7 +22,7 @@ class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecB
 	}
 	
 	static Closure addReader = {
-		discussion, reader, user = null -> 
+		discussion, reader, user = null ->
 			def userGroup = UserGroup.create(getUniqueName(), getUniqueName(), getUniqueName(), null)
 			userGroup.addDiscussion(discussion)
 			userGroup.addReader(reader)
@@ -76,7 +76,7 @@ class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecB
 	}
 	
 	static def data = [
-	//		visibility			otherUser	expectedResult					otherUserCode	expectedSize expectedResult	
+	//		visibility			otherUser	expectedResult					otherUserCode	expectedSize expectedResult
 	[Model.Visibility.PUBLIC 	, 	1	, 	"self sees"						,	{d, u2, u1 ->}	,	1	,	"sees"],
 	[Model.Visibility.PRIVATE	, 	1	,	"self sees"						,	{d, u2, u1 ->}	,	1	,	"sees"],
 	[Model.Visibility.UNLISTED	,	1	,	"self sees"						, 	{d, u2, u1 ->}	,	1	,	"sees"],
@@ -440,7 +440,7 @@ class GetDiscussionActivityIntegrationSpec extends SearchServiceIntegrationSpecB
 		results.listItems.size() == 0
 		
 		where:
-		visibility					|	followType						|	followCode		|	unFollowCode	
+		visibility					|	followType						|	followCode		|	unFollowCode
 		Model.Visibility.PUBLIC		|	"user follower"					|	addFollower		|	removeFollower
 		Model.Visibility.PRIVATE	|	"user follower"					|	addFollower		|	removeFollower
 		Model.Visibility.UNLISTED	|	"user follower"					|	addFollower		|	removeFollower

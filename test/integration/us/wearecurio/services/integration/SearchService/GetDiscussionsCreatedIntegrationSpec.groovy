@@ -138,8 +138,8 @@ class GetDiscussionsCreatedIntegrationSpec extends SearchServiceIntegrationSpecB
 		then: "only discussion1 or discussion2 or discussion3 is returned"
 		results.success
 		results.listItems.size() == 1
-		results.listItems.find{ it -> 
-			(it.id == discussion1.id && it.name == discussion1.name) || 
+		results.listItems.find{ it ->
+			(it.id == discussion1.id && it.name == discussion1.name) ||
 			(it.id == discussion2.id && it.name == discussion2.name) ||
 			(it.id == discussion3.id && it.name == discussion3.name)
 		}
@@ -163,8 +163,8 @@ class GetDiscussionsCreatedIntegrationSpec extends SearchServiceIntegrationSpecB
 		then: "results01 is either discussion1, discussion2 or discussion3"
 		results01.success
 		results01.listItems.size() == 1
-		results01.listItems.find{ it -> 
-			(it.id == discussion1.id && it.name == discussion1.name) || 
+		results01.listItems.find{ it ->
+			(it.id == discussion1.id && it.name == discussion1.name) ||
 			(it.id == discussion2.id && it.name == discussion2.name) ||
 			(it.id == discussion3.id && it.name == discussion3.name)
 		}
@@ -191,5 +191,5 @@ class GetDiscussionsCreatedIntegrationSpec extends SearchServiceIntegrationSpecB
 		results01[0].id != results11[0].id
 		results01[0].id != results21[0].id
 		results11[0].id != results21[0].id
-	}	
+	}
 }

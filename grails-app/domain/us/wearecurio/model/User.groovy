@@ -107,6 +107,8 @@ class User {
 		user.createDiscussionsVirtualGroup()
 		user.createFollowersVirtualGroup()
 		
+		UserActivity.create(UserActivity.ActivityType.CREATE, UserActivity.ObjectType.USER, user.id)
+		
 		return user
 	}
 
@@ -208,6 +210,7 @@ class User {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete(flush:true)
+		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
 	}
 
 	public static boolean follow(User followed, User follower) {
@@ -224,6 +227,16 @@ class User {
 		
 		r = GroupMemberReader.create(virtualUserGroupIdFollowers, follower.id)
 		
+		if (r != null) {
+			UserActivity.create(
+				follower.id,
+				UserActivity.ActivityType.FOLLOW, 
+				UserActivity.ObjectType.USER, 
+				follower.id, 
+				UserActivity.ObjectType.USER,
+				id
+			)
+		}
 		return r != null
 	}
 	
@@ -232,6 +245,15 @@ class User {
 		if (r == null) return
 		
 		GroupMemberReader.delete(virtualUserGroupIdFollowers, follower.id)
+		
+		UserActivity.create(
+			follower.id,
+			UserActivity.ActivityType.UNFOLLOW, 
+			UserActivity.ObjectType.USER, 
+			follower.id, 
+			UserActivity.ObjectType.USER,
+			id
+		)
 	}
 	
 	public update(Map map) {
