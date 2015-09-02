@@ -411,7 +411,7 @@ class DataRetriever {
 		if ((!r) || (!r[0]))
 			return null
 			
-		return new TagUnitStatsInfo(userId, null, UnitGroup.get(unitGroupId), r[0]['unit'], r[0]['s'])
+		return new TagUnitStatsInfo(userId, null, UnitGroup.get(unitGroupId), r[0]['unit'], r[0]['s'].longValue())
 	}
 	
 }

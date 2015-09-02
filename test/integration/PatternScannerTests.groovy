@@ -65,26 +65,26 @@ class PatternScannerTests extends CuriousTestCase {
 
 		ScannerPattern atEndScanPattern = new ScannerPattern(CONDITION_ATEND)
 		ScannerPattern anyScanPattern = new ScannerPattern(CONDITION_ANY)
-		ScannerPattern tagWordScanPattern = new ScannerPattern(CONDITION_TAGWORD, tagWordPattern, false, {
+		ScannerPattern tagWordScanPattern = new ScannerPattern(CONDITION_TAGWORD, tagWordPattern, false, { s, c ->
 			words.add(scanner.group(1))
 		})
-		ScannerPattern durationScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, {
+		ScannerPattern durationScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, { s, c ->
 			retVal['suffix'] = scanner.group(1)
 		})
-		ScannerPattern repeatScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, {
+		ScannerPattern repeatScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, { s, c ->
 			retVal['repeat'] = scanner.group(1)
 		})
-		ScannerPattern repeatStartScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, {
+		ScannerPattern repeatStartScanPattern = new ScannerPattern(CONDITION_REPEAT, repeatPattern, true, { s, c ->
 			retVal['repeat'] = scanner.group(1)
 		})
-		ScannerPattern timeScanPattern = new ScannerPattern(CONDITION_TIME, timePattern, true, {
+		ScannerPattern timeScanPattern = new ScannerPattern(CONDITION_TIME, timePattern, true, { s, c ->
 			retVal['time'] = scanner.group(0)
 		})
-		ScannerPattern commentScanPattern = new ScannerPattern(CONDITION_COMMENT, commentWordPattern, false, {
+		ScannerPattern commentScanPattern = new ScannerPattern(CONDITION_COMMENT, commentWordPattern, false, { s, c ->
 			commentWords.add(scanner.group(1))
 			inComment = true
-		}, { (!matchTag) || scanner.trying(CONDITION_AMOUNT) })
-		ScannerPattern amountScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountPattern, false, {
+		}, { s, c -> (!matchTag) || scanner.trying(CONDITION_AMOUNT) })
+		ScannerPattern amountScanPattern = new ScannerPattern(CONDITION_AMOUNT, amountPattern, false, { s, c ->
 			String amountStr
 			boolean twoDAmount = false
 			
@@ -98,12 +98,12 @@ class PatternScannerTests extends CuriousTestCase {
 		})
 		
 		// first word of units
-		ScannerPattern unitsScanPatternA = new ScannerPattern(CONDITION_UNITSA, tagWordPattern, false, {
+		ScannerPattern unitsScanPatternA = new ScannerPattern(CONDITION_UNITSA, tagWordPattern, false, { s, c ->
 			units.add(scanner.group(1))
 		})
 		
 		// second word of units
-		ScannerPattern unitsScanPatternB = new ScannerPattern(CONDITION_UNITSB, tagWordPattern, false, {
+		ScannerPattern unitsScanPatternB = new ScannerPattern(CONDITION_UNITSB, tagWordPattern, false, { s, c ->
 			units.add(scanner.group(1))
 		})
 
@@ -121,15 +121,15 @@ class PatternScannerTests extends CuriousTestCase {
 			}
 			
 			if (matchTag) tagWordScanPattern.match(scanner)
-			repeatScanPattern.tryMatch(scanner) { matchTag = false }
-			timeScanPattern.tryMatch(scanner) { matchTag = false }
-			durationScanPattern.tryMatch(scanner) { matchTag = false }
-			amountScanPattern.tryMatch(scanner) { matchTag = false }
+			repeatScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+			timeScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+			durationScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+			amountScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
 			if (!matchTag) {
-				repeatScanPattern.tryMatch(scanner) { matchTag = false }
-				timeScanPattern.tryMatch(scanner) { matchTag = false }
-				durationScanPattern.tryMatch(scanner) { matchTag = false }
-				commentScanPattern.match(scanner) { inComment = true }
+				repeatScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+				timeScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+				durationScanPattern.tryMatch(scanner) {  s, c -> matchTag = false }
+				commentScanPattern.match(scanner) {  s, c -> inComment = true }
 			}
 			if (inComment) break
 		}

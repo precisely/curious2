@@ -124,6 +124,21 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testMultiCreateUnitDecorator() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 2 hours deep 3 hours rem", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+		}
+		
+		assert x == ":sleep [duration]:sleep:sleep [deep]:sleep:sleep [rem]:sleep"
+	}
+	
+	@Test
 	void testMultiCreateSuffix() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", null, null, baseDate, true), new EntryStats())
 		
