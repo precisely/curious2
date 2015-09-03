@@ -540,6 +540,10 @@ class UserActivity {
 		return toObjectType(typeId, false)
 	}
 	
+	String getTypeString() {
+		return getTypeString(activityType, objectType, otherType)
+	}
+	
 	String toString() {
 		return this.class.toString() + "(id:" + getId() + ", created:" + created + ", userId:" + userId \
 				+ ", typeId:" + typeId+ ", objectId:" + objectId+ ", otherId:" + otherId + ")"
