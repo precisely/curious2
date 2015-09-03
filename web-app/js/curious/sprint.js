@@ -1,4 +1,4 @@
-function showDiscussionData(sprintDiscussions) {
+function showDiscussionData(sprintDiscussions, sprintHash) {
 	$('#queryTitle').text('Tracking Sprint');
 
 	$('#sprint-discussions').infiniteScroll({
@@ -7,20 +7,10 @@ function showDiscussionData(sprintDiscussions) {
 		bindTo: $('.discussions-wrapper'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			showMoreDiscussions('${sprintInstance.hash}', this);
+			showMoreDiscussions(sprintHash, this);
 		}
 	});
 
-	$('#participants-list ul>li>ul').infiniteScroll({
-		bufferPx: 15,
-		scrollHorizontally: true,
-		offset: 10,
-		bindTo: $('#participants-list ul'),
-		onScrolledToBottom: function(e, $element) {
-			this.pause();
-			showMoreParticipants('${sprintInstance.hash}', this);
-		}
-	});
 
 	var discussionData = sprintDiscussions;
 	if (discussionData.listItems) {
@@ -35,14 +25,13 @@ var offset = 10;
 
 function showPreviousParticipants() {
 	var leftPos = $('#participants-list ul').scrollLeft();                                             
-	console.log('left: ', leftPos);
-	$("#participants-list ul").scrollLeft(leftPos - 250);    
+	$("#participants-list ul").scrollLeft(leftPos - 250); 
 }
 
-function showMoreParticipants(sprintHash, infiniteScroll) {
-	var participantsCount = $(this).data(sprintInstance.getParticipantsCount());
+function showMoreParticipants(sprintInstance, infiniteScroll) {
+	var participantsCount = sprintInstance.totalParticipants;
 	if ((participantsCount - offset) > 0) {
-		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintHash
+		queueJSON("Getting more participants", "/data/getSprintParticipantsData?id=" + sprintInstance.hash
 				+ "&offset=" + offset + "&max=10&"
 				+ getCSRFPreventionURI("getSprintParticipantsDataCSRF") + "&callback=?",
 				function(data) {
@@ -52,9 +41,9 @@ function showMoreParticipants(sprintHash, infiniteScroll) {
 			if (data.success) {
 				if (data.participants.length > 0) {
 					$.each(data.participants, function(index, participant) {
-						$('#participants-list ul li ul').append('<li>' + 
-								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">' + 
-								'<p>' + participant.username + '</p></li>');
+						var avatarImage = participant.avatarURL ? '<img src="' + participant.avatarURL + '" alt="avatar" class="participantsAvatar">' : 
+								'<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">';
+						$('#participants-list ul li ul').append('<li>' + avatarImage + '<p>' + participant.username + '</p></li>');
 					})
 					offset += 10;
 					var leftPos = $('#participants-list ul').scrollLeft();
@@ -102,17 +91,25 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 }
 
 function sprintShow(hash) {
-
 	queueJSON('Getting sprint details', '/api/sprint/' + hash + '?' + getCSRFPreventionURI('showsprintCSRF') + '&callback=?',
 			function(data) { 
 		if (data.success) { 
-				sprintInstance = data.sprint;
+				var sprintInstance = data.sprint;
 				sprintInstance.entries = data.entries;
 				sprintInstance.participants = data.participants;
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
-				showDiscussionData(data.discussions);
-				window.location.hash = 'sprints/' + hash;
+				showDiscussionData(data.discussions, sprintInstance.hash);
+				$('#participants-list ul>li>ul').infiniteScroll({
+					bufferPx: 15,
+					scrollHorizontally: true,
+					offset: 10,
+					bindTo: $('#participants-list ul'),
+					onScrolledToBottom: function(e, $element) {
+						this.pause();
+						showMoreParticipants(sprintInstance, this);
+					}
+				});
 		} else {
 			showAlert(data.message);
 			window.location.hash = 'sprints';

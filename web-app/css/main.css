@@ -1030,6 +1030,10 @@ body.discuss-page .red-header {
 	text-transform: none;
 }
 
+.feed-body .container-fluid {
+	padding: 0px;
+}
+
 .discuss-page .container-fluid {
 	padding-left: 116px;
 	padding-right: 116px;
@@ -1047,12 +1051,13 @@ body.discuss-page .red-header {
 	width:225px;
 	float:right;
 }
+
 #discussTitleSpan {
 	font-size:20px;
 	width:500px;
 }
+
 .discusscomments {
-	margin: 5px auto;
 	width: 100%;
 }
 
@@ -1065,6 +1070,7 @@ body.discuss-page .red-header {
 	border-top:2px solid #EF4B3A;
 	border-bottom:2px solid #EF4B3A;
 }
+
 .discusscomments .description p {
 	margin:1em 0px;
 }
@@ -1073,6 +1079,7 @@ body.discuss-page .red-header {
 	text-align:right;
 	margin:2em 0px;
 }
+
 .discusscomments .button a {
 	display:inline-block;
 	text-align:right;
@@ -1103,18 +1110,22 @@ body.discuss-page .red-header {
 	margin:2em 0px;
 	border-bottom:1px solid #EAEAEA;
 }
+
 .commentList .comment {
 	padding-bottom: 20px;
 }
+
 .commentList .comment .message p {
 	margin:0px 0px 1em 0px;
 }
+
 .commentList .comment .message {
 	width:700px;
 	right:280px;
 	display:inline-block;
 	vertical-align:top;
 }
+
 .commentList .comment .messageInfo {
 	width:200px;
 	display:inline-block;
@@ -1124,12 +1135,14 @@ body.discuss-page .red-header {
 * html .message {
 	left: 600px;					 /* RC width */
 }
+
 .description .comment {
 	margin-top:20px;
 	width:700px;
 	display:inline-block;
 	vertical-align:top;
 }
+
 .description .messageControls {
 	margin-top:20px;
 	vertical-align:top;
@@ -1137,24 +1150,29 @@ body.discuss-page .red-header {
 	width:20px;
 	float:right;
 }
+
 #addComment {
 	text-transform:uppercase;
 	font-size:12px;
 	color:#666666;
 }
+
 #addComment input,#addComment textarea {
 	background-color:#EFEFEF;
 	padding:2px;
 }
+
 #addComment input {
 	width:350px;
 	margin:2px 0px;
 }
+
 #addComment textarea {
 	width:100%;
 	height:80px;
 	margin:2px 0px 0px 0px;
 }
+
 #addComment .submitButton {
 	display:inline-block;
 	float:right;
@@ -1169,6 +1187,7 @@ body.discuss-page .red-header {
 	margin:0px;
 	padding:2px 5px;
 }
+
 #addComment h1 {
 	font-size:1.3em;
 	background-color:transparent;
@@ -1177,9 +1196,11 @@ body.discuss-page .red-header {
 	padding:0px;
 	margin:.7em 0px;
 }
+
 #addComment p {
 	margin:.5em 0px;
 }
+
 #addComment p.decorate {
 	border-right:60px solid #08BBF1;
 }
@@ -1190,16 +1211,20 @@ body.discuss-page .red-header {
 	font-size: 12px;
 	vertical-align: baseline;
 }
+
 .entryRepeat {
 	vertical-align: baseline;
 	color: #C0C8C9;
 	text-transform: uppercase;
 	font-size: 12px;
 }
+
 .entryAmount {
 }
+
 .entryUnits {
 }
+
 .entryDelete {
 	display:none;
 	float:right;
@@ -1208,12 +1233,14 @@ body.discuss-page .red-header {
 	padding-left:8px;
 	color:#999999;
 }
+
 .entryModify {
 	cursor: pointer;
 	position: absolute;
 	width: auto;
 	height: 40px;
 }
+
 .custom-row {
 	padding-right: 10px;
 }
@@ -1256,30 +1283,36 @@ body.discuss-page .red-header {
 	-moz-transform: scale(0.8) !important;
 	margin-top: -3px;
 }
+
 .red-header .right {
 	float: left;
 	width: calc(100% - 215px);
 	border-right: 2px solid #fff;
 }
+
 .tags-container {
 	margin-left: 2px;
 }
+
 .red-header h1 {
 	font-weight: normal;
 	font-size: 16px;
 	line-height: 21px;
 }
+
 .red-header #actions {
 	position: relative;
 	height: 15px;
 	float: left;
 	width: 20px;
 }
+
 .date-right-arrow, .date-left-arrow {
 	height: 16px;
 	width: auto;
 	margin-top: -2px;
 }
+
 #actions ul {
 	background: #fff;
 	display: block;
@@ -1292,19 +1325,24 @@ body.discuss-page .red-header {
 	display: none;
 	left: -10px;
 }
+
 .red-header #actions ul li {
 	cursor: pointer;
 }
+
 .red-header #actions ul li:hover {
 	background: #f1f1f1;
 }
+
 .red-header #actions ul li a {
 	color: #879293;
 	font-weight: bold;
 }
+
 .red-header #actions img {
 	height: 15px;
 }
+
 .icon-triangle {
 	border-style: solid;
 	border-width: 7px;
@@ -1312,21 +1350,26 @@ body.discuss-page .red-header {
 	height: 0;
 	float: left;
 }
+
 .icon-triangle-down {
 	border-color: #ffffff #fc3f28 #fc3f28 #fc3f28;
 	margin-top: 5px;
 }
+
 .icon-triangle-left {
 	margin-top: 3px;
 	border-color: #fc3f28 #ffffff #fc3f28 #fc3f28;
 }
+
 .icon-triangle-right {
 	border-color: #fc3f28 #fc3f28 #fc3f28 #ffffff;
 	margin-top: 3px;
 }
+
 .icon-triangle-up {
 	border-color: #fc3f28 #fc3f28 #ffffff #fc3f28;
 }
+
 .close {
 	float: right;
 	font-size: 18px;
@@ -1339,6 +1382,7 @@ body.discuss-page .red-header {
 	background: transparent;
 	cursor: pointer;
 }
+
 .alert {
 	font-size: 13px;
 	padding: 10px;
@@ -1347,6 +1391,7 @@ body.discuss-page .red-header {
 	border-radius: 0px;
 	font-weight: bold;
 }
+
 .alert.alert-danger {
 	background-color: #f2dede;
 	border-color: #ebccd1;
@@ -2026,7 +2071,6 @@ div.graph-header-container .red-header {
 .sprint .participantsAvatar {
 	height: 80px;
 	width: auto;
-	padding: 0px 10px 10px 10px;
 }
 
 .discussions-wrapper {
@@ -2053,7 +2097,6 @@ div.graph-header-container .red-header {
 .sprint p {
 	text-align: justify;
 	font-size: 15px;
-	margin-right: 10px;
 }
 
 .sprint .left-content {
@@ -2083,7 +2126,7 @@ div.graph-header-container .red-header {
 
 .sprint .right-content #participants-list ul li{
 	display: inline-block;
-
+	margin-right: 30px;
 }
 
 .sprint .right-content .nav {
@@ -4012,7 +4055,7 @@ body .modal-header button {
 	margin-left: 41px;
 }
 
-#helpWizardOverlay .wait-form-submit {
+.wait-form-submit {
 	width: 100%;
 	height: 100%;
 	background-color: #F0F0F0;
@@ -4424,6 +4467,10 @@ input[type = "number"] {
 
 .cropit-image-input {
     display: block;
+	max-width: 250px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .cropit-image-zoom-input {

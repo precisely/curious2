@@ -31,6 +31,8 @@ function readURL(input) {
 			});
 
 			$('.export').click(function() {
+				$('#avatarModal .export').hide()
+				$('#avatarModal .wait-form-submit').show()
 				var imageData = $('.image-editor').cropit('export');
 				var blob = dataURItoBlob(imageData);
 				console.log('blob' + blob);
@@ -45,11 +47,15 @@ function readURL(input) {
 						console.log(data);
 						$('.img-circle').attr('src', data.avatarURL);
 					} else {
-						showAlert('Error updating avatar. Please try again.');
+						showAlert(data.message);
 					}
-						$('#avatarModal').modal('hide');
+					$('#avatarModal').modal('hide');
+					$('#avatarModal .wait-form-submit').hide()
+					$('#avatarModal .export').show()
 				}, function(data) {
 					showAlert('Internal server error occurred.');
+					$('#avatarModal .wait-form-submit').hide()
+					$('#avatarModal .export').show()
 				}, 0, httpArgs);
 			});
 		}
@@ -361,6 +367,7 @@ function editUserDetails() {
 						</div>
 					</div>
 					<div class="modal-footer">
+						<div class="wait-form-submit waiting-icon" hidden="true"></div>
 						<button class="export btn btn-danger" type="button">Upload</button>
 					</div>
 				</div>

@@ -8,10 +8,10 @@
 					</div>
 					<div class="right-content">
 						<h2>
-							{{- sprintInstance.name }}
+							{{- name }}
 						</h2>
 						<p>
-							{{- sprintInstance.description }}
+							{{- description }}
 						</p>
 					</div>
 				</div>
@@ -22,7 +22,7 @@
 					</div>
 					<div class="right-content">
 						<ul>
-							{{ _.each (sprintInstance.entries, function(entry) { }}
+							{{ _.each (entries, function(entry) { }}
 								<li class="sprintTag">
 									{{- entry.description }} {{ if (entry.comment) { }}(<i>{{- entry.comment }}</i>){{ } }}
 									<button type="button" class="deleteSprintEntry" data-id="{{- entry.id }}" 
@@ -46,9 +46,13 @@
 								<ul>
 									<li>
 										<ul>
-											{{ _.each(sprintInstance.participants, function(participant) { }}
+											{{ _.each(participants, function(participant) { }}
 												<li>
-													<img src="/images/track-avatar.png" alt="avatar" class="participantsAvatar">
+													{{ if (participant.avatarURL) { }}
+														<img src="{{- participant.avatarURL }}" alt="avatar" class="participantsAvatar img-circle">
+													{{ } else { }}
+														<img class="participantsAvatar img-circle" src="/images/track-avatar.png" alt="avatar">
+													{{ } }}
 													<p>{{- participant.username }}</p>
 												</li>
 											{{ }) }}
@@ -57,7 +61,7 @@
 								</ul>
 							</div>
 						</div>
-						<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('{{- sprintInstance.hash }}')"></i>
+						<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('{{- hash }}')"></i>
 					</div>
 				</div>
 				<div class="row">
@@ -75,7 +79,7 @@
 									<input type="text" id="discussion-description" class="full-width discussion-topic-description hide" placeholder="Enter comment/description"
 											name="discussionPost">
 								</div>
-								<input type="hidden" name="group" value="{{- sprintInstance.virtualGroupName }}" />
+								<input type="hidden" name="group" value="{{- virtualGroupName }}" />
 							</form>
 						</div>
 					</div>
@@ -87,25 +91,25 @@
 				</div>
 			</div>
 			<div class="col-xs-2">
-				{{ if (sprintInstance.hasMember) { }}
-					<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('{{- sprintInstance.hash }}')">Unfollow</button>
-					{{ if (sprintInstance.hasStarted && !sprintInstance.hasEnded) { }}
+				{{ if (hasMember) { }}
+					<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
+					{{ if (hasStarted && !hasEnded) { }}
 						<button id="stop-sprint" class="sprint-button prompted-action" 
-								onclick="stopSprint('{{- sprintInstance.hash }}')">Stop</button>
+								onclick="stopSprint('{{- hash }}')">Stop</button>
 						<button id="start-sprint" class="prompted-action sprint-button hidden"
-								onclick="startSprint('{{- sprintInstance.hash }}')">Start</button>
+								onclick="startSprint('{{- hash }}')">Start</button>
 					{{ } else { }}
 						<button id="start-sprint" class="prompted-action sprint-button"
-								onclick="startSprint('{{- sprintInstance.hash }}')">Start</button>
+								onclick="startSprint('{{- hash }}')">Start</button>
 						<button id="stop-sprint" class="sprint-button prompted-action hidden"
-								onclick="stopSprint('{{- sprintInstance.hash }}')">Stop</button>
+								onclick="stopSprint('{{- hash }}')">Stop</button>
 					{{ } }}
 				{{ } else { }}
-					<button id="join-sprint" class="sprint-button" onclick="joinSprint('{{- sprintInstance.hash }}')">Follow</button>
+					<button id="join-sprint" class="sprint-button" onclick="joinSprint('{{- hash }}')">Follow</button>
 				{{ } }}
-				{{ if (sprintInstance.hasAdmin) { }}
-					<button class="sprint-button" onclick="editSprint('{{- sprintInstance.hash }}')">Edit</button>
-					<button class="sprint-button" onclick="deleteSprint('{{- sprintInstance.hash }}')">Delete</button>
+				{{ if (hasAdmin) { }}
+					<button class="sprint-button" onclick="editSprint('{{- hash }}')">Edit</button>
+					<button class="sprint-button" onclick="deleteSprint('{{- hash }}')">Delete</button>
 				{{ } }}
 			</div>
 		</div>

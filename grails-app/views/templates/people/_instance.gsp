@@ -1,6 +1,6 @@
 <div class="people-wrapper">
 	<div class="user-details-header">
-		<a href="#" onclick="showUserDetails('{{- user.hash }}')">
+		<a href="#people/{{- user.hash }}">
 			{{ if (user.avatarURL) { }}
 				<img src="{{- user.avatarURL }}" alt="avatar" class="avatar img-circle">
 			{{ } else { }}

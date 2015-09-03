@@ -7,17 +7,6 @@
 			callLogoutCallbacks();
 		}
 
-		<content tag="processUserData">
-			processUserData = function(data) {
-				if (data == 'login') {
-					data = [{id:-1,name:'',username:'(anonymous)',sex:''}];
-				}
-				if (data != 'login' && (!checkData(data)))
-					return;
-				return true;
-			}
-		</content> 
-
 function searchFeeds(params) {
 	if (!params) {
 		params = {};

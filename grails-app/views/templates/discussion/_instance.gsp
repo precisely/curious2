@@ -7,8 +7,12 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9 discussion-header">
-					<a href="#">
-						<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+					<a href="#people/{{- discussionData.userHash }}">
+						{{ if (discussionData.userAvatarURL) { }}
+							<img src="{{- discussionData.userAvatarURL }}" alt="avatar" class="avatar img-circle">
+						{{ } else { }}
+							<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+						{{ } }}
 						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>

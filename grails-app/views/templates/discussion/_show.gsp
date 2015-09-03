@@ -47,14 +47,18 @@
 
 		<!-- COMMENTS -->
 
-			<div class="discusscomments">
+			<div class="main discusscomments">
 				<div class="feed-item discussion" id="discussion-{{- discussionHash }}">
 					<div class="discussion-topic">
 						<div class="contents">
 							<div class="row">
 								<div class="col-xs-9 discussion-header">
 									<a href="#">
-										<img class="avatar img-circle" src="/images/avatar.png" alt="...">
+										{{ if (discussionOwnerAvatarURL) { }}
+											<img src="{{- discussionOwnerAvatarURL }}" alt="avatar" class="avatar img-circle">
+										{{ } else { }}
+											<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+										{{ } }}
 										&nbsp; <span class="username">{{- discussionOwner }}</span>
 									</a>
 								</div>

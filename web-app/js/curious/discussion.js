@@ -341,6 +341,7 @@ function discussionShow(hash) {
 	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
 			function(data) { 
 		if (data.success) { 
+			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
 			discussionDetails.serverURL = window.location.host;
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);

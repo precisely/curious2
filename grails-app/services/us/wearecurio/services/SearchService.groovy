@@ -138,12 +138,14 @@ class SearchService {
 				
 				for (def d : readerGroupDiscussions.searchResults ) {
 					log.debug "readerGroupDiscussion: " + d.toString()
+					User discussionUser = User.get(d.userId)
 					model["discussionList"] << [
 						id: d.id,
 						hash: d.hash,
 						name: d.name,
-						userId: d.userId,
-						userName: User.get(d.userId).username,
+						userHash: discussionUser.hash,
+						userName: discussionUser.username,
+						userAvatarURL: discussionUser.avatar?.path,
 						isPublic: d.isPublic(),
 						created: d.created,
 						updated: d.updated,
@@ -192,6 +194,7 @@ class SearchService {
 					//def groupIds = d.groupIds
 					if (d.groupIds == null || d.groupIds.length < 1) {
 						//all discussions should have at least one group
+						println "discussion groupids null"
 						return [listItems: false, success: false] // better to throw exception?
 					}
 					

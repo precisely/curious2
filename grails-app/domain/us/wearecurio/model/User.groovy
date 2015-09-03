@@ -43,6 +43,7 @@ class User {
 	String bio
 	UserSettings settings = new UserSettings()
 	UFile avatar
+	static transients = ['avatarURL']
 	
 	static constraints = {
 		bio(nullable: true)
@@ -78,7 +79,7 @@ class User {
 
 	static searchable = {
 		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 
-				'created', 'virtualUserGroupId']
+				'created', 'virtualUserGroupId', 'avatarURL']
 	}
 
 	SortedSet interestTags
@@ -287,6 +288,16 @@ class User {
 			return false
 		EmailService.get().send(this.email, subject, message)
 		return true
+	}
+
+	String getAvatarURL() {
+		return avatar?.path
+	}
+
+	void setAvatarURL(String path) {
+		UFile avatar = new UFile()
+		avatar.path = path
+		this.avatar = avatar
 	}
 
 	def updatePreferences(Map map) {
@@ -522,16 +533,14 @@ class User {
 		return [
 			id: id,
 			virtual: virtual,
-			username: username
+			username: username,
+			avatarURL: avatarURL
 		];
 	}
 
 	def getJSONDesc() {
-		return [
-			id: id,
+		return getJSONShortDesc() + [
 			hash: hash,
-			virtual: virtual,
-			username: username,
 			email: email,
 			remindEmail: remindEmail,
 			name: name,
@@ -541,7 +550,6 @@ class User {
 			notifyOnComments: notifyOnComments,
 			created: created,
 			type: "usr",
-			avatarURL: avatar?.path
 		];
 	}
 	

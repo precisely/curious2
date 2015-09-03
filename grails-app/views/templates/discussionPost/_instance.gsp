@@ -1,7 +1,11 @@
 <div class="discussion-comment media">
 	<div class="media-left">
 		<a href="#">
-			<img class="avatar" src="/images/avatar2.png" alt="avatar">
+			{{ if (discussionPost.authorAvatarURL) { }}
+				<img src="{{- discussionPost.authorAvatarURL }}" alt="avatar" class="avatar img-circle">
+			{{ } else { }}
+				<img class="avatar img-circle" src="/images/avatar2.png" alt="avatar">
+			{{ } }}
 		</a>
 	</div>
 	<div class="media-body">

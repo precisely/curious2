@@ -79,6 +79,7 @@ $(window).on('hashchange', function() {
 });
 
 function checkAndDisplayTabData() {
+	$('.container-fluid').addClass('main');
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
 	if (hash == "#sprints") {
@@ -742,7 +743,6 @@ function showUserDetails(hash) {
 			} else {
 				$('#feed').html('No details to show.');
 			}
-			window.location.hash = 'people/' + hash;
 		} else {
 			$('.alert').text(data.message);
 		}

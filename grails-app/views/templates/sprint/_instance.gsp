@@ -3,7 +3,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
-					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
+					<a href="#sprints/{{- sprint.hash }}">
 						<span> {{- sprint.name }}</span>
 					</a>
 				</div>
@@ -18,15 +18,15 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-8 tags-participants-label">
-					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
+					<a href="#sprints/{{- sprint.hash }}">
 						TAGS({{- sprint.totalTags }})
 					</a>
-					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
+					<a href="#sprints/{{- sprint.hash }}">
 						PARTICIPANTS({{- sprint.totalParticipants }})
 					</a>
 				</div>
 				<div class="col-xs-4 align-right read-more">
-					<a onclick="sprintShow('{{- sprint.hash }}');" href="javascript:void(0);">
+					<a href="#sprints/{{- sprint.hash }}">
 						VIEW MORE
 					</a>
 				</div>

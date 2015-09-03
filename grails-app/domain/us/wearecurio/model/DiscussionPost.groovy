@@ -52,6 +52,7 @@ class DiscussionPost {
 		return [
 			authorUserId: authorUserId,
 			authorName: User.get(authorUserId).username,
+			authorAvatarURL: User.get(authorUserId).avatar?.path,
 			discussionId: discussionId,
 			id: id,
 			message: message,

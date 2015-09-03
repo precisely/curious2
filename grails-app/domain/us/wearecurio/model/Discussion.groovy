@@ -458,9 +458,11 @@ class Discussion {
 		List result = databaseService.sqlRows(GROUP_NAME_QUERY, [id: id])
 		String groupName = result[0].full_name ?: ""
 
+		User user = User.get(this.userId)
+
 		// TODO Remove the word "discussion" from all keys since we are passing data for discussion only
 		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
-			discussionOwner: User.get(this.userId)?.username, discussionCreatedOn: this.created, updated: this.updated,
+			discussionOwner: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
 			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount,
 			isPublic: isPublic(), groupName: groupName]
 	}

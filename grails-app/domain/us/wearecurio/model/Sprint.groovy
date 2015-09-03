@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
+import org.hibernate.criterion.CriteriaSpecification
 
 import org.apache.commons.logging.LogFactory
 
@@ -478,7 +479,16 @@ class Sprint {
 		}.list()
 
 		// Fetch all non-virtual or actual users
+		// TODO: Use projections to get required field
+		// Due to some problem rows with null avatar field value are not being projected
 		List<User> participantsList = User.withCriteria {
+				/* resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+				createAlias("avatar", "avatarAlias")
+				projections {
+					property "username", "username"
+					property "avatarAlias.path", "avatarURL"
+					property "id", "userId"
+				} */
 				'in'("id", participantIdsList ?: [0l])
 				or {
 					isNull("virtual")
@@ -488,7 +498,7 @@ class Sprint {
 				firstResult(offset)
 			}
 	
-		return participantsList
+		return participantsList*.getJSONShortDesc()
 	}
 
 	String toString() {
