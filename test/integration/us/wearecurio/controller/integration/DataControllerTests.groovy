@@ -95,7 +95,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def c = controller.response.contentAsString
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":' + userId)
-		assert controller.response.contentAsString.contains(',"virtual":false,"username":"y","email":"y@y.com","remindEmail":null,"name":"y y","sex":"F","birthdate":')
+		assert controller.response.contentAsString.contains(',"virtual":false,"username":"y","avatarURL":null,"hash":"39jrye3wdo57",email":"y@y.com","remindEmail":null,"name":"y y","sex":"F","birthdate":')
 		assert controller.response.contentAsString.contains('"website":null,"notifyOnComments":true,"created"')
 	}
 
@@ -543,10 +543,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.saveSnapshotData()
 
 		def content = controller.response.contentAsString
-		assert content.startsWith('{"discussionHash":')
-
 		def responseData = JSON.parse(content)
 
+		assert responseData.success
 		def discussion = Discussion.findByHash(responseData.discussionHash)
 
 		assert discussion != null
