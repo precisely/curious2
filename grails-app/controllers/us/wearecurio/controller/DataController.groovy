@@ -1005,6 +1005,13 @@ class DataController extends LoginController {
 
 		debug "Saving " + params.snapshotData
 
+		UserGroup group = Discussion.loadGroup(params.group, user)
+
+		if (!group) {
+			renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
+			return
+		}
+
 		def plotDataObj = PlotData.createOrReplace(user, params.name, params.snapshotData, true)
 
 		Utils.save(plotDataObj, true)
@@ -1013,9 +1020,12 @@ class DataController extends LoginController {
 		Discussion discussion = Discussion.create(user, name)
 
 		if (discussion) {
+			if (group) {
+				group.addDiscussion(discussion)
+			}
 			DiscussionPost.createComment(null, user, discussion, plotDataObj.id, null)
 		}
-		renderJSONPost([discussionHash: discussion.hash])
+		renderJSONPost([success: true, discussionHash: discussion.hash])
 	}
 
 	def loadSnapshotDataId() {

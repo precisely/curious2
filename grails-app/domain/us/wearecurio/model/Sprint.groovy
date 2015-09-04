@@ -94,6 +94,10 @@ class Sprint {
 		
 	}
 	
+	boolean isPublic() {
+		return visibility == Visibility.PUBLIC
+	}
+
 	boolean hasWriter(Long userId) {
 		return fetchUserGroup()?.hasWriter(userId)
 	}

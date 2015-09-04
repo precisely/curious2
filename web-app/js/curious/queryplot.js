@@ -429,7 +429,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		queuePostJSON("sharing graph", makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
 				function(data) {
 					if (checkData(data, '', "Error while saving snapshot")) {
-						window.location = makePlainUrl('social#discussions/' + data.discussionHash);
+						if (data.success) {
+							window.location = makePlainUrl('social#discussions/' + data.discussionHash);
+						} else {
+							showAlert(data.message);
+						}
 					}
 				});
 	}

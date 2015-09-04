@@ -56,7 +56,7 @@ class SprintController extends LoginController {
 			return
 		}
 
-		if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.isPublic()) {
 			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
 			return
 		}

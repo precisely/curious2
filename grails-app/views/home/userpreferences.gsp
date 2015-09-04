@@ -258,7 +258,7 @@ function editUserDetails() {
 							<div class="col-xs-4" style="margin-top: -75px">
 								<div class="form-group">
 									<label class="control-label" for="bio">BIO</label>
-									<textarea id="bio" name="bio" class="form-control" value="${user.bio}"></textarea>
+									<textarea id="bio" name="bio" class="form-control" value="${user.bio}">${user.bio}</textarea>
 									<div class="bio-radio">
 										<input type="radio" class="radio-public" name="bioPrivacy" id="bio-public" value="public"
 												${user.settings.isBioPublic() ? 'checked="checked"' : '' }>

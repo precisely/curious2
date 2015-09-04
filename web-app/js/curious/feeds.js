@@ -80,6 +80,7 @@ $(window).on('hashchange', function() {
 
 function checkAndDisplayTabData() {
 	$('.container-fluid').addClass('main');
+	$('#queryTitle').parent().find('#go-back-arrow').remove();
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
 	if (hash == "#sprints") {
@@ -747,6 +748,7 @@ function showUserDetails(hash) {
 			$('.alert').text(data.message);
 		}
 		$('.nav').hide();
+		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
 		$('#queryTitle').text('Go Back');
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {

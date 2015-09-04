@@ -123,7 +123,7 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
+					if (isOnFeedPage() || location.hash.indexOf('#sprints') > -1) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});

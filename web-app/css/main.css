@@ -319,7 +319,6 @@ a,a:link,a:hover,a:visited {
 	font-weight: bold;
 }
 .mainLinks li.active {
-	pointer-events: none;
 	cursor: default;
 	border-bottom: #F14A42 2px solid;
 }
@@ -3357,7 +3356,7 @@ body {
 }
 
 .footer-items ul li a {
-	font-weight: 600;
+	color: #949494;
 }
 
 .footer-items ul li .ul-head {
@@ -4331,8 +4330,7 @@ input[type = "number"] {
 }
 
 .user-description hr {
-	margin-left: auto;
-	margin-right: auto;
+	margin: 40px auto;
 	width: 175px;
 	border-top: 3px solid #d8d8d8;
 }
@@ -4354,6 +4352,7 @@ input[type = "number"] {
 
 .lower-body .media {
 	border: none;
+	margin-left: 20px;
 }
 
 .people-detail .media-body {
@@ -4362,12 +4361,8 @@ input[type = "number"] {
 }
 
 .public-interests, .public-groups, .public-sprints {
-	margin-bottom: 22px;
+	margin-bottom: 35px;
 	margin-left: -7px;
-}
-
-.public-groups .media {
-	margin-left: -3px;
 }
 
 .public-sprints p {
@@ -4386,6 +4381,7 @@ input[type = "number"] {
 	font-weight: 500;
 	font-size: 15px;
 	display: block;
+	margin-bottom: 20px;
 }
 
 .people-detail button {
@@ -4420,6 +4416,7 @@ input[type = "number"] {
 
 .lower-body .media-left {
 	padding-right: 20px;
+	margin-left: 20px;
 }
 
 .interest-list label{
