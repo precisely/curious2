@@ -95,7 +95,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def c = controller.response.contentAsString
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":' + userId)
-		assert controller.response.contentAsString.contains(',"virtual":false,"username":"y","avatarURL":null,"hash":"39jrye3wdo57",email":"y@y.com","remindEmail":null,"name":"y y","sex":"F","birthdate":')
+		assert controller.response.contentAsString.contains(',"virtual":false,"username":"y","avatarURL":null')
+		assert controller.response.contentAsString.contains('email":"y@y.com","remindEmail":null,"name":"y y","sex":"F","birthdate":')
 		assert controller.response.contentAsString.contains('"website":null,"notifyOnComments":true,"created"')
 	}
 
