@@ -53,7 +53,7 @@
 						<div class="contents">
 							<div class="row">
 								<div class="col-xs-9 discussion-header">
-									<a href="#">
+									<a href="#people/{{- discussionOwnerHash }}">
 										{{ if (discussionOwnerAvatarURL) { }}
 											<img src="{{- discussionOwnerAvatarURL }}" alt="avatar" class="avatar img-circle">
 										{{ } else { }}
@@ -83,7 +83,7 @@
 							<div class="group">
 								{{- (associatedGroups[0] && associatedGroups[0].shared) ? associatedGroups[0].fullName : 'Open to all' }}
 							</div>
-							<a href="#"> {{- discussionTitle || '(No Title)' }}</a>
+							<a href="javascript:void(0);"> {{- discussionTitle || '(No Title)' }}</a>
 							<p>
 								{{- firstPost ? firstPost.message : '' }}
 							</p>

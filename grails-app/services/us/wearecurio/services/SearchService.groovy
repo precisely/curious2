@@ -15,6 +15,7 @@ import org.elasticsearch.search.sort.*
 import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import us.wearecurio.utility.Utils
+import grails.util.Environment
 
 import org.apache.commons.logging.LogFactory
 
@@ -139,6 +140,12 @@ class SearchService {
 				for (def d : readerGroupDiscussions.searchResults ) {
 					log.debug "readerGroupDiscussion: " + d.toString()
 					User discussionUser = User.get(d.userId)
+
+					if (Environment.isDevelopmentMode() && !discussionUser) {
+						log.warn "No discussionUser for id: $d.userId "
+						continue
+					}
+
 					model["discussionList"] << [
 						id: d.id,
 						hash: d.hash,

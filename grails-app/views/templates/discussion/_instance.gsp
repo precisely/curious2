@@ -8,11 +8,7 @@
 			<div class="row">
 				<div class="col-xs-9 discussion-header">
 					<a href="#people/{{- discussionData.userHash }}">
-						{{ if (discussionData.userAvatarURL) { }}
-							<img src="{{- discussionData.userAvatarURL }}" alt="avatar" class="avatar img-circle">
-						{{ } else { }}
-							<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
-						{{ } }}
+						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>
@@ -37,7 +33,7 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-7">
-					<a onclick="discussionShow('{{- discussionData.hash }}');" href="javascript:void(0);">
+					<a href="#discussions/{{- discussionData.hash }}">
 						<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 					</a>
 				</div>

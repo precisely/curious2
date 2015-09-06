@@ -483,16 +483,14 @@ class Sprint {
 		}.list()
 
 		// Fetch all non-virtual or actual users
-		// TODO: Use projections to get required field
-		// Due to some problem rows with null avatar field value are not being projected
 		List<User> participantsList = User.withCriteria {
-				/* resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
-				createAlias("avatar", "avatarAlias")
+				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+				createAlias("avatar", "avatarAlias", CriteriaSpecification.LEFT_JOIN)
 				projections {
 					property "username", "username"
 					property "avatarAlias.path", "avatarURL"
 					property "id", "userId"
-				} */
+				}
 				'in'("id", participantIdsList ?: [0l])
 				or {
 					isNull("virtual")
@@ -502,7 +500,7 @@ class Sprint {
 				firstResult(offset)
 			}
 	
-		return participantsList*.getJSONShortDesc()
+		return participantsList
 	}
 
 	String toString() {

@@ -61,7 +61,7 @@ function getComments(discussionHash, args, callback) {
 			return;
 		}
 
-		renderComments(discussionHash, data.posts, data, window.isDiscussionSinglePage);
+		renderComments(discussionHash, data.posts, data, isTabActive('#discussions'));
 
 		if (callback) {
 			callback(data);
@@ -88,7 +88,7 @@ function renderComments(discussionHash, posts, data, append) {
 	var compiledHTML = "";
 
 	// If we are in discussion listing page (i.e. feeds page)
-	if (!window.isDiscussionSinglePage) {
+	if (append) {
 		// Then reverse the comments to display the most recent comment at last
 		posts = posts.reverse();
 	}
@@ -110,7 +110,7 @@ $(document).ready(function() {
 	/**
 	 * Click handler to execute when user clicks on the button to delete a Discussion.
 	 */
-	var httpArgs ={requestMethod:'delete'};
+	var httpArgs = {requestMethod: 'delete'};
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -190,7 +190,7 @@ $(document).ready(function() {
 				return;
 			}
 
-			renderComments(params.discussionHash, [data.post], data, !window.isDiscussionSinglePage);
+			renderComments(params.discussionHash, [data.post], data, isTabActive('#discussions'));
 			$form[0].reset();
 		}, function(xhr) {
 			console.log('Internal server error');
@@ -278,16 +278,6 @@ $(function() {
 
 	discussTitle.data('rename', discussTitleRename);
 
-	/*<g:if test="${!isNew}">
-		discussTitle.off('mouseup');
-		discussTitle.on('mouseup', discussTitleRename);
-		$("#postcommentarea").focus();
-	</g:if>
-	<g:else>
-		discussTitleRename();
-		discussTitleInput.select();
-	</g:else>*/
-
 	$("#postcommentarea").keyup(function(e) {
 		if (e.keyCode == 13) {
 			saveTitle(function() {
@@ -307,9 +297,6 @@ $(function() {
 		return false;
 	});
 });
-
-window.isDiscussionSinglePage = true;
-//var discussionHash = "${discussionHash}";
 
 function infiniteScrollComments(discussionHash) {
 	commentsArgs.max = 5;
@@ -348,7 +335,6 @@ function discussionShow(hash) {
 			$('#feed').html(compiledHTML);
 			infiniteScrollComments(hash);
 			getComments(hash, commentsArgs);		// See discussion.js for "commentsArgs"
-			window.location.hash = 'discussions/' + hash;
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
 				plot = new Plot(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
 					'startDate':'#startdatepicker1',
@@ -363,6 +349,7 @@ function discussionShow(hash) {
 				}));
 				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId);
 			}
+			$(window).scrollTop();
 		} else {
 			$('.alert').text(data.message);
 		}

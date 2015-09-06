@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.dao.DataIntegrityViolationException
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
+import us.wearecurio.model.Model.Visibility
 
 class DiscussionController extends LoginController {
 
@@ -16,7 +17,7 @@ class DiscussionController extends LoginController {
 	def index() {
 	}
 
-	def save(Long plotDataId, String name, Long id, String discussionPost) {
+	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
 		def user = sessionUser()
 		UserGroup group = Discussion.loadGroup(params.group, user)
 
@@ -24,7 +25,8 @@ class DiscussionController extends LoginController {
 			renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			discussion = discussion ?: Discussion.create(user, name, group, null)
+			Visibility discussionVisibility = visibility.toUpperCase()
+			discussion = discussion ?: Discussion.create(user, name, group, null, discussionVisibility)
 
 			if (discussion != null) {
 				Utils.save(discussion, true)
@@ -36,8 +38,9 @@ class DiscussionController extends LoginController {
 				Map model = discussion.getJSONDesc()
 				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
 
-				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), type: "dis", userAvatarURL: model.discussionOwnerAvatarURL,
-						userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
+				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
+						type: "dis", userAvatarURL: model.discussionOwnerAvatarURL,
+					userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
 			} else {
 				renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 			}

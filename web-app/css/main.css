@@ -6,7 +6,8 @@ input, optgroup, select, textarea {
 	font-size: 14px;
 	font-weight: 500;
 }
-.container-fluid .user-details input[name=name] {
+.container-fluid .user-details input[name=name], .profile-container #addData input[type="text"],
+.profile-container #addData input[type="password"] {
 	width: 190px;
 	height:40px;
 	border-radius: 2px;
@@ -17,28 +18,15 @@ input, optgroup, select, textarea {
 	font-style: italic;
 	margin-left: 9px;
 }
-.profile-container #addData input[type="text"] {
-	width: 190px;
-	height:40px;
-	border-radius: 2px;
-	padding-left: 10px;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
+.profile-container #addData input[type="text"], .profile-container #addData input[type="password"] {
 	margin-bottom: -11px;
 	margin-left: -7px;
 }
-.profile-container #addData input[type="password"] {
-	width: 190px;
-	height:40px;
-	border-radius: 2px;
-	padding-left: 10px;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
-	margin-bottom: -11px;
-	margin-left: -7px;
+
+#interestTagsList {
+	list-style-type: none;
 }
+
 .interest-list input[type="text"] {
 	width: 190px;
 	height:40px;
@@ -4436,8 +4424,22 @@ input[type = "number"] {
     border: 1px solid #e0e0e0;
     margin-top: 12px;
     margin-bottom: -7px;
-    border-left: 5px solid #F48D5B;
+    border-left: 5px solid #c04f4f;
     height: 60px;
+}
+
+.interest-tags-container a {
+	position: relative;
+}
+
+.interest-tags-container span {
+	font-size: 18px;
+	color: #c04f7f;
+	font-weight: normal;
+}
+
+.interest-tags-container .edit-delete {
+	right: 50px;
 }
 
 .cropit-image-preview {

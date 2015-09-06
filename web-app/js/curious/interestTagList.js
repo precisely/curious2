@@ -31,9 +31,10 @@ function InterestTagList(editId, listId) {
 		var innerHTMLContent = '<span id="interestTagListText' + this.listId + this.numTags + '">'
 				+ escapehtml(description) + '</span>';
 		
-		innerHTMLContent += '<a href="#" style="padding-left:0;" id="interestTagListDelete' + this.listId + this.numTags + '">&nbsp;&nbsp;<img width="9" height="9" src="/images/x.gif"></a>';
+		innerHTMLContent += '<a href="javascript:void(0);" style="padding-left:0; float: right;" id="interestTagListDelete' + this.listId + this.numTags + 
+				'">&nbsp;&nbsp;<img class="entryModify edit-delete" src="/images/x.png"></a>';
 
-		var classes = '';
+		var classes = 'interest-tags-container';
 		
 		var newEntryContent = '<li id="interestTagList' + this.listId + this.numTags +'" class="' + classes + '">' + innerHTMLContent + '</li>';
 		this.listDiv.append(newEntryContent);
@@ -53,11 +54,10 @@ function InterestTagList(editId, listId) {
 	};
 	
 	this.displayTags = function(tags) {
-/*		jQuery.each(tags, function() {
+		jQuery.each(tags, function() {
 			interestList.displayTag(this);
 			return true;
-		});*/
-		$( ".interest-list" ).append(displayEntry(tags));
+		});
 	};
 	
 	this.refreshTags = function(tags) {

@@ -1,10 +1,16 @@
 package us.wearecurio.controller
 
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
+import org.grails.plugins.elasticsearch.ElasticSearchService
+
 import us.wearecurio.model.User
 
 class SearchController extends LoginController {
 
 	def searchService
+
+	ElasticSearchService elasticSearchService
+	ElasticSearchAdminService elasticSearchAdminService
 
 	static debug(str) {
 		log.debug(str)
@@ -63,5 +69,11 @@ class SearchController extends LoginController {
 		} else {
 			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
 		}
+	}
+
+	def refreshIndex() {
+	
+		println ">>>>>>>>>>>>>>>>>>>>>"
+		elasticSearchService.unindex()
 	}
 }

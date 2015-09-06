@@ -34,7 +34,7 @@ class UserController extends LoginController {
 		UFile avatar
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
-		} catch (FileNotFoundException|IOException e) {		// https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
+		} catch (FileNotFoundException | IOException e) {		// https://docs.oracle.com/javase/tutorial/essential/exceptions/catch.html
 			renderJSONPost([success: false, message: g.message(code: "default.not.updated.message", args: ["Avatar"])])
 			return
 		}

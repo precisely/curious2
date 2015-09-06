@@ -18,54 +18,25 @@ function doLogout() {
 	callLogoutCallbacks();
 }
 
-function readURL(input) {
-	var httpArgs ={processData: false, contentType: false, requestMethod:'POST'};
-
-	if (input.files && input.files[0]) {
-		var reader = new FileReader();
-		reader.onload = function (e) {
-			$('.image-editor').cropit({
-				imageState: {
-				src: e.target.result
-				},
-			});
-
-			$('.export').click(function() {
-				$('#avatarModal .export').hide()
-				$('#avatarModal .wait-form-submit').show()
-				var imageData = $('.image-editor').cropit('export');
-				var blob = dataURItoBlob(imageData);
-				console.log('blob' + blob);
-				var formData = new FormData();
-				formData.append("avatar", blob, "avatar.png");
-				formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
-				formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
-
-				queueJSONAll('updating avatar', '/user/saveAvatar', 
-						formData, function(data) {
-					if (data.success) {
-						console.log(data);
-						$('.img-circle').attr('src', data.avatarURL);
-					} else {
-						showAlert(data.message);
-					}
-					$('#avatarModal').modal('hide');
-					$('#avatarModal .wait-form-submit').hide()
-					$('#avatarModal .export').show()
-				}, function(data) {
-					showAlert('Internal server error occurred.');
-					$('#avatarModal .wait-form-submit').hide()
-					$('#avatarModal .export').show()
-				}, 0, httpArgs);
-			});
-		}
-		reader.readAsDataURL(input.files[0]);
+function onFileSelect(input) {
+	if (!input || !input.files || !input.files[0]) {
+		return false;
 	}
+
+	var reader = new FileReader();
+	reader.onload = function (e) {
+		$('.image-editor').cropit({
+			imageState: {
+			src: e.target.result
+			},
+		});
+	}
+	reader.readAsDataURL(input.files[0]);
 }
 
 $(window).load(function() {
 	$("#cropit-image-input").change(function() {
-		readURL(this);
+		onFileSelect(this);
 	});
 
 	$( "#updateUserPreferences" ).keyup(function(e) {
@@ -73,26 +44,37 @@ $(window).load(function() {
 			editUserDetails();
 		}
 	});
+
+	var httpArgs = {processData: false, contentType: false, requestMethod:'POST'};
+	$('.export').click(function() {
+		$('#avatarModal .export').hide()
+		$('#avatarModal .wait-form-submit').show()
+		var imageData = $('.image-editor').cropit('export');
+		var blob = dataURItoBlob(imageData);
+		console.log('blob' + blob);
+		var formData = new FormData();
+		formData.append("avatar", blob, "avatar.png");
+		formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);
+		formData.append(App.CSRF.SyncTokenUriName, 'updateAvatarCSRF');
+
+		queueJSONAll('updating avatar', '/user/saveAvatar', 
+				formData, function(data) {
+			if (data.success) {
+				console.log(data);
+				$('.img-circle').attr('src', data.avatarURL);
+			} else {
+				showAlert(data.message);
+			}
+			$('#avatarModal').modal('hide');
+			$('#avatarModal .wait-form-submit').hide()
+			$('#avatarModal .export').show()
+		}, function(data) {
+			showAlert('Internal server error occurred.');
+			$('#avatarModal .wait-form-submit').hide()
+			$('#avatarModal .export').show()
+		}, 0, httpArgs);
+	});
 });
-
-function dataURItoBlob(dataURI) {
-	// convert base64/URLEncoded data component to raw binary data held in a string
-	var byteString;
-	if (dataURI.split(',')[0].indexOf('base64') >= 0) {
-		byteString = atob(dataURI.split(',')[1]);
-	} else {
-		byteString = unescape(dataURI.split(',')[1]);
-	}
-	// separate out the mime component
-	var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-
-	// write the bytes of the string to a typed array
-	var ia = new Uint8Array(byteString.length);
-	for (var i = 0; i < byteString.length; i++) {
-		ia[i] = byteString.charCodeAt(i);
-	}
-	return new Blob([ia], {type:mimeString});
-}
 
 var origUsername = "${user.username}";
 
@@ -346,6 +328,7 @@ function editUserDetails() {
 		<div class="interest-list">
 			<label class="control-label" for="interests">Interest Tags</label>
 			<input type="text" class="form-control" id="interestTagInputField" name="data" value="" />
+			<div id="interestTagsList"></div>
 		</div>
 		<div class="modal fade" id="avatarModal" role="dialog">
 			<div class="modal-dialog modal-sm">

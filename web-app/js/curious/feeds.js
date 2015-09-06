@@ -125,7 +125,7 @@ $(document).ready(function() {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $(this).serializeObject();
 		var id = $('#sprintIdField').val();
-		var httpArgs ={requestMethod:'PUT'};
+		var httpArgs = { requestMethod: 'PUT' };
 		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
@@ -738,12 +738,8 @@ function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
 			function(data) { 
 		if (data.success) { 
-			if (data.listItems != false) {
-				var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
-				$('#feed').html(compiledHTML);
-			} else {
-				$('#feed').html('No details to show.');
-			}
+			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
+			$('#feed').html(compiledHTML);
 		} else {
 			$('.alert').text(data.message);
 		}

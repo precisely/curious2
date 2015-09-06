@@ -43,6 +43,7 @@ class User {
 	String bio
 	UserSettings settings = new UserSettings()
 	UFile avatar
+	private String avatarURL
 	static transients = ['avatarURL']
 	
 	static constraints = {
@@ -291,13 +292,14 @@ class User {
 	}
 
 	String getAvatarURL() {
+		if (this.avatarURL) {
+		    return this.avatarURL
+		}
 		return avatar?.path
 	}
-
-	void setAvatarURL(String path) {
-		UFile avatar = new UFile()
-		avatar.path = path
-		this.avatar = avatar
+	
+	void setAvatarURL(String url) {
+	    this.avatarURL = url
 	}
 
 	def updatePreferences(Map map) {
@@ -534,7 +536,7 @@ class User {
 			id: id,
 			virtual: virtual,
 			username: username,
-			avatarURL: avatarURL
+			avatarURL: getAvatarURL()
 		];
 	}
 

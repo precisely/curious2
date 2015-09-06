@@ -60,9 +60,9 @@ class Discussion {
 		return create(user, null)
 	}
 	
-	public static Discussion create(User user, String name) {
-		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name
-		def discussion = new Discussion(user, name, new Date())
+	public static Discussion create(User user, String name, Visibility visibility) {
+		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", visibility: " + visibility
+		def discussion = new Discussion(user, name, new Date(), visibility)
 		
 		Utils.save(discussion, true)
 		
@@ -71,12 +71,12 @@ class Discussion {
 		return discussion
 	}
 	
-	static Discussion create(User user, String name, UserGroup group, Date createTime = null) {
-		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime
+	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility) {
+		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime + ", visibility: " + visibility
 		Discussion discussion = null
 		
 		if (group == null) {
-			discussion = new Discussion(user, name, createTime)
+			discussion = new Discussion(user, name, createTime, visibility)
 			
 			Utils.save(discussion, true)
 			
@@ -86,7 +86,7 @@ class Discussion {
 		}
 		
 		if (group?.hasWriter(user)) {
-			discussion = new Discussion(user, name, createTime)
+			discussion = new Discussion(user, name, createTime, visibility)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
 			discussion.addUserVirtualGroup(user)
@@ -154,12 +154,12 @@ class Discussion {
 		this.visibility = Model.Visibility.PUBLIC
 	}
 	
-	public Discussion(User user, String name, Date createTime = null) {
+	public Discussion(User user, String name, Date createTime = null, Visibility visibility) {
 		this.userId = user?.getId()
 		this.name = name
 		this.created = createTime ?: new Date()
 		this.updated = this.created
-		this.visibility = Model.Visibility.PUBLIC
+		this.visibility = visibility ?: Model.Visibility.PUBLIC
 	}
 	
 	boolean isPublic() {
@@ -463,7 +463,7 @@ class Discussion {
 		// TODO Remove the word "discussion" from all keys since we are passing data for discussion only
 		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
 			discussionOwner: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
-			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount,
+			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount, discussionOwnerHash: user?.hash,
 			isPublic: isPublic(), groupName: groupName]
 	}
 
