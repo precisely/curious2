@@ -70,10 +70,4 @@ class SearchController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
 		}
 	}
-
-	def refreshIndex() {
-	
-		println ">>>>>>>>>>>>>>>>>>>>>"
-		elasticSearchService.unindex()
-	}
 }
