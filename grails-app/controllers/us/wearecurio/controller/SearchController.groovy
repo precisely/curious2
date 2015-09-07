@@ -1,8 +1,5 @@
 package us.wearecurio.controller
 
-import org.grails.plugins.elasticsearch.ElasticSearchAdminService
-import org.grails.plugins.elasticsearch.ElasticSearchService
-
 import us.wearecurio.model.User
 
 class SearchController extends LoginController {

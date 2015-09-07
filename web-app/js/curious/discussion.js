@@ -345,14 +345,12 @@ function discussionShow(hash) {
 				}));
 				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId);
 			}
-			$(window).scrollTop();
 		} else {
 			$('.alert').text(data.message);
 		}
 		
 		$('.nav').hide();
-		$('#queryTitle').text('Curious Discussions');
-		//$('#feed-sprints-tab a').tab('show');
+		setQueryHeader('Curious Discussions', true);
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});

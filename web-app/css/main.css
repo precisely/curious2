@@ -28,7 +28,6 @@ input, optgroup, select, textarea {
 }
 
 .interest-list input[type="text"] {
-	width: 190px;
 	height:40px;
 	border-radius: 2px;
 	padding-left: 10px;
@@ -4444,28 +4443,44 @@ input[type = "number"] {
 
 .cropit-image-preview {
     background-color: #f8f8f8;
-    background-size: cover;
-    border: 1px solid #ccc;
     border-radius: 3px;
-    margin-top: 7px;
-    width: 250px;
     height: 250px;
+	width: 250px;
     cursor: move;
 }
 
+.cropit-image-preview-container {
+	position: relative;
+	width: 250px;
+	margin: 0px auto;
+}
+
+/*
+ * If the slider or anything else is covered by the background image,
+ * use relative or absolute position on it
+ */
+input.cropit-image-zoom-input {
+	position: relative;
+}
+
+/* Limit the background image by adding overflow: hidden */
+#image-cropper {
+	overflow: hidden;
+}
+
 .cropit-image-background {
-    opacity: .2;
-    cursor: auto;
+	opacity: .2;
+	cursor: auto;
 }
 
 .image-size-label {
-    position: relative;
-    z-index: 10;
-    display: block;
+	position: relative;
+	z-index: 10;
+	display: block;
 }
 
 .cropit-image-input {
-    display: block;
+	display: block;
 	max-width: 250px;
 	overflow: hidden;
 	white-space: nowrap;
@@ -4473,9 +4488,51 @@ input[type = "number"] {
 }
 
 .cropit-image-zoom-input {
-    display: block;
+	display: block;
 }
 
 .export {
-    margin-top: 10px;
+	margin-top: 10px;
+}
+
+.image-editor input[type='range'] {
+	-webkit-appearance: none;
+	border-radius: 5px;
+	box-shadow: inset 0 0 5px #333;
+	background-color: #999;
+	height: 10px;
+	vertical-align: middle;
+	margin: 10px 0px;
+}
+
+.image-editor input[type='range']::-moz-range-track {
+	-moz-appearance: none;
+	border-radius: 5px;
+	box-shadow: inset 0 0 5px #333;
+	background-color: #999;
+	height: 10px;
+}
+
+.image-editor input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none !important;
+	border-radius: 20px;
+	background-color: #FFF;
+	box-shadow:inset 0 0 10px rgba(000,000,000,0.5);
+	border: 1px solid #999;
+	height: 20px;
+	width: 20px;
+}
+
+.image-editor input[type='range']::-moz-range-thumb {
+	-moz-appearance: none;
+	border-radius: 20px;
+	background-color: #FFF;
+	box-shadow:inset 0 0 10px rgba(000,000,000,0.5);
+	border: 1px solid #999;
+	height: 20px;
+	width: 20px;
+}
+
+.cropit-image-preview.cropit-image-loading .spinner {
+	opacity: 1;
 }

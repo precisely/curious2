@@ -1,6 +1,4 @@
 function showDiscussionData(sprintDiscussions, sprintHash) {
-	$('#queryTitle').text('Tracking Sprint');
-
 	$('#sprint-discussions').infiniteScroll({
 		bufferPx: 25,
 		offset: 5,
@@ -110,11 +108,12 @@ function sprintShow(hash) {
 						showMoreParticipants(sprintInstance, this);
 					}
 				});
+				$('.nav').hide();
 		} else {
 			showAlert(data.message);
 			window.location.hash = 'sprints';
 		}
-		$('#queryTitle').text('Tracking Sprint');
+		setQueryHeader('Tracking Sprint', true);
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});

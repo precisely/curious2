@@ -80,7 +80,6 @@ $(window).on('hashchange', function() {
 
 function checkAndDisplayTabData() {
 	$('.container-fluid').addClass('main');
-	$('#queryTitle').parent().find('#go-back-arrow').remove();
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
 	if (hash == "#sprints") {
@@ -99,6 +98,7 @@ function checkAndDisplayTabData() {
 	} else if (hash == "#people/" + hashData[1]) { 
 		showUserDetails(hashData[1]);
 	}
+	$(window).scrollTop(0);
 }
 
 $(document).ready(function() {
@@ -301,7 +301,8 @@ function showSprints() {
 			$('.alert').text(data.message);
 		}
 		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
-		$('#queryTitle').text('Tracking Sprints');
+		setQueryHeader('Tracking Sprints', false);
+
 		$('#feed-sprints-tab a').tab('show');
 		$('.nav').show();
 	}, function(data) {
@@ -312,7 +313,7 @@ function showSprints() {
 
 function showDiscussions() {
 	// Change the red bar title
-	$('#queryTitle').text('Discussions');
+	setQueryHeader('Discussions', false);
 
 	$('.nav').show();
 	
@@ -377,7 +378,7 @@ function showPeople() {
 				});
 				$('#feed-right-tab').html('');
 			}
-			$('#queryTitle').text('People');		
+			setQueryHeader('People', false);
 			$('#feed-people-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
@@ -403,7 +404,7 @@ function showAllFeeds() {
 				addAllFeedItems(data);
 				$('#feed-right-tab').html('');
 			}
-			$('#queryTitle').text('All Feeds');		
+			setQueryHeader('All Feeds', false);
 			$('#feed-all-tab a').tab('show');
 			$('.nav').show();
 		} else {
@@ -744,10 +745,18 @@ function showUserDetails(hash) {
 			$('.alert').text(data.message);
 		}
 		$('.nav').hide();
-		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
-		$('#queryTitle').text('Go Back');
+		setQueryHeader('userProfile', true);
 		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
+}
+
+function setQueryHeader(text, setGobackButton) {
+	if (setGobackButton) {
+		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
+	} else if ($('#go-back-arrow').length > 0) {
+		$('#go-back-arrow').remove();
+	}
+	$('#queryTitle').text(text);
 }

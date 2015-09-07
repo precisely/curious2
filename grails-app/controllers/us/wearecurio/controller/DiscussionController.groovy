@@ -39,13 +39,12 @@ class DiscussionController extends LoginController {
 				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
 
 				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
-						type: "dis", userAvatarURL: model.discussionOwnerAvatarURL,
-					userName: model.discussionOwner, isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
+						type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash, 
+					isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
 			} else {
 				renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 			}
 		}
-
 	}
 
 	def show() {

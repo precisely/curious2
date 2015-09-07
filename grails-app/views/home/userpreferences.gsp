@@ -17,26 +17,9 @@ function refreshPage() {
 function doLogout() {
 	callLogoutCallbacks();
 }
-
-function onFileSelect(input) {
-	if (!input || !input.files || !input.files[0]) {
-		return false;
-	}
-
-	var reader = new FileReader();
-	reader.onload = function (e) {
-		$('.image-editor').cropit({
-			imageState: {
-			src: e.target.result
-			},
-		});
-	}
-	reader.readAsDataURL(input.files[0]);
-}
-
 $(window).load(function() {
-	$("#cropit-image-input").change(function() {
-		onFileSelect(this);
+	$('#image-cropper').cropit({ 
+		imageBackground: true
 	});
 
 	$( "#updateUserPreferences" ).keyup(function(e) {
@@ -331,7 +314,7 @@ function editUserDetails() {
 			<div id="interestTagsList"></div>
 		</div>
 		<div class="modal fade" id="avatarModal" role="dialog">
-			<div class="modal-dialog modal-sm">
+			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
 						Add/Edit Avatar
@@ -340,12 +323,16 @@ function editUserDetails() {
 						<div class="image-editor">
 							<g:uploadForm name="saveAvatar" id="saveAvatar" class="form-horizontal" autocomplete="off">
 								<g:hiddenField name="userId" value="${user.id}" />
-								<input type="file" class="cropit-image-input" id="cropit-image-input">
-								<div class="cropit-image-preview"></div>
-								<div class="image-size-label">
-									Resize image
+								<div id="image-cropper">
+									<input type="file" class="cropit-image-input" id="cropit-image-input">
+									<div class="cropit-image-preview-container">
+										<div class="cropit-image-preview"></div>
+									</div>
+									<div class="image-size-label">
+										Resize image
+									</div>
+									<input type="range" class="cropit-image-zoom-input">
 								</div>
-								<input type="range" class="cropit-image-zoom-input">
 							</g:uploadForm>
 						</div>
 					</div>
