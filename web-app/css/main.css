@@ -3185,13 +3185,14 @@ body {
 	position: absolute;
 	bottom: -5px;
 	right: 0;
-	min-width: 400px;
+	min-width: 450px;
 }
 
 .discussion-topic .buttons {
 	margin-right: 15px;
 	display: inline-block;
 	float: right;
+	margin-bottom: 0px;
 }
 
 .discussion-topic .buttons .share-button {
@@ -3206,7 +3207,8 @@ body {
 .discussion-topic .buttons button {
 	height: 25px;
 	background-color: transparent;
-	margin-left: 20px;
+	margin: 20px;
+	margin-bottom: 0px;
 	font-size: 14px;
 	font-weight: 100;
 	text-transform: none;

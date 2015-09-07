@@ -32,12 +32,12 @@
 				{{- discussionData.groupName }}
 			</div>
 			<div class="row">
-				<div class="col-xs-7">
+				<div class="col-md-7">
 					<a href="#discussions/{{- discussionData.hash }}">
 						<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 					</a>
 				</div>
-				<div class="col-xs-5 button-box">
+				<div class="col-md-5 button-box">
 					<div class="buttons">
 						<button onclick="showShareDialog('{{- discussionData.hash }}')">
 							<img src="/images/follow.png" alt="follow">Follow

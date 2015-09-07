@@ -753,10 +753,11 @@ function showUserDetails(hash) {
 }
 
 function setQueryHeader(text, setGobackButton) {
-	if (setGobackButton) {
-		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
-	} else if ($('#go-back-arrow').length > 0) {
+	if ($('#go-back-arrow').length > 0) {
 		$('#go-back-arrow').remove();
 	}
+	if (setGobackButton) {
+		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
+	} 
 	$('#queryTitle').text(text);
 }

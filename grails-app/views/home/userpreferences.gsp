@@ -32,9 +32,9 @@ $(window).load(function() {
 	$('.export').click(function() {
 		$('#avatarModal .export').hide()
 		$('#avatarModal .wait-form-submit').show()
-		var imageData = $('.image-editor').cropit('export');
+		var imageData = $('#image-cropper').cropit('export');
 		var blob = dataURItoBlob(imageData);
-		console.log('blob' + blob);
+
 		var formData = new FormData();
 		formData.append("avatar", blob, "avatar.png");
 		formData.append(App.CSRF.SyncTokenKeyName, App.CSRF.updateAvatarCSRF);

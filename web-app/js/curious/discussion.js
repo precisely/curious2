@@ -61,7 +61,7 @@ function getComments(discussionHash, args, callback) {
 			return;
 		}
 
-		renderComments(discussionHash, data.posts, data, isTabActive('#discussions'));
+		renderComments(discussionHash, data.posts, data, (isTabActive('#discussions') || location.hash.indexOf('#sprints') > -1));
 
 		if (callback) {
 			callback(data);
@@ -98,9 +98,9 @@ function renderComments(discussionHash, posts, data, append) {
 	});
 
 	if (append) {
-		$('.comments', discussionElementID).append(compiledHTML);
-	} else {
 		$('.comments', discussionElementID).prepend(compiledHTML);
+	} else {
+		$('.comments', discussionElementID).append(compiledHTML);
 	}
 
 	showCommentAgeFromDate();

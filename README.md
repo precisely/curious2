@@ -57,7 +57,7 @@ due to important mark in css.
 
 ## Maven server settings
 
-You need to set following credentials inside `settings.groovy` file:
+You need to set following credentials inside `~/.grails/settings.groovy` file:
 ``` 
 grails.project.dependency.authentication = {
 	credentials { 
