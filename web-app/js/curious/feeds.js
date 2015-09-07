@@ -78,10 +78,17 @@ $(window).on('hashchange', function() {
 	checkAndDisplayTabData();
 });
 
+var commentsArgs;
+
 function checkAndDisplayTabData() {
+	// Reset these variables as we change state
+	window.singleDiscussionPage = false;
+	commentsArgs = {offset: 0, sort: "created", order: "desc"};
+
 	$('.container-fluid').addClass('main');
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
+
 	if (hash == "#sprints") {
 		showSprints();
 	} else if (hash == '#discussions') {
@@ -94,6 +101,7 @@ function checkAndDisplayTabData() {
 	} else if (hash == "#sprints/" + hashData[1]) { 
 		sprintShow(hashData[1]);
 	} else if (hash == "#discussions/" + hashData[1]) { 
+		window.singleDiscussionPage = true;
 		discussionShow(hashData[1]);
 	} else if (hash == "#people/" + hashData[1]) { 
 		showUserDetails(hashData[1]);

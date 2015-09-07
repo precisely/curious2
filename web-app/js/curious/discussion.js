@@ -1,8 +1,6 @@
 /**
  * Script contains Discussion & DiscussionPost (comment) related code.
  */
-var commentsArgs = {offset: 0, sort: "created", order: "desc"};
-
 function modifyShare(discussionHash) {
 	var $selectElement = $('select#shareOptions');
 	if (discussionHash == null) {
@@ -61,7 +59,7 @@ function getComments(discussionHash, args, callback) {
 			return;
 		}
 
-		renderComments(discussionHash, data.posts, data, (isTabActive('#discussions') || location.hash.indexOf('#sprints') > -1));
+		renderComments(discussionHash, data.posts, data, window.singleDiscussionPage);
 
 		if (callback) {
 			callback(data);
@@ -88,7 +86,7 @@ function renderComments(discussionHash, posts, data, append) {
 	var compiledHTML = "";
 
 	// If we are in discussion listing page (i.e. feeds page)
-	if (append) {
+	if (!window.singleDiscussionPage) {
 		// Then reverse the comments to display the most recent comment at last
 		posts = posts.reverse();
 	}
@@ -97,7 +95,7 @@ function renderComments(discussionHash, posts, data, append) {
 		compiledHTML += compileTemplate("_comments", {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
 	});
 
-	if (append) {
+	if (!append) {
 		$('.comments', discussionElementID).prepend(compiledHTML);
 	} else {
 		$('.comments', discussionElementID).append(compiledHTML);
@@ -190,7 +188,7 @@ $(document).ready(function() {
 				return;
 			}
 
-			renderComments(params.discussionHash, [data.post], data, isTabActive('#discussions'));
+			renderComments(params.discussionHash, [data.post], data, !window.singleDiscussionPage);
 			$form[0].reset();
 		}, function(xhr) {
 			console.log('Internal server error');
@@ -329,8 +327,9 @@ function discussionShow(hash) {
 			discussionDetails.serverURL = window.location.host;
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
 			$('#feed').html(compiledHTML);
+
 			infiniteScrollComments(hash);
-			getComments(hash, commentsArgs);		// See discussion.js for "commentsArgs"
+			getComments(hash, commentsArgs);		// See feeds.js for "commentsArgs"
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
 				plot = new Plot(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
 					'startDate':'#startdatepicker1',
