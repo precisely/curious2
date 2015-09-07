@@ -61,7 +61,7 @@ function getComments(discussionHash, args, callback) {
 			return;
 		}
 
-		renderComments(discussionHash, data.posts, data, window.isDiscussionSinglePage);
+		renderComments(discussionHash, data.posts, data, (isTabActive('#discussions') || location.hash.indexOf('#sprints') > -1));
 
 		if (callback) {
 			callback(data);
@@ -88,7 +88,7 @@ function renderComments(discussionHash, posts, data, append) {
 	var compiledHTML = "";
 
 	// If we are in discussion listing page (i.e. feeds page)
-	if (!window.isDiscussionSinglePage) {
+	if (append) {
 		// Then reverse the comments to display the most recent comment at last
 		posts = posts.reverse();
 	}
@@ -98,9 +98,9 @@ function renderComments(discussionHash, posts, data, append) {
 	});
 
 	if (append) {
-		$('.comments', discussionElementID).append(compiledHTML);
-	} else {
 		$('.comments', discussionElementID).prepend(compiledHTML);
+	} else {
+		$('.comments', discussionElementID).append(compiledHTML);
 	}
 
 	showCommentAgeFromDate();
@@ -110,6 +110,7 @@ $(document).ready(function() {
 	/**
 	 * Click handler to execute when user clicks on the button to delete a Discussion.
 	 */
+	var httpArgs = {requestMethod: 'delete'};
 	$(document).on("click", "a.delete-discussion", function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
@@ -122,7 +123,7 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage() || location.pathname.indexOf('/home/sprint') > -1) {
+					if (isOnFeedPage() || location.hash.indexOf('#sprints') > -1) {
 						showAlert(data.message, function() {
 							$this.parents('.feed-item').fadeOut();
 						});
@@ -134,7 +135,7 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			}, null, 'delete');
+			}, null, httpArgs);
 		});
 		return false;
 	});
@@ -143,6 +144,7 @@ $(document).ready(function() {
 	 * Click handler to execute when user clicks on the button to delete a DiscussionPost/comment.
 	 */
 	$(document).on("click", "a.delete-post", function() {
+		var httpArgs ={requestMethod:'delete'};
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var postId = $this.data('postId');
@@ -169,7 +171,7 @@ $(document).ready(function() {
 				}
 			}, function(xhr) {
 				showAlert('Internal server error occurred.');
-			}, null, 'delete');
+			}, null, httpArgs);
 		});
 		return false;
 	});
@@ -188,7 +190,7 @@ $(document).ready(function() {
 				return;
 			}
 
-			renderComments(params.discussionHash, [data.post], data, !window.isDiscussionSinglePage);
+			renderComments(params.discussionHash, [data.post], data, isTabActive('#discussions'));
 			$form[0].reset();
 		}, function(xhr) {
 			console.log('Internal server error');
@@ -209,3 +211,147 @@ $(document).ready(function() {
 		return false;
 	});
 });
+
+var plot = null;
+var tagList = null;
+var discussionTitle = "${discussionTitle}";
+var alreadySentName = null;
+var preventCommentSubmit = false;
+
+function doLogout() {
+	callLogoutCallbacks();
+}
+
+$(function() {
+	initTagListOnly();
+
+	// plot.loadSnapshotId(${firstPost.plotDataId});
+	var discussTitleArea = $("#discussTitleArea");
+	var discussTitle = $("#discussTitleSpan");
+
+	var saveTitle = function(closure) {
+		var discussTitleInput = $("#discussTitleInput");
+		if (discussTitleInput) {
+			var newName = discussTitleInput.val();
+			if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
+				alreadySentName = newName;
+				preventCommentSubmit = true; // for some reason, comment submission happening twice?
+				backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash:"${discussionHash}", name:newName }), function(data) {
+					if (checkData(data)) {
+						preventCommentSubmit = false;
+						discussionTitle = newName;
+						discussTitle.html(newName);
+						discussTitle.off('mouseup');
+						discussTitle.on('mouseup', discussTitle.data('rename'));
+						if (closure) closure();
+					} else {
+						showAlert('Failed to set name');
+					}
+				});
+			} else if (closure && (!preventCommentSubmit))
+				closure();
+		}
+	}
+
+	var renameDiscussionHandler = function(e) {
+		if (e.keyCode == 13) {
+			saveTitle();
+			$("#postcommentarea").focus();
+		}
+	}
+
+	var discussTitleRename = function(e) {
+		discussTitleArea.off('mouseup');
+		discussTitle.html('<input type="text" id="discussTitleInput"></input>');
+		var discussTitleInput = $("#discussTitleInput");
+		discussTitleInput.val(discussionTitle);
+		discussTitleInput.keyup(renameDiscussionHandler);
+		discussTitleInput.focus();
+		discussTitleInput.blur(function() {
+			saveTitle();
+		});
+	}
+
+	discussTitle.data('rename', discussTitleRename);
+
+	$("#postcommentarea").keyup(function(e) {
+		if (e.keyCode == 13) {
+			saveTitle(function() {
+				$(".comment-form").submit();
+			});
+		}
+	});
+
+	$("#commentSubmitButton").click(function() {
+		saveTitle(function() {
+			$(".comment-form").submit();
+		});
+	});
+
+	$('li#share-discussion').on('click', function() {
+		showShareDialog(null);
+		return false;
+	});
+});
+
+function infiniteScrollComments(discussionHash) {
+	commentsArgs.max = 5;
+	
+	$(".comments").infiniteScroll({
+		bufferPx: 360,
+		finalMessage: 'No more comments to show',
+		onScrolledToBottom: function(e, $element) {
+			// Pause the scroll event to not trigger again untill AJAX call finishes
+			// Can be also called as: $("#postList").infiniteScroll("pause")
+			this.pause();
+			commentsArgs.offset = this.getOffset();
+
+			getComments(discussionHash, commentsArgs, function(data) {
+				if (!data.posts) {
+					this.finish();
+				} else {
+					this.setNextPage();		// Increment offset for next page
+					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
+				}
+			}.bind(this));
+		}
+	});
+}
+
+function discussionShow(hash) {
+	$('#feed').infiniteScroll("stop");
+
+	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
+			function(data) { 
+		if (data.success) { 
+			$('.container-fluid').removeClass('main');
+			var discussionDetails = data.discussionDetails;
+			discussionDetails.serverURL = window.location.host;
+			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
+			$('#feed').html(compiledHTML);
+			infiniteScrollComments(hash);
+			getComments(hash, commentsArgs);		// See discussion.js for "commentsArgs"
+			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
+				plot = new Plot(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
+					'startDate':'#startdatepicker1',
+					'startDateInit':'start date and/or tag',
+					'endDate':'#enddatepicker1',
+					'endDateInit':'end date and/or tag',
+					'cycleTag':'#cycleTag1',
+					'zoomControl':'#zoomcontrol1',
+					'username':'#queryUsername',
+					'name':'',
+					'logout':'#logoutLink'
+				}));
+				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId);
+			}
+		} else {
+			$('.alert').text(data.message);
+		}
+		
+		$('.nav').hide();
+		setQueryHeader('Curious Discussions', true);
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+}

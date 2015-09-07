@@ -55,6 +55,19 @@ After downloading the customized files, remove **!important** in **.hide** class
 This is required because, we're using **hide** class in most portions & jQuery's **show()** method can't display element 
 due to important mark in css.
 
+## Maven server settings
+
+You need to set following credentials inside `~/.grails/settings.groovy` file:
+``` 
+grails.project.dependency.authentication = {
+	credentials { 
+		id = "curiousRepo"
+		username = "curious"
+		password = "BleCtateRa" 
+	}
+}
+```
+
 ## New development machine setup
 
 All your development dependencies are going to be inside a linux container. The goal is to replicate a light weight 

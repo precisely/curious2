@@ -1,7 +1,7 @@
 <div class="discussion-comment media">
 	<div class="media-left">
-		<a href="#">
-			<img class="avatar" src="/images/avatar2.png" alt="avatar">
+		<a href="#people/{{- discussionPost.authorHash }}">
+			<img src="{{- discussionPost.authorAvatarURL || '/images/avatar2.png' }}" alt="avatar" class="avatar img-circle">
 		</a>
 	</div>
 	<div class="media-body">

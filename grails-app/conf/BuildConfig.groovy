@@ -22,6 +22,10 @@ grails.project.fork = [
     console: [maxMemory: 2048, minMemory: 64, debug: false, maxPerm: 256]
 ]
 
+if (Environment.current == Environment.DEVELOPMENT) {
+	grails.project.plugins.dir = "./plugins"
+}
+
 grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
@@ -36,6 +40,7 @@ grails.project.dependency.resolution = {
     repositories {
         inherits true // Whether to inherit repository definitions from plugins
 
+        mavenRepo ([id: "curiousRepo", url: "http://curious-maven.causecode.com"])
         grailsPlugins()
         grailsHome()
         mavenLocal()
@@ -49,10 +54,12 @@ grails.project.dependency.resolution = {
     }
 
     dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
+		// specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 		compile 'com.ganyo:gcm-server:1.0.2'
 		compile 'com.notnoop.apns:apns:1.0.0.Beta6'
         runtime 'mysql:mysql-connector-java:5.1.29'
+		// Dependency for file-uploader plugin
+		compile "org.apache.jclouds:jclouds-core:1.7.2"
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
         test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
 		runtime 'commons-dbcp:commons-dbcp:1.4' //or 1.3 if java 1.5
@@ -74,7 +81,7 @@ grails.project.dependency.resolution = {
 		compile ":message-digest:1.1"
 		runtime ':elasticsearch:0.0.4.2'
 		compile ":quartz:1.0.2"
-		
+		compile "com.cc.plugins:file-uploader:2.4.2-RC1"
 		//compile ":spring-security-core:2.0-RC5"
 		//compile ":searchable:0.6.9"
 		

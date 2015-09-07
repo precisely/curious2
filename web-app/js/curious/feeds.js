@@ -58,7 +58,10 @@ function registerScroll() {
 						this.resume();
 					}
 				} else {
-					$('.alert').text(data.message);
+					this.finish();
+					if (data.message) {
+						$('.alert').text(data.message);
+					}
 				}
 			}.bind(this), function(data) {
 				showAlert('Internal server error occurred.');
@@ -68,17 +71,35 @@ function registerScroll() {
 }
 
 $(window).load(function() {
-	if (isTabActive('#sprints')) {
+	checkAndDisplayTabData();
+});
+
+$(window).on('hashchange', function() {
+	checkAndDisplayTabData();
+});
+
+function checkAndDisplayTabData() {
+	$('.container-fluid').addClass('main');
+	var hash = window.location.hash;
+	var hashData = hash.split("/");
+	if (hash == "#sprints") {
 		showSprints();
-	} else if (isTabActive('#discussions')) {
+	} else if (hash == '#discussions') {
 		showDiscussions();
-	} else if (isTabActive('#people')) {
+	} else if (hash == '#people') {
 		showPeople();
-	} else if (isTabActive('#all') || (location.href.indexOf('social') > -1)) {
+	} else if (!hash || hash == '#all') {
 		// If the all tab is active or the user is on the social page without a hash
 		showAllFeeds();
-	} 
-});
+	} else if (hash == "#sprints/" + hashData[1]) { 
+		sprintShow(hashData[1]);
+	} else if (hash == "#discussions/" + hashData[1]) { 
+		discussionShow(hashData[1]);
+	} else if (hash == "#people/" + hashData[1]) { 
+		showUserDetails(hashData[1]);
+	}
+	$(window).scrollTop(0);
+}
 
 $(document).ready(function() {
 	if (isOnFeedPage()) {
@@ -104,6 +125,7 @@ $(document).ready(function() {
 		// See base.js for implementation details of $.serializeObject()
 		var params = $(this).serializeObject();
 		var id = $('#sprintIdField').val();
+		var httpArgs = { requestMethod: 'PUT' };
 		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
 				function(data) {
 			if (!checkData(data))
@@ -115,11 +137,16 @@ $(document).ready(function() {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			} else {
-				location.assign('/home/sprint/' + data.hash);
+				if (isTabActive('#sprints/' + data.hash)) {
+					sprintShow(data.hash);
+				} else {
+					location.assign('/home/social#sprints/' + data.hash);
+				}
 				clearSprintFormData()
+				$('#createSprintOverlay').modal('hide');
 			}
 		}, function(xhr) {
-		}, null, 'PUT');
+		}, null, httpArgs);
 		return false;
 	});
 
@@ -164,7 +191,7 @@ $(document).ready(function() {
 	});
 
 	// Handlers for discussion form input fields
-	$(document).on('keypress', '#discussion-topic', function(e) {
+	$(document).on('keypress', '#discussion-topic', function(e) { 
 		var key = e.which;
 		if (key == 13) {
 			var value = $(this).val();
@@ -274,8 +301,10 @@ function showSprints() {
 			$('.alert').text(data.message);
 		}
 		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
-		$('#queryTitle').text('Tracking Sprints');
+		setQueryHeader('Tracking Sprints', false);
+
 		$('#feed-sprints-tab a').tab('show');
+		$('.nav').show();
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
@@ -284,8 +313,10 @@ function showSprints() {
 
 function showDiscussions() {
 	// Change the red bar title
-	$('#queryTitle').text('Discussions');
+	setQueryHeader('Discussions', false);
 
+	$('.nav').show();
+	
 	// Select the tab
 	$('#feed-discussions-tab a').tab('show');
 
@@ -340,13 +371,14 @@ function showPeople() {
 				$('#feed').text('No people to show.');
 			} else {
 				$('#feed').removeClass().addClass('type-people').html('');
+				$('.nav').show();
 				$.each(data.listItems, function(index, user) {
 					var compiledHtml = compileTemplate("_people", {'user': user});
 					$('#feed').append(compiledHtml);
 				});
 				$('#feed-right-tab').html('');
 			}
-			$('#queryTitle').text('People');		
+			setQueryHeader('People', false);
 			$('#feed-people-tab a').tab('show');
 		} else {
 			$('.alert').text(data.message);
@@ -372,8 +404,9 @@ function showAllFeeds() {
 				addAllFeedItems(data);
 				$('#feed-right-tab').html('');
 			}
-			$('#queryTitle').text('All Feeds');		
+			setQueryHeader('All Feeds', false);
 			$('#feed-all-tab a').tab('show');
+			$('.nav').show();
 		} else {
 			$('.alert').text(data.message);
 		}
@@ -620,52 +653,54 @@ function createSprint() {
 function editSprint(sprintHash) {
 	queueJSON("Getting sprint data", '/api/sprint/' + sprintHash + '?' + getCSRFPreventionURI("fetchSprintDataCSRF") + "&callback=?",
 			function(data) {
-				if (!checkData(data))
-					return;
+		if (!checkData(data))
+			return;
 
-				console.log('data: ', data);
-				if (!data.success) {
-					showAlert(data.message);
-				} else {
-					console.log(data.sprint);
-					//Clearing data from last load
-					clearSprintFormData();
-					$('#sprintIdField').val(data.sprint.hash);
-					$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
-					$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
-					$('#sprint-title').val(data.sprint.name);
-					$('#sprint-duration').val(data.sprint.daysDuration);
-					$('#sprint-details').val(data.sprint.description);
-					$('.submit-sprint').text('Update Sprint');
-					$('#createSprintOverlay .modal-title').text('Edit Sprint');
-					if (data.sprint.visibility === 'PRIVATE') {
-						$('#closed').prop('checked', true);
-					} else {
-						$('#open').prop('checked', true);
-					}
+		console.log('data: ', data);
+		if (!data.success) {
+			showAlert(data.message);
+		} else {
+			console.log(data.sprint);
+			//Clearing data from last load
+			clearSprintFormData();
+			$('#sprintIdField').val(data.sprint.hash);
+			$('#sprintVirtualUserId').val(data.sprint.virtualUserId);
+			$('#sprintVirtualGroupId').val(data.sprint.virtualGroupId);
+			$('#sprint-title').val(data.sprint.name);
+			$('#sprint-duration').val(data.sprint.daysDuration);
+			$('#sprint-details').val(data.sprint.description);
+			$('.submit-sprint').text('Update Sprint');
+			$('#createSprintOverlay .modal-title').text('Edit Sprint');
 
-					$.each(data.entries, function(index, value) {
-						addTagsToList(value);
-					});
-					$.each(data.participants, function(index, participant) {
-						if (!participant.virtual) {
-							addParticipantsAndAdminsToList($("#sprint-participants-list"), 
-									'deleteParticipants', participant.username);
-						}
-					});
-					$.each(data.admins, function(index, admin) {
-						if (!admin.virtual) {
-							addParticipantsAndAdminsToList($("#sprint-admins-list"), 
-									'deleteAdmins', admin.username);
-						}
-					});
-					$('#createSprintOverlay').modal({show: true});
-				}
-				autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
+			if (data.sprint.visibility === 'PRIVATE') {
+				$('#closed').prop('checked', true);
+			} else {
+				$('#open').prop('checked', true);
+			}
+
+			$.each(data.entries, function(index, value) {
+				addTagsToList(value);
 			});
+			$.each(data.participants, function(index, participant) {
+				if (!participant.virtual) {
+					addParticipantsAndAdminsToList($("#sprint-participants-list"), 
+							'deleteParticipants', participant.username);
+				}
+			});
+			$.each(data.admins, function(index, admin) {
+				if (!admin.virtual) {
+					addParticipantsAndAdminsToList($("#sprint-admins-list"), 
+							'deleteAdmins', admin.username);
+				}
+			});
+			$('#createSprintOverlay').modal({show: true});
+		}
+		autocompleteWidget = new AutocompleteWidget('autocomplete1', 'sprint-tags');
+	});
 }
 
 function deleteSprint(sprintHash) {
+	var httpArgs ={requestMethod:'delete'};
 	showYesNo('Delete this sprint?', function() {
 		queueJSONAll('Deleting sprint', '/api/sprint/' + sprintHash, 
 				getCSRFPreventionObject('deleteSprintDataCSRF'), 
@@ -681,89 +716,7 @@ function deleteSprint(sprintHash) {
 				}
 			}, function(data) {
 				showAlert(data.message);
-			}, null, 'delete');
-	});
-}
-
-function startSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Starting Sprint', '/api/sprint/action/start?' + getCSRFPreventionURI('startSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#start-sprint').hide();
-			$('#stop-sprint').show();
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function stopSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Stopping Sprint', '/api/sprint/action/stop?' + getCSRFPreventionURI('stopSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#stop-sprint').hide();
-			$('#start-sprint').show();
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function leaveSprint(sprintHash) {
-	var timeZoneName = jstz.determine().name();
-	var now = new Date().toUTCString();
-	queueJSON('Unfollow Sprint', '/api/sprint/action/leave?' + getCSRFPreventionURI('leaveSprintDataCSRF') + '&callback=?', {
-		id: sprintHash,
-		now: now,
-		timeZoneName: timeZoneName
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
-				sprintHash + '\')">Follow</button>');
-		} else {
-			showAlert(data.message);
-		}
-	});
-}
-
-function joinSprint(sprintHash) {
-	queueJSON('Follow Sprint', '/api/sprint/action/join?' + getCSRFPreventionURI('joinSprintDataCSRF') + '&callback=?', {
-		id: sprintHash
-	}, function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
-				sprintHash + '\')">Unfollow</button>');
-			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
-				sprintHash + '\')">Start</button>');
-			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
-				sprintHash + '\')">Stop</button>');
-		} else {
-			showAlert(data.message);
-		}
+			}, null, httpArgs);
 	});
 }
 
@@ -780,4 +733,31 @@ function toggleCommentsList(discussionHash) {
 		getComments(discussionHash, commentsArgs);
 		$element.show();
 	}
+}
+
+function showUserDetails(hash) {
+	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
+			function(data) { 
+		if (data.success) { 
+			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
+			$('#feed').html(compiledHTML);
+		} else {
+			$('.alert').text(data.message);
+		}
+		$('.nav').hide();
+		setQueryHeader('userProfile', true);
+		$('#feed-sprints-tab a').tab('show');
+	}, function(data) {
+		showAlert('Internal server error occurred.');
+	});
+}
+
+function setQueryHeader(text, setGobackButton) {
+	if ($('#go-back-arrow').length > 0) {
+		$('#go-back-arrow').remove();
+	}
+	if (setGobackButton) {
+		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
+	} 
+	$('#queryTitle').text(text);
 }

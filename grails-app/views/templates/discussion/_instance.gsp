@@ -7,8 +7,8 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9 discussion-header">
-					<a href="#">
-						<img class="avatar img-circle" src="/images/avatar.png" alt="avatar">
+					<a href="#people/{{- discussionData.userHash }}">
+						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>
@@ -32,19 +32,19 @@
 				{{- discussionData.groupName }}
 			</div>
 			<div class="row">
-				<div class="col-xs-7">
-					<a href="/home/discuss?discussionHash={{- discussionData.hash }}">
+				<div class="col-md-7">
+					<a href="#discussions/{{- discussionData.hash }}">
 						<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 					</a>
 				</div>
-				<div class="col-xs-5 button-box">
+				<div class="col-md-5 button-box">
 					<div class="buttons">
 						<button onclick="showShareDialog('{{- discussionData.hash }}')">
 							<img src="/images/follow.png" alt="follow">Follow
 						</button>
 						{{ if (discussionData.isAdmin) {  }}
 							<button class="share-button" data-toggle="popover" title="Share:"
-								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/discuss?discussionHash={{- discussionData.hash }}'>">
+								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/social#discussions/{{- discussionData.hash }}'>">
 								<img src="/images/share.png" alt="share">Share
 							</button>
 						{{ } }}

@@ -1,22 +1,11 @@
 <html>
 <head>
-<meta name="layout" content="social" />
-<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF" />
-<script type="text/javascript">
-
-function deleteDiscussionId(id) {
-	showYesNo("Are you sure you want to delete the saved discussion?", function() {
-			backgroundJSON("deleting discussion", "/home/deleteDiscussionId?id=" + escape(id) + "&callback=?",
-				function(entries) {
-					if (checkData(entries))
-						location.reload(true);
-			});
-	});
-}
-
-function doLogout() {
-	callLogoutCallbacks();
-}
+	<meta name="layout" content="social" />
+	<c:jsCSRFToken keys="getCommentsCSRF, deleteDiscussionPostDataCSRF, getUserDataCSRF" />
+	<script type="text/javascript">
+		function doLogout() {
+			callLogoutCallbacks();
+		}
 
 function searchFeeds(params) {
 	if (!params) {

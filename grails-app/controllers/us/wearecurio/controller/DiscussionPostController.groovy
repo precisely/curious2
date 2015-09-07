@@ -77,7 +77,7 @@ class DiscussionPostController extends LoginController{
 				discussion.setUpdated(new Date())
 				DiscussionPost.delete(post)
 				Utils.save(discussion, true)
-				renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "post"])])
+				renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "comment"])])
 			}
 		}
 	}

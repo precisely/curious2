@@ -1,5 +1,7 @@
 import org.scribe.model.SignatureType
 
+import com.lucastex.grails.fileuploader.CDNProvider;
+
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
 import us.wearecurio.thirdparty.jawbone.JawboneUpApi
@@ -585,4 +587,17 @@ oauth {
 		}
 	}
 	debug = true
+}
+
+fileuploader {
+	provider = CDNProvider.RACKSPACE
+	RackspaceUsername = "vishesh.wearecurious"
+	RackspaceKey = "07b8235db4c9430992a56b707d83d814"
+
+	avatar {
+		maxSize = 1024 * 1024 * 2 //256 kbytes
+		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
+		storageTypes = "CDN"
+		container = "curious"
+	}
 }

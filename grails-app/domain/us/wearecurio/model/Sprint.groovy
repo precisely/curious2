@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
+import org.hibernate.criterion.CriteriaSpecification
 
 import org.apache.commons.logging.LogFactory
 
@@ -93,6 +94,10 @@ class Sprint {
 		
 	}
 	
+	boolean isPublic() {
+		return visibility == Visibility.PUBLIC
+	}
+
 	boolean hasWriter(Long userId) {
 		return fetchUserGroup()?.hasWriter(userId)
 	}
@@ -479,6 +484,13 @@ class Sprint {
 
 		// Fetch all non-virtual or actual users
 		List<User> participantsList = User.withCriteria {
+				resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+				createAlias("avatar", "avatarAlias", CriteriaSpecification.LEFT_JOIN)
+				projections {
+					property "username", "username"
+					property "avatarAlias.path", "avatarURL"
+					property "id", "userId"
+				}
 				'in'("id", participantIdsList ?: [0l])
 				or {
 					isNull("virtual")
