@@ -49,10 +49,12 @@ class DiscussionPost {
 	}
 	
 	def getJSONDesc() {
+		User author = User.get(authorUserId)
 		return [
 			authorUserId: authorUserId,
-			authorName: User.get(authorUserId).username,
-			authorAvatarURL: User.get(authorUserId).avatar?.path,
+			authorName: author.username,
+			authorAvatarURL: author.avatar?.path,
+			authorHash: author.hash,
 			discussionId: discussionId,
 			id: id,
 			message: message,

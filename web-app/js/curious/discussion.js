@@ -212,10 +212,6 @@ $(document).ready(function() {
 	});
 });
 
-//list of users to plot
-function refreshPage() {
-}
-
 var plot = null;
 var tagList = null;
 var discussionTitle = "${discussionTitle}";

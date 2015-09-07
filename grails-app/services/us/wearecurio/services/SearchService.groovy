@@ -201,7 +201,6 @@ class SearchService {
 					//def groupIds = d.groupIds
 					if (d.groupIds == null || d.groupIds.length < 1) {
 						//all discussions should have at least one group
-						println "discussion groupids null"
 						return [listItems: false, success: false] // better to throw exception?
 					}
 					

@@ -590,7 +590,7 @@ oauth {
 fileuploader {
 	provider = CDNProvider.RACKSPACE
 	RackspaceUsername = "vishesh.wearecurious"
-	RackspaceKey = "njh157r2rg80rX"
+	RackspaceKey = "07b8235db4c9430992a56b707d83d814"
 
 	avatar {
 		maxSize = 1024 * 1024 * 2 //256 kbytes

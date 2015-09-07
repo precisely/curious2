@@ -41,16 +41,16 @@
 					</div>
 				</div>
 			{{ } else { }}
-			{{ _.each(user.sprints, function(sprint) { }}
-			<div class="media">
-				<div class="media-left">
-					<img src="/images/sprint-icon.png" height="30" width="auto">
+				{{ _.each(user.sprints, function(sprint) { }}
+				<div class="media">
+					<div class="media-left">
+						<img src="/images/sprint-icon.png" height="30" width="auto">
+					</div>
+					<div class="media-body">
+						<h4 class="media-heading">{{- sprint.name }}</h4>
+						<p>{{- sprint.description }}</p>
+					</div>
 				</div>
-				<div class="media-body">
-					<h4 class="media-heading">{{- sprint.name }}</h4>
-					<p>{{- sprint.description }}</p>
-				</div>
-			</div>
 			{{ })} }}
 		</div>
 		<div class="public-groups">

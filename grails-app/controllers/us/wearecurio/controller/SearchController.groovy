@@ -9,9 +9,6 @@ class SearchController extends LoginController {
 
 	def searchService
 
-	ElasticSearchService elasticSearchService
-	ElasticSearchAdminService elasticSearchAdminService
-
 	static debug(str) {
 		log.debug(str)
 	}

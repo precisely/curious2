@@ -10,7 +10,7 @@ removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, removeTagGroupFromTagGroup
 excludeFromTagGroupDataCSRF, addBackToTagGroupDataCSRF, getInterestTagsDataCSRF, addInterestTagDataCSRF, deleteInterestTagDataCSRF, updateInterestTagDataCSRF, updateAvatarCSRF" />
 
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
-<script src="/js/jquery/jquery.cropit.js"></script>
+<script src="/js/jquery/jquery.cropit.min.js"></script>
 <script>
 function refreshPage() {
 }
