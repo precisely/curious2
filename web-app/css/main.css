@@ -2984,8 +2984,7 @@ body {
 }
 
 .discusscomments .buttons {
-	margin-top: 5px;
-	padding: 10px 7px 20px 7px;
+	margin-top: -10px;
 }
 
 .feed-item .sprint {

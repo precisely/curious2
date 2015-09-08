@@ -54,6 +54,10 @@
 			return offset;
 		};
 
+
+		this.setOffset = function(newOffset) {
+			offset = newOffset;
+		};
 		/*
 		 * Resume the scrolling event to again start watching for scroll end.
 		 */

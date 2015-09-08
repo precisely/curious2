@@ -83,6 +83,10 @@ var commentsArgs;
 function checkAndDisplayTabData() {
 	// Reset these variables as we change state
 	window.singleDiscussionPage = false;
+
+	// This is to increase or decrease the offset if new comment is added or any comment is deleted
+	window.discussionCommentsOffsetMargin = 0;
+
 	commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
 	$('.container-fluid').addClass('main');
@@ -190,6 +194,8 @@ $(document).ready(function() {
 	 */
 	$(document).on("click", ".discussion .view-comment", function() {
 		var offset = $(this).data("offset") || 4;
+		offset += window.discussionCommentsOffsetMargin;
+		window.discussionCommentsOffsetMargin = 0;
 
 		commentsArgs.offset = offset;
 
@@ -294,23 +300,22 @@ function showSprints() {
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
 		if (data.success) {
-			if (data.listItems != false) {
-				// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
-				$('#feed').removeClass().addClass('type-sprints').html('');
-				$.each(data.listItems.sprintList, function(index, sprint) {
-					var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
-					$('#feed').append(compiledHtml);
-				});
-				showCommentAgeFromDate();
-			} else {
-				$('#feed').html('No sprints to show.');
-			}
+			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
+			$('#feed').removeClass().addClass('type-sprints').html('');
+			$.each(data.listItems.sprintList, function(index, sprint) {
+				var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
+				$('#feed').append(compiledHtml);
+			});
+			showCommentAgeFromDate();
 		} else {
-			$('.alert').text(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
+			$('#feed').html('No sprints to show.');
 		}
+
 		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
 		setQueryHeader('Tracking Sprints', false);
-
 		$('#feed-sprints-tab a').tab('show');
 		$('.nav').show();
 	}, function(data) {
@@ -337,7 +342,7 @@ function showDiscussions() {
 	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?', function(data) {
 
-		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.listItems.groupName});
+		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
 		$('#feed').removeClass().addClass('type-discussions')
 				.html(createDiscussionForm)		// Reset the main container with create discussion form
 				.append('<div class="discussions"></div>')	// And append one container for holding all discussions
@@ -347,20 +352,18 @@ function showDiscussions() {
 		}
 
 		if (!data.success) {
-			$('.alert').text(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
+			$('#feed').text('No discussions to show.');
 			return;
 		}
 
-		if (data.listItems == false) {
-			$('#feed').text('No discussions to show.');
-		} else {
-
-			$.each(data.listItems.discussionList, function(index, discussionData) {
-				var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
-				$('.discussions').append(compiledHtml);
-			});
-			showCommentAgeFromDate();
-		}
+		$.each(data.listItems.discussionList, function(index, discussionData) {
+			var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
+			$('.discussions').append(compiledHtml);
+		});
+		showCommentAgeFromDate();
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
@@ -375,22 +378,21 @@ function showPeople() {
 			return;
 
 		if (data.success) {
-			if (data.listItems == false) {
-				$('#feed').text('No people to show.');
-			} else {
-				$('#feed').removeClass().addClass('type-people').html('');
-				$('.nav').show();
-				$.each(data.listItems, function(index, user) {
-					var compiledHtml = compileTemplate("_people", {'user': user});
-					$('#feed').append(compiledHtml);
-				});
-				$('#feed-right-tab').html('');
-			}
-			setQueryHeader('People', false);
-			$('#feed-people-tab a').tab('show');
+			$('#feed').removeClass().addClass('type-people').html('');
+			$('.nav').show();
+			$.each(data.listItems, function(index, user) {
+				var compiledHtml = compileTemplate("_people", {'user': user});
+				$('#feed').append(compiledHtml);
+			});
+			$('#feed-right-tab').html('');
 		} else {
-			$('.alert').text(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
+			$('#feed').text('No people to show.');
 		}
+		setQueryHeader('People', false);
+		$('#feed-people-tab a').tab('show');
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
@@ -405,19 +407,18 @@ function showAllFeeds() {
 			return;
 
 		if (data.success) {
-			if (data.listItems == false) {
-				$('#feed').text('No feeds to show.');
-			} else {
-				$('#feed').removeClass().addClass('type-all').html('');
-				addAllFeedItems(data);
-				$('#feed-right-tab').html('');
-			}
-			setQueryHeader('All Feeds', false);
-			$('#feed-all-tab a').tab('show');
-			$('.nav').show();
+			$('#feed').removeClass().addClass('type-all').html('');
+			addAllFeedItems(data);
+			$('#feed-right-tab').html('');
 		} else {
-			$('.alert').text(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
+			$('#feed').text('No feeds to show.');
 		}
+		setQueryHeader('All Feeds', false);
+		$('#feed-all-tab a').tab('show');
+		$('.nav').show();
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
@@ -749,12 +750,13 @@ function showUserDetails(hash) {
 		if (data.success) { 
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
+			$('.nav').hide();
+			setQueryHeader('User Profile', true);
+			$('#feed-sprints-tab a').tab('show');
 		} else {
-			$('.alert').text(data.message);
+			showAlert(data.message);
+			window.history.back();
 		}
-		$('.nav').hide();
-		setQueryHeader('userProfile', true);
-		$('#feed-sprints-tab a').tab('show');
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});

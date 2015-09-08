@@ -164,6 +164,7 @@ $(document).ready(function() {
 							$commentButton.text(totalComments);
 						}
 					});
+					window.discussionCommentsOffsetMargin--;
 				} else {
 					showAlert(data.message);
 				}
@@ -190,6 +191,7 @@ $(document).ready(function() {
 
 			renderComments(params.discussionHash, [data.post], data, !window.singleDiscussionPage);
 			$form[0].reset();
+			window.discussionCommentsOffsetMargin++;
 		}, function(xhr) {
 			console.log('Internal server error');
 		});
@@ -303,6 +305,9 @@ function infiniteScrollComments(discussionHash) {
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
 			commentsArgs.offset = this.getOffset();
+			commentsArgs.offset += window.discussionCommentsOffsetMargin;
+			this.setOffset(commentsArgs.offset);
+			window.discussionCommentsOffsetMargin = 0;
 
 			getComments(discussionHash, commentsArgs, function(data) {
 				if (!data.posts) {

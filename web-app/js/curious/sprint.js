@@ -108,7 +108,7 @@ function sprintShow(hash) {
 						showMoreParticipants(sprintInstance, this);
 					}
 				});
-				$('.nav').hide();
+				$('.nav-pills').hide();
 		} else {
 			showAlert(data.message);
 			window.location.hash = 'sprints';
