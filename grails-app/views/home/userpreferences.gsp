@@ -30,9 +30,13 @@ $(window).load(function() {
 
 	var httpArgs = {processData: false, contentType: false, requestMethod:'POST'};
 	$('.export').click(function() {
+		var imageData = $('#image-cropper').cropit('export');
+		if (!imageData) {
+			showAlert('Please choose a file to upload.');
+			return;
+		}
 		$('#avatarModal .export').hide()
 		$('#avatarModal .wait-form-submit').show()
-		var imageData = $('#image-cropper').cropit('export');
 		var blob = dataURItoBlob(imageData);
 
 		var formData = new FormData();

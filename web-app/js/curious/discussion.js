@@ -146,14 +146,18 @@ $(document).ready(function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var postId = $this.data('postId');
-			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId,
-					getCSRFPreventionObject('deleteDiscussionPostDataCSRF'),
+			var currentOffset = $('.feed-item').data('offset');
+			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId + '?offset=' + (currentOffset - 1) + '&' +
+					getCSRFPreventionURI('deleteDiscussionPostDataCSRF'), null,
 					function(data) {
 				if (!checkData(data))
 					return;
 
 				if (data.success) {
 					showAlert(data.message, function() {
+						if (data.nextFollowupPost) {
+							renderComments(data.discussionHash, [data.nextFollowupPost], {discussionDetails: {isAdmin: data.isAdmin}}, window.singleDiscussionPage);
+						}
 						$this.parent().closest('.discussion-comment').fadeOut(null, function() {
 							$(this).remove();
 						});
@@ -191,7 +195,9 @@ $(document).ready(function() {
 
 			renderComments(params.discussionHash, [data.post], data, !window.singleDiscussionPage);
 			$form[0].reset();
-			window.discussionCommentsOffsetMargin++;
+			var discussionElement = getDiscussionElement(params.discussionHash);
+			var currentOffset = discussionElement.data('offset');
+			discussionElement.data('offset', ++currentOffset);
 		}, function(xhr) {
 			console.log('Internal server error');
 		});
@@ -304,16 +310,15 @@ function infiniteScrollComments(discussionHash) {
 			// Pause the scroll event to not trigger again untill AJAX call finishes
 			// Can be also called as: $("#postList").infiniteScroll("pause")
 			this.pause();
-			commentsArgs.offset = this.getOffset();
-			commentsArgs.offset += window.discussionCommentsOffsetMargin;
-			this.setOffset(commentsArgs.offset);
-			window.discussionCommentsOffsetMargin = 0;
+			var discussionElement = getDiscussionElement(discussionHash);
+			commentsArgs.offset = discussionElement.data('offset');
 
 			getComments(discussionHash, commentsArgs, function(data) {
 				if (!data.posts) {
 					this.finish();
 				} else {
-					this.setNextPage();		// Increment offset for next page
+					commentsArgs.offset += commentsArgs.max;
+					discussionElement.data('offset', commentsArgs.offset);
 					this.resume();			// Re start scrolling event to fetch next page data on reaching to bottom
 				}
 			}.bind(this));

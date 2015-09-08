@@ -84,9 +84,6 @@ function checkAndDisplayTabData() {
 	// Reset these variables as we change state
 	window.singleDiscussionPage = false;
 
-	// This is to increase or decrease the offset if new comment is added or any comment is deleted
-	window.discussionCommentsOffsetMargin = 0;
-
 	commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
 	$('.container-fluid').addClass('main');
@@ -193,14 +190,12 @@ $(document).ready(function() {
 	 * comments.
 	 */
 	$(document).on("click", ".discussion .view-comment", function() {
-		var offset = $(this).data("offset") || 4;
-		offset += window.discussionCommentsOffsetMargin;
-		window.discussionCommentsOffsetMargin = 0;
-
+		var discussionHash = $(this).data("discussionHash");
+		var offset = $('#discussion-' + discussionHash).data("offset") || 4;
 		commentsArgs.offset = offset;
 
-		getComments($(this).data("discussionHash"), commentsArgs, function() {
-			$(this).data("offset", offset + maxCommentsPerDiscussion);
+		getComments(discussionHash, commentsArgs, function() {
+			$('#discussion-' + discussionHash).data("offset", offset + maxCommentsPerDiscussion);
 		}.bind(this));
 	});
 
@@ -355,7 +350,7 @@ function showDiscussions() {
 			if (data.message) {
 				showAlert(data.message);
 			}
-			$('#feed').text('No discussions to show.');
+			$('#feed').append('No discussions to show.');
 			return;
 		}
 
@@ -770,4 +765,8 @@ function setQueryHeader(text, setGobackButton) {
 		$('#queryTitle').parent().prepend('<img alt="back" id="go-back-arrow" class="date-left-arrow" src="/images/left-arrow-white.png" onclick="window.history.back()" style="cursor: pointer; margin-right: 15px;">');
 	} 
 	$('#queryTitle').text(text);
+}
+
+function getDiscussionElement(hash) {
+	return $('#discussion-' + hash);
 }

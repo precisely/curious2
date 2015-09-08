@@ -275,14 +275,14 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	requestMethod = httpArgs.requestMethod || 'GET';
+	var requestMethod = (httpArgs.requestMethod || 'get').toUpperCase();
 	var contentType;
 	var processData;
 
 	if (httpArgs.contentType == false) {
 		contentType = httpArgs.contentType;
 	} else {
-		contentType = (httpArgs.requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
+		contentType = (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
 	}
 
 	if (httpArgs.processData == false) {

@@ -50,7 +50,7 @@ class SearchService {
 			}
 	
 			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			Map model = [sprintList: results.searchResults*.getJSONDesc()]
@@ -88,7 +88,7 @@ class SearchService {
 			}
 			
 			if (totalDiscussionCount < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
@@ -269,7 +269,7 @@ class SearchService {
 			}
 			
 			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			return [listItems: results.searchResults*.getPeopleJSONDesc(), success: true]

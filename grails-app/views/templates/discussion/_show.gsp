@@ -48,7 +48,7 @@
 		<!-- COMMENTS -->
 
 			<div class="main discusscomments">
-				<div class="feed-item discussion" id="discussion-{{- discussionHash }}">
+				<div class="feed-item discussion" id="discussion-{{- discussionHash }}" data-offset="5">
 					<div class="discussion-topic">
 						<div class="contents">
 							<div class="row">

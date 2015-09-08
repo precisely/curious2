@@ -2,7 +2,7 @@
 	A Javascript Lodash or Underscore template used to render a single Discussion
 -->
 
-<div class="feed-item discussion" id="discussion-{{- discussionData.hash}}">
+<div class="feed-item discussion" id="discussion-{{- discussionData.hash}}" data-offset="4">
 	<div class="discussion-topic">
 		<div class="contents">
 			<div class="row">
@@ -39,7 +39,7 @@
 				</div>
 				<div class="col-md-5 button-box">
 					<div class="buttons">
-						<button onclick="showShareDialog('{{- discussionData.hash }}')">
+						<button>
 							<img src="/images/follow.png" alt="follow">Follow
 						</button>
 						{{ if (discussionData.isAdmin) {  }}
