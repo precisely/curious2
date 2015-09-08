@@ -146,7 +146,7 @@ $(document).ready(function() {
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var postId = $this.data('postId');
-			var currentOffset = $('.feed-item').data('offset');
+			var currentOffset = $this.closest('.feed-item').data('offset');
 			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId + '?offset=' + (currentOffset - 1) + '&' +
 					getCSRFPreventionURI('deleteDiscussionPostDataCSRF'), null,
 					function(data) {
