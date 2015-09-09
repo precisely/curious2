@@ -79,27 +79,21 @@ function renderComments(discussionHash, posts, data, append) {
 	var discussionElementID = '#discussion-' + discussionHash;
 
 	if (!posts) {
-		$('.view-comment', discussionElementID).html('');
+		$('.view-comment', discussionElementID).hide();
 		return;
 	}
 
 	var compiledHTML = "";
 
-	// If we are in discussion listing page (i.e. feeds page)
-	if (!window.singleDiscussionPage) {
-		// Then reverse the comments to display the most recent comment at last
-		posts = posts.reverse();
-	}
-
 	$.each(posts, function(index, post) {
-		compiledHTML += compileTemplate("_comments", {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
+		compiledHTML = compileTemplate('_comments', {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
+		if (!append) {
+			$(compiledHTML).prependTo(discussionElementID + ' .comments').slideDown();
+		} else {
+			$(compiledHTML).appendTo(discussionElementID + ' .comments').slideDown();
+		}
 	});
 
-	if (!append) {
-		$('.comments', discussionElementID).prepend(compiledHTML);
-	} else {
-		$('.comments', discussionElementID).append(compiledHTML);
-	}
 
 	showCommentAgeFromDate();
 }
@@ -154,21 +148,18 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					showAlert(data.message, function() {
-						if (data.nextFollowupPost) {
-							renderComments(data.discussionHash, [data.nextFollowupPost], {discussionDetails: {isAdmin: data.isAdmin}}, window.singleDiscussionPage);
-						}
-						$this.parent().closest('.discussion-comment').fadeOut(null, function() {
-							$(this).remove();
-						});
-						if (isOnFeedPage()) {
-							var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
-							var totalComments = $commentButton.data('totalComments') - 1;
-							$commentButton.data('totalComments', totalComments);
-							$commentButton.text(totalComments);
-						}
+					if (data.nextFollowupPost) {
+						renderComments(data.discussionHash, [data.nextFollowupPost], {discussionDetails: {isAdmin: data.isAdmin}}, window.singleDiscussionPage);
+					}
+					$this.parent().closest('.discussion-comment').slideUp('normal', function() {
+						$(this).remove();
 					});
-					window.discussionCommentsOffsetMargin--;
+					if (isOnFeedPage()) {
+						var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
+						var totalComments = $commentButton.data('totalComments') - 1;
+						$commentButton.data('totalComments', totalComments);
+						$commentButton.text(totalComments);
+					}
 				} else {
 					showAlert(data.message);
 				}

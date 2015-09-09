@@ -1,4 +1,4 @@
-<div class="discussion-comment media">
+<div class="discussion-comment media hide">
 	<div class="media-left">
 		<a href="#people/{{- discussionPost.authorHash }}">
 			<img src="{{- discussionPost.authorAvatarURL || '/images/avatar2.png' }}" alt="avatar" class="avatar img-circle">

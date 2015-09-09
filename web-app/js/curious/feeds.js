@@ -735,6 +735,7 @@ function toggleCommentsList(discussionHash) {
 		commentsArgs.max = maxCommentsPerDiscussion;
 
 		getComments(discussionHash, commentsArgs);
+		$('.discussion .view-comment').show();
 		$element.show();
 	}
 }
