@@ -190,7 +190,6 @@ class RepeatType {
 		if (repeatEnd == null)
 			return null
 			
-		println ">>>>>>repeatend: $repeatEnd"
 		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
 		
 		DateTime endDateTime = new DateTime(repeatEnd, dateTimeZone)

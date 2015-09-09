@@ -435,8 +435,8 @@ var RepeatType = new function() {
 	this.CONTINUOUS_BIT = 0x100;
 	this.GHOST_BIT = 0x200;
 	this.CONCRETEGHOST_BIT = 0x400;
-	this.TIMED_BIT = 0x1 | 0x2 | 0x4;
 	this.DURATION_BIT = 0x0800;
+	this.REPEAT_BIT = this. DAILY_BIT | this.WEEKLY_BIT | this.HOURLY_BIT | this.MONTHLY_BIT | this.YEARLY_BIT;
 	this.DAILYGHOST = this.DAILY_BIT | this.GHOST_BIT;
 	this.WEEKLYGHOST = this.WEEKLY_BIT | this.GHOST_BIT;
 	this.REMINDDAILY = this.REMIND_BIT | this.DAILY_BIT;
@@ -467,10 +467,7 @@ var RepeatType = new function() {
 		return (repeatType & this.REMIND_BIT) != 0;
 	}
 	this.isRepeat = function(repeatType) {
-		return (repeatType & (this.DAILY_BIT | this.WEEKLY_BIT | this.REMIND_BIT | this.CONTINUOUS_BIT)) != 0;
-	}
-	this.isTimed = function(repeatType) {
-		return (repeatType & (this.DAILY_BIT | this.WEEKLY_BIT | this.REMIND_BIT)) != 0;
+		return (repeatType & this.REPEAT_BIT) != 0;
 	}
 	this.isHourly = function(repeatType) {
 		return (repeatType & this.HOURLY_BIT) != 0
