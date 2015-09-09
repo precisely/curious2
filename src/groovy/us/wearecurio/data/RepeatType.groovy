@@ -195,6 +195,11 @@ public class RepeatType {
 		if (repeatEnd == null)
 			return null
 			
+<<<<<<< Upstream, based on master
+=======
+		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
+		
+>>>>>>> ca64242 Changed repeat type bits check on client side and removed isTimmed check. #617
 		DateTime endDateTime = new DateTime(repeatEnd, dateTimeZone)
 		LocalDate endLocalDate = endDateTime.toLocalDate()
 		LocalTime endLocalTime = endDateTime.toLocalTime()

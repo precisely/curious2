@@ -139,21 +139,16 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				isPlain = false;
 				classes += " continuous"
 			}
-			if (RepeatType.isTimed(repeatType)) {
-				isTimed = true;
+			if (RepeatType.isRemind(repeatType)) {
+				isRemind = true;
 				isPlain = false;
-				classes += " timedrepeat"
+				classes += " remind"
 			}
 			if (RepeatType.isRepeat(repeatType) || RepeatType.isDaily(repeatType) || RepeatType.isWeekly(repeatType) || 
 					RepeatType.isMonthly(repeatType)) {
 				isRepeat = true;
 				isPlain = false;
 				classes += " repeat"
-			}
-			if (RepeatType.isRemind(repeatType)) {
-				isRemind = true;
-				isPlain = false;
-				classes += " remind"
 			}
 		}
 		if (isPlain) {

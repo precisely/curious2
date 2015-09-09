@@ -1955,8 +1955,8 @@ li.entry.continuousghost {
 li.entry.pinned {
 	border-left: 5px solid #f14a42;
 }
-li.entry.repeat.remind {
-	border-left: 5px solid #c35785;
+li.entry.remind {
+	border-left: 5px solid #c35785 !important;
 }
 li.entry.repeat {
 	border-left: 5px solid #f48d5b;
