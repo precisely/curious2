@@ -108,7 +108,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry full-width " + ((comment != '')?'':'no-tag') + " ";
+		var classes = "entry full-width " + ((entry.repeatType)?'':'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -139,20 +139,16 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				isPlain = false;
 				classes += " continuous"
 			}
-			if (RepeatType.isTimed(repeatType)) {
-				isTimed = true;
-				isPlain = false;
-				classes += " timedrepeat"
-			}
-			if (RepeatType.isRepeat(repeatType)) {
-				isRepeat = true;
-				isPlain = false;
-				classes += " repeat"
-			}
 			if (RepeatType.isRemind(repeatType)) {
 				isRemind = true;
 				isPlain = false;
 				classes += " remind"
+			}
+			if (RepeatType.isRepeat(repeatType) || RepeatType.isDaily(repeatType) || RepeatType.isWeekly(repeatType) || 
+					RepeatType.isMonthly(repeatType)) {
+				isRepeat = true;
+				isPlain = false;
+				classes += " repeat"
 			}
 		}
 		if (isPlain) {
@@ -164,10 +160,10 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			if(entry.amountPrecision > 0) {
 				buttonText += ' ' + entry.amount + ' ' + entry.units;
 			}
-			var pinnedTagButtonHTMLContent = '<div id="' + this.editId + 'entryid' + id + '">' + 
+			var pinnedTagButtonHTMLContent = '<div class="pin-button" id="' + this.editId + 'entryid' + id + '">' + 
 				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId 
 				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
-				buttonText + '</button>' + '<li class="dropdown"><a href="#" data-toggle="dropdown">' + 
+				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' + 
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
 				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');">' + 
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
@@ -190,7 +186,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			}
 		}
 		
-		var innerHTMLContent = '<div class="content-wrapper '+ ((comment != '')?'':'no-tag') +'">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+		var innerHTMLContent = '<div class="content-wrapper '+ ((entry.repeatType) ? '' : 'no-tag') +'">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 				+ escapehtml(description) + '</span>';
 		
 		var amounts = entry.amounts;
@@ -218,14 +214,22 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>'
 		}
 		
-		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + (comment != '' ? ' ' + '<br><div class="comment-label "> <div class="' +
-				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') ? 
-				'repeatLabelImage' : (comment.startsWith('remind')? 'remindLabelImage':'')) + '"></div> <span class="' +
-				(comment.startsWith('repeat') || comment.startsWith('daily') || comment.startsWith('weekly') || comment.startsWith('remind') ? 'entryRepeat' : 'entryComment') + '">' + escapehtml(comment) + '</span></div>' : '')
-				+ '</div><button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>';
+		var commentLabel = '';
+		if (isRemind && isRepeat) {
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT w/ reminder</span></div>';
+		} else if (isRemind) {
+			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">REMIND</span></div>';
+		} else if (isRepeat) {
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span></div>';
+		}
 
+		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
+		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
+				+ escapehtml(dateStr) + '</span>' : '') + '</div>' + commentLabel + 
+			'<button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + 
+			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
+
 		var entryEditItem;
 		
 		if (isUpdating) {
@@ -246,17 +250,40 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			console.log('deleting....');
 			self.deleteEntryId(id);
 		});
+
+		$('#' + id + '-remind-checkbox').change(function() {
+			if ($('#' + id + '-repeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
+				$('#' + id + '-confirm-each-repeat').prop('checked', true);
+			}
+		});
 		
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
 		entryEditItem.data(data);
 	}
 
-	this.displayEntries = function(entries) {
+	/*
+	 * This method iterates through list of entries and displays them
+	 * @param entries list of entries to display
+	 * @param onlyPinned to display only pinned entries 
+	 */
+	this.displayEntries = function(entries, onlyPinned) {
 		self.entrySelectData = {};
 		jQuery.each(entries, function() {
+			if (onlyPinned && !RepeatType.isContinuous(this.repeatType)) {
+				return;
+			} 
 			self.displayEntry(this, false);
 			return true;
+		});
+		$('#pinned-tag-list').children('div').each(function () {
+			$(this).hover(
+				function() {
+					$(this).children('.dropdown').removeClass('hide-important');
+				}, function() {
+					$(this).children('.dropdown').addClass('hide-important');
+				}
+			);
 		});
 	}
 
@@ -265,69 +292,13 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		this.displayEntries(entries);
 	}
 
+	this.refreshPinnedEntries = function(entries) {
+		$("#pinned-tag-list").html('');
+		this.displayEntries(entries, true);
+	}
+
 	this.getEntryElement = function(entryId) {
 		return $("#" + this.editId + "entryid" + entryId);
-	}
-
-	this.toggleSuffix = function($control, suffix) {
-		var text = $control.val();
-
-		if (text.endsWith(" repeat")) {
-			text = text.substr(0, text.length - 7);
-			$control.val(text);
-
-			if (suffix == "repeat") {
-				window.setTimeout(function() {
-					$control.selectRange(text.length, text.length);
-					$control.focus();
-				}, 1);
-				return text.length > 0;
-			}
-		}
-		if (text.endsWith(" remind")) {
-			text = text.substr(0, text.length - 7);
-			$control.val(text);
-
-			if (suffix == "remind") {
-				window.setTimeout(function() {
-					$control.selectRange(text.length, text.length);
-					$control.focus();
-				}, 1);
-				return text.length > 0;
-			}
-		}
-		if (text.endsWith(" pinned")) {
-			text = text.substr(0, text.length - 7);
-			$control.val(text);
-
-			if (suffix == "pinned") {
-				window.setTimeout(function() {
-					$control.selectRange(text.length, text.length);
-					$control.focus();
-				}, 1);
-				return text.length > 0;
-			}
-		}
-
-		var retVal = text.length > 0;	
-		text = text + " " + suffix;
-		$control.val(text);
-		window.setTimeout(function() {
-			$control.selectRange(text.length, text.length);
-			$control.focus();
-		}, 1);
-
-		return retVal;
-	}
-
-	this.modifyEdit = function(suffix) {
-		var $control = $('#' + this.editId + 'tagTextInput');
-		this.toggleSuffix($control, suffix);
-	}
-
-	this.modifyInput = function(suffix) {
-		this.initInput();
-		this.toggleSuffix($('#' + this.editId), suffix);
 	}
 
 	this.sortByTime = function() {
@@ -459,16 +430,23 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		return false;
 	}
 
-	this.doUpdateEntry = function(entryId, text, defaultToNow, allFuture) {
+	this.doUpdateEntry = function(entryId, text, defaultToNow, repeatTypeId, repeatEnd, allFuture) {
 		this.cacheNow();
+		var repeatParams = this.getRepeatParamsStr(repeatTypeId, repeatEnd);
+
 		queueJSON("updating entry", "/home/updateEntrySData?entryId=" + entryId
-				+ "&currentTime=" + this.currentTimeUTC + "&text=" + escape(text) + "&baseDate="
+				+ "&currentTime=" + this.currentTimeUTC + "&text=" + escape(text) + repeatParams + "&baseDate="
 				+ this.cachedDateUTC + "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
 				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
 				self.tagList.load();
 				self.refreshEntries(entries[0]);
+				if (self.nextSelectionId) {
+					var nextSelection = $('#' + self.nextSelectionId);
+					self.nextSelectionId = null;
+					self.selectEntry(nextSelection);
+				}
 				if (entries[1] != null)
 					self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
 				if (entries[2] != null) {
@@ -478,18 +456,18 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		});
 	}
 
-	this.updateEntry = function(entryId, text, defaultToNow) {
+	this.updateEntry = function(entryId, text, defaultToNow, repeatTypeId, repeatEnd) {
 		var $oldEntry = this.getEntryElement(entryId);
 
 		console.log('update....');
 		if ((($oldEntry.data("isRepeat") && (!$oldEntry.data("isRemind"))) || $oldEntry.data("isGhost")) && (!this.isTodayOrLater)) {
 			showAB("Update just this one event or also future events?", "One", "Future", function() {
-				self.doUpdateEntry(entryId, text, defaultToNow, false);
+				self.doUpdateEntry(entryId, text, defaultToNow, repeatTypeId, repeatEnd, false);
 			}, function() {
-				self.doUpdateEntry(entryId, text, defaultToNow, true);
+				self.doUpdateEntry(entryId, text, defaultToNow, repeatTypeId, repeatEnd, true);
 			});
 		} else {
-			self.doUpdateEntry(entryId, text, defaultToNow, true);
+			self.doUpdateEntry(entryId, text, defaultToNow, repeatTypeId, repeatEnd, true);
 		}
 	}
 
@@ -499,18 +477,21 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		if ((!tagStats) || tagStats.typicallyNoAmount) {
 			this.addEntry(userId, text, defaultToNow);
 		} else {
-			this.addEntry(userId, text, defaultToNow, function() {
+			this.addEntry(userId, text, defaultToNow, null, null, function() {
 				var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
-				self.selectEntry($(selectee), false);
+				self.selectEntry($(selectee));
 			});
 		}
 	}
 
-	this.addEntry = function(userId, text, defaultToNow, callBack) {
+	this.addEntry = function(userId, text, defaultToNow, repeatTypeId, repeatEnd, callBack) {
+		if (text == '') {
+			return;
+		}
 		this.cacheNow();
-
+		var repeatParams = this.getRepeatParamsStr(repeatTypeId, repeatEnd);
 		queueJSON("adding new entry", "/home/addEntrySData?currentTime=" + this.currentTimeUTC
-				+ "&userId=" + userId + "&text=" + escape(text) + "&baseDate=" + this.cachedDateUTC
+				+ "&userId=" + userId + "&text=" + escape(text) + repeatParams + "&baseDate=" + this.cachedDateUTC
 				+ "&timeZoneName=" + this.timeZoneName + "&defaultToNow=" + (defaultToNow ? '1':'0') + "&"
 				+ getCSRFPreventionURI("addEntryCSRF") + "&callback=?",
 				function(entries) {
@@ -520,7 +501,11 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				}
 				self.tagList.load();
 				self.latestEntryId = entries[3].id;
-				self.refreshEntries(entries[0]);
+				if (RepeatType.isContinuous(entries[3].repeatType)) {
+					self.refreshPinnedEntries(entries[0]);
+				} else {
+					self.refreshEntries(entries[0]);
+				}
 				if (entries[2] != null)
 					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3], entries[2][4]);
 				if (callBack && typeof callBack == 'function') {
@@ -528,6 +513,24 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				}
 			}
 		});
+	}
+
+	this.getRepeatParamsStr = function(repeatTypeId, repeatEnd) {
+		var repeatTypeParam = '';
+		var repeatEndParam = '';
+		if (repeatTypeId) {
+			repeatTypeParam = "&repeatTypeId=" + repeatTypeId;
+		}
+		if (repeatEnd && typeof repeatEnd == 'string') {
+			repeatEnd = new Date(repeatEnd).setHours(23, 59, 59, 0);
+			var now = new Date();
+			if(new Date(repeatEnd) < now) {
+				now.setHours(23, 59, 59, 0);
+				repeatEnd = now;
+			}
+			repeatEndParam = "&repeatEnd=" + new Date(repeatEnd).toUTCString();
+		}
+		return repeatEndParam + repeatTypeParam;	
 	}
 
 	this.initInput = function() {
@@ -539,11 +542,60 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.processInput = function() {
 		var $field = $("#" + this.editId);
 		$field.autocomplete("close");
+		$('.repeat-modifiers').addClass('hide');
 		var text = $field.val();
 		if (text == "") return; // no entry data
 		$field.val("");
-		this.addEntry(currentUserId, text, this.defaultToNow);
+		var repeatTypeId = this.getRepeatTypeId('new');
+		var repeatEnd = $('#addData .choose-date-input').val();
+		$('.entry-details-form').trigger('reset');
+		this.addEntry(currentUserId, text, this.defaultToNow, repeatTypeId, repeatEnd);
 		return true;
+	}
+
+	this.getRepeatTypeId = function(idSelector) {
+		var isRepeat = $('#' + idSelector + 'repeat-checkbox').is(':checked');
+		var setAlert = $('#' + idSelector + 'remind-checkbox').is(':checked');
+
+		if (!isRepeat && !setAlert) {
+			return false;
+		}
+
+		var confirmRepeat = $('#' + idSelector + 'confirm-each-repeat').is(':checked');
+		var frequencyBit = RepeatType.DAILY_BIT;	// Repeat daily by default
+		var repeatTypeBit;
+		var frequency = $('input[name=' + idSelector + 'repeat-frequency]:checked').val();
+
+		if (isRepeat) {
+			if (frequency == 'daily') {
+				frequencyBit = RepeatType.DAILY_BIT;
+			} else if (frequency == 'monthly') {
+				frequencyBit = RepeatType.MONTHLY_BIT;
+			} else if (frequency == 'weekly') {
+				frequencyBit = RepeatType.WEEKLY_BIT;
+			}
+			repeatTypeBit = RepeatType.CONCRETEGHOST_BIT | frequencyBit;
+		}
+		if (setAlert) {
+			if (repeatTypeBit) {
+				repeatTypeBit = (RepeatType.REMIND_BIT | repeatTypeBit);
+			} else {
+				repeatTypeBit = RepeatType.REMIND_BIT;
+			}
+		}
+		if (confirmRepeat) {
+			return (repeatTypeBit | RepeatType.GHOST_BIT);
+		} 
+		return (repeatTypeBit);
+	}
+
+	this.createPinnedEntry = function(editId) {
+		editId = editId || this.editId;
+		var $field = $("#" + editId);
+		var text = $field.val();
+		if (text != '') {
+			this.addEntry(currentUserId, text, this.defaultToNow, RepeatType.CONTINUOUSGHOST);
+		}
 	}
 
 	this.setEntryText = function(text, startSelect, endSelect) {
@@ -579,6 +631,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$button.addClass("edit");
 		$button.text("Edit");
 
+		$unselectee.removeClass("open");
+		$('#' + $unselectee.attr('id') + ' .track-input-dropdown').hide();
+
 		$contentWrapper.html(displayText);
 		$contentWrapper.show();
 		if (displaySpinner) {
@@ -587,6 +642,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 
 		$("#" + this.editId + "tagTextEdit").remove();
 		$unselectee.removeClass('ui-selected');
+		if ($unselectee.find('.comment-label').length > 0) {
+			$unselectee.find('.comment-label').show();
+		}
 	}
 
 	/**
@@ -594,6 +652,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	 */
 	this.selectEntry = function($selectee) {
 		console.debug('Select Entry:', $selectee.attr("id"));
+		var entry = $selectee.data("entry");
 
 		console.log('width: ', $(window).width());
 		if ($(window).width() <= 1025) {
@@ -615,6 +674,9 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		}
 
 		$selectee.siblings().removeClass("ui-selected");
+		if ($selectee.find('.comment-label').length > 0) {
+			$selectee.find('.comment-label').hide();
+		}
 		var $contentWrapper = $selectee.find(".content-wrapper");
 		var $button = $selectee.find(".edit");
 		$button.removeClass("edit");
@@ -632,22 +694,43 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				entryText = entryText.substr(0, selectRange[0] - 1) + " " + entryText.substr(selectRange[0] - 1);
 			}
 		}
-		var repeatType = $contentWrapper.find(".entryRepeat").text();
-		var repeatImgSrc = "/images/repeat.png";
-		var remindImgSrc = "/images/remind.png";
-		
-		if (repeatType.indexOf("remind") > -1) {
-			remindImgSrc = "/images/remind-active.png"
-		} else if (repeatType.indexOf("repeat") > -1) {
-			repeatImgSrc = "/images/repeat-active.png";
-		} 
+		var repeatType = $selectee.data("entry").repeatType;
 		
 		$selectee.data('originalText', entryText); // store entry text for comparison
 		$contentWrapper.hide();
-		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input>'
-				+ '<img class="entryModify edit-repeat" data-suffix="repeat" src="' + repeatImgSrc + '">'
-				+ '<img class="entryModify edit-remind" data-suffix="remind" src="' + remindImgSrc + '">'
-				+ '<img class="entryModify edit-pin" data-suffix="pinned" src="/images/pin.png"></span>');
+
+		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + 
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>');
+		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
+
+		if (RepeatType.isRemind(repeatType)) {
+			$('#' + currentEntryId + '-remind-checkbox').prop('checked', true);
+		}
+		if (RepeatType.isRepeat(repeatType)) {
+			$('#' + currentEntryId + '-repeat-checkbox').prop('checked', true);
+			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
+		}
+		if (RepeatType.isDaily(repeatType)) {
+			$('#' + currentEntryId + '-daily').prop('checked', true);
+		} else if (RepeatType.isWeekly(repeatType)) {
+			$('#' + currentEntryId + '-weekly').prop('checked', true);
+		} else if (RepeatType.isMonthly(repeatType)) {
+			$('#' + currentEntryId + '-monthly').prop('checked', true);
+		} 
+		if (RepeatType.isGhost(repeatType)) {
+			$('#' + entry.id + '-confirm-each-repeat').prop('checked', true);
+		}
+
+		$(".choose-date-input").datepicker();
+		if (entry.repeatEnd) {
+			var oldRepeatEndDate = new Date(entry.repeatEnd);
+			$(".choose-date-input").datepicker('setDate', oldRepeatEndDate);
+		}
+		$('#' + $selectee.attr('id') + ' .repeat-entry-checkbox').change(function() {
+			$('#' + $selectee.attr('id') + ' .repeat-modifiers').toggleClass('hide');
+			return;
+		});
+
 
 		$('#' + self.editId + 'tagTextInput')
 			.val(entryText).focus()
@@ -660,9 +743,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					self.unselectEntry($selectee);
 				}
 			});
-
-		if ($selectee.data('isContinuous'))
-			self.toggleSuffix($('#' + this.editId + 'tagTextInput'), 'pinned');
 
 		if (selectRange) {
 			$('#' + self.editId + 'tagTextInput').selectRange(selectRange[0], selectRange[1]);
@@ -686,20 +766,31 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			console.warn("Undefined new text");
 			return;
 		}
-		var currentEntryId = $unselectee.data("entryId");
+		var currentEntryId = $unselectee.data('entryId');
+		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-') || $unselectee.data('entry').repeatType;
+		var repeatEnd = $('#' + this.editId + 'entryid' + currentEntryId + ' .choose-date-input').val();
+		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
+		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
+		var isOldRepeatEndChanged = false;
+
+		if (oldRepeatEndMidnightTime || !isNaN(new Date(repeatEnd).getTime())) {
+			isOldRepeatEndChanged = !(oldRepeatEndMidnightTime == new Date(repeatEnd).getTime());
+		}
 
 		if ($unselectee.data('isContinuous')) {
 			console.debug('Is a continuous entry:', $unselectee.attr('id'));
 			this.unselectEntry($unselectee, true, true);
-			this.updateEntry(currentEntryId, newText, this.defaultToNow);
-		} else if (!$unselectee.data('isRemind') && $unselectee.data('originalText') == newText) {
+			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
+		} else if (!$unselectee.data('isGhost') && ($unselectee.data('originalText') == newText && 
+				$unselectee.data("entry").repeatType == repeatTypeId && !isOldRepeatEndChanged)) {
 			console.debug('Is not remind & no change in entry.');
 			this.unselectEntry($unselectee);
 		} else {
 			console.log('Either remind or change in entry.');
 			this.unselectEntry($unselectee, true, true);
-			this.updateEntry(currentEntryId, newText, this.defaultToNow);
+			this.updateEntry(currentEntryId, newText, this.defaultToNow, repeatTypeId, repeatEnd);
 		}
+		$('.entry-details-form').trigger('reset');
 	}
 
 	/**
@@ -714,6 +805,16 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return;
 
 		var $target = $(e.target);
+
+		if ($target[0].className == 'make-pin-button') {
+			if ($target.closest('#recordList').length == 0) {
+				self.createPinnedEntry();
+			} else {
+				self.createPinnedEntry('input0tagTextInput');
+			}
+			return;
+		}
+
 		var $alreadySelectedEntry = $("li.entry.ui-selected");
 
 		// Checking if any entry is already selected when mousedown event triggered.
@@ -725,19 +826,26 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		// If such elements are clicked, where we not have to do anything. (Like deleteEntry)
 		var isEventToCancel = $target.closest(".entryNoBlur").length > 0;
 
-		// If any of the 3 image buttons (besides edit entry text field) are clicked.
-		var isEntryModify = $target.closest("img.entryModify").length > 0;
-		
 		if (isEventToCancel) {
 			return;
 		}
 
+		if ($target.closest('.dropdown-menu').length == 0 && $target.closest('#ui-datepicker-div').length == 0) {
+			$('.entry-details-dropdown-menu').parent().removeClass('open');
+		} else {
+			return;
+		}
+
+		if ($($target.context).hasClass('track-input-dropdown')) {
+			$($target.context).parent().toggleClass("open");
+			return;
+		} else if ($target.is('.track-input-dropdown img')) {
+			// get parent of enclosing dropdown button
+			$target.parents().eq(1).toggleClass("open");
+			return;
+		}
+
 		if (isAnyEntrySelected) {
-			if (isEntryModify) {
-				var suffix = $target.data('suffix');
-				self.modifyEdit(suffix);
-				return;
-			}
 			console.debug('Mousedown: There is a selcted entry. Will now unselect.')
 			self.checkAndUpdateEntry($("li.entry.ui-selected"));
 			return;
@@ -747,7 +855,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			// parents() method returns all anscestors as list. So element at 0th position will be li.entry
 			var selectee = $target.parents("li.entry").andSelf()[0];
 			console.debug('Mousedown: Clicked on an entry. Will now select.');
-			self.selectEntry($(selectee), false);
+			self.selectEntry($(selectee));
 			return false;
 		}
 	});
@@ -805,7 +913,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down
 	 */
-	$("#" + self.editId).keydown(function(e) {
+	$("#" + self.listId).keydown(function(e) {
 		if ($.inArray(e.keyCode, [38, 40]) == -1) {
 			return true;
 		}
@@ -820,6 +928,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			$selectee = $unselectee.prev();
 		}
 		if ($selectee) {
+			self.nextSelectionId  = $selectee.attr('id');
 			self.checkAndUpdateEntry($unselectee);
 			self.selectEntry($selectee, false);
 		}
@@ -828,3 +937,4 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	
 	self.refresh();
 }
+

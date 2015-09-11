@@ -426,15 +426,36 @@ function getCSRFPreventionObject(key, data) {
 
 //Singleton Class function.
 var RepeatType = new function() {
+	this.DAILY_BIT = 1;
+	this.WEEKLY_BIT = 2;
+	this.REMIND_BIT = 4;
+	this.HOURLY_BIT = 8;
+	this.MONTHLY_BIT = 0x0010;
+	this.YEARLY_BIT = 0x0020;
 	this.CONTINUOUS_BIT = 0x100;
 	this.GHOST_BIT = 0x200;
 	this.CONCRETEGHOST_BIT = 0x400;
-	this.TIMED_BIT = 0x1 | 0x2 | 0x4;
-	this.REPEAT_BIT = 0x1 | 0x2;
-	this.REMIND_BIT = 0x4;
+	this.DURATION_BIT = 0x0800;
+	this.REPEAT_BIT = this. DAILY_BIT | this.WEEKLY_BIT | this.HOURLY_BIT | this.MONTHLY_BIT | this.YEARLY_BIT;
+	this.DAILYGHOST = this.DAILY_BIT | this.GHOST_BIT;
+	this.WEEKLYGHOST = this.WEEKLY_BIT | this.GHOST_BIT;
+	this.REMINDDAILY = this.REMIND_BIT | this.DAILY_BIT;
+	this.REMINDWEEKLY = this.REMIND_BIT | this.WEEKLY_BIT;
+	this.REMINDDAILYGHOST = this.REMIND_BIT | this.DAILY_BIT | this.GHOST_BIT;
+	this.REMINDWEEKLYGHOST = this.REMIND_BIT | this.WEEKLY_BIT | this.GHOST_BIT;
+	this.CONTINUOUSGHOST = this.CONTINUOUS_BIT|  this.GHOST_BIT;
+	this.DAILYCONCRETEGHOST = this.CONCRETEGHOST_BIT | this.DAILY_BIT;
+	this.MONTHLYCONCRETEGHOST = this.CONCRETEGHOST_BIT | this.MONTHLY_BIT;
+	this.DAILYCONCRETEGHOSTGHOST = this.CONCRETEGHOST_BIT | this.GHOST_BIT | this.DAILY_BIT;
+	this.WEEKLYCONCRETEGHOST = this.CONCRETEGHOST_BIT | this.WEEKLY_BIT;
+	this.WEEKLYCONCRETEGHOSTGHOST = this.CONCRETEGHOST_BIT | this.GHOST_BIT | this.WEEKLY_BIT;
+	this.DURATIONGHOST = this.GHOST_BIT | this.DURATION_BIT;
 
 	this.isConcreteGhost = function(repeatType) {
 		return (repeatType & this.CONCRETEGHOST_BIT) != 0;
+	}
+	this.isAnyGhost = function(repeatType) {
+		return (repeatType & (this.GHOST_BIT | this.CONCRETEGHOST_BIT)) != 0
 	}
 	this.isContinuous = function(repeatType) {
 		return (repeatType & this.CONTINUOUS_BIT) != 0;
@@ -448,8 +469,23 @@ var RepeatType = new function() {
 	this.isRepeat = function(repeatType) {
 		return (repeatType & this.REPEAT_BIT) != 0;
 	}
-	this.isTimed = function(repeatType) {
-		return (repeatType & this.TIMED_BIT) != 0;
+	this.isHourly = function(repeatType) {
+		return (repeatType & this.HOURLY_BIT) != 0
+	}
+	this.isDaily = function(repeatType) {
+		return (repeatType & this.DAILY_BIT) != 0
+	}
+	this.isHourlyOrDaily = function(repeatType) {
+		return (repeatType & (this.HOURLY_BIT | this.DAILY_BIT)) != 0
+	}
+	this.isWeekly = function(repeatType) {
+		return (repeatType & this.WEEKLY_BIT) != 0
+	}
+	this.isMonthly = function(repeatType) {
+		return (repeatType & this.MONTHLY_BIT) != 0
+	}
+	this.isYearly = function(repeatType) {
+		return (repeatType & this.YEARLY_BIT) != 0
 	}
 }
 
@@ -521,3 +557,8 @@ function shorten(text, maxLength, includeLastWord) {
 		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" "))) + ' ...';
 	}
 }
+
+_.templateSettings = {
+	evaluate: /\{\{(.+?)\}\}/g,
+	interpolate: /\{\{=(.+?)\}\}/g
+};
