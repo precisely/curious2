@@ -150,7 +150,7 @@ class UserActivitySpec extends Specification {
 	@spock.lang.Unroll
 	void "test ActivityType.toString for '#activityType' returns '#expected'"() {
 		when: "isValidSecondaryType is called"
-		def result = activityType != null ? activityType.toString() : ""
+		def result = activityType != null ? activityType.toAbbrev() : ""
 		
 		then: "result matches expected value"
 		result == expected
@@ -176,7 +176,7 @@ class UserActivitySpec extends Specification {
 	@spock.lang.Unroll
 	void "test ObjectType.toString for '#objectType' returns '#expected'"() {
 		when: "isValidSecondaryType is called"
-		def result = objectType != null ? objectType.toString() : ""
+		def result = objectType != null ? objectType.toAbbrev() : ""
 		
 		then: "result matches expected value"
 		result == expected

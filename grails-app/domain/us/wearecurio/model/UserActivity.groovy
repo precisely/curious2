@@ -39,7 +39,7 @@ class UserActivity {
 	}
 	
 	static searchable = {
-		only = ['id', 'created', 'userId', 'typeId', 'activityType', 'objectType', 'otherType', 'objectId', 'otherId']
+		only = ['id', 'created', 'userId', 'userName', 'typeId', 'activityType', 'objectType', 'objectId', 'objectDescription', 'otherType', 'otherId', 'otherDescription']
 	}
 	
 	static final String		TYPE_ABBREVIATION 	= 	"act"
@@ -194,7 +194,7 @@ class UserActivity {
 			return id
 		}		
 
-		String toString() {
+		String toAbbrev() {
 			switch (get(id)) {
 				case ActivityType.CREATE:
 					return "created"
@@ -263,7 +263,7 @@ class UserActivity {
 			return id
 		}
 		
-		String toString() {
+		String toAbbrev() {
 			switch (get(id)) {
 				case ObjectType.SPRINT:
 					return "spr"
@@ -293,12 +293,12 @@ class UserActivity {
 		
 		String ret = TYPE_ABBREVIATION
 		ret += TYPE_DELIMITER
-		ret += actType.toString() 
+		ret += actType.toAbbrev() 
 		ret += TYPE_DELIMITER 
-		ret += primaryObjType.toString()
+		ret += primaryObjType.toAbbrev()
 		if (secondaryObjType != null) {
 			ret += TYPE_DELIMITER
-			ret += secondaryObjType.toString()
+			ret += secondaryObjType.toAbbrev()
 		}
 		
 		return ret
@@ -517,6 +517,27 @@ class UserActivity {
 		return null
 	}
 	
+	static String getObjectDescription(ObjectType type, Long objectId) {
+		if (type == null || objectId < 1) {
+			return null
+		}
+		
+		switch (type) {
+			case ObjectType.USER:
+			case ObjectType.ADMIN:
+			case ObjectType.READER:
+				return User.get(objectId)?.name
+			case ObjectType.DISCUSSION:
+				return Discussion.get(objectId)?.name
+			case ObjectType.DISCUSSION_POST:
+				return DiscussionPost.get(objectId)?.message
+			case ObjectType.SPRINT:
+				return Sprint.get(objectId)?.name
+		}
+		
+		return null
+	}
+	
 	UserActivity() {
 	}
 	
@@ -542,6 +563,18 @@ class UserActivity {
 	
 	String getTypeString() {
 		return getTypeString(activityType, objectType, otherType)
+	}
+	
+	String getUserName() {
+		return User.get(userId)?.name
+	}
+	
+	String getObjectDescription() {
+		return getObjectDescription(objectType, objectId)
+	}
+	
+	String getOtherDescription() {
+		return getObjectDescription(otherType, otherId)	
 	}
 	
 	String toString() {
