@@ -85,6 +85,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
     def cleanup() {
     }
 
+	//@spock.lang.Ignore
     void "Test getSprintsList"() {
  		given: "a newly created sprint"
 		def sprint = Sprint.create(new Date(), user1, "Test getSprintsList", Model.Visibility.PUBLIC)
@@ -105,6 +106,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.sprintList[0].name == sprint.name
 	}
 
+	//@spock.lang.Ignore
 	void "Test getSprintsList with offset and max"()
 	{
 		given: "two newly created sprints"
@@ -171,6 +173,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems[0].name == user2.name
 	}
 	
+	//@spock.lang.Ignore
 	void "Test getPeopleList with offset and max"()
 	{
 		given: "a third user in addition to the two for this class"
@@ -227,6 +230,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		(result.listItems.find{ u -> u.name == user2.name } || result.listItems.find{ u -> u.name == user3.name })
 	}
 
+	//@spock.lang.Ignore
 	void "Test getDiscussionsList"()
 	{
 		when: "given two usergroups, two discussions and two discussion posts"
@@ -296,6 +300,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.discussionPostData[discussionReadByUser.id].totalPosts == 2
 	}
 	
+	//@spock.lang.Ignore
 	void "Test getDiscussionsList with offset and max"()
 	{
 		when: "given a usergroup and two discussions"
@@ -399,6 +404,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.discussionPostData[discussion1.id].totalPosts == 0
 	}
 	
+	//@spock.lang.Ignore
 	void "Test getDiscussionsList Admin Groups"()
 	{
 		when: "given a group with an admin, a group without an admin, two discussions and two posts"

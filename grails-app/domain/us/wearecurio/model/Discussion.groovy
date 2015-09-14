@@ -70,7 +70,7 @@ class Discussion {
 		
 		Utils.save(discussion, true)
 		
-		discussion.addUserVirtualGroup(user)
+		discussion.addUserVirtualGroups(user)
 		
 		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
 		
@@ -86,7 +86,7 @@ class Discussion {
 			
 			Utils.save(discussion, true)
 			
-			discussion.addUserVirtualGroup(user)
+			discussion.addUserVirtualGroups(user)
 			
 			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
 			
@@ -97,7 +97,7 @@ class Discussion {
 			discussion = new Discussion(user, name, createTime)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
-			discussion.addUserVirtualGroup(user)
+			discussion.addUserVirtualGroups(user)
 		}
 		
 		if (discussion != null) {
@@ -500,9 +500,12 @@ class Discussion {
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
 	}
 	
-	private void addUserVirtualGroup(User user) {
+	private void addUserVirtualGroups(User user) {
 		if (user?.virtualUserGroupIdDiscussions > 0) {
 			GroupMemberDiscussion.create(user.virtualUserGroupIdDiscussions, id)
+		}
+		if (user?.virtualUserGroupIdFollowers > 0) {
+			GroupMemberDiscussion.create(user.virtualUserGroupIdFollowers, id)
 		}
 	}
 }

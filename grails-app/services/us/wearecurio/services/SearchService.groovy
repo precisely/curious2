@@ -134,6 +134,8 @@ class SearchService {
 		visibility << Model.Visibility.PUBLIC
 		
 		switch (role) {
+			case Role.DISCUSSION_READER:
+				visibility << Model.Visibility.UNLISTED
 			case Role.DISCUSSION_ADMIN:
 				visibility << Model.Visibility.UNLISTED
 				visibility << Model.Visibility.NEW
@@ -149,37 +151,87 @@ class SearchService {
 	}
 	
 	Map getDiscussionActivity(User user, int offset = 0, int max = 10) {
-		//discussion readers		
+		if (user == null) {
+			return [listItems: false, success: false]
+		}		
+		
+		//fetch owners
+		
 		def visibilitiesOr = Utils.orifyList(getVisibilityRequirements(Role.DISCUSSION_READER).collect{ it.toString()})
 		def groupIdsOr = Utils.orifyList(UserGroup.getGroupsForReader(user.id).collect{ it[0].id })
 
+		def followedUsers = User.search(searchType:'query_and_fetch', sort:'created', order:'desc') {
+			query_string(query:  "virtualUserGroupIdDiscussions: " + groupIdsOr)
+		}
+		
+		def idsVisibility = []
+		if (visibilitiesOr != null || visibilitiesOr != "" || groupIdsOr != null || groupIdsOr != "") {
+			idsVisibility << ("(groupIds:" + groupIdsOr + " AND visibility:" + visibilitiesOr + ")")
+		}
+				
+		visibilitiesOr = Utils.orifyList(getVisibilityRequirements(Role.DISCUSSION_ADMIN).collect{ it.toString()})
+		groupIdsOr = Utils.orifyList(UserGroup.getGroupsForAdmin(user.id).collect{ it[0].id })
+		
+		if (visibilitiesOr != null || visibilitiesOr != "" || groupIdsOr != null || groupIdsOr != "") {
+			idsVisibility << ("(groupIds:" + groupIdsOr + " AND visibility:" + visibilitiesOr + ")")
+		}
+		
+		visibilitiesOr = Utils.orifyList(getVisibilityRequirements(Role.USER_FOLLOWER).collect{ it.toString()})
+		def followedUsersOr = Utils.orifyList(followedUsers.searchResults.collect{ it.id })
+		
+		if (visibilitiesOr != null || visibilitiesOr != "" || followedUsersOr != null || followedUsersOr != "") {
+			idsVisibility << ("(userId:" + followedUsersOr + " AND visibility:" + visibilitiesOr + ")")
+		}
+
+		// (((name:*asdfdaf*) OR (name: *asdf*) OR (name: *eeyyy*)) AND visibility:PUBLIC)
+		// ((name:*asdfdaf*) AND visibility:PUBLIC)
+		def tags = user.getInterestTags()
+		if (tags?.size() > 0) {
+//			def nameQueries = []
+//			for (def tag : tags) {
+//				nameQueries << ("name:*" + tag.description + "*")
+//			}
+//			idsVisibility << ("(" + Utils.orifyList(nameQueries) + " AND visibility:PUBLIC)")
+//			println "idsVisibility: " + idsVisibility
+			idsVisibility << ("(" + Utils.orifyList(tags.collect{ it.description }) + " AND visibility:PUBLIC)")
+
+		}
+		
+		if  (idsVisibility.size() == 0) {
+			return [listItems: [], success: true]
+		}
+		
+		String queryString = Utils.orifyList(idsVisibility)		
+		
+		//find discussions associated with discussion groupsß
 		def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc') {
-			query_string(query:  "groupIds:" + groupIdsOr + " AND visibility:" + visibilitiesOr)
+			query_string(query:  queryString)
 		}
-		
-		def discussionIdsOr = Utils.orifyList(readerGroupDiscussions.results?.collect{it.id.toString()})
-		println "discussionIdsOr: " + discussionIdsOr
-		println "results: " + readerGroupDiscussions.results
+
+		def discussionIdsOr = Utils.orifyList(readerGroupDiscussions.searchResults?.collect{it.id.toString()})
 		if (discussionIdsOr == null || discussionIdsOr == "") {
-			return [listItems: false, success: false]
+			return [listItems: [], success: true]
 		}
 		
+		//find discussion creation user activity for the discussions
 		def userAcivities = UserActivity.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
-			query_string(query:  "objectId:" + discussionIdsOr + " AND typeId:DISCUSSION" )
+			query_string(query:  "objectId:" + discussionIdsOr + " AND activityType:CREATE AND objectType:DISCUSSION" )
 		}
 		
-		def c = userAcivities.collect{
+		//generate results
+		def activities = userAcivities.searchResults.collect{
 			[
-				type 			: it.typeString,
-				activity 		: "",
-				id				: it.objectId,
-				name			: readerGroupDiscussions.results.find{ d -> d.id == it.objectId }?.name,
-				activityDetail	: ""
+				userId				: it.userId,
+				userName			: it.userName,
+				type 				: it.typeString,
+				objectId			: it.objectId,
+				objectDescription	: it.objectDescription,
+				otherId				: null,
+				otherDescription	: null
 			]
 		}
 		
-		println "results:"
-		c.each{ k, v -> println "${k}:${v}" }
+		//activities.each{ hm ->  hm.each { k, v -> println "${k}:${v}" } }
 		
 		//discussion admins
 		
@@ -225,7 +277,7 @@ class SearchService {
 //			]
 //		}
 		
-		return [listItems: false, success: false]
+		return [listItems: activities, success: true]
 	}
 	
 	Map getSprintActivity(User user, int offset = 0, int max = 10) {
