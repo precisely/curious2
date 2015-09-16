@@ -2,6 +2,8 @@
 <html>
 <head>
 <title><g:layoutTitle/></title>
+<meta property="og:image" content="${request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()}/www/content/images/curious-share.png" />
+<meta property="og:type" content="website"/>
 <g:layoutHead/>
 <script type="text/javascript" src="/js/curious/autocomplete.js?ver=21"></script>
 <script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>

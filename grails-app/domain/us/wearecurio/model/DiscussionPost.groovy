@@ -52,7 +52,7 @@ class DiscussionPost {
 		User author = User.get(authorUserId)
 		return [
 			authorUserId: authorUserId,
-			authorName: author.username,
+			authorName: author.name ?: author.username,
 			authorAvatarURL: author.avatar?.path,
 			authorHash: author.hash,
 			discussionId: discussionId,

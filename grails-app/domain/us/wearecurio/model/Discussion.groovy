@@ -59,8 +59,8 @@ class Discussion {
 	public static Discussion create(User user) {
 		return create(user, null)
 	}
-	
-	public static Discussion create(User user, String name, Visibility visibility) {
+
+	public static Discussion create(User user, String name, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", visibility: " + visibility
 		def discussion = new Discussion(user, name, new Date(), visibility)
 		
@@ -71,7 +71,7 @@ class Discussion {
 		return discussion
 	}
 	
-	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility) {
+	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime + ", visibility: " + visibility
 		Discussion discussion = null
 		
@@ -462,7 +462,7 @@ class Discussion {
 
 		// TODO Remove the word "discussion" from all keys since we are passing data for discussion only
 		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
-			discussionOwner: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
+			discussionOwner: user?.name ?: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
 			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount, discussionOwnerHash: user?.hash,
 			isPublic: isPublic(), groupName: groupName]
 	}

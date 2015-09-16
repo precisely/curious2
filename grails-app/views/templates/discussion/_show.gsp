@@ -89,11 +89,13 @@
 							</p>
 							<hr>
 							<div class="buttons">
-								<button class="share-button" data-toggle="popover" data-placement="top" 
-											data-content="<input class='share-link' type='text' value='{{- serverURL}}home/social#discussions/{{- discussionHash }}'>"
-											title="Share:">
-									<img src="/images/share.png" alt="share"> Share
-								</button>
+								{{ if (isAdmin) { }}
+									<button class="share-button" data-toggle="modal" data-target="#share-modal"
+											data-share-url="{{- location.protocol+'//114.143.237.123' + (location.port ? ':' + location.port : '') }}/home/social/discussions/{{- discussionHash }}"
+											data-discussion-title="{{- discussionTitle }}">
+										<img src="/images/share.png" alt="share"> Share
+									</button>
+								{{ } }}
 								<button class="comment-button">
 									<img src="/images/comment.png" alt="comment"> Comment
 								</button>
@@ -107,24 +109,28 @@
 										{{ if (notLoggedIn) { }}
 											<p>Enter your details below</p>
 
-											<div id="postname">
+											<div>
+												<label for="postname">Name</label>
 												<input type="text" id="postname" name="postname" value=""
-														class="postInput" /> Name
+														class="postInput" />
 											</div>
-											<div id="postemail">
+											<div>
+												<label for="postemail">Email (not publicly visible)</label>
 												<input type="text" id="postemail" name="postemail" value=""
-														class="postInput" /> Email (not publicly visible)
+														class="postInput" />
 											</div>
-											<div id="posturl">
+											<div>
+												<label for="postsite"> Website URL (optional)</label>
 												<input type="text" id="postsite" name="postsite" value=""
-														class="postInput" /> Website URL (optional)
+														class="postInput" />
 											</div>
-											<div id="postcomment">
-												<textarea rows="20" cols="100" style="border-style: solid"
+											<div>
+												<label for="postcommentarea">Comment</label>
+												<textarea rows="10" style="border-style: solid; width: 100%;"
 														id="postcommentarea" name="message"></textarea>
 											</div>
 											<br />
-											<input type="button" class="submitButton"
+											<input type="submit" class="submitButton"
 													id="commentSubmitButton" value="submit" />
 													<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
 										{{ } else { }}

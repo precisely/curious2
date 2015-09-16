@@ -2,12 +2,14 @@ package us.wearecurio.controller
 
 import grails.converters.JSON
 import us.wearecurio.model.*
+import us.wearecurio.security.NoAuth
 import us.wearecurio.utility.*
 
 class DiscussionPostController extends LoginController{
 
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
+	@NoAuth
 	def index(Integer offset) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
@@ -28,11 +30,11 @@ class DiscussionPostController extends LoginController{
 		}
 
 		JSON.use("jsonDate") {
-			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser().id, success: true,
+			renderJSONGet([posts: posts ? posts*.getJSONDesc() : false, userId: sessionUser()?.id, success: true,
 					discussionDetails: discussionDetails])
 		}
 	}
-
+	@NoAuth
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 
 				"for discussion with hash: ${params.discussionHash}"
@@ -58,7 +60,7 @@ class DiscussionPostController extends LoginController{
 		}
 
 		JSON.use("jsonDate") {
-			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser().id, idAdmin:
+			renderJSONPost([success: true, post: comment.getJSONDesc(), userId: sessionUser()?.id, idAdmin:
 					UserGroup.canAdminDiscussion(sessionUser(), discussion)])
 		}
 	}

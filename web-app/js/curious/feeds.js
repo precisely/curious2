@@ -115,12 +115,6 @@ $(document).ready(function() {
 		registerScroll();
 	}
 
-	$('html').on('click', function(e) {
-		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
-			$('[data-original-title]').popover('hide');
-		}
-	});
-
 	$('#sprint-tags').keypress(function (e) {
 		var key = e.which;
 
@@ -294,6 +288,9 @@ function showSprints() {
 	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
 			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
 			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) {
 			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 			$('#feed').removeClass().addClass('type-sprints').html('');
@@ -742,7 +739,10 @@ function toggleCommentsList(discussionHash) {
 
 function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
-			function(data) { 
+			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) { 
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
@@ -750,7 +750,9 @@ function showUserDetails(hash) {
 			setQueryHeader('User Profile', true);
 			$('#feed-sprints-tab a').tab('show');
 		} else {
-			showAlert(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
 			window.history.back();
 		}
 	}, function(data) {

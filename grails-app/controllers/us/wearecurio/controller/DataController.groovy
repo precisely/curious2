@@ -1,5 +1,7 @@
 package us.wearecurio.controller
 
+import us.wearecurio.security.NoAuth
+
 import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
 
@@ -297,6 +299,7 @@ class DataController extends LoginController {
 		writer.flush()
 	}
 
+	@NoAuth
 	def getPeopleData() {
 		debug "DataController.getPeopleData"
 
@@ -304,7 +307,7 @@ class DataController extends LoginController {
 
 		if (user == null) {
 			debug "auth failure - return empty array"
-			renderStringGet([])
+			renderJSONGet([])
 			return
 		}
 
@@ -1031,6 +1034,7 @@ class DataController extends LoginController {
 		renderJSONPost([success: true, discussionHash: discussion.hash])
 	}
 
+	@NoAuth
 	def loadSnapshotDataId() {
 		debug "DataController.loadSnapshotDataId() params:" + params
 

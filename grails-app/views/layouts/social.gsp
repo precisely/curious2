@@ -3,8 +3,11 @@
 <html>
 	<head>
 	<title><g:layoutTitle/></title>
+	<meta property="og:title" content="${discussionTitle}"/>
+	<meta property="og:description" content="${firstPost?.message}"/>
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
+	<script src="/js/zero.clipboard.min.js"></script>
 	<script type="text/javascript" src="/js/curious/feeds.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/discussion.js?ver=22"></script>
 	<script type="text/javascript" src="/js/curious/sprint.js"></script>
@@ -29,6 +32,24 @@
 	</style>
 	</head>
 	<body class="${pageProperty(name: 'body.class') ?: '' }">
+	<script>
+		// TODO: change facebook appId after creating final app
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId      : '714092418734227',
+				xfbml      : true,
+				version    : 'v2.4'
+			});
+		};
+
+		(function(d, s, id){
+			var js, fjs = d.getElementsByTagName(s)[0];
+			if (d.getElementById(id)) {return;}
+			js = d.createElement(s); js.id = id;
+			js.src = "//connect.facebook.net/en_US/sdk.js";
+			fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+	</script>
 		<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
 	<!-- MAIN -->
 		<div class="row red-header">
@@ -84,6 +105,7 @@
 			<input type="hidden" name="discussionHash" value="${discussionHash}">
 		</div>
 		<g:render template="/sprint/createSprintModal" />
+		<g:render template="/templates/discussion/share"/>
 
 		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />
 		<c:renderJSTemplate template="/discussion/instance" id="_discussions" />

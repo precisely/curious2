@@ -9,7 +9,7 @@
 			{{- discussionPost.authorName || 'anonymous'}}
 		</span>
 		<span class="posting-time" data-time="{{- discussionPost.created || discussionPost.updated}}"></span>
-		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
+		{{ if (discussionPost.authorUserId == discussionDetails.userId || discussionDetails.isAdmin) { }}
 			<a href="#" class="delete-post pull-right" data-post-id="{{-discussionPost.id}}" data-discussion-hash="{{-discussionPost.hash}}"> 
 				<i class="fa fa-times-circle"></i>
 			</a>
