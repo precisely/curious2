@@ -66,6 +66,8 @@ class BootStrap {
 			}
 		}
 
+		log.debug "populating no auth actions."
+		securityService.populateNoAuthMethods()
 
 		withingsDataService.refreshSubscriptions()
 		if (current != Environment.TEST && current != Environment.DEVELOPMENT) {

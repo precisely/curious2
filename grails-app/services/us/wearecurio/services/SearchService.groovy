@@ -838,7 +838,7 @@ class SearchService {
 						hash: d.hash,
 						name: d.name,
 						userHash: discussionUser.hash,
-						userName: discussionUser.username,
+						userName: discussionUser.name ?: discussionUser.username,
 						userAvatarURL: discussionUser.avatar?.path,
 						isPublic: d.isPublic(),
 						created: d.created,

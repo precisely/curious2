@@ -254,18 +254,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testSocial() {
-		HomeController controller = new HomeController()
-
-		controller.session.userId = user.getId()
-		controller.params.discussionHash = discussion.hash
-		
-		def model = controller.social()
-
-		assert model.prefs != null
-	}
-
-	@Test
 	void testUpload() {
 		HomeController controller = new HomeController()
 

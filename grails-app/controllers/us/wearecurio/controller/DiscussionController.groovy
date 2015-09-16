@@ -1,5 +1,7 @@
 package us.wearecurio.controller
 
+import us.wearecurio.security.NoAuth
+
 import java.text.SimpleDateFormat
 import java.text.DateFormat
 import grails.converters.JSON
@@ -47,6 +49,7 @@ class DiscussionController extends LoginController {
 		}
 	}
 
+	@NoAuth
 	def show() {
 		User user = sessionUser()
 
@@ -57,7 +60,7 @@ class DiscussionController extends LoginController {
 		}
 
 		if (!discussion.getIsPublic() && !user) {
-			renderJSONGet([success: false, message: g.message(code: "default.login.message")])
+			renderStringGet("access denied")
 			return
 		}
 
