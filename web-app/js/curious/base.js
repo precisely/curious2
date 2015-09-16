@@ -559,23 +559,3 @@ function dataURItoBlob(dataURI) {
 	}
 	return new Blob([ia], {type:mimeString});
 }
-
-function copyToClipboard(textToCopy) {
-	// create a "hidden" input
-	var aux = document.createElement("input");
-
-	// assign it the value of the specified element
-	aux.setAttribute("value", textToCopy);
-
-	// append it to the body
-	document.body.appendChild(aux);
-
-	// highlight its content
-	aux.select();
-
-	// copy the highlighted text
-	document.execCommand("copy");
-
-	// remove it from the body
-	document.body.removeChild(aux);
-}
