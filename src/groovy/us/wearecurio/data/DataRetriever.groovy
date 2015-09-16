@@ -125,7 +125,7 @@ class DataRetriever {
 				else if (repeatEnd.getTime() > endDate.getTime())
 					repeatEnd = endDate
 				Date entryDate = result['entry_date']
-				LocalTimeRepeater repeater = new LocalTimeRepeater([entryDate, result['amount'], result['description']], new DateTime(entryDate), repeatEnd.getTime())
+				LocalTimeRepeater repeater = new LocalTimeRepeater([entryDate, result['amount'], result['description']], new DateTime(entryDate), repeatEnd.getTime(), (int)(repeatTypeBits & RepeatType.INTERVAL_BITS))
 				repeaters.add(repeater)
 			}
 		}

@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.collection.SingleCollection
 import us.wearecurio.datetime.LocalTimeRepeater
+import us.wearecurio.datetime.IncrementingDateTime
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
@@ -501,48 +502,70 @@ class Entry implements Comparable {
 	}
 
 	/*
-	 * Create a new repeat entry on the baseDate + addDays, if needed, and cut the current entry at the next base date
+	 * Create a new repeat entry on the baseDate + added interval, if needed, and cut the current entry at the next base date
 	 */
-	protected Entry createRepeatOnBaseDate(Date baseDate, Map m, EntryCreateMap creationMap, EntryStats stats, int addDays) {
+	protected Entry createRepeatAfterInterval(Date baseDate, Map m, EntryCreateMap creationMap, EntryStats stats, int numIntervals) {
 		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
 			return null
 		}
-
+		
+		RepeatType newRepeatType = m['repeatType']
+		int newIntervalCode
+		
+		if (newRepeatType == null) {
+			if (numIntervals > 0)
+				return null // if no repeat type, interval not defined
+			newIntervalCode = 0
+		} else {
+			newIntervalCode = newRepeatType.intervalCode()
+		}
+		
 		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
+		
+		// figure out local time and local date of new edited repeat time if it occurred on the passed-in baseDate in the passed-in time zone
 		LocalTime mLocalTime = new DateTime(m['date'], dateTimeZone).toLocalTime()
 		LocalDate baseLocalDate = new DateTime(baseDate, dateTimeZone).toLocalDate()
-		DateTime repeatEndDateTime = new DateTime(this.repeatEnd, dateTimeZone)
-		LocalTime repeatEndLocalTime = repeatEndDateTime.toLocalTime()
-		LocalDate repeatEndLocalDate = repeatEndDateTime.toLocalDate()
-		Date oneDayAfterCurrentRepeatEnd = repeatEndLocalDate.plusDays(1).toDateTime(repeatEndLocalTime, dateTimeZone).toDate()
-
-		if (addDays > 0) baseLocalDate = baseLocalDate.plusDays(addDays)
-
-		Date newRepeatEntryDateOnThisBaseDate = baseLocalDate.toDateTime(mLocalTime, dateTimeZone).toDate()
-
-		// compute previous repeatEnd time by keeping original local time but subtracting a day
-		DateTime currentDateTime = fetchDateTime()
-		LocalTime currentLocalTime = currentDateTime.toLocalTime()
-		DateTimeZone currentDateTimeZone = fetchDateTimeZone()
-		Date prevDate = baseLocalDate.minusDays(2).toDateTime(currentLocalTime, currentDateTimeZone).toDate()
+		DateTime newRepeatEntryDateTime = IncrementingDateTime.incrementDateTime(baseLocalDate.toDateTime(mLocalTime, dateTimeZone), numIntervals, newIntervalCode)
+		Date newRepeatEntryDate = newRepeatEntryDateTime.toDate()
 		
-		while (newRepeatEntryDateOnThisBaseDate.getTime() - prevDate.getTime() > DAYTICKS)
-			prevDate = prevDate + 1
-
-		// if no repeat end or the new repeat entry date is earlier than one day after the current repeat end, create new repeat entry
-		// and change the end of this repeat entry.
-		if (this.repeatEnd == null || newRepeatEntryDateOnThisBaseDate < oneDayAfterCurrentRepeatEnd) {
-			m['date'] = newRepeatEntryDateOnThisBaseDate
+		DateTime currentDateTime = fetchDateTime()
+		Date newRepeatEnd = IncrementingDateTime.lastRepeatBeforeDateTime(currentDateTime, newRepeatEntryDateTime, repeatType.intervalCode()).toDate()
+		
+		if (this.repeatEnd == null || this.repeatEnd > newRepeatEnd) {
+			m['date'] = newRepeatEntryDate
 			m['repeatEnd'] = this.repeatEnd
 
-			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newRepeatEntryDateOnThisBaseDate), stats)
+			this.repeatEnd = newRepeatEnd
+			
+			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newRepeatEntryDate), stats)
+			
+			creationMap.add(newEntry)
+
+			Utils.save(this, true)
+			
+			return newEntry
+		}
+		
+		Date previousDate = IncrementingDateTime.incrementDateTime(currentDateTime, -1, newIntervalCode).toDate()
+		
+		// get dateTime of current repeatEnd in the passed-in time zone
+		DateTime repeatEndDateTime = new DateTime(this.repeatEnd, dateTimeZone)
+		Date oneIntervalAfterCurrentRepeatEnd = IncrementingDateTime.incrementDateTime(repeatEndDateTime, 1, newIntervalCode).toDate()
+		
+		// if no repeat end or the new repeat entry date is earlier than one day after the current repeat end, create new repeat entry
+		// and change the end of this repeat entry.
+		if (this.repeatEnd == null || newRepeatEntryDate < oneIntervalAfterCurrentRepeatEnd) {
+			m['date'] = newRepeatEntryDate
+			m['repeatEnd'] = this.repeatEnd
+
+			def newEntry = createSingle(this.userId, m, creationMap.groupForDate(newRepeatEntryDate), stats)
 			
 			creationMap.add(newEntry)
 
 			// set the repeat end of this entry to the day before the current date
 
-			if (prevDate >= this.date)
-				this.setRepeatEnd(prevDate)
+			if (previousDate >= this.date)
+				this.setRepeatEnd(previousDate)
 			else
 				this.setRepeatEnd(this.date)
 
@@ -555,24 +578,24 @@ class Entry implements Comparable {
 	}
 	
 	protected static Entry updateGhostSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture, boolean unGhost) {
-		boolean isToday = EntryParserService.isToday(entry.getDate(), baseDate)
+		boolean entryIsOnBaseDate = EntryParserService.isToday(entry.getDate(), baseDate)
 
 		if (entry.repeatParametersMatch(m) && ((!entry.isGhost()) || (!unGhost)))
 			return entry // no need to update when entry doesn't change
 
-		if (isToday) {
+		if (entryIsOnBaseDate) {
 			if (allFuture) {
 				entry.doUpdate(m, stats)
 
 				if (entry.isGhost() && unGhost) {
-					// create an entry a day after the baseDate with the new entry data
-					entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
+					// create new ghosted entry one interval after the baseDate with the NEW entry data
+					entry.createRepeatAfterInterval(baseDate, entry.entryMap(), creationMap, stats, 1)
 					entry.unGhost(stats)
 				}				
 				return entry // allFuture updates can just edit the entry and return if the entry is today
 			} else {
-				// create an entry a day after the baseDate with the old entry data
-				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
+				// create an entry one interval after the baseDate with the OLD entry data
+				entry.createRepeatAfterInterval(baseDate, entry.entryMap(), creationMap, stats, 1)
 
 				if (entry.getRepeatEnd() == entry.getDate()) {
 					m['repeatEnd'] = m['date']
@@ -587,10 +610,10 @@ class Entry implements Comparable {
 			}
 		} else {
 			if ((!allFuture) || (unGhost && entry.isGhost())) { // create another entry after the base date
-				entry.createRepeatOnBaseDate(baseDate, entry.entryMap(), creationMap, stats, 1)
+				entry.createRepeatAfterInterval(baseDate, entry.entryMap(), creationMap, stats, 1)
 			}
 
-			Entry newEntry = entry.createRepeatOnBaseDate(baseDate, m, creationMap, stats, 0)
+			Entry newEntry = entry.createRepeatAfterInterval(baseDate, m, creationMap, stats, 0)
 			
 			if (unGhost && newEntry.isGhost())
 				newEntry.unGhost()
@@ -1512,44 +1535,6 @@ class Entry implements Comparable {
 		}
 	}
 
-	protected findNeighboringDailyRepeatEntry(String queryStr, parms) {
-		parms['entryDate'] = this.date
-		while (true) {
-			def entries = DatabaseService.get().sqlRows(queryStr, parms)
-
-			if (entries.size() > 0) {
-				Entry e = Entry.get(entries[0]['id'])
-
-				// check to see if this entry is actually the same local time as the deleted entry:
-				// find the date of this entry in JodaTime with the time zone of the deleted entry, get its local time in that zone, compare with the local time of the deleted entry
-
-				DateTimeZone dateTimeZone = this.fetchDateTimeZone()
-				LocalTime thisLocalTime = this.fetchDateTimeInZone(dateTimeZone).toLocalTime()
-				LocalTime entryLocalTime = e.fetchDateTimeInZone(dateTimeZone).toLocalTime()
-
-				if (thisLocalTime.equals(entryLocalTime)) {
-					return e
-				} else {
-					parms['entryDate'] = e.getDate()
-				}
-			} else
-				break
-		}
-
-		return null
-	}
-
-	protected findPreviousRepeatEntry() {
-		return findNeighboringDailyRepeatEntry(
-		"select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date < :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type_id & :dailyBit) <> 0) order by entry.date desc limit 1",
-		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
-	}
-
-	protected findNextRepeatEntry() {
-		return findNeighboringDailyRepeatEntry("select entry.id from entry entry, tag tag where entry.tag_id = tag.id and tag.description = :desc and entry.date > :entryDate and (time(entry.date) = time(:entryDate) or time(date_add(entry.date, interval 1 hour)) = time(:entryDate) or time(entry.date) = time(date_sub(:entryDate, interval 1 hour))) and entry.user_id = :userId and ((entry.repeat_type_id & :dailyBit) <> 0) order by entry.date asc limit 1",
-		[desc:this.tag.getDescription(), userId:this.userId, dailyBit:RepeatType.DAILY_BIT])
-	}
-
 	protected createRepeat(EntryStats stats) {
 		if (this.repeatTypeId == null) return
 
@@ -1565,23 +1550,6 @@ class Entry implements Comparable {
 					Entry.delete(e, stats) // delete matching entries, to avoid duplicates
 					Utils.save(e, true)
 				}
-			}
-		} else {
-			Entry e = findPreviousRepeatEntry()
-
-			if (e != null) {
-				if (e.getRepeatEnd() == null || e.getRepeatEnd() > this.date) { // only reset repeatEnd if it is later
-					e.setRepeatEnd(this.fetchPreviousDate())
-					Utils.save(e, true)
-				}
-			}
-
-			e = findNextRepeatEntry()
-
-			if (e != null) {
-				Date newPrevious = e.fetchPreviousDate()
-				if (repeatEnd == null || newPrevious < repeatEnd)
-					repeatEnd = newPrevious
 			}
 		}
 	}

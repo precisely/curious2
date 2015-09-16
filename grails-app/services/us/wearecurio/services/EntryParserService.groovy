@@ -119,7 +119,7 @@ class EntryParserService {
 	 * 
 	 * If you update repeatPattern, you need to update repeatMap
 	 */
-	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|remind daily|remind weekly|reminder daily|reminder weekly|daily repeat|daily remind|daily reminder|weekly repeat|weekly remind|weekly reminder|button|repeat|pinned|favorite|remind|reminder|daily|weekly)\b\s*/
+	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|repeat monthly|repeat yearly|repeat annual|repeat annually|remind daily|remind weekly|remind monthly|remind yearly|remind annual|remind annually|button|repeat|pinned|favorite|remind|reminder|daily|weekly|monthly|yearly|annual|annually)\b\s*/
 	
 	protected static final int REPEATMAP_SYNONYM = 0
 	protected static final int REPEATMAP_TYPE = 1
@@ -128,23 +128,26 @@ class EntryParserService {
 		'repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'repeat weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
+		'repeat monthly':['repeat monthly', RepeatType.MONTHLYCONCRETEGHOST],
+		'repeat yearly':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
+		'repeat annual':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
+		'repeat annually':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 		'button':['pinned', RepeatType.CONTINUOUSGHOST],
 		'pinned':['pinned', RepeatType.CONTINUOUSGHOST],
 		'favorite':['pinned', RepeatType.CONTINUOUSGHOST],
 		'remind':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind daily':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+		'remind monthly':['remind monthly', RepeatType.REMINDMONTHLYGHOST],
+		'remind yearly':['remind yearly', RepeatType.REMINDYEARLYGHOST],
+		'remind annual':['remind yearly', RepeatType.REMINDYEARLYGHOST],
+		'remind annually':['remind yearly', RepeatType.REMINDYEARLYGHOST],
 		'reminder':['remind', RepeatType.REMINDDAILYGHOST],
-		'reminder daily':['remind', RepeatType.REMINDDAILYGHOST],
-		'reminder weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
 		'daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
-		'daily repeat':['repeat', RepeatType.DAILYCONCRETEGHOST],
-		'daily remind':['remind', RepeatType.REMINDDAILYGHOST],
-		'daily reminder':['remind', RepeatType.REMINDDAILYGHOST],
 		'weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
-		'weekly repeat':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
-		'weekly remind':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
-		'weekly reminder':['remind weekly', RepeatType.REMINDWEEKLYGHOST],
+		'monthly':['repeat monthly', RepeatType.MONTHLYCONCRETEGHOST],
+		'annual':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
+		'annually':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 	]
 
 	/**

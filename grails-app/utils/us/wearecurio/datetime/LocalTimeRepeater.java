@@ -6,57 +6,53 @@ import org.joda.time.*;
 
 public class LocalTimeRepeater<T> {
 
-	DateTime currentDateTime;
+	IncrementingDateTime incrementingDateTime;
 	long endDateTimeTicks;
-	DateTimeZone dateTimeZone;
-	LocalDate localDate;
-	LocalTime localTime;
 	T payload;
 
-	public LocalTimeRepeater(T payload, DateTime dateTime, Long endDateTimeTicks) {
-		currentDateTime = dateTime;
+	public LocalTimeRepeater(T payload, DateTime dateTime, Long endDateTimeTicks, int intervalCode) {
+		incrementingDateTime = new IncrementingDateTime(dateTime, intervalCode);
 		this.endDateTimeTicks = endDateTimeTicks;
-		dateTimeZone = dateTime.getZone();
-		localDate = dateTime.toLocalDate();
-		localTime = dateTime.toLocalTime();
 		this.payload = payload;
 	}
 
 	public DateTime incrementDate() {
-		localDate = localDate.plusDays(1);
-		// http://stackoverflow.com/questions/5451152/how-to-handle-jodatime-illegal-instant-due-to-time-zone-offset-transition
-		try {
-			currentDateTime = localDate.toDateTime(localTime, dateTimeZone);
-		} catch(Exception e) {
-			localTime = localTime.plusHours(1);
-			currentDateTime = localDate.toDateTime(localTime, dateTimeZone);
-		}
+		if (incrementingDateTime != null) {			
+			DateTime newDateTime = incrementingDateTime.increment();
+			
+			if (newDateTime.getMillis() > endDateTimeTicks) {
+				incrementingDateTime = null;
+				return null;
+			}
 
-		if (currentDateTime.getMillis() > endDateTimeTicks) {
-			return currentDateTime = null;
+			return newDateTime;
 		}
-
-		return currentDateTime;
+		
+		return null;
 	}
 
 	public boolean isActive() {
-		return currentDateTime != null && currentDateTime.getMillis() <= endDateTimeTicks;
+		return incrementingDateTime != null && incrementingDateTime.getCurrentDateTime().getMillis() <= endDateTimeTicks;
 	}
 
 	public Long getTimestamp() {
-		if (currentDateTime != null)
-			return currentDateTime.getMillis();
+		if (incrementingDateTime != null)
+			return incrementingDateTime.getMillis();
 		
 		return null;
 	}
 	
 	public DateTime getCurrentDateTime() {
-		return currentDateTime;
+		if (incrementingDateTime != null)
+			return incrementingDateTime.getCurrentDateTime();
+		
+		return null;
 	}
 
 	public Date getDate() {
-		if (currentDateTime != null)
-			return currentDateTime.toDate();
+		if (incrementingDateTime != null)
+			return incrementingDateTime.toDate();
+		
 		return null;
 	}
 	

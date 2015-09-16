@@ -19,7 +19,8 @@ target/**
 plugins/**
 target-eclipse/**
 /.link_to_grails_plugins
-/target
+/target/**
+/target-eclipse/**
 /stacktrace.log
 /grails-app/conf/LocalConfig.groovy
 /grails-app/conf/QuartzConfig.groovy

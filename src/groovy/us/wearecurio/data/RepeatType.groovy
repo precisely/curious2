@@ -32,7 +32,7 @@ import us.wearecurio.model.TimeZoneId
 
 // repeat type is now an integer flag variable
 
-class RepeatType {
+public class RepeatType {
 	// IMPORTANT: there must be ghost entries
 	// for all non-ghost entries and vice-versa
 	// if you add more remind types, please edit the sql in
@@ -47,6 +47,8 @@ class RepeatType {
 	static RepeatType REMINDWEEKLY = new RepeatType(REMIND_BIT | WEEKLY_BIT)
 	static RepeatType REMINDDAILYGHOST = new RepeatType(REMIND_BIT | DAILY_BIT | GHOST_BIT)
 	static RepeatType REMINDWEEKLYGHOST = new RepeatType(REMIND_BIT | WEEKLY_BIT | GHOST_BIT)
+	static RepeatType REMINDMONTHLYGHOST = new RepeatType(REMIND_BIT | MONTHLY_BIT | GHOST_BIT)
+	static RepeatType REMINDYEARLYGHOST = new RepeatType(REMIND_BIT | YEARLY_BIT | GHOST_BIT)
 	
 	static RepeatType CONTINUOUS = new RepeatType(CONTINUOUS_BIT)
 	static RepeatType CONTINUOUSGHOST = new RepeatType(CONTINUOUS_BIT|  GHOST_BIT)
@@ -55,11 +57,15 @@ class RepeatType {
 	static RepeatType DAILYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | DAILY_BIT)
 	static RepeatType WEEKLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | WEEKLY_BIT)
 	static RepeatType WEEKLYCONCRETEGHOSTGHOST = new RepeatType(CONCRETEGHOST_BIT | GHOST_BIT | WEEKLY_BIT)
+	static RepeatType MONTHLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | MONTHLY_BIT)
+	static RepeatType YEARLYCONCRETEGHOST = new RepeatType(CONCRETEGHOST_BIT | YEARLY_BIT)
 	
 	static RepeatType GHOST = new RepeatType(GHOST_BIT)
 	static RepeatType NOTHING = new RepeatType(0)
 	
 	static RepeatType DURATIONGHOST = new RepeatType(GHOST_BIT | DURATION_BIT)
+	
+	// note: if changing these, be sure to update IncrementingDateTime.java
 	
 	static final int DAILY_BIT = 1
 	static final int WEEKLY_BIT = 2
@@ -82,7 +88,8 @@ class RepeatType {
 	
 	static final int WEEKDAY_BITS = SUNDAY_BIT | MONDAY_BIT | TUESDAY_BIT | WEDNESDAY_BIT | THURSDAY_BIT | FRIDAY_BIT | SATURDAY_BIT
 	static final int REPEAT_BITS = HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT | WEEKDAY_BITS
-
+	static final int INTERVAL_BITS = HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT
+	
 	Long id
 	
 	static RepeatType look(Long id) {
@@ -147,12 +154,12 @@ class RepeatType {
 		return (this.id & REMIND_BIT) > 0
 	}
 	
-	boolean isTimed() {
-		return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT)) > 0
+	boolean isRepeat() {
+		return (this.id & (HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT | CONTINUOUS_BIT)) > 0
 	}
 	
-	boolean isRepeat() {
-		return (this.id & (DAILY_BIT | WEEKLY_BIT | REMIND_BIT | CONTINUOUS_BIT)) > 0
+	int intervalCode() {
+		return (this.id & INTERVAL_BITS)
 	}
 	
 	RepeatType unGhost() {

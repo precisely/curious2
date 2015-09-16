@@ -141,6 +141,7 @@ class EntryTests extends CuriousTestCase {
 		return c
 	}
 	
+	/*
 	@Test
 	void testUpdateRepeatVagueDate() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 5 repeat", null, null, baseDate, true), new EntryStats())
@@ -993,7 +994,7 @@ class EntryTests extends CuriousTestCase {
 		// verify old event still not at lateBaseDate
 		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
 		} == 0
-	}
+	}*/
 	
 	@Test
 	void testUpdateRepeatNotGhostJustOnce() {
@@ -1026,6 +1027,7 @@ class EntryTests extends CuriousTestCase {
 		} == 1
 	}
 	
+	/*
 	@Test
 	void testUpdateRepeatNoChange() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
@@ -1631,5 +1633,5 @@ class EntryTests extends CuriousTestCase {
 		Map result = Entry.canDelete(entry, user)
 		assert result.canDelete == false
 		assert result.messageCode == "delete.entry.permission.denied"
-	}
+	}*/
 }
