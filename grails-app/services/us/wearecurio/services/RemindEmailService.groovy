@@ -21,33 +21,30 @@ class RemindEmailService {
 
 	private static def log = LogFactory.getLog(this)
 
-	static Tag lhpMemberTag
-	
 	@Transactional(readOnly = true)
-	def sendReminderForEvent(long userId, String email, def entryId, def devices) {
-		def event = Entry.get(entryId)
+	def sendReminderForEvent(long userId, String email, AlertNotification alert, def devices) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
-		if (event != null) {
+		if (alert != null) {
 			if (email != null && email.length() > 1) {
 				try {
-					log.debug "Trying to send reminder email " + event + " to " + email
-					def messageBody = url + "?entryId=" + event.getId()
-					def messageSubject = "Reminder to track:" + event.getTag().getDescription()
+					log.debug "Trying to send reminder email " + alert + " to " + email
+					def messageBody = url + "?entryId=" + alert.objectId
+					def messageSubject = "Reminder to track: " + alert.text
 					emailService.send(email, messageSubject, messageBody)
 				} catch (Throwable t) {
 					log.debug "Error while sending email: " + t
 				}
 			}
-			def notificationMessage = "Reminder to track:" + event.getTag().getDescription() 
+			def notificationMessage = "Reminder to track:" + alert.text
 			devices.each { userDevice ->
 				if (userDevice && userDevice.deviceType == PushNotificationDevice.ANDROID_DEVICE) {
 					googleMessageService.sendMessage(notificationMessage, [userDevice.token])
-					log.debug "Notifying Android device for user "+userId
+					log.debug "Notifying Android device for user "+ alert.userId
 				} else if (userDevice && userDevice.deviceType == PushNotificationDevice.IOS_DEVICE) {
 					//TODO Send APN message for reminder
-					log.debug "Notifying iOS device for user "+userId
+					log.debug "Notifying iOS device for user "+ alert.userId
 					appleNotificationService.sendMessage(notificationMessage, [userDevice.token],"Curious",
-						['entryId':event.getId(),'entryDate':dateTimeFormatter.print(event.getDate().getTime())])
+						['entryId':alert.objectId,'entryDate':dateTimeFormatter.print(alert.date.getTime())])
 				}
 			}
 		}
@@ -60,9 +57,6 @@ class RemindEmailService {
 			return // don't send reminders in test or development mode
 		}
 		
-		if (!lhpMemberTag)
-			lhpMemberTag = User.lookupMetaTag("lhpmember", "true")
-
 		DateRecord rec = DateRecord.lookup(DateRecord.REMIND_EMAILS)
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
 		
@@ -84,8 +78,7 @@ class RemindEmailService {
 			def email = user[1]
 			def u = User.get(userId)
 			def devices = PushNotificationDevice.findAllByUserId(userId)
-			def lhp = u.hasMetaTag(lhpMemberTag)
-			def url = lhp ? "https://lamhealth.wearecurio.us/mobile/index" : "https://dev.wearecurio.us/mobile/index"
+			def url = "https://dev.wearecurio.us/home/index"
 
 			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
@@ -94,7 +87,7 @@ class RemindEmailService {
 				log.debug "User devices registered for notification " + devices.size()
 				log.debug "Number of remind events found "+remindEvents.size()
 			}
-			for (def eventIdRecord in remindEvents) {
+			for (AlertNotification alert in remindEvents) {
 				sendReminderForEvent(userId, email, eventIdRecord['id'], devices)
 			}
 			

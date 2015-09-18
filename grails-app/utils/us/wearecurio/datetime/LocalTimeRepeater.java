@@ -10,9 +10,13 @@ public class LocalTimeRepeater<T> {
 	long endDateTimeTicks;
 	T payload;
 
-	public LocalTimeRepeater(T payload, DateTime dateTime, Long endDateTimeTicks, int intervalCode) {
-		incrementingDateTime = new IncrementingDateTime(dateTime, intervalCode);
-		this.endDateTimeTicks = endDateTimeTicks;
+	public LocalTimeRepeater(T payload, DateTime dateTime, Date startDate, Date endDate, int intervalCode) {
+		incrementingDateTime = new IncrementingDateTime(dateTime, startDate, intervalCode);
+		Date incrementingDate = incrementingDateTime.toDate();
+		this.endDateTimeTicks = endDate.getTime();
+		if (incrementingDate.getTime() > endDateTimeTicks) {
+			incrementingDateTime = null;
+		}
 		this.payload = payload;
 	}
 

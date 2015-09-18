@@ -25,6 +25,7 @@ import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.data.DataRetriever
 
 import java.util.ArrayList
+import java.util.Date;
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.LinkedList
@@ -113,6 +114,16 @@ class Entry implements Comparable {
 	boolean isGhost() {
 		if (repeatTypeId == null) return false
 		return getRepeatType().isGhost()
+	}
+	
+	boolean isAlert() {
+		if (repeatTypeId == null) return false
+		return getRepeatType().isReminder()
+	}
+	
+	boolean isReminder() {
+		if (repeatTypeId == null) return false
+		return getRepeatType().isReminder()
 	}
 	
 	String fetchSuffix() { 
@@ -336,7 +347,7 @@ class Entry implements Comparable {
 		}
 		
 		if (m['repeatType'] != null && m['repeatEnd'] != null) {
-			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId)
+			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId.toDateTimeZone())
 		}
 		
 		Entry entry = new Entry(
@@ -529,9 +540,9 @@ class Entry implements Comparable {
 		Date newRepeatEntryDate = newRepeatEntryDateTime.toDate()
 		
 		DateTime currentDateTime = fetchDateTime()
-		Date newRepeatEnd = IncrementingDateTime.lastRepeatBeforeDateTime(currentDateTime, newRepeatEntryDateTime, repeatType.intervalCode()).toDate()
+		Date newRepeatEnd = IncrementingDateTime.lastRepeatBeforeDateTime(currentDateTime, newRepeatEntryDateTime, repeatType.intervalCode())?.toDate()
 		
-		if (this.repeatEnd == null || this.repeatEnd > newRepeatEnd) {
+		if (newRepeatEnd != null && (this.repeatEnd == null || this.repeatEnd > newRepeatEnd)) {
 			m['date'] = newRepeatEntryDate
 			m['repeatEnd'] = this.repeatEnd
 
@@ -1749,7 +1760,7 @@ class Entry implements Comparable {
 		}
 
 		if (m['repeatType'] != null && m['repeatEnd'] != null) {
-			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId)
+			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId.toDateTimeZone())
 		}
 		
 		setTag(m['tag'])
@@ -1796,13 +1807,8 @@ class Entry implements Comparable {
 
 	static def fetchReminders(User user, Date startDate, long intervalSecs) {
 		Date endDate = new Date(startDate.getTime() + intervalSecs * 1000L)
-
-		String queryStr = "select distinct entry.id " \
-		+ "from entry entry where entry.user_id = :userId and " \
-		+ "entry.date < :endDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :remindBit <> 0) " \
-		+ "and (timestampdiff(second, :startDate, entry.date) % 86400 + 86400) % 86400 < :interval"
-
-		def rawResults = DatabaseService.get().sqlRows(queryStr, [userId:user.getId(), endDate:endDate, startDate:startDate, interval:intervalSecs, remindBit:RepeatType.REMIND_BIT])
+		
+		return AlertNotification.pendingAlerts(user.id, startDate, endDate)
 	}
 	
 	boolean isPrimaryEntry() {
@@ -1984,11 +1990,11 @@ class Entry implements Comparable {
 		return [min, max]
 	}
 	
-	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
+	static def fetchPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentTime, Map plotInfo = null) {
 		log.debug "Entry.fetchPlotData() userId:" + user.getId() + ", tagIds:" + tagIds + ", startDate:" + startDate \
-				+ ", endDate:" + endDate + ", timeZoneName:" + timeZoneName
+				+ ", endDate:" + endDate
 		
-		return DataRetriever.get().fetchPlotData(user.id, tagIds, startDate, endDate, currentTime, timeZoneName, plotInfo)
+		return DataRetriever.get().fetchPlotData(user.id, tagIds, startDate, endDate, currentTime, plotInfo)
 	}
 	
 	static def fetchSumPlotData(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Map plotInfo = null) {

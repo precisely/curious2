@@ -114,8 +114,8 @@ class TagStatsTests extends CuriousTestCase {
 		super.tearDown()
 	}
 
-	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, String timeZoneName, Closure test) {
-		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, currentDate, timeZoneName)
+	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, Closure test) {
+		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, currentDate)
 		
 		int c = 0
 		for (result in results) {

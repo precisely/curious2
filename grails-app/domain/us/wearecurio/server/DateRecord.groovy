@@ -7,7 +7,8 @@ class DateRecord {
 	private static def log = LogFactory.getLog(this)
 	
 	public static final int REMIND_EMAILS = 1
-
+	public static final int ALERT_GENERATION = 2
+	
 	Integer code
 	Date date
 	

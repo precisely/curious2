@@ -84,30 +84,43 @@ class DataRetriever {
 		}
 		[interpolated, queryMap]
 	}
-
-	def fetchPlotData(Long userId, List tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
-		if (!tagIds.size()) {
-			return []
+	
+	static String alertText(Map result) {
+		StringBuffer text = new StringBuffer((String)result['description'])
+		BigDecimal amount = result['amount']
+		String units = result['units']
+		String comment = result['comment']
+		/*def amountPrecision = result['amount_precision']
+		if (amountPrecision >= 0) {
+			text.append(" ")
+			text.append(amount.toString())
+			if (units) {
+				text.append(" ")
+				text.append(units)
+			}
+		}*/
+		if (comment) {
+			text.append(" ")
+			text.append(comment)
 		}
+		
+		return text.toString()
+	}
 
-		DateTimeZone currentTimeZone = DateTimeZone.forID(timeZoneName ?: "Etc/UTC")
-
+	def fetchRemindData(Long userId, Date startDate, Date endDate, Date currentTime) {
 		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
 		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
 
 		// get timed daily repeats (not ghosted)
 
-		String queryStr = "select entry.id, t.description, entry.amount, entry.repeat_type_id, entry.repeat_end, entry.date as entry_date " \
+		String queryStr = "select entry.id, t.description, entry.comment, entry.repeat_type_id, entry.repeat_end, entry.date as entry_date " \
 				+ "from entry inner join tag t on entry.tag_id = t.id where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type_id & :ghostBit = 0) and (entry.repeat_type_id & :repeatBit <> 0) " \
-				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+				+ "and (entry.repeat_type_id & :remindBit <> 0) order by entry.date asc"
 
-		def queryMap = [userId:userId, startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.DAILY_BIT, tagIds:tagIds]
-		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
+		def queryMap = [userId:userId, startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.REPEAT_BITS, remindBit:RepeatType.REMIND_BIT]
 		def rawResults = databaseService.sqlRows(queryStr, queryMap)
 
 		def timedResults = []
-
-		Set resultTagIds = new HashSet<Long>()
 
 		// make this repeater list ordered by current timestamp
 		def repeaters = []
@@ -125,7 +138,77 @@ class DataRetriever {
 				else if (repeatEnd.getTime() > endDate.getTime())
 					repeatEnd = endDate
 				Date entryDate = result['entry_date']
-				LocalTimeRepeater repeater = new LocalTimeRepeater([entryDate, result['amount'], result['description']], new DateTime(entryDate), repeatEnd.getTime(), (int)(repeatTypeBits & RepeatType.INTERVAL_BITS))
+				
+				LocalTimeRepeater repeater = new LocalTimeRepeater([entryDate, entryId, alertText(result)], new DateTime(entryDate), startDate, repeatEnd, (int)(repeatTypeBits & RepeatType.INTERVAL_BITS))
+				repeaters.add(repeater)
+			}
+		}
+		// get regular results
+		queryStr = "select e.id, e.date, e.tag_id, t.description, e.comment " \
+				+ "from entry e, tag t where e.user_id = :userId and e.tag_id = t.id " \
+				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type_id is null or (e.repeat_type_id & :concreteRepeatBits = 0)) " \
+				+ "and (e.repeat_type_id & :remindBit <> 0) order by e.date asc"
+
+
+		queryMap = [userId:userId, startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.CONCRETEGHOST_BIT), remindBit:RepeatType.REMIND_BIT ]
+
+		rawResults = databaseService.sqlRows(queryStr, queryMap)
+
+		def results = []
+
+		for (result in rawResults) {
+			def entryJSON = [
+				date,
+				result['id'],
+				alertText(result)
+			]
+			long entryTimestamp = date.getTime()
+			generateRepeaterEntries(repeaters, entryTimestamp, results)
+			results.add(entryJSON)
+		}
+		// keep generating remaining repeaters until endDate
+		generateRepeaterEntries(repeaters, endDate.getTime(), results)
+
+		return results
+	}
+
+	def fetchPlotData(Long userId, List tagIds, Date startDate, Date endDate, Date currentTime, Map plotInfo = null) {
+		if (!tagIds.size()) {
+			return []
+		}
+
+		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
+		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
+
+		// get timed daily repeats (not ghosted)
+
+		String queryStr = "select entry.id, t.description, entry.amount, entry.repeat_type_id, entry.repeat_end, entry.date as entry_date " \
+				+ "from entry inner join tag t on entry.tag_id = t.id where entry.user_id = :userId and entry.amount is not null and (entry.repeat_end is null or entry.repeat_end >= :startDate) and entry.date < :endDate and (entry.repeat_type_id & :ghostBit = 0) and (entry.repeat_type_id & :repeatBit <> 0) " \
+				+ "and entry.tag_id in (:tagIds) order by entry.date asc"
+
+		def queryMap = [userId:userId, startDate:startDate, endDate:endDate, ghostBit:RepeatType.GHOST_BIT, repeatBit:RepeatType.REPEAT_BITS, tagIds:tagIds]
+		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
+		def rawResults = databaseService.sqlRows(queryStr, queryMap)
+
+		def timedResults = []
+
+		// make this repeater list ordered by current timestamp
+		def repeaters = []
+
+		Long nextRepeaterTimestamp = null
+
+		for (result in rawResults) {
+			Long entryId = result['id']
+			Long repeatTypeBits = result['repeat_type_id']
+			
+			if (!(repeatTypeBits == null || repeatTypeBits == 0L)) {
+				Date repeatEnd = result['repeat_end']
+				if (repeatEnd == null)
+					repeatEnd = endDate
+				else if (repeatEnd.getTime() > endDate.getTime())
+					repeatEnd = endDate
+				Date entryDate = result['entry_date']
+				LocalTimeRepeater repeater = new LocalTimeRepeater([entryDate, result['amount'], result['description']], new DateTime(entryDate), startDate, repeatEnd, (int)(repeatTypeBits & RepeatType.INTERVAL_BITS))
 				repeaters.add(repeater)
 			}
 		}
@@ -138,7 +221,7 @@ class DataRetriever {
 				+ "and e.tag_id in (:tagIds) order by e.date asc"
 
 
-		queryMap = [userId:userId, startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.GHOST_BIT), tagIds:tagIds ]
+		queryMap = [userId:userId, startDate:startDate, endDate:endDate, concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.CONCRETEGHOST_BIT), tagIds:tagIds ]
 
 		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		rawResults = databaseService.sqlRows(queryStr, queryMap)
@@ -173,6 +256,10 @@ class DataRetriever {
 		}
 
 		return results
+	}
+
+	def fetchPlotData(Long userId, List tagIds, Date startDate, Date endDate, Date currentTime, String timeZoneName, Map plotInfo = null) {
+		return fetchPlotData(userId, tagIds, startDate, endDate, currentTime, plotInfo)
 	}
 
 	def fetchAverageTime(Long userId, def tagIds, Date startDate, Date endDate, Date currentTime, DateTimeZone currentTimeZone) {

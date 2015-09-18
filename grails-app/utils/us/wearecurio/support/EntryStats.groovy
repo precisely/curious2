@@ -12,6 +12,7 @@ import us.wearecurio.model.TagStats
 import us.wearecurio.model.TagValueStats
 import us.wearecurio.model.User
 
+import us.wearecurio.services.AlertGenerationService
 
 /*
  * Class to return entry creation statistics for later updating of entry and tag statistics
@@ -22,6 +23,7 @@ class EntryStats {
 	Long userId
 	Set<Long> baseTagIds = new HashSet<Long>()
 	Set<Long> tagIds = new HashSet<Long>()
+	boolean alertEdited = false
 	Date startDate
 	Integer timeZoneId = null
 	boolean batchCreation = false
@@ -51,6 +53,9 @@ class EntryStats {
 		else if (startDate > entry.date)
 			startDate = entry.date
 		timeZoneId = entry.getTimeZoneId()
+		
+		if (entry.isAlert())
+			alertEdited = true
 	}
 	
 	ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
@@ -66,6 +71,10 @@ class EntryStats {
 
 		if (timeZoneId != null)
 			User.setTimeZoneId(userId, timeZoneId)
+		
+		if (alertEdited) {
+			AlertGenerationService.get().regenerateAlerts(userId)
+		}
 
 		return tagStats
 	}

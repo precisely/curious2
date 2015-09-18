@@ -20,16 +20,106 @@ public class IncrementingDateTime {
 	static final int MONTHLY_BIT = 0x0010;
 	static final int YEARLY_BIT = 0x0020;
 	
-	public IncrementingDateTime(DateTime dateTime, int intervalCode) {
-		currentDateTime = dateTime;
+	public IncrementingDateTime(DateTime dateTime, Date startDate, int intervalCode) {
+		currentDateTime = firstRepeatAfterDate(dateTime, startDate, intervalCode);
 		dateTimeZone = dateTime.getZone();
-		localDate = dateTime.toLocalDate();
-		localTime = dateTime.toLocalTime();
+		localDate = currentDateTime.toLocalDate();
+		localTime = currentDateTime.toLocalTime();
 		this.intervalCode = intervalCode;
 	}
 	
 	// utility methods for external clients for incrementing date time, code repeated in increment method, below, for speed
+	public static DateTime firstRepeatAfterDate(DateTime initialDateTime, Date startDate, int intervalCode) {
+		if (startDate.getTime() < initialDateTime.getMillis())
+			return initialDateTime;
+		
+		LocalTime initialLocalTime = initialDateTime.toLocalTime();
+		LocalDate initialLocalDate = initialDateTime.toLocalDate();
+		DateTimeZone initialDateTimeZone = initialDateTime.getZone();
+		DateTime startDateTimeInInitialDateTimeZone = new DateTime(startDate, initialDateTimeZone);
+		LocalDate startLocalDate = startDateTimeInInitialDateTimeZone.toLocalDate();
+		LocalTime startLocalTime = startDateTimeInInitialDateTimeZone.toLocalTime();
+		
+		if (intervalCode == HOURLY_BIT) {
+			int initialMinute = initialLocalTime.getMinuteOfHour();
+			int startMinute = startLocalTime.getMinuteOfHour();
+			
+			if (startMinute == initialMinute) {
+				return startDateTimeInInitialDateTimeZone;
+			} else {
+				LocalTime newRepeatLocalTime = startLocalTime.withMinuteOfHour(initialMinute);
+				if (initialMinute < startMinute) {
+					newRepeatLocalTime = newRepeatLocalTime.plusHours(1);
+				}
+				return startLocalDate.toDateTime(newRepeatLocalTime, initialDateTimeZone);
+			}
+		} else {
+			switch (intervalCode) {
+				case DAILY_BIT:
+				default:
+					
+				if (initialLocalTime.compareTo(startLocalTime) <= 0)
+					return startLocalDate.plusDays(1).toDateTime(initialLocalTime, initialDateTimeZone);
+				return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+
+				case WEEKLY_BIT:
+					
+				int initialDayOfWeek = initialLocalDate.getDayOfWeek();
+				int limitDayOfWeek = startLocalDate.getDayOfWeek();
+				
+				if (initialDayOfWeek == limitDayOfWeek) {
+					if (initialLocalTime.compareTo(startLocalTime) <= 0)
+						return startLocalDate.plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
+					return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+				} else if (initialDayOfWeek > limitDayOfWeek) {
+					return startLocalDate.withDayOfWeek(initialDayOfWeek).plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
+				} else
+					return startLocalDate.withDayOfWeek(initialDayOfWeek).toDateTime(initialLocalTime, initialDateTimeZone);
+				
+				case MONTHLY_BIT: {
+					int initialDayOfMonth = initialLocalDate.getDayOfMonth();
+					int limitDayOfMonth = startLocalDate.getDayOfMonth();
+					
+					if (initialDayOfMonth == limitDayOfMonth) {
+						if (initialLocalTime.compareTo(startLocalTime) <= 0)
+							return startLocalDate.plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
+						return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+					} else if (initialDayOfMonth < limitDayOfMonth) {
+						return startLocalDate.withDayOfMonth(initialDayOfMonth).plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
+					} else
+						return startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+				}
+				
+				case YEARLY_BIT: {
+					int initialDayOfMonth = initialLocalDate.getDayOfMonth();
+					int limitDayOfMonth = startLocalDate.getDayOfMonth();
+					int initialMonthOfYear = initialLocalDate.getMonthOfYear();
+					int limitMonthOfYear = startLocalDate.getMonthOfYear();
+
+					if (initialMonthOfYear == limitMonthOfYear) {
+						if (initialDayOfMonth == limitDayOfMonth) {
+							if (initialLocalTime.compareTo(startLocalTime) <= 0)
+								return startLocalDate.plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
+							return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+						} else if (initialDayOfMonth < limitDayOfMonth)
+							return startLocalDate.withDayOfMonth(initialDayOfMonth).plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
+						else
+							return startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+					} else if (initialMonthOfYear > limitMonthOfYear)
+						return startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).minusYears(1)
+								.toDateTime(initialLocalTime, initialDateTimeZone);
+					else
+						return startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+				}
+			}
+		}
+	}
+	
+	// utility methods for external clients for incrementing date time, code repeated in increment method, below, for speed
 	public static DateTime lastRepeatBeforeDateTime(DateTime initialDateTime, DateTime limitDateTime, int intervalCode) {
+		if (initialDateTime.compareTo(limitDateTime) > 0)
+			return null; // if initial date is after limit, return null --- no last repeat
+		
 		LocalTime initialLocalTime = initialDateTime.toLocalTime();
 		LocalDate initialLocalDate = initialDateTime.toLocalDate();
 		DateTimeZone initialDateTimeZone = initialDateTime.getZone();
@@ -45,11 +135,10 @@ public class IncrementingDateTime {
 				return limitDateTimeInInitialDateTimeZone.minusHours(1);
 			} else {
 				LocalTime newRepeatLocalTime = limitLocalTime.withMinuteOfHour(initialMinute);
-				DateTime newRepeatDateTime = limitLocalDate.toDateTime(newRepeatLocalTime, initialDateTimeZone);
 				if (initialMinute > limitMinute) {
-					return newRepeatDateTime.minusHours(1);
+					newRepeatLocalTime = newRepeatLocalTime.minusHours(1);
 				}
-				return newRepeatDateTime;
+				return limitLocalDate.toDateTime(newRepeatLocalTime, initialDateTimeZone);
 			}
 		} else {
 			switch (intervalCode) {

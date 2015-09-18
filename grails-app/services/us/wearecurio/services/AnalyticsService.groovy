@@ -67,7 +67,7 @@ class AnalyticsService {
 			String time_zone = "Etc/UTC"
 			Date now = new Date();
 			def user = User.get(userId.toLong())
-			def data_points = Entry.fetchPlotData(user, [tagId], null, null, now, time_zone)
+			def data_points = Entry.fetchPlotData(user, [tagId], null, null, now)
 		
 			def prop = TagProperties.lookup(userId, tagId)
 		

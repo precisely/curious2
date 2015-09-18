@@ -25,7 +25,8 @@ class BootStrap {
 	SecurityService securityService
 	SearchService searchService
 	EntryParserService entryParserService
-
+	AlertGenerationService alertGenerationService
+	
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
@@ -36,6 +37,7 @@ class BootStrap {
 		SearchService.set(searchService)
 		EntryParserService.set(entryParserService)
 		AnalyticsService.set(analyticsService)
+		AlertGenerationService.set(alertGenerationService)
 		
 		DataRetriever.setDatabaseService(databaseService)
 		

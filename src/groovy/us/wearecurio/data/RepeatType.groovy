@@ -14,7 +14,6 @@ import org.joda.time.Years
 
 import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.datetime.LocalTimeRepeater
-import us.wearecurio.model.TimeZoneId
 
 // NOTE: Unghosted repeat entries are repeated in an unghosted manner all
 // the way until their repeatEnd
@@ -192,12 +191,10 @@ public class RepeatType {
 		return false
 	}
 	
-	Date makeRepeatEnd(Date repeatEnd, Date entryTime, TimeZoneId timeZoneId) {
+	Date makeRepeatEnd(Date repeatEnd, Date entryTime, DateTimeZone dateTimeZone) {
 		if (repeatEnd == null)
 			return null
 			
-		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
-		
 		DateTime endDateTime = new DateTime(repeatEnd, dateTimeZone)
 		LocalDate endLocalDate = endDateTime.toLocalDate()
 		LocalTime endLocalTime = endDateTime.toLocalTime()
