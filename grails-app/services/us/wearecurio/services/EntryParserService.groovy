@@ -146,6 +146,7 @@ class EntryParserService {
 		'daily':['repeat', RepeatType.DAILYCONCRETEGHOST],
 		'weekly':['repeat weekly', RepeatType.WEEKLYCONCRETEGHOST],
 		'monthly':['repeat monthly', RepeatType.MONTHLYCONCRETEGHOST],
+		'yearly':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 		'annual':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 		'annually':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 	]

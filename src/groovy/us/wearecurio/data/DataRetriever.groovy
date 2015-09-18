@@ -61,7 +61,7 @@ class DataRetriever {
 		}
 		int c = 0
 		while (repeater.isActive() && repeater.getDate().getTime() <= endTimestamp) {
-			def desc = repeater.getPayload()
+			def desc = repeater.getPayload().collect()
 			desc[SHORT_DESC_DATE] = repeater.getDate()
 			repeater.incrementDate()
 			results.add(desc)

@@ -65,6 +65,7 @@ class EntryTests extends CuriousTestCase {
 	Date lateCurrentTime
 	Date microlateCurrentTime
 	Date veryLateBaseDate
+	Date veryVeryLateBaseDate
 	
 	@Before
 	void setUp() {
@@ -101,6 +102,7 @@ class EntryTests extends CuriousTestCase {
 		timeZone2BaseDate = dateFormat.parse("July 3, 2010 3:00 am")
 		microlateCurrentTime = dateFormat.parse("July 3, 2010 1:58 pm")
 		veryLateBaseDate = dateFormat.parse("July 20, 2010 12:00 am")
+		veryVeryLateBaseDate = dateFormat.parse("July 20, 2011 12:00 am")
 		
 		Entry.executeUpdate("delete Entry")
 		Entry.executeUpdate("delete TagUnitStats")
@@ -144,11 +146,75 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testMonthlyRepeatPlotData() {
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm monthly", null, null, veryEarlyBaseDate, true), new EntryStats())
+		
+		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
+		
+		int c = 0
+		LocalDate lastLocalDate = null
+		
+		assert testPlot(user, [Tag.look("bread").getId()], veryEarlyBaseDate, veryVeryLateBaseDate, veryVeryLateBaseDate) {
+			def date = it[0]
+			DateTime dateTime = new DateTime(date, dateTimeZone)
+			LocalDate localDate = dateTime.toLocalDate()
+			
+			if (lastLocalDate != null) {
+				assert localDate.dayOfMonth() == lastLocalDate.dayOfMonth()
+			}
+			lastLocalDate = localDate
+			assert it[1].intValue() == 2
+		} == 19
+	}
+	
+	@Test
+	void testAnnualRepeatPlotData() {
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm yearly", null, null, veryEarlyBaseDate, true), new EntryStats())
+		
+		DateTimeZone dateTimeZone = timeZoneId.toDateTimeZone()
+		
+		int c = 0
+		LocalDate lastLocalDate = null
+		
+		assert testPlot(user, [Tag.look("bread").getId()], veryEarlyBaseDate, veryVeryLateBaseDate, veryVeryLateBaseDate) {
+			def date = it[0]
+			DateTime dateTime = new DateTime(date, dateTimeZone)
+			LocalDate localDate = dateTime.toLocalDate()
+			
+			if (lastLocalDate != null) {
+				assert localDate.dayOfMonth() == lastLocalDate.dayOfMonth()
+				assert localDate.monthOfYear() == lastLocalDate.monthOfYear()
+			}
+			lastLocalDate = localDate
+			assert it[1].intValue() == 2
+		} == 2
+	}
+	
+	@Test
+	void testWeeklyRepeatPlotData() {
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm weekly", null, null, earlyBaseDate, true), new EntryStats())
+		
+		int c = 0
+		def expected = [ 2, 2, 2, 2 ]
+		Date lastDate = null
+		
+		assert testPlot(user, [Tag.look("bread").getId()], earlyBaseDate, veryLateBaseDate, veryLateBaseDate) {
+			def date = it[0]
+			if (lastDate != null) {
+				assert date.getTime() - lastDate.getTime() == 1000L* 60L * 60L * 24L * 7L
+			}
+			lastDate = date
+			assert it[1].intValue() == expected[c++]
+			assert it[2] == "bread"
+		} == expected.size()
+	}
+	
+	@Test
 	void testRemindActivatePlotData() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm remind", null, null, earlyBaseDate, true), new EntryStats())
 	
-		//assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate) {
-		//} == 0
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate) {
+		} == 0
 		
 		entry.update(null, new EntryStats(), earlyBaseDate)
 
@@ -159,7 +225,7 @@ class EntryTests extends CuriousTestCase {
 		} == 1
 	}
 	
-	/*@Test
+	@Test
 	void testMixedRepeatPlotData() {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm repeat", null, null, veryEarlyBaseDate, true), new EntryStats())
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm repeat", null, null, baseDate, true), new EntryStats())
