@@ -146,6 +146,22 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testWeeklyRepeatFetchListData() {
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm weekly", null, null, earlyBaseDate, true), new EntryStats())
+				
+		assert testEntries(user, timeZone, earlyBaseDate, earlyBaseDate) {
+			assert it['description'] == "bread"
+		} == 1
+	
+		assert testEntries(user, timeZone, earlyBaseDate + 1, earlyBaseDate + 1) {
+		} == 0
+	
+		assert testEntries(user, timeZone, earlyBaseDate + 7, earlyBaseDate + 7) {
+			assert it['description'] == "bread"
+		} == 1
+	}
+	
+	@Test
 	void testMonthlyRepeatPlotData() {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm monthly", null, null, veryEarlyBaseDate, true), new EntryStats())
 		

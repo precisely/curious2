@@ -11,6 +11,7 @@ import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UnitGroupMap.UnitGroup
 import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.datetime.LocalTimeRepeater
+import us.wearecurio.model.User;
 
 class DataRetriever {
 	static DatabaseServiceInterface databaseService

@@ -23,6 +23,7 @@ import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UnitGroupMap.UnitGroup
 import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.data.DataRetriever
+import us.wearecurio.datetime.IncrementingDateTime
 
 import java.util.ArrayList
 import java.util.Date;
@@ -1818,7 +1819,7 @@ class Entry implements Comparable {
 			return true
 		}
 		
-		if (durationType.isStart())
+		if (durationType?.isStart())
 			return true
 		
 		Entry firstEntry = group.fetchSortedEntries().first()
@@ -1863,12 +1864,18 @@ class Entry implements Comparable {
 		return new Date(0L)
 	}
 	
+	DateTime firstRepeatAfterDate(Date startDate) {
+		return IncrementingDateTime.firstRepeatAfterDate(fetchDateTime(), startDate, repeatType.intervalCode())
+	}
+	
 	static def fetchListData(User user, String timeZoneName, Date baseDate, Date now) {
 		long nowTime = now.getTime()
 		long baseTime = baseDate.getTime()
 
-		DateTimeZone currentTimeZone = TimeZoneId.look(timeZoneName).toDateTimeZone()
-
+		DateTimeZone currentTimeZone = DateTimeZone.forID(timeZoneName)
+		DateTime baseDateTime = new DateTime(baseDate, currentTimeZone)
+		LocalDate baseLocalDate = baseDateTime.toLocalDate()
+		
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id " \
 				+ "from entry entry, tag tag where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type_id is null or (entry.repeat_type_id & :continuousBit = 0))) or " \
@@ -1897,11 +1904,16 @@ class Entry implements Comparable {
 			// use JodaTime to figure out the correct time in the current time zone
 			desc['timeZoneName'] = timeZoneName
 			if (entry.repeatTypeId != null) { // adjust dateTime for repeat entries
-				def date = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
-				if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
+				DateTime firstRepeat = entry.firstRepeatAfterDate(baseDate)
+				
+				if (firstRepeat.toLocalDate().equals(baseLocalDate)) {
+					Date date = entry.fetchCorrespondingDateTimeInTimeZone(baseDate, currentTimeZone).toDate()
+					if (entry.repeatEnd != null && entry.repeatEnd.getTime() < date.getTime()) // check if adjusted time is after repeat end
+						continue
+					desc['date'] = date
+					desc['repeatType'] = entry.repeatTypeId
+				} else
 					continue
-				desc['date'] = date
-				desc['repeatType'] = entry.repeatTypeId
 			} else
 				desc['repeatType'] = null
 			desc['setName'] = entry.setIdentifier?.toString()
