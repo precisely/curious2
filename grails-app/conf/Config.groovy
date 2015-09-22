@@ -1,5 +1,7 @@
 import org.scribe.model.SignatureType
 
+import com.lucastex.grails.fileuploader.CDNProvider
+
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
 import us.wearecurio.thirdparty.jawbone.JawboneUpApi
@@ -588,6 +590,8 @@ oauth {
 }
 
 fileuploader {
+
+	provider = CDNProvider.RACKSPACE
 	avatar {
 		maxSize = 1024 * 1024 * 2 //256 kbytes
 		allowedExtensions = ["jpg", "jpeg", "gif", "png"]
