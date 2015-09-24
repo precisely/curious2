@@ -3,13 +3,6 @@
 <html>
 <head>
 	<meta name="layout" content="menu" />
-	<script type="text/javascript">
-		function doLogout() {
-			callLogoutCallbacks();
-		}
-		function refreshPage() {
-		}
-	</script>
 </head>
 
 <body class="warning-page">

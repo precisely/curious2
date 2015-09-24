@@ -91,7 +91,7 @@
 							<div class="buttons">
 								{{ if (isAdmin) { }}
 									<button class="share-button" data-toggle="modal" data-target="#share-modal"
-											data-share-url="{{- location.protocol+'//114.143.237.123' + (location.port ? ':' + location.port : '') }}/home/social/discussions/{{- discussionHash }}"
+											data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionHash }}"
 											data-discussion-title="{{- discussionTitle }}">
 										<img src="/images/share.png" alt="share"> Share
 									</button>
