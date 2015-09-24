@@ -10,6 +10,7 @@ _.templateSettings.escape = /\{\{-(.+?)\}\}/g;
 _.templateSettings.evaluate = /\{\{(.+?)\}\}/g;
 _.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
 
+var serverURL = location.protocol + '//' + location.host;
 /*
  * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
  * data is passed to the compile the HTML template.

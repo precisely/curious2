@@ -34,6 +34,7 @@ class DiscussionPostController extends LoginController{
 					discussionDetails: discussionDetails])
 		}
 	}
+
 	@NoAuth
 	def save() {
 		debug "Attemping to add comment '" + params.message + "', plotIdMessage: " + params.plotIdMessage + 

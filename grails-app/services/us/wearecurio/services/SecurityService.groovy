@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest
 import org.springframework.transaction.annotation.Transactional
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
-import grails.util.Holders
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.springframework.web.context.request.RequestContextHolder
 
 import us.wearecurio.model.Sprint
@@ -27,8 +27,8 @@ class SecurityService {
 	private static def log = LogFactory.getLog(this)
 	
 	static SecurityService service
-	def grailsApplication = Holders.grailsApplication
-	
+	DefaultGrailsApplication grailsApplication
+
 	public static def set(s) { service = s }
 
 	public static SecurityService get() { return service }
@@ -61,7 +61,7 @@ class SecurityService {
 		"unregisterPushNotification"
 	] as Set
 
-	// list of actions that are allowed without authentication
+	// list of actions that are allowed without authentication, this will be populated by populateNoAuthMethods action which is being called in Bootstrap.groovy
 	static Map noauthActions = [:]
 
 	/**
@@ -113,7 +113,7 @@ class SecurityService {
 		log.debug "login security filter: " + actionName
 		if (params.mobileSessionId != null)
 			params.persistentSessionId = params.mobileSessionId
-		if (!session.userId && !noauthActions[params.controller]?.contains(actionName)) {
+		if (!session.userId && (!noauthActions[params.controller] == '*' || !noauthActions[params.controller]?.contains(actionName))) {
 			if (params.persistentSessionId != null) {
 				User user = Session.lookupSessionUser(params.persistentSessionId)
 				if (user != null) {
@@ -276,18 +276,22 @@ class SecurityService {
 		session.sessionCache = null
 	}
 
+	/*
+	 * This method iterates over all the controllersandmethods to search for 
+	 * NoAuth annotation and populates noauthActions list based on above
+	 * search
+	 */
 	void populateNoAuthMethods() {
 		grailsApplication.controllerClasses.each { controllerArtefact ->
-			def controllerClass = controllerArtefact.getClazz()
-			String controllerName = "" + Character.toLowerCase(controllerArtefact.name.charAt(0)) + controllerArtefact.name.substring(1);
+			Class controllerClass = controllerArtefact.getClazz()
+			String controllerName = controllerArtefact.getLogicalPropertyName();
 			if (controllerClass.isAnnotationPresent(NoAuth)) {
 				noauthActions[controllerName] = '*'
-				return
 			}
 
 			controllerClass.methods.each { Method method ->
 				if (method.isAnnotationPresent(NoAuth)) {
-					if (noauthActions[controllerName]) {
+					if (noauthActions[controllerName] && !(noauthActions[controllerName] == '*')) {
 						noauthActions[controllerName].push(method.name)
 					} else {
 						noauthActions[controllerName] = [method.name]
@@ -295,5 +299,6 @@ class SecurityService {
 				}
 			}
 		}
+		log.debug "No auth actions map: ${noauthActions.dump()}"
 	}
 }

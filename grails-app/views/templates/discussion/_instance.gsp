@@ -44,10 +44,10 @@
 						</button>
 						{{ if (discussionData.isAdmin) {  }}
 							<button class="share-button" data-toggle="modal" data-target="#share-modal"
-									data-share-url="{{- location.protocol+'//114.143.237.123' + (location.port ? ':' + location.port : '') }}/home/social/discussions/{{- discussionData.hash }}"
+									data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
 									data-discussion-title="{{- discussionData.name }}">
 								<img src="/images/share.png" alt="share" data-target="#share-modal"
-										data-share-url="{{- location.protocol+'//114.143.237.123' + (location.port ? ':' + location.port : '') }}/home/social/discussions/{{- discussionData.hash }}"
+										data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
 									 data-discussion-title="{{- discussionData.name }}">Share
 							</button>
 						{{ } }}

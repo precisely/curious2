@@ -40,10 +40,6 @@ class HomeController extends DataController {
 	MovesDataService movesDataService
 	def jawboneUpDataService
 
-	@Override
-	protected renderJSONPost(Object data) {
-		return super.renderJSONPost(data)
-	}
 	def oauthService
 	SearchService searchService
 	PageRenderer groovyPageRenderer
@@ -623,10 +619,14 @@ class HomeController extends DataController {
 
 		Map model
 		// TODO: protect private discussions
-		if (params.hash && request.getHeader("User-Agent").indexOf("facebook") > -1) {
+		/*
+		 * If request is coming from facebook(i.e. while posting discussion to facebook), return model with discussion details to be used in og meta tags.
+		 * Og meta tags are used by facebook scrapper to scrap information about the post being shared
+		 */
+		if (params.hash && request.getHeader("User-Agent").contains("facebook")) {
 			Discussion discussion = Discussion.findByHash(params.hash)
 			model = discussion?.getJSONDesc()
-		} else if (params.hash){
+		} else if (params.hash) {
 			redirect(uri: "home/social#" + params.id + "/" + params.hash);
 		}
 

@@ -205,15 +205,13 @@ $(document).ready(function() {
 
 	$('#share-modal').on('show.bs.modal', function(event) {
 		var targetElement = $(event.relatedTarget); // Element that triggered the modal
-		var shareUrl = targetElement.data('shareUrl');
+		var shareURL = targetElement.data('shareUrl');
 		var discussionTitle = targetElement.data('discussionTitle');
-		$('#social-share-message').data('shareUrl', shareUrl);
-		$('#social-share-message').data('discussionTitle', discussionTitle);
+		$('#social-share-message').data({shareURL: shareURL, discussionTitle: discussionTitle});
 	});
 
 	$('#post-message').click(function() {
-		var shareURL, shareMessage;
-		shareMessage = $('#social-share-message').val();
+		var shareMessage = $('#social-share-message').val();
 		if (!shareMessage || shareMessage == '') {
 			return false;
 		}
@@ -221,14 +219,14 @@ $(document).ready(function() {
 		if (platform == 'facebook') {
 			FB.ui({
 				method: 'feed',
-				link: $('#social-share-message').data('shareUrl'),
+				link: $('#social-share-message').data('shareURL'),
 				caption: 'Curious Discussions',
 				description: shareMessage,
 				name: $('#social-share-message').data('discussionTitle')
 			}, function(response){});
 		} else if (platform == 'twitter') {
-			shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
-				encodeURIComponent($('#social-share-message').data('shareUrl'));
+			var shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
+				encodeURIComponent($('#social-share-message').data('shareURL'));
 			var shareWindow = window.open(shareURL, '_blank', 'toolbar=no, menubar=no, width=500, height=400');
 		}
 		$('.share-options').show();
@@ -239,10 +237,10 @@ $(document).ready(function() {
 	});
 
 	// Class to copy link to clipboard
-	var client = new ZeroClipboard( $('.clip_button') );
-	client.on( 'ready', function(event) {
-		client.on( 'copy', function(event) {
-			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareUrl'));
+	var client = new ZeroClipboard($('.clip_button'));
+	client.on('ready', function(event) {
+		client.on('copy', function(event) {
+			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareURL'));
 		});
 	});
 });
@@ -403,14 +401,11 @@ function discussionShow(hash) {
 
 function shareMessage(platform) {
 	if (platform == 'copy') {
-		copyToClipboard($('#social-share-message').data('shareUrl'));
 		$('#share-modal').modal('hide');
 		return true;
 	}
 	$('#share-modal .modal-header h4').text('Sharing to ' + platform);
-	$('.post-message .fa').removeClass('fa-facebook');
-	$('.post-message .fa').removeClass('fa-twitter');
-	$('.post-message .fa').addClass('fa-' + platform);
+	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
 	$('#post-message').data('platform', platform);
 	$('.share-options').hide();
 	$('.post-message').show();
