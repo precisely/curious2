@@ -9,7 +9,7 @@ import org.joda.time.LocalTime
 
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.UnitRatio
 import us.wearecurio.datetime.LocalTimeRepeater
 import us.wearecurio.model.User;
 
@@ -214,7 +214,7 @@ class DataRetriever {
 			}
 		}
 		// get regular results
-		UnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
+		DecoratedUnitRatio mostUsedUnitRatioForTags = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
 
 		queryStr = "select e.date, e.amount, e.tag_id, t.description, e.units " \
 				+ "from entry e, tag t where e.user_id = :userId and e.tag_id = t.id " \
@@ -239,7 +239,7 @@ class DataRetriever {
 				amount,
 				result['description']
 			]
-			UnitRatio unitRatio = mostUsedUnitRatioForTags?.lookupUnitRatio(result['units'])
+			DecoratedUnitRatio unitRatio = mostUsedUnitRatioForTags?.lookupDecoratedUnitRatio(result['units'])
 			if (unitRatio) {
 				entryJSON[1] = (amount * unitRatio.ratio) / mostUsedUnitRatio
 			}
@@ -251,7 +251,7 @@ class DataRetriever {
 		generateRepeaterEntries(repeaters, endDate.getTime(), results)
 
 		if (plotInfo != null) {
-			plotInfo['unitRatio'] = mostUsedUnitRatioForTags
+			plotInfo['unitRatio'] = mostUsedUnitRatioForTags?.unitRatio
 			plotInfo['unitGroupId'] = mostUsedUnitRatioForTags == null ? -1 : mostUsedUnitRatioForTags.unitGroup.id
 			plotInfo['valueScale'] = mostUsedUnitRatio
 		}

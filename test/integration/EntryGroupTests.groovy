@@ -109,18 +109,42 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testMultiCreate() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
-		
+	void testBloodPressure() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "blood pressure 120/80", null, null, baseDate, true), new EntryStats())
+
 		Iterable<Entry> group = entry.fetchGroupEntries()
 		
-		String x = ""
-		for (Entry e : group) {
-			x += ":" + e.tag.getDescription()
-			x += ":" + e.baseTag.getDescription()
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			entryDesc = entryDesc
+			assert entryDesc.amounts.size() == 2
+			++c
 		}
 		
-		assert x == ":bread [slices]:bread:bread [calories]:bread"
+		assert c == 1
+	}
+
+/*	@Test
+	void testMultiUpdateAddElements() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
+		
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories 127 steps", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 2
+			assert amounts[0].units == "beans"
+			assert amounts[1].amount.intValue() == 127
+			assert amounts[1].units == "steps"
+			assert amounts[2].amount.intValue() == 255
+			assert amounts[2].units == "calories"
+		}
+		
+		assert c == 1
 	}
 	
 	@Test
@@ -139,19 +163,21 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testMultiCreateSuffix() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", null, null, baseDate, true), new EntryStats())
+	void testMultiCreateUnitDecoratorDuration() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 30 minutes deep", null, null, baseDate, true), new EntryStats())
 		
-		Iterable<Entry> group = entry.fetchGroupEntries()
-		
-		String x = ""
-		for (Entry e : group) {
-			x += ":" + e.tag.getDescription()
-			x += ":" + e.baseTag.getDescription()
-			x += ":" + e.units
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 5
+			assert amounts[0].units == "hrs"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins deep"
 		}
 		
-		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles"
+		assert c == 1
 	}
 	
 	@Test
@@ -170,6 +196,107 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert x == ":run [duration]:run:2.500000000:hours"
+	}
+	
+	@Test
+	void testExpandPartialUnitsSingularSubUnit() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 hour 1 minute", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.toString() == "1"
+			assert amounts[0].units == "hr"
+			assert amounts[1].amount.intValue() == 1
+			assert amounts[1].units == "min"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testExpandPartialUnitsSingular() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1.5 hours", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.toString() == "1"
+			assert amounts[0].units == "hr"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testExpandPartialUnits() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2.5 hours", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.toString() == "2"
+			assert amounts[0].units == "hrs"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testExpandSubOneSubUnit() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread .5 hours", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.toString() == "30"
+			assert amounts[0].units == "mins"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testMultiCreate() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+		}
+		
+		assert x == ":bread [slices]:bread:bread [calories]:bread"
+	}
+	
+	@Test
+	void testMultiCreateSuffix() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.units
+		}
+		
+		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles"
 	}
 	
 	@Test
@@ -201,7 +328,7 @@ class EntryGroupTests extends CuriousTestCase {
 			++c
 			def amounts = entryDesc['amounts']
 			assert amounts[0].amount.intValue() == 2
-			assert amounts[0].units == "hours"
+			assert amounts[0].units == "hrs"
 			assert amounts[1].amount.intValue() == 30
 			assert amounts[1].units == "mins"
 		}
@@ -280,31 +407,9 @@ class EntryGroupTests extends CuriousTestCase {
 			++c
 			def amounts = entryDesc['amounts']
 			assert amounts[0].amount.toString() == "2"
-			assert amounts[0].units == "hours"
+			assert amounts[0].units == "hrs"
 			assert amounts[1].amount.intValue() == 30
 			assert amounts[1].units == "mins"
-			assert amounts[2].amount.intValue() == 255
-			assert amounts[2].units == "calories"
-		}
-		
-		assert c == 1
-	}
-	
-	@Test
-	void testMultiUpdateAddElements() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
-		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories 127 steps", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
-
-		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		int c = 0
-		for (entryDesc in entries) {
-			++c
-			def amounts = entryDesc['amounts']
-			assert amounts[0].amount.intValue() == 2
-			assert amounts[0].units == "beans"
-			assert amounts[1].amount.intValue() == 127
-			assert amounts[1].units == "steps"
 			assert amounts[2].amount.intValue() == 255
 			assert amounts[2].units == "calories"
 		}
@@ -399,23 +504,6 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testBloodPressure() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "blood pressure 120/80", null, null, baseDate, true), new EntryStats())
-
-		Iterable<Entry> group = entry.fetchGroupEntries()
-		
-		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		int c = 0
-		for (entryDesc in entries) {
-			entryDesc = entryDesc
-			assert entryDesc.amounts.size() == 2
-			++c
-		}
-		
-		assert c == 1
-	}
-
-	@Test
 	void testNoUnitsDoubleEntries() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 10 20", null, null, baseDate, true), new EntryStats())
 		
@@ -430,4 +518,5 @@ class EntryGroupTests extends CuriousTestCase {
 		
 		assert x == ":bread:bread:10.000000000::bread:bread:20.000000000:"
 	}
+	/**/
 }

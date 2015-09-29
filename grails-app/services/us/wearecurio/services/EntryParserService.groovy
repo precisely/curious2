@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.DurationType
+import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import static us.wearecurio.model.Entry.DAYTICKS
 import static us.wearecurio.model.Entry.HALFDAYTICKS
@@ -39,7 +40,7 @@ import static us.wearecurio.model.Entry.mc
 
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.UnitRatio
 
 import java.text.SimpleDateFormat
 import us.wearecurio.utility.Utils
@@ -223,14 +224,39 @@ class EntryParserService {
 		
 	static class ParseAmount {
 		Tag tag // tag including units suffix
-		String suffix
+		String tagSuffix
+		String unitSuffix
 		BigDecimal amount
 		int precision
-		UnitRatio unitRatio
+		DecoratedUnitRatio unitRatio
 		String units
 		
 		ParseAmount(BigDecimal amount, int precision) {
 			this.tag = null
+			this.amount = amount
+			this.precision = precision
+		}
+		
+		ParseAmount(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
+			this.update(baseTag, amount, precision, units, unitGroup)
+		}
+		
+		void update(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
+			this.units = units
+			this.unitRatio = unitGroup.lookupDecoratedUnitRatio(units)
+			if (unitRatio != null) {
+				this.tag = Tag.look(baseTag.description + ' ' + unitRatio.tagSuffix)
+				this.tagSuffix = unitRatio.tagSuffix
+				this.unitSuffix = unitRatio.unitSuffix
+			} else if (units) {
+				this.tagSuffix = "[" + units + "]"
+				this.unitSuffix = units
+				this.tag = Tag.look(baseTag.description + ' ' + this.tagSuffix)
+			} else {
+				this.tag = baseTag
+				this.tagSuffix = ""
+				this.unitSuffix = ""
+			}
 			this.amount = amount
 			this.precision = precision
 		}
@@ -246,9 +272,9 @@ class EntryParserService {
 		ParseAmount setTags(Tag tag, Tag baseTag) {
 			this.tag = tag
 			if (baseTag == null || baseTag == tag) {
-				this.suffix = ""
+				this.tagSuffix = ""
 			} else {
-				this.suffix = tag.getDescription().substring(baseTag.getDescription().length() + 1)
+				this.tagSuffix = tag.getDescription().substring(baseTag.getDescription().length() + 1)
 			}
 			return this
 		}
@@ -258,7 +284,7 @@ class EntryParserService {
 		}
 		
 		boolean matchesWeak(Entry e) {
-			return e.fetchSuffix().equals(suffix) || e.getUnits().equals(units)
+			return e.fetchSuffix().equals(tagSuffix) || e.getUnits().equals(units)
 		}
 		
 		Map copyToMap(Map m) {
@@ -274,6 +300,11 @@ class EntryParserService {
 			if (tag == null)
 				return "ParseAmount(inactive)"
 			return "ParseAmount(Tag: " + tag.getDescription() + " amount: " + amount + " units: " + units + ")"
+		}
+		
+		boolean isDuration() {
+			if (unitRatio == null) return false
+			return unitRatio.unitGroup == UnitGroup.DURATION
 		}
 	}
 	
@@ -302,10 +333,10 @@ class EntryParserService {
 			return baseTag
 		}
 		
-		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(units)
 		String suffix
 		if (unitRatio)
-			suffix = unitRatio.getSuffix()
+			suffix = unitRatio.tagSuffix
 		else
 			suffix = units
 			
@@ -329,10 +360,10 @@ class EntryParserService {
 			return baseTag
 		}
 		
-		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(units)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(units)
 		String suffix, coreSuffix
 		if (unitRatio)
-			suffix = unitRatio.getSuffix()
+			suffix = unitRatio.tagSuffix
 		else
 			suffix = units
 		
@@ -598,7 +629,7 @@ class EntryParserService {
 		
 		commentScanPattern.followedBy([atEndScanPattern])
 	}
-		
+	
 	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
 		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
@@ -825,9 +856,10 @@ class EntryParserService {
 		Tag baseTag = (Tag) context.retVal['baseTag']
 		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
 		
-		Map<String, ParseAmount> suffixToParseAmount = new HashMap<String, ParseAmount>()
-		
 		boolean bloodPressure = bloodPressureTags.contains(baseTag.getDescription())
+		
+		ParseAmount prevAmount = null
+		String prevSuffix = null
 		
 		for (ParseAmount amount : context.amounts) {
 			if (bloodPressure && (!amount.units)) {
@@ -844,12 +876,17 @@ class EntryParserService {
 				else
 					amount.setTags(baseTag, baseTag)
 			} else {
-				UnitRatio unitRatio = unitGroupMap.unitRatioForUnits(units)
+				DecoratedUnitRatio unitRatio = unitGroupMap.decoratedUnitRatioForUnits(units)
 				if (unitRatio) {
-					amountSuffix = unitRatio.getSuffix()
-					amount.setUnitRatio(unitRatio)
-				} else
+					amountSuffix = unitRatio.tagSuffix
+					amount.unitRatio = unitRatio
+					if (unitRatio.unitGroup == UnitGroup.DURATION && amount.amount == null) {
+						context.retVal['durationType'] = DurationType.START
+					}
+				} else {
 					amountSuffix = units
+					// null duration amount equals duration start
+				}
 					
 				if (bloodPressure) {
 					if (amountSuffix) {
@@ -864,22 +901,20 @@ class EntryParserService {
 				
 				amount.setTags(tag, baseTag)
 				
-				ParseAmount prevAmount = suffixToParseAmount.get(amountSuffix)
-				
-				if (prevAmount) {
-					UnitRatio prevUnitRatio = prevAmount.getUnitRatio()
-					if (prevUnitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup) {
-						// merge amounts together, they are the same unit group
+				if (prevAmount != null) {
+					DecoratedUnitRatio prevUnitRatio = prevAmount.getUnitRatio()
+					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && prevSuffix == amountSuffix && prevUnitRatio.ratio != unitRatio.ratio) {
+						// merge amounts together, they are the same unit group, provided prevAmount's unitSuffix is compatible
 						// use first amount units
 						prevAmount.amount = prevAmount.amount.add(new BigDecimal(amount.amount.doubleValue()
 								* (unitRatio.ratio / prevUnitRatio.ratio)))
+						prevAmount.setTags(tag, baseTag) // update tags to the last suffix
 						amount.deactivate()
 					} // otherwise do nothing, don't merge the amounts
 				}
 				
-				if (amount.isActive()) {
-					suffixToParseAmount.put(amountSuffix, amount)
-				}
+				prevAmount = amount
+				prevSuffix = amountSuffix
 			}
 			index++
 		}

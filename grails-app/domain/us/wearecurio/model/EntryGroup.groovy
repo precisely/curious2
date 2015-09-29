@@ -13,7 +13,7 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.model.Tag
 import us.wearecurio.model.Entry
 import us.wearecurio.data.UnitGroupMap
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.UnitRatio
 
 import java.util.ArrayList
 import java.util.Map;

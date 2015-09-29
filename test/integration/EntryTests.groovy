@@ -120,7 +120,7 @@ class EntryTests extends CuriousTestCase {
 	void tearDown() {
 		super.tearDown()
 	}
-
+	
 	int testPlot(User user, def tagIds, Date startDate, Date endDate, Date currentDate, Closure test) {
 		def results = Entry.fetchPlotData(user, tagIds, startDate, endDate, currentDate)
 		
@@ -143,6 +143,58 @@ class EntryTests extends CuriousTestCase {
 		}
 		
 		return c
+	}
+	
+	@Test
+	void testOrphanDurationEnd() {
+		// test creation of one side of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.fetchIsStart()
+		
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
+		
+		assert entry.is(entry2)
+
+		def x = entry.valueString()
+		// assert entry.valueString().equals(""
+//			"Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of orphan end of duration pair
+		println("== Test creation of new end entry after first duration pair ==")
+
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4:30pm", null, null, baseDate, true), new EntryStats())
+		println entry3.valueString()
+		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry3.fetchDurationEntry() == null
+		assert entry3.fetchStartEntry() == null
+		assert entry.fetchEndEntry() == entry2
+		assert entry2.fetchStartEntry() == entry
+		
+		// test deletion of start of duration pair
+		
+		println("== Test deletion of middle end entry ==")
+		
+		Entry.delete(entry2, new EntryStats())
+		
+		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
+				
+		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.fetchEndEntry() == entry3
+		assert entry3.fetchStartEntry() == entry
+	}
+
+/*	@Test
+	void testRepeatStart() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start repeat", null, null, earlyBaseDate, true), new EntryStats())
+		assert entry.getDurationType().equals(DurationType.START)
 	}
 	
 	@Test
@@ -1192,12 +1244,6 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testRepeatStart() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start repeat", null, null, earlyBaseDate, true), new EntryStats())
-		assert entry.getDurationType().equals(DurationType.START)
-	}
-	
-	@Test
 	void testDeleteContinuousRepeat() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread pinned", null, null, baseDate, true), new EntryStats())
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:pinned, repeatType:768, repeatEnd:null)")
@@ -1569,53 +1615,6 @@ class EntryTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testOrphanDurationEnd() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == null
-		
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of orphan end of duration pair
-		println("== Test creation of new end entry after first duration pair ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4:30pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchDurationEntry() == null
-		assert entry3.fetchStartEntry() == null
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		
-		// test deletion of start of duration pair
-		
-		println("== Test deletion of middle end entry ==")
-		
-		Entry.delete(entry2, new EntryStats())
-		
-		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
-				
-		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry.fetchEndEntry() == entry3
-		assert entry3.fetchStartEntry() == entry
-	}
-
-	@Test
 	void "Test canDelete when user is null"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, null)
@@ -1628,19 +1627,6 @@ class EntryTests extends CuriousTestCase {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
 		Map result = Entry.canDelete(entry, user)
 		assert result.canDelete == true
-	}
-
-	@Test
-	void "Test canDelete when user has not created the entry"() {
-		Map params = [username: "z", sex: "M", name: "z z", email: "z@z.com", birthdate: "01/01/2001", password: "z"]
-		
-		User user2 = User.create(params)
-		Utils.save(user2, true)
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		Map result = Entry.canDelete(entry, user2)
-		assert result.canDelete == false
-		assert result.messageCode == "delete.entry.permission.denied"
 	}
 
 	@Test
