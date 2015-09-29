@@ -12,7 +12,6 @@ import org.joda.time.Days
 import org.joda.time.Months
 import org.joda.time.Years
 
-import us.wearecurio.data.UnitGroupMap.UnitRatio
 import us.wearecurio.datetime.LocalTimeRepeater
 
 // NOTE: Unghosted repeat entries are repeated in an unghosted manner all

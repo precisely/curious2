@@ -9,6 +9,8 @@ import java.util.regex.Pattern
 
 import us.wearecurio.data.DataRetriever
 
+import us.wearecurio.data.UnitGroupMap.UnitGroup
+
 class UnitGroupMap {
 	
 	private static def log = LogFactory.getLog(this)
@@ -16,8 +18,6 @@ class UnitGroupMap {
 	static final Pattern twoWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*)))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	static final Pattern oneWordUnitPattern = ~/(?i)^(([^0-9\(\)@\s\.:][^\(\)@\s:]*))\s(([^0-9\(\)@\s\.:][^\(\)@\s:]*)(\s([^0-9\(\)@\s\.:][^\(\)@\s:]*))*)/
 	
-	Map<String, UnitRatio> unitsToRatio
-
 	//Index offsets of unit ratio initializer array
 	static final int RATIO = 0
 	static final int SUBRATIO = 1
@@ -240,9 +240,12 @@ class UnitGroupMap {
 		'cup':'cups',
 	]
 	
+	Map<String, UnitRatio> unitToUnitRatio
+	Map<String, DecoratedUnitRatio> unitToDecorated
+	
 	enum UnitGroup {
 		DURATION(1, "duration", 100, [
-			'm':[MINUTE,SECOND,1,'minute'], 'min':[MINUTE,SECOND,5,'minute'], 'mins':[MINUTE,SECOND,6,'minute',BOTH], 'minute':[MINUTE,SECOND,10,'minute'], 'minutes':[MINUTE,SECOND,10,'minute'],
+			'm':[MINUTE,SECOND,1,'minute'], 'min':[MINUTE,SECOND,5,'minute',SINGULAR], 'mins':[MINUTE,SECOND,6,'minute',PLURAL], 'minute':[MINUTE,SECOND,10,'minute'], 'minutes':[MINUTE,SECOND,10,'minute'],
 			'h':[HOUR,MINUTE,1,'hour'], 'hours':[HOUR,MINUTE,10,'hour'], 'hr':[HOUR,MINUTE,8,'hour',SINGULAR], 'hr.':[HOUR,MINUTE,8,'hour'], 'hrs':[HOUR,MINUTE,8,'hour',PLURAL], 'hrs.':[HOUR,MINUTE,8,'hour'], 'hour':[HOUR,MINUTE,10,'hour'],
 			'day':[DAY,HOUR,10,'day',SINGULAR], 'days':[DAY,HOUR,10,'day',PLURAL], 'd':[DAY,HOUR,1,'day',SINGULAR],
 			'week':[WEEK,DAY,10,'week',SINGULAR], 'weeks':[WEEK,DAY,10,'week',PLURAL], 'wks':[WEEK,DAY,5,'week'], 'wk':[WEEK,DAY,4,'week'],
@@ -468,12 +471,12 @@ class UnitGroupMap {
 		final int id
 		final String name
 		final int priority // priority for listing units in a sequence
-		Map<String, UnitRatio> map = [:]
+		Map<String, UnitRatio> localMap = new ConcurrentHashMap<String, UnitRatio>()
+		Map<String, DecoratedUnitRatio> localDecoratedMap = new ConcurrentHashMap<String, DecoratedUnitRatio>()
 		Set<String> units = new HashSet<String>()
-		Map<Double, UnitRatio> singularSubUnit = [:]
-		Map<Double, UnitRatio> pluralSubUnit = [:]
-		Map<String, UnitGroup> numeratorMap = null
-		Map<String, UnitGroup> denominatorMap = null
+		Map<String, UnitGroup> numeratorMap = new ConcurrentHashMap<String, UnitGroup>()
+		Map<String, UnitGroup> denominatorMap = new ConcurrentHashMap<String, UnitGroup>()
+		UnitRatio largestUnitRatio
 		
 		UnitGroup(int id, String name, int priority, def initMap) {
 			this.id = id
@@ -484,6 +487,11 @@ class UnitGroupMap {
 			
 			UnitGroupMap.suffixes.add(name)
 			
+			Double maxRatio = null
+			
+			Map<Double, UnitRatio> singularSubUnit = [:]
+			Map<Double, UnitRatio> pluralSubUnit = [:]
+		
 			// first pass, collect unit information
 			for (e in initMap) {
 				String unit = e.key
@@ -505,33 +513,51 @@ class UnitGroupMap {
 				}
 
 				UnitRatio unitRatio = new UnitRatio(
-					this, unit, val[RATIO], val[AFFINITY], val[CANONICALUNIT], unitStrings[val[CANONICALUNIT]], suffix)
-				map.put(unit, unitRatio)
+					this, unit, val[RATIO], val[AFFINITY], val[CANONICALUNIT], unitStrings[val[CANONICALUNIT]], suffix, false)
+				localMap.put(unit, unitRatio)
+				
+				Double ratio = val[RATIO]
 				
 				if (subUnitType & SINGULAR) {
-					singularSubUnit.put((Double)val[RATIO], unitRatio)
+					singularSubUnit.putAt(ratio, unitRatio)
 				}
-				if (subUnitType & PLURAL)
-					pluralSubUnit.putAt((Double)val[RATIO], unitRatio)
+				if (subUnitType & PLURAL) {
+					pluralSubUnit.putAt(ratio, unitRatio)
+				}
 				
+				if (largestUnitRatio == null || ratio > maxRatio) {
+					largestUnitRatio = unitRatio
+					maxRatio = ratio
+				}
+
 				units.add(unit)
 			}
 			
-			// second pass, link up unit display maps
+			List<UnitRatio> unitRatios = []
+			
+			// second pass, link up unit display maps and singular/plural unit ratios
 			for (e in initMap) {
 				String unit = e.key
 				def val = e.value
 				
+				UnitRatio unitRatio = localMap.get(unit)
+				
+				unitRatios.add(unitRatio)
+				
+				double ratio = unitRatio.ratio
+				unitRatio.singularUnitRatio = singularSubUnit.get((Double)unitRatio.ratio)
+				unitRatio.pluralUnitRatio = pluralSubUnit.get((Double)unitRatio.ratio)
+				
 				double subRatio = val[SUBRATIO]
-				
-				UnitRatio unitRatio = map.get(unit)
-				
 				unitRatio.subRatio = subRatio
 				
 				if (subRatio > 0.0d) {
-					unitRatio.singularSubUnitRatio = singularSubUnit.get((Double)subRatio)
-					unitRatio.pluralSubUnitRatio = pluralSubUnit.get((Double)subRatio)
+					unitRatio.subUnitRatio = pluralSubUnit.get((Double)subRatio)
 				}
+			}
+			
+			for (unitRatio in unitRatios) {
+				unitRatio.decoratedUnitRatio.initializeSubUnitRatios()
 			}
 		}
 		
@@ -557,7 +583,7 @@ class UnitGroupMap {
 			if (numeratorMap == null)
 				numeratorMap = [:]
 			groups.each {
-				numeratorMap.putAll(it.map)
+				numeratorMap.putAll(it.localMap)
 			}
 		}
 		
@@ -565,10 +591,9 @@ class UnitGroupMap {
 			if (denominatorMap == null)
 				denominatorMap = [:]
 			groups.each {
-				denominatorMap.putAll(it.map)
+				denominatorMap.putAll(it.localMap)
 			}
 		}
-		
 		
 		String lookupUnitString(String unit, boolean plural) {
 			UnitRatio unitRatio = lookupUnitRatio(unit)
@@ -576,22 +601,20 @@ class UnitGroupMap {
 			if (!unitRatio)
 				return unit
 			
-			double ratio = unitRatio.ratio
-			
 			if (plural) {
-				UnitRatio pluralRatio = pluralSubUnit?.get(ratio)
+				UnitRatio pluralRatio = unitRatio.pluralUnitRatio
 				return (pluralRatio ?: unitRatio).unit
 			}
 			
-			UnitRatio singularRatio = singularSubUnit?.get(ratio)
+			UnitRatio singularRatio = unitRatio.singularUnitRatio
 			return (singularRatio ?: unitRatio).unit
 		}
 
 		UnitRatio lookupUnitRatio(String unit) {
-			UnitRatio unitRatio = map[unit]
+			UnitRatio unitRatio = localMap[unit]
 			if (unitRatio) return unitRatio
 			unit = unit.toLowerCase()
-			unitRatio = map[unit.toLowerCase()]
+			unitRatio = localMap[unit.toLowerCase()]
 			if (unitRatio) return unitRatio
 			if (numeratorMap != null && denominatorMap != null) {
 				int slashPosition = unit.indexOf('/')
@@ -605,9 +628,9 @@ class UnitGroupMap {
 					if (numeratorRatio != null && denominatorRatio != null) {
 						// create new hybrid UnitRatio
 						String unitName = numeratorRatio.canonicalUnitString + '/' + denominatorRatio.canonicalUnitString
-						UnitRatio newDensityRatio = new UnitRatio(this, unit, numeratorRatio.ratio / denominatorRatio.ratio, 10, unitName, unitName, name)
-						map.put(unit, newDensityRatio)
-						map.put(unitName, newDensityRatio)
+						UnitRatio newDensityRatio = new UnitRatio(this, unit, numeratorRatio.ratio / denominatorRatio.ratio, 10, unitName, unitName, name, true)
+						localMap.put(unit, newDensityRatio)
+						localMap.put(unitName, newDensityRatio)
 						
 						return newDensityRatio
 					}
@@ -625,113 +648,75 @@ class UnitGroupMap {
 			return unitRatio.bestRatio(prevUnitRatio)
 		}
 		
-		Set<String> fetchUnits() {
-			return map.keySet()
+		void registerDecoratedUnitRatio(DecoratedUnitRatio decorated) {
+			localDecoratedMap.put(decorated.unit, decorated)
+			UnitGroupMap.theMap.registerDecoratedUnitRatio(decorated)
 		}
-	}
 	
-	static class UnitRatio {
-		UnitGroup unitGroup
-		String unit 
-		double ratio
-		def affinity
-		String canonicalUnit
-		String canonicalUnitString
-		String suffix
-		double subRatio
-		UnitRatio singularSubUnitRatio
-		UnitRatio pluralSubUnitRatio
-		
-		UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String suffix) {
-			this.unitGroup = unitGroup
-			this.unit = unit
-			this.ratio = ratio
-			this.affinity = affinity
-			this.canonicalUnit = canonicalUnit
-			this.canonicalUnitString = canonicalUnitString ?: canonicalUnit
-			if (!suffix.startsWith('['))
-				suffix = '[' + suffix + ']'
-			this.suffix = suffix
-			this.subRatio = 0.0d
-			this.singularSubUnitRatio = null
-			this.pluralSubUnitRatio = null
+		DecoratedUnitRatio simpleLookupDecoratedUnitRatio(String units) {
+			return localDecoratedMap.get(units)
 		}
 		
-		UnitRatio(UnitRatio other, String newSuffix) {
-			this.unitGroup = other.unitGroup
-			this.unit = other.unit
-			this.ratio = other.ratio
-			this.affinity = other.affinity
-			this.canonicalUnit = other.canonicalUnit
-			this.canonicalUnitString = other.canonicalUnitString
-			if (!newSuffix.startsWith('['))
-				newSuffix = '[' + newSuffix + ']'
-			this.suffix = newSuffix
-			this.subRatio = 0.0d
-			this.singularSubUnitRatio = null
-			this.pluralSubUnitRatio = null
-		}
-		
-		UnitRatio bestRatio(UnitRatio other) {
-			if (other == null)
-				return this
-			return this.affinity > other.affinity ? this : other
-		}
-		
-		int getGroupId() {
-			return unitGroup.getId()
-		}
-		
-		UnitGroup getGroup() {
-			return unitGroup
-		}
-		
-		int getGroupPriority() {
-			return unitGroup.getPriority()
-		}
-		
-		UnitRatio lookupUnitRatio(String unit) {
-			return unitGroup.lookupUnitRatio(unit)
-		}
-		
-		BigDecimal conversionRatio(String unit) {
-			if (!unit)
-				return null
+		DecoratedUnitRatio lookupDecoratedUnitRatio(String units) {
+			DecoratedUnitRatio decorated = localDecoratedMap.get(units)
 			
-			UnitRatio otherRatio = lookupUnitRatio(unit)
+			if (decorated != null)
+				return decorated
 			
-			if (otherRatio == null)
-				return null
+			UnitRatio ratio = lookupUnitRatio(units)
+			
+			if (ratio != null) {
+				decorated = ratio.decoratedUnitRatio
 				
-			if (otherRatio == this)
-				return null
+				return decorated
+			}
 			
-			return new BigDecimal(otherRatio.ratio / this.ratio)
+			Matcher matcher = twoWordUnitPattern.matcher(units)
+			
+			if (matcher.lookingAt()) {
+				String units2 = matcher.group(1)
+				ratio = lookupUnitRatio(units2.toLowerCase())
+				if (ratio != null) {
+					String suffix = matcher.group(3)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+					
+					return decorated
+				}
+			}
+			
+			matcher = oneWordUnitPattern.matcher(units)
+			
+			if (matcher.lookingAt()) {
+				String units1 = matcher.group(1)
+				ratio = lookupUnitRatio(units1.toLowerCase())
+				if (ratio != null) {
+					String suffix = matcher.group(4)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+					
+					return decorated
+				}
+			}
+			
+			return null
 		}
 		
-		void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
-			UnitRatio subUnitRatio = null
-			if (subRatio) {
-				if (amount.compareTo(BigDecimal.ONE) == 0) {
-					subUnitRatio = singularSubUnitRatio
-				} else
-					subUnitRatio = pluralSubUnitRatio
-			}
-			if (subUnitRatio == null || amountPrecision < 0) {
-				amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:this.unit])
-			} else {
-				long primeVal = (long)amount
-				amounts.put(amounts.size(), [amount:new BigDecimal(primeVal), amountPrecision:(Integer)amountPrecision, units:this.unit])
-				double remainder = (amount.doubleValue() - ((double)primeVal)) * ratio / subRatio
-				if (remainder != 0.0d && (remainder > 1.0e-5d || remainder < -1.0e-5d))
-					subUnitRatio.getJSONAmounts(amounts, new BigDecimal(remainder).setScale(2, BigDecimal.ROUND_HALF_UP), amountPrecision)
-			}
+		Set<String> fetchUnits() {
+			return localMap.keySet()
 		}
 	}
 	
-	static final UnitGroupMap theMap = new UnitGroupMap()
+	static UnitGroupMap theMap
+	
+	static {
+		new UnitGroupMap()
+	}
 	
 	def UnitGroupMap() {
+		theMap = this
+		
+		unitToUnitRatio = new ConcurrentHashMap<String, UnitRatio>()
+		unitToDecorated = new ConcurrentHashMap<String, UnitRatio>()
+		
 		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
 				UnitGroup.UNIT, UnitGroup.QUANTITY)
 		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
@@ -743,17 +728,22 @@ class UnitGroupMap {
 			allUnits.addAll(group.fetchUnits())
 		}
 		
-		unitsToRatio = new ConcurrentHashMap<String, UnitRatio>()
-
+		List<UnitRatio> unitRatios = new ArrayList<UnitRatio>()
+		
 		for (String units : allUnits) {
 			UnitRatio baseRatio = simpleLookupUnitRatioForUnits(units)
 			if (baseRatio)
-				unitsToRatio.put(units.toLowerCase(), baseRatio)
+				unitToUnitRatio.put(units.toLowerCase(), baseRatio)
+			unitRatios.add(baseRatio)
 		}
 		
-		for (String units : allUnits) {
-			unitsToRatio.put(units.toLowerCase(), unitRatioForUnits(units))
+		for (UnitRatio unitRatio : unitRatios) {
+			unitRatio.decoratedUnitRatio?.initializeSubUnitRatios()
 		}
+	}
+	
+	void registerDecoratedUnitRatio(DecoratedUnitRatio decorated) {
+		unitToDecorated.put(decorated.unit, decorated)
 	}
 	
 	/**
@@ -761,7 +751,7 @@ class UnitGroupMap {
 	 *
 	 */
 	protected UnitRatio simpleLookupUnitRatioForUnits(String units) {
-		UnitRatio ratio = unitsToRatio.get(units)
+		UnitRatio ratio = unitToUnitRatio.get(units)
 		
 		if (ratio)
 			return ratio
@@ -771,13 +761,13 @@ class UnitGroupMap {
 		}
 		
 		if (ratio)
-			unitsToRatio.put(units, ratio)
+			unitToUnitRatio.put(units, ratio)
 		
 		return ratio
 	}
 	
 	protected double lookupRatioForUnits(String units) {
-		UnitRatio unitRatio = unitRatioForUnits(units.toLowerCase())
+		DecoratedUnitRatio unitRatio = decoratedUnitRatioForUnits(units.toLowerCase())
 		if (unitRatio) return unitRatio.ratio
 		
 		return 1.0d
@@ -792,22 +782,30 @@ class UnitGroupMap {
 	 * 
 	 * Also look for units that contain an additional suffix ("meters climbed") and records it as "miles" plus suffix of "climbed"
 	 */
-	UnitRatio unitRatioForUnits(String units) {
+	DecoratedUnitRatio decoratedUnitRatioForUnits(String units) {
+		DecoratedUnitRatio decorated = unitToDecorated.get(units)
+		
+		if (decorated != null)
+			return decorated
+		
 		UnitRatio ratio = simpleLookupUnitRatioForUnits(units.toLowerCase())
 		
-		if (ratio != null) return ratio
+		if (ratio != null) {
+			decorated = ratio.decoratedUnitRatio
+			
+			return decorated
+		}
 		
 		Matcher matcher = twoWordUnitPattern.matcher(units)
 		
 		if (matcher.lookingAt()) {
 			String units2 = matcher.group(1)
-			ratio = unitsToRatio.get(units2.toLowerCase())
+			ratio = simpleLookupUnitRatioForUnits(units2.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(3)
-				ratio = new UnitRatio(ratio, suffix)
-				unitsToRatio.put(units, ratio)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
 				
-				return ratio
+				return decorated
 			}
 		}
 		
@@ -815,56 +813,57 @@ class UnitGroupMap {
 		
 		if (matcher.lookingAt()) {
 			String units1 = matcher.group(1)
-			ratio = unitsToRatio.get(units1.toLowerCase())
+			ratio = simpleLookupUnitRatioForUnits(units1.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(4)
-				ratio = new UnitRatio(ratio, suffix)
-				unitsToRatio.put(units, ratio)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
 				
-				return ratio
+				return decorated
 			}
 		}
 		
 		return null
 	}
 	
-	UnitRatio unitRatioForTagIdUnits(Long userId, Long tagId, String units) {
+	DecoratedUnitRatio decoratedUnitRatioForTagIdUnits(Long userId, Long tagId, String units) {
 		TagUnitStatsInterface mostUsed = DataRetriever.get().mostUsedTagUnitStats(userId, tagId)
 		
 		UnitGroup unitGroup = mostUsed?.getUnitGroup()
 		if (unitGroup != null) {
-			return unitGroup.lookupUnitRatio(units)
+			UnitRatio unitRatio = unitGroup.lookupUnitRatio(units)
+			if (unitRatio != null)
+				return unitRatio.decoratedUnitRatio
 		}
 		
 		// lookup generic unit ratio for the unit
-		return unitRatioForUnits(units)
+		return decoratedUnitRatioForUnits(units)
 	}
 
 	void getJSONAmounts(Long userId, Long tagId, Map amounts, BigDecimal amount, int amountPrecision, String units) {
-		UnitRatio unitRatio = unitRatioForTagIdUnits(userId, tagId, units)
-		if (unitRatio == null) {
+		DecoratedUnitRatio decorated = decoratedUnitRatioForTagIdUnits(userId, tagId, units)
+		if (decorated == null) {
 			amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:units])
 		} else {
-			unitRatio.getJSONAmounts(amounts, amount, amountPrecision)
+			decorated.getJSONAmounts(amounts, amount, amountPrecision)
 		}
 	}
 	
 	/**
 	 * Look through UnitGroups, or just use most used UnitGroup
 	 */
-	UnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
+	DecoratedUnitRatio mostUsedUnitRatioForTagIds(Long userId, def tagIds) {
 		TagUnitStatsInterface mostUsed = DataRetriever.get().mostUsedTagUnitStatsForTags(userId, tagIds)
 		if (mostUsed == null)
 			return null
 			
 		UnitGroup unitGroup = mostUsed?.getUnitGroup()
 		if (unitGroup != null) {
-			return unitGroup.lookupUnitRatio(mostUsed.getUnit())
+			UnitRatio unitRatio = unitGroup.lookupUnitRatio(mostUsed.getUnit())
+			if (unitRatio != null) return unitRatio.decoratedUnitRatio
 		}
 		
-
 		// lookup cached unit ratio for the unit
-		return unitRatioForUnits(mostUsed.getUnit())
+		return decoratedUnitRatioForUnits(mostUsed.getUnit())
 	}
 	
 	/**
@@ -875,10 +874,10 @@ class UnitGroupMap {
 			return ""
 		}
 		
-		UnitRatio unitRatio = unitRatioForUnits(units)
+		DecoratedUnitRatio unitRatio = decoratedUnitRatioForUnits(units)
 		String suffix
 		if (unitRatio)
-			suffix = unitRatio.getSuffix()
+			suffix = unitRatio.getTagSuffix()
 		else
 			suffix = units
 		
@@ -894,6 +893,263 @@ class UnitGroupMap {
 	
 	static int getSuffixPriority(String suffix) {
 		return suffixPriority.get(suffix)
+	}
+}
+
+class UnitRatio {
+	UnitGroup unitGroup
+	String unit
+	double ratio
+	def affinity
+	String canonicalUnit
+	String canonicalUnitString
+	String tagSuffix
+	double subRatio
+	UnitRatio singularUnitRatio
+	UnitRatio pluralUnitRatio
+	UnitRatio subUnitRatio
+	DecoratedUnitRatio decoratedUnitRatio
+	Map<String, DecoratedUnitRatio> decoratedMap = new ConcurrentHashMap<String, DecoratedUnitRatio>()
+	
+	UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String tagSuffix, boolean initialize) {
+		this.unitGroup = unitGroup
+		this.unit = unit
+		this.ratio = ratio
+		this.affinity = affinity
+		this.canonicalUnit = canonicalUnit
+		this.canonicalUnitString = canonicalUnitString ?: canonicalUnit
+		if (!tagSuffix.startsWith('['))
+			tagSuffix = '[' + tagSuffix + ']'
+		this.tagSuffix = tagSuffix
+		this.subRatio = 0.0d
+		this.singularUnitRatio = null
+		this.pluralUnitRatio = null
+		this.subUnitRatio = null
+		this.decoratedUnitRatio = DecoratedUnitRatio.lookupOrCreate(this, null, initialize)
+	}
+	
+	DecoratedUnitRatio unitSuffixToDecoratedUnitRatio(String unitSuffix) {
+		DecoratedUnitRatio decorated = decoratedMap.get(unitSuffix)
+		
+		if (decorated == null) {
+			return DecoratedUnitRatio.lookupOrCreate(this, unitSuffix, true)
+		}
+		
+		return decorated
+	}
+	
+	DecoratedUnitRatio getDecoratedUnitRatio() {
+		if (decoratedUnitRatio != null)
+			return decoratedUnitRatio
+		return DecoratedUnitRatio.lookupOrCreate(this, null, true)
+	}
+	
+	UnitRatio bestRatio(UnitRatio other) {
+		if (other == null)
+			return this
+		return this.affinity > other.affinity ? this : other
+	}
+	
+	int getGroupId() {
+		return unitGroup.getId()
+	}
+	
+	UnitGroup getGroup() {
+		return unitGroup
+	}
+	
+	int getGroupPriority() {
+		return unitGroup.getPriority()
+	}
+	
+	UnitRatio lookupUnitRatio(String unit) {
+		return unitGroup.lookupUnitRatio(unit)
+	}
+	
+	BigDecimal conversionRatio(String unit) {
+		if (!unit)
+			return null
+		
+		UnitRatio otherRatio = lookupUnitRatio(unit)
+		
+		if (otherRatio == null)
+			return null
+			
+		if (otherRatio == this)
+			return null
+		
+		return new BigDecimal(otherRatio.ratio / this.ratio)
+	}
+}
+
+class DecoratedUnitRatio {
+	UnitRatio unitRatio
+	String unitSuffix // this is a special suffix added to the tag if the unit is decorated (i.e., "hours rem" or "feet elevation"
+	String tagSuffix // computed suffix ([elevation])
+	DecoratedUnitRatio singularUnitRatio
+	DecoratedUnitRatio pluralUnitRatio
+	DecoratedUnitRatio subUnitRatio
+	
+	static DecoratedUnitRatio lookupOrCreate(UnitRatio ratio, String unitSuffix, boolean initialize) {
+		String unit = ratio.unit
+		String decoratedUnit = unitSuffix == null ? unit : unit + ' ' + unitSuffix
+		DecoratedUnitRatio decorated = ratio.unitGroup.simpleLookupDecoratedUnitRatio(decoratedUnit)
+		if (decorated != null) return decorated
+		return new DecoratedUnitRatio(ratio, unitSuffix, initialize)
+	}
+	
+	DecoratedUnitRatio(UnitRatio unitRatio, String unitSuffix, boolean initialize) {
+		this.unitRatio = unitRatio
+		this.unitSuffix = unitSuffix
+		if (unitSuffix) {
+			tagSuffix = '[' + unitSuffix + ']'
+		} else
+			tagSuffix = unitRatio.tagSuffix
+		unitRatio.unitGroup.registerDecoratedUnitRatio(this)
+		if (initialize) {
+			initializeSubUnitRatios()
+		}
+	}
+	
+	void initializeSubUnitRatios() {
+		if (unitRatio.subUnitRatio != null) {
+			if (unitSuffix == null) {
+				subUnitRatio = unitRatio.subUnitRatio?.decoratedUnitRatio
+			} else
+				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, unitSuffix, true)
+		}
+		if (unitRatio.singularUnitRatio != null) {
+			if (unitSuffix == null) {
+				if (unitRatio.singularUnitRatio != null) {
+					singularUnitRatio = unitRatio.singularUnitRatio?.decoratedUnitRatio
+					if (singularUnitRatio == null) {
+						singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
+					}
+				}
+			} else {
+				if (unitRatio.singularUnitRatio.is(unitRatio)) {
+					singularUnitRatio = this
+				} else
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
+			}
+		}
+		if (unitRatio.pluralUnitRatio != null) {
+			if (unitSuffix == null) {
+				if (unitRatio.pluralUnitRatio != null) {
+					pluralUnitRatio = unitRatio.pluralUnitRatio?.decoratedUnitRatio
+					if (pluralUnitRatio == null) {
+						pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
+					}
+				}
+			} else {
+				if (unitRatio.pluralUnitRatio.is(unitRatio)) {
+					pluralUnitRatio = this
+				} else
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
+			}
+		}
+	}
+	
+	DecoratedUnitRatio(UnitRatio unitRatio, String unitSuffix) {
+		this.unitRatio = unitRatio
+		this.unitSuffix = unitSuffix
+		unitRatio.unitGroup.registerDecoratedUnitRatio(this)
+	}
+	
+	DecoratedUnitRatio fetchSingularUnitRatio() {
+		if (singularUnitRatio != null) return singularUnitRatio
+		if (unitRatio.singularUnitRatio == null) return null
+		if (unitSuffix == null) {
+			singularUnitRatio = unitRatio.singularUnitRatio?.decoratedUnitRatio
+			return singularUnitRatio
+		}
+		if (unitRatio.singularUnitRatio.is(unitRatio)) {
+			singularUnitRatio = this
+		} else
+			singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix)
+		return singularUnitRatio
+	}
+	
+	DecoratedUnitRatio fetchPluralUnitRatio() {
+		if (pluralUnitRatio != null) return pluralUnitRatio
+		if (unitRatio.pluralUnitRatio == null) return null
+		if (unitSuffix == null) {
+			pluralUnitRatio = unitRatio.pluralUnitRatio?.decoratedUnitRatio
+			return pluralUnitRatio
+		}
+		if (unitRatio.pluralUnitRatio.is(unitRatio)) {
+			pluralUnitRatio = this
+		} else
+			pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix)
+		return pluralUnitRatio
+	}
+	
+	double getRatio() { unitRatio.ratio }
+	UnitGroup getUnitGroup() { unitRatio.unitGroup }
+	int getGroupPriority() { unitRatio.groupPriority }
+	String getUnit() { unitSuffix == null ? unitRatio.unit : unitRatio.unit + ' ' + unitSuffix }
+	String getCanonicalUnit() { unitRatio.canonicalUnit }
+	String getCanonicalUnitString() { unitSuffix == null ? unitRatio.canonicalUnitString : unitRatio.canonicalUnitString + ' ' + unitSuffix }
+	String getUnitSuffix() { unitSuffix }
+	double getSubRatio() { unitRatio.subRatio }
+	int getGroupId() { unitRatio.groupId }
+	def getAffinity() { unitRatio.affinity }
+	BigDecimal conversionRatio(String unit) { unitRatio.conversionRatio(unit) }
+	
+	DecoratedUnitRatio unitSuffixToDecoratedUnitRatio(String unitSuffix) {
+		if (unitSuffix == unitSuffix)
+			return this
+			
+		return unitRatio.unitSuffixToDecoratedUnitRatio(unitSuffix)
+	}
+	
+	DecoratedUnitRatio lookupDecoratedUnitRatio(String unit) {
+		if (unitSuffix == null)
+			return unitRatio.lookupUnitRatio(unit).decoratedUnitRatio
+		
+		String baseUnit = unit
+		if (unit.endsWith(unitSuffix))
+			baseUnit = unit.substring(0, (unit.length() - unitSuffix.length()) - 1)
+		UnitRatio baseUnitRatio = unitRatio.lookupUnitRatio(baseUnit)
+		if (baseUnitRatio == null)
+			return null
+		
+		return baseUnitRatio.unitSuffixToDecoratedUnitRatio(unitSuffix)
+	}
+	
+	String singularOrPluralUnitString(boolean plural) {
+		DecoratedUnitRatio decorated = plural ? pluralUnitRatio : singularUnitRatio
+		
+		if (decorated != null)
+			return decorated.unit
+		
+		return this.unit
+	}
+	
+	void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
+		int compareToOne = amount.compareTo(BigDecimal.ONE)
+		
+		if ((!subRatio) || subUnitRatio == null || amountPrecision < 0) {
+			amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0)])
+		} else {
+			BigDecimal subAmount
+			
+			if (compareToOne >= 0) {
+				String baseUnitString
+				
+				long primeVal = (long)amount				
+				amounts.put(amounts.size(), [amount:new BigDecimal(primeVal), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(primeVal != 1L)])
+				double remainder = (amount.doubleValue() - ((double)primeVal)) * ratio / subRatio
+				if (remainder != 0.0d && (remainder > 1.0e-5d || remainder < -1.0e-5d)) {
+					subAmount = new BigDecimal(remainder).setScale(4, BigDecimal.ROUND_HALF_UP)
+				} else
+					return
+			} else {
+				subAmount = amount.multiply(new BigDecimal(ratio / subRatio))
+			}
+			
+			subUnitRatio.getJSONAmounts(amounts, subAmount, amountPrecision)
+		}
 	}
 }
 

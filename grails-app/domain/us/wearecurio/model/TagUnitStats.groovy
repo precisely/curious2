@@ -1,6 +1,8 @@
 package us.wearecurio.model
 
+import grails.compiler.GrailsTypeChecked
 import org.apache.commons.logging.LogFactory
+
 import org.springframework.aop.aspectj.RuntimeTestWalker.ThisInstanceOfResidueTestVisitor;
 import org.springframework.transaction.annotation.Transactional
 
@@ -10,7 +12,8 @@ import us.wearecurio.services.DatabaseService
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.DataRetriever
 import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.DecoratedUnitRatio
+import us.wearecurio.data.UnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.TagUnitStatsInterface
 
@@ -129,7 +132,7 @@ class TagUnitStats implements TagUnitStatsInterface {
 		}
 		
 		// Find UnitRatio for the unit
-		UnitRatio unitRatio = UnitGroupMap.theMap.unitRatioForUnits(unit)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(unit)
 
 		if (!unitRatio) {
 			return createOrUpdateSingle(userId, tagId, unit, null, false)

@@ -10,7 +10,8 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UnitGroupMap.UnitGroup
-import us.wearecurio.data.UnitGroupMap.UnitRatio
+import us.wearecurio.data.DecoratedUnitRatio
+import us.wearecurio.data.UnitRatio
 import us.wearecurio.data.RepeatType
 
 class TagValueStats {
@@ -74,7 +75,7 @@ class TagValueStats {
 		}
 
 		if (minMax && minMax.size() > 0) {
-			UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, [tagId])
+			DecoratedUnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, [tagId])
 
 			for (int i = 0; i < minMax.size(); ++i) {
 				String units = minMax[i]['units']
