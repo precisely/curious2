@@ -377,7 +377,6 @@ class EntryParserService {
 	static final int CONDITION_STRICTUNITSB = 9
 	static final int CONDITION_TIME = 10
 	static final int CONDITION_COMMENT = 11
-	
 	static class ParserContext {
 		ArrayList<ParseAmount> amounts = new ArrayList<ParseAmount>()
 		
