@@ -80,7 +80,7 @@ class Sprint {
 	}
 	
 	static searchable = {
-		only = [ 'hash', 'userId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
+		only = [ 'hash', 'userId', 'searchId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
 	}
 	
 	static Sprint create(User user) {
@@ -643,7 +643,11 @@ class Sprint {
 	
 		return participantsList
 	}
-
+	
+	String getSearchId() {
+		return Model.getSearchId(Model.SearchType.SPRINT, this)
+	}
+	
 	String toString() {
 		return "Sprint(id:" + getId() + ", userId:" + userId + ", name:" + name + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", visibility:" + visibility + ")"

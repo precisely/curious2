@@ -223,7 +223,25 @@ class UserActivitySpec extends Specification {
 		secondaryObjectType << typePermutations.collect{ it[2] }
 		expectedTypeString << typePermutations.collect{ it[3] }
 	}
-	
+
+	@spock.lang.Unroll
+	void "test getTypeString with typeId returns '#expectedTypeString' for activity '#activityType', primary object '#primaryObjectType' and secondary object '#secondaryObjectType'"() {
+		given: "a typeId from activity, object and other types"
+		Long typeId = UserActivity.toType(activityType, primaryObjectType, secondaryObjectType)
+		
+		when: "getTypeString is called"
+		def typeString = UserActivity.getTypeString(typeId)
+		
+		then: "expected results are returned"
+		typeString == expectedTypeString
+		
+		where:
+		activityType << typePermutations.collect{ it[0] }
+		primaryObjectType << typePermutations.collect{ it[1] }
+		secondaryObjectType << typePermutations.collect{ it[2] }
+		expectedTypeString << typePermutations.collect{ it[3] }
+	}	
+
 	//@spock.lang.Ignore
 	@spock.lang.Unroll
 	void "test toActivityType and toObjectType returns correct values using typeId returned from toTypeId(#activityType, #primaryObjectType, #secondaryObjectType)"() {

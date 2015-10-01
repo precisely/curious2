@@ -4,7 +4,9 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 
 import org.apache.commons.logging.LogFactory
+
 import grails.gorm.DetachedCriteria
+
 import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
@@ -67,7 +69,7 @@ class User {
 	}
 
 	static searchable = {
-		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions']
+		only = ['username', 'hash', 'searchId', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions']
 	}
 
 	SortedSet interestTags
@@ -564,6 +566,10 @@ class User {
 			}
 		}
 		return groups
+	}
+
+	String getSearchId() {
+		return Model.getSearchId(Model.SearchType.USER, this)
 	}
 	
 	def getJSONShortDesc() {
