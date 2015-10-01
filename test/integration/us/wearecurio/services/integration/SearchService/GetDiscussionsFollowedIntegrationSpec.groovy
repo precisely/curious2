@@ -6,7 +6,7 @@ import us.wearecurio.model.UserGroup
 class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
 	void "Test single"() {
-		given: "discussion followed by user1"
+		given: "discussion followed by owner"
 		def discussion = Discussion.create(user1, getUniqueName())
 		
 		when: "elasticsearch service is indexed"
@@ -16,8 +16,9 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "getDiscussionsFollowed returns discussion followed by user1"
 		def results = searchService.getDiscussionsFollowed(user1)
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion.id.toString()
 		results.listItems[0].name == discussion.name
 	}
 
@@ -25,6 +26,7 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		given: "discussion followed by user1 and user2"
 		def discussion = Discussion.create(user1, getUniqueName())
 		def userGroup = UserGroup.create(getUniqueName(), getUniqueName(), getUniqueName(), null)
+		userGroup.addWriter(user1)
 		userGroup.addDiscussion(discussion)
 		userGroup.addReader(user2)
 		
@@ -35,17 +37,20 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "getDiscussionsFollowed called for user1 returns discussion followed by user1"
 		def results = searchService.getDiscussionsFollowed(user1)
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion.id.toString()
 		results.listItems[0].name == discussion.name
 
 		when: "getDiscussionsFollowed called for user2"
 		results = searchService.getDiscussionsFollowed(user2)
+		def readerGroups = UserGroup.getGroupsForReader(user2.id)
 		
 		then: "discussion followed by user2 is returned"
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion.id.toString()
 		results.listItems[0].name == discussion.name
 	}
 	
@@ -61,8 +66,9 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "getDiscussionsFollowed called for user1 only returns discussion1"
 		def results = searchService.getDiscussionsFollowed(user1)
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion1.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion1.id.toString()
 		results.listItems[0].name == discussion1.name
 		
 		when: "getDiscussionsFollowed called for user2"
@@ -70,8 +76,9 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		
 		then: "only discussion2 is returned"
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion2.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion2.id.toString()
 		results.listItems[0].name == discussion2.name
 	}
 	
@@ -79,6 +86,7 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		given: "discussion followed by user1 and user2"
 		def discussion = Discussion.create(user1, getUniqueName())
 		def userGroup = UserGroup.create(getUniqueName(), getUniqueName(), getUniqueName(), null)
+		userGroup.addWriter(user1)
 		userGroup.addDiscussion(discussion)
 		userGroup.addReader(user2)
 		
@@ -89,8 +97,9 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 				
 		then: "discussion followed by user2 is returned"
 		results.success
-		results.listItems.count() == 1
-		results.listItems[0].id == discussion.id
+		results.listItems.size() == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].id == discussion.id.toString()
 		results.listItems[0].name == discussion.name
 		
 		when: "user2 is removed from discussion and getDiscussionsFollowed called for user2"
@@ -101,7 +110,7 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 
 		then: "no discussions returned"
 		results.success
-		results.listItems.count() < 1
+		results.listItems.size() < 1
 	}
 	
 	void "Test with offset"() {
@@ -115,12 +124,20 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		def results = searchService.getDiscussionsFollowed(user1, 0, 3)
-
+		
 		then: "both discussion1 and discussion2 are returned"
 		results.success
 		results.listItems.size() == 2
-		results.listItems.find{ it -> it.id == discussion1.id && it.name == discussion1.name }
-		results.listItems.find{ it -> it.id == discussion2.id && it.name == discussion2.name }
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion1.id.toString() && 
+			it.name == discussion1.name
+		} != null
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion2.id.toString() && 
+			it.name == discussion2.name
+		} != null
 		
 		when: "getDiscussionsFollowed is called for user1 with offset 1 and max > 2"
 		results = searchService.getDiscussionsFollowed(user1, 1, 3)
@@ -128,7 +145,10 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "discussion1 or discussion2 is returned"
 		results.success
 		results.listItems.size() == 1
-		results.listItems.find{ it -> (it.id == discussion1.id && it.name == discussion1.name) || (it.id == discussion2.id && it.name == discussion2.name) }
+		results.listItems.find{ 
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) || 
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name)
+		} != null
 
 		when: "getDiscussionsFollowed is called for user1 with offset > 1 and max > 2"
 		results = searchService.getDiscussionsFollowed(user1, 2, 3)
@@ -136,7 +156,6 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "no discusions are returned"
 		results.success
 		results.listItems.size() < 1
-
 	}
 	
 	void "Test with max"() {
@@ -160,7 +179,10 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "only discussion1 or discussion2 is returned"
 		results.success
 		results.listItems.size() == 1
-		results.listItems.find{ it -> (it.id == discussion1.id && it.name == discussion1.name) || (it.id == discussion2.id && it.name == discussion2.name) }
+		results.listItems.find{ 
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) || 
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name)
+		} != null
 
 		when: "getDiscussionsFollowed is called for user1 with offset 0 and max 2"
 		results = searchService.getDiscussionsFollowed(user1, 0, 2)
@@ -168,8 +190,16 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "both discussion1 and discussion2 are returned"
 		results.success
 		results.listItems.size() == 2
-		results.listItems.find{ it -> it.id == discussion1.id && it.name == discussion1.name }
-		results.listItems.find{ it -> it.id == discussion2.id && it.name == discussion2.name }
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion1.id.toString() && 
+			it.name == discussion1.name
+		} != null
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion2.id.toString() && 
+			it.name == discussion2.name 
+		} != null
 		
 		when: "getDiscussionsFollowed is called for user1 with offset 0 and max > 2"
 		results = searchService.getDiscussionsFollowed(user1, 0, 3)
@@ -177,8 +207,16 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "both discussion1 and discussion2 are returned"
 		results.success
 		results.listItems.size() == 2
-		results.listItems.find{ it -> it.id == discussion1.id && it.name == discussion1.name }
-		results.listItems.find{ it -> it.id == discussion2.id && it.name == discussion2.name }
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion1.id.toString() && 
+			it.name == discussion1.name 
+		} != null
+		results.listItems.find{ 
+			it.type == "dis" && 
+			it.id == discussion2.id.toString()	 && 
+			it.name == discussion2.name 
+		} != null
 	}
 
 	void "Test with offset and max"() {
@@ -197,11 +235,11 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "only discussion1 or discussion2 or discussion3 is returned"
 		results.success
 		results.listItems.size() == 1
-		results.listItems.find{ it ->
-			(it.id == discussion1.id && it.name == discussion1.name) ||
-			(it.id == discussion2.id && it.name == discussion2.name) ||
-			(it.id == discussion3.id && it.name == discussion3.name)
-		}
+		results.listItems.find{
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) ||
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name) ||
+			(it.type == "dis" && it.id == discussion3.id.toString() && it.name == discussion3.name)
+		} != null
 	}
 	
 	void "Test unique for unique offset values with max 1"() {
@@ -222,33 +260,33 @@ class GetDiscussionsFollowedIntegrationSpec extends SearchServiceIntegrationSpec
 		then: "results01 is either discussion1, discussion2 or discussion3"
 		results01.success
 		results01.listItems.size() == 1
-		results01.listItems.find{ it ->
-			(it.id == discussion1.id && it.name == discussion1.name) ||
-			(it.id == discussion2.id && it.name == discussion2.name) ||
-			(it.id == discussion3.id && it.name == discussion3.name)
-		}
+		results01.listItems.find{
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) ||
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name) ||
+			(it.type == "dis" && it.id == discussion3.id.toString() && it.name == discussion3.name)
+		} != null
 		
 		and: "results11 is either discussion1, discussion2 or discussion3"
 		results11.success
 		results11.listItems.size() == 1
-		results11.listItems.find{ it ->
-			(it.id == discussion1.id && it.name == discussion1.name) ||
-			(it.id == discussion2.id && it.name == discussion2.name) ||
-			(it.id == discussion3.id && it.name == discussion3.name)
-		}
+		results11.listItems.find{
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) ||
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name) ||
+			(it.type == "dis" && it.id == discussion3.id.toString() && it.name == discussion3.name)
+		} != null
 
 		and: "results21 is either discussion1, discussion2 or discussion3"
 		results21.success
 		results21.listItems.size() == 1
-		results21.listItems.find{ it ->
-			(it.id == discussion1.id && it.name == discussion1.name) ||
-			(it.id == discussion2.id && it.name == discussion2.name) ||
-			(it.id == discussion3.id && it.name == discussion3.name)
-		}
+		results21.listItems.find{
+			(it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name) ||
+			(it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name) ||
+			(it.type == "dis" && it.id == discussion3.id.toString() && it.name == discussion3.name)
+		} != null
 
 		and: "none of the discussions in results01, results11 and results21 are the same"
-		results01[0].id != results11[0].id
-		results01[0].id != results21[0].id
-		results11[0].id != results21[0].id
+		results01.listItems[0].id != results11.listItems[0].id
+		results01.listItems[0].id != results21.listItems[0].id
+		results11.listItems[0].id != results21.listItems[0].id
 	}
 }

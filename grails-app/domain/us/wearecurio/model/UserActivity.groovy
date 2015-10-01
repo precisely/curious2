@@ -41,9 +41,28 @@ class UserActivity {
 	}
 	
 	static searchable = {
-		only = ['id', 'created', 'userId', 'userName', 'typeId', 'activityType', 'objectType', 'objectId', 'objectDescription', 'otherType', 'otherId', 'otherDescription']
+		only = [
+			'id', 
+			'created',
+			'userId', 
+			'userName', 
+			'typeId', 
+			'activityType', 
+			'objectType', 
+			'objectId', 
+			'objectDescription', 
+			'otherType', 
+			'otherId', 
+			'otherDescription',
+			'objectUserId',
+			'objectVisibility',
+			'discussionGroupIds',
+			'sprintVirtualGroupId',
+			'sprintDescription',
+			'sprintTagName']
 	}
-	
+
+
 	static final String		TYPE_ABBREVIATION 	= 	"act"
 	static final String 	TYPE_DELIMITER 		=	"-"
 	static final String 	INVALID_TYPE_STRING	=	""
@@ -51,6 +70,7 @@ class UserActivity {
 	static final int		SHIFT_OTHER_BASE	= 	24
 	static final int		INVALID_TYPE		= 	-1
 	
+
 	static ActivityType toActivityType(Long typeIdParam) {
 		if (typeIdParam == INVALID_TYPE) return null
 		
@@ -283,6 +303,10 @@ class UserActivity {
 					return ""
 			}
 		}
+	}
+	
+	static String getTypeString(Long typeId) {
+		return getTypeString(toActivityType(typeId), toObjectType(typeId), toOtherType(typeId))
 	}
 	
 	static String getTypeString(ActivityType actType, ObjectType primaryObjType, ObjectType secondaryObjType = null) {
@@ -577,6 +601,52 @@ class UserActivity {
 	
 	String getOtherDescription() {
 		return getObjectDescription(otherType, otherId)	
+	}
+	
+	Long[] getDiscussionGroupIds() {
+		if (objectType != ObjectType.DISCUSSION) return null
+		
+		return Discussion.get(objectId)?.getGroupIds()
+	}
+	
+	Model.Visibility getObjectVisibility() {
+		switch(objectType) {
+			case ObjectType.DISCUSSION:
+				return Discussion.get(objectId)?.visibility
+			case ObjectType.SPRINT:
+				return Sprint.get(objectId)?.visibility
+			default:
+				return null
+		}
+	}
+	
+	Long getObjectUserId() {
+		switch(objectType) {
+			case ObjectType.DISCUSSION:
+				return Discussion.get(objectId)?.userId
+			case ObjectType.SPRINT:
+				return Sprint.get(objectId)?.userId
+			default:
+				return null
+		}
+	}
+	
+	String getSprintVirtualGroupId() {
+		if (objectType != ObjectType.SPRINT) return null
+			
+		return Sprint.get(objectId)?.virtualGroupId
+	}
+	
+	String getSprintDescription() {
+		if (objectType != ObjectType.SPRINT) return null
+		
+		return Sprint.get(objectId)?.description
+	}
+	
+	String getSprintTagName() {
+		if (objectType != ObjectType.SPRINT) return null
+		
+		return Sprint.get(objectId)?.tagName
 	}
 	
 	String toString() {

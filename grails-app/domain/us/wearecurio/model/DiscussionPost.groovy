@@ -2,8 +2,8 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
-import us.wearecurio.utility.Utils
 
+import us.wearecurio.utility.Utils
 import grails.converters.*
 import us.wearecurio.model.Model.Visibility
 
@@ -45,7 +45,7 @@ class DiscussionPost {
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
+		only = ['discussionId', 'searchId', 'discussionName', 'discussionGroupIds', 'discussionUserId', 'discussionVisibility', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
 	}
 	
 	def getJSONDesc() {
@@ -204,6 +204,26 @@ class DiscussionPost {
 		}
 	}
 	
+	String getDiscussionName() {
+		return Discussion.get(discussionId)?.name
+	}
+	
+	Long[] getDiscussionGroupIds() {
+		return Discussion.get(discussionId)?.groupIds
+	}
+	
+	Visibility getDiscussionVisibility() {
+		return Discussion.get(discussionId)?.visibility
+	}
+	
+	Long getDiscussionUserId() {
+		return Discussion.get(discussionId)?.userId
+	}
+	
+	String getSearchId() {
+		return Model.getSearchId(Model.SearchType.DISCUSSION_POST, this)
+	}	
+
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}

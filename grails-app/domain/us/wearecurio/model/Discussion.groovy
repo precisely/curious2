@@ -41,7 +41,7 @@ class Discussion {
 	static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
-		only = ['userId', 'firstPostId', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
+		only = ['userId', 'firstPostId', 'searchId', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
@@ -123,11 +123,12 @@ class Discussion {
 	
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
-		def discussionId = discussion.id
-		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
-		//TODO: create delete DiscussionPost activities and write integration tests
-		discussion.delete(flush: true)
+		println "Discussion.delete() discussionId:" + discussion.getId()
+		def discussionId = discussion.getId()
 		createUserActivity(null, UserActivity.ActivityType.DELETE, discussionId)
+		//TODO: create delete DiscussionPost activities and write integration tests
+		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
+		discussion.delete(flush: true)
 	}
 	
 	static boolean update(Discussion discussion, def params, User user) {
@@ -494,6 +495,10 @@ class Discussion {
 			isPublic: isPublic(), groupName: groupName]
 	}
 
+	String getSearchId() {
+		return Model.getSearchId(Model.SearchType.DISCUSSION, this)
+	}
+	
 	@Override
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \

@@ -1,6 +1,7 @@
 package us.wearecurio.services.integration.SearchService
 
 import grails.test.spock.IntegrationSpec
+import groovy.lang.Closure;
 
 import java.text.DateFormat
 import java.util.concurrent.atomic.AtomicInteger
@@ -10,8 +11,8 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
 
-import us.wearecurio.model.GroupMemberReader;
-import us.wearecurio.model.User;
+import us.wearecurio.model.GroupMemberReader
+import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 
@@ -32,7 +33,11 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 	static String getUniqueName() {
 		return "SearchServiceIntegrationSpecBase name" + nameCount.getAndIncrement()
 	}
-
+	
+	static String getUniqueTerm() {
+		return "searchTerm" + nameCount.getAndIncrement()
+	}
+	
 	def setup() {
 		searchService
 		searchService.elasticSearchService = elasticSearchService
@@ -93,4 +98,27 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 	def cleanup() {
 	}
 
+	void printAllUserActivities() {
+		println ""
+		println "UserActivities:"
+		us.wearecurio.model.UserActivity.getAll().each {
+			println "activity: " + it
+			println "activityType: " + it.activityType
+			println "objectType: " + it.objectType
+			println "typeString: " + it.typeString
+			println "otherType: " + it.otherType
+			println "objectDescription: " + it.objectDescription
+			println "otherDescription: " + it.otherDescription
+			println "discussionGroupIds: " + it.discussionGroupIds
+			println "objectUserId: " + it.objectUserId
+			println "objectVisibility: " + it.objectVisibility
+			println "sprintDescription: " + it.sprintDescription
+			println "sprintVirtualGroupId: " + it.sprintVirtualGroupId
+			println "sprintTagName: " + it.sprintTagName
+			println ""
+		}
+		println ""
+	}	
+
+	
 }
