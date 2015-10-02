@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import java.math.MathContext
+import java.math.RoundingMode
 import java.text.DateFormat
 import java.util.ArrayList
 import java.util.Date
@@ -230,20 +231,25 @@ class EntryParserService {
 		int precision
 		DecoratedUnitRatio unitRatio
 		String units
+		DurationType durationType
 		
 		ParseAmount(BigDecimal amount, int precision) {
 			this.tag = null
 			this.amount = amount
 			this.precision = precision
+			this.durationType = DurationType.NONE
 		}
 		
-		ParseAmount(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
-			this.update(baseTag, amount, precision, units, unitGroup)
+		ParseAmount(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup, DurationType durationType) {
+			this.update(baseTag, amount, precision, units, unitGroup, durationType)
 		}
 		
-		void update(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
+		void update(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup, DurationType durationType) {
 			this.units = units
-			this.unitRatio = unitGroup.lookupDecoratedUnitRatio(units)
+			if (units)
+				this.unitRatio = unitGroup.lookupDecoratedUnitRatio(units)
+			else
+				this.unitRatio = null
 			if (unitRatio != null) {
 				this.tag = Tag.look(baseTag.description + ' ' + unitRatio.tagSuffix)
 				this.tagSuffix = unitRatio.tagSuffix
@@ -259,6 +265,7 @@ class EntryParserService {
 			}
 			this.amount = amount
 			this.precision = precision
+			this.durationType = durationType
 		}
 		
 		void deactivate() {
@@ -290,8 +297,10 @@ class EntryParserService {
 		Map copyToMap(Map m) {
 			m['tag'] = tag
 			m['amount'] = amount
+			m['unitRatio'] = unitRatio
 			m['amountPrecision'] = precision
 			m['units'] = units
+			m['durationType'] = durationType
 			
 			return m
 		}
@@ -305,6 +314,26 @@ class EntryParserService {
 		boolean isDuration() {
 			if (unitRatio == null) return false
 			return unitRatio.unitGroup == UnitGroup.DURATION
+		}
+		
+		DurationType fetchDurationType() {
+			if (amount == null && isDuration()) {
+				return DurationType.START
+			}
+			
+			return durationType
+		}
+		
+		Long durationInMilliseconds() {
+			return unitRatio.durationInMilliseconds(amount)
+		}
+		
+		BigDecimal durationInHours() {
+			if (!isDuration())
+				return null
+			if (amount == null)
+				return null
+			return amount * (unitRatio.ratio * (1000.0g * 60.0g * 60.0g))
 		}
 	}
 	
@@ -907,8 +936,7 @@ class EntryParserService {
 					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && prevSuffix == amountSuffix && prevUnitRatio.ratio != unitRatio.ratio) {
 						// merge amounts together, they are the same unit group, provided prevAmount's unitSuffix is compatible
 						// use first amount units
-						prevAmount.amount = prevAmount.amount.add(new BigDecimal(amount.amount.doubleValue()
-								* (unitRatio.ratio / prevUnitRatio.ratio)))
+						prevAmount.amount = (prevAmount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) + amount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) * (unitRatio.ratio / prevUnitRatio.ratio)).setScale(100, BigDecimal.ROUND_HALF_UP)
 						prevAmount.setTags(tag, baseTag) // update tags to the last suffix
 						amount.deactivate()
 					} // otherwise do nothing, don't merge the amounts

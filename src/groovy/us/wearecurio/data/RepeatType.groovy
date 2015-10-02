@@ -144,6 +144,10 @@ public class RepeatType {
 		return (this.id & MONTHLY_BIT) > 0
 	}
 	
+	boolean isTimedRepeat() {
+		return (this.id & HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT) > 0
+	}
+	
 	boolean isYearly() {
 		return (this.id & YEARLY_BIT) > 0
 	}
@@ -153,11 +157,15 @@ public class RepeatType {
 	}
 	
 	boolean isRepeat() {
-		return (this.id & (HOURLY_BIT | DAILY_BIT | WEEKLY_BIT | MONTHLY_BIT | YEARLY_BIT | CONTINUOUS_BIT)) > 0
+		return (this.id & REPEAT_BITS) > 0
 	}
 	
 	int intervalCode() {
 		return (this.id & INTERVAL_BITS)
+	}
+	
+	RepeatType unRepeat() {
+		return RepeatType.look(this.id & (~REPEAT_BITS))
 	}
 	
 	RepeatType unGhost() {

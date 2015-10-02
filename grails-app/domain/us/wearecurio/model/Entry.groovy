@@ -32,6 +32,7 @@ import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.LinkedList
 import java.math.MathContext
+import java.math.RoundingMode
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
@@ -44,10 +45,11 @@ class Entry implements Comparable {
 
 	private static def log = LogFactory.getLog(this)
 
-	static final MathContext mc = new MathContext(9)
+	static final int ENTRY_SCALE = 9
+	static final MathContext mc = new MathContext(ENTRY_SCALE)
 
-	static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999.999999999")
-	static final BigDecimal MIN_AMOUNT = new BigDecimal("-9999999999.999999999")
+	static final BigDecimal MAX_AMOUNT = 9999999999.999999999g
+	static final BigDecimal MIN_AMOUNT = -9999999999.999999999g
 
 	static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
 	static final int VAGUE_DATE_PRECISION_SECS = 86400
@@ -61,8 +63,9 @@ class Entry implements Comparable {
 
 	static constraints = {
 		group(nullable:true)
-		amount(scale:9, max:9999999999999999999.999999999, nullable:true)
+		amount(scale:ENTRY_SCALE, max:9999999999999999999.999999999, nullable:true)
 		date(nullable:true)
+		startDate(nullable:true)
 		datePrecisionSecs(nullable:true)
 		amountPrecision(nullable:true)
 		repeatEnd(nullable:true)
@@ -92,6 +95,7 @@ class Entry implements Comparable {
 
 	Long userId
 	Date date
+	Date startDate // the start date of a duration, if this is a completed duration, otherwise null
 	Integer timeZoneId
 	Integer datePrecisionSecs
 	Tag tag
@@ -148,30 +152,6 @@ class Entry implements Comparable {
 	/**
 	 * Create and save new entry
 	 */
-	static Entry createArgs(EntryCreateMap creationMap, EntryStats stats, Long userId, Date date, TimeZoneId timeZoneId, String description, BigDecimal amount, String units,
-					String comment, String setName, int amountPrecision = DEFAULT_AMOUNTPRECISION) {
-
-		Map<String,Object> m = [
-			'date':date,
-			'timeZoneId':(Integer) timeZoneId.id,
-			'timeZoneName': timeZoneId.name,
-			'datePrecisionSecs':DEFAULT_DATEPRECISION_SECS,
-			'amount':amount,
-			'units':units,
-			'comment':comment,
-			'setName':setName,
-			'amountPrecision': amountPrecision,
-		]
-
-		m['baseTag'] = Tag.look(description.toLowerCase())
-		m['tag'] = EntryParserService.get().tagWithSuffixForUnits(m['baseTag'], units, 0)
-
-		Entry e = createSingle(userId, m, creationMap.groupForDate(date), stats)
-		creationMap.add(e)
-
-		return e
-	}
-
 	static Entry updatePartialOrCreate(Long userId, Map m, EntryGroup group, EntryStats stats) {
 		log.debug("Entry.updatePartialOrCreate: Trying to find a partial entry to update")
 		def partialEntry = lookForPartialEntry(userId, m)
@@ -234,7 +214,7 @@ class Entry implements Comparable {
 		return results
 	}
 
-	protected static final BigDecimal smallDifference = new BigDecimal("0.01")
+	protected static final BigDecimal smallDifference = 0.01g
 
 	// Prevent duplicates for imported entries
 	protected static boolean hasDuplicate(Long userId, Map m) {
@@ -308,6 +288,24 @@ class Entry implements Comparable {
 
 		m['amount'] = amount
 	}
+	
+	protected static prepareStartDate(Long userId, Map m) {
+		String units = m['units']
+		if (m['unitRatio'] == null) {
+			if (units)
+				m['unitRatio'] = UnitGroupMap.theMap.decoratedUnitRatioForTagIdUnits(userId, m['tag'].id, units)
+		}
+		DecoratedUnitRatio unitRatio = m['unitRatio']
+		BigDecimal amount = m['amount']
+		Date date = m['date']
+		if (unitRatio?.isDuration() && amount != null) {
+			Long milliseconds = unitRatio.durationInMilliseconds(amount)
+			if (milliseconds != null)
+				m['startDate'] = new Date(date.getTime() - milliseconds)
+			else
+				m['startDate'] = null
+		}
+	}
 
 	protected static Entry createSingle(Long userId, Map m, EntryGroup group, EntryStats stats) {
 		log.debug "Entry.createSingle() userId:" + userId + ", m:" + m
@@ -321,9 +319,6 @@ class Entry implements Comparable {
 
 		Tag baseTag = m['baseTag']
 		DurationType durationType = m['durationType']
-
-		if (durationType != null && ((RepeatType)m['repeatType'])?.isGhost())
-			durationType = durationType.makeGhost()
 
 		Tag tag = m['tag']
 
@@ -351,11 +346,14 @@ class Entry implements Comparable {
 		if (m['repeatType'] != null && m['repeatEnd'] != null) {
 			m['repeatEnd'] = ((RepeatType)m['repeatType']).makeRepeatEnd(m['repeatEnd'], m['date'], timeZoneId.toDateTimeZone())
 		}
-
+		
+		prepareStartDate(userId, m)
+		
 		Entry entry = new Entry(
 						userId:userId,
 						group:group,
 						date:m['date'],
+						startDate:m['startDate'],
 						timeZoneId:timeZoneId.getId(),
 						datePrecisionSecs:m['datePrecisionSecs'] == null ? DEFAULT_DATEPRECISION_SECS : m['datePrecisionSecs'],
 						tag:tag,
@@ -390,44 +388,67 @@ class Entry implements Comparable {
 		return entry
 	}
 	
-	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, def amounts, Closure findOtherEntry) {
+	static final BigDecimal DAYTICKSDECIMAL = (1000.0g * 60.0g * 60.0g * 24.0g).setScale(100, BigDecimal.ROUND_HALF_UP)
+	
+	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, def amounts, DurationType durationType, Closure findOtherEntry) {
 		Date date = m['date']
 		Entry other = findOtherEntry()
 		ParseAmount durationAmount = null
 		if (other != null) {
-			long durationTicks = date.getTime() - other.getTime()
-			BigDecimal days = new BigDecimal(durationTicks).divide(new BigDecimal(1000L * 60L * 60L * 24L))
+			BigDecimal durationTicks = ((BigDecimal) date.getTime() - other.date.getTime()).setScale(100, BigDecimal.ROUND_HALF_UP)
+			if (durationType == DurationType.START)
+				durationTicks = -durationTicks
+			BigDecimal days = (durationTicks / DAYTICKSDECIMAL).setScale(100, BigDecimal.ROUND_HALF_UP)
 			for (ParseAmount amount : amounts) {
 				if (!amount.isActive())
 					continue
 				if (amount.isDuration() && amount.unitRatio != null && amount.unitRatio.unitSuffix == null) {
 					durationAmount = amount
 					if (amount.amount != null) {
-						m['durationType'] = DurationType.DURATION // unghost this
-						m['tag'] = m['baseTag'] // get rid of start tag
+						m['tag'] = m['baseTag'] // get rid of modifier tag, this is a complete duration tag
 					}
 					break
 				}
+				if (amount.unitRatio == null && amount.precision < 0) {
+					amount.deactivate() // default amount removed and replaced by duration value
+				}
 			}
 			if (durationAmount == null) {
-				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroup.DURATION)
+				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroup.DURATION, DurationType.NONE)
 				amounts.add(durationAmount)
 			}
 			other.update(m, stats, date, true, true)
 			
 			return other
 		} else {
-			// continue entry update
+			// create entry with start or end time because there is no matching
 			for (ParseAmount amount : amounts) {
 				if (!amount.isActive())
 					continue
+				// duration has been specified with this entry, so complete the entry
 				if (amount.isDuration() && amount.unitRatio != null && amount.unitRatio.unitSuffix == null) {
-					amount.update(m['baseTag'], null, -1, "hours", UnitGroup.DURATION)
+					if (amount.amount != null) {
+						// if this is the start of the interval
+						if (durationType == DurationType.START) {
+							// move date of entry to the end of the interval
+							BigDecimal durationTicksDecimal = amount.durationInMilliseconds()
+							if (durationTicksDecimal != null) {
+								long durationTicks = durationTicksDecimal.longValue()
+								m['date'] = new Date(m['date'].getTime() + durationTicks)
+							}
+						}
+						// complete this entry and rewrite it as a full duration entry
+						m['tag']= m['baseTag']
+						amount.update(m['baseTag'], amount.durationInHours(), 3, "hours", UnitGroup.DURATION, DurationType.NONE)
+						return null
+					}
+				} else if (amount.unitRatio == null && amount.precision < 0) {
+					amount.durationType = durationType
 					return null
 				}
 			}
 			
-			amounts.add(new ParseAmount(m['baseTag'], null, -1, "days", UnitGroup.DURATION))
+			amounts.add(new ParseAmount(m['tag'], BigDecimal.ONE, -1, "", UnitGroup.DURATION, durationType))
 			return null
 		}
 	}
@@ -446,19 +467,23 @@ class Entry implements Comparable {
 		if (m['tag'] == null) return null
 
 		def amounts = m['amounts']
-		Date date = m['dat]
+		Date date = m['date']
 
 		// intercept duration creation --- if creating duration end, search for previous duration start
 		DurationType durationType = m['durationType']
-		if (durationType == DurationType.END) {
-			Entry updated = completeDurationEntry(userId, m, stats, amounts) {
+		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeat()) {
+			// cannot combine duration edge and repeat
+			m['durationType'] = DurationType.NONE
+			m['tag'] = m['baseTag']
+		} else if (durationType == DurationType.END) {
+			Entry updated = completeDurationEntry(userId, m, stats, amounts, DurationType.END) {
 				return findPreviousStartEntry(userId, m['baseTag'], date)
 			}
 			
 			if (updated != null)
 				return updated
 		} else if (durationType == DurationType.START) {
-			Entry updated = completeDurationEntry(userId, m, stats, amounts) {
+			Entry updated = completeDurationEntry(userId, m, stats, amounts, DurationType.START) {
 				return findNextEndEntry(userId, m['baseTag'], date)
 			}
 			
@@ -549,7 +574,8 @@ class Entry implements Comparable {
 		m['repeatEnd'] = this.repeatEnd
 		m['durationType'] = this.durationType
 		m['setName'] = this.setIdentifier?.toString()
-
+		m['unitRatio'] = UnitGroupMap.theMap.decoratedUnitRatioForTagIdUnits(this.userId, this.tag.id, this.units)
+		
 		log.debug "Creating entry map:" + m
 
 		return m
@@ -682,6 +708,9 @@ class Entry implements Comparable {
 	 */
 	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true, boolean unGhost = true) {
 		log.debug "Entry.updateSingle() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
+		
+		prepareStartDate(entry.userId, m)
+		
 		RepeatType repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
 			Entry retVal = updateGhostSingle(entry, m, creationMap, stats, baseDate, allFuture, unGhost)
@@ -802,8 +831,9 @@ class Entry implements Comparable {
 		// finally, create new entries in group for remaining amounts
 		if (amounts.size() > 0) {
 			for (ParseAmount a : amounts) {
-				if (!a.isActive()) continue
-					a.copyToMap(m)
+				if (!a.isActive())
+					continue
+				a.copyToMap(m)
 				Entry created = createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
 				if (retVal == null)
 					retVal = created
@@ -1210,7 +1240,6 @@ class Entry implements Comparable {
 			eq("userId", userId)
 			le("date", date)
 			eq("baseTag", baseTag)
-			eq("amount", null)
 			eq("durationType", DurationType.START)
 			maxResults(1)
 			order("date", "desc")
@@ -1228,7 +1257,6 @@ class Entry implements Comparable {
 			eq("userId", userId)
 			ge("date", date)
 			eq("baseTag", baseTag)
-			eq("amount", null)
 			eq("durationType", DurationType.END)
 			maxResults(1)
 			order("date", "asc")
@@ -1252,29 +1280,28 @@ class Entry implements Comparable {
 	}
 
 	protected createRepeat(EntryStats stats) {
-		if (this.repeatTypeId == null) return
+		if (this.repeatTypeId == null)
+			return
 
-			if (this.repeatType.isContinuous()) {
-				// search for matching continuous tag
-				String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type_id & :continuousBit <> 0)"
+		if (this.repeatType.isContinuous()) {
+			// search for matching continuous tag
+			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type_id & :continuousBit <> 0)"
 
-				def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
+			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
-				for (def v in entries) {
-					if (v != null) {
-						Entry e = Entry.get(v['id'])
-						Entry.delete(e, stats) // delete matching entries, to avoid duplicates
-						Utils.save(e, true)
-					}
+			for (def v in entries) {
+				if (v != null) {
+					Entry e = Entry.get(v['id'])
+					Entry.delete(e, stats) // delete matching entries, to avoid duplicates
+					Utils.save(e, true)
 				}
 			}
+		}
 	}
 
 	protected Entry unGhost(EntryStats stats) {
 		if (this.repeatType?.isGhost()) {
 			this.repeatTypeId = this.repeatType.toggleGhost().id
-
-			this.durationType = durationType?.unGhost()
 			this.processAndSave(stats)
 		}
 
@@ -1331,7 +1358,7 @@ class Entry implements Comparable {
 		m['amount'] = this.amount
 		m['amountPrecision'] = this.amountPrecision
 		m['units'] = this.units
-		m['durationType'] = this.durationType?.unGhost()
+		m['durationType'] = this.durationType
 		m['baseTag'] = baseTag
 		// continuous tags create new tags based on the template
 		m['comment'] = ''
@@ -1343,6 +1370,9 @@ class Entry implements Comparable {
 			m['date'] = new Date(dayStartTime + HALFDAYTICKS)
 			m['datePrecisionSecs'] = VAGUE_DATE_PRECISION_SECS
 		}
+		
+		m['unitRatio'] = UnitGroupMap.theMap.decoratedUnitRatioForTagIdUnits(this.userId, this.tag.id, this.units)
+			
 		Entry retVal = Entry.createSingle(userId, m, creationMap.groupForDate(m['date']), stats)
 
 		creationMap.add(retVal)
@@ -1390,6 +1420,9 @@ class Entry implements Comparable {
 		m['date'] = fetchCorrespondingDateTimeInTimeZone(currentBaseDate, currentTimeZone).toDate()
 		log.debug "activateTemplateEntrySingle(), data: ${m['date']} and currentTimeZone Calculated: $currentTimeZone"
 		m['datePrecisionSecs'] = this.datePrecisionSecs
+
+		m['unitRatio'] = UnitGroupMap.theMap.decoratedUnitRatioForTagIdUnits(this.userId, this.tag.id, this.units)
+			
 		def retVal = Entry.createSingle(forUserId, m, creationMap.groupForDate(m['date']), stats)
 
 		creationMap.add(retVal)
@@ -1441,8 +1474,8 @@ class Entry implements Comparable {
 		DurationType newDurationType = m['durationType']
 
 		def descriptionChanged = tag.getId() != newTag.getId()
-
-		m['amount'] = m['amount'] == null ? null : new BigDecimal(m['amount'], mc)
+		
+		m['amount'] = m['amount']?.setScale(ENTRY_SCALE, BigDecimal.ROUND_HALF_UP)
 
 		TimeZoneId timeZoneId = TimeZoneId.look(m['timeZoneName'])
 		if (timeZoneId == null) {
@@ -1464,6 +1497,7 @@ class Entry implements Comparable {
 
 		setTag(m['tag'])
 		setDate(m['date'])
+		setStartDate(m['startDate'])
 		setDatePrecisionSecs(m['datePrecisionSecs'])
 		checkAmount(m)
 		setAmount(m['amount'])

@@ -113,6 +113,79 @@ class SprintTests extends CuriousTestCase {
 	}
 
 	@Test
+	void testCreateSprintTags() {
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar sprint"
+		
+		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
+		
+		sprint.addMember(user.id)
+		
+		sprint.start(user.id, baseDate, currentTime, timeZone, new EntryStats())
+		
+		def list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		
+		assert sprint.hasStarted(user.id, currentTime)
+		assert sprint.hasStarted(user.id, tomorrowCurrentTime)
+		
+		boolean sugar = false, aspirin = false, coffee = false, sprintStart = false
+		
+		for (record in list) {
+			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
+				sugar = true
+			else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
+				aspirin = true
+			else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
+				coffee = true
+			else if (record.description == 'caffeine sugar sprint start')
+				sprintStart = true
+			else
+				assert false
+		}
+		
+		assert sugar && aspirin && coffee && sprintStart
+		
+		sprint.stop(user.id, tomorrowBaseDate, tomorrowCurrentTime, timeZone, new EntryStats())
+		
+		assert sprint.hasStarted(user.id, currentTime)
+		assert !sprint.hasStarted(user.id, tomorrowCurrentTime)
+		
+		list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		
+		sprintStart = false
+		aspirin = false
+		
+		for (record in list) {
+			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
+				aspirin = true
+			else
+				assert false
+		}
+		
+		assert aspirin && sprintStart
+
+		list = Entry.fetchListData(user, timeZone, tomorrowBaseDate, tomorrowCurrentTime)
+		
+		boolean sprintStop = false, sprintDuration = false
+		
+		for (record in list) {
+			if (record.description == 'caffeine sugar sprint end')
+				sprintStop = true
+			else if (record.description == 'caffeine sugar sprint')
+				sprintDuration = true
+			else
+				assert false
+		}
+		
+		assert sprintStop && sprintDuration
+	}
+	
+/*	@Test
 	void testCreateSprint() {
 		def sprint = Sprint.create(user)
 		assert sprint.userId == user.id
@@ -185,81 +258,6 @@ class SprintTests extends CuriousTestCase {
 		assert sprint.hasAdmin(user.id)
 		assert sprint.fetchUserGroup().fullName.equals("New Name Tracking Sprint")
 		assert sprint.fetchTagName().equals("new name sprint")
-	}
-	
-	@Test
-	void testCreateSprintTags() {
-		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
-		assert sprint.userId == user2.id
-		assert sprint.name == "Caffeine + Sugar"
-		assert sprint.visibility == Visibility.PUBLIC
-		assert sprint.fetchTagName() == "caffeine sugar sprint"
-		
-		def entry1 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "coffee pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry2 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "sugar pinned", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
-		def entry3 = Entry.create(sprint.getVirtualUserId(), entryParserService.parse(Sprint.getSprintBaseDate(), "UTC", "aspirin 200mg 3pm repeat", null, null, Sprint.getSprintBaseDate(), true), new EntryStats())
-		
-		sprint.addMember(user.id)
-		
-		sprint.start(user.id, baseDate, currentTime, timeZone, new EntryStats())
-		
-		def list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		
-		assert sprint.hasStarted(user.id, currentTime)
-		assert sprint.hasStarted(user.id, tomorrowCurrentTime)
-		
-		boolean sugar = false, aspirin = false, coffee = false, sprintStart = false
-		
-		for (record in list) {
-			if (record.description == 'sugar' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
-				sugar = true
-			else if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
-				aspirin = true
-			else if (record.description == 'coffee' && (record.repeatType & RepeatType.CONTINUOUS_BIT))
-				coffee = true
-			else if (record.description == 'caffeine sugar sprint start')
-				sprintStart = true
-			else
-				assert false
-		}
-		
-		assert sugar && aspirin && coffee && sprintStart
-		
-		sprint.stop(user.id, tomorrowBaseDate, tomorrowCurrentTime, timeZone, new EntryStats())
-		
-		assert sprint.hasStarted(user.id, currentTime)
-		assert !sprint.hasStarted(user.id, tomorrowCurrentTime)
-		
-		list = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		
-		sprintStart = false
-		aspirin = false
-		
-		for (record in list) {
-			if (record.description == 'aspirin' && (record.repeatType & RepeatType.DAILY_BIT))
-				aspirin = true
-			else if (record.description == 'caffeine sugar sprint start')
-				sprintStart = true
-			else
-				assert false
-		}
-		
-		assert aspirin && sprintStart
-
-		list = Entry.fetchListData(user, timeZone, tomorrowBaseDate, tomorrowCurrentTime)
-		
-		boolean sprintStop = false, sprintDuration = false
-		
-		for (record in list) {
-			if (record.description == 'caffeine sugar sprint end')
-				sprintStop = true
-			else if (record.description == 'caffeine sugar sprint')
-				sprintDuration = true
-			else
-				assert false
-		}
-		
-		assert sprintStop && sprintDuration
 	}
 	
 	@Test
@@ -617,4 +615,6 @@ class SprintTests extends CuriousTestCase {
 		assert participantsList[1].id in userIds
 		assert participantsList[0].id != participantsList[1].id
 	}
+
+/**/
 }
