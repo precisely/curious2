@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.Log
 
 import java.math.MathContext
 import java.sql.ResultSet
@@ -13,9 +14,11 @@ import us.wearecurio.data.RepeatType
 import us.wearecurio.data.DataRetriever
 import java.util.Date
 
+import grails.compiler.GrailsCompileStatic
+
 public class AlertNotification {
 
-	private static def log = LogFactory.getLog(this)
+	private static Log log = LogFactory.getLog(this)
 
 	Long userId
 	Date date
@@ -58,7 +61,7 @@ public class AlertNotification {
 			deleteforUserBetween(userId, startDate, endDate)
 			def remindData = DataRetriever.get().fetchRemindData(userId, startDate, endDate, new Date())
 			for (result in remindData) {
-				createOrUpdate(userId, result[0], result[1],  result[2])
+				createOrUpdate(userId, new Date(result[0]), result[1].longValue(),  result[2])
 			}
 		}
 	}
@@ -84,7 +87,7 @@ public class AlertNotification {
 	}
 
 	String toString() {
-		return "AlertNotification(userId:" + userId + ", entryId:" + entryId + ", date:" + date + ", text:" \
+		return "AlertNotification(userId:" + userId + ", objectId:" + objectId + ", date:" + date + ", text:" \
 				+ text + ")"
 	}
 }

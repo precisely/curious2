@@ -1,7 +1,5 @@
 package us.wearecurio.model
 
-import java.util.Map;
-
 class SharedTagGroup extends TagGroup {
 
 	static mapping = {

@@ -1,7 +1,5 @@
 package us.wearecurio.model
 
-import java.util.Map
-
 import us.wearecurio.collection.MapList
 
 import org.apache.commons.logging.LogFactory

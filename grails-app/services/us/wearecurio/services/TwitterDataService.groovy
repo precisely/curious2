@@ -15,7 +15,6 @@ import twitter4j.Status
 import twitter4j.Paging
 
 import java.net.URL
-import java.util.Map
 import java.util.HashMap
 import java.util.Calendar
 

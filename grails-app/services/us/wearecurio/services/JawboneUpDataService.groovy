@@ -128,8 +128,8 @@ class JawboneUpDataService extends DataService {
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
-
-			tagUnitMap.buildEntry(creationMap, stats, "weight", bodyEntry["weight"], userId, timeZoneIdNumber,
+			
+			tagUnitMap.buildEntry(creationMap, stats, "weight", new BigDecimal((String)bodyEntry["weight"]), userId, timeZoneIdNumber,
 					entryDate, COMMENT, setName)
 
 			if (bodyEntry["body_fat"]) {

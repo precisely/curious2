@@ -2,8 +2,6 @@ package us.wearecurio.model
 
 import static us.wearecurio.model.ThirdParty.*
 
-import java.util.Map
-
 import org.scribe.model.Token
 
 import us.wearecurio.services.DataService

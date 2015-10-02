@@ -12,7 +12,6 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.model.Tag
 
-import java.util.Map;
 import java.util.regex.Pattern
 import java.math.MathContext
 import java.text.DateFormat

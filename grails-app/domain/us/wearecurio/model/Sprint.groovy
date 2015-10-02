@@ -1,8 +1,7 @@
 package us.wearecurio.model
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Locale;
+import java.util.Date
+import java.util.Locale
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria

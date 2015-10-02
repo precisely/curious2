@@ -48,20 +48,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void testUnsubscribe() {
-		// If no OAuthAccount Exists
-		shouldFail(MissingOAuthAccountException) {
-			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
-		}
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
-
-		// If OAuthAccount Exists
-		Map response = movesDataService.unsubscribe(userId)
-		assertTrue response.success
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
-	}
-
-	@Test
 	void testGetDataDefaultForValidData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
@@ -86,14 +72,28 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				assert entry.toString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, baseTag:run, description:run [steps], amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null, repeatEnd:null")
 			}
 		}
-		assert Entry.count() == 23
+		assert Entry.count() == 15
 
 		// Ensuring entries of the same day will be replaced with new entries.
 		response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
 		
 		entries = Entry.findAllByUserId(user.getId())
-		assert entries.size() == 23
+		assert entries.size() == 15
+	}
+
+	@Test
+	void testUnsubscribe() {
+		// If no OAuthAccount Exists
+		shouldFail(MissingOAuthAccountException) {
+			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
+		}
+		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
+
+		// If OAuthAccount Exists
+		Map response = movesDataService.unsubscribe(userId)
+		assertTrue response.success
+		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
 	}
 
 	@Test
@@ -136,4 +136,5 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 			assert e instanceof InvalidAccessTokenException
 		}
 	}
+	/**/
 }

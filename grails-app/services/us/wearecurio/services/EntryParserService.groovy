@@ -1,6 +1,7 @@
 package us.wearecurio.services
 
 import java.math.MathContext
+import java.math.RoundingMode
 import java.text.DateFormat
 import java.util.ArrayList
 import java.util.Date
@@ -29,6 +30,8 @@ import static us.wearecurio.model.Entry.MAXSETNAMELENGTH
 import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType
 
+import com.google.javascript.jscomp.parsing.parser.trees.ThisExpressionTree;
+
 import us.wearecurio.parse.ParseUtils
 import us.wearecurio.parse.ScannerPattern
 import us.wearecurio.parse.PatternScanner
@@ -37,14 +40,13 @@ import us.wearecurio.parse.ScannerPattern
 import static us.wearecurio.parse.PatternScanner.CONDITION_ATEND
 import static us.wearecurio.parse.PatternScanner.CONDITION_ANY
 import static us.wearecurio.model.Entry.mc
-
 import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.data.UnitGroupMap.UnitGroup
 import us.wearecurio.data.UnitRatio
 
 import java.text.SimpleDateFormat
-import us.wearecurio.utility.Utils
 
+import us.wearecurio.utility.Utils
 import grails.compiler.GrailsCompileStatic
 
 @GrailsCompileStatic
@@ -223,6 +225,7 @@ class EntryParserService {
 	}
 		
 	static class ParseAmount {
+		Tag baseTag // tag without units suffix
 		Tag tag // tag including units suffix
 		String tagSuffix
 		String unitSuffix
@@ -230,20 +233,27 @@ class EntryParserService {
 		int precision
 		DecoratedUnitRatio unitRatio
 		String units
+		DurationType durationType
 		
-		ParseAmount(BigDecimal amount, int precision) {
+		ParseAmount(BigDecimal amount, Integer precision, DurationType durationType) {
 			this.tag = null
 			this.amount = amount
-			this.precision = precision
+			this.precision = precision == null ? DEFAULT_AMOUNTPRECISION : precision
+			this.durationType = durationType
 		}
 		
-		ParseAmount(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
-			this.update(baseTag, amount, precision, units, unitGroup)
+		ParseAmount(Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
+			this.update(baseTag, amount, precision, units, unitRatio, durationType)
 		}
 		
-		void update(Tag baseTag, BigDecimal amount, int precision, String units, UnitGroup unitGroup) {
-			this.units = units
-			this.unitRatio = unitGroup.lookupDecoratedUnitRatio(units)
+		ParseAmount(Tag tag, Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
+			this.update(tag, baseTag, amount, precision, units, unitRatio, durationType)
+		}
+		
+		void update(Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
+			this.units = units ?: ''
+			this.unitRatio = unitRatio
+			this.baseTag = baseTag
 			if (unitRatio != null) {
 				this.tag = Tag.look(baseTag.description + ' ' + unitRatio.tagSuffix)
 				this.tagSuffix = unitRatio.tagSuffix
@@ -258,7 +268,25 @@ class EntryParserService {
 				this.unitSuffix = ""
 			}
 			this.amount = amount
-			this.precision = precision
+			this.precision = precision ?: DEFAULT_AMOUNTPRECISION
+			this.durationType = durationType
+		}
+		
+		void update(Tag tag, Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
+			this.units = units ?: ''
+			this.unitRatio = unitRatio
+			this.setTags(tag, baseTag)
+			
+			if (unitRatio != null) {
+				this.unitSuffix = unitRatio.unitSuffix
+			} else if (units) {
+				this.unitSuffix = units
+			} else {
+				this.unitSuffix = ""
+			}
+			this.amount = amount
+			this.precision = precision ?: DEFAULT_AMOUNTPRECISION
+			this.durationType = durationType
 		}
 		
 		void deactivate() {
@@ -271,6 +299,7 @@ class EntryParserService {
 		
 		ParseAmount setTags(Tag tag, Tag baseTag) {
 			this.tag = tag
+			this.baseTag = baseTag
 			if (baseTag == null || baseTag == tag) {
 				this.tagSuffix = ""
 			} else {
@@ -280,31 +309,50 @@ class EntryParserService {
 		}
 		
 		boolean matches(Entry e) {
-			return e.getTag().id == tag.id
+			return e.tag.id == tag.id
 		}
 		
 		boolean matchesWeak(Entry e) {
 			return e.fetchSuffix().equals(tagSuffix) || e.getUnits().equals(units)
 		}
 		
-		Map copyToMap(Map m) {
-			m['tag'] = tag
-			m['amount'] = amount
-			m['amountPrecision'] = precision
-			m['units'] = units
-			
-			return m
-		}
-		
 		String toString() {
 			if (tag == null)
 				return "ParseAmount(inactive)"
-			return "ParseAmount(Tag: " + tag.getDescription() + " amount: " + amount + " units: " + units + ")"
+			return "ParseAmount(tag: " + tag.getDescription() + ", baseTag: " + baseTag.getDescription() + ", amount: " + amount + ", units: '" + units + "', tagSuffix: " + tagSuffix + ", unitSuffix:" + unitSuffix + ", precision: " + precision + ", durationType: " + durationType + ")"
 		}
 		
 		boolean isDuration() {
 			if (unitRatio == null) return false
 			return unitRatio.unitGroup == UnitGroup.DURATION
+		}
+		
+		DurationType fetchDurationType() {
+			if (amount == null && isDuration()) {
+				return DurationType.START
+			}
+			
+			return durationType
+		}
+		
+		Long durationInMilliseconds() {
+			return unitRatio?.durationInMilliseconds(amount)
+		}
+		
+		BigDecimal durationInHours() {
+			if (!isDuration())
+				return null
+			if (amount == null)
+				return null
+			return (amount * unitRatio.ratio) / (1000.0g * 60.0g * 60.0g)
+		}
+		
+		BigDecimal durationInDays() {
+			if (!isDuration())
+				return null
+			if (amount == null)
+				return null
+			return (amount * unitRatio.ratio) / (1000.0g * 60.0g * 60.0g * 24.0g)
 		}
 	}
 	
@@ -333,7 +381,7 @@ class EntryParserService {
 			return baseTag
 		}
 		
-		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(units)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.lookupDecoratedUnitRatio(units)
 		String suffix
 		if (unitRatio)
 			suffix = unitRatio.tagSuffix
@@ -360,7 +408,7 @@ class EntryParserService {
 			return baseTag
 		}
 		
-		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(units)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.lookupDecoratedUnitRatio(units)
 		String suffix, coreSuffix
 		if (unitRatio)
 			suffix = unitRatio.tagSuffix
@@ -538,9 +586,9 @@ class EntryParserService {
 			for (String amount in amountStrs) {
 				if (numberMap.containsKey(amount)) {
 					List num = numberMap.get(amount)
-					context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1]))
+					context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1], DurationType.NONE))
 				} else {
-					context.amounts.add(new ParseAmount(new BigDecimal(amount, mc), (int)DEFAULT_AMOUNTPRECISION)) 
+					context.amounts.add(new ParseAmount(new BigDecimal(amount, mc), (int)DEFAULT_AMOUNTPRECISION, DurationType.NONE))
 				}
 			}
 		}
@@ -554,7 +602,7 @@ class EntryParserService {
 			
 			if (numberMap.containsKey(amountStr)) {
 				List num = numberMap.get(amountStr)
-				context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1]))
+				context.amounts.add(new ParseAmount((BigDecimal)num[0], (int)num[1], DurationType.NONE))
 			}
 		}
 		
@@ -615,9 +663,9 @@ class EntryParserService {
 		timeWordScanPattern.followedBy([ atEndScanPattern, commentScanPattern, durationScanPattern, fillerScanPattern, amountScanPattern, amountWordScanPattern, durationScanPattern, repeatScanPattern, durationSynonymScanPattern ])
 		repeatScanPattern.followedBy([ atEndScanPattern, commentScanPattern, durationScanPattern, timeScanPattern, timeWordScanPattern, fillerScanPattern ])
 		repeatStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, durationStartScanPattern])
-		durationScanPattern.followedBy([ atEndScanPattern, commentScanPattern, repeatScanPattern, timeScanPattern, timeWordScanPattern, fillerScanPattern ])
+		durationScanPattern.followedBy([ atEndScanPattern, repeatScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, amountWordScanPattern, commentScanPattern, fillerScanPattern ])
 		durationStartScanPattern.followedBy([tagWordScanPattern, timeScanPattern, timeWordScanPattern, repeatStartScanPattern])
-		durationSynonymScanPattern.followedBy([ atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, amountWordScanPattern, repeatScanPattern ])
+		durationSynonymScanPattern.followedBy([ atEndScanPattern, timeScanPattern, timeWordScanPattern, amountScanPattern, amountWordScanPattern, commentScanPattern, repeatScanPattern ])
 		
 		amountScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsScanPatternA, anyScanPattern])
 		amountWordScanPattern.followedBy([atEndScanPattern, commentScanPattern, timeScanPattern, timeWordScanPattern, repeatScanPattern, durationScanPattern, amountScanPattern, unitsSingleScanPattern])
@@ -705,16 +753,13 @@ class EntryParserService {
 		
 		String description = ParseUtils.implode(context.words).toLowerCase()
 		
-		if (context.amounts.size() == 0) {
-			context.amounts.add(new ParseAmount(new BigDecimal(1, mc), -1))
-		}
-
-		// Duration (start/stop) only when amount(s) not specified		
-		if (context.amounts.size() > 1 || (context.amounts[0].getPrecision() != -1)) {
+		RepeatType repeatType = (RepeatType) context.retVal['repeatType']
+		
+		if (repeatType != null && repeatType.isRepeat()) {
 			context.retVal['durationType'] = DurationType.NONE
-			context.suffix = ''
+			context.retVal['tag'] = context.retVal['baseTag']
 		}
-
+		
 		String comment = ''
 		if (context.commentWords.size() > 0) {
 			comment = ParseUtils.implode(context.commentWords)
@@ -850,7 +895,8 @@ class EntryParserService {
 		context.retVal['baseTag'] = Tag.look(description)
 		String tagDescription = description
 		if (context.suffix) tagDescription += ' ' + context.suffix
-		context.retVal['tag'] = Tag.look(tagDescription)
+		Tag tag = Tag.look(tagDescription)
+		context.retVal['tag'] = tag
 		
 		int index = 0
 		Tag baseTag = (Tag) context.retVal['baseTag']
@@ -876,13 +922,10 @@ class EntryParserService {
 				else
 					amount.setTags(baseTag, baseTag)
 			} else {
-				DecoratedUnitRatio unitRatio = unitGroupMap.decoratedUnitRatioForUnits(units)
+				DecoratedUnitRatio unitRatio = unitGroupMap.lookupDecoratedUnitRatio(units)
 				if (unitRatio) {
 					amountSuffix = unitRatio.tagSuffix
 					amount.unitRatio = unitRatio
-					if (unitRatio.unitGroup == UnitGroup.DURATION && amount.amount == null) {
-						context.retVal['durationType'] = DurationType.START
-					}
 				} else {
 					amountSuffix = units
 					// null duration amount equals duration start
@@ -897,17 +940,16 @@ class EntryParserService {
 					}
 				}
 				
-				Tag tag = Tag.look(baseTag.getDescription() + ' ' + amountSuffix)
+				Tag amountTag = Tag.look(baseTag.getDescription() + ' ' + amountSuffix)
 				
-				amount.setTags(tag, baseTag)
+				amount.setTags(amountTag, baseTag)
 				
 				if (prevAmount != null) {
 					DecoratedUnitRatio prevUnitRatio = prevAmount.getUnitRatio()
 					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && prevSuffix == amountSuffix && prevUnitRatio.ratio != unitRatio.ratio) {
 						// merge amounts together, they are the same unit group, provided prevAmount's unitSuffix is compatible
 						// use first amount units
-						prevAmount.amount = prevAmount.amount.add(new BigDecimal(amount.amount.doubleValue()
-								* (unitRatio.ratio / prevUnitRatio.ratio)))
+						prevAmount.amount = (prevAmount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) + amount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) * (unitRatio.ratio / prevUnitRatio.ratio)).setScale(100, BigDecimal.ROUND_HALF_UP)
 						prevAmount.setTags(tag, baseTag) // update tags to the last suffix
 						amount.deactivate()
 					} // otherwise do nothing, don't merge the amounts
@@ -919,6 +961,28 @@ class EntryParserService {
 			index++
 		}
 		
+		DurationType durationType = (DurationType) context.retVal['durationType']
+		
+		if (context.amounts.size() == 0) {
+			context.amounts.add(new ParseAmount(tag, baseTag, 1.0g, -1, "", null, DurationType.NONE))
+		}
+
+		if (durationType != null && durationType != DurationType.NONE) {
+			boolean setDuration = false
+			for (ParseAmount amount : context.amounts) {
+				if (!amount.isActive())
+					continue
+				if (amount.isDuration() || amount.precision < 0) {
+					amount.durationType = durationType
+					setDuration = true
+				} else {
+					amount.durationType = DurationType.NONE
+				}
+			}
+			if (!setDuration)
+				context.amounts.add(new ParseAmount(tag, baseTag, 1.0g, -1, "", null, DurationType.NONE))
+		}
+				
 		context.retVal['amounts'] = context.amounts
 
 		return context.retVal

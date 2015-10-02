@@ -1,7 +1,6 @@
 package us.wearecurio.data
 
 import java.util.Date
-import java.util.Map
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -158,6 +157,7 @@ class DataRetriever {
 		def results = []
 
 		for (result in rawResults) {
+			Date date = result['date']
 			def entryJSON = [
 				date,
 				result['id'],

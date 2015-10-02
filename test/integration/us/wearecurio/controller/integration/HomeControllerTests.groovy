@@ -75,6 +75,31 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testPollDevices() {
+		def account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
+
+		Utils.save(account, true)
+
+		def account2 = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
+			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
+
+		Utils.save(account2, true)
+
+		HomeController controller = new HomeController()
+
+		controller.session.userId = user.getId()
+
+		controller.polldevices()
+
+		def modelAndView = controller.modelAndView
+
+		def rU = controller.response.redirectedUrl
+
+		assert rU.endsWith("/home/index")
+	}
+
+	@Test
 	void testIndexNotLoggedIn() {
 		HomeController controller = new HomeController()
 
@@ -275,31 +300,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert modelAndView.model['discussionHash'].toString().equals(discussion.hash.toString())
 		assert modelAndView.model['username'].equals(user.getUsername())
 		assert modelAndView.getViewName().equals("/home/discuss")
-	}
-
-	@Test
-	void testPollDevices() {
-		def account = new OAuthAccount([typeId: ThirdParty.WITHINGS, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
-
-		Utils.save(account, true)
-
-		def account2 = new OAuthAccount([typeId: ThirdParty.FITBIT, userId: userId, accessToken: "Dummy-token",
-			accessSecret: "Dummy-secret", accountId: "dummy-id", timeZoneId: TimeZoneId.look("America/New_York").id])
-
-		Utils.save(account2, true)
-
-		HomeController controller = new HomeController()
-
-		controller.session.userId = user.getId()
-
-		controller.polldevices()
-
-		def modelAndView = controller.modelAndView
-
-		def rU = controller.response.redirectedUrl
-
-		assert rU.endsWith("/home/index")
 	}
 
 	@Test
@@ -542,4 +542,5 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert modelAndView.model['participants'][0].id == user.getId()
 		assert modelAndView.getViewName().equals("/home/sprint")
 	}
+	/**/
 }

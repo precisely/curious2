@@ -86,6 +86,27 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "Test createHelpEntriesData when entryId passed in parameters"() {
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", null, null, baseDate, true), stats)
+		stats.finish()
+
+		assert Entry.get(entry.id).amount == 0.083333333g
+
+		controller.session.userId = userId
+		controller.params['entries[]'] = 'sleep 3 hours'
+		controller.params['entryId'] = entry.id.toString()
+		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
+		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
+		controller.params["timeZoneName"] = "Asia/Kolkata"
+		
+		controller.createHelpEntriesData()
+		assert controller.response.json.success == true
+		assert Entry.get(entry.id).amount == 3
+	}
+
+	@Test
 	void testGetPeopleData() {
 		controller.session.userId = userId
 		controller.params['callback'] = 'callback'
@@ -690,27 +711,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test createHelpEntriesData when entryId passed in parameters"() {
-		EntryStats stats = new EntryStats(userId)
-		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", null, null, baseDate, true), stats)
-		stats.finish()
-
-		assert Entry.get(entry.id).amount == 2
-
-		controller.session.userId = userId
-		controller.params['entries[]'] = 'sleep 3 hours'
-		controller.params['entryId'] = entry.id.toString()
-		controller.params["currentTime"] = "Wed, 25 Feb 2015 10:44:07 GMT"
-		controller.params["baseDate"] = "Wed, 25 Feb 2015 00:00:00 GMT"
-		controller.params["timeZoneName"] = "Asia/Kolkata"
-		
-		controller.createHelpEntriesData()
-		assert controller.response.json.success == true
-		assert Entry.get(entry.id).amount == 3
-	}
-
-	@Test
 	void "Test createHelpEntriesData when no blank entries are passed in params"() {
 		controller.session.userId = user.getId()
 		controller.params['entries[]'] = ['mood 3', 'sleep 9 hrs']
@@ -775,4 +775,5 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.text.contains("<div class=\"item active\">")
 		assert !controller.response.text.contains("qcode3")
 	}
+	/**/
 }

@@ -2,7 +2,6 @@ package us.wearecurio.model
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.List
 
 import org.apache.commons.logging.LogFactory
 import grails.gorm.DetachedCriteria

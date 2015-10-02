@@ -24,6 +24,7 @@ import us.wearecurio.model.Tag
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.model.DurationType
@@ -125,21 +126,16 @@ class HumanDataService {
 			tag = entryParserService.tagWithSuffixForUnits(baseTag, units, 0)
 		
 		def m = [
-			tag: tag,
-			baseTag: baseTag,
-			units: units,
 			date: date,
 			timeZoneId: timeZoneIdNumber,
-			amount: amount,
+			amount: new ParseAmount(tag, amount, amountPrecision, units, UnitGroupMap.theMap.lookupDecoratedUnitRatio(units), DurationType.NONE),
 			repeatType: null,
 			repeatEnd: null,
-			durationType: DurationType.NONE,
 			setName: setName,
-			amountPrecision: amountPrecision,
 			comment: comment,
 		]
 		
-		Entry e = Entry.createSingle(userId, m, creationMap.groupForDate(date), stats)
+		Entry e = Entry.createOrCompleteSingle(userId, m, creationMap.groupForDate(date), stats)
 		
 		creationMap.add(e)
 		

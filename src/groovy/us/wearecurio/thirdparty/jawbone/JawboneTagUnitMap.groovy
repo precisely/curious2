@@ -4,6 +4,10 @@ import us.wearecurio.thirdparty.TagUnitMap
 
 import us.wearecurio.model.DurationType
 
+import us.wearecurio.data.UnitGroupMap.UnitGroup
+import us.wearecurio.data.UnitRatio
+import us.wearecurio.data.DecoratedUnitRatio
+
 class JawboneTagUnitMap extends TagUnitMap {
 	
 	private static Map estimatedMealUnitMap, measuredMovementUnitMap, sleepUnitMap, napUnitMap, moodUnitMap, 
@@ -37,11 +41,11 @@ class JawboneTagUnitMap extends TagUnitMap {
 		]
 
 		sleepUnitMap = [
-			s_asleep_time: [tag: "$SLEEP", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START],
+			s_asleep_time: [tag: "$SLEEP", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START, amountPrecision:-1],
 			s_awake: [tag: "$SLEEP", unit: "hours awake", convert: true, from: "secs"],
-			s_awake_time: [tag: "$SLEEP", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END],
+			s_awake_time: [tag: "$SLEEP", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END, amountPrecision:-1],
 			s_awakenings: [tag: "$SLEEP awakenings", unit: ""],
-			s_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START],
+			s_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START, amountPrecision:-1],
 			s_deep: [tag: "$SLEEP", unit: "hours deep", convert: true, from: "secs"],
 			s_duration: [tag: "$SLEEP", unit: "hours", convert: true, from: "secs"],
 			s_light: [tag: "$SLEEP", unit: "hours light", convert: true, from: "secs"],
@@ -49,11 +53,11 @@ class JawboneTagUnitMap extends TagUnitMap {
 		]
 
 		napUnitMap = [
-			n_asleep_time: [tag: "nap", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START],
+			n_asleep_time: [tag: "nap", suffix: "start", unit: "ms", convert: true, from: "ms", durationType: DurationType.START, amountPrecision:-1],
 			n_awake: [tag: "$SLEEP", unit: "hours awake", convert: true, from: "secs"],
-			n_awake_time: [tag: "nap", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END],
+			n_awake_time: [tag: "nap", suffix: "end", unit: "ms", convert: true, from: "ms", durationType: DurationType.END, amountPrecision:-1],
 			n_awakenings: [tag: "$SLEEP awakenings", unit: ""],
-			n_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START],
+			n_bedtime: [tag: "$SLEEP", suffix: "start", unit: "", durationType: DurationType.START, amountPrecision:-1],
 			n_deep: [tag: "$SLEEP", unit: "hours deep", convert: true, from: "secs"],
 			n_duration: [tag: "$SLEEP", unit: "hours", convert: true, from: "secs"],
 			n_light: [tag: "$SLEEP", unit: "hours light", convert: true, from: "secs"],
@@ -75,7 +79,7 @@ class JawboneTagUnitMap extends TagUnitMap {
 	public JawboneTagUnitMap() {
 		buckets = [
 			// don't forget to initialize a empty list named `values`.
-			mood_average: [values: [], tag: "$MOOD average", unit: "", operation: AVERAGE],
+			mood_average: [values: [], tag: "$MOOD average", unit: "", operation: AVERAGE, unitRatio:UnitGroup.SCALE.simpleLookupDecoratedUnitRatio("to ten")],
 		]
 		tagUnitMappings = initializeTagUnitMappings(columnDetailMap)
 	}

@@ -3,6 +3,7 @@ package us.wearecurio.controller
 import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
 
+import java.math.BigDecimal;
 import java.math.MathContext
 import java.text.SimpleDateFormat
 
@@ -12,11 +13,15 @@ import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 
+import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
+import us.wearecurio.data.UnitRatio;
 import us.wearecurio.model.*
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
+import us.wearecurio.data.UnitGroupMap
 
 class DataController extends LoginController {
 
@@ -55,8 +60,8 @@ class DataController extends LoginController {
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
 				
-		EntryStats stats = new EntryStats()
-		def entry = Entry.create(user.getId(), parsedEntry, stats)
+		EntryStats stats = new EntryStats(user.id)
+		def entry = Entry.create(user.id, parsedEntry, stats)
 		ArrayList<TagStats> tagStats = stats.finish()
 
 		debug("created " + entry)
@@ -179,18 +184,19 @@ class DataController extends LoginController {
 				}
 				if (currentDate) {
 					Long repeatTypeId = Long.valueOf(tokens[5])
+					String units = tokens[3]
+					DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.lookupDecoratedUnitRatio(units)
+					Tag baseTag = Tag.look(tokens.length > 9 ? tokens[9] : tokens[1])
+					Integer amountPrecision = Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6])
+					ParseAmount amount = new ParseAmount(Tag.look(tokens[1]), baseTag, new BigDecimal(tokens[2], mc), amountPrecision, units, unitRatio, DurationType.NONE)
 					def parsedEntry = [ \
 						userId:userId, \
 						date:currentDate, \
 						timeZoneName:tokens[8], \
-						tag:Tag.look(tokens[1]), \
-						baseTag:Tag.look(tokens.length > 9 ? tokens[9] : tokens[1]), \
-						amount:new BigDecimal(tokens[2], mc), \
-						units:tokens[3], \
+						amount:amount, \
 						comment:tokens[4], \
 						repeatType:repeatTypeId >= 0 ? RepeatType.look((long)repeatTypeId) : null, \
 						setName:setName, \
-						amountPrecision:Integer.valueOf(tokens[6].equals("null") ? '3' : tokens[6]), \
 						datePrecisionSecs:Integer.valueOf(tokens[7].equals("null") ? '180':tokens[7]), \
 					]
 					def entry = Entry.createSingle(userId, parsedEntry, null, stats)
@@ -313,24 +319,6 @@ class DataController extends LoginController {
 		renderJSONGet([user.getJSONDesc()])
 	}
 
-	// for backwards compatibility with older mobile apps - no longer used
-	def getEntriesData() {
-		debug "DataController.getEntriesData() userId:" + params.userId + " date: " + params.date
-
-		def user = userFromIdStr(params.userId);
-		if (user == null) {
-			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
-			return
-		}
-
-		def entries = Entry.fetchListDataNoRepeats(user, parseDate(params.date), new Date())
-
-		// skip continuous repeat entries with entries within the usage threshold
-
-		renderJSONGet(entries)
-	}
-	
 	// legacy support for obsolete call
 	def deleteGhostEntry() {
 		deleteGhostEntryData()
@@ -360,7 +348,7 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def timeZoneName = params.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : params.timeZoneName
 
-		EntryStats stats = new EntryStats()
+		EntryStats stats = new EntryStats(entry.userId)
 		Entry.deleteGhost(entry, stats, currentTime, allFuture)
 		def tagStats = stats.finish()
 		return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
@@ -685,7 +673,7 @@ class DataController extends LoginController {
 		} else if (entry.fetchIsGenerated()) {
 			renderStringGet('Cannot delete generated entries.')
 		} else {
-			EntryStats stats = new EntryStats()
+			EntryStats stats = new EntryStats(userId)
 			Entry.delete(entry, stats)
 			def tagStats = stats.finish()
 			renderJSONGet([listEntries(sessionUser(), timeZoneName, parseDate(params.displayDate), currentTime),

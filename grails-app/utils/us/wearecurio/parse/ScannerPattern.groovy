@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log
 import groovy.lang.Closure
 import groovy.transform.TypeChecked
 
-import java.util.List
 import java.util.regex.Pattern
 import java.util.regex.Matcher
 

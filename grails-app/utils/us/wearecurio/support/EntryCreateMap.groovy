@@ -1,7 +1,6 @@
 package us.wearecurio.support
 
 import java.util.Date
-import java.util.Map
 
 import us.wearecurio.model.Entry
 import us.wearecurio.model.EntryGroup

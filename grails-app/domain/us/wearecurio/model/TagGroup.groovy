@@ -1,8 +1,5 @@
 package us.wearecurio.model
 
-import java.util.List;
-import java.util.Map;
-
 import us.wearecurio.cache.BoundedCache
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService

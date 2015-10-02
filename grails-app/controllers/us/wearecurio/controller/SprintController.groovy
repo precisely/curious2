@@ -170,7 +170,7 @@ class SprintController extends LoginController {
 
 		if (sprintInstance.hasStarted(memberInstance.id, new Date())) {
 			Date now = params.now ? null : parseDate(params.now)
-			EntryStats stats = new EntryStats()
+			EntryStats stats = new EntryStats(currentUser.id)
 			Date baseDate = Utils.getStartOfDay(now)
 			sprintInstance.stop(memberInstance.id, baseDate, now, params.timeZoneName, stats)
 		}
@@ -221,7 +221,7 @@ class SprintController extends LoginController {
 		Date now = params.now ? parseDate(params.now) : null
 		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		Date baseDate = Utils.getStartOfDay(now)
-		EntryStats stats = new EntryStats()
+		EntryStats stats = new EntryStats(currentUser.id)
 
 		if (sprintInstance.start(currentUser.id, baseDate, now, timeZoneName, stats)) {
 			renderJSONGet([success: true])
@@ -248,7 +248,7 @@ class SprintController extends LoginController {
 		Date now = params.now ? parseDate(params.now) : null
 		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
 		Date baseDate = Utils.getStartOfDay(now)
-		EntryStats stats = new EntryStats()
+		EntryStats stats = new EntryStats(currentUser.id)
 
 		if (sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)) {
 			renderJSONGet([success: true])
@@ -274,7 +274,7 @@ class SprintController extends LoginController {
 		Date now = params.now ? parseDate(params.now) : null
 		Date baseDate = Utils.getStartOfDay(now)
 		String timeZoneName = params.timeZoneName ? params.timeZoneName : TimeZoneId.guessTimeZoneNameFromBaseDate(now)
-		EntryStats stats = new EntryStats()
+		EntryStats stats = new EntryStats(currentUser.id)
 		sprintInstance.stop(currentUser.id, baseDate, now, timeZoneName, stats)
 
 		sprintInstance.removeMember(currentUser.id)

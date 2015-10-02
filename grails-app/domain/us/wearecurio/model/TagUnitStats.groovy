@@ -132,7 +132,7 @@ class TagUnitStats implements TagUnitStatsInterface {
 		}
 		
 		// Find UnitRatio for the unit
-		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.decoratedUnitRatioForUnits(unit)
+		DecoratedUnitRatio unitRatio = UnitGroupMap.theMap.lookupDecoratedUnitRatio(unit)
 
 		if (!unitRatio) {
 			return createOrUpdateSingle(userId, tagId, unit, null, false)

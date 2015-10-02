@@ -1,15 +1,22 @@
 package us.wearecurio.thirdparty
 
+import java.math.BigDecimal
+
+import us.wearecurio.data.UnitRatio
+import us.wearecurio.data.DecoratedUnitRatio
+
 import java.math.MathContext
 import java.math.RoundingMode
 import org.apache.commons.logging.LogFactory
 
+import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.services.*
+import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.data.UnitGroupMap
 
 abstract class TagUnitMap {
@@ -63,6 +70,7 @@ abstract class TagUnitMap {
 	
 	static Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
+			value['unitRatio'] = UnitGroupMap.theMap.lookupDecoratedUnitRatio(value['unit'])
 			if (value['convert'])
 				value['ratio'] = UnitGroupMap.theMap.fetchConversionRatio(value['from'], value['unit'])
 		}
@@ -77,7 +85,7 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
-	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId,
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
 			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 
 		if (tagName.contains("awake"))
@@ -92,23 +100,19 @@ abstract class TagUnitMap {
 
 		log.debug "The tag map is: $currentMapping"
 		
-		int amountPrecision = currentMapping.amountPrecision ?: Entry.DEFAULT_AMOUNTPRECISION
-
-		if (amount != null) {
-			amount = amount.toBigDecimal()
-		}
 		if (currentMapping.convert) {
-			amount = new BigDecimal(amount * currentMapping.ratio, new MathContext(amountPrecision, RoundingMode.HALF_UP))
+			amount = (amount * currentMapping.ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
 		}
 		if (currentMapping.bucketKey) {
 			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]
 			getBuckets()[currentMapping.bucketKey].values.add(amount)
 		}
+		DurationType durationType
 		if (currentMapping.durationType) {
-			args["durationType"] = currentMapping.durationType
+			durationType = currentMapping.durationType
 		}
 
-		args["amountPrecision"] = args["amountPrecision"] ?: currentMapping["amountPrecision"]
+		int amountPrecision = currentMapping.amountPrecision ?: Entry.DEFAULT_AMOUNTPRECISION
 		args["timeZoneName"] = args["timeZoneName"] ?: "America/Los_Angeles"
 
 		String description = args["tagName"] ?: currentMapping["tag"]
@@ -117,10 +121,12 @@ abstract class TagUnitMap {
 		
 		Tag tag
 		
+		String units = currentMapping.unit
+		
 		if (currentMapping["suffix"]) {
 			tag = Tag.look(description + ' ' + currentMapping["suffix"])
 		} else {
-			tag = EntryParserService.get().tagWithSuffixForUnits(baseTag, currentMapping["unit"], 0)
+			tag = EntryParserService.get().tagWithSuffixForUnits(baseTag, units, 0)
 		}
 		
 		if (args["isSummary"]) {
@@ -128,12 +134,13 @@ abstract class TagUnitMap {
 			args['datePrecisionSecs'] = Entry.VAGUE_DATE_PRECISION_SECS
 		} else
 			args['datePrecisionSecs'] = Entry.DEFAULT_DATEPRECISION_SECS
-
-		Map parsedEntry = [userId: userId, date: date, tag: tag, baseTag: baseTag, description: description, amount: amount,
-				units: currentMapping["unit"], amountPrecision: (args["amountPrecision"] ?: Entry.DEFAULT_AMOUNTPRECISION),
-				comment: comment, setName: setName, timeZoneId: timeZoneId]
+		
+		ParseAmount parseAmount = new ParseAmount(tag, baseTag, amount, amountPrecision, units, currentMapping.unitRatio, durationType)
+		
+		Map parsedEntry = [userId: userId, date: date, description: description, amount: parseAmount, comment: comment, setName: setName, timeZoneId: timeZoneId, durationType:durationType]
 		
 		parsedEntry.putAll(args)
+		
 		Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
 		
 		creationMap.add(e)
@@ -147,16 +154,17 @@ abstract class TagUnitMap {
 	 */
 	void buildBucketedEntries(EntryCreateMap creationMap, EntryStats stats, Long userId, Map args) {
 		// Iterating through buckets & performing actions.
+		Date date = new Date()
 		this.getBuckets().each { bucketName, bucket ->
 			if (bucket.operation == this.AVERAGE) {
 				def totalAmount = bucket.values.sum()
 				def averageAmount = totalAmount / bucket.values.size()
 
-				Map parsedEntry = [userId: userId, date: new Date(), description: bucket.tag, amount: averageAmount,
+				Map parsedEntry = [userId: userId, date: date, description: bucket.tag, amount: averageAmount,
 					comment: args.comment, setName: args.setName, timeZoneId: args.timeZoneId, units: bucket.unit, datePrecisionSecs:Entry.DEFAULT_DATEPRECISION_SECS]
 
 				DatabaseService.retry(args) {
-					Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), stats)
+					Entry e = Entry.updatePartialOrCreate(userId, parsedEntry, creationMap.groupForDate(date), bucket.unitRatio, stats)
 					creationMap.add(e)
 				}
 			}

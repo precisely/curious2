@@ -146,57 +146,73 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testOrphanDurationEnd() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-		assert entry.fetchIsStart()
-		
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		
-		assert entry.is(entry2)
-
-		def x = entry.valueString()
-		// assert entry.valueString().equals(""
-//			"Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of orphan end of duration pair
-		println("== Test creation of new end entry after first duration pair ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4:30pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchDurationEntry() == null
-		assert entry3.fetchStartEntry() == null
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		
-		// test deletion of start of duration pair
-		
-		println("== Test deletion of middle end entry ==")
-		
-		Entry.delete(entry2, new EntryStats())
-		
-		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
-				
-		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry.fetchEndEntry() == entry3
-		assert entry3.fetchStartEntry() == entry
-	}
-
-/*	@Test
-	void testRepeatStart() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start repeat", null, null, earlyBaseDate, true), new EntryStats())
-		assert entry.getDurationType().equals(DurationType.START)
+	void testNoRepeatStartDuration() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start 4pm repeat", null, null, earlyBaseDate, true), new EntryStats())
+		assert entry.durationType == DurationType.NONE
+		assert entry.repeatType == RepeatType.DAILYCONCRETEGHOST
 	}
 	
+	@Test
+	void testUpdateToStart() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm", null, null, baseDate, true), new EntryStats())
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread start 2pm", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+
+		assert updated == entry && updated != null
+		
+		assert updated.durationType == DurationType.START
+		
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 1
+			assert it['description'] == 'bread start'
+		} == 1
+	}
+	
+	@Test
+	void testUpdateRepeatNoChange() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 5 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+
+		assert updated == entry && updated != null
+		
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify old event still at earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+		
+		// verify new event with old amount after baseDate
+		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 5
+		} == 1
+	}
+	
+	@Test
+	void testUpdatePartialOrCreate() {
+		def m = entryParserService.parse(currentTime, timeZone2, "bread summary 1", null, null, baseDate, true)
+		m.put('comment','(Withings)')
+		m.put('setName','withings import')
+		def timezone = (Integer) TimeZoneId.look(timeZone2).getId()
+		m.put('timeZoneId', timezone)
+		m.amount = m.amounts[0]
+		Entry entry = Entry.updatePartialOrCreate(userId, m, null, new EntryStats())
+		println entry.valueString()
+		assert Entry.count() == 1
+		entry = Entry.updatePartialOrCreate(userId, m, null, new EntryStats())
+		println Entry.list()
+		assert Entry.count() == 1
+	}
+
 	@Test
 	void testWeeklyRepeatFetchListData() {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm weekly", null, null, earlyBaseDate, true), new EntryStats())
@@ -1164,33 +1180,6 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testUpdateRepeatNoChange() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
-		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 5 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
-
-		assert updated == entry && updated != null
-		
-		// verify new event created on baseDate
-		assert testEntries(user, timeZone, baseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 5
-		} == 1
-		
-		// verify old event still at earlyBaseDate
-		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 5
-		} == 1
-		
-		// verify new event with old amount after baseDate
-		assert testEntries(user, timeZone, lateBaseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 5
-		} == 1
-	}
-	
-	@Test
 	void testUpdateRepeatOnFirstDayJustOnce() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
@@ -1445,23 +1434,6 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testOldRepeat() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread repeat daily", null, null, earlyBaseDate, true), new EntryStats())
-		String v = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:repeat, repeatType:1025, repeatEnd:null)")
-		def entries = Entry.fetchListDataNoRepeats(user, baseDate)
-		assert entries.size() == 0
-		
-		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 3pm pinned", null, null, baseDate, true), new EntryStats())
-		entries = Entry.fetchListDataNoRepeats(user, baseDate)
-		assert entries.size() == 0
-
-		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 3pm", null, null, baseDate, true), new EntryStats())
-		entries = Entry.fetchListDataNoRepeats(user, baseDate)
-		assert entries.size() == 1
-	}
-	
-	@Test
 	void testRemind() {
 		EntryStats stats = new EntryStats()
 		
@@ -1547,21 +1519,6 @@ class EntryTests extends CuriousTestCase {
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:2010-07-02T19:00:00)")
 	}
 	
-	@Test
-	void testUpdatePartialOrCreate() {
-		def m = entryParserService.parse(currentTime, timeZone2, "bread summary 1", null, null, baseDate, true)
-		m.put('comment','(Withings)')
-		m.put('setName','withings import')
-		def timezone = (Integer) TimeZoneId.look(timeZone2).getId()
-		m.put('timeZoneId', timezone)
-		Entry entry = Entry.updatePartialOrCreate(userId, m, null, new EntryStats())
-		println entry.valueString()
-		assert Entry.count() == 1
-		entry = Entry.updatePartialOrCreate(userId, m, null, new EntryStats())
-		println Entry.list()
-		assert Entry.count() == 1
-	}
-
 	@Test
 	void testUpdateDate() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), new EntryStats())
