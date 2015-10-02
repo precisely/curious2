@@ -77,7 +77,7 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
-	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, def amount, Long userId,
+	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
 			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 
 		if (tagName.contains("awake"))
@@ -98,7 +98,7 @@ abstract class TagUnitMap {
 			amount = amount.toBigDecimal()
 		}
 		if (currentMapping.convert) {
-			amount = new BigDecimal(amount * currentMapping.ratio, new MathContext(amountPrecision, RoundingMode.HALF_UP))
+			amount = (amount * currentMapping.ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
 		}
 		if (currentMapping.bucketKey) {
 			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]

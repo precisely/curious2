@@ -151,8 +151,8 @@ class EntryTests extends CuriousTestCase {
 		println("== Test creation of start entry ==")
 		
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:null, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		def x = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:null, units:hrs, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 		assert entry.fetchIsStart()
 		
 		// test creation of the other side of the duration pair
@@ -162,7 +162,7 @@ class EntryTests extends CuriousTestCase {
 		
 		assert entry.is(entry2)
 
-		def x = entry.valueString()
+		x = entry.valueString()
 		// assert entry.valueString().equals(""
 //			"Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 

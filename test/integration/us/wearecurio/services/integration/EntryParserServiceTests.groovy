@@ -133,6 +133,293 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testWideDuration() {
+		// test creation of wide duration
+		println("== Test creation of wide duration entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, earlyBaseDate, true), new EntryStats())
+
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 3:31pm", null, null, veryLateBaseDate, true), new EntryStats())
+		assert entry2.is(entry) // should have completed entry
+		testEntries(user, timeZone, veryLateBaseDate, currentTime) {
+			int c = 0
+			def amount = it.amounts[0]
+			assert amount.amount.longValue() == 25
+			assert amount.units == 'days'
+			amount = it.amounts[1]
+			assert amount.amount.longValue() == 1
+			assert amount.units == 'min'
+
+			assert it.amounts.size() == 2
+		}
+	}
+
+/*	@Test
+	void testDuration() {
+		// test creation of start of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
+		def x = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 3:31pm", null, null, baseDate, true), new EntryStats())
+		assert entry2.is(entry) // should have completed entry
+		testEntries(user, timeZone, baseDate, currentTime) {
+			int c = 0
+			def amount = it.amounts[0]
+			assert amount.amount.longValue() == 1
+			assert amount.units == 'min'
+			
+			assert it.amounts.size() == 1
+		}
+	}
+
+	@Test
+	void testSleep() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 3:30pm", null, null, baseDate, true), new EntryStats())
+		assert entry.getDurationType().equals(DurationType.START)
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 4pm", null, null, baseDate, true), new EntryStats())
+		assert entry2.getDurationType().equals(DurationType.START)
+		
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4 hours at 3:30pm", null, null, baseDate, true), new EntryStats())
+		assert entry3.getDurationType().equals(DurationType.NONE)
+
+		Entry entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm start", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getDurationType().equals(DurationType.START)
+
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getDurationType().equals(DurationType.START)
+
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4pm starts(hola)", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getComment().equals("(hola)")
+		assert entry4.getDurationType().equals(DurationType.START)
+
+		Entry entry5 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4pm stop", null, null, baseDate, true), new EntryStats())
+		assert entry5.getDescription().equals("sleep end")
+		assert entry5.getDurationType().equals(DurationType.END)
+
+		Entry entry6 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm end", null, null, baseDate, true), new EntryStats())
+		assert entry6.getDescription().equals("sleep end")
+		assert entry6.getDurationType().equals(DurationType.END)
+	}
+
+	@Test
+	void testSleepWake() {
+		// test creation of one side of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 3:30pm", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "wake 3:31pm", null, null, baseDate, true), new EntryStats())
+		println entry2.valueString()
+		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry2.getDurationType().equals(DurationType.END)
+
+		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:0.016667000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert entry2.fetchStartEntry().equals(entry)
+		assert entry.fetchEndEntry().equals(entry2)
+		assert entry2.fetchDurationEntry().fetchIsGenerated()
+		
+		// test editing the start time of the duration pair
+		println("== Test update start entry ==")
+
+		entry.update(entryParserService.parse(currentTime, timeZone, "sleep at 3:01pm", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:01:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry().fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert entry2.fetchStartEntry().equals(entry)
+		assert entry.fetchEndEntry().equals(entry2)
+
+		// test creation of new start of a duration pair
+		println("== Test creation of new start entry in between start and end entry ==")
+
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 3:16pm", null, null, baseDate, true), new EntryStats())
+		println entry3.valueString()
+		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:16:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry3.fetchEndEntry().equals(entry2)
+		assert entry.fetchEndEntry() == null
+		assert entry2.fetchStartEntry().equals(entry3)
+		
+		// test deletion of start end of a duration pair
+		println("== Test deletion of start entry from duration pair ==")
+		
+		Entry.delete(entry3, new EntryStats())
+
+		assert entry2.fetchStartEntry().equals(entry)
+		assert entry.fetchEndEntry().equals(entry2)
+
+		// test creation of new end after the duration pair
+		println("== Test creation of new end after the duration pair ==")
+		
+		Entry entry4 = Entry.create(userId, entryParserService.parse(endTime, timeZone, "sleep end at 4:31pm", null, null, baseDate, true), new EntryStats())
+		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry4.fetchStartEntry() == null
+		assert entry2.fetchStartEntry().equals(entry)
+		assert entry.fetchEndEntry().equals(entry2)
+
+		// test deletion of start of duration pair
+		println("== Test deletion of start entry from duration pair ==")
+		
+		Entry.delete(entry2, new EntryStats())
+		
+		assert entry.fetchEndEntry().equals(entry4)
+		assert entry4.fetchStartEntry().equals(entry)
+		
+		assert entry4.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+	}
+
+	//
+	// Test creating an interleaved duration pair: create a duration pair, then create another start before the
+	// pair and a new end in the middle of the first pair
+	//
+	@Test
+	void testInterleavedDuration() {
+		// test creation of one side of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.fetchEndEntry() == null
+		
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
+		println entry2.valueString()
+		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry2.fetchStartEntry() == entry
+		assert entry.fetchEndEntry() == entry2
+		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of new start of a duration pair
+		println("== Test creation of new start entry before start and end entry ==")
+
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3pm", null, null, baseDate, true), new EntryStats())
+		println entry3.valueString()
+		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry3.fetchEndEntry() == null
+		assert entry2.fetchStartEntry() == entry
+		assert entry.fetchEndEntry() == entry2
+
+		// test creation of new end in between first duration pair
+		println("== Test creation of new end in between first duration pair ==")
+		
+		Entry entry4 = Entry.create(userId, entryParserService.parse(endTime, timeZone, "testxyz end at 3:45pm", null, null, baseDate, true), new EntryStats())
+		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		
+		assert entry4.fetchStartEntry() == entry
+		assert entry.fetchEndEntry() == entry4
+		println entry4.fetchDurationEntry().valueString()
+		
+		assert entry2.fetchStartEntry() == null
+		assert entry2.fetchDurationEntry() == null
+	}
+
+	@Test
+	void testInterleavedDuration2() {
+		// test creation of one side of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry() == null
+		
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
+		println entry2.valueString()
+		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry() == entry2
+		assert entry2.fetchStartEntry() == entry
+		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of new start of a duration pair
+		println("== Test creation of new start entry in between first duration pair ==")
+
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:45pm", null, null, baseDate, true), new EntryStats())
+		println entry3.valueString()
+		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry() == null
+		
+		assert entry3.fetchEndEntry() == entry2
+		assert entry2.fetchStartEntry() == entry3
+	}
+
+	@Test
+	void testOrphanDurationEnd() {
+		// test creation of one side of a duration pair
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry() == null
+		
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
+		println entry2.valueString()
+		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry.fetchEndEntry() == entry2
+		assert entry2.fetchStartEntry() == entry
+		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		// test creation of orphan end of duration pair
+		println("== Test creation of new end entry after first duration pair ==")
+
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4:30pm", null, null, baseDate, true), new EntryStats())
+		println entry3.valueString()
+		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
+
+		assert entry3.fetchDurationEntry() == null
+		assert entry3.fetchStartEntry() == null
+		assert entry.fetchEndEntry() == entry2
+		assert entry2.fetchStartEntry() == entry
+		
+		// test deletion of start of duration pair
+		
+		println("== Test deletion of middle end entry ==")
+		
+		Entry.delete(entry2, new EntryStats())
+		
+		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
+				
+		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert entry.fetchEndEntry() == entry3
+		assert entry3.fetchStartEntry() == entry
+	}
+	
+/*	@Test
 	void testLongTagTwoSpaces() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "dream pissed off mob they want to kill me women fake death put me in coffin w food bury me can play  yrs", null, null, baseDate, true), new EntryStats())
 		
@@ -634,320 +921,6 @@ class EntryParserServiceTests extends CuriousTestCase {
 		
 	}
 
-	@Test
-	void testSleep() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 3:30pm", null, null, baseDate, true), new EntryStats())
-		assert entry.getDurationType().equals(DurationType.START)
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 4pm", null, null, baseDate, true), new EntryStats())
-		assert entry2.getDurationType().equals(DurationType.START)
-		
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4 hours at 3:30pm", null, null, baseDate, true), new EntryStats())
-		assert entry3.getDurationType().equals(DurationType.NONE)
-
-		Entry entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm start", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts (hola)", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getComment().equals("(hola)")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts(hola)", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getComment().equals("(hola)")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		Entry entry5 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm stop", null, null, baseDate, true), new EntryStats())
-		assert entry5.getDescription().equals("sleep end")
-		assert entry5.getDurationType().equals(DurationType.END)
-
-		Entry entry6 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm end", null, null, baseDate, true), new EntryStats())
-		assert entry6.getDescription().equals("sleep end")
-		assert entry6.getDurationType().equals(DurationType.END)
-	}
-
-	@Test
-	void testDuration() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 3:31pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.016667000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-		assert entry2.fetchDurationEntry().fetchIsGenerated()
-		
-		// test editing the start time of the duration pair
-		println("== Test update start entry ==")
-
-		entry.update(entryParserService.parse(currentTime, timeZone, "testxyz start at 3:01pm", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:01:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry().fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test creation of new start of a duration pair
-		println("== Test creation of new start entry in between start and end entry ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:16pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:16:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchEndEntry().equals(entry2)
-		assert entry.fetchEndEntry() == null
-		assert entry2.fetchStartEntry().equals(entry3)
-		
-		// test deletion of start end of a duration pair
-		println("== Test deletion of start entry from duration pair ==")
-		
-		Entry.delete(entry3, new EntryStats())
-
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test creation of new end after the duration pair
-		println("== Test creation of new end after the duration pair ==")
-		
-		Entry entry4 = Entry.create(userId, entryParserService.parse(endTime, timeZone, "testxyz end at 4:31pm", null, null, baseDate, true), new EntryStats())
-		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry4.fetchStartEntry() == null
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test deletion of start of duration pair
-		println("== Test deletion of start entry from duration pair ==")
-		
-		Entry.delete(entry2, new EntryStats(userId))
-		
-		assert entry.fetchEndEntry().equals(entry4)
-		assert entry4.fetchStartEntry().equals(entry)
-		
-		assert entry4.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-	}
-
-	@Test
-	void testSleepWake() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "wake 3:31pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-		assert entry2.getDurationType().equals(DurationType.END)
-
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:0.016667000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-		assert entry2.fetchDurationEntry().fetchIsGenerated()
-		
-		// test editing the start time of the duration pair
-		println("== Test update start entry ==")
-
-		entry.update(entryParserService.parse(currentTime, timeZone, "sleep at 3:01pm", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:01:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry().fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test creation of new start of a duration pair
-		println("== Test creation of new start entry in between start and end entry ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 3:16pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:16:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchEndEntry().equals(entry2)
-		assert entry.fetchEndEntry() == null
-		assert entry2.fetchStartEntry().equals(entry3)
-		
-		// test deletion of start end of a duration pair
-		println("== Test deletion of start entry from duration pair ==")
-		
-		Entry.delete(entry3, new EntryStats())
-
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test creation of new end after the duration pair
-		println("== Test creation of new end after the duration pair ==")
-		
-		Entry entry4 = Entry.create(userId, entryParserService.parse(endTime, timeZone, "sleep end at 4:31pm", null, null, baseDate, true), new EntryStats())
-		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry4.fetchStartEntry() == null
-		assert entry2.fetchStartEntry().equals(entry)
-		assert entry.fetchEndEntry().equals(entry2)
-
-		// test deletion of start of duration pair
-		println("== Test deletion of start entry from duration pair ==")
-		
-		Entry.delete(entry2, new EntryStats())
-		
-		assert entry.fetchEndEntry().equals(entry4)
-		assert entry4.fetchStartEntry().equals(entry)
-		
-		assert entry4.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:31:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:sleep, amount:1.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-	}
-
-	//
-	// Test creating an interleaved duration pair: create a duration pair, then create another start before the
-	// pair and a new end in the middle of the first pair
-	//
-	@Test
-	void testInterleavedDuration() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-		assert entry.fetchEndEntry() == null
-		
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry2.fetchStartEntry() == entry
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of new start of a duration pair
-		println("== Test creation of new start entry before start and end entry ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchEndEntry() == null
-		assert entry2.fetchStartEntry() == entry
-		assert entry.fetchEndEntry() == entry2
-
-		// test creation of new end in between first duration pair
-		println("== Test creation of new end in between first duration pair ==")
-		
-		Entry entry4 = Entry.create(userId, entryParserService.parse(endTime, timeZone, "testxyz end at 3:45pm", null, null, baseDate, true), new EntryStats())
-		assert entry4.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		
-		assert entry4.fetchStartEntry() == entry
-		assert entry.fetchEndEntry() == entry4
-		println entry4.fetchDurationEntry().valueString()
-		
-		assert entry2.fetchStartEntry() == null
-		assert entry2.fetchDurationEntry() == null
-	}
-
-	@Test
-	void testInterleavedDuration2() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == null
-		
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of new start of a duration pair
-		println("== Test creation of new start entry in between first duration pair ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:45pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:45:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == null
-		
-		assert entry3.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry3
-	}
-
-	@Test
-	void testOrphanDurationEnd() {
-		// test creation of one side of a duration pair
-		println("== Test creation of start entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start at 3:30pm", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == null
-		
-		// test creation of the other side of the duration pair
-		println("== Test creation of end entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4pm", null, null, baseDate, true), new EntryStats())
-		println entry2.valueString()
-		assert entry2.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		assert entry2.fetchDurationEntry().valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:0.500000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		// test creation of orphan end of duration pair
-		println("== Test creation of new end entry after first duration pair ==")
-
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end at 4:30pm", null, null, baseDate, true), new EntryStats())
-		println entry3.valueString()
-		assert entry3.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
-
-		assert entry3.fetchDurationEntry() == null
-		assert entry3.fetchStartEntry() == null
-		assert entry.fetchEndEntry() == entry2
-		assert entry2.fetchStartEntry() == entry
-		
-		// test deletion of start of duration pair
-		
-		println("== Test deletion of middle end entry ==")
-		
-		Entry.delete(entry2, new EntryStats())
-		
-		Entry newDurationEntry = entry.fetchEndEntry().fetchDurationEntry()
-				
-		assert newDurationEntry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T23:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:testxyz, amount:1.000000000, units:hours, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-		assert entry.fetchEndEntry() == entry3
-		assert entry3.fetchStartEntry() == entry
-	}
-	
 /*	@Test
 	void testBigNumbers() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1000 slices", null, null, baseDate, true), new EntryStats())

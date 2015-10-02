@@ -27,129 +27,129 @@ class UnitGroupMap {
 	static final int SUFFIXSUFFIX = 5
 	
 	//Duration
-	static final long MILLISECOND = 1
-	static final double PICOSECOND = MILLISECOND * 0.000000001d
-	static final double MICROSECOND = MILLISECOND * 0.001d
-	static final long SECOND = MILLISECOND * 1000
-	static final long MINUTE = SECOND * 60
-	static final long HOUR = MINUTE * 60
-	static final long DAY = HOUR * 24
-	static final long WEEK = DAY * 7
-	static final double MONTH = DAY * 30.4375d
-	static final double YEAR = MONTH * 12
-	static final double CENTURY = YEAR * 100
+	static final BigDecimal MILLISECOND = 1.0g
+	static final BigDecimal PICOSECOND = MILLISECOND * 0.000000001g
+	static final BigDecimal MICROSECOND = MILLISECOND * 0.001g
+	static final BigDecimal SECOND = MILLISECOND * 1000.0g
+	static final BigDecimal MINUTE = SECOND * 60.0g
+	static final BigDecimal HOUR = MINUTE * 60.0g
+	static final BigDecimal DAY = HOUR * 24.0g
+	static final BigDecimal WEEK = DAY * 7.0g
+	static final BigDecimal MONTH = DAY * 30.4375g
+	static final BigDecimal YEAR = MONTH * 12.0g
+	static final BigDecimal CENTURY = YEAR * 100.0g
 
 	//Distance
-	static final double METER = 1
-	static final double CENTIMETER = 0.01d
-	static final double MILLIMETER = 0.001d
-	static final double FOOT = METER * 0.30480d
-	static final double INCH = FOOT / 12.0d
-	static final double YARD = METER * FOOT * 3.0d
-	static final double MILE = METER * FOOT * 5280.0d
-	static final double KILOMETER = METER * 1000
+	static final BigDecimal METER = 1.0g
+	static final BigDecimal CENTIMETER = 0.01g
+	static final BigDecimal MILLIMETER = 0.001g
+	static final BigDecimal FOOT = METER * 0.30480g
+	static final BigDecimal INCH = FOOT / 12.0g
+	static final BigDecimal YARD = METER * FOOT * 3.0g
+	static final BigDecimal MILE = METER * FOOT * 5280.0g
+	static final BigDecimal KILOMETER = METER * 1000.0g
 
 	//Weight
-	static final double GRAM = 1
-	static final double MILLIGRAM = 0.001d
-	static final double MICROGRAM = 0.001d * MILLIGRAM
-	static final double KILOGRAM = GRAM * 1000
-	static final double POUND = GRAM * 453.6d
-	static final double TON = POUND * 2000.0d
-	static final double OUNCE = POUND / 16.0d
+	static final BigDecimal GRAM = 1.0g
+	static final BigDecimal MILLIGRAM = 0.001g
+	static final BigDecimal MICROGRAM = 0.001g * MILLIGRAM
+	static final BigDecimal KILOGRAM = GRAM * 1000.0g
+	static final BigDecimal POUND = GRAM * 453.6g
+	static final BigDecimal TON = POUND * 2000.0g
+	static final BigDecimal OUNCE = POUND / 16.0g
 	
 	//Area
-	static final double SQMETER = 1
-	static final double HECTARE = 10000 * SQMETER
-	static final double ACRE = HECTARE / 2.471d
-	static final double SQKILOMETER = KILOMETER * KILOMETER
-	static final double SQMILE = MILE * MILE
-	static final double SQFOOT = FOOT * FOOT
+	static final BigDecimal SQMETER = 1.0g
+	static final BigDecimal HECTARE = 10000.0g * SQMETER
+	static final BigDecimal ACRE = HECTARE / 2.471g
+	static final BigDecimal SQKILOMETER = KILOMETER * KILOMETER
+	static final BigDecimal SQMILE = MILE * MILE
+	static final BigDecimal SQFOOT = FOOT * FOOT
 	
 	//Volume
-	static final double CC = 1
-	static final double LITER = 1000.0d
-	static final double GALLON = OUNCE * 128.0d
-	static final double QUART = OUNCE * 32.0d
-	static final double CUP = OUNCE * 8.0d
-	static final double TEASPOON = LITER * 0.00492892d
+	static final BigDecimal CC = 1.0g
+	static final BigDecimal LITER = 1000.0g
+	static final BigDecimal GALLON = OUNCE * 128.0g
+	static final BigDecimal QUART = OUNCE * 32.0g
+	static final BigDecimal CUP = OUNCE * 8.0g
+	static final BigDecimal TEASPOON = LITER * 0.00492892g
 	
 	//Force
-	static final double NEWTON = POUND / 4.44822162825d
-	static final double DYNE = NEWTON / 100000.0d
-	static final double KIP = POUND * 1000.0d
+	static final BigDecimal NEWTON = POUND / 4.44822162825g
+	static final BigDecimal DYNE = NEWTON / 100000.0g
+	static final BigDecimal KIP = POUND * 1000.0g
 	
 	//Power
-	static final double WATT = 1
-	static final double KILOWATT = 1000.0d * WATT
-	static final double MILLIWATT = WATT / 1000.0d
-	static final double HORSEPOWER = 745.699872d * WATT
+	static final BigDecimal WATT = 1.0g
+	static final BigDecimal KILOWATT = 1000.0g * WATT
+	static final BigDecimal MILLIWATT = WATT / 1000.0g
+	static final BigDecimal HORSEPOWER = 745.699872g * WATT
 	
 	//Energy
-	static final double JOULE = 1
-	static final double ERG = 1.0e-7d
-	static final double FOOTPOUND = 1.3558d
-	static final double BTU = 1055.056d
-	static final double HORSEPOWERHOUR = 2.6845e6d
-	static final double MEGAJOULE = 1000000.0d
-	static final double GIGAJOULE = 1.0e9d
-	static final double TERAJOULE = 1.0e12d
-	static final double PETAJOULE = 1.0e15d
-	static final double KILOWATTHOUR = 3.6e6d
-	static final double THERM = 105.5d * MEGAJOULE
-	static final double CALORIE = 4.184d
-	static final double KILOCALORIE = 1000.0d * CALORIE
-	static final double KILOTON = 4.184e3d * GIGAJOULE
-	static final double MEGATON = 1000.0d * KILOTON
-	static final double EV = 1.60217653e-19d
+	static final BigDecimal JOULE = 1.0g
+	static final BigDecimal ERG = 1.0e-7g
+	static final BigDecimal FOOTPOUND = 1.3558g
+	static final BigDecimal BTU = 1055.056g
+	static final BigDecimal HORSEPOWERHOUR = 2.6845e6g
+	static final BigDecimal MEGAJOULE = 1000000.0g
+	static final BigDecimal GIGAJOULE = 1.0e9g
+	static final BigDecimal TERAJOULE = 1.0e12g
+	static final BigDecimal PETAJOULE = 1.0e15g
+	static final BigDecimal KILOWATTHOUR = 3.6e6g
+	static final BigDecimal THERM = 105.5g * MEGAJOULE
+	static final BigDecimal CALORIE = 4.184g
+	static final BigDecimal KILOCALORIE = 1000.0g * CALORIE
+	static final BigDecimal KILOTON = 4.184e3g * GIGAJOULE
+	static final BigDecimal MEGATON = 1000.0g * KILOTON
+	static final BigDecimal EV = new BigDecimal(1.60217653e-19d)
 	
 	//Pressure
-	static final double PASCAL = 1
-	static final double BARYE = 0.1d
-	static final double PSI = 6894.75729d
-	static final double BAR = 100000.0d
-	static final double DECIBAR = BAR / 10.0d
-	static final double CENTIBAR = BAR / 100.0d
-	static final double MILLIBAR = BAR / 1000.0d
-	static final double MEGABAR = 1.0e6d * BAR
-	static final double KILOBAR = 1.0e3d * BAR
-	static final double MMHG = 133.3223684211d
-	static final double INCHHG = 3386.389d
-	static final double ATMOSPHERE = 98.0665e3d
+	static final BigDecimal PASCAL = 1.0g
+	static final BigDecimal BARYE = 0.1g
+	static final BigDecimal PSI = 6894.75729g
+	static final BigDecimal BAR = 100000.0g
+	static final BigDecimal DECIBAR = BAR * 0.1g
+	static final BigDecimal CENTIBAR = BAR * 0.01g
+	static final BigDecimal MILLIBAR = BAR * 0.001g
+	static final BigDecimal MEGABAR = 1000000.0g * BAR
+	static final BigDecimal KILOBAR = 1000.0g * BAR
+	static final BigDecimal MMHG = 133.3223684211g
+	static final BigDecimal INCHHG = 3386.389g
+	static final BigDecimal ATMOSPHERE = 98.0665e3g
 	
 	//Density
-	static final double KGPERM3 = 1.0d/1000.0d
-	static final double GPERM3 = 1/1000000.0d
-	static final double MGPERDL = 0.00001d
-	static final double KGPERL = 1.0d
-	static final double GPERML = 1.0d
-	static final double GPERL = 1.0d/1000.0d
+	static final BigDecimal KGPERM3 = 0.001g
+	static final BigDecimal GPERM3 = 1/1000000.0g
+	static final BigDecimal MGPERDL = 0.00001g
+	static final BigDecimal KGPERL = 1.0g
+	static final BigDecimal GPERML = 1.0g
+	static final BigDecimal GPERL = 0.001g
 	// TODO: Finish adding density units
 	
 	//Steps
-	static final double STEPSUNIT = 1
+	static final BigDecimal STEPSUNIT = 1.0g
 	
 	//Percentage
-	static final double PERCENTAGEUNIT = 1
+	static final BigDecimal PERCENTAGEUNIT = 1.0g
 	
 	//Frequency
-	static final double PERSECOND = 1.0d
-	static final double PERMINUTE = 60.0d
-	static final double PERHOUR = 60.0d * PERMINUTE
-	static final double PERDAY = 24.0d * PERHOUR
-	static final double PERWEEK = 7.0d * PERDAY
-	static final double PERMONTH = 30.4375d * PERDAY
-	static final double PERYEAR = 365.25d * PERDAY
+	static final BigDecimal PERSECOND = 1.0g
+	static final BigDecimal PERMINUTE = 60.0g
+	static final BigDecimal PERHOUR = 60.0g * PERMINUTE
+	static final BigDecimal PERDAY = 24.0g * PERHOUR
+	static final BigDecimal PERWEEK = 7.0g * PERDAY
+	static final BigDecimal PERMONTH = 30.4375g * PERDAY
+	static final BigDecimal PERYEAR = 365.25g * PERDAY
 	
 	//Scale
-	static final double SCALEUNITY = 1
-	static final double SCALETEN = 10
-	static final double SCALEFIVE = 5
-	static final double SCALEFOUR = 4
-	static final double SCALETHREE = 4
+	static final BigDecimal SCALEUNITY = 1.0g
+	static final BigDecimal SCALETEN = 10.0g
+	static final BigDecimal SCALEFIVE = 5.0g
+	static final BigDecimal SCALEFOUR = 4.0g
+	static final BigDecimal SCALETHREE = 3.0g
 	
 	//Quantity
-	static final double QUANTITYRATIO = 1
+	static final BigDecimal QUANTITYRATIO = 1.0g
 	
 	static final int SINGULAR = 1 // mark unit as a singular sub unit
 	static final int PLURAL = 2 // mark it as a plural sub unit
@@ -460,13 +460,6 @@ class UnitGroupMap {
 		QUANTITY(26, "quantity", 2, [
 			'quantity':[QUANTITYRATIO,0,10,'quantity',BOTH], 'qty':[QUANTITYRATIO,0,10,'quantity'],
 		]),
-		static final double PERSECOND = 1.0d
-		static final double PERMINUTE = 60.0d
-		static final double PERHOUR = 60.0d * PERMINUTE
-		static final double PERDAY = 24.0d * PERHOUR
-		static final double PERWEEK = 7.0d * PERDAY
-		static final double PERMONTH = 30.4375d * PERDAY
-		static final double PERYEAR = 365.25d * PERDAY
 	
 		final int id
 		final String name
@@ -544,11 +537,11 @@ class UnitGroupMap {
 				
 				unitRatios.add(unitRatio)
 				
-				double ratio = unitRatio.ratio
+				BigDecimal ratio = unitRatio.ratio
 				unitRatio.singularUnitRatio = singularSubUnit.get((Double)unitRatio.ratio)
 				unitRatio.pluralUnitRatio = pluralSubUnit.get((Double)unitRatio.ratio)
 				
-				double subRatio = val[SUBRATIO]
+				BigDecimal subRatio = val[SUBRATIO]
 				unitRatio.subRatio = subRatio
 				
 				if (subRatio > 0.0d) {
@@ -766,14 +759,14 @@ class UnitGroupMap {
 		return ratio
 	}
 	
-	protected double lookupRatioForUnits(String units) {
+	protected BigDecimal lookupRatioForUnits(String units) {
 		DecoratedUnitRatio unitRatio = decoratedUnitRatioForUnits(units.toLowerCase())
 		if (unitRatio) return unitRatio.ratio
 		
-		return 1.0d
+		return 1.0g
 	}
 	
-	double fetchConversionRatio(String fromUnits, String toUnits) {
+	BigDecimal fetchConversionRatio(String fromUnits, String toUnits) {
 		return lookupRatioForUnits(fromUnits) / lookupRatioForUnits(toUnits)
 	}
 	
@@ -899,29 +892,29 @@ class UnitGroupMap {
 class UnitRatio {
 	UnitGroup unitGroup
 	String unit
-	double ratio
+	BigDecimal ratio
 	def affinity
 	String canonicalUnit
 	String canonicalUnitString
 	String tagSuffix
-	double subRatio
+	BigDecimal subRatio
 	UnitRatio singularUnitRatio
 	UnitRatio pluralUnitRatio
 	UnitRatio subUnitRatio
 	DecoratedUnitRatio decoratedUnitRatio
 	Map<String, DecoratedUnitRatio> decoratedMap = new ConcurrentHashMap<String, DecoratedUnitRatio>()
 	
-	UnitRatio(UnitGroup unitGroup, String unit, double ratio, def affinity, String canonicalUnit, String canonicalUnitString, String tagSuffix, boolean initialize) {
+	UnitRatio(UnitGroup unitGroup, String unit, BigDecimal ratio, def affinity, String canonicalUnit, String canonicalUnitString, String tagSuffix, boolean initialize) {
 		this.unitGroup = unitGroup
 		this.unit = unit
-		this.ratio = ratio
+		this.ratio = ratio.setScale(100, BigDecimal.ROUND_HALF_UP)
 		this.affinity = affinity
 		this.canonicalUnit = canonicalUnit
 		this.canonicalUnitString = canonicalUnitString ?: canonicalUnit
 		if (!tagSuffix.startsWith('['))
 			tagSuffix = '[' + tagSuffix + ']'
 		this.tagSuffix = tagSuffix
-		this.subRatio = 0.0d
+		this.subRatio = 0.0g
 		this.singularUnitRatio = null
 		this.pluralUnitRatio = null
 		this.subUnitRatio = null
@@ -978,7 +971,7 @@ class UnitRatio {
 		if (otherRatio == this)
 			return null
 		
-		return new BigDecimal(otherRatio.ratio / this.ratio)
+		return (otherRatio.ratio / this.ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
 	}
 }
 
@@ -1084,14 +1077,15 @@ class DecoratedUnitRatio {
 		return pluralUnitRatio
 	}
 	
-	double getRatio() { unitRatio.ratio }
+	BigDecimal getRatio() { unitRatio.ratio }
+	BigDecimal getRatioDecimal() { unitRatio.ratioDecimal }
 	UnitGroup getUnitGroup() { unitRatio.unitGroup }
 	int getGroupPriority() { unitRatio.groupPriority }
 	String getUnit() { unitSuffix == null ? unitRatio.unit : unitRatio.unit + ' ' + unitSuffix }
 	String getCanonicalUnit() { unitRatio.canonicalUnit }
 	String getCanonicalUnitString() { unitSuffix == null ? unitRatio.canonicalUnitString : unitRatio.canonicalUnitString + ' ' + unitSuffix }
 	String getUnitSuffix() { unitSuffix }
-	double getSubRatio() { unitRatio.subRatio }
+	BigDecimal getSubRatio() { unitRatio.subRatio }
 	int getGroupId() { unitRatio.groupId }
 	def getAffinity() { unitRatio.affinity }
 	BigDecimal conversionRatio(String unit) { unitRatio.conversionRatio(unit) }
@@ -1126,26 +1120,26 @@ class DecoratedUnitRatio {
 		return this.unit
 	}
 	
+	BigDecimal SLIGHTLYLESSTHANONE = 0.9999g
+	
 	void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
-		int compareToOne = amount.compareTo(BigDecimal.ONE)
+		int compareToOne = amount.compareTo(SLIGHTLYLESSTHANONE)
 		
 		if ((!subRatio) || subUnitRatio == null || amountPrecision < 0) {
-			amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0)])
+			amounts.put(amounts.size(), [amount:amount.setScale(4, BigDecimal.ROUND_HALF_UP), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0)])
 		} else {
 			BigDecimal subAmount
 			
 			if (compareToOne >= 0) {
 				String baseUnitString
 				
-				long primeVal = (long)amount				
-				amounts.put(amounts.size(), [amount:new BigDecimal(primeVal), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(primeVal != 1L)])
-				double remainder = (amount.doubleValue() - ((double)primeVal)) * ratio / subRatio
-				if (remainder != 0.0d && (remainder > 1.0e-5d || remainder < -1.0e-5d)) {
-					subAmount = new BigDecimal(remainder).setScale(4, BigDecimal.ROUND_HALF_UP)
-				} else
+				BigDecimal primeVal = amount.setScale(0, BigDecimal.ROUND_HALF_UP).setScale(4, BigDecimal.ROUND_HALF_UP)
+				amounts.put(amounts.size(), [amount:primeVal, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(primeVal != 1.0g)])
+				subAmount = ((amount - primeVal) * ratio / subRatio).setScale(100, BigDecimal.ROUND_HALF_UP)
+				if (subAmount == 0.0g || (subAmount < 0.0001g && subAmount > -0.0001g))
 					return
 			} else {
-				subAmount = amount.multiply(new BigDecimal(ratio / subRatio))
+				subAmount = (amount * ratio / subRatio).setScale(100, BigDecimal.ROUND_HALF_UP)
 			}
 			
 			subUnitRatio.getJSONAmounts(amounts, subAmount, amountPrecision)

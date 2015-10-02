@@ -32,6 +32,7 @@ import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.LinkedList
 import java.math.MathContext
+import java.math.RoundingMode
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
@@ -44,10 +45,11 @@ class Entry implements Comparable {
 
 	private static def log = LogFactory.getLog(this)
 
-	static final MathContext mc = new MathContext(9)
+	static final int ENTRY_SCALE = 9
+	static final MathContext mc = new MathContext(ENTRY_SCALE)
 
-	static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999.999999999")
-	static final BigDecimal MIN_AMOUNT = new BigDecimal("-9999999999.999999999")
+	static final BigDecimal MAX_AMOUNT = 9999999999.999999999g
+	static final BigDecimal MIN_AMOUNT = -9999999999.999999999g
 
 	static final int DEFAULT_DATEPRECISION_SECS = 3 * 60
 	static final int VAGUE_DATE_PRECISION_SECS = 86400
@@ -61,7 +63,7 @@ class Entry implements Comparable {
 
 	static constraints = {
 		group(nullable:true)
-		amount(scale:9, max:9999999999999999999.999999999, nullable:true)
+		amount(scale:ENTRY_SCALE, max:9999999999999999999.999999999, nullable:true)
 		date(nullable:true)
 		datePrecisionSecs(nullable:true)
 		amountPrecision(nullable:true)
@@ -234,7 +236,7 @@ class Entry implements Comparable {
 		return results
 	}
 
-	protected static final BigDecimal smallDifference = new BigDecimal("0.01")
+	protected static final BigDecimal smallDifference = 0.01g
 
 	// Prevent duplicates for imported entries
 	protected static boolean hasDuplicate(Long userId, Map m) {
@@ -322,9 +324,6 @@ class Entry implements Comparable {
 		Tag baseTag = m['baseTag']
 		DurationType durationType = m['durationType']
 
-		if (durationType != null && ((RepeatType)m['repeatType'])?.isGhost())
-			durationType = durationType.makeGhost()
-
 		Tag tag = m['tag']
 
 		TimeZoneId timeZoneId
@@ -390,44 +389,67 @@ class Entry implements Comparable {
 		return entry
 	}
 	
-	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, def amounts, Closure findOtherEntry) {
+	static final BigDecimal DAYTICKSDECIMAL = (1000.0g * 60.0g * 60.0g * 24.0g).setScale(100, BigDecimal.ROUND_HALF_UP)
+	
+	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, def amounts, DurationType durationType, Closure findOtherEntry) {
 		Date date = m['date']
 		Entry other = findOtherEntry()
 		ParseAmount durationAmount = null
 		if (other != null) {
-			long durationTicks = date.getTime() - other.getTime()
-			BigDecimal days = new BigDecimal(durationTicks).divide(new BigDecimal(1000L * 60L * 60L * 24L))
+			BigDecimal durationTicks = ((BigDecimal) date.getTime() - other.date.getTime()).setScale(100, BigDecimal.ROUND_HALF_UP)
+			if (durationType == DurationType.START)
+				durationTicks = -durationTicks
+			BigDecimal days = (durationTicks / DAYTICKSDECIMAL).setScale(100, BigDecimal.ROUND_HALF_UP)
 			for (ParseAmount amount : amounts) {
 				if (!amount.isActive())
 					continue
 				if (amount.isDuration() && amount.unitRatio != null && amount.unitRatio.unitSuffix == null) {
 					durationAmount = amount
 					if (amount.amount != null) {
-						m['durationType'] = DurationType.DURATION // unghost this
-						m['tag'] = m['baseTag'] // get rid of start tag
+						m['tag'] = m['baseTag'] // get rid of modifier tag, this is a complete duration tag
 					}
 					break
 				}
+				if (amount.unitRatio == null && amount.precision < 0) {
+					amount.deactivate() // default amount removed and replaced by duration value
+				}
 			}
 			if (durationAmount == null) {
-				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroup.DURATION)
+				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroup.DURATION, DurationType.NONE)
 				amounts.add(durationAmount)
 			}
 			other.update(m, stats, date, true, true)
 			
 			return other
 		} else {
-			// continue entry update
+			// create entry with start or end time because there is no matching
 			for (ParseAmount amount : amounts) {
 				if (!amount.isActive())
 					continue
+				// duration has been specified with this entry, so complete the entry
 				if (amount.isDuration() && amount.unitRatio != null && amount.unitRatio.unitSuffix == null) {
-					amount.update(m['baseTag'], null, -1, "hours", UnitGroup.DURATION)
+					if (amount.amount != null) {
+						// if this is the start of the interval
+						if (durationType == DurationType.START) {
+							// move date of entry to the end of the interval
+							BigDecimal durationTicksDecimal = amount.durationInMilliseconds()
+							if (durationTicksDecimal != null) {
+								long durationTicks = durationTicksDecimal.longValue()
+								m['date'] = new Date(m['date'].getTime() + durationTicks)
+							}
+						}
+						// complete this entry and rewrite it as a full duration entry
+						m['tag']= m['baseTag']
+						amount.update(m['baseTag'], amount.durationInHours(), 3, "hours", UnitGroup.DURATION, DurationType.NONE)
+						return null
+					}
+				} else if (amount.unitRatio == null && amount.precision < 0) {
+					amount.durationType = durationType
 					return null
 				}
 			}
 			
-			amounts.add(new ParseAmount(m['baseTag'], null, -1, "days", UnitGroup.DURATION))
+			amounts.add(new ParseAmount(m['tag'], BigDecimal.ONE, -1, "", UnitGroup.DURATION, durationType))
 			return null
 		}
 	}
@@ -446,19 +468,19 @@ class Entry implements Comparable {
 		if (m['tag'] == null) return null
 
 		def amounts = m['amounts']
-		Date date = m['dat]
+		Date date = m['date']
 
 		// intercept duration creation --- if creating duration end, search for previous duration start
 		DurationType durationType = m['durationType']
 		if (durationType == DurationType.END) {
-			Entry updated = completeDurationEntry(userId, m, stats, amounts) {
+			Entry updated = completeDurationEntry(userId, m, stats, amounts, DurationType.END) {
 				return findPreviousStartEntry(userId, m['baseTag'], date)
 			}
 			
 			if (updated != null)
 				return updated
 		} else if (durationType == DurationType.START) {
-			Entry updated = completeDurationEntry(userId, m, stats, amounts) {
+			Entry updated = completeDurationEntry(userId, m, stats, amounts, DurationType.START) {
 				return findNextEndEntry(userId, m['baseTag'], date)
 			}
 			
@@ -1210,7 +1232,6 @@ class Entry implements Comparable {
 			eq("userId", userId)
 			le("date", date)
 			eq("baseTag", baseTag)
-			eq("amount", null)
 			eq("durationType", DurationType.START)
 			maxResults(1)
 			order("date", "desc")
@@ -1228,7 +1249,6 @@ class Entry implements Comparable {
 			eq("userId", userId)
 			ge("date", date)
 			eq("baseTag", baseTag)
-			eq("amount", null)
 			eq("durationType", DurationType.END)
 			maxResults(1)
 			order("date", "asc")
@@ -1441,8 +1461,8 @@ class Entry implements Comparable {
 		DurationType newDurationType = m['durationType']
 
 		def descriptionChanged = tag.getId() != newTag.getId()
-
-		m['amount'] = m['amount'] == null ? null : new BigDecimal(m['amount'], mc)
+		
+		m['amount'] = m['amount']?.setScale(ENTRY_SCALE, BigDecimal.ROUND_HALF_UP)
 
 		TimeZoneId timeZoneId = TimeZoneId.look(m['timeZoneName'])
 		if (timeZoneId == null) {
