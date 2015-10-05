@@ -91,72 +91,45 @@ class DiscussionTests extends CuriousTestCase {
 		Discussion discussion1 = Discussion.create(user, "testIndexDiscussionId1", null, currentTime)
 		Discussion discussion2 = Discussion.create(user, "testIndexDiscussionId2", null, currentTime + 1)
 		Discussion discussion3 = Discussion.create(user, "testIndexDiscussionId3", null, currentTime + 2)
+
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
-		def id1 = 38
-		def id2 = 93
-		def id3 = 4397
+		def name1Orig = discussion1.name
+		def name3Orig = discussion3.name
 		
-		discussion1.id = id1
-		discussion2.id = id2
-		discussion3.id = id3
-		
+		discussion1.name += "newstuff"		
+		discussion2.name += "newstuff"		
+		discussion3.name += "newstuff"
+			
 		elasticSearchService.index(discussion2)
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
-		def results = elasticSearchService.search(searchType:'query_and_fetch') {
-			ids ( values: [id1, id2, id3] )
-		}
-
-		assert results.searchResults.size() == 1
-		assert results.searchResults.find{ it.id == id1 } == null
-		assert results.searchResults.find{ it.id == id2 }
-		assert results.searchResults.find{ it.id == id2 }.id == id2
-		assert results.searchResults.find{ it.id == id2 }.getId() == id2
-		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
-		assert results.searchResults.find{ it.id == id3 } == null
-				
-		discussion2.id = id3 //changing id has no effect on existing index
-		
-		elasticSearchService.index(discussion3)
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-
-		results = elasticSearchService.search(searchType:'query_and_fetch') {
-			ids ( values: [id1, id2, id3] )
-		}
-
-		assert results.searchResults.size() == 2
-		assert results.searchResults.find{ it.id == id1 } == null
-		assert results.searchResults.find{ it.id == id2 }
-		assert results.searchResults.find{ it.id == id2 }.id == id2
-		assert results.searchResults.find{ it.id == id2 }.getId() == id2
-		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
-		assert results.searchResults.find{ it.id == id3 }
-		assert results.searchResults.find{ it.id == id3 }.id == id3
-		assert results.searchResults.find{ it.id == id3 }.getId() == id3
-		assert results.searchResults.find{ it.id == id3 }.name == discussion3.name
-		
-		discussion3.id = id1 //changing id has no effect on files already indexed
-		
-		elasticSearchService.index(discussion1)
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-
-		results = elasticSearchService.search(searchType:'query_and_fetch') {
-			ids ( values: [id1, id2, id3] )
+		def results = Discussion.search(searchType:'query_and_fetch') {
+			ids ( values: [discussion1.id, discussion2.id, discussion3.id] )
 		}
 
 		assert results.searchResults.size() == 3
-		assert results.searchResults.find{ it.id == id1 }
-		assert results.searchResults.find{ it.id == id1 }.id == id1
-		assert results.searchResults.find{ it.id == id1 }.getId() == id1
-		assert results.searchResults.find{ it.id == id1 }.name == discussion1.name
-		assert results.searchResults.find{ it.id == id2 }
-		assert results.searchResults.find{ it.id == id2 }.id == id2
-		assert results.searchResults.find{ it.id == id2 }.getId() == id2
-		assert results.searchResults.find{ it.id == id2 }.name == discussion2.name
-		assert results.searchResults.find{ it.id == id3 }
-		assert results.searchResults.find{ it.id == id3 }.id == id3
-		assert results.searchResults.find{ it.id == id3 }.getId() == id3
-		assert results.searchResults.find{ it.id == id3 }.name == discussion3.name
+		assert results.searchResults.find{ 
+			it.id == discussion1.id &&
+			it.name == discussion1.name
+		} == null
+		assert results.searchResults.find{ 
+			it.id == discussion1.id &&
+			it.name == name1Orig
+		}
+		assert results.searchResults.find{
+			it.id == discussion2.id &&
+			it.name == discussion2.name
+		}
+		assert results.searchResults.find{
+			it.id == discussion3.id &&
+			it.name == discussion1.name
+		} == null
+		assert results.searchResults.find{
+			it.id == discussion3.id &&
+			it.name == name3Orig
+		}
 	}
 	
 	@Test

@@ -96,10 +96,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		def sprint = Sprint.create(currentTime, user1, getUniqueName(), Visibility.PUBLIC)
 		
 		then: "a CREATE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
     }
@@ -113,10 +112,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		Sprint.delete(sprint)
 		
 		then: "a DELETE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -130,10 +128,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.addReader(user1.id)
 		
 		then: "a FOLLOW UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.FOLLOW, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.FOLLOW, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	ObjectType.USER
 		userActivity.otherId	==	user1.id
 	}
@@ -150,10 +147,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.removeReader(user1.id)
 		
 		then: "an UNFOLLOW UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.UNFOLLOW, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.UNFOLLOW, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	ObjectType.USER
 		userActivity.otherId	==	user1.id
 	}
@@ -170,10 +166,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.addDiscussion(discussion)
 		
 		then: "an ADD UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -193,10 +188,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.removeDiscussion(discussion)
 		
 		then: "an REMOVE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -229,10 +223,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.removeAdmin(user2.id)
 
 		then: "a REMOVE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.ADMIN)
+		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.ADMIN, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -246,10 +239,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.addReader(user2.id)
 		
 		then: "an ADD UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.READER)
+		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.READER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -266,10 +258,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.removeReader(user2.id)
 
 		then: "a REMOVE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.READER)
+		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.READER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -284,10 +275,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.start(user1.id, baseDate,  currentTime, TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate), new EntryStats())
 		
 		then: "a START UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.START, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.START, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -303,10 +293,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.stop(user1.id, baseDate+1,  currentTime+1, TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate+1), new EntryStats())
 		
 		then: "a STOP UserActivity is created" 
-		UserActivity userActivity = findUserActivity(ActivityType.STOP, ObjectType.SPRINT)
+		UserActivity userActivity = findUserActivity(ActivityType.STOP, ObjectType.SPRINT, sprint.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	sprint.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -320,10 +309,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.addInvited(user2.id)
 		
 		then: "an INVITE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.INVITE, ObjectType.USER)
+		UserActivity userActivity = findUserActivity(ActivityType.INVITE, ObjectType.USER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -340,10 +328,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		sprint.removeInvited(user2.id)
 		
 		then: "an UNINVITE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.UNINVITE, ObjectType.USER)
+		UserActivity userActivity = findUserActivity(ActivityType.UNINVITE, ObjectType.USER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.SPRINT
 		userActivity.otherId	==	sprint.id
 	}
@@ -420,10 +407,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		def post = discussion.createPost(user1, getUniqueName())
 		
 		then: "a CREATE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.DISCUSSION_POST)
+		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.DISCUSSION_POST, post.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	post.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -438,10 +424,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		DiscussionPost.delete(post)
 		
 		then: "a DELETE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.DISCUSSION_POST)
+		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.DISCUSSION_POST, post.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	post.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -455,10 +440,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		def post = discussion.createPost(user2, getUniqueName())
 		
 		then: "a COMMENT UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.COMMENT, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.COMMENT, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION_POST
 		userActivity.otherId	==	post.id
 	}
@@ -473,10 +457,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		DiscussionPost.delete(post)
 		
 		then: "an UNCOMMENT UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.UNCOMMENT, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.UNCOMMENT, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION_POST
 		userActivity.otherId	==	post.id
 	}
@@ -487,10 +470,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		def discussion = Discussion.create(user1, getUniqueName())
 		
 		then: "a CREATE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.CREATE, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user1.id
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -504,10 +486,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		Discussion.delete(discussion)
 		
 		then: "a DELETE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.DISCUSSION)
+		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.DISCUSSION, discussion.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	discussion.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -526,10 +507,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		}
 		
 		then: "an ADD UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.ADMIN)
+		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.ADMIN, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION
 		userActivity.otherId	==	discussion.id
 	}
@@ -555,10 +535,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		}
 
 		then: "a REMOVE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.ADMIN)
+		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.ADMIN, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION
 		userActivity.otherId	==	discussion.id
 	}
@@ -577,10 +556,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		}
 		
 		then: "an ADD UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.READER)
+		UserActivity userActivity = findUserActivity(ActivityType.ADD, ObjectType.READER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION
 		userActivity.otherId	==	discussion.id
 	}
@@ -606,10 +584,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		}
 
 		then: "a REMOVE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.READER)
+		UserActivity userActivity = findUserActivity(ActivityType.REMOVE, ObjectType.READER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.DISCUSSION
 		userActivity.otherId	==	discussion.id
 	}
@@ -633,10 +610,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		User.delete(user1)
 		
 		then: "a DELETE UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.USER)
+		UserActivity userActivity = findUserActivity(ActivityType.DELETE, ObjectType.USER, user1.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	null
-		userActivity.objectId 	== 	user1.id
 		userActivity.otherType 	== 	null
 		userActivity.otherId	==	null
 	}
@@ -647,10 +623,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		user1.follow(user2)
 		
 		then: "a FOLLOW UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.FOLLOW, ObjectType.USER)
+		UserActivity userActivity = findUserActivity(ActivityType.FOLLOW, ObjectType.USER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	user2.id
 		userActivity.otherType 	== 	ObjectType.USER
 		userActivity.otherId	==	user1.id
 	}
@@ -664,11 +639,9 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
 		user1.unFollow(user2)
 		
 		then: "a FOLLOW UserActivity is created"
-		UserActivity userActivity = findUserActivity(ActivityType.UNFOLLOW, ObjectType.USER)
+		UserActivity userActivity = findUserActivity(ActivityType.UNFOLLOW, ObjectType.USER, user2.id)
 		userActivity 			!= 	null
 		userActivity.userId 	== 	user2.id
-		userActivity.objectId 	== 	user2.id
-		userActivity.otherType 	== 	ObjectType.USER
 		userActivity.otherId	==	user1.id
 	}
 }
