@@ -41,7 +41,7 @@ class Discussion {
 	static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
-		only = ['userId', 'firstPostId', 'searchId', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
+		only = ['userId', 'firstPostId', 'searchId', 'posts', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
@@ -497,6 +497,13 @@ class Discussion {
 
 	String getSearchId() {
 		return Model.getSearchId(Model.SearchType.DISCUSSION, this)
+	}
+	
+	//for searching
+	String getPosts() {
+		def posts = getPosts([:])
+		
+		return posts?.collect{ it.message }?.join(" ")		
 	}
 	
 	@Override
