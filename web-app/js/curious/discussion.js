@@ -216,15 +216,7 @@ $(document).ready(function() {
 			return false;
 		}
 		var platform = $(this).data('platform');
-		if (platform == 'facebook') {
-			FB.ui({
-				method: 'feed',
-				link: $('#social-share-message').data('shareURL'),
-				caption: 'Curious Discussions',
-				description: shareMessage,
-				name: $('#social-share-message').data('discussionTitle')
-			}, function(response){});
-		} else if (platform == 'twitter') {
+		if (platform == 'twitter') {
 			var shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
 				encodeURIComponent($('#social-share-message').data('shareURL'));
 			var shareWindow = window.open(shareURL, '_blank', 'toolbar=no, menubar=no, width=500, height=400');
@@ -232,6 +224,7 @@ $(document).ready(function() {
 		$('.share-options').show();
 		$('.post-message').hide();
 		$('#social-share-message').val('');
+		$('#share-modal .modal-header h4').text('Share');
 		$('#share-modal .modal-footer').hide();
 		$('#share-modal').modal('hide');
 	});
@@ -403,8 +396,19 @@ function shareMessage(platform) {
 	if (platform == 'copy') {
 		$('#share-modal').modal('hide');
 		return true;
+	} else if (platform == 'facebook') {
+		FB.ui({
+			method: 'feed',
+			link: $('#social-share-message').data('shareURL'),
+			caption: 'Curious Discussions',
+			name: $('#social-share-message').data('discussionTitle')
+		}, function(response){});
+		$('#share-modal').modal('hide');
+		return true;
 	}
-	$('#share-modal .modal-header h4').text('Sharing to ' + platform);
+
+	// See base.js for capitalizeFirstLetter() method
+	$('#share-modal .modal-header h4').text('Sharing to ' + platform.capitalizeFirstLetter());
 	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
 	$('#post-message').data('platform', platform);
 	$('.share-options').hide();
