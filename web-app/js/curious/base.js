@@ -7,8 +7,6 @@
  * http://stackoverflow.com/a/15625454/2405040
  */
 _.templateSettings.escape = /\{\{-(.+?)\}\}/g;
-_.templateSettings.evaluate = /\{\{(.+?)\}\}/g;
-_.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
 
 /*
  * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
@@ -267,14 +265,30 @@ function queuePostJSON(description, url, args, successCallback, failCallback, de
 }
 
 function queueJSON(description, url, args, successCallback, failCallback, delay, post, background) {
-	queueJSONAll(description, url, args, successCallback, failCallback, delay, post ? 'POST' : 'GET', background);
+	var requestMethod = post ? 'POST' : 'GET';
+	queueJSONAll(description, url, args, successCallback, failCallback, delay, {requestMethod: requestMethod}, background);
 }
 
-function queueJSONAll(description, url, args, successCallback, failCallback, delay, requestMethod, background) {
+function queueJSONAll(description, url, args, successCallback, failCallback, delay, httpArgs, background) {
 	var currentLoginSession = _loginSessionNumber; // cache current login session
 	var stillRunning = true;
 	var alertShown = false;
-	requestMethod = requestMethod || 'GET';
+	var requestMethod = (httpArgs.requestMethod || 'get').toUpperCase();
+	var contentType;
+	var processData;
+
+	if (httpArgs.contentType == false) {
+		contentType = httpArgs.contentType;
+	} else {
+		contentType = (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8'
+	}
+
+	if (httpArgs.processData == false) {
+		processData = httpArgs.processData;
+	} else {
+		processData = true;
+	}
+
 	window.setTimeout(function() {
 		if (stillRunning) {
 			alertShown = true;
@@ -345,7 +359,7 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	if ((!background) && (numJSONCalls > 0)) { // json call in progress
 		var jsonCall = function() {
 			$.ajax({
-				type: requestMethod,
+				type: httpArgs.requestMethod,
 				dataType: "json",
 				url: url,
 				data: args,
@@ -359,15 +373,15 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	} else { // first call
 		if (!background)
 			++numJSONCalls;
-
 		// When using PUT method contentType needs to be set to application/json explicitly to be able to send json data
 		$.ajax({
-			type: requestMethod,
+			type: httpArgs.requestMethod,
 			dataType: "json",
-			contentType: (requestMethod == 'PUT') ? 'application/json; charset=UTF-8' : 'application/x-www-form-urlencoded; charset=UTF-8',
-					url: url,
-					data: args,
-					timeout: 20000 + (delay > 0 ? delay : 0)
+			contentType: contentType,
+			processData: processData,
+			url: url,
+			data: args,
+			timeout: 20000 + (delay > 0 ? delay : 0)
 		})
 		.done(wrapSuccessCallback)
 		.fail(wrapFailCallback);
@@ -562,3 +576,25 @@ _.templateSettings = {
 	evaluate: /\{\{(.+?)\}\}/g,
 	interpolate: /\{\{=(.+?)\}\}/g
 };
+
+function dataURItoBlob(dataURI) {
+	if (!dataURI) {
+		return false;
+	}
+	// convert base64/URLEncoded data component to raw binary data held in a string
+	var byteString;
+	if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+		byteString = atob(dataURI.split(',')[1]);
+	} else {
+		byteString = unescape(dataURI.split(',')[1]);
+	}
+	// separate out the mime component
+	var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+	// write the bytes of the string to a typed array
+	var ia = new Uint8Array(byteString.length);
+	for (var i = 0; i < byteString.length; i++) {
+		ia[i] = byteString.charCodeAt(i);
+	}
+	return new Blob([ia], {type:mimeString});
+}

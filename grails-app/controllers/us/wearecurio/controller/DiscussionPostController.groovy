@@ -77,7 +77,12 @@ class DiscussionPostController extends LoginController{
 				discussion.setUpdated(new Date())
 				DiscussionPost.delete(post)
 				Utils.save(discussion, true)
-				renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "post"])])
+				Map nextFollowupPost = discussion.getFollowupPosts([offset: params.offset ?: 0, max: 1, order: 'desc'])[0]?.getJSONDesc()
+				boolean isAdmin = UserGroup.canAdminDiscussion(sessionUser(), discussion)
+				JSON.use("jsonDate") {
+					renderJSONPost([success: true, message: g.message(code: "default.deleted.message", args: ["Discussion", "comment"]), 
+							nextFollowupPost: nextFollowupPost, isAdmin: isAdmin, discussionHash: discussion.hash])
+				}
 			}
 		}
 	}

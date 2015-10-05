@@ -90,7 +90,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		assert controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.deleted.message", 
-			["Discussion", "post"] as Object[], null)
+			["Discussion", "comment"] as Object[], null)
 		assert !DiscussionPost.count()
 	}
 

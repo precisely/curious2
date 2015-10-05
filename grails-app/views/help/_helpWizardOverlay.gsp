@@ -72,7 +72,7 @@
 							<div class="item get-started">
 								<h3 class="questions">Now, get started tracking on your own!</h3>
 								<h4>
-									On the next screen, we'll put you on the calender day July 7, 2015.<br>
+									On the next screen, we'll put you on the current calender day.<br>
 									Track by entering tags and numbers in the input field at the top of the screen.<br><br>
 								</h4>
 							</div>

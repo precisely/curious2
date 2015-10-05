@@ -31,9 +31,10 @@ function InterestTagList(editId, listId) {
 		var innerHTMLContent = '<span id="interestTagListText' + this.listId + this.numTags + '">'
 				+ escapehtml(description) + '</span>';
 		
-		innerHTMLContent += '<a href="#" style="padding-left:0;" id="interestTagListDelete' + this.listId + this.numTags + '">&nbsp;&nbsp;<img width="9" height="9" src="/images/x.gif"></a>';
+		innerHTMLContent += '<a href="javascript:void(0);" style="padding-left:0; float: right;" id="interestTagListDelete' + this.listId + this.numTags + 
+				'">&nbsp;&nbsp;<img class="entryModify edit-delete" src="/images/x.png"></a>';
 
-		var classes = '';
+		var classes = 'interest-tags-container';
 		
 		var newEntryContent = '<li id="interestTagList' + this.listId + this.numTags +'" class="' + classes + '">' + innerHTMLContent + '</li>';
 		this.listDiv.append(newEntryContent);
@@ -96,13 +97,12 @@ function InterestTagList(editId, listId) {
 	};
 
 	this.setText = function(text) {
-		var $inp = interestList.editDiv;
+		var $interestInput = interestList.editDiv;
 		//$inp.autocomplete("close");
-		$inp.val(text);
+		$interestInput.val(text);
 		interestList.origText = text;
-		$inp.css('color','#000000');
-		$inp.focus();
-		$inp.data("entryTextSet", true);
+		$interestInput.css('color','#000000');
+		$interestInput.data("entryTextSet", true);
 	};
 	
 	this.processInput = function() {
