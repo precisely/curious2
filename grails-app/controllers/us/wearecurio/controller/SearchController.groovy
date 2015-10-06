@@ -56,7 +56,7 @@ class SearchController extends LoginController {
 			}
 
 			if (!listItems) {
-				renderJSONGet([success: true, listItems: false])
+				renderJSONGet([success: false, listItems: false])
 				return
 			}
 			renderJSONGet([listItems: listItems, success: true])

@@ -454,7 +454,7 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'upload'))
 			return
 		}
-		
+
 		def p = processPrefs(params)
 
 		if (p.twitterDefaultToNow != 'on')
@@ -736,121 +736,9 @@ class HomeController extends DataController {
 
 		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
 	}
-
-	/**
-	 * TODO This action is going to be removed in the upcoming pull request that will use JSON  data to render a
-	 * particular discussion. Do not change or alter code here instead use the DiscussionController for this.
-	 */
-	@Deprecated
-	def discuss(String discussionHash, Long plotIdMessage) {
-		/*
-		 * New discussion format uses discussionHash to identify discussions
-		 * 
-		 * plotIdMessage contains the plotId of the plot to be added to the discussion
-		 * 
-		 * Should support both modes
-		 */
-		debug "HomeController.discuss() $params"
-
-		def user = sessionUser()
-
-		UserGroup group = params.group ? UserGroup.lookup(params.group) : UserGroup.getDefaultGroupForUser(user)
-
-		Discussion discussion
-
-		if (discussionHash) {
-			discussion = Discussion.findByHash(discussionHash)
-		}
-
-		if (discussion == null && plotIdMessage) {
-			def name = params.name ?: "New question or discussion title?"
-			if (plotIdMessage != null) {
-				def plot = PlotData.get(plotIdMessage)
-				if (plot)
-					name = plot.getName()
-			}
-			if (group) {
-				if (!group.hasWriter(user)) {
-					flash.message = "Failed to create new discussion topic: can't post to this group"
-					redirect(url:toUrl(action:'index'))
-					return
-				}
-			}
-			discussion = Discussion.create(user, name)
-
-			if (discussion) {
-				if (group) group.addDiscussion(discussion)
-				DiscussionPost.createComment(params.message, user, discussion, plotIdMessage, params)
-			}
-			redirect(url: toUrl(action: "discuss", params: [discussionHash: discussion.hash]))
-			return
-		}
-
-		if (!discussion) {
-			debug "DiscussionHash not found: " + discussionHash
-			flash.message = "That discussion topic no longer exists."
-			redirect(url: toUrl(action: 'social'))
-			return
-		}
-
-		if (true) {		// TODO remove this if condition and fix indentation
-			Map model = discussion.getJSONDesc()
-
-			model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],
-					username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
-					templateVer: urlService.template(request), discussionHash: discussion.hash])
-
-			log.debug "Overall model: $model"
-
-			if (user) {
-				List associatedGroups = UserGroup.getGroupsForWriter(user)
-				List alreadySharedGroups = [], otherGroups = []
-	
-				associatedGroups.each { userGroup ->
-					if (UserGroup.hasDiscussion(userGroup["id"], discussion.id)) {
-						alreadySharedGroups << userGroup.plus([shared: true])
-					} else {
-						otherGroups << userGroup
-					}
-				}
-				associatedGroups = alreadySharedGroups.sort { it.name }
-				associatedGroups.addAll(otherGroups.sort { it.name })
-				model.put("associatedGroups", associatedGroups)
-			}
-
-			render(view: "/home/discuss", model: model)
-		}
-	}
 	
 	def lgmd2iproject() {
 		def model = []
 		render(view:"/home/lgmd2iproject", model:model)
-	}
-
-	def sprint() {
-		log.debug "Hash: $params.id"
-		Sprint sprintInstance = Sprint.findByHash(params.id)
-		if (!sprintInstance?.userId) {
-			debug "SprintId not found: $params.id"
-			flash.message = g.message(code: "sprint.not.exist")
-			redirect(url: toUrl(action:'social'))
-			return
-		} else if ((sprintInstance.visibility == Model.Visibility.PRIVATE) && 
-					!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.hasAdmin(sessionUser().id)) {
-			debug "Permission denied for user: ${sessionUser()} to see sprint: ${sprintInstance}"
-			flash.message = g.message(code: "not.permitted.to.see.sprint")
-			redirect(url: toUrl(action:'social'))
-			return
-		}
-		
-		List<Map> entries = Entry.findAllByUserId(sprintInstance.virtualUserId)*.getJSONDesc()
-		List<User> participantsList = sprintInstance.getParticipants(10, 0)
-		List<Map> participants = participantsList*.getJSONShortDesc()
-		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintInstance.virtualGroupId])
-
-		log.debug "Sprint discussions: ${sprintDiscussions.dump()}"
-
-		render(view: "/home/sprint", model: [sprintInstance: sprintInstance, entries: entries, discussions: (sprintDiscussions as JSON).toString(),
-			participants : participants , user: sessionUser(), virtualGroupName: sprintInstance.fetchUserGroup().name])
 	}
 }
