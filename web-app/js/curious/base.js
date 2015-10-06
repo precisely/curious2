@@ -7,6 +7,8 @@
  * http://stackoverflow.com/a/15625454/2405040
  */
 _.templateSettings.escape = /\{\{-(.+?)\}\}/g;
+_.templateSettings.evaluate = /\{\{(.+?)\}\}/g;
+_.templateSettings.interpolate = /\{\{=(.+?)\}\}/g;
 
 /*
  * A simple helper method to return the compiled lodash based HTML template available in any script tag with given "id".
@@ -571,11 +573,6 @@ function shorten(text, maxLength, includeLastWord) {
 		return trimmedText.substring(0, Math.min(trimmedText.length, trimmedText.lastIndexOf(" "))) + ' ...';
 	}
 }
-
-_.templateSettings = {
-	evaluate: /\{\{(.+?)\}\}/g,
-	interpolate: /\{\{=(.+?)\}\}/g
-};
 
 function dataURItoBlob(dataURI) {
 	if (!dataURI) {

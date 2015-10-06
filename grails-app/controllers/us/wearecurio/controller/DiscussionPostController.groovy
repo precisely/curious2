@@ -8,14 +8,14 @@ class DiscussionPostController extends LoginController{
 
 	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
 
-	def index(Integer offset) {
+	def index(Integer offset, Integer max) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
 			renderJSONGet([posts: false, success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
 			return
 		}
 
-		params.max = Math.min(Integer.parseInt(params.max) ?: 4, 100)
+		params.max = Math.min(max ?: 4, 100)
 		params.offset = offset ?: 0
 
 		List<DiscussionPost> posts = discussion.getFollowupPosts(params)
