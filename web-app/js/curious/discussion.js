@@ -357,7 +357,6 @@ function discussionShow(hash) {
 		if (data.success) { 
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
-			discussionDetails.serverURL = window.location.host;
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
 			$('#feed').html(compiledHTML);
 
