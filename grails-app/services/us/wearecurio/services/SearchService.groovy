@@ -655,7 +655,6 @@ class SearchService {
 		
 		def result = [listItems: [], success: true]
 		if (queries.size() > 0) {
-			println "Utils.orifyList(queries):${Utils.orifyList(queries)}"
 			elasticSearchHelper.withElasticSearch{ client ->
 				//TODO: add scoring. for now, sort descending by date
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
@@ -665,29 +664,15 @@ class SearchService {
 					.prepareSearch("us.wearecurio.model_v0")
 					//.setTypes("discussion", "discussionPost", "user", "sprint")
 					.setTypes("discussion", "user", "sprint")
-					//.setQuery(fsqb) //TODO: to add scoring fuction, uncomment this line and remove line below this one
+					//.setQuery(fsqb) //TODO: to add scoring function, uncomment this line and remove line below this one
 					.setQuery(queryString(Utils.orifyList(queries)))
 					.setExplain(false)
 					.setSize(max)
 					.setFrom(offset)
 					.addSort(SortBuilders.fieldSort("created").order(SortOrder.DESC))
-//					.addAggregation(
-//					AggregationBuilders
-//					.terms("by_searchId")
-//					.field("searchId")
-//					.subAggregation(
-//					AggregationBuilders
-//					.topHits("top_hits")
-//					.setSize(2)  // number of post documents to show PER discussion id
-//					.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-//					)
-//					)
 					.execute()
 					.actionGet()
 
-				println ""
-				println "sr: " + sr
-				println ""
 				if (sr.hits.hits.size() > 0) {
 					def activities = []
 					for(def hit : sr.hits.hits) {
