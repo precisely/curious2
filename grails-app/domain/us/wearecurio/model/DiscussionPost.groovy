@@ -45,7 +45,7 @@ class DiscussionPost {
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'searchId', 'discussionName', 'discussionGroupIds', 'discussionUserId', 'discussionVisibility', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
+		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
 	}
 	
 	def getJSONDesc() {
@@ -149,7 +149,7 @@ class DiscussionPost {
 
 	public static void delete(DiscussionPost post) {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
-		Discussion discussion = Discussion.get(post.getDiscussionId())
+		Discussion discussion = Discussion.get(post.discussionId)
 		discussion.setUpdated(new Date())
 		def postId = post.id
 		post.delete(flush:true)
@@ -204,26 +204,6 @@ class DiscussionPost {
 		}
 	}
 	
-	String getDiscussionName() {
-		return Discussion.get(discussionId)?.name
-	}
-	
-	Long[] getDiscussionGroupIds() {
-		return Discussion.get(discussionId)?.groupIds
-	}
-	
-	Visibility getDiscussionVisibility() {
-		return Discussion.get(discussionId)?.visibility
-	}
-	
-	Long getDiscussionUserId() {
-		return Discussion.get(discussionId)?.userId
-	}
-	
-	String getSearchId() {
-		return Model.getSearchId(Model.SearchType.DISCUSSION_POST, this)
-	}	
-
 	String toString() {
 		return "DiscussionPost(discussionId:" + discussionId + ", author:" + author + ", created:" + Utils.dateToGMTString(created) + ", plotDataId:" + plotDataId + ", message:'" + message + "')"
 	}

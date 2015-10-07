@@ -69,7 +69,7 @@ class User {
 	}
 
 	static searchable = {
-		only = ['username', 'hash', 'searchId', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions']
+		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions']
 	}
 
 	SortedSet interestTags
@@ -568,10 +568,6 @@ class User {
 		return groups
 	}
 
-	String getSearchId() {
-		return Model.getSearchId(Model.SearchType.USER, this)
-	}
-	
 	def getJSONShortDesc() {
 		return [
 			id: id,
