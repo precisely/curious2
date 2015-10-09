@@ -25,7 +25,7 @@ class DiscussionController extends LoginController {
 			renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
 		} else {
 			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			Visibility discussionVisibility = visibility.toUpperCase()
+			Visibility discussionVisibility = visibility ? visibility.toUpperCase() : Visibility.PUBLIC
 			discussion = discussion ?: Discussion.create(user, name, group, null, discussionVisibility)
 
 			if (discussion != null) {

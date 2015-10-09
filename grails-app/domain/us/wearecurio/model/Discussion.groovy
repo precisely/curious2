@@ -64,7 +64,7 @@ class Discussion {
 		UserActivity.create(userId, activityType, UserActivity.ObjectType.DISCUSSION, objectId)
 	}
 	
-	public static Discussion create(User user, String name, Visibility visibility) {
+	public static Discussion create(User user, String name, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", visibility: " + visibility
 		def discussion = new Discussion(user, name, new Date(), visibility)
 
@@ -77,7 +77,7 @@ class Discussion {
 		return discussion
 	}
 	
-	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility) {
+	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime + ", visibility: " + visibility
 		Discussion discussion = null
 		
