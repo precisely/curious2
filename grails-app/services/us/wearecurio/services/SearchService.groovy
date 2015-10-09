@@ -11,6 +11,7 @@ import org.elasticsearch.index.query.QueryBuilders
 
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.sort.*
+import grails.util.Environment
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
@@ -739,7 +740,7 @@ class SearchService {
 			}
 	
 			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			Map model = [sprintList: results.searchResults*.getJSONDesc()]
@@ -774,7 +775,7 @@ class SearchService {
 			}
 			
 			if (totalDiscussionCount < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
@@ -825,12 +826,20 @@ class SearchService {
 				
 				for (def d : readerGroupDiscussions.searchResults ) {
 					log.debug "readerGroupDiscussion:${d.toString()}"
+					User discussionUser = User.get(d.userId)
+
+					if (Environment.isDevelopmentMode() && !discussionUser) {
+						log.warn "No discussionUser for id: $d.userId "
+						continue
+					}
+
 					model["discussionList"] << [
 						id: d.id,
 						hash: d.hash,
 						name: d.name,
-						userId: d.userId,
-						userName: User.get(d.userId).username,
+						userHash: discussionUser.hash,
+						userName: discussionUser.username,
+						userAvatarURL: discussionUser.avatar?.path,
 						isPublic: d.isPublic(),
 						created: d.created,
 						updated: d.updated,
@@ -947,7 +956,7 @@ class SearchService {
 			}
 			
 			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: true]
+				return [listItems: false, success: false]
 			}
 			
 			return [listItems: results.searchResults*.getPeopleJSONDesc(), success: true]
