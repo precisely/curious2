@@ -72,7 +72,7 @@ class EntryStats {
 			User.setTimeZoneId(userId, timeZoneId)
 		
 		if (alertEdited) {
-			AlertGenerationService.get().regenerateAlerts(userId)
+			AlertGenerationService.get().regenerateAlerts(userId, new Date())
 		}
 
 		return tagStats

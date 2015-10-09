@@ -61,7 +61,7 @@ public class AlertNotification {
 			deleteforUserBetween(userId, startDate, endDate)
 			def remindData = DataRetriever.get().fetchRemindData(userId, startDate, endDate, new Date())
 			for (result in remindData) {
-				createOrUpdate(userId, new Date(result[0]), result[1].longValue(),  result[2])
+				createOrUpdate(userId, result[0], result[1],  result[2])
 			}
 		}
 	}

@@ -40,6 +40,7 @@ public class RepeatType {
 	static RepeatType WEEKLY = new RepeatType(WEEKLY_BIT)
 	static RepeatType DAILYGHOST = new RepeatType(DAILY_BIT | GHOST_BIT)
 	static RepeatType WEEKLYGHOST = new RepeatType(WEEKLY_BIT | GHOST_BIT)
+	static RepeatType ALERT = new RepeatType(REMIND_BIT)
 	static RepeatType REMINDDAILY = new RepeatType(REMIND_BIT | DAILY_BIT)
 	static RepeatType REMINDWEEKLY = new RepeatType(REMIND_BIT | WEEKLY_BIT)
 	static RepeatType REMINDDAILYGHOST = new RepeatType(REMIND_BIT | DAILY_BIT | GHOST_BIT)

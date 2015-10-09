@@ -5,7 +5,7 @@ import grails.util.Environment
 
 class AlertGenerationJob extends us.wearecurio.utility.TimerJob {
 	static transactional = false
-	RemindEmailService remindEmailService
+	AlertGenerationService alertGenerationService
 
 	static triggers = {
 		simple startDelay: 0, repeatInterval: 120 * MINUTE
@@ -13,7 +13,7 @@ class AlertGenerationJob extends us.wearecurio.utility.TimerJob {
 
 	def execute() {
 		log.debug "Started executing AlertGenerationJob..."
-		remindEmailService.sendReminders()
+		alertGenerationService.generateAlerts(new Date())
 		log.debug "Finished executing AlertGenerationJob..."
 	}
 }

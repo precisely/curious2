@@ -24,17 +24,17 @@ class AlertGenerationService {
 
 	static AlertGenerationService get() { return service }
 	
-	def generateAlerts() {
+	def generateAlerts(Date now) {
 		log.debug "generateAlerts()"
 		
 		DateRecord rec = DateRecord.lookup(DateRecord.ALERT_GENERATION)
 		
 		Date startDate = rec.getDate()
 		
-		Date endDate = new Date() + 1
+		Date endDate = now + 1
 		
 		if (!startDate)
-			startDate = new Date(endDate.getTime() - 25*60000L)
+			startDate = new Date(now.getTime() - 2L*60L*60000L)
 			
 		def alertUsers = User.executeQuery("SELECT u.id FROM User u")
 		log.debug "Users to generate alerts for " + alertUsers.size()
@@ -48,9 +48,8 @@ class AlertGenerationService {
 		Utils.save(rec, true)
 	}
 	
-	def regenerateAlerts(Long userId) {
+	def regenerateAlerts(Long userId, Date now) {
 		AlertNotification.deleteforUser(userId)
-		Date now = new Date()
 		Date startDate = new Date(now.getTime() - 1*60000L)
 		Date endDate = now + 1
 		AlertNotification.generate(userId, startDate, endDate)

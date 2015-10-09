@@ -159,8 +159,8 @@ class DataRetriever {
 		for (result in rawResults) {
 			Date date = result['date']
 			def entryJSON = [
-				date,
-				result['id'],
+				new Date(date.getTime()),
+				result['id'].longValue(),
 				alertText(result)
 			]
 			long entryTimestamp = date.getTime()
