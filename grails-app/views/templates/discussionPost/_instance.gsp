@@ -1,7 +1,7 @@
-<div class="discussion-comment media">
+<div class="discussion-comment media hide">
 	<div class="media-left">
-		<a href="#">
-			<img class="avatar" src="/images/avatar2.png" alt="avatar">
+		<a href="#people/{{- discussionPost.authorHash }}">
+			<img src="{{- discussionPost.authorAvatarURL || '/images/avatar2.png' }}" alt="avatar" class="avatar img-circle">
 		</a>
 	</div>
 	<div class="media-body">
@@ -10,7 +10,7 @@
 		</span>
 		<span class="posting-time" data-time="{{- discussionPost.created || discussionPost.updated}}"></span>
 		{{ if (discussionPost.authorUserId == userId || discussionDetails.isAdmin) { }}
-			<a href="#" class="delete-post pull-right" data-post-id="{{-discussionPost.id}}"> 
+			<a href="#" class="delete-post pull-right" data-post-id="{{-discussionPost.id}}" data-discussion-hash="{{-discussionPost.hash}}"> 
 				<i class="fa fa-times-circle"></i>
 			</a>
 		{{ } }}

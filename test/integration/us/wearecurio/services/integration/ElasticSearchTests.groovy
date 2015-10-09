@@ -162,12 +162,12 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	}
 	
 	@Test
-	void "Test Search Discuussion by userId"() {
+	void "Test Search Discussion by userId"() {
 		testSimpleSearch(Discussion.create(user), "userId")
 	}
 	
 	@Test
-	void "Test Search Discuussion by firstPostId"() {
+	void "Test Search Discussion by firstPostId"() {
 		Discussion discussion = Discussion.create(user)
 		DiscussionPost post = discussion.createPost(user, "Test post")
 		
@@ -176,23 +176,23 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	}
 	
 	@Test
-	void "Test Search Discuussion by name"() {
-		testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByName"), "name", "name")
+	void "Test Search Discussion by name"() {
+		testSimpleSearch(Discussion.create(user, "TestSearchDiscussionByName"), "name", "name")
 	}
 	
 	@Test
-	void "Test Search Discuussion by created"() {
-		testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByCreated"), "created", "name")
+	void "Test Search Discussion by created"() {
+		testSimpleSearch(Discussion.create(user, "TestSearchDiscussionByCreated"), "created", "name")
 	}
 	
 	@Test
-	void "Test Search Discuussion by updated"() {
-		testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByUpdated"), "updated", "name")
+	void "Test Search Discussion by updated"() {
+		testSimpleSearch(Discussion.create(user, "TestSearchDiscussionByUpdated"), "updated", "name")
 	}
 	
 	@Test
-	void "Test Search Discuussion by visibility"() {
-		testSimpleSearch(Discussion.create(user, "TestSearchDiscuussionByVisibility"), "visibility", "name")
+	void "Test Search Discussion by visibility"() {
+		testSimpleSearch(Discussion.create(user, "TestSearchDiscussionByVisibility"), "visibility", "name")
 	}
 	
 	@Test

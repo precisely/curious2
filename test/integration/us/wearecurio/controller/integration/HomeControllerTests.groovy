@@ -168,6 +168,24 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "test update user preferences to update name and bio privacy setting"() {
+		controller.session.userId = user.getId()
+		controller.params.putAll([
+			userId: user.id.toString(),
+			name: "x y",
+			bioPrivacy: "public",
+			namePrivacy: "private"
+		])
+
+		controller.doupdateuserpreferences()
+
+		assert user.refresh().settings.isBioPublic() == true
+		assert user.settings.isNamePublic() == false
+
+		assert user.settings.getValue() == 1
+	}
+
+	@Test
 	void testDoUpload() {
 		HomeController controller = new HomeController()
 
@@ -283,23 +301,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 
 		assert modelAndView.model['plotDataId'].equals(plotData.getId().toString())
 		assert modelAndView.getViewName().equals("/home/graph")
-	}
-
-	@Test
-	void testDiscuss() {
-		HomeController controller = new HomeController()
-
-		controller.session.userId = user.getId()
-
-		controller.params['discussionHash'] = discussion.hash.toString()
-
-		controller.discuss()
-
-		def modelAndView = controller.modelAndView
-
-		assert modelAndView.model['discussionHash'].toString().equals(discussion.hash.toString())
-		assert modelAndView.model['username'].equals(user.getUsername())
-		assert modelAndView.getViewName().equals("/home/discuss")
 	}
 
 	@Test
@@ -477,70 +478,4 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		assert controller.flash.message == "thirdparty.unsubscribe.success.message"
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
-
-	Sprint dummySprint
-	User dummyUser2
-	void mockSprintData() {
-		dummySprint = Sprint.create(new Date(), user, "demo", Model.Visibility.PRIVATE)
-				
-		Map params = [username: "a", sex: "F", email: "a@a.com", birthdate: "01/01/2001", name: "a y", password: "y"]
-		dummyUser2 = User.create(params)
-	
-		Utils.save(dummyUser2, true)
-	}
-
-	@Test 
-	void "Test sprint when wrong id is passed"() {
-		HomeController controller = new HomeController()
-		
-		mockSprintData()
-		controller.params["id"] = 0
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint when null id is passed"() {
-		HomeController controller = new HomeController()
-		
-		mockSprintData()
-		controller.params["id"] = null
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("Sprint does not exist.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint when a non member tries to open the private sprint"() {
-		HomeController controller = new HomeController()
-
-		mockSprintData()
-		controller.params["id"] = dummySprint.hash
-		controller.session.userId = user2.getId()
-		
-		controller.sprint()
-		assert controller.flash.message == ("You are not permitted to see that sprint.")
-		assert controller.response.redirectUrl.contains("social")
-	}
-
-	@Test
-	void "Test sprint"() {
-		HomeController controller = new HomeController()
-
-		mockSprintData()
-		controller.params["id"] = dummySprint.hash
-		controller.session.userId = user.getId()
-		
-		controller.sprint()
-
-		def modelAndView = controller.modelAndView
-		assert modelAndView.model['participants'][0].id == user.getId()
-		assert modelAndView.getViewName().equals("/home/sprint")
-	}
-	/**/
 }

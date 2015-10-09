@@ -55,6 +55,7 @@ After downloading the customized files, remove **!important** in **.hide** class
 This is required because, we're using **hide** class in most portions & jQuery's **show()** method can't display element 
 due to important mark in css.
 
+
 ## New development machine setup
 
 All your development dependencies are going to be inside a linux container. The goal is to replicate a light weight 

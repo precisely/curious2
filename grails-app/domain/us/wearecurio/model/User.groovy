@@ -10,11 +10,13 @@ import grails.gorm.DetachedCriteria
 import org.hibernate.criterion.CriteriaSpecification
 
 import us.wearecurio.cache.BoundedCache
+import us.wearecurio.data.UserSettings
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
+import com.lucastex.grails.fileuploader.UFile
 
 class User {
 	
@@ -38,8 +40,14 @@ class User {
 	Date created
 	Long virtualUserGroupIdDiscussions
 	Long virtualUserGroupIdFollowers
-	
+	String bio
+	UserSettings settings = new UserSettings()
+	UFile avatar
+	private String avatarURL
+	static transients = ['avatarURL']
+
 	static constraints = {
+		bio(nullable: true)
 		username(maxSize:70, unique:true)
 		// This needs to be uncommented after migrations have run on all the systems
 		hash(/*blank: false, unique: true,*/ nullable: true)
@@ -58,6 +66,7 @@ class User {
 		website(nullable:true)
 		virtualUserGroupIdFollowers(nullable:true)
 		virtualUserGroupIdDiscussions(nullable:true)
+		avatar(nullable: true)
 	}
 	
 	static mapping = {
@@ -68,8 +77,11 @@ class User {
 		email column:'email', index:'email_idx'
 	}
 
+	static embedded = ["settings"]
+
 	static searchable = {
-		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created', 'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions']
+		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created',
+				'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions', 'avatarURL']
 	}
 
 	SortedSet interestTags
@@ -285,7 +297,12 @@ class User {
 		if ((password != null) && (password.length() > 0)) {
 			this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 		}
-
+		
+		String userBio = map['bio']
+		if (userBio != null) {
+			bio = userBio
+		}
+		
 		if ((!map["name"]) && (map["first"] || map["last"])) {
 			map["name"] = (map["first"] ?: '') + ' ' + (map["last"] ?: '')
 		}
@@ -299,6 +316,15 @@ class User {
 		displayTimeAfterTag = (map['displayTimeAfterTag'] ?: 'on').equals('on') ? true : false
 		webDefaultToNow = (map['webDefaultToNow'] ?: 'on').equals('on') ? true : false
 		notifyOnComments = (map['notifyOnComments'] ?: 'on').equals('on') ? true : false
+
+		["name", "bio"].each { privacyField ->
+			String paramName = privacyField + "Privacy"
+
+			if (map[paramName] == "public" || map[paramName] == "private") {
+				String methodName = "make" + privacyField.capitalize() + map[paramName].capitalize()
+				settings."${methodName}"()
+			}
+		}
 
 		try {
 			if (map["birthdate"] != null)
@@ -337,6 +363,17 @@ class User {
 			return false
 		EmailService.get().send(this.email, subject, message)
 		return true
+	}
+
+	String getAvatarURL() {
+		if (this.avatarURL) {
+		    return this.avatarURL
+		}
+		return avatar?.path
+	}
+	
+	void setAvatarURL(String url) {
+	    this.avatarURL = url
 	}
 
 	def updatePreferences(Map map) {
@@ -572,16 +609,14 @@ class User {
 		return [
 			id: id,
 			virtual: virtual,
-			username: username
+			username: username,
+			avatarURL: getAvatarURL()
 		];
 	}
 
 	def getJSONDesc() {
-		return [
-			id: id,
+		return getJSONShortDesc() + [
 			hash: hash,
-			virtual: virtual,
-			username: username,
 			email: email,
 			remindEmail: remindEmail,
 			name: name,
@@ -590,7 +625,7 @@ class User {
 			website: website,
 			notifyOnComments: notifyOnComments,
 			created: created,
-			type: "usr"
+			type: "usr",
 		];
 	}
 	
@@ -599,6 +634,7 @@ class User {
 			sprints: getOwnedSprints(),
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
+			bio: bio,
 			updated: created
 		]
 	}

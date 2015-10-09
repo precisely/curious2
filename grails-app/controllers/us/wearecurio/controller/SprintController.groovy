@@ -56,7 +56,7 @@ class SprintController extends LoginController {
 			return
 		}
 
-		if (!sprintInstance.hasMember(sessionUser().id)) {
+		if (!sprintInstance.hasMember(sessionUser().id) && !sprintInstance.isPublic()) {
 			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
 			return
 		}
@@ -65,9 +65,17 @@ class SprintController extends LoginController {
 		List<User> participants = sprintInstance.getParticipants(10, 0)
 		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
+		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintInstance.virtualGroupId])
 
-		renderJSONGet([success: true, sprint: sprintInstance, entries: entries, participants: participants, admins: admins, 
-			totalParticipants: sprintInstance.getParticipantsCount()])
+		Map sprintInstanceMap = sprintInstance.getJSONDesc()
+		sprintInstanceMap["hasAdmin"] = sprintInstance.hasAdmin(sessionUser().id)
+		sprintInstanceMap["hasStarted"] = sprintInstance.hasStarted(sessionUser().id, new Date())
+		sprintInstanceMap["hasEnded"] = sprintInstance.hasEnded(sessionUser().id, new Date())
+		sprintInstanceMap["virtualGroupName"] = sprintInstance.fetchUserGroup().name
+		sprintInstanceMap["hasMember"] = sprintInstance.hasMember(sessionUser().id)
+
+		renderJSONGet([success: true, sprint: sprintInstanceMap, entries: entries, participants: participants, admins: admins, 
+			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions])
 	} 
 
 	def delete() {
