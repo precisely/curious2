@@ -4,7 +4,5 @@
 <head>
 <meta name="layout" content="plot" />
 
-
 </head>
-
 </html>

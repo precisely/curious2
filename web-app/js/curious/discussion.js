@@ -332,7 +332,7 @@ function discussionShow(hash) {
 			infiniteScrollComments(hash);
 			getComments(hash, commentsArgs);		// See feeds.js for "commentsArgs"
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
-				plot = new Plot(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
+				plot = new PlotWeb(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({
 					'startDate':'#startdatepicker1',
 					'startDateInit':'start date and/or tag',
 					'endDate':'#enddatepicker1',

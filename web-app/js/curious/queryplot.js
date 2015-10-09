@@ -65,51 +65,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	
 	this.interactive = interactive;
 	
-	var datepicker = properties.getStartDatePicker();
-	datepicker.datepicker({dateFormat: 'DD MM dd, yy', disabled:!interactive,
-		beforeShow: function() {
-	        setTimeout(function(){
-	            $('.ui-datepicker').css('z-index', 99999999999999);
-	        }, 0);
-	    },
-		onClose: function(dateText, inst) { if (dateText == "") { properties.initStartDate(); plot.loadAllData(); } }});
-	datepicker.change(function () {
-		plot.loadAllData();
-	});
-	datepicker = properties.getEndDatePicker();
-	datepicker.datepicker({dateFormat: 'DD MM dd, yy', disabled:!interactive,
-		beforeShow: function() {
-	        setTimeout(function(){
-	            $('.ui-datepicker').css('z-index', 99999999999999);
-	        }, 0);
-	    },
-		onClose: function(dateText, inst) { if (dateText == "") { properties.initEndDate(); plot.loadAllData(); } }});
-	datepicker.change(function () {
-		plot.loadAllData();
-	})
-	
 	this.manualName = false;
-	
-	if (interactive) {
-		var nameField = properties.getNameField();
-		var renameFunction = function() {
-			var newName = prompt("Rename plot:", plot.getName());
-			
-			if (newName) {
-				plot.setManualName(true);
-				plot.setName(newName);
-				plot.store();
-				$(document).trigger(afterQueryTitleChangeEvent);
-			}
-		};
-		nameField.off('mouseup');
-		nameField.on('mouseup', renameFunction);
-		var renameField = properties.getRenameField();
-		if (renameField) {
-			renameField.off('mouseup');
-			renameField.on('mouseup', renameFunction);
-		}
-	}
 	
 	this.setManualName = function(manualName) {
 		this.manualName = manualName;
@@ -151,121 +107,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		
 		return name;		
 	}
-	
-	this.setupSlider = function() {
-		if (!this.interactive) return;
-		
-		var zoomDiv = this.properties.getZoomControl();
-		if (!zoomDiv) return;
-		
-		var leftSlider, rightSlider;
-		
-		if (this.cycleTagLine) {
-			leftSlider = this.leftCycleSlider == undefined ? -5780 : this.leftCycleSlider;
-			rightSlider = this.rightCycleSlider == undefined ? 5780 : this.rightCycleSlider;
-		} else {
-			var startTime = this.properties.getStartTime();
-			var endTime = this.properties.getEndTime();
-			
-			if (!startTime) startTime = this.minTime;
-			if (!endTime) endTime = this.maxTime;
 
-			var span = endTime - startTime;
-			
-			if (!this.leftLinearSlider) leftSlider = -10000;
-			else leftSlider = (this.leftLinearSlider - startTime) * 20000 / span - 10000;
-			if (!this.rightLinearSlider) rightSlider = 10000;
-			else rightSlider = (this.rightLinearSlider - startTime) * 20000 / span - 10000;
-		}
-
-		zoomDiv.slider({range: true, min:-10000, max: 10000, values: [leftSlider,rightSlider]});
-		zoomDiv.off("slide");
-		zoomDiv.on("slide", function(event, ui) {
-			return plot.slideCallback(ui.value == ui.values[0] ? 0 : 1, ui.value);
-		})
-		
-		var plot = this;
-		zoomDiv.off("slidestop");
-		zoomDiv.on("slidestop", function(event, ui) {
-			return plot.store();
-		})
-		
-		if (this.cycleTagLine) {
-			plot.slideCallback(0, leftSlider);
-			plot.slideCallback(1, rightSlider);
-		}
-	}
-
-	this.slideCallback = function(handle, value) {
-		if (this.cycleTagLine) {
-			if (handle == 0) {
-				this.leftCycleSlider = value;
-			} else {
-				this.rightCycleSlider = value;
-			}
-			if (handle == 0 && value > 0)
-				return false;
-			else if (handle == 1 && value < 0)
-				return false;
-			else {
-				if (handle == 0) {
-					if (value < 0)
-						this.minCycleRange = -Math.exp(4.362 * (-value/5000.0))/77.416;
-					else
-						this.minCycleRange = Math.exp(4.362 * (value/5000.0))/77.416;
-				} else {
-					if (value < 0)
-						this.maxCycleRange = -Math.exp(4.362 * (-value/5000.0))/77.416;
-					else
-						this.maxCycleRange = Math.exp(4.362 * (value/5000.0))/77.416;
-				}
-				this.redrawPlot();
-				return true;
-			}
-		} else {
-			var startTime = this.properties.getStartTime();
-			var endTime = this.properties.getEndTime();
-			
-			if (!startTime) startTime = this.minTime;
-			if (!endTime) endTime = this.maxTime;
-
-			var span = endTime - startTime;
-			
-			var handleTime = undefined;
-			if (!((handle == 0 && value == -10000) || (handle == 1 && value == 10000)))
-				handleTime = ((value + 10000) / 20000.0) * span + startTime;				
-			
-			if (handle == 0) {
-				this.leftLinearSlider = handleTime;
-				if (value == -10000) this.leftLinearSlider = null;
-			} else {
-				this.rightLinearSlider = handleTime;
-				if (value == 10000) this.rightLinearSlider = null;
-			}
-			
-			this.redrawPlot();
-			return true;
-		}
-		
-		return true;
-	}
-	
-	if (interactive) {
-		var replotDataOnEntry = function(e) {
-			if (e.keyCode == 13) {
-				plot.loadAllData();
-			}
-		};
-	
-		var textClickHandler = function(e) {
-			resetTextField($(this));
-		};
-
-		properties.getStartDatePicker().off("click");
-		properties.getEndDatePicker().off("click");
-		properties.getStartDatePicker().on("click", textClickHandler);
-		properties.getEndDatePicker().on("click", textClickHandler);
-	}
 	this.getNextLineId = function() {
 		return this.nextLineId++;
 	}
@@ -274,18 +116,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.setName = function(name) {
 		this.properties.setName(name);
-	}
-	this.getStartDate = function() {
-		return this.properties.getStartDate();
-	}
-	this.getEndDate = function() {
-		return this.properties.getEndDate();
-	}
-	this.getStartTime = function() {
-		return this.properties.getStartTime();
-	}
-	this.getEndTime = function() {
-		return this.properties.getEndTime();
 	}
 	this.getLine = function(plotLineId) {
 		if (plotLineId == 'cycle')
@@ -382,13 +212,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var first = true;
 		var plotDataStr = this.store();
 		if (plotDataStr == null) {
-			showAlert("No plotted data to save");
+			this.showAlert("No plotted data to save");
 			return;
 		}
-		
-		queuePostJSON("saving graph", makePostUrl("savePlotData"), { name: this.getName(), plotData: plotDataStr },
+
+		this.queuePostJSON("saving graph", this.makePostUrl("savePlotData"), { name: this.getName(), plotData: plotDataStr },
 				function(data) {
-					checkData(data[0], '', "Error while saving live graph", "Graph saved");
+					this.checkData(data[0], '', "Error while saving live graph", "Graph saved");
 				});
 	}
 	this.storeSnapshot = function() {
@@ -421,18 +251,18 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var first = true;
 		var plotDataStr = this.storeSnapshot();
 		if (plotDataStr == null) {
-			showAlert("No plotted data to save");
+			this.showAlert("No plotted data to save");
 			return;
 		}
 		var plot = this;
-		
-		queuePostJSON("sharing graph", makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
+
+		this.queuePostJSON("sharing graph", this.makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
 				function(data) {
-					if (checkData(data, '', "Error while saving snapshot")) {
+					if (this.checkData(data, '', "Error while saving snapshot")) {
 						if (data.success) {
-							window.location = makePlainUrl('social#discussions/' + data.discussionHash);
+							window.location = this.makePlainUrl('social#discussions/' + data.discussionHash);
 						} else {
-							showAlert(data.message);
+							this.showAlert(data.message);
 						}
 					}
 				});
@@ -468,7 +298,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.activeLineId = plotData.activeLineId;
 		$(document).trigger(afterLinePlotEvent);
 	}
-	
+
 	this.loadLine = function(save,version) {
 		var parentLine = null;
 		this.minSeriesVal = save.min;
@@ -486,14 +316,14 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (save.entries != null && save.entries != undefined) {
 			isSnapshot = true;
 		}
-		
+
 		if ((version <= 4 || save.tag == null) && (save.tags != null && save.tags.length > 0)) {
 			var tagInstance;
 			if (save.tags.length == 1) {
 				tagInstance = new Tag({
 					id:save.name+0,
 					type: "Tag",
-					description: save.tags[0], 
+					description: save.tags[0],
 					treeStore: tagList.store});
 				tagInstance = tagList.store.createOrUpdate(tagInstance);
 				save.tag = tagInstance;
@@ -509,15 +339,15 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					var childTagInstance = new Tag({
 						id:"tag"+save.name+j,
 						type: "Tag",
-						description: save.tags[j], 
+						description: save.tags[j],
 						treeStore: tagList.store});
 					childTagInstance = tagList.store.createOrUpdate(childTagInstance);
 					tagInstance.addChild(childTagInstance);
 				}
 				save.tag = tagInstance;
 			}
-		} 
-		
+		}
+
 		if (save.tag != null) {
 			if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
 				if (save.tag.type.indexOf("Group") !== -1) {
@@ -536,7 +366,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.createPlotLine(save, parentLine);
 		}
 	}
-	
+
 	this.createPlotLine = function(save, parentLine) {
 		var plotLine = new PlotLine(save);
 		if (parentLine) {
@@ -550,37 +380,37 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		else
 			this.lines['id' + plotLine.id] = plotLine;
 		plotLine.loadPlotData();
-		
+
 		if (parentLine) {
 			if (!plotLine.hidden && !parentLine.hidden) {
 				this.activeLineId = plotLine.id;
 				parentLine.activated = true;
 			}
 		}
-		
+
 		if (plotLine.showYAxis) {
 			plotLine.activate();
 		}
 		return plotLine;
 	}
-	
+
 	this.restoreTag = function(tag) {
 		tag = new Tag({
 			id:tag.id,
 			type: "Tag",
-			description: tag.description, 
+			description: tag.description,
 			treeStore: tagList.store,
 			state: TREEITEM_SNAPSHOT});
 		tag = tagList.store.createOrUpdate(tag);
 		return tag;
 	}
-	
+
 	this.restoreTagGroup = function(tagGroup) {
 		/**
 		 * tagGroup is a generic object using which we create an Instance of type TagGroup called tagGroupInstance
-		 */ 
+		 */
 		var type = "tagGroup";
-		
+
 		if (tagGroup.type.indexOf("wildcard") !== -1) {
 			type = "wildcardTagGroup";
 		}
@@ -603,7 +433,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		return tagGroupInstance;
 	}
-	
+
 	this.restore = function() {
 		if (this.doStore && supportsLocalStorage() && localStorage['plotData' + this.id]) {
 			if (localStorage['plotUserId' + this.id] != this.userId) {
@@ -634,7 +464,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			if (version < 2) {
 				plotData.data[i].entries = _reverseEntries(plotData.data[i].entries);
 			}
-			
+
 			this.loadLine(plotData.data[i],version);
 		}
 		if (plotData.cycleData) {
@@ -658,20 +488,20 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	this.loadId = function(id) {
 		var plot = this;
-		queueJSON("loading graph", makeGetUrl("loadPlotDataId"), makeGetArgs({ id:id }), function(plotData) {
-			if (checkData(plotData)) {
+		this.queueJSON("loading graph", this.makeGetUrl("loadPlotDataId"), this.makeGetArgs({ id:id }), function(plotData) {
+			if (this.checkData(plotData)) {
 				plot.load(plotData);
 			} else
-				showAlert("Error while loading");
+				this.showAlert("Error while loading");
 		});
 	}
 	this.loadSnapshotId = function(id) {
 		var plot = this;
-		queueJSON("loading graph", makeGetUrl("loadSnapshotDataId"), makeGetArgs({ id:id }), function(plotData) {
-			if (checkData(plotData)) {
+		this.queueJSON("loading graph", this.makeGetUrl("loadSnapshotDataId"), this.makeGetArgs({ id:id }), function(plotData) {
+			if (this.checkData(plotData)) {
 				plot.loadSnapshot(plotData);
 			} else {
-				showAlert("Error while loading");
+				this.showAlert("Error while loading");
 				window.location = '/home/index';
 			}
 		});
@@ -728,26 +558,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		
 		this.drawPlot();
 	}
-	this.getLinearSliderValues = function() {
-		var startTime = this.properties.getStartTime();
-		var endTime = this.properties.getEndTime();
-		
-		if (!startTime) startTime = this.minTime;
-		if (!endTime) endTime = this.maxTime;
-		
-		var start = startTime;
-		var end = endTime;
-		
-		if (this.leftLinearSlider > endTime) { this.leftLinearSlider = endTime; start = endTime; }
-		else if (this.leftLinearSlider != null && this.leftLinearSlider < startTime) this.leftLinearSlider = null;
-		else start = this.leftLinearSlider ? this.leftLinearSlider : startTime;
-		
-		if (this.rightLinearSlider > endTime) this.rightLinearSlider = null;
-		else if (this.rightLinearSlider != null && this.rightLinearSlider < startTime) { this.rightLinearSlider = startTime; end = startTime; }
-		else end = this.rightLinearSlider ? this.rightLinearSlider : endTime;
 
-		return [start, end];
-	}
 	this.refreshPlot = function() {
 		var minTime = undefined, maxTime = undefined;
 		
@@ -1143,22 +954,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		
 		return null;
 	}
-	this.handleDropTag = function(event, ui) {
-		var $sourceElement = $(ui.draggable[0]);
-		console.log($sourceElement);
-		var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
-		var plot = this;
-
-		if (tagListItem instanceof TagGroup) {
-			tagListItem.fetchAll(function() { plot.addLine(tagListItem); });
-		} else {
-			tagListItem.getTagProperties(function(tagProperties){
-				console.log("import tag properties");
-				plot.addLine(tagListItem);
-			});
-		}
-		
-	}
 
 	this.drawLine = function($elt) {
 		var tagListItem = $elt.data(DATA_KEY_FOR_ITEM_VIEW).getData();
@@ -1542,10 +1337,10 @@ function PlotLine(p) {
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
-			queueJSON("saving setting", makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+			this.queueJSON("saving setting", this.makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
 					{ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
 					function(result){
-						if (checkData(result)) {
+						if (this.checkData(result)) {
 							if (plotLine.tag) plotLine.tag.setIsContinuous(val);
 						}
 					});
@@ -1555,10 +1350,10 @@ function PlotLine(p) {
 		if (this.showPoints != val) {
 			this.showPoints = val;
 			var plotLine = this;
-			queueJSON("saving setting", makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+			this.plot.queueJSON("saving setting", this.plot.makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
 					{ tags:$.toJSON(this.getTags()), showPoints:val ? 'true' : 'false' }),
 					function(result){
-						if (checkData(result)) {
+						if (this.checkData(result)) {
 							if (plotLine.tag) plotLine.tag.setShowPoints(val);
 						}
 					});
@@ -1824,12 +1619,12 @@ function PlotLine(p) {
 		var method = this.sumData ? "getSumPlotDescData" : "getPlotDescData";
 		var plotLine = this;
 		
-		queueJSON("loading graph data", makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
+		this.plot.queueJSON("loading graph data", this.plot.makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				timeZoneName:timeZoneName }),
 				function(plotDesc){
-					if (checkData(plotDesc)) {
+					if (this.checkData(plotDesc)) {
 						plotLine.loadEntries(plotDesc);
 						if (plotLine.smoothLine && plotLine.smoothDataWidth > 0 && plot.interactive)
 							plotLine.smoothLine.entries = undefined;
