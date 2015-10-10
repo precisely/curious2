@@ -237,7 +237,8 @@ class DataRetriever {
 			def entryJSON = [
 				date,
 				amount,
-				result['description']
+				result['description'],
+				result['tag_id']
 			]
 			DecoratedUnitRatio unitRatio = mostUsedUnitRatioForTags?.lookupDecoratedUnitRatio(result['units'])
 			if (unitRatio) {
@@ -353,6 +354,7 @@ class DataRetriever {
 		Long endDayTime = startDayTime != null ? startDayTime + DAYTICKS : null
 
 		def currentResult = null
+		SortedSet<String> currentDescriptions = new TreeSet<String>()
 		def summedResults = []
 		
 		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
@@ -377,12 +379,14 @@ class DataRetriever {
 				if (currentResult == null) {
 					currentResult = result
 					result[SHORT_DESC_DATE] = new Date(startDayTime + HALFDAYTICKS)
+					result[SHORT_DESC_DESCRIPTION] = currentDescriptions.join(', ')
+					currentDescriptions.clear()
 					summedResults.add(currentResult)
 				} else {
 					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT] + result[SHORT_DESC_AMOUNT]
+					currentDescriptions.add(currentResult[SHORT_DESC_DESCRIPTION])
 				}
 			}
-
 		}
 		
 		double valueScale = mostUsedUnitRatio ? mostUsedUnitRatio.ratio : 1.0d

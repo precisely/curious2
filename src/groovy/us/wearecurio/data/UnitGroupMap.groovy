@@ -1136,7 +1136,7 @@ class DecoratedUnitRatio {
 	
 	DecoratedUnitRatio lookupDecoratedUnitRatio(String unit) {
 		if (unitSuffix == null)
-			return unitRatio.lookupUnitRatio(unit).decoratedUnitRatio
+			return unitRatio.lookupUnitRatio(unit)?.decoratedUnitRatio
 		
 		String baseUnit = unit
 		if (unit.endsWith(unitSuffix))

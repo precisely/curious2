@@ -529,6 +529,10 @@ class DataController extends LoginController {
 		def plotEntries = Entry.fetchPlotData(sessionUser(), tagIds, startDateStr ? parseDate(startDateStr) : null,
 			endDateStr ? parseDate(endDateStr) : null, new Date(), plotInfo)
 		
+		for (def entry : plotEntries) {
+			
+		}
+		
 		return [entries:plotEntries, tagIds:tagIds, unitGroupId:plotInfo.unitGroupId,
 				valueScale:plotInfo.valueScale]
 	}

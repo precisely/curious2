@@ -1826,7 +1826,7 @@ class Entry implements Comparable {
 		for (TagValueStats stats : tagValueStats) {
 			if ((min == null) || (stats.minimum != null && stats.minimum < min))
 				min = stats.minimum
-			if ((max == null) || (stats.maximum != null && stats.maximum < max))
+			if ((max == null) || (stats.maximum != null && stats.maximum > max))
 				max = stats.maximum
 		}
 
