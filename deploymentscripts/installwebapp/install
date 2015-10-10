@@ -22,6 +22,14 @@ echo "Enter database curious user password"
 
 read DBPASSWORD
 
+echo "Enter Rackspace fileuploader user name"
+
+read RACKSPACEUSERNAME
+
+echo "Enter Rackspace fileuploader key"
+
+read RACKSPACEKEY
+
 cd ~
 mkdir .ssh
 chmod 700 .ssh
@@ -119,7 +127,9 @@ cp $INSTALLDIR/localconfig/LocalConfig_template.groovy /home/curious/localconfig
 ~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBNAME" "$DBNAME"
 ~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBUSERNAME" "$DBUSERNAME"
 ~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "ADMINKEY" "$ADMINKEY"
-~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBPASSWORD" "$DBPASSWORD"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "DBPASSWORoD" "$DBPASSWORD"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "RACKSPACEUSERNAME" "$RACKSPACEUSERNAME"
+~/deploymentbin/replaceword /home/curious/localconfig/LocalConfig.groovy "RACKSPACEKEY" "$RACKSPACEKEY"
 chown -R curious.apache /home/curious/localconfig
 
 systemctl daemon-reload

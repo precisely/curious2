@@ -26,6 +26,14 @@ if (Environment.current == Environment.DEVELOPMENT) {
 	grails.project.plugins.dir = "./plugins"
 }
 
+grails.project.dependency.authentication = {
+	credentials {
+		id = "curiousRepo"
+		username = "curious"
+		password = "eracEMbleN"
+	}
+}
+	
 grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies

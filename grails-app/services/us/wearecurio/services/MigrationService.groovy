@@ -70,12 +70,12 @@ class MigrationService {
 	boolean skipMigrations = false
 	
 	@Transactional
-	public def sql(String statement, args = []) {
+	public def sql(String statement, args = [:]) {
 		return databaseService.sqlNoRollback(statement, args)
 	}
 	
 	@Transactional
-	public def sqlRows(String statement, args = []) {
+	public def sqlRows(String statement, args = [:]) {
 		return databaseService.sqlRows(statement, args)
 	}
 
