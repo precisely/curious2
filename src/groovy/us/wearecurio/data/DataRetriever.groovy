@@ -379,7 +379,7 @@ class DataRetriever {
 				if (currentResult == null) {
 					currentResult = result
 					result[SHORT_DESC_DATE] = new Date(startDayTime + HALFDAYTICKS)
-					result[SHORT_DESC_DESCRIPTION] = currentDescriptions.join(', ')
+					result[SHORT_DESC_DESCRIPTION] = currentDescriptions.join('+')
 					currentDescriptions.clear()
 					summedResults.add(currentResult)
 				} else {

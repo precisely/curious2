@@ -985,8 +985,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				plot.activeLineId = undefined;
 			}
 		});
-		plotArea.off("plotclick");
-		plotArea.on("plotclick", function(event, pos, item) {
+		plotArea.off("plothover");
+		plotArea.on("plothover", function(event, pos, item) {
 	        if (item) {
 	        	var now = new Date().getTime();
 	        	//if (plot.lastItemClicked == null) {
@@ -1018,7 +1018,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				}
 				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
 					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
-					dialogDiv.html(plot.plotData[item.seriesIndex].popuplabel + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
+					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
 					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
@@ -1338,8 +1338,7 @@ function PlotLine(p) {
 	this.freqDataWidth = p.freqDataWidth ? p.freqDataWidth : 0;
 	this.freqLine = p.freqData ? 1 : null;
 	this.fill = p.fill == undefined ? true : (p.fill ? true : false);
-	this.isCycle = p.isCycle ? true : false; // true if this line is used as
-	
+	this.isCycle = p.isCycle ? true : false; // true if this line is used as cyclic data
 	
 	if (this.isCycle) {
 		this.minRange = p.minRange ? p.minRange : 0;
@@ -2180,7 +2179,7 @@ function PlotLine(p) {
 	}
 	this.prepEntries = function() {
 		var d1Data = [];
-
+		
 		var entries = this.entries;
 		
 		var plotLine = this;
@@ -2221,7 +2220,7 @@ function PlotLine(p) {
 			if (maxTime == undefined || time > maxTime) maxTime = time;
 			if (minVal == undefined || entry[1] < minVal) minVal = entry[1];
 			if (maxVal == undefined || entry[1] > maxVal) maxVal = entry[1];
-			d1Data.push([entry[0], plotLine.flatten ? (entry[1] > 0.0 ? 1.0 : (entry[1] < 0 ? -1.0 : 0)) : entry[1]]);
+			d1Data.push([entry[0], plotLine.flatten ? (entry[1] > 0.0 ? 1.0 : (entry[1] < 0 ? -1.0 : 0)) : entry[1], {t:entry[2] ? entry[2] : this.name}]);
 			if (plotLine.name == null)
 				plotLine.name = entry['description'];
 			
