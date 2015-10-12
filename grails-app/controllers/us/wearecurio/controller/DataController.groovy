@@ -3,7 +3,6 @@ package us.wearecurio.controller
 import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
 
-import java.math.BigDecimal;
 import java.math.MathContext
 import java.text.SimpleDateFormat
 

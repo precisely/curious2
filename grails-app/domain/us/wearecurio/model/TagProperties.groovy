@@ -2,19 +2,22 @@ package us.wearecurio.model;
 
 
 import us.wearecurio.utility.Utils
+import org.apache.commons.logging.LogFactory
 
 class TagProperties {
+	
+	private static def log = LogFactory.getLog(this)
 
-	public static enum DataType {
+	static enum DataType {
 		UNSPECIFIED(0), CONTINUOUS(1), EVENT(2)
 		final int id
 		DataType(Integer val) { this.id = val }
 		String toString() { name() }
 		Integer getValue() { id }
 	}
-	public static final DataType CONTINUOUS	= DataType.CONTINUOUS
-	public static final DataType EVENT = DataType.EVENT
-	public static final DataType UNSPECIFIED = DataType.UNSPECIFIED
+	static final DataType CONTINUOUS	= DataType.CONTINUOUS
+	static final DataType EVENT = DataType.EVENT
+	static final DataType UNSPECIFIED = DataType.UNSPECIFIED
 
 	// The user specified something.
 	//	If set to false, it means that the user wants to have
@@ -46,25 +49,28 @@ class TagProperties {
 	}
 
 	// Put reg. expressions  here so that we don't have to keep recompiling them.
-	public static REG_PATTERN = ~/^\/(.*)\/$/
+	static REG_PATTERN = ~/^\/(.*)\/$/
 
-	public static EVENT_PATTERNS = ["/ache/", "bread", "pain", "ate", "eat", "/exercise/", "jogging", "sleep"]
-	public static EVENT_EXCLUSION_PATTERNS = ["constant .* pain"]
+	static EVENT_PATTERNS = ["/ache\b/", "bread", "pain", "ate", "eat", "exercise", "jogging", "sleep", "duration"]
+	static EVENT_EXCLUSION_PATTERNS = ["constant .* pain"]
 
-	public static CONTINUOUS_PATTERNS = ["weight", "rate", "pulse", "cholesterol"]
-	public static CONTINUOUS_EXCLUSION_PATTERNS = ["weight watchers meal"]
+	static CONTINUOUS_PATTERNS = ["weight", "rate", "pulse", "cholesterol", "temp", "temperature", "pressure", "air quality", "mood", "density", "glucose", "blood", "cholesterol",
+			"hdl", "ldl", "thyroid", "compounded", "cortisol", "serum", "creatinine", "/bacteria\b/", "ratio", "bmi", "body mass index", "heart rate", "hr", "hrv",
+			"heart rate variability", "co2", "platelet count"]
+	static CONTINUOUS_EXCLUSION_PATTERNS = ["weight watchers", "blood orange"]
 
-	public TagProperties() {
-			// Default values.
-			dataTypeManual = UNSPECIFIED
-			dataTypeComputed = UNSPECIFIED
+	TagProperties() {
+		// Default values.
+		dataTypeManual = UNSPECIFIED
+		dataTypeComputed = UNSPECIFIED
 	}
 
-	public static def createOrLookup(long userId, long tagId) {
+	static def createOrLookup(long userId, long tagId) {
 		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
 
 		if (!props) {
 			props = new TagProperties(tagId:tagId, userId:userId)
+			props.classifyAsEvent()
 			if (!Utils.save(props, true))
 				props = null
 		}
@@ -72,7 +78,7 @@ class TagProperties {
 		return props
 	}
 
-	public def percentEntriesWithoutValues() {
+	def percentEntriesWithoutValues() {
 		def numEntriesWithNoValue = Entry.countSeries(userId, tagId, -1)
 		def totalEntriesInSeries = Entry.countSeries(userId, tagId, null)
 		if (totalEntriesInSeries > 0) {
@@ -82,7 +88,7 @@ class TagProperties {
 		}
 	}
 
-	public static def toReg(String s) {
+	static def toReg(String s) {
 		// Convert a string to a regular expression.
 		// If it looks like "/stuff.*/" then convert it to a raw regular expression.
 		// Otherwise, assume it's a word, so match word boundaries on the beginning
@@ -98,7 +104,7 @@ class TagProperties {
 		result
 	}
 
-	public static def match(patterns, not_patterns, description) {
+	static def match(patterns, not_patterns, description) {
 		def result = false
 		patterns.find { pattern ->
 			if (toReg(pattern).matcher(description).find()) {
@@ -115,11 +121,11 @@ class TagProperties {
 		result
 	}
 
-	public static def isEventWord(description) {
+	static def isEventWord(description) {
 		match(EVENT_PATTERNS, EVENT_EXCLUSION_PATTERNS, description)
 	}
 
-	public static def isContinuousWord(description) {
+	static def isContinuousWord(description) {
 		match(CONTINUOUS_PATTERNS, CONTINUOUS_EXCLUSION_PATTERNS, description)
 	}
 
@@ -128,7 +134,7 @@ class TagProperties {
 	//	continuous (most likely hovers around some non-zero mean
 	//	value).
 
-	public def classifyAsEvent() {
+	TagProperties classifyAsEvent() {
 		// If user specified something, use what the user specified.
 		//	The user-specified value is dataTypeComputed.
 		if (dataTypeManual != null && dataTypeManual != UNSPECIFIED) {
@@ -165,11 +171,32 @@ class TagProperties {
 		}
 
 		// The default value is that the tag series is continuous.
-		dataTypeComputed = CONTINUOUS
+		dataTypeComputed = EVENT
 		return this
 	}
+	
+	static reclassifyAll() {
+		log.debug "Reclassifying all TagProperties..."
+		
+		TagProperties.executeUpdate("delete TagProperties tp where tp.dataTypeManual = :unspecified",
+				[unspecified:DataType.UNSPECIFIED])
+		
+		TagProperties.withTransaction {
+			def allTP = TagProperties.getAll()
+			
+			for (TagProperties tp : allTP) {
+				log.debug "Reclassifying " + tp
+				
+				tp.classifyAsEvent()
+				
+				log.debug "TP now: " + tp
+				
+				Utils.save(tp, true)
+			}
+		}
+	}
 
-	public static TagProperties lookup(Long uid, Long tid) {
+	static TagProperties lookup(Long uid, Long tid) {
 		return TagProperties.findWhere(tagId:tid, userId:uid)
 	}
 
@@ -194,11 +221,11 @@ class TagProperties {
 		dataTypeComputed
 	}
 
-	public def setIsContinuous(x) {
+	def setIsContinuous(x) {
 		setDataType(x)
 	}
 
-	public def getIsContinuous() {
+	def getIsContinuous() {
 		dataTypeComputed == CONTINUOUS
 	}
 
@@ -210,7 +237,7 @@ class TagProperties {
 			showPoints: showPoints]
 	}
 
-	static public def lookupJSONDesc(long userId, long tagId) {
+	static def lookupJSONDesc(long userId, long tagId) {
 		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
 
 		if (!props) { // return default settings, don't create new TagProperties
@@ -222,8 +249,8 @@ class TagProperties {
 		return props.getJSONDesc()
 	}
 
-	public String toString() {
-		return "TagProperties(userId:" + userId + ", tagId:" + tagId + ", dataTypeComputed:" \
+	String toString() {
+		return "TagProperties(userId:" + userId + ", tag:" + Tag.fetch(tagId).description + ", dataTypeComputed:" \
 				+ dataTypeComputed + ", showPoints:" \
 				+ showPoints + ")"
 	}
