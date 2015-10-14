@@ -546,6 +546,12 @@ class MigrationService {
 				}
 			}
 		}
+		tryMigration("Nullable userId for UserActivity") {
+			try {
+				sql ("ALTER TABLE `user_activity` CHANGE COLUMN `user_id` user_id bigint(20) DEFAULT NULL")
+			} catch (Throwable t) {
+			}
+		}
 	}
 	
 	/**
