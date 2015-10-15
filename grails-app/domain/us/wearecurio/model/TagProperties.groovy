@@ -51,12 +51,14 @@ class TagProperties {
 	// Put reg. expressions  here so that we don't have to keep recompiling them.
 	static REG_PATTERN = ~/^\/(.*)\/$/
 
-	static EVENT_PATTERNS = ["/ache\b/", "bread", "pain", "ate", "eat", "exercise", "jogging", "sleep", "duration"]
+	static EVENT_PATTERNS = ["ate", "/.*ache\\b/", "bread", "pain", "eat", "jog", "ran", "run", "running", "jogged", "jogging", "sleep", "slept", "duration", "/\\bexercise.*\\b/"]
 	static EVENT_EXCLUSION_PATTERNS = ["constant .* pain"]
 
 	static CONTINUOUS_PATTERNS = ["weight", "rate", "pulse", "cholesterol", "temp", "temperature", "pressure", "air quality", "mood", "density", "glucose", "blood", "cholesterol",
-			"hdl", "ldl", "thyroid", "compounded", "cortisol", "serum", "creatinine", "/bacteria\b/", "ratio", "bmi", "body mass index", "heart rate", "hr", "hrv",
-			"heart rate variability", "co2", "platelet count"]
+			"hdl", "ldl", "thyroid", "compounded", "cortisol", "serum", "creatinine", "/bacteria\\b/", "ratio", "bmi", "body mass index", "heart rate", "hr", "hrv",
+			"heart rate variability", "co2", "platelet count", "body fat", "/\\bhips\\b.*\\[distance\\]/", "/\\bwaist\\b.*\\[distance\\]/", "/\\bchest\\b.*\\[distance\\]/",
+			"/\\bbiceps\\b.*\\[distance\\]/", "/\\bbicep\\b.*\\[distance\\]/", "/\\bthighs\\b.*\\[distance\\]/", "/\\bthigh\\b.*\\[distance\\]/", "/\\bcalves\\b.*\\[distance\\]/", "bdt", "respiration", "hrv", "heart-rate", "bp", "cbc",
+			"blood sugar", "glucose", "fbs", "fbg", "pulse"]
 	static CONTINUOUS_EXCLUSION_PATTERNS = ["weight watchers", "blood orange"]
 
 	TagProperties() {
@@ -99,24 +101,26 @@ class TagProperties {
 		if (m.matches()) {
 			result = ~(m[0][1])
 		} else {
-			result = ~"\\b${s}\\b"
+			result = ~("\\b" + s + "\\b")
 		}
 		result
 	}
 
 	static def match(patterns, not_patterns, description) {
 		def result = false
-		patterns.find { pattern ->
+		patterns.each { pattern ->
 			if (toReg(pattern).matcher(description).find()) {
 				result = true
 				return true // break out of find loop.
 			}
+			return false
 		}
-		not_patterns.find { pattern ->
+		not_patterns.each { pattern ->
 			if (toReg(pattern).matcher(description).find()) {
 				result = false
 				return true // break out of find loop.
 			}
+			return false
 		}
 		result
 	}

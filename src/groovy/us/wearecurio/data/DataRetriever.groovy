@@ -361,6 +361,7 @@ class DataRetriever {
 
 		for (result in rawResults) {
 			Date resultDate = result[SHORT_DESC_DATE]
+			currentDescriptions.add(result[SHORT_DESC_DESCRIPTION])
 			if (startDate == null) { // no start date, start a date at midnight
 				DateTime startDateTime = new DateTime(resultDate, currentTimeZone) // set start date to 1000 AD if startDate isn't specified
 				// set time to zero
@@ -384,7 +385,6 @@ class DataRetriever {
 					summedResults.add(currentResult)
 				} else {
 					currentResult[SHORT_DESC_AMOUNT] = currentResult[SHORT_DESC_AMOUNT] + result[SHORT_DESC_AMOUNT]
-					currentDescriptions.add(currentResult[SHORT_DESC_DESCRIPTION])
 				}
 			}
 		}

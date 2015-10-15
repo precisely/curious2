@@ -705,7 +705,7 @@ class MigrationService {
 			sql("update user_activity set type_id = 262 where type_id = 260")
 			sql("update user_activity set type_id = 263 where type_id = 261")
 		}
-		tryMigration("Reclassify tag properties4") {
+		tryMigration("Reclassify tag properties5") {
 			TagProperties.reclassifyAll()
 		}
 	}

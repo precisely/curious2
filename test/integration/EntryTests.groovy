@@ -146,6 +146,61 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testSumPlotData() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), new EntryStats())
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+	
+		Entry.create(userId, entryParserService.parse(slightDifferentCurrentTime, timeZone, "bread 3", null, null, baseDate, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "bread 2", null, null, tomorrowBaseDate, true), new EntryStats())
+		
+		def results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles")
+		
+		def c = 0
+		for (result in results) {
+			def date = Utils.dateToGMTString(result[0])
+			if (date == "2010-07-01T21:32:48") {
+				assert result[1].intValue() == 4
+				assert result[2] == "bread"
+			} else if (date == "2010-07-02T21:32:48") {
+				assert result[1].intValue() == 2
+				assert result[2] == "bread"
+			} else
+				assert false
+			++c
+		}
+		
+		assert c == 2
+		
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 0
+		
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 0
+		
+		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
+		
+		c = 0
+		for (result in results) {
+			++c
+		}
+		
+		assert c == 2
+	}
+	
+	@Test
 	void testNoRepeatStartDuration() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start 4pm repeat", null, null, earlyBaseDate, true), new EntryStats())
 		assert entry.durationType == DurationType.NONE
@@ -526,61 +581,6 @@ class EntryTests extends CuriousTestCase {
 		
 		assert testPlot(user, [Tag.look("bread").getId()], earlyBaseDate, lateBaseDate, veryLateBaseDate) {
 		} == 1
-	}
-	
-	@Test
-	void testSumPlotData() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), new EntryStats())
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-	
-		Entry.create(userId, entryParserService.parse(slightDifferentCurrentTime, timeZone, "bread 3", null, null, baseDate, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "bread 2", null, null, tomorrowBaseDate, true), new EntryStats())
-		
-		def results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], null, null, veryLateBaseDate, "America/Los_Angeles")
-		
-		def c = 0
-		for (result in results) {
-			def date = Utils.dateToGMTString(result[0])
-			if (date == "2010-07-01T21:32:48") {
-				assert result[1].intValue() == 4
-				assert result[2] == "bread"
-			} else if (date == "2010-07-02T21:32:48") {
-				assert result[1].intValue() == 2
-				assert result[2] == "bread"
-			} else
-				assert false
-			++c
-		}
-		
-		assert c == 2
-		
-		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], lateBaseDate, null, veryLateBaseDate, "America/Los_Angeles")
-		
-		c = 0
-		for (result in results) {
-			++c
-		}
-		
-		assert c == 0
-		
-		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, baseDate, veryLateBaseDate, "America/Los_Angeles")
-		
-		c = 0
-		for (result in results) {
-			++c
-		}
-		
-		assert c == 0
-		
-		results = Entry.fetchSumPlotData(user, [Tag.look("bread").getId()], earlyBaseDate, lateBaseDate, veryLateBaseDate, "America/Los_Angeles")
-		
-		c = 0
-		for (result in results) {
-			++c
-		}
-		
-		assert c == 2
 	}
 	
 	@Test

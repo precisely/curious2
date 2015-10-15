@@ -198,7 +198,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
-		assert controller.response.contentAsString.endsWith(',1.000000000,"bread"]])')
+		assert controller.response.contentAsString.endsWith(',1.000000000,"bread",' + Tag.look('bread').id + ']])')
 		}
 
 	@Test
@@ -224,7 +224,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getSumPlotData()
 
 		assert controller.response.contentAsString.startsWith('callback([[')
-		assert controller.response.contentAsString.endsWith(',2.000000000,"bread"]])')
+		assert controller.response.contentAsString.endsWith(',2.000000000,"bread",' + Tag.look('bread').id + ']])')
 		}
 
 	@Test
