@@ -1243,7 +1243,7 @@ body.discuss-page .red-header {
 
 .entryComment {
 	color: #999999;
-	text-transform: uppercase;
+	text-transform: none;
 	font-size: 12px;
 	vertical-align: baseline;
 }

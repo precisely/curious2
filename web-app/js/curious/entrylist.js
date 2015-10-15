@@ -11,6 +11,14 @@
 
 // widget must be constructed from within $.ready()
 
+function __removePrefix(str, prefix) {
+	if (!str) return str;
+	if (str == prefix) return '';
+	if (str.startsWith(prefix + ' ')) {
+		return str.substr(prefix.length + 1);
+	}
+}
+
 function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	var self = this;
 	
@@ -214,13 +222,22 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					+ '<span class="entryUnits">' + escapehtml(formatUnits(units)) + '</span>'
 		}
 		
+		comment = __removePrefix(comment, 'repeat');
+		comment = __removePrefix(comment, 'remind');
+		comment = __removePrefix(comment, 'daily');
+		comment = __removePrefix(comment, 'weekly');
+		comment = __removePrefix(comment, 'monthly');
+		
+		var commentHTML = comment ? ' <span class="entryComment">' + escapehtml(comment) : '</span>';
 		var commentLabel = '';
 		if (isRemind && isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT w/ reminder</span></div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT + ALERT</span>' + commentHTML + '</div>';
 		} else if (isRemind) {
-			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">REMIND</span></div>';
+			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">ALERT</span>' + commentHTML + '</div>';
 		} else if (isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span></div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span>' + commentHTML + '</div>';
+		} else {
+			commentLabel = '<div class="comment-label ">' + commentHTML + '</div>';
 		}
 
 		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
@@ -229,7 +246,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			'<button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + 
 			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
-
 		var entryEditItem;
 		
 		if (isUpdating) {
