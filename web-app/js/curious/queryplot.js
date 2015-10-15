@@ -1225,7 +1225,8 @@ function PlotLine(p) {
 		save.entries = this.entries;
 		return save;
 	}
-	
+
+	// TODO: Not reuired in mobile graph
 	this.handleDropTag = function(event, ui) {
 		var plotLine = this;
 		var $sourceElement = $(ui.draggable[0]);
