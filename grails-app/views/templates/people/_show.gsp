@@ -20,7 +20,7 @@
 			</label>
 			<div class="media">
 				<div class="media-left">
-					<img src="/images/tag.png" height="30" width="auto">
+					<img src="/images/tag.png" height="25" width="auto">
 				</div>
 				<div class="media-body">
 					<p> {{- (user.interestTags.length == 0) ? "No Tags" : user.interestTags.join(", ") }}</p>

@@ -12,11 +12,13 @@
 // widget must be constructed from within $.ready()
 
 function __removePrefix(str, prefix) {
-	if (!str) return str;
-	if (str == prefix) return '';
-	if (str.startsWith(prefix + ' ')) {
-		return str.substr(prefix.length + 1);
+	if (str) {
+		if (str == prefix) return '';
+		if (str.startsWith(prefix + ' ')) {
+			return str.substr(prefix.length + 1);
+		}
 	}
+	return str;
 }
 
 function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
@@ -702,7 +704,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
-		var entryText = $contentWrapper.text();
+		var entryText = $contentWrapper.text() + ' ' + entry.comment;
 
 		var selectRange = self.entrySelectData[currentEntryId];
 		if (selectRange != undefined) {
@@ -783,7 +785,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return;
 		}
 		var currentEntryId = $unselectee.data('entryId');
-		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-') || $unselectee.data('entry').repeatType;
+		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-');
 		var repeatEnd = $('#' + this.editId + 'entryid' + currentEntryId + ' .choose-date-input').val();
 		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
 		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;
