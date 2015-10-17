@@ -25,16 +25,16 @@ class PasswordRecovery {
 		userId column:'user_id', index:'user_id_index'
 	}
 	
-	public PasswordRecovery() {}
+	PasswordRecovery() {}
 
-	public PasswordRecovery(long userId) {
+	PasswordRecovery(long userId) {
 		this.start = new Date()
 		this.userId = userId
 		Random random = new Random(start.getTime() - 91242273L)
 		this.code = '' + (random.nextLong() + start.getTime()) + (random.nextLong() + 1429L) + userId
 	}
 	
-	static public PasswordRecovery create(long userId) {
+	static PasswordRecovery create(long userId) {
 		def recovery = new PasswordRecovery(userId)
 		Utils.save(recovery, true)
 		
@@ -56,7 +56,7 @@ class PasswordRecovery {
 		start = new Date()
 	}
 	
-	static public PasswordRecovery look(String code) {
+	static PasswordRecovery look(String code) {
 		Date now = new Date()
 		
 		PasswordRecovery retVal = PasswordRecovery.findByCode(code)
@@ -68,7 +68,7 @@ class PasswordRecovery {
 		return retVal
 	}
 	
-	static public deleteStaleRecoveries() {
+	static deleteStale() {
 		def c = PasswordRecovery.createCriteria()
 		
 		def hourAgo = new Date(getHourAgoTicks())

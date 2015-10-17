@@ -23,7 +23,7 @@ class Session {
 	long expires
 	boolean disabled
 
-	public static final long EXPIRE_TIME = 60000L * 60L * 24L * 7L // one week
+	static final long EXPIRE_TIME = 60000L * 60L * 24L * 7L // one week
 
 	static constraints = { uuid(maxSize:50) }
 	static mapping = {
@@ -40,33 +40,29 @@ class Session {
 		return hi.toString() + "-" + low.toString()
 	}
 
-	public static Session createOrGetSession(User user) {
+	static Session createOrGetSession(User user, Date now) {
 		log.debug "Session.createOrGetSession() userId:" + user.getId()
 		
 		def session = Session.findByUserId(user.getId())
 
-		def nowTime = new Date().getTime()
+		long nowTime = now.getTime()
 
 		if (session != null && (!session.isDisabled())) {
-			def result = DatabaseService.retry(session) {
-				log.debug "Session found for user " + user.getId() + " uuid: " + session.getUuid()
-				if (session.getExpires() > nowTime) {
-					if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
-						session.setExpires(nowTime + EXPIRE_TIME) // refresh session
-						Utils.save(session, true)
-					}
-					return session
-				} else {
-					log.debug ("Session expired, deleting");
-					delete(session)
-					return null
+			log.debug "Session found for user " + user.getId() + " uuid: " + session.getUuid()
+			if (session.getExpires() > nowTime) {
+				if (nowTime + EXPIRE_TIME > session.getExpires() + 60000L * 30L) {
+					session.setExpires(nowTime + EXPIRE_TIME) // refresh session
+					Utils.save(session, true)
 				}
+				return session
+			} else {
+				log.debug ("Session expired, disable");
+				session.disabled = true
+				Utils.save(session, true)
 			}
-			if (result != null)
-				return result
 		}
 
-		log.debug "Session not found for user " + user.getId()
+		log.debug "Session not found or expired for user, create new session " + user.getId()
 
 		session = new Session()
 		session.setUuid(newUUIDString())
@@ -78,16 +74,18 @@ class Session {
 		return session
 	}
 	
-	public static delete(Session session) {
-		session.delete(flush: true)
+	static delete(Session session) {
+		// disable instead of delete
+		session.disabled = true
+		Utils.save(session)
 	}
 
-	public static User lookupSessionUser(String sessionId) {
+	static User lookupSessionUser(String sessionId, Date now) {
 		log.debug "Session.lookupSessionUser() sessionId:" + sessionId
 		
 		def session = Session.findByUuid(sessionId)
 
-		def nowTime = new Date().getTime()
+		def nowTime = now.getTime()
 
 		if (session != null && (!session.isDisabled())) {
 			if (session.getExpires() > nowTime) {
@@ -102,17 +100,26 @@ class Session {
 		return null
 	}
 
-	public boolean equals(Object other) {
+	boolean equals(Object other) {
 		if (other == null) return false
 		return this.uuid == other.uuid && this.userId == other.userId && this.expires == other.expires
 	}
 
-	public String fetchUuid() {
+	String fetchUuid() {
 		if (disabled) return null
 		else return uuid;
 	}
 
-	public String toString() {
+	String toString() {
 		return "Session(" + uuid + ", userId:" + userId + ", expires:" + expires + ", disabled:" + disabled + ")"
+	}
+
+	static deleteStale() {
+		def c = Session.createCriteria()
+		
+		Long twoWeeksAgoTicks = new Date(new Date().getTime() - 60000L * 60L * 24L * 14L).getTime()
+		
+		Session.executeUpdate("delete Session s where s.expires < :twoWeeksAgoTicks",
+				[twoWeeksAgoTicks:twoWeeksAgoTicks])
 	}
 }

@@ -309,7 +309,7 @@ class DataController extends LoginController {
 
 		if (user == null) {
 			debug "auth failure - return empty array"
-			renderStringGet([])
+			renderJSONGet([])
 			return
 		}
 

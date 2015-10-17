@@ -85,7 +85,7 @@ class SecurityService {
 	protected boolean checkCSRF(HttpServletRequest request, params, def session, def user, boolean resetToken = false) {
 		log.debug "checkCSRF() params:" + params
 		if (params.mobileSessionId) {
-			User mobileUser = Session.lookupSessionUser(params.mobileSessionId)
+			User mobileUser = Session.lookupSessionUser(params.mobileSessionId, new Date())
 			if (mobileUser != null) {
 				if (user == null) {
 					log.debug "Opening mobile session with user " + mobileUser
@@ -130,7 +130,7 @@ class SecurityService {
 			params.persistentSessionId = params.mobileSessionId
 		if (!session.userId && !noauthActions.contains(actionName)) {
 			if (params.persistentSessionId != null) {
-				User user = Session.lookupSessionUser(params.persistentSessionId)
+				User user = Session.lookupSessionUser(params.persistentSessionId, new Date())
 				if (user != null) {
 					log.debug "Opening persistent session with user " + user
 					session.userId = user.getId()
@@ -175,6 +175,8 @@ class SecurityService {
 	User getCurrentUser() {
 		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
 		
+		Date now = new Date()
+		
 		Long userId = getCurrentUserId()
 		
 		if (userId) {
@@ -183,11 +185,11 @@ class SecurityService {
 			session.setMaxInactiveInterval(60*60*24*7) // one week session timeout by default
 			if (session.persistentSession != null && !session.persistentSession.isDisabled()) {
 				if (session.persistentSession.getUserId() != user.getId()) {
-					session.persistentSession = Session.createOrGetSession(user)
+					session.persistentSession = Session.createOrGetSession(user, now)
 					return user
 				}
 			}
-			session.persistentSession = Session.createOrGetSession(user)
+			session.persistentSession = Session.createOrGetSession(user, now)
 			return user
 		}
 		log.debug "No session user"
@@ -261,8 +263,10 @@ class SecurityService {
 
 		GrailsHttpSession session = RequestContextHolder.requestAttributes.session
 		
+		Date now = new Date()
+		
 		if (user != null) {
-			Session persistentSession = Session.createOrGetSession(user)
+			Session persistentSession = Session.createOrGetSession(user, now)
 			log.debug "Login: persistent session " + persistentSession.fetchUuid()
 			session.persistentSession = persistentSession
 		}
