@@ -48,7 +48,7 @@
 										CARDIO
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="cardio"
-											placeholder="e.g. running 45 minutes, zumba 60 min" /> 
+											placeholder="e.g. running 45 minutes" /> 
 									<label for="resistance">
 										RESISTANCE
 									</label>
@@ -58,7 +58,7 @@
 										STRETCH
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="stretch"
-											placeholder="e.g. 90 mins bikram yoga" />
+											placeholder="e.g. bikram yoga 90 mins" />
 									<label for="metabolic">
 										METABOLIC TRAINING
 									</label>
