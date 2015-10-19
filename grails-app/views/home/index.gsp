@@ -85,7 +85,7 @@
 	</div>
 	<!-- /MAIN -->
 	<div id="remove-exclusion-dialog" class="hide" title="Add back to the Group"></div>
-	<script type="text/javascript" src="/js/curious/entrylist.js"></script>
+	<script type="text/javascript" src="/js/curious/entrylist.js?ver=27"></script>
 	<script type="text/javascript">
 		var timeAfterTag = ${prefs['displayTimeAfterTag'] ? true : false};
 		var currentDate = new Date();

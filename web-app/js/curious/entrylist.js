@@ -17,6 +17,7 @@ function __removePrefix(str, prefix) {
 	if (str.startsWith(prefix + ' ')) {
 		return str.substr(prefix.length + 1);
 	}
+	return str;
 }
 
 function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
