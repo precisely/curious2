@@ -89,13 +89,15 @@ function PlotProperties(divIdArray) {
 
 	this.getName = function() {
 		if (this.nameField) {
-			return this.nameField.text();
+			return this.nameField.data('completeName');
 		}
 		return '';
 	}
 	this.setName = function(name) {
-		if (this.nameField)
-			this.nameField.text(name);
+		if (this.nameField) {
+			this.nameField.data('completeName', name);
+			this.nameField.text(shorten(name, 70, false));
+		}
 	}
 	this.setUsername = function(name) {
 		if (this.usernameField)

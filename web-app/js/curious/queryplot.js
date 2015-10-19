@@ -1602,11 +1602,11 @@ function PlotLine(p) {
 		if (!this.showPoints) this.showPoints = false;
 		var html = '<div id="plotline' + idSuffix + '" class="'+plotColorClass[this.color]+'">\
 			<h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
-			+ escapehtml(this.name) + '</span> <span class="plotGroup">'
-			+ (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
+			+ escapehtml(this.name) + '</span></div>' +
+			' <span class="plotGroup-edit-options">' + (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
 				+ "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' + 
 				this.plot.id + "','" + this.id + '\')" >x</span>')
-			+ '</span></div></h3><div class="plotlineinfo hide"><div id="editplotline'
+			+ '</span></h3><div class="plotlineinfo hide"><div id="editplotline'
 			+ idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
 		if (this.isCycle) {
 			html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix

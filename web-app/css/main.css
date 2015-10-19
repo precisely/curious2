@@ -715,6 +715,7 @@ ul#tagList {
 	cursor: pointer;
 	margin-right: 4px;
 	margin-bottom: 4px;
+	background-color: #f1f1f1;
 }
 .plotlines .ui-droppable h3 {
 	margin: 0;
@@ -734,8 +735,8 @@ ul#tagList {
 	border: 0;
 }
 
-.plotGroup {
-	background-color: #f1f1f1;
+.plotGroup-edit-options, .plotGroup {
+	display: inline-block;
 }
 
 .orange h3 {
