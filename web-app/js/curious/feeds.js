@@ -716,7 +716,9 @@ function deleteSprint(sprintHash) {
 				if (!data.success) {
 					showAlert('Unable to delete sprint!');
 				} else {
-					location.assign('/home/social#all');
+					if (!window.history.back()) {
+						location.href = '/home/social#sprints';
+					}
 				}
 			}, function(data) {
 				showAlert(data.message);
