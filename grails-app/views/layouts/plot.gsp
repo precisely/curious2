@@ -96,6 +96,7 @@ function PlotProperties(divIdArray) {
 	this.setName = function(name) {
 		if (this.nameField) {
 			this.nameField.data('completeName', name);
+			// Using max character limit 70 to render properly on both desktop and iPads
 			this.nameField.text(shorten(name, 70, false));
 		}
 	}
