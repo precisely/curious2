@@ -233,18 +233,18 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var commentHTML = comment ? ' <span class="entryComment">' + escapehtml(comment) : '</span>';
 		var commentLabel = '';
 		if (isRemind && isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT + ALERT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT + ALERT</span></div>';
 		} else if (isRemind) {
-			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">ALERT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">ALERT</span></div>';
 		} else if (isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span></div>';
 		} else {
-			commentLabel = '<div class="comment-label ">' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "></div>';
 		}
 
 		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + '</div>' + commentLabel + 
+				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel +
 			'<button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + 
 			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
@@ -704,7 +704,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
-		var entryText = $contentWrapper.text() + ' ' + entry.comment;
+		var entryText = $contentWrapper.text();
 
 		var selectRange = self.entrySelectData[currentEntryId];
 		if (selectRange != undefined) {

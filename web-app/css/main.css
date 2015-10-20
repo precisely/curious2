@@ -1255,9 +1255,7 @@ body.discuss-page .red-header {
 }
 
 .entryComment {
-	color: #999999;
 	text-transform: none;
-	font-size: 12px;
 	vertical-align: baseline;
 }
 
@@ -2157,6 +2155,7 @@ li.no-tag input {
 }
 li .no-tag{
 	color: #f14a42;
+	line-height: 40px;
 }
 li.entry.continuousghost {
 	border-left: 5px;
