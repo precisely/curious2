@@ -12,10 +12,11 @@
 // widget must be constructed from within $.ready()
 
 function __removePrefix(str, prefix) {
-	if (!str) return str;
-	if (str == prefix) return '';
-	if (str.startsWith(prefix + ' ')) {
-		return str.substr(prefix.length + 1);
+	if (str) {
+		if (str == prefix) return '';
+		if (str.startsWith(prefix + ' ')) {
+			return str.substr(prefix.length + 1);
+		}
 	}
 	return str;
 }
@@ -232,18 +233,18 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 		var commentHTML = comment ? ' <span class="entryComment">' + escapehtml(comment) : '</span>';
 		var commentLabel = '';
 		if (isRemind && isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT + ALERT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT + ALERT</span></div>';
 		} else if (isRemind) {
-			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">ALERT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="remindLabelImage"></div><span class="entryRemind">ALERT</span></div>';
 		} else if (isRepeat) {
-			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span>' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "> <div class="repeatLabelImage"></div><span class="entryRepeat">REPEAT</span></div>';
 		} else {
-			commentLabel = '<div class="comment-label ">' + commentHTML + '</div>';
+			commentLabel = '<div class="comment-label "></div>';
 		}
 
 		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + '</div>' + commentLabel + 
+				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel +
 			'<button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + 
 			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
@@ -784,7 +785,7 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			return;
 		}
 		var currentEntryId = $unselectee.data('entryId');
-		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-') || $unselectee.data('entry').repeatType;
+		var repeatTypeId = this.getRepeatTypeId(currentEntryId + '-');
 		var repeatEnd = $('#' + this.editId + 'entryid' + currentEntryId + ' .choose-date-input').val();
 		var oldRepeatEnd = $unselectee.data('entry').repeatEnd;
 		var oldRepeatEndMidnightTime = oldRepeatEnd ? oldRepeatEnd.setHours(0, 0, 0, 0) : null;

@@ -90,13 +90,16 @@ function PlotProperties(divIdArray) {
 
 	this.getName = function() {
 		if (this.nameField) {
-			return this.nameField.text();
+			return this.nameField.data('completeName');
 		}
 		return '';
 	}
 	this.setName = function(name) {
-		if (this.nameField)
-			this.nameField.text(name);
+		if (this.nameField) {
+			this.nameField.data('completeName', name);
+			// Using max character limit 70 to render properly on both desktop and iPads
+			this.nameField.text(shorten(name, 70, false));
+		}
 	}
 	this.setUsername = function(name) {
 		if (this.usernameField)

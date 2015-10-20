@@ -3,6 +3,9 @@
 		<img src="/images/calander-light.png" alt="calander" height="22"> Details
 	</button>
 	<ul class="entry-details-dropdown-menu dropdown-menu">
+		<button id="close-track-input-modifier" onclick="$('.entry-details-dropdown-menu').parent().removeClass('open')">
+			<i class="fa fa-times"></i>
+		</button>
 		<form class="entry-details-form">
 			<li class="instructions">
 				Check the box below to repeat this tag.

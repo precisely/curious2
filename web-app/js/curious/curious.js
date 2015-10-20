@@ -226,15 +226,9 @@ $(document).ready(function() {
 	});
 
 	$('#helpWizardOverlay').on('hidden.bs.modal', function () {
-		$('#helpWizardOverlay :input').each(function (index, element) {
-			$(element).val('');
+		createHelpEntry(function() {
+			window.location.href = '/home/index';
 		});
-		$('#helpWizardOverlay .label').each(function (index, element) {
-			$(element).text('');
-		});
-		$('#helpWizardOverlay .alert').hide();
-		$('#help-carousel-content').carousel(0);
-
 	});
 
 	$("#sleep-hour").keyup(function(event) {
@@ -289,7 +283,7 @@ $(document).ready(function() {
 
 });
 
-function submitExerciseForm() {
+function submitExerciseForm(callback) {
 	$('#helpWizardForm .next-question').hide();
 	$('#helpWizardForm .left-carousel-control').hide();
 	$('#helpWizardForm .right-carousel-control').hide();
@@ -305,6 +299,9 @@ function submitExerciseForm() {
 		return false;
 	}
 	$('#helpWizardWxerciseForm').submit(submitHelpEntryForm({entries: entries}, function(resp) {
+		if (callback) {
+			callback();
+		}
 		$('#help-carousel-content').carousel('next');
 		enableHelpForm();
 	}));
@@ -346,10 +343,7 @@ function enableHelpForm() {
 }
 
 function nextQuestion() {
-	if ($('#helpWizardOverlay .carousel-inner .item:nth-child(3)').hasClass('active')) {
-		submitExerciseForm();
-		return true;
-	} else if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
+	if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
 		$('#helpWizardOverlay').modal('hide');
 		window.location.href = '/home/index'
 			return true;
@@ -390,7 +384,10 @@ function createHelpEntry(callback) {
 		} else if (entryText != '') {
 			entryText = 'sleep ' + entryText;
 		}
-	}  else {
+	}  else if ($('#helpWizardOverlay .carousel-inner .item:nth-child(3)').hasClass('active')) {
+		submitExerciseForm(callback);
+		return true;
+	} else {
 		entryInputElement = $('#mood-entry');
 		entryText = entryInputElement.val();
 		entryId = entryInputElement.data('id');

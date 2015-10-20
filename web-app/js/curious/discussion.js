@@ -120,7 +120,9 @@ $(document).ready(function() {
 							$this.parents('.feed-item').fadeOut();
 						});
 					} else {
-						location.href = '/home/social#all';
+						if (!window.history.back()) {
+							location.href = '/home/social#discussions';
+						}
 					}
 				} else {
 					showAlert(data.message);
