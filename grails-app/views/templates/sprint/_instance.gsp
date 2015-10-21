@@ -3,7 +3,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
-					<a href="#sprints/{{- sprint.hash }}">
+					<a href="/home/sprint#{{- sprint.hash }}">
 						<span> {{- sprint.name }}</span>
 					</a>
 				</div>
@@ -18,15 +18,15 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-8 tags-participants-label">
-					<a href="#sprints/{{- sprint.hash }}">
+					<a href="/home/sprint#{{- sprint.hash }}">
 						TAGS({{- sprint.totalTags }})
 					</a>
-					<a href="#sprints/{{- sprint.hash }}">
+					<a href="/home/sprint#{{- sprint.hash }}">
 						PARTICIPANTS({{- sprint.totalParticipants }})
 					</a>
 				</div>
 				<div class="col-xs-4 align-right read-more">
-					<a href="#sprints/{{- sprint.hash }}">
+					<a href="/home/sprint#{{- sprint.hash }}">
 						VIEW MORE
 					</a>
 				</div>

@@ -10,7 +10,10 @@
 			</div>
 			<form id="submitSprint">
 				<div class="modal-body">
-					<div class="alert alert-danger hide" role="alert">Some error has occurred while performing the operation.</div>
+					<div class="alert alert-danger alert-dismissible hide" role="alert">
+						<span class="message">Some error has occurred while performing the operation.</span>
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close">&times;</button>
+					</div>
 					<div class="row">
 						<div class="col-md-11" style="font-size:11pt;font-style:italic;margin-bottom:5px;">
 						<p>Sprints are reusable tracking experiments</p>

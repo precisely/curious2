@@ -45,22 +45,24 @@
 		</div>
 		<div class="feed-body">
 		<div class="main container-fluid">
-		<ul class="nav nav-pills">
-			<li id="feed-all-tab" role="presentation">
-				<a href="/home/social#all">ALL</a>
-			</li>
-			<li id="feed-people-tab" role="presentation">
-				<a href="/home/social#people">PEOPLE</a>
-			</li>
-			<li id="feed-discussions-tab" role="presentation">
-				<a href="/home/social#discussions">DISCUSSIONS</a>
-			</li>
-			<li id="feed-sprints-tab" role="presentation">
-				<a href="/home/social#sprints">SPRINTS</a>
-			</li>
-			<li id="feed-right-tab" role="presentation">
-			<li>
-		</ul>
+			<ul class="nav nav-pills">
+				<g:if test="${actionName.equalsIgnoreCase('social')}">
+					<li id="feed-all-tab" role="presentation">
+						<a href="/home/social#all">ALL</a>
+					</li>
+					<li id="feed-people-tab" role="presentation">
+						<a href="/home/social#people">PEOPLE</a>
+					</li>
+					<li id="feed-discussions-tab" role="presentation">
+						<a href="/home/social#discussions">DISCUSSIONS</a>
+					</li>
+				</g:if>
+				<g:if test="${actionName.equalsIgnoreCase('sprint')}">
+					<li id="feed-right-tab" role="presentation">
+						<a class="create-new-sprint" href="#">START NEW SPRINT</a>
+					<g>
+				</g:if>
+			</ul>
 			<div id="feed">
 				<g:pageProperty name="page.feedContent" />
 			</div>
