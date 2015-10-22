@@ -42,15 +42,15 @@ function registerScroll() {
 								$('#feed').append(compiledHtml);                                                                
 							});                                                                                                      
 						} else if (isTabActive('#discussions')) {
-							$.each(data.listItems.discussionList, function(index, discussionData) {
-								var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData, 'groupName': data.listItems.groupName});
+							$.each(data.listItems, function(index, discussionData) {
+								var compiledHtml = compileTemplate("_discussions", {discussionData: discussionData});
 								$('#feed').append(compiledHtml);
 								showCommentAgeFromDate();
 							});
 						} else if (isTabActive('#all')) {
 							addAllFeedItems(data);
 						} else {
-							$.each(data.listItems.sprintList, function(index, sprint) {
+							$.each(data.listItems, function(index, sprint) {
 								var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
 								$('#feed').append(compiledHtml);
 							});
@@ -308,7 +308,7 @@ function showSprints() {
 		if (data.success) {
 			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 			$('#feed').removeClass().addClass('type-sprints').html('');
-			$.each(data.listItems.sprintList, function(index, sprint) {
+			$.each(data.listItems, function(index, sprint) {
 				var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
 				$('#feed').append(compiledHtml);
 			});
@@ -364,8 +364,8 @@ function showDiscussions() {
 			return;
 		}
 
-		$.each(data.listItems.discussionList, function(index, discussionData) {
-			var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
+		$.each(data.listItems, function(index, discussionData) {
+			var compiledHtml = compileTemplate("_discussions", {discussionData: discussionData});
 			$('.discussions').append(compiledHtml);
 		});
 		showCommentAgeFromDate();

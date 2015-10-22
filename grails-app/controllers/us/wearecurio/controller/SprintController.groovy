@@ -68,7 +68,7 @@ class SprintController extends LoginController {
 		List<User> participants = sprintInstance.getParticipants(10, 0)
 		List memberAdmins = GroupMemberAdmin.findAllByGroupId(sprintInstance.virtualGroupId)
 		List<User> admins = memberAdmins.collect {User.get(it.memberId)}
-		Map sprintDiscussions = searchService.getDiscussionsList(sessionUser(), 0, 5, [sprintInstance.virtualGroupId])
+		Map sprintDiscussions = searchService.getSprintDiscussions(sprintInstance, sessionUser(), 0, 5)
 
 		Map sprintInstanceMap = sprintInstance.getJSONDesc()
 		sprintInstanceMap["hasAdmin"] = sprintInstance.hasAdmin(sessionUser().id)
@@ -345,7 +345,7 @@ class SprintController extends LoginController {
 
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
-		Map sprintDiscussions = searchService.getDiscussionsList(currentUser, params.offset, params.max, [sprint.fetchUserGroup().id])
+		Map sprintDiscussions = searchService.getSprintDiscussions(sprint, currentUser, params.offset, params.max)
 		renderJSONGet([listItems: sprintDiscussions.listItems, success: true]);
 	}
 }
