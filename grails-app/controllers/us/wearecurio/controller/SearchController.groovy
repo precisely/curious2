@@ -42,12 +42,12 @@ class SearchController extends LoginController {
 
 			Map sprints = searchService.getSprintsList(user, params.offset, params.max)
 			if (sprints.listItems) {
-				listItems.addAll(sprints.listItems.sprintList)
+				listItems.addAll(sprints.listItems)
 			}
 
 			Map discussions = searchService.getDiscussionsList(user, params.offset, params.max)
 			if (discussions.listItems) {
-				listItems.addAll(discussions.listItems.discussionList)
+				listItems.addAll(discussions.listItems)
 			}
 
 			Map peoples = searchService.getPeopleList(user, params.offset, params.max)
