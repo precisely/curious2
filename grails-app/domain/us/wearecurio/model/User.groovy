@@ -80,8 +80,24 @@ class User {
 	static embedded = ["settings"]
 
 	static searchable = {
-		only = ['username', 'hash', 'email', 'remindEmail', 'name', 'sex', 'birthdate', 'notifyOnComments', 'virtual', 'created',
-				'virtualUserGroupIdFollowers', 'virtualUserGroupIdDiscussions', 'avatarURL']
+		only = [
+			'username', 
+			'hash', 
+			'email', 
+			'remindEmail', 
+			'sex', 
+			'birthdate', 
+			'notifyOnComments', 
+			'virtual', 
+			'created',
+			'virtualUserGroupIdFollowers', 
+			'virtualUserGroupIdDiscussions', 
+			'avatarURL', 
+			'interestTagsString', 
+			'publicBio', 
+			'publicName',
+			'website'
+		]
 	}
 
 	SortedSet interestTags
@@ -678,8 +694,35 @@ class User {
 				[id: userId])
 	}
 	
+	static List getAdminDiscussionIds(Long userId) {
+		if (userId == null) { return null }
+		
+		return User.executeQuery(
+				"""SELECT dis.memberId as discussionId
+             FROM 
+                UserGroup userGroup, 
+                GroupMemberAdmin item,
+				GroupMemberDiscussion dis
+             WHERE 
+                item.memberId = :id AND 
+                item.groupId = userGroup.id AND
+				dis.groupId = item.groupId""",
+				[id: userId])
+	}
+	
 	List getAdminGroupIds() {
 		return getAdminGroupIds(id)
 	}
 	
+	String getPublicName() {
+		return settings.isNamePublic() ? name : ""
+	}
+	
+	String getPublicBio() {
+		return settings.isBioPublic() ? bio : ""
+	}
+	
+	String getInterestTagsString() {
+		return this.interestTags?.collect{ it.description }?.join(" ")
+	}
 }

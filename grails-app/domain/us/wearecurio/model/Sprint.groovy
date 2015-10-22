@@ -13,6 +13,7 @@ import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.utility.Utils
 import us.wearecurio.data.RepeatType
 import us.wearecurio.model.DurationType
+import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
@@ -81,7 +82,24 @@ class Sprint {
 	}
 	
 	static searchable = {
-		only = [ 'hash', 'userId', 'virtualGroupId', 'virtualUserId', 'name', 'description', 'created', 'updated', 'daysDuration', 'startDate', 'visibility']
+		only = [ 
+			'hash', 
+			'userId', 
+			'virtualGroupId',
+			'virtualGroupName', 
+			'virtualUserId', 
+			'name', 
+			'description', 
+			'created', 
+			'updated', 
+			'daysDuration', 
+			'startDate', 
+			'visibility',
+			'entriesCount',
+			'participantsCount',
+			'hasRecentPost',
+			'recentPostCreated'
+		]
 	}
 	
 	static Sprint create(User user) {
@@ -266,10 +284,12 @@ class Sprint {
 		}
 	}
 	
+	//TODO: need to make sure the sprint is re-index any time entry is added for this virtual user id
 	Long getEntriesCount() {
 		return Entry.countByUserId(virtualUserId)
 	}
 	
+	//TODO: need to make sure sprint is re-indexed every time participant is added
 	Long getParticipantsCount() {
 		List participantsIdList = GroupMemberReader.findAllByGroupId(virtualGroupId)*.memberId
 
@@ -654,6 +674,41 @@ class Sprint {
 			}
 	
 		return participantsList
+	}
+	
+	String getVirtualGroupName() {
+		return UserGroup.get(virtualGroupId)?.name
+	}
+	
+	//TODO: any time post made to discussion, will need to re-index sprint
+	Date getRecentPostCreated() {
+		def recent = null
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(virtualGroupId)
+		if (discussionIds?.size() > 0) {
+			for ( def d_id : discussionIds ) {
+				def d = Discussion.get(d_id)
+				if (recent == null) {
+					recent = d.recentPostCreated
+				} else if (d.recentPostCreated > recent) {
+					recent = d.recentPostCreated 
+				}
+			}
+		}
+		
+		return recent
+	}
+	
+	boolean getHasRecentPost() {
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(virtualGroupId)
+		if (discussionIds?.size() > 0) {
+			for ( def d_id : discussionIds ) {
+				if (Discussion.get(d_id)?.hasRecentPost) {
+					return true
+				}
+			}
+		}
+		
+		return false
 	}
 	
 	String toString() {

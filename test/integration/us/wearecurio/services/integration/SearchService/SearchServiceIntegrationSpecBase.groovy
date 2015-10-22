@@ -62,6 +62,9 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 				action:'doregister',
 				controller:'home'	]
 		)
+		user1.settings.makeNamePublic()
+		user1.settings.makeBioPublic()
+		Utils.save(user1, true)
 		user2 = User.create(
 			[	username:'spider',
 				sex:'F',
@@ -72,6 +75,9 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 				action:'doregister',
 				controller:'home'	]
 		)
+		user2.settings.makeNamePublic()
+		user2.settings.makeBioPublic()
+		Utils.save(user2, true)
 		user3 = User.create(
 			[	username:'jem',
 				sex:'F',
@@ -82,6 +88,9 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 				action:'doregister',
 				controller:'home'	]
 		)
+		user3.settings.makeNamePublic()
+		user3.settings.makeBioPublic()
+		Utils.save(user3, true)
 
 		def entryTimeZone = Utils.createTimeZone(-8 * 60 * 60, "GMTOFFSET8", true)
 		def dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
