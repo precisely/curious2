@@ -1,11 +1,14 @@
 package us.wearecurio.controller
-
 import grails.converters.JSON
-import org.springframework.transaction.annotation.Transactional	 
-import us.wearecurio.model.*
-import us.wearecurio.utility.*
-import us.wearecurio.support.EntryStats
+import us.wearecurio.model.Entry
+import us.wearecurio.model.GroupMemberAdmin
+import us.wearecurio.model.Model
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.services.SearchService
+import us.wearecurio.support.EntryStats
+import us.wearecurio.utility.Utils
 
 class SprintController extends LoginController {
 
@@ -172,6 +175,16 @@ class SprintController extends LoginController {
 		}
 
 		if (!sprintInstance.hasMember(memberInstance.id)) {
+			/*
+			 * It might be the case that a user tries to remove a participant just after adding it but participants
+			 * are added after we save or update the sprint.
+			 */
+			if (sprintInstance.hasInvited(memberInstance.id)) {
+				sprintInstance.removeInvited(memberInstance.id)
+				renderJSONPost([success: true])
+				return
+			}
+
 			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.member.to.delete")])
 			return
 		}
@@ -203,6 +216,15 @@ class SprintController extends LoginController {
 		}
 
 		if (!sprintInstance.hasAdmin(adminInstance.id)) {
+			/*
+			 * It might be the case that a user tries to remove an admin just after adding it but admins are added
+			 * after we save or update the sprint.
+			 */
+			if (sprintInstance.hasInvitedAdmin(adminInstance.id)) {
+				sprintInstance.removeInvitedAdmin(adminInstance.id)
+				renderJSONPost([success: true])
+			}
+
 			renderJSONPost([error: true, errorMessage: g.message(code: "no.sprint.admin.to.delete")])
 			return
 		}

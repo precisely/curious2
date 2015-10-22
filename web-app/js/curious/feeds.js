@@ -4,6 +4,8 @@
 var autocompleteWidget;
 var searchList = [];
 var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
+var sprintListURL = '/home/sprint';
+var sprintShowURL = sprintListURL + '#';
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
@@ -90,23 +92,32 @@ function checkAndDisplayTabData() {
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
 
-	if (hash == "#sprints") {
-		showSprints();
-	} else if (hash == '#discussions') {
-		showDiscussions();
-	} else if (hash == '#people') {
-		showPeople();
-	} else if (!hash || hash == '#all') {
-		// If the all tab is active or the user is on the social page without a hash
-		showAllFeeds();
-	} else if (hash == "#sprints/" + hashData[1]) { 
-		sprintShow(hashData[1]);
-	} else if (hash == "#discussions/" + hashData[1]) { 
-		window.singleDiscussionPage = true;
-		discussionShow(hashData[1]);
-	} else if (hash == "#people/" + hashData[1]) { 
-		showUserDetails(hashData[1]);
+	if (actionName === "sprint") {                               // See "actionName" in the "base.gsp" layout
+		if (!hash) {
+			showSprints();                                      // For sprint listing page
+		} else {                                                // For single sprint page
+			sprintShow(hashData[0].substring(1));               // Removing "#" from the beginning
+		}
+	} else if (actionName === "social") {
+		if (hash == "#sprints") {
+			window.location.href = sprintListURL;               // Backward support for old URL for list of sprints
+		} else if (hash == '#discussions') {
+			showDiscussions();
+		} else if (hash == '#people') {
+			showPeople();
+		} else if (!hash || hash == '#all') {
+			// If the all tab is active or the user is on the social page without a hash
+			showAllFeeds();
+		} else if (hash == "#sprints/" + hashData[1]) {
+			window.location.href = sprintShowURL + hashData[1];   // Backward support for old URL of sprint show page
+		} else if (hash == "#discussions/" + hashData[1]) {
+			window.singleDiscussionPage = true;
+			discussionShow(hashData[1]);
+		} else if (hash == "#people/" + hashData[1]) {
+			showUserDetails(hashData[1]);
+		}
 	}
+
 	$(window).scrollTop(0);
 }
 
@@ -146,10 +157,10 @@ $(document).ready(function() {
 					$('.modal-dialog .alert').addClass('hide');
 				}, 5000);
 			} else {
-				if (isTabActive('#sprints/' + data.hash)) {
+				if (isTabActive('#' + data.hash)) {
 					sprintShow(data.hash);
 				} else {
-					location.assign('/home/social#sprints/' + data.hash);
+					location.assign(sprintShowURL + data.hash);
 				}
 				clearSprintFormData()
 				$('#createSprintOverlay').modal('hide');
@@ -309,7 +320,6 @@ function showSprints() {
 			$('#feed').html('No sprints to show.');
 		}
 
-		$('#feed-right-tab').html('<a onclick="createSprint()" href="#sprints">START NEW SPRINT</a>');
 		setQueryHeader('Tracking Sprints', false);
 		$('#feed-sprints-tab a').tab('show');
 		$('.nav').show();
@@ -539,7 +549,7 @@ function addSprintMemberOrAdmin(inputId, userName) {
 			$("#" + inputId).val('');
 			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
 		} else {
-			showBootstrapAlert($('.modal-dialog .alert'), data.message);
+			showBootstrapAlert($('.modal-dialog .alert'), data.errorMessage);
 		}
 	}, function(xhr) {
 		console.log('error: ', xhr);
@@ -635,6 +645,11 @@ function addParticipantsAndAdminsToList($element, deleteButtonClass, userName) {
 			userName + '"><i class="fa fa-times-circle"></i></button></li>');
 }
 
+$(document).on('click', '.create-new-sprint', function() {
+	createSprint();
+	return false;
+});
+
 function createSprint() {
 	queuePostJSON('Creating sprint', '/api/sprint', getCSRFPreventionObject('createNewSprintDataCSRF'), 
 		function(data) {
@@ -717,7 +732,7 @@ function deleteSprint(sprintHash) {
 					showAlert('Unable to delete sprint!');
 				} else {
 					if (!window.history.back()) {
-						location.href = '/home/social#sprints';
+						location.href = sprintListURL;
 					}
 				}
 			}, function(data) {

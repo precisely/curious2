@@ -4099,7 +4099,7 @@ body .modal-header button {
 	width: 150px;
 }
 
-#participantsAutocomplete ul, #sprint-participants-list, #adminsAutocomplete ul {
+#participantsAutocomplete ul, #adminsAutocomplete ul {
 	-moz-column-count: 1; 
 	-moz-column-gap : 20px; 
 	-webkit-column-count : 1;

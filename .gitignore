@@ -33,3 +33,5 @@ grails-console
 /data/
 /.settings/
 .vagrant/
+.idea
+*.iml
