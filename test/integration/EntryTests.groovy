@@ -146,6 +146,16 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void "Test update repeat daily entry end date"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
+		assert entry.repeatEnd == dateFormat.parse("July 24, 2010 4:00 pm")
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", null, dateFormat.parse("August 4, 2010 12:00 am"), lateBaseDate, true, true), new EntryStats(), lateBaseDate, true)
+		Date end = updated.repeatEnd
+		end = end
+	}
+	
+	@Test
 	void testSumPlotData() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), new EntryStats())
 		println entry.valueString()
@@ -1638,6 +1648,13 @@ class EntryTests extends CuriousTestCase {
 	void "Test create repeat weekly entry for end date"() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 15, 2010 4:00 pm")
+	}
+	
+	@Test
+	void "Test toggle ghost"() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.WEEKLYGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
+		entry.unGhost(new EntryStats())
+		assert !entry.repeatType.isGhost()
 	}
 	
 	/*@Test
