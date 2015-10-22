@@ -45,16 +45,25 @@ class DiscussionPost {
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
+		only = [
+			'discussionId', 
+			'authorUserId', 
+			'created', 
+			'updated', 
+			'plotDataId', 
+			'message', 
+			'flags',
+			'authorName',
+			'authorHash']
 	}
 	
 	def getJSONDesc() {
-		User author = User.get(authorUserId)
+		User author = getAuthor()
 		return [
 			authorUserId: authorUserId,
-			authorName: author.username,
-			authorAvatarURL: author.avatar?.path,
-			authorHash: author.hash,
+			authorName: author?.username,
+			authorAvatarURL: author?.avatar?.path,
+			authorHash: author?.hash,
 			discussionId: discussionId,
 			id: id,
 			message: message,
@@ -92,6 +101,15 @@ class DiscussionPost {
 			return User.get(authorUserId)
 		
 		return null
+	}
+	
+	//for search
+	String getAuthorHash() {
+		return getAuthor()?.hash
+	}
+	
+	String getAuthorName() {
+		return getAuthor()?.name
 	}
 	
 	public DiscussionPost() {

@@ -327,7 +327,7 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.find{ it.type == "spr" && it.id == sprint3.id.toString() && it.name == sprint3.name }
 	}
 
-	//@spock.lang.Ignore
+	//@spock.lang.IgnoreRest
 	void "Test search"() {
 		given: "user1 with interest tag"
 		def tagText = "MyInterestTag"
@@ -377,12 +377,10 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
-		then: "searchAll2 returns 4 results"
+		then: "search returns 4 results"
 		def results = searchService.search(user1, tagText)
 		results.success
-		//results.listItems.size() == 4
-		//TODO: figure out why posts are not being stored in the discussion index, has to do with hibernate in testing, I think
-		results.listItems.size() == 3
+		results.listItems.size() == 4
 		
 		and: "results includes user2"
 		results.listItems.find{ it.type == "usr" && it.hash == user2.hash }
@@ -390,9 +388,8 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		and: "results includes discussion1"
 		results.listItems.find{ it.type == "dis" && it.hash == discussion1.hash }
 		
-		//TODO: see above
-		//and: "results includes discussion2"
-		//results.listItems.find{ it.type == "dis" && it.hash == discussion2.hash }
+		and: "results includes discussion2"
+		results.listItems.find{ it.type == "dis" && it.hash == discussion2.hash }
 		
 		and: "results includes sprint1"
 		results.listItems.find{ it.type == "spr" && it.hash == sprint1.hash }
