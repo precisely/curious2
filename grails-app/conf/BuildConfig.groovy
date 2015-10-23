@@ -94,8 +94,8 @@ grails.project.dependency.resolution = {
 		//compile ":searchable:0.6.9"
 		
         // plugins needed at runtime but not for compilation
-        runtime ":hibernate4:4.3.8.1" // or
-		//runtime ":hibernate:3.6.10.19"
+        //runtime ":hibernate4:4.3.8.1" // or
+		runtime ":hibernate:3.6.10.19"
 		//runtime ':hibernate4:4.3.5.5'
         //runtime ":database-migration:1.4.0"
 
