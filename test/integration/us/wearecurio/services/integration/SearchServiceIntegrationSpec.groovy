@@ -1,26 +1,20 @@
 package us.wearecurio.services.integration
-
 import grails.test.spock.IntegrationSpec
-
-import java.text.DateFormat
-import java.util.Date
-
-import static org.elasticsearch.index.query.QueryBuilders.*
-
-import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
 import org.grails.plugins.elasticsearch.ElasticSearchService
-import org.joda.time.DateTimeZone;
-
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.model.Model
 import us.wearecurio.model.Sprint
-import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.SearchService
 import us.wearecurio.utility.Utils
+
+import java.text.DateFormat
+
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 
 class SearchServiceIntegrationSpec extends IntegrationSpec {
 	
@@ -96,14 +90,13 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		then: "getSprintList returns sprint"
-		Map result = searchService.getSprintsList(user1, 0, 10)
+		Map result = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
-		result.listItems.sprintList
-		result.listItems.sprintList.size() == 1
-		result.listItems.sprintList[0].id == sprint.id
-		result.listItems.sprintList[0].name == sprint.name
+		result.listItems.size() == 1
+		result.listItems[0].id == sprint.id
+		result.listItems[0].name == sprint.name
 	}
 
 	//@spock.lang.Ignore
@@ -120,50 +113,46 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		then: "getSprintList returns all sprint"
-		Map result = searchService.getSprintsList(user1, 0, 10)
+		Map result = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
-		result.listItems.sprintList
-		result.listItems.sprintList.size() == 2
-		result.listItems.sprintList[0].id == sprint1.id
-		result.listItems.sprintList[0].name == sprint1.name
-		result.listItems.sprintList[1].id == sprint2.id
-		result.listItems.sprintList[1].name == sprint2.name
+		result.listItems.size() == 2
+		result.listItems[0].id == sprint1.id
+		result.listItems[0].name == sprint1.name
+		result.listItems[1].id == sprint2.id
+		result.listItems[1].name == sprint2.name
 		
 		when: "getSprintsList is called with offset 0 and max 1"
-		result = searchService.getSprintsList(user1, 0, 1)
+		result = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 0, 1)
 		
 		then: "it returns first sprint only"
 		result
 		result.success
 		result.listItems
-		result.listItems.sprintList
-		result.listItems.sprintList.size() == 1
-		result.listItems.sprintList[0].id == sprint1.id
-		result.listItems.sprintList[0].name == sprint1.name
+		result.listItems.size() == 1
+		result.listItems[0].id == sprint1.id
+		result.listItems[0].name == sprint1.name
 
 		when: "getSprintsList is called with offset 1 and max 1"
-		result = searchService.getSprintsList(user1, 1, 1)
+		result = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 1, 1)
 
 		then: "it returns second sprint only"
 		result
 		result.success
 		result.listItems
-		result.listItems.sprintList
-		result.listItems.sprintList.size() == 1
-		result.listItems.sprintList[0].id == sprint2.id
-		result.listItems.sprintList[0].name == sprint2.name
+		result.listItems.size() == 1
+		result.listItems[0].id == sprint2.id
+		result.listItems[0].name == sprint2.name
 	}
 
-	void "Test getPeopleList"()
-	{
+	void "Test getPeopleList"() {
 		when: "elasticSearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		then: "getPeopleList for user 1 returns user 2"
-		def result = searchService.getPeopleList(user1, 0, 10)		
+		def result = searchService.getFeed(SearchService.USER_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
@@ -174,8 +163,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 	}
 	
 	//@spock.lang.Ignore
-	void "Test getPeopleList with offset and max"()
-	{
+	void "Test getPeopleList with offset and max"() {
 		given: "a third user in addition to the two for this class"
 		def user3 = User.create(
 			[	username:'james', 
@@ -193,7 +181,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		then: "getPeopleList returns all but the first user"
-		def result = searchService.getPeopleList(user1, 0, 10)		
+		def result = searchService.getFeed(SearchService.USER_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
@@ -206,7 +194,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.find{ u -> u.id == user3.id }.name == user3.name
 
 		when: "getPeopleList is called with offset 0 and max 1"		
-		result = searchService.getPeopleList(user1, 0, 1)
+		result = searchService.getFeed(SearchService.USER_TYPE, user1, 0, 1)
 		
 		then: "it returns user2 or user3 only"
 		result
@@ -218,7 +206,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		(result.listItems.find{ u -> u.name == user2.name } || result.listItems.find{ u -> u.name == user3.name })
 
 		when: "getPeopleList is called with offset 1 and max 1"
-		result = searchService.getPeopleList(user1, 1, 1)
+		result = searchService.getFeed(SearchService.USER_TYPE, user1, 1, 1)
 
 		then: "it returns user2 or user3 only"
 		result
@@ -231,8 +219,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 	}
 
 	//@spock.lang.Ignore
-	void "Test getDiscussionsList"()
-	{
+	void "Test getDiscussionsList"() {
 		when: "given two usergroups, two discussions and two discussion posts"
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
@@ -261,7 +248,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		then: "getDiscussionList returns both discussions"
-		Map result = searchService.getDiscussionsList(user1, 0, 10)
+		Map result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
@@ -277,23 +264,23 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.groupMemberships[1][0].fullName == groupA.fullName
 		//need to round milliseconds.
 		Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(groupA.created.getTime())
-		result.listItems.discussionList
-		result.listItems.discussionList.size() == 1
-		result.listItems.discussionList[0].id == discussionReadByUser.id
-		result.listItems.discussionList[0].name == discussionReadByUser.name
-		result.listItems.discussionList[0].userId == discussionReadByUser.userId
-		result.listItems.discussionList[0].isPublic == discussionReadByUser.isPublic()
-		Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussionReadByUser.created)
-		Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussionReadByUser.updated)
-		result.listItems.discussionList[0].type == "dis"
-		result.listItems.discussionList[0].totalComments == 2
-		result.listItems.discussionList[0].isPlot == false
-		result.listItems.discussionList[0].firstPost
-		result.listItems.discussionList[0].firstPost.message == readByUser1.message
+		result.listItems
+		result.listItems.size() == 1
+		result.listItems[0].id == discussionReadByUser.id
+		result.listItems[0].name == discussionReadByUser.name
+		result.listItems[0].userId == discussionReadByUser.userId
+		result.listItems[0].isPublic == discussionReadByUser.isPublic()
+		Utils.elasticSearchDate(result.listItems[0].created) == Utils.elasticSearchDate(discussionReadByUser.created)
+		Utils.elasticSearchDate(result.listItems[0].updated) == Utils.elasticSearchDate(discussionReadByUser.updated)
+		result.listItems[0].type == "dis"
+		result.listItems[0].totalComments == 2
+		result.listItems[0].isPlot == false
+		result.listItems[0].firstPost
+		result.listItems[0].firstPost.message == readByUser1.message
 		// the discussion item should show the non-virtual user1 group for UI purposes
-		result.listItems.discussionList[0].groupId == groupA.id
-		result.listItems.discussionList[0].isAdmin
-		result.listItems.discussionList[0].groupName == groupA.fullName
+		result.listItems[0].groupId == groupA.id
+		result.listItems[0].isAdmin
+		result.listItems[0].groupName == groupA.fullName
 		result.listItems.discussionPostData
 		result.listItems.discussionPostData[discussionReadByUser.id].secondPost
 		result.listItems.discussionPostData[discussionReadByUser.id].secondPost.message == readByUser2.message
@@ -328,7 +315,7 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		
 		then: "getDiscussionsList returns both discussions"
 		//first no offset, max set to 10 so all 2 results are included
-		Map result = searchService.getDiscussionsList(user1, 0, 10)
+		Map result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 0, 10)
 		result
 		result.success
 		result.listItems
@@ -340,19 +327,19 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.groupMemberships[1][0].name == group.name
 		result.listItems.groupMemberships[1][0].fullName == group.fullName
 		Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
-		result.listItems.discussionList
-		result.listItems.discussionList.size() == 2
-		result.listItems.discussionList[0].id == discussion2.id
-		result.listItems.discussionList[0].name == discussion2.name
-		result.listItems.discussionList[0].userId == discussion2.userId
-		result.listItems.discussionList[0].isPublic == discussion2.isPublic()
-		Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion2.created)
-		Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
-		result.listItems.discussionList[0].type == "dis"
+		result.listItems
+		result.listItems.size() == 2
+		result.listItems[0].id == discussion2.id
+		result.listItems[0].name == discussion2.name
+		result.listItems[0].userId == discussion2.userId
+		result.listItems[0].isPublic == discussion2.isPublic()
+		Utils.elasticSearchDate(result.listItems[0].created) == Utils.elasticSearchDate(discussion2.created)
+		Utils.elasticSearchDate(result.listItems[0].updated) == Utils.elasticSearchDate(discussion2.updated)
+		result.listItems[0].type == "dis"
 		result.listItems.discussionPostData[discussion2.id].totalPosts == 0
 		
 		when: "getDiscussionList is called with offset 0 and max 1"
-		result = searchService.getDiscussionsList(user1, 0, 1)
+		result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 0, 1)
 		
 		then: "it returns first discussion only"
 		result
@@ -366,19 +353,19 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.groupMemberships[1][0].name == group.name
 		result.listItems.groupMemberships[1][0].fullName == group.fullName
 		Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
-		result.listItems.discussionList
-		result.listItems.discussionList.size() == 1
-		result.listItems.discussionList[0].id == discussion2.id
-		result.listItems.discussionList[0].name == discussion2.name
-		result.listItems.discussionList[0].userId == discussion2.userId
-		result.listItems.discussionList[0].isPublic == discussion2.isPublic()
-		Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion2.created)
-		Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion2.updated)
-		result.listItems.discussionList[0].type == "dis"
+		result.listItems
+		result.listItems.size() == 1
+		result.listItems[0].id == discussion2.id
+		result.listItems[0].name == discussion2.name
+		result.listItems[0].userId == discussion2.userId
+		result.listItems[0].isPublic == discussion2.isPublic()
+		Utils.elasticSearchDate(result.listItems[0].created) == Utils.elasticSearchDate(discussion2.created)
+		Utils.elasticSearchDate(result.listItems[0].updated) == Utils.elasticSearchDate(discussion2.updated)
+		result.listItems[0].type == "dis"
 		result.listItems.discussionPostData[discussion2.id].totalPosts == 0
 		
 		when: "getDiscussionList is called with offset 1 and max 1"
-		result = searchService.getDiscussionsList(user1, 1, 1)
+		result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 1, 1)
 		
 		then: "it returns second discussion only"
 		result
@@ -392,21 +379,20 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		result.listItems.groupMemberships[1][0].name == group.name
 		result.listItems.groupMemberships[1][0].fullName == group.fullName
 		Utils.elasticSearchRoundMs(result.listItems.groupMemberships[1][1].getTime()) >= Utils.elasticSearchRoundMs(group.created.getTime())
-		result.listItems.discussionList
-		result.listItems.discussionList.size() == 1
-		result.listItems.discussionList[0].id == discussion1.id
-		result.listItems.discussionList[0].name == discussion1.name
-		result.listItems.discussionList[0].userId == discussion1.userId
-		result.listItems.discussionList[0].isPublic == discussion1.isPublic()
-		Utils.elasticSearchDate(result.listItems.discussionList[0].created) == Utils.elasticSearchDate(discussion1.created)
-		Utils.elasticSearchDate(result.listItems.discussionList[0].updated) == Utils.elasticSearchDate(discussion1.updated)
-		result.listItems.discussionList[0].type == "dis"
+		result.listItems
+		result.listItems.size() == 1
+		result.listItems[0].id == discussion1.id
+		result.listItems[0].name == discussion1.name
+		result.listItems[0].userId == discussion1.userId
+		result.listItems[0].isPublic == discussion1.isPublic()
+		Utils.elasticSearchDate(result.listItems[0].created) == Utils.elasticSearchDate(discussion1.created)
+		Utils.elasticSearchDate(result.listItems[0].updated) == Utils.elasticSearchDate(discussion1.updated)
+		result.listItems[0].type == "dis"
 		result.listItems.discussionPostData[discussion1.id].totalPosts == 0
 	}
 	
 	//@spock.lang.Ignore
-	void "Test getDiscussionsList Admin Groups"()
-	{
+	void "Test getDiscussionsList Admin Groups"() {
 		when: "given a group with an admin, a group without an admin, two discussions and two posts"
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
 				[isReadOnly:false, defaultNotify:false])
@@ -436,9 +422,9 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		then: "getDiscussionList returns isAdmin true"
-		Map result = searchService.getDiscussionsList(user1, 0, 10)
+		Map result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 0, 10)
 		
-		result.listItems.discussionList[0].isAdmin
+		result.listItems[0].isAdmin
 		
 		when: "user is removed as admin, elasticsearch is re-indexed and getDiscussionsList is called"
 		groupA.removeAdmin(user1.id)
@@ -449,9 +435,9 @@ class SearchServiceIntegrationSpec extends IntegrationSpec {
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
-		result = searchService.getDiscussionsList(user1, 0, 10)
+		result = searchService.getFeed(SearchService.DISCUSSION_TYPE, user1, 0, 10)
 		
 		then: "getDiscussionsList returns isAdmin false"
-		!(result.listItems.discussionList[0].isAdmin)
+		!(result.listItems[0].isAdmin)
 	}
 }
