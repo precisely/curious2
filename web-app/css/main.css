@@ -4308,6 +4308,17 @@ body .modal-header button {
 	color: #fff;
 }
 
+.feed-body .nav .label {
+	background-color: #ff935f;
+	border-radius: 2px;
+	color: white;
+	padding: 1px 2px 2px 5px;
+	height: auto;
+	font-size: 11px;
+	margin-top: 6px;
+	margin-left: 10px;
+}
+
 #feed-right-tab {
 	float: right;
 	margin-right: 5px;

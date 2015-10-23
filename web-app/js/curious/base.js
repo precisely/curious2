@@ -611,3 +611,22 @@ function dataURItoBlob(dataURI) {
 	}
 	return new Blob([ia], {type:mimeString});
 }
+
+/*$(document).ajaxStart(function() {
+	$('#spinner-feedback').show();
+});
+
+$(document).ajaxComplete(function() {
+	$('#spinner-feedback').hide();
+});*/
+
+/*
+ * Some browser do not supports String.startsWith method.
+ * https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith#Browser_compatibility
+ */
+if (typeof String.prototype.startsWith != 'function') {
+	console.log('Adding startsWith method to the string');
+	String.prototype.startsWith = function(str){
+		return this.slice(0, str.length) == str;
+	};
+}

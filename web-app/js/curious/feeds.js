@@ -15,11 +15,21 @@ var FEED_TYPE = {
 
 function getFeedURL(type, offset, max) {
 	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset});
+	params.query = $("#global-search input").val();
+
 	return '/search/indexData?' + jQuery.param(params) + '&callback=?';
 }
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
+}
+
+function displayNoDataMessage(listItems) {
+	$(".no-data-msg").remove();
+	if (!listItems || listItems.length === 0) {
+		$('#feed').append('<span class="no-data-msg">No data to display.</span>');
+		return;
+	}
 }
 
 /**
@@ -29,6 +39,8 @@ function isTabActive(anchor) {
  * @param key Main key name to pass as for each feed item
  */
 function renderFeedItems(listItems, template, key) {
+	displayNoDataMessage(listItems);
+
 	$.each(listItems, function(index, item) {
 		var args = {};
 		args[key] = item;
@@ -48,6 +60,25 @@ function renderSprints(listItems) {
 	renderFeedItems(listItems, "_sprints", 'sprint');
 }
 
+function isDiscussionShowPage() {
+	return window.location.hash.startsWith("#discussions/");
+}
+function isUserShowPage() {
+	return window.location.hash.startsWith("#people/");
+}
+function isSprintShowPage() {
+	return window.location.hash.startsWith("#sprint/");
+}
+function isFeedListingPage() {
+	var anchor = location.hash.substring(1);
+
+	if (actionName === "social") {
+		return ["all", "people", "discussions"].indexOf(anchor) > -1;
+	} else if (actionName === "sprint") {
+		return anchor === "";
+	}
+}
+
 function registerScroll(feedType) {
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
@@ -61,7 +92,7 @@ function registerScroll(feedType) {
 					return;
 
 				if (data.success) {
-					if (!data.listItems) {
+					if (!data.listItems || data.listItems.length === 0) {
 						this.finish();
 					} else {
 						if (isTabActive('#people')) {
@@ -131,6 +162,44 @@ function checkAndDisplayTabData() {
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
 $(document).ready(function() {
+	$("form#global-search").submit(function() {
+		// Make sure to remove existing infinite scroll so that any finished pagination on feed can be reloaded
+		// based on the new search filter
+		$('#feed').infiniteScroll('stop');
+
+		// If we are on the feed listing page like discussions, sprints or people
+		if (isFeedListingPage()) {
+			checkAndDisplayTabData();
+		} else {
+			// Else navigate to the listing page and the query will be passed automatically
+			if (actionName === "social") {
+				if (isDiscussionShowPage) {
+					window.location.hash = "discussions";
+				} else if (isUserShowPage) {
+					window.location.hash = "people";
+				}
+			} else {
+				window.location.hash = "";      // Remove the hash to display sprints listing
+			}
+		}
+
+		var value = $(this).find('input').val();
+		var filterElement = $("#search-filter a");
+		if (value && value.trim()) {
+			filterElement.find(".message").text(value);
+			filterElement.show();
+		} else {
+			filterElement.hide();
+		}
+
+		return false;
+	});
+
+	$("#search-filter a").click(function() {
+		$("#global-search input").val("").parents('form').submit();
+		return false;
+	});
+
 	$('html').on('click', function(e) {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
@@ -417,6 +486,8 @@ function showAllFeeds() {
 }
 
 function addAllFeedItems(data, elementId, prepend) {
+	displayNoDataMessage(data.listItems);
+
 	elementId = elementId || '#feed';
 	data.listItems.sort(function(a, b) {
 		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)

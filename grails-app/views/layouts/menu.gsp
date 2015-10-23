@@ -20,9 +20,9 @@
 	</ul>
 	--%>
 	<div class="pull-right search-bar left-addon">
-		<form>
+		<form id="global-search">
 			<i class="fa fa-search"></i>
-			<input type="text" placeholder="Search Curious" required >
+			<input type="text" placeholder="Search Curious" >
 		</form>
 	</div>
 	<div class="text-center clearfix">
