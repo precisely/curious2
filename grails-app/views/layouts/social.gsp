@@ -57,6 +57,12 @@
 						<a href="/home/social#discussions">DISCUSSIONS</a>
 					</li>
 				</g:if>
+				<li id="search-filter">
+					<a href="" class="label" style="display: none;" title="Clear search filter">
+						<span class="message"></span>
+						<i class="fa fa-times-circle fa-fw"></i>
+					</a>
+				</li>
 				<g:if test="${actionName.equalsIgnoreCase('sprint')}">
 					<li id="feed-right-tab" role="presentation">
 						<a class="create-new-sprint" href="#">START NEW SPRINT</a>
