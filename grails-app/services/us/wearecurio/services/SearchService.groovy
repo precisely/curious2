@@ -1,5 +1,4 @@
 package us.wearecurio.services
-
 import org.apache.commons.logging.LogFactory
 import org.elasticsearch.action.search.SearchResponse
 
@@ -35,7 +34,13 @@ class SearchService {
 	def elasticSearchHelper
 	
 	static transactional = true
-	
+
+	/*
+	 * Any changes made here to these types must be reflected in the client side code. See "feeds.js" file.
+	 *
+	 * Using -1 instead of 0 to avoid problem with Groovy truth i.e. !0 == true
+	 */
+	static final Long ALL_TYPE 					= -1
 	static final Long DISCUSSION_TYPE 			= 1
 	static final Long SPRINT_TYPE				= 2
 	static final Long DISCUSSION_POST_TYPE		= 4
@@ -166,7 +171,7 @@ class SearchService {
 			case "discussion":
 				return [
 					type: "dis",
-					id: hit.id,
+					id: hit.id.toLong(),
 					hash: hit.source.hash,
 					name: hit.source.name,
 					userHash: hit.source.userHash,
@@ -178,14 +183,14 @@ class SearchService {
 					totalComments: hit.source.postCount,
 					isPlot: hit.source.isFirstPostPlot,
 					firstPost: hit.source.firstPostId,
-					isAdmin: adminDiscussionIds.contains(hit.id),
+					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
 					groupId: null,
 					groupName: null,
 				]
 			case "sprint":
 				return [
 					type: "spr",
-					id: hit.id,
+					id: hit.id.toLong(),
 					hash: hit.source.hash,
 					name: hit.source.name,
 					userId: hit.source.userId,

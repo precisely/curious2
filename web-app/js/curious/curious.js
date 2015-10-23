@@ -363,7 +363,7 @@ function skipQuestions() {
 
 function isOnFeedPage() {
 	var anchor = location.hash.slice(1);
-	return ['all', 'people', 'discussions', 'sprints'].indexOf(anchor) > -1
+	return ['all', 'people', 'discussions'].indexOf(anchor) > -1;
 }
 
 function createHelpEntry(callback) {

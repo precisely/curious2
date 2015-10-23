@@ -15,7 +15,7 @@
 				<div class="col-xs-3 discussion-topic-span discussion-header">
 					<span class="posting-time" data-time="{{- discussionData.created }}"></span>
 					{{ if (discussionData.isAdmin) { }}
-						<li class="dropdown">
+						<div class="dropdown">
 							<a href="#" data-toggle="dropdown"><b class="caret"></b></a>
 							<ul class="dropdown-menu" role="menu">
 								<li>
@@ -24,7 +24,7 @@
 									</a>
 								</li>
 							</ul>
-						</li>
+						</div>
 					{{ } }}
 				</div>
 			</div>
@@ -32,12 +32,14 @@
 				{{- discussionData.groupName }}
 			</div>
 			<div class="row">
-				<div class="col-md-7">
-					<a href="#discussions/{{- discussionData.hash }}">
-						<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
-					</a>
+				<div class="col-md-6">
+					<div class="name">
+						<a href="#discussions/{{- discussionData.hash }}">
+							<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
+						</a>
+					</div>
 				</div>
-				<div class="col-md-5 button-box">
+				<div class="col-md-6">
 					<div class="buttons">
 						<button>
 							<img src="/images/follow.png" alt="follow">Follow
