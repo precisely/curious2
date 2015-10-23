@@ -59,7 +59,7 @@ class Utils {
 			return false
 		} else {
 			log.debug "Object saved successfully $obj."
-			SearchService.get().index(obj)
+			SearchService.get()?.index(obj)
 		}
 
 		return true

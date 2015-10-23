@@ -368,8 +368,8 @@ class Entry implements Comparable {
 				amount.units = tagUnitStats.getUnitGroup()?.lookupUnitString(tagUnitStats.unit, (amount.amount.compareTo(BigDecimal.ONE) != 0))
 			}
 		} else {
-			TagUnitStats.createOrUpdate(userId, tag.getId(), amount.units)
-			TagUnitStats.createOrUpdate(userId, baseTag.getId(), amount.units)
+			TagUnitStats.createOrUpdate(userId, tag.id, amount.units)
+			TagUnitStats.createOrUpdate(userId, baseTag.id, amount.units)
 		}
 
 		if (m['repeatType'] != null && m['repeatEnd'] != null) {
