@@ -207,6 +207,10 @@ class Discussion {
 		return getIsPublic()
 	}
 	
+	boolean hasFirstPost() {
+		return firstPostId != null
+	}
+	
 	boolean getIsPublic() {
 		return this.visibility == Model.Visibility.PUBLIC
 	}
@@ -380,9 +384,7 @@ class Discussion {
 		if (userId == null)
 			this.userId = post.getAuthorUserId()
 		
-		if (firstPostId == null) {
-			firstPostId = post.getId()
-			post.flags |= DiscussionPost.FIRST_POST_BIT
+		if (post.isFirstPost()) {
 			if (plotDataId) {
 				PlotData plotData = PlotData.get(plotDataId)
 				if (this.name == null || this.name.length() == 0)
@@ -391,8 +393,6 @@ class Discussion {
 			} else {
 				this.notifyParticipants(post, false)
 			}
-			Utils.save(this, true)
-			Utils.save(post, true)
 		} else {
 			this.notifyParticipants(post, false)
 		}
