@@ -902,7 +902,7 @@ class EntryParserService {
 		Tag baseTag = (Tag) context.retVal['baseTag']
 		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
 		
-		boolean bloodPressure = bloodPressureTags.contains(baseTag.getDescription())
+		boolean bloodPressure = bloodPressureTags?.contains(description)
 		
 		ParseAmount prevAmount = null
 		String prevSuffix = null
