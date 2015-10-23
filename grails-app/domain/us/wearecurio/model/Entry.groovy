@@ -639,9 +639,11 @@ class Entry implements Comparable {
 		if (!localTime.equals(newDateTime.toLocalTime()))
 			return false
 
-		return amount.precision == this.amountPrecision && this.amount == amount.amount \
+		boolean retVal = amount.precision == this.amountPrecision && this.amount == amount.amount \
 				&& this.comment == (m['comment'] ?: '') && this.repeatTypeId == m['repeatType']?.id && this.units == (amount.units ?: '') \
 				&& m['repeatEnd'] == this.repeatEnd
+				
+		return retVal
 	}
 
 	protected def entryMap() {
@@ -662,12 +664,30 @@ class Entry implements Comparable {
 
 		return m
 	}
+	
+	protected updateRepeatType(Map m) {
+		RepeatType newRepeatType = m['repeatType']
+		if (!newRepeatType) {
+			this.repeatTypeId = null
+			this.repeatEnd = null
+			return
+		}
+		DateTimeZone dateTimeZone = DateTimeZone.forID(m['timeZoneName'])
+		Date repeatEndLimit = m['repeatEnd']
+		if (!repeatEndLimit) {
+			this.repeatEnd = null
+			return
+		}
+		DateTime repeatEndLimitDateTime = new DateTime(repeatEndLimit, dateTimeZone)
+		this.repeatTypeId = newRepeatType.id
+		this.repeatEnd = IncrementingDateTime.lastRepeatBeforeDateTime(fetchDateTime(), repeatEndLimitDateTime, newRepeatType.intervalCode())?.toDate()
+	}
 
 	/*
 	 * Create a new repeat entry on the baseDate + added interval, if needed, and cut the current entry at the next base date
 	 */
 	protected Entry createRepeatAfterInterval(Date baseDate, Map m, EntryCreateMap creationMap, EntryStats stats, int numIntervals) {
-		if (this.repeatEnd != null && this.repeatEnd <= this.date) { // do not create repeat if no future repeats
+		if (m.repeatEnd != null && m.repeatEnd <= this.date) { // do not create repeat if no future repeats
 			return null
 		}
 
@@ -745,7 +765,12 @@ class Entry implements Comparable {
 		if (entry.repeatParametersMatch(m) && ((!entry.isGhost()) || (!unGhost))) {
 			return entry // no need to update when entry doesn't change
 		}
-
+		
+		if (!m['repeatType']) {
+			entry.doUpdate(m, stats)
+			return entry
+		}
+		
 		if (entryIsOnBaseDate) {
 			if (allFuture) {
 				entry.doUpdate(m, stats)
@@ -758,6 +783,8 @@ class Entry implements Comparable {
 				return entry // allFuture updates can just edit the entry and return if the entry is today
 			} else {
 				// create an entry one interval after the baseDate with the OLD entry data
+				entry.updateRepeatType(m)
+				
 				entry.createRepeatAfterInterval(baseDate, entry.entryMap(), creationMap, stats, 1)
 
 				if (entry.getRepeatEnd() == entry.getDate()) {
@@ -772,11 +799,15 @@ class Entry implements Comparable {
 				return entry
 			}
 		} else {
+			entry.updateRepeatType(m)
+		
 			if ((!allFuture) || (unGhost && entry.isGhost())) { // create another entry after the base date
 				entry.createRepeatAfterInterval(baseDate, entry.entryMap(), creationMap, stats, 1)
 			}
 
 			Entry newEntry = entry.createRepeatAfterInterval(baseDate, m, creationMap, stats, 0)
+			
+			Utils.save(entry, true)
 
 			if (unGhost && newEntry.isGhost())
 				newEntry.unGhost()
@@ -1579,7 +1610,10 @@ class Entry implements Comparable {
 		setBaseTag(newBaseTag)
 		setDurationType(newDurationType)
 		setTimeZoneId((Integer)timeZoneId.getId())
-		setRepeatEnd(m['repeatEnd'] ? m['repeatEnd'] : this.repeatEnd)
+		if (!repeatTypeId) {
+			this.repeatEnd = null
+		} else
+			setRepeatEnd(m['repeatEnd'] ? m['repeatEnd'] : this.repeatEnd)
 
 		Utils.save(this, true)
 

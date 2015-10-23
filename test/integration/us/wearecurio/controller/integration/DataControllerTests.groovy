@@ -39,6 +39,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	Date tomorrowBaseDate
 	Date tomorrowCurrentTime
 	Date winterCurrentTime
+	Date winterLaterTime
 	Date winterBaseDate
 	
 	EntryParserService entryParserService
@@ -56,7 +57,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 		Discussion.executeUpdate("delete Discussion d")
 		DiscussionPost.executeUpdate("delete DiscussionPost p")
 		TagStats.executeUpdate("delete TagStats t")
-		TagStats.executeUpdate("delete TagUnitStats t")
+		TagUnitStats.executeUpdate("delete TagUnitStats t")
+		TagProperties.executeUpdate("delete TagProperties tp")
 		
 		super.setUp()
 		
@@ -74,6 +76,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		tomorrowBaseDate = dateFormat.parse("July 2, 2010 12:00 am")
 		tomorrowCurrentTime = dateFormat.parse("July 2, 2010 3:30 pm")
 		winterCurrentTime = dateFormat.parse("December 1, 2010 3:30 pm")
+		winterLaterTime = dateFormat.parse("December 1, 2010 4:30 pm")
 		winterBaseDate = dateFormat.parse("December 1, 2010 12:00 am")
 	}
 
@@ -83,6 +86,35 @@ class DataControllerTests extends CuriousControllerTestCase {
 		Entry.executeUpdate("delete Entry e")
 		Discussion.executeUpdate("delete Discussion d")
 		DiscussionPost.executeUpdate("delete DiscussionPost p")
+		TagStats.executeUpdate("delete TagStats t")
+		TagUnitStats.executeUpdate("delete TagUnitStats t")
+		TagProperties.executeUpdate("delete TagProperties tp")
+	}
+
+	@Test
+	void testExport() {
+		DataController controller = new DataController()
+
+		EntryStats stats = new EntryStats(userId)
+		
+		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1", null, null, winterBaseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(winterLaterTime, timeZone, "bread 1 slice", null, null, winterBaseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, winterBaseDate, true), stats)
+		
+		stats.finish()
+
+		def out = new ByteArrayOutputStream()
+
+		controller.doExportCSVAnalysis(out, user)
+
+		def outString = out.toString()
+
+		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone","Base Tag"\n' \
+				+ '"2010-12-01 20:00:00 GMT","aspirin [tablets]",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
+				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles","bread"\n' \
+				+ '"2010-12-02 00:30:00 GMT","bread [slices]",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
+		
+		assert outString.equals(compareStr)
 	}
 
 	@Test
@@ -636,32 +668,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.deleteSnapshotDataId()
 
 		assert !controller.response.contentAsString.equals("callback('success')")
-	}
-
-	@Test
-	void testExport() {
-		DataController controller = new DataController()
-
-		EntryStats stats = new EntryStats(userId)
-		
-		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1", null, null, winterBaseDate, true), stats)
-		Entry.create(userId, entryParserService.parse(winterCurrentTime, timeZone, "bread 1 slice", null, null, winterBaseDate, true), stats)
-		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, winterBaseDate, true), stats)
-		
-		stats.finish()
-
-		def out = new ByteArrayOutputStream()
-
-		controller.doExportCSVAnalysis(out, user)
-
-		def outString = out.toString()
-
-		def compareStr = '"Date (GMT) for y","Tag","Amount","Units","Comment","RepeatType","Amount Precision","Date Precision","Time Zone","Base Tag"\n' \
-				+ '"2010-12-01 20:00:00 GMT","aspirin [tablets]",1.000000000,"tablet","repeat",1025,3,86400,"America/Los_Angeles","aspirin"\n' \
-				+ '"2010-12-01 23:30:00 GMT","bread",1.000000000,"","",-1,3,180,"America/Los_Angeles","bread"\n' \
-				+ '"2010-12-01 23:30:00 GMT","bread [slices]",1.000000000,"slice","",-1,3,180,"America/Los_Angeles","bread"\n'
-		
-		assert outString.equals(compareStr)
 	}
 
 	@Test
