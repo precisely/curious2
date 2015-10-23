@@ -1,60 +1,77 @@
-/**
- * 
- */
-var autocompleteWidget;
-var searchList = [];
+var autocompleteWidget, commentsArgs;
 var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
+
+/**
+ * A copy of types defined in the server side code. See "SearchService.groovy"
+ */
+var FEED_TYPE = {
+	ALL: -1,
+	DISCUSSION: 1,
+	SPRINT: 2,
+	USER: 8
+};
+
+function getFeedURL(type, offset, max) {
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset});
+	return '/search/indexData?' + jQuery.param(params) + '&callback=?';
+}
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
 }
 
-function registerScroll() {
+/**
+ * A generic method to render a list of feed items like "sprints", "discussions", "people".
+ * @param listItems List of feed items
+ * @param template Name of the template to render
+ * @param key Main key name to pass as for each feed item
+ */
+function renderFeedItems(listItems, template, key) {
+	$.each(listItems, function(index, item) {
+		var args = {};
+		args[key] = item;
+
+		$('#feed').append(compileTemplate(template, args));
+	});
+
+	showCommentAgeFromDate();
+}
+function renderUsers(listItems) {
+	renderFeedItems(listItems, "_people", 'user');
+}
+function renderDiscussions(listItems) {
+	renderFeedItems(listItems, "_discussions", 'discussionData');
+}
+function renderSprints(listItems) {
+	renderFeedItems(listItems, "_sprints", 'sprint');
+}
+
+function registerScroll(feedType) {
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			var url;
-			var anchor = location.hash.slice(1);
-
-			if (isOnFeedPage()) {
-				url = '/search/indexData?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
-						getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?';
-			} else {
-				this.finish();
-				return;
-			}
+			var url = getFeedURL(feedType, this.getOffset(), 5);
 
 			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
 
 				if (data.success) {
-					if (data.listItems == false) {
+					if (!data.listItems) {
 						this.finish();
 					} else {
 						if (isTabActive('#people')) {
-							$.each(data.listItems, function(index, user) {                                                           
-								var compiledHtml = compileTemplate("_people", {'user': user});                                       
-								$('#feed').append(compiledHtml);                                                                
-							});                                                                                                      
+							renderUsers(data.listItems);
 						} else if (isTabActive('#discussions')) {
-							$.each(data.listItems, function(index, discussionData) {
-								var compiledHtml = compileTemplate("_discussions", {discussionData: discussionData});
-								$('#feed').append(compiledHtml);
-								showCommentAgeFromDate();
-							});
+							renderDiscussions(data.listItems);
 						} else if (isTabActive('#all')) {
 							addAllFeedItems(data);
 						} else {
-							$.each(data.listItems, function(index, sprint) {
-								var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
-								$('#feed').append(compiledHtml);
-							});
-							showCommentAgeFromDate();
+							renderSprints(data.listItems);
 						}
 						this.setNextPage();
 						this.resume();
@@ -71,16 +88,6 @@ function registerScroll() {
 		}
 	});
 }
-
-$(window).load(function() {
-	checkAndDisplayTabData();
-});
-
-$(window).on('hashchange', function() {
-	checkAndDisplayTabData();
-});
-
-var commentsArgs;
 
 function checkAndDisplayTabData() {
 	// Reset these variables as we change state
@@ -121,11 +128,9 @@ function checkAndDisplayTabData() {
 	$(window).scrollTop(0);
 }
 
-$(document).ready(function() {
-	if (isOnFeedPage()) {
-		registerScroll();
-	}
+$(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
+$(document).ready(function() {
 	$('html').on('click', function(e) {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
@@ -197,7 +202,7 @@ $(document).ready(function() {
 	});
 
 	/**
-	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of disucssion and their
+	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of discussion and their
 	 * comments.
 	 */
 	$(document).on("click", ".discussion .view-comment", function() {
@@ -264,10 +269,6 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$('#feed-sprints-tab a').click(function(e) {
-		showSprints();
-	});
-
 	$('#feed-discussions-tab a').click(function(e) {
 		showDiscussions();
 	})
@@ -302,17 +303,11 @@ function extractDiscussionNameAndPost(value) {
 }
 
 function showSprints() {
-	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
+	queueJSON('Getting sprint list', getFeedURL(FEED_TYPE.SPRINT, 0, 5), function(data) {
 		if (data.success) {
 			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 			$('#feed').removeClass().addClass('type-sprints').html('');
-			$.each(data.listItems, function(index, sprint) {
-				var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
-				$('#feed').append(compiledHtml);
-			});
-			showCommentAgeFromDate();
+			renderSprints(data.listItems);
 		} else {
 			if (data.message) {
 				showAlert(data.message);
@@ -326,7 +321,8 @@ function showSprints() {
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
-	registerScroll();
+
+	registerScroll(FEED_TYPE.SPRINT);
 }
 
 function showDiscussions() {
@@ -344,9 +340,7 @@ function showDiscussions() {
 	$('#feed-right-tab').html('');
 
 	// Get the discussion data
-	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?', function(data) {
-
+	queueJSON('Getting discussion data', getFeedURL(FEED_TYPE.DISCUSSION, 0, 5), function(data) {
 		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
 		$('#feed').removeClass().addClass('type-discussions')
 				.html(createDiscussionForm)		// Reset the main container with create discussion form
@@ -364,31 +358,23 @@ function showDiscussions() {
 			return;
 		}
 
-		$.each(data.listItems, function(index, discussionData) {
-			var compiledHtml = compileTemplate("_discussions", {discussionData: discussionData});
-			$('.discussions').append(compiledHtml);
-		});
-		showCommentAgeFromDate();
+		renderDiscussions(data.listItems);
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
-	registerScroll();
+
+	registerScroll(FEED_TYPE.DISCUSSION);
 }
 
 function showPeople() {
-	queueJSON('Getting people list', '/search/indexData?type=people&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
+	queueJSON('Getting people list', getFeedURL(FEED_TYPE.USER, 0, 5), function(data) {
 		if (!checkData(data))
 			return;
 
 		if (data.success) {
 			$('#feed').removeClass().addClass('type-people').html('');
 			$('.nav').show();
-			$.each(data.listItems, function(index, user) {
-				var compiledHtml = compileTemplate("_people", {'user': user});
-				$('#feed').append(compiledHtml);
-			});
+			renderUsers(data.listItems);
 			$('#feed-right-tab').html('');
 		} else {
 			if (data.message) {
@@ -401,13 +387,12 @@ function showPeople() {
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
-	registerScroll();
+
+	registerScroll(FEED_TYPE.USER);
 }
 
 function showAllFeeds() {
-	queueJSON('Getting feeds', '/search/indexData?type=all&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
+	queueJSON('Getting feeds', getFeedURL(FEED_TYPE.ALL, 0, 5), function(data) {
 		if (!checkData(data))
 			return;
 
@@ -427,7 +412,8 @@ function showAllFeeds() {
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});
-	registerScroll();
+
+	registerScroll(FEED_TYPE.ALL);
 }
 
 function addAllFeedItems(data, elementId, prepend) {

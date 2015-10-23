@@ -115,10 +115,10 @@ $(document).ready(function() {
 					return;
 
 				if (data.success) {
-					if (isOnFeedPage() || location.hash.indexOf('#sprints') > -1) {
-						showAlert(data.message, function() {
-							$this.parents('.feed-item').fadeOut();
-						});
+					// If not on the single discussion show page
+					if (!isTabActive('#discussions/' + discussionHash)) {
+						// Then we are on some listing page so just remove the discussion element.
+						$this.parents('.feed-item').fadeOut();
 					} else {
 						if (!window.history.back()) {
 							location.href = '/home/social#discussions';
@@ -331,6 +331,7 @@ function discussionShow(hash) {
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
 			$('#feed').html(compiledHTML);
 
+			showCommentAgeFromDate();
 			infiniteScrollComments(hash);
 			getComments(hash, commentsArgs);		// See feeds.js for "commentsArgs"
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {

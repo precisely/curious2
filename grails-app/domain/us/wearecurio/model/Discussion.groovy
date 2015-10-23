@@ -565,7 +565,7 @@ class Discussion {
 			return ""
 		}
 
-		return last.author.hash
+		return last.authorHash
 	}
 	
 	String getRecentPostUserPublicName() {
