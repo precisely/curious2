@@ -1,30 +1,26 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory
 import org.elasticsearch.action.search.SearchResponse
-
-import static org.elasticsearch.index.query.FilterBuilders.*
-import org.elasticsearch.index.query.functionscore.*
-import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.*
-import static org.elasticsearch.index.query.QueryBuilders.*
-import org.elasticsearch.index.query.QueryBuilders
-
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.sort.*
-import grails.util.Environment
-
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.DiscussionPost
-import us.wearecurio.model.Entry
-import us.wearecurio.model.GroupMemberReader
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
+import org.elasticsearch.search.sort.SortBuilders
+import org.elasticsearch.search.sort.SortOrder
 import us.wearecurio.model.GroupMemberDiscussion
 import us.wearecurio.model.Model
-import us.wearecurio.model.Model.Visibility;
 import us.wearecurio.model.Sprint
-import us.wearecurio.model.Tag
 import us.wearecurio.model.User
-import us.wearecurio.model.UserActivity
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
+
+import static org.elasticsearch.index.query.FilterBuilders.andFilter
+import static org.elasticsearch.index.query.FilterBuilders.queryFilter
+import static org.elasticsearch.index.query.FilterBuilders.termsFilter
+import static org.elasticsearch.index.query.FilterBuilders.typeFilter
+import static org.elasticsearch.index.query.QueryBuilders.functionScoreQuery
+import static org.elasticsearch.index.query.QueryBuilders.queryString
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.factorFunction
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.linearDecayFunction
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.randomFunction
 
 class SearchService {
 	
@@ -1174,15 +1170,4 @@ class SearchService {
 		return search(user, DISCUSSION_TYPE | SPRINT_TYPE | USER_TYPE, query, offset, max)
 	}
 */
-	Map getSprintsList(User user, int offset, int max) {
-		return getFeed(SPRINT_TYPE, user, offset, max)
-	}
-	
-	Map getDiscussionsList(User user, int offset, int max) {
-		return getFeed(DISCUSSION_TYPE, user, offset, max)
-	}
-	
-	Map getPeopleList(User user, int offset, int max) {
-		return getFeed(USER_TYPE, user, offset, max)
-	}
 }
