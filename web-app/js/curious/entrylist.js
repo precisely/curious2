@@ -21,7 +21,7 @@ function __removePrefix(str, prefix) {
 	return str;
 }
 
-function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
+function EntryListWidget(divIds, autocompleteWidget) {
 	var self = this;
 	
 	if (!divIds) divIds = {};
@@ -37,18 +37,12 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 	this.listId = divIds.listId;
 	this.calendarId = divIds.calendarId;
 	this.dragId = divIds.dragId;
-	this.tagListWidget = tagListWidget;
-	this.tagList = tagListWidget.list;
 	this.latestEntryId;
 	if (!autocompleteWidget) {
 		autocompleteWidget = new AutocompleteWidget("autocomplete", this.editId);
 	}
 	
 	this.autocompleteWidget = autocompleteWidget;
-	
-	/* var isTodayOrLater, cachedDate, cachedDateUTC, timeZoneName, currentTimeUTC, tagList, currentDrag, currentDragTag,
-	entrySelectData, freqTagList, dateTagList,
-	defaultToNow = true; */
 	
 	var dayDuration = 86400000;
 	
@@ -84,7 +78,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 			if (checkData(entries))
 				self.refreshEntries(entries);
 		});
-		this.tagList.load();
 	}
 
 	this.clearEntries = function() {
@@ -434,7 +427,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 					+ getCSRFPreventionURI("deleteEntryDataCSRF") + "&callback=?",
 					function(entries) {
 				if (checkData(entries, 'success', "Error deleting entry")) {
-					self.tagList.load();
 					self.refreshEntries(entries[0]);
 					if (entries[1] != null)
 						self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
@@ -458,7 +450,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				+ getCSRFPreventionURI("updateEntrySDataCSRF") + "&allFuture=" + (allFuture? '1':'0') + "&callback=?",
 				function(entries) {
 			if (checkData(entries, 'success', "Error updating entry")) {
-				self.tagList.load();
 				self.refreshEntries(entries[0]);
 				if (self.nextSelectionId) {
 					var nextSelection = $('#' + self.nextSelectionId);
@@ -517,7 +508,6 @@ function EntryListWidget(tagListWidget, divIds, autocompleteWidget) {
 				if (entries[1] != null) {
 					showAlert(entries[1]);
 				}
-				self.tagList.load();
 				self.latestEntryId = entries[3].id;
 				if (RepeatType.isContinuous(entries[3].repeatType)) {
 					self.refreshPinnedEntries(entries[0]);
