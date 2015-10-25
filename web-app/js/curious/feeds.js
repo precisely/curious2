@@ -129,7 +129,7 @@ function registerScroll(feedType) {
 }
 
 function checkAndDisplayTabData() {
-	// Reset these variables as we change state
+	// Reset these variables as we change state/tab
 	window.singleDiscussionPage = false;
 	nextSuggestionOffset = 0;
 
@@ -379,6 +379,7 @@ function extractDiscussionNameAndPost(value) {
 function showSprints() {
 	queueJSON('Getting sprint list', getFeedURL(FEED_TYPE.SPRINT, 0, 5), function(data) {
 		if (data.success) {
+			nextSuggestionOffset = data.nextSuggestionOffset;
 			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
 			$('#feed').removeClass().addClass('type-sprints').html('');
 			renderSprints(data.listItems);
@@ -432,6 +433,7 @@ function showDiscussions() {
 			return;
 		}
 
+		nextSuggestionOffset = data.nextSuggestionOffset;
 		renderDiscussions(data.listItems);
 	}, function(data) {
 		showAlert('Internal server error occurred.');

@@ -35,7 +35,7 @@ class SearchController extends LoginController {
 		if (query) {
 			renderJSONGet(searchService.search(user, query, params.offset, params.max, type))
 		} else if (type == SearchService.USER_TYPE) {
-			renderJSONGet(searchService.getSuggestions(type, user, params.offset, params.max))
+			renderJSONGet(searchService.getSuggestions(type, user, params.offset, params.max, params.randomSessionId))
 		} else {
 			renderJSONGet(searchService.getFeed(type, user, params.offset, params.max, params.nextSuggestionOffset,
 					params.randomSessionId))

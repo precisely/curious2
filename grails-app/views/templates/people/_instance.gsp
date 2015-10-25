@@ -13,7 +13,8 @@
 	<div class="user-details-content hide">
 		<span>Public Sprints:</span>
 		<span class="label-value">
-			<!-- Fix this to display user's sprints "user.sprints" -->
+			<!-- Using an empty list and keeping the code for now. Can be removed if user's sprints “user.sprints”
+				 are not going to be used in the future. -->
 			{{ [].forEach(function(sprint, index) { }}
 				{{- sprint.name }}
 				{{ if (index < user.sprints.length - 1) { print(", ") }; }}
