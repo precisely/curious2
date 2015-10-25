@@ -1,20 +1,23 @@
-var autocompleteWidget, commentsArgs;
+var autocompleteWidget, commentsArgs, nextSuggestionOffset = 0;
 var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
+var randomSessionId = Math.floor((Math.random() * 1000) + 1)        // Get a random number between 0 - 1000;
 
 /**
  * A copy of types defined in the server side code. See "SearchService.groovy"
  */
 var FEED_TYPE = {
-	ALL: -1,
 	DISCUSSION: 1,
 	SPRINT: 2,
 	USER: 8
 };
 
+FEED_TYPE.DISCUSSION_USER_TYPE = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER);
+
 function getFeedURL(type, offset, max) {
-	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset});
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset, nextSuggestionOffset:
+			nextSuggestionOffset, randomSessionId: randomSessionId});
 	params.query = $("#global-search input").val();
 
 	return '/search/indexData?' + jQuery.param(params) + '&callback=?';
@@ -80,6 +83,10 @@ function isFeedListingPage() {
 }
 
 function registerScroll(feedType) {
+	// Make sure to remove existing infinite scroll so that any finished pagination on feed can be reloaded
+	// based on the new selected tab and the new search filter.
+	$('#feed').infiniteScroll('stop');
+
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
@@ -92,6 +99,7 @@ function registerScroll(feedType) {
 					return;
 
 				if (data.success) {
+					nextSuggestionOffset = data.nextSuggestionOffset;
 					if (!data.listItems || data.listItems.length === 0) {
 						this.finish();
 					} else {
@@ -123,6 +131,7 @@ function registerScroll(feedType) {
 function checkAndDisplayTabData() {
 	// Reset these variables as we change state
 	window.singleDiscussionPage = false;
+	nextSuggestionOffset = 0;
 
 	commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
@@ -163,10 +172,6 @@ $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
 $(document).ready(function() {
 	$("form#global-search").submit(function() {
-		// Make sure to remove existing infinite scroll so that any finished pagination on feed can be reloaded
-		// based on the new search filter
-		$('#feed').infiniteScroll('stop');
-
 		// If we are on the feed listing page like discussions, sprints or people
 		if (isFeedListingPage()) {
 			checkAndDisplayTabData();
@@ -460,12 +465,19 @@ function showPeople() {
 	registerScroll(FEED_TYPE.USER);
 }
 
+/*
+ * Used to display feeds of type user and discussion. Previously the sprints were also displayed in the "All" tab
+ * but it moved out to a separate tab.
+ * TODO Rename the method and merge "showAlFeeds", "showPeople", "showDiscussions" and "showSprints" methods to make
+ * code DRYer.
+ */
 function showAllFeeds() {
-	queueJSON('Getting feeds', getFeedURL(FEED_TYPE.ALL, 0, 5), function(data) {
+	queueJSON('Getting feeds', getFeedURL(FEED_TYPE.DISCUSSION_USER_TYPE, 0, 5), function(data) {
 		if (!checkData(data))
 			return;
 
 		if (data.success) {
+			nextSuggestionOffset = data.nextSuggestionOffset;
 			$('#feed').removeClass().addClass('type-all').html('');
 			addAllFeedItems(data);
 			$('#feed-right-tab').html('');
@@ -482,7 +494,7 @@ function showAllFeeds() {
 		showAlert('Internal server error occurred.');
 	});
 
-	registerScroll(FEED_TYPE.ALL);
+	registerScroll(FEED_TYPE.DISCUSSION_USER_TYPE);
 }
 
 function addAllFeedItems(data, elementId, prepend) {

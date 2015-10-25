@@ -33,10 +33,7 @@ class SearchService {
 
 	/*
 	 * Any changes made here to these types must be reflected in the client side code. See "feeds.js" file.
-	 *
-	 * Using -1 instead of 0 to avoid problem with Groovy truth i.e. !0 == true
 	 */
-	static final Long ALL_TYPE 					= -1
 	static final Long DISCUSSION_TYPE 			= 1
 	static final Long SPRINT_TYPE				= 2
 	static final Long DISCUSSION_POST_TYPE		= 4
