@@ -177,9 +177,9 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test indexData when type is all"() {
+	void "Test indexData to get all users and discussions"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = SearchService.ALL_TYPE
+		controller.params["type"] = (SearchService.USER_TYPE | SearchService.DISCUSSION_TYPE)
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
@@ -193,11 +193,11 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		println ""
 		
 		assert controller.response.json.success
-		assert controller.response.json.listItems.size() == 7
-		assert controller.response.json.listItems[0].id == sprint3.id ||
-				controller.response.json.listItems[0].id == sprint2.id ||
-				controller.response.json.listItems[0].id == sprint1.id
-		assert controller.response.json.listItems[6].id == user2.id ||
-				controller.response.json.listItems[6].id == user3.id
+		assert controller.response.json.listItems.size() == 5
+		assert controller.response.json.listItems[0].hash == discussion2.hash
+		assert controller.response.json.listItems[1].hash == discussion1.hash
+		assert controller.response.json.listItems[2].type == "usr"
+		assert controller.response.json.listItems[3].type == "usr"
+		assert controller.response.json.listItems[4].type == "usr"
 	}
 }
