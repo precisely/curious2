@@ -55,4 +55,28 @@ class UserController extends LoginController {
 			renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
 		}
 	}
+
+	def update() {
+		Map requestData = request.JSON
+		def validate = [:]
+		User user = User.findByHash(params.id)
+
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
+			return
+		}
+
+		validate = user.validateUserPreferences(requestData, user)
+
+		if (!validate.status) {
+			renderJSONGet([success: false, message: validate.message])
+			return
+		}
+
+		if (!validate.status) {
+			renderJSONGet([success: false, message: validate.message])
+		} else {
+			renderJSONGet([success: true, message: validate.message, hash: validate.hash])
+		}
+	}
 }

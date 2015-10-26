@@ -635,10 +635,20 @@ class User {
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
 			bio: bio,
-			updated: created
+			updated: created,
+			linkedToFitbit: getAccessTokenForThirdParty("FITBIT"),
+			linkedToWithings: getAccessTokenForThirdParty("WITHINGS"),
+			linkedToMoves: getAccessTokenForThirdParty("MOVES"),
+			linkedToJawbone: getAccessTokenForThirdParty("JAWBONE"),
+			linkedToTwenty3andMe: getAccessTokenForThirdParty("TWENTY_THREE_AND_ME")
 		]
 	}
-	
+
+	private String getAccessTokenForThirdParty(String type) {
+		ThirdParty partyType = ThirdParty[type]
+		return OAuthAccount.findByTypeIdAndUserId(partyType, id)?.accessToken
+	}
+
 	/**
 	 * This method will return list of all actual users except
 	 * the user with id: excludedUserId
@@ -681,5 +691,27 @@ class User {
 	List getAdminGroupIds() {
 		return getAdminGroupIds(id)
 	}
-	
+
+	def validateUserPreferences(Map map, user) {
+		def status
+
+		if (map.twitterDefaultToNow != 'on')
+			map.twitterDefaultToNow = 'off'
+
+		if (map.password != null && map.password.length() > 0) {
+			if (!user.checkPassword(map.oldPassword)) {
+				return [status: false, message: "Error updating user preferences: old password does not match"]
+			}
+		}
+
+		user.update(map)
+
+		Utils.save(user, true)
+
+		if (!user.validate()) {
+			return [status: false, message: "Error updating user preferences: missing field or email already in use"]
+		} else {
+			return [status: true, message: "User preferences updated", hash: user.hash]
+		}
+	}
 }
