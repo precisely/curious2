@@ -31,7 +31,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	}
 
 	this.makeGetArgs = function(args) {
-		makeGetArgs(args);
+		return makeGetArgs(args);
 	}
 	var datepicker = this.properties.getStartDatePicker();
 

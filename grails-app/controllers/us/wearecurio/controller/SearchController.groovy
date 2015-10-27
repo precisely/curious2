@@ -24,7 +24,7 @@ class SearchController extends LoginController {
 	 * AJAX endpoint which is called when the user searches anything from the search bar. This endpoint is also
 	 * called when any of the tab is selected in the search page results.
 	 */
-	def searchData(Long type, int max, int offset, Boolean ownedFeed) {
+	def searchData(Long type, int max, int offset, Boolean ownedFeed, String q) {
 		log.debug "Search with $params"
 
 		User user = sessionUser()
@@ -38,6 +38,12 @@ class SearchController extends LoginController {
 			return
 		}
 
+		// If no query is entered or empty string is passed
+		if (!q || !q.trim()) {
+			renderJSONGet([success: false, message: g.message(code: "search.query.empty")])
+			return
+		}
+
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 
@@ -47,7 +53,7 @@ class SearchController extends LoginController {
 			return
 		}
 
-		renderJSONGet(searchService.search(user, params.q ?: "", params.offset, params.max, type))
+		renderJSONGet(searchService.search(user, q, params.offset, params.max, type))
 	}
 
 	/**
