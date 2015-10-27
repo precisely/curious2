@@ -85,7 +85,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("auth.error.message", null, null)
@@ -98,7 +98,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 		
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
@@ -111,7 +111,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
@@ -124,7 +124,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		println "json.listItems after index: " + controller.response.json.listItems.toString()
 		assert controller.response.json.success
@@ -142,7 +142,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
@@ -161,7 +161,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 3
@@ -183,7 +183,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		println ""
 		for( def i : controller.response.json.listItems) {

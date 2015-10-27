@@ -1,8 +1,12 @@
-var autocompleteWidget, commentsArgs, nextSuggestionOffset = 0;
+var autocompleteWidget, commentsArgs, ownedFeed = false, nextSuggestionOffset = 0;
 var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
-var randomSessionId = Math.floor((Math.random() * 1000) + 1)        // Get a random number between 0 - 1000;
+
+// See "controllerName" and "actionName" in the "base.gsp" layout
+var isSocialGSP = (controllerName == "home" && actionName == "social");
+var isSprintGSP = (controllerName == "home" && actionName == "sprint");
+var isSearchGSP = (controllerName == "search" && actionName == "index");
 
 /**
  * A copy of types defined in the server side code. See "SearchService.groovy"
@@ -13,14 +17,16 @@ var FEED_TYPE = {
 	USER: 8
 };
 
-FEED_TYPE.DISCUSSION_USER_TYPE = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER);
-
 function getFeedURL(type, offset, max) {
 	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset, nextSuggestionOffset:
-			nextSuggestionOffset, randomSessionId: randomSessionId});
-	params.query = $("#global-search input").val();
+			nextSuggestionOffset, ownedFeed: ownedFeed});
 
-	return '/search/indexData?' + jQuery.param(params) + '&callback=?';
+	if (isSearchGSP) {
+		params.q = $("#global-search input[name=q]").val();
+	}
+
+	var actionName = (isSearchGSP ? 'searchData' : 'feedData');
+	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
 }
 
 function isTabActive(anchor) {
@@ -36,50 +42,22 @@ function displayNoDataMessage(listItems) {
 }
 
 /**
- * A generic method to render a list of feed items like "sprints", "discussions", "people".
- * @param listItems List of feed items
- * @param template Name of the template to render
- * @param key Main key name to pass as for each feed item
+ * Check if the current page is a feed listing page of any kind. For example, all sprints page, owned sprints page,
+ * all discussions page, all users page, owned social page, all search results.
  */
-function renderFeedItems(listItems, template, key) {
-	displayNoDataMessage(listItems);
-
-	$.each(listItems, function(index, item) {
-		var args = {};
-		args[key] = item;
-
-		$('#feed').append(compileTemplate(template, args));
-	});
-
-	showCommentAgeFromDate();
-}
-function renderUsers(listItems) {
-	renderFeedItems(listItems, "_people", 'user');
-}
-function renderDiscussions(listItems) {
-	renderFeedItems(listItems, "_discussions", 'discussionData');
-}
-function renderSprints(listItems) {
-	renderFeedItems(listItems, "_sprints", 'sprint');
-}
-
-function isDiscussionShowPage() {
-	return window.location.hash.startsWith("#discussions/");
-}
-function isUserShowPage() {
-	return window.location.hash.startsWith("#people/");
-}
-function isSprintShowPage() {
-	return window.location.hash.startsWith("#sprint/");
-}
 function isFeedListingPage() {
-	var anchor = location.hash.substring(1);
+	var urlHashValue = location.hash.substring(1).trim();
+	var hashes = ["all", "people", "discussions", "owned"];
 
-	if (actionName === "social") {
-		return ["all", "people", "discussions"].indexOf(anchor) > -1;
-	} else if (actionName === "sprint") {
-		return anchor === "";
+	if (isSocialGSP) {
+		return hashes.indexOf(urlHashValue) > -1;
+	} else if (isSprintGSP) {
+		return ["all", "owned"].indexOf(urlHashValue) > -1;
+	} else if (isSearchGSP) {
+		hashes.push("sprints");
+		return hashes.indexOf(urlHashValue) > -1;
 	}
+	return false;
 }
 
 function registerScroll(feedType) {
@@ -103,15 +81,7 @@ function registerScroll(feedType) {
 					if (!data.listItems || data.listItems.length === 0) {
 						this.finish();
 					} else {
-						if (isTabActive('#people')) {
-							renderUsers(data.listItems);
-						} else if (isTabActive('#discussions')) {
-							renderDiscussions(data.listItems);
-						} else if (isTabActive('#all')) {
-							addAllFeedItems(data);
-						} else {
-							renderSprints(data.listItems);
-						}
+						addAllFeedItems(data);
 						this.setNextPage();
 						this.resume();
 					}
@@ -132,36 +102,112 @@ function checkAndDisplayTabData() {
 	// Reset these variables as we change state/tab
 	window.singleDiscussionPage = false;
 	nextSuggestionOffset = 0;
-
 	commentsArgs = {offset: 0, sort: "created", order: "desc"};
 
-	$('.container-fluid').addClass('main');
 	var hash = window.location.hash;
 	var hashData = hash.split("/");
 
-	if (actionName === "sprint") {                               // See "actionName" in the "base.gsp" layout
-		if (!hash) {
-			showSprints();                                      // For sprint listing page
-		} else {                                                // For single sprint page
-			sprintShow(hashData[0].substring(1));               // Removing "#" from the beginning
-		}
-	} else if (actionName === "social") {
+	// If no "hash" is specified or hash is empty
+	if (!hash) {
+		window.location.hash = "#all";
+		return;
+	}
+
+	if (isSocialGSP) {
 		if (hash == "#sprints") {
 			window.location.href = sprintListURL;               // Backward support for old URL for list of sprints
-		} else if (hash == '#discussions') {
-			showDiscussions();
-		} else if (hash == '#people') {
-			showPeople();
-		} else if (!hash || hash == '#all') {
-			// If the all tab is active or the user is on the social page without a hash
-			showAllFeeds();
-		} else if (hash == "#sprints/" + hashData[1]) {
+			return;
+		}
+		if (window.location.hash.startsWith("#sprint/")) {
 			window.location.href = sprintShowURL + hashData[1];   // Backward support for old URL of sprint show page
-		} else if (hash == "#discussions/" + hashData[1]) {
-			window.singleDiscussionPage = true;
-			discussionShow(hashData[1]);
-		} else if (hash == "#people/" + hashData[1]) {
-			showUserDetails(hashData[1]);
+			return;
+		}
+	}
+
+	var $feedElement = $("#feed");
+	var isAnyFeedListingPage = isFeedListingPage();
+	// Clear the main content and display a spinner
+	$feedElement.html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
+
+	if (isAnyFeedListingPage) {
+		$(".nav").show();
+		$('.container-fluid').addClass("main");
+		$(".nav a[href=" + hash + "]").tab("show");
+
+		var type, title;
+
+		ownedFeed = (hash === "#owned");
+		/*
+		 * Depending upon the type of listing page, we will have to pass different FEED_TYPEs as parameter for the
+		 * owned or all tabs.
+		 */
+		if (ownedFeed || (hash === "#all")) {
+			if (isSocialGSP) {
+				type = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER);
+			} else if (isSprintGSP) {
+				type = FEED_TYPE.SPRINT;
+				title = 'Tracking Sprints';
+			} else if (isSearchGSP) {
+				type = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER | FEED_TYPE.SPRINT);
+			}
+		} else if (hash === "#discussions") {
+			type = FEED_TYPE.DISCUSSION;
+			title = "Discussions";
+		} else if (hash === "#people") {
+			type = FEED_TYPE.USER;
+			title = "People";
+		} else if (isSearchGSP && hash === "#sprints") {
+			type = FEED_TYPE.SPRINT;
+		}
+
+		if (isSearchGSP) {
+			title = 'Search Results: ' + $("#global-search input[name=q]").val();
+		}
+
+		if (title) {
+			setQueryHeader(title, false);
+		}
+
+		queueJSON("Getting feeds", getFeedURL(type, 0, 5), function(data) {
+			var parentElement;
+
+			if (type === FEED_TYPE.DISCUSSION) {
+				var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
+				$feedElement.html(createDiscussionForm).append('<div class="discussions"></div>');
+				parentElement = ".discussions";
+			} else {
+				$feedElement.html("");      // Remove spinner
+			}
+
+			if (!checkData(data)) {
+				return;
+			}
+
+			if (data.success) {
+				nextSuggestionOffset = data.nextSuggestionOffset;
+				addAllFeedItems(data, parentElement);
+			} else {
+				if (data.message) {
+					showAlert(data.message);
+				}
+
+				$feedElement.text("No feeds to display.");
+			}
+		});
+
+		registerScroll(type);
+	} else {        // For any show/detail page. Example user show or sprint show
+		$(".nav").hide();
+
+		if (isSocialGSP) {
+			if (window.location.hash.startsWith("#discussions/")) {
+				window.singleDiscussionPage = true;
+				discussionShow(hashData[1]);
+			} else if (window.location.hash.startsWith("#people/")) {
+				showUserDetails(hashData[1]);
+			}
+		} else if (isSprintGSP) {
+			sprintShow(hash.substring(1));               // Removing "#" from the beginning
 		}
 	}
 
@@ -171,40 +217,6 @@ function checkAndDisplayTabData() {
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
 $(document).ready(function() {
-	$("form#global-search").submit(function() {
-		// If we are on the feed listing page like discussions, sprints or people
-		if (isFeedListingPage()) {
-			checkAndDisplayTabData();
-		} else {
-			// Else navigate to the listing page and the query will be passed automatically
-			if (actionName === "social") {
-				if (isDiscussionShowPage) {
-					window.location.hash = "discussions";
-				} else if (isUserShowPage) {
-					window.location.hash = "people";
-				}
-			} else {
-				window.location.hash = "";      // Remove the hash to display sprints listing
-			}
-		}
-
-		var value = $(this).find('input').val();
-		var filterElement = $("#search-filter a");
-		if (value && value.trim()) {
-			filterElement.find(".message").text(value);
-			filterElement.show();
-		} else {
-			filterElement.hide();
-		}
-
-		return false;
-	});
-
-	$("#search-filter a").click(function() {
-		$("#global-search input").val("").parents('form').submit();
-		return false;
-	});
-
 	$('html').on('click', function(e) {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
@@ -342,18 +354,6 @@ $(document).ready(function() {
 		});
 		return false;
 	});
-
-	$('#feed-discussions-tab a').click(function(e) {
-		showDiscussions();
-	})
-
-	$('#feed-people-tab a').click(function(e) {
-		showPeople();
-	});
-
-	$('#feed-all-tab a').click(function(e) {
-		showAllFeeds();
-	})
 });
 
 function extractDiscussionNameAndPost(value) {
@@ -376,136 +376,10 @@ function extractDiscussionNameAndPost(value) {
 	return {name: discussionName, post: discussionPost};
 }
 
-function showSprints() {
-	queueJSON('Getting sprint list', getFeedURL(FEED_TYPE.SPRINT, 0, 5), function(data) {
-		if (data.success) {
-			nextSuggestionOffset = data.nextSuggestionOffset;
-			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
-			$('#feed').removeClass().addClass('type-sprints').html('');
-			renderSprints(data.listItems);
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').html('No sprints to show.');
-		}
-
-		setQueryHeader('Tracking Sprints', false);
-		$('#feed-sprints-tab a').tab('show');
-		$('.nav').show();
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-
-	registerScroll(FEED_TYPE.SPRINT);
-}
-
-function showDiscussions() {
-	// Change the red bar title
-	setQueryHeader('Discussions', false);
-
-	$('.nav').show();
-	
-	// Select the tab
-	$('#feed-discussions-tab a').tab('show');
-
-	// Clear the tab content and display a spinner
-	$('#feed').html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
-
-	$('#feed-right-tab').html('');
-
-	// Get the discussion data
-	queueJSON('Getting discussion data', getFeedURL(FEED_TYPE.DISCUSSION, 0, 5), function(data) {
-		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-		$('#feed').removeClass().addClass('type-discussions')
-				.html(createDiscussionForm)		// Reset the main container with create discussion form
-				.append('<div class="discussions"></div>')	// And append one container for holding all discussions
-
-		if (!checkData(data)) {
-			return;
-		}
-
-		if (!data.success) {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').append('No discussions to show.');
-			return;
-		}
-
-		nextSuggestionOffset = data.nextSuggestionOffset;
-		renderDiscussions(data.listItems);
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-
-	registerScroll(FEED_TYPE.DISCUSSION);
-}
-
-function showPeople() {
-	queueJSON('Getting people list', getFeedURL(FEED_TYPE.USER, 0, 5), function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#feed').removeClass().addClass('type-people').html('');
-			$('.nav').show();
-			renderUsers(data.listItems);
-			$('#feed-right-tab').html('');
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').text('No people to show.');
-		}
-		setQueryHeader('People', false);
-		$('#feed-people-tab a').tab('show');
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-
-	registerScroll(FEED_TYPE.USER);
-}
-
-/*
- * Used to display feeds of type user and discussion. Previously the sprints were also displayed in the "All" tab
- * but it moved out to a separate tab.
- * TODO Rename the method and merge "showAlFeeds", "showPeople", "showDiscussions" and "showSprints" methods to make
- * code DRYer.
- */
-function showAllFeeds() {
-	queueJSON('Getting feeds', getFeedURL(FEED_TYPE.DISCUSSION_USER_TYPE, 0, 5), function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			nextSuggestionOffset = data.nextSuggestionOffset;
-			$('#feed').removeClass().addClass('type-all').html('');
-			addAllFeedItems(data);
-			$('#feed-right-tab').html('');
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').text('No feeds to show.');
-		}
-		setQueryHeader('All Feeds', false);
-		$('#feed-all-tab a').tab('show');
-		$('.nav').show();
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-
-	registerScroll(FEED_TYPE.DISCUSSION_USER_TYPE);
-}
-
 function addAllFeedItems(data, elementId, prepend) {
 	displayNoDataMessage(data.listItems);
 
 	elementId = elementId || '#feed';
-	data.listItems.sort(function(a, b) {
-		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
-	});
 
 	$.each(data.listItems, function(index, item) {
 		var compiledHTML = '';
@@ -834,9 +708,7 @@ function showUserDetails(hash) {
 		if (data.success) { 
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
-			$('.nav').hide();
 			setQueryHeader('User Profile', true);
-			$('#feed-sprints-tab a').tab('show');
 		} else {
 			showAlert(data.message);
 			window.history.back();

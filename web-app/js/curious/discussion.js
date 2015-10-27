@@ -352,9 +352,6 @@ function discussionShow(hash) {
 			$('.alert').text(data.message);
 		}
 		
-		$('.nav').hide();
 		setQueryHeader('Curious Discussions', true);
-	}, function(data) {
-		showAlert('Internal server error occurred.');
 	});
 }

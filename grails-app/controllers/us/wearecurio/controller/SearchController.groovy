@@ -14,10 +14,49 @@ class SearchController extends LoginController {
 		debug "SearchController constructor()"
 	}
 
-	def indexData(Long type, int max, int offset, String query, int nextSuggestionOffset) {
-		User user = sessionUser()
+	/**
+	 * Action used only for rendering the search GSP
+	 */
+	def index() {
+	}
 
-		log.debug "Get feeds $params"
+	/**
+	 * AJAX endpoint which is called when the user searches anything from the search bar. This endpoint is also
+	 * called when any of the tab is selected in the search page results.
+	 */
+	def searchData(Long type, int max, int offset, Boolean ownedFeed) {
+		log.debug "Search with $params"
+
+		User user = sessionUser()
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
+			return
+		}
+
+		if (!type) {
+			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+			return
+		}
+
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+
+		if (ownedFeed) {
+			// TODO Replace with actual method for search + owned feed. Temporarily using only the owned feed method
+			renderJSONGet(searchService.getOwned(type, user, params.offset, params.max))
+			return
+		}
+
+		renderJSONGet(searchService.search(user, params.q ?: "", params.offset, params.max, type))
+	}
+
+	/**
+	 * AJAX endpoint for getting any feed data of any type.
+	 */
+	def feedData(Long type, int max, int offset, int nextSuggestionOffset, Boolean ownedFeed) {
+		log.debug "Get feeds with $params"
+
+		User user = sessionUser()
 		if (!user) {
 			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
 			return
@@ -32,13 +71,19 @@ class SearchController extends LoginController {
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 
-		if (query) {
-			renderJSONGet(searchService.search(user, query, params.offset, params.max, type))
-		} else if (type == SearchService.USER_TYPE) {
-			renderJSONGet(searchService.getSuggestions(type, user, params.offset, params.max, params.randomSessionId))
+		if (ownedFeed) {
+			renderJSONGet(searchService.getOwned(type, user, params.offset, params.max))
+			return
+		}
+
+		// TODO Implement this and pass a actual sessionId for current user
+		def randomSessionId = "44";
+
+		if (type == SearchService.USER_TYPE) {
+			renderJSONGet(searchService.getSuggestions(type, user, params.offset, params.max, randomSessionId))
 		} else {
 			renderJSONGet(searchService.getFeed(type, user, params.offset, params.max, params.nextSuggestionOffset,
-					params.randomSessionId))
+					randomSessionId))
 		}
 	}
 }

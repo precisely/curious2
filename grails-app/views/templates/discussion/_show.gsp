@@ -159,9 +159,5 @@
 				{{ }) }}
 			</select>
 		</div>
-		<div id="comment-dialog" class="hide" title="Comment">
-			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
-			<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
-		</div>
 	</div>
 </div>

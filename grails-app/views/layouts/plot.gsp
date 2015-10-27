@@ -207,14 +207,10 @@ WeAreCurious.getPlot = function() {
 }
 
 </script>
-
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
-
-<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
-
-<g:layoutBody/>
-
+	<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
+	<g:layoutBody/>
 </body>
 </html>
 </g:applyLayout>
