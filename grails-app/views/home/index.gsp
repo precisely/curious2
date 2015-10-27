@@ -19,7 +19,7 @@
 		<div id="alert-message-text"></div>
 	</div>
 	<div class="red-header date-controls clearfix">
-		<g:render template="/tag/tagListWidget" model="[header: true]" />
+		<!-- g:render template="/tag/tagListWidget" model="[header: true]" / -->
 		<h1 class="clearfix">
 			<a class="back" href="#" onclick="entryListWidget.changeDate(-1);">
 				<img alt="back" class="date-left-arrow" src="/images/left-arrow.png">
@@ -31,13 +31,12 @@
 				<span class="hide">next</span>
 			</a>
 		</h1>
-		<hr>
 	</div>
 
 	<!-- MAIN -->
 	<div class="clearfix">
 		<!-- RIGHT NAV -->
-		<g:render template="/tag/tagListWidget" />
+		<!-- g:render template="/tag/tagListWidget" / -->
 		<!-- /RIGHT NAV -->
 		<div class="floating-column entry-container">
 			<div class="main container-fluid" id="trackmain">
@@ -118,7 +117,7 @@
 					return true;
 				});
 				
-				entryListWidget = new EntryListWidget(initTagListWidget());				
+				entryListWidget = new EntryListWidget();				
 			});
 		});
 

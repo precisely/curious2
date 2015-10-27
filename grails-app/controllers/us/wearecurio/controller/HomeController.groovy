@@ -7,27 +7,29 @@ import static org.springframework.http.HttpStatus.*
 import grails.converters.*
 import groovy.json.*
 import grails.gorm.DetachedCriteria
+
 import grails.gsp.PageRenderer
-import grails.converters.JSON
-
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.joda.time.DateTime
-import org.springframework.http.HttpStatus
-
-import us.wearecurio.exceptions.*
-import us.wearecurio.model.*
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
+import us.wearecurio.services.SearchService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
-import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.AuthenticationRequiredException
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
+
+import static org.springframework.http.HttpStatus.NOT_FOUND
+import static org.springframework.http.HttpStatus.UNAUTHORIZED
 
 class HomeController extends DataController {
 
@@ -736,6 +738,10 @@ class HomeController extends DataController {
 		}
 
 		model
+	}
+
+	def sprint() {
+
 	}
 
 	def shareDiscussion(String discussionHash) {

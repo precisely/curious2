@@ -10,7 +10,7 @@ import us.wearecurio.model.Model.Visibility
 class DiscussionPost {
 	
 	private static def log = LogFactory.getLog(this)
-	public static final Integer FIRST_POST_BIT = 1
+	static final Integer FIRST_POST_BIT = 1
 	
 	Long discussionId
 	Long authorUserId
@@ -20,7 +20,7 @@ class DiscussionPost {
 	String message
 	Integer flags = 0
 	
-	public static final int MAXMESSAGELEN = 50000
+	static final int MAXMESSAGELEN = 50000
 	
 	static constraints = {
 		message(maxSize:50000)
@@ -45,16 +45,25 @@ class DiscussionPost {
 	static transients = ['visibility', 'discussion']
 	
 	static searchable = {
-		only = ['discussionId', 'authorUserId', 'created', 'updated', 'plotDataId', 'message', 'flags']
+		only = [
+			'discussionId', 
+			'authorUserId', 
+			'created', 
+			'updated', 
+			'plotDataId', 
+			'message', 
+			'flags',
+			'authorName',
+			'authorHash']
 	}
 	
 	def getJSONDesc() {
-		User author = User.get(authorUserId)
+		User author = getAuthor()
 		return [
 			authorUserId: authorUserId,
-			authorName: author.username,
-			authorAvatarURL: author.avatar?.path,
-			authorHash: author.hash,
+			authorName: author?.username,
+			authorAvatarURL: author?.avatar?.path,
+			authorHash: author?.hash,
 			discussionId: discussionId,
 			id: id,
 			message: message,
@@ -94,10 +103,19 @@ class DiscussionPost {
 		return null
 	}
 	
-	public DiscussionPost() {
+	//for search
+	String getAuthorHash() {
+		return getAuthor()?.hash
 	}
 	
-	public DiscussionPost(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
+	String getAuthorName() {
+		return getAuthor()?.name
+	}
+	
+	DiscussionPost() {
+	}
+	
+	DiscussionPost(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created, boolean isFirstPost) {
 		if (created == null) created = new Date()
 		this.discussionId = discussion.getId()
 		this.authorUserId = authorUserId
@@ -108,8 +126,8 @@ class DiscussionPost {
 		if ((comment != null) && (comment.length() > MAXMESSAGELEN)) {
 			comment = comment.substring(0, MAXMESSAGELEN)
 		}
+		this.setIsFirstPost(isFirstPost)
 		this.message = comment
-		
 	}
 	
 	static def create(Discussion discussion, Long authorUserId, String message) {
@@ -122,8 +140,13 @@ class DiscussionPost {
 	
 	static def create(Discussion discussion, Long authorUserId, Long plotDataId, String comment, Date created) {
 		log.debug "DiscussionPost.create() discussionId:" + discussion.id + ", authorUserId:" + authorUserId + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", created:" + created
-		def post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date())
+		boolean isFirstPost = !discussion.hasFirstPost()
+		def post = new DiscussionPost(discussion, authorUserId, plotDataId, comment, created ?: new Date(), isFirstPost)
 		Utils.save(post, true)
+		if (isFirstPost) {
+			discussion.setFirstPostId(post.id)
+			Utils.save(discussion, true)
+		}
 		UserActivity.create(
 			post.authorUserId, 
 			UserActivity.ActivityType.CREATE, 
@@ -131,6 +154,17 @@ class DiscussionPost {
 			post.id
 		)
 		return post
+	}
+	
+	boolean isFirstPost() {
+		return flags & FIRST_POST_BIT ? true : false
+	}
+	
+	boolean setIsFirstPost(boolean isFirstPost) {
+		if (isFirstPost) {
+			flags |= FIRST_POST_BIT
+		} else
+			flags &= ~FIRST_POST_BIT
 	}
 
 	private static void unComment(Long authorUserId, Long discussionId, Long postId) {
@@ -150,7 +184,7 @@ class DiscussionPost {
 		)
 	}
 
-	public static void delete(DiscussionPost post) {
+	static void delete(DiscussionPost post) {
 		log.debug "DiscussionPost.delete() postId:" + post.getId()
 		Discussion discussion = Discussion.get(post.discussionId)
 		discussion.setUpdated(new Date())

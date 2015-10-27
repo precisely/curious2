@@ -34,7 +34,7 @@ public class RepeatType {
 	// for all non-ghost entries and vice-versa
 	// if you add more remind types, please edit the sql in
 	// RemindEmailService
-	private static final Map<Long, RepeatType> map = new ConcurrentHashMap<Long, RepeatType>(new HashMap<Integer, RepeatType>())
+	private static final Map<Long, RepeatType> cache = new ConcurrentHashMap<Long, RepeatType>(new HashMap<Integer, RepeatType>())
 	
 	static RepeatType DAILY = new RepeatType(DAILY_BIT)
 	static RepeatType WEEKLY = new RepeatType(WEEKLY_BIT)
@@ -96,7 +96,7 @@ public class RepeatType {
 	
 	static RepeatType get(Long id) {
 		if (id == null) return null
-		RepeatType repeatType = map.get(id)
+		RepeatType repeatType = cache.get(id)
 		if (repeatType == null)
 			return new RepeatType(id)
 		
@@ -105,7 +105,7 @@ public class RepeatType {
 	
 	RepeatType(long id) {
 		this.id = id
-		map.put(id, this)
+		cache.put(id, this)
 	}
 	
 	boolean isGhost() {
@@ -174,16 +174,16 @@ public class RepeatType {
 	
 	RepeatType toggleGhost() {
 		if (isGhost())
-			return map.get(this.id & (~GHOST_BIT))
-		return map.get(this.id | GHOST_BIT)
+			return get(this.id & (~GHOST_BIT))
+		return get(this.id | GHOST_BIT)
 	}
 	
 	RepeatType makeGhost() {
-		return map.get(this.id | GHOST_BIT)
+		return get(this.id | GHOST_BIT)
 	}
 	
 	RepeatType makeConcreteGhost() {
-		return map.get(this.id | CONCRETEGHOST_BIT)
+		return get(this.id | CONCRETEGHOST_BIT)
 	}
 	
 	int hashCode() {

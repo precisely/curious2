@@ -526,14 +526,30 @@ $.datepicker._gotoToday = function(id) {
 }
 
 function showBootstrapAlert($element, message, delay) {
-	delay = !delay ? 5000 : delay
-			$element.show().text(message);
-	if (delay == 0) {
-		setInterval(function() {
-			$element.hide();
+	delay = !delay ? 5000 : delay;
+
+	// If alert element has a child element with class "message"
+	if ($element.find(".message").length != 0) {
+		// Then display the message there (to prevent removal of close button on ".text(message)" method call
+		$element.find(".message").text(message);
+	} else {
+		$element.text(message);
+	}
+
+	$element.slideDown();
+
+	if (delay != 0) {
+		setTimeout(function() {
+			$element.slideUp();
 		}, delay);
 	}
 }
+
+// On click of any close button with attribute [data-dismiss="alert"] inside an alert
+$(document).on("click", '[data-dismiss="alert"]', function() {
+	// Close it's parent alert message (if any)
+	$(this).parents(".alert").slideUp();
+});
 
 /**
  * A method used to trim a given text upto the given length including or excluding the last word at boundary.

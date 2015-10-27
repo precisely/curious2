@@ -90,12 +90,14 @@ function formatShortDate(d) {
 	
 	return '' + (d.getMonth() + 1) +'/' + d.getDate() + '/' + ('' + d.getFullYear()).slice(-2);
 }
+
+var actionName = '${actionName}';
+var controllerName = '${controllerName}';
+
 </script>
 <g:layoutHead />
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
-
-<g:layoutBody />
-
+	<g:layoutBody />
 </body>
 </html>

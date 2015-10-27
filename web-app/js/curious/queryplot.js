@@ -705,7 +705,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			options = {
 				series: {
 					lines: { show: true },
-					points: { show: false }
+					points: { show: true }
 				},
 				xaxis: {
 					mode: null,
@@ -728,7 +728,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			options = {
 				series: {
 					lines: { show: true },
-					points: { show: false }
+					points: { show: true }
 				},
 				xaxis: {
 					mode: 'time',
@@ -1127,7 +1127,7 @@ function PlotLine(p) {
 	this.hidden = p.hidden ? true : false;
 	this.showLines = p.showLines == undefined ? true : p.showLines;
 	this.isContinuous = p.literalData == undefined ? (p.isContinuous == undefined ? false : p.isContinuous) : p.literalData;
-	this.showPoints = p.showPoints == undefined ? false : p.showPoints;
+	this.showPoints = p.showPoints == undefined ? true : p.showPoints;
 	this.smoothDataWidth = p.smoothDataWidth ? p.smoothDataWidth : 0;
 	this.smoothLine = p.smoothData ? 1 : null;
 	this.freqDataWidth = p.freqDataWidth ? p.freqDataWidth : 0;
@@ -1226,7 +1226,7 @@ function PlotLine(p) {
 		return save;
 	}
 
-	// TODO: Not reuired in mobile graph
+	// TODO: Not required in mobile graph
 	this.handleDropTag = function(event, ui) {
 		var plotLine = this;
 		var $sourceElement = $(ui.draggable[0]);
@@ -1338,7 +1338,7 @@ function PlotLine(p) {
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
-			this.queueJSON("saving setting", this.makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
+			this.plot.queueJSON("saving setting", this.plot.makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
 					{ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
 					function(result){
 						if (this.checkData(result)) {
@@ -1410,14 +1410,7 @@ function PlotLine(p) {
 					+ idSuffix + '"></div><div style="display:inline-block;margin-left:15px;" id="plotlinerangemax' + idSuffix
 					+ '"></div></div>';
 		}
-		if (!this.isCycle)
-				html += '<h4>GRAPH AS</h4><div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
-			+ idSuffix + '" id="plotlinepoints' + idSuffix + '"' + 'value="points"' + (this.showPoints ? 'checked' : '') 
-			+ '/> <label> PLOT</label></div><img src="/images/gf-plot.png" class="graph-icon" /></div> \
-				<div class="form-group"><div class="widget"><input type="radio" name="plotlinepoints' 
-				+ idSuffix + '" id="plotlineline' + idSuffix + '"' +	'value="line"' + (this.showPoints ? '' :'checked') 
-				+ '/> <label> LINE</label></div><img src="/images/gf-line.png" class="graph-icon" /></div> ';
-			html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
+		html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
 			+ 'value="continuous" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"' 
 			+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label></div> \
 			<img src="/images/gf-continuous.png" class="graph-icon" /> </div> \
@@ -1950,7 +1943,7 @@ function PlotLine(p) {
 						show: this.showLines
 					},
 					points: {
-						show: this.showPoints || data.length < 2
+						show: this.isSmoothLine() ? false : true
 					},
 					yaxis: this.yaxis,
 					plotLine: this
@@ -1966,7 +1959,7 @@ function PlotLine(p) {
 						fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 					},
 					points: {
-						show: this.showPoints || data.length < 2
+						show: this.isSmoothLine() ? false : true
 					},
 					yaxis: this.yaxis,
 					plotLine: this
@@ -1989,7 +1982,7 @@ function PlotLine(p) {
 		var minVal = undefined;
 		var maxVal = undefined;
 		
-		var reZero = (this.isFreqLineFlag || this.showPoints) ? false : (this.isSmoothLine() ? !this.parentLine.isContinuous : !this.isContinuous);
+		var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? !this.parentLine.isContinuous : !this.isContinuous);
 
 		var lastTime = 0;
 		var lastVal = undefined;
@@ -2002,15 +1995,15 @@ function PlotLine(p) {
 			// if space between two data points >= 2 days
 			if (reZero && (time - lastTime >= 1000*60*60*24*2)) {
 				if (lastTime && lastVal != 0) {
-					// create additional zero point at 12 hours after last data
+					// create additional null point at 12 hours after last data
 					// point if it wasn't already zero
-					d1Data.push([new Date(lastTime + 1000*60*60*12), 0]);
+					d1Data.push([new Date(lastTime + 1000*60*60*12), null]);
 				}
-				if (entry[1] != 0) {
+				/*if (entry[1] != 0) {
 					// 12 hours before first data point if it isn't zero
 					d1Data.push([new Date(time - 1000*60*60*12), 0]);
 					if (minTime == undefined) minTime = time - 1000*60*60*12;
-				}
+				}*/
 			}
 			if (minTime == undefined || time < minTime) minTime = time;
 			if (maxTime == undefined || time > maxTime) maxTime = time;
@@ -2024,14 +2017,20 @@ function PlotLine(p) {
 			lastVal = entry[1];
 		}
 		if (reZero && lastTime && lastVal != 0) {
-			// create additional zero point at 12 hours after last data point
+			// create additional null point at 12 hours after last data point
 			var currentTime = new Date(lastTime);
 			var dateRangeForToday = new DateUtil().getDateRangeForToday(); // See base.js
 			// Checking if last data point is not within a day of "now"
 			if(!(currentTime >= dateRangeForToday.start && currentTime <= dateRangeForToday.end)) {
-				d1Data.push([new Date(lastTime + 1000*60*60*12), 0]);
+				d1Data.push([new Date(lastTime + 1000*60*60*12), null]);
 			}
+			minTime = minTime - 1000*60*60*12;
 			maxTime = lastTime + 1000*60*60*12;
+		} else {
+			if (minTime == maxTime) {
+				minTime = minTime - 1000*60*60;
+				maxTime = lastTime + 1000*60*60;
+			}
 		}
 
 		this.minTime = minTime;

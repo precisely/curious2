@@ -90,7 +90,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-xs-2">
+			<div class="col-xs-2 col-lg-1">
 				{{ if (hasMember) { }}
 					<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
 					{{ if (hasStarted && !hasEnded) { }}

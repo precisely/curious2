@@ -41,7 +41,28 @@ class Discussion {
 	static transients = [ 'groups', 'groupIds', 'isPublic' ]
 	
 	static searchable = {
-		only = ['userId', 'firstPostId', 'posts', 'name', 'created', 'updated', 'visibility', 'groupIds', 'hash']
+		only = [
+			'userId',
+			'userIdFinal',
+			'userHash',
+			'publicUserName',
+			'userAvatarURL',
+			'firstPostId',
+			'isFirstPostPlot',
+			'posts',
+			'postCount',
+			'hasRecentPost',
+			'recentPostMessage',
+			'recentPostCreated',
+			'recentPostUserHash',
+			'recentPostUserPublicName',
+			'name', 
+			'created', 
+			'updated', 
+			'visibility', 
+			'groupIds', 
+			'hash'
+		]
 	}
 	
 	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
@@ -123,7 +144,6 @@ class Discussion {
 	
 	static void delete(Discussion discussion) {
 		log.debug "Discussion.delete() discussionId:" + discussion.getId()
-		println "Discussion.delete() discussionId:" + discussion.getId()
 		def discussionId = discussion.getId()
 		createUserActivity(null, UserActivity.ActivityType.DELETE, discussionId)
 		//TODO: create delete DiscussionPost activities and write integration tests
@@ -185,6 +205,10 @@ class Discussion {
 	
 	boolean isPublic() {
 		return getIsPublic()
+	}
+	
+	boolean hasFirstPost() {
+		return firstPostId != null
 	}
 	
 	boolean getIsPublic() {
@@ -254,6 +278,10 @@ class Discussion {
 		return DiscussionPost.get(firstPostId)
 	}
 
+	Boolean getIsFirstPostPlot() {
+		return (PlotData.get(firstPost?.plotDataId) != null)
+	}
+	
 	DiscussionPost getLastPost() {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			eq("discussionId", this.id)
@@ -265,6 +293,10 @@ class Discussion {
 		return post
 	}
 
+	Long getUserIdFinal() {
+		return fetchUserId()
+	}
+	
 	Long fetchUserId() {
 		if (userId != null) return userId
 		DiscussionPost post = getFirstPost()
@@ -352,9 +384,7 @@ class Discussion {
 		if (userId == null)
 			this.userId = post.getAuthorUserId()
 		
-		if (firstPostId == null) {
-			firstPostId = post.getId()
-			post.flags |= DiscussionPost.FIRST_POST_BIT
+		if (post.isFirstPost()) {
 			if (plotDataId) {
 				PlotData plotData = PlotData.get(plotDataId)
 				if (this.name == null || this.name.length() == 0)
@@ -363,8 +393,6 @@ class Discussion {
 			} else {
 				this.notifyParticipants(post, false)
 			}
-			Utils.save(this, true)
-			Utils.save(post, true)
 		} else {
 			this.notifyParticipants(post, false)
 		}
@@ -497,13 +525,71 @@ class Discussion {
 			isPublic: isPublic(), groupName: groupName]
 	}
 
+	//TODO: make sure discussion is re-indexed every time a post is made to a discussion
 	//for searching
 	String getPosts() {
-		def posts = getPosts([:])
-		
-		return posts?.collect{ it.message }?.join(" ")		
+		return DiscussionPost.findAllByDiscussionId(id)?.collect{ it.message }.join(" ")
 	}
 	
+	Long getPostCount() {
+		return DiscussionPost.findAllByDiscussionId(id).size()	- (isFirstPostPlot ? 1 : 0)
+	}
+	
+	String getUserHash() {
+		return User.get(fetchUserId())?.hash
+	}
+	
+	boolean getHasRecentPost() {
+		def last = lastPost
+		return (last != null && (last.id != firstPostId || !isFirstPostPlot))
+	}
+	
+	String getRecentPostMessage() {
+		def last = lastPost
+		if (last == null || (last.id == firstPostId && isFirstPostPlot) ) {
+			return ""
+		}
+		
+		return last.message
+	}
+	
+	Date getRecentPostCreated() {
+		def last = lastPost
+		if (last == null || (last.id == firstPostId && isFirstPostPlot) ) {
+			return null
+		}
+		
+		return last.created
+	}
+	
+	String getRecentPostUserHash() {
+		def last = lastPost
+		if (last == null || (last.id == firstPostId && isFirstPostPlot) ) {
+			return ""
+		}
+		
+		return last.authorHash
+	}
+	
+	String getRecentPostUserPublicName() {
+		def last = lastPost
+		if (last == null || (last.id == firstPostId && isFirstPostPlot) ) {
+			return ""
+		}
+		
+		return User.get(lastPost.authorUserId)?.publicName
+	}
+
+	
+	//To Do: when user changes it's settings, discussions it owns will need to be redindexed
+	String getPublicUserName() {
+		return User.get(fetchUserId())?.publicName
+	}
+	
+	String getUserAvatarURL() {
+		return User.get(fetchUserId())?.avatarURL
+	}
+
 	@Override
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
