@@ -7,7 +7,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9 discussion-header">
-					<a href="#people/{{- discussionData.userHash }}">
+					<a href="/home/social#people/{{- discussionData.userHash }}">
 						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
@@ -34,7 +34,7 @@
 			<div class="row">
 				<div class="col-md-6">
 					<div class="name">
-						<a href="#discussions/{{- discussionData.hash }}">
+						<a href="/home/social#discussions/{{- discussionData.hash }}">
 							<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 						</a>
 					</div>

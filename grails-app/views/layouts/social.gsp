@@ -1,5 +1,4 @@
 <g:applyLayout name="plot">
-<g:setProvider library="jquery" />
 <html>
 	<head>
 	<title><g:layoutTitle/></title>
@@ -12,70 +11,72 @@
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 
 			deleteSprintDataCSRF, stopSprintDataCSRF, startSprintDataCSRF, addMemberToSprintDataCSRF, addAdminToSprintDataCSRF, 
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
-			deleteDiscussionDataCSRF, getSearchResultsCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF ,
+			deleteDiscussionDataCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF ,
 			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
-			deleteTagGroupDataCSRF, showTagGroupDataCSRF, getTagPropertiesCSRF, addTagToTagGroupCSRF, listTagsAndTagGroupsCSRF,
-			removeTagFromTagGroupCSRF, addTagGroupToTagGroupCSRF, createTagGroupDataCSRF, removeTagGroupFromTagGroupCSRF,
-			setTagPropertiesDataCSRF, addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF, getSprintParticipantsDataCSRF,
+			getSprintParticipantsDataCSRF, getUserDataCSRF,
 			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
 			leaveSprintDataCSRF, showsprintCSRF" />
-	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<g:layoutHead />
 
-	<style type="text/css">
-		.ui-accordion-header {
-			overflow: hidden;
-		}
-	</style>
 	</head>
 	<body class="${pageProperty(name: 'body.class') ?: '' }">
+		<g:set var="isSearchListingPage" value="${controllerName == "search" && actionName == "index"}" />
+		<g:set var="isSocialListingPage" value="${controllerName == "home" && actionName == "social"}" />
+		<g:set var="isSprintsListingPage" value="${controllerName == "home" && actionName == "sprint"}" />
+
 		<content tag="processUserData"><g:pageProperty name="page.processUserData"/></content>
-	<!-- MAIN -->
 		<div class="row red-header">
-			<div>
-				<h1 class="clearfix">
-					<span id="queryTitle">${groupFullname}</span>
-				</h1>
-			</div>
+			<h1 class="clearfix">
+				<span id="queryTitle">
+					<g:if test="${isSearchListingPage}">
+						Search Results: ${params.q}
+					</g:if>
+					<g:else>
+						${groupFullname}
+					</g:else>
+				</span>
+			</h1>
 			<div class="pull-right">
 				<div class="help">
 					<i class="fa fa-question"></i>
 				</div>
 			</div>
 		</div>
-		<div class="feed-body">
-		<div class="main container-fluid">
-			<ul class="nav nav-pills">
-				<g:if test="${actionName.equalsIgnoreCase('social')}">
-					<li id="feed-all-tab" role="presentation">
-						<a href="/home/social#all">ALL</a>
+
+		<div class="feed-body clearfix">
+			<div class="main container-fluid">
+				<ul class="nav nav-pills">
+					<li role="presentation">
+						<a href="#all">ALL</a>
 					</li>
-					<li id="feed-people-tab" role="presentation">
-						<a href="/home/social#people">PEOPLE</a>
+					<g:if test="${isSocialListingPage || isSearchListingPage}">
+						<li role="presentation">
+							<a href="#people">PEOPLE</a>
+						</li>
+						<li role="presentation">
+							<a href="#discussions">DISCUSSIONS</a>
+						</li>
+					</g:if>
+					<g:if test="${isSearchListingPage}">
+						<li role="presentation">
+							<a href="#sprints">SPRINTS</a>
+						</li>
+					</g:if>
+					<li role="presentation">
+						<a href="#owned">OWNED</a>
 					</li>
-					<li id="feed-discussions-tab" role="presentation">
-						<a href="/home/social#discussions">DISCUSSIONS</a>
-					</li>
-				</g:if>
-				<li id="search-filter">
-					<a href="" class="label" style="display: none;" title="Clear search filter">
-						<span class="message"></span>
-						<i class="fa fa-times-circle fa-fw"></i>
-					</a>
-				</li>
-				<g:if test="${actionName.equalsIgnoreCase('sprint')}">
-					<li id="feed-right-tab" role="presentation">
-						<a class="create-new-sprint" href="#">START NEW SPRINT</a>
-					<g>
-				</g:if>
-			</ul>
-			<div id="feed">
-				<g:pageProperty name="page.feedContent" />
+					<g:if test="${isSprintsListingPage}">
+						<li id="feed-right-tab" role="presentation">
+							<a class="create-new-sprint" href="#">START NEW SPRINT</a>
+						<g>
+					</g:if>
+				</ul>
+				<div id="feed">
+					<g:pageProperty name="page.feedContent" />
+				</div>
 			</div>
 		</div>
-		</div>
-		<!-- /MAIN -->
-		<div style="clear: both;"></div>
+
 		<div id="share-dialog" class="hide" title="Share">
 			<select name="shareOptions" id="shareOptions" multiple="multiple"
 				class="form-control" size="8">
@@ -87,10 +88,7 @@
 				</g:each>
 			</select>
 		</div>
-		<div id="comment-dialog" class="hide" title="Comment">
-			<input type="text" name="comment" id="userComment" required placeholder="Add Comment..."> 
-			<input type="hidden" name="discussionHash" value="${discussionHash}">
-		</div>
+
 		<g:render template="/sprint/createSprintModal" />
 
 		<c:renderJSTemplate template="/discussion/create" id="_createDiscussionForm" />

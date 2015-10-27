@@ -20,17 +20,17 @@
 	</ul>
 	--%>
 	<div class="pull-right search-bar left-addon">
-		<form id="global-search">
+		<g:form name="global-search" controller="search" method="GET">
 			<i class="fa fa-search"></i>
-			<input type="text" placeholder="Search Curious" >
-		</form>
+			<input type="text" placeholder="Search Curious" name="q" value="${params.q}" >
+		</g:form>
 	</div>
 	<div class="text-center clearfix">
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><a href="/home/social#all">Social</a></li>
-			<li><a href="/home/sprint">Sprints</a></li>
+			<li><a href="/home/sprint#all">Sprints</a></li>
 			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>

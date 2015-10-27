@@ -4,6 +4,7 @@ class UrlMappings {
 
 	static mappings = {
 
+		"/search"(controller: "search", action: "index")
 		"/home/graph/curiosities/$description1/$description2" {
 			controller = "home"
 			action = "graphCuriosities"
