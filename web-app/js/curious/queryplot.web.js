@@ -27,11 +27,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	}
 
 	this.checkData = function(data, status, errorMessage, successMessage) {
-		checkData(data, status, errorMessage, successMessage);
+		return checkData(data, status, errorMessage, successMessage);
 	}
 
 	this.makeGetArgs = function(args) {
-		makeGetArgs(args);
+		return makeGetArgs(args);
 	}
 	var datepicker = this.properties.getStartDatePicker();
 
