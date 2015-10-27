@@ -61,10 +61,6 @@ function isFeedListingPage() {
 }
 
 function registerScroll(feedType) {
-	// Make sure to remove existing infinite scroll so that any finished pagination on feed can be reloaded
-	// based on the new selected tab and the new search filter.
-	$('#feed').infiniteScroll('stop');
-
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
@@ -128,6 +124,10 @@ function checkAndDisplayTabData() {
 	var isAnyFeedListingPage = isFeedListingPage();
 	// Clear the main content and display a spinner
 	$feedElement.html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
+
+	// Make sure to remove existing infinite scroll so that feeds can be reloaded based on the new selected tab and
+	// the search filter.
+	$('#feed').infiniteScroll('stop');
 
 	if (isAnyFeedListingPage) {
 		$(".nav").show();
