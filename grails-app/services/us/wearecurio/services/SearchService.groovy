@@ -726,6 +726,10 @@ class SearchService {
 		return result
 	}
 	
+	Map searchOwned(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
+		return search(user, query, offset, max, type)
+	}
+	
 	Map getSprintDiscussions(Sprint sprint, User user, int offset = 0, int max = 10) {
 		if (user == null || sprint == null) {
 			return [listItems: false, success: false]

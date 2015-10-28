@@ -11,22 +11,130 @@ var isSearchGSP = (controllerName == "search" && actionName == "index");
 /**
  * A copy of types defined in the server side code. See "SearchService.groovy"
  */
-var FEED_TYPE = {
-	DISCUSSION: 1,
-	SPRINT: 2,
-	USER: 8
-};
+function getSearchControllerURL(actionName, paramsClosure) {
+	//var params = getCSRFPreventionObject(csrfpreventionObjectName, params);
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
 
-function getFeedURL(type, offset, max) {
-	var params = getCSRFPreventionObject('getFeedsDataCSRF', {type: type, max: max, offset: offset, nextSuggestionOffset:
-			nextSuggestionOffset, ownedFeed: ownedFeed});
-
-	if (isSearchGSP) {
-		params.q = $("#global-search input[name=q]").val();
-	}
-
-	var actionName = (isSearchGSP ? 'searchData' : 'feedData');
 	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
+}
+
+function getSearchControllerURLSearch(actionName, paramsClosure) {
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
+	params.q = $("#global-search input[name=q]").val();
+
+	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
+}
+
+function getURLSocialAll(offset, max) {
+	return getSearchControllerURL(
+			"getAllSocialData",
+			{
+				offset: offset, 
+				max: max,
+				nextSuggestionOffset: nextSuggestionOffset  //global variable
+			}
+		)
+}
+
+function getURLSocialDiscussions(offset, max) {
+	return getSearchControllerURL(
+			"getDiscussionSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSocialPeople(offset, max) {
+	return getSearchControllerURL(
+			"getPeopleSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)	
+}
+
+function getURLSocialOwned(offset, max) {
+	return getSearchControllerURL(
+			"getOwnedSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSprintsAll(offset, max) {
+	return getSearchControllerURL(
+			"getAllSprintData",
+			{
+				offset: offset, 
+				max: max,
+				nextSuggestionOffset: nextSuggestionOffset //global variable
+			}
+		)
+}
+
+function getURLSprintsOwned(offset, max) {
+	return getSearchControllerURL(
+			"getOwnedSprintData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchAll(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchAllData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchDiscussions(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchAllData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchSprints(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchSprintData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)	
+}
+
+function getURLSearchPeople(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchPeopleData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchOwned(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchAllOwnedData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
 }
 
 function isTabActive(anchor) {
@@ -41,33 +149,16 @@ function displayNoDataMessage(listItems) {
 	}
 }
 
-/**
- * Check if the current page is a feed listing page of any kind. For example, all sprints page, owned sprints page,
- * all discussions page, all users page, owned social page, all search results.
- */
-function isFeedListingPage() {
-	var urlHashValue = location.hash.substring(1).trim();
-	var hashes = ["all", "people", "discussions", "owned"];
-
-	if (isSocialGSP) {
-		return hashes.indexOf(urlHashValue) > -1;
-	} else if (isSprintGSP) {
-		return ["all", "owned"].indexOf(urlHashValue) > -1;
-	} else if (isSearchGSP) {
-		hashes.push("sprints");
-		return hashes.indexOf(urlHashValue) > -1;
-	}
-	return false;
-}
-
-function registerScroll(feedType) {
+//function registerScroll(feedType) {
+function registerScroll(getURLMethod) {
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			var url = getFeedURL(feedType, this.getOffset(), 5);
-
+			//var url = getFeedURL(feedType, this.getOffset(), 5);
+			var url = getURLMethod(feedType, this.getOffset(), 5);
+			
 			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
@@ -94,123 +185,184 @@ function registerScroll(feedType) {
 	});
 }
 
+function isHash(values) {
+	var urlHashValue = location.hash.substring(1).trim();	
+	return (values.indexOf(urlHashValue) > -1);
+}
+
+function initializeListing() {
+	$(".nav").show();
+	$('.container-fluid').addClass("main");
+	$(".nav a[href=" + window.location.hash + "]").tab("show");	
+}
+
+function processResults(data) {
+	var parentElement;
+
+	if (window.location.hash === "#discussions") {
+		//special handling for discussions social page
+		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
+		$("#feed").html(createDiscussionForm).append('<div class="discussions"></div>');
+		parentElement = ".discussions";
+	} else {
+		$("#feed").html("");      // Remove spinner
+	}
+	
+	if (!checkData(data)) {
+		return;
+	}
+
+	if (data.success) {
+		nextSuggestionOffset = data.nextSuggestionOffset;
+		addAllFeedItems(data, parentElement);
+	} else {
+		if (data.message) {
+			showAlert(data.message);
+		}
+
+		$("#feed").text("No feeds to display.");
+	}	
+}
+
+function displaySocialPage() {
+	hash = window.location.hash
+	if (hash == "#sprints") {
+		// Backward support for old URL for list of sprints
+		window.location.href = sprintListURL;
+		return;
+	} else if (hash.startsWith("#sprint/")) {
+		// Backward support for old URL of sprint show page
+		window.location.href = sprintShowURL + hash.split("/")[1];
+		return;
+	}
+	
+	if (!isHash(["all", "discussions", "people", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+	
+	switch (hash) {
+	case "#all":
+		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
+		registerScroll2(getURLSocialAll)
+		break;
+	case "#discussions":
+		setQueryHeader("Discussions", false);
+		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
+		registerScroll2(getURLSocialDiscussions)
+		break;
+	case "#people":
+		setQueryHeader("People", false);
+		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
+		registerScroll2(getURLSocialPeople)
+		break;
+	case "#owned":
+		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)
+		registerScroll2(getURLSocialOwned)
+		break;
+	}
+}
+
+function displaySprintPage() {
+	if (!isHash(["all", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+		
+	setQueryHeader("Tracking Sprints", false);
+	
+	switch (window.location.hash) {
+	case "#all":
+		queueJSON("Getting sprints feed", getURLSprintsAll(0, 5), processResults)
+		registerScroll2(getURLSprintsAll)
+		break;
+	case "#owned":
+		queueJSON("Getting owned sprints", getURLSprintsOwned(0, 5), processResults)
+		registerScroll2(getURLSprintsOwned)
+		break;
+	}
+}
+
+function displaySearchPage() {
+	if (!isHash(["all", "discussions", "sprints", "people", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+	
+	setQueryHeader('Search Results: ' + $("#global-search input[name=q]").val(), false);
+	
+	switch (window.location.hash) {
+	case "#all":
+		queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
+		registerScroll2(getURLSearchAll)
+		break;
+	case "#discussions":
+		queueJSON("Getting search results", getURLSearchDiscussions(0, 5), processResults)
+		registerScroll2(getURLSearchDiscussions)
+		break;
+	case "#sprints":
+		queueJSON("Getting search results", getURLSearchSprints(0, 5), processResults)
+		registerScroll2(getURLSearchSprints)
+		break;
+	case "#people":
+		queueJSON("Getting search results", getURLSearchPeople(0, 5), processResults)
+		registerScroll2(getURLSearchPeople)
+		break;
+	case "#owned":
+		queueJSON("Getting search results", getURLSearchOwned(0, 5), processResults)
+		registerScroll2(getURLSearchOwned)
+		break;
+	}
+}
+
+function displayDetail() {
+	$(".nav").hide();
+
+	if (isSocialGSP) {
+		if (window.location.hash.startsWith("#discussions/")) {
+			window.singleDiscussionPage = true;
+			discussionShow(hashData[1]);
+		} else if (window.location.hash.startsWith("#people/")) {
+			showUserDetails(hashData[1]);
+		}
+	} else if (isSprintGSP) {
+		sprintShow(hash.substring(1));               // Removing "#" from the beginning
+	}
+}
+
 function checkAndDisplayTabData() {
 	// Reset these variables as we change state/tab
 	window.singleDiscussionPage = false;
 	nextSuggestionOffset = 0;
-	commentsArgs = {offset: 0, sort: "created", order: "desc"};
+	commentsArgs = {offset: 0, sort: "created", order: "desc"};	
+	
+	// Clear the main content and display a spinner
+	$("#feed").html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
 
-	var hash = window.location.hash;
-	var hashData = hash.split("/");
-
+	// Make sure to remove existing infinite scroll so that feeds can be reloaded based on the new selected tab and
+	// the search filter.
+	$('#feed').infiniteScroll('stop');
+		
 	// If no "hash" is specified or hash is empty
-	if (!hash) {
+	if (!window.location.hash) {
 		window.location.hash = "#all";
 		return;
 	}
 
 	if (isSocialGSP) {
-		if (hash == "#sprints") {
-			window.location.href = sprintListURL;               // Backward support for old URL for list of sprints
-			return;
-		}
-		if (window.location.hash.startsWith("#sprint/")) {
-			window.location.href = sprintShowURL + hashData[1];   // Backward support for old URL of sprint show page
-			return;
-		}
+		displaySocialPage()
+	} else if (isSprintGSP) {
+		displaySprintPage()
+	} else if (isSearchGSP) {
+		displaySearchPage()
 	}
-
-	var $feedElement = $("#feed");
-	var isAnyFeedListingPage = isFeedListingPage();
-	// Clear the main content and display a spinner
-	$feedElement.html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
-
-	// Make sure to remove existing infinite scroll so that feeds can be reloaded based on the new selected tab and
-	// the search filter.
-	$('#feed').infiniteScroll('stop');
-
-	if (isAnyFeedListingPage) {
-		$(".nav").show();
-		$('.container-fluid').addClass("main");
-		$(".nav a[href=" + hash + "]").tab("show");
-
-		var type, title;
-
-		ownedFeed = (hash === "#owned");
-		/*
-		 * Depending upon the type of listing page, we will have to pass different FEED_TYPEs as parameter for the
-		 * owned or all tabs.
-		 */
-		if (ownedFeed || (hash === "#all")) {
-			if (isSocialGSP) {
-				type = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER);
-			} else if (isSprintGSP) {
-				type = FEED_TYPE.SPRINT;
-				title = 'Tracking Sprints';
-			} else if (isSearchGSP) {
-				type = (FEED_TYPE.DISCUSSION | FEED_TYPE.USER | FEED_TYPE.SPRINT);
-			}
-		} else if (hash === "#discussions") {
-			type = FEED_TYPE.DISCUSSION;
-			title = "Discussions";
-		} else if (hash === "#people") {
-			type = FEED_TYPE.USER;
-			title = "People";
-		} else if (isSearchGSP && hash === "#sprints") {
-			type = FEED_TYPE.SPRINT;
-		}
-
-		if (isSearchGSP) {
-			title = 'Search Results: ' + $("#global-search input[name=q]").val();
-		}
-
-		if (title) {
-			setQueryHeader(title, false);
-		}
-
-		queueJSON("Getting feeds", getFeedURL(type, 0, 5), function(data) {
-			var parentElement;
-
-			if (type === FEED_TYPE.DISCUSSION) {
-				var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-				$feedElement.html(createDiscussionForm).append('<div class="discussions"></div>');
-				parentElement = ".discussions";
-			} else {
-				$feedElement.html("");      // Remove spinner
-			}
-
-			if (!checkData(data)) {
-				return;
-			}
-
-			if (data.success) {
-				nextSuggestionOffset = data.nextSuggestionOffset;
-				addAllFeedItems(data, parentElement);
-			} else {
-				if (data.message) {
-					showAlert(data.message);
-				}
-
-				$feedElement.text("No feeds to display.");
-			}
-		});
-
-		registerScroll(type);
-	} else {        // For any show/detail page. Example user show or sprint show
-		$(".nav").hide();
-
-		if (isSocialGSP) {
-			if (window.location.hash.startsWith("#discussions/")) {
-				window.singleDiscussionPage = true;
-				discussionShow(hashData[1]);
-			} else if (window.location.hash.startsWith("#people/")) {
-				showUserDetails(hashData[1]);
-			}
-		} else if (isSprintGSP) {
-			sprintShow(hash.substring(1));               // Removing "#" from the beginning
-		}
-	}
-
+	
 	$(window).scrollTop(0);
 }
 
