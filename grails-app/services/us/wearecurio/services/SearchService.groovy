@@ -383,6 +383,8 @@ class SearchService {
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
 		//TODO: make suggestion count change, but for now returning 3 suggestions per max activity OR enough to meet max count, whichever is greater
 		
+		log.debug "SearchService.getFeed called with type: $type; user: $user; offset: $offset; max: $max; suggestionOffset: $suggestionOffset; sessionId: $sessionId"
+		
 		if (type != DISCUSSION_TYPE && type != (DISCUSSION_TYPE | USER_TYPE) && type != SPRINT_TYPE) {
 			return [success: false, listItems: false, nextSuggestionOffset: false]
 		}
@@ -437,6 +439,8 @@ class SearchService {
 	}
 
 	Map getActivity(Long type, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getActivity called with type: $type; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || !((type == DISCUSSION_TYPE) || (type == SPRINT_TYPE)) ) {
 			return [listItems: false, success: false]
 		}
@@ -505,6 +509,8 @@ class SearchService {
 	}
 
 	Map getSuggestions(Long type, User user, int offset = 0, int max = 10, def sessionId = null) {
+		log.debug "SearchService.getSuggestions called with type: $type; user: $user; offset: $offset; max: $max; sessionId: $sessionId"
+		
 		if (user == null || ((type & (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
@@ -577,6 +583,8 @@ class SearchService {
 	}
 
 	Map getOwned(Long type, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getOwned called with type: $type; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || ((type & (DISCUSSION_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
@@ -632,6 +640,8 @@ class SearchService {
 	}
 		
 	Map search(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
+		log.debug "SearchService.search called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
+		
 		if (user == null) {
 			return [listItems: false, success: false]
 		}
@@ -733,10 +743,14 @@ class SearchService {
 	}
 	
 	Map searchOwned(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
+		log.debug "SearchService.searchOwned called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
+		
 		return search(user, query, offset, max, type)
 	}
 	
 	Map getSprintDiscussions(Sprint sprint, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getSprintDiscussions called with sprint: $sprint; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || sprint == null) {
 			return [listItems: false, success: false]
 		}

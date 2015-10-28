@@ -219,7 +219,7 @@ function processResults(data) {
 }
 
 function displaySocialPage() {
-	var hash = window.location.hash
+	var hash = window.location.hash;
 	if (hash == "#sprints") {
 		// Backward support for old URL for list of sprints
 		window.location.href = sprintListURL;
@@ -237,18 +237,18 @@ function displaySocialPage() {
 	
 	initializeListing();
 	
+	setQueryHeader("Social Activity", false);
+	
 	switch (hash) {
 	case "#all":
 		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
 		registerScroll(getURLSocialAll);
 		break;
 	case "#discussions":
-		setQueryHeader("Discussions", false);
 		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
 		registerScroll(getURLSocialDiscussions);
 		break;
 	case "#people":
-		setQueryHeader("People", false);
 		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
 		registerScroll(getURLSocialPeople);
 		break;
