@@ -158,7 +158,6 @@ function registerScroll(getURLMethod) {
 			this.pause();
 			//var url = getFeedURL(feedType, this.getOffset(), 5);
 			var url = getURLMethod(feedType, this.getOffset(), 5);
-			
 			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
@@ -246,21 +245,21 @@ function displaySocialPage() {
 	switch (hash) {
 	case "#all":
 		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
-		registerScroll2(getURLSocialAll)
+		registerScroll(getURLSocialAll)
 		break;
 	case "#discussions":
 		setQueryHeader("Discussions", false);
 		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
-		registerScroll2(getURLSocialDiscussions)
+		registerScroll(getURLSocialDiscussions)
 		break;
 	case "#people":
 		setQueryHeader("People", false);
 		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
-		registerScroll2(getURLSocialPeople)
+		registerScroll(getURLSocialPeople)
 		break;
 	case "#owned":
 		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)
-		registerScroll2(getURLSocialOwned)
+		registerScroll(getURLSocialOwned)
 		break;
 	}
 }
@@ -278,11 +277,11 @@ function displaySprintPage() {
 	switch (window.location.hash) {
 	case "#all":
 		queueJSON("Getting sprints feed", getURLSprintsAll(0, 5), processResults)
-		registerScroll2(getURLSprintsAll)
+		registerScroll(getURLSprintsAll)
 		break;
 	case "#owned":
 		queueJSON("Getting owned sprints", getURLSprintsOwned(0, 5), processResults)
-		registerScroll2(getURLSprintsOwned)
+		registerScroll(getURLSprintsOwned)
 		break;
 	}
 }
@@ -300,23 +299,23 @@ function displaySearchPage() {
 	switch (window.location.hash) {
 	case "#all":
 		queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
-		registerScroll2(getURLSearchAll)
+		registerScroll(getURLSearchAll)
 		break;
 	case "#discussions":
 		queueJSON("Getting search results", getURLSearchDiscussions(0, 5), processResults)
-		registerScroll2(getURLSearchDiscussions)
+		registerScroll(getURLSearchDiscussions)
 		break;
 	case "#sprints":
 		queueJSON("Getting search results", getURLSearchSprints(0, 5), processResults)
-		registerScroll2(getURLSearchSprints)
+		registerScroll(getURLSearchSprints)
 		break;
 	case "#people":
 		queueJSON("Getting search results", getURLSearchPeople(0, 5), processResults)
-		registerScroll2(getURLSearchPeople)
+		registerScroll(getURLSearchPeople)
 		break;
 	case "#owned":
 		queueJSON("Getting search results", getURLSearchOwned(0, 5), processResults)
-		registerScroll2(getURLSearchOwned)
+		registerScroll(getURLSearchOwned)
 		break;
 	}
 }

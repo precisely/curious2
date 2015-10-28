@@ -338,10 +338,9 @@ class SearchController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "search.query.empty")])
 			return
 		}
-
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
-
+		
 		if (ownedFeed) {
 			// TODO Replace with actual method for search + owned feed. Temporarily using only the owned feed method
 			renderJSONGet(searchService.getOwned(type, user, params.offset, params.max))
