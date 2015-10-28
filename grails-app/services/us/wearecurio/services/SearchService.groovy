@@ -28,6 +28,7 @@ class SearchService {
 
 	def elasticSearchService
 	def elasticSearchHelper
+	def messageSource
 	
 	static transactional = true
 
@@ -634,7 +635,12 @@ class SearchService {
 		if (user == null) {
 			return [listItems: false, success: false]
 		}
-						
+
+		// If no query is entered or empty string is passed
+		if (!query || !query.trim()) {
+			return [success: false, message: messageSource.getMessage("search.query.empty", null, null)]
+		}
+
 		String queryAnd = query.replaceAll("[oO][rR]","").replaceAll("[aA][nN][dD]"," ").replaceAll("\\s+", " AND ")
 		def readerGroups = UserGroup.getGroupsForReader(user.id)
 		def adminGroups = UserGroup.getGroupsForAdmin(user.id)

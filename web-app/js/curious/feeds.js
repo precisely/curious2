@@ -8,17 +8,14 @@ var isSocialGSP = (controllerName == "home" && actionName == "social");
 var isSprintGSP = (controllerName == "home" && actionName == "sprint");
 var isSearchGSP = (controllerName == "search" && actionName == "index");
 
-/**
- * A copy of types defined in the server side code. See "SearchService.groovy"
- */
-function getSearchControllerURL(actionName, paramsClosure) {
+function getSearchControllerURL(actionName, params) {
 	//var params = getCSRFPreventionObject(csrfpreventionObjectName, params);
 	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
 
 	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
 }
 
-function getSearchControllerURLSearch(actionName, paramsClosure) {
+function getSearchControllerURLSearch(actionName, params) {
 	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
 	params.q = $("#global-search input[name=q]").val();
 
@@ -99,7 +96,7 @@ function getURLSearchAll(offset, max) {
 
 function getURLSearchDiscussions(offset, max) {
 	return getSearchControllerURLSearch(
-			"searchAllData",
+			"searchDiscussionData",
 			{
 				offset: offset, 
 				max: max
@@ -149,15 +146,13 @@ function displayNoDataMessage(listItems) {
 	}
 }
 
-//function registerScroll(feedType) {
 function registerScroll(getURLMethod) {
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			//var url = getFeedURL(feedType, this.getOffset(), 5);
-			var url = getURLMethod(feedType, this.getOffset(), 5);
+			var url = getURLMethod(this.getOffset(), 5);
 			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
@@ -185,14 +180,14 @@ function registerScroll(getURLMethod) {
 }
 
 function isHash(values) {
-	var urlHashValue = location.hash.substring(1).trim();	
+	var urlHashValue = location.hash.substring(1).trim();
 	return (values.indexOf(urlHashValue) > -1);
 }
 
 function initializeListing() {
 	$(".nav").show();
 	$('.container-fluid').addClass("main");
-	$(".nav a[href=" + window.location.hash + "]").tab("show");	
+	$(".nav a[href=" + window.location.hash + "]").tab("show");
 }
 
 function processResults(data) {
@@ -224,7 +219,7 @@ function processResults(data) {
 }
 
 function displaySocialPage() {
-	hash = window.location.hash
+	var hash = window.location.hash
 	if (hash == "#sprints") {
 		// Backward support for old URL for list of sprints
 		window.location.href = sprintListURL;
@@ -245,21 +240,21 @@ function displaySocialPage() {
 	switch (hash) {
 	case "#all":
 		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
-		registerScroll(getURLSocialAll)
+		registerScroll(getURLSocialAll);
 		break;
 	case "#discussions":
 		setQueryHeader("Discussions", false);
 		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
-		registerScroll(getURLSocialDiscussions)
+		registerScroll(getURLSocialDiscussions);
 		break;
 	case "#people":
 		setQueryHeader("People", false);
 		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
-		registerScroll(getURLSocialPeople)
+		registerScroll(getURLSocialPeople);
 		break;
 	case "#owned":
 		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)
-		registerScroll(getURLSocialOwned)
+		registerScroll(getURLSocialOwned);
 		break;
 	}
 }
@@ -277,11 +272,11 @@ function displaySprintPage() {
 	switch (window.location.hash) {
 	case "#all":
 		queueJSON("Getting sprints feed", getURLSprintsAll(0, 5), processResults)
-		registerScroll(getURLSprintsAll)
+		registerScroll(getURLSprintsAll);
 		break;
 	case "#owned":
 		queueJSON("Getting owned sprints", getURLSprintsOwned(0, 5), processResults)
-		registerScroll(getURLSprintsOwned)
+		registerScroll(getURLSprintsOwned);
 		break;
 	}
 }
@@ -322,13 +317,16 @@ function displaySearchPage() {
 
 function displayDetail() {
 	$(".nav").hide();
+	var hash = window.location.hash;
 
 	if (isSocialGSP) {
-		if (window.location.hash.startsWith("#discussions/")) {
+		var domainHashValue = hash.split("/")[1];
+
+		if (hash.startsWith("#discussions/")) {
 			window.singleDiscussionPage = true;
-			discussionShow(hashData[1]);
-		} else if (window.location.hash.startsWith("#people/")) {
-			showUserDetails(hashData[1]);
+			discussionShow(domainHashValue);
+		} else if (hash.startsWith("#people/")) {
+			showUserDetails(domainHashValue);
 		}
 	} else if (isSprintGSP) {
 		sprintShow(hash.substring(1));               // Removing "#" from the beginning

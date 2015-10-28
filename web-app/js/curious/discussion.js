@@ -156,7 +156,7 @@ $(document).ready(function() {
 					$this.parent().closest('.discussion-comment').slideUp('normal', function() {
 						$(this).remove();
 					});
-					if (isFeedListingPage()) {
+					if (isHash(["all", "discussions", "people", "owned"])) {
 						var $commentButton = $this.parents().closest('.discussion').find('.comment-button');
 						var totalComments = $commentButton.data('totalComments') - 1;
 						$commentButton.data('totalComments', totalComments);
