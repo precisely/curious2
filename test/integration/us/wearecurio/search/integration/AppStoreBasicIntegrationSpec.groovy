@@ -1,4 +1,4 @@
-package us.wearecurio.services.integration.SearchService
+package us.wearecurio.search.integration
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.Model.Visibility
