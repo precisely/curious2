@@ -29,7 +29,7 @@ $(function() {
 				$("#graphList").append('<div class="graphItem">\
 					<div class="summary">\
 					<h2>' + this['name'] + '</h2>\
-					<div class="date">' + this['created'].getMonth() +'/' + this['created'].getDay() + '/' + this['created'].getFullYear() + '</div>\
+					<div class="date">' + (this['created'].getMonth() + 1) +'/' + this['created'].getDate() + '/' + this['created'].getFullYear() + '</div>\
 					<a class="preview" href="/home/viewgraph?plotDataId=' + this['id'] + '">load</a>\
 					<a href="#" onclick="deletePlotId(' + this['id'] + ')"><img height="12" width="12" src="/images/x.gif"></a>\
 					</div>\
