@@ -652,16 +652,15 @@ class User {
 			interestTags: fetchInterestTagsJSON()*.description,
 			bio: bio,
 			updated: created,
-			linkedToFitbit: getAccessTokenForThirdParty("FITBIT"),
-			linkedToWithings: getAccessTokenForThirdParty("WITHINGS"),
-			linkedToMoves: getAccessTokenForThirdParty("MOVES"),
-			linkedToJawbone: getAccessTokenForThirdParty("JAWBONE"),
-			linkedToTwenty3andMe: getAccessTokenForThirdParty("TWENTY_THREE_AND_ME")
+			linkedToFitbit: getAccessTokenForThirdParty(ThirdParty["FITBIT"]),
+			linkedToWithings: getAccessTokenForThirdParty(ThirdParty["WITHINGS"]),
+			linkedToMoves: getAccessTokenForThirdParty(ThirdParty["MOVES"]),
+			linkedToJawbone: getAccessTokenForThirdParty(ThirdParty["JAWBONE"]),
+			linkedToTwenty3andMe: getAccessTokenForThirdParty(ThirdParty["TWENTY_THREE_AND_ME"])
 		]
 	}
 
-	private String getAccessTokenForThirdParty(String type) {
-		ThirdParty partyType = ThirdParty[type]
+	private String getAccessTokenForThirdParty(ThirdParty partyType) {
 		return OAuthAccount.findByTypeIdAndUserId(partyType, id)?.accessToken
 	}
 

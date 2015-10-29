@@ -66,6 +66,10 @@ class UserController extends LoginController {
 			return
 		}
 
+		if (user.id != sessionUser().id) {
+			renderJSONGet([success: false, message: g.message(code: "default.permission.denied")])
+			return
+		}
 		validate = user.validateUserPreferences(requestData, user)
 
 		if (!validate.status) {

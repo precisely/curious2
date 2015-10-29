@@ -970,12 +970,12 @@ function parseISO8601(str) {
 	// we assume str is a UTC date ending in 'Z'
 
 	var parts = str.split('T'),
-			dateParts = parts[0].split('-'),
-			timeParts = parts[1].split('Z'),
-			timeSubParts = timeParts[0].split(':'),
-			timeSecParts = timeSubParts[2].split('.'),
-			timeHours = Number(timeSubParts[0]),
-			_date = new Date;
+		dateParts = parts[0].split('-'),
+		timeParts = parts[1].split('Z'),
+		timeSubParts = timeParts[0].split(':'),
+		timeSecParts = timeSubParts[2].split('.'),
+		timeHours = Number(timeSubParts[0]),
+		_date = new Date;
 
 	_date.setUTCFullYear(Number(dateParts[0]));
 	_date.setUTCDate(1);
@@ -1251,7 +1251,7 @@ function PlotLine(p) {
 			this.isContinuous = val;
 			var plotLine = this;
 			queueJSON("saving setting", makeGetUrl("setTagPropertiesData"), getCSRFPreventionObject("setTagPropertiesDataCSRF",
-							{ tags:$.toJSON(this.getTags()), isContinuous:val ? 'true' : 'false' }),
+							{tags: $.toJSON(this.getTags()), isContinuous: val ? 'true' : 'false'}),
 					function(result){
 						if (this.checkData(result)) {
 							if (plotLine.tag) plotLine.tag.setIsContinuous(val);
