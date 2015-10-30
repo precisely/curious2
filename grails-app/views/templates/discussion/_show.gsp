@@ -63,9 +63,9 @@
 									</a>
 								</div>
 								<div class="col-xs-3 discussion-topic-span discussion-header">
-									<span class="posting-time" data-time="{{- discussionCreatedOn.time }}"></span>
+									<span class="posting-time" data-time="{{- discussionCreatedOn }}"></span>
 									{{ if (isAdmin) { }}
-										<li class="dropdown">
+										<div class="dropdown">
 											<a href="#" data-toggle="dropdown">
 												<b class="caret"></b>
 											</a>
@@ -76,7 +76,7 @@
 													</a>
 												</li>
 											</ul>
-										</li>
+										</div>
 									{{ } }}
 								</div>
 							</div>
@@ -158,10 +158,6 @@
 					</option>
 				{{ }) }}
 			</select>
-		</div>
-		<div id="comment-dialog" class="hide" title="Comment">
-			<input type="text" name="comment" id="userComment" required placeholder="Add Comment...">
-			<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 		</div>
 	</div>
 </div>

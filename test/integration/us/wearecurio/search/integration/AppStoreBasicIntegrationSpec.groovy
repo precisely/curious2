@@ -1,15 +1,10 @@
-package us.wearecurio.services.integration.SearchService
-
-import grails.test.spock.IntegrationSpec
+package us.wearecurio.search.integration
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.Sprint
-import us.wearecurio.model.UserGroup
 import us.wearecurio.model.Tag
-
 import us.wearecurio.services.SearchService
-
 import us.wearecurio.utility.Utils
 
 class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
@@ -57,10 +52,10 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.find{ it.type == "usr" && it.hash == user3.hash }
 
 		and: "results includes suggested discussion with matching tags (discussion1)"
-		results.listItems.find{ it.type == "dis" && it.id == discussion1.id.toString() && it.name == discussion1.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion1.id && it.name == discussion1.name }
 		
 		and: "results includes discussion with post (discussion2)"
-		results.listItems.find{ it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion2.id && it.name == discussion2.name }
     }
 	
 	//@spock.lang.Ignore
@@ -108,10 +103,10 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 2
 		
 		and: "results includes suggested sprint (sprint1)"
-		results.listItems.find{ it.type == "spr" && it.id == sprint1.id.toString() && it.name == sprint1.name }
+		results.listItems.find{ it.type == "spr" && it.id == sprint1.id && it.name == sprint1.name }
 		
 		and: "results includes sprint with discussion with post (sprint2)"
-		results.listItems.find{ it.type == "spr" && it.id == sprint2.id.toString() && it.name == sprint2.name }
+		results.listItems.find{ it.type == "spr" && it.id == sprint2.id && it.name == sprint2.name }
     }
 	
 	//@spock.lang.Ignore
@@ -151,7 +146,7 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 1
 		
 		and: "results includes discussion with post (discussion2)"
-		results.listItems.find{ it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion2.id && it.name == discussion2.name }
 	}
 
 	//@spock.lang.Ignore
@@ -198,7 +193,7 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 1
 		
 		and: "results includes sprint with discussion with post (sprint2)"
-		results.listItems.find{ it.type == "spr" && it.id == sprint2.id.toString() && it.name == sprint2.name }
+		results.listItems.find{ it.type == "spr" && it.id == sprint2.id && it.name == sprint2.name }
 	}
 
 	//@spock.lang.Ignore
@@ -272,7 +267,7 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 1
 		
 		and: "results includes discussion2"
-		results.listItems.find{ it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion2.id && it.name == discussion2.name }
 	}
 
 	//@spock.lang.Ignore
@@ -324,7 +319,7 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 1
 		
 		and: "results includes owned sprint (sprint2)"
-		results.listItems.find{ it.type == "spr" && it.id == sprint3.id.toString() && it.name == sprint3.name }
+		results.listItems.find{ it.type == "spr" && it.id == sprint3.id && it.name == sprint3.name }
 	}
 
 	//@spock.lang.IgnoreRest
@@ -446,9 +441,9 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems.size() == 2
 		
 		and: "results includes discussion2"
-		results.listItems.find{ it.type == "dis" && it.id == discussion2.id.toString() && it.name == discussion2.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion2.id && it.name == discussion2.name }
 		
 		and: "results includes discussion3"
-		results.listItems.find{ it.type == "dis" && it.id == discussion3.id.toString() && it.name == discussion3.name }
+		results.listItems.find{ it.type == "dis" && it.id == discussion3.id && it.name == discussion3.name }
 	}
 }

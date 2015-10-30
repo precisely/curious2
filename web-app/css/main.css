@@ -3230,10 +3230,6 @@ body {
 	font-size: 16px;
 }
 
-.discusscomments .discussion-topic {
-	padding: 10px 7px 43px 7px;
-}
-
 .discusscomments .buttons {
 	margin-top: -10px;
 }
@@ -3265,30 +3261,29 @@ body {
 	padding-left: 5px;
 }
 
-.discussion-header li {
+.discussion-header .dropdown {
 	display: inline-block;
 	background-color: #f3f3f3;
+	margin-left: 20px;
 }
 
 .discussion-header .open {
 	width: 92px;
 }
-.discussion-header li a b {
+.discussion-header .dropdown a b {
 	margin: 10px 12px;
 	color: #c8c8c8;
 }
 
-.discussion-header li a .caret {
+.discussion-header .dropdown a .caret {
 	border-top: 5px solid;
 	border-right: 5px solid transparent;
 }
 
-.discussion-header li .dropdown-menu {
+.discussion-header .dropdown .dropdown-menu {
 	background-color: #f3f3f3;
 	min-width: 0px;
 	max-width: 92px;
-	min-height: 0px;
-	max-height: 29px;
 	text-align: center;
 	margin-left: 85px;
 	margin-top: -2px;
@@ -3297,12 +3292,12 @@ body {
 	padding-top: 0px;
 }
 
-.discussion-header li .dropdown-menu li a {
+.discussion-header .dropdown .dropdown-menu li a {
 	padding: 2px;
 	color: #a8a8a8;
 }
 
-.discussion-header li .dropdown-menu li a img {
+.discussion-header .dropdown .dropdown-menu li a img {
 	margin-right: 10px;
 }
 
@@ -3319,10 +3314,6 @@ body {
 .discussion .discussion-topic a {
 	margin-top: 0px;
 	font-weight: 600;
-}
-
-.discussion-topic .discussion-title-col {
-	max-width: 50%;
 }
 
 .discusscomments .discussion .discussion-topic a {
@@ -3400,11 +3391,6 @@ body {
 .discussion-topic .posting-time, .feed-item .sprint .posting-time {
 	font-size: 11px;
 	color: #a8a8a8;
-	margin-right: 20px;
-}
-
-.feed-item .sprint .posting-time {
-	margin-right: 0px;
 }
 
 .discussion .discussion-topic p {
@@ -3416,7 +3402,7 @@ body {
 }
 
 .discussion .discussion-topic hr {
-	margin-bottom: 10px;
+	margin-bottom: 25px;
 	border-width: 2px;
 	border-color: #e9e9e9;
 	margin-top: 0px;
@@ -3431,17 +3417,8 @@ body {
 	margin-top: 5px;
 }
 
-.discussion-topic .button-box {
-	position: absolute;
-	bottom: -5px;
-	right: 0;
-	min-width: 450px;
-}
-
 .discussion-topic .buttons {
-	margin-right: 15px;
-	display: inline-block;
-	float: right;
+	text-align: right;
 }
 
 .discussion-topic .buttons .share-button {
@@ -3456,11 +3433,22 @@ body {
 .discussion-topic .buttons button {
 	height: 25px;
 	background-color: transparent;
-	margin: 20px;
-	margin-bottom: 0px;
+	margin: 0 20px;
 	font-size: 14px;
 	font-weight: 100;
 	text-transform: none;
+}
+
+.discussion-topic .name {
+	padding-top: 7px;
+}
+
+.discussion-topic .buttons button:last-child {
+	margin-right: 0;
+}
+
+.discussion-topic .buttons button:first-child {
+	margin-left: 0;
 }
 
 .discussion-topic button img {
@@ -3470,12 +3458,7 @@ body {
 }
 
 .discussion-topic .contents {
-	margin-bottom: 10px;
-	padding: 6px 14px 3px 10px;
-}
-
-.discusscomments .discussion-topic .contents {
-	margin-top: 9px;
+	padding: 6px 14px;
 }
 
 .discussion-comments-wrapper {
@@ -3624,7 +3607,7 @@ body {
 	padding: 10px 10px 10px 45px;
 	height: 41px;
 	width: 136px;
-	color: #AAAAAA;
+	color: rgb(45, 45, 45);
 	background-color: #f3f3f3;
 	font-size: 11px;
 }
@@ -4323,6 +4306,17 @@ body .modal-header button {
 	height: 30px;
 	font-size: 14px;
 	color: #fff;
+}
+
+.feed-body .nav .label {
+	background-color: #ff935f;
+	border-radius: 2px;
+	color: white;
+	padding: 1px 2px 2px 5px;
+	height: auto;
+	font-size: 11px;
+	margin-top: 6px;
+	margin-left: 10px;
 }
 
 #feed-right-tab {

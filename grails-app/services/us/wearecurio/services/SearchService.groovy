@@ -1,33 +1,26 @@
 package us.wearecurio.services
-
 import org.apache.commons.logging.LogFactory
-
-import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.search.SearchResponse
-
-import static org.elasticsearch.index.query.FilterBuilders.*
-import org.elasticsearch.index.query.functionscore.*
-import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.*
-import static org.elasticsearch.index.query.QueryBuilders.*
-import org.elasticsearch.index.query.QueryBuilders
-
-import org.elasticsearch.search.aggregations.AggregationBuilders
-import org.elasticsearch.search.sort.*
-import grails.util.Environment
-
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.DiscussionPost
-import us.wearecurio.model.Entry
-import us.wearecurio.model.GroupMemberReader
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
+import org.elasticsearch.search.sort.SortBuilders
+import org.elasticsearch.search.sort.SortOrder
 import us.wearecurio.model.GroupMemberDiscussion
 import us.wearecurio.model.Model
-import us.wearecurio.model.Model.Visibility;
 import us.wearecurio.model.Sprint
-import us.wearecurio.model.Tag
 import us.wearecurio.model.User
-import us.wearecurio.model.UserActivity
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
+
+import static org.elasticsearch.index.query.FilterBuilders.andFilter
+import static org.elasticsearch.index.query.FilterBuilders.queryFilter
+import static org.elasticsearch.index.query.FilterBuilders.termsFilter
+import static org.elasticsearch.index.query.FilterBuilders.typeFilter
+import static org.elasticsearch.index.query.QueryBuilders.functionScoreQuery
+import static org.elasticsearch.index.query.QueryBuilders.queryString
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.factorFunction
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.linearDecayFunction
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.randomFunction
 
 class SearchService {
 	
@@ -35,9 +28,13 @@ class SearchService {
 
 	def elasticSearchService
 	def elasticSearchHelper
+	def messageSource
 	
 	static transactional = true
-	
+
+	/*
+	 * Any changes made here to these types must be reflected in the client side code. See "feeds.js" file.
+	 */
 	static final Long DISCUSSION_TYPE 			= 1
 	static final Long SPRINT_TYPE				= 2
 	static final Long DISCUSSION_POST_TYPE		= 4
@@ -168,7 +165,7 @@ class SearchService {
 			case "discussion":
 				return [
 					type: "dis",
-					id: hit.id,
+					id: hit.id.toLong(),
 					hash: hit.source.hash,
 					name: hit.source.name,
 					userHash: hit.source.userHash,
@@ -180,14 +177,14 @@ class SearchService {
 					totalComments: hit.source.postCount,
 					isPlot: hit.source.isFirstPostPlot,
 					firstPost: hit.source.firstPostId,
-					isAdmin: adminDiscussionIds.contains(hit.id),
+					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
 					groupId: null,
 					groupName: null,
 				]
 			case "sprint":
 				return [
 					type: "spr",
-					id: hit.id,
+					id: hit.id.toLong(),
 					hash: hit.source.hash,
 					name: hit.source.name,
 					userId: hit.source.userId,
@@ -386,6 +383,8 @@ class SearchService {
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
 		//TODO: make suggestion count change, but for now returning 3 suggestions per max activity OR enough to meet max count, whichever is greater
 		
+		log.debug "SearchService.getFeed called with type: $type; user: $user; offset: $offset; max: $max; suggestionOffset: $suggestionOffset; sessionId: $sessionId"
+		
 		if (type != DISCUSSION_TYPE && type != (DISCUSSION_TYPE | USER_TYPE) && type != SPRINT_TYPE) {
 			return [success: false, listItems: false, nextSuggestionOffset: false]
 		}
@@ -440,6 +439,8 @@ class SearchService {
 	}
 
 	Map getActivity(Long type, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getActivity called with type: $type; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || !((type == DISCUSSION_TYPE) || (type == SPRINT_TYPE)) ) {
 			return [listItems: false, success: false]
 		}
@@ -508,6 +509,8 @@ class SearchService {
 	}
 
 	Map getSuggestions(Long type, User user, int offset = 0, int max = 10, def sessionId = null) {
+		log.debug "SearchService.getSuggestions called with type: $type; user: $user; offset: $offset; max: $max; sessionId: $sessionId"
+		
 		if (user == null || ((type & (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
@@ -580,6 +583,8 @@ class SearchService {
 	}
 
 	Map getOwned(Long type, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getOwned called with type: $type; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || ((type & (DISCUSSION_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
@@ -635,10 +640,17 @@ class SearchService {
 	}
 		
 	Map search(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
+		log.debug "SearchService.search called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
+		
 		if (user == null) {
 			return [listItems: false, success: false]
 		}
-						
+
+		// If no query is entered or empty string is passed
+		if (!query || !query.trim()) {
+			return [success: false, message: messageSource.getMessage("search.query.empty", null, null)]
+		}
+
 		String queryAnd = query.replaceAll("[oO][rR]","").replaceAll("[aA][nN][dD]"," ").replaceAll("\\s+", " AND ")
 		def readerGroups = UserGroup.getGroupsForReader(user.id)
 		def adminGroups = UserGroup.getGroupsForAdmin(user.id)
@@ -730,7 +742,15 @@ class SearchService {
 		return result
 	}
 	
+	Map searchOwned(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
+		log.debug "SearchService.searchOwned called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
+		
+		return search(user, query, offset, max, type)
+	}
+	
 	Map getSprintDiscussions(Sprint sprint, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getSprintDiscussions called with sprint: $sprint; user: $user; offset: $offset; max: $max"
+		
 		if (user == null || sprint == null) {
 			return [listItems: false, success: false]
 		}
@@ -1170,239 +1190,5 @@ class SearchService {
 	Map searchAll(User user, String query, int offset = 0, int max = 10) {
 		return search(user, DISCUSSION_TYPE | SPRINT_TYPE | USER_TYPE, query, offset, max)
 	}
-*/			
-	Map getSprintsList(User user, int offset, int max) {
-		try {
-						
-			def results = Sprint.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
-				query_string(query:  "userId:" + user.id)
-			}
-	
-			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: false]
-			}
-			
-			Map model = [sprintList: results.searchResults*.getJSONDesc()]
-			return [listItems: model, success: true]
-			
-		} catch (RuntimeException e) {
-			log.debug(e.message)
-			return [listItems: false, success: false]
-		}
-	}
-	
-	Map getDiscussionsList(User user, int offset, int max, def groupIds = null) {
-		log.debug "getDiscussionsList: user:${user} offset:${offset} max:${max} groupIds:${groupIds}"
-		try {
-			def userReaderGroups = UserGroup.getGroupsForReader(user)
-			if (userReaderGroups == null || userReaderGroups.size() < 1) {
-				return [listItems: false, success: false]
-			}
-			
-			String groupIdsOr = Utils.orifyList(userReaderGroups.collect{ it[0].id }.findAll{ groupIds == null ? true : it in groupIds })
-									
-			def totalDiscussionCount = 0
-			elasticSearchHelper.withElasticSearch{ client ->
-				CountResponse cr = client
-						.prepareCount("us.wearecurio.model_v0")
-						.setTypes("discussion")
-						.setQuery(queryString("groupIds:" + groupIdsOr))
-						.execute()
-						.actionGet()
-				
-				totalDiscussionCount = cr.count
-			}
-			
-			if (totalDiscussionCount < 1) {
-				return [listItems: false, success: false]
-			}
-			
-			def readerGroupDiscussions = Discussion.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
-				query_string(query:  "groupIds:${groupIdsOr}")
-			}
-			
-			if (readerGroupDiscussions == null || readerGroupDiscussions.searchResults == null || readerGroupDiscussions.searchResults.size() < 1) {
-				return [listItems: false, success: false]
-			}
-			
-			String discussionIdsOr = readerGroupDiscussions.searchResults.collect{ it.id }.join(" OR ")
-			if (discussionIdsOr.size() > 1) discussionIdsOr = "(${discussionIdsOr})"
-			
-			def adminGroupIds = user.getAdminGroupIds()
-			
-			return elasticSearchHelper.withElasticSearch{ client ->
-				SearchResponse sr = client
-						.prepareSearch("us.wearecurio.model_v0")
-						.setTypes("discussionPost")
-						.setQuery(
-						boolQuery()
-						.must(
-						queryString("discussionId:${discussionIdsOr}")
-						)
-						)
-						.setSize(0)   // prevent documents from showing up; only interested in count stats and top posts PER discussionId
-						.addAggregation(
-						AggregationBuilders
-						.terms("by_discussionId")
-						.field("discussionId")
-						.subAggregation(
-						AggregationBuilders
-						.topHits("top_hits")
-						.setSize(2)  // number of post documents to show PER discussion id
-						.addSort(SortBuilders.fieldSort("created").order(SortOrder.ASC))
-						)
-						)
-						.execute()
-						.actionGet()
-				
-				Map model = [
-					userId: user.id,
-					groupMemberships: userReaderGroups,
-					totalDiscussionCount: totalDiscussionCount,
-					discussionList: [],
-					discussionPostData: [:]
-				]
-				
-				for (def d : readerGroupDiscussions.searchResults ) {
-					log.debug "readerGroupDiscussion:${d.toString()}"
-					User discussionUser = User.get(d.userId)
-
-					if (Environment.isDevelopmentMode() && !discussionUser) {
-						log.warn "No discussionUser for id: $d.userId "
-						continue
-					}
-
-					model["discussionList"] << [
-						id: d.id,
-						hash: d.hash,
-						name: d.name,
-						userHash: discussionUser.hash,
-						userName: discussionUser.username,
-						userAvatarURL: discussionUser.avatar?.path,
-						isPublic: d.isPublic(),
-						created: d.created,
-						updated: d.updated,
-						type: "dis"
-					]
-					
-					def discussionItem = model["discussionList"].find{ it.id == d.id}
-					
-					def bucket = sr.getAggregations().get("by_discussionId").getBuckets().find{ b -> b.key == d.id.toString() }
-					def firstPost
-					if (bucket) {
-						def secondPost
-						def hits = bucket.getAggregations().get("top_hits").getHits().getHits()
-						if (hits.size() < 1 || hits.size() > 2 || (d.firstPostId == null || hits[0].id != d.firstPostId.toString())) {
-							//should always have either 1 or 2 hits in agg list
-							//first hit should always match first postid of this discussion
-							return [listItems: false, success: false] // better to throw exception?
-						}
-						
-						firstPost = hits[0].getSource()
-						if (hits.size() > 1 ) {
-							secondPost = hits[1].getSource()
-						}
-						
-						model["discussionPostData"][d.id] = [
-							secondPost: secondPost,
-							totalPosts: bucket.docCount
-						]
-						discussionItem["totalComments"] = bucket.docCount
-					} else {
-						model["discussionPostData"][d.id] = [
-							secondPost: null,
-							totalPosts: 0
-						]
-						discussionItem["totalComments"] = 0
-					}
-					
-					if (firstPost) {
-						discussionItem["isPlot"] = (firstPost.plotDataId != null && firstPost.plotDataId > 0)
-						discussionItem["firstPost"] = firstPost
-					}
-					
-					//eventually, this code will need to be refactored to account for discussions with multiple groups
-					//for now, arbitrarily grab first group for which user is an admin and which is associated with this discussion
-					//if user is not admin of any group associated with this discussion, then arbitrarily select first group associated with this discussion.
-					//def groupIds = d.groupIds
-					if (d.groupIds == null || d.groupIds.length < 1) {
-						//all discussions should have at least one group
-						return [listItems: false, success: false] // better to throw exception?
-					}
-					
-					discussionItem["isAdmin"] = (d.userId == user.id)
-					boolean firstGroup = true
-					Long anyGid = null
-					String anyGName = null
-					for (Long gid : d.groupIds) {
-						//NOT ALL of discussion's groups are necessarily included in userReaderGroups
-						//BUT at least ONE of the discussion's groupIds MUST be, use first non-hidden user group
-						def groups = userReaderGroups.find{ it[0].id == gid }
-						if (groups && groups.length > 0) {
-							UserGroup group = groups[0]
-							anyGid = gid
-							anyGName = group.fullName
-							if (firstGroup && (!group.isHidden)) {
-								//use first group data, unless admin group is found further down in the list.
-								discussionItem["groupId"] = gid
-								discussionItem["groupName"] = group.fullName
-								if (model["discussionList"].find{ it.id == d.id}["isAdmin"]) {
-									break //admin already true, so no need to continue
-								}
-								firstGroup = false
-							}
-							if (d.userId == user.id || (adminGroupIds != null && adminGroupIds.contains(gid))) {
-								//found first admin group
-								if (!firstGroup) {
-									//override first group data with current, non-first-group-but-first-admin-group data
-									discussionItem["groupId"] = gid
-									discussionItem["groupName"] = groups[0].fullName
-								}
-								discussionItem["isAdmin"] = true
-								break // found admin, so no need to proceed
-							}
-						}
-					}
-					// make sure at least one group ID and name are set for discussion even if they are hidden/user-virtual
-					if (!discussionItem["groupId"]) {
-						discussionItem["groupId"] = anyGid
-						discussionItem['groupName'] = anyGName
-					}
-				}
-				
-				log.debug "Done processing search result information: ${model}"
-				
-				return [listItems: model, success: true]
-			}
-		
-		} catch (RuntimeException e) {
-			log.debug(e.message)
-			return [listItems: false, success: false]
-		}
-	}
-	
-	Map getPeopleList(User user, int offset, int max) {
-		try {
-			def results = User.search(searchType:'query_and_fetch', sort:'created', order:'desc', size: max.toString(), from: offset.toString() ) {
-				bool {
-					must {
-						query_string(query: "virtual:false")
-					}
-					must_not {
-						ids(values: [user.id.toString()])
-					}
-				}
-			}
-			
-			if (results == null || results.searchResults == null || results.searchResults.size() < 1) {
-				return [listItems: false, success: false]
-			}
-			
-			return [listItems: results.searchResults*.getPeopleJSONDesc(), success: true]
-		
-		} catch (RuntimeException e) {
-			log.debug(e.message)
-			return [listItems: false, success: false]
-		}
-	}
+*/
 }

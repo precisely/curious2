@@ -1,6 +1,6 @@
 package us.wearecurio.controller
-
 import us.wearecurio.model.User
+import us.wearecurio.services.SearchService
 
 class SearchController extends LoginController {
 
@@ -14,54 +14,304 @@ class SearchController extends LoginController {
 		debug "SearchController constructor()"
 	}
 
-	def indexData(String type, int max, int offset) {
+	User getCurrentUser() {
 		User user = sessionUser()
-
-		log.debug "params recieved: $params"
+		
 		if (!user) {
+			debug "sessionUser returns null"
 			renderJSONGet([success: false, message: g.message(code: "auth.error.message")])
-			return
+			return null
 		}
 
-		if (!type) {
-			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+		return user
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "ALL" sub-tab in the "SOCIAL" view
+	 */
+	def getAllSocialData(int offset, int max, int nextSuggestionOffset) {
+		log.debug "SearchController.getAllSocialData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.nextSuggestionOffset = nextSuggestionOffset ?: 0
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+
+		renderJSONGet(
+			searchService.getFeed(
+				SearchService.DISCUSSION_TYPE | SearchService.USER_TYPE,
+				user,
+				params.offset,
+				params.max,
+				nextSuggestionOffset//,
+				//session.id
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "DISCUSSIONS" sub-tab in the "SOCIAL" view
+	 */
+	def getDiscussionSocialData(int offset, int max) {
+		log.debug "SearchController.getDiscussionSocialData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.getActivity(
+				SearchService.DISCUSSION_TYPE,
+				user, 
+				params.offset, 
+				params.max
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "PEOPLE" sub-tab in the "SOCIAL" view
+	 */
+	def getPeopleSocialData(int offset, int max) {
+		log.debug "SearchController.getPeopleSocialData $params"
+		
+		User user = currentUser
+		if (user == null) {
 			return
 		}
 
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 
-		if (type.equalsIgnoreCase("people")) {
-			renderJSONGet(searchService.getPeopleList(user, params.offset, params.max))
-		} else if (type.equalsIgnoreCase("discussions")) {
-			renderJSONGet(searchService.getDiscussionsList(user, params.offset, params.max))
-		} else if (type.equalsIgnoreCase("sprints")) {
-			renderJSONGet(searchService.getSprintsList(user, params.offset, params.max))
-		} else if (type.equalsIgnoreCase("all")) {
-			List listItems = []
-
-			Map sprints = searchService.getSprintsList(user, params.offset, params.max)
-			if (sprints.listItems) {
-				listItems.addAll(sprints.listItems.sprintList)
-			}
-
-			Map discussions = searchService.getDiscussionsList(user, params.offset, params.max)
-			if (discussions.listItems) {
-				listItems.addAll(discussions.listItems.discussionList)
-			}
-
-			Map peoples = searchService.getPeopleList(user, params.offset, params.max)
-			if (peoples.listItems) {
-				listItems.addAll(peoples.listItems)
-			}
-
-			if (!listItems) {
-				renderJSONGet([success: false, listItems: false])
-				return
-			}
-			renderJSONGet([listItems: listItems, success: true])
-		} else {
-			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Type"])])
+//		renderJSONGet(
+//			searchService.getSuggestions(
+//				SearchService.USER_TYPE,
+//				user, 
+//				params.offset, 
+//				params.max,
+//				session.id
+//			)
+//		)
+		
+		renderJSONGet(
+			searchService.getSuggestions(
+				SearchService.USER_TYPE,
+				user,
+				params.offset,
+				params.max
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "OWNED" sub-tab in the "SOCIAL" view
+	 */
+	def getOwnedSocialData(int offset, int max) {
+		log.debug "SearchController.getOwnedSocialData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
 		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.getOwned(
+				SearchService.DISCUSSION_TYPE,
+				user, 
+				params.offset, 
+				params.max
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "ALL" sub-tab in the "SPRINTS" view
+	 */
+	def getAllSprintData(int offset, int max, int nextSuggestionOffset) {
+		log.debug "SearchController.getAllSprintData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+
+		params.nextSuggestionOffset = nextSuggestionOffset ?: 0
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+
+		renderJSONGet(
+			searchService.getFeed(
+				SearchService.SPRINT_TYPE,
+				user,
+				params.offset,
+				params.max,
+				nextSuggestionOffset//,
+				//session.id
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "OWNED" sub-tab in the "SPRINTS" view
+	 */
+	def getOwnedSprintData(int offset, int max) {
+		log.debug "SearchController.getOwnedSprintData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.getOwned(
+				SearchService.SPRINT_TYPE,
+				user,
+				params.offset, 
+				params.max
+			)
+		)
+	}
+
+	/**
+	 * AJAX endpoint which is called for the "ALL" (default) sub-tab in the "SEARCH" view
+	 */
+	def searchAllData(int offset, int max, String q) {
+		log.debug "SearchController.searchData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.search(
+				user,
+				q,
+				params.offset,
+				params.max
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "DISCUSSIONS" sub-tab in the "SEARCH" view
+	 */
+	def searchDiscussionData(int offset, int max, String q) {
+		log.debug "SearchController.searchData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.search(
+				user,
+				q,
+				params.offset,
+				params.max,
+				SearchService.DISCUSSION_TYPE
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "SPRINTS" sub-tab in the "SEARCH" view
+	 */
+	def searchSprintData(int offset, int max, String q) {
+		log.debug "SearchController.searchData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.search(
+				user,
+				q,
+				params.offset,
+				params.max,
+				SearchService.SPRINT_TYPE
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "PEOPLE" sub-tab in the "SEARCH" view
+	 */
+	def searchPeopleData(int offset, int max, String q) {
+		log.debug "SearchController.searchData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.search(
+				user,
+				q,
+				params.offset,
+				params.max,
+				SearchService.USER_TYPE
+			)
+		)
+	}
+	
+	/**
+	 * AJAX endpoint which is called for the "OWNED" sub-tab in the "SEARCH" view
+	 */
+	def searchAllOwnedData(int offset, int max, String q) {
+		log.debug "SearchController.searchData $params"
+		
+		User user = currentUser
+		if (user == null) {
+			return
+		}
+		
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(
+			searchService.searchOwned(
+				user,
+				q,
+				params.offset,
+				params.max
+			)
+		)
+	}
+	
+	/**
+	 * Action used only for rendering the search GSP
+	 */
+	def index() {
 	}
 }
