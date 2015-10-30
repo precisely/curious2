@@ -43,11 +43,24 @@ class UserControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test show"() {
+	void "Test show when requested user details are not of current user"() {
 		controller.params["id"] = dummyUser2.hash
+		controller.session.userId = userId
 		
 		controller.show()
 		assert controller.response.json.success
 		assert controller.response.json.user.username == "a"
+		assert !controller.response.json.user.email
+	}
+
+	@Test
+	void "Test show when requested user details are of current user"() {
+		controller.params["id"] = dummyUser2.hash
+		controller.session.userId = dummyUser2.id
+
+		controller.show()
+		assert controller.response.json.success
+		assert controller.response.json.user.username == "a"
+		assert controller.response.json.user.email == 'a@a.com'
 	}
 }

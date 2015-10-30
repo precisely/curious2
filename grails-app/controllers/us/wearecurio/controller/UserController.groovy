@@ -23,7 +23,13 @@ class UserController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
 			return
 		}
-		renderJSONGet([success: true, user: user.getPeopleJSONDesc()])
+		Map userDetails = [:]
+		if (user.id != sessionUser().id) {
+			userDetails = user.getPublicJSONDesc()
+		} else {
+			userDetails = user.getPeopleJSONDesc()
+		}
+		renderJSONGet([success: true, user: userDetails])
 	}
 
 	/**
