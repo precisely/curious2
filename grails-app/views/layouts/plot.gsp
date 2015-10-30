@@ -11,6 +11,9 @@ addBackToTagGroupDataCSRF, removeTagFromTagGroupDataCSRF" />
 <script type="text/javascript" src="/js/flot/jquery.flot.js?ver=2"></script>
 <script type="text/javascript" src="/js/flot/jquery.flot.time.js?ver=2"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
+<script type="text/javascript" src="/js/interpolate/smooth.js"></script>
+<script type="text/javascript" src="/js/interpolate/science.js"></script>
+<script type="text/javascript" src="/js/interpolate/science_loess.js"></script>
 <script type="text/javascript" src="/js/curious/queryplot.js"></script>
 <script type="text/javascript" src="/js/curious/queryplot.web.js"></script>
 

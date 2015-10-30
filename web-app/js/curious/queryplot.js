@@ -391,6 +391,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (plotLine.showYAxis) {
 			plotLine.activate();
 		}
+		
 		return plotLine;
 	}
 
@@ -601,7 +602,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		for (i in this.lines) {
 			var line = this.lines[i];
 			
-			if (line.hidden) continue;
+			if (line.isHidden()) continue;
 
 			var valueScale = line.valueScale;
 			
@@ -657,7 +658,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		for (i in this.lines) {
 			var line = this.lines[i];
 			
-			if (line.hidden) continue;
+			if (line.isHidden()) continue;
 			
 			var pData = line.plotData;
 			/* changed to no legend
@@ -818,7 +819,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
 				plot.ignoreClick = true;
 				plot.deactivateActivatedLine(plotLine);
-				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+				if (plotLine.smoothLine) {	//means there is a smooth line of this accordion line
 					plot.activeLineId = plotLine.smoothLine.id;
 					plotLine.smoothLine.activate();
 					console.log('plotclick: activating line id: ' + plotLine.id);
@@ -980,6 +981,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				isContinuous:initialTag.isContinuous, showPoints:initialTag.showPoints});
 		
 		this.lines['id' + plotLine.id] = plotLine;
+		
+		if ((!plotLine.isContinuous) && (!plotLine.smoothLine)) {
+			plotLine.postLoadClosure = function() {
+				plotLine.setSmoothDataWidth(1);
+			}
+		}
+		
 		plotLine.loadPlotData();
 		
 		this.refreshName();
@@ -1129,7 +1137,7 @@ function PlotLine(p) {
 	this.isContinuous = p.literalData == undefined ? (p.isContinuous == undefined ? false : p.isContinuous) : p.literalData;
 	this.showPoints = p.showPoints == undefined ? true : p.showPoints;
 	this.smoothDataWidth = p.smoothDataWidth ? p.smoothDataWidth : 0;
-	this.smoothLine = p.smoothData ? 1 : null;
+	this.smoothLine = this.smoothDataWidth ? 1 : null;
 	this.freqDataWidth = p.freqDataWidth ? p.freqDataWidth : 0;
 	this.freqLine = p.freqData ? 1 : null;
 	this.fill = p.fill == undefined ? true : (p.fill ? true : false);
@@ -1522,6 +1530,9 @@ function PlotLine(p) {
 				} else if (plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothDataWidth > 0) {
 					plotLine.smoothLine.setIsContinuous(true);
 				}
+				if (plotLine.smoothDataWidth == 1) {
+					plotLine.setSmoothDataWidth(0);
+				}
 				plot.prepAllLines();
 				plot.refreshPlot();
 			} else {
@@ -1534,6 +1545,9 @@ function PlotLine(p) {
 				}
 				plot.prepAllLines();
 				plot.refreshPlot();
+				if ((!plotLine.parentLine) && (plotLine.smoothDataWidth == 0)) {
+					plotLine.setSmoothDataWidth(1);
+				}
 			}
 		});
 		$("input[name='plotlinepoints" + idSuffix + "']").change(function(e) {
@@ -1585,7 +1599,7 @@ function PlotLine(p) {
 	}
 	
 	this.getPlotData = function() {
-		if (this.hidden) {
+		if (this.isHidden()) {
 			return [];
 		}
 	
@@ -1612,7 +1626,7 @@ function PlotLine(p) {
 		
 		var method = this.sumData ? "getSumPlotDescData" : "getPlotDescData";
 		var plotLine = this;
-		
+
 		this.plot.queueJSON("loading graph data", this.plot.makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
@@ -1625,136 +1639,77 @@ function PlotLine(p) {
 						if (plotLine.freqLine && plotLine.freqDataWidth > 0 && plot.interactive)
 							plotLine.freqLine.entries = undefined;
 						plot.removePendingLoad();
+						if (plotLine.postLoadClosure) {
+							var postLoadClosure = plotLine.postLoadClosure;
+							plotLine.postLoadClosure = null;
+							window.setTimeout(postLoadClosure, 0);
+						}
 					}
 				});
 	}
+
 	this.calculateSmoothEntries = function() {
 		var parentLine = this.parentLine;
+		var lineName = parentLine.name;
 		var parentEntries = parentLine.entries;
 		
 		if (!parentEntries) return; // don't calculate if parent line hasn't
 									// been loaded yet
 		
-		var entries = [];
+		if (parentEntries.length < 1) return; // don't calculate if parent line has no data
 		
-		var segments = [];
+		var data = [];
 		
-		var lastTime = 0;
+		var minTime = parentEntries[0][0].getTime()
+		var maxTime = parentEntries[parentEntries.length - 1][0].getTime()
+		var deltaT = maxTime - minTime;
 		
-		var width = Math.ceil(parentLine.smoothDataWidth);
-		
-		// parse data into segments
-		// if space between two data points >= 1/2 day, start new segment, unless it's a continuous line
-		var smoothMinGap = this.parentLine.isContinuous ? DAYTICKS*(width + 1)*3 : DAYTICKS;
-		var segment = [];
 		for (var i = 0; i < parentEntries.length; ++i) {
 			var entry = parentEntries[i];
 			var time = entry[0].getTime();
-			if (lastTime && time - lastTime > smoothMinGap) {
-				segments.push(segment);
-				segment = [];
-				lastTime = 0;
-			}
-			var segWidth = lastTime ? time - lastTime : 0;
-			segment.push([time, entry[1], segWidth/DAYTICKS]);
-			lastTime = time;
+			var value = entry[1];
+			data.push([time, value]);
 		}
-		if (segment.length > 0) segments.push(segment);
 		
-		// process each segment
-		for (i = 0; i < segments.length; ++i) {
-			var segment = segments[i];
-			
-			if (segment.length == 0) continue; // skip empty sements (should
-												// never happen)
-			
-			if (segment.length == 1) { // trivial length-one segment
-				entries.push([new Date(segment[0][0]), segment[0][1]]);
-				continue;
-			}
+		// loess smoothing
+		var smoothWidth = this.parentLine.smoothDataWidth;
+		
+		var bandwidth = 0.25 + 0.75 * (smoothWidth - 1) / 29;
+		
+		var results = loess_pairs(data, bandwidth);
 
-			var series = [];
-			var seriesStart = 0;
-			var cellStartT = segment[0][0];
-			var endT = segment[segment.length - 1][0];
-			var r = 0;
-			var rangeArea = 0;
+		// Generate LOESS interpolation
+		data = [];
+		
+		for (i = 0; i < results.length; i++) {
+			data.push([results[i][0], results[i][1]]);
+		}
 
-			for (; r < segment.length - 1; ++r) {
-				var rangeStartT = segment[r][0];
-				if (segment[r+1][0] - cellStartT >= DAYTICKS) { // next range
-									// boundary at or after 1 day
-					var w = (cellStartT + DAYTICKS - segment[r][0]) / DAYTICKS;
-					var frac = w / segment[r+1][2];
-					var h = segment[r+1][1] - segment[r][1];
-					var y = segment[r][1] + h * frac;
-					rangeArea += w * (y + segment[r][1]) / 2;
-					series.push(rangeArea);
-					cellStartT += DAYTICKS;
-					// while remaining ranges are greater than a day long, fill
-					// in spaces
-					while (segment[r+1][0] - cellStartT >= DAYTICKS) {
-						var yEnd = y + h / segment[r+1][2];
-						series.push((yEnd + y) / 2);
-						frac += 1 / segment[r+1][2];
-						y = yEnd;
-						cellStartT += DAYTICKS;
-					}
-					// advance to next segment
-					rangeArea = ((segment[r+1][1] + y) / 2) * (segment[r+1][0] - cellStartT) / DAYTICKS;
-				} else
-					rangeArea += segment[r+1][2] * (segment[r][1] + segment[r+1][1]) / 2;
-			}
-			if (rangeArea > 0) {
-				series.push(rangeArea / ((segment[r][0] - cellStartT) / DAYTICKS));
-			}
-			
-			/**
-			 * symmetrical exponential moving average
-			 */
-			var sum = 0;
-			
-			var decay = 1 - 1/(width / 10 + 1);
-			var denom = 0;
-			
-			// record rightTail values to avoid roundoff error problems with near unity decay values
-			var rightTailValues = []
-			var rightTailDenom = []
-			
-			for (var j = series.length - 1; j >= 0; --j) {
-				sum *= decay;
-				sum += series[j];
-				
-				denom = denom * decay + 1;
-				rightTailValues.push(sum);
-				rightTailDenom.push(denom);
-			}
-			
-			var t = segment[0][0];
-			
-			entries.push([new Date(t), sum / denom]);
-			
-			var rightTailSum = sum;
-			var leftTailSum = 0;
-			var leftDenom = 0;
-
-			var l = series.length;
-			
-			for (j = 0; j < l; ++j) {
-				t += DAYTICKS;
-				
-				// shift right tail sum
-				rightDenom = rightTailDenom[l - j - 1];
-				rightTailSum = rightTailValues[l - j - 1];
-				
-				// grow left tail sum
-				leftTailSum = (leftTailSum * decay) + series[j];
-				leftDenom = leftDenom * decay + 1;
-				
-				entries.push([new Date(t), (rightTailSum + leftTailSum) / (rightDenom + leftDenom)]);
-			}
+		/*var entries = [];
+		
+		for (i = 0; i < results.length; i++) {
+			entries.push([new Date(results[i][0]), results[i][1]]);
 		}
 		this.entries = entries;
+		return;*/
+		
+		// smooth with cubic spline
+		
+		var smoothed = Smooth(data, {
+			cubicTension: 0.5,
+		});
+		
+		var dataLen = data.length;
+		
+		data = [];
+		
+		for (i = 0.0; i <= dataLen - 1.0; i += 0.2) {
+			var item = smoothed(i);
+			
+			data.push([new Date(item[0]), item[1], lineName, 0]);
+		}
+		
+		this.entries = data;
 	}
 	this.calculateFreqEntries = function() {
 		var parentLine = this.parentLine;
@@ -1840,13 +1795,17 @@ function PlotLine(p) {
 		this.plot.store();
 		this.plot.refreshPlot();
 	}
+	this.smoothActive = function() {
+		return this.smoothLine && this.smoothDataWidth > 0;
+	}
 	this.isHidden = function() {
 		if (this.smoothLine && this.smoothDataWidth > 0) {
+			if (this.isContinuous) return this.hidden;
 			return this.smoothLine.hidden;
 		} else if (this.freqLine && this.freqDataWidth > 0) {
 				return this.freqLine.hidden;
 		} else
-			return this.hidden;
+			return this.hidden && (this.isContinuous || (!this.smoothLine));
 	}
 	this.setHidden = function(hidden) {
 		if (this.smoothLine && this.smoothDataWidth > 0) {
@@ -1938,9 +1897,9 @@ function PlotLine(p) {
 			return {
 					popuplabel: name,
 					data: data,
-					color: ((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
+					color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-						show: this.showLines
+						show: this.isContinuous || this.smoothLine,
 					},
 					points: {
 						show: this.isSmoothLine() ? false : true
@@ -1952,10 +1911,10 @@ function PlotLine(p) {
 			return {
 					popuplabel: name,
 					data: data,
-					color: ((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
+					color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-						show: this.showLines,
-						fill: true,
+						show: this.isContinuous || this.isSmoothLine(),
+						fill: (this.isContinuous && (!this.smoothActive())) || this.isSmoothLine(),
 						fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 					},
 					points: {
@@ -1982,7 +1941,7 @@ function PlotLine(p) {
 		var minVal = undefined;
 		var maxVal = undefined;
 		
-		var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? !this.parentLine.isContinuous : !this.isContinuous);
+		//var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? false : !this.isContinuous);
 
 		var lastTime = 0;
 		var lastVal = undefined;
@@ -1993,18 +1952,18 @@ function PlotLine(p) {
 				plotLine.allUnity = false;
 			var time = entry[0].getTime();
 			// if space between two data points >= 2 days
-			if (reZero && (time - lastTime >= 1000*60*60*24*2)) {
+			/*if (reZero && (time - lastTime >= 1000*60*60*24*2)) {
 				if (lastTime && lastVal != 0) {
 					// create additional null point at 12 hours after last data
 					// point if it wasn't already zero
 					d1Data.push([new Date(lastTime + 1000*60*60*12), null]);
 				}
-				/*if (entry[1] != 0) {
+				//if (entry[1] != 0) {
 					// 12 hours before first data point if it isn't zero
-					d1Data.push([new Date(time - 1000*60*60*12), 0]);
-					if (minTime == undefined) minTime = time - 1000*60*60*12;
-				}*/
-			}
+					//d1Data.push([new Date(time - 1000*60*60*12), 0]);
+					//if (minTime == undefined) minTime = time - 1000*60*60*12;
+				//}
+			}*/
 			if (minTime == undefined || time < minTime) minTime = time;
 			if (maxTime == undefined || time > maxTime) maxTime = time;
 			if (minVal == undefined || entry[1] < minVal) minVal = entry[1];
@@ -2016,7 +1975,7 @@ function PlotLine(p) {
 			lastTime = time;
 			lastVal = entry[1];
 		}
-		if (reZero && lastTime && lastVal != 0) {
+		/*if (reZero && lastTime && lastVal != 0) {
 			// create additional null point at 12 hours after last data point
 			var currentTime = new Date(lastTime);
 			var dateRangeForToday = new DateUtil().getDateRangeForToday(); // See base.js
@@ -2026,12 +1985,12 @@ function PlotLine(p) {
 			}
 			minTime = minTime - 1000*60*60*12;
 			maxTime = lastTime + 1000*60*60*12;
-		} else {
+		} else {*/
 			if (minTime == maxTime) {
 				minTime = minTime - 1000*60*60;
 				maxTime = lastTime + 1000*60*60;
 			}
-		}
+		//}
 
 		this.minTime = minTime;
 		this.maxTime = maxTime;
