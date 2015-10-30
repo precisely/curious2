@@ -477,11 +477,7 @@ class SearchService {
 				FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchAllQuery())
 				
-				if ((type & DISCUSSION_TYPE) > 0) {
-					fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("created", "1d"))
-				} else if((type & SPRINT_TYPE) > 0) {
-					fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
-				}
+				fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
 								
 				def temp = client.prepareSearch("us.wearecurio.model_v0")
 				if ((type & DISCUSSION_TYPE) > 0) {
