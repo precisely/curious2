@@ -602,8 +602,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		for (i in this.lines) {
 			var line = this.lines[i];
 			
-			if (line.isHidden()) continue;
-
 			var valueScale = line.valueScale;
 			
 			var scaleMin, scaleMax;
@@ -817,9 +815,9 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
         		plot.lastItemClickTime = now;
 				var dialogDiv = plot.getDialogDiv(); 
 				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
-				plot.ignoreClick = true;
+				//plot.ignoreClick = true;
 				plot.deactivateActivatedLine(plotLine);
-				if (plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+				if (plotLine.hasSmoothLine()) {	//means there is a smooth line of this accordion line
 					plot.activeLineId = plotLine.smoothLine.id;
 					plotLine.smoothLine.activate();
 					console.log('plotclick: activating line id: ' + plotLine.id);
@@ -853,8 +851,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		var plot = this;
 
 		if (plotLine) {
-			if(plotLine.smoothLine) {
-				if(plotLine.smoothLine == 1 || plotLine.smoothLine.id == plot.activeLineId) {
+			if (plotLine.smoothLine) {
+				if (plotLine.smoothLine == 1 || plotLine.smoothLine.id == plot.activeLineId) {
 					return false;
 				}
 			}
@@ -982,7 +980,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		
 		this.lines['id' + plotLine.id] = plotLine;
 		
-		if ((!plotLine.isContinuous) && (!plotLine.smoothLine)) {
+		if ((!plotLine.isContinuous) && (!plotLine.hasSmoothLine())) {
 			plotLine.postLoadClosure = function() {
 				plotLine.setSmoothDataWidth(1);
 			}
@@ -1316,6 +1314,9 @@ function PlotLine(p) {
 		
 		
 	}
+	this.hasSmoothLine = function() {
+		return this.smoothLine && this.smoothLine != 1;
+	}
 	this.isSmoothLine = function() {
 		return this.parentLine != null && (!this.isFreqLineFlag);
 	}
@@ -1388,7 +1389,7 @@ function PlotLine(p) {
 	}
 	this.yAxisVisible = function() {
 		//if (this.parentLine) return (this.parentLine.hidden || this.parentLine.activated) && this.parentLine.showYAxis;
-		if (this.smoothLine) {
+		if (this.hasSmoothLine()) {
 			if (this.smoothDataWidth == 0 && this.showYAxis) {
 				if (this.freqLine)
 					return this.freqDataWidth == 0 && this.showYAxis;
@@ -1501,11 +1502,11 @@ function PlotLine(p) {
 				var plotLine = plot.getLine(plotLineId);
 				if (plotLine.flatten) {
 					plotLine.flatten = false;
-					if (plotLine.smoothLine) plotLine.smoothLine.flatten = false;
+					if (plotLine.hasSmoothLine()) plotLine.smoothLine.flatten = false;
 				}
 				else {
 					plotLine.flatten = true;
-					if (plotLine.smoothLine) plotLine.smoothLine.flatten = true;
+					if (plotLine.hasSmoothLine()) plotLine.smoothLine.flatten = true;
 				}
 				plot.prepAllLines();
 				plot.refreshPlot();
@@ -1799,13 +1800,16 @@ function PlotLine(p) {
 		return this.smoothLine && this.smoothDataWidth > 0;
 	}
 	this.isHidden = function() {
-		if (this.smoothLine && this.smoothDataWidth > 0) {
-			if (this.isContinuous) return this.hidden;
+		if (this.isSmoothLine()) {
+			return this.parentLine.smoothDataWidth < 1;
+		} else if (this.smoothLine && this.smoothDataWidth > 0) {
+			if (this.isContinuous)
+				return this.hidden;
 			return this.smoothLine.hidden;
 		} else if (this.freqLine && this.freqDataWidth > 0) {
 				return this.freqLine.hidden;
 		} else
-			return this.hidden && (this.isContinuous || (!this.smoothLine));
+			return this.hidden && (this.isContinuous || (!this.hasSmoothLine()));
 	}
 	this.setHidden = function(hidden) {
 		if (this.smoothLine && this.smoothDataWidth > 0) {
@@ -1827,17 +1831,18 @@ function PlotLine(p) {
 				else if (oldSmoothValue) {
 					this.prepEntries();
 				}
-				if ((!this.smoothLine) || this.smoothLine == 1) {
+				if (!this.hasSmoothLine()) {
 					this.generateSmoothLine(value);
 				} else {
 					this.smoothLine.hidden = false;
 					this.smoothLine.calculateSmoothEntries();
 					this.smoothLine.prepEntries();
+					this.prepEntries();
 					this.plot.store();
 				}
 			} else {
 				this.hidden = false;
-				if (this.smoothLine) {
+				if (this.hasSmoothLine()) {
 					this.smoothLine.hidden = true;
 				}
 				this.prepEntries();
@@ -1899,7 +1904,7 @@ function PlotLine(p) {
 					data: data,
 					color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-						show: this.isContinuous || this.smoothLine,
+						show: this.isContinuous && this.smoothLine,
 					},
 					points: {
 						show: this.isSmoothLine() ? false : true
@@ -1908,17 +1913,20 @@ function PlotLine(p) {
 					plotLine: this
 				};
 		} else {
+			var smoothActive = this.smoothActive();
+			if (!this.isSmoothLine())
+				smoothActive = smoothActive;
 			return {
 					popuplabel: name,
 					data: data,
 					color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 					lines: {
-						show: this.isContinuous || this.isSmoothLine(),
+						show: (this.isContinuous && (!this.smoothActive())) || this.isSmoothLine(),
 						fill: (this.isContinuous && (!this.smoothActive())) || this.isSmoothLine(),
 						fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 					},
 					points: {
-						show: this.isSmoothLine() ? false : true
+						show: this.isSmoothLine() ? this.hasSmoothLine() : true
 					},
 					yaxis: this.yaxis,
 					plotLine: this
