@@ -81,24 +81,6 @@ chown -R root.apache /etc/httpd/certs
 rm -f /etc/httpd/conf.d/httpd-vhosts.conf
 sed "s/CURIOUSHOSTNAME/$APPHOSTNAME/g" $INSTALLDIR/httpd-vhosts.conf > /etc/httpd/conf.d/httpd-vhosts.conf
 
-# install jetty
-
-wget http://download.eclipse.org/jetty/9.3.2.v20150730/dist/jetty-distribution-9.3.2.v20150730.zip
-rm -rf /opt/jetty
-tar zxvf jetty-distribution-9.3.2.v20150730.tar.gz -C /opt/
-mv /opt/jetty-distribution-9.3.2.v20150730 /opt/jetty
-mkdir /opt/jetty/work
-chown -R curious:curious /opt/jetty/
-ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty
-chkconfig --add jetty
-chkconfig --level 345 jetty on
-rm -f /etc/default/jetty
-cp $INSTALLDIR/etcdefaultjetty /etc/default/jetty
-mkdir /root/bin
-rm -f /root/bin/deploycur
-cp $INSTALLDIR/deploycur /root/bin
-chmod 700 /root/bin/deploycur
-
 # install curious user
 
 adduser curious
@@ -116,6 +98,24 @@ mkdir /home/curious/www
 chmod 750 /home/curious/www
 chown -R curious.apache /home/curious/www
 su -l curious -c /home/curious/installcurious/installcurious
+
+# install jetty
+
+wget http://download.eclipse.org/jetty/9.3.2.v20150730/dist/jetty-distribution-9.3.2.v20150730.zip
+rm -rf /opt/jetty
+tar zxvf jetty-distribution-9.3.2.v20150730.tar.gz -C /opt/
+mv /opt/jetty-distribution-9.3.2.v20150730 /opt/jetty
+mkdir /opt/jetty/work
+chown -R curious:curious /opt/jetty/
+ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty
+chkconfig --add jetty
+chkconfig --level 345 jetty on
+rm -f /etc/default/jetty
+cp $INSTALLDIR/etcdefaultjetty /etc/default/jetty
+mkdir /root/bin
+rm -f /root/bin/deploycur
+cp $INSTALLDIR/deploycur /root/bin
+chmod 700 /root/bin/deploycur
 
 # create localconfig
 
