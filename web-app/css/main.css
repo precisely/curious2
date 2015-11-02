@@ -388,7 +388,7 @@ body.graph-page .body1 {
 	position: relative;
 }
 #tagListWrapper ul#tagList {
-	height: 550px;
+	height: 628px;
 }
 body.graph-page .querymain {
 	margin: 0px;
@@ -398,7 +398,7 @@ body.graph-page .querymain {
 	width: 100%;
 }
  #plotArea {
-	height:530px;
+	height:500px;
 }
 #plotArea canvas {
 	z-index: 2;
@@ -3710,6 +3710,24 @@ body {
 .curiosities .red-header span {
 }
 
+#plot-menu {
+	background-color: #ffffff;
+	padding: 0px 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 30px;
+	border-style: solid;
+	border-color: #000000;
+}
+
+#plot-menu li {
+	margin-right: 30px;
+}
+
+#plot-menu li.label {
+	color: #bbb;
+}
+
 #sort-by-row {
 	padding: 0px 10px;
 	padding-top: 15px;
@@ -3731,6 +3749,12 @@ body {
 
 #sort-by-row li.label {
 	color: #bbb;
+}
+
+.graph-page nav ul li {
+	float:left;
+	display:list-item;
+	list-style: none;
 }
 
 .curiosities nav ul li {

@@ -187,11 +187,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			var line = this.lines[i];
 			if (line.isSmoothLine() && line.parentLine.smoothDataWidth == 0) continue; // skip hidden smooth lines
 			if (line.isFreqLine() && line.parentLine.freqDataWidth == 0) continue; // skip hidden freq lines
-			plotData.push(line.getSavePlotData());
+			plotData.push(line.getSaveData());
 		}
 		var cycleTagData = null;
 		if (this.cycleTagLine) {
-			cycleTagData = this.cycleTagLine.getSavePlotData();
+			cycleTagData = this.cycleTagLine.getSaveData();
 		}
 		if (this.doStore && plotData.length == 0) {
 			localStorage['plotData' + this.id] = '';
@@ -349,7 +349,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		if (save.tag != null) {
-			if ( version >= 5 && isSnapshot && typeof save.tag !== 'undefined') {
+			if ( version >= 5 && typeof save.tag !== 'undefined') {
 				if (save.tag.type.indexOf("Group") !== -1) {
 					save.tag = this.restoreTagGroup(save.tag);
 				} else {
@@ -795,6 +795,49 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				plot.activeLineId = undefined;
 			}
 		});
+		plotArea.off("plotclick");
+		plotArea.on("plotclick", function(event, pos, item) {
+	        if (item) {
+	        	var now = new Date().getTime();
+	        	//if (plot.lastItemClicked == null) {
+	        	//	plot.lastItemClicked = item;
+	        	//	plot.lastItemClickTime = now;
+	        	//} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
+	        	//			&& now - plot.lastItemClickTime < 1000 && now - plot.lastItemClickTime > 30) {
+        		//	plot.lastItemClicked = null;
+        		//	plot.lastItemClickTime = null;
+        		//	if (plot.interactive) {
+        		//		plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
+        		//	}
+        		//	return;
+        		//}
+        		plot.lastItemClicked = item;
+        		plot.lastItemClickTime = now;
+				var dialogDiv = plot.getDialogDiv(); 
+				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
+				plot.ignoreClick = true;
+				plot.deactivateActivatedLine(plotLine);
+				if (plotLine.hasSmoothLine()) {	//means there is a smooth line of this accordion line
+					plot.activeLineId = plotLine.smoothLine.id;
+					plotLine.smoothLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
+				} else {
+					plot.activeLineId = plotLine.id;
+					plotLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
+				}
+				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
+					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
+					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
+							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
+							+ ' (' + item.datapoint[1] + ')');
+					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
+				}
+			} else {
+				console.log('plotclick: Item not found');
+			}
+		});
+		
 		plotArea.off("plothover");
 		plotArea.on("plothover", function(event, pos, item) {
 	        if (item) {
@@ -836,7 +879,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			} else {
 				console.log('plotclick: Item not found');
 			}
-			});
+		});
 		
 		this.store();
 	}
@@ -986,12 +1029,16 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 		}
 		
-		plotLine.loadPlotData();
+		var plot = this;
 		
-		this.refreshName();
-		
-		this.store();
-		$(document).trigger(afterLinePlotEvent, [initialTag]);
+		initialTag.fetchAll(function() {
+			plotLine.loadPlotData();
+			
+			plot.refreshName();
+			
+			plot.store();
+			$(document).trigger(afterLinePlotEvent, [initialTag]);
+		});
 	}
 	this.addCycleLine = function(initialTag) {
 		if (this.cycleTagLine != null) {
@@ -1214,7 +1261,7 @@ function PlotLine(p) {
 	this.getNumTags = function() {
 		return tags.length;
 	}
-	this.getSavePlotData = function() {
+	this.getSaveData = function() {
 		var data = {name:this.name,color:this.color,sumData:this.sumData,
 				tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
 				isContinuous:this.isContinuous,isFreqLineFlag:this.isFreqLineFlag,showPoints:this.showPoints,fill:this.fill,smoothDataWidth:this.smoothDataWidth,
@@ -1226,7 +1273,7 @@ function PlotLine(p) {
 		return data;
 	}
 	this.getSaveSnapshotData = function() {
-		var save = this.getSavePlotData();
+		var save = this.getSaveData();
 		
 		save.entries = this.entries;
 		return save;
@@ -1627,6 +1674,8 @@ function PlotLine(p) {
 		
 		var method = this.sumData ? "getSumPlotDescData" : "getPlotDescData";
 		var plotLine = this;
+		
+		var tagsDebug = this.getTags();
 
 		this.plot.queueJSON("loading graph data", this.plot.makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
@@ -1665,11 +1714,23 @@ function PlotLine(p) {
 		var maxTime = parentEntries[parentEntries.length - 1][0].getTime()
 		var deltaT = maxTime - minTime;
 		
+		var lastTime;
+		var lastValues = [];
+		
 		for (var i = 0; i < parentEntries.length; ++i) {
 			var entry = parentEntries[i];
 			var time = entry[0].getTime();
 			var value = entry[1];
+			if (i > 0 && time == lastTime && lastValues.indexOf(value) >= 0) {
+				continue; // same data point in a row blows up LOESS algorithm
+			}
 			data.push([time, value]);
+			
+			if (time != lastTime) {
+				lastValues = [];
+			}
+			lastTime = time;
+			lastValues.push(value);
 		}
 		
 		// loess smoothing

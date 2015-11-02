@@ -1443,7 +1443,11 @@ science.stats.loess = function() {
 
     var bandwidthInPoints = Math.floor(bandwidth * n);
 
-    if (bandwidthInPoints < 2) throw {error: "Bandwidth too small."};
+    if (bandwidthInPoints < 2) {
+    	//throw {error: "Bandwidth too small."};
+    	bandwidth = 2 / n;
+    	bandwidthInPoints = 2;
+    }
 
     var res = [],
         residuals = [],
@@ -1490,8 +1494,8 @@ science.stats.loess = function() {
             sumX = 0,
             sumXSquared = 0,
             sumY = 0,
-            sumXY = 0,
-            denom = Math.abs(1 / (xval[edge] - x));
+            sumXY = 0;
+        var denom = Math.abs(1 / (xval[edge] - x));
 
         for (var k = ileft; k <= iright; ++k) {
           var xk   = xval[k],
