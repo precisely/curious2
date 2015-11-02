@@ -106,22 +106,12 @@ function doLogout() {
 	<div class="red-header graph-header-container clearfix">
 		<g:render template="/tag/tagListWidget" model="[header: true, expandByDefault: true]" />
 		<h1 class="clearfix">
-			<div id="actions">
-				<span class="icon-triangle icon-triangle-right toggle"></span>
-				<ul>
-					<li><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
-					<li><a href="#" onclick="plot.save()">Save</a></li>
-					<li><g:link action="load">Load</g:link></li>
-					<li><a href="#" onclick="plot.saveSnapshot()">Share (Publish to Community)	
-						<img src="/images/eye.png">	
-					</a></li>
-				</ul>
-			</div>
 			<span id="queryTitle">PLOT</span>
 			<span id="mobileQueryTitle" class="hid">PLOT</span>
 			<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
 			<div id="debug"></div>
 		</h1>
+
 		<hr>
 	</div>
 
@@ -130,6 +120,16 @@ function doLogout() {
 		<g:render template="/tag/tagListWidget" />
 		<!-- /RIGHT NAV BODY -->
 		<div class="floating-column graph-container">
+			<nav class="row disable-select" id="plot-menu" >
+				<ul class="disable-select">
+						<ul>
+							<li class="filter"><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
+							<li class="filter"><a href="#" onclick="plot.save()">Save</a></li>
+							<li class="filter"><g:link action="load">Load</g:link></li>
+							<li class="filter"><a href="#" onclick="plot.saveSnapshot()">Publish</a></li>
+						</ul>
+				</ul>
+			</nav>
 			<div id="plotLeftNav">
 				<div id="plotLinesplotArea" class="plotlines clearfix"></div>
 			</div>

@@ -1,20 +1,18 @@
 package us.wearecurio.controller.integration
-
-import static org.junit.Assert.*
-
-import org.junit.*
-import org.scribe.model.Response
-
-import us.wearecurio.model.Model.Visibility
-import us.wearecurio.controller.SearchController
-import us.wearecurio.model.*
-import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.utility.Utils
-import us.wearecurio.services.SearchService
-
-import static org.elasticsearch.index.query.QueryBuilders.*
-import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
+import org.grails.plugins.elasticsearch.ElasticSearchAdminService
 import org.grails.plugins.elasticsearch.ElasticSearchService
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import us.wearecurio.controller.SearchController
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.Model.Visibility
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.User
+import us.wearecurio.services.SearchService
+import us.wearecurio.utility.Utils
+
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 
 class SearchControllerTests extends CuriousControllerTestCase {
 
@@ -87,7 +85,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("auth.error.message", null, null)
@@ -100,7 +98,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 		
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
@@ -113,7 +111,7 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
@@ -122,11 +120,11 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test indexData when type is people"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = "people"
+		controller.params["type"] = SearchService.USER_TYPE
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		println "json.listItems after index: " + controller.response.json.listItems.toString()
 		assert controller.response.json.success
@@ -140,52 +138,52 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test indexData when type is discussions"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = "discussions"
+		controller.params["type"] = SearchService.DISCUSSION_TYPE
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert controller.response.json.success
-		assert controller.response.json.listItems["discussionList"].size() == 2
-		assert controller.response.json.listItems["discussionList"][0].id == discussion2.id ||
-				controller.response.json.listItems["discussionList"][0].id == discussion1.id
-		assert controller.response.json.listItems["discussionList"][1].id == discussion2.id ||
-				controller.response.json.listItems["discussionList"][1].id == discussion1.id
-		assert controller.response.json.listItems["discussionList"][0].type == "dis"
-		assert controller.response.json.listItems["discussionList"][1].type == "dis"
+		assert controller.response.json.listItems.size() == 2
+		assert controller.response.json.listItems[0].id == discussion2.id ||
+				controller.response.json.listItems[0].id == discussion1.id
+		assert controller.response.json.listItems[1].id == discussion2.id ||
+				controller.response.json.listItems[1].id == discussion1.id
+		assert controller.response.json.listItems[0].type == "dis"
+		assert controller.response.json.listItems[1].type == "dis"
 	}
 
 	@Test
 	void "Test indexData when type is sprints"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = "sprints"
+		controller.params["type"] = SearchService.SPRINT_TYPE
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		assert controller.response.json.success
-		assert controller.response.json.listItems.sprintList.size() == 3
-		assert controller.response.json.listItems.sprintList[0].id == sprint1.id ||
-				controller.response.json.listItems.sprintList[0].id == sprint2.id ||
-				controller.response.json.listItems.sprintList[0].id == sprint3.id
-		assert controller.response.json.listItems.sprintList[1].id == sprint1.id ||
-				controller.response.json.listItems.sprintList[1].id == sprint2.id ||
-				controller.response.json.listItems.sprintList[1].id == sprint3.id
-		assert controller.response.json.listItems.sprintList[0].type == "spr"
-		assert controller.response.json.listItems.sprintList[1].type == "spr"
-		assert controller.response.json.listItems.sprintList[2].type == "spr"
+		assert controller.response.json.listItems.size() == 3
+		assert controller.response.json.listItems[0].id == sprint1.id ||
+				controller.response.json.listItems[0].id == sprint2.id ||
+				controller.response.json.listItems[0].id == sprint3.id
+		assert controller.response.json.listItems[1].id == sprint1.id ||
+				controller.response.json.listItems[1].id == sprint2.id ||
+				controller.response.json.listItems[1].id == sprint3.id
+		assert controller.response.json.listItems[0].type == "spr"
+		assert controller.response.json.listItems[1].type == "spr"
+		assert controller.response.json.listItems[2].type == "spr"
 	}
 
 	@Test
-	void "Test indexData when type is all"() {
+	void "Test indexData to get all users and discussions"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = "all"
+		controller.params["type"] = (SearchService.USER_TYPE | SearchService.DISCUSSION_TYPE)
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.indexData()
+		controller.feedData()
 
 		println ""
 		for( def i : controller.response.json.listItems) {
@@ -195,11 +193,11 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		println ""
 		
 		assert controller.response.json.success
-		assert controller.response.json.listItems.size() == 7
-		assert controller.response.json.listItems[0].id == sprint3.id ||
-				controller.response.json.listItems[0].id == sprint2.id ||
-				controller.response.json.listItems[0].id == sprint1.id
-		assert controller.response.json.listItems[6].id == user2.id ||
-				controller.response.json.listItems[6].id == user3.id
+		assert controller.response.json.listItems.size() == 5
+		assert controller.response.json.listItems[0].hash == discussion2.hash
+		assert controller.response.json.listItems[1].hash == discussion1.hash
+		assert controller.response.json.listItems[2].type == "usr"
+		assert controller.response.json.listItems[3].type == "usr"
+		assert controller.response.json.listItems[4].type == "usr"
 	}
 }

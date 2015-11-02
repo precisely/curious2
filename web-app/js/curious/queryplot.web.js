@@ -139,7 +139,6 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	}
 
 	this.drawPlot = function() {
-		console.log('Plot: 799, drawPlot()');
 		var plotArea = this.plotArea;
 		var plot = this;
 		this.lastItemClicked = null;
@@ -165,8 +164,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 				plot.activeLineId = undefined;
 			}
 		});
-		plotArea.off("plothover");
-		plotArea.on("plothover", function(event, pos, item) {
+		plotArea.off("plotclick");
+		plotArea.on("plotclick", function(event, pos, item) {
 			if (item) {
 				var now = new Date().getTime();
 				//if (plot.lastItemClicked == null) {
@@ -187,7 +186,50 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
 				plot.ignoreClick = true;
 				plot.deactivateActivatedLine(plotLine);
-				if(plotLine.smoothLine) {	//means there is a smooth line of this accordion line
+				if (plotLine.hasSmoothLine()) {	//means there is a smooth line of this accordion line
+					plot.activeLineId = plotLine.smoothLine.id;
+					plotLine.smoothLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
+				} else {
+					plot.activeLineId = plotLine.id;
+					plotLine.activate();
+					console.log('plotclick: activating line id: ' + plotLine.id);
+				}
+				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
+					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
+					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
+							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
+							+ ' (' + item.datapoint[1] + ')');
+					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
+				}
+			} else {
+				console.log('plotclick: Item not found');
+			}
+		});
+
+		plotArea.off("plothover");
+		plotArea.on("plothover", function(event, pos, item) {
+			if (item) {
+				var now = new Date().getTime();
+				//if (plot.lastItemClicked == null) {
+				//	plot.lastItemClicked = item;
+				//	plot.lastItemClickTime = now;
+				//} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
+				//			&& now - plot.lastItemClickTime < 1000 && now - plot.lastItemClickTime > 30) {
+				//	plot.lastItemClicked = null;
+				//	plot.lastItemClickTime = null;
+				//	if (plot.interactive) {
+				//		plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
+				//	}
+				//	return;
+				//}
+				plot.lastItemClicked = item;
+				plot.lastItemClickTime = now;
+				var dialogDiv = plot.getDialogDiv();
+				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
+				//plot.ignoreClick = true;
+				plot.deactivateActivatedLine(plotLine);
+				if (plotLine.hasSmoothLine()) {	//means there is a smooth line of this accordion line
 					plot.activeLineId = plotLine.smoothLine.id;
 					plotLine.smoothLine.activate();
 					console.log('plotclick: activating line id: ' + plotLine.id);
@@ -318,19 +360,12 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	};
 
 	this.handleDropTag = function(event, ui) {
+		var plotLine = this;
 		var $sourceElement = $(ui.draggable[0]);
-		console.log($sourceElement);
 		var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
-		var plot = this;
-
-		if (tagListItem instanceof TagGroup) {
-			tagListItem.fetchAll(function() { plot.addLine(tagListItem); });
-		} else {
-			tagListItem.getTagProperties(function(tagProperties){
-				console.log("import tag properties");
-				plot.addLine(tagListItem);
-			});
-		}
+		if (!tagListItem)
+			return false;
+		plotLine.addTag(tagListItem);
 	}
 
 	this.clearGraphs = function () {
@@ -450,11 +485,11 @@ PlotLine.prototype.appendHTML = function() {
 			var plotLine = plot.getLine(plotLineId);
 			if (plotLine.flatten) {
 				plotLine.flatten = false;
-				if (plotLine.smoothLine) plotLine.smoothLine.flatten = false;
+				if (plotLine.hasSmoothLine()) plotLine.smoothLine.flatten = false;
 			}
 			else {
 				plotLine.flatten = true;
-				if (plotLine.smoothLine) plotLine.smoothLine.flatten = true;
+				if (plotLine.hasSmoothLine()) plotLine.smoothLine.flatten = true;
 			}
 			plot.prepAllLines();
 			plot.refreshPlot();
@@ -479,6 +514,9 @@ PlotLine.prototype.appendHTML = function() {
 			} else if (plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothDataWidth > 0) {
 				plotLine.smoothLine.setIsContinuous(true);
 			}
+			if (plotLine.smoothDataWidth == 1) {
+				plotLine.setSmoothDataWidth(0);
+			}
 			plot.prepAllLines();
 			plot.refreshPlot();
 		} else {
@@ -491,6 +529,9 @@ PlotLine.prototype.appendHTML = function() {
 			}
 			plot.prepAllLines();
 			plot.refreshPlot();
+			if ((!plotLine.parentLine) && (plotLine.smoothDataWidth == 0)) {
+				plotLine.setSmoothDataWidth(1);
+			}
 		}
 	});
 	$("input[name='plotlinepoints" + idSuffix + "']").change(function(e) {

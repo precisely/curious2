@@ -98,6 +98,8 @@ var controllerName = '${controllerName}';
 <g:layoutHead />
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
+	<i id="spinner-feedback" class="hide fa fa-spin fa-spinner" style="position: fixed; top: 10px; left: 10px;
+			z-index: 1050;"></i>
 	<g:layoutBody />
 </body>
 </html>

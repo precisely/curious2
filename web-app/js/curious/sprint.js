@@ -12,7 +12,7 @@ function showDiscussionData(sprintDiscussions, sprintHash) {
 
 	var discussionData = sprintDiscussions;
 	if (discussionData.listItems) {
-		addAllFeedItems({listItems: discussionData.listItems.discussionList}, '#sprint-discussions');
+		addAllFeedItems({listItems: discussionData.listItems}, '#sprint-discussions');
 		$(".share-button").popover({html:true});
 		$('.share-button').on('click', function () {
 			$('.share-link').select();
@@ -76,7 +76,7 @@ function showMoreDiscussions(sprintHash, infiniteScroll) {
 
 		if (data.success) {
 			if (data.listItems) {
-				addAllFeedItems({listItems: data.listItems.discussionList}, '#sprint-discussions');
+				addAllFeedItems({listItems: data.listItems}, '#sprint-discussions');
 				infiniteScroll.setNextPage();
 				infiniteScroll.resume();
 			} else {

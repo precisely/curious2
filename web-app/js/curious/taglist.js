@@ -102,6 +102,14 @@ function Tag(args) {
 	this.getChildren = function(callback) {
 		callback();
 	}
+
+	this.fetchAll = function(callback) {
+		callback();
+	}
+	
+	this.fetch = function(callback) {
+		callback();
+	}
 }
 
 inherit(Tag, TreeItem);
@@ -117,7 +125,7 @@ function TagGroup(args) {
 	this.isSystemGroup = args.isSystemGroup;
 	this.isAdminOfTagGroup = args.isAdminOfTagGroup;
 
-	if (this.getType().indexOf('wildcard')!==-1) {
+	if (this.type.indexOf('wildcard')!==-1) {
 		this.isWildcard = true; // cache this for efficiency
 	}
 	

@@ -1,4 +1,4 @@
-package us.wearecurio.services.integration.SearchService
+package us.wearecurio.search.integration
 
 import grails.test.spock.IntegrationSpec
 import groovy.lang.Closure;

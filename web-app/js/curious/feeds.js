@@ -1,61 +1,168 @@
-/**
- * 
- */
-var autocompleteWidget;
-var searchList = [];
+var autocompleteWidget, commentsArgs, ownedFeed = false, nextSuggestionOffset = 0;
 var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
+
+// See "controllerName" and "actionName" in the "base.gsp" layout
+var isSocialGSP = (controllerName == "home" && actionName == "social");
+var isSprintGSP = (controllerName == "home" && actionName == "sprint");
+var isSearchGSP = (controllerName == "search" && actionName == "index");
+
+function getSearchControllerURL(actionName, params) {
+	//var params = getCSRFPreventionObject(csrfpreventionObjectName, params);
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
+
+	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
+}
+
+function getSearchControllerURLSearch(actionName, params) {
+	var params = getCSRFPreventionObject('getFeedsDataCSRF', params);
+	params.q = $("#global-search input[name=q]").val();
+
+	return '/search/' + actionName + '?' + jQuery.param(params) + '&callback=?';
+}
+
+function getURLSocialAll(offset, max) {
+	return getSearchControllerURL(
+			"getAllSocialData",
+			{
+				offset: offset, 
+				max: max,
+				nextSuggestionOffset: nextSuggestionOffset  //global variable
+			}
+		)
+}
+
+function getURLSocialDiscussions(offset, max) {
+	return getSearchControllerURL(
+			"getDiscussionSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSocialPeople(offset, max) {
+	return getSearchControllerURL(
+			"getPeopleSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)	
+}
+
+function getURLSocialOwned(offset, max) {
+	return getSearchControllerURL(
+			"getOwnedSocialData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSprintsAll(offset, max) {
+	return getSearchControllerURL(
+			"getAllSprintData",
+			{
+				offset: offset, 
+				max: max,
+				nextSuggestionOffset: nextSuggestionOffset //global variable
+			}
+		)
+}
+
+function getURLSprintsOwned(offset, max) {
+	return getSearchControllerURL(
+			"getOwnedSprintData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchAll(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchAllData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchDiscussions(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchDiscussionData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchSprints(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchSprintData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)	
+}
+
+function getURLSearchPeople(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchPeopleData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
+function getURLSearchOwned(offset, max) {
+	return getSearchControllerURLSearch(
+			"searchAllOwnedData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
 
 function isTabActive(anchor) {
 	return location.hash == anchor;
 }
 
-function registerScroll() {
+function displayNoDataMessage(listItems) {
+	$(".no-data-msg").remove();
+	if (!listItems || listItems.length === 0) {
+		$('#feed').append('<span class="no-data-msg">No data to display.</span>');
+		return;
+	}
+}
+
+function registerScroll(getURLMethod) {
 	$('#feed').infiniteScroll({
 		bufferPx: 20,
 		bindTo: $('.main'),
 		onScrolledToBottom: function(e, $element) {
 			this.pause();
-			var url;
-			var anchor = location.hash.slice(1);
-
-			if (isOnFeedPage()) {
-				url = '/search/indexData?type=' + anchor + '&offset=' + this.getOffset() + '&max=5&' +
-						getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?';
-			} else {
-				this.finish();
-				return;
-			}
-
+			var url = getURLMethod(this.getOffset(), 5);
 			queueJSON('Loading data', url, function(data) {
 				if (!checkData(data))
 					return;
 
 				if (data.success) {
-					if (data.listItems == false) {
+					nextSuggestionOffset = data.nextSuggestionOffset;
+					if (!data.listItems || data.listItems.length === 0) {
 						this.finish();
 					} else {
-						if (isTabActive('#people')) {
-							$.each(data.listItems, function(index, user) {                                                           
-								var compiledHtml = compileTemplate("_people", {'user': user});                                       
-								$('#feed').append(compiledHtml);                                                                
-							});                                                                                                      
-						} else if (isTabActive('#discussions')) {
-							$.each(data.listItems.discussionList, function(index, discussionData) {
-								var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData, 'groupName': data.listItems.groupName});
-								$('#feed').append(compiledHtml);
-								showCommentAgeFromDate();
-							});
-						} else if (isTabActive('#all')) {
-							addAllFeedItems(data);
-						} else {
-							$.each(data.listItems.sprintList, function(index, sprint) {
-								var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
-								$('#feed').append(compiledHtml);
-							});
-							showCommentAgeFromDate();
-						}
+						addAllFeedItems(data);
 						this.setNextPage();
 						this.resume();
 					}
@@ -72,60 +179,193 @@ function registerScroll() {
 	});
 }
 
-$(window).load(function() {
-	checkAndDisplayTabData();
-});
+function isHash(values) {
+	var urlHashValue = location.hash.substring(1).trim();
+	return (values.indexOf(urlHashValue) > -1);
+}
 
-$(window).on('hashchange', function() {
-	checkAndDisplayTabData();
-});
+function initializeListing() {
+	$(".nav").show();
+	$('.container-fluid').addClass("main");
+	$(".nav a[href=" + window.location.hash + "]").tab("show");
+}
 
-var commentsArgs;
+function processResults(data) {
+	var parentElement;
 
-function checkAndDisplayTabData() {
-	// Reset these variables as we change state
-	window.singleDiscussionPage = false;
-
-	commentsArgs = {offset: 0, sort: "created", order: "desc"};
-
-	$('.container-fluid').addClass('main');
-	var hash = window.location.hash;
-	var hashData = hash.split("/");
-
-	if (actionName === "sprint") {                               // See "actionName" in the "base.gsp" layout
-		if (!hash) {
-			showSprints();                                      // For sprint listing page
-		} else {                                                // For single sprint page
-			sprintShow(hashData[0].substring(1));               // Removing "#" from the beginning
-		}
-	} else if (actionName === "social") {
-		if (hash == "#sprints") {
-			window.location.href = sprintListURL;               // Backward support for old URL for list of sprints
-		} else if (hash == '#discussions') {
-			showDiscussions();
-		} else if (hash == '#people') {
-			showPeople();
-		} else if (!hash || hash == '#all') {
-			// If the all tab is active or the user is on the social page without a hash
-			showAllFeeds();
-		} else if (hash == "#sprints/" + hashData[1]) {
-			window.location.href = sprintShowURL + hashData[1];   // Backward support for old URL of sprint show page
-		} else if (hash == "#discussions/" + hashData[1]) {
-			window.singleDiscussionPage = true;
-			discussionShow(hashData[1]);
-		} else if (hash == "#people/" + hashData[1]) {
-			showUserDetails(hashData[1]);
-		}
+	if (window.location.hash === "#discussions") {
+		//special handling for discussions social page
+		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
+		$("#feed").html(createDiscussionForm).append('<div class="discussions"></div>');
+		parentElement = ".discussions";
+	} else {
+		$("#feed").html("");      // Remove spinner
+	}
+	
+	if (!checkData(data)) {
+		return;
 	}
 
+	if (data.success) {
+		nextSuggestionOffset = data.nextSuggestionOffset;
+		addAllFeedItems(data, parentElement);
+	} else {
+		if (data.message) {
+			showAlert(data.message);
+		}
+
+		$("#feed").text("No feeds to display.");
+	}	
+}
+
+function displaySocialPage() {
+	var hash = window.location.hash;
+	if (hash == "#sprints") {
+		// Backward support for old URL for list of sprints
+		window.location.href = sprintListURL;
+		return;
+	} else if (hash.startsWith("#sprint/")) {
+		// Backward support for old URL of sprint show page
+		window.location.href = sprintShowURL + hash.split("/")[1];
+		return;
+	}
+	
+	if (!isHash(["all", "discussions", "people", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+	
+	setQueryHeader("Social Activity", false);
+	
+	switch (hash) {
+	case "#all":
+		queueJSON("Getting feeds", getURLSocialAll(0, 5), processResults)
+		registerScroll(getURLSocialAll);
+		break;
+	case "#discussions":
+		queueJSON("Getting discussions", getURLSocialDiscussions(0, 5), processResults)
+		registerScroll(getURLSocialDiscussions);
+		break;
+	case "#people":
+		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
+		registerScroll(getURLSocialPeople);
+		break;
+	case "#owned":
+		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)
+		registerScroll(getURLSocialOwned);
+		break;
+	}
+}
+
+function displaySprintPage() {
+	if (!isHash(["all", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+		
+	setQueryHeader("Tracking Sprints", false);
+	
+	switch (window.location.hash) {
+	case "#all":
+		queueJSON("Getting sprints feed", getURLSprintsAll(0, 5), processResults)
+		registerScroll(getURLSprintsAll);
+		break;
+	case "#owned":
+		queueJSON("Getting owned sprints", getURLSprintsOwned(0, 5), processResults)
+		registerScroll(getURLSprintsOwned);
+		break;
+	}
+}
+
+function displaySearchPage() {
+	if (!isHash(["all", "discussions", "sprints", "people", "owned"])) {
+		displayDetail();
+		return;
+	}
+	
+	initializeListing();
+	
+	setQueryHeader('Search Results: ' + $("#global-search input[name=q]").val(), false);
+	
+	switch (window.location.hash) {
+	case "#all":
+		queueJSON("Getting search results", getURLSearchAll(0, 5), processResults)
+		registerScroll(getURLSearchAll)
+		break;
+	case "#discussions":
+		queueJSON("Getting search results", getURLSearchDiscussions(0, 5), processResults)
+		registerScroll(getURLSearchDiscussions)
+		break;
+	case "#sprints":
+		queueJSON("Getting search results", getURLSearchSprints(0, 5), processResults)
+		registerScroll(getURLSearchSprints)
+		break;
+	case "#people":
+		queueJSON("Getting search results", getURLSearchPeople(0, 5), processResults)
+		registerScroll(getURLSearchPeople)
+		break;
+	case "#owned":
+		queueJSON("Getting search results", getURLSearchOwned(0, 5), processResults)
+		registerScroll(getURLSearchOwned)
+		break;
+	}
+}
+
+function displayDetail() {
+	$(".nav").hide();
+	var hash = window.location.hash;
+
+	if (isSocialGSP) {
+		var domainHashValue = hash.split("/")[1];
+
+		if (hash.startsWith("#discussions/")) {
+			window.singleDiscussionPage = true;
+			discussionShow(domainHashValue);
+		} else if (hash.startsWith("#people/")) {
+			showUserDetails(domainHashValue);
+		}
+	} else if (isSprintGSP) {
+		sprintShow(hash.substring(1));               // Removing "#" from the beginning
+	}
+}
+
+function checkAndDisplayTabData() {
+	// Reset these variables as we change state/tab
+	window.singleDiscussionPage = false;
+	nextSuggestionOffset = 0;
+	commentsArgs = {offset: 0, sort: "created", order: "desc"};	
+	
+	// Clear the main content and display a spinner
+	$("#feed").html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
+
+	// Make sure to remove existing infinite scroll so that feeds can be reloaded based on the new selected tab and
+	// the search filter.
+	$('#feed').infiniteScroll('stop');
+		
+	// If no "hash" is specified or hash is empty
+	if (!window.location.hash) {
+		window.location.hash = "#all";
+		return;
+	}
+
+	if (isSocialGSP) {
+		displaySocialPage()
+	} else if (isSprintGSP) {
+		displaySprintPage()
+	} else if (isSearchGSP) {
+		displaySearchPage()
+	}
+	
 	$(window).scrollTop(0);
 }
 
-$(document).ready(function() {
-	if (isOnFeedPage()) {
-		registerScroll();
-	}
+$(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
+$(document).ready(function() {
 	$('html').on('click', function(e) {
 		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
 			$('[data-original-title]').popover('hide');
@@ -197,7 +437,7 @@ $(document).ready(function() {
 	});
 
 	/**
-	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of disucssion and their
+	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of discussion and their
 	 * comments.
 	 */
 	$(document).on("click", ".discussion .view-comment", function() {
@@ -263,22 +503,6 @@ $(document).ready(function() {
 		});
 		return false;
 	});
-
-	$('#feed-sprints-tab a').click(function(e) {
-		showSprints();
-	});
-
-	$('#feed-discussions-tab a').click(function(e) {
-		showDiscussions();
-	})
-
-	$('#feed-people-tab a').click(function(e) {
-		showPeople();
-	});
-
-	$('#feed-all-tab a').click(function(e) {
-		showAllFeeds();
-	})
 });
 
 function extractDiscussionNameAndPost(value) {
@@ -301,140 +525,10 @@ function extractDiscussionNameAndPost(value) {
 	return {name: discussionName, post: discussionPost};
 }
 
-function showSprints() {
-	queueJSON('Getting sprint list', '/search/indexData?type=sprints&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
-		if (data.success) {
-			// Adding custom classes according to the tabs, so as to be able to modify the elements differently in respective tabs if required
-			$('#feed').removeClass().addClass('type-sprints').html('');
-			$.each(data.listItems.sprintList, function(index, sprint) {
-				var compiledHtml = compileTemplate("_sprints", {'sprint': sprint});
-				$('#feed').append(compiledHtml);
-			});
-			showCommentAgeFromDate();
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').html('No sprints to show.');
-		}
-
-		setQueryHeader('Tracking Sprints', false);
-		$('#feed-sprints-tab a').tab('show');
-		$('.nav').show();
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-	registerScroll();
-}
-
-function showDiscussions() {
-	// Change the red bar title
-	setQueryHeader('Discussions', false);
-
-	$('.nav').show();
-	
-	// Select the tab
-	$('#feed-discussions-tab a').tab('show');
-
-	// Clear the tab content and display a spinner
-	$('#feed').html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
-
-	$('#feed-right-tab').html('');
-
-	// Get the discussion data
-	queueJSON('Getting discussion data', '/search/indexData?type=discussions&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?', function(data) {
-
-		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-		$('#feed').removeClass().addClass('type-discussions')
-				.html(createDiscussionForm)		// Reset the main container with create discussion form
-				.append('<div class="discussions"></div>')	// And append one container for holding all discussions
-
-		if (!checkData(data)) {
-			return;
-		}
-
-		if (!data.success) {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').append('No discussions to show.');
-			return;
-		}
-
-		$.each(data.listItems.discussionList, function(index, discussionData) {
-			var compiledHtml = compileTemplate("_discussions", {'discussionData': discussionData});
-			$('.discussions').append(compiledHtml);
-		});
-		showCommentAgeFromDate();
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-	registerScroll();
-}
-
-function showPeople() {
-	queueJSON('Getting people list', '/search/indexData?type=people&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#feed').removeClass().addClass('type-people').html('');
-			$('.nav').show();
-			$.each(data.listItems, function(index, user) {
-				var compiledHtml = compileTemplate("_people", {'user': user});
-				$('#feed').append(compiledHtml);
-			});
-			$('#feed-right-tab').html('');
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').text('No people to show.');
-		}
-		setQueryHeader('People', false);
-		$('#feed-people-tab a').tab('show');
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-	registerScroll();
-}
-
-function showAllFeeds() {
-	queueJSON('Getting feeds', '/search/indexData?type=all&offset=0&max=5&' + 
-			getCSRFPreventionURI('getFeedsDataCSRF') + '&callback=?',
-			function(data) {
-		if (!checkData(data))
-			return;
-
-		if (data.success) {
-			$('#feed').removeClass().addClass('type-all').html('');
-			addAllFeedItems(data);
-			$('#feed-right-tab').html('');
-		} else {
-			if (data.message) {
-				showAlert(data.message);
-			}
-			$('#feed').text('No feeds to show.');
-		}
-		setQueryHeader('All Feeds', false);
-		$('#feed-all-tab a').tab('show');
-		$('.nav').show();
-	}, function(data) {
-		showAlert('Internal server error occurred.');
-	});
-	registerScroll();
-}
-
 function addAllFeedItems(data, elementId, prepend) {
+	displayNoDataMessage(data.listItems);
+
 	elementId = elementId || '#feed';
-	data.listItems.sort(function(a, b) {
-		return a.updated > b.updated ? -1 : (a.updated < b.updated ? 1 : 0)
-	});
 
 	$.each(data.listItems, function(index, item) {
 		var compiledHTML = '';
@@ -763,9 +857,7 @@ function showUserDetails(hash) {
 		if (data.success) { 
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
-			$('.nav').hide();
 			setQueryHeader('User Profile', true);
-			$('#feed-sprints-tab a').tab('show');
 		} else {
 			showAlert(data.message);
 			window.history.back();

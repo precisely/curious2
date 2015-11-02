@@ -8,7 +8,7 @@ chmod 400 .ssh/authorized_keys
 # install gvmtool and grails
 
 curl -s get.gvmtool.net | bash
-source "/home/curious/.gvm/bin/gvm-init.sh"
+source "/home/oura/.sdkman/bin/sdkman-init.sh"
 gvm install grails 2.5.0
 gvm use grails 2.5.0
 ~/deploymentbin/replaceline .bashrc "gvm use" "gvm use grails 2.5.0" .bashrc

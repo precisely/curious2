@@ -1,9 +1,6 @@
 package us.wearecurio.model
 
-import grails.converters.*
-
 import org.apache.commons.logging.LogFactory
-
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.DatabaseService
@@ -567,7 +564,7 @@ class Discussion {
 		if (last == null || (last.id == firstPostId && isFirstPostPlot) ) {
 			return ""
 		}
-		
+
 		return last.authorHash
 	}
 	
