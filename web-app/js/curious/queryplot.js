@@ -1677,7 +1677,7 @@ function PlotLine(p) {
 		
 		var tagsDebug = this.getTags();
 
-		this.plot.queueJSON("loading graph data", this.plot.makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
+		this.plot.queuePostJSON("loading graph data", this.plot.makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
 				startDate:startDate == null ? "" : startDate.toUTCString(),
 				endDate:endDate == null ? "" : endDate.toUTCString(),
 				timeZoneName:timeZoneName }),
@@ -1707,6 +1707,11 @@ function PlotLine(p) {
 									// been loaded yet
 		
 		if (parentEntries.length < 1) return; // don't calculate if parent line has no data
+		
+		if (parentEntries.length == 1) {
+			this.entries = parentEntries;
+			return;
+		}
 		
 		var data = [];
 		
