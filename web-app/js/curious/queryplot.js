@@ -978,12 +978,12 @@ function parseISO8601(str) {
 	// we assume str is a UTC date ending in 'Z'
 
 	var parts = str.split('T'),
-		dateParts = parts[0].split('-'),
-		timeParts = parts[1].split('Z'),
-		timeSubParts = timeParts[0].split(':'),
-		timeSecParts = timeSubParts[2].split('.'),
-		timeHours = Number(timeSubParts[0]),
-		_date = new Date;
+			dateParts = parts[0].split('-'),
+			timeParts = parts[1].split('Z'),
+			timeSubParts = timeParts[0].split(':'),
+			timeSecParts = timeSubParts[2].split('.'),
+			timeHours = Number(timeSubParts[0]),
+			_date = new Date;
 
 	_date.setUTCFullYear(Number(dateParts[0]));
 	_date.setUTCDate(1);
@@ -1130,11 +1130,12 @@ function PlotLine(p) {
 	}
 	this.getSaveData = function() {
 		var data = {name:this.name,color:this.color,sumData:this.sumData,
-			tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
-			isContinuous:this.isContinuous,isFreqLineFlag:this.isFreqLineFlag,showPoints:this.showPoints,fill:this.fill,smoothDataWidth:this.smoothDataWidth,
-			freqDataWidth:this.freqDataWidth,parentLineName:this.parentLine?this.parentLine.name:'',flatten:this.flatten,smoothData:this.smoothLine&&this.smoothDataWidth>0?true:false,
-			freqData:this.freqLine&&this.freqDataWidth>0?true:false,
-			min:this.minSeriesVal,max:this.maxSeriesVal,unitGroupId:this.unitGroupId,valueScale:this.valueScale};
+				tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
+				isContinuous:this.isContinuous,isFreqLineFlag:this.isFreqLineFlag,showPoints:this.showPoints,fill:this.fill,smoothDataWidth:this.smoothDataWidth,
+				freqDataWidth:this.freqDataWidth,parentLineName:this.parentLine?this.parentLine.name:'',flatten:this.flatten,smoothData:this.smoothLine&&this.smoothDataWidth>0?true:false,
+				freqData:this.freqLine&&this.freqDataWidth>0?true:false,
+				min:this.minSeriesVal,max:this.maxSeriesVal,unitGroupId:this.unitGroupId,valueScale:this.valueScale};
+
 		if (this.minRange != undefined) data.minRange = this.minRange;
 		if (this.maxRange != undefined) data.maxRange = this.maxRange;
 		return data;
@@ -1724,10 +1725,10 @@ function PlotLine(p) {
 			minTime = minTime - 1000*60*60*12;
 			maxTime = lastTime + 1000*60*60*12;
 		} else {*/
-			if (minTime == maxTime) {
-				minTime = minTime - 1000*60*60;
-				maxTime = lastTime + 1000*60*60;
-			}
+		if (minTime == maxTime) {
+			minTime = minTime - 1000*60*60;
+			maxTime = lastTime + 1000*60*60;
+		}
 		//}
 
 		this.minTime = minTime;
