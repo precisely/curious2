@@ -625,28 +625,37 @@ class User {
 		return [
 			id: id,
 			virtual: virtual,
-			username: username,
-			avatarURL: getAvatarURL()
+			avatarURL: getAvatarURL(),
+			username: username
 		];
 	}
 
 	def getJSONDesc() {
 		return getJSONShortDesc() + [
 			hash: hash,
-			email: email,
-			remindEmail: remindEmail,
-			name: name,
 			sex: sex,
-			birthdate: birthdate,
 			website: website,
-			notifyOnComments: notifyOnComments,
 			created: created,
-			type: "usr",
+			type: "usr"
 		];
 	}
-	
+
+	def getPublicJSONDesc() {
+		return getJSONDesc() + [
+			sprints: getOwnedSprints(),
+			groups: getUserGroups(),
+			interestTags: fetchInterestTagsJSON()*.description,
+			bio: settings.isBioPublic() ? bio : null,
+			name: settings.isNamePublic() ? name : null,
+			updated: created
+		]
+	}
+
 	def getPeopleJSONDesc() {
 		return getJSONDesc() + [
+			name: name,
+			email: email,
+			remindEmail: remindEmail,
 			sprints: getOwnedSprints(),
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
@@ -656,7 +665,9 @@ class User {
 			linkedToWithings: getAccessTokenForThirdParty(ThirdParty["WITHINGS"]),
 			linkedToMoves: getAccessTokenForThirdParty(ThirdParty["MOVES"]),
 			linkedToJawbone: getAccessTokenForThirdParty(ThirdParty["JAWBONE"]),
-			linkedToTwenty3andMe: getAccessTokenForThirdParty(ThirdParty["TWENTY_THREE_AND_ME"])
+			linkedToTwenty3andMe: getAccessTokenForThirdParty(ThirdParty["TWENTY_THREE_AND_ME"]),
+			notifyOnComments: notifyOnComments,
+			birthdate: birthdate,
 		]
 	}
 
