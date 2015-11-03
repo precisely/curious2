@@ -360,12 +360,19 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	};
 
 	this.handleDropTag = function(event, ui) {
-		var plotLine = this;
 		var $sourceElement = $(ui.draggable[0]);
+		console.log($sourceElement);
 		var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
-		if (!tagListItem)
-			return false;
-		plotLine.addTag(tagListItem);
+		var plot = this;
+
+		if (tagListItem instanceof TagGroup) {
+			tagListItem.fetchAll(function() { plot.addLine(tagListItem); });
+		} else {
+			tagListItem.getTagProperties(function(tagProperties){
+				console.log("import tag properties");
+				plot.addLine(tagListItem);
+			});
+		}
 	}
 
 	this.clearGraphs = function () {
@@ -381,6 +388,15 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 }
 
 PlotWeb.prototype = Object.create(Plot);
+
+PlotLine.prototype.handleDropTag = function(event, ui) {
+	var plotLine = this;
+	var $sourceElement = $(ui.draggable[0]);
+	var tagListItem = $sourceElement.data(DATA_KEY_FOR_ITEM_VIEW).getData();
+	if (!tagListItem)
+		return false;
+	plotLine.addTag(tagListItem);
+};
 
 PlotLine.prototype.appendHTML = function() {
 	if (this.isSmoothLine() || this.isFreqLine()) return; // don't show controls for smooth line
