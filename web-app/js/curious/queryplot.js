@@ -1342,25 +1342,25 @@ function PlotLine(p) {
 		var plotLine = this;
 		var tagsDebug = this.getTags();
 
-		queueJSON("loading graph data", makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
-					startDate:startDate == null ? "" : startDate.toUTCString(),
-					endDate:endDate == null ? "" : endDate.toUTCString(),
-					timeZoneName:timeZoneName }),
-				function(plotDesc){
-					if (this.checkData(plotDesc)) {
-						plotLine.loadEntries(plotDesc);
-						if (plotLine.smoothLine && plotLine.smoothDataWidth > 0 && plot.interactive)
-							plotLine.smoothLine.entries = undefined;
-						if (plotLine.freqLine && plotLine.freqDataWidth > 0 && plot.interactive)
-							plotLine.freqLine.entries = undefined;
-						plot.removePendingLoad();
-						if (plotLine.postLoadClosure) {
-							var postLoadClosure = plotLine.postLoadClosure;
-							plotLine.postLoadClosure = null;
-							window.setTimeout(postLoadClosure, 0);
-						}
+		queuePostJSON("loading graph data", makeGetUrl(method), getCSRFPreventionObject(method + "CSRF", {tags: $.toJSON(this.getTags()),
+				startDate:startDate == null ? "" : startDate.toUTCString(),
+				endDate:endDate == null ? "" : endDate.toUTCString(),
+				timeZoneName:timeZoneName }),
+			function(plotDesc){
+				if (this.checkData(plotDesc)) {
+					plotLine.loadEntries(plotDesc);
+					if (plotLine.smoothLine && plotLine.smoothDataWidth > 0 && plot.interactive)
+						plotLine.smoothLine.entries = undefined;
+					if (plotLine.freqLine && plotLine.freqDataWidth > 0 && plot.interactive)
+						plotLine.freqLine.entries = undefined;
+					plot.removePendingLoad();
+					if (plotLine.postLoadClosure) {
+						var postLoadClosure = plotLine.postLoadClosure;
+						plotLine.postLoadClosure = null;
+						window.setTimeout(postLoadClosure, 0);
 					}
-				});
+				}
+			});
 	}
 
 	this.calculateSmoothEntries = function() {
@@ -1372,6 +1372,11 @@ function PlotLine(p) {
 									// been loaded yet
 
 		if (parentEntries.length < 1) return; // don't calculate if parent line has no data
+		
+		if (parentEntries.length == 1) {
+			this.entries = parentEntries;
+			return;
+		}
 		
 		var data = [];
 		
