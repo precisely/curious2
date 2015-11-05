@@ -97,7 +97,7 @@ class HomeController extends DataController {
 			flash.args << result.message ?: ""
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -130,7 +130,7 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Withings"])
 			flash.args << result.message ?: ""
 		}
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
 			flash.message = message
@@ -162,7 +162,7 @@ class HomeController extends DataController {
 			message = g.message(code: "twenty3andme.import.failure.message")
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -205,7 +205,8 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Moves"])
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
+			log.debug "mobile request....>>>>>>>>>>>>>>>>>>>>>"
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -237,7 +238,8 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Moves"])
 			flash.args << result.message ?: ""
 		}
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
+			log.debug "mobile request....>>>>>>>>>>>>>>>>>"
 			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
 			flash.message = message
@@ -269,7 +271,7 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["JawboneUp"])
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -301,7 +303,7 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["JawboneUp"])
 			flash.args << result.message ?: ""
 		}
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
 			flash.message = message
@@ -356,7 +358,7 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Fitbit"])
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -394,7 +396,7 @@ class HomeController extends DataController {
 			flash.args << result.message ?: ""
 		}
 
-		if (params.mobileSessionId) {
+		if (params.mobileRequest) {
 			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
 			flash.message = message
