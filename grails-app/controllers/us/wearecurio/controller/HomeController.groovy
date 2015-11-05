@@ -206,7 +206,6 @@ class HomeController extends DataController {
 		}
 
 		if (params.mobileRequest) {
-			log.debug "mobile request....>>>>>>>>>>>>>>>>>>>>>"
 			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
@@ -239,7 +238,6 @@ class HomeController extends DataController {
 			flash.args << result.message ?: ""
 		}
 		if (params.mobileRequest) {
-			log.debug "mobile request....>>>>>>>>>>>>>>>>>"
 			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
 			flash.message = message
