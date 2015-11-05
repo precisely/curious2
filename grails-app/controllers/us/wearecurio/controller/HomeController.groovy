@@ -94,6 +94,7 @@ class HomeController extends DataController {
 		} else {
 			debug "Failed to subscribe: " + (result.message ?: "")
 			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Withings"])
+			flash.args = []
 			flash.args << result.message ?: ""
 		}
 
@@ -235,6 +236,7 @@ class HomeController extends DataController {
 		} else {
 			debug "Failure while unsubscribing" + result.message
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Moves"])
+			flash.args = []
 			flash.args << result.message ?: ""
 		}
 		if (params.mobileRequest) {
@@ -299,6 +301,7 @@ class HomeController extends DataController {
 		} else {
 			debug "Failure while unsubscribing" + result.message
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["JawboneUp"])
+			flash.args = []
 			flash.args << result.message ?: ""
 		}
 		if (params.mobileRequest) {
@@ -347,6 +350,7 @@ class HomeController extends DataController {
 		}
 
 		String message
+		flash.args = []
 		flash.args << result.message ? ", " + result.message : ""
 		if(result.success) {
 			debug "Succeeded in subscribing"
@@ -391,6 +395,7 @@ class HomeController extends DataController {
 		} else {
 			debug "Failure in unsubscribing:" + result.message
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Fitbit"])
+			flash.args = []
 			flash.args << result.message ?: ""
 		}
 
