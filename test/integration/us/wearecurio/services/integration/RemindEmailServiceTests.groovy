@@ -159,7 +159,7 @@ class RemindEmailServiceTests extends CuriousServiceTestCase {
 		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
 		} == 1
 	
-		Date remindDate = dateFormat.parse("July 1, 2010 12:00pm")
+		Date remindDate = dateFormat.parse("July 1, 2010 12:00 pm")
 		remindDate = remindDate
 	}
 	
