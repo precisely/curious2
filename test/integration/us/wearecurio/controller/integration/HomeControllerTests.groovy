@@ -341,7 +341,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 		controller.registerwithings()
 		assert account.accessToken == ""
-		assert controller.flash.message == "thirdparty.subscribe.failure.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.failure.message",
+				["Withings"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		account.accessToken = "some-token"
@@ -356,7 +357,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 
 		controller.registerwithings()
-		assert controller.flash.message == "thirdparty.subscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.success.message",
+				["Withings"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -370,7 +372,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		controller.unregisterwithings()
-		assert controller.flash.message == "thirdparty.unsubscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
+				["Withings"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -411,8 +414,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 			}
 		]
 		controller.registerfitbit()
-		assert controller.flash.message == "thirdparty.subscribe.success.message"
-		assert controller.flash.args[1].contains("already been subscribed")
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.success.message",
+				["Fitbit"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 
 		controller.response.reset()
@@ -427,7 +430,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		]
 
 		controller.registerfitbit()
-		assert controller.flash.message == "thirdparty.subscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.success.message",
+				["Fitbit"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -440,7 +444,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		controller.unregisterfitbit()
-		assert controller.flash.message == "thirdparty.unsubscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
+				["Fitbit"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -462,7 +467,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.response.reset()
 
 		controller.registermoves()
-		assert controller.flash.message == "thirdparty.subscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.success.message",
+				["Moves"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 
@@ -475,7 +481,8 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.session.userId = userId
 
 		controller.unregistermoves()
-		assert controller.flash.message == "thirdparty.unsubscribe.success.message"
+		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
+				["Moves"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 }
