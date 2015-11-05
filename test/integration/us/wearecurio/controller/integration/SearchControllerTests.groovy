@@ -52,11 +52,17 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		params.put("birthdate", "12/1/1991")
 
 		user2 = User.create(params)
-
+		user2.settings.makeNamePublic()
+		user2.settings.makeBioPublic()
+		Utils.save(user2, true)
+		
 		params.put("username", "testuser3")
 		params.put("email", "test3@test.com")
 
 		user3 = User.create(params)
+		user3.settings.makeNamePublic()
+		user3.settings.makeBioPublic()
+		Utils.save(user3, true)
 		
 		Date now = new Date()
 		
@@ -72,6 +78,12 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		println ""
+		println "user.hash: $user.hash"
+		println "user2.hash: $user2.hash"
+		println "user3.hash: $user3.hash"
+		println ""
 	}
 
 	@After
@@ -81,37 +93,35 @@ class SearchControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void "Test indexData when user is not in session"() {
-		controller.params["type"] = "people"
-		controller.params["max"] = 5
-		controller.params["offset"] = 0
-
-		controller.feedData()
+		controller.getPeopleSocialData(0, 5)
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("auth.error.message", null, null)
 	}
 
-	@Test
+	//obsolete
+	//@Test
 	void "Test indexData when no type is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = null
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 		
-		controller.feedData()
+		controller.index()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
 	}
 
-	@Test
+	//obsolete
+	//@Test
 	void "Test indexData when wrong type is passed"() {
 		controller.session.userId = user.getId()
 		controller.params["type"] = "falseType"
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.feedData()
+		controller.index()
 
 		assert !controller.response.json.success
 		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Type"] as Object[] , null)
@@ -120,19 +130,14 @@ class SearchControllerTests extends CuriousControllerTestCase {
 	@Test
 	void "Test indexData when type is people"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = SearchService.USER_TYPE
-		controller.params["max"] = 5
-		controller.params["offset"] = 0
 
-		controller.feedData()
+		controller.getPeopleSocialData(0,5)
 
 		println "json.listItems after index: " + controller.response.json.listItems.toString()
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
-		assert (controller.response.json.listItems[0].id == user2.id && controller.response.json.listItems[1].id == user3.id) || \
-				(controller.response.json.listItems[0].id == user3.id && controller.response.json.listItems[1].id == user2.id)
-		assert controller.response.json.listItems[0].type == "usr"
-		assert controller.response.json.listItems[1].type == "usr"
+		assert controller.response.json.listItems.find{ it.hash == user2.hash && it.type == "usr" }
+		assert controller.response.json.listItems.find{ it.hash == user3.hash && it.type == "usr" }
 	}
 
 	@Test
@@ -142,16 +147,12 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.feedData()
+		controller.getOwnedSocialData(0,5)
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 2
-		assert controller.response.json.listItems[0].id == discussion2.id ||
-				controller.response.json.listItems[0].id == discussion1.id
-		assert controller.response.json.listItems[1].id == discussion2.id ||
-				controller.response.json.listItems[1].id == discussion1.id
-		assert controller.response.json.listItems[0].type == "dis"
-		assert controller.response.json.listItems[1].type == "dis"
+		assert controller.response.json.listItems.find{ it.hash == discussion1.hash && it.type == "dis" }
+		assert controller.response.json.listItems.find{ it.hash == discussion2.hash && it.type == "dis" }
 	}
 
 	@Test
@@ -161,29 +162,20 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		controller.params["max"] = 5
 		controller.params["offset"] = 0
 
-		controller.feedData()
+		controller.getOwnedSprintData(0,5)
 
 		assert controller.response.json.success
 		assert controller.response.json.listItems.size() == 3
-		assert controller.response.json.listItems[0].id == sprint1.id ||
-				controller.response.json.listItems[0].id == sprint2.id ||
-				controller.response.json.listItems[0].id == sprint3.id
-		assert controller.response.json.listItems[1].id == sprint1.id ||
-				controller.response.json.listItems[1].id == sprint2.id ||
-				controller.response.json.listItems[1].id == sprint3.id
-		assert controller.response.json.listItems[0].type == "spr"
-		assert controller.response.json.listItems[1].type == "spr"
-		assert controller.response.json.listItems[2].type == "spr"
+		assert controller.response.json.listItems.find{ it.hash == sprint1.hash && it.type == "spr" }
+		assert controller.response.json.listItems.find{ it.hash == sprint2.hash && it.type == "spr" }
+		assert controller.response.json.listItems.find{ it.hash == sprint3.hash && it.type == "spr" }
 	}
 
 	@Test
 	void "Test indexData to get all users and discussions"() {
 		controller.session.userId = user.getId()
-		controller.params["type"] = (SearchService.USER_TYPE | SearchService.DISCUSSION_TYPE)
-		controller.params["max"] = 5
-		controller.params["offset"] = 0
 
-		controller.feedData()
+		controller.getAllSocialData(0,10,0)
 
 		println ""
 		for( def i : controller.response.json.listItems) {
@@ -193,11 +185,10 @@ class SearchControllerTests extends CuriousControllerTestCase {
 		println ""
 		
 		assert controller.response.json.success
-		assert controller.response.json.listItems.size() == 5
-		assert controller.response.json.listItems[0].hash == discussion2.hash
-		assert controller.response.json.listItems[1].hash == discussion1.hash
-		assert controller.response.json.listItems[2].type == "usr"
-		assert controller.response.json.listItems[3].type == "usr"
-		assert controller.response.json.listItems[4].type == "usr"
+		assert controller.response.json.listItems.size() == 4
+		assert controller.response.json.listItems.find{ it.hash == discussion1.hash && it.type == "dis" }
+		assert controller.response.json.listItems.find{ it.hash == discussion2.hash && it.type == "dis" }
+		assert controller.response.json.listItems.find{ it.hash == user2.hash && it.type == "usr" }
+		assert controller.response.json.listItems.find{ it.hash == user3.hash && it.type == "usr" }
 	}
 }
