@@ -22,7 +22,7 @@ class RemindEmailService {
 	private static def log = LogFactory.getLog(this)
 
 	@Transactional(readOnly = true)
-	def sendReminderForEvent(long userId, String email, AlertNotification alert, def devices) {
+	boolean sendReminderForEvent(long userId, String email, AlertNotification alert, def devices) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
 		if (alert != null) {
 			if (email != null && email.length() > 1) {
@@ -47,10 +47,17 @@ class RemindEmailService {
 						['entryId':alert.objectId,'entryDate':dateTimeFormatter.print(alert.date.getTime())])
 				}
 			}
+			
+			return true
 		}
+		
+		return false
 	}
 	
-	def sendReminders() {
+	/**
+	 * Returns number of reminders sent
+	 */
+	int sendReminders(Date now) {
 		log.debug "RemindEmailService.sendReminders()"
 		
 		if (Environment.current != Environment.PRODUCTION) {
@@ -62,8 +69,6 @@ class RemindEmailService {
 		
 		Date oldDate = rec.getDate()
 		
-		Date now = new Date()
-		
 		if (!oldDate)
 			oldDate = new Date(now.getTime() - 5*60000L)
 			
@@ -72,6 +77,9 @@ class RemindEmailService {
 		//appleNotificationService.sendMessage("This is a test reminder with data",
 			//["54f8158bbe5bd3fc0031c4fde5c6cfdc42e43b6a2fa67762c8d0bf1bd000e2fd"],"Curious", 
 			//['entryId':"5229",'entryDate':dateTimeFormatter.print(new DateTime(now).plusDays(3).getMillis())])
+		
+		int numReminders = 0
+		
 		for (def user in remindUsers) {
 			def c = Entry.createCriteria()
 			def userId = user[0]
@@ -88,7 +96,8 @@ class RemindEmailService {
 				log.debug "Number of remind events found "+remindEvents.size()
 			}
 			for (AlertNotification alert in remindEvents) {
-				sendReminderForEvent(userId, email, eventIdRecord['id'], devices)
+				if (sendReminderForEvent(userId, email, alert, devices))
+					++numReminders
 			}
 			
 		}
@@ -96,5 +105,7 @@ class RemindEmailService {
 		rec.setDate(now)
 		
 		Utils.save(rec, true)
+		
+		return numReminders
 	}
 }

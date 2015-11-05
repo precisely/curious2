@@ -15,7 +15,7 @@ class RemindEmailJob extends us.wearecurio.utility.TimerJob {
 		if (Environment.current != Environment.PRODUCTION)
 			return
 		log.debug "Started executing RemindEmailJob..."
-		remindEmailService.sendReminders()
+		remindEmailService.sendReminders(new Date())
 		log.debug "Finished executing RemindEmailJob..."
 	}
 }

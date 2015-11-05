@@ -1426,10 +1426,10 @@ function PlotLine(p) {
 		this.entries = entries;
 		return;*/
 		
-		// smooth with cubic spline
+		// smooth with linear interpolation
 		
 		var smoothed = Smooth(data, {
-			cubicTension: 0.5,
+		    method: 'linear',
 		});
 		
 		var dataLen = data.length;
@@ -1439,10 +1439,33 @@ function PlotLine(p) {
 		for (i = 0.0; i <= dataLen - 1.0; i += 0.2) {
 			var item = smoothed(i);
 			
-			data.push([new Date(item[0]), item[1], lineName, 0]);
+			data.push([item[0], item[1]]);
 		}
 		
-		this.entries = data;
+		// take moving average
+		
+		var movingAverage = function(data, r, third, fourth) {
+			var dataLen = data.length;
+			
+			var results = [];
+			
+			for (var i = 0; i < dataLen; ++i) {
+				var w = 0;
+				var sum = 0;
+				var limit = i + r < dataLen ? i + r : dataLen - 1;
+				for (var j = (i - r > 0 ? i - r : 0); j <= limit; ++j) {
+					var weight = Math.pow(.6, Math.abs(i-j));
+					w += weight;
+					sum += data[j][1] * weight;
+				}
+				results.push([new Date(data[i][0]), sum / w, third, fourth]);
+			}
+			
+			return results;
+		};
+		
+		var entries = movingAverage(data, 10, lineName, 0);
+		this.entries = entries;
 	}
 	this.calculateFreqEntries = function() {
 		var parentLine = this.parentLine;

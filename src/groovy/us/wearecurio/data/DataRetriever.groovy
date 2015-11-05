@@ -357,7 +357,7 @@ class DataRetriever {
 		SortedSet<String> currentDescriptions = new TreeSet<String>()
 		def summedResults = []
 		
-		UnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
+		DecoratedUnitRatio mostUsedUnitRatio = UnitGroupMap.theMap.mostUsedUnitRatioForTagIds(userId, tagIds)
 
 		for (result in rawResults) {
 			Date resultDate = result[SHORT_DESC_DATE]
