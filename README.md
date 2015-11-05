@@ -44,7 +44,7 @@ Please read the README in src/clojure/analytics.
 
 Following are some bootstrap customization which needs to be made before downloading new bootstrap resources:
 
-Bootstrap customization URL: http://getbootstrap.com/customize/?id=0b8dece3ce0f443468df (Also present in bootstrap.min.css)
+Bootstrap customization URL: http://getbootstrap.com/customize/?id=22d43b550f36d2f3829c (Also present in bootstrap.min.css)
 
 This customization ID sets: 
 1. Uncheck all Less Components except **Grid system, form, typography, Basic utilities, Responsive utilities**,

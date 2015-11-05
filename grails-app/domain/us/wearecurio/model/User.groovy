@@ -625,36 +625,56 @@ class User {
 		return [
 			id: id,
 			virtual: virtual,
-			username: username,
-			avatarURL: getAvatarURL()
+			avatarURL: getAvatarURL(),
+			username: username
 		];
 	}
 
 	def getJSONDesc() {
 		return getJSONShortDesc() + [
 			hash: hash,
-			email: email,
-			remindEmail: remindEmail,
-			name: name,
 			sex: sex,
-			birthdate: birthdate,
 			website: website,
-			notifyOnComments: notifyOnComments,
 			created: created,
-			type: "usr",
+			type: "usr"
 		];
 	}
-	
-	def getPeopleJSONDesc() {
+
+	def getPublicJSONDesc() {
 		return getJSONDesc() + [
 			sprints: getOwnedSprints(),
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
-			bio: bio,
+			bio: settings.isBioPublic() ? bio : null,
+			name: settings.isNamePublic() ? name : null,
 			updated: created
 		]
 	}
-	
+
+	def getPeopleJSONDesc() {
+		return getJSONDesc() + [
+			name: name,
+			email: email,
+			remindEmail: remindEmail,
+			sprints: getOwnedSprints(),
+			groups: getUserGroups(),
+			interestTags: fetchInterestTagsJSON()*.description,
+			bio: bio,
+			updated: created,
+			linkedToFitbit: getAccessTokenForThirdParty(ThirdParty["FITBIT"]),
+			linkedToWithings: getAccessTokenForThirdParty(ThirdParty["WITHINGS"]),
+			linkedToMoves: getAccessTokenForThirdParty(ThirdParty["MOVES"]),
+			linkedToJawbone: getAccessTokenForThirdParty(ThirdParty["JAWBONE"]),
+			linkedToTwenty3andMe: getAccessTokenForThirdParty(ThirdParty["TWENTY_THREE_AND_ME"]),
+			notifyOnComments: notifyOnComments,
+			birthdate: birthdate,
+		]
+	}
+
+	private String getAccessTokenForThirdParty(ThirdParty partyType) {
+		return OAuthAccount.findByTypeIdAndUserId(partyType, id)?.accessToken
+	}
+
 	/**
 	 * This method will return list of all actual users except
 	 * the user with id: excludedUserId
@@ -713,7 +733,7 @@ class User {
 	List getAdminGroupIds() {
 		return getAdminGroupIds(id)
 	}
-	
+
 	String getPublicName() {
 		return settings.isNamePublic() ? name : ""
 	}
@@ -723,6 +743,29 @@ class User {
 	}
 	
 	String getInterestTagsString() {
-		return this.interestTags?.collect{ it.description }?.join(" ")
+		return this.interestTags?.collect { it.description }?.join(" ")
+	}
+
+	def validateUserPreferences(Map map, user) {
+		def status
+
+		if (map.twitterDefaultToNow != 'on')
+			map.twitterDefaultToNow = 'off'
+
+		if (map.password != null && map.password.length() > 0) {
+			if (!user.checkPassword(map.oldPassword)) {
+				return [status: false, message: "Error updating user preferences: old password does not match"]
+			}
+		}
+
+		user.update(map)
+
+		Utils.save(user, true)
+
+		if (!user.validate()) {
+			return [status: false, message: "Error updating user preferences: missing field or email already in use"]
+		} else {
+			return [status: true, message: "User preferences updated", hash: user.hash]
+		}
 	}
 }

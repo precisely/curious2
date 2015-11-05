@@ -23,7 +23,13 @@ class UserController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
 			return
 		}
-		renderJSONGet([success: true, user: user.getPeopleJSONDesc()])
+		Map userDetails = [:]
+		if (user.id != sessionUser().id) {
+			userDetails = user.getPublicJSONDesc()
+		} else {
+			userDetails = user.getPeopleJSONDesc()
+		}
+		renderJSONGet([success: true, user: userDetails])
 	}
 
 	/**
@@ -53,6 +59,34 @@ class UserController extends LoginController {
 		} catch (Exception e) {
 			log.error "Unable to change or add avatar for ${currentUserInstance}", e
 			renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
+		}
+	}
+
+	def update() {
+		Map requestData = request.JSON
+		def validate = [:]
+		User user = User.findByHash(params.id)
+
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
+			return
+		}
+
+		if (user.id != sessionUser().id) {
+			renderJSONGet([success: false, message: g.message(code: "default.permission.denied")])
+			return
+		}
+		validate = user.validateUserPreferences(requestData, user)
+
+		if (!validate.status) {
+			renderJSONGet([success: false, message: validate.message])
+			return
+		}
+
+		if (!validate.status) {
+			renderJSONGet([success: false, message: validate.message])
+		} else {
+			renderJSONGet([success: true, message: validate.message, hash: validate.hash])
 		}
 	}
 }
