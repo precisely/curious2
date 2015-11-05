@@ -524,7 +524,7 @@ class SearchService {
 			queries << "(_type:sprint AND visibility:PUBLIC)"
 		}
 		if ((type & USER_TYPE) > 0) {
-			queries << "(_type:user AND _id:(NOT ${user.id}))"
+			queries << "(_type:user AND _id:(NOT ${user.id}) AND virtual:false)"
 		}
 		
 		def tags = user.getInterestTags()
