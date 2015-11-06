@@ -235,11 +235,12 @@ class EntryParserService {
 		String units
 		DurationType durationType
 		
-		ParseAmount(BigDecimal amount, Integer precision, DurationType durationType) {
+		ParseAmount(BigDecimal amount, Integer precision, DurationType durationType, String unitSuffix = null) {
 			this.tag = null
 			this.amount = amount
 			this.precision = precision == null ? DEFAULT_AMOUNTPRECISION : precision
 			this.durationType = durationType
+			this.unitSuffix = unitSuffix
 		}
 		
 		ParseAmount(Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
@@ -275,15 +276,8 @@ class EntryParserService {
 		void update(Tag tag, Tag baseTag, BigDecimal amount, Integer precision, String units, DecoratedUnitRatio unitRatio, DurationType durationType) {
 			this.units = units ?: ''
 			this.unitRatio = unitRatio
-			this.setTags(tag, baseTag)
+			this.setTags(tag, baseTag, unitRatio ? unitRatio.unitSuffix : (units ?: ""))
 			
-			if (unitRatio != null) {
-				this.unitSuffix = unitRatio.unitSuffix
-			} else if (units) {
-				this.unitSuffix = units
-			} else {
-				this.unitSuffix = ""
-			}
 			this.amount = amount
 			this.precision = precision ?: DEFAULT_AMOUNTPRECISION
 			this.durationType = durationType
@@ -297,13 +291,16 @@ class EntryParserService {
 			return tag != null
 		}
 		
-		ParseAmount setTags(Tag tag, Tag baseTag) {
+		ParseAmount setTags(Tag tag, Tag baseTag, String unitSuffix) {
 			this.tag = tag
 			this.baseTag = baseTag
 			if (baseTag == null || baseTag == tag) {
 				this.tagSuffix = ""
 			} else {
 				this.tagSuffix = tag.getDescription().substring(baseTag.getDescription().length() + 1)
+			}
+			if ((!this.unitSuffix) && unitSuffix) {
+				this.unitSuffix = unitSuffix
 			}
 			return this
 		}
@@ -918,16 +915,16 @@ class EntryParserService {
 			
 			if (!units) {
 				if (context.foundDuration)
-					amount.setTags((Tag)context.retVal['tag'], baseTag)
+					amount.setTags((Tag)context.retVal['tag'], baseTag, "")
 				else
-					amount.setTags(baseTag, baseTag)
+					amount.setTags(baseTag, baseTag, "")
 			} else {
 				DecoratedUnitRatio unitRatio = unitGroupMap.lookupDecoratedUnitRatio(units)
 				if (unitRatio) {
 					amountSuffix = unitRatio.tagSuffix
 					amount.unitRatio = unitRatio
 				} else {
-					amountSuffix = units
+					amountSuffix = '[' + units + ']'
 					// null duration amount equals duration start
 				}
 					
@@ -942,16 +939,18 @@ class EntryParserService {
 				
 				Tag amountTag = Tag.look(baseTag.getDescription() + ' ' + amountSuffix)
 				
-				amount.setTags(amountTag, baseTag)
+				amount.setTags(amountTag, baseTag, unitRatio?.unitSuffix)
 				
 				if (prevAmount != null) {
 					DecoratedUnitRatio prevUnitRatio = prevAmount.getUnitRatio()
-					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && prevSuffix == amountSuffix && prevUnitRatio.ratio != unitRatio.ratio) {
+					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && (prevSuffix == amountSuffix || (!prevUnitRatio.customSuffix)) && prevUnitRatio.ratio != unitRatio.ratio) {
 						// merge amounts together, they are the same unit group, provided prevAmount's unitSuffix is compatible
 						// use first amount units
-						prevAmount.amount = (prevAmount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) + amount.amount.setScale(100, BigDecimal.ROUND_HALF_UP) * (unitRatio.ratio / prevUnitRatio.ratio)).setScale(100, BigDecimal.ROUND_HALF_UP)
-						prevAmount.setTags(tag, baseTag) // update tags to the last suffix
+						prevAmount.amount = prevUnitRatio.addAmount(prevAmount.amount, amount.amount, unitRatio)
+						prevAmount.setTags(amountTag, baseTag, unitRatio.unitSuffix) // update tags to the last suffix
 						amount.deactivate()
+						amount = prevAmount
+						amountSuffix = prevSuffix
 					} // otherwise do nothing, don't merge the amounts
 				}
 				

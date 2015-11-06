@@ -109,23 +109,6 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testBloodPressure() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "blood pressure 120/80", null, null, baseDate, true), new EntryStats())
-
-		Iterable<Entry> group = entry.fetchGroupEntries()
-		
-		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		int c = 0
-		for (entryDesc in entries) {
-			entryDesc = entryDesc
-			assert entryDesc.amounts.size() == 2
-			++c
-		}
-		
-		assert c == 1
-	}
-
-/*	@Test
 	void testMultiUpdateAddElements() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
@@ -147,22 +130,7 @@ class EntryGroupTests extends CuriousTestCase {
 		assert c == 1
 	}
 	
-	@Test
-	void testMultiCreateUnitDecorator() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 2 hours deep 3 hours rem", null, null, baseDate, true), new EntryStats())
-		
-		Iterable<Entry> group = entry.fetchGroupEntries()
-		
-		String x = ""
-		for (Entry e : group) {
-			x += ":" + e.tag.getDescription()
-			x += ":" + e.baseTag.getDescription()
-		}
-		
-		assert x == ":sleep [duration]:sleep:sleep [deep]:sleep:sleep [rem]:sleep"
-	}
-	
-	@Test
+/*	@Test
 	void testMultiCreateUnitDecoratorDuration() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 30 minutes deep", null, null, baseDate, true), new EntryStats())
 		
@@ -196,6 +164,38 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert x == ":run [duration]:run:2.500000000:hours"
+	}
+	
+	@Test
+	void testBloodPressure() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "blood pressure 120/80", null, null, baseDate, true), new EntryStats())
+
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			entryDesc = entryDesc
+			assert entryDesc.amounts.size() == 2
+			++c
+		}
+		
+		assert c == 1
+	}
+
+	@Test
+	void testMultiCreateUnitDecorator() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 2 hours deep 3 hours rem", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+		}
+		
+		assert x == ":sleep [duration]:sleep:sleep [deep]:sleep:sleep [rem]:sleep"
 	}
 	
 	@Test

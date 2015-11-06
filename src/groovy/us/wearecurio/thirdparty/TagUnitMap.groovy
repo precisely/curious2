@@ -88,9 +88,6 @@ abstract class TagUnitMap {
 	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
 			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 
-		if (tagName.contains("awake"))
-			tagName = tagName
-			
 		Map currentMapping = tagUnitMappings[tagName]
 
 		if (!currentMapping) {

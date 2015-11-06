@@ -674,7 +674,7 @@ class UnitGroupMap {
 				ratio = lookupUnitRatio(units2.toLowerCase())
 				if (ratio != null) {
 					String suffix = matcher.group(3)
-					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
 					
 					return decorated
 				}
@@ -687,7 +687,7 @@ class UnitGroupMap {
 				ratio = lookupUnitRatio(units1.toLowerCase())
 				if (ratio != null) {
 					String suffix = matcher.group(4)
-					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
 					
 					return decorated
 				}
@@ -816,7 +816,7 @@ class UnitGroupMap {
 			ratio = simpleLookupUnitRatioForUnits(units2.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(3)
-				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
 				
 				return decorated
 			}
@@ -829,7 +829,7 @@ class UnitGroupMap {
 			ratio = simpleLookupUnitRatioForUnits(units1.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(4)
-				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
 				
 				return decorated
 			}
@@ -994,6 +994,14 @@ class UnitRatio {
 		return (otherRatio.ratio / this.ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
 	}
 	
+	BigDecimal convertFrom(BigDecimal amount, UnitRatio other) {
+		return amount.setScale(50, BigDecimal.ROUND_HALF_UP) * (other.ratio.setScale(50, BigDecimal.ROUND_HALF_UP) / this.ratio.setScale(50, BigDecimal.ROUND_HALF_UP))
+	}
+	
+	BigDecimal addAmount(BigDecimal amount, BigDecimal otherAmount, UnitRatio other) {
+		return amount.setScale(50, BigDecimal.ROUND_HALF_UP) + convertFrom(otherAmount, other)
+	}
+	
 	boolean isDuration() {
 		return unitGroup.isDuration()
 	}
@@ -1010,21 +1018,25 @@ class DecoratedUnitRatio {
 	UnitRatio unitRatio
 	String unitSuffix // this is a special suffix added to the tag if the unit is decorated (i.e., "hours rem" or "feet elevation"
 	String tagSuffix // computed suffix ([elevation])
+	boolean customSuffix
+	DecoratedUnitRatio bareSingularUnitRatio
+	DecoratedUnitRatio barePluralUnitRatio
 	DecoratedUnitRatio singularUnitRatio
 	DecoratedUnitRatio pluralUnitRatio
 	DecoratedUnitRatio subUnitRatio
 	
-	static DecoratedUnitRatio lookupOrCreate(UnitRatio ratio, String unitSuffix, boolean initialize) {
+	static DecoratedUnitRatio lookupOrCreate(UnitRatio ratio, String unitSuffix, boolean initialize, boolean customSuffix = false) {
 		String unit = ratio.unit
 		String decoratedUnit = unitSuffix == null ? unit : unit + ' ' + unitSuffix
 		DecoratedUnitRatio decorated = ratio.unitGroup.simpleLookupDecoratedUnitRatio(decoratedUnit)
 		if (decorated != null) return decorated
-		return new DecoratedUnitRatio(ratio, unitSuffix, initialize)
+		return new DecoratedUnitRatio(ratio, unitSuffix, initialize, customSuffix)
 	}
 	
-	DecoratedUnitRatio(UnitRatio unitRatio, String unitSuffix, boolean initialize) {
+	DecoratedUnitRatio(UnitRatio unitRatio, String unitSuffix, boolean initialize, boolean customSuffix = false) {
 		this.unitRatio = unitRatio
 		this.unitSuffix = unitSuffix
+		this.customSuffix = customSuffix
 		if (unitSuffix) {
 			tagSuffix = '[' + unitSuffix + ']'
 		} else
@@ -1035,6 +1047,14 @@ class DecoratedUnitRatio {
 		}
 	}
 	
+	BigDecimal convertFrom(BigDecimal amount, DecoratedUnitRatio other) {
+		return unitRatio.convertFrom(amount, other.unitRatio)
+	}
+	
+	BigDecimal addAmount(BigDecimal amount, BigDecimal otherAmount, DecoratedUnitRatio other) {
+		return unitRatio.addAmount(amount, otherAmount, other.unitRatio)
+	}
+	
 	void initializeSubUnitRatios() {
 		if (unitRatio.subUnitRatio != null) {
 			if (unitSuffix == null) {
@@ -1043,12 +1063,11 @@ class DecoratedUnitRatio {
 				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, unitSuffix, true)
 		}
 		if (unitRatio.singularUnitRatio != null) {
+			bareSingularUnitRatio = unitRatio.singularUnitRatio.decoratedUnitRatio
 			if (unitSuffix == null) {
-				if (unitRatio.singularUnitRatio != null) {
-					singularUnitRatio = unitRatio.singularUnitRatio?.decoratedUnitRatio
-					if (singularUnitRatio == null) {
-						singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
-					}
+				bareSingularUnitRatio = singularUnitRatio
+				if (singularUnitRatio == null) {
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.singularUnitRatio.is(unitRatio)) {
@@ -1058,12 +1077,11 @@ class DecoratedUnitRatio {
 			}
 		}
 		if (unitRatio.pluralUnitRatio != null) {
+			barePluralUnitRatio = unitRatio.pluralUnitRatio.decoratedUnitRatio
 			if (unitSuffix == null) {
-				if (unitRatio.pluralUnitRatio != null) {
-					pluralUnitRatio = unitRatio.pluralUnitRatio?.decoratedUnitRatio
-					if (pluralUnitRatio == null) {
-						pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
-					}
+				barePluralUnitRatio = pluralUnitRatio
+				if (pluralUnitRatio == null) {
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.pluralUnitRatio.is(unitRatio)) {
@@ -1082,30 +1100,26 @@ class DecoratedUnitRatio {
 	
 	DecoratedUnitRatio fetchSingularUnitRatio() {
 		if (singularUnitRatio != null) return singularUnitRatio
-		if (unitRatio.singularUnitRatio == null) return null
-		if (unitSuffix == null) {
-			singularUnitRatio = unitRatio.singularUnitRatio?.decoratedUnitRatio
-			return singularUnitRatio
-		}
-		if (unitRatio.singularUnitRatio.is(unitRatio)) {
-			singularUnitRatio = this
-		} else
-			singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix)
+		initializeSubUnitRatios()
 		return singularUnitRatio
 	}
 	
 	DecoratedUnitRatio fetchPluralUnitRatio() {
 		if (pluralUnitRatio != null) return pluralUnitRatio
-		if (unitRatio.pluralUnitRatio == null) return null
-		if (unitSuffix == null) {
-			pluralUnitRatio = unitRatio.pluralUnitRatio?.decoratedUnitRatio
-			return pluralUnitRatio
-		}
-		if (unitRatio.pluralUnitRatio.is(unitRatio)) {
-			pluralUnitRatio = this
-		} else
-			pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix)
+		initializeSubUnitRatios()
 		return pluralUnitRatio
+	}
+	
+	DecoratedUnitRatio fetchBareSingularUnitRatio() {
+		if (bareSingularUnitRatio != null) return bareSingularUnitRatio
+		initializeSubUnitRatios()
+		return bareSingularUnitRatio
+	}
+	
+	DecoratedUnitRatio fetchBarePluralUnitRatio() {
+		if (barePluralUnitRatio != null) return barePluralUnitRatio
+		initializeSubUnitRatios()
+		return barePluralUnitRatio
 	}
 	
 	BigDecimal getRatio() { unitRatio.ratio }
@@ -1148,8 +1162,12 @@ class DecoratedUnitRatio {
 		return baseUnitRatio.unitSuffixToDecoratedUnitRatio(unitSuffix)
 	}
 	
-	String singularOrPluralUnitString(boolean plural) {
-		DecoratedUnitRatio decorated = plural ? pluralUnitRatio : singularUnitRatio
+	String singularOrPluralUnitString(boolean plural, boolean bare) {
+		DecoratedUnitRatio decorated
+		if (bare)
+			decorated = plural ? fetchBarePluralUnitRatio() : fetchBareSingularUnitRatio()
+		else
+			decorated = plural ? fetchPluralUnitRatio() : fetchSingularUnitRatio()
 		
 		if (decorated != null)
 			return decorated.unit
@@ -1157,13 +1175,13 @@ class DecoratedUnitRatio {
 		return this.unit
 	}
 	
-	BigDecimal SLIGHTLYLESSTHANONE = 0.9999g
+	static final BigDecimal SLIGHTLYLESSTHANONE = 0.9999g
 	
 	void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
 		int compareToOne = amount.compareTo(SLIGHTLYLESSTHANONE)
 		
 		if ((!subRatio) || subUnitRatio == null || amountPrecision < 0) {
-			amounts.put(amounts.size(), [amount:amount.setScale(4, BigDecimal.ROUND_HALF_UP), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0)])
+			amounts.put(amounts.size(), [amount:amount.setScale(4, BigDecimal.ROUND_HALF_UP), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0, false)])
 		} else {
 			BigDecimal subAmount
 			
@@ -1171,9 +1189,13 @@ class DecoratedUnitRatio {
 				String baseUnitString
 				
 				BigDecimal primeVal = amount.setScale(4, BigDecimal.ROUND_HALF_UP).setScale(0, BigDecimal.ROUND_FLOOR)
-				amounts.put(amounts.size(), [amount:primeVal, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(primeVal != 1.0g)])
 				subAmount = ((amount - primeVal) * ratio / subRatio).setScale(100, BigDecimal.ROUND_HALF_UP)
-				if (subAmount == 0.0g || (subAmount < 0.0001g && subAmount > -0.0001g))
+				boolean sub = true
+				if (subAmount == 0.0g || (subAmount < 0.0001g && subAmount > -0.0001g)) {
+					sub = false
+				}
+				amounts.put(amounts.size(), [amount:primeVal, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(primeVal != 1.0g, sub)])
+				if (!sub)
 					return
 			} else {
 				subAmount = (amount * ratio / subRatio).setScale(100, BigDecimal.ROUND_HALF_UP)

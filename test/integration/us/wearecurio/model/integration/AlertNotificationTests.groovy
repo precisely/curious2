@@ -163,7 +163,7 @@ class AlertNotificationTests extends CuriousTestCase {
 		
 		Entry entry = Entry.create(userId, m, new EntryStats())
 		
-		alertGenerationService.generateAlerts(baseDate)
+		alertGenerationService.generate(baseDate)
 		
 		def pendingAlerts = AlertNotification.pendingAlerts(userId, baseDate - 1, baseDate + 1)
 		
@@ -179,7 +179,7 @@ class AlertNotificationTests extends CuriousTestCase {
 		
 		Entry entry = Entry.create(userId, m, new EntryStats())
 		
-		alertGenerationService.regenerateAlerts(userId, baseDate)
+		alertGenerationService.regenerate(userId, baseDate)
 		
 		def pendingAlerts = AlertNotification.pendingAlerts(userId, baseDate - 1, baseDate + 1)
 		

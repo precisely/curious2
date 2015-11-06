@@ -62,7 +62,42 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		Utils.save(account, true)
 	}
 
-	void "test get data body"() {
+	void "test get data sleep"() {
+		String mockedResponseData = new File(testDataPath("sleep", 1)).text
+
+		jawboneUpDataService.oauthService = [
+			getJawboneupResource: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection(mockedResponseData))
+			}
+		]
+
+		when:
+		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false)
+
+		then:
+		result.success == true
+
+		List<Entry> userEntries = Entry.findAllByUserId(userId)
+		userEntries.size() == 4
+
+		userEntries.find { it.tag.description == "sleep [duration]" } != null
+		userEntries.find { it.tag.description == "sleep [duration]" }.amount.round(2) == 672.58g
+		userEntries.find { it.tag.description == "sleep [duration]" }.units == "mins"
+
+		userEntries.find { it.tag.description == "sleep interruptions" } != null
+		userEntries.find { it.tag.description == "sleep interruptions" }.amount.round(0) == 2.0g
+		userEntries.find { it.tag.description == "sleep interruptions" }.units == ""
+
+		userEntries.find { it.tag.description == "sleep [awake]" } != null
+		userEntries.find { it.tag.description == "sleep [awake]" }.amount.round(2) == 53.30g
+		userEntries.find { it.tag.description == "sleep [awake]" }.units == "mins awake"
+
+		userEntries.find { it.tag.description == "sleep quality" } != null
+		userEntries.find { it.tag.description == "sleep quality" }.amount.round(2) == 80.00g.round(2)
+		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
+	}
+
+/*	void "test get data body"() {
 		String mockedResponseData = new File(testDataPath("body")).text
 
 		jawboneUpDataService.oauthService = [
@@ -197,41 +232,6 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		// For hour 13th
 		lightActivityDistanceEntries[1].amount.round(4) == 0.0373g.round(4)
 		lightActivityDistanceEntries[1].units == "miles"
-	}
-
-	void "test get data sleep"() {
-		String mockedResponseData = new File(testDataPath("sleep", 1)).text
-
-		jawboneUpDataService.oauthService = [
-			getJawboneupResource: { token, url, p, header ->
-				return new Response(new MockedHttpURLConnection(mockedResponseData))
-			}
-		]
-
-		when:
-		Map result = jawboneUpDataService.getDataSleep(account, new Date(), false)
-
-		then:
-		result.success == true
-
-		List<Entry> userEntries = Entry.findAllByUserId(userId)
-		userEntries.size() == 4
-
-		userEntries.find { it.tag.description == "sleep [duration]" } != null
-		userEntries.find { it.tag.description == "sleep [duration]" }.amount.round(2) == 672.58g
-		userEntries.find { it.tag.description == "sleep [duration]" }.units == "mins"
-
-		userEntries.find { it.tag.description == "sleep interruptions" } != null
-		userEntries.find { it.tag.description == "sleep interruptions" }.amount.round(0) == 2.0g
-		userEntries.find { it.tag.description == "sleep interruptions" }.units == ""
-
-		userEntries.find { it.tag.description == "sleep [awake]" } != null
-		userEntries.find { it.tag.description == "sleep [awake]" }.amount.round(2) == 53.30g
-		userEntries.find { it.tag.description == "sleep [awake]" }.units == "mins awake"
-
-		userEntries.find { it.tag.description == "sleep quality" } != null
-		userEntries.find { it.tag.description == "sleep quality" }.amount.round(2) == 80.00g.round(2)
-		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
 	}
 
 	void "test get data sleep for pagination"() {

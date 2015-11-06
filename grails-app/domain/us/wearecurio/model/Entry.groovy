@@ -471,10 +471,8 @@ class Entry implements Comparable {
 							}
 						}
 						// complete this entry and rewrite it as a full duration entry
-						m['tag'] = m['baseTag']
 						m['durationType'] = DurationType.NONE
-						amount.tag = amount.baseTag
-						amount.update(m['baseTag'], amount.durationInDays(), 3, "days", UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
+						amount.update(amount.tag, m['baseTag'], amount.durationInDays(), 3, "days" + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
 						return null
 					}
 				} else if (amount.unitRatio == null && amount.precision < 0) {

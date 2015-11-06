@@ -65,7 +65,7 @@ class DataController extends LoginController {
 
 		debug("created " + entry)
 
-		return [entry, parsedEntry['status'], tagStats.get(0)]
+		return [entry, parsedEntry['status'], tagStats?.get(0)]
 	}
 
 	protected def doUpdateEntry(Map parms) {
