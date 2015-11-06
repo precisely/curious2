@@ -18,13 +18,18 @@ class RemindEmailService {
 	EmailService emailService
 	def googleMessageService
 	def appleNotificationService
+	AlertGenerationService alertGenerationService
 
 	private static def log = LogFactory.getLog(this)
 
 	@Transactional(readOnly = true)
 	boolean sendReminderForEvent(long userId, String email, AlertNotification alert, def devices) {
+		boolean actuallySend = Environment.current == Environment.PRODUCTION
+		
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)
 		if (alert != null) {
+			if (!actuallySend)
+				return true
 			if (email != null && email.length() > 1) {
 				try {
 					log.debug "Trying to send reminder email " + alert + " to " + email
@@ -60,9 +65,7 @@ class RemindEmailService {
 	int sendReminders(Date now) {
 		log.debug "RemindEmailService.sendReminders()"
 		
-		if (Environment.current != Environment.PRODUCTION) {
-			return // don't send reminders in test or development mode
-		}
+		alertGenerationService.generate(now)
 		
 		DateRecord rec = DateRecord.lookup(DateRecord.REMIND_EMAILS)
 		DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'hh:mm:ss.SSSZZ").withZone(DateTimeZone.UTC)

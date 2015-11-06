@@ -24,8 +24,8 @@ class AlertGenerationService {
 
 	static AlertGenerationService get() { return service }
 	
-	def generateAlerts(Date now) {
-		log.debug "generateAlerts()"
+	def generate(Date now) {
+		log.debug "generate() " + now
 		
 		DateRecord rec = DateRecord.lookup(DateRecord.ALERT_GENERATION)
 		
@@ -48,7 +48,7 @@ class AlertGenerationService {
 		Utils.save(rec, true)
 	}
 	
-	def regenerateAlerts(Long userId, Date now) {
+	def regenerate(Long userId, Date now) {
 		AlertNotification.deleteforUser(userId)
 		Date startDate = new Date(now.getTime() - 1*60000L)
 		Date endDate = now + 1

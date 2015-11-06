@@ -24,6 +24,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.RemindEmailService
+import us.wearecurio.services.AlertGenerationService
 import us.wearecurio.services.EntryParserService
 import groovy.transform.TypeChecked
 
@@ -37,12 +38,14 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.Integration
 import grails.test.mixin.integration.IntegrationTestMixin
 
+
 @Integration
-class RemindEmailServiceTests extends CuriousServiceTestCase {
+class RemindEmailServiceTests extends CuriousTestCase {
 	static transactional = true
 	
 	EntryParserService entryParserService
 	RemindEmailService remindEmailService
+	AlertGenerationService alertGenerationService
 
 	DateFormat dateFormat
 	Date earlyBaseDate
@@ -117,12 +120,7 @@ class RemindEmailServiceTests extends CuriousServiceTestCase {
 		return diff <= d
 	}
 
-	@After
-	void tearDown() {
-		super.tearDown()
-	}
-
-	int testEntries(User user, String timeZoneName, Date baseDate, Date currentTime, Closure test) {
+	static int testEntries(User user, String timeZoneName, Date baseDate, Date currentTime, Closure test) {
 		def list = Entry.fetchListData(user, timeZoneName, baseDate, currentTime)
 		
 		int c = 0
@@ -134,8 +132,13 @@ class RemindEmailServiceTests extends CuriousServiceTestCase {
 		return c
 	}
 	
+	@After
+	void tearDown() {
+		super.tearDown()
+	}
+
 	@Test
-	void testRemindActivate() {
+	void testRemindSend() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread remind", null, null, earlyBaseDate, true), new EntryStats())
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517, repeatEnd:null)")
 		
@@ -159,10 +162,11 @@ class RemindEmailServiceTests extends CuriousServiceTestCase {
 		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
 		} == 1
 	
-		Date remindDate = dateFormat.parse("July 1, 2010 12:00 pm")
-		remindDate = remindDate
+		int n = remindEmailService.sendReminders(dateFormat.parse("July 1, 2010 11:00 am"))
+		assert n == 0
+		n = remindEmailService.sendReminders(dateFormat.parse("July 1, 2010 1:00 pm"))
+		assert n == 1
 	}
-	
 /**/
 	
 }
