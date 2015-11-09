@@ -356,15 +356,12 @@ class EntryParserService {
 	protected static DateFormat gmtFormat
 	protected static long GMTMIDNIGHTSECS
 
-	static {
+	static protected HashSet<String> bloodPressureTags = new HashSet<String>()
+	
+	static initialize() {
 		gmtFormat = new SimpleDateFormat("k:mm")
 		gmtFormat.setTimeZone(Utils.createTimeZone(0, "GMT", false))
 		GMTMIDNIGHTSECS = (new SimpleDateFormat("yyyy-MM-dd h:mm a z").parse("2010-01-01 12:00 AM GMT").getTime() / 1000L).longValue()
-	}
-	
-	static protected HashSet<String> bloodPressureTags = new HashSet<String>()
-	
-	static {
 		bloodPressureTags.add("blood pressure")
 		bloodPressureTags.add("bp")
 		bloodPressureTags.add("blood")
@@ -500,6 +497,8 @@ class EntryParserService {
 	ScannerPattern commentScanPattern
 
 	EntryParserService() {
+		initialize()
+		
 		atEndScanPattern = new ScannerPattern(CONDITION_ATEND)
 		anyScanPattern = new ScannerPattern(CONDITION_ANY)		
 

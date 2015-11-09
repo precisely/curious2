@@ -45,7 +45,7 @@ abstract class TagUnitMap {
 	UnitGroupMap unitGroupMap
 	
 	public TagUnitMap() {
-		unitGroupMap = UnitGroupMap.theMap
+		unitGroupMap = UnitGroupMap.fetchTheMap()
 	}
 
 	static {
@@ -70,9 +70,10 @@ abstract class TagUnitMap {
 	
 	static Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
-			value['unitRatio'] = UnitGroupMap.theMap.lookupDecoratedUnitRatio(value['unit'])
+			UnitGroupMap theMap = UnitGroupMap.fetchTheMap()
+			value['unitRatio'] = theMap.lookupDecoratedUnitRatio(value['unit'])
 			if (value['convert'])
-				value['ratio'] = UnitGroupMap.theMap.fetchConversionRatio(value['from'], value['unit'])
+				value['ratio'] = theMap.fetchConversionRatio(value['from'], value['unit'])
 		}
 		
 		return map

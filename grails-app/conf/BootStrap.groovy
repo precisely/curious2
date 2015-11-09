@@ -13,6 +13,7 @@ import us.wearecurio.utility.Utils
 import us.wearecurio.data.DataRetriever
 import org.springframework.web.context.support.WebApplicationContextUtils
 
+import us.wearecurio.data.UnitGroupMap
 
 class BootStrap {
 
@@ -30,7 +31,7 @@ class BootStrap {
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
-
+		
 		DatabaseService.set(databaseService)
 		EmailService.set(emailService)
 		SecurityService.set(securityService)
@@ -40,6 +41,8 @@ class BootStrap {
 		AlertGenerationService.set(alertGenerationService)
 		
 		DataRetriever.setDatabaseService(databaseService)
+		
+		UnitGroupMap.initialize()
 		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())

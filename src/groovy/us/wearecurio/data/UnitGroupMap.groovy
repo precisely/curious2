@@ -707,12 +707,22 @@ class UnitGroupMap {
 	
 	static UnitGroupMap theMap
 	
-	static {
-		new UnitGroupMap()
+	static UnitGroupMap fetchTheMap() {
+		if (theMap) return theMap
+		theMap = new UnitGroupMap()
 	}
 	
-	DecoratedUnitRatio DAYSDURATIONRATIO
-	DecoratedUnitRatio HOURSDURATIONRATIO
+	static DecoratedUnitRatio DAYSDURATIONRATIO
+	static DecoratedUnitRatio HOURSDURATIONRATIO
+	
+	static initialize() {
+		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
+			UnitGroup.UNIT, UnitGroup.QUANTITY)
+		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
+		
+		DAYSDURATIONRATIO = UnitGroup.DURATION.lookupDecoratedUnitRatio("days")
+		HOURSDURATIONRATIO = UnitGroup.DURATION.lookupDecoratedUnitRatio("hours")
+	}
 	
 	def UnitGroupMap() {
 		theMap = this
@@ -720,10 +730,6 @@ class UnitGroupMap {
 		unitToUnitRatio = new ConcurrentHashMap<String, UnitRatio>()
 		unitToDecorated = new ConcurrentHashMap<String, UnitRatio>()
 		
-		UnitGroup.DENSITY.addNumeratorGroups(UnitGroup.WEIGHT, UnitGroup.TABLET, UnitGroup.CAPSULE, UnitGroup.K,
-				UnitGroup.UNIT, UnitGroup.QUANTITY)
-		UnitGroup.DENSITY.addDenominatorGroups(UnitGroup.VOLUME)
-
 		Set<String> allUnits = new HashSet<String>()
 		
 		// cache best unit ratio for each unit
@@ -743,9 +749,6 @@ class UnitGroupMap {
 		for (UnitRatio unitRatio : unitRatios) {
 			unitRatio.decoratedUnitRatio?.initializeSubUnitRatios()
 		}
-		
-		DAYSDURATIONRATIO = UnitGroup.DURATION.lookupDecoratedUnitRatio("days")
-		HOURSDURATIONRATIO = UnitGroup.DURATION.lookupDecoratedUnitRatio("hours")
 	}
 	
 	void registerDecoratedUnitRatio(DecoratedUnitRatio decorated) {
