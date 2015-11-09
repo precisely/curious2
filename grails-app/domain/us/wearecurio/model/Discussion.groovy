@@ -45,6 +45,7 @@ class Discussion {
 			'publicUserName',
 			'userAvatarURL',
 			'firstPostId',
+			'firstPostMessage',
 			'isFirstPostPlot',
 			'posts',
 			'postCount',
@@ -524,6 +525,14 @@ class Discussion {
 
 	//TODO: make sure discussion is re-indexed every time a post is made to a discussion
 	//for searching
+	String getfirstPostMessage() {
+		if (firstPostId && firstPostId > 0) {
+			return DiscussionPost.get(firstPostId)?.message
+		}
+		
+		return null
+	}
+	
 	String getPosts() {
 		return DiscussionPost.findAllByDiscussionId(id)?.collect{ it.message }.join(" ")
 	}

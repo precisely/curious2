@@ -180,6 +180,9 @@ class SearchService {
 					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
 					groupId: null,
 					groupName: null,
+					score: hit.score,
+					firstPostMessage: hit.source.firstPostMessage,
+					posts: hit.source.posts
 				]
 			case "sprint":
 				return [
@@ -195,7 +198,8 @@ class SearchService {
 					virtualGroupId: hit.source.virtualGroupId,
 					virtualGroupName: hit.source.virtualGroupName,
 					created: hit.source.created,
-					updated: hit.source.updated
+					updated: hit.source.updated,
+					score: hit.score
 				]
 			case "user":
 				return [
@@ -339,7 +343,7 @@ class SearchService {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
-		return "( ( (  (${Utils.orifyList(discussionQueries)}) AND ( name:(${query}) OR posts:(${query}) ) ) OR ( visibility:PUBLIC AND ( name:(${query}) OR posts:(${query}) ) ) ) AND _type:discussion )"
+		return "( ( (  (${Utils.orifyList(discussionQueries)}) AND ( name:($query) OR posts:($query) OR firstPostMessage:($query)) ) OR ( visibility:PUBLIC AND ( name:($query) OR posts:($query) ) ) ) AND _type:discussion )"
 	}
 
 	String getSprintSearchQueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
@@ -370,9 +374,9 @@ class SearchService {
 		}
 		
 		if (sprintQueries.size() > 0) {
-			return "(((${Utils.orifyList(sprintQueries)} AND name:(${query})) OR (visibility:PUBLIC AND name:(${query}) ) ) AND _type:sprint)"
+			return "(((${Utils.orifyList(sprintQueries)} AND ((name:($query)) OR (description:($query)))) OR (visibility:PUBLIC AND name:($query) ) ) AND _type:sprint)"
 		} else {
-			return "(visibility:PUBLIC AND name:(${query}) AND _type:sprint)"
+			return "(visibility:PUBLIC AND name:($query) AND _type:sprint)"
 		}
 	}
 
@@ -624,11 +628,16 @@ class SearchService {
 	}
 	
 	private void scoreDiscussionSearch(FunctionScoreQueryBuilder fsqb, User user, String query) {
-		fsqb.add(andFilter(typeFilter("discussion"), termsFilter("visibility", "public", "private")), factorFunction(100))
+		fsqb.add(andFilter(typeFilter("discussion"), queryFilter(queryString("name:($query)"))), factorFunction(100.0f))
+		fsqb.add(andFilter(typeFilter("discussion"), queryFilter(queryString("firstPostMessage:($query)"))), factorFunction(100.0f))
+		fsqb.add(andFilter(typeFilter("discussion"), queryFilter(queryString("posts:($query)"))), factorFunction(5.0f))
+		//fsqb.add(andFilter(typeFilter("discussion"), termsFilter("visibility", "public", "private")), factorFunction(100.0f))
 	}
 
 	private void scoreSprintSearch(FunctionScoreQueryBuilder fsqb, User user, String query) {
 		fsqb.add(typeFilter("sprint"), factorFunction(8.0f))
+		fsqb.add(andFilter(typeFilter("sprint"), queryFilter(queryString("name:($query)"))), factorFunction(100.0f))
+		fsqb.add(andFilter(typeFilter("sprint"), queryFilter(queryString("description:($query)"))), factorFunction(5.0f))
 	}
 	
 	private void scoreUserSearch(FunctionScoreQueryBuilder fsqb, User user, String query) {
@@ -686,6 +695,7 @@ class SearchService {
 				//TODO: work on scoring
 				FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchAllQuery())
+				fsqb.scoreMode("sum")
 				
 				scoreSearch(fsqb, user, query)
 				

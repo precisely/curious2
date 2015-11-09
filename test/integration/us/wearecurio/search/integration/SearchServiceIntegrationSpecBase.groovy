@@ -102,6 +102,7 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 		testGroup.addWriter(user1)
 		
 		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 	}
 
 	def cleanup() {
