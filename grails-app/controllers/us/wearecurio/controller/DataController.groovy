@@ -625,11 +625,14 @@ class DataController extends LoginController {
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		
 		def result = doAddEntry(params)
+		if (!result[2]) {
+			
+		}
 		if (result[0] != null) {
 			renderJSONGet([
 				listEntries(userId, params.timeZoneName, baseDate, currentTime),
 				result[1],
-				result[2].getJSONDesc(),
+				result[2]?.getJSONDesc(),
 				result[0].getJSONDesc()
 			])
 		} else {

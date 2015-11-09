@@ -943,7 +943,7 @@ class EntryParserService {
 				
 				if (prevAmount != null) {
 					DecoratedUnitRatio prevUnitRatio = prevAmount.getUnitRatio()
-					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && (prevSuffix == amountSuffix || (!prevUnitRatio.customSuffix)) && prevUnitRatio.ratio != unitRatio.ratio) {
+					if (prevUnitRatio != null && unitRatio != null && prevUnitRatio.unitGroup == unitRatio.unitGroup && (prevSuffix == amountSuffix || ((!prevUnitRatio.customSuffix) && unitRatio.customSuffix)) && prevUnitRatio.ratio != unitRatio.ratio) {
 						// merge amounts together, they are the same unit group, provided prevAmount's unitSuffix is compatible
 						// use first amount units
 						prevAmount.amount = prevUnitRatio.addAmount(prevAmount.amount, amount.amount, unitRatio)

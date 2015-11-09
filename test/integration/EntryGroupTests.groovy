@@ -109,6 +109,72 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 
 	@Test
+	void testMultiCreateSuffix() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles distance 1000 feet elevation", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.units
+		}
+		
+		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles distance"
+	}
+	
+	@Test
+	void testMultiCreateSuffixDifferent() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 pounds 1000 feet elevation", null, null, baseDate, true), new EntryStats())
+		
+		Iterable<Entry> group = entry.fetchGroupEntries()
+		
+		String x = ""
+		for (Entry e : group) {
+			x += ":" + e.tag.getDescription()
+			x += ":" + e.baseTag.getDescription()
+			x += ":" + e.units
+		}
+		
+		assert x == ":run [elevation]:run:feet elevation:run [weight]:run:pounds"
+	}
+	
+	@Test
+	void testMultiCreatePrioritizeSort() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "run 1279 steps 2 miles", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 1279
+			assert amounts[0].units == "steps"
+			assert amounts[1].amount.intValue() == 2
+			assert amounts[1].units == "mi"
+		}
+		
+		assert c == 1
+		
+		def entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "run 3 miles 8900 steps", null, null, earlyBaseDate, true), new EntryStats())
+		
+		entries = Entry.fetchListData(user, timeZone, earlyBaseDate, currentTime)
+		c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 8900
+			assert amounts[0].units == "steps"
+			assert amounts[1].amount.intValue() == 3
+			assert amounts[1].units == "mi"
+		}
+		
+		assert c == 1
+		
+	}
+	
+	@Test
 	void testMultiUpdateAddElements() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
@@ -130,7 +196,7 @@ class EntryGroupTests extends CuriousTestCase {
 		assert c == 1
 	}
 	
-/*	@Test
+	@Test
 	void testMultiCreateUnitDecoratorDuration() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 30 minutes deep", null, null, baseDate, true), new EntryStats())
 		
@@ -284,22 +350,6 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testMultiCreateSuffix() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", null, null, baseDate, true), new EntryStats())
-		
-		Iterable<Entry> group = entry.fetchGroupEntries()
-		
-		String x = ""
-		for (Entry e : group) {
-			x += ":" + e.tag.getDescription()
-			x += ":" + e.baseTag.getDescription()
-			x += ":" + e.units
-		}
-		
-		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles"
-	}
-	
-	@Test
 	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
 	void testMultiCreateMinutesSeconds() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "swam 40 minutes 30 seconds", null, null, baseDate, true), new EntryStats())
@@ -415,40 +465,6 @@ class EntryGroupTests extends CuriousTestCase {
 		}
 		
 		assert c == 1
-	}
-	
-	@Test
-	void testMultiCreatePrioritizeSort() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "run 1279 steps 2 miles", null, null, baseDate, true), new EntryStats())
-		
-		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		int c = 0
-		for (entryDesc in entries) {
-			++c
-			def amounts = entryDesc['amounts']
-			assert amounts[0].amount.intValue() == 1279
-			assert amounts[0].units == "steps"
-			assert amounts[1].amount.intValue() == 2
-			assert amounts[1].units == "miles"
-		}
-		
-		assert c == 1
-		
-		def entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "run 3 miles 8900 steps", null, null, earlyBaseDate, true), new EntryStats())
-		
-		entries = Entry.fetchListData(user, timeZone, earlyBaseDate, currentTime)
-		c = 0
-		for (entryDesc in entries) {
-			++c
-			def amounts = entryDesc['amounts']
-			assert amounts[0].amount.intValue() == 8900
-			assert amounts[0].units == "steps"
-			assert amounts[1].amount.intValue() == 3
-			assert amounts[1].units == "miles"
-		}
-		
-		assert c == 1
-		
 	}
 	
 	@Test

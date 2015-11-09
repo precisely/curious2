@@ -395,7 +395,7 @@ class Entry implements Comparable {
 						amountPrecision:amount.precision==null ? 3 : amount.precision
 						)
 
-		entry.setUnits(amount.units)
+		entry.setUnits(amount.units ?: '')
 		entry.setComment(m['comment'] ?: '')
 
 		log.debug "Created entry:" + entry

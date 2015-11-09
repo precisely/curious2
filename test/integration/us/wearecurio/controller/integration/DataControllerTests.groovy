@@ -92,6 +92,33 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testAddEntrySData2() {
+		controller.session.userId = userId
+
+		controller.params.putAll([currentTime:'Fri, 30 Oct 2015 19:11:17 GMT',
+			text:'request swing 11:30 (Megan)',
+			dateToken:'1446232277272',
+			userId:userId.toString(),
+			callback:'jQuery21105134934808593243_1446228256265',
+			_:'1446228256271',
+			SYNCHRONIZER_TOKEN:'12b3b03c-6062-47d2-9bf8-baee385e3b6e',
+			defaultToNow:'1',
+			timeZoneName:'America/Los_Angeles',
+			baseDate:'Fri, 30 Oct 2015 07:00:00 GMT',
+			SYNCHRONIZER_URI:'addEntryCSRF',
+			action:'addEntrySData',
+			format:'null',
+			controller:'home'
+		])
+
+		controller.addEntrySData()
+
+		def x = controller.response.contentAsString
+		
+		assert x.contains('"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.0000,"amountPrecision":-1,"units":""}},"setName":null}],null,')
+	}
+
+	@Test
 	void testExport() {
 		DataController controller = new DataController()
 
@@ -136,7 +163,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
 		assert Entry.get(entry.id).amount == 3
-	}
+	}	
 
 	@Test
 	void testGetPeopleData() {
@@ -331,7 +358,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
 			|| controller.response.contentAsString.contains(',"date":"2011-01-21T20:30:00Z","datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null') \
 	}
-
+	
 	@Test
 	void testUpdateEntrySData() {
 		controller.session.userId = userId
