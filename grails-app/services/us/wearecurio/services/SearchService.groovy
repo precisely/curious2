@@ -377,7 +377,7 @@ class SearchService {
 	}
 
 	String getUserSearchQueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-		return "(((publicName:(${query})) OR (publicBio:(${query})) OR (interestTagsString:(${query}))) AND _type:user AND _id:(NOT ${user.id}))"
+		return "(((publicName:(${query})) OR (publicBio:(${query})) OR (interestTagsString:(${query}))) AND _type:user AND _id:(NOT ${user.id}) AND virtual:false)"
 	}
 			
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
