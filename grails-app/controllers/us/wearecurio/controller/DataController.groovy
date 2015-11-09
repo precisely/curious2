@@ -351,7 +351,7 @@ class DataController extends LoginController {
 		Entry.deleteGhost(entry, stats, currentTime, allFuture)
 		def tagStats = stats.finish()
 		return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
-			tagStats[0]?.getJSONDesc(),
+			tagStats == null ? null : (tagStats[0]?.getJSONDesc()),
 			tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null]
 	}
 

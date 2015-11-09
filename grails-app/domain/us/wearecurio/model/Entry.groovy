@@ -168,6 +168,7 @@ class Entry implements Comparable {
 			log.debug ("Updating partial entry " + entry)
 			entry.amount = amount
 			Utils.save(entry, true)
+			stats.addEntry(entry)
 			return entry
 		}
 	}
@@ -806,7 +807,8 @@ class Entry implements Comparable {
 			Entry newEntry = entry.createRepeatAfterInterval(baseDate, m, creationMap, stats, 0)
 			
 			Utils.save(entry, true)
-
+			stats.addEntry(entry)
+			
 			if (unGhost && newEntry.isGhost())
 				newEntry.unGhost()
 
@@ -1027,6 +1029,7 @@ class Entry implements Comparable {
 			} else if (entryTime <= baseTime) { // this should always be true
 				entry.setRepeatEnd(baseDate)
 				Utils.save(entry, true)
+				stats.addEntry(entry)
 			} else {
 				log.error("Invalid call for entry: " + entry + " for baseDate " + baseDate)
 			}
@@ -1041,6 +1044,7 @@ class Entry implements Comparable {
 						entry.setDate(newDate)
 
 						Utils.save(entry, true)
+						stats.addEntry(entry)
 					}
 				} else { // otherwise, delete entry
 					Entry.deleteSingle(entry, stats)
@@ -1053,7 +1057,8 @@ class Entry implements Comparable {
 				else
 					entry.setRepeatEnd(prevDate)
 				Utils.save(entry, true)
-
+				stats.addEntry(entry)
+				
 				if (endAfterToday) {
 					DateTime newDateTime = TimeZoneId.nextDayFromDateSameTime(baseDate, entry.fetchDateTime())
 
