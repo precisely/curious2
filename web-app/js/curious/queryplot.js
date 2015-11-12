@@ -262,7 +262,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (plotData.cycleData) {
 			this.loadLine(plotData.cycleData);
 		}
-		this.properties.setName(plotData.name);
+		this.properties.setName(plotData.name ? plotData.name : '');
 		this.manualName = version > 3 ? plotData.manualName : false;
 		if (version >= 3) {
 			this.userId = plotData.userId;
@@ -490,10 +490,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.lines[i].loadPlotData();
 		}
 	}
-	this.prepAllLines = function() {
+	this.postprocessAllLines = function() {
 		// redraw left nav
 		for (var i in this.lines) {
-			this.lines[i].prepEntries();
+			this.lines[i].postprocessEntries();
 		}
 	}
 	this.refreshAll = function() {
@@ -519,12 +519,27 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			cycleTagDiv.css('height','23px');
 		}
 	}
+	// refresh slider positions, return true if need to recalculate plot if rezero threshold changes
+	this.log2 = Math.log(2);
+	this.refreshLinearSliders = function() {
+		this.linearSliders = this.getLinearSliderValues();
+		
+		var daysWidth = (this.linearSliders[1] - this.linearSliders[0]) / 86400000;
+		if (daysWidth == 0) {
+			this.rezeroWidth = 0;
+			return;
+		}
+		var canonicalWidth = Math.pow(2, Math.floor(Math.log(daysWidth) / this.log2));
+		this.rezeroWidth = (canonicalWidth / 15) * 86400000;
+		
+		return this.rezeroWidth;
+	}
 	// redraw plot but don't recompute it, only change min/max if needed
 	this.redrawPlot = function() {
 		if (this.plotData == null || this.plotData[0] == undefined)
 			this.refreshPlot();
 
-		var sliders = this.getLinearSliderValues();
+		var sliders = this.linearSliders;
 
 		if (this.cycleTagLine) {
 			this.plotOptions['xaxis']['min'] = this.minCycleRange;
@@ -538,22 +553,20 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 		this.drawPlot();
 	}
-
+	this.prepAllLines = function() {
+		// deprecated, replaced by refreshPlot
+	}
 	this.refreshPlot = function() {
 		var minTime = undefined, maxTime = undefined;
-
+		
 		for (var i in this.lines) {
 			var line = this.lines[i];
 
-			if (line.isSmoothLine() && (!line.entries)) {
-				line.calculateSmoothEntries();
-				line.prepEntries();
-			}
-			if (line.isFreqLine() && (!line.entries)) {
-				line.calculateFreqEntries();
-				line.prepEntries();
-			}
+			if (line.isSmoothLine() || line.isFreqLine())
+				continue;
 
+			line.calculateMinMaxTime();
+			
 			if (minTime == undefined || line.minTime < minTime) minTime = line.minTime;
 			if (maxTime == undefined || line.maxTime > maxTime) maxTime = line.maxTime;
 		}
@@ -561,6 +574,21 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.minTime = minTime;
 		this.maxTime = maxTime;
 
+		this.refreshLinearSliders();
+		
+		var sliders = this.linearSliders;
+		
+		for (var i in this.lines) {
+			var line = this.lines[i];
+
+			if (line.isSmoothLine() && (!line.entries)) {
+				line.calculateSmoothEntries();
+			} else if (line.isFreqLine() && (!line.entries)) {
+				line.calculateFreqEntries();
+			}
+			line.postprocessEntries();
+		}
+		
 		if (arrayEmpty(this.lines)) {
 			// no more plot lines, remove graph
 			this.plotArea.html('');
@@ -699,7 +727,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			// SEE ALSO redrawPlot() DUPLICATED LOGIC FOR UPDATING THESE
 			// PARAMETERS
-			var sliders = this.getLinearSliderValues();
 			var span = sliders[1] - sliders[0];
 			options = {
 				series: {
@@ -922,7 +949,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				parentLine:parentLine,isContinuous:parentLine.isContinuous,showPoints:false,smoothDataWidth:smoothValue,fill:parentLine.fill});
 			parentLine.smoothLine = smoothLine;
 			smoothLine.calculateSmoothEntries();
-			smoothLine.prepEntries();
+			smoothLine.postprocessEntries();
 
 			this.lines['id' + smoothLine.id] = smoothLine;
 
@@ -936,7 +963,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				parentLine:parentLine,isFreqLineFlag:true,isContinuous:parentLine.isContinuous,showPoints:false,smoothDataWidth:0,fill:parentLine.fill});
 			parentLine.freqLine = freqLine;
 			freqLine.calculateFreqEntries();
-			freqLine.prepEntries();
+			freqLine.postprocessEntries();
 
 			this.lines['id' + freqLine.id] = freqLine;
 
@@ -1249,6 +1276,10 @@ function PlotLine(p) {
 		});
 	}
 	this.setIsContinuous = function(val) {
+		if (this.parentLine)
+			return this.parentLine.setIsContinuous(val);
+		if (this.smoothLine)
+			this.smoothLine.isContinuous = val;
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
@@ -1321,16 +1352,14 @@ function PlotLine(p) {
 		return this.plotData;
 	}
 	this.loadPlotData = function() {
+		var plot = this.plot;
 		if (this.snapshot) {
 			this.parseEntries();
-			this.prepEntries();
 			return; // do not reload snapshots
 		}
 		if (this.parentLine) {
 			return;
 		}
-
-		var plot = this.plot;
 
 		plot.addPendingLoad();
 
@@ -1536,7 +1565,7 @@ function PlotLine(p) {
 		if (this.parentLine) {
 			this.parentLine.hidden = false;
 			this.parentLine.activated = true;
-			this.parentLine.prepEntries();
+			this.parentLine.postprocessEntries();
 		}
 		this.plot.store();
 		this.plot.refreshPlot();
@@ -1584,23 +1613,21 @@ function PlotLine(p) {
 				if (!this.activated)
 					this.hidden = true;
 				else if (oldSmoothValue) {
-					this.prepEntries();
+					//this.postprocessEntries();
 				}
 				if (!this.hasSmoothLine()) {
 					this.generateSmoothLine(value);
 				} else {
 					this.smoothLine.hidden = false;
 					this.smoothLine.calculateSmoothEntries();
-					this.smoothLine.prepEntries();
-					this.prepEntries();
+					this.smoothLine.postprocessEntries();
 					this.plot.store();
 				}
 			} else {
 				this.hidden = false;
 				if (this.hasSmoothLine()) {
 					this.smoothLine.hidden = true;
-				}
-				this.prepEntries();
+				}				//this.postprocessEntries();
 				this.plot.store();
 			}
 			this.plot.refreshPlot();
@@ -1615,12 +1642,10 @@ function PlotLine(p) {
 				// hide current line, show freq line
 				if ((!this.freqLine) || (this.freqLine == 1)) {
 					this.generateFreqLine(value);
-					this.prepEntries();
 				} else {
 					this.freqLine.hidden = false;
 					this.freqLine.calculateFreqEntries();
-					this.freqLine.prepEntries();
-					this.prepEntries();
+					this.freqLine.postprocessEntries();
 					this.plot.store();
 				}
 			} else {
@@ -1628,7 +1653,6 @@ function PlotLine(p) {
 				if (this.freqLine) {
 					this.freqLine.hidden = true;
 				}
-				this.prepEntries();
 				this.plot.store();
 			}
 			this.plot.refreshPlot();
@@ -1650,10 +1674,9 @@ function PlotLine(p) {
 		this.unitGroupId = plotDesc.unitGroupId;
 		this.valueScale = plotDesc.valueScale;
 		this.parseEntries();
-		this.prepEntries();
 	}
 	this.makePlotData = function(name, data) {
-		if (this.intervals || (!this.fill)) {
+		if (this.intervals) { //} || (!this.fill)) {
 			return {
 				popuplabel: name,
 				data: data,
@@ -1669,15 +1692,13 @@ function PlotLine(p) {
 			};
 		} else {
 			var smoothActive = this.smoothActive();
-			if (!this.isSmoothLine())
-				smoothActive = smoothActive;
 			return {
 				popuplabel: name,
 				data: data,
 				color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 				lines: {
-					show: (this.isContinuous && (!this.smoothActive())) || this.isSmoothLine(),
-					fill: (this.isContinuous && (!this.smoothActive())) || this.isSmoothLine(),
+					show: (this.isContinuous && (!smoothActive)) || this.isSmoothLine() || (!this.isContinuous),
+					fill: (this.isContinuous && (!smoothActive)) || (this.isContinuous && this.isSmoothLine()) || ((!this.isContinuous) && (!this.isSmoothLine())),
 					fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 				},
 				points: {
@@ -1688,9 +1709,30 @@ function PlotLine(p) {
 			};
 		}
 	}
-	this.prepEntries = function() {
-		var d1Data = [];
+	this.calculateMinMaxTime = function() {
+		var entries = this.entries;
+		
+		var minTime = undefined;
+		var maxTime = undefined;
 
+		for (var i = 0; i < entries.length; ++i) {
+			var entry = entries[i];
+			var time = entry[0].getTime();
+			if (minTime == undefined || time < minTime) minTime = time;
+			if (maxTime == undefined || time > maxTime) maxTime = time;
+		}
+		if (minTime == maxTime) {
+			minTime = minTime - 1000*60*60;
+			maxTime = maxTime + 1000*60*60;
+		}
+		this.minTime = minTime;
+		this.maxTime = maxTime;
+	}
+	this.postprocessEntries = function() {
+		if (!this.entries) return;
+		
+		var d1Data = [];
+		
 		var entries = this.entries;
 
 		var plotLine = this;
@@ -1698,36 +1740,32 @@ function PlotLine(p) {
 		var oldAllUnity = this.allUnity;
 		this.allUnity = true;
 
-		var minTime = undefined;
-		var maxTime = undefined;
-
 		var minVal = undefined;
 		var maxVal = undefined;
-		//var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? false : !this.isContinuous);
+		var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? false : !this.isContinuous);
 
 		var lastTime = 0;
 		var lastVal = undefined;
+		
+		var rezeroWidth = this.plot.rezeroWidth;
 
 		for (var i = 0; i < entries.length; ++i) {
 			var entry = entries[i];
 			if (entry[1] != 1.0)
 				plotLine.allUnity = false;
 			var time = entry[0].getTime();
-			// if space between two data points >= 2 days
-			/*if (reZero && (time - lastTime >= 1000*60*60*24*2)) {
+			// if space between two data points >= 2 * rezero width, rezero data
+			if (reZero && (time - lastTime >= 2 * rezeroWidth)) {
 				if (lastTime && lastVal != 0) {
-					// create additional null point at 12 hours after last data
+					// create additional null point at rezero width after last data
 					// point if it wasn't already zero
-					d1Data.push([new Date(lastTime + 1000*60*60*12), null]);
+					d1Data.push([new Date(lastTime + rezeroWidth), 0, {t:''}]);
 				}
-				//if (entry[1] != 0) {
-					// 12 hours before first data point if it isn't zero
-					//d1Data.push([new Date(time - 1000*60*60*12), 0]);
-					//if (minTime == undefined) minTime = time - 1000*60*60*12;
-				//}
-			}*/
-			if (minTime == undefined || time < minTime) minTime = time;
-			if (maxTime == undefined || time > maxTime) maxTime = time;
+				if (entry[1] != 0) {
+					// before first data point if it isn't zero
+					d1Data.push([new Date(time - rezeroWidth), 0, {t:''}]);
+				}
+			}
 			if (minVal == undefined || entry[1] < minVal) minVal = entry[1];
 			if (maxVal == undefined || entry[1] > maxVal) maxVal = entry[1];
 			d1Data.push([entry[0], plotLine.flatten ? (entry[1] > 0.0 ? 1.0 : (entry[1] < 0 ? -1.0 : 0)) : entry[1], {t:entry[2] ? entry[2] : this.name}]);
@@ -1737,25 +1775,16 @@ function PlotLine(p) {
 			lastTime = time;
 			lastVal = entry[1];
 		}
-		/*if (reZero && lastTime && lastVal != 0) {
-			// create additional null point at 12 hours after last data point
+		if (reZero && lastTime && lastVal != 0) {
+			// create additional null point at rezeroWidth after last data point
 			var currentTime = new Date(lastTime);
 			var dateRangeForToday = new DateUtil().getDateRangeForToday(); // See base.js
 			// Checking if last data point is not within a day of "now"
 			if(!(currentTime >= dateRangeForToday.start && currentTime <= dateRangeForToday.end)) {
-				d1Data.push([new Date(lastTime + 1000*60*60*12), null]);
+				d1Data.push([new Date(lastTime + rezeroWidth), 0, {t:''}]);
 			}
-			minTime = minTime - 1000*60*60*12;
-			maxTime = lastTime + 1000*60*60*12;
-		} else {*/
-		if (minTime == maxTime) {
-			minTime = minTime - 1000*60*60;
-			maxTime = lastTime + 1000*60*60;
 		}
-		//}
 
-		this.minTime = minTime;
-		this.maxTime = maxTime;
 		this.minVal = minVal;
 		this.maxVal = maxVal;
 

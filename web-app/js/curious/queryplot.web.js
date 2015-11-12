@@ -239,7 +239,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 					console.log('plotclick: activating line id: ' + plotLine.id);
 				}
 				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
-					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
+					console.log('plotclick: parent of a smooth line with line id: ' + plotLine.id);
 					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');
@@ -254,6 +254,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	}
 
 	this.slideCallback = function(handle, value) {
+		var lastRezeroWidth = this.rezeroWidth ? this.rezeroWidth : 0;
+		
 		if (this.cycleTagLine) {
 			if (handle == 0) {
 				this.leftCycleSlider = value;
@@ -276,7 +278,12 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 					else
 						this.maxCycleRange = Math.exp(4.362 * (value/5000.0))/77.416;
 				}
-				this.redrawPlot();
+				this.refreshLinearSliders();
+				
+				if (this.rezeroWidth != lastRezeroWidth)
+					this.refreshPlot();
+				else
+					this.redrawPlot();
 				return true;
 			}
 		} else {
@@ -300,7 +307,12 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 				if (value == 10000) this.rightLinearSlider = null;
 			}
 
-			this.redrawPlot();
+			this.refreshLinearSliders();
+			
+			if (this.rezeroWidth != lastRezeroWidth)
+				this.refreshPlot();
+			else
+				this.redrawPlot();
 			return true;
 		}
 
@@ -494,7 +506,6 @@ PlotLine.prototype.appendHTML = function() {
 			if (plotLine.plotData != null) {
 				plotLine.plotData.lines = { show: plotLine.showLines };
 			}
-			plot.prepAllLines();
 			plot.refreshPlot();
 		});
 		$("#plotlineflatten" + idSuffix).change(function(e) {
@@ -507,7 +518,6 @@ PlotLine.prototype.appendHTML = function() {
 				plotLine.flatten = true;
 				if (plotLine.hasSmoothLine()) plotLine.smoothLine.flatten = true;
 			}
-			plot.prepAllLines();
 			plot.refreshPlot();
 		});
 	}
@@ -533,7 +543,6 @@ PlotLine.prototype.appendHTML = function() {
 			if (plotLine.smoothDataWidth == 1) {
 				plotLine.setSmoothDataWidth(0);
 			}
-			plot.prepAllLines();
 			plot.refreshPlot();
 		} else {
 			plotLine.setIsContinuous(false);
@@ -543,7 +552,6 @@ PlotLine.prototype.appendHTML = function() {
 			} else if (plotLine.smoothLine && plotLine.smoothLine != 1 && plotLine.smoothDataWidth > 0) {
 				plotLine.smoothLine.setIsContinuous(false);
 			}
-			plot.prepAllLines();
 			plot.refreshPlot();
 			if ((!plotLine.parentLine) && (plotLine.smoothDataWidth == 0)) {
 				plotLine.setSmoothDataWidth(1);
@@ -555,13 +563,11 @@ PlotLine.prototype.appendHTML = function() {
 		if ($(e.target).val() == 'points') {
 			console.log('setShowPoints - true');
 			plotLine.setShowPoints(true);
-			plot.prepAllLines();
 			plot.refreshPlot();
 		}
 		else {
 			console.log('setShowPoints - false');
 			plotLine.setShowPoints(false);
-			plot.prepAllLines();
 			plot.refreshPlot();
 		}
 	});
@@ -569,7 +575,6 @@ PlotLine.prototype.appendHTML = function() {
 		var plotLine = plot.getLine(plotLineId);
 		if (plotLine.fill) plotLine.fill = false;
 		else plotLine.fill = true;
-		plot.prepAllLines();
 		plot.refreshPlot();
 	});
 	var div = $('#plotline' + idSuffix);
