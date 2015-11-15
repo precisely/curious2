@@ -147,6 +147,12 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			delete this.lines['id' + plotLineId];
 		}
 	}
+	this.clear = function() {
+		for (var i in this.lines) {
+			var line = this.lines[i];
+			removePlotLine(this.id, line.id);
+		}
+	}
 	this.removeLine = function(plotLineId) {
 		this.doRemoveLine(plotLineId);
 		this.refreshName();

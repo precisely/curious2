@@ -20,6 +20,7 @@ $(function() {
 			plot = WeAreCurious.getPlot();
 			clearInterval(plotReady);
 
+			plot.clear();
 			plot.drawLine(elt1);
 			plot.drawLine(elt2);
 		}
