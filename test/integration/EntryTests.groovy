@@ -443,6 +443,16 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testNoPinnedPlotData() {
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm button", null, null, earlyBaseDate, true), new EntryStats())
+		
+		int c = 0
+		
+		assert testPlot(user, [Tag.look("bread").getId()], earlyBaseDate, veryLateBaseDate, veryLateBaseDate) {
+		} == 0
+	}
+	
+	@Test
 	void testRemindActivatePlotData() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm remind", null, null, earlyBaseDate, true), new EntryStats())
 	
