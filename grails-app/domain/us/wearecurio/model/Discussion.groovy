@@ -59,7 +59,8 @@ class Discussion {
 			'updated', 
 			'visibility', 
 			'groupIds', 
-			'hash'
+			'hash',
+			'recentActivityDate'
 		]
 	}
 	
@@ -566,6 +567,14 @@ class Discussion {
 		}
 		
 		return last.created
+	}
+	
+	Date getRecentActivityDate() {
+		if (!recentPostCreated) {
+			return created 
+		}
+		
+		return recentPostCreated
 	}
 	
 	String getRecentPostUserHash() {
