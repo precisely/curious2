@@ -549,7 +549,7 @@ PlotLine.prototype.appendHTML = function() {
 			}
 			plot.refreshPlot();
 			if ((!plotLine.parentLine) && (plotLine.smoothDataWidth == 0)) {
-				plotLine.setSmoothDataWidth(1);
+				plotLine.setSmoothDataWidth(1, true);
 			}
 		}
 	});

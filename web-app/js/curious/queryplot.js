@@ -785,6 +785,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	}
 	/**
 	 * Deactivate any active line determined by activateLineId in Plot instance.
+	 * The passed-in plotLine is the line currently clicked on, if any
 	 * If the current line that was clicked on is a smooth line and also active do not deactivate it.
 	 */
 	this.deactivateActivatedLine = function(plotLine) {
@@ -925,7 +926,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 		if ((!plotLine.isContinuous) && (!plotLine.hasSmoothLine())) {
 			plotLine.postLoadClosure = function() {
-				plotLine.setSmoothDataWidth(1);
+				plotLine.setSmoothDataWidth(1, true);
 			}
 		}
 		
@@ -949,10 +950,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.cycleTagLine.loadPlotData();
 		}
 	}
-	this.addSmoothLine = function(parentLine, smoothValue) {
+	this.addSmoothLine = function(parentLine, smoothValue, hidden) {
 		if (parentLine.smoothLine == null) {
 			var smoothLine = new PlotLine({plot:this,name:parentLine.name + ' (smooth)',color:parentLine.color,
-				parentLine:parentLine,isContinuous:parentLine.isContinuous,showPoints:false,smoothDataWidth:smoothValue,fill:parentLine.fill});
+				parentLine:parentLine, isContinuous:parentLine.isContinuous, showPoints:false, smoothDataWidth:smoothValue, fill:parentLine.fill, hidden:hidden});
 			parentLine.smoothLine = smoothLine;
 			smoothLine.calculateSmoothEntries();
 			smoothLine.postprocessEntries();
@@ -1284,8 +1285,11 @@ function PlotLine(p) {
 	this.setIsContinuous = function(val) {
 		if (this.parentLine)
 			return this.parentLine.setIsContinuous(val);
-		if (this.smoothLine)
+		if (this.smoothLine && this.smoothLine != 1) {
 			this.smoothLine.isContinuous = val;
+			if (!val)
+				this.smoothLine.hidden = true;
+		}
 		if (this.isContinuous != val) {
 			this.isContinuous = val;
 			var plotLine = this;
@@ -1559,43 +1563,72 @@ function PlotLine(p) {
 
 		this.entries = entries;
 	}
-	this.generateSmoothLine = function(smoothValue) {
-		this.plot.addSmoothLine(this, smoothValue);
+	this.generateSmoothLine = function(smoothValue, hidden) {
+		this.plot.addSmoothLine(this, smoothValue, hidden);
 	}
 	this.generateFreqLine = function(freqValue) {
 		this.plot.addFreqLine(this, freqValue);
 	}
 	this.activate = function() {
 		this.showYAxis = true;
-		//this.activated = true;
-		if (this.parentLine) {
+		// should show parent line and show smooth line
+		if (this.parentLine && this.parentLine.smoothWouldBeActive()) {
 			this.parentLine.hidden = false;
-			this.parentLine.activated = true;
-			this.parentLine.postprocessEntries();
+			this.parentLine.activated = false;
+			this.hidden = false;
+			this.activated = true;
+		}
+		if (this.smoothLine && this.smoothLine != 1) {
+			this.smoothLine.hidden = false;
+			this.smoothLine.activated = true;
+			this.hidden = false;
+			this.activated = false;
 		}
 		this.plot.store();
 		this.plot.refreshPlot();
 	}
 	this.deactivate = function() {
 		this.showYAxis = false;
-		//this.activated = false;
-		if (this.parentLine) {
-			this.parentLine.hidden = true;
-			this.parentLine.activated = false;
+		this.activated = false;
+		if (this.isContinuous) {
+			// continuous line should hide parent line and show smooth line
+			if (this.parentLine && this.parentLine.smoothWouldBeActive()) {
+				this.parentLine.hidden = true;
+				this.parentLine.activated = false;
+				this.hidden = false;
+			}
+			if (this.smoothLine && this.smoothLine != 1 && this.smoothWouldBeActive()) {
+				this.smoothLine.hidden = false;
+				this.smoothLine.activated = false;
+				this.hidden = true;
+			}
+		} else {
+			// event line should show parent line and hide smooth line
+			if (this.parentLine) {
+				this.parentLine.hidden = false;
+				this.parentLine.activated = false;
+				this.hidden = true;
+			}
+			if (this.smoothLine && this.smoothLine != 1 && this.smoothWouldBeActive()) {
+				this.smoothLine.hidden = true;
+				this.smoothLine.activated = false;
+				this.hidden = false;
+			}
 		}
 		this.plot.store();
 		this.plot.refreshPlot();
 	}
 	this.smoothActive = function() {
+		return this.smoothLine && this.smoothDataWidth > 0 && (!this.smoothLine.hidden);
+	}
+	this.smoothWouldBeActive = function() {
 		return this.smoothLine && this.smoothDataWidth > 0;
 	}
 	this.isHidden = function() {
 		if (this.isSmoothLine()) {
-			return this.parentLine.smoothDataWidth < 1;
+			return (this.parentLine.smoothDataWidth < 1) || this.hidden;
 		} else if (this.smoothLine && this.smoothDataWidth > 0) {
-			if (this.isContinuous)
-				return this.hidden;
-			return this.smoothLine.hidden;
+			return this.hidden;
 		} else if (this.freqLine && this.freqDataWidth > 0) {
 			return this.freqLine.hidden;
 		} else
@@ -1609,22 +1642,19 @@ function PlotLine(p) {
 		} else
 			this.hidden = hidden;
 	}
-	this.setSmoothDataWidth = function(value) {
+	this.setSmoothDataWidth = function(value, hidden) {
 		if (value != this.smoothDataWidth) {
 			var oldSmoothValue = this.smoothDataWidth;
 			this.smoothDataWidth = value;
 			if (value > 0) {
 				// create smooth line
-				// hide current line, show smooth line
-				if (!this.activated)
+				// hide current line, show smooth line, but only if continuous
+				if ((!this.activated) && this.isContinuous)
 					this.hidden = true;
-				else if (oldSmoothValue) {
-					//this.postprocessEntries();
-				}
 				if (!this.hasSmoothLine()) {
-					this.generateSmoothLine(value);
+					this.generateSmoothLine(value, hidden);
 				} else {
-					this.smoothLine.hidden = false;
+					this.smoothLine.hidden = hidden;
 					this.smoothLine.calculateSmoothEntries();
 					this.smoothLine.postprocessEntries();
 					this.plot.store();
