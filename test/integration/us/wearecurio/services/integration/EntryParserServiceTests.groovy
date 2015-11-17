@@ -186,6 +186,10 @@ class EntryParserServiceTests extends CuriousTestCase {
 		def x = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
+		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 SLICE", null, null, baseDate, true), new EntryStats())
+		x = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
 		// noon variations
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 100 noon", null, null, baseDate, true), new EntryStats())
 		x = entry.valueString()

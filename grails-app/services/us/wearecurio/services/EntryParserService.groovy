@@ -610,7 +610,7 @@ class EntryParserService {
 		
 		// units
 		Closure unitsAClosure = { PatternScanner scanner, ParserContext context ->
-			context.currentUnits = scanner.group(1)
+			context.currentUnits = scanner.group(1).toLowerCase()
 			for (int i = context.currentAmountIndex; i < context.amounts.size(); ++i) {
 				((ParseAmount)context.amounts[i]).setUnits(context.currentUnits)
 			}
@@ -623,7 +623,7 @@ class EntryParserService {
 		
 		// second word of units
 		ScannerPattern unitsScanPatternB = new ScannerPattern(CONDITION_UNITSB, tagWordPattern, false, { PatternScanner scanner, ParserContext context ->
-			context.currentUnits = context.currentUnits + ' ' + scanner.group(1)
+			context.currentUnits = context.currentUnits + ' ' + scanner.group(1).toLowerCase()
 			for (int i = context.currentAmountIndex; i < context.amounts.size(); ++i) {
 				((ParseAmount)context.amounts[i]).setUnits(context.currentUnits)
 			}
