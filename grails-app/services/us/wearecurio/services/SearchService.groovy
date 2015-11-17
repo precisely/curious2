@@ -186,7 +186,6 @@ class SearchService {
 					score: hit.score,
 					firstPostMessage: hit.source.firstPostMessage,
 					posts: hit.source.posts,
-					explanation: hit.explanation
 				]
 			case "sprint":
 				return [
@@ -204,7 +203,6 @@ class SearchService {
 					created: hit.source.created,
 					updated: hit.source.updated,
 					score: hit.score,
-					explanation: hit.explanation
 				]
 			case "user":
 				return [
@@ -220,7 +218,6 @@ class SearchService {
 					created: hit.source.created,
 					score: hit.score,
 					interestTagsString: hit.source.interestTagsString,
-					explanation: hit.explanation
 				]
 		}
 		
@@ -308,88 +305,6 @@ class SearchService {
 		}
 	}
 
-	String getDiscussionSearchQueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-		// collect queries to be used for an ES query to find all discussions associated with user
-		def discussionQueries = []
-		
-		def followingUserUserGroupIds = followedUsers.collect{ it.virtualUserGroupIdFollowers }
-		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-		def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
-						
-		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
-		discussionQueries << ("(userId:${user.id} AND visibility:${visibilitiesOr})")
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_READER).collect{ it.toString()})
-		def groupIdsOr = Utils.orifyList(readerGroupsSansFollowingGroups)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_ADMIN).collect{ it.toString()})
-		groupIdsOr = Utils.orifyList(adminGroups.collect{ it[0].id })
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.USER_FOLLOWER).collect{ it.toString()})
-		groupIdsOr =  Utils.orifyList(followingUserUserGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_READER).collect{ it.toString()})
-		groupIdsOr = Utils.orifyList(followingSprintUserGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_ADMIN).collect{ it.toString()})
-		groupIdsOr = Utils.orifyList(followedSprints.findAll{ it.userId == user.id }.collect{ it.virtualGroupId })
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		return "( ( (  (${Utils.orifyList(discussionQueries)}) AND ( name:($query) OR posts:($query) OR firstPostMessage:($query)) ) OR ( visibility:PUBLIC AND ( name:($query) OR posts:($query) ) ) ) AND _type:discussion )"
-	}
-
-	String getSprintSearchQueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-		// collect queries to be used for an ES query to find all discussions associated with user
-		def sprintQueries = []
-		
-		def followingUserIds = followedUsers.collect{ it.id }
-		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-		def sprintReaderGroupIds = readerGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-		def sprintAdminGroupIds = adminGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-		
-		def visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_READER).collect{ it.toString()})
-		def groupIdsOr = Utils.orifyList(sprintReaderGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			sprintQueries << ("(virtualGroupId:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-
-		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_ADMIN).collect{ it.toString()})
-		groupIdsOr = Utils.orifyList(sprintAdminGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			sprintQueries << ("(virtualGroupId:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.USER_FOLLOWER).collect{ it.toString()})
-		def userIdsOr =  Utils.orifyList(followingUserIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && userIdsOr != null && userIdsOr != "") {
-			sprintQueries << ("(userId:${userIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		if (sprintQueries.size() > 0) {
-			return "(((${Utils.orifyList(sprintQueries)} AND ((name:($query)) OR (description:($query)))) OR (visibility:PUBLIC AND name:($query) ) ) AND _type:sprint)"
-		} else {
-			return "(visibility:PUBLIC AND name:($query) AND _type:sprint)"
-		}
-	}
-
-	String getUserSearchQueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-		return "(((publicName:(${query})) OR (publicBio:(${query})) OR (interestTagsString:(${query}))) AND _type:user AND _id:(NOT ${user.id}) AND virtual:false)"
-	}
-			
 	String getDiscussionSearchGroup1QueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def discussionQueries = []
@@ -469,7 +384,7 @@ class SearchService {
 	String getUserSearchGroup1QueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
 		def followedSansUser = followedUsers.findAll{ it.id != user.id }.collect{ it.id }
 		if (followedSansUser.size > 0) {
-			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query))) AND _type:user AND (_id:${Utils.orifyList(followedSansUser)}))"
+			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query))) AND _type:user AND (_id:${Utils.orifyList(followedSansUser)}) AND virtual:false)"
 		} else {
 			return ""
 		}
@@ -536,7 +451,7 @@ class SearchService {
 			ignoreUserIds << user.id
 		}
 		
-		return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query))) AND _type:user AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
+		return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query)))  AND virtual:false AND _type:user AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
 	}
 			
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
@@ -963,10 +878,6 @@ class SearchService {
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicName:($userQuery)"))), weightFactorFunction(60.0f))
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("interestTagsString:($userQuery)"))), weightFactorFunction(40.0f))
 		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicBio:($userQuery)"))), weightFactorFunction(40.0f))
-//		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("username:($userQuery)"))), linearDecayFunction("created", "7d").setWeight(60.0f))
-//		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicName:($userQuery)"))), linearDecayFunction("created", "7d").setWeight(60.0f))
-//		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("interestTagsString:($userQuery)"))), linearDecayFunction("created", "7d").setWeight(40.0f))
-//		fsqb.add(andFilter(typeFilter("user"), queryFilter(queryString("publicBio:($userQuery)"))), linearDecayFunction("created", "7d").setWeight(40.0f))
 	}
 		
 	private Map searchWithESQuery(User user, String fullQuery, String userQuery, int offset, int max, def type) {
@@ -1016,7 +927,7 @@ class SearchService {
 			SearchResponse sr = temp
 				.setQuery(fsqb)
 				//.setQuery(queryString(Utils.orifyList(queries)))
-				.setExplain(true)
+				.setExplain(false)
 				.setSize(max)
 				.setFrom(offset)
 				.execute()
@@ -1443,122 +1354,6 @@ class SearchService {
 	
 	Map getAllActivity(User user, int offset = 0, int max = 10) {
 		return getActivity(user, DISCUSSION_TYPE | SPRINT_TYPE, offset, max)
-	}
-
-	private Map search(User user, Long type, String query, int offset = 0, int max = 10) {
-		if (user == null) {
-			return [listItems: false, success: false]
-		}
-						
-		String queryAnd = query.replaceAll("[oO][rR]","").replaceAll("[aA][nN][dD]"," ").replaceAll("\\s+", " AND ")
-		def readerGroups = UserGroup.getGroupsForReader(user.id)
-		def adminGroups = UserGroup.getGroupsForAdmin(user.id)
-		def followedUsers = User.search(searchType:'query_and_fetch') {
-			query_string(query:  "virtualUserGroupIdFollowers:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
-		}
-		def followedSprints = Sprint.search(searchType:'query_and_fetch') {
-			query_string(query:  "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
-		}
-
-		def queries = []
-		def searchQueryString
-		if ((type & DISCUSSION_TYPE) > 0) {
-			searchQueryString = getDiscussionSearchQueryString(user, queryAnd, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
-		
-		if ((type & SPRINT_TYPE) > 0) {
-			searchQueryString = getSprintSearchQueryString(user, queryAnd, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
-		
-		if ((type & USER_TYPE) > 0) {
-			searchQueryString = getUserSearchQueryString(user, queryAnd, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
-		
-		def result = [listItems: [], success: true]
-		if (queries.size() > 0) {
-			elasticSearchHelper.withElasticSearch{ client ->
-				//TODO: add scoring. for now, sort descending by date
-				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
-				//fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("created", "7d"))
-				
-				SearchResponse sr = client
-					.prepareSearch("us.wearecurio.model_v0")
-					//.setTypes("discussion", "discussionPost", "user", "sprint")
-					.setTypes("discussion", "user", "sprint")
-					//.setQuery(fsqb) //TODO: to add scoring function, uncomment this line and remove line below this one
-					.setQuery(queryString(Utils.orifyList(queries)))
-					.setExplain(false)
-					.setSize(max)
-					.setFrom(offset)
-					.addSort(SortBuilders.fieldSort("created").order(SortOrder.DESC))
-					.execute()
-					.actionGet()
-
-				if (sr.hits.hits.size() > 0) {
-					def activities = []
-					for(def hit : sr.hits.hits) {
-						switch(hit.type) {
-							case "discussion":
-								activities << [
-									type	: "dis",
-									id		: hit.id,
-									name	: hit.source.name,
-									created	: hit.source.created,
-									score	: hit.score
-								]
-								break;
-							case "user":
-								activities << [
-									type	: "usr",
-									id		: hit.id,
-									name	: hit.source.name,
-									created	: hit.source.created,
-									score	: hit.score
-								]
-								break;
-							case "sprint":
-								activities << [
-									type	: "spr",
-									id		: hit.id,
-									name	: hit.source.name,
-									created	: hit.source.created,
-									score	: hit.score
-								]
-								break;
-						}
-					}
-					
-					result = [listItems: activities, success: true]
-				}
-			}
-		}
-		
-		return result
-	}
-				
-	Map searchDiscussions(User user, String query, int offset = 0, int max = 10) {
-		return search(user, DISCUSSION_TYPE, query, offset, max)
-	}
-	
-	Map searchSprints(User user, String query, int offset = 0, int max = 10) {
-		return search(user, SPRINT_TYPE, query, offset, max)
-	}
-	
-	Map searchUsers(User user, String query, int offset = 0, int max = 10) {
-		return search(user, USER_TYPE, query, offset, max)
-	}
-	
-	Map searchAll(User user, String query, int offset = 0, int max = 10) {
-		return search(user, DISCUSSION_TYPE | SPRINT_TYPE | USER_TYPE, query, offset, max)
 	}
 */
 }
