@@ -956,7 +956,7 @@ class SearchService {
 			return [success: false, message: messageSource.getMessage("search.query.empty", null, null)]
 		}
 
-		String queryAnd = query.replaceAll("[oO][rR]","").replaceAll("[aA][nN][dD]"," ").replaceAll("\\s+", " AND ")
+		String queryAnd = query.trim().replaceAll("[oO][rR]","").replaceAll("[aA][nN][dD]"," ").replaceAll("\\s+", " AND ")
 		def readerGroups = UserGroup.getGroupsForReader(user.id)
 		def adminGroups = UserGroup.getGroupsForAdmin(user.id)
 		def followedUsers = User.search(searchType:'query_and_fetch') {
