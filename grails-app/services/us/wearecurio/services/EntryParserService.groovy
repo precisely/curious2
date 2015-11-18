@@ -859,7 +859,7 @@ class EntryParserService {
 		if (today && (!forUpdate)) {
 			// if base date is today and time is greater than one hour from now, assume
 			// user meant yesterday, unless the element is a ghost
-			if (context.retVal['repeatType'] == null || (!((RepeatType)context.retVal['repeatType']).isRepeat())) {
+			if (context.retVal['repeatType'] == null) {
 				if (date.getTime() > time.getTime() + HOURTICKS) {
 					// if am/pm is not specified, then assume user meant half a day ago
 					if (!context.foundAMPM) {

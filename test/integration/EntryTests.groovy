@@ -146,6 +146,15 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testRemindFutureToday() {
+		EntryStats stats = new EntryStats()
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5pm", RepeatType.ALERT.id, null, baseDate, true), stats)
+		String v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T00:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:4, repeatEnd:null)")
+	}
+
+	@Test
 	void testDeleteRepeatThenUpdate() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat", null, null, earlyBaseDate, true), new EntryStats())
 		
