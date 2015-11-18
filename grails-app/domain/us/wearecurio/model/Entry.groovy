@@ -423,7 +423,10 @@ class Entry implements Comparable {
 	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, DurationType durationType, Closure findOtherEntry) {
 		Date date = m['date']
 		def amounts = m['amounts']
-		Entry other = findOtherEntry()
+		Entry other = null
+		if (!m['hasDurationAmount']) { // only try to compelte duration with another entry if duration amount not specified
+			other = findOtherEntry()
+		}
 		ParseAmount durationAmount = null
 		if (other != null) {
 			BigDecimal durationTicks = ((BigDecimal) date.getTime() - other.date.getTime()).setScale(100, BigDecimal.ROUND_HALF_UP)

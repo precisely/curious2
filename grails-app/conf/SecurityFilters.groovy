@@ -41,8 +41,7 @@ class SecurityFilters {
 		'listSnapshotData',
 		'listDiscussionData',
 		'loadSnapshotDataId',
-		'getTagProperties',
-		'createDiscussionData'
+		'getTagProperties'
 	] as Set
 
 	def filters = {
@@ -91,7 +90,7 @@ class SecurityFilters {
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					log.debug "duplicate filter: " + actionName
 					def p = new TreeMap(params)
-					if (params.date || params.dateToken || params.currentTime) {
+					if (params.date || params.dateToken || params.currentTime || params.currentDate) {
 						p.remove('_')
 						p.remove('callback')
 						

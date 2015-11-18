@@ -132,29 +132,6 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testReverseDuration() {
-		// test creation of start of a duration pair
-		println("== Test creation of end entry ==")
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "testxyz end 5pm", null, null, baseDate, true), new EntryStats())
-		def x = entry.valueString()
-
-		// test creation of the other side of the duration pair
-		println("== Test creation of start entry ==")
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "testxyz start 3pm", null, null, baseDate, true), new EntryStats())
-		assert entry2.is(entry) // should have completed entry
-		testEntries(user, timeZone, baseDate, currentTime) {
-			int c = 0
-			def amount = it.amounts[0]
-			assert amount.amount.longValue() == 2
-			assert amount.units == 'hrs'
-			
-			assert it.amounts.size() == 1
-		}
-	}
-
-	@Test
 	void testStartExtendedDuration() {
 		// test creation of duration with start entry converting to duration entry
 		println("== Test creation of duration with start entry converting to duration entry ==")
@@ -178,6 +155,81 @@ class EntryParserServiceTests extends CuriousTestCase {
 			}
 		}
 		assert entry.date.getTime() - entry.startDate.getTime() == 7200000L
+	}
+
+	@Test
+	void testSleepStart() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 3:30pm", null, null, baseDate, true), new EntryStats())
+		assert entry.getDurationType().equals(DurationType.START)
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 4pm", null, null, baseDate, true), new EntryStats())
+		assert entry2.getDurationType().equals(DurationType.START)
+		
+		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4 hours 3:30pm", null, null, baseDate, true), new EntryStats())
+		assert entry3.getDurationType().equals(DurationType.NONE)
+
+		Entry entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm start", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getDurationType().equals(DurationType.START)
+
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getDurationType().equals(DurationType.START)
+
+		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4pm starts(hola)", null, null, baseDate, true), new EntryStats())
+		assert entry4.getDescription().equals("sleep start")
+		assert entry4.getComment().equals("(hola)")
+		assert entry4.getDurationType().equals(DurationType.START)
+	}
+
+	@Test
+	void testStartImpliedDuration() {
+		// test creation of duration with start entry converting to duration entry
+		println("== Test creation of duration with start entry converting to duration entry ==")
+		
+		Entry endEntry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "fooey 2:30pm", null, null, baseDate, true), new EntryStats())
+		
+		def parseResult = entryParserService.parse(currentTime, timeZone, "sleep 2 hours 2:30pm", null, null, baseDate, true)
+		Entry entry = Entry.create(userId, parseResult, new EntryStats())
+		
+		assert entry.durationType == DurationType.NONE
+		assert entry.baseTag == Tag.look("sleep")
+		assert entry.tag == Tag.look("sleep [duration]")
+		assert entry.date == endEntry.date
+		
+		testEntries(user, timeZone, baseDate, currentTime) {
+			if (it.description == "sleep") {
+				def amount = it.amounts[0]
+				assert amount.amount.longValue() == 2
+				assert amount.units == 'hrs'
+				
+				assert it.amounts.size() == 1
+			}
+		}
+		assert entry.date.getTime() - entry.startDate.getTime() == 7200000L
+	}
+
+	@Test
+	void testReverseDuration() {
+		// test creation of start of a duration pair
+		println("== Test creation of end entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "testxyz end 5pm", null, null, baseDate, true), new EntryStats())
+		def x = entry.valueString()
+
+		// test creation of the other side of the duration pair
+		println("== Test creation of start entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(lateCurrentTime, timeZone, "testxyz start 3pm", null, null, baseDate, true), new EntryStats())
+		assert entry2.is(entry) // should have completed entry
+		testEntries(user, timeZone, baseDate, currentTime) {
+			int c = 0
+			def amount = it.amounts[0]
+			assert amount.amount.longValue() == 2
+			assert amount.units == 'hrs'
+			
+			assert it.amounts.size() == 1
+		}
 	}
 
 	@Test
@@ -550,31 +602,6 @@ class EntryParserServiceTests extends CuriousTestCase {
 		assert entry6.getDurationType().equals(DurationType.END)
 	}
 	
-	@Test
-	void testSleepStart() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 3:30pm", null, null, baseDate, true), new EntryStats())
-		assert entry.getDurationType().equals(DurationType.START)
-
-		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep start at 4pm", null, null, baseDate, true), new EntryStats())
-		assert entry2.getDurationType().equals(DurationType.START)
-		
-		Entry entry3 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4 hours 3:30pm", null, null, baseDate, true), new EntryStats())
-		assert entry3.getDurationType().equals(DurationType.NONE)
-
-		Entry entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm start", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep at 4pm starts", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getDurationType().equals(DurationType.START)
-
-		entry4 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 4pm starts(hola)", null, null, baseDate, true), new EntryStats())
-		assert entry4.getDescription().equals("sleep start")
-		assert entry4.getComment().equals("(hola)")
-		assert entry4.getDurationType().equals(DurationType.START)
-	}
-
 	@Test
 	void testSleepWake() {
 		// test creation of start of a duration pair

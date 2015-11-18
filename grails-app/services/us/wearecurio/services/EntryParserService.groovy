@@ -197,17 +197,19 @@ class EntryParserService {
 	protected static final int DURATIONSYNONYM_TAG = 0
 	protected static final int DURATIONSYNONYM_SUFFIX = 1
 	protected static final int DURATIONSYNONYM_TYPE = 2
-	
+	protected static final int DURATIONSYNONYM_WITHDURATIONAMOUNT_SUFFIX = 3
+	protected static final int DURATIONSYNONYM_WITHDURATIONAMOUNT_TYPE = 4
+
 	protected static final Map<String, List> durationSynonymMap = [
-		'wake':['sleep', 'end', DurationType.END],
-		'wake up':['sleep', 'end', DurationType.END],
-		'woke':['sleep', 'end', DurationType.END],
-		'awakened':['sleep', 'end', DurationType.END],
-		'awoke':['sleep', 'end', DurationType.END],
-		'went to sleep':['sleep', 'start', DurationType.START],
-		'go to sleep':['sleep', 'start', DurationType.START],
-		'slept':['sleep', 'start', DurationType.START],
-		'sleep':['sleep', 'start', DurationType.START],
+		'wake':['sleep', 'end', DurationType.END, 'end', DurationType.END],
+		'wake up':['sleep', 'end', DurationType.END, 'end', DurationType.END],
+		'woke':['sleep', 'end', DurationType.END, 'end', DurationType.END],
+		'awakened':['sleep', 'end', DurationType.END, 'end', DurationType.END],
+		'awoke':['sleep', 'end', DurationType.END, 'end', DurationType.END],
+		'went to sleep':['sleep', 'start', DurationType.START, 'end', DurationType.END],
+		'go to sleep':['sleep', 'start', DurationType.START, 'end', DurationType.END],
+		'slept':['sleep', 'start', DurationType.START, 'end', DurationType.END],
+		'sleep':['sleep', 'start', DurationType.START, 'end', DurationType.END],
 	]
 
 	static boolean isToday(Date time, Date baseDate) {
@@ -463,6 +465,8 @@ class EntryParserService {
 		LinkedList<String> commentWords = new LinkedList<String>()
 		String suffix = ''
 		String repeatSuffix = ''
+		String withDurationAmountSuffix = ''
+		DurationType withDurationAmountDurationType = null
 		
 		boolean foundRepeat = false
 		boolean foundDuration = false
@@ -559,6 +563,8 @@ class EntryParserService {
 			List info = durationMap[modifier]
 			context.retVal['durationType'] = (DurationType) info[DURATIONMAP_TYPE]
 			context.suffix = (String) info[DURATIONMAP_SYNONYM]
+			context.withDurationAmountSuffix = (String) info[DURATIONMAP_SYNONYM]
+			context.withDurationAmountDurationType = (DurationType) info[DURATIONMAP_TYPE]
 		}
 		
 		durationScanPattern = new ScannerPattern(CONDITION_DURATION, durationPattern, true, durationClosure)
@@ -641,6 +647,8 @@ class EntryParserService {
 			List info = durationSynonymMap[modifier]
 			context.retVal['durationType'] = (DurationType) info[DURATIONSYNONYM_TYPE]
 			context.suffix = (String) info[DURATIONSYNONYM_SUFFIX]
+			context.withDurationAmountSuffix = (String) info[DURATIONSYNONYM_WITHDURATIONAMOUNT_SUFFIX]
+			context.withDurationAmountDurationType = (DurationType) info[DURATIONSYNONYM_WITHDURATIONAMOUNT_TYPE]
 			context.words.add((String) info[DURATIONSYNONYM_TAG])
 		})
 		
@@ -890,13 +898,29 @@ class EntryParserService {
 		if (!description) description = "unknown"
 		context.retVal['baseTag'] = Tag.look(description)
 		String tagDescription = description
-		if (context.suffix) tagDescription += ' ' + context.suffix
+		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
+		if (context.suffix) {
+			boolean durationAmount = false
+			for (ParseAmount amount : context.amounts) {
+				DecoratedUnitRatio unitRatio = unitGroupMap.lookupDecoratedUnitRatio(amount.units)
+				if (unitRatio.isDuration()) {
+					durationAmount = true
+					break
+				}
+			}
+			if (durationAmount) {
+				context.retVal['hasDurationAmount'] = true
+				tagDescription += ' ' + context.withDurationAmountSuffix
+				context.retVal['durationType'] = context.withDurationAmountDurationType
+			} else {
+				tagDescription += ' ' + context.suffix
+			}
+		}
 		Tag tag = Tag.look(tagDescription)
 		context.retVal['tag'] = tag
 		
 		int index = 0
 		Tag baseTag = (Tag) context.retVal['baseTag']
-		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
 		
 		boolean bloodPressure = bloodPressureTags?.contains(description)
 		
