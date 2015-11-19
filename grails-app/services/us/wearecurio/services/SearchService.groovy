@@ -398,23 +398,19 @@ class SearchService {
 		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
 		def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
 						
-		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
-		discussionQueries << ("(userId:${user.id} AND visibility:${visibilitiesOr})")
+		discussionQueries << ("(userId:${user.id})")
 		
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_READER).collect{ it.toString()})
-		def groupIdsOr = Utils.orifyList(readerGroupsSansFollowingGroups)
 		def groupIds = []
 		groupIds += readerGroupsSansFollowingGroups
-		groupIds += adminGroups
+		groupIds += adminGroups.collect{ it[0].id }
 		groupIds += followingUserUserGroupIds
 		groupIds += followingSprintUserGroupIds
 		groupIds += followedSprints.findAll{ it.userId == user.id }.collect{ it.virtualGroupId }
-		
 		if (groupIds.size > 0) {
-			return "( ( NOT (${Utils.orifyList(discussionQueries)}) ) AND visibility:PUBLIC AND ( name:($query) OR posts:($query) ) AND _type:discussion )"
-		} else {
-			return "( visibility:PUBLIC AND ( name:($query) OR posts:($query) ) AND _type:discussion )"
+			discussionQueries << ("(groupIds:${Utils.orifyList(groupIds)})")
 		}
+		
+		return "( ( NOT (${Utils.orifyList(discussionQueries)}) ) AND visibility:PUBLIC AND ( name:($query) OR posts:($query) OR firstPostMessage:($query)) AND _type:discussion )"
 	}
 	
 	String getSprintSearchGroup2QueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
