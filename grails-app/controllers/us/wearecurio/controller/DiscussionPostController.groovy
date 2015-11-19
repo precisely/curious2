@@ -11,7 +11,7 @@ class DiscussionPostController extends LoginController{
 	def index(Integer offset, Integer max) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion) {
-			renderJSONGet([posts: false, success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
+			renderJSONGet([posts: false, success: false, message: g.message(code: "not.found.message", args: ["Discussion"])])
 			return
 		}
 
@@ -39,7 +39,7 @@ class DiscussionPostController extends LoginController{
 
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
 		if (!discussion){
-			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
+			renderJSONPost([success: false, message: g.message(code: "not.found.message", args: ["Discussion"])])
 			return
 		}
 
@@ -68,7 +68,7 @@ class DiscussionPostController extends LoginController{
 		Discussion discussion
 		User user = sessionUser()
 		if (!post) {
-			renderJSONPost([success: false, message: g.message(code: "default.blank.message", args: ["Post"])])
+			renderJSONPost([success: false, message: g.message(code: "not.found.message", args: ["Post"])])
 		} else {
 			discussion = Discussion.get(post.discussionId)
 			if (post && (!user || (post.getUserId() != user.id && (!UserGroup.canAdminDiscussion(user, discussion))))) {

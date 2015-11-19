@@ -308,6 +308,9 @@ function queueJSONAll(description, url, args, successCallback, failCallback, del
 	} else if (!args['dateToken']) {
 		args['dateToken'] = new Date().getTime();
 	}
+	if (url.indexOf('?') >= 0 && url.indexOf('dateToken=') < 0) {
+		url += '&dateToken=' + new Date().getTime();
+	}
 	var wrapSuccessCallback = function(data, msg) {
 		stillRunning = false;
 		if (alertShown)
