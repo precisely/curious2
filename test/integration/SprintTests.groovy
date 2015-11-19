@@ -555,6 +555,16 @@ class SprintTests extends CuriousTestCase {
 	}
 
 	@Test
+	void "Test admin stays after removing member"() {
+		mockSprintData()
+		dummySprint1.addAdmin(user.id)
+		assert dummySprint1.hasAdmin(user.id)
+		dummySprint1.removeMember(user.id)
+		assert !dummySprint1.hasMember(user.id)
+		assert dummySprint1.hasAdmin(user.id)
+	}
+
+	@Test
 	void "Test getParticipants"() {
 		mockSprintData()
 

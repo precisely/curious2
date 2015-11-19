@@ -409,8 +409,9 @@ class Sprint {
 	
 	void removeMember(Long userId) {
 		removeReader(userId)
-		removeWriter(userId)
-		removeAdmin(userId)
+		if (!hasAdmin(userId))
+			removeWriter(userId)
+		//removeAdmin(userId)
 	}
 	
 	boolean hasMember(Long userId) {

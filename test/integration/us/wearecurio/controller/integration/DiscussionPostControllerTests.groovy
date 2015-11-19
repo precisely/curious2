@@ -69,7 +69,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		controller.delete()
 	
-		assert controller.response.json.message == messageSource.getMessage("default.blank.message", ["Post"] as Object[], null)
+		assert controller.response.json.message == messageSource.getMessage("not.found.message", ["Post"] as Object[], null)
 		assert !controller.response.json.success
 	}
 
@@ -105,7 +105,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 		controller.save()
 
 		assert !controller.response.json.success
-		assert controller.response.json.message == messageSource.getMessage("default.blank.message", 
+		assert controller.response.json.message == messageSource.getMessage("not.found.message", 
 			["Discussion"] as Object[], null) 
 		assert !DiscussionPost.count()
 	}
@@ -156,7 +156,7 @@ class DiscussionPostControllerTests extends CuriousControllerTestCase {
 
 		assert !controller.response.json.success
 		assert !controller.response.json.posts
-		assert controller.response.json.message == messageSource.getMessage("default.blank.message", 
+		assert controller.response.json.message == messageSource.getMessage("not.found.message", 
 			["Discussion"] as Object[], null) 
 	}
 
