@@ -965,10 +965,10 @@ class SearchService {
 		def queryGroup1 = getSearchQuery(1, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		def queryGroup2 = getSearchQuery(2, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		
-		println "=============================================="
-		println "=============================================="
-		println "queryGroup1: $queryGroup1"
-		println "queryGroup2: $queryGroup2"
+//		println "=============================================="
+//		println "=============================================="
+//		println "queryGroup1: $queryGroup1"
+//		println "queryGroup2: $queryGroup2"
 		
 		def group1Count = searchCount(queryGroup1, type)
 		def group2Count = searchCount(queryGroup2, type)
@@ -991,8 +991,8 @@ class SearchService {
 //		println "resultsGroup1.listItems: $resultsGroup1.listItems"
 //		println "resultsGroup2.success: $resultsGroup2.success"
 //		println "resultsGroup2.listItems: $resultsGroup2.listItems"
-		println "=============================================="
-		println "=============================================="
+//		println "=============================================="
+//		println "=============================================="
 		
 		if (!resultsGroup1.success || !resultsGroup2.success) {
 			return [listItems: false, success: false]
