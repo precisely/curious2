@@ -398,23 +398,19 @@ class SearchService {
 		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
 		def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
 						
-		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
-		discussionQueries << ("(userId:${user.id} AND visibility:${visibilitiesOr})")
+		discussionQueries << ("(userId:${user.id})")
 		
-		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_READER).collect{ it.toString()})
-		def groupIdsOr = Utils.orifyList(readerGroupsSansFollowingGroups)
 		def groupIds = []
 		groupIds += readerGroupsSansFollowingGroups
-		groupIds += adminGroups
+		groupIds += adminGroups.collect{ it[0].id }
 		groupIds += followingUserUserGroupIds
 		groupIds += followingSprintUserGroupIds
 		groupIds += followedSprints.findAll{ it.userId == user.id }.collect{ it.virtualGroupId }
-		
 		if (groupIds.size > 0) {
-			return "( ( NOT (${Utils.orifyList(discussionQueries)}) ) AND visibility:PUBLIC AND ( name:($query) OR posts:($query) ) AND _type:discussion )"
-		} else {
-			return "( visibility:PUBLIC AND ( name:($query) OR posts:($query) ) AND _type:discussion )"
+			discussionQueries << ("(groupIds:${Utils.orifyList(groupIds)})")
 		}
+		
+		return "( ( NOT (${Utils.orifyList(discussionQueries)}) ) AND visibility:PUBLIC AND ( name:($query) OR posts:($query) OR firstPostMessage:($query)) AND _type:discussion )"
 	}
 	
 	String getSprintSearchGroup2QueryString(User user, String query, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
@@ -969,10 +965,10 @@ class SearchService {
 		def queryGroup1 = getSearchQuery(1, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		def queryGroup2 = getSearchQuery(2, user, queryAnd, readerGroups, adminGroups, followedUsers, followedSprints, type)
 		
-//		println "=============================================="
-//		println "=============================================="
-//		println "queryGroup1: $queryGroup1"
-//		println "queryGroup2: $queryGroup2"
+		println "=============================================="
+		println "=============================================="
+		println "queryGroup1: $queryGroup1"
+		println "queryGroup2: $queryGroup2"
 		
 		def group1Count = searchCount(queryGroup1, type)
 		def group2Count = searchCount(queryGroup2, type)
@@ -995,8 +991,8 @@ class SearchService {
 //		println "resultsGroup1.listItems: $resultsGroup1.listItems"
 //		println "resultsGroup2.success: $resultsGroup2.success"
 //		println "resultsGroup2.listItems: $resultsGroup2.listItems"
-//		println "=============================================="
-//		println "=============================================="
+		println "=============================================="
+		println "=============================================="
 		
 		if (!resultsGroup1.success || !resultsGroup2.success) {
 			return [listItems: false, success: false]
