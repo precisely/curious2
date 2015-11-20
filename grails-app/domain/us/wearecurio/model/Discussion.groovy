@@ -5,6 +5,7 @@ import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.utility.Utils
+import us.wearecurio.services.SearchService
 
 class Discussion {
 	
@@ -18,7 +19,7 @@ class Discussion {
 	String hash = new DefaultHashIDGenerator().generate(12)
 	Visibility visibility
 	
-	public static final int MAXPLOTDATALENGTH = 1024
+	static final int MAXPLOTDATALENGTH = 1024
 	
 	static constraints = {
 		userId(nullable:true)
@@ -64,7 +65,7 @@ class Discussion {
 		]
 	}
 	
-	public static Discussion getDiscussionForPlotDataId(Long plotDataId) {
+	static Discussion getDiscussionForPlotDataId(Long plotDataId) {
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			and {
 				eq("plotDataId", plotDataId)
@@ -76,7 +77,7 @@ class Discussion {
 		return post?.getDiscussion()
 	}
 	
-	public static Discussion create(User user) {
+	static Discussion create(User user) {
 		return create(user, null)
 	}
 	
@@ -84,7 +85,7 @@ class Discussion {
 		UserActivity.create(userId, activityType, UserActivity.ObjectType.DISCUSSION, objectId)
 	}
 	
-	public static Discussion create(User user, String name, Visibility visibility = Visibility.PUBLIC) {
+	static Discussion create(User user, String name, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", visibility: " + visibility
 		def discussion = new Discussion(user, name, new Date(), visibility)
 
@@ -190,16 +191,20 @@ class Discussion {
 		}
 	}
 	
-	public Discussion() {
+	Discussion() {
 		this.visibility = Model.Visibility.PUBLIC
 	}
 	
-	public Discussion(User user, String name, Date createTime = null, Visibility visibility) {
+	Discussion(User user, String name, Date createTime = null, Visibility visibility) {
 		this.userId = user?.getId()
 		this.name = name
 		this.created = createTime ?: new Date()
 		this.updated = this.created
 		this.visibility = visibility ?: Model.Visibility.PUBLIC
+	}
+	
+	void reindex() {
+		if (id) SearchService.get().index(this)
 	}
 	
 	boolean isPublic() {

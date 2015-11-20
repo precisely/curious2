@@ -17,6 +17,7 @@ import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.model.Model.Visibility
 
@@ -114,25 +115,31 @@ class Sprint {
 	boolean isPublic() {
 		return visibility == Visibility.PUBLIC
 	}
+	
+	void reindex() {
+		if (id) SearchService.get().index(this) // only reindex if this sprint has been saved
+	}
 
 	boolean hasWriter(Long userId) {
 		return fetchUserGroup()?.hasWriter(userId)
 	}
 	
-	def addWriter(Long userId) {
-		return fetchUserGroup()?.addWriter(userId)
+	void addWriter(Long userId) {
+		fetchUserGroup()?.addWriter(userId)
+		reindex()
 	}
 	
-	def removeWriter(Long userId) {
-		return fetchUserGroup()?.removeWriter(userId)
+	void removeWriter(Long userId) {
+		fetchUserGroup()?.removeWriter(userId)
+		reindex()
 	}
 	
 	boolean hasReader(Long userId) {
 		return fetchUserGroup()?.hasReader(userId)
 	}
 	
-	def addReader(Long userId) {
-		def r = fetchUserGroup()?.addReader(userId)
+	void addReader(Long userId) {
+		fetchUserGroup()?.addReader(userId)
 		UserActivity.create(
 			userId,
 			UserActivity.ActivityType.FOLLOW,
@@ -149,11 +156,11 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		r
+		reindex()
 	}
 	
-	def removeReader(Long userId) {
-		def r = fetchUserGroup()?.removeReader(userId)
+	void removeReader(Long userId) {
+		fetchUserGroup()?.removeReader(userId)
 		UserActivity.create(
 			userId,
 			UserActivity.ActivityType.UNFOLLOW,
@@ -170,15 +177,15 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		r
+		reindex()
 	}
 	
 	boolean hasAdmin(Long userId) {
 		return fetchUserGroup()?.hasAdmin(userId)
 	}
 	
-	def addAdmin(Long userId) {
-		def a = fetchUserGroup()?.addAdmin(userId)
+	void addAdmin(Long userId) {
+		fetchUserGroup()?.addAdmin(userId)
 		UserActivity.create(
 			userId,
 			UserActivity.ActivityType.ADD,
@@ -187,14 +194,14 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		a
+		reindex()
 	}
 	
 	boolean hasInvited(Long userId) {
 		return fetchUserGroup()?.hasInvited(userId)
 	}
 	
-	def addInvited(Long userId) {
+	void addInvited(Long userId) {
 		fetchUserGroup()?.addInvited(userId)
 		UserActivity.create(
 			null,
@@ -204,9 +211,10 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
+		reindex()
 	}
 	
-	def removeInvited(Long userId) {
+	void removeInvited(Long userId) {
 		fetchUserGroup()?.removeInvited(userId)
 		UserActivity.create(
 			null,
@@ -216,14 +224,15 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
+		reindex()
 	}
 	
 	boolean hasInvitedAdmin(Long userId) {
 		return fetchUserGroup()?.hasInvitedAdmin(userId)
 	}
 	
-	def addInvitedAdmin(Long userId) {
-		def a = fetchUserGroup()?.addInvitedAdmin(userId)
+	void addInvitedAdmin(Long userId) {
+		fetchUserGroup()?.addInvitedAdmin(userId)
 		UserActivity.create(
 			null,
 			UserActivity.ActivityType.INVITE,
@@ -232,11 +241,11 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		return a
+		reindex()
 	}
 	
-	def removeInvitedAdmin(Long userId) {
-		def a = fetchUserGroup()?.removeInvitedAdmin(userId)
+	void removeInvitedAdmin(Long userId) {
+		fetchUserGroup()?.removeInvitedAdmin(userId)
 		UserActivity.create(
 			null,
 			UserActivity.ActivityType.UNINVITE,
@@ -245,7 +254,7 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		return a
+		reindex()
 	}
 	
 	void clearInvited() {
@@ -282,6 +291,7 @@ class Sprint {
 				)
 			}
 		}
+		reindex()
 	}
 	
 	//TODO: need to make sure the sprint is re-index any time entry is added for this virtual user id
@@ -303,8 +313,8 @@ class Sprint {
 		return participantsCount
 	}
 
-	def removeAdmin(Long userId) {
-		def a = fetchUserGroup()?.removeAdmin(userId)
+	void removeAdmin(Long userId) {
+		fetchUserGroup()?.removeAdmin(userId)
 		UserActivity.create(
 			userId,
 			UserActivity.ActivityType.REMOVE,
@@ -313,17 +323,17 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		a
+		reindex()
 	}
 	
-	def hasDiscussion(Discussion discussion) {
+	boolean hasDiscussion(Discussion discussion) {
 		return fetchUserGroup()?.hasDiscussion(discussion)
 	}
 	
-	def addDiscussion(Discussion discussion) {
+	void addDiscussion(Discussion discussion) {
 		if (hasDiscussion(discussion)) return null
 		
-		def r = fetchUserGroup()?.addDiscussion(discussion)
+		fetchUserGroup()?.addDiscussion(discussion)
 		UserActivity.create(
 			null,
 			UserActivity.ActivityType.ADD,
@@ -332,13 +342,13 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		r
+		reindex()
 	}
 	
-	def removeDiscussion(Discussion discussion) {
+	void removeDiscussion(Discussion discussion) {
 		if (!hasDiscussion(discussion)) return null
 		
-		def r = fetchUserGroup()?.removeDiscussion(discussion)
+		fetchUserGroup()?.removeDiscussion(discussion)
 		UserActivity.create(
 			null,
 			UserActivity.ActivityType.REMOVE,
@@ -347,7 +357,7 @@ class Sprint {
 			UserActivity.ObjectType.SPRINT,
 			this.id
 		)
-		r
+		reindex()
 	}
 	
 	static Sprint create(Date now, User user, String name, Visibility visibility) {
@@ -405,6 +415,7 @@ class Sprint {
 	void addMember(Long userId) {
 		addReader(userId)
 		addWriter(userId)
+		reindex()
 	}
 	
 	void removeMember(Long userId) {
@@ -412,6 +423,7 @@ class Sprint {
 		if (!hasAdmin(userId))
 			removeWriter(userId)
 		//removeAdmin(userId)
+		reindex()
 	}
 	
 	boolean hasMember(Long userId) {

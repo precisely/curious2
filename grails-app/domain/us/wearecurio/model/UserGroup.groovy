@@ -122,7 +122,7 @@ class UserGroup {
 		return group
 	}
 
-	public static void delete(UserGroup group) {
+	static void delete(UserGroup group) {
 		Long groupId = group.getId()
 		log.debug "UserGroup.delete() groupId:" + groupId
 		GroupMemberReader.executeUpdate("delete GroupMemberReader item where item.groupId = :id", [id:groupId])
@@ -239,7 +239,7 @@ class UserGroup {
 		return discussionPostData
 	}
 
-	static def canReadDiscussion(User user, Discussion discussion) {
+	static boolean canReadDiscussion(User user, Discussion discussion) {
 		if (!user)
 			return discussion.getIsPublic()
 		if (discussion.getUserId() == user.getId())
@@ -254,7 +254,7 @@ class UserGroup {
 		return false
 	}
 
-	static def canWriteDiscussion(User user, Discussion discussion) {
+	static boolean canWriteDiscussion(User user, Discussion discussion) {
 		if (!user) {
 			log.debug "UserGroup.canWriteDiscussion(): No user passed, looking to see if the group is public"
 			return discussion.getIsPublic()
@@ -275,7 +275,7 @@ class UserGroup {
 		return false
 	}
 
-	static def canAdminDiscussion(User user, Discussion discussion) {
+	static boolean canAdminDiscussion(User user, Discussion discussion) {
 		if (!user)
 			return false
 		if (!discussion)
@@ -291,7 +291,7 @@ class UserGroup {
 		return false
 	}
 
-	def acceptAllInvited() {
+	void acceptAllInvited() {
 		def invitedUserIds = GroupMemberInvited.lookupMemberIds(this.id)
 
 		for (Long userId in invitedUserIds) {
@@ -318,7 +318,7 @@ class UserGroup {
 		}
 	}
 
-	def addReader(User user) {
+	void addReader(User user) {
 		if (!user) return;
 
 		GroupMemberReader.create(id, user.getId())
@@ -339,21 +339,20 @@ class UserGroup {
 				)
 			}
 		}
-		n
 	}
 
-	def addReader(Long userId) {
+	void addReader(Long userId) {
 		if (!userId) return;
 
 		addReader(User.get(userId))
 	}
 
-	def removeReader(User user) {
+	void removeReader(User user) {
 		if (!user) return;
 
 		GroupMemberReader.delete(id, user.getId())
 
-		def n = this.notifyNotifiedMajors("User '" + user.getUsername() + "' left group '" + this.description + "'",
+		this.notifyNotifiedMajors("User '" + user.getUsername() + "' left group '" + this.description + "'",
 						"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) left group '" + this.description + "'")
 
 		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
@@ -369,16 +368,15 @@ class UserGroup {
 				)
 			}
 		}
-		n
 	}
 
-	def removeReader(Long userId) {
+	void removeReader(Long userId) {
 		if (!userId) return;
 
 		removeReader(User.get(userId))
 	}
 
-	def addInvited(User user) {
+	void addInvited(User user) {
 		if (!user) return;
 
 		GroupMemberInvited.create(id, user.getId())
@@ -387,13 +385,13 @@ class UserGroup {
 		//		"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) invited to group '" + this.description + "'")
 	}
 
-	def addInvited(Long userId) {
+	void addInvited(Long userId) {
 		if (!userId) return;
 
 		addInvited(User.get(userId))
 	}
 
-	def removeInvited(User user) {
+	void removeInvited(User user) {
 		if (!user) return;
 
 		GroupMemberInvited.delete(id, user.getId())
@@ -402,13 +400,13 @@ class UserGroup {
 		//		"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) no longer invited to group '" + this.description + "'")
 	}
 
-	def removeInvited(Long userId) {
+	void removeInvited(Long userId) {
 		if (!userId) return;
 
 		removeInvited(User.get(userId))
 	}
 
-	def addInvitedAdmin(User user) {
+	void addInvitedAdmin(User user) {
 		if (!user) return;
 
 		GroupMemberInvitedAdmin.create(id, user.getId())
@@ -417,13 +415,13 @@ class UserGroup {
 		//		"New user '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) invited to admin group '" + this.description + "'")
 	}
 
-	def addInvitedAdmin(Long userId) {
+	void addInvitedAdmin(Long userId) {
 		if (!userId) return;
 
 		addInvitedAdmin(User.get(userId))
 	}
 
-	def removeInvitedAdmin(User user) {
+	void removeInvitedAdmin(User user) {
 		if (!user) return;
 
 		GroupMemberInvitedAdmin.delete(id, user.getId())
@@ -432,13 +430,13 @@ class UserGroup {
 		//		"User '" + user.getUsername() + "' (" + user.getName() + " <" + user.getEmail() + ">) no longer invited to admin group '" + this.description + "'")
 	}
 
-	def removeInvitedAdmin(Long userId) {
+	void removeInvitedAdmin(Long userId) {
 		if (!userId) return;
 
 		removeInvitedAdmin(User.get(userId))
 	}
 
-	def removeAllParticipants() {
+	void removeAllParticipants() {
 		removeAllInvited()
 		removeAllInvitedAdmin()
 		removeAllReaders()
@@ -446,81 +444,81 @@ class UserGroup {
 		removeAllAdmins()
 	}
 
-	def removeAllReaders() {
+	void removeAllReaders() {
 		GroupMemberReader.executeUpdate("DELETE GroupMemberReader gmr WHERE gmr.groupId = :groupId", [groupId: id])
 	}
 
-	def removeAllInvited() {
+	void removeAllInvited() {
 		GroupMemberInvited.executeUpdate("DELETE GroupMemberInvited gm WHERE gm.groupId = :groupId", [groupId: id])
 	}
 
-	def removeAllInvitedAdmin() {
+	void removeAllInvitedAdmin() {
 		GroupMemberInvited.executeUpdate("DELETE GroupMemberInvitedAdmin gm WHERE gm.groupId = :groupId", [groupId: id])
 	}
 
-	def removeAllWriters() {
+	void removeAllWriters() {
 		GroupMemberWriter.executeUpdate("DELETE GroupMemberWriter gmw WHERE gmw.groupId = :groupId", [groupId: id])
 	}
 
-	def removeAllAdmins() {
+	void removeAllAdmins() {
 		GroupMemberAdmin.executeUpdate("DELETE GroupMemberAdmin gma WHERE gma.groupId = :groupId", [groupId: id])
 	}
 
-	def hasReader(User user) {
+	boolean hasReader(User user) {
 		if (!user) return false
 
 		return GroupMemberReader.lookup(id, user.getId()) != null
 	}
 
-	def hasReader(Long userId) {
+	boolean hasReader(Long userId) {
 		if (!userId) return false
 
 		return GroupMemberReader.lookup(id, userId) != null
 	}
 
-	def hasInvited(User user) {
+	boolean hasInvited(User user) {
 		if (!user) return false
 
 		return GroupMemberInvited.lookup(id, user.getId()) != null
 	}
 
-	def hasInvited(Long userId) {
+	boolean hasInvited(Long userId) {
 		if (!userId) return false
 
 		return GroupMemberInvited.lookup(id, userId) != null
 	}
 
-	def hasInvitedAdmin(User user) {
+	boolean hasInvitedAdmin(User user) {
 		if (!user) return false
 
 		return GroupMemberInvitedAdmin.lookup(id, user.getId()) != null
 	}
 
-	def hasInvitedAdmin(Long userId) {
+	boolean hasInvitedAdmin(Long userId) {
 		if (!userId) return false
 
 		return GroupMemberInvitedAdmin.lookup(id, userId) != null
 	}
 
-	def addWriter(User user) {
+	void addWriter(User user) {
 		if (!user) return;
 
 		GroupMemberWriter.create(id, user.getId())
 	}
 
-	def addWriter(Long userId) {
+	void addWriter(Long userId) {
 		if (!userId) return;
 
 		GroupMemberWriter.create(id, userId)
 	}
 
-	def removeWriter(User user) {
+	void removeWriter(User user) {
 		if (!user) return;
 
 		removeWriter(user.id)
 	}
 
-	def removeWriter(Long userId) {
+	void removeWriter(Long userId) {
 		if (!userId) return;
 
 		GroupMemberReader.delete(id, userId)
@@ -544,13 +542,13 @@ class UserGroup {
 		GroupMemberWriter.lookup(id, userId) != null
 	}
 
-	def addAdmin(User user) {
+	void addAdmin(User user) {
 		if (!user) return;
 		
-		return addAdmin(user.id)		
+		addAdmin(user.id)		
 	}
 
-	def removeAdmin(User user) {
+	void removeAdmin(User user) {
 		if (!user) return;
 
 		removeAdmin(user.id)
@@ -562,7 +560,7 @@ class UserGroup {
 		return hasAdmin(id, user.id)
 	}
 
-	def addAdmin(Long userId) {
+	void addAdmin(Long userId) {
 		if (!userId) return;
 
 		addReader(userId)
@@ -571,7 +569,7 @@ class UserGroup {
 			addNotified(userId)
 			addNotifiedMajor(userId)
 		}
-		def a = GroupMemberAdmin.create(id, userId)
+		GroupMemberAdmin.create(id, userId)
 		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
 		if (discussionIds != null) {
 			for (def discussionId : discussionIds) {
@@ -585,10 +583,9 @@ class UserGroup {
 				)
 			}
 		}
-		a
 	}
 
-	def removeAdmin(Long userId) {
+	void removeAdmin(Long userId) {
 		if (!userId) return;
 
 		def discussionIds = GroupMemberDiscussion.lookupMemberIds(id)
@@ -617,73 +614,73 @@ class UserGroup {
 		return GroupMemberAdmin.lookup(groupId, userId) != null
 	}
 
-	def addNotified(User user) {
+	void addNotified(User user) {
 		if (!user) return;
 
 		GroupMemberNotified.create(id, user.getId())
 	}
 
-	def removeNotified(User user) {
+	void removeNotified(User user) {
 		if (!user) return;
 
 		GroupMemberNotified.delete(id, user.getId())
 	}
 
-	def hasNotified(User user) {
+	boolean hasNotified(User user) {
 		if (!user) return false
 
 		return GroupMemberNotified.lookup(id, user.getId()) != null
 	}
 
-	def addNotified(Long userId) {
+	void addNotified(Long userId) {
 		if (!userId) return;
 
 		GroupMemberNotified.create(id, userId)
 	}
 
-	def removeNotified(Long userId) {
+	void removeNotified(Long userId) {
 		if (!userId) return;
 
 		GroupMemberNotified.delete(id, userId)
 	}
 
-	def hasNotified(long userId) {
+	boolean hasNotified(long userId) {
 		if (!userId) return false
 
 		return GroupMemberNotified.lookup(id, userId) != null
 	}
 
-	def addNotifiedMajor(User user) {
+	void addNotifiedMajor(User user) {
 		if (!user) return;
 
 		GroupMemberNotifiedMajor.create(id, user.getId())
 	}
 
-	def removeNotifiedMajor(User user) {
+	void removeNotifiedMajor(User user) {
 		if (!user) return;
 
 		GroupMemberNotified.delete(id, user.getId())
 	}
 
-	def hasNotifiedMajor(User user) {
+	boolean hasNotifiedMajor(User user) {
 		if (!user) return false
 
 		return GroupMemberNotifiedMajor.lookup(id, user.getId()) != null
 	}
 
-	def addNotifiedMajor(Long userId) {
+	void addNotifiedMajor(Long userId) {
 		if (!userId) return;
 
 		GroupMemberNotifiedMajor.create(id, userId)
 	}
 
-	def removeNotifiedMajor(Long userId) {
+	void removeNotifiedMajor(Long userId) {
 		if (!userId) return;
 
 		GroupMemberNotified.delete(id, userId)
 	}
 
-	def hasNotifiedMajor(Long userId) {
+	boolean hasNotifiedMajor(Long userId) {
 		if (!userId) return false
 
 		return GroupMemberNotifiedMajor.lookup(id, userId) != null
@@ -699,7 +696,7 @@ class UserGroup {
 	 * @param user
 	 * @return
 	 */
-	def addMember(User user) {
+	void addMember(User user) {
 		if (!user) return;
 
 		addReader(user)
@@ -708,7 +705,7 @@ class UserGroup {
 			addWriter(user)
 	}
 
-	def removeMember(User user) {
+	void removeMember(User user) {
 		if (!user) return;
 
 		removeInvited(user)
@@ -725,7 +722,7 @@ class UserGroup {
 	 * @param discussion
 	 * @return
 	 */
-	def addDefaultFor(User user) {
+	boolean addDefaultFor(User user) {
 		if (!user) return false
 
 		if (!hasReader(user)) return false
@@ -733,10 +730,10 @@ class UserGroup {
 		return GroupMemberDefaultFor.create(id, user.getId()) ? true : false
 	}
 
-	def removeDefaultFor(User user) {
+	void removeDefaultFor(User user) {
 		if (!user) return
 
-			GroupMemberDefaultFor.delete(id, user.getId())
+		GroupMemberDefaultFor.delete(id, user.getId())
 	}
 
 	static UserGroup getDefaultGroupForUser(User user) {
@@ -836,7 +833,7 @@ class UserGroup {
 						['id':getId()])
 	}
 
-	private sendMessages(people, String subjectString, String message) {
+	private void sendMessages(people, String subjectString, String message) {
 		for (User p in people) {
 			if (p.getEmail() != null) {
 				log.debug("Sending email about '" + subjectString + "' to " + p.getEmail())
@@ -845,7 +842,7 @@ class UserGroup {
 		}
 	}
 
-	private sendMessages(people, Closure subjectClosure, Closure messageClosure) {
+	private void sendMessages(people, Closure subjectClosure, Closure messageClosure) {
 		for (User p in people) {
 			String subjectString = subjectClosure(p, fromAddress)
 			String message = messageClosure(p, fromAddress)
@@ -856,31 +853,31 @@ class UserGroup {
 		}
 	}
 
-	def notifyAdmins(String subject, String message) {
+	void notifyAdmins(String subject, String message) {
 		sendMessages(getAdminUsers(), subject, message)
 	}
 
-	def notifyNotifieds(String subject, String message) {
+	void notifyNotifieds(String subject, String message) {
 		sendMessages(getNotifiedUsers(), subject, message)
 	}
 
-	def notifyNotifiedMajors(String subject, String message) {
+	void notifyNotifiedMajors(String subject, String message) {
 		sendMessages(getNotifiedMajorUsers(), subject, message)
 	}
 
-	def notifyReaders(String subject, String message) {
+	void notifyReaders(String subject, String message) {
 		sendMessages(getReaderUsers(), subject, message)
 	}
 
-	def notifyReaders(Closure subjectClosure, Closure messageClosure) {
+	void notifyReaders(Closure subjectClosure, Closure messageClosure) {
 		sendMessages(getReaderUsers(), subjectClosure, messageClosure)
 	}
 
-	def notifyInvited(String subject, String message) {
+	void notifyInvited(String subject, String message) {
 		sendMessages(getInvitedUsers(), subject, message)
 	}
 
-	def notifyInvited(Closure subjectClosure, Closure messageClosure) {
+	void notifyInvited(Closure subjectClosure, Closure messageClosure) {
 		sendMessages(getInvitedUsers(), subjectClosure, messageClosure)
 	}
 

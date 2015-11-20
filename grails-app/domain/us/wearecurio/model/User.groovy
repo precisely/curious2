@@ -13,6 +13,8 @@ import us.wearecurio.cache.BoundedCache
 import us.wearecurio.data.UserSettings
 import us.wearecurio.services.DatabaseService
 import us.wearecurio.services.EmailService
+import us.wearecurio.services.SearchService
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.utility.Utils
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
@@ -122,7 +124,7 @@ class User {
 	
 	static dateFormat = new SimpleDateFormat("MM/dd/yyyy")
 	
-	public static User create(Map map) {
+	static User create(Map map) {
 		log.debug "User.create()"
 		
 		User user = new User()
@@ -142,8 +144,7 @@ class User {
 	}
 
 	//make virtual groups public so can be used by migration service
-	public createDiscussionsVirtualGroup()
-	{ 
+	private void createDiscussionsVirtualGroup() { 
 		if (virtualUserGroupIdDiscussions != null) {
 			return
 		}
@@ -157,8 +158,7 @@ class User {
 		}
 	}
 	
-	public createFollowersVirtualGroup()
-	{
+	private void createFollowersVirtualGroup() {
 		if (virtualUserGroupIdFollowers != null) {
 			return
 		}
@@ -174,7 +174,7 @@ class User {
 		}
 	}
 	
-	public static User createVirtual() {
+	static User createVirtual() {
 		log.debug "User.createVirtual()"
 		
 		User user = new User()
@@ -195,7 +195,7 @@ class User {
 		return user
 	}
 
-	public static User lookupOrCreateVirtualEmailUser(String name, String email, String website) {
+	static User lookupOrCreateVirtualEmailUser(String name, String email, String website) {
 		log.debug "User.lookupOrCreateVirtualEmailUser() name: " + name + " email: " + email + " website: " + website
 
 		if (name) {
@@ -235,22 +235,22 @@ class User {
 		return user
 	}
 
-	public static void delete(User user) {
+	static void delete(User user) {
 		Long userId = user.getId()
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete(flush:true)
 		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
 	}
 
-	public static boolean follow(User followed, User follower) {
+	static boolean follow(User followed, User follower) {
 		return followed.follow(follower)
 	}
 	
-	public static unFollow(User followed, User follower) {
+	static void unFollow(User followed, User follower) {
 		followed.unFollow(follower)
 	}
 	
-	public boolean follow(User follower) {
+	boolean follow(User follower) {
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r) return true
 		
@@ -269,7 +269,7 @@ class User {
 		return r != null
 	}
 	
-	public unFollow(User follower) {
+	void unFollow(User follower) {
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r == null) return
 		
@@ -285,7 +285,11 @@ class User {
 		)
 	}
 	
-	public update(Map map) {
+	void reindex() {
+		if (id) SearchService.get().index(this)
+	}
+	
+	User update(Map map) {
 		log.debug "User.update() this:" + this + ", map:" + map
 
 		def uname = map["username"]
@@ -392,7 +396,7 @@ class User {
 	    this.avatarURL = url
 	}
 
-	def updatePreferences(Map map) {
+	void updatePreferences(Map map) {
 		log.debug "User.updatePreferences() this:" + this + ", map:" + map
 		
 		twitterDefaultToNow = (map['twitterDefaultToNow'] ?: 'on').equals('on') ? true : false
@@ -420,11 +424,11 @@ class User {
 		return false
 	}
 	
-	def encodePassword(password) {
+	String encodePassword(password) {
 		this.password = (password + passwordSalt + username).encodeAsMD5Hex()
 	}
 	
-	def String getSite() {
+	String getSite() {
 		return ""
 	}
 	
@@ -438,11 +442,11 @@ class User {
 		}
 	}
 	
-	def addMetaTag(def tag, def value) {
+	Entry addMetaTag(def tag, def value) {
 		return Entry.create(getId(), EntryParserService.get().parseMeta(tag + ' ' + value), null);
 	}
 	
-	def static lookupMetaTag(def tag, def value) {
+	static lookupMetaTag(def tag, def value) {
 		return Tag.look(tag + ' ' + value)
 	}
 	
@@ -456,7 +460,7 @@ class User {
 		return remindEvent != null
 	}
 	
-	public void setOAuthAccess(int service, String authToken) {
+	void setOAuthAccess(int service, String authToken) {
 		
 	}
 	
