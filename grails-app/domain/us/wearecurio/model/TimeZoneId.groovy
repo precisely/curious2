@@ -18,6 +18,7 @@ class TimeZoneId {
 	
 	TimeZoneId(String name) {
 		this.name = name
+		toDateTimeZone()
 	}
 
 	String name

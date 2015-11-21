@@ -20,6 +20,7 @@ import us.wearecurio.services.EntryParserService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.support.EntryCreateMap
 import static org.junit.Assert.*
+import us.wearecurio.model.Model.Visibility
 
 import org.joda.time.DateTime
 import org.junit.*
@@ -89,6 +90,66 @@ class DataControllerTests extends CuriousControllerTestCase {
 		TagStats.executeUpdate("delete TagStats t")
 		TagUnitStats.executeUpdate("delete TagUnitStats t")
 		TagProperties.executeUpdate("delete TagProperties tp")
+	}
+
+	@Test
+	void testAddEntrySprint() {
+		controller.session.userId = userId
+
+		Sprint sprint = Sprint.create(currentTime, user, "Caffeine + Sugar", Visibility.PUBLIC)
+		
+		controller.params.putAll([currentTime:'Fri, 30 Oct 2015 19:11:17 GMT',
+			text:'headache button',
+			dateToken:'1446232277272',
+			userId:sprint.virtualUserId.toString(),
+			callback:'jQuery21105134934808593243_1446228256265',
+			_:'1446228256271',
+			SYNCHRONIZER_TOKEN:'12b3b03c-6062-47d2-9bf8-baee385e3b6e',
+			defaultToNow:'1',
+			timeZoneName:'America/Los_Angeles',
+			baseDate:'Fri, 30 Oct 2015 07:00:00 GMT',
+			SYNCHRONIZER_URI:'addEntryCSRF',
+			action:'addEntrySData',
+			format:'null',
+			controller:'home'
+		])
+
+		controller.addEntrySData()
+
+		def x = controller.response.contentAsString
+		
+		assert x.contains('"description":"headache"')
+	}
+
+	@Test
+	void testUpdateEntrySDataSprint() {
+		controller.session.userId = userId
+
+		println "User ID: " + userId
+
+		EntryStats stats = new EntryStats(userId)
+		
+		Sprint sprint = Sprint.create(currentTime, user, "Caffeine + Sugar", Visibility.PUBLIC)
+
+		def entry = Entry.create(sprint.virtualUserId, entryParserService.parse(currentTime, timeZone, "headache pinned", null, null, baseDate, true), stats)
+		
+		stats.finish()
+
+		controller.params['entryId'] = entry.getId().toString()
+		controller.params['currentTime'] = 'Fri, 22 Jan 2011 21:46:20 GMT'
+		controller.params['text'] = 'head pain pinned'
+		controller.params['baseDate'] = 'Fri, 22 Jan 2011 06:00:00 GMT'
+		controller.params['timeZoneName'] = "America/Chicago"
+		controller.params['defaultToNow'] = '1'
+		controller.params['action'] = 'updateEntrySData'
+		controller.params['controller'] = 'home'
+		controller.params['allFuture'] = '1'
+
+		controller.updateEntrySData()
+		
+		def x = controller.response.contentAsString
+		
+		assert x.contains('"description":"head pain"')
 	}
 
 	@Test

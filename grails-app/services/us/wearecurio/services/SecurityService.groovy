@@ -206,19 +206,43 @@ class SecurityService {
 	 * @return
 	 */
 	boolean userIdIsAccessible(Long userId) {
+		return authFromUserId(userId) ? true : false
+	}
+	
+	// In the future, may return more complex authorization levels
+	static class AuthenticationStatus {
+		boolean authorized
+		boolean primary
+		Sprint sprint
+		Long userId
+		User user
+		
+		User getUser() {
+			if (user) return user
+			if (userId) {
+				user = User.get(userId)
+				return user
+			}
+			return null
+		}
+	}
+
+	AuthenticationStatus authFromUserId(Long userId) {
 		Long currentUserId = getCurrentUserId()
 		
-		if (!currentUserId) return false
+		if (!currentUserId) return new AuthenticationStatus(authorized:false, primary:false)
 		
-		if (userId == currentUserId) return true
+		if (userId == currentUserId) return new AuthenticationStatus(authorized:true, primary:true, userId:userId)
 		
 		Sprint sprint = Sprint.findByVirtualUserId(userId)
 		
 		if (sprint) {
-			return sprint.hasWriter(userId)
+			if (sprint.hasWriter(userId) || sprint.hasAdmin(userId)) {
+				return new AuthenticationStatus(authorized:true, primary:false, sprint:sprint, userId:userId)
+			}
 		}
 		
-		return false
+		return new AuthenticationStatus(authorized:false, primary:false)
 	}
 
 	protected def clearTags() {

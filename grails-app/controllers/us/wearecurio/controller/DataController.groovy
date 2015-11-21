@@ -17,6 +17,7 @@ import us.wearecurio.data.RepeatType
 import us.wearecurio.data.UnitRatio;
 import us.wearecurio.model.*
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.SecurityService.AuthenticationStatus
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -44,7 +45,9 @@ class DataController extends LoginController {
 		
 		debug "DataController.doAddEntry() params:" + p
 		
-		User user = userFromIdStr(p.userId)
+		AuthenticationStatus authStatus = authFromUserIdStr(p.userId)
+		
+		User user = authStatus.user
 
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
@@ -64,6 +67,8 @@ class DataController extends LoginController {
 		ArrayList<TagStats> tagStats = stats.finish()
 
 		debug("created " + entry)
+		
+		authStatus.sprint?.reindex()
 
 		return [entry, parsedEntry['status'], tagStats?.get(0)]
 	}
@@ -85,20 +90,22 @@ class DataController extends LoginController {
 			debug "Attempting to edit a deleted entry."
 			return [null, 'Attempting to edit a deleted entry.', null, null]
 		}
-
-		if (entry.getUserId() != sessionUser().getId()) {
-			debug "No permission to edit this entry"
-			return [null, 'You do not have permission to edit this entry.', null, null]
-		}
 		
 		Long userId = entry.getUserId()
+
+		AuthenticationStatus authStatus = authFromUserId(entry.getUserId())
+		
+		if (!authStatus.authorized) {
+			debug "Illegal access to entry " + entry
+			return [null, 'You do not have permission to edit this entry.', null, null]
+		}
 
 		if (entry.fetchIsGenerated()) {
 			debug "Can't edit a generated entry"
 			return [null, 'You cannot edit a generated entry.', null, null]
 		}
 
-		Date currentTime = parseDate(p.currenTime)
+		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		String timeZoneName = p.timeZoneName == null ? TimeZoneId.guessTimeZoneNameFromBaseDate(baseDate) : p.timeZoneName
 		
@@ -132,6 +139,8 @@ class DataController extends LoginController {
 		} else if (entry != null) {
 			entry = entry.update(m, stats, baseDate, allFuture)
 		}
+		
+		authStatus.sprint?.reindex()
 		
 		ArrayList<TagStats> tagStats = stats.finish()
 		return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];

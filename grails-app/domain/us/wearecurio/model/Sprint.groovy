@@ -299,7 +299,6 @@ class Sprint {
 		return Entry.countByUserId(virtualUserId)
 	}
 	
-	//TODO: need to make sure sprint is re-indexed every time participant is added
 	Long getParticipantsCount() {
 		List participantsIdList = GroupMemberReader.findAllByGroupId(virtualGroupId)*.memberId
 

@@ -10,6 +10,7 @@ import us.wearecurio.model.User
 import us.wearecurio.server.Session
 import us.wearecurio.services.SecurityService
 import us.wearecurio.services.UrlService
+import us.wearecurio.services.SecurityService.AuthenticationStatus
 
 class SessionController {
 	
@@ -109,10 +110,11 @@ class SessionController {
 	}
 	
 	protected User userFromId(Long userId) {
-		if (securityService.userIdIsAccessible(userId))
-			return User.get(userId)
+		return authFromUserId(userId).user
+	}
 
-		return null
+	protected AuthenticationStatus authFromUserId(Long userId) {
+		return securityService.authFromUserId(userId)
 	}
 
 	protected def userFromIdStr(String userIdStr) {
@@ -127,6 +129,21 @@ class SessionController {
 			log.error("userIdStr passed in has a format exception ")
 			e.printStackTrace()
 			return null
+		}
+	}
+
+	protected def authFromUserIdStr(String userIdStr) {
+		if (userIdStr == "undefined") {
+			return authFromUserId(sessionUser()?.id)
+		}
+		if (!userIdStr)
+			return authFromUserId(null)
+		try {
+			return authFromUserId(Long.parseLong(userIdStr))
+		} catch (NumberFormatException e) {
+			log.error("userIdStr passed in has a format exception ")
+			e.printStackTrace()
+			return authFromUserId(null)
 		}
 	}
 
