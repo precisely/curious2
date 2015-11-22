@@ -940,18 +940,6 @@ class SearchService {
 		return result
 	}	
 	
-	static String normalizeQuery(String query) {
-		if (!query || query == "") {
-			return ""
-		}
-		
-	    return query.trim()
-	        .replaceAll($/ ([oO][rR] )+|^[oO][rR]$| [oO][rR]$|^([oO][rR] )+[oO][rR]$|^([oO][rR] )+/$," ")
-	        .replaceAll($/ ([aA][nN][dD] )+|^[aA][nN][dD]$| [aA][nN][dD]$|^([aA][nN][dD] )+[aA][nN][dD]$|^([aA][nN][dD] )+/$," ")
-	        .trim()
-	        .replaceAll("\\s+", " AND ")
-	}
-	
 	Map search(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
 		log.debug "SearchService.search called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
 		
@@ -959,7 +947,7 @@ class SearchService {
 			return [listItems: false, success: false]
 		}
 
-		String queryAnd = normalizeQuery(query)
+		String queryAnd = SearchQueryService.normalizeQuery(query)
 		// If no query is entered or empty string is passed
 		if (!queryAnd || !queryAnd.trim()) {
 			return [success: false, message: messageSource.getMessage("search.query.empty", null, null)]
