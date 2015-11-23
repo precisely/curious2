@@ -27,19 +27,19 @@
 <div id="tooltip-go-graph" class="nodisplay">View graph</div>
 
 <div id="tooltip-title-noise" class="nodisplay">Mark this interaction as noise.</div>
-<div id="tooltip-body-noise" class="nodisplay">This interaction is not interesting.  It's probably a false positive.	Maybe it's just an artifact of the computation, the experimental set-up, noisy data, or possibly an outlier.	Regard this interaction of tag pairs as noise.</div>
-<div id="tooltip-go-noise" class="nodisplay">Mark as noise</div>
+<div id="tooltip-body-noise" class="nodisplay">This interaction is not interesting.  It's probably a false positive.	Maybe it's just an artifact of the computation, the experimental set-up, noisy data, or possibly an outlier.	Regard this interaction of tag pairs as uninteresting.</div>
+<div id="tooltip-go-noise" class="nodisplay">Mark no</div>
 
 <div id="tooltip-title-save" class="nodisplay">Save this interaction</div>
 <div id="tooltip-body-save" class="nodisplay">This is interesting.	There could be something here.	Save this interaction for further investigation.</div>
-<div id="tooltip-go-save" class="nodisplay">Save</div>
+<div id="tooltip-go-save" class="nodisplay">Rate</div>
 
 
 <img id="garbage-can-icon" src="/images/curiosities/garbage-bin.png" >
 
 <div class="arrow-box">
 	<h3 class='tooltip-title'>Reviewing your curiosity</h3>
-	<p class='tooltip-body'>At vero eos et accusamus et iusto odio dignissimos corrupti quos dolores et quas molestias id est laborum et dolorum fuga.</p>
+	<p class='tooltip-body'></p>
 	<p class="buttons">
 		<button type="button" class="btn btn-primary maybe-later-button">Maybe later</button>
 		<button type="button" class="btn btn-primary tooltip-action-button">Next</button>
@@ -61,9 +61,7 @@
 	<div class="filter-group">
 		<nav class="red-header">
 			<ul class="col-md-4 filter-area disable-select">
-				<li id="all" class="yes-or-no filter disable-select">All</li>
-				<li id="yes" class="yes-or-no filter disable-select">Yes</li>
-				<li id="no" class="yes-or-no filter disable-select">No</li>
+				&nbsp;
 			</ul>
 			<ul class="col-md-8 search-area disable-select" >
 				<li>
@@ -74,11 +72,9 @@
 
 		<nav class="row disable-select" id="sort-by-row" >
 			<ul class="disable-select">
-				<li class="label disable-select">Sort By:</li>
-				<li id="natural" class="filter disable-select curiosities-order active" data-order="natural">Natural</li>
-				<li id="alpha"	 class="filter disable-select curiosities-order"				 data-order="alpha asc">A-Z</li>
-				<li id="marked"  class="filter disable-select curiosities-order"				 data-order="marked asc">Marked</li>
-				<li id="score"	 class="filter disable-select curiosities-order"				 data-order="score asc">Score</li>
+				<li id="natural" class="filter disable-select curiosities-order active" data-order="natural">Unrated</li>
+				<li id="rated"  class="filter disable-select curiosities-order"				 data-order="rated">Rated</li>
+				<li id="score"	 class="filter disable-select curiosities-order"				 data-order="all">All</li>
 				<!-- <li id="type"		 class="filter disable-select curiosities-order"				 data-order="type positive">Type</li> //-->
 			</ul>
 		</nav>
@@ -97,20 +93,12 @@
 					</div>
 					<div class="col-md-9 curiosities-description">
 						<p>
-							<span class="curiosities-section-question">Is {{description1}} {{relation_in_english}} {{description2}}?</span>
+							<span class="curiosities-section-question">{{relation_text}}?</span>
 						</p>
 						<br>
 						<p>
-							<span class="curiosities-section-title">SCORE:</span>
-							<span class="curiosities-section-details">{{score}}</span>
-						</p>
-						<p>
-							<span class="curiosities-section-title">X:</span>
-							<span class="curiosities-section-details">{{description1}}</span>
-						</p>
-						<p>
-							<span class="curiosities-section-title">Y:</span>
-							<span class="curiosities-section-details">{{description2}}</span>
+							<span class="curiosities-section-title">STRENGTH:</span>
+							<span class="curiosities-section-details">{{strength}} ({{score}})</span>
 						</p>
 					</div>
 				</div>

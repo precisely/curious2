@@ -144,19 +144,22 @@ class AnalyticsCorrelation {
 			criterion = criteria.addOrder(or)
 
 		}
-		// 'marked'
-		else if (name == 'marked') {
+		// 'rated'
+		else if (name == 'rated') {
 			if (asc == 'asc') {
 				criterion = criteria.addOrder( O.asc('signalLevel') )
 			} else {
 				criterion = criteria.addOrder( O.desc('signalLevel') )
 			}
+			criterion = criteria.addOrder( O.desc('absValue') )
 		}
 		// 'natural'
 		else if (name == 'natural') {
 			// Sort by absolute value of 'value' column.
 			criterion = criteria.addOrder(O.asc('signalLevel'))
 			criterion = criteria.addOrder(O.desc('absValue'))
+		} else if (name == 'all') {
+			criterion = criteria.addOrder( O.desc('absValue') )
 		}
 		criterion
 	}
@@ -167,6 +170,10 @@ class AnalyticsCorrelation {
 			criterion = criteria.add( R.eq('signalLevel', new Double(4.0) ) )
 		} else if (filter == 'no') {
 			criterion = criteria.add( R.eq('signalLevel', new Double(0.0) ) )
+		} else if (filter == 'unrated') {
+			criterion = criteria.add( R.lt('signalLevel', new Double(0.0) ) )
+		} else if (filter == 'rated') {
+			criterion = criteria.add( R.ge('signalLevel', new Double(0.0) ) )
 		}
 		criterion
 	}
@@ -191,10 +198,12 @@ class AnalyticsCorrelation {
 
 		if (order1 && order1.size() > 0) {
 			criteria = addRestriction(criteria, order1)
-			if (order2 && order2.size() > 0) {
+			criteria = addFilter(criteria, order1)
+			/*if (order2 && order2.size() > 0) {
 				criteria = addRestriction(criteria, order1)
-			}
+			}*/
 		}
+		//criteria = criteria.add( R.ge('signalLevel', new Double(0.01) ) )
 		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
 		criteria.setFirstResult((pageNumber - 1) * pageSize)
 		criteria.setMaxResults( pageSize )
