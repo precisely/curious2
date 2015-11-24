@@ -170,7 +170,7 @@ class AnalyticsCorrelation {
 			criterion = criteria.add( R.eq('signalLevel', new Double(4.0) ) )
 		} else if (filter == 'no') {
 			criterion = criteria.add( R.eq('signalLevel', new Double(0.0) ) )
-		} else if (filter == 'unrated') {
+		} else if (filter == 'natural') {
 			criterion = criteria.add( R.lt('signalLevel', new Double(0.0) ) )
 		} else if (filter == 'rated') {
 			criterion = criteria.add( R.ge('signalLevel', new Double(0.0) ) )
@@ -203,7 +203,7 @@ class AnalyticsCorrelation {
 				criteria = addRestriction(criteria, order1)
 			}*/
 		}
-		//criteria = criteria.add( R.ge('signalLevel', new Double(0.01) ) )
+		criteria = criteria.add( R.ge('absValue', new Double(0.01) ) )
 		criteria = criteria.add( R.ltProperty("series1Id", "series2Id") )
 		criteria.setFirstResult((pageNumber - 1) * pageSize)
 		criteria.setMaxResults( pageSize )

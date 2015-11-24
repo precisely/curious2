@@ -315,13 +315,10 @@ $(function() {
 
 	// search
 	$('#search-input').keyup(function(e) {
-		if (13 == e.which) {
-			performSearch();
-		}
+		performSearch();
 	});
 
 	$('#search-image').click(function() {
-		var q = $('#search-input').val();
 		performSearch();
 	});
 
@@ -339,6 +336,7 @@ $(function() {
 
 		C.pageIds = [];
 		C.curiositiesPageNumber = {};
+		C.curiositiesNumSearchResults = {};
 		reRenderCorrelations(C.pageIds);
 	});
 
