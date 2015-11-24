@@ -14,8 +14,13 @@ C.curiositiesPageNumber = {};
 //	 so that we'll know ahead of time whether or not there will be any results.	If the last search had 0
 //	 results then there will always be no more results since we're storing past results in C.correlationIndex.
 C.curiositiesNumSearchResults = {};
+if (!isMobile) {
+	$(function() {
+		initCuriosities();
+	});
+}
 
-$(function() {
+function initCuriosities() {
 
 	var loadedPositive = false;
 	var loadedNegative = false;
@@ -98,8 +103,10 @@ $(function() {
 		return appendSortOrder(order);
 	};
 
-	// Only execute this code on the /home/curiosities page.
-	if ($('body.curiosities').length < 1 ) { return undefined; }
+	if (!isMobile) {
+		// Only execute this code on the /home/curiosities page.
+		if ($('body.curiosities').length < 1 ) { return undefined; }
+	}
 
 	var reRenderCorrelations = function(ids) {
 		$('.curiosities-row-container').remove();
@@ -185,7 +192,9 @@ $(function() {
 	// Load data.
 
 	var correlation_template = $('#correlation-template').html();
-	Mustache.parse(correlation_template);
+	if(Mustache) {
+		Mustache.parse(correlation_template);
+	}
 
 	var in_english = {
 		triggered: 'triggered by',
@@ -232,70 +241,57 @@ $(function() {
 		else
 			strengthText = 'very weak';
 
-		var new_row = Mustache.render(correlation_template,
-			{
-				id: id,
-				type: type,
-				marked: marked,
-				label: LABELS[type],
-				description1: description1,
-				description2: description2,
-				bubble_0: bubble(signalLevel, 0),
-				bubble_1: bubble(signalLevel, 1),
-				bubble_2: bubble(signalLevel, 2),
-				bubble_3: bubble(signalLevel, 3),
-				bubble_4: bubble(signalLevel, 4),
-				relation_text: relationText,
-				score: score,
-				strength: strengthText,
-				display: display
-			});
-		$('#correlation-container').append(new_row);
+		var new_row;
+		var templateProperties = {
+			id: id,
+			type: type,
+			marked: marked,
+			label: LABELS[type],
+			description1: description1,
+			description2: description2,
+			bubble_0: bubble(signalLevel, 0),
+			bubble_1: bubble(signalLevel, 1),
+			bubble_2: bubble(signalLevel, 2),
+			bubble_3: bubble(signalLevel, 3),
+			bubble_4: bubble(signalLevel, 4),
+			relation_text: relationText,
+			score: score,
+			strength: strengthText,
+			display: display
+		};
+
+		if (!isMobile) {
+			var new_row = Mustache.render(correlation_template, templateProperties);
+			$('#correlation-container').append(new_row);
+		} else {
+			App.pageView.getCurrentView().addListItems(templateProperties);
+		}
 	};
 
-	$('#correlation-container').on('mouseenter', '.bubble', function() {
-		if ($(this).attr('src').match(/empty/)) {
-			$(this).attr('src', "/images/curiosities/hover_circle.png")
-		}
-	});
+	if (!isMobile) {
+		$('#correlation-container').on('mouseenter', '.bubble', function() {
+			if ($(this).attr('src').match(/empty/)) {
+				$(this).attr('src', "/images/curiosities/hover_circle.png")
+			}
+		});
 
-	$('#correlation-container').on('mouseleave', '.bubble', function() {
-		if ($(this).attr('src').match(/hover/)) {
-			$(this).attr('src', "/images/curiosities/empty_circle.png")
-		}
-	});
+		$('#correlation-container').on('mouseleave', '.bubble', function() {
+			if ($(this).attr('src').match(/hover/)) {
+				$(this).attr('src', "/images/curiosities/empty_circle.png")
+			}
+		});
+	}
 
 	var makeActiveById = function(id) {
 		var v  = $('#' + id).parents('ul').find('.filter').removeClass('active');
 		$('#' + id).addClass('active');
 	};
 
-	$('.filter-group').on('click', '.filter', function() {
-		var id = $(this).attr('id');
-		makeActiveById(id);
-		if (shouldLoad()) {
-			performSearch();
-		}
-	});
-
-	$('#correlation-container').on('click', '.bubble', function() {
-		var signalLevel = $(this).attr('signal-level');
-		var correlationId = parseInt($(this).parent().parent().parent().attr('data-id'));
-		var action = 'updateSignalLevel'
-		var url = '/correlation/' + correlationId + '/updateSignalLevel'
-		queuePostJSON(action, url, { _method: 'PATCH', signalLevel: signalLevel},
-			function(data) {
-				if (!checkData(data))
-					return;
-	
-				log('success', data);
-			});
-		$(this).siblings('img').attr('src', "/images/curiosities/empty_circle.png");
-		$(this).siblings('img').attr('marked', 'empty');
-		$(this).attr('src', "/images/curiosities/marked_circle.png");
-		$(this).attr('marked', 'marked');
-		C.correlationIndex[correlationId].marked = 'marked';
-	});
+	if (!isMobile) {
+		$('#correlation-container').on('click', '.bubble', function() {
+			setNoiseOrSignal(this);
+		});
+	}
 
 	var incPageNumber = function(searchId) {
 		if (undefined == C.curiositiesPageNumber[searchId]) {
@@ -310,7 +306,7 @@ $(function() {
 		}
 		var searchId = getSearchId(q);
 		C.curiositiesLastSearch = q;
-		searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber[searchId]);
+		C.searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber[searchId]);
 	};
 
 	// search
@@ -323,23 +319,34 @@ $(function() {
 	});
 
 	// Record the last 5 sort orders and store it in localStorage if it is available.
-	$('#sort-by-row').on('click', '.filter', function(e) {
-		var id = $(this).attr('id');
-		var idReg = new RegExp(id);
-		var order = $(this).attr('data-order');
-		var newOrder = order;
-		$(this).attr('data-order', newOrder);
-		C.curiositiesSortOrder = _.filter(C.curiositiesSortOrder, function(sortOrder) { return !sortOrder.match(idReg); });
-		appendSortOrder(newOrder);
+	C.sortClickHandler = function(selector) {
+		$(selector).on('click', '.filter', function(e) {
+			var id = $(this).attr('id');
+			var idReg = new RegExp(id);
+			var order = $(this).attr('data-order');
+			var newOrder = order;
+			$(this).attr('data-order', newOrder);
+			C.curiositiesSortOrder = _.filter(C.curiositiesSortOrder, function(sortOrder) { return !sortOrder.match(idReg); });
+			appendSortOrder(newOrder);
 
-		log("C.curiositiesSortOrder", C.curiositiesSortOrder);
+			log("C.curiositiesSortOrder", C.curiositiesSortOrder);
 
-		C.pageIds = [];
-		C.curiositiesPageNumber = {};
-		C.curiositiesNumSearchResults = {};
-		reRenderCorrelations(C.pageIds);
-	});
+			C.pageIds = [];
+			C.curiositiesPageNumber = {};
+			C.curiositiesNumSearchResults = {};
+			reRenderCorrelations(C.pageIds);
+		});
 
+		$('.filter-group').on('click', '.filter', function() {
+			var id = $(this).attr('id');
+			makeActiveById(id);
+			if (shouldLoad()) {
+				performSearch();
+			}
+		});
+	}
+
+	C.sortClickHandler('#sort-by-row');
 	// Click on row to view graph.
 	$('#correlation-container').on('click', '.curiosities-row-top', function() {
 		var correlationId = $(this).parent().attr('data-id');
@@ -365,7 +372,7 @@ $(function() {
 
 	// Separate the search function from the application-specific prep work for calling the search function
 	//	 in order to make testing of the search function easier.
-	var searchWithDefaults = function(afterSuccess, q) {
+	C.searchWithDefaults = function(afterSuccess, q) {
 		var searchId = getSearchId(q);
 		incPageNumber(searchId);
 		var pageNumber = C.curiositiesPageNumber[searchId];
@@ -487,7 +494,7 @@ $(function() {
 				return 0;
 			}
 			C.curiositiesScrollReady = false;
-			searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber);
+			C.searchWithDefaults(afterSearch(q), q, C.curiositiesPageNumber);
 			log('infinite scroll!', C.curiositiesPageNumber);
 		}
 	};
@@ -496,4 +503,23 @@ $(function() {
 
 	initSortOrder();
 	performSearch();
-});
+}
+
+function setNoiseOrSignal(currentElement) {
+	var signalLevel = $(currentElement).attr('signal-level');
+	var correlationId = parseInt($(currentElement).closest('.curiosities-row-container').attr('data-id'));
+	var action = 'updateSignalLevel'
+	var url = '/correlation/' + correlationId + '/updateSignalLevel'
+	queuePostJSON(action, url, { _method: 'PATCH', signalLevel: signalLevel},
+			function(data) {
+				if (!checkData(data))
+					return;
+
+				console.log('success', data);
+			});
+	$(currentElement).siblings('img').attr('src', (isMobile ? 'content' : '') + "/images/curiosities/empty_circle.png");
+	$(currentElement).siblings('img').attr('marked', 'empty');
+	$(currentElement).attr('src', (isMobile ? 'content' : '') + "/images/curiosities/marked_circle.png");
+	$(currentElement).attr('marked', 'marked');
+	C.correlationIndex[correlationId].marked = 'marked';
+}
