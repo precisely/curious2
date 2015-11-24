@@ -21,7 +21,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "(foo* OR #foo*)"
 	}
 	
@@ -33,7 +33,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "#foo*"
 	}
 	
@@ -45,7 +45,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "((foo* OR #foo*) AND (bar* OR #bar*))"
 	}
 	
@@ -56,7 +56,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -67,7 +67,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
     }
 
@@ -78,7 +78,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "bandaid"
     }
 
@@ -89,7 +89,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "bANDaid"
     }
 
@@ -100,7 +100,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "baNdaid"
     }
 
@@ -111,7 +111,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "anderson"
     }
 
@@ -122,7 +122,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "ANDerson"
     }
 
@@ -133,7 +133,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "aNderson"
     }
 
@@ -144,7 +144,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "band"
     }
 
@@ -155,7 +155,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "bAND"
     }
 
@@ -166,7 +166,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "baNd"
     }
 
@@ -177,7 +177,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "bore"
     }
 
@@ -188,7 +188,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "bORe"
     }
 
@@ -199,7 +199,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "boRe"
     }
 
@@ -210,7 +210,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "orson"
     }
 
@@ -221,7 +221,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "ORson"
     }
 
@@ -232,7 +232,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "oRson"
     }
 
@@ -243,7 +243,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "evaluator"
     }
 
@@ -254,7 +254,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "evaluatOR"
     }
 
@@ -265,7 +265,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "evaluatoR"
     }
 
@@ -276,7 +276,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "blahandorblah"
     }
 
@@ -287,7 +287,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "blahandorandblah"
     }
 
@@ -298,7 +298,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "blahorandorblah"
     }
 
@@ -309,7 +309,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "evaluator AND in AND training"
     }
 
@@ -320,7 +320,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "orson AND welles"
     }
 
@@ -331,7 +331,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "music AND evaluator"
     }
 
@@ -342,7 +342,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "anderson AND cooper"
     }
 
@@ -353,7 +353,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "big AND band"
     }
 
@@ -364,7 +364,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "orson AND welles AND big AND band"
     }
 
@@ -375,7 +375,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "simple"
     }
 
@@ -386,7 +386,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -397,7 +397,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -408,7 +408,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -419,7 +419,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -430,7 +430,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -441,7 +441,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -452,7 +452,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -463,7 +463,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2"
     }
 
@@ -474,7 +474,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -485,7 +485,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -496,7 +496,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "simple"
     }
 
@@ -507,7 +507,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "simple"
     }
 
@@ -518,7 +518,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -529,7 +529,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -540,7 +540,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 
@@ -551,7 +551,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == "word1 AND word2 AND word3"
     }
 	
@@ -562,7 +562,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -573,7 +573,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -584,7 +584,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -595,7 +595,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -606,7 +606,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -617,7 +617,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -628,7 +628,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -639,7 +639,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 	
@@ -650,7 +650,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -661,7 +661,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 
@@ -672,7 +672,7 @@ class SearchServiceQuerySpec extends Specification {
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
-		then: "valid andified query is produced"
+		then: "valid normalized query is produced"
 		normalizedQuery == ""
 	}
 }
