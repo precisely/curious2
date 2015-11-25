@@ -145,7 +145,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 		assert !entry2.is(entry) // should not have completed entry
 	}
 
-/*	@Test
+	@Test
 	void testStartExtendedDuration() {
 		// test creation of duration with start entry converting to duration entry
 		println("== Test creation of duration with start entry converting to duration entry ==")
