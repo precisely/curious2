@@ -20,6 +20,14 @@ function compileTemplate(id, data) {
 	return _.template(rawTemplate)(data);
 }
 
+function _stripParens(str) {
+	var x = str.slice(0, 1);
+	var y = str.slice(-1);
+	if (str.slice(0, 1) == '(' && str.slice(-1) == ')')
+		return str.slice(1, -1);
+	return str;
+}
+
 function isOnline() {
 	return window.navigator.onLine;
 }

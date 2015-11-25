@@ -67,7 +67,7 @@ function showMoreParticipants(sprintInstance, infiniteScroll) {
 }
 
 function showMoreDiscussions(sprintHash, infiniteScroll) {
-	queueJSON("Getting more discussoins", "/api/sprint/action/discussions?sprintHash=" + sprintHash
+	queueJSON("Getting more discussions", "/api/sprint/action/discussions?sprintHash=" + sprintHash
 			+ "&offset=" + infiniteScroll.getOffset() + "&max=5&"
 			+ getCSRFPreventionURI("getSprintDiscussionsDataCSRF") + "&callback=?",
 			function(data) {
@@ -93,7 +93,12 @@ function sprintShow(hash) {
 			function(data) { 
 		if (data.success) { 
 				var sprintInstance = data.sprint;
-				sprintInstance.entries = data.entries;
+				var entries = data.entries;
+				for (var i in entries) {
+					var entry = entries[i];
+					entry.comment = _stripParens(entry.comment);
+				}
+				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);

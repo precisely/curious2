@@ -3,11 +3,11 @@
 <head>
 <title><g:layoutTitle/></title>
 <g:layoutHead/>
-<script type="text/javascript" src="/js/curious/autocomplete.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/treeview.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/taglist.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/curiosities.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/interestTagList.js?ver=21"></script>
+<script type="text/javascript" src="/js/curious/autocomplete.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/treeview.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/taglist.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/curiosities.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
 		getInterestTagsDataCSRF"/>

@@ -67,7 +67,7 @@
 					</li>
 					<g:if test="${isSprintsListingPage}">
 						<li id="feed-right-tab" role="presentation">
-							<a class="create-new-sprint" href="#">START NEW SPRINT</a>
+							<a class="create-new-sprint" href="#">CREATE NEW SPRINT</a>
 						<g>
 					</g:if>
 				</ul>

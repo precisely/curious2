@@ -8,9 +8,9 @@
 	<script src="/js/lodash/lodash.min.js"></script>
 	<script src="/js/jquery/ui.datepicker.js"></script>
 	<script src="/js/curious/base.js"></script>
-	<script src="/js/curious/analyticsTask.js?ver=1"></script>
-	<link rel="stylesheet" href="/css/main.css?ver=21"/>
-	<link rel="stylesheet" href="/css/admin.css?ver=21"/>
+	<script src="/js/curious/analyticsTask.js?ver=22"></script>
+	<link rel="stylesheet" href="/css/main.css?ver=22"/>
+	<link rel="stylesheet" href="/css/admin.css?ver=22"/>
 </head>
 <body class="analytics-tasks container-fluid">
 <h1 class="page-header">Analytics Jobs</h1>

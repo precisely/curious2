@@ -13,14 +13,14 @@
 <script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/jquery/jquery-ui.min.js"></script>
 <script type="text/javascript" src="/js/jstz-1.0.4.min.js"></script>
-<script type="text/javascript" src="/js/curious/base.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/webBase.js?ver=21"></script>
-<script type="text/javascript" src="/js/curious/curious.js?ver=21"></script>
+<script type="text/javascript" src="/js/curious/base.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/webBase.js?ver=22"></script>
+<script type="text/javascript" src="/js/curious/curious.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
-<link rel="stylesheet" href="/css/main.css?ver=21"/>
+<link rel="stylesheet" href="/css/main.css?ver=22"/>
 <%--<link rel="stylesheet" href="/css/sprite.css"/>--%>
-<link rel="stylesheet" href="/css/main-responsive.css?ver=21"/>
+<link rel="stylesheet" href="/css/main-responsive.css?ver=22"/>
 <g:if test="${templateVer == 'lhp'}">
 <link rel="stylesheet" href="/css/mainlhp.css"/>
 </g:if>
