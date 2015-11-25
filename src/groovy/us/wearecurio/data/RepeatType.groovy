@@ -160,6 +160,10 @@ public class RepeatType {
 		return (this.id & REPEAT_BITS) > 0
 	}
 	
+	boolean isRepeatOrContinuous() {
+		return (this.id & (REPEAT_BITS | CONTINUOUS_BIT)) > 0
+	}
+	
 	boolean isRepeatOrRemind() {
 		return (this.id & (REPEAT_BITS | REMIND_BIT)) > 0
 	}

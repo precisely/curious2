@@ -132,6 +132,20 @@ class EntryParserServiceTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testDurationPinned() {
+		// make sure pinned durations do not complete each other
+		println("== Test creation of start entry ==")
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz start pinned", null, null, baseDate, true), new EntryStats())
+
+		// test creation of the other side of the duration pair
+		println("== Test creation of end entry ==")
+
+		Entry entry2 = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz end pinned", null, null, baseDate, true), new EntryStats())
+		assert !entry2.is(entry) // should not have completed entry
+	}
+
+/*	@Test
 	void testStartExtendedDuration() {
 		// test creation of duration with start entry converting to duration entry
 		println("== Test creation of duration with start entry converting to duration entry ==")

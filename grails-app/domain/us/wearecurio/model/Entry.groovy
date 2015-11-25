@@ -312,7 +312,7 @@ class Entry implements Comparable {
 
 		// intercept duration creation --- if creating duration end, search for previous duration start
 		DurationType durationType = amount.durationType
-		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeat()) {
+		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeatOrContinuous()) {
 			// cannot combine duration edge and repeat
 			amount.durationType = DurationType.NONE
 			amount.tag = amount.baseTag
@@ -558,7 +558,7 @@ class Entry implements Comparable {
 
 		// intercept duration creation --- if creating duration end, search for previous duration start
 		DurationType durationType = m['durationType']
-		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeat()) {
+		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeatOrContinuous()) {
 			// cannot combine duration edge and repeat
 			m['durationType'] = DurationType.NONE
 			m['tag'] = m['baseTag']
