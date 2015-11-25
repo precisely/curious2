@@ -225,6 +225,8 @@ class SearchService {
 	}
 
 	String getDiscussionActivityQueryString(User user, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
+        //return SearchQueryService.getDiscussinoActivity(User.id, )
+        
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def discussionQueries = []
 		
@@ -804,47 +806,60 @@ class SearchService {
 		def followedUsers, 
 		def followedSprints,
 		def type ) {
-				
-		def queries = []
-		def searchQueryString
-		if ((type & DISCUSSION_TYPE) > 0) {
-			searchQueryString =
-				group == 1 ?
-				getDiscussionSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-				getDiscussionSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-				
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
 		
-		if ((type & SPRINT_TYPE) > 0) {
-			searchQueryString =
-				group == 1 ?
-				getSprintSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-				getSprintSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-				
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
-		
-		if ((type & USER_TYPE) > 0) {
-			searchQueryString =
-				group == 1 ?
-				getUserSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-				getUserSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
-				
-			if (searchQueryString != null && searchQueryString != "") {
-				queries << searchQueryString
-			}
-		}
-		
-		if (queries.size() > 0) {
-			return Utils.orifyList(queries)
-		}
-		
-		return ""
+        return SearchQueryService.getSearchQuery(
+            group,
+            user.id,
+            query,
+            readerGroups.collect{ it[0].id },
+            adminGroups.collect{ it[0].id },
+            followedUsers.searchResults.collect{ it.id },
+            followedUsers.searchResults.collect{ it.virtualUserGroupIdFollowers },
+            followedSprints.searchResults.collect{ it.virtualGroupId },
+            followedSprints.searchResults.findAll{ it.userId == user.id }.collect{ it.virtualGroupId },
+            type
+        )
+        
+//		def queries = []
+//		def searchQueryString
+//		if ((type & DISCUSSION_TYPE) > 0) {
+//			searchQueryString =
+//				group == 1 ?
+//				getDiscussionSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
+//				getDiscussionSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
+//				
+//			if (searchQueryString != null && searchQueryString != "") {
+//				queries << searchQueryString
+//			}
+//		}
+//		
+//		if ((type & SPRINT_TYPE) > 0) {
+//			searchQueryString =
+//				group == 1 ?
+//				getSprintSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
+//				getSprintSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
+//				
+//			if (searchQueryString != null && searchQueryString != "") {
+//				queries << searchQueryString
+//			}
+//		}
+//		
+//		if ((type & USER_TYPE) > 0) {
+//			searchQueryString =
+//				group == 1 ?
+//				getUserSearchGroup1QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
+//				getUserSearchGroup2QueryString(user, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
+//				
+//			if (searchQueryString != null && searchQueryString != "") {
+//				queries << searchQueryString
+//			}
+//		}
+//		
+//		if (queries.size() > 0) {
+//			return Utils.orifyList(queries)
+//		}
+//		
+//		return ""
 	}
 	
 	private void scoreSearch(FunctionScoreQueryBuilder fsqb, User user, String userQuery) {
