@@ -13,6 +13,7 @@ import us.wearecurio.services.SearchQueryService
 //@TestMixin(GrailsUnitTestMixin)
 class SearchServiceQueryEscapeSpec extends Specification {
 
+<<<<<<< bd84a4f2f2fe7927d6f17279fb8338f635482d6d
     @spock.lang.IgnoreRest
     @spock.lang.Unroll
     void "test '#query' is escaped"() {
@@ -29,6 +30,8 @@ class SearchServiceQueryEscapeSpec extends Specification {
         "-"     |   /(\-* OR #\-*)/
     }
     
+=======
+>>>>>>> work in progress for normalizing query
     void "test + is escaped"() {
 		given: "a query string"
 		String query = "+"
