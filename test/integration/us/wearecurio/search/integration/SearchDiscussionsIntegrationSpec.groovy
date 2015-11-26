@@ -8,26 +8,83 @@ import us.wearecurio.utility.Utils
 
 class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
-	//@spock.lang.IgnoreRest
-	void "Test public discussion found"() {
-		given: "a search term"
-		def searchTerm = "magnesium"
+	@spock.lang.IgnoreRest
+	void "Test exact phrase found"() {
+		given: "a search phrase"
+		def searchPhrase = "check magnesium levels"
 		
-		and: "a new discussion"
-		Discussion d = Discussion.create(user1, "$uniqueTerm $searchTerm", Visibility.PUBLIC)
-		println ""
-		println "user1.id: $user1.id"
-		println "d.id: $d.userId"
-		println ""
+		and: "a new public discussion with searchPhrase in name"
+		Discussion d = Discussion.create(user2, "$uniqueTerm $searchPhrase", Visibility.PUBLIC)
 		
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		and: "search is performed"
-		def results = searchService.search(user2, searchTerm)
+		def results = searchService.search(user1, /"$searchPhrase"/)
 		
-		then: "single public discussion is found"
+		then: "matched discussion is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == d.hash
+	}
+	
+	@spock.lang.IgnoreRest
+	void "Test exact phrase not found even though words match"() {
+		given: "a search phrase"
+		def searchPhrase = "check magnesium levels"
+		
+		and: "a new public discussion with searchPhrase in name"
+		Discussion d = Discussion.create(user2, "$uniqueTerm magnesium levels check", Visibility.PUBLIC)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, /"$searchPhrase"/)
+		
+		then: "matched discussion is found"
+		results.success
+		results.listItems.size == 0
+	}
+	
+	@spock.lang.IgnoreRest
+	void "Test hash tag found even though words match"() {
+		given: "a search phrase"
+		def searchPhrase = "check magnesium levels"
+		
+		and: "a new public discussion with searchPhrase in name"
+		Discussion d = Discussion.create(user2, "$uniqueTerm magnesium levels check", Visibility.PUBLIC)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, /"$searchPhrase"/)
+		
+		then: "matched discussion is found"
+		results.success
+		results.listItems.size == 0
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test public discussion found"() {
+		given: "a search term"
+		def searchTerm = "magnesium"
+		
+		and: "a new public discussion"
+		Discussion d = Discussion.create(user2, "$uniqueTerm $searchTerm", Visibility.PUBLIC)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, searchTerm)
+		
+		then: "matched discussion is found"
 		results.success
 		results.listItems.size == 1
 		results.listItems[0].hash == d.hash
@@ -44,24 +101,58 @@ class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase 
 		Utils.save(group, true)
 
 		and: "a new discussion"
-		Discussion d = Discussion.create(user1, "$uniqueTerm $searchTerm", group, new Date(), Visibility.PUBLIC)
-		println ""
-		println "user1.id: $user1.id"
-		println "d.userid: $d.userId"
-		println "d.groupIds: $d.groupIds"
-		println "d.name: $d.name"
-		println "d.visibility: $d.visibility"
-		println "group.id: $group.id"
-		println ""
+		Discussion d = Discussion.create(user2, "$uniqueTerm $searchTerm", group, new Date(), Visibility.PUBLIC)
 		
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 
 		and: "search is performed"
-		def results = searchService.search(user2, searchTerm)
+		def results = searchService.search(user1, searchTerm)
 		
-		then: "single public discussion is found"
+		then: "single matched discussion is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == d.hash
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test search for discussion with wildcard"() {
+		given: "a search term"
+		def searchTerm = "magnesium"
+		
+		and: "a new public discussion"
+		Discussion d = Discussion.create(user2, "$uniqueTerm $searchTerm", Visibility.PUBLIC)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, "mag*")
+		
+		then: "matched discussion is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == d.hash
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test search for discussion with partial word"() {
+		given: "a search term"
+		def searchTerm = "magnesium"
+		
+		and: "a new public discussion"
+		Discussion d = Discussion.create(user2, "$uniqueTerm $searchTerm", Visibility.PUBLIC)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, "mag")
+		
+		then: "matched discussion is found"
 		results.success
 		results.listItems.size == 1
 		results.listItems[0].hash == d.hash
