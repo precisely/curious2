@@ -43,8 +43,8 @@ class SearchQueryService {
 			return "($ret)"
 		}	
 	}
-                                                      
-	static enum Role {
+
+    static enum Role {
 		SPRINT_READER(0),
 		SPRINT_ADMIN(1),
 		DISCUSSION_OWNER(2),
