@@ -44,8 +44,8 @@ class SearchServiceQuerySpec extends Specification {
 		
 		when: "SearchQueryService.normalizeQuery is called"
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
-        
-		then: "valid normalized query is produced"
+
+        then: "valid normalized query is produced"
 		normalizedQuery == "((foo* OR #foo*) AND (bar* OR #bar*))"
 	}
 	

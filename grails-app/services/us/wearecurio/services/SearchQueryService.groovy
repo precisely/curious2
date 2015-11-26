@@ -34,7 +34,7 @@ class SearchQueryService {
 		if (normalizedTokens.size == 0) {
 			return ""
 		}
-		
+                                                      
 		String ret = normalizedTokens.join(" AND ")
 		
 		if (normalizedTokens.size == 1) {
