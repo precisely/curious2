@@ -21,8 +21,6 @@ function compileTemplate(id, data) {
 }
 
 function _stripParens(str) {
-	var x = str.slice(0, 1);
-	var y = str.slice(-1);
 	if (str.slice(0, 1) == '(' && str.slice(-1) == ')')
 		return str.slice(1, -1);
 	return str;

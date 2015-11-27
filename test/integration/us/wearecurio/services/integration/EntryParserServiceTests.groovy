@@ -683,7 +683,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 		
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "1 slice", null, null, baseDate, true), new EntryStats())
 		v = entry.valueString()
-		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:unknown, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:cannot understand what you typed, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 	}
 	
 	@Test

@@ -359,7 +359,7 @@ environments {
     }
     production {
         grails.logging.jul.usebridge = false
-        grails.serverURL = "https://dev.wearecurio.us/"
+        grails.serverURL = "https://wearecurio.us/"
 		grails.serverURLProtocol = "https"
 		def extConfig = System.properties.getProperty('CURIOUSCONFIGHOME');
 		if (!extConfig) extConfig = "/home/curious/localconfig"

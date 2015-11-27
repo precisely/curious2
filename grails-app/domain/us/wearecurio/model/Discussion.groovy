@@ -518,7 +518,7 @@ class Discussion {
 		DatabaseService databaseService = DatabaseService.get()
 
 		List result = databaseService.sqlRows(GROUP_NAME_QUERY, [id: id])
-		String groupName = result[0].full_name ?: ""
+		String groupName = result[0]?.full_name ?: ""
 
 		User user = User.get(this.userId)
 

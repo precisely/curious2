@@ -529,7 +529,9 @@ class DataController extends LoginController {
 
 		def tagIds = []
 		for (tagStr in tags) {
-			tagIds.add(Tag.look(tagStr).getId())
+			Tag tag = Tag.look(tagStr)
+			if (tag)
+				tagIds.add(tag.getId())
 		}
 
 		def plotInfo = [:]

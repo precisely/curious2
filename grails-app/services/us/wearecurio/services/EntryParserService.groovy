@@ -895,8 +895,10 @@ class EntryParserService {
 				context.retVal['repeatType'] = ((RepeatType)context.retVal['repeatType']).makeGhost()
 		}
 
-		if (!description) description = "unknown"
-		context.retVal['baseTag'] = Tag.look(description)
+		if (!description) description = "cannot understand what you typed"
+		Tag baseTag = Tag.look(description)
+		if (!baseTag) baseTag = Tag.look("cannot understand what you typed")
+		context.retVal['baseTag'] = baseTag
 		String tagDescription = description
 		UnitGroupMap unitGroupMap = UnitGroupMap.theMap
 		if (context.suffix) {
@@ -920,7 +922,6 @@ class EntryParserService {
 		context.retVal['tag'] = tag
 		
 		int index = 0
-		Tag baseTag = (Tag) context.retVal['baseTag']
 		
 		boolean bloodPressure = bloodPressureTags?.contains(description)
 		
