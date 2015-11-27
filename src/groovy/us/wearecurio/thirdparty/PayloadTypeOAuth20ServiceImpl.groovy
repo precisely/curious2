@@ -61,7 +61,6 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		if(config.hasScope()) queryParams.put(OAuthConstants.SCOPE, config.getScope())
 
 		request.addPayload(queryParams.collect { key, value -> "$key=$value" }.join("&"))
-		println ">>>>>>$queryParams"
 
 		Response response = request.send()
 
