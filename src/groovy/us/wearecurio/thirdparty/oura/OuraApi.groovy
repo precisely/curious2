@@ -4,6 +4,8 @@ import org.scribe.builder.api.DefaultApi20
 import org.scribe.model.OAuthConfig
 import org.scribe.model.Verb
 import org.scribe.utils.OAuthEncoder
+import us.wearecurio.thirdparty.PayloadTypeOAuth20ServiceImpl
+import us.wearecurio.thirdparty.QueryParamTypeOAuth20ServiceImpl
 
 class OuraApi extends DefaultApi20 {
 
@@ -11,7 +13,7 @@ class OuraApi extends DefaultApi20 {
 
 	@Override
 	String getAccessTokenEndpoint() {
-		"https://cloud.ouraring.com/oauth/token"
+		"http://cloud.ouraring.com/oauth/token"
 	}
 
 	@Override
@@ -25,9 +27,11 @@ class OuraApi extends DefaultApi20 {
 		String.format(AUTHORIZE_URL, config.apiKey, config.scope, OAuthEncoder.encode(config.callback))
 	}
 
-	/*@Override
-	OAuthService createService(OAuthConfig config) {
-		return new MovesOAuth20ServiceImpl(this, config)
-	}*/
+	@Override
+	PayloadTypeOAuth20ServiceImpl createService(OAuthConfig config) {
+		return new PayloadTypeOAuth20ServiceImpl(this, config)
+
+	}
+
 
 }
