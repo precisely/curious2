@@ -488,7 +488,17 @@ class Sprint {
 		tagName = name.toLowerCase()
 			.replaceAll(~/[^a-zA-Z ]+/, '')		// Removes all special characters and numbers
 			.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
-			.trim() + ' sprint'			// Removes spaces from the start and the end of the string
+			.trim() // Removes spaces from the start and the end of the string
+		// find last space before 80 characters
+		if (tagName.length() > 80) {
+			int cutoffSpaceIndex = tagName.lastIndexOf(' ', 80)
+			if (cutoffSpaceIndex < 0) cutoffSpaceIndex = 80
+			tagName = tagName.substring(0, cutoffSpaceIndex)
+		}
+		if (tagName.length() == 0) {
+			tagName = "a"
+		}
+		tagName += ' sprint'
 		
 		return tagName
 	}
@@ -699,6 +709,7 @@ class Sprint {
 		if (discussionIds?.size() > 0) {
 			for ( def d_id : discussionIds ) {
 				def d = Discussion.get(d_id)
+				if (!d) continue
 				if (recent == null) {
 					recent = d.recentPostCreated
 				} else if (d.recentPostCreated > recent) {

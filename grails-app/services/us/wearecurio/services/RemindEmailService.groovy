@@ -90,6 +90,9 @@ class RemindEmailService {
 			def u = User.get(userId)
 			def devices = PushNotificationDevice.findAllByUserId(userId)
 			def url = "https://dev.wearecurio.us/home/index"
+			
+			if (userId == 1L)
+				userId = userId
 
 			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
