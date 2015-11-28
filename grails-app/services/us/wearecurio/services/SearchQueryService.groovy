@@ -138,14 +138,8 @@ class SearchQueryService {
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def discussionQueries = []
 		
-		//def followingUserUserGroupIds = followedUsers.collect{ it.virtualUserGroupIdFollowers }
-		//def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-						
-//		def followingUserUserGroupIds = followedUsers.collect{ it.virtualUserGroupIdFollowers }
-//		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-//		def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
-		
+								
 		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
 		discussionQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")
 		
@@ -169,14 +163,12 @@ class SearchQueryService {
 		}
 		
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_READER).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(followingSprintUserGroupIds)
 		groupIdsOr = Utils.orifyList(followedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_ADMIN).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(followedSprints.find{ it.userId == userId }.collect{ it.virtualGroupId })
 		groupIdsOr = Utils.orifyList(ownedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
@@ -194,14 +186,8 @@ class SearchQueryService {
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def sprintQueries = []
 		
-		//def followingUserIds = followedUsers.collect{ it.id }
 		def sprintReaderGroupIds = readerGroupIds.intersect( followedSprintsGroupIds )
 		def sprintAdminGroupIds = adminGroupIds.intersect( followedSprintsGroupIds )
-		
-//		def followingUserIds = followedUsers.collect{ it.id }
-//		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-//		def sprintReaderGroupIds = readerGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-//		def sprintAdminGroupIds = adminGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
 		
 		def visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_OWNER).collect{ it.toString()})
 		sprintQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")

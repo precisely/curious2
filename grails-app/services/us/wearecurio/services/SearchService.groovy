@@ -222,40 +222,13 @@ class SearchService {
 	}
 	
 	String getSprintActivityQueryString(User user, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-		// collect queries to be used for an ES query to find all discussions associated with user
-		def sprintQueries = []
-		
-		def followingUserIds = followedUsers.collect{ it.id }
-		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-		def sprintReaderGroupIds = readerGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-		def sprintAdminGroupIds = adminGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-		
-		def visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_OWNER).collect{ it.toString()})
-		sprintQueries << ("(userId:${user.id} AND visibility:${visibilitiesOr})")
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_READER).collect{ it.toString()})
-		def groupIdsOr = Utils.orifyList(sprintReaderGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			sprintQueries << ("(virtualGroupId:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-
-		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_ADMIN).collect{ it.toString()})
-		groupIdsOr = Utils.orifyList(sprintAdminGroupIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
-			sprintQueries << ("(virtualGroupId:${groupIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.USER_FOLLOWER).collect{ it.toString()})
-		def userIdsOr =  Utils.orifyList(followingUserIds)
-		if (visibilitiesOr != null && visibilitiesOr != "" && userIdsOr != null && userIdsOr != "") {
-			sprintQueries << ("(userId:${userIdsOr} AND visibility:${visibilitiesOr})")
-		}
-		
-		if (sprintQueries.size() > 0) {
-			return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND hasRecentPost:true)"
-		} else {
-			return ""
-		}
+        return SearchQueryService.getSprintActivityQueryString(
+            user.id,
+            readerGroups.collect{ it[0].id },
+            adminGroups.collect{ it[0].id },
+            followedUsers.collect{ it.id },
+            followedSprints.collect{ it.virtualGroupId }
+        )
 	}
 
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
