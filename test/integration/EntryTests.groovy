@@ -146,6 +146,42 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testUpdateToStart() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm", null, null, baseDate, true), new EntryStats())
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread start 2pm", null, null, baseDate, true, 1), new EntryStats(), baseDate, true)
+
+		assert updated == entry && updated != null
+		
+		assert updated.durationType == DurationType.START
+		
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 1
+			assert it['description'] == 'bread start'
+		} == 1
+	}
+	
+	@Test
+	void testUpdateDurationEndTime() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 8 hours 8am", null, null, baseDate, true), new EntryStats())
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "sleep 8 hours 9am", null, null, baseDate, true, 1), new EntryStats(), baseDate, true)
+
+		assert updated == entry && updated != null
+		
+		assert updated.durationType == DurationType.NONE
+		
+		// verify new event created on baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amounts'][0].amount.intValue() == 8
+			assert it['description'] == 'sleep'
+		} == 1
+	}
+	
+	@Test
 	void testRemindFutureToday() {
 		EntryStats stats = new EntryStats()
 		
@@ -177,7 +213,7 @@ class EntryTests extends CuriousTestCase {
 		} == 0
 
 		// update event at baseDate		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 7 2pm repeat", null, entry.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 7 2pm repeat", null, entry.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry
 		
@@ -209,7 +245,7 @@ class EntryTests extends CuriousTestCase {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 24, 2010 4:00 pm")
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", null, null, lateBaseDate, true, true), new EntryStats(), lateBaseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", null, null, lateBaseDate, true, 1), new EntryStats(), lateBaseDate, true)
 		assert updated.repeatTypeId == null
 		assert updated.repeatEnd == null
 		String x = updated.valueString()
@@ -221,7 +257,7 @@ class EntryTests extends CuriousTestCase {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 24, 2010 4:00 pm")
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, null, lateBaseDate, true, true), new EntryStats(), lateBaseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, null, lateBaseDate, true, 1), new EntryStats(), lateBaseDate, true)
 		assert updated.repeatEnd == null
 		String x = updated.valueString()
 		assert x.endsWith("date:2010-07-03T23:00:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:1025, repeatEnd:null)")
@@ -232,7 +268,7 @@ class EntryTests extends CuriousTestCase {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 24, 2010 4:00 pm")
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", null, dateFormat.parse("July 25, 2010 12:00 am"), lateBaseDate, true, true), new EntryStats(), lateBaseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", null, dateFormat.parse("July 25, 2010 12:00 am"), lateBaseDate, true, 1), new EntryStats(), lateBaseDate, true)
 		assert updated.repeatEnd == null
 		String x = updated.valueString()
 		assert x.endsWith("date:2010-07-03T23:00:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:testxyz, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
@@ -243,7 +279,7 @@ class EntryTests extends CuriousTestCase {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("July 25, 2010 12:00 am"), baseDate, true), new EntryStats())
 		assert entry.repeatEnd == dateFormat.parse("July 24, 2010 4:00 pm")
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("August 4, 2010 12:00 am"), lateBaseDate, true, true), new EntryStats(), lateBaseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone2, "testxyz 4pm", RepeatType.DAILYCONCRETEGHOST.id, dateFormat.parse("August 4, 2010 12:00 am"), lateBaseDate, true, 1), new EntryStats(), lateBaseDate, true)
 		Date end = updated.repeatEnd
 		assert end == dateFormat.parse("August 3, 2010 4:00 pm")
 	}
@@ -311,28 +347,10 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testUpdateToStart() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm", null, null, baseDate, true), new EntryStats())
-		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread start 2pm", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
-
-		assert updated == entry && updated != null
-		
-		assert updated.durationType == DurationType.START
-		
-		// verify new event created on baseDate
-		assert testEntries(user, timeZone, baseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 1
-			assert it['description'] == 'bread start'
-		} == 1
-	}
-	
-	@Test
 	void testUpdateRepeatNoChange() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 5 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 5 at 2pm repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, true)
 
 		assert updated == entry && updated != null
 		
@@ -501,7 +519,7 @@ class EntryTests extends CuriousTestCase {
 		
 		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
 
-		def parse = entryParserService.parse(currentTime, timeZone, "bread 8 repeat ", null, null, baseDate, true, true)
+		def parse = entryParserService.parse(currentTime, timeZone, "bread 8 repeat ", null, null, baseDate, true, 1)
 		Entry updated = entry.update(parse, new EntryStats(), baseDate, true)
 
  		v = entry.valueString()
@@ -585,7 +603,7 @@ class EntryTests extends CuriousTestCase {
 		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
 		} == 1
 
-		Entry updated = activated.update(entryParserService.parse(lateCurrentTime, timeZone, "bread remind",null, null,  baseDate, true, true), new EntryStats(), baseDate, true)
+		Entry updated = activated.update(entryParserService.parse(lateCurrentTime, timeZone, "bread remind",null, null,  baseDate, true, 1), new EntryStats(), baseDate, true)
 		
 		assert updated == activated
 
@@ -599,7 +617,7 @@ class EntryTests extends CuriousTestCase {
 		
 		Entry activated = entry.update(null, new EntryStats(), baseDate)
 		
-		Entry updated = activated.update(entryParserService.parse(currentTime, timeZone, "bread 8 12pm remind", activated.repeatTypeId, activated.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = activated.update(entryParserService.parse(currentTime, timeZone, "bread 8 12pm remind", activated.repeatTypeId, activated.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 
@@ -639,7 +657,7 @@ class EntryTests extends CuriousTestCase {
 		
 		def activated = entry.update(null, new EntryStats(), baseDate)
 		
-		Entry updated = activated.update(entryParserService.parse(veryLateBaseDate, timeZone, "bread 8 remind", activated.repeatTypeId, activated.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = activated.update(entryParserService.parse(veryLateBaseDate, timeZone, "bread 8 remind", activated.repeatTypeId, activated.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 
@@ -982,7 +1000,7 @@ class EntryTests extends CuriousTestCase {
 		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate) {
 		} == 0
 
-		Entry updated = activated.update(entryParserService.parse(currentTime, timeZone, "bread 6 3pm remind", null, null, earlyBaseDate, true, true), new EntryStats(), earlyBaseDate, true)
+		Entry updated = activated.update(entryParserService.parse(currentTime, timeZone, "bread 6 3pm remind", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, true)
 		
 		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate) {
 		} == 1
@@ -991,7 +1009,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateNonRepeatToRepeat() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm ", null, null, baseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 pinned", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 pinned", null, null, baseDate, true, 1), new EntryStats(), baseDate, true)
 		
 		assert updated == entry
 		
@@ -1002,7 +1020,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatAllFuture() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, true)
 		
 		assert updated != entry
 
@@ -1029,7 +1047,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatJustOnce() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 
@@ -1056,7 +1074,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatVagueChangeTimeZone() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "bread 5 repeat", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime2, timeZone, "bread 8 repeat", null, null, baseDateShifted, true, true), new EntryStats(), baseDateShifted, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime2, timeZone, "bread 8 repeat", null, null, baseDateShifted, true, 1), new EntryStats(), baseDateShifted, false)
 		
 		String v = entry.valueString()
 	
@@ -1087,7 +1105,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatJustTodayTwice() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat", entry.repeatTypeId, entry.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat", entry.repeatTypeId, entry.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 
@@ -1109,7 +1127,7 @@ class EntryTests extends CuriousTestCase {
 			assert it['amount'].intValue() == 5
 		} == 1
 
-		Entry updated2 = updated.update(entryParserService.parse(currentTime, timeZone, "bread 7 at 2pm repeat", updated.repeatTypeId, updated.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated2 = updated.update(entryParserService.parse(currentTime, timeZone, "bread 7 at 2pm repeat", updated.repeatTypeId, updated.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated2 == updated
 
@@ -1136,7 +1154,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatJustTodayDeleteUpdate() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat", entry.repeatTypeId, entry.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat", entry.repeatTypeId, entry.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 
@@ -1190,7 +1208,7 @@ class EntryTests extends CuriousTestCase {
 		assert testEntries(user, timeZone, tomorrowBaseDate, currentTime) {
 		} == 0
 	
-		Entry updated2 = updated.update(entryParserService.parse(currentTime, timeZone, "bread 7 at 2pm repeat", updated.repeatTypeId, updated.repeatEnd, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated2 = updated.update(entryParserService.parse(currentTime, timeZone, "bread 7 at 2pm repeat", updated.repeatTypeId, updated.repeatEnd, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated2 == updated
 
@@ -1217,7 +1235,7 @@ class EntryTests extends CuriousTestCase {
 		
 		entry.getRepeatType().unGhost()
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, false)
 		
 		assert updated != entry && updated != null
 		
@@ -1246,7 +1264,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatOnFirstDayJustOnce() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, true), new EntryStats(), earlyBaseDate, false)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, false)
 
 		assert updated == entry && updated != null
 		
@@ -1267,7 +1285,7 @@ class EntryTests extends CuriousTestCase {
 	void testUpdateRepeatOnFirstDayAllFuture() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, true), new EntryStats(), earlyBaseDate, true)
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, true)
 
 		assert updated == entry && updated != null
 		
@@ -1569,15 +1587,15 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 1 slice", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 1 slice", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
 
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, dayAfterTomorrowBaseDate, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, dayAfterTomorrowBaseDate, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:2010-07-02T19:00:00)")
 	}
@@ -1588,17 +1606,17 @@ class EntryTests extends CuriousTestCase {
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 1 slice", null, null, tomorrowBaseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 1 slice", null, null, tomorrowBaseDate, true, 1), new EntryStats(), baseDate, true) != null
 		println entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-02T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:slice, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
 	}
 
 	@Test
 	void testUpdateRepeat() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo repeat daily", null, null, baseDate, true, false), new EntryStats())
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo repeat daily", null, null, baseDate, true), new EntryStats())
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat, repeatType:1025, repeatEnd:null)")
 		println("Attempting to update")
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread repeat daily", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread repeat daily", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 		
 		testEntries(user, timeZone2, timeZone2BaseDate, lateCurrentTime) {
 			assert it['id'] == entry.getId()
@@ -1609,11 +1627,11 @@ class EntryTests extends CuriousTestCase {
 
 	@Test
 	void testUpdateRepeatChangeTime() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo repeat daily", null, null, earlyBaseDate, true, false), new EntryStats())
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:repeat, repeatType:1025, repeatEnd:null)")
 		println("Attempting to update")
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "headache 8 at 3pm repeat daily", null, null, earlyBaseDate, true, true), new EntryStats(), earlyBaseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "headache 8 at 3pm repeat daily", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, true) != null
 		
 		testEntries(user, timeZone, baseDate, currentTime) {
 			assert it['id'] == entry.getId()
@@ -1624,12 +1642,12 @@ class EntryTests extends CuriousTestCase {
 
 	@Test
 	void testUpdateRepeatChangeTimeZone() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo 2pm", null, null, earlyBaseDate, true, false), new EntryStats())
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread foo 2pm", null, null, earlyBaseDate, true), new EntryStats())
 		String v = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 		println("Attempting to update")
 		
-		entry.update(entryParserService.parse(currentTime, timeZone2, "bread foo 3pm", null, null, earlyBaseDate2, true, true), new EntryStats(), baseDate, true)
+		entry.update(entryParserService.parse(currentTime, timeZone2, "bread foo 3pm", null, null, earlyBaseDate2, true, 1), new EntryStats(), baseDate, true)
 		v = entry.valueString()
 		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-06-25T21:00:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread foo, amount:1.000000000, units:, amountPrecision:-1, comment:, repeatType:null, repeatEnd:null)")
 	}

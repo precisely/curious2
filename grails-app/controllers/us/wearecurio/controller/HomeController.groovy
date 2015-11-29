@@ -537,7 +537,7 @@ class HomeController extends DataController {
 		Utils.save(user, true)
 		
 		if (!user.validate()) {
-			flash.message = "Error updating user preferences: missing field or email already in use"
+			flash.message = "Error updating user preferences: missing field or username/email already in use"
 			log.warn "Error updating user preferences: $user.errors"
 			render(view:"/home/userpreferences",
 					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,

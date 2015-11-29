@@ -595,7 +595,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 		
 		assert v.endsWith("date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/New_York, description:bread, amount:5.000000000, units:, amountPrecision:3, comment:repeat, repeatType:1025, repeatEnd:null)")
 
-		def parse = entryParserService.parse(currentTime, timeZone, "bread 8 repeat ", null, null, baseDate, true, true)
+		def parse = entryParserService.parse(currentTime, timeZone, "bread 8 repeat ", null, null, baseDate, true, 1)
 		Entry updated = entry.update(parse, new EntryStats(), baseDate, true)
 
  		v = entry.valueString()

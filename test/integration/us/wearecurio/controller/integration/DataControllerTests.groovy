@@ -223,7 +223,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
-		assert Entry.get(entry.id).amount == 3
+		assert Entry.get(entry.id).amount == 0.125000000g
 	}	
 
 	@Test

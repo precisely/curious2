@@ -57,7 +57,7 @@ class DataController extends LoginController {
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
-		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow)
+		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? 2 : EntryParserService.UPDATEMODE_TUTORIAL)
 
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
@@ -127,7 +127,7 @@ class DataController extends LoginController {
 		
 		boolean wasContinuous = entry.getRepeatType()?.isContinuous()
 
-		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, true)
+		def m = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, false, 1)
 
 		if (!m) {
 			debug "Parse error"
@@ -1169,6 +1169,7 @@ class DataController extends LoginController {
 				// Iterating over all the entries received and creating entries for them
 				entries.any({
 					p.text = it
+					p.tutorial = true
 					def result = doAddEntry(p)
 					if (!result[0]) {
 						operationSuccess = false

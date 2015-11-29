@@ -237,7 +237,7 @@ class AlertNotificationTests extends CuriousTestCase {
 		assert testEntries(user, timeZone, veryLateBaseDate, lateCurrentTime) {
 		} == 1
 
-		Entry updated = activated.update(entryParserService.parse(lateCurrentTime, timeZone, "bread remind",null, null,  baseDate, true, true), new EntryStats(), baseDate, true)
+		Entry updated = activated.update(entryParserService.parse(lateCurrentTime, timeZone, "bread remind",null, null,  baseDate, true, 1), new EntryStats(), baseDate, true)
 		
 		assert updated == activated
 

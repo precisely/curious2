@@ -27,8 +27,8 @@
 							<div class="item mood">
 								<h3 class="questions">How's your mood right now?</h3>
 								<p>
-									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Oh dear, what a day'<br>
-									5 would mean 'Pretty calm, even-keeled'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
+									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Really not the best day'<br>
+									5 would mean 'Just so-so'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
 								</p>
 								<div class="alert alert-danger hide mood-help-alert" role="alert">
 									Some error has occurred while performing the operation.
@@ -42,28 +42,28 @@
 								<div class="alert alert-danger hide help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
-								<h3 class="questions">Have you exercised today?</h3>
+								<h3 class="questions">What have you done today (all are optional)?</h3>
 								<form id="helpWizardExerciseForm">
-									<label for="cardio">
-										CARDIO
+									<label for="drink">
+										DRINK
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="cardio"
-											placeholder="e.g. running 45 minutes" /> 
-									<label for="resistance">
-										RESISTANCE
+											placeholder="e.g. coffee 1 cup 8am" /> 
+									<label for="exercise">
+										EXERCISE
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="resistance"
-											placeholder="e.g. weight lifting 2  hrs" />
-									<label for="stretch">
-										STRETCH
+											placeholder="e.g. walk 9500 steps" />
+									<label for="eat">
+										WORK
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="stretch"
-											placeholder="e.g. bikram yoga 90 mins" />
-									<label for="metabolic">
-										METABOLIC TRAINING
+											placeholder="e.g. work 7 hours 30 minutes" />
+									<label for="supplements">
+										SUPPLEMENTS
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="metabolic"
-											placeholder="e.g. crossfit 1 hour 15 min" />
+											placeholder="e.g. aspirin 400 mg, or vitamin c 200 mg " />
 									<input type="hidden" name="currentTime" id="current-time-input" />
 									<input type="hidden" name="baseDate" id="base-date-input" />
 									<input type="hidden" name="timeZoneName" id="time-zone-name-input" />

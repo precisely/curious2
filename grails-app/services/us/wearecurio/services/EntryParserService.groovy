@@ -682,10 +682,17 @@ class EntryParserService {
 		commentScanPattern.followedBy([atEndScanPattern])
 	}
 	
-	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, boolean forUpdate = false) {
+	static final int UPDATEMODE_NONE = 0
+	static final int UPDATEMODE_UPDATE = 1
+	static final int UPDATEMODE_TUTORIAL = 2
+	
+	def parse(Date time, String timeZoneName, String entryStr, Long repeatTypeId, Date repeatEnd, Date baseDate, boolean defaultToNow = true, int updateMode = UPDATEMODE_NONE) {
 		log.debug "EntryParserService.parse() time:" + time + ", timeZoneName:" + timeZoneName + ", entryStr:" + entryStr + ", baseDate:" + baseDate + ", defaultToNow:" + defaultToNow
 
 		if (entryStr == '') return null // no input
+		
+		boolean forUpdate = (updateMode == UPDATEMODE_UPDATE)
+		boolean dontChangeDayOnLateTime = (updateMode != UPDATEMODE_NONE)
 		
 		// truncate time to hours:minutes
 		
@@ -864,7 +871,7 @@ class EntryParserService {
 			}
 		}
 
-		if (today && (!forUpdate)) {
+		if (today && (!dontChangeDayOnLateTime)) {
 			// if base date is today and time is greater than one hour from now, assume
 			// user meant yesterday, unless the element is a ghost
 			if (context.retVal['repeatType'] == null) {

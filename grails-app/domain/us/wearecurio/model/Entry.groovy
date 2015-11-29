@@ -424,7 +424,7 @@ class Entry implements Comparable {
 		Date date = m['date']
 		def amounts = m['amounts']
 		Entry other = null
-		if (!m['hasDurationAmount']) { // only try to compelte duration with another entry if duration amount not specified
+		if (!m['hasDurationAmount']) { // only try to complete duration with another entry if duration amount not specified
 			other = findOtherEntry()
 		}
 		ParseAmount durationAmount = null
@@ -825,7 +825,37 @@ class Entry implements Comparable {
 	protected static Entry updateSingle(Entry entry, Map m, EntryCreateMap creationMap, EntryStats stats, Date baseDate, boolean allFuture = true, boolean unGhost = true) {
 		log.debug "Entry.updateSingle() entry:" + entry + ", m:" + m + ", baseDate:" + baseDate + ", allFuture:" + allFuture
 		
-		prepareStartDate(entry.userId, m)
+		Long userId = entry.userId
+		
+		prepareStartDate(userId, m)
+		
+		Date updatedDate = m.date
+		
+		// intercept duration updating
+		DurationType durationType = m['durationType']
+		if (durationType != DurationType.NONE && durationType != null && ((RepeatType)m['repeatType'])?.isRepeatOrContinuous()) {
+			// cannot combine duration edge and repeat
+			m['durationType'] = DurationType.NONE
+			m['tag'] = m['baseTag']
+		} else if (durationType == DurationType.END) {
+			Entry updated = completeDurationEntry(userId, m, stats, DurationType.END) {
+				return findPreviousStartEntry(userId, m['baseTag'], updatedDate, entry.id)
+			}
+			
+			if (updated != null) {
+				Entry.delete(entry, stats)
+				return updated
+			}
+		} else if (durationType == DurationType.START) {
+			Entry updated = completeDurationEntry(userId, m, stats, DurationType.START) {
+				return findNextEndEntry(userId, m['baseTag'], updatedDate, entry.id)
+			}
+			
+			if (updated != null) {
+				Entry.delete(entry, stats)
+				return updated
+			}
+		}
 		
 		RepeatType repeatType = entry.getRepeatType()
 		if (repeatType != null && repeatType.isRepeat()) {
@@ -1346,7 +1376,7 @@ class Entry implements Comparable {
 		return durationType?.isStart()
 	}
 
-	static Entry findPreviousStartEntry(Long userId, Tag baseTag, Date date) {
+	static Entry findPreviousStartEntry(Long userId, Tag baseTag, Date date, Long excludeId = null) {
 		def c = Entry.createCriteria()
 
 		// look for latest matching start entry prior to this one
@@ -1356,6 +1386,8 @@ class Entry implements Comparable {
 			le("date", date)
 			eq("baseTag", baseTag)
 			eq("durationType", DurationType.START)
+			if (excludeId != null)
+				not { eq("id", excludeId) }
 			maxResults(1)
 			order("date", "desc")
 		}
@@ -1363,7 +1395,7 @@ class Entry implements Comparable {
 		return results[0]
 	}
 
-	static Entry findNextEndEntry(Long userId, Tag baseTag, Date date) {
+	static Entry findNextEndEntry(Long userId, Tag baseTag, Date date, excludeId = null) {
 		def c = Entry.createCriteria()
 
 		// look for latest matching start entry prior to this one
@@ -1373,6 +1405,8 @@ class Entry implements Comparable {
 			ge("date", date)
 			eq("baseTag", baseTag)
 			eq("durationType", DurationType.END)
+			if (excludeId != null)
+				not { eq("id", excludeId) }
 			maxResults(1)
 			order("date", "asc")
 		}

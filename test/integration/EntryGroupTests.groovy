@@ -178,7 +178,7 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiUpdateAddElements() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories 127 steps", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories 127 steps", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		int c = 0
@@ -426,7 +426,7 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiUpdateSimilar() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 slices 255 calories", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 slices 255 calories", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		int c = 0
@@ -447,7 +447,7 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiUpdateDissimilar() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 beans 255 calories", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		int c = 0
@@ -467,7 +467,7 @@ class EntryGroupTests extends CuriousTestCase {
 	void testMultiUpdateDissimilarAddUnits() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 slices 500 calories", null, null, baseDate, true), new EntryStats())
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 hours 30 minutes 255 calories", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "bread 2 hours 30 minutes 255 calories", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 
 		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		int c = 0
@@ -503,7 +503,7 @@ class EntryGroupTests extends CuriousTestCase {
 		
 		assert c == 1
 		
-		assert entry.update(entryParserService.parse(currentTime, timeZone, "run 3 aye 2 b", null, null, baseDate, true, true), new EntryStats(), baseDate, true) != null
+		assert entry.update(entryParserService.parse(currentTime, timeZone, "run 3 aye 2 b", null, null, baseDate, true, 1), new EntryStats(), baseDate, true) != null
 
 		entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
 		
