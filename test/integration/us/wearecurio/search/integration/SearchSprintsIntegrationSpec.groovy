@@ -74,8 +74,6 @@ class SearchSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
 	
 	//@spock.lang.IgnoreRest
->>>>>>> 7a097bda1ea75adefff88308beead1afc99fb1d3
->>>>>>> something is wrong with search-service-search-wildcards, so replacing that branch with this new one.
 	void "Test search for sprint with partial word"() {
 		given: "a search term"
 		def searchTerm = "magnesium"
