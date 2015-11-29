@@ -139,7 +139,6 @@ class SearchQueryService {
 		def discussionQueries = []
 		
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-								
 		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
 		discussionQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")
 		
