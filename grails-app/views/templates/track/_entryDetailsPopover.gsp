@@ -1,6 +1,6 @@
 <script type="text/html" id="entry-details-popover">
 	<button class="btn btn-default track-input-modifiers track-input-dropdown hide" type="button" aria-haspopup="true" aria-expanded="true"> 
-		<img src="/images/calander-light.png" alt="calander" height="22"> Details
+		<img src="/images/calendar-light.png" alt="calendar" height="22"> Details
 	</button>
 	<ul class="entry-details-dropdown-menu dropdown-menu">
 		<button id="close-track-input-modifier" onclick="$('.entry-details-dropdown-menu').parent().removeClass('open')">
@@ -21,7 +21,7 @@
 			<li class="repeat-modifiers hide">
 				<ul>
 					<li class="input-group">
-						<span class="input-group-addon calander-addon"></span>
+						<span class="input-group-addon calendar-addon"></span>
 						<input class="choose-date-input" placeholder="Choose End Date">
 						<span class="instructions input-group-addon">(Optional)</span>
 					</li>
@@ -61,7 +61,7 @@
 				Click below for on-the-go one click tracking. <br>This button will be under the 'Enter Tags' section
 			</li>
 			<li>
-				<button class="make-pin-button" type="button">MAKE A BUTTON</button>
+				<button class="make-pin-button" type="button">MAKE TAG BUTTON</button>
 			</li>
 		</form>
 	</ul>

@@ -65,7 +65,7 @@
 					<div style="clear: both"></div>
 				</div>
 				<div id="pinned-tags">
-					<img alt="Pinned Tags" class="pin-header" src="/images/pinned-tags.png">
+					<img alt="One Click Tag Buttons" class="pin-header" src="/images/button-tags.png">
 					<span id="pinned-tag-list"></span>
 				</div>
 				<hr>

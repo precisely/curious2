@@ -1897,8 +1897,8 @@ body.discuss-page .red-header {
 	border: none;
 }
 
-.calander-addon {
-	background: url(/images/calander-dark.png) no-repeat;
+.calendar-addon {
+	background: url(/images/calendar-dark.png) no-repeat;
 	width: 52px;
 	background-size: 24px;
 	background-position: 15px;
@@ -2227,7 +2227,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 }
 
 #pinned-tags .pin-header {
-	height: 22px;
+	height: 16px;
 	display: block;
 	margin: -5px 0px 5px 0px;
 }

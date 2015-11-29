@@ -44,7 +44,7 @@
 						</div>
 						<div class="col-md-9" style="font-size:11pt;font-style:italic;">
 						<p>Enter all the tags users should track ("sleep quality", "exercise"), or:<br/>
-						Pin: make a button for one-tap tracking (&quot;headache <span class="pinnedDarkLabelImage"></span>&quot;).<br/>
+						Button: make a button for one-tap tracking (&quot;headache <span class="pinnedDarkLabelImage"></span>&quot;).<br/>
 						Repeat: makes the tag show up every day (&quot;mood 5 <span class="repeatDarkLabelImage"></span>&quot;)<br/>
 						Remind: pop up a reminder alert (&quot;aspirin 8pm <span class="remindDarkLabelImage"></span>&quot;)<br/>&nbsp;
 						</div>
@@ -55,7 +55,7 @@
 							<div class="input-group">
 								<input type="text" placeholder="Ex.: &quot;headache&quot;, &quot;mood&quot;" id="sprint-tags">
 								<span class="input-group-addon pinnedDarkLabelImage" id="basic-addon2" 
-									onclick="addEntryToSprint('sprint-tags', 'pinned')"></span>
+									onclick="addEntryToSprint('sprint-tags', 'button')"></span>
 								<span class="input-group-addon repeatDarkLabelImage" id="basic-addon2"
 									onclick="addEntryToSprint('sprint-tags', 'repeat')"></span>
 								<span class="input-group-addon remindDarkLabelImage" id="basic-addon2"
