@@ -57,7 +57,7 @@ class DataController extends LoginController {
 
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
-		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? 2 : EntryParserService.UPDATEMODE_TUTORIAL)
+		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
 
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
