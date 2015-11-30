@@ -56,7 +56,6 @@ public class AlertNotification {
 	}
 	
 	static def generate(Long userId, Date startDate, Date endDate) {
-		log.debug "generate() userId:" + userId + ", startDate:" + startDate + ", endDate:" + endDate
 		AlertNotification.withTransaction {
 			deleteforUserBetween(userId, startDate, endDate)
 			def remindData = DataRetriever.get().fetchRemindData(userId, startDate, endDate, new Date())
@@ -67,8 +66,6 @@ public class AlertNotification {
 	}
 	
 	static def deleteforUser(Long userId) {
-		log.debug "deleteforUser() userId:" + userId
-		
 		AlertNotification.executeUpdate("delete AlertNotification a where a.userId = :userId", [userId:userId])
 	}
 	
@@ -80,10 +77,14 @@ public class AlertNotification {
 	}
 	
 	static def pendingAlerts(Long userId, Date startDate, Date endDate) {
-		log.debug "pendingAlerts() userId:" + userId + ", startDate:" + startDate + ", endDate:" + endDate
-
-		return AlertNotification.executeQuery("from AlertNotification a where userId = :userId and a.date >= :startDate and a.date < :endDate",
+		def alerts = AlertNotification.executeQuery("from AlertNotification a where userId = :userId and a.date >= :startDate and a.date < :endDate",
 				[userId:userId, startDate:startDate, endDate:endDate])
+		
+		if (alerts?.size()) {
+			log.debug "pendingAlerts() userId:" + userId + ", startDate:" + startDate + ", endDate:" + endDate + " alerts:" + alerts
+		}
+		
+		return alerts
 	}
 
 	String toString() {

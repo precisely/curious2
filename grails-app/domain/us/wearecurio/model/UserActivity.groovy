@@ -566,7 +566,7 @@ class UserActivity {
 	}
 	
 	UserActivity(Date created, Long userId, Long typeId, Long objectId, Long otherId) {
-		this.created = created
+		this.created = created ?: new Date()
 		this.userId = userId
 		this.typeId = typeId
 		this.objectId = objectId

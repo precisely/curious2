@@ -208,8 +208,8 @@ class SearchService {
 				return [
 					type: "usr",
 					hash: hit.source.hash,
-					email: hit.source.email,
 					remindEmail: hit.source.remindEmail,
+					username: hit.source.username,
 					name: hit.source.publicName,
 					sex: hit.source.sex,
 					birthdate: hit.source.birthdate,

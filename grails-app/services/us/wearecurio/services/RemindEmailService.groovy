@@ -96,7 +96,7 @@ class RemindEmailService {
 
 			def remindEvents = Entry.fetchReminders(u, oldDate, (long)(now.getTime() - oldDate.getTime()) / 1000L)
 			
-			if (remindEvents.size() > 0) {
+			if (remindEvents?.size()) {
 				log.debug "Reminder for user " + userId + " " + u?.username
 				log.debug "User devices registered for notification " + devices.size()
 				log.debug "Number of remind events found "+remindEvents.size()

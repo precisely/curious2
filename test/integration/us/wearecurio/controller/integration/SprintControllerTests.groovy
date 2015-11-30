@@ -37,6 +37,16 @@ class SprintControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void "test start when non member user tries to start the sprint"() {
+		controller.session.userId = dummyUser2.getId()
+		controller.params["id"] = dummySprint.hash
+		
+		controller.start()
+		assert controller.response.json.success == true
+		assert dummySprint.hasStarted(dummyUser2.getId(), new Date() + 1)
+	}
+
+	@Test
 	void "test update when wrong id is passed"() {
 		controller.request.contentType = "text/json"
 		controller.request.content = "{'id': 0, 'name': 'Sprint1', 'description': 'Description'," + 
@@ -172,17 +182,6 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
 		assert controller.response.json.message == "Sprint does not exist."
-	}
-
-	@Test
-	void "test start when non member user tries to start the sprint"() {
-		controller.session.userId = dummyUser2.getId()
-		controller.params["id"] = dummySprint.hash
-		
-		controller.start()
-		assert controller.response.json.success == false
-		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
-		assert controller.response.json.message == "You are not a member of this sprint."
 	}
 
 	@Test
@@ -620,4 +619,5 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success == true
 		assert dummySprint.hasMember(dummyUser2.getId()) == true
 	}
+/**/
 }

@@ -538,6 +538,10 @@ function addAllFeedItems(data, elementId, prepend) {
 		} else if (item.type == 'dis') {
 			compiledHTML = compileTemplate("_discussions", {'discussionData': item});
 		} else if (item.type == 'usr') {
+			if (item.name) {
+				item.nameInfo = item.username + ' (' + item.name + ')';
+			} else
+				item.nameInfo = item.username
 			compiledHTML = compileTemplate("_people", {'user': item});
 		}
 

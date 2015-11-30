@@ -2,7 +2,7 @@
 	<div class="user-details-header">
 		<a href="#people/{{- user.hash }}">
 			<img src="{{- user.avatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
-			<span class="username">{{- user.name }}</span>
+			<span class="username">{{- user.nameInfo }}</span>
 		</a>
 		<button class="follow">FOLLOW</button>
 	</div>
