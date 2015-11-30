@@ -911,10 +911,12 @@ class EntryParserService {
 		if (context.suffix) {
 			boolean durationAmount = false
 			for (ParseAmount amount : context.amounts) {
-				DecoratedUnitRatio unitRatio = unitGroupMap.lookupDecoratedUnitRatio(amount.units)
-				if (unitRatio.isDuration()) {
-					durationAmount = true
-					break
+				if (amount.units) {
+					DecoratedUnitRatio unitRatio = unitGroupMap.lookupDecoratedUnitRatio(amount.units)
+					if (unitRatio?.isDuration()) {
+						durationAmount = true
+						break
+					}
 				}
 			}
 			if (durationAmount) {

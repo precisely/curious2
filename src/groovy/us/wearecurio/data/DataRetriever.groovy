@@ -178,7 +178,7 @@ class DataRetriever {
 			return []
 		}
 
-		if (endDate == null) endDate = currentTime // don't query past now if endDate isn't specified
+		if (endDate == null) endDate = currentTime + 1 // don't query past now if endDate isn't specified
 		if (startDate == null) startDate = new Date(-30610137600000) // set start date to 1000 AD if startDate isn't specified
 
 		// get timed daily repeats (not ghosted)

@@ -554,7 +554,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.plotOptions['xaxis']['min'] = sliders[0];
 			this.plotOptions['xaxis']['max'] = sliders[1];
 			var span = sliders[1] - sliders[0];
-			this.plotOptions['xaxis']['timeformat'] = span < 172800000 ? '%h%p' : (span > 432000000 ? '%m/%d' : '%m/%d %h%p');
+			this.plotOptions['xaxis']['timeformat'] = span < 172800000 ? '%l%p' : (span > 432000000 ? '%m/%d' : '%m/%d %l%p');
 		}
 
 		this.drawPlot();
@@ -741,8 +741,8 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				},
 				xaxis: {
 					mode: 'time',
-					timeformat: span < 172800000 ? '%h%p' : (span > 432000000 ? '%m/%d' : '%m/%d %h%p'),
-					browsertimezone: true,
+					timeformat: span < 172800000 ? '%l:%M%p' : (span > 432000000 ? '%m/%d' : '%m/%d %l%p'),
+					timezone: 'browser',
 					min: sliders[0],
 					max: sliders[1]
 				},

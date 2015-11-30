@@ -176,7 +176,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def x = controller.response.contentAsString
 		
-		assert x.contains('"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.0000,"amountPrecision":-1,"units":""}},"setName":null}],null,')
+		assert x.contains('"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.0000')
 	}
 
 	@Test

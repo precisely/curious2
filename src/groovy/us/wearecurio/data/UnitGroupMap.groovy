@@ -799,6 +799,8 @@ class UnitGroupMap {
 	 * Also look for units that contain an additional suffix ("meters climbed") and records it as "miles" plus suffix of "climbed"
 	 */
 	DecoratedUnitRatio lookupDecoratedUnitRatio(String units) {
+		if (!units) return null
+		
 		DecoratedUnitRatio decorated = unitToDecorated.get(units)
 		
 		if (decorated != null)
