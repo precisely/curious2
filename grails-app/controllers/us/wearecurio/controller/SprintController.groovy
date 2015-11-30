@@ -244,8 +244,11 @@ class SprintController extends LoginController {
 		}
 
 		if (!sprintInstance.hasMember(currentUser.id)) {
-			renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
-			return
+			sprintInstance.addMember(currentUser.id)
+			if (!sprintInstance.hasMember(currentUser.id)) {
+				renderJSONGet([success: false, message: g.message(code: "not.sprint.member")])
+				return
+			}
 		}
 
 		Date now = params.now ? parseDate(params.now) : null

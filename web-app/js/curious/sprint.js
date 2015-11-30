@@ -136,6 +136,8 @@ function startSprint(sprintHash) {
 			return;
 
 		if (data.success) {
+			$('#leave-sprint').show();
+			$('#join-sprint').hide();
 			$('#start-sprint').hide();
 			$('#stop-sprint').show();
 		} else {
@@ -156,6 +158,8 @@ function stopSprint(sprintHash) {
 			return;
 
 		if (data.success) {
+			$('#leave-sprint').show();
+			$('#join-sprint').hide();
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
 		} else {
@@ -176,9 +180,10 @@ function leaveSprint(sprintHash) {
 			return;
 
 		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="join-sprint" class="sprint-button" onclick="joinSprint(\'' + 
-				sprintHash + '\')">Follow</button>');
+			$('#leave-sprint').hide();
+			$('#join-sprint').show();
+			$('#stop-sprint').hide();
+			$('#start-sprint').show();
 		} else {
 			showAlert(data.message);
 		}
@@ -193,13 +198,10 @@ function joinSprint(sprintHash) {
 			return;
 
 		if (data.success) {
-			$('.sprint-button').remove();
-			$('.sprint .col-xs-2').append('<button id="leave-sprint" class="sprint-button" onclick="leaveSprint(\'' + 
-				sprintHash + '\')">Unfollow</button>');
-			$('.sprint .col-xs-2').append('<button id="start-sprint" class="prompted-action sprint-button" onclick="startSprint(\'' + 
-				sprintHash + '\')">Start</button>');
-			$('.sprint .col-xs-2').append('<button id="stop-sprint" class="sprint-button prompted-action hidden" onclick="stopSprint(\'' + 
-				sprintHash + '\')">Stop</button>');
+			$('#leave-sprint').show();
+			$('#join-sprint').hide();
+			$('#stop-sprint').show();
+			$('#start-sprint').hide();
 		} else {
 			showAlert(data.message);
 		}

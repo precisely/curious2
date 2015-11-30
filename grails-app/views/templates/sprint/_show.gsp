@@ -93,6 +93,7 @@
 			<div class="col-xs-2 col-lg-1">
 				{{ if (hasMember) { }}
 					<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
+					<button id="join-sprint" class="sprint-button hidden" onclick="joinSprint('{{- hash }}')">Follow</button>
 					{{ if (hasStarted && !hasEnded) { }}
 						<button id="stop-sprint" class="sprint-button prompted-action" 
 								onclick="stopSprint('{{- hash }}')">Stop</button>
@@ -106,6 +107,11 @@
 					{{ } }}
 				{{ } else { }}
 					<button id="join-sprint" class="sprint-button" onclick="joinSprint('{{- hash }}')">Follow</button>
+					<button id="leave-sprint" class="sprint-button hidden" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
+					<button id="stop-sprint" class="sprint-button prompted-action hidden" 
+							onclick="stopSprint('{{- hash }}')">Stop</button>
+					<button id="start-sprint" class="prompted-action sprint-button"
+							onclick="startSprint('{{- hash }}')">Start</button>
 				{{ } }}
 				{{ if (hasAdmin) { }}
 					<button class="sprint-button" onclick="editSprint('{{- hash }}')">Edit</button>
