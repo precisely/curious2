@@ -34,15 +34,6 @@ class PlotData {
 		isSnapshot column: 'is_snapshot'
 	}
 	
-	public static createOrReplace(User user, String name, String jsonPlotData, Boolean isSnapshot) {
-		log.debug "PlotData.createOrReplace() userId:" + user.getId() + ", name:" + name + ", jsonPlotData(length):" + jsonPlotData.length() + ", isSnapshot:" + isSnapshot
-
-		PlotData.executeUpdate("delete PlotData p where p.name = :name and p.userId = :userId",
-			[name:name, userId:user.getId()]);
-		
-		return create(user, name, jsonPlotData, isSnapshot)
-	}
-	
 	public static create(User user, String name, String jsonPlotData, Boolean isSnapshot) {
 		log.debug "PlotData.create() userId:" + user.getId() + ", name:" + name + ", jsonPlotData(length):" + jsonPlotData.length() + ", isSnapshot:" + isSnapshot
 

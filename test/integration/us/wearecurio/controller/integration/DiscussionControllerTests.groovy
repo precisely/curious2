@@ -50,15 +50,6 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
     }
 
     @Test
-    void testCreateReadOnly() {
-		controller.params.putAll(params)
-		controller.session.userId = user2.getId()
-		controller.request.method = "POST"
-		controller.save()
-		assert Discussion.count() == 0 
-    }
-
-    @Test
     void testCreateWithGroupNameWithWritePermission() {
 		//Adds a new discussion to the specified group
 		params.group = "testgroup"
@@ -67,6 +58,15 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "POST"
 		controller.save()
 		assert Discussion.count() == 1
+    }
+
+    @Test
+    void testCreateReadOnly() {
+		controller.params.putAll(params)
+		controller.session.userId = user2.getId()
+		controller.request.method = "POST"
+		controller.save()
+		assert Discussion.count() == 0 
     }
 
     @Test
@@ -219,4 +219,5 @@ class DiscussionControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.message == messageSource.getMessage("default.updated.message", ["Discussion"] as Object[], null)
 		assert discussion.isPublic()
 	}
+/**/
 }

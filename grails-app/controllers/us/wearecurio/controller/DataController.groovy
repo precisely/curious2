@@ -898,7 +898,7 @@ class DataController extends LoginController {
 		}
 
 		try {
-			def plotDataObj = PlotData.createOrReplace(user, params.name, params.plotData, false)
+			def plotDataObj = PlotData.create(user, params.name, params.plotData, false)
 
 			Utils.save(plotDataObj, true)
 
@@ -1013,14 +1013,18 @@ class DataController extends LoginController {
 
 		debug "Saving " + params.snapshotData
 
-		UserGroup group = Discussion.loadGroup(params.group, user)
-
-		if (!group) {
-			renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
-			return
+		UserGroup group = null
+		
+		if (params.group) {
+			group = Discussion.loadGroup(params.group, user)
+	
+			if (!group) {
+				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
+				return
+			}
 		}
 
-		def plotDataObj = PlotData.createOrReplace(user, params.name, params.snapshotData, true)
+		def plotDataObj = PlotData.create(user, params.name, params.snapshotData, true)
 
 		Utils.save(plotDataObj, true)
 

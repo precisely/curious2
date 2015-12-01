@@ -19,31 +19,35 @@ class DiscussionController extends LoginController {
 
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
 		def user = sessionUser()
-		UserGroup group = Discussion.loadGroup(params.group, user)
+		UserGroup group = null
+		
+		if (params.group) {
+			group = Discussion.loadGroup(params.group, user)
 
-		if (!group) {
-			renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
-		} else {
-			Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
-			Visibility discussionVisibility = visibility ? visibility.toUpperCase() : Visibility.PUBLIC
-			discussion = discussion ?: Discussion.create(user, name, group, null, discussionVisibility)
-
-			if (discussion != null) {
-				Utils.save(discussion, true)
-
-				if (discussionPost) {
-					discussion.createPost(user, discussionPost)
-				}
-
-				Map model = discussion.getJSONDesc()
-				DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
-
-				renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
-						type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash, 
-					isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
-			} else {
-				renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
+			if (!group) {
+				renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
+				return
 			}
+		}
+		Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
+		Visibility discussionVisibility = visibility ? visibility.toUpperCase() : Visibility.PUBLIC
+		discussion = discussion ?: Discussion.create(user, name, group, null, discussionVisibility)
+
+		if (discussion != null) {
+			Utils.save(discussion, true)
+
+			if (discussionPost) {
+				discussion.createPost(user, discussionPost)
+			}
+
+			Map model = discussion.getJSONDesc()
+			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
+
+			renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
+					type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash, 
+				isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
+		} else {
+			renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 		}
 	}
 

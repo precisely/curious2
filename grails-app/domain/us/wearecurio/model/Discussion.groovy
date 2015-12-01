@@ -603,7 +603,7 @@ class Discussion {
 	
 	//To Do: when user changes it's settings, discussions it owns will need to be redindexed
 	String getPublicUserName() {
-		return User.get(fetchUserId())?.publicName
+		return User.get(fetchUserId())?.username
 	}
 	
 	String getUserAvatarURL() {

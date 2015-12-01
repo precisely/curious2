@@ -81,7 +81,7 @@
 								</div>
 							</div>
 							<div class="group">
-								{{- (associatedGroups[0] && associatedGroups[0].shared) ? associatedGroups[0].fullName : 'Open to all' }}
+								{{- (associatedGroups[0] && associatedGroups[0].shared) ? associatedGroups[0].fullName : '' }}
 							</div>
 							<a href="javascript:void(0);"> {{- discussionTitle || '(No Title)' }}</a>
 							<p>

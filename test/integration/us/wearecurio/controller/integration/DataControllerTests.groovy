@@ -628,7 +628,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testLoadPlotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
 
@@ -645,7 +645,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeletePlotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
 
@@ -661,7 +661,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteNonPlotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
 
@@ -699,7 +699,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testListSnapshotData() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo,isSnapshot:true}', false)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo,isSnapshot:true}', false)
 
 		Utils.save(plotDataObj, true)
 
@@ -714,7 +714,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testLoadSnapshotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
 
@@ -730,7 +730,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteSnapshotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', true)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
 
@@ -746,7 +746,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 	@Test
 	void testDeleteNonSnapshotDataId() {
-		def plotDataObj = PlotData.createOrReplace(user, 'name', '{foo:foo}', false)
+		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', false)
 
 		Utils.save(plotDataObj, true)
 
