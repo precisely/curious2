@@ -35,3 +35,4 @@ grails-console
 .vagrant/
 .idea
 *.iml
+/temp/

@@ -32,6 +32,21 @@ class UserController extends LoginController {
 		renderJSONGet([success: true, user: userDetails])
 	}
 
+	def follow() {
+		User followed = User.findByHash(params.id)
+
+		if (!followed) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
+			return
+		}
+
+		User follower = sessionUser()
+
+		boolean retVal = follower.follow(followed)
+
+		renderJSONGet([success: retVal])
+	}
+
 	/**
 	 * Used to update the avatar for current logged in user.
 	 */

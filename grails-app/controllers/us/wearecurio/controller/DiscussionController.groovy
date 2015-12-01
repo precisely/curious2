@@ -52,7 +52,7 @@ class DiscussionController extends LoginController {
 
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion){
-			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])])
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])])
 			return
 		}
 
@@ -115,7 +115,7 @@ class DiscussionController extends LoginController {
 		User user = sessionUser()
 
 		if (!discussion) {
-			renderJSONGet([success: false, message: g.message(code: "default.blank.message", args: ["Discussion"])]) 
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])]) 
 			return
 		}
 		def discussionUserId = discussion.getUserId()
