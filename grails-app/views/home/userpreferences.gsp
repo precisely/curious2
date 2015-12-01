@@ -250,7 +250,7 @@ function editUserDetails() {
 
 								<div class="form-group">
 									<label class="control-label">External Accounts</label><br>
-									<oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
+									<!-- oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
 										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>
 										</g:if>
@@ -260,7 +260,7 @@ function editUserDetails() {
 										<g:else>
 											<g:link action="registerfitbit">Link FitBit Account</g:link><br>
 										</g:else>
-									</oauth:checkSubscription>
+									</oauth:checkSubscription -->
 									<oauth:checkSubscription userId="${user.id}" typeId="WITHINGS">
 										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterwithings">Unlink Withings Account</g:link><br>
@@ -301,7 +301,7 @@ function editUserDetails() {
 												Re-import from 23andMe Account
 											</g:if>
 											<g:else>
-												Import from 23andme Account
+												Import from 23andMe Account
 											</g:else>
 										</oauth:checkSubscription>
 									</g:link>

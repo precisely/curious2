@@ -27,8 +27,8 @@
 							<div class="item mood">
 								<h3 class="questions">How's your mood right now?</h3>
 								<p>
-									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Really not the best day'<br>
-									5 would mean 'Just so-so'<br>10 would mean 'Super stoked, cheerful state of mind'<br><br>
+									Please enter a number from 1 to 10<br><br>Examples:<br>1 would mean 'Not the best day'<br>
+									5 would mean 'Just so-so'<br>10 would mean 'Super stoked'<br><br>
 								</p>
 								<div class="alert alert-danger hide mood-help-alert" role="alert">
 									Some error has occurred while performing the operation.
@@ -72,7 +72,7 @@
 							<div class="item get-started">
 								<h3 class="questions">Now, get started tracking on your own!</h3>
 								<h4>
-									On the next screen, we'll put you on the current calender day.<br>
+									On the next screen, we'll put you on the current calendar day.<br>
 									Track by entering tags and numbers in the input field at the top of the screen.<br><br>
 								</h4>
 							</div>

@@ -70,8 +70,6 @@ public class AlertNotification {
 	}
 	
 	static def deleteforUserBetween(Long userId, Date startDate, Date endDate) {
-		log.debug "deleteforUser() userId:" + userId + ", startDate:" + startDate + ", endDate:" + endDate
-		
 		AlertNotification.executeUpdate("delete AlertNotification a where a.userId = :userId and a.date >= :startDate and a.date < :endDate",
 				[userId:userId, startDate:startDate, endDate:endDate])
 	}

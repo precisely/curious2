@@ -28,7 +28,7 @@ class Twenty3AndMeApi extends DefaultApi20 {
 
 	/**
 	 * This is needed to override because default implementation for this (i.e. org.scribe.oauth.Default20ServiceImpl)
-	 * sends parameter using queryString technique but according to 23AndMe API, query parameters needs to passed as
+	 * sends parameter using queryString technique but according to 23andMe API, query parameters needs to passed as
 	 * payload. So writing our custom service implementation will overcome this problem.
 	 * 
 	 * @see https://github.com/fernandezpablo85/scribe-java/blob/master/src/main/java/org/scribe/oauth/OAuth20ServiceImpl.java 
