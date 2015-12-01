@@ -19,7 +19,9 @@ function doLogout() {
 }
 $(window).load(function() {
 	$('#image-cropper').cropit({ 
-		imageBackground: true
+		imageBackground: true,
+		smallImage: 'stretch',
+		maxZoom: 3,
 	});
 
 	$( "#updateUserPreferences" ).keyup(function(e) {
