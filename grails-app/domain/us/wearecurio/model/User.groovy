@@ -135,8 +135,8 @@ class User {
 		user.update(map)
 		Utils.save(user, true)
 
-		user.createDiscussionsVirtualGroup()
-		user.createFollowersVirtualGroup()
+		user.fetchVirtualUserGroupIdDiscussions()
+		user.fetchVirtualUserGroupIdFollowers()
 
 		UserActivity.create(UserActivity.ActivityType.CREATE, UserActivity.ObjectType.USER, user.id)
 
@@ -144,9 +144,9 @@ class User {
 	}
 
 	//make virtual groups public so can be used by migration service
-	private void createDiscussionsVirtualGroup() {
+	private Long fetchVirtualUserGroupIdDiscussions() {
 		if (virtualUserGroupIdDiscussions != null) {
-			return
+			return virtualUserGroupIdDiscussions
 		}
 
 		def groupNameDiscussions = "'" + (username?:"anonymous" ) + "' virtual group for discussions"
@@ -156,11 +156,13 @@ class User {
 			//addAdmin also adds as reader and writer
 			virtualUserGroup.addAdmin(this)
 		}
+		
+		return virtualUserGroupIdDiscussions
 	}
 
-	private void createFollowersVirtualGroup() {
+	private Long fetchVirtualUserGroupIdFollowers() {
 		if (virtualUserGroupIdFollowers != null) {
-			return
+			return virtualUserGroupIdFollowers
 		}
 
 		def groupNameFollowers = "'" + (username?:"anonymous" ) + "' virtual group for followers"
@@ -172,6 +174,8 @@ class User {
 			virtualUserGroup.removeReader(this)
 			virtualUserGroup.removeWriter(this)
 		}
+		
+		return virtualUserGroupIdFollowers
 	}
 
 	static User createVirtual() {
@@ -251,6 +255,8 @@ class User {
 	}
 
 	boolean follow(User follower) {
+		fetchVirtualUserGroupIdFollowers()
+		
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r) return true
 
@@ -270,6 +276,8 @@ class User {
 	}
 
 	void unFollow(User follower) {
+		fetchVirtualUserGroupIdFollowers()
+		
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
 		if (r == null) return
 

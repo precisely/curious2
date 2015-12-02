@@ -514,30 +514,6 @@ class MigrationService {
 		tryMigration("Remove user group unique constraint") {
 			sql('alter table user_group drop index full_name')
 		}
-		tryMigration("Update Virtual UserGroups for User") {
-			def hasVirtualGroupId = sqlRows ("SELECT 'x' FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'tlb_dev' AND TABLE_NAME = '_user' AND COLUMN_NAME = 'virtual_user_group_id'")
-			if (hasVirtualGroupId.size() >= 1) {
-				// has virtualUserGroupId
-				def userData = sqlRows ("SELECT id, virtual_user_group_id FROM _user WHERE virtual_user_group_id IS NOT NULL")
-				def users = User.findAllByVirtualNotEqual(true)
-				for (def user : users) {
-					if (user.virtualUserGroupIdDiscussions == null) {
-						def ids = userData.find{ it2 -> it2.id.mag[0] == user.id }
-						if (ids) {
-							user.virtualUserGroupIdDiscussions = ids.virtual_user_group_id.mag[0]
-						} else {
-							user.createDiscussionsVirtualGroup()
-							Utils.save(user, true)
-						}
-					}
-					if (user.virtualUserGroupIdFollowers == null) {
-						user.createFollowersVirtualGroup()
-						Utils.save(user, true)
-					}
-				}
-				sql ("alter table _user drop column virtual_user_group_id")
-			}			
-		}
 		tryMigration("Change repeat type column") {
 			if (sql('select * from entry where repeat_type is null limit 1')) {
 				if (!sql('alter table entry change repeat_type repeat_type_id int(11)')) {
@@ -550,6 +526,15 @@ class MigrationService {
 			try {
 				sql ("ALTER TABLE `user_activity` CHANGE COLUMN `user_id` user_id bigint(20) DEFAULT NULL")
 			} catch (Throwable t) {
+			}
+		}
+		tryMigration("Create virtual user groups") {
+			for (User user in User.list()) {
+				if (user.virtualUserGroupIdFollowers == null || user.virtualUserGroupIdDiscussions == null) {
+					user.fetchVirtualUserGroupIdDiscussions()
+					user.fetchVirtualUserGroupIdFollowers()
+					Utils.save(user, true)
+				}
 			}
 		}
 	}

@@ -17,6 +17,7 @@ class UserController extends LoginController {
 	}
 
 	def show() {
+		debug ("UserController.show() params:" + params)
 		User user = User.findByHash(params.id)
 
 		if (!user) {
@@ -33,6 +34,7 @@ class UserController extends LoginController {
 	}
 
 	def follow() {
+		debug ("UserController.follow() params:" + params)
 		User followed = User.findByHash(params.id)
 
 		if (!followed) {
@@ -51,7 +53,7 @@ class UserController extends LoginController {
 	 * Used to update the avatar for current logged in user.
 	 */
 	def saveAvatar() {
-		debug ("HomeController.saveAvatar() params:" + params)
+		debug ("UserController.saveAvatar() params:" + params)
 		UFile avatar
 		try {
 			avatar = fileUploaderService.saveFile("avatar", params.avatar)
@@ -78,6 +80,7 @@ class UserController extends LoginController {
 	}
 
 	def update() {
+		debug ("UserController.update() params:" + params)
 		Map requestData = request.JSON
 		def validate = [:]
 		User user = User.findByHash(params.id)
