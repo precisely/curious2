@@ -346,7 +346,7 @@ function discussionShow(hash) {
 					'name':'',
 					'logout':'#logoutLink'
 				}));
-				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId);
+				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId, hash); // send discussion hash as authentication confirmation
 			}
 		} else {
 			$('.alert').text(data.message);

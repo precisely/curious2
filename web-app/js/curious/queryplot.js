@@ -479,14 +479,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				this.showAlert("Error while loading");
 		});
 	}
-	this.loadSnapshotId = function(id) {
+	this.loadSnapshotId = function(id, discussionHash) {
 		var plot = this;
-		this.queueJSON("loading graph", this.makeGetUrl("loadSnapshotDataId"), this.makeGetArgs({ id:id }), function(plotData) {
+		this.queueJSON("loading graph", this.makeGetUrl("loadSnapshotDataId"), this.makeGetArgs({ id:id, discussionHash:discussionHash }), function(plotData) {
 			if (this.checkData(plotData)) {
 				plot.loadSnapshot(plotData);
 			} else {
 				this.showAlert("Error while loading");
-				window.location = '/home/index';
 			}
 		});
 	}

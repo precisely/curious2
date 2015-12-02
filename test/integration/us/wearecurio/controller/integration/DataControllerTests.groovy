@@ -93,6 +93,28 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testLoadSnapshotDataId() {
+		PlotData plotData = PlotData.create(user, 'name', '{foo:foo}', true)
+		Utils.save(plotData, true)
+		Discussion discussion = Discussion.create(user, "testCreateDiscussion", null, null)
+		DiscussionPost post = discussion.createPost(user, plotData.id, "comment")
+		
+		DiscussionPost findPost = DiscussionPost.findByPlotDataId(plotData.id)
+		
+		assert findPost == post
+
+		controller.session.userId = userId
+
+		controller.params.callback = 'callback'
+		controller.params.id = plotData.id.toString()
+		controller.params.discussionHash = discussion.hash
+
+		def retVal = controller.loadSnapshotDataId()
+
+		assert controller.response.contentAsString.equals('callback({"username":"y","foo":"foo"})')
+	}
+
+	@Test
 	void testAddEntrySprint() {
 		controller.session.userId = userId
 
@@ -713,7 +735,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testLoadSnapshotDataId() {
+	void testLoadSnapshotDataIdNoHash() {
 		def plotDataObj = PlotData.create(user, 'name', '{foo:foo}', true)
 
 		Utils.save(plotDataObj, true)
@@ -725,7 +747,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def retVal = controller.loadSnapshotDataId()
 
-		assert controller.response.contentAsString.equals('callback({"username":"y","foo":"foo"})')
+		assert !controller.response.contentAsString.equals('callback({"username":"y","foo":"foo"})')
 	}
 
 	@Test

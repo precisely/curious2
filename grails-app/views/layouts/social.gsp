@@ -5,7 +5,7 @@
 	<script src="/js/jquery/jquery.ui.touch-punch.min.js"></script>
 	<script src="/js/jquery/jquery.mobile.custom.min.js"></script>
 	<script type="text/javascript" src="/js/curious/feeds.js?ver=22"></script>
-	<script type="text/javascript" src="/js/curious/discussion.js?ver=22"></script>
+	<script type="text/javascript" src="/js/curious/discussion.js?ver=23"></script>
 	<script type="text/javascript" src="/js/curious/sprint.js"></script>
 	<c:jsCSRFToken keys="deleteGhostEntryDataCSRF, deleteEntryDataCSRF, addEntryCSRF, getPeopleDataCSRF, getCommentsCSRF,
 			getInterestTagsDataCSRF, addInterestTagDataCSRF, autocompleteDataCSRF, fetchSprintDataCSRF, createNewSprintDataCSRF, 

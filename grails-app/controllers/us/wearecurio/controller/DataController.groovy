@@ -14,8 +14,21 @@ import org.joda.time.format.DateTimeFormatter
 
 import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
-import us.wearecurio.data.UnitRatio;
-import us.wearecurio.model.*
+import us.wearecurio.data.UnitRatio
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.DurationType
+import us.wearecurio.model.User
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.Entry
+import us.wearecurio.model.TagProperties
+import us.wearecurio.model.UserGroup
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.UserSurveyAnswer
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.SecurityService.AuthenticationStatus
 import us.wearecurio.services.EntryParserService.ParseAmount
@@ -922,6 +935,11 @@ class DataController extends LoginController {
 		debug "Trying to load plot data " + params.id
 
 		def plotData = PlotData.get(Long.valueOf(params.id))
+		
+		if (plotData.userId != user.id) {
+			renderStringGet('Not authorized to load this graph');
+			return;
+		}
 
 		if (plotData == null) {
 			renderStringGet('No such graph id ' + params.id)
@@ -1044,25 +1062,53 @@ class DataController extends LoginController {
 		debug "DataController.loadSnapshotDataId() params:" + params
 
 		Long plotDataId = Long.valueOf(params.id)
-
+		String discussionHash = params.discussionHash
+		if (!discussionHash) {
+			debug "old version"
+			renderStringGet("You're using an old version of the client; please update to the latest version (reload the browser or update your mobile app).")
+			return
+		}
+		
 		def user = sessionUser()
 
 		if (user == null) {
 			Discussion discussion = Discussion.getDiscussionForPlotDataId(plotDataId)
 			if (!discussion.getIsPublic()) {
 				debug "auth failure"
-				renderStringGet(AUTH_ERROR_MESSAGE)
+				renderStringGet("You do not have authorization to load this graph.")
 				return
 			}
 		}
 
 		debug "Trying to load plot data " + params.id
 
-		def plotData = PlotData.get(plotDataId)
+		PlotData plotData = PlotData.get(plotDataId)
 
 		if (plotData == null) {
 			renderStringGet('No such graph id ' + params.id)
 			return;
+		}
+		
+		def c = DiscussionPost.createCriteria()
+		def results = c {
+			eq("plotDataId", plotDataId)
+			maxResults(1)
+		}
+
+		if (!results) {
+			debug "auth failure - no post associated with this plotDataId"
+			renderStringGet("You do not have authorization to load this graph.")
+			return
+		}
+		
+		DiscussionPost post = results[0]
+		
+		Discussion discussion = Discussion.get(post.discussionId)
+		
+		if (discussionHash != discussion.hash) {
+			debug "auth failure - discussion hash doesn't match"
+			renderStringGet("You do not have authorization to load this graph.")
+			return
 		}
 
 		debug "PlotData: " + plotData.getJsonPlotData()
