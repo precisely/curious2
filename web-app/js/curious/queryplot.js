@@ -1334,14 +1334,6 @@ function PlotLine(p) {
 	}
 	this.yAxisVisible = function() {
 		//if (this.parentLine) return (this.parentLine.hidden || this.parentLine.activated) && this.parentLine.showYAxis;
-		if (this.hasSmoothLine()) {
-			if (this.smoothDataWidth == 0 && this.showYAxis) {
-				if (this.freqLine)
-					return this.freqDataWidth == 0 && this.showYAxis;
-			}
-		}
-		if (this.freqLine)
-			return this.freqDataWidth == 0 && this.showYAxis;
 		return this.showYAxis;
 	}
 	/**

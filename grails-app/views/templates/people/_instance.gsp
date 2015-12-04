@@ -4,7 +4,7 @@
 			<img src="{{- user.avatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 			<span class="username">{{- user.nameInfo }}</span>
 		</a>
-		<button class="follow">FOLLOW</button>
+		<button class="follow" id="follow-user-{{- user.hash }}" onclick="setFollowUser('{{- user.hash }}', ! {{- user.followed }})">{{- user.followButtonText}}</button>
 	</div>
 	<div class="user-details-content">
 		<span>Interest Tags:</span>

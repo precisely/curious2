@@ -275,13 +275,13 @@ class User {
 		return r != null
 	}
 
-	void unFollow(User follower) {
+	boolean unFollow(User follower) {
 		fetchVirtualUserGroupIdFollowers()
 		
 		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
-		if (r == null) return
+		if (r == null) return true
 
-			GroupMemberReader.delete(virtualUserGroupIdFollowers, follower.id)
+		GroupMemberReader.delete(virtualUserGroupIdFollowers, follower.id)
 
 		UserActivity.create(
 						follower.id,
@@ -291,6 +291,24 @@ class User {
 						UserActivity.ObjectType.USER,
 						id
 						)
+		
+		return true
+	}
+	
+	static Long idFromHash(String hash) {
+		def result = DatabaseService.get().sqlRows("select id from _user where hash = :hash", [hash: hash])
+		return result[0]?.id
+	}
+	
+	boolean follows(User other) {
+		return followsId(other.id)
+	}
+	
+	boolean followsId(Long otherId) {
+		fetchVirtualUserGroupIdFollowers()
+		
+		def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, otherId)
+		return r ? true : false
 	}
 
 	void reindex() {
@@ -656,24 +674,27 @@ class User {
 			sex: sex,
 			website: website,
 			created: created,
-			type: "usr"
+			type: "usr",
 		];
 	}
 
 	def getPublicJSONDesc() {
 		return getJSONDesc() + [
+			username: username,
 			sprints: getOwnedSprints(),
 			groups: getUserGroups(),
 			interestTags: fetchInterestTagsJSON()*.description,
 			bio: settings.isBioPublic() ? bio : null,
 			name: settings.isNamePublic() ? name : null,
-			updated: created
+			created: created,
+			updated: created,
 		]
 	}
 
 	def getPeopleJSONDesc() {
 		return getJSONDesc() + [
 			name: name,
+			username: username,
 			email: email,
 			remindEmail: remindEmail,
 			sprints: getOwnedSprints(),
@@ -688,6 +709,7 @@ class User {
 			linkedToTwenty3andMe: getAccessTokenForThirdParty(ThirdParty["TWENTY_THREE_AND_ME"]),
 			notifyOnComments: notifyOnComments,
 			birthdate: birthdate,
+			created: created,
 		]
 	}
 

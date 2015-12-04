@@ -1183,6 +1183,11 @@ class DecoratedUnitRatio {
 	static final BigDecimal SLIGHTLYLESSTHANONE = 0.9999g
 	
 	void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
+		if (amount == null) {
+			amounts.put(amounts.size(), [amount:null, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(true, false)])
+			return
+		}
+		
 		int compareToOne = amount.compareTo(SLIGHTLYLESSTHANONE)
 		
 		if ((!subRatio) || subUnitRatio == null || amountPrecision < 0) {

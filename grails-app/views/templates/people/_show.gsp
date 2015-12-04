@@ -6,7 +6,7 @@
 			<i class="fa fa-circle fa-4x"></i>
 		{{ } }}
 		<h2>{{- user.username }}</h2>
-		<button>FOLLOW</button>
+		<button id="follow-user-{{- user.hash }}" onclick="setFollowUser('{{- user.hash }}', ! {{- user.followed }})">{{- user.followButtonText}}</button>
 	</div>
 
 	<div class="lower-body">

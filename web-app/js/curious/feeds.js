@@ -138,6 +138,21 @@ function isTabActive(anchor) {
 	return location.hash == anchor;
 }
 
+function setFollowUser(userHash, follow) {
+	queueJSON('change follow status', '/user/follow', makeGetArgs(getCSRFPreventionObject("followCSRF", {id:userHash, unfollow:(follow ? '' : 'true')})),
+		function(data) {
+			if (data.success) {
+				console.log(data);
+				var button = $('#follow-user-' + userHash);
+				button.text(follow ? 'UNFOLLOW' : 'FOLLOW');
+				button.attr("onclick", "setFollowUser('" + userHash + "', " + ((!follow) ? "true" : "false") + ")");
+			} else {
+				showAlert("Failed to follow user");
+			}
+		}
+	);
+}
+
 function displayNoDataMessage(listItems) {
 	$(".no-data-msg").remove();
 	if (!listItems || listItems.length === 0) {
@@ -542,6 +557,7 @@ function addAllFeedItems(data, elementId, prepend) {
 				item.nameInfo = item.username + ' (' + item.name + ')';
 			} else
 				item.nameInfo = item.username
+			item.followButtonText = item.followed ? 'UNFOLLOW' : 'FOLLOW';
 			compiledHTML = compileTemplate("_people", {'user': item});
 		}
 
@@ -859,6 +875,7 @@ function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
 			function(data) { 
 		if (data.success) { 
+			data.user.followButtonText = data.user.followed ? 'UNFOLLOW' : 'FOLLOW';
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
 			setQueryHeader('User Profile', true);

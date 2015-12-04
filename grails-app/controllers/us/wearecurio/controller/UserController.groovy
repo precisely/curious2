@@ -25,17 +25,20 @@ class UserController extends LoginController {
 			return
 		}
 		Map userDetails = [:]
-		if (user.id != sessionUser().id) {
+		User sessionUser = sessionUser()
+		if (user.id != sessionUser.id) {
 			userDetails = user.getPublicJSONDesc()
 		} else {
 			userDetails = user.getPeopleJSONDesc()
 		}
+		userDetails.followed = sessionUser.follows(user);
 		renderJSONGet([success: true, user: userDetails])
 	}
 
 	def follow() {
 		debug ("UserController.follow() params:" + params)
 		User followed = User.findByHash(params.id)
+		boolean unfollow = params.unfollow ? true : false
 
 		if (!followed) {
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
@@ -44,7 +47,12 @@ class UserController extends LoginController {
 
 		User follower = sessionUser()
 
-		boolean retVal = follower.follow(followed)
+		boolean retVal
+		
+		if (unfollow)
+			retVal = follower.unFollow(followed)
+		else
+			retVal = follower.follow(followed)
 
 		renderJSONGet([success: retVal])
 	}

@@ -163,7 +163,8 @@ class SearchService {
 		return visibility
 	}
 
-	private Map toJSON(def hit, List adminDiscussionIds) {
+	// user is the user viewing this search hit
+	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
 				return [
@@ -205,6 +206,7 @@ class SearchService {
 					score: hit.score,
 				]
 			case "user":
+				boolean followed = user.followsId(hit.id.toLong());
 				return [
 					type: "usr",
 					hash: hit.source.hash,
@@ -218,6 +220,7 @@ class SearchService {
 					created: hit.source.created,
 					score: hit.score,
 					interestTagsString: hit.source.interestTagsString,
+					followed: followed,
 				]
 		}
 		
@@ -565,7 +568,7 @@ class SearchService {
 
 				if (sr.hits.hits.size() > 0) {
 					for ( def hit : sr.hits.hits ) {
-						result.listItems << toJSON(hit, adminDiscussionIds)
+						result.listItems << toJSON(hit, adminDiscussionIds, user)
 					}
 				}
 			}
@@ -640,7 +643,7 @@ class SearchService {
 
 			if (sr.hits.hits.size() > 0) {
 				for ( def hit : sr.hits.hits ) {
-					result.listItems << toJSON(hit, adminDiscussionIds)
+					result.listItems << toJSON(hit, adminDiscussionIds, user)
 				}
 			}
 		}
@@ -681,7 +684,7 @@ class SearchService {
 
 			if (sr.hits.hits.size() > 0) {
 				for ( def hit : sr.hits.hits ) {
-					result.listItems << toJSON(hit, adminDiscussionIds)
+					result.listItems << toJSON(hit, adminDiscussionIds, user)
 				}
 			}
 		}
@@ -932,7 +935,7 @@ class SearchService {
 			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			if (sr.hits.hits.size() > 0) {
 				for(def hit : sr.hits.hits) {
-					result.listItems << toJSON(hit, adminDiscussionIds)
+					result.listItems << toJSON(hit, adminDiscussionIds, user)
 				}
 			}
 		}
@@ -1066,7 +1069,7 @@ class SearchService {
 			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			if (sr.hits.hits.size() > 0) {
 				for(def hit : sr.hits.hits) {
-					result.listItems << toJSON(hit, adminDiscussionIds)
+					result.listItems << toJSON(hit, adminDiscussionIds, user)
 				}
 			}
 		}
