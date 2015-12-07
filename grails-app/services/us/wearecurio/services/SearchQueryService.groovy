@@ -324,7 +324,6 @@ class SearchQueryService {
 		def discussionQueries = []
 		
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-								
 		discussionQueries << ("(userId:${userId})")
 		
 		def groupIds = []
@@ -350,7 +349,7 @@ class SearchQueryService {
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def sprintReaderGroupIds = readerGroupIds.intersect( followedSprintsGroupIds )
 		def sprintAdminGroupIds = adminGroupIds.intersect( followedSprintsGroupIds )
-				
+        
 		def sprintQueries = []
 		def groupIds = []
 		
