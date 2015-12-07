@@ -54,7 +54,9 @@ class DiscussionPost {
 			'message', 
 			'flags',
 			'authorName',
-			'authorHash']
+			'authorHash',
+            'authorUsername'
+        ]
 	}
 	
 	def getJSONDesc() {
@@ -112,6 +114,10 @@ class DiscussionPost {
 		return getAuthor()?.name
 	}
 	
+    String getAuthorUsername() {
+        return getAuthor()?.username
+    }
+    
 	DiscussionPost() {
 	}
 	

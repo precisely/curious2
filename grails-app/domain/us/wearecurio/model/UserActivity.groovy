@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.DurationType
 import us.wearecurio.data.RepeatType
-import us.wearecurio.services.SearchService.Role;
 import us.wearecurio.utility.Utils
 
 /**

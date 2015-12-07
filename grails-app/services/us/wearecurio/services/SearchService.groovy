@@ -308,12 +308,26 @@ class SearchService {
 		def queries = []
 		def query
 		if ((type & DISCUSSION_TYPE) > 0) {
-			query = getDiscussionActivityQueryString(user, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
+            
+            query = SearchQueryService.getDiscussionActivityQueryString(
+                user.id,
+                readerGroups.collect{ it[0].id },
+                adminGroups.collect{ it[0].id },
+                followedUsers.searchResults.collect{ it.virtualUserGroupIdFollowers },
+                followedSprints.searchResults.collect{ it.virtualGroupId },
+                followedSprints.searchResults.find{ it.userId == userId }.collect{ it.virtualGroupId }
+            )
 			if (query != null && query != "") {
 				queries << query
 			}
 		} else if((type & SPRINT_TYPE) > 0) {
-			query = getSprintActivityQueryString(user, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
+            query = SearchQueryService.getSprintActivityQueryString(
+                user.id,
+                readerGroups.collect{ it[0].id },
+                adminGroups.collect{ it[0].id },
+                followedUsers.searchResults.collect{ it.id },
+                followedSprints.searchResults.collect{ it.virtualGroupId }
+            )
 			if (query != null && query != "") {
 				queries << query
 			}

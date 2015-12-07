@@ -61,7 +61,9 @@ class Discussion {
 			'visibility', 
 			'groupIds', 
 			'hash',
-			'recentActivityDate'
+			'recentActivityDate',
+            'username',
+            'postUsernames'
 		]
 	}
 	
@@ -609,6 +611,14 @@ class Discussion {
 	String getUserAvatarURL() {
 		return User.get(fetchUserId())?.avatarURL
 	}
+    
+    String getUsername() {
+        return User.get(userId)?.username        
+    }
+    
+    String getPostUsernames() {
+        return DiscussionPost.findAllByDiscussionId(id)?.collect{ it.authorUsername }.unique().join(" ")
+    }
 
 	@Override
 	String toString() {
