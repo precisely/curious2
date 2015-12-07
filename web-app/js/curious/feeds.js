@@ -145,6 +145,8 @@ function setFollowUser(userHash, follow) {
 				console.log(data);
 				var button = $('#follow-user-' + userHash);
 				button.text(follow ? 'UNFOLLOW' : 'FOLLOW');
+				button.toggleClass('follow', !follow);
+				button.toggleClass('following', follow);
 				button.attr("onclick", "setFollowUser('" + userHash + "', " + ((!follow) ? "true" : "false") + ")");
 			} else {
 				showAlert("Failed to follow user");
