@@ -246,6 +246,12 @@ class User {
 		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
 	}
 
+    void addOwnedDiscussion(Long ownedDiscussionId) {
+		if (virtualUserGroupIdDiscussions != null && virtualUserGroupIdDiscussions > 0) {
+			GroupMemberDiscussion.create(virtualUserGroupIdDiscussions, ownedDiscussionId)
+		}        
+    }
+    
 	static boolean follow(User followed, User follower) {
 		return followed.follow(follower)
 	}
