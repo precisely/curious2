@@ -184,6 +184,7 @@ function leaveSprint(sprintHash) {
 			$('#join-sprint').show();
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
+			$('#create-discussion').hide();
 		} else {
 			showAlert(data.message);
 		}
@@ -202,6 +203,7 @@ function joinSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#stop-sprint').show();
 			$('#start-sprint').hide();
+			$('#create-discussion').show();
 		} else {
 			showAlert(data.message);
 		}
