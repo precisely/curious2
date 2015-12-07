@@ -139,7 +139,7 @@ class SearchQueryService {
 		def discussionQueries = []
 		
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-								
+        
 		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
 		discussionQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")
 		
@@ -169,6 +169,7 @@ class SearchQueryService {
 		}
 
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_ADMIN).collect{ it.toString()})
+with this new one.
 		groupIdsOr = Utils.orifyList(ownedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
@@ -188,7 +189,7 @@ class SearchQueryService {
 		
 		def sprintReaderGroupIds = readerGroupIds.intersect( followedSprintsGroupIds )
 		def sprintAdminGroupIds = adminGroupIds.intersect( followedSprintsGroupIds )
-		
+        
 		def visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_OWNER).collect{ it.toString()})
 		sprintQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")
 		
