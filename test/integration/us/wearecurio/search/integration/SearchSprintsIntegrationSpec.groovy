@@ -53,6 +53,27 @@ class SearchSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
 	
 	//@spock.lang.IgnoreRest
+	void "Test search for sprint with wildcard"() {
+		given: "a search term"
+		def searchTerm = "magnesium"
+		
+		and: "a new public sprint"
+		Sprint s = Sprint.create(new Date(), user2, "sprPublicRecentNameMatch $uniqueName $searchTerm", Visibility.PUBLIC)
+				
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed"
+		def results = searchService.search(user1, "mag*")
+		
+		then: "matched sprint is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == s.hash
+	}
+	
+	//@spock.lang.IgnoreRest
 	void "Test search for sprint with partial word"() {
 		given: "a search term"
 		def searchTerm = "magnesium"
