@@ -149,7 +149,6 @@ class SearchQueryService {
 		}
 
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_ADMIN).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(adminGroups.collect{ it[0].id })
 		groupIdsOr = Utils.orifyList(adminGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
@@ -229,11 +228,7 @@ class SearchQueryService {
 		def discussionQueries = []
 		
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-						
-		//def followingUserUserGroupIds = followedUsers.collect{ it.virtualUserGroupIdFollowers }
-		//def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-		//def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
-		
+								
 		def visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_OWNER).collect{ it.toString()})
 		discussionQueries << ("(userId:${userId} AND visibility:${visibilitiesOr})")
 		
@@ -244,7 +239,6 @@ class SearchQueryService {
 		}
 
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_ADMIN).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(adminGroups.collect{ it[0].id })
 		groupIdsOr = Utils.orifyList(adminGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
@@ -258,20 +252,18 @@ class SearchQueryService {
 		}
 		
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_READER).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(followingSprintUserGroupIds)
 		groupIdsOr = Utils.orifyList(followedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 
 		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.SPRINT_ADMIN).collect{ it.toString()})
-		//groupIdsOr = Utils.orifyList(followedSprints.findAll{ it.userId == userId }.collect{ it.virtualGroupId })
 		groupIdsOr = Utils.orifyList(ownedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
-		return "((${Utils.orifyList(discussionQueries)}) AND ( name:($query) OR posts:($query) OR firstPostMessage:($query)) AND _type:discussion)"
+		return "((${Utils.orifyList(discussionQueries)}) AND ( name:($query) OR posts:($query) OR firstPostMessage:($query) OR username:($query) OR postUsernames:($query)) AND _type:discussion)"
 	}
 	
 	static String getSprintSearchGroup1QueryString(
@@ -287,11 +279,6 @@ class SearchQueryService {
 		def sprintReaderGroupIds = readerGroupIds.intersect( followedSprintsGroupIds )
 		def sprintAdminGroupIds = adminGroupIds.intersect( followedSprintsGroupIds )
 		
-//		def followingUserIds = followedUsers.collect{ it.id }
-//		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-//		def sprintReaderGroupIds = readerGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-//		def sprintAdminGroupIds = adminGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-
 		def visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.SPRINT_READER).collect{ it.toString()})
 		def groupIdsOr = Utils.orifyList(sprintReaderGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
@@ -305,20 +292,19 @@ class SearchQueryService {
 		}
 		
 		visibilitiesOr = Utils.orifyList(getVisibilityForSprint(Role.USER_FOLLOWER).collect{ it.toString()})
-		//def userIdsOr =  Utils.orifyList(followingUserIds)
 		def userIdsOr = Utils.orifyList(followedUsersIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && userIdsOr != null && userIdsOr != "") {
 			sprintQueries << ("(userId:${userIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
 		if (sprintQueries.size() > 0) {
-			return "((${Utils.orifyList(sprintQueries)}) AND ((name:($query)) OR (description:($query))) AND _type:sprint)"
+			return "((${Utils.orifyList(sprintQueries)}) AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
 		}
 	}
 	
 	static String getUserSearchGroup1QueryString(Long userId, String query, List followedUsersIds) {
 		def followedSansUser = followedUsersIds.findAll{ it != userId }
-		//def followedSansUser = followedUsers.findAll{ it.id != userId }.collect{ it.id }
+        
 		if (followedSansUser.size > 0) {
 			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query))) AND _type:user AND (_id:${Utils.orifyList(followedSansUser)}) AND virtual:false)"
 		} else {
@@ -338,11 +324,7 @@ class SearchQueryService {
 		def discussionQueries = []
 		
 		def readerGroupsSansFollowingGroups = (readerGroupIds - followedUsersGroupIds) - followedSprintsGroupIds
-		
-//		def followingUserUserGroupIds = followedUsers.collect{ it.virtualUserGroupIdFollowers }
-//		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-//		def readerGroupsSansFollowingGroups = (readerGroups.collect{ it[0].id } - followingUserUserGroupIds) - followingSprintUserGroupIds
-						
+								
 		discussionQueries << ("(userId:${userId})")
 		
 		def groupIds = []
@@ -351,15 +333,11 @@ class SearchQueryService {
 		groupIds += followedUsersGroupIds
 		groupIds += followedSprintsGroupIds
 		groupIds += ownedSprintsGroupIds
-//		groupIds += adminGroups.collect{ it[0].id }
-//		groupIds += followingUserUserGroupIds
-//		groupIds += followingSprintUserGroupIds
-//		groupIds += followedSprints.findAll{ it.userId == userId }.collect{ it.virtualGroupId }
 		if (groupIds.size > 0) {
 			discussionQueries << ("(groupIds:${Utils.orifyList(groupIds)})")
 		}
 		
-		return "((NOT (${Utils.orifyList(discussionQueries)})) AND visibility:PUBLIC AND (name:($query) OR posts:($query) OR firstPostMessage:($query)) AND _type:discussion)"
+		return "((NOT (${Utils.orifyList(discussionQueries)})) AND visibility:PUBLIC AND (name:($query) OR posts:($query) OR username:($query) OR firstPostMessage:($query) OR postUsernames:($query)) AND _type:discussion)"
 	}
 	
 	static String getSprintSearchGroup2QueryString(
@@ -372,12 +350,7 @@ class SearchQueryService {
 		// collect queries to be used for an ES query to find all discussions associated with user
 		def sprintReaderGroupIds = readerGroupIds.intersect( followedSprintsGroupIds )
 		def sprintAdminGroupIds = adminGroupIds.intersect( followedSprintsGroupIds )
-		
-//		def followingUserIds = followedUsers.collect{ it.id }
-//		def followingSprintUserGroupIds = followedSprints.collect{ it.virtualGroupId }
-//		def sprintReaderGroupIds = readerGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-//		def sprintAdminGroupIds = adminGroups.collect{ it[0].id }.intersect( followingSprintUserGroupIds )
-		
+				
 		def sprintQueries = []
 		def groupIds = []
 		
@@ -391,14 +364,11 @@ class SearchQueryService {
 		if (followedUsersIds.size > 0) {
 			sprintQueries << "(userId:${Utils.orifyList(followedUsersIds)})"
 		}
-//		if (followingUserIds.size > 0) {
-//			sprintQueries << "(userId:${Utils.orifyList(followingUserIds)})"
-//		}
 		
 		if (sprintQueries.size > 0) {
-			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query)) AND _type:sprint)"
+			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query)) AND _type:sprint)"
 		} else {
-			return "(visibility:PUBLIC AND (name:($query) OR description:($query)) AND _type:sprint)"
+			return "(visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
 		}
 	}
 	
