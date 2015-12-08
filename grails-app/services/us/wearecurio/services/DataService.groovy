@@ -169,7 +169,7 @@ abstract class DataService {
 			// Okay. Nothing to do. Thrown when response code are like 204, means there are no response body.
 		}
 
-		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [$responseBody]"
+		log.debug "[$currentTime] Fetched data for [$provider] with response code: [$response.code] & body: [${response.body}]"
 
 		if (response.code == 401) {
 			throw new InvalidAccessTokenException(provider)
@@ -189,8 +189,7 @@ abstract class DataService {
 		}
 
 		if (Environment.current != Environment.PRODUCTION) {
-			log.debug "DataService.getResponse() Response data:"
-			log.debug parsedResponse
+			log.debug "DataService.getResponse() Response data: ${parsedResponse.toString(4)}"
 		}
 
 		// Helper dynamic methods.
@@ -334,7 +333,7 @@ abstract class DataService {
 						Utils.save(notification, true)
 					}
 				} catch (MissingMethodException e) {
-					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider."
+					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider.", e
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
 				} catch (Throwable t) {
@@ -506,4 +505,7 @@ abstract class DataService {
 		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
 
+	boolean isRequestSucceded(JSONObject response) {
+		return response && response["meta"] && response["meta"]["code"] == 200
+	}
 }

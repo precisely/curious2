@@ -3,6 +3,7 @@ package us.wearecurio.jobs
 import us.wearecurio.model.ThirdPartyNotification
 
 import grails.util.Environment
+import us.wearecurio.services.OuraDataService
 
 class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	static transactional = false
@@ -15,6 +16,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 
 	def fitBitDataService
 	def withingsDataService
+	OuraDataService ouraDataService
 
 	def execute() {
 		log.debug "Started executing ThirdPartyNotificationJob.."

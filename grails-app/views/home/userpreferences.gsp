@@ -252,7 +252,7 @@ function editUserDetails() {
 
 								<div class="form-group">
 									<label class="control-label">External Accounts</label><br>
-									%{--<oauth:checkSubscription userId="${user.id}" typeId="OURA">
+									<oauth:checkSubscription userId="${user.id}" typeId="OURA">
 										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterOura">Unlink Oura Account</g:link><br>
 										</g:if>
@@ -262,7 +262,7 @@ function editUserDetails() {
 										<g:else>
 											<g:link action="registerOura">Link Oura Account</g:link><br>
 										</g:else>
-									</oauth:checkSubscription>--}%
+									</oauth:checkSubscription>
 									<oauth:checkSubscription userId="${user.id}" typeId="FITBIT">
 										<g:if test="${it?.accessToken }">
 											<g:link action="unregisterfitbit">Unlink FitBit Account</g:link><br>

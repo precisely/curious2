@@ -44,6 +44,7 @@ class Discussion {
 			'userIdFinal',
 			'userHash',
 			'publicUserName',
+			'username',
 			'userAvatarURL',
 			'firstPostId',
 			'firstPostMessage',
@@ -605,7 +606,11 @@ class Discussion {
 	String getPublicUserName() {
 		return User.get(fetchUserId())?.publicName
 	}
-	
+
+	String getUsername() {
+		return User.get(fetchUserId())?.username
+	}
+
 	String getUserAvatarURL() {
 		return User.get(fetchUserId())?.avatarURL
 	}

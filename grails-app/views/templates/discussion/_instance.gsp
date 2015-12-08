@@ -9,7 +9,7 @@
 				<div class="col-xs-9 discussion-header">
 					<a href="/home/social#people/{{- discussionData.userHash }}">
 						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
-						&nbsp; <span class="username">{{- discussionData.userName }}</span>
+						&nbsp; <span class="username">{{- discussionData.publicUserName ? (discussionData.userName + '(' + discussionData.publicUserName + ')') : discussionData.userName}}</span>
 					</a>
 				</div>
 				<div class="col-xs-3 discussion-topic-span discussion-header">

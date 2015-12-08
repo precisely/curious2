@@ -493,6 +493,18 @@ class HomeController extends DataController {
 	}
 
 	/**
+	 * Oura Subscriber Endpoints
+	 */
+	def notifyOura() {
+		String notificationData = request.JSON.toString()
+		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
+
+		ouraDataService.notificationHandler(notificationData)
+		render status: 204
+		return
+	}
+
+	/**
 	 * FitBit Subscriber Endpoint
 	 */
 	def notifyfitbit() {
