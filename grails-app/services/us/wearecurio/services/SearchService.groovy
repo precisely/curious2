@@ -229,7 +229,7 @@ class SearchService {
                 adminGroups.collect{ it[0].id },
                 followedUsers.searchResults.collect{ it.virtualUserGroupIdFollowers },
                 followedSprints.searchResults.collect{ it.virtualGroupId },
-                followedSprints.searchResults.find{ it.userId == userId }.collect{ it.virtualGroupId }
+                followedSprints.searchResults.find{ it.userId == user.id }.collect{ it.virtualGroupId }
             )
 			if (query != null && query != "") {
 				queries << query
