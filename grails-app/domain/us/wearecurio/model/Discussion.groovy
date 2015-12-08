@@ -98,9 +98,9 @@ class Discussion {
 
 		Utils.save(discussion, true)
 		
-        //user.addOwnedDiscussion(discussion.id)
-        //discussion.addFollower(user.id)
-		//discussion.addUserVirtualGroups(user)
+        user.addOwnedDiscussion(discussion.id)
+        discussion.createVirtualObjects()
+        discussion.addFollower(user.id)
         
 		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
 		
@@ -116,12 +116,12 @@ class Discussion {
 			
 			Utils.save(discussion, true)
 			
-            //user.addOwnedDiscussion(discussion.id)
-            //discussion.addFollower(user.id)
-			//discussion.addUserVirtualGroups(user)
-			
+            user.addOwnedDiscussion(discussion.id)
+            discussion.createVirtualObjects()
+            discussion.addFollower(user.id)
+            
 			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
-			
+			            
 			return discussion
 		}
 		
@@ -129,9 +129,9 @@ class Discussion {
 			discussion = new Discussion(user, name, createTime, visibility)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
-			//discussion.addUserVirtualGroups(user)
-            //user.addOwnedDiscussion(discussion.id)
-            //discussion.addFollower(user.id)
+            discussion.createVirtualObjects()
+            user.addOwnedDiscussion(discussion.id)
+            discussion.addFollower(user.id)
 		}
 		
 		if (discussion != null) {
@@ -206,7 +206,6 @@ class Discussion {
 	
 	Discussion() {
 		this.visibility = Model.Visibility.PUBLIC
-        //createVirtualObjects()
 	}
 	
 	Discussion(User user, String name, Date createTime = null, Visibility visibility) {
@@ -215,7 +214,6 @@ class Discussion {
 		this.created = createTime ?: new Date()
 		this.updated = this.created
 		this.visibility = visibility ?: Model.Visibility.PUBLIC
-        //createVirtualObjects()
 	}
 	
 	void reindex() {
@@ -459,12 +457,9 @@ class Discussion {
 	}
 	
     boolean addFollower(Long userId) {
-		//def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
-		//if (r) return true
 		if (isFollower(userId)) return true
-        
 		def r = GroupMemberReader.create(virtualUserGroupIdFollowers, userId)
-		
+        
 		if (r != null) {
 			UserActivity.create(
 				userId,
@@ -479,9 +474,6 @@ class Discussion {
     }
     
     void removeFollower(Long userId) {
-		//def r = GroupMemberReader.lookup(virtualUserGroupIdFollowers, follower.id)
-		//if (r == null) return
-		
         if (!isFollower(userId)) return
         
 		GroupMemberReader.delete(virtualUserGroupIdFollowers, userId)
@@ -501,10 +493,10 @@ class Discussion {
     }
     
     List getAllFollowers() {
-//        def gmr = GroupMemberReader.findAllByGroupId(virtualUserGroupIdFollowers)
-//        if (gmr != null && gmr.size > 0) {
-//            return User.getAll(gmr.collect{ it.memberId })
-//        }
+        def gmr = GroupMemberReader.findAllByGroupId(virtualUserGroupIdFollowers)
+        if (gmr != null && gmr.size > 0) {
+            return User.getAll(gmr.collect{ it.memberId })
+        }
         
         return []
     }
@@ -719,13 +711,4 @@ class Discussion {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
 	}
-	
-//	private void addUserVirtualGroups(User user) {
-//		if (user?.virtualUserGroupIdDiscussions > 0) {
-//			GroupMemberDiscussion.create(user.virtualUserGroupIdDiscussions, id)
-//		}
-//		if (user?.virtualUserGroupIdFollowers > 0) {
-//			GroupMemberDiscussion.create(user.virtualUserGroupIdFollowers, id)
-//		}
-//	}
 }

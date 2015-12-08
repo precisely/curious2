@@ -34,13 +34,13 @@ class SearchQueryServiceGroup1Spec extends Specification {
 		userId	| query	| readerGroupIds	| adminGroupIds	| followedUsersGroupIds	| followedSprintsGroupIds	| ownedSprintsGroupIds	| 
 		expected
 		34		| "foo"	| []				| []			| []					| []						| []					| 
-		"(((userId:34 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW))) AND ( name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"(((userId:34 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW))) AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]						| [6]					| 
-		"((((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:4 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:378 AND visibility:PUBLIC) OR (groupIds:3 AND visibility:PUBLIC) OR (groupIds:6 AND visibility:PUBLIC))) AND ( name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"((((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:4 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:378 AND visibility:PUBLIC) OR (groupIds:3 AND visibility:PUBLIC) OR (groupIds:6 AND visibility:PUBLIC))) AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []						| []					| 
-		"((((userId:4637 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:6 AND visibility:(PUBLIC OR UNLISTED)) OR (groupIds:8 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:5 AND visibility:PUBLIC))) AND ( name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"((((userId:4637 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:6 AND visibility:(PUBLIC OR UNLISTED)) OR (groupIds:8 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:5 AND visibility:PUBLIC))) AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 	}
 	
 	//@spock.lang.IgnoreRest
@@ -66,10 +66,10 @@ class SearchQueryServiceGroup1Spec extends Specification {
 		null
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]					| 
-		"((((virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED)) OR (userId:378 AND visibility:PUBLIC))) AND ((name:(foo)) OR (description:(foo))) AND _type:sprint)"
+		"((((virtualGroupId:3 AND visibility:(PUBLIC OR UNLISTED)) OR (userId:378 AND visibility:PUBLIC))) AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []					| 
-		"(((userId:5 AND visibility:PUBLIC)) AND ((name:(foo)) OR (description:(foo))) AND _type:sprint)"
+		"(((userId:5 AND visibility:PUBLIC)) AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
 	}
 	
 	//@spock.lang.IgnoreRest
