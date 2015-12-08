@@ -2,7 +2,7 @@
 	A Javascript Lodash or Underscore template used to render a single Discussion
 -->
 
-<div class="feed-item discussion" id="discussion-{{- discussionData.hash}}" data-offset="4">
+<div class="feed-item discussion" id="discussion-{{- discussionData.hash}}">
 	<div class="discussion-topic">
 		<div class="contents">
 			<div class="row">
@@ -66,8 +66,8 @@
 		</div>
 	</div>
 	<div class="discussion-comments-wrapper hide">
-		<div class="view-comment bottom-margin" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
-		<div class="comments media-list bottom-margin"></div>
+		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
+		<div class="comments media-list"></div>
 		<div class="row">
 			<div class="col-md-6 add-comment">
 				<form class="comment-form">

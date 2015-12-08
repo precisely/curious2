@@ -315,10 +315,12 @@ class User {
 		if (id) SearchService.get().index(this)
 	}
 
+	/**
+	 * Used to reindex all the associated data related to this user.
+	 */
 	void reindexAssociations() {
 		List instances = []
 		instances.addAll(Discussion.getAllByUser(this))
-
 		SearchService.get().index(instances)
 	}
 

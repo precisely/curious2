@@ -3476,6 +3476,7 @@ body {
 	color: #555555;
 	font-size: 11px;
 	cursor: pointer;
+	margin-bottom: 25px;
 }
 
 .discussion-comments-wrapper .add-comment {
@@ -3496,11 +3497,7 @@ body {
 }
 
 .comments {
-	margin-top: 25px;
-}
-
-.discussions .comments {
-	margin-top: 0;
+	margin-bottom: 25px;
 }
 
 .comments:empty {

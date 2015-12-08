@@ -48,7 +48,7 @@
 		<!-- COMMENTS -->
 
 			<div class="main discusscomments">
-				<div class="feed-item discussion" id="discussion-{{- discussionHash }}" data-offset="5">
+				<div class="feed-item discussion" id="discussion-{{- discussionHash }}">
 					<div class="discussion-topic">
 						<div class="contents">
 							<div class="row">
@@ -102,6 +102,9 @@
 					</div>
 					<div class="commentList">
 						<div class="discussion-comments-wrapper">
+								<div class="view-comment"
+									 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
+								<div class="comments media-list"></div>
 								<div class="add-comment-to-discussion">
 									<form method="post" class="comment-form">
 										{{ if (notLoggedIn) { }}
@@ -134,7 +137,6 @@
 										<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 									</form>
 								</div>
-								<div class="comments media-list"></div>
 							</div>
 						</div>
 					</div>

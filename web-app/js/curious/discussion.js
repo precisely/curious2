@@ -59,7 +59,7 @@ function getComments(discussionHash, args, callback) {
 			return;
 		}
 
-		renderComments(discussionHash, data.posts, data, window.singleDiscussionPage);
+		renderComments(discussionHash, data.posts, data);
 
 		if (callback) {
 			callback(data);
@@ -138,11 +138,12 @@ $(document).ready(function() {
 	 * Click handler to execute when user clicks on the button to delete a DiscussionPost/comment.
 	 */
 	$(document).on("click", "a.delete-post", function() {
-		var httpArgs ={requestMethod:'delete'};
+		var httpArgs = {requestMethod: 'delete'};
 		var $this = $(this);
 		showYesNo('Are you sure want to delete this?', function() {
 			var postId = $this.data('postId');
-			var currentOffset = $this.closest('.feed-item').data('offset');
+			var currentOffset = $this.closest('.feed-item').data('offset') || maxCommentsPerDiscussion;
+
 			queueJSONAll('Deleting comment', '/api/discussionPost/' + postId + '?offset=' + (currentOffset - 1) + '&' +
 					getCSRFPreventionURI('deleteDiscussionPostDataCSRF'), null,
 					function(data) {
@@ -151,7 +152,7 @@ $(document).ready(function() {
 
 				if (data.success) {
 					if (data.nextFollowupPost) {
-						renderComments(data.discussionHash, [data.nextFollowupPost], {discussionDetails: {isAdmin: data.isAdmin}}, window.singleDiscussionPage);
+						renderComments(data.discussionHash, [data.nextFollowupPost], {discussionDetails: {isAdmin: data.isAdmin}});
 					}
 					$this.parent().closest('.discussion-comment').slideUp('normal', function() {
 						$(this).remove();
@@ -186,12 +187,12 @@ $(document).ready(function() {
 				return;
 			}
 
-			renderComments(params.discussionHash, [data.post], data, !window.singleDiscussionPage);
+			renderComments(params.discussionHash, [data.post], data, true);
 			$form[0].reset();
 			var discussionElement = getDiscussionElement(params.discussionHash);
-			var currentOffset = discussionElement.data('offset');
+			var currentOffset = discussionElement.data('offset') || maxCommentsPerDiscussion;
 			discussionElement.data('offset', ++currentOffset);
-		}, function(xhr) {
+		}, function() {
 			console.log('Internal server error');
 		});
 
@@ -294,8 +295,6 @@ $(function() {
 });
 
 function infiniteScrollComments(discussionHash) {
-	commentsArgs.max = 5;
-	
 	$(".comments").infiniteScroll({
 		bufferPx: 360,
 		finalMessage: 'No more comments to show',
@@ -332,7 +331,6 @@ function discussionShow(hash) {
 			$('#feed').html(compiledHTML);
 
 			showCommentAgeFromDate();
-			infiniteScrollComments(hash);
 			getComments(hash, commentsArgs);		// See feeds.js for "commentsArgs"
 			if (discussionDetails.firstPost && discussionDetails.firstPost.plotDataId) {
 				plot = new PlotWeb(tagList, discussionDetails.userId, discussionDetails.username, "#plotDiscussArea", true, true, new PlotProperties({

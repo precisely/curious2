@@ -1,5 +1,5 @@
 var autocompleteWidget, commentsArgs, ownedFeed = false, nextSuggestionOffset = 0;
-var maxCommentsPerDiscussion = 4;		// Comments to display in the discussion listing page (feeds page) at once
+var maxCommentsPerDiscussion = 5;
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
 
@@ -340,7 +340,6 @@ function displayDetail() {
 		var domainHashValue = hash.split("/")[1];
 
 		if (hash.startsWith("#discussions/")) {
-			window.singleDiscussionPage = true;
 			discussionShow(domainHashValue);
 		} else if (hash.startsWith("#people/")) {
 			showUserDetails(domainHashValue);
@@ -352,9 +351,8 @@ function displayDetail() {
 
 function checkAndDisplayTabData() {
 	// Reset these variables as we change state/tab
-	window.singleDiscussionPage = false;
 	nextSuggestionOffset = 0;
-	commentsArgs = {offset: 0, sort: "created", order: "desc"};	
+	commentsArgs = {offset: 0, sort: "created", order: "desc", max: maxCommentsPerDiscussion};
 	
 	// Clear the main content and display a spinner
 	$("#feed").html('<div class="text-center"><i class="fa fa-circle-o-notch fa-spin fa-3x"></i></div>');
@@ -459,7 +457,7 @@ $(document).ready(function() {
 	 */
 	$(document).on("click", ".discussion .view-comment", function() {
 		var discussionHash = $(this).data("discussionHash");
-		var offset = $('#discussion-' + discussionHash).data("offset") || 4;
+		var offset = $('#discussion-' + discussionHash).data("offset") || maxCommentsPerDiscussion;
 		commentsArgs.offset = offset;
 
 		getComments(discussionHash, commentsArgs, function() {
