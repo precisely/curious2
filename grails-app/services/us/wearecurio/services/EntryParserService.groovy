@@ -318,7 +318,7 @@ class EntryParserService {
 		String toString() {
 			if (tag == null)
 				return "ParseAmount(inactive)"
-			return "ParseAmount(tag: " + tag.getDescription() + ", baseTag: " + baseTag.getDescription() + ", amount: " + amount + ", units: '" + units + "', tagSuffix: " + tagSuffix + ", unitSuffix:" + unitSuffix + ", precision: " + precision + ", durationType: " + durationType + ")"
+			return "ParseAmount(tag: " + tag?.getDescription() + ", baseTag: " + baseTag?.getDescription() + ", amount: " + amount + ", units: '" + units + "', tagSuffix: " + tagSuffix + ", unitSuffix:" + unitSuffix + ", precision: " + precision + ", durationType: " + durationType + ")"
 		}
 		
 		boolean isDuration() {

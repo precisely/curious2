@@ -164,15 +164,13 @@
 		<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a>
 	</li>
 	</c:ifLoggedin>
-	       		<li><a href="#">Wiki</a> </li>
-	       		<li><a href="#">FAQS</a> </li>
-	       		<li><a href="#">Email Help</a> </li>
+	       		<li><a href="mailto:support@wearecurio.us">Email Help</a> </li>
 	       	</ul>
 	       </div>
 	       <div class="col-xs-2">
 	       	<ul>
 	       	<li> <span class="ul-head">Follow</span><br></li>
-	       		<li ><a href="#"> Blog </a></li>
+	       		<li ><a href="http://soon.wearecurio.us/blog/"> Blog </a></li>
 	       		<li ><a href="#">Twitter</a> </li>
 	       		<li ><a href="#">Facebook</a> </li>
 	       	</ul>

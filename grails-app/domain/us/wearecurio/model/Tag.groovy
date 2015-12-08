@@ -91,7 +91,7 @@ class Tag implements Serializable, Comparable {
 	static Tag look(String d) {
 		log.debug "Tag.look() description:'" + d + "'"
 		def tag = tagCache.get(d)
-		if (tag) return tagIdCache.get(tag.id)
+		if (tag != null) return tag
 		
 		if (d.length() > MAXLENGTH)
 			d = d.substring(0, MAXLENGTH)
