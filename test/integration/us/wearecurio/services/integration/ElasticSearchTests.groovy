@@ -551,9 +551,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
-		assert dbGroupIds.size() == 2
+		assert dbGroupIds.size() == 3
 		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
+        assert dbGroupIds.contains(discussionReadByUser.virtualUserGroupIdFollowers)
 		assert dbGroupIds.contains(groupA.id)
+        assert !dbGroupIds.contains(discussionNotReadByUser.virtualUserGroupIdFollowers)
 		assert !dbGroupIds.contains(groupB.id)
 		
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
@@ -1056,9 +1058,11 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
-		assert dbGroupIds.size() == 2
+		assert dbGroupIds.size() == 3
 		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
+        assert dbGroupIds.contains(discussionA.virtualUserGroupIdFollowers)
 		assert dbGroupIds.contains(groupA.id)
+        assert !dbGroupIds.contains(discussionB.virtualUserGroupIdFollowers)
 		assert !dbGroupIds.contains(groupB.id)
 		
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
@@ -1136,12 +1140,16 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
-		assert dbGroupIds.size() == 3
+		assert dbGroupIds.size() == 5
 		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
+		assert dbGroupIds.contains(discussionA.virtualUserGroupIdFollowers)
+		assert dbGroupIds.contains(discussionC.virtualUserGroupIdFollowers)
 		assert dbGroupIds.contains(groupA.id)
-		assert !dbGroupIds.contains(groupB.id)
 		assert dbGroupIds.contains(groupC.id)
-		
+
+		assert !dbGroupIds.contains(discussionB.virtualUserGroupIdFollowers)
+        assert !dbGroupIds.contains(groupB.id)
+
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
 			query_string(query:  "groupIds:(" + dbGroupIds.iterator().join(" OR ") + ")")
 		}
@@ -1268,7 +1276,8 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 			assert bucket == null
 		}
 	}
-	
+    
+
 	@Test
 	void "Test Get Discussion Post Info for User Belonging to Two Groups Multiple Discussions Each"() {
 		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
@@ -1303,11 +1312,28 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		
+        println "user.virtualUserGroupIdDiscussions: ${user.virtualUserGroupIdDiscussions}"
+        println "user.virtualUserGroupIdFollowers: ${user.virtualUserGroupIdFollowers}"
+        println "discussionA1.virtualUserGroupIdFollowers: ${discussionA1.virtualUserGroupIdFollowers}"
+        println "discussionA2.virtualUserGroupIdFollowers: ${discussionA2.virtualUserGroupIdFollowers}"
+        println "discussionB1.virtualUserGroupIdFollowers: ${discussionB1.virtualUserGroupIdFollowers}"
+        println "discussionB2.virtualUserGroupIdFollowers: ${discussionB2.virtualUserGroupIdFollowers}"
+        println "groupA.id: ${groupA.id}"
+        println "groupB.id: ${groupB.id}"
+        println "groupC.id: ${groupC.id}"
+        
 		def dbGroupIds = GroupMemberReader.lookupGroupIds(userId)
-		assert dbGroupIds.size() == 3
+		assert dbGroupIds.size() == 7
 		assert dbGroupIds.contains(user.virtualUserGroupIdDiscussions)
+        assert dbGroupIds.contains(discussionA1.virtualUserGroupIdFollowers)
+        assert dbGroupIds.contains(discussionA2.virtualUserGroupIdFollowers)
+        assert dbGroupIds.contains(discussionB1.virtualUserGroupIdFollowers)
+        assert dbGroupIds.contains(discussionB2.virtualUserGroupIdFollowers)
 		assert dbGroupIds.contains(groupA.id)
 		assert dbGroupIds.contains(groupB.id)
+        
+        assert !dbGroupIds.contains(discussionC1.virtualUserGroupIdFollowers)
+        assert !dbGroupIds.contains(user.virtualUserGroupIdFollowers)
 		assert !dbGroupIds.contains(groupC.id)
 		
 		def discussionResults = Discussion.search(searchType:'query_and_fetch') {
