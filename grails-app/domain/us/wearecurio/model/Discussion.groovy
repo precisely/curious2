@@ -80,7 +80,15 @@ class Discussion {
 	static Discussion create(User user) {
 		return create(user, null)
 	}
-	
+
+	static List<Discussion> getAllByUser(User user) {
+		List discussions = Discussion.withCriteria {
+			eq("userId", user.id)
+		}
+
+		return discussions
+	}
+
 	private static createUserActivity(Long userId, UserActivity.ActivityType activityType, Long objectId) {
 		UserActivity.create(userId, activityType, UserActivity.ObjectType.DISCUSSION, objectId)
 	}

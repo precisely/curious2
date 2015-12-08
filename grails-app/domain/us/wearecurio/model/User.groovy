@@ -315,6 +315,13 @@ class User {
 		if (id) SearchService.get().index(this)
 	}
 
+	void reindexAssociations() {
+		List instances = []
+		instances.addAll(Discussion.getAllByUser(this))
+
+		SearchService.get().index(instances)
+	}
+
 	User update(Map map) {
 		log.debug "User.update() this:" + this + ", map:" + map
 
