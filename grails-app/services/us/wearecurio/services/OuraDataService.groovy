@@ -83,16 +83,23 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Long endTime = new Date().getTime()
+		Calendar cal = Calendar.getInstance()
+		cal.setTime(startDate)
+		cal.set(Calendar.HOUR_OF_DAY, 23)
+		cal.set(Calendar.MINUTE, 59)
+		cal.set(Calendar.SECOND, 59)
+		cal.set(Calendar.MILLISECOND, 0)
+		Long endTime = cal.getTimeInMillis()
+
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "sleep", startTimestamp: Long.toString(startTime), endTimestamp: Long.toString(endTime)], requestHeaderParams)
+				[dataType: "sleep", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
 
 		JSONArray sleepData = apiResponse["data"]
 
 		sleepData.each { sleepEntry ->
 			String setName = SET_NAME + "s" + sleepEntry["dateCreated"]
 
-			Date entryDate = new Date(sleepEntry["eventTime"])
+			Date entryDate = new Date(new Long(sleepEntry["eventTime"]) * 1000)
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
@@ -101,32 +108,32 @@ class OuraDataService extends DataService {
 
 			if (sleepEntryData) {
 				if (sleepEntryData["bedtime_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "bedtime_m", Long.parseLong(sleepEntryData["bedtime_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "bedtime_m", Long.parseLong(sleepEntryData["bedtime_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 
 				if (sleepEntryData["sleep_score"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "sleep_score", Long.parseLong(sleepEntryData["sleep_score"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "sleep_score", Long.parseLong(sleepEntryData["sleep_score"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 
 				if (sleepEntryData["awake_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "awake_m", Long.parseLong(sleepEntryData["awake_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "awake_m", Long.parseLong(sleepEntryData["awake_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 
 				if (sleepEntryData["rem_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "rem_m", Long.parseLong(sleepEntryData["rem_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "rem_m", Long.parseLong(sleepEntryData["rem_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 
 				if (sleepEntryData["light_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "light_m", Long.parseLong(sleepEntryData["light_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "light_m", Long.parseLong(sleepEntryData["light_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 
 				if (sleepEntryData["deep_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "deep_m", Long.parseLong(sleepEntryData["deep_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "deep_m", Long.parseLong(sleepEntryData["deep_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 			}
@@ -158,23 +165,29 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Long endTime = new Date().getTime()
+		Calendar cal = Calendar.getInstance()
+		cal.setTime(startDate)
+		cal.set(Calendar.HOUR_OF_DAY, 23)
+		cal.set(Calendar.MINUTE, 59)
+		cal.set(Calendar.SECOND, 59)
+		cal.set(Calendar.MILLISECOND, 0)
+		Long endTime = cal.getTimeInMillis()
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "exercise", startTimestamp: Long.toString(startTime), endTimestamp: Long.toString(endTime)], requestHeaderParams)
+				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
 
 		JSONArray exerciseData = apiResponse["data"]
 
 		exerciseData.each { exerciseEntry ->
 			String setName = SET_NAME + "e" + exerciseEntry["dateCreated"]
 
-			Date entryDate = new Date(exerciseEntry["eventTime"])
+			Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
 			def exerciseEntryData = exerciseEntry["data"]
 			if (exerciseEntryData) {
-				Long duration = Long.parseLong(exerciseEntryData["duration_m"])
+				Long duration = Long.parseLong(exerciseEntryData["duration_m"].toString())
 				if (exerciseEntryData["classification"] == "rest") {
 					tagUnitMap.buildEntry(creationMap, stats, "classification_rest", duration, userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
@@ -223,16 +236,23 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Long endTime = new Date().getTime()
+		Calendar cal = Calendar.getInstance()
+		cal.setTime(startDate)
+		cal.set(Calendar.HOUR_OF_DAY, 23)
+		cal.set(Calendar.MINUTE, 59)
+		cal.set(Calendar.SECOND, 59)
+		cal.set(Calendar.MILLISECOND, 0)
+		Long endTime = cal.getTimeInMillis()
+
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "activity", startTimestamp: Long.toString(startTime), endTimestamp: Long.toString(endTime)], requestHeaderParams)
+				[dataType: "activity", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
 
 		JSONArray activityData = apiResponse["data"]
 
 		activityData.each { activityEntry ->
 			String setName = SET_NAME + "ac" + activityEntry["dateCreated"]
 
-			Date entryDate = new Date(activityEntry["eventTime"])
+			Date entryDate = new Date(new Long(activityEntry["eventTime"]) * 1000)
 
 			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
@@ -240,23 +260,23 @@ class OuraDataService extends DataService {
 			def exerciseEntryData = activityEntry["data"]
 			if (exerciseEntryData) {
 				if (exerciseEntryData["non_wear_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "non_wear_m", Long.parseLong(exerciseEntryData["non_wear_m"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "non_wear_m", Long.parseLong(exerciseEntryData["non_wear_m"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 				if (exerciseEntryData["steps"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "steps", Long.parseLong(exerciseEntryData["steps"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "steps", Long.parseLong(exerciseEntryData["steps"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 				if (exerciseEntryData["eq_meters"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "eq_meters", Long.parseLong(exerciseEntryData["eq_meters"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "eq_meters", Long.parseLong(exerciseEntryData["eq_meters"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 				if (exerciseEntryData["active_cal"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "active_cal", Long.parseLong(exerciseEntryData["active_cal"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "active_cal", Long.parseLong(exerciseEntryData["active_cal"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 				if (exerciseEntryData["total_cal"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "total_cal", Long.parseLong(exerciseEntryData["total_cal"]), userId, timeZoneIdNumber,
+					tagUnitMap.buildEntry(creationMap, stats, "total_cal", Long.parseLong(exerciseEntryData["total_cal"].toString()), userId, timeZoneIdNumber,
 							entryDate, COMMENT, setName)
 				}
 			}

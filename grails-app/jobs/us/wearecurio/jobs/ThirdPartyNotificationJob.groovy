@@ -26,6 +26,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 		}
 		fitBitDataService.notificationProcessor()
 		withingsDataService.notificationProcessor()
+		ouraDataService.notificationProcessor()
 		log.debug "Finished executing ThirdPartyNotificationJob."
 	}
 }
