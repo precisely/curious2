@@ -454,6 +454,7 @@ class Entry implements Comparable {
 				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
 				amounts.add(durationAmount)
 			}
+			m['durationType'] = DurationType.NONE
 			other.update(m, stats, date, true, true)
 			
 			return other
@@ -1382,12 +1383,15 @@ class Entry implements Comparable {
 		// look for latest matching start entry prior to this one
 
 		def results = c {
-			eq("userId", userId)
-			le("date", date)
-			eq("baseTag", baseTag)
-			eq("durationType", DurationType.START)
-			if (excludeId != null)
-				not { eq("id", excludeId) }
+			and {
+				eq("userId", userId)
+				le("date", date)
+				eq("baseTag", baseTag)
+				eq("durationType", DurationType.START)
+				if (excludeId != null) {
+					not { eq("id", excludeId) }
+				}
+			}
 			maxResults(1)
 			order("date", "desc")
 		}
@@ -1401,12 +1405,15 @@ class Entry implements Comparable {
 		// look for latest matching start entry prior to this one
 
 		def results = c {
-			eq("userId", userId)
-			ge("date", date)
-			eq("baseTag", baseTag)
-			eq("durationType", DurationType.END)
-			if (excludeId != null)
-				not { eq("id", excludeId) }
+			and {
+				eq("userId", userId)
+				ge("date", date)
+				eq("baseTag", baseTag)
+				eq("durationType", DurationType.END)
+				if (excludeId != null) {
+					not { eq("id", excludeId) }
+				}
+			}
 			maxResults(1)
 			order("date", "asc")
 		}
