@@ -61,7 +61,7 @@ class OuraDataService extends DataService {
 				ownerType: "user", typeId: ThirdParty.OURA]))
 	}
 
-	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "getDataSleep(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
 		String requestUrl = "/api/sleep"
@@ -71,7 +71,7 @@ class OuraDataService extends DataService {
 	}
 
 	// Overloaded method to support pagination
-	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) {
+	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
 
 		// TODO: revisit timezoneId calculation
 		Integer timeZoneIdNumber = getTimeZoneId(account)
@@ -100,9 +100,6 @@ class OuraDataService extends DataService {
 			String setName = SET_NAME + "s" + sleepEntry["dateCreated"]
 
 			Date entryDate = new Date(new Long(sleepEntry["eventTime"]) * 1000)
-
-			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
 			def sleepEntryData = sleepEntry["data"]
 
@@ -141,20 +138,19 @@ class OuraDataService extends DataService {
 
 		stats.finish()
 
-		if (sleepData["links"] && sleepData["links"]["next"]) {
+		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
-
-			getDataSleep(account, refreshAll, sleepData["links"]["next"])
+			getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
 		}
 
 		return [success: true]
 	}
 
-	Map getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		getDataExercise(account, refreshAll, "/api/exercise", forDay)
 	}
 
-	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) {
+	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
 		// TODO: revisit timezoneId calculation
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 
@@ -182,9 +178,6 @@ class OuraDataService extends DataService {
 
 			Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
 
-			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
-
 			def exerciseEntryData = exerciseEntry["data"]
 			if (exerciseEntryData) {
 				Long duration = Long.parseLong(exerciseEntryData["duration_m"].toString())
@@ -206,20 +199,19 @@ class OuraDataService extends DataService {
 
 		stats.finish()
 
-		if (exerciseData["links"] && exerciseData["links"]["next"]) {
-			log.debug "Processing get sleep data for paginated URL"
-
-			getDataExercise(account, refreshAll, exerciseData["links"]["next"])
+		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
+			log.debug "Processing get exercise data for paginated URL"
+			getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
 		}
 
 		return [success: true]
 	}
 
-	Map getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) {
+	Map getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		getDataActivity(account, refreshAll, "/api/activity", forDay)
 	}
 
-	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) {
+	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
 		// TODO: revisit timezoneId calculation
 		Integer timeZoneIdNumber = getTimeZoneId(account)
 		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
@@ -254,9 +246,6 @@ class OuraDataService extends DataService {
 
 			Date entryDate = new Date(new Long(activityEntry["eventTime"]) * 1000)
 
-			Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-					e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
-
 			def exerciseEntryData = activityEntry["data"]
 			if (exerciseEntryData) {
 				if (exerciseEntryData["non_wear_m"]) {
@@ -284,10 +273,9 @@ class OuraDataService extends DataService {
 
 		stats.finish()
 
-		if (activityData["links"] && activityData["links"]["next"]) {
-			log.debug "Processing get sleep data for paginated URL"
-
-			getDataActivity(account, refreshAll, activityData["links"]["next"])
+		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
+			log.debug "Processing get activity data for paginated URL"
+			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
 		}
 
 		return [success: true]

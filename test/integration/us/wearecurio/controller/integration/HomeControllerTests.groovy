@@ -1,5 +1,7 @@
 package us.wearecurio.controller.integration
 
+import us.wearecurio.services.OuraDataService
+
 import static org.junit.Assert.*
 
 import org.junit.*
@@ -26,6 +28,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	HomeController controller
 	FitBitDataService fitBitDataService
 	WithingsDataService withingsDataService
+	OuraDataService ouraDataService
 	UrlService urlService
 
 	User user2
@@ -483,6 +486,71 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 		controller.unregistermoves()
 		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
 				["Moves"] as Object[], null)
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
+	void testRegisterOura() {
+		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "token",
+				 accessSecret: "secret", accountId: "id"])
+		Utils.save(account, true)
+		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.OURA)
+
+		controller.session.userId = user2.id
+
+		shouldFail(AuthenticationRequiredException) {
+			// When no OAuthAccount exist.
+			controller.registerOura()
+		}
+	}
+
+	@Test
+	void "Test registerOura When token expired"() {
+		controller.session.userId = userId
+		ouraDataService.oauthService = [
+				postOuraResource: { token, url, p, h ->
+					return new Response(new MockedHttpURLConnection(401))
+				}
+		]
+
+		shouldFail(AuthenticationRequiredException) {
+			// When token expired & re-subscribing.
+			controller.registerOura()
+		}
+	}
+
+	@Test
+	void "Test registerOura"() {
+		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "token",
+				 accessSecret: "secret", accountId: "id"])
+		Utils.save(account, true)
+		assertNotNull OAuthAccount.findByUserIdAndTypeId(userId, ThirdParty.OURA)
+
+		account.accessToken = "some-token"
+		Utils.save(account, true)
+		controller.session.userId = userId
+
+		ouraDataService.oauthService = [
+				postOuraResource: { token, url, p, h ->
+					return new Response(new MockedHttpURLConnection("""{}"""))
+				}
+		]
+		controller.registerOura()
+		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.success.message",
+				["Oura"] as Object[], null)
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
+	void "Test unregisterOura"() {
+		controller.ouraDataService = [
+				unsubscribe: { Long userId -> return [success:true] }
+		] as OuraDataService
+		controller.session.userId = userId
+
+		controller.unregisterOura()
+		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
+				["Oura"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}
 }

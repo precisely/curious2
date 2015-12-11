@@ -10,6 +10,7 @@ class MockedHttpURLConnection extends HttpURLConnection {
 
 	int code = 200
 	String responseString = "no-content"
+	String body = "{}"
 
 	MockedHttpURLConnection() {
 		super(new URL("http://dummy-url.com"))
@@ -24,12 +25,14 @@ class MockedHttpURLConnection extends HttpURLConnection {
 		super(new URL("http://dummy-url.com"))
 
 		this.responseString = responseString
+		this.body = responseString
 	}
 
 	MockedHttpURLConnection(String responseString, int code) {
 		super(new URL("http://dummy-url.com"))
 
 		this.responseString = responseString
+		this.body = responseString
 		this.code = code
 	}
 
@@ -56,4 +59,8 @@ class MockedHttpURLConnection extends HttpURLConnection {
 		return new ByteArrayInputStream(responseString.bytes)
 	}
 
+	@Override
+	InputStream getErrorStream() {
+		return new ByteArrayInputStream(responseString.bytes)
+	}
 }
