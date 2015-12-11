@@ -156,7 +156,10 @@ class DataController extends LoginController {
 		authStatus.sprint?.reindex()
 		
 		ArrayList<TagStats> tagStats = stats.finish()
-		return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
+		if (tagStats == null) {
+			return [entry, '', null, null]
+		} else
+			return [entry, '', tagStats[0], tagStats.size() > 0 ? tagStats[1] : null];
 	}
 
 	// find entries including those with null events
