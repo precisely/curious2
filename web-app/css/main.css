@@ -2309,6 +2309,10 @@ div.graph-header-container .red-header {
 	width: auto;
 }
 
+.sprint.not-following.not-admin #create-discussion, .sprint.not-following.not-admin .add-comment {
+	display: none;
+}
+
 .discussions-wrapper {
 	max-height: 520px;
 	overflow: auto;

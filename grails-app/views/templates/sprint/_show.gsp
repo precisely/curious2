@@ -1,5 +1,5 @@
 <div class="feed">
-	<div class="sprint">
+	<div class="sprint {{- hasMember ? 'following' : 'not-following' }} {{- hasAdmin ? 'admin': 'not-admin'}}" id="sprint-{{- hash}}">
 		<div class="row">
 			<div class="col-xs-10 sprint-content">
 				<div class="row">
@@ -67,7 +67,7 @@
 				<div class="row">
 					<div class="right-content">
 						<div class="new-post">
-							<form id="create-discussion" class="{{- hasMember ? '' : 'hide' }}">
+							<form id="create-discussion">
 								<div class="input-affordance left-addon">
 									<i class="fa fa-pencil"></i> 
 									<input class="full-width discussion-topic-input"

@@ -241,11 +241,13 @@ function editUserDetails() {
 								</div>
 
 								<div class="form-group">
-									<label class="control-label" for="email notifications">Email Notifications</label><br>
+									<label class="control-label" for="notifyOnComments">Email Notifications</label><br>
 									<div class="email-radio">
-										<input type="radio" class="radio-public" name="visibility1" id="public1" value="public" checked="">
+										<input type="radio" class="radio-public" name="notifyOnComments" id="public1"
+											value="on" ${user.notifyOnComments ? "checked" : ""}>
 										<label for="public1" class="radio-public-label">Email me when someone comments</label> <br>
-										<input type="radio" class="radio-private" name="visibility1" id="private1" value="private">
+										<input type="radio" class="radio-private" name="notifyOnComments" id="private1" value="off"
+											value="on" ${user.notifyOnComments ? "" : "checked"}>
 										<label for="private1" class="radio-private-label">Don't email me when someone comments</label>
 									</div>
 								</div>
