@@ -31,7 +31,7 @@
 		// TODO: change facebook appId after creating final app
 		window.fbAsyncInit = function() {
 			FB.init({
-				appId      : '714092418734227',
+				appId      : ${grailsApplication.config.facebookAppId},
 				xfbml      : true,
 				version    : 'v2.4'
 			});
