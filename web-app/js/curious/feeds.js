@@ -380,144 +380,136 @@ function checkAndDisplayTabData() {
 
 $(window).load(checkAndDisplayTabData).on('hashchange', checkAndDisplayTabData);
 
-$(document).ready(function() {
-	$('html').on('click', function(e) {
-		if (typeof $(e.target).data('original-title') == 'undefined' && !$(e.target).is('.share-button img')) {
-			$('[data-original-title]').popover('hide');
+$('#sprint-tags').keypress(function (e) {
+	var key = e.which;
+
+	if (key == 13) { // the enter key code
+		addEntryToSprint('sprint-tags', '');
+		return false;
+	}
+});
+
+$('#submitSprint').submit(function(event) {
+	// See base.js for implementation details of $.serializeObject()
+	var params = $(this).serializeObject();
+	var id = $('#sprintIdField').val();
+	var httpArgs = { requestMethod: 'PUT' };
+	queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
+			function(data) {
+		if (!checkData(data))
+			return;
+
+		if (!data.success) {
+			$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
+			setInterval(function() {
+				$('.modal-dialog .alert').addClass('hide');
+			}, 5000);
+		} else {
+			if (isTabActive('#' + data.hash)) {
+				sprintShow(data.hash);
+			} else {
+				location.assign(sprintShowURL + data.hash);
+			}
+			clearSprintFormData()
+			$('#createSprintOverlay').modal('hide');
 		}
-	});
+	}, function(xhr) {
+	}, null, httpArgs);
+	return false;
+});
 
-	$('#sprint-tags').keypress(function (e) {
-		var key = e.which;
+createAutocomplete('sprint-participants', 'participantsAutocomplete');
+createAutocomplete('sprint-admins', 'adminsAutocomplete');
 
-		if (key == 13) { // the enter key code
-			addEntryToSprint('sprint-tags', '');
+$(document).on("click", ".deleteSprintEntry", function() {
+	var $element = $(this);
+	var repeatType = $(this).data('repeatType');
+	var id = $(this).data('id');
+	console.log('repeat type: ', repeatType);
+	deleteGhost($element, id, true);
+	return false;
+});
+
+$(document).on("click", ".deleteParticipants", function() {
+	var $element = $(this);
+	var username = $(this).data('username');
+	deleteParticipantsOrAdmins($element, username, 'participants');
+	return false;
+});
+
+$(document).on("click", ".deleteAdmins", function() {
+	var $element = $(this);
+	var username = $(this).data('username');
+	deleteParticipantsOrAdmins($element, username, 'admins');
+	return false;
+});
+
+/**
+ * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of discussion and their
+ * comments.
+ */
+$(document).on("click", ".discussion .view-comment", function() {
+	var discussionHash = $(this).data("discussionHash");
+	var offset = $('#discussion-' + discussionHash).data("offset") || 4;
+	commentsArgs.offset = offset;
+
+	getComments(discussionHash, commentsArgs, function() {
+		$('#discussion-' + discussionHash).data("offset", offset + maxCommentsPerDiscussion);
+	}.bind(this));
+});
+
+// Handlers for discussion form input fields
+$(document).on('keypress', '#discussion-topic', function(e) {
+	var key = e.which;
+	if (key == 13) {
+		var value = $(this).val();
+		if (!value) {
 			return false;
 		}
-	});
 
-	$('#submitSprint').submit(function(event) {
+		var data = extractDiscussionNameAndPost(value);
+
 		// See base.js for implementation details of $.serializeObject()
-		var params = $(this).serializeObject();
-		var id = $('#sprintIdField').val();
-		var httpArgs = { requestMethod: 'PUT' };
-		queueJSONAll('Updating sprint', '/api/sprint/' + id + '?' + getCSRFPreventionURI('updateSprintDataCSRF'), JSON.stringify(params),
+		var params = $('#create-discussion').serializeObject();
+		params.name = data.name
+		params.discussionPost = data.post;
+
+		queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
 				function(data) {
 			if (!checkData(data))
 				return;
-
-			if (!data.success) {
-				$('.modal-dialog .alert').text('Error occurred while submitting the form.').removeClass('hide');
-				setInterval(function() {
-					$('.modal-dialog .alert').addClass('hide');
-				}, 5000);
-			} else {
-				if (isTabActive('#' + data.hash)) {
-					sprintShow(data.hash);
-				} else {
-					location.assign(sprintShowURL + data.hash);
-				}
-				clearSprintFormData()
-				$('#createSprintOverlay').modal('hide');
-			}
-		}, function(xhr) {
-		}, null, httpArgs);
-		return false;
-	});
-
-	createAutocomplete('sprint-participants', 'participantsAutocomplete');
-	createAutocomplete('sprint-admins', 'adminsAutocomplete');
-
-	$(document).on("click", ".deleteSprintEntry", function() {
-		var $element = $(this);
-		var repeatType = $(this).data('repeatType');
-		var id = $(this).data('id');
-		console.log('repeat type: ', repeatType);
-		deleteGhost($element, id, true);
-		return false;
-	});
-
-	$(document).on("click", ".deleteParticipants", function() {
-		var $element = $(this);
-		var username = $(this).data('username');
-		deleteParticipantsOrAdmins($element, username, 'participants');
-		return false;
-	});
-
-	$(document).on("click", ".deleteAdmins", function() {
-		var $element = $(this);
-		var username = $(this).data('username');
-		deleteParticipantsOrAdmins($element, username, 'admins');
-		return false;
-	});
-
-	/**
-	 * Click handler for event when user clicks on the "VIEW MORE COMMENTS" in the listing of discussion and their
-	 * comments.
-	 */
-	$(document).on("click", ".discussion .view-comment", function() {
-		var discussionHash = $(this).data("discussionHash");
-		var offset = $('#discussion-' + discussionHash).data("offset") || 4;
-		commentsArgs.offset = offset;
-
-		getComments(discussionHash, commentsArgs, function() {
-			$('#discussion-' + discussionHash).data("offset", offset + maxCommentsPerDiscussion);
-		}.bind(this));
-	});
-
-	// Handlers for discussion form input fields
-	$(document).on('keypress', '#discussion-topic', function(e) { 
-		var key = e.which;
-		if (key == 13) {
-			var value = $(this).val();
-			if (!value) {
-				return false;
-			}
-
-			var data = extractDiscussionNameAndPost(value);
-
-			// See base.js for implementation details of $.serializeObject()
-			var params = $('#create-discussion').serializeObject();
-			params.name = data.name
-			params.discussionPost = data.post;
-
-			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
-					function(data) {
-				if (!checkData(data))
-					return;
-				if (data.success) {
-					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
-					$('#create-discussion')[0].reset();
-				}
-			}, function(xhr) {
-				console.log('Internal server error');
-			});
-
-			return false;
-		}
-	});
-
-	$('#close-sprint-modal').click(function() {
-		$('#createSprintOverlay').modal('hide').data('bs.modal', null);
-		clearSprintFormData();
-		queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF', 
-				{username: userName, sprintHash: $('#sprintIdField').val()}),
-				function(data) {
-			if (!checkData(data))
-				return;
-
 			if (data.success) {
-				console.log('added persons: ', data);
-				$("#" + inputId).val('');
-				addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
-			} else {
-				showBootstrapAlert($('.modal-dialog .alert'), data.message);
+				addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
+				$('#create-discussion')[0].reset();
 			}
 		}, function(xhr) {
-			console.log('error: ', xhr);
+			console.log('Internal server error');
 		});
+
 		return false;
+	}
+});
+
+$('#close-sprint-modal').click(function() {
+	$('#createSprintOverlay').modal('hide').data('bs.modal', null);
+	clearSprintFormData();
+	queuePostJSON('Canceling sprint edit', '/data/cancelSprintEdit', getCSRFPreventionObject('cancelSprintEditCSRF',
+			{username: userName, sprintHash: $('#sprintIdField').val()}),
+			function(data) {
+		if (!checkData(data))
+			return;
+
+		if (data.success) {
+			console.log('added persons: ', data);
+			$("#" + inputId).val('');
+			addParticipantsAndAdminsToList($("#" + inputId + "-list"), deleteButtonClass, userName);
+		} else {
+			showBootstrapAlert($('.modal-dialog .alert'), data.message);
+		}
+	}, function(xhr) {
+		console.log('error: ', xhr);
 	});
+	return false;
 });
 
 function extractDiscussionNameAndPost(value) {
@@ -873,14 +865,19 @@ function toggleCommentsList(discussionHash) {
 
 function showUserDetails(hash) {
 	queueJSON('Getting user details', '/api/user/' + hash + '?' + getCSRFPreventionURI('getUserDataCSRF') + '&callback=?',
-			function(data) { 
+			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) { 
 			data.user.followButtonText = data.user.followed ? 'UNFOLLOW' : 'FOLLOW';
 			var compiledHTML = compileTemplate("_peopleDetails", {'user': data.user});
 			$('#feed').html(compiledHTML);
 			setQueryHeader('User Profile', true);
 		} else {
-			showAlert(data.message);
+			if (data.message) {
+				showAlert(data.message);
+			}
 			window.history.back();
 		}
 	}, function(data) {

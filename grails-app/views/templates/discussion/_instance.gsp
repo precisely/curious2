@@ -45,9 +45,12 @@
 							<img src="/images/follow.png" alt="follow">Follow
 						</button>
 						{{ if (discussionData.isAdmin) {  }}
-							<button class="share-button" data-toggle="popover" title="Share:"
-								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/social#discussions/{{- discussionData.hash }}'>">
-								<img src="/images/share.png" alt="share">Share
+							<button class="share-button" data-toggle="modal" data-target="#share-modal"
+									data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
+									data-discussion-title="{{- discussionData.name }}">
+								<img src="/images/share.png" alt="share" data-target="#share-modal"
+										data-share-url="{{- serverURL }}/home/social/discussions/{{- discussionData.hash }}"
+									 data-discussion-title="{{- discussionData.name }}">Share
 							</button>
 						{{ } }}
 						<button onclick="toggleCommentsList('{{- discussionData.hash }}')">
@@ -73,10 +76,10 @@
 				<form class="comment-form">
 					{{ if (false) { }}
 						<p>Enter your details below</p>
-						<div id="postname">
+						<div id="postName">
 							<input type="text" id="postname" name="postname" value="" class="postInput" />Name
 						</div>
-						<div id="postemail">
+						<div id="postEmail">
 							<input type="text" id="postemail" name="postemail" value="" class="postInput" />
 							Email (not publicly visible)
 						</div>

@@ -1,26 +1,16 @@
 package us.wearecurio.controller
 
-import us.wearecurio.server.Session
-import us.wearecurio.services.SecurityService
-
-import static org.springframework.http.HttpStatus.*
-import grails.converters.*
-import groovy.json.*
-import grails.gorm.DetachedCriteria
-
+import us.wearecurio.security.NoAuth
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
-import us.wearecurio.model.DurationType
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
-import us.wearecurio.services.SearchService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
@@ -42,6 +32,7 @@ class HomeController extends DataController {
 	JawboneService jawboneService
 	MovesDataService movesDataService
 	def jawboneUpDataService
+
 	def oauthService
 	PageRenderer groovyPageRenderer
 	Twenty3AndMeDataService twenty3AndMeDataService
@@ -71,7 +62,6 @@ class HomeController extends DataController {
 		Long userId = user.id
 		
 		debug "userId: $userId"
-
 
 		Map result = [:]
 
@@ -174,6 +164,7 @@ class HomeController extends DataController {
 		redirect(url: session.deniedURI)
 	}
 
+	@NoAuth
 	def notifywithings() {
 		debug "HomeController.notifywithings() from IP: [$request.remoteAddr] with params:" + params
 
@@ -186,8 +177,6 @@ class HomeController extends DataController {
 		debug "HomeController.registermoves() params:" + params
 		User user = sessionUser()
 		Long userId = user.id
-
-
 
 		Map result = [:]
 
@@ -414,6 +403,7 @@ class HomeController extends DataController {
 	/**
 	 * FitBit Subscriber Endpoint
 	 */
+	@NoAuth
 	def notifyfitbit() {
 		// Fitbit now sends notification data as request body
 		String notificationData = request.JSON.toString()
@@ -632,6 +622,7 @@ class HomeController extends DataController {
 		[templateVer:urlService.template(request)]
 	}
 
+	@NoAuth
 	def termsofservice_home() {
 		debug "HomeController.termsofservice_home()"
 		[templateVer:urlService.template(request)]
@@ -651,7 +642,8 @@ class HomeController extends DataController {
 		
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
-	
+
+	@NoAuth
 	def homepage() {
 		render(view:"/home/homepage")
 	}
@@ -667,83 +659,22 @@ class HomeController extends DataController {
 	def feed(String discussionHash, boolean unpublish, boolean publish) {
 		redirect(url:toUrl(action:'social'))
 	}
-	
-	def social(String discussionHash, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
-		debug "HomeController.social(): $params"
-		def user = sessionUser()
 
-		if (user == null) {
-			debug "auth failure"
-			flash.message = "Must be logged in"
-			redirect(url:toUrl(action:'index'))
-			return
-		} else if (userId && userId != user.id) {
-			debug "authorization failure"
-			flash.message = "You don't have permission to read these feeds."
-			redirect(url:toUrl(action:'index'))
-			return
-		}
+	@NoAuth
+	def social() {
+		debug "HomeController.social(): $params"
 
 		Map model
-		params.max = Math.min(max ?: 5, 100)
-		params.offset = offset ?: 0
-
-		if (listSprint) {
-			// This is to get list of sprints the user belongs to or is admin of
-			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id, params.max, params.offset)
-			if (!sprintList) {
-				renderJSONGet([listItems: false])
-				return
-			}
-			model = [sprintList: sprintList]
-			renderJSONGet([listItems: model])
-		} else {
-			if (discussionHash) {
-				Discussion discussion = Discussion.findByHash(discussionHash)
-				if (!discussion) {
-					debug "no discussion for discussionHash " + discussionHash
-					flash.message = "No discussion found"
-					return
-				}
-				
-				if (unpublish) {
-					if (UserGroup.canAdminDiscussion(user, discussion)) {
-						discussion.setIsPublic(false)
-						Utils.save(discussion, true)
-					}
-				}
-				if (publish) {
-					if (UserGroup.canAdminDiscussion(user, discussion)) {
-						discussion.setIsPublic(true)
-						Utils.save(discussion, true)
-					}
-				}
-			}
-			
-			List groupMemberships = UserGroup.getGroupsForReader(user)
-			List associatedGroups = UserGroup.getGroupsForWriter(user)
-			String groupName
-			String groupFullname = "Social Activity"
-					
-			groupMemberships.each { group ->
-				if (group[0]?.name.equals(params.userGroupNames)) {
-					groupFullname = group[0].fullName ?: group[0].name
-							groupName = group[0].name
-				}
-			}
-
-			log.debug("HomeController.social: User has read memberships for :" + groupMemberships.dump())
-
-			model = [
-				prefs: user.getPreferences(), 
-				userId: user.getId(), 
-				templateVer: urlService.template(request), 
-				offset: offset,
-				groupMemberships: groupMemberships, 
-				associatedGroups: associatedGroups, 
-				groupName: groupName, 
-				groupFullname: groupFullname
-				]
+		// TODO: protect private discussions
+		/*
+		 * If request is coming from facebook(i.e. while posting discussion to facebook), return model with discussion details to be used in og meta tags.
+		 * Og meta tags are used by facebook scrapper to scrap information about the post being shared
+		 */
+		if (params.hash && request.getHeader("User-Agent").contains("facebook")) {
+			Discussion discussion = Discussion.findByHash(params.hash)
+			model = discussion?.getJSONDesc()
+		} else if (params.hash) {
+			redirect(uri: "home/social#" + params.id + "/" + params.hash);
 		}
 
 		model

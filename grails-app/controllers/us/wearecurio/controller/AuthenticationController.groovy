@@ -6,6 +6,7 @@ import org.scribe.model.Token
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.security.NoAuth
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -72,6 +73,7 @@ class AuthenticationController extends SessionController {
 	/**
 	 * @see Declarative Error handling in http://grails.org/doc/latest/guide/theWebLayer.html#mappingToResponseCodes
 	 */
+	@NoAuth
 	def authenticateProvider() {
 		String provider = request.exception.cause.provider
 		String returnURI = request.forwardURI
