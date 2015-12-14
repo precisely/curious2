@@ -598,6 +598,10 @@ class User {
 	void deleteInterestTag(Tag tag) {
 		this.removeFromInterestTags(tag)
 	}
+	
+	boolean hasInterestTag(Tag tag) {
+		this.interestTags?.contains(tag) ? true : false
+	}
 
 	def fetchInterestTagsJSON() {
 		def retVal = []

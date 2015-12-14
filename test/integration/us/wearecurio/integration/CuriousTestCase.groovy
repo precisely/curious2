@@ -50,6 +50,8 @@ abstract class CuriousTestCase {
 
 	@After
 	void tearDown() {
-		User.executeUpdate("delete User u")
+		for (User user in User.list()) {
+			user.delete()
+		}
 	}
 }

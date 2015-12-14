@@ -537,6 +537,12 @@ class MigrationService {
 				}
 			}
 		}
+		tryMigration("Add newuser tag to all accounts") {
+			Tag tag = Tag.look('newuser')
+			for (User user in User.list()) {
+				user.addInterestTag(tag)
+			}
+		}
 	}
 	
 	/**

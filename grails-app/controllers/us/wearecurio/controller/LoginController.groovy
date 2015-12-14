@@ -7,6 +7,7 @@ import grails.util.Environment
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
+import us.wearecurio.model.Tag
 import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
@@ -358,6 +359,9 @@ class LoginController extends SessionController {
 			return retVal
 		} else {
 			debug "Successful creation of new user: " + user
+			
+			user.addInterestTag(Tag.look("newuser"))
+			
 			Utils.save(user, true)
 			
 			def groups

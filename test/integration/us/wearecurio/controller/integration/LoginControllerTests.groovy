@@ -344,6 +344,8 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		assert !announce.hasWriter(q)
 		assert announce.hasReader(q)
 		
+		assert q.hasInterestTag(Tag.look("newuser"))
+		
 		def rU = controller.response.redirectedUrl
 		
 		assert rU.endsWith('/home/index')
