@@ -6,13 +6,13 @@
 	<div class="discussion-topic">
 		<div class="contents">
 			<div class="row">
-				<div class="col-xs-9 discussion-header">
+				<div class="col-xs-8 discussion-header">
 					<a href="/home/social#people/{{- discussionData.userHash }}">
 						<img src="{{- discussionData.userAvatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 						&nbsp; <span class="username">{{- discussionData.userName }}</span>
 					</a>
 				</div>
-				<div class="col-xs-3 discussion-topic-span discussion-header">
+				<div class="col-xs-4 discussion-topic-span discussion-header">
 					<span class="posting-time" data-time="{{- discussionData.created }}"></span>
 					{{ if (discussionData.isAdmin) { }}
 						<div class="dropdown">

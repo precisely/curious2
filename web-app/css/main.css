@@ -2303,7 +2303,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint button {
-	margin: 0px 10px 10px 10px;
+	margin: 0px 10px 10px 10px !important;
 	text-transform: uppercase;
 	font-weight: 600;
 	color: dimgrey;
