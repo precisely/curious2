@@ -533,6 +533,9 @@ class Sprint {
 		// record activity
 		UserActivity.create(now, userId, UserActivity.ActivityType.START, UserActivity.ObjectType.SPRINT, this.id)
 		
+		// refresh writer date
+		GroupMemberWriter.update(this.virtualGroupId, userId)
+		
 		return true
 	}
 	

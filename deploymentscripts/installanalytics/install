@@ -45,6 +45,7 @@ iptables -I OUTPUT -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
 iptables -I OUTPUT -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
 iptables -I OUTPUT -p tcp --sport 3306 -m state --state ESTABLISHED -j ACCEPT
 service iptables save
+chkconfig iptables on
 yum -y install lynx
 yum -y install zip
 yum -y install unzip

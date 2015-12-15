@@ -68,6 +68,62 @@ class DiscussionTests extends CuriousTestCase {
 	}
 
 	@Test
+	void testCreateDiscussionInGroups() {
+		Thread.sleep(1000)
+		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
+			[isReadOnly:false, defaultNotify:false])
+		groupA.addMember(user)
+		Thread.sleep(1000)
+		UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
+			[isReadOnly:false, defaultNotify:true])
+		groupB.addMember(user)
+
+		def userGroups = UserGroup.getConcreteGroupsForWriter(user)
+		assert userGroups[0].id == groupB.id
+		assert userGroups[1].id == groupA.id
+		
+		Thread.sleep(1000)
+		
+		Discussion discussion = Discussion.create(user, "Topic name", groupA, null)
+		groupB.addDiscussion(discussion)
+		
+		userGroups = UserGroup.getConcreteGroupsForWriter(user)
+		assert userGroups[1].id == groupB.id
+		assert userGroups[0].id == groupA.id
+		
+		DiscussionPost post = discussion.createPost(user, "Test post")
+		
+		Utils.save(discussion, true)
+		Utils.save(post, true)
+		
+		def groupIds = discussion.groupIds
+		
+		elasticSearchService.index()
+		
+		Thread.sleep(2000)
+		
+		// test elastic search here		
+		def results = Discussion.search(searchType:'query_and_fetch') {
+		  bool {
+		      must {
+				  query_string(query: "name:name bar")
+		          //query_string(query: "groupIds:5")
+		      }
+	          //must {
+	          //    term(name: "name")
+	          //}
+		  }
+		}
+		
+		/* QueryBuilder query = QueryBuilders.termQuery("name", "Topic name")
+		
+		def results = elasticSearchService.search(query)*/
+		
+		System.out.println "RESULT SIZE: " + results.searchResults.size()
+		//assert results.searchResults[0].id == discussion.id
+	}
+
+/*	@Test
 	void testCreateDiscussion() {
 		Discussion discussion = Discussion.create(user, "testCreateDiscussion", testGroup, null)
 		DiscussionPost post = discussion.createPost(user, "Test post")
@@ -133,49 +189,6 @@ class DiscussionTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testCreateDiscussionInGroups() {
-		UserGroup groupA = UserGroup.create("curious A", "Group A", "Discussion topics for Sprint A",
-			[isReadOnly:false, defaultNotify:false])
-		groupA.addMember(user)
-		UserGroup groupB = UserGroup.create("curious B", "Group B", "Discussion topics for Sprint B",
-			[isReadOnly:false, defaultNotify:true])
-		groupB.addMember(user)
-
-		Discussion discussion = Discussion.create(user, "Topic name", groupA, null)
-		groupB.addDiscussion(discussion)
-		DiscussionPost post = discussion.createPost(user, "Test post")
-		
-		Utils.save(discussion, true)
-		Utils.save(post, true)
-		
-		def groupIds = discussion.groupIds
-		
-		elasticSearchService.index()
-		
-		Thread.sleep(2000)
-		
-		// test elastic search here		
-		def results = Discussion.search(searchType:'query_and_fetch') {
-		  bool {
-		      must {
-				  query_string(query: "name:name bar")
-		          //query_string(query: "groupIds:5")
-		      }
-	          //must {
-	          //    term(name: "name")
-	          //}
-		  }
-		}
-		
-		/* QueryBuilder query = QueryBuilders.termQuery("name", "Topic name")
-		
-		def results = elasticSearchService.search(query)*/
-		
-		System.out.println "RESULT SIZE: " + results.searchResults.size()
-		//assert results.searchResults[0].id == discussion.id
-	}
-
-	@Test
 	void "test getFollowupPosts when there is first post but that is not associated with any graph"() {
 		Discussion discussion = Discussion.create(user, "First discussion", testGroup, null)
 		DiscussionPost post1 = discussion.createPost(user, "Post 1")
@@ -210,4 +223,5 @@ class DiscussionTests extends CuriousTestCase {
 		assert discussionModel.firstPost != null
 		assert discussionModel.firstPost.id == post1.id
 	}
+/**/
 }

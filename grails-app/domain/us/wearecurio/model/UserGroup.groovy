@@ -62,6 +62,7 @@ class UserGroup {
 		this.name = name
 		this.fullName = fullName
 		this.description = description
+		this.isVirtual = false
 	}
 
 	static UserGroup lookupOrCreateSystemGroup() {
@@ -185,8 +186,19 @@ class UserGroup {
 	static List getGroupsForWriter(Long userId) {
 		return UserGroup.executeQuery("""SELECT new Map(ug.id AS id, ug.name AS name, ug.fullName AS fullName,
 				ug.description AS description, ug.created AS created, item.created AS joined)
-				FROM UserGroup ug, GroupMemberWriter item WHERE item.memberId = :id AND item.groupId = ug.id""",
+				FROM UserGroup ug, GroupMemberWriter item WHERE item.memberId = :id AND item.groupId = ug.id order by item.created desc""",
 						[id: userId])
+	}
+
+	static List getConcreteGroupsForWriter(User user) {
+		return UserGroup.executeQuery("""SELECT new Map(ug.id AS id, ug.name AS name, ug.fullName AS fullName,
+				ug.description AS description, ug.created AS created, item.created AS joined)
+				FROM UserGroup ug, GroupMemberWriter item WHERE (NOT ug.id = :virtualGroupId) AND item.memberId = :id AND item.groupId = ug.id order by item.created desc""",
+						[virtualGroupId:user.virtualUserGroupIdDiscussions, id: user.id])
+	}
+
+	static List getConcreteGroupsForWriter(Long userId) {
+		getConcreteGroupsForWriter(User.get(userId))
 	}
 
 	public static def getGroupsForDiscussion(Discussion discussion) {
@@ -512,6 +524,20 @@ class UserGroup {
 		GroupMemberWriter.create(id, userId)
 	}
 
+	// refresh created date of GroupMemberWriter object, for use in sorted queries for group write priority
+	void updateWriter(User user) {
+		if (!user) return;
+
+		GroupMemberWriter.update(id, user.getId())
+	}
+
+	// refresh created date of GroupMemberWriter object, for use in sorted queries for group write priority
+	void updateWriter(Long userId) {
+		if (!userId) return;
+
+		GroupMemberWriter.update(id, userId)
+	}
+
 	void removeWriter(User user) {
 		if (!user) return;
 
@@ -524,7 +550,15 @@ class UserGroup {
 		GroupMemberReader.delete(id, userId)
 		GroupMemberWriter.delete(id, userId)
 	}
+	
+	Date writerDate(Long userId) {
+		GroupMemberWriter.lookup(id, userId)?.created
+	}
 
+	Date writerDate(User user) {
+		GroupMemberWriter.lookup(id, user.id)?.created
+	}
+	
 	boolean hasWriter(User user) {
 		if (!user) return false
 		hasWriter(user.id)

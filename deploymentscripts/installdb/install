@@ -18,6 +18,7 @@ yum -y install yum-cron
 cp /usr/share/zoneinfo/UTC /etc/localtime
 iptables -i eth1 -I INPUT -p tcp --dport 3306 -j ACCEPT
 service iptables save
+chkconfig iptables on
 yum -y install lynx
 yum -y install zip
 yum -y install unzip

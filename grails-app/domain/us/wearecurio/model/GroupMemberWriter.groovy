@@ -50,6 +50,20 @@ class GroupMemberWriter {
 		return item
 	}
 	
+	public static GroupMemberWriter update(Long groupId, Long memberId) {
+		GroupMemberWriter item = lookup(groupId, memberId)
+		
+		if (item) {
+			item.created = new Date()
+		} else {
+			return null
+		}
+		
+		Utils.save(item, true)
+		
+		return item
+	}
+	
 	GroupMemberWriter() {
 	}
 	
@@ -69,7 +83,7 @@ class GroupMemberWriter {
 	}
 	
 	public static lookupGroupIds(Long memberId) {
-		return GroupMemberWriter.executeQuery("SELECT item.groupId FROM GroupMemberWriter item WHERE item.memberId = :id",
+		return GroupMemberWriter.executeQuery("SELECT item.groupId FROM GroupMemberWriter item WHERE item.memberId = :id order by item.created desc",
 				[id:memberId])
 	}
 	

@@ -122,11 +122,12 @@ class Discussion {
 			return discussion
 		}
 		
-		if (group?.hasWriter(user)) {
+		if (group.hasWriter(user)) {
 			discussion = new Discussion(user, name, createTime, visibility)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
 			discussion.addUserVirtualGroups(user)
+			group.updateWriter(user)
 		}
 		
 		if (discussion != null) {

@@ -18,7 +18,9 @@ class UserGroupTests extends CuriousTestCase {
 	User admin2
 	User anon
 	User schmoe
+	User bloo
 	UserGroup curious
+	UserGroup curious2
 	UserGroup announce
 
 	static def createUser(name, email) {
@@ -41,8 +43,11 @@ class UserGroupTests extends CuriousTestCase {
 		admin2 = createUser('admin2', 'admin2@user.com')
 		anon = createUser('anon', 'anon@user.com')
 		schmoe = createUser('schmoe', 'schmoe@user.com')
-
+		bloo = createUser('bloo', 'bloo@user.com')
+		
 		curious = UserGroup.create("curious", "Curious Discussions", "Discussion topics for Curious users",
+				[isReadOnly:false, defaultNotify:false])
+		curious2 = UserGroup.create("curious2", "Curious Discussions 2", "Discussion topics for Curious users 2",
 				[isReadOnly:false, defaultNotify:false])
 		announce = UserGroup.create("announce", "Curious Announcements", "Announcements for Curious users",
 				[isReadOnly:true, defaultNotify:true])
@@ -108,7 +113,7 @@ class UserGroupTests extends CuriousTestCase {
 		assert !curious.hasNotified(admin)
 		assert curious.hasAdmin(admin)
 		assert UserGroup.getDefaultGroupForUser(admin) == curious
-
+		
 		announce.addAdmin(admin)
 
 		assert announce.hasReader(admin)
@@ -171,6 +176,21 @@ class UserGroupTests extends CuriousTestCase {
 		announce.removeMember(anon)
 
 		assert !UserGroup.canReadDiscussion(anon, announcement)
+		
+		curious.addMember(bloo)
+		Thread.sleep(1000)
+		curious2.addMember(bloo)
+		
+		def userGroups = UserGroup.getConcreteGroupsForWriter(bloo)
+		assert userGroups[1].id == curious.id
+		assert userGroups[0].id == curious2.id
+		
+		Thread.sleep(1000)
+		curious.updateWriter(bloo)
+		
+		userGroups = UserGroup.getConcreteGroupsForWriter(bloo)
+		assert userGroups[0].id == curious.id
+		assert userGroups[1].id == curious2.id
 	}
 
 	@Test
