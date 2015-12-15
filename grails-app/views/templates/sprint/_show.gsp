@@ -1,10 +1,10 @@
 <div class="feed">
-	<div class="sprint">
+	<div class="sprint {{- hasMember ? 'following' : 'not-following' }} {{- hasAdmin ? 'admin': 'not-admin'}}" id="sprint-{{- hash}}">
 		<div class="row">
 			<div class="col-xs-10 sprint-content">
 				<div class="row">
 					<div class="left-content">
-						<span class="label label-default">DETAILS</span>
+						<span class="label-wide label-default">INSTRUCTIONS</span>
 					</div>
 					<div class="right-content">
 						<h2>
@@ -37,7 +37,7 @@
 				<hr>
 				<div class="row">
 					<div class=" left-content">
-						<span class="label-default label-participants">PARTICIPANTS</span>
+						<span class="label-default label-wide">PARTICIPANTS</span>
 					</div>
 					<div class="right-content">
 						<i class="nav fa fa-chevron-left fa-4x" onclick="showPreviousParticipants()"></i>
@@ -91,9 +91,13 @@
 				</div>
 			</div>
 			<div class="col-xs-2 col-lg-1">
+				<button id="leave-sprint" class="sprint-button {{- hasMember ? '' : 'hide' }}"
+						onclick="leaveSprint('{{- hash }}')">Unfollow</button>
+
+				<button id="join-sprint" class="sprint-button {{- hasMember ? 'hide' : '' }}"
+						onclick="joinSprint('{{- hash }}')">Follow</button>
+
 				{{ if (hasMember) { }}
-					<button id="leave-sprint" class="sprint-button" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
-					<button id="join-sprint" class="sprint-button hidden" onclick="joinSprint('{{- hash }}')">Follow</button>
 					{{ if (hasStarted && !hasEnded) { }}
 						<button id="stop-sprint" class="sprint-button prompted-action" 
 								onclick="stopSprint('{{- hash }}')">Stop</button>
@@ -106,9 +110,7 @@
 								onclick="stopSprint('{{- hash }}')">Stop</button>
 					{{ } }}
 				{{ } else { }}
-					<button id="join-sprint" class="sprint-button" onclick="joinSprint('{{- hash }}')">Follow</button>
-					<button id="leave-sprint" class="sprint-button hidden" onclick="leaveSprint('{{- hash }}')">Unfollow</button>
-					<button id="stop-sprint" class="sprint-button prompted-action hidden" 
+					<button id="stop-sprint" class="sprint-button prompted-action hidden"
 							onclick="stopSprint('{{- hash }}')">Stop</button>
 					<button id="start-sprint" class="prompted-action sprint-button"
 							onclick="startSprint('{{- hash }}')">Start</button>

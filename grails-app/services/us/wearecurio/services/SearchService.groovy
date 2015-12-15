@@ -221,6 +221,7 @@ class SearchService {
 					score: hit.score,
 					interestTagsString: hit.source.interestTagsString,
 					followed: followed,
+					avatarURL: hit.source.avatarURL
 				]
 		}
 		

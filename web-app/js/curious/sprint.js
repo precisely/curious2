@@ -184,6 +184,7 @@ function leaveSprint(sprintHash) {
 			$('#join-sprint').show();
 			$('#stop-sprint').hide();
 			$('#start-sprint').show();
+			getSprintElement(sprintHash).addClass('not-following').removeClass('following');
 		} else {
 			showAlert(data.message);
 		}
@@ -202,8 +203,13 @@ function joinSprint(sprintHash) {
 			$('#join-sprint').hide();
 			$('#stop-sprint').show();
 			$('#start-sprint').hide();
+			getSprintElement(sprintHash).removeClass('not-following').addClass('following');
 		} else {
 			showAlert(data.message);
 		}
 	});
+}
+
+function getSprintElement(hash) {
+	return $('#sprint-' + hash);
 }

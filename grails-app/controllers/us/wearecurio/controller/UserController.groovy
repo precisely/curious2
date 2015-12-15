@@ -1,10 +1,8 @@
 package us.wearecurio.controller
-
-import grails.converters.JSON
-import us.wearecurio.model.*
-import us.wearecurio.utility.*
-import com.lucastex.grails.fileuploader.UFile
 import com.lucastex.grails.fileuploader.FileUploaderService
+import com.lucastex.grails.fileuploader.UFile
+import us.wearecurio.model.User
+import us.wearecurio.utility.Utils
 
 class UserController extends LoginController {
 
@@ -81,6 +79,7 @@ class UserController extends LoginController {
 			currentUserInstance.avatar = avatar
 			Utils.save(currentUserInstance, true)
 			renderJSONPost([success: true, avatarURL: avatar.path])
+			currentUserInstance.reindexAssociations()
 		} catch (Exception e) {
 			log.error "Unable to change or add avatar for ${currentUserInstance}", e
 			renderJSONPost([success: false], message: g.message(code: "default.not.updated.message", args: ["Avatar"]))
