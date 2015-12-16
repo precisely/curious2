@@ -192,7 +192,7 @@ function initCuriosities() {
 	// Load data.
 
 	var correlation_template = $('#correlation-template').html();
-	if(Mustache) {
+	if(!isMobile) {
 		Mustache.parse(correlation_template);
 	}
 

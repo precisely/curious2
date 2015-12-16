@@ -490,7 +490,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void testRegisterOura() {
+	void "Test RegisterOura when no OAuthAccount exists"() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "token",
 				 accessSecret: "secret", accountId: "id"])
 		Utils.save(account, true)
@@ -520,7 +520,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test registerOura"() {
+	void "Test registerOura success condition"() {
 		OAuthAccount account = new OAuthAccount([typeId: ThirdParty.OURA, userId: userId, accessToken: "token",
 				 accessSecret: "secret", accountId: "id"])
 		Utils.save(account, true)
@@ -542,14 +542,27 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test unregisterOura"() {
+	void "Test unregisterOura success"() {
 		controller.ouraDataService = [
-				unsubscribe: { Long userId -> return [success:true] }
+				unsubscribe: { Long userId -> return [success: true] }
 		] as OuraDataService
 		controller.session.userId = userId
 
 		controller.unregisterOura()
 		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.success.message",
+				["Oura"] as Object[], null)
+		assert controller.response.redirectUrl.contains("home/userpreferences")
+	}
+
+	@Test
+	void "Test unregisterOura faliur condition"() {
+		controller.ouraDataService = [
+				unsubscribe: { Long userId -> return [success: false] }
+		] as OuraDataService
+		controller.session.userId = userId
+
+		controller.unregisterOura()
+		assert controller.flash.message == messageSource.getMessage("thirdparty.unsubscribe.failure.message",
 				["Oura"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")
 	}

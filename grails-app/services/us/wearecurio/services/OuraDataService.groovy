@@ -49,15 +49,18 @@ class OuraDataService extends DataService {
 	@Override
 	@Transactional
 	void notificationHandler(String notificationData) {
+	}
+
+	@Transactional
+	ThirdPartyNotification ouraNotificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
 		if (!notification.userId) {	// At time of subscription
 			return
 		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		// TODO: Check if an object of notification for given date is already present
 		Date notificationDate = simpleDateFormat.parse(notification.date);
 
-		Utils.save(new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
+		return Utils.save(new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
 				ownerType: "user", typeId: ThirdParty.OURA]))
 	}
 
@@ -72,10 +75,6 @@ class OuraDataService extends DataService {
 
 	// Overloaded method to support pagination
 	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
-
-		// TODO: revisit timezoneId calculation
-		Integer timeZoneIdNumber = getTimeZoneId(account)
-
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -100,7 +99,7 @@ class OuraDataService extends DataService {
 			String setName = SET_NAME + "s" + sleepEntry["dateCreated"]
 
 			Date entryDate = new Date(new Long(sleepEntry["eventTime"]) * 1000)
-
+			Integer timeZoneIdNumber = sleepEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(sleepEntry["timeZone"]).id
 			def sleepEntryData = sleepEntry["data"]
 
 			if (sleepEntryData) {
@@ -151,9 +150,6 @@ class OuraDataService extends DataService {
 	}
 
 	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
-		// TODO: revisit timezoneId calculation
-		Integer timeZoneIdNumber = getTimeZoneId(account)
-
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -177,6 +173,7 @@ class OuraDataService extends DataService {
 			String setName = SET_NAME + "e" + exerciseEntry["dateCreated"]
 
 			Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
+			Integer timeZoneIdNumber = exerciseEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(exerciseEntry["timeZone"]).id
 
 			def exerciseEntryData = exerciseEntry["data"]
 			if (exerciseEntryData) {
@@ -212,15 +209,6 @@ class OuraDataService extends DataService {
 	}
 
 	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
-		// TODO: revisit timezoneId calculation
-		Integer timeZoneIdNumber = getTimeZoneId(account)
-		TimeZoneId timeZoneIdInstance = TimeZoneId.fromId(timeZoneIdNumber)
-		DateTimeZone dateTimeZoneInstance = timeZoneIdInstance.toDateTimeZone()
-		TimeZone timeZone = dateTimeZoneInstance.toTimeZone()
-
-		SimpleDateFormat shortDateParser = new SimpleDateFormat("yyyyMMdd", Locale.US)
-		shortDateParser.setTimeZone(timeZone)
-
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -245,6 +233,7 @@ class OuraDataService extends DataService {
 			String setName = SET_NAME + "ac" + activityEntry["dateCreated"]
 
 			Date entryDate = new Date(new Long(activityEntry["eventTime"]) * 1000)
+			Integer timeZoneIdNumber = activityEntry["timeZone"] == "null" ? getTimeZoneId(account): TimeZoneId.look(activityEntry["timeZone"]).id
 
 			def exerciseEntryData = activityEntry["data"]
 			if (exerciseEntryData) {

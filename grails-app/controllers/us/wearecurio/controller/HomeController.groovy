@@ -499,8 +499,11 @@ class HomeController extends DataController {
 		String notificationData = request.JSON.toString()
 		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
 
-		ouraDataService.notificationHandler(notificationData)
-		render status: 204
+		if (ouraDataService.ouraNotificationHandler(notificationData)) {
+			render status: 204
+		} else {
+			render status: 500
+		}
 		return
 	}
 

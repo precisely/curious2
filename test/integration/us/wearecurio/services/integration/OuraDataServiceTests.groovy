@@ -49,13 +49,13 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test Subscribe"() {
+	void "Test subscribe sucess"() {
 		Map result = ouraDataService.subscribe(userId)
 		assert result.success
 	}
 
 	@Test
-	void "Test Subscribe if no OAuthAccount"() {
+	void "Test subscribe if no OAuthAccount"() {
 		shouldFail(MissingOAuthAccountException) {
 			ouraDataService.subscribe(user2.id)
 		}
@@ -82,7 +82,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test NotificationHandler"() {
+	void "Test notificationHandler success"() {
 		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3}"""
 		ouraDataService.notificationHandler(notificationString)
 		assert ThirdPartyNotification.count() == 1
@@ -105,7 +105,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataSleep"() {
+	void "Test getDataSleep success"() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
@@ -133,7 +133,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataExercise"() {
+	void "Test getDataExercise success"() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
@@ -161,7 +161,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataActivity"() {
+	void "Test getDataActivity success"() {
 		String mockedResponseData = """{"someKey": "someValue"}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->

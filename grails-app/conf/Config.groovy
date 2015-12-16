@@ -595,7 +595,7 @@ oauth {
 			api = OuraApi
 			key = "curious"
 			secret = "\$2a\$10\$eBxUN4gGeZV5V4lQdbeSEezI990aDJMEsqkW.4NLy2E6KKJtWyFHK"
-			callback = "${grails.serverURL }oauth/oura/callback"
+			callback = "${grails.serverURL}oauth/oura/callback"
 			successUri = "authentication/oura/success"
 			failureUri = "authentication/oura/fail"
 			scope = "read"
