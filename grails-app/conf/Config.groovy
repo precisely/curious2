@@ -159,7 +159,7 @@ elasticSearch {
 environments {
     development {
         grails.logging.jul.usebridge = false
-        grails.serverURL = "http://114.143.237.122:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
+        grails.serverURL = "http://127.0.0.1:8080/"	/** If last `/` is removed, modify url's in oauth provider configurations **/
 		grails.serverURLProtocol = "http"
 		grails.config.locations = ["file:grails-app/conf/LocalConfig.groovy"]
 		
