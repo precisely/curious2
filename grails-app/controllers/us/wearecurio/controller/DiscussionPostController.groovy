@@ -20,7 +20,7 @@ class DiscussionPostController extends LoginController{
 
 		List<DiscussionPost> posts = discussion.getFollowupPosts(params)
 
-		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion),canWrite: UserGroup.canWriteDiscussion(sessionUser(),discussion)]
+		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion), canWrite: UserGroup.canWriteDiscussion(sessionUser(), discussion)]
 
 		// Discussion details are only needed for the first page
 		if (params.offset == 0) {
