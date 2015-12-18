@@ -5,10 +5,15 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
+
+import us.wearecurio.model.Discussion
 import us.wearecurio.model.GroupMemberDiscussion
 import us.wearecurio.model.Model
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
+import us.wearecurio.model.UserActivity
+import us.wearecurio.model.UserActivity.ActivityType
+import us.wearecurio.model.UserActivity.ObjectType
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 
@@ -16,9 +21,13 @@ import us.wearecurio.utility.Utils
 import org.elasticsearch.action.count.CountResponse
 
 import static org.elasticsearch.index.query.FilterBuilders.andFilter
+import static org.elasticsearch.index.query.FilterBuilders.existsFilter
+import static org.elasticsearch.index.query.FilterBuilders.notFilter
+import static org.elasticsearch.index.query.FilterBuilders.orFilter
 import static org.elasticsearch.index.query.FilterBuilders.queryFilter
 import static org.elasticsearch.index.query.FilterBuilders.termsFilter
 import static org.elasticsearch.index.query.FilterBuilders.typeFilter
+import static org.elasticsearch.index.query.QueryBuilders.constantScoreQuery
 import static org.elasticsearch.index.query.QueryBuilders.functionScoreQuery
 import static org.elasticsearch.index.query.QueryBuilders.queryString
 import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.weightFactorFunction
@@ -64,27 +73,28 @@ class SearchService {
 	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
-				return [
-					type: "dis",
-					id: hit.id.toLong(),
-					hash: hit.source.hash,
-					name: hit.source.name,
-					userHash: hit.source.userHash,
-					userName: hit.source.publicUserName,
-					userAvatarURL: hit.source.userAvatarURL,
-					isPublic: (hit.source.visibility == "PUBLIC"),
-					created: hit.source.created,
-					updated: hit.source.updated,
-					totalComments: hit.source.postCount,
-					isPlot: hit.source.isFirstPostPlot,
-					firstPost: hit.source.firstPostId,
-					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
-					groupId: null,
-					groupName: null,
-					score: hit.score,
-					firstPostMessage: hit.source.firstPostMessage,
-					posts: hit.source.posts,
-				]
+                return toJSON(hit.source, adminDiscussions, user, false, hit.score)
+//				return [
+//					type: "dis",
+//					id: hit.id.toLong(),
+//					hash: hit.source.hash,
+//					name: hit.source.name,
+//					userHash: hit.source.userHash,
+//					userName: hit.source.publicUserName,
+//					userAvatarURL: hit.source.userAvatarURL,
+//					isPublic: (hit.source.visibility == "PUBLIC"),
+//					created: hit.source.created,
+//					updated: hit.source.updated,
+//					totalComments: hit.source.postCount,
+//					isPlot: hit.source.isFirstPostPlot,
+//					firstPost: hit.source.firstPostId,
+//					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
+//					groupId: null,
+//					groupName: null,
+//					score: hit.score,
+//					firstPostMessage: hit.source.firstPostMessage,
+//					posts: hit.source.posts,
+//				]
 			case "sprint":
 				return [
 					type: "spr",
@@ -125,25 +135,29 @@ class SearchService {
 		return [:]
 	}
 
-	String getDiscussionActivityQueryString(User user, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-        return SearchQueryService.getDiscussionActivityQueryString(
-            user.id,
-            readerGroups.collect{ it[0].id },
-            adminGroups.collect{ it[0].id },
-            followedUsers.collect{ it.virtualUserGroupIdFollowers },
-            followedSprints.collect{ it.virtualGroupId },
-            followedSprints.find{ it.userId == userId }.collect{ it.virtualGroupId }
-        )
-	}
-	
-	String getSprintActivityQueryString(User user, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
-        return SearchQueryService.getSprintActivityQueryString(
-            user.id,
-            readerGroups.collect{ it[0].id },
-            adminGroups.collect{ it[0].id },
-            followedUsers.collect{ it.id },
-            followedSprints.collect{ it.virtualGroupId }
-        )
+	private Map toJSON(Discussion discussion, List adminDiscussionIds, boolean isNew, Long score = 0) {
+        return [
+            type: "dis",
+            id: discussion.id,
+            hash: discussion.hash,
+            name: discussion.name,
+            userHash: discussion.userHash,
+            userName: discussion.publicUserName,
+            userAvatarURL: discussion.userAvatarURL,
+            isPublic: (discussion.visibility == "PUBLIC"),
+            created: discussion.created,
+            updated: discussion.updated,
+            totalComments: discussion.postCount,
+            isPlot: discussion.isFirstPostPlot,
+            firstPost: discussion.firstPostId,
+            isAdmin: adminDiscussionIds.contains(discussion.id),
+            groupId: null,
+            groupName: null,
+            score: score,
+            firstPostMessage: discussion.firstPostMessage,
+            posts: discussion.posts,
+            isNew: isNew,
+        ]
 	}
 
 	Map getFeed(Long type, User user, int offset = 0, int max = 10, int suggestionOffset = 0, def sessionId = null) {
@@ -248,16 +262,50 @@ class SearchService {
 			}
 		}
 		
+        println "activityQuery: ${Utils.orifyList(queries)}"
 		def result = [listItems: [], success: true]
 		if (queries.size() > 0) {
 			
 			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			
 			elasticSearchHelper.withElasticSearch{ client ->
-				FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
+				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
+				FunctionScoreQueryBuilder fsqb = functionScoreQuery(constantScoreQuery(queryString(Utils.orifyList(queries))))
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchAllQuery())
+                //fsqb.scoreMode("sum")
+                //fsqb.scoreMode("first")
 				
-				fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
+                fsqb.add(
+                    andFilter(
+                        typeFilter("discussion"), 
+                        queryFilter(queryString("hasRecentPost:true AND followers:${user.id}"))
+                    ), linearDecayFunction("recentPostCreated", "7d").setWeight(100.0f)
+                )
+                
+                fsqb.add(
+                    andFilter(
+                        typeFilter("discussion"),
+                        orFilter(
+                            queryFilter(queryString("hasRecentPost:false")),
+                            andFilter(
+                                queryFilter(queryString("hasRecentPost:true")),
+                                queryFilter(queryString("NOT followers:${user.id}"))
+                            )
+                        )
+                    ), linearDecayFunction("created", "7d").setWeight(100.0f)
+                )
+                
+                fsqb.add(
+                    typeFilter("sprint"), 
+                    linearDecayFunction("lastInterestingActivityDate", "60d").setWeight(100.0f)
+                )
+//                fsqb.add(
+//                    andFilter(
+//                        typeFilter("sprint"), 
+//                        existsFilter("userDiscusionAcivityDates.${user.id}")
+//                    ), linearDecayFunction("created", "7d").setWeight(100.0f)
+//                )
+				//fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
 								
 				def temp = client.prepareSearch("us.wearecurio.model_v0")
 				if ((type & DISCUSSION_TYPE) > 0) {
@@ -743,4 +791,170 @@ class SearchService {
 		
 		return result
 	}
+    
+    Long getSprintNotificationCount(User user, Date end=null, Date begin=null) {
+        return -1
+    }
+    
+    Long getNotificationCount(User user, Long type, Date begin=null, Date end=null) {
+		if (type == null || type != DISCUSSION_TYPE || user == null) {
+			return null
+		}
+        
+        String query
+        if (type == DISCUSSION_TYPE) {
+            query = SearchQueryService.getDiscussionNotificationQuery(user.id, begin, end)
+        //} else if (type == SPRINT_TYPE) {
+        }
+        
+        if (query == null || query == "") {
+            return null
+        }
+        
+        Long count = null
+                    
+		elasticSearchHelper.withElasticSearch{ client ->			
+			CountResponse cr = client.prepareCount("us.wearecurio.model_v0")
+                .setTypes("discussion")
+                .setQuery(queryString(query))
+				.execute()
+				.actionGet()
+			
+            println "countResponse: $cr"
+            
+			count = cr.count
+		}
+
+        return count
+    }    
+    
+    Long getNewNotificationCount(User user, Long type = DISCUSSION_TYPE) {
+		if (type == null || type != DISCUSSION_TYPE || user == null) {
+			return null
+		}
+        
+        Long uaType = UserActivity.toType(
+            UserActivity.ActivityType.CHECKED_NOTIFICATIONS, 
+            UserActivity.ObjectType.USER,
+            type==DISCUSSION_TYPE ? ObjectType.DISCUSSION : ObjectType.SPRINT
+        )
+        
+        def checkedActivity = UserActivity.search(searchType:'query_and_fetch') {
+            query_string(query:"typeId:$uaType AND objectId:${user.id}")
+		}
+        
+        Date begin = null
+        if (checkedActivity.searchResults.size > 0) {
+            begin = checkedActivity.searchResults[0].created
+        }
+        
+        return getDiscussionNotificationCount(user, type, begin)
+    }
+    
+    def getNotifications(User user, Long type, Date curDate, int offset=0, int max=10, Date lastCheckedDate=null){
+        println "called static getNotifications"
+        //write query to find all sprint and discussion notifications (as per notes)
+		//if (type == null || (type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null || curDate == null) {
+		if (type == null || type != DISCUSSION_TYPE || user == null || curDate == null) {
+			println "return false"
+            return [listItems: false, success: false]
+		}
+        
+        String query
+        if (type == DISCUSSION_TYPE) {
+            query = SearchQueryService.getDiscussionNotificationQuery(user.id, curDate, lastCheckedDate)
+        //} else if (type == SPRINT_TYPE) {
+        }
+        
+        println "query: $query"
+        def results = Discussion.search(
+            searchType:'query_and_fetch', 
+            sort:'recentPostCreated', 
+            order:'desc',
+            offset:offset,
+            size:max
+        ) {
+            query_string(query:query)
+        }
+
+        println "query results: $results.searchResults"
+		def ret = [listItems: [], success: true]
+        def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
+        
+        results.searchResults.each {
+            boolean isNew = true
+            if (curDate && lastCheckedDate) {
+                isNew = (it.recentPostCreated >= lastCheckedDate && it.recentPostCreated <= curDate)
+            } else if (curDate) {
+                isNew = (it.recentPostCreated <= curDate)
+            } else if (lastCheckedDate) {
+                isNew = (it.recentPostCreated >= lastCheckedDate)
+            }
+            
+            ret.listItems << toJSON(it, adminDiscussionIds, isNew)
+        }
+        
+        println "returning ret: $ret"
+        return ret
+    }
+    
+    def getNotifications(User user, Long type=DISCUSSION_TYPE, int offset=0, int max=10) {
+        println "calling getNotifications"
+		//if ((type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null) {
+		if (type != DISCUSSION_TYPE || user == null) {
+			return [listItems: false, success: false]
+		}
+        
+        Long uaType = UserActivity.toType(
+            ActivityType.CHECKED_NOTIFICATIONS, 
+            ObjectType.USER,
+            type==DISCUSSION_TYPE ? ObjectType.DISCUSSION : ObjectType.SPRINT
+        )
+
+        def results = UserActivity.search(searchType:'query_and_fetch') {
+            query_string(query:"typeId:$uaType AND objectId:${user.id}")
+        }
+        
+        println "calling static getNotifications"
+        return getNotifications(
+                user, 
+                type, 
+                new Date(),
+                offset,
+                max,
+                (results.searchResults.size > 0) ? results.searchResults[0].created : new Date() )
+    }
+    
+    void resetNotificationsCheckDate(User user, Long type, Date checkDate){
+		//if ((type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null || checkDate == null) {
+		if (type != DISCUSSION_TYPE || user == null || checkDate == null) {
+			return
+		}
+        
+        Long uaType = UserActivity.toType(
+            ActivityType.CHECKED_NOTIFICATIONS, 
+            ObjectType.USER,
+            type==DISCUSSION_TYPE ? ObjectType.DISCUSSION : ObjectType.SPRINT
+        )
+        
+        UserActivity ua = UserActivity.findByTypeIdAndObjectId(uaType, user.id)
+        
+        if (ua != null) {
+            ua.created = checkDate
+            Utils.save(ua, true)
+        } else {
+            UserActivity.create(
+                checkDate,
+                null,
+                ActivityType.CHECKED_NOTIFICATIONS,
+                ObjectType.USER,
+                user.id,
+                type==DISCUSSION_TYPE ? ObjectType.DISCUSSION : ObjectType.SPRINT
+            )
+        }
+    }
+    
+    void resetNotificationsCheckDate(User user, Long type=DISCUSSION_TYPE){
+        resetNotificationsCheckDate(user, type, new Date())
+    }
 }

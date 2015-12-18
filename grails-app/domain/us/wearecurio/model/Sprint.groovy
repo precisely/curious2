@@ -101,7 +101,8 @@ class Sprint {
 			'hasRecentPost',
 			'recentPostCreated',
             'username',
-            'discussionsUsernames'
+            'discussionsUsernames',
+            'lastInterestingActivityDate',
 		]
 	}
 	
@@ -775,6 +776,24 @@ class Sprint {
 		}
         
         return usernames
+    }
+    
+    Date getLastInterestingActivityDate() {
+        Date ret = created
+        
+        if (virtualGroupId != null && virtualGroupId > 0) {
+            def discussionIds = GroupMemberDiscussion.lookupMemberIds(virtualGroupId)
+            if (discussionIds != null && discussionIds.size > 0) {
+                Discussion d = Discussion.createCriteria().get {
+                    'in'("id", discussionIds)
+                    maxResults(1)
+                    order("created", "desc")
+                }
+                return d.created
+            }
+        }
+            
+        return ret
     }
     
 	String toString() {

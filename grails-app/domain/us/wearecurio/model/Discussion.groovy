@@ -68,7 +68,8 @@ class Discussion {
 			'recentActivityDate',
             'username',
             'postUsernames',
-            'virtualUserGroupIdFollowers'
+            'virtualUserGroupIdFollowers',
+            'followers'
 		]
 	}
 	
@@ -339,6 +340,8 @@ class Discussion {
 	}
 	
 	DiscussionPost getLastPost() {
+        if (this.id == null) return null
+        
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			eq("discussionId", this.id)
 			maxResults(1)
@@ -697,7 +700,10 @@ class Discussion {
 		return User.get(lastPost.authorUserId)?.publicName
 	}
 
-	
+	Long[] getFollowers() {
+		return GroupMemberReader.lookupMemberIds(virtualUserGroupIdFollowers)
+    }
+    
 	//To Do: when user changes it's settings, discussions it owns will need to be redindexed
 	String getPublicUserName() {
 		return User.get(fetchUserId())?.username
