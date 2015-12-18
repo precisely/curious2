@@ -224,7 +224,8 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         result.listItems != null
         result.listItems.size == 0
     }
-        
+     
+    //@spock.lang.IgnoreRest
     void "Test get notification returns followed discussion with one post"() {
         given: "a new discussion"
         Discussion discussion = Discussion.create(user1, uniqueName)
@@ -249,7 +250,8 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         result.listItems[0].type == "dis"
         result.listItems[0].hash == discussion.hash
     }
-        
+     
+    //@spock.lang.IgnoreRest
     void "Test get notification returns followed discussion with two posts"() {
         given: "a new discussion"
         Discussion discussion = Discussion.create(user1, uniqueName)
@@ -277,7 +279,8 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         result.listItems[0].type == "dis"
         result.listItems[0].hash == discussion.hash
     }
-        
+    
+    //@spock.lang.IgnoreRest
     void "Test get notification returns followed discussions with posts but not followed discussion without post"() {
         given: "a new discussion"
         Discussion discussion1 = Discussion.create(user1, uniqueName)
@@ -308,7 +311,8 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         result.listItems[0].type == "dis"
         result.listItems[0].hash == discussion1.hash
     }
-        
+    
+    //@spock.lang.IgnoreRest
     void "Test get notification returns multiple followed and owned discussions with posts"() {
         given: "discussions owned by user1 and user3"
         Discussion discussion1 = Discussion.create(user1, uniqueName)
@@ -327,7 +331,7 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         discussion2.createPost(user3, uniqueName)
         discussion3.createPost(user1, uniqueName)
         discussion4.createPost(user3, uniqueName)
-        
+    
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")

@@ -262,7 +262,7 @@ class SearchService {
 			}
 		}
 		
-        println "activityQuery: ${Utils.orifyList(queries)}"
+        //println "activityQuery: ${Utils.orifyList(queries)}"
 		def result = [listItems: [], success: true]
 		if (queries.size() > 0) {
 			
@@ -819,8 +819,6 @@ class SearchService {
                 .setQuery(queryString(query))
 				.execute()
 				.actionGet()
-			
-            println "countResponse: $cr"
             
 			count = cr.count
 		}
@@ -852,21 +850,18 @@ class SearchService {
     }
     
     def getNotifications(User user, Long type, Date curDate, int offset=0, int max=10, Date lastCheckedDate=null){
-        println "called static getNotifications"
         //write query to find all sprint and discussion notifications (as per notes)
 		//if (type == null || (type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null || curDate == null) {
 		if (type == null || type != DISCUSSION_TYPE || user == null || curDate == null) {
-			println "return false"
             return [listItems: false, success: false]
 		}
         
         String query
         if (type == DISCUSSION_TYPE) {
-            query = SearchQueryService.getDiscussionNotificationQuery(user.id, curDate, lastCheckedDate)
+            query = SearchQueryService.getDiscussionNotificationQuery(user.id, lastCheckedDate, curDate)
         //} else if (type == SPRINT_TYPE) {
         }
         
-        println "query: $query"
         def results = Discussion.search(
             searchType:'query_and_fetch', 
             sort:'recentPostCreated', 
@@ -877,7 +872,6 @@ class SearchService {
             query_string(query:query)
         }
 
-        println "query results: $results.searchResults"
 		def ret = [listItems: [], success: true]
         def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
         
@@ -894,12 +888,10 @@ class SearchService {
             ret.listItems << toJSON(it, adminDiscussionIds, isNew)
         }
         
-        println "returning ret: $ret"
         return ret
     }
     
     def getNotifications(User user, Long type=DISCUSSION_TYPE, int offset=0, int max=10) {
-        println "calling getNotifications"
 		//if ((type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null) {
 		if (type != DISCUSSION_TYPE || user == null) {
 			return [listItems: false, success: false]
@@ -915,14 +907,13 @@ class SearchService {
             query_string(query:"typeId:$uaType AND objectId:${user.id}")
         }
         
-        println "calling static getNotifications"
         return getNotifications(
                 user, 
                 type, 
                 new Date(),
                 offset,
                 max,
-                (results.searchResults.size > 0) ? results.searchResults[0].created : new Date() )
+                (results.searchResults.size > 0) ? results.searchResults[0].created : null )
     }
     
     void resetNotificationsCheckDate(User user, Long type, Date checkDate){
