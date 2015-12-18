@@ -101,7 +101,7 @@ class Discussion {
 		
         user.addOwnedDiscussion(discussion.id)
         discussion.createVirtualObjects()
-        discussion.addFollower(user.id)
+        discussion.addFollower(user.id, true)
         
 		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
 		
@@ -119,7 +119,7 @@ class Discussion {
 			
             user.addOwnedDiscussion(discussion.id)
             discussion.createVirtualObjects()
-            discussion.addFollower(user.id)
+            discussion.addFollower(user.id, true)
             
 			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
 			            
@@ -132,7 +132,7 @@ class Discussion {
 			group.addDiscussion(discussion)
             discussion.createVirtualObjects()
             user.addOwnedDiscussion(discussion.id)
-            discussion.addFollower(user.id)
+            discussion.addFollower(user.id, true)
 		}
 		
 		if (discussion != null) {
@@ -460,6 +460,10 @@ class Discussion {
 	}
 	
     boolean addFollower(Long userId) {
+        return addFollower(userId, true)
+    }
+    
+    boolean addFollower(Long userId, boolean save) {
 		if (isFollower(userId)) return true
 		def r = GroupMemberReader.create(virtualUserGroupIdFollowers, userId)
         
@@ -477,10 +481,18 @@ class Discussion {
     }
     
     void removeFollower(Long userId) {
+        removeFollower(userId, true)
+    }
+    
+    void removeFollower(Long userId, boolean save) {
         if (!isFollower(userId)) return
         
 		GroupMemberReader.delete(virtualUserGroupIdFollowers, userId)
 		
+        if (save) {
+            Utils.save(this, true)            
+        }
+        
 		UserActivity.create(
 			userId,
 			UserActivity.ActivityType.UNFOLLOW, 

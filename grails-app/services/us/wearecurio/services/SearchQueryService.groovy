@@ -457,9 +457,9 @@ class SearchQueryService {
             //[] for inclusive, {} for exclusive
             query += " AND recentPostCreated:[${Utils.elasticSearchDate(begin)} TO ${Utils.elasticSearchDate(end)}]"
         } else if (begin != null) {
-            query += " AND recentPostCreated:>=${Utils.elasticSearchDate(begin)}"
+            query += " AND recentPostCreated:[${Utils.elasticSearchDate(begin)} TO *]"
         } else if (end != null) {
-            query += " AND recentPostCreated:<=${Utils.elasticSearchDate(end)}"            
+            query += " AND recentPostCreated:[* TO ${Utils.elasticSearchDate(end)}]"            
         }
         
         return query
