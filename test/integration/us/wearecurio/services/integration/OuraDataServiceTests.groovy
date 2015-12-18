@@ -82,9 +82,9 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test notificationHandler success"() {
+	void "Test ouraNotificationHandler success"() {
 		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3}"""
-		ouraDataService.notificationHandler(notificationString)
+		ouraDataService.ouraNotificationHandler(notificationString)
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}

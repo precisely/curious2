@@ -52,7 +52,7 @@ class OuraDataService extends DataService {
 	}
 
 	@Transactional
-	ThirdPartyNotification ouraNotificationHandler(String notificationData) {
+	def ouraNotificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
 		if (!notification.userId) {	// At time of subscription
 			return
