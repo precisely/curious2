@@ -128,7 +128,7 @@
 													id="commentSubmitButton" value="submit" />
 													<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
 										{{ } else { }}
-											{{ if(canWrite) { }}
+											{{ if (canWrite) { }}
 												<input type="text" placeholder="Add Comment to this discussion..."
 														id="post-comment" name="message" required>
 											{{ } }}
