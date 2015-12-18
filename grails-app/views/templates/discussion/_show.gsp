@@ -128,8 +128,10 @@
 													id="commentSubmitButton" value="submit" />
 													<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
 										{{ } else { }}
-											<input type="text" placeholder="Add Comment to this discussion..."
-													id="post-comment" name="message" required>
+											{{ if(canWrite) { }}
+												<input type="text" placeholder="Add Comment to this discussion..."
+														id="post-comment" name="message" required>
+											{{ } }}
 										{{ } }}
 										<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 									</form>
