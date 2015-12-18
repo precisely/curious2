@@ -64,16 +64,22 @@ class GroupMemberReader {
 	}
 	
 	public static lookupMemberIds(Long groupId) {
+        if (groupId == null) return null
+        
 		return GroupMemberReader.executeQuery("SELECT item.memberId FROM GroupMemberReader item WHERE item.groupId = :id",
 				[id:groupId])
 	}
 	
 	public static lookupGroupIds(Long memberId) {
+        if (memberId == null) return null
+        
 		return GroupMemberReader.executeQuery("SELECT item.groupId FROM GroupMemberReader item WHERE item.memberId = :id",
 				[id:memberId])
 	}
 	
 	public static lookup(Long groupId, memberId) {
+        if( groupId == null || memberId == null) return null
+        
 		return GroupMemberReader.findByGroupIdAndMemberId(groupId, memberId)
 	}
 	

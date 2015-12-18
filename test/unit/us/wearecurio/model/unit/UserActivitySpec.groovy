@@ -44,7 +44,9 @@ class UserActivitySpec extends Specification {
 		[UserActivity.ActivityType.INVITE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.INVITE, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT],
 		[UserActivity.ActivityType.UNINVITE, UserActivity.ObjectType.ADMIN, UserActivity.ObjectType.SPRINT],
-		[UserActivity.ActivityType.UNINVITE, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT]
+		[UserActivity.ActivityType.UNINVITE, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT],
+        [UserActivity.ActivityType.CHECKED_NOTIFICATIONS, UserActivity.ObjectType.USER, UserActivity.ObjectType.SPRINT],
+        [UserActivity.ActivityType.CHECKED_NOTIFICATIONS, UserActivity.ObjectType.USER, UserActivity.ObjectType.DISCUSSION]
 	]
 	static String expectedTypeStringPart = "act"
 	static String expectedDelimiter = "-"
@@ -62,7 +64,8 @@ class UserActivitySpec extends Specification {
 		8 : "commented",
 		9 : "uncommented",
 		10 : "invited",
-		11 : "uninvited"
+		11 : "uninvited",
+        12 : "checked_notifications"
 	]
 	
 	static def expectedObjectTypeStringPart = [
@@ -169,6 +172,7 @@ class UserActivitySpec extends Specification {
 		UserActivity.ActivityType.UNCOMMENT	|	"uncommented"
 		UserActivity.ActivityType.INVITE	|	"invited"
 		UserActivity.ActivityType.UNINVITE	|	"uninvited"
+        UserActivity.ActivityType.CHECKED_NOTIFICATIONS |   "checked_notifications"
 		null								| 	""
 	}
 	
@@ -302,6 +306,7 @@ class UserActivitySpec extends Specification {
 		UserActivity.ActivityType.UNCOMMENT,
 		UserActivity.ActivityType.INVITE,
 		UserActivity.ActivityType.UNINVITE,
+        UserActivity.ActivityType.CHECKED_NOTIFICATIONS,
 		null
 		]
 	}

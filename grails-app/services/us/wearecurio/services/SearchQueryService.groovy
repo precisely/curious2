@@ -172,7 +172,8 @@ class SearchQueryService {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
-		return "(${Utils.orifyList(discussionQueries)} AND _type:discussion and hasRecentPost:true)"
+		return "(${Utils.orifyList(discussionQueries)} AND _type:discussion)"
+		//return "(${Utils.orifyList(discussionQueries)} AND _type:discussion and hasRecentPost:true)"
 	}
 	
 	static String getSprintActivityQueryString(
@@ -210,7 +211,8 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size() > 0) {
-			return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND hasRecentPost:true)"
+			return "(${Utils.orifyList(sprintQueries)} AND _type:sprint)"
+			//return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND hasRecentPost:true)"
 		} else {
 			return ""
 		}
@@ -400,8 +402,6 @@ class SearchQueryService {
 				getDiscussionSearchGroup1QueryString(userId, query, readerGroupIds, adminGroupIds, followedUsersGroupIds, followedSprintsGroupIds, ownedSprintsGroupIds) :
 				getDiscussionSearchGroup2QueryString(userId, query, readerGroupIds, adminGroupIds, followedUsersGroupIds, followedSprintsGroupIds, ownedSprintsGroupIds)
 				
-//				getDiscussionSearchGroup1QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-//				getDiscussionSearchGroup2QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
 			if (searchQueryString != null && searchQueryString != "") {
 				queries << searchQueryString
 			}
@@ -413,8 +413,6 @@ class SearchQueryService {
 				getSprintSearchGroup1QueryString(userId, query, readerGroupIds, adminGroupIds, followedUsersIds, followedSprintsGroupIds) :
 				getSprintSearchGroup2QueryString(userId, query, readerGroupIds, adminGroupIds, followedUsersIds, followedSprintsGroupIds)
 				
-//				getSprintSearchGroup1QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-//				getSprintSearchGroup2QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
 			if (searchQueryString != null && searchQueryString != "") {
 				queries << searchQueryString
 			}
@@ -426,8 +424,6 @@ class SearchQueryService {
 				getUserSearchGroup1QueryString(userId, query, followedUsersIds) :
 				getUserSearchGroup2QueryString(userId, query, followedUsersIds)
 				
-//				getUserSearchGroup1QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults) :
-//				getUserSearchGroup2QueryString(userId, query, readerGroups, adminGroups, followedUsers.searchResults, followedSprints.searchResults)
 			if (searchQueryString != null && searchQueryString != "") {
 				queries << searchQueryString
 			}
@@ -438,5 +434,34 @@ class SearchQueryService {
 		}
 		
 		return ""
-	}	
+	}
+                                                      
+    static String getSprintNotificationQuery(Long userId, Date begin=null, Date end=null) {
+        //TODO: finish implementing
+        if (userId == null || userId <= 0) {
+            return ""
+        }
+        
+        return "userId:$userId _type:sprint"
+    }
+                                                      
+    static String getDiscussionNotificationQuery(Long userId, Date begin=null, Date end=null) {
+        if (userId == null || userId <= 0 || (begin!=null && end!=null && begin>end)) {
+            return ""
+        }
+        
+        String query = 
+            "(followers:$userId OR userId:$userId) AND hasRecentPost:true AND _type:discussion"
+        
+        if (begin != null && end != null) {
+            //[] for inclusive, {} for exclusive
+            query += " AND recentPostCreated:[${Utils.elasticSearchDate(begin)} TO ${Utils.elasticSearchDate(end)}]"
+        } else if (begin != null) {
+            query += " AND recentPostCreated:>=${Utils.elasticSearchDate(begin)}"
+        } else if (end != null) {
+            query += " AND recentPostCreated:<=${Utils.elasticSearchDate(end)}"            
+        }
+        
+        return query
+    }
 }

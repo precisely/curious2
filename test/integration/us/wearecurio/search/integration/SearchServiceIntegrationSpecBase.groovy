@@ -11,9 +11,9 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.grails.plugins.elasticsearch.ElasticSearchAdminService;
 import org.grails.plugins.elasticsearch.ElasticSearchService
 
-import us.wearecurio.model.GroupMemberReader
-import us.wearecurio.model.User
-import us.wearecurio.model.UserGroup
+import spock.lang.*
+
+import us.wearecurio.model.*
 import us.wearecurio.utility.Utils
 
 public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
@@ -39,6 +39,9 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 	}
 	
 	def setup() {
+		Locale.setDefault(Locale.US)	// For to run test case in any country.
+		Utils.resetForTesting()
+        
 		searchService
 		searchService.elasticSearchService = elasticSearchService
 
@@ -48,9 +51,6 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 		}
 		
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-		
-		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
-		UserGroup.executeUpdate("delete UserGroup g")
 		
 		user1 = User.create(
 			[	username:'shane',
@@ -106,6 +106,41 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 	}
 
 	def cleanup() {
+        for (GroupMemberReader o in GroupMemberReader.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberWriter o in GroupMemberWriter.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberAdmin o in GroupMemberAdmin.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberDiscussion o in GroupMemberDiscussion.list()) {
+            o.delete(flush:true)
+        }
+        for (UserGroup o in UserGroup.list()) {
+            o.delete(flush:true)
+        }
+        for (DiscussionPost o in DiscussionPost.list()) {
+            o.delete(flush:true)
+        }
+        for (Discussion o in Discussion.list()) {
+            o.delete(flush:true)
+        }
+        for (Sprint o in Sprint.list()) {
+            o.delete(flush:true)
+        }
+        for (User o in User.list()) {
+            o.delete(flush:true)
+        }
+        for (Entry o in Entry.list()) {
+            o.delete(flush:true)
+        }
+        for (Tag o in Tag.list()) {
+            o.delete(flush:true)
+        }
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 	}
 
 	void printAllUserActivities() {
