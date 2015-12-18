@@ -207,15 +207,15 @@ $(function() {
 		var relationText;
 		
 		if (type == 'triggered') {
-			relationText = 'Could ' + description1 + ' be a trigger of ' + description2;
+			relationText = 'There may be a relationship between ' + description1 + ' and ' + description2 + ', what do you think';
 		} else {
-			relationText = 'Could there be ';
+			relationText = 'There may be ';
 			if (type == 'negative') {
 				relationText += ' an inverse ';
 			} else {
 				relationText += ' a ';
 			}
-			relationText += ' relationship between ' + description1 + ' and ' + description2;
+			relationText += ' relationship between ' + description1 + ' and ' + description2 + ', what do you think';
 		}
 		
 		var strengthText;

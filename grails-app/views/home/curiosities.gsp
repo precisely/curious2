@@ -104,13 +104,13 @@
 				</div>
 				<div class="row curiosities-row curiosities-row-bottom">
 					<div class="col-md-3"></div>
-					<div class="col-md-9 curiosities-section-mark-no-or-yes"> NO
+					<div class="col-md-9 curiosities-section-mark-no-or-yes"> NOISE
 						<img class="bubble" marked="{{bubble_0}}" signal-level="0" src="/images/curiosities/{{bubble_0}}_circle.png?v=4" >
 						<img class="bubble" marked="{{bubble_1}}" signal-level="1" src="/images/curiosities/{{bubble_1}}_circle.png?v=4" >
 						<img class="bubble" marked="{{bubble_2}}" signal-level="2" src="/images/curiosities/{{bubble_2}}_circle.png?v=4" >
 						<img class="bubble" marked="{{bubble_3}}" signal-level="3" src="/images/curiosities/{{bubble_3}}_circle.png?v=4" >
 						<img class="bubble" marked="{{bubble_4}}" signal-level="4" src="/images/curiosities/{{bubble_4}}_circle.png?v=4" >
-						YES
+						SIGNAL
 					</div>
 				</div>
 			</div>
