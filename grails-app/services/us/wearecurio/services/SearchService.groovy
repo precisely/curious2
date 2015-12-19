@@ -220,7 +220,6 @@ class SearchService {
             followedSprints.collect{ it.virtualGroupId },
             followedSprints.find{ it.userId == userId }.collect{ it.virtualGroupId }
         )
-        
 	}
 	
 	String getSprintActivityQueryString(User user, List readerGroups, List adminGroups, List followedUsers, List followedSprints) {
