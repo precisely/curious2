@@ -4,8 +4,8 @@ import org.apache.commons.logging.LogFactory
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.DatabaseService
-import us.wearecurio.utility.Utils
 import us.wearecurio.services.SearchService
+import us.wearecurio.utility.Utils
 
 class Discussion {
 	
@@ -18,6 +18,8 @@ class Discussion {
 	Date updated
 	String hash = new DefaultHashIDGenerator().generate(12)
 	Visibility visibility
+	Long virtualUserId // user id for virtual user (admin of virtual user group)
+	Long virtualUserGroupIdFollowers    
 	
 	static final int MAXPLOTDATALENGTH = 1024
 	
@@ -28,6 +30,8 @@ class Discussion {
 		name(nullable:true)
 		firstPostId(nullable:true)
 		visibility(nullable:true)
+		virtualUserId(nullable:true)
+		virtualUserGroupIdFollowers(nullable:true)
 	}
 	
 	static mapping = {
@@ -61,7 +65,11 @@ class Discussion {
 			'visibility', 
 			'groupIds', 
 			'hash',
-			'recentActivityDate'
+			'recentActivityDate',
+            'username',
+            'postUsernames',
+            'virtualUserGroupIdFollowers',
+            'followers'
 		]
 	}
 	
@@ -99,8 +107,10 @@ class Discussion {
 
 		Utils.save(discussion, true)
 		
-		discussion.addUserVirtualGroups(user)
-		
+        user.addOwnedDiscussion(discussion.id)
+        discussion.createVirtualObjects()
+        discussion.addFollower(user.id, true)
+        
 		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
 		
 		return discussion
@@ -115,10 +125,12 @@ class Discussion {
 			
 			Utils.save(discussion, true)
 			
-			discussion.addUserVirtualGroups(user)
-			
+            user.addOwnedDiscussion(discussion.id)
+            discussion.createVirtualObjects()
+            discussion.addFollower(user.id, true)
+            
 			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
-			
+			            
 			return discussion
 		}
 		
@@ -126,8 +138,10 @@ class Discussion {
 			discussion = new Discussion(user, name, createTime, visibility)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
-			discussion.addUserVirtualGroups(user)
 			group.updateWriter(user)
+            discussion.createVirtualObjects()
+            user.addOwnedDiscussion(discussion.id)
+            discussion.addFollower(user.id, true)
 		}
 		
 		if (discussion != null) {
@@ -216,6 +230,36 @@ class Discussion {
 		if (id) SearchService.get().index(this)
 	}
 	
+    private void createVirtualObjects() {
+        if (this.virtualUserGroupIdFollowers != null && 
+            this.virtualUserGroupIdFollowers > 0 &&
+            this.virtualUserId != null &&
+            this.virtualUserId > 0
+           ) {
+            return
+        }
+        
+        UserGroup vUGFollowers
+        if (this.virtualUserGroupIdFollowers == null ||
+            this.virtualUserGroupIdFollowers <= 0
+           ) {
+            vUGFollowers = UserGroup.createVirtual(
+                "'${(name?:"anonymous")}' virtual group for discussion followers"
+            )
+            this.virtualUserGroupIdFollowers = vUGFollowers.id
+        } else {
+            vUGFollowers = UserGroup.get(this.virtualUserGroupIdFollowers)
+        }
+        
+        if (this.virtualUserId == null || this.virtualUserId <= 0) {
+            this.virtualUserId = User.createVirtual().id
+        }
+        vUGFollowers.addAdmin(this.virtualUserId)
+        //virtual user only admins group, do not want to be follower
+        vUGFollowers.removeReader(this.virtualUserId)
+        vUGFollowers.removeWriter(this.virtualUserId)
+    }
+    
 	boolean isPublic() {
 		return getIsPublic()
 	}
@@ -296,6 +340,8 @@ class Discussion {
 	}
 	
 	DiscussionPost getLastPost() {
+        if (this.id == null) return null
+        
 		DiscussionPost post = DiscussionPost.createCriteria().get {
 			eq("discussionId", this.id)
 			maxResults(1)
@@ -422,6 +468,63 @@ class Discussion {
 		return post
 	}
 	
+    boolean addFollower(Long userId) {
+        return addFollower(userId, true)
+    }
+    
+    boolean addFollower(Long userId, boolean save) {
+		if (isFollower(userId)) return true
+		def r = GroupMemberReader.create(virtualUserGroupIdFollowers, userId)
+        
+		if (r != null) {
+			UserActivity.create(
+				userId,
+				UserActivity.ActivityType.FOLLOW, 
+				UserActivity.ObjectType.USER, 
+				userId, 
+				UserActivity.ObjectType.DISCUSSION,
+				this.id
+			)
+		}
+		return r != null        
+    }
+    
+    void removeFollower(Long userId) {
+        removeFollower(userId, true)
+    }
+    
+    void removeFollower(Long userId, boolean save) {
+        if (!isFollower(userId)) return
+        
+		GroupMemberReader.delete(virtualUserGroupIdFollowers, userId)
+		
+        if (save) {
+            Utils.save(this, true)            
+        }
+        
+		UserActivity.create(
+			userId,
+			UserActivity.ActivityType.UNFOLLOW, 
+			UserActivity.ObjectType.USER, 
+			userId, 
+			UserActivity.ObjectType.DISCUSSION,
+			this.id
+		)        
+    }
+    
+    boolean isFollower(Long userId) {
+        return (GroupMemberReader.lookup(virtualUserGroupIdFollowers, userId) != null)
+    }
+    
+    List getAllFollowers() {
+        def gmr = GroupMemberReader.findAllByGroupId(virtualUserGroupIdFollowers)
+        if (gmr != null && gmr.size > 0) {
+            return User.getAll(gmr.collect{ it.memberId })
+        }
+        
+        return []
+    }
+    
 	/**
 	 * getParticipants()
 	 * 
@@ -609,7 +712,10 @@ class Discussion {
 		return User.get(lastPost.authorUserId)?.publicName
 	}
 
-	
+	Long[] getFollowers() {
+		return GroupMemberReader.lookupMemberIds(virtualUserGroupIdFollowers)
+    }
+    
 	//To Do: when user changes it's settings, discussions it owns will need to be redindexed
 	String getPublicUserName() {
 		return User.get(fetchUserId())?.username
@@ -618,19 +724,18 @@ class Discussion {
 	String getUserAvatarURL() {
 		return User.get(fetchUserId())?.avatarURL
 	}
+    
+    String getUsername() {
+        return User.get(userId)?.username        
+    }
+    
+    String getPostUsernames() {
+        return DiscussionPost.findAllByDiscussionId(id)?.collect{ it.authorUsername }.unique().join(" ")
+    }
 
 	@Override
 	String toString() {
 		return "Discussion(id:" + getId() + ", userId:" + userId + ", name:" + name + ", firstPostId:" + firstPostId + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", isPublic:" + (this.visibility == Model.Visibility.PUBLIC) + ")"
-	}
-	
-	private void addUserVirtualGroups(User user) {
-		if (user?.virtualUserGroupIdDiscussions > 0) {
-			GroupMemberDiscussion.create(user.virtualUserGroupIdDiscussions, id)
-		}
-		if (user?.virtualUserGroupIdFollowers > 0) {
-			GroupMemberDiscussion.create(user.virtualUserGroupIdFollowers, id)
-		}
 	}
 }

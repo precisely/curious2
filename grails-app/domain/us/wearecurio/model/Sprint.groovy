@@ -99,7 +99,10 @@ class Sprint {
 			'entriesCount',
 			'participantsCount',
 			'hasRecentPost',
-			'recentPostCreated'
+			'recentPostCreated',
+            'username',
+            'discussionsUsernames',
+            'lastInterestingActivityDate',
 		]
 	}
 	
@@ -705,6 +708,10 @@ class Sprint {
 		return UserGroup.get(virtualGroupId)?.name
 	}
 	
+    String getUsername() {
+        return User.get(userId)?.username
+    }
+    
 	//TODO: any time post made to discussion, will need to re-index sprint
 	Date getRecentPostCreated() {
 		def recent = null
@@ -737,6 +744,58 @@ class Sprint {
 		return false
 	}
 	
+    String getDiscussionsUsernames() {
+		def discussionIds = GroupMemberDiscussion.lookupMemberIds(virtualGroupId)
+        String usernames = ""
+		if (discussionIds?.size > 0) {
+			for (def d_id : discussionIds) {
+            //def discussions = Discussion.getAll(discussionIds)
+                boolean first = true
+                def d = Discussion.get(d_id)
+            //if (discussions && discussions.size > 0) {
+                //for (def d : discussions) {
+                    if (d?.username && d.username != "") {
+                        if (first) {
+                            usernames = d.username
+                            first = false
+                        } else {
+                            usernames += " ${d.username}"
+                        }
+                    }
+                        if (d?.postUsernames && d.postUsernames != "") {
+                            if (first) {
+                                usernames = d.postUsernames
+                                first = false
+                            } else {
+                                usernames += " ${d.postUsernames}"
+                            }
+                        }
+                    }
+                //}
+            //}
+		}
+        
+        return usernames
+    }
+    
+    Date getLastInterestingActivityDate() {
+        Date ret = created
+        
+        if (virtualGroupId != null && virtualGroupId > 0) {
+            def discussionIds = GroupMemberDiscussion.lookupMemberIds(virtualGroupId)
+            if (discussionIds != null && discussionIds.size > 0) {
+                Discussion d = Discussion.createCriteria().get {
+                    'in'("id", discussionIds)
+                    maxResults(1)
+                    order("created", "desc")
+                }
+                return d.created
+            }
+        }
+            
+        return ret
+    }
+    
 	String toString() {
 		return "Sprint(id:" + getId() + ", userId:" + userId + ", name:" + name + ", created:" + Utils.dateToGMTString(created) \
 				+ ", updated:" + Utils.dateToGMTString(updated) + ", visibility:" + visibility + ")"

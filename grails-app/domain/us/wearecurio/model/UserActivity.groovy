@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.model.DurationType
 import us.wearecurio.data.RepeatType
-import us.wearecurio.services.SearchService.Role;
 import us.wearecurio.utility.Utils
 
 /**
@@ -72,7 +71,9 @@ class UserActivity {
 	static ActivityType toActivityType(Long typeIdParam) {
 		if (typeIdParam == INVALID_TYPE) return null
 		
-		if ((typeIdParam & 11L) == 11L) {
+        if ((typeIdParam & 12L) == 12L) {
+            return ActivityType.CHECKED_NOTIFICATIONS
+        } else if ((typeIdParam & 11L) == 11L) {
 			return ActivityType.UNINVITE
 		} else if ((typeIdParam & 10L) == 10L) {
 			return ActivityType.INVITE
@@ -171,7 +172,8 @@ class UserActivity {
 		COMMENT(8),
 		UNCOMMENT(9),
 		INVITE(10),
-		UNINVITE(11)
+		UNINVITE(11),
+        CHECKED_NOTIFICATIONS(12)
 		
 		final Integer id
 		
@@ -201,6 +203,8 @@ class UserActivity {
 					return INVITE
 				case 11:
 					return UNINVITE
+                case 12:
+                    return CHECKED_NOTIFICATIONS
 				default:
 					return null
 			}
@@ -240,6 +244,8 @@ class UserActivity {
 					return "invited"
 				case ActivityType.UNINVITE:
 					return "uninvited"
+                case ActivityType.CHECKED_NOTIFICATIONS:
+                    return "checked_notifications"
 				default:
 					return ""
 			}
@@ -385,6 +391,11 @@ class UserActivity {
 				return (
 					otherType == ObjectType.SPRINT
 					&& (objectType == ObjectType.ADMIN || objectType == ObjectType.USER)
+				)
+            case ActivityType.CHECKED_NOTIFICATIONS:
+				return (
+					objectType == ObjectType.USER
+					&& (otherType == ObjectType.DISCUSSION || otherType == ObjectType.SPRINT)
 				)
 		}
 		
