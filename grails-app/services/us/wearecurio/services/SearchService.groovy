@@ -73,7 +73,7 @@ class SearchService {
 	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
-                return toJSON(hit.source, adminDiscussions, user, false, hit.score)
+                return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score)
 //				return [
 //					type: "dis",
 //					id: hit.id.toLong(),
@@ -135,10 +135,11 @@ class SearchService {
 		return [:]
 	}
 
-	private Map toJSON(Discussion discussion, List adminDiscussionIds, boolean isNew, Long score = 0) {
+	private Map toJSON(def id, def discussion, List adminDiscussionIds, boolean isNew, Float score = 0) {
+        println "toJSON discussion: $discussion"
         return [
             type: "dis",
-            id: discussion.id,
+            id: id.toLong(),
             hash: discussion.hash,
             name: discussion.name,
             userHash: discussion.userHash,
@@ -150,7 +151,7 @@ class SearchService {
             totalComments: discussion.postCount,
             isPlot: discussion.isFirstPostPlot,
             firstPost: discussion.firstPostId,
-            isAdmin: adminDiscussionIds.contains(discussion.id),
+            isAdmin: adminDiscussionIds.contains(id.toLong()),
             groupId: null,
             groupName: null,
             score: score,
@@ -295,10 +296,10 @@ class SearchService {
                     ), linearDecayFunction("created", "7d").setWeight(100.0f)
                 )
                 
-                fsqb.add(
-                    typeFilter("sprint"), 
-                    linearDecayFunction("lastInterestingActivityDate", "60d").setWeight(100.0f)
-                )
+//                fsqb.add(
+//                    typeFilter("sprint"), 
+//                    linearDecayFunction("lastInterestingActivityDate", "60d").setWeight(100.0f)
+//                )
 //                fsqb.add(
 //                    andFilter(
 //                        typeFilter("sprint"), 
@@ -858,7 +859,7 @@ class SearchService {
         
         String query
         if (type == DISCUSSION_TYPE) {
-            query = SearchQueryService.getDiscussionNotificationQuery(user.id, lastCheckedDate, curDate)
+            query = SearchQueryService.getDiscussionNotificationQuery(user.id)
         //} else if (type == SPRINT_TYPE) {
         }
         
@@ -885,7 +886,24 @@ class SearchService {
                 isNew = (it.recentPostCreated >= lastCheckedDate)
             }
             
-            ret.listItems << toJSON(it, adminDiscussionIds, isNew)
+//            Map disMap = [
+//                id: it.id,
+//                hash: it.hash,
+//                name: it.name,
+//                userHash: it.userHash,
+//                publicUserName: it.publicUserName,
+//                userAvatarURL: it.userAvatarURL,
+//                visibility: (it.visibility == "PUBLIC"),
+//                created: it.created,
+//                updated: it.updated,
+//                postCount: it.postCount,
+//                isFirstPostPlot: it.isFirstPostPlot,
+//                firstPostId: it.firstPostId,
+//                firstPostMessage: it.firstPostMessage,
+//                posts: it.posts,
+//            ]
+            
+            ret.listItems << toJSON(it.id, it, adminDiscussionIds, isNew)
         }
         
         return ret

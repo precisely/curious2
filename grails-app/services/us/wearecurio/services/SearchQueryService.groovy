@@ -445,6 +445,11 @@ class SearchQueryService {
         
         return "userId:$userId _type:sprint"
     }
+    
+    
+    static String getAllDiscussionNotificationQuery(Long userId) {
+        return getDiscussionNotificationQuery(userId, null, null)
+    }
                                                       
     static String getDiscussionNotificationQuery(Long userId, Date begin=null, Date end=null) {
         if (userId == null || userId <= 0 || (begin!=null && end!=null && begin>end)) {
