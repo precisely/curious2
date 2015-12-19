@@ -88,6 +88,16 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
 	}
 	
 	void "Test max and offset for getActivity for sprints"() {
+		when: "getActivity is called with max and offset"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1, 1, 1)
+
+        then: "only middle sprint (sprint2) is returned"        
+		results.success
+		results.listItems.size() == 1
+		
+		and: "single result is sprint2"
+		results.listItems[0].type == "spr"
+        results.listItems[0].hash == sprint2.hash
 	}
 	
 	void "Test order for getActivity for sprints"() {
