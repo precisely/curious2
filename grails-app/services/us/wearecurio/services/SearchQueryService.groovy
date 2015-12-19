@@ -263,7 +263,7 @@ class SearchQueryService {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
-		return "((${Utils.orifyList(discussionQueries)}) AND ( name:($query) OR posts:($query) OR firstPostMessage:($query) OR username:($query) OR postUsernames:($query)) AND _type:discussion)"
+		return "((${Utils.orifyList(discussionQueries)}) AND (name:($query) OR posts:($query) OR firstPostMessage:($query) OR username:($query) OR postUsernames:($query)) AND _type:discussion)"
 	}
 	
 	static String getSprintSearchGroup1QueryString(
@@ -337,7 +337,7 @@ class SearchQueryService {
 			discussionQueries << ("(groupIds:${Utils.orifyList(groupIds)})")
 		}
 		
-		return "((NOT (${Utils.orifyList(discussionQueries)})) AND visibility:PUBLIC AND (name:($query) OR posts:($query) OR username:($query) OR firstPostMessage:($query) OR postUsernames:($query)) AND _type:discussion)"
+		return "((NOT (${Utils.orifyList(discussionQueries)})) AND visibility:PUBLIC AND (name:($query) OR posts:($query) OR firstPostMessage:($query) OR username:($query) OR postUsernames:($query)) AND _type:discussion)"
 	}
 	
 	static String getSprintSearchGroup2QueryString(
@@ -366,7 +366,7 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size > 0) {
-			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query)) AND _type:sprint)"
+			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
 		} else {
 			return "(visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
 		}

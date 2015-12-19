@@ -32,13 +32,13 @@ class SearchQueryServiceGroup2Spec extends Specification {
 		userId	| query	| readerGroupIds	| adminGroupIds	| followedUsersGroupIds	| followedSprintsGroupIds	| ownedSprintsGroupIds	| 
 		expected
 		34		| "foo"	| []				| []			| []					| []						| []					| 
-		"((NOT ((userId:34))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"((NOT ((userId:34))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]						| [6]					| 
-		"((NOT (((userId:578) OR (groupIds:(4 OR 378 OR 3 OR 6))))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"((NOT (((userId:578) OR (groupIds:(4 OR 378 OR 3 OR 6))))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []						| []					| 
-		"((NOT (((userId:4637) OR (groupIds:(6 OR 8 OR 5))))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo)) AND _type:discussion)"
+		"((NOT (((userId:4637) OR (groupIds:(6 OR 8 OR 5))))) AND visibility:PUBLIC AND (name:(foo) OR posts:(foo) OR firstPostMessage:(foo) OR username:(foo) OR postUsernames:(foo)) AND _type:discussion)"
 	}
 	
 	//@spock.lang.IgnoreRest
@@ -61,13 +61,13 @@ class SearchQueryServiceGroup2Spec extends Specification {
 		userId	| query	| readerGroupIds	| adminGroupIds	| followedUsersIds	| followedSprintsGroupIds	|
 		expected
 		34		| "foo"	| []				| []			| []					| []					| 
-		"(visibility:PUBLIC AND (name:(foo) OR description:(foo)) AND _type:sprint)"
+		"(visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]					| 
-		"((NOT (((virtualGroupId:3) OR (userId:378)))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo)) AND _type:sprint)"
+		"((NOT (((virtualGroupId:3) OR (userId:378)))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []					| 
-		"((NOT ((userId:5))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo)) AND _type:sprint)"
+		"((NOT ((userId:5))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
 	}
 	
 	//@spock.lang.IgnoreRest
