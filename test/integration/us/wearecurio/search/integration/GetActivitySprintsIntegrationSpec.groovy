@@ -100,6 +100,9 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         results.listItems[0].hash == sprint2.hash
 	}
 	
+	void "Test max and offset for getActivity for sprints"() {
+	}
+	
 	void "Test order for getActivity for sprints"() {
 		when: "getActivity is called"
 		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
