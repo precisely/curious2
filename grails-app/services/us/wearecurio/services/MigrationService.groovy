@@ -537,10 +537,11 @@ class MigrationService {
 				}
 			}
 		}
-		tryMigration("Add newuser tag to all accounts") {
+		tryMigration("Add newuser tag to all accounts and flush") {
 			Tag tag = Tag.look('newuser')
 			for (User user in User.list()) {
 				user.addInterestTag(tag)
+				Utils.save(user, true)
 			}
 		}
 	}
