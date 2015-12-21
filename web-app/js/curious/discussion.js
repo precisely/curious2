@@ -199,16 +199,45 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$(document).on("click", ".share-button", function() {
-		$(this).popover({html: true});
-		$('.share-link').select();
-	});
-
 	// On click of comment button in the single discussion page
 	$(document).on("click", ".comment-button", function() {
 		// Just put focus on the comment box
 		$(this).parents(".discussion").find("input[name=message]").focus();
 		return false;
+	});
+
+	$('#share-modal').on('show.bs.modal', function(event) {
+		var targetElement = $(event.relatedTarget); // Element that triggered the modal
+		var shareURL = targetElement.data('shareUrl');
+		var discussionTitle = targetElement.data('discussionTitle');
+		$('#social-share-message').data({shareURL: shareURL, discussionTitle: discussionTitle});
+	});
+
+	$('#post-message').click(function() {
+		var shareMessage = $('#social-share-message').val();
+		if (!shareMessage || shareMessage == '') {
+			return false;
+		}
+		var platform = $(this).data('platform');
+		if (platform == 'twitter') {
+			var shareURL = 'http://twitter.com/intent/tweet?text=' + shareMessage + '&url=' +
+				encodeURIComponent($('#social-share-message').data('shareURL'));
+			var shareWindow = window.open(shareURL, '_blank', 'toolbar=no, menubar=no, width=500, height=400');
+		}
+		$('.share-options').show();
+		$('.post-message').hide();
+		$('#social-share-message').val('');
+		$('#share-modal .modal-header h4').text('Share');
+		$('#share-modal .modal-footer').hide();
+		$('#share-modal').modal('hide');
+	});
+
+	// Class to copy link to clipboard
+	var client = new ZeroClipboard($('.clip_button'));
+	client.on('ready', function(event) {
+		client.on('copy', function(event) {
+			event.clipboardData.setData('text/plain', $('#social-share-message').data('shareURL'));
+		});
 	});
 });
 
@@ -262,7 +291,7 @@ $(function() {
 
 	var discussTitleRename = function(e) {
 		discussTitleArea.off('mouseup');
-		discussTitle.html('<input type="text" id="discussTitleInput"></input>');
+		discussTitle.html('<input type="text" id="discussTitleInput"/>');
 		var discussTitleInput = $("#discussTitleInput");
 		discussTitleInput.val(discussionTitle);
 		discussTitleInput.keyup(renameDiscussionHandler);
@@ -322,11 +351,13 @@ function discussionShow(hash) {
 	$('#feed').infiniteScroll("stop");
 
 	queueJSON('Getting discussion', '/api/discussion/' + hash + '?' + getCSRFPreventionURI('getDiscussionList') + '&callback=?',
-			function(data) { 
+			function(data) {
+		if (!checkData(data)) {
+			return;
+		}
 		if (data.success) { 
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
-			discussionDetails.serverURL = window.location.host;
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
 			$('#feed').html(compiledHTML);
 
@@ -347,9 +378,37 @@ function discussionShow(hash) {
 				plot.loadSnapshotId(discussionDetails.firstPost.plotDataId, hash); // send discussion hash as authentication confirmation
 			}
 		} else {
-			$('.alert').text(data.message);
+			showAlert(data.message);
+			if (window.history.state) {
+				window.history.back();
+			} else {
+				location.hash = '#all';
+			}
 		}
-		
 		setQueryHeader('Curious Discussions', true);
 	});
+}
+
+function shareMessage(platform) {
+	if (platform == 'copy') {
+		$('#share-modal').modal('hide');
+		return true;
+	} else if (platform == 'facebook') {
+		FB.ui({
+			method: 'feed',
+			link: $('#social-share-message').data('shareURL'),
+			caption: 'Curious Discussions',
+			name: $('#social-share-message').data('discussionTitle')
+		}, function(response){});
+		$('#share-modal').modal('hide');
+		return true;
+	}
+
+	// See base.js for capitalizeFirstLetter() method
+	$('#share-modal .modal-header h4').text('Sharing to ' + platform.capitalizeFirstLetter());
+	$('.post-message .fa').removeClass('fa-facebook fa-twitter').addClass('fa-' + platform);
+	$('#post-message').data('platform', platform);
+	$('.share-options').hide();
+	$('.post-message').show();
+	$('#share-modal .modal-footer').show();
 }

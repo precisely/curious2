@@ -1,12 +1,14 @@
 package us.wearecurio.services
 
 import grails.converters.JSON
+import us.wearecurio.security.NoAuth
 
 import javax.servlet.http.HttpServletRequest
 
 import org.springframework.transaction.annotation.Transactional
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.springframework.web.context.request.RequestContextHolder
 
 import us.wearecurio.model.Sprint
@@ -16,6 +18,8 @@ import grails.compiler.GrailsTypeChecked
 
 import org.apache.commons.logging.LogFactory
 
+import java.lang.reflect.Method
+
 class SecurityService {
 
 	static transactional = true
@@ -23,7 +27,8 @@ class SecurityService {
 	private static def log = LogFactory.getLog(this)
 	
 	static SecurityService service
-	
+	DefaultGrailsApplication grailsApplication
+
 	public static def set(s) { service = s }
 
 	public static SecurityService get() { return service }
@@ -56,28 +61,8 @@ class SecurityService {
 		"unregisterPushNotification"
 	] as Set
 
-	// list of actions that are allowed without authentication
-	static def noauthActions = [
-		'login',
-		'authenticateProvider',
-		'dologin',
-		'register',
-		'doregister',
-		'forgot',
-		'doforgot',
-		'doforgotData',
-		'dologinData',
-		'doregisterData',
-		'discuss',
-		'loadSnapshotDataId',
-		'recover',
-		'dorecover',
-		'notifywithings',
-		'termsofservice_home',
-		'notifyfitbit',
-		'homepage',
-		'getPeopleData'
-	] as Set
+	// list of actions that are allowed without authentication, this will be populated by populateNoAuthMethods action which is being called in Bootstrap.groovy
+	static Map noauthActions = [:]
 
 	/**
 	 * Checks whether the CSRF token in the request is valid.
@@ -128,7 +113,7 @@ class SecurityService {
 		log.debug "login security filter: " + actionName
 		if (params.mobileSessionId != null)
 			params.persistentSessionId = params.mobileSessionId
-		if (!session.userId && !noauthActions.contains(actionName)) {
+		if (!session.userId && (!noauthActions[params.controller] == '*' || !noauthActions[params.controller]?.contains(actionName))) {
 			if (params.persistentSessionId != null) {
 				User user = Session.lookupSessionUser(params.persistentSessionId, new Date())
 				if (user != null) {
@@ -317,6 +302,31 @@ class SecurityService {
 		}
 		session.persistentSession = null
 		session.sessionCache = null
+	}
 
+	/*
+	 * This method iterates over all the controllersandmethods to search for 
+	 * NoAuth annotation and populates noauthActions list based on above
+	 * search
+	 */
+	void populateNoAuthMethods() {
+		grailsApplication.controllerClasses.each { controllerArtefact ->
+			Class controllerClass = controllerArtefact.getClazz()
+			String controllerName = controllerArtefact.getLogicalPropertyName();
+			if (controllerClass.isAnnotationPresent(NoAuth)) {
+				noauthActions[controllerName] = '*'
+			}
+
+			controllerClass.methods.each { Method method ->
+				if (method.isAnnotationPresent(NoAuth)) {
+					if (noauthActions[controllerName] && !(noauthActions[controllerName] == '*')) {
+						noauthActions[controllerName].push(method.name)
+					} else {
+						noauthActions[controllerName] = [method.name]
+					}
+				}
+			}
+		}
+		log.debug "No auth actions map: ${noauthActions.dump()}"
 	}
 }

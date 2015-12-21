@@ -19,7 +19,7 @@ class UrlMappings {
 			controller = "correlation"
 		}
 
-		"/$controller/$action?/$id?(.$format)?"{
+		"/$controller/$action?/$id?(.$format)?/$hash?"{
 			constraints {
 				// apply constraints here
 			}
@@ -72,7 +72,11 @@ class UrlMappings {
 
 		"500" (controller: "authentication", action: "authenticateProvider", exception: AuthenticationRequiredException)
 
-		"/"(view:"/index")
-		"500"(view:'/error')
+		"/"(view: "/index")
+
+		// Default page to be loaded when access is denied
+		"/accessDenied"(view: "/accessDenied")
+
+		"500"(view: '/error')
 	}
 }

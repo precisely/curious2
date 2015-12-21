@@ -53,7 +53,7 @@
 													{{ } else { }}
 														<img class="participantsAvatar img-circle" src="/images/track-avatar.png" alt="avatar">
 													{{ } }}
-													<p>{{- participant.username }}</p>
+													<p>{{- participant.name || participant.username }}</p>
 												</li>
 											{{ }) }}
 										</ul>
