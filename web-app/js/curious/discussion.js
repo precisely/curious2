@@ -187,6 +187,9 @@ $(document).ready(function() {
 				return;
 			}
 
+			if (!data.discussionDetails) {
+				data.discussionDetails = {userId: data.userId, isAdmin: data.isAdmin};
+			}
 			renderComments(params.discussionHash, [data.post], data, true);
 			$form[0].reset();
 			var discussionElement = getDiscussionElement(params.discussionHash);

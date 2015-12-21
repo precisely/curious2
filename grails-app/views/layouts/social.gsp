@@ -28,7 +28,6 @@
 		<g:set var="isSprintsListingPage" value="${controllerName == "home" && actionName == "sprint"}" />
 
 	<script>
-		// TODO: change facebook appId after creating final app
 		window.fbAsyncInit = function() {
 			FB.init({
 				appId      : ${grailsApplication.config.facebookAppId},
