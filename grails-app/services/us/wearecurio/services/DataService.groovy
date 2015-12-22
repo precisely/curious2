@@ -504,8 +504,4 @@ abstract class DataService {
 
 		[code: parsedResponse.getCode(), body: parsedResponse]
 	}
-
-	boolean isRequestSucceded(JSONObject response) {
-		return response && response["meta"] && response["meta"]["code"] == 200
-	}
 }

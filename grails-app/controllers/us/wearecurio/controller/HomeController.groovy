@@ -446,13 +446,14 @@ class HomeController extends DataController {
 			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Oura"])
 		}
 
+		String deniedURI
 		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
+			deniedURI = "curious://?message=" + message + "&hash=" + user.hash
 		} else {
 			flash.message = message
-			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
+			deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
 		}
-		redirect(url: session.deniedURI)
+		redirect(url: deniedURI)
 	}
 
 	def unregisterOura() {
@@ -482,7 +483,7 @@ class HomeController extends DataController {
 			debug "Failure in unsubscribing:" + result.message
 			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Oura"])
 			flash.args = []
-			flash.args << result.message ?: ""
+			flash.args = [(result.message ?: "")]
 		}
 
 		if (params.mobileRequest) {

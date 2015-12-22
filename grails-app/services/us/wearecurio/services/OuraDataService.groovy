@@ -24,8 +24,7 @@ import java.text.SimpleDateFormat
 
 class OuraDataService extends DataService {
 
-	static final String BASE_URL = "http://localhost:2000"
-	static final Map requestHeaderParams = [Authorization: "Bearer 1d49fc35-2af6-477e-8fd4-ab0353a4a76f"]
+	static final String BASE_URL = "https://ouracloud.ouraring.com"
 	static final String SET_NAME = "OURA"
 	static final String COMMENT = "(Oura)"
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
@@ -54,9 +53,6 @@ class OuraDataService extends DataService {
 	@Transactional
 	def ouraNotificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
-		if (!notification.userId) {	// At time of subscription
-			return
-		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date notificationDate = simpleDateFormat.parse(notification.date);
 
@@ -69,7 +65,6 @@ class OuraDataService extends DataService {
 
 		String requestUrl = "/api/sleep"
 
-		Date startDate
 		return getDataSleep(account, refreshAll, requestUrl, forDay)
 	}
 
@@ -91,7 +86,7 @@ class OuraDataService extends DataService {
 		Long endTime = cal.getTimeInMillis()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "sleep", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
+				[dataType: "sleep", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
 		JSONArray sleepData = apiResponse["data"]
 
@@ -165,7 +160,7 @@ class OuraDataService extends DataService {
 		cal.set(Calendar.MILLISECOND, 0)
 		Long endTime = cal.getTimeInMillis()
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
+				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
 		JSONArray exerciseData = apiResponse["data"]
 
@@ -225,7 +220,7 @@ class OuraDataService extends DataService {
 		Long endTime = cal.getTimeInMillis()
 
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "activity", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))], requestHeaderParams)
+				[dataType: "activity", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
 		JSONArray activityData = apiResponse["data"]
 

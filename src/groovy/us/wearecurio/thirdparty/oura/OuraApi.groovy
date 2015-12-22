@@ -9,11 +9,11 @@ import us.wearecurio.thirdparty.QueryParamTypeOAuth20ServiceImpl
 
 class OuraApi extends DefaultApi20 {
 
-	private static final String AUTHORIZE_URL = "http://localhost:2000/oauth/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s";
+	private static final String AUTHORIZE_URL = "https://ouracloud.ouraring.com/oauth/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s";
 
 	@Override
 	String getAccessTokenEndpoint() {
-		"http://localhost:2000/oauth/token"
+		"https://ouracloud.ouraring.com/oauth/token"
 	}
 
 	@Override
@@ -30,8 +30,5 @@ class OuraApi extends DefaultApi20 {
 	@Override
 	PayloadTypeOAuth20ServiceImpl createService(OAuthConfig config) {
 		return new PayloadTypeOAuth20ServiceImpl(this, config)
-
 	}
-
-
 }
