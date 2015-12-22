@@ -75,6 +75,7 @@ class SecurityService {
 		'notifywithings',
 		'termsofservice_home',
 		'notifyfitbit',
+		'notifyOura',
 		'homepage',
 		'getPeopleData'
 	] as Set

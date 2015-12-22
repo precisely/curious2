@@ -105,11 +105,6 @@ class UserController extends LoginController {
 
 		if (!validate.status) {
 			renderJSONGet([success: false, message: validate.message])
-			return
-		}
-
-		if (!validate.status) {
-			renderJSONGet([success: false, message: validate.message])
 		} else {
 			renderJSONGet([success: true, message: validate.message, hash: validate.hash])
 		}

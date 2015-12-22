@@ -89,6 +89,11 @@ class SecurityFilters {
 			before = {
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					log.debug "duplicate filter: " + actionName
+
+					// If request is ajax and request method is PUT parameters are received in request
+					if (request.xhr && request.getMethod() == "PUT") {
+						params << request.JSON
+					}
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime || params.currentDate) {
 						p.remove('_')

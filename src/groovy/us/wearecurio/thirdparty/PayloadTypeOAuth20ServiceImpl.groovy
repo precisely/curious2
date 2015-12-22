@@ -12,6 +12,7 @@ import org.scribe.model.Response
 import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
+import us.wearecurio.thirdparty.oura.OuraApi
 
 /**
  * By default scribe library sends parameter as query string. But some API's
@@ -37,7 +38,11 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		Map queryParams = [:]
 
 		queryParams.put(OAuthConstants.CLIENT_ID, config.getApiKey())
-		queryParams.put(OAuthConstants.CLIENT_SECRET, config.getApiSecret())
+
+		// TODO: authentication is not working when client secret is passed for Oura. Need to fix that
+		if (!(api instanceof OuraApi)) {
+			queryParams.put(OAuthConstants.CLIENT_SECRET, config.getApiSecret())
+		}
 		queryParams.put(OAuthConstants.REDIRECT_URI, config.getCallback())
 
 		/**

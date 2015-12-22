@@ -1,6 +1,7 @@
 package us.wearecurio.controller
 
 import us.wearecurio.server.Session
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.SecurityService
 
 import static org.springframework.http.HttpStatus.*
@@ -41,6 +42,7 @@ class HomeController extends DataController {
 	FitBitDataService fitBitDataService
 	JawboneService jawboneService
 	MovesDataService movesDataService
+	OuraDataService ouraDataService
 	def jawboneUpDataService
 	def oauthService
 	PageRenderer groovyPageRenderer
@@ -409,6 +411,101 @@ class HomeController extends DataController {
 			flash.message = message
 			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
 		}
+	}
+
+	def registerOura() {
+		debug "HomeController.registerOura() params:" + params
+		User user = sessionUser()
+
+		if (user == null) {
+			debug "auth failure"
+			return
+		}
+		Long userId = user.id
+
+		debug "userId: $userId"
+
+		Map result = [:]
+
+		try {
+			result = ouraDataService.subscribe(userId)
+		} catch (MissingOAuthAccountException e) {
+			throw new AuthenticationRequiredException("oura")
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("oura")
+		}
+
+		String message
+		flash.args = []
+		flash.args << result.message ? ", " + result.message : ""
+		if(result.success) {
+			debug "Succeeded in subscribing"
+			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Oura"])
+		} else {
+			debug "Failure in unsubscribing:" + result.message
+			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Oura"])
+		}
+
+		if (params.mobileRequest) {
+			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
+		} else {
+			flash.message = message
+			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
+		}
+		redirect(url: session.deniedURI)
+	}
+
+	def unregisterOura() {
+		debug "HomeController.unregisterOura() params:" + params
+		User user = sessionUser()
+		if (user == null) {
+			debug "auth failure"
+			return
+		}
+		Long userId = user.id
+
+		Map result = [:]
+
+		try {
+			result = ouraDataService.unsubscribe(userId)
+		} catch (InvalidAccessTokenException e) {
+			throw new AuthenticationRequiredException("oura")
+		} catch (MissingOAuthAccountException e) {
+			result = [success: false, message: "No subscription found."]
+		}
+
+		String message
+		if (result.success) {
+			debug "Succeeded in unsubscribing"
+			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["Oura"])
+		} else {
+			debug "Failure in unsubscribing:" + result.message
+			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Oura"])
+			flash.args = []
+			flash.args << result.message ?: ""
+		}
+
+		if (params.mobileRequest) {
+			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
+		} else {
+			flash.message = message
+			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+		}
+	}
+
+	/**
+	 * Oura Subscriber Endpoints
+	 */
+	def notifyOura() {
+		String notificationData = request.JSON.toString()
+		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
+
+		if (ouraDataService.ouraNotificationHandler(notificationData)) {
+			render status: 204
+		} else {
+			render status: 500
+		}
+		return
 	}
 
 	/**
