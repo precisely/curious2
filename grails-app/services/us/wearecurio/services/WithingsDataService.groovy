@@ -39,19 +39,19 @@ class WithingsDataService extends DataService {
 
 	@Override
 	@Transactional
-	void notificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
 		if (!notification.userid) {	// At time of subscription
 			return
 		}
 		Date notificationDate = notification.startdate ? new Date(notification.startdate.toLong() * 1000L) : new Date()
 
-		saveNotification(notificationDate, notification.userid)
+		return [saveNotification(notificationDate, notification.userid)]
 	}
 
 	@Transactional
-	void saveNotification(Date notificationDate, String accountId) {
-		new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: accountId, subscriptionId: "",
+	ThirdPartyNotification saveNotification(Date notificationDate, String accountId) {
+		return new ThirdPartyNotification([collectionType: "default", date: notificationDate, ownerId: accountId, subscriptionId: "",
 			ownerType: "user", typeId: typeId]).save()
 	}
 

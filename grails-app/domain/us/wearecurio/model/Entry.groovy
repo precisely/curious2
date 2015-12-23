@@ -1616,7 +1616,7 @@ class Entry implements Comparable {
 		
 		def newTag = amount.tag
 
-		if (newTag == null) return null
+		if (newTag == null) return
 
 		Tag newBaseTag = amount.baseTag
 		DurationType newDurationType = amount.durationType

@@ -125,22 +125,8 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
-		flash.args = ["Withings"]
-		String message
-		if (result.success) {
-			debug "Succeeded in unsubscribing"
-			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["Withings"])
-		} else {
-			debug "Failed to unsubscribe: " + (result.message ?: "")
-			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Withings"])
-			flash.args << result.message ?: ""
-		}
-		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
-		} else {
-			flash.message = message
-			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
-		}
+		thirdPartyLinkResultHandler(result, "unsubscribe", "Withings")
+		return
 	}
 
 	def register23andme() {
@@ -158,22 +144,8 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("Twenty3AndMe")
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in importing"
-			message = g.message(code: "twenty3andme.import.success.message")
-		} else {
-			debug "Failed to import"
-			message = g.message(code: "twenty3andme.import.failure.message")
-		}
-
-		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
-		} else {
-			flash.message = message
-			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
-		}
-		redirect(url: session.deniedURI)
+		thirdPartyLinkResultHandler(result, "subscribe", "Twenty3AndMe")
+		return
 	}
 
 	def notifywithings() {
@@ -188,9 +160,6 @@ class HomeController extends DataController {
 		debug "HomeController.registermoves() params:" + params
 		User user = sessionUser()
 		Long userId = user.id
-
-
-
 		Map result = [:]
 
 		try {
@@ -201,22 +170,8 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("moves")
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in subscribing"
-			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Moves"])
-		} else {
-			debug "Failed to subscribe"
-			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Moves"])
-		}
-
-		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
-		} else {
-			flash.message = message
-			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
-		}
-		redirect(url: session.deniedURI)
+		thirdPartyLinkResultHandler(result, "subscribe", "Moves")
+		return
 	}
 
 	def unregistermoves() {
@@ -233,23 +188,8 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in unsubscribing"
-			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["Moves"])
-		} else {
-			debug "Failure while unsubscribing" + result.message
-			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Moves"])
-			//result.message is a misnomer it should actually have been named result.apiResponseMessage
-			flash.args = []
-			flash.args << result.message ?: ""
-		}
-		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
-		} else {
-			flash.message = message
-			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
-		}
+		thirdPartyLinkResultHandler(result, "unsubscribe", "Moves")
+		return
 	}
 
 	def registerJawboneUp() {
@@ -267,22 +207,8 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("jawboneup")
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in subscribing"
-			message = g.message(code: "thirdparty.subscribe.success.message", args: ["JawboneUp"])
-		} else {
-			debug "Failed to subscribe"
-			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["JawboneUp"])
-		}
-
-		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
-		} else {
-			flash.message = message
-			session.deniedURI = toUrl(controller: "home", action: "userpreferences", params: [userId: userId])
-		}
-		redirect(url: session.deniedURI)
+		thirdPartyLinkResultHandler(result, "subscribe", "JawboneUp")
+		return
 	}
 
 	def unregisterJawboneUp() {
@@ -299,23 +225,8 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in unsubscribing"
-			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["JawboneUp"])
-		} else {
-			debug "Failure while unsubscribing" + result.message
-			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["JawboneUp"])
-			//result.message is a misnomer it should actually have been named result.apiResponseMessage
-			flash.args = []
-			flash.args << result.message ?: ""
-		}
-		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
-		} else {
-			flash.message = message
-			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
-		}
+		thirdPartyLinkResultHandler(result, "unsubscribe", "JawboneUp")
+		return
 	}
 
 	def polldevices() {
@@ -355,24 +266,8 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("fitbit")
 		}
 
-		String message
-		flash.args = []
-		flash.args << result.message ? ", " + result.message : ""
-		if(result.success) {
-			debug "Succeeded in subscribing"
-			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Fitbit"])
-		} else {
-			debug "Failure in unsubscribing:" + result.message
-			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Fitbit"])
-		}
-
-		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
-		} else {
-			flash.message = message
-			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
-		}
-		redirect(url: session.deniedURI)
+		thirdPartyLinkResultHandler(result, "subscribe", "Fitbit")
+		return
 	}
 
 	def unregisterfitbit() {
@@ -394,23 +289,8 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 
-		String message
-		if (result.success) {
-			debug "Succeeded in unsubscribing"
-			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["Fitbit"])
-		} else {
-			debug "Failure in unsubscribing:" + result.message
-			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Fitbit"])
-			flash.args = []
-			flash.args << result.message ?: ""
-		}
-
-		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
-		} else {
-			flash.message = message
-			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
-		}
+		thirdPartyLinkResultHandler(result, "unsubscribe", "Fitbit")
+		return
 	}
 
 	def registerOura() {
@@ -436,24 +316,8 @@ class HomeController extends DataController {
 		}
 
 		String message
-		flash.args = []
-		flash.args << result.message ? ", " + result.message : ""
-		if(result.success) {
-			debug "Succeeded in subscribing"
-			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Oura"])
-		} else {
-			debug "Failure in unsubscribing:" + result.message
-			message = g.message(code: "thirdparty.subscribe.failure.message", args: ["Oura"])
-		}
-
-		String deniedURI
-		if (params.mobileRequest) {
-			deniedURI = "curious://?message=" + message + "&hash=" + user.hash
-		} else {
-			flash.message = message
-			deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: userId])
-		}
-		redirect(url: deniedURI)
+		thirdPartyLinkResultHandler(result, "subscribe", "Oura")
+		return
 	}
 
 	def unregisterOura() {
@@ -474,23 +338,26 @@ class HomeController extends DataController {
 		} catch (MissingOAuthAccountException e) {
 			result = [success: false, message: "No subscription found."]
 		}
+		thirdPartyLinkResultHandler(result, "unsubscribe", "Oura")
+		return
+	}
 
-		String message
+	private void thirdPartyLinkResultHandler(Map result, String action, String thirdPartyType) {
+		User user = sessionUser()
 		if (result.success) {
-			debug "Succeeded in unsubscribing"
-			message = g.message(code: "thirdparty.unsubscribe.success.message", args: ["Oura"])
+			debug "Succeeded in ${(action == 'unsubscribe') ? 'unsubscribing' : 'subscribing'}"
+			flash.message = g.message(code: "thirdparty." + action + ".success.message", args: [thirdPartyType])
 		} else {
-			debug "Failure in unsubscribing:" + result.message
-			message = g.message(code: "thirdparty.unsubscribe.failure.message", args: ["Oura"])
+			debug "Failure in ${(action == 'unsubscribe') ? 'unsubscribing' : 'subscribing'}: " + result.message
+			flash.message = g.message(code: "thirdparty." + action + ".failure.message", args: [thirdPartyType])
 			flash.args = []
 			flash.args = [(result.message ?: "")]
 		}
 
 		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + message + "&method=unsubscribe&hash=" + user.hash)
+			redirect(url: "curious://?message=" + flash.message + "&method=unsubscribe&hash=" + user.hash)
 		} else {
-			flash.message = message
-			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id]))
+			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: user.id]))
 		}
 	}
 
@@ -501,7 +368,7 @@ class HomeController extends DataController {
 		String notificationData = request.JSON.toString()
 		debug "HomeController.notifyOura() from IP: [$request.remoteAddr] with params: $params data: $notificationData"
 
-		if (ouraDataService.ouraNotificationHandler(notificationData)) {
+		if (ouraDataService.notificationHandler(notificationData)) {
 			render status: 204
 		} else {
 			render status: 500

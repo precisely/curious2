@@ -1,5 +1,7 @@
 package us.wearecurio.services
 
+import us.wearecurio.model.ThirdPartyNotification
+
 import static us.wearecurio.model.OAuthAccount.*
 
 import org.springframework.transaction.annotation.Transactional
@@ -119,7 +121,7 @@ class MovesDataService extends DataService {
 
 	@Override
 	@Transactional
-	void notificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 	}
 
 	@Transactional

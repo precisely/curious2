@@ -211,8 +211,8 @@ environments {
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
 				}
 				oura {
-					key = "curious"
-					secret = "\$2a\$10\$eBxUN4gGeZV5V4lQdbeSEezI990aDJMEsqkW.4NLy2E6KKJtWyFHK"
+					key = "curious-dev"
+					secret = "\$2a\$10\$T5yNKIVCsgODHh9XCSi63OaJNbMKofxdDKdyF0n5.QzcJScbUSQOq​"
 				}
 				/**withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"

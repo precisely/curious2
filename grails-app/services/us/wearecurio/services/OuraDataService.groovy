@@ -7,6 +7,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.OAuthAccount
@@ -47,17 +48,17 @@ class OuraDataService extends DataService {
 
 	@Override
 	@Transactional
-	void notificationHandler(String notificationData) {
-	}
-
-	@Transactional
-	def ouraNotificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date notificationDate = simpleDateFormat.parse(notification.date);
 
-		return Utils.save(new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
-				ownerType: "user", typeId: ThirdParty.OURA]))
+		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
+				ownerType: "user", typeId: ThirdParty.OURA])
+		if (Utils.save(thirdPartyNotification)) {
+			return [thirdPartyNotification]
+		}
+		return []
 	}
 
 	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
@@ -77,14 +78,9 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Calendar cal = Calendar.getInstance()
-		cal.setTime(startDate)
-		cal.set(Calendar.HOUR_OF_DAY, 23)
-		cal.set(Calendar.MINUTE, 59)
-		cal.set(Calendar.SECOND, 59)
-		cal.set(Calendar.MILLISECOND, 0)
-		Long endTime = cal.getTimeInMillis()
+		Long endTime = DateUtils.getEndOfTheDay(startDate)
 
+		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
 				[dataType: "sleep", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
@@ -130,11 +126,13 @@ class OuraDataService extends DataService {
 			}
 		}
 
-		stats.finish()
+		if (!stats.finish()) {
+			return [success: false]
+		}
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
-			getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
+			return getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
 		}
 
 		return [success: true]
@@ -152,13 +150,9 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Calendar cal = Calendar.getInstance()
-		cal.setTime(startDate)
-		cal.set(Calendar.HOUR_OF_DAY, 23)
-		cal.set(Calendar.MINUTE, 59)
-		cal.set(Calendar.SECOND, 59)
-		cal.set(Calendar.MILLISECOND, 0)
-		Long endTime = cal.getTimeInMillis()
+		Long endTime = DateUtils.getEndOfTheDay(startDate)
+
+		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
 				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
@@ -189,7 +183,9 @@ class OuraDataService extends DataService {
 			}
 		}
 
-		stats.finish()
+		if (!stats.finish()) {
+			return [success: false]
+		}
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get exercise data for paginated URL"
@@ -219,6 +215,7 @@ class OuraDataService extends DataService {
 		cal.set(Calendar.MILLISECOND, 0)
 		Long endTime = cal.getTimeInMillis()
 
+		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
 				[dataType: "activity", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
 
@@ -255,7 +252,9 @@ class OuraDataService extends DataService {
 			}
 		}
 
-		stats.finish()
+		if (!stats.finish()) {
+			return [success: false]
+		}
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get activity data for paginated URL"

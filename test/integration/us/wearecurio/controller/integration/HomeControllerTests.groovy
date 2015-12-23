@@ -505,7 +505,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test registerOura When token expired"() {
+	void "Test registerOura When token has expired"() {
 		controller.session.userId = userId
 		ouraDataService.oauthService = [
 				postOuraResource: { token, url, p, h ->
@@ -555,7 +555,7 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
-	void "Test unregisterOura faliur condition"() {
+	void "Test unregisterOura failure condition"() {
 		controller.ouraDataService = [
 				unsubscribe: { Long userId -> return [success: false] }
 		] as OuraDataService

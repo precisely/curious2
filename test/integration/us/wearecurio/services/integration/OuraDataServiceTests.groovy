@@ -5,6 +5,7 @@ import org.junit.Before
 import org.junit.Test
 import org.scribe.model.Response
 import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.Entry
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.ThirdPartyNotification
@@ -84,7 +85,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	@Test
 	void "Test ouraNotificationHandler success"() {
 		String notificationString = """{type: exercise, date: "2015-09-12", userId: 3}"""
-		ouraDataService.ouraNotificationHandler(notificationString)
+		ouraDataService.notificationHandler(notificationString)
 		assert ThirdPartyNotification.count() == 1
 		assert ThirdPartyNotification.first().typeId == ThirdParty.OURA
 	}
@@ -106,7 +107,10 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 	@Test
 	void "Test getDataSleep success"() {
-		String mockedResponseData = """{"someKey": "someValue"}"""
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 3,
+				type: "sleep", eventTime: 1434440700, data: {bedtime_m: 510, sleep_score: 86, awake_m: 52, rem_m: 78, light_m: 220, deep_m: 160}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
+				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68, light_m: 320, deep_m: 260}}]}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
@@ -115,6 +119,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		Map result = ouraDataService.getDataSleep(account, new Date(), false)
 		assert result.success == true
+		assert Entry.getCount() == 12
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+		assert entryList[0].description == "sleep bed time [duration]"
+		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
 	@Test
@@ -133,8 +143,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataExercise success"() {
-		String mockedResponseData = """{"someKey": "someValue"}"""
+	void "Test getDataExercise with success as response and entries get created"() {
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+				type: "exercise", eventTime: 1434440700, data: {duration_m: 10, classification: "sedentary"}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
+				type: "exercise", eventTime: 1424440700, data: {duration_m: 20, classification: "light"}}]}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
@@ -143,6 +156,26 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		Map result = ouraDataService.getDataExercise(account, new Date(), false)
 		assert result.success == true
+		assert Entry.getCount() == 2
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+	}
+
+	@Test
+	void "Test getDataExercise when no entries are passed"() {
+		String mockedResponseData = """{}"""
+		ouraDataService.oauthService = [
+			getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				return new Response(new MockedHttpURLConnection(mockedResponseData))
+			}
+		]
+
+		Map result = ouraDataService.getDataExercise(account, new Date(), false)
+		assert result.success == false
 	}
 
 	@Test
@@ -161,8 +194,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataActivity success"() {
-		String mockedResponseData = """{"someKey": "someValue"}"""
+	void "Test getDataActivity success with two entries being created"() {
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 2,
+				type: "activity", eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 2,
+				type: "activity", eventTime: 1424440700, data: {non_wear_m: 441, steps: 10000, eq_meters: 1778, active_cal: 254, total_cal: 2262}}]}"""
+
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
@@ -171,5 +208,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		Map result = ouraDataService.getDataActivity(account, new Date(), false)
 		assert result.success == true
+		assert Entry.getCount() == 10
+
+		Entry entry1 = Entry.get(1)
+		Entry entry2 = Entry.get(6)
+		assert entry1.timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+		assert entry2.timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 }

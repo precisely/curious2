@@ -107,7 +107,7 @@ class MigrationService {
 		
 		migration = shouldDoMigration(code)
 		
-		if (migration) {
+		if (false) {
 			log.debug("Starting migration: " + migration)
 			
 			def retVal = true

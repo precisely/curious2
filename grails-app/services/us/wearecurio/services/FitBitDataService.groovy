@@ -251,11 +251,12 @@ class FitBitDataService extends DataService {
 	}
 
 	@Override
-	void notificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		log.debug "Received fitbit notification data: $notificationData"
 
 		JSONArray notifications = JSON.parse(notificationData)
 
+		List<ThirdPartyNotification> notificationsList = []
 		notifications.each { notification ->
 			log.debug "Saving " + notification.dump()
 			notification.typeId = typeId
@@ -273,9 +274,14 @@ class FitBitDataService extends DataService {
 			formatter.setTimeZone(timeZone)
 			notification.date = formatter.parse(notification.date)
 			ThirdPartyNotification.withTransaction {
-				Utils.save(new ThirdPartyNotification(notification), true)
+				ThirdPartyNotification thirdPartyNotificationInstance = new ThirdPartyNotification(notification)
+				if (Utils.save(thirdPartyNotificationInstance, true)) {
+					notificationsList.add(thirdPartyNotificationInstance)
+				}
 			}
 		}
+
+		return notificationsList
 	}
 
 	@Override

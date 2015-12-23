@@ -302,7 +302,7 @@ abstract class DataService {
 	 * @param notificationData String data received.
 	 */
 	@Transactional
-	abstract void notificationHandler(String notificationData)
+	abstract List<ThirdPartyNotification> notificationHandler(String notificationData)
 
 	/**
 	 * This method iterates every unprocessed notification of respective type (third party)
