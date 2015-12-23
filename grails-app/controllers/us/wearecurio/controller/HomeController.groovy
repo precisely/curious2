@@ -315,7 +315,6 @@ class HomeController extends DataController {
 			throw new AuthenticationRequiredException("oura")
 		}
 
-		String message
 		thirdPartyLinkResultHandler(result, "subscribe", "Oura")
 		return
 	}
