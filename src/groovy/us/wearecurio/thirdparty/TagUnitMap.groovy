@@ -20,6 +20,8 @@ import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.data.UnitGroupMap
 
 abstract class TagUnitMap {
+	
+	String name
 
 	final static String ACTIVITY = "activity"
 	final static String MEAL = "meal"
@@ -39,13 +41,25 @@ abstract class TagUnitMap {
 	Map tagUnitMappings = null
 
 	static Map commonTagMap = [:]
+	static Map<String, TagUnitMap> theMaps = Collections.synchronizedMap([:])
 
 	private static def log = LogFactory.getLog(this)
 	
 	UnitGroupMap unitGroupMap
 	
-	public TagUnitMap() {
+	boolean active
+	
+	Set<String> baseTagNames = new HashSet<String>()
+	
+	TagUnitMap(String name, boolean active = true) {
+		this.name = name
+		
 		unitGroupMap = UnitGroupMap.fetchTheMap()
+		
+		if (active)
+			theMaps[name] = this
+		
+		this.active = active
 	}
 
 	static {
@@ -68,15 +82,16 @@ abstract class TagUnitMap {
 		]
 	}
 	
-	static Map initializeTagUnitMappings(Map map) {
+	Map initializeTagUnitMappings(Map map) {
 		for (Map value : map.values()) {
 			UnitGroupMap theMap = UnitGroupMap.fetchTheMap()
 			value['unitRatio'] = theMap.lookupDecoratedUnitRatio(value['unit'])
 			if (value['convert'])
 				value['ratio'] = theMap.fetchConversionRatio(value['from'], value['unit'])
+			baseTagNames.add(value['tag'])
 		}
 		
-		return map
+		tagUnitMappings = map
 	}
 
 	/**

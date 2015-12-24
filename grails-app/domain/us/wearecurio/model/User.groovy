@@ -615,6 +615,10 @@ class User {
 		this.removeFromInterestTags(tag)
 	}
 	
+	void removeInterestTag(Tag tag) {
+		this.removeFromInterestTags(tag)
+	}
+	
 	boolean hasInterestTag(Tag tag) {
 		this.interestTags?.contains(tag) ? true : false
 	}

@@ -43,6 +43,7 @@ class JawboneUpTagUnitMap extends TagUnitMap {
 	}
 
 	JawboneUpTagUnitMap() {
+		super("Jawbone Up")
 		// First keeping commonTagMap so that unit map from here can override the common
 		tagUnitMappings = initializeTagUnitMappings(commonTagMap + columnDetailMap)
 	}

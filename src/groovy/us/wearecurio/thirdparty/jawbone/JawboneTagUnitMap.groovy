@@ -77,6 +77,7 @@ class JawboneTagUnitMap extends TagUnitMap {
 	}
 	
 	public JawboneTagUnitMap() {
+		super("Jawbone", false)
 		buckets = [
 			// don't forget to initialize a empty list named `values`.
 			mood_average: [values: [], tag: "$MOOD average", unit: "", operation: AVERAGE, unitRatio:UnitGroup.SCALE.simpleLookupDecoratedUnitRatio("to ten")],

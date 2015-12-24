@@ -11,6 +11,8 @@ class WithingsTagUnitMap extends TagUnitMap {
 	}
 	
 	WithingsTagUnitMap() {
+		super("Withings")
+		
 		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
 	}
 

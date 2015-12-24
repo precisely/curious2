@@ -199,6 +199,28 @@ class SprintTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testAddDeviceName() {
+		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.name == "Caffeine + Sugar"
+		assert sprint.visibility == Visibility.PUBLIC
+		assert sprint.fetchTagName() == "caffeine sugar sprint"
+		
+		
+		assert Sprint.getDeviceNames().contains("Moves")
+		
+		sprint.addDeviceName("Moves")
+		
+		assert sprint.devices.contains("Moves")
+		
+		Utils.save(sprint, true)
+		
+		Sprint sprint2 = Sprint.get(sprint.id)
+		
+		assert sprint2.devices.contains("Moves")
+	}
+	
+	@Test
 	void testCreateSprint() {
 		def sprint = Sprint.create(user)
 		assert sprint.userId == user.id

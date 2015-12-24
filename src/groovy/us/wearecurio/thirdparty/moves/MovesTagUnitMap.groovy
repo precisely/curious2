@@ -43,6 +43,8 @@ class MovesTagUnitMap extends TagUnitMap {
 	}
 
 	MovesTagUnitMap() {
+		super("Moves")
+		
 		tagUnitMappings = initializeTagUnitMappings(columnDetailMap)
 	}
 

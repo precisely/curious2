@@ -35,7 +35,9 @@ class FitBitTagUnitMap extends TagUnitMap {
 	}
 	
 	FitBitTagUnitMap() {
-		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
+		super("FitBit", false)
+		
+		initializeTagUnitMappings(columnDetailMap + commonTagMap)
 	}
 
 	@Override

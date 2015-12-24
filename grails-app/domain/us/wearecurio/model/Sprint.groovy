@@ -5,8 +5,8 @@ import java.util.Locale
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
-import org.hibernate.criterion.CriteriaSpecification
 
+import org.hibernate.criterion.CriteriaSpecification
 import org.apache.commons.logging.LogFactory
 
 import us.wearecurio.hashids.DefaultHashIDGenerator
@@ -20,6 +20,7 @@ import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.model.Model.Visibility
+import us.wearecurio.thirdparty.TagUnitMap
 
 import java.text.DateFormat
 
@@ -45,6 +46,9 @@ class Sprint {
 	Date startDate
 	Visibility visibility
 	String tagName
+	List<String> devices // list of devices supported by this sprint
+	
+	static hasMany = [devices: String]
 	
 	static final int MAXPLOTDATALENGTH = 1024
 	
@@ -123,6 +127,18 @@ class Sprint {
 		if (id) SearchService.get().index(this) // only reindex if this sprint has been saved
 	}
 
+	void addDeviceName(String deviceName) {
+		this.addToDevices(deviceName)
+	}
+
+	void removeDeviceName(String deviceName) {
+		this.removeFromDevices(deviceName)
+	}
+	
+	static Set<String> getDeviceNames() {
+		return TagUnitMap.theMaps.keySet()
+	}
+	
 	boolean hasWriter(Long userId) {
 		return fetchUserGroup()?.hasWriter(userId)
 	}

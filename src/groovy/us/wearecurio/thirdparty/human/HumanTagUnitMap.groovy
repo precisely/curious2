@@ -11,6 +11,8 @@ class HumanTagUnitMap extends TagUnitMap {
 	}
 
 	HumanTagUnitMap() {
+		super("Human API", false)
+		
 		tagUnitMappings = initializeTagUnitMappings(columnDetailMap + commonTagMap)
 	}
 
