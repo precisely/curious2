@@ -66,11 +66,11 @@ class OuraDataService extends DataService {
 
 		String requestUrl = "/api/sleep"
 
-		return getDataSleep(account, refreshAll, requestUrl, forDay)
+		return getDataSleep(account, refreshAll, requestUrl, forDay, 1)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
+	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -86,9 +86,12 @@ class OuraDataService extends DataService {
 
 		JSONArray sleepData = apiResponse["data"]
 
-		sleepData.each { sleepEntry ->
-			String setName = SET_NAME + "s" + sleepEntry["dateCreated"]
+		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
+		String setName = SET_NAME + "s" + startDate + "-" + pageNumber
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
+		sleepData.each { sleepEntry ->
 			Date entryDate = new Date(new Long(sleepEntry["eventTime"]) * 1000)
 			Integer timeZoneIdNumber = sleepEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(sleepEntry["timeZone"]).id
 			def sleepEntryData = sleepEntry["data"]
@@ -132,17 +135,17 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
-			return getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
+			return getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
 
 		return [success: true]
 	}
 
 	Map getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataExercise(account, refreshAll, "/api/exercise", forDay)
+		getDataExercise(account, refreshAll, "/api/exercise", forDay, 1)
 	}
 
-	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
+	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -155,32 +158,36 @@ class OuraDataService extends DataService {
 		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
 				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
-
 		JSONArray exerciseData = apiResponse["data"]
 
+		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
+		String setName = SET_NAME + "e" + startDate + "-" + pageNumber
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+
+		JSONObject previousEntry = null
+
 		exerciseData.each { exerciseEntry ->
-			String setName = SET_NAME + "e" + exerciseEntry["dateCreated"]
-
-			Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
-			Integer timeZoneIdNumber = exerciseEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(exerciseEntry["timeZone"]).id
-
-			def exerciseEntryData = exerciseEntry["data"]
-			if (exerciseEntryData) {
-				Long duration = Long.parseLong(exerciseEntryData["duration_m"].toString())
-				if (exerciseEntryData["classification"] == "rest") {
-					tagUnitMap.buildEntry(creationMap, stats, "classification_rest", duration, userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				} else if (exerciseEntryData["classification"] == "light") {
-					tagUnitMap.buildEntry(creationMap, stats, "classification_light", duration, userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				} else if (exerciseEntryData["classification"] == "sedentary") {
-					tagUnitMap.buildEntry(creationMap, stats, "classification_sedentary", duration, userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}  else if (exerciseEntryData["classification"] == "moderate") {
-					tagUnitMap.buildEntry(creationMap, stats, "classification_moderate", duration, userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
+			if (exerciseEntry["data"]) {
+				if (!previousEntry) {
+					previousEntry = exerciseEntry
+					previousEntry["duration_m"] = Long.parseLong(exerciseEntry["data"]["duration_m"].toString())
+				} else {
+					Long duration = Long.parseLong(exerciseEntry["data"]["duration_m"].toString())
+					if (previousEntry["data"]["classification"] == exerciseEntry["data"]["classification"]) {
+						previousEntry["data"]["duration_m"] += duration
+					} else {
+						buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
+						previousEntry = exerciseEntry
+						previousEntry["data"]["duration_m"] = duration
+					}
 				}
 			}
+		}
+
+		if (previousEntry) {
+			buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
+			previousEntry = null
 		}
 
 		if (!stats.finish()) {
@@ -189,17 +196,38 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get exercise data for paginated URL"
-			getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
+			return getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
 
 		return [success: true]
 	}
 
-	Map getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataActivity(account, refreshAll, "/api/activity", forDay)
+
+	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry, Long userId, String setName, OAuthAccount account) {
+		def exerciseEntryData = exerciseEntry["data"]
+		Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
+		Integer timeZoneIdNumber = exerciseEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(exerciseEntry["timeZone"]).id
+
+		if (exerciseEntryData["classification"] == "rest") {
+			tagUnitMap.buildEntry(creationMap, stats, "classification_rest", exerciseEntryData["duration_m"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+		} else if (exerciseEntryData["classification"] == "light") {
+			tagUnitMap.buildEntry(creationMap, stats, "classification_light", exerciseEntryData["duration_m"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+		} else if (exerciseEntryData["classification"] == "sedentary") {
+			tagUnitMap.buildEntry(creationMap, stats, "classification_sedentary", exerciseEntryData["duration_m"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+		}  else if (exerciseEntryData["classification"] == "moderate") {
+			tagUnitMap.buildEntry(creationMap, stats, "classification_moderate", exerciseEntryData["duration_m"], userId, timeZoneIdNumber,
+					entryDate, COMMENT, setName)
+		}
 	}
 
-	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate) throws InvalidAccessTokenException {
+	Map getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+		getDataActivity(account, refreshAll, "/api/activity", forDay, 1)
+	}
+
+	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -207,13 +235,8 @@ class OuraDataService extends DataService {
 		EntryStats stats = new EntryStats(userId)
 
 		Long startTime = startDate.getTime()
-		Calendar cal = Calendar.getInstance()
-		cal.setTime(startDate)
-		cal.set(Calendar.HOUR_OF_DAY, 23)
-		cal.set(Calendar.MINUTE, 59)
-		cal.set(Calendar.SECOND, 59)
-		cal.set(Calendar.MILLISECOND, 0)
-		Long endTime = cal.getTimeInMillis()
+
+		Long endTime = DateUtils.getEndOfTheDay(startDate)
 
 		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
 		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
@@ -221,9 +244,12 @@ class OuraDataService extends DataService {
 
 		JSONArray activityData = apiResponse["data"]
 
-		activityData.each { activityEntry ->
-			String setName = SET_NAME + "ac" + activityEntry["dateCreated"]
+		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
+		String setName = SET_NAME + "ac" + startDate + "-" + pageNumber
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 
+		activityData.each { activityEntry ->
 			Date entryDate = new Date(new Long(activityEntry["eventTime"]) * 1000)
 			Integer timeZoneIdNumber = activityEntry["timeZone"] == "null" ? getTimeZoneId(account): TimeZoneId.look(activityEntry["timeZone"]).id
 
@@ -258,7 +284,7 @@ class OuraDataService extends DataService {
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get activity data for paginated URL"
-			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate)
+			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
 
 		return [success: true]

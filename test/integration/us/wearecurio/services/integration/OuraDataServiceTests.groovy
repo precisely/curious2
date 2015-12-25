@@ -166,6 +166,32 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
+	void "Test getDataExercise with success as response and entries get merged if two consicutive same entries are encountered"() {
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+				type: "exercise", eventTime: 1434440700, data: {duration_m: 5, classification: "sedentary"}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+				type: "exercise", eventTime: 1434441000, data: {duration_m: 10, classification: "sedentary"}},
+				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
+				type: "exercise", eventTime: 1424440700, data: {duration_m: 20, classification: "light"}}]}"""
+		ouraDataService.oauthService = [
+				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+					return new Response(new MockedHttpURLConnection(mockedResponseData))
+				}
+		]
+
+		Map result = ouraDataService.getDataExercise(account, new Date(), false)
+		assert result.success == true
+		assert Entry.getCount() == 2
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].amount == 15
+		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+	}
+
+	@Test
 	void "Test getDataExercise when no entries are passed"() {
 		String mockedResponseData = """{}"""
 		ouraDataService.oauthService = [
