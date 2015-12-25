@@ -30,7 +30,7 @@
 		</div>
 		<div class="public-sprints">
 			<label class="people-label">
-				SPRINTS
+				EXPERIMENTS
 			</label>
 			{{ if (user.sprints.length == 0) { }}
 				<div class="media">
@@ -38,7 +38,7 @@
 						<img src="/images/sprint-icon.png" height="30" width="auto">
 					</div>
 					<div class="media-body">
-						<p>No Sprints</p>
+						<p>No Experiments</p>
 					</div>
 				</div>
 			{{ } else { }}

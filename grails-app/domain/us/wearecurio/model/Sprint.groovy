@@ -405,7 +405,7 @@ class Sprint {
 	}
 	
 	protected createUserGroupFullName() {
-		return this.name + " Tracking Sprint"
+		return this.name + " Experiment"
 	}
 	
 	Sprint(Date now, User user, String name, Visibility visibility) {
@@ -469,7 +469,7 @@ class Sprint {
 	}
 	
 	protected String entrySetName() {
-		return "sprint id: " + this.id
+		return "experiment id: " + this.id
 	}
 	
 	void setName(String name) {
@@ -517,7 +517,7 @@ class Sprint {
 		if (tagName.length() == 0) {
 			tagName = "a"
 		}
-		tagName += ' sprint'
+		tagName += ' experiment'
 		
 		return tagName
 	}
@@ -634,7 +634,7 @@ class Sprint {
 		return [
 			id: this.id,
 			hash: this.hash,
-			name: this.name?:'New Sprint',
+			name: this.name?:'New Experiment',
 			userId: this.userId,
 			description: this.description,
 			totalParticipants: this.getParticipantsCount(),

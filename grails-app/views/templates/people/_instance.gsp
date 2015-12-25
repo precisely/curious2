@@ -12,7 +12,7 @@
 		<span class="label-value">{{- user.interestTagsString }}</span>
 	</div>
 	<div class="user-details-content hide">
-		<span>Public Sprints:</span>
+		<span>Public Experiments:</span>
 		<span class="label-value">
 			<!-- Using an empty list and keeping the code for now. Can be removed if user's sprints “user.sprints”
 				 are not going to be used in the future. -->

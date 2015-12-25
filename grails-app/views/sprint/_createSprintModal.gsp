@@ -6,7 +6,7 @@
 				<button type="button" class="close" id="close-sprint-modal">
 					<i class="fa fa-times-circle-o"></i>
 				</button>
-				<h4 class="modal-title">Create Sprint</h4>
+				<h4 class="modal-title">Create Experiment</h4>
 			</div>
 			<form id="submitSprint">
 				<div class="modal-body">
@@ -95,7 +95,7 @@
 					<input type="hidden" name="virtualGroupId" id="sprintVirtualGroupId">
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="submit-sprint">Create Sprint</button>
+					<button type="submit" class="submit-sprint">Create Experiment</button>
 				</div>
 			</form>
 		</div>

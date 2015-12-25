@@ -30,7 +30,7 @@
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
 			<li><a href="/home/social#all">Social</a></li>
-			<li><a href="/home/sprint#all">Sprints</a></li>
+			<li><a href="/home/sprint#all">Experiments</a></li>
 			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
 			<c:ifAdmin>
 				<li><g:link controller="admin" action="dashboard">Admin</g:link></li>
