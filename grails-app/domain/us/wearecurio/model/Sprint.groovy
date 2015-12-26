@@ -805,7 +805,7 @@ class Sprint {
                     maxResults(1)
                     order("created", "desc")
                 }
-                return d.created
+                return d?.created
             }
         }
             

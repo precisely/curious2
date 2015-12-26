@@ -1754,9 +1754,9 @@ class Entry implements Comparable {
 		// get regular elements + timed repeating elements next
 		String queryStr = "select distinct entry.id " \
 				+ "from entry entry where entry.user_id = :userId and (((entry.date >= :startDate and entry.date < :endDate) and (entry.repeat_type_id is null or (entry.repeat_type_id & :continuousBit = 0))) or " \
-				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :continuousBit = 0)))"
+				+ "(entry.date < :startDate and (entry.repeat_end is null or entry.repeat_end >= :startDate) and (not entry.repeat_type_id is null) and (entry.repeat_type_id & :repeatBits <> 0) and (entry.repeat_type_id & :continuousBit = 0)))"
 
-		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, continuousBit:RepeatType.CONTINUOUS_BIT]
+		def queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, repeatBits:RepeatType.REPEAT_BITS, continuousBit:RepeatType.CONTINUOUS_BIT]
 
 		def rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 
@@ -1778,7 +1778,7 @@ class Entry implements Comparable {
 
 			// use JodaTime to figure out the correct time in the current time zone
 			desc['timeZoneName'] = timeZoneName
-			if (entry.repeatTypeId != null) { // adjust dateTime for repeat entries
+			if (entry.repeatTypeId != null && ((entry.repeatTypeId & RepeatType.REPEAT_BITS) != 0)) { // adjust dateTime for repeat entries
 				DateTime firstRepeat = entry.firstRepeatAfterDate(baseDate)
 
 				if (firstRepeat.toLocalDate().equals(baseLocalDate)) {
@@ -1797,9 +1797,9 @@ class Entry implements Comparable {
 
 		// get start duration elements (durations with start time on this day)
 		queryStr = "select distinct entry.id " \
-				+ "from entry entry where entry.user_id = :userId and ((entry.start_date >= :startDate and entry.start_date < :endDate) and entry.repeat_type_id is null)"
+				+ "from entry entry where entry.user_id = :userId and ((entry.start_date >= :startDate and entry.start_date < :endDate) and (entry.repeat_type_id is null or (entry.repeat_type_id & :repeatAndContinuousBits = 0)))"
 
-		queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1]
+		queryMap = [userId:user.getId(), startDate:baseDate, endDate:baseDate + 1, repeatAndContinuousBits:RepeatType.REPEAT_AND_CONTINUOUS_BITS]
 
 		rawResults = DatabaseService.get().sqlRows(queryStr, queryMap)
 		

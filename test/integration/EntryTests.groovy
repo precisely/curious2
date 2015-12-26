@@ -146,6 +146,45 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testUpdateRepeatOnFirstDayAllFuture() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
+		
+		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, true)
+
+		assert updated == entry && updated != null
+		
+		// verify old event updated on earlyBaseDate
+		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 8
+		} == 1
+		
+		// verify old event still at baseDate
+		assert testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['id'] == entry.getId()
+			assert it['amount'].intValue() == 8
+		} == 1
+	}
+	
+	@Test
+	void testAlertNoRepeat() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm", RepeatType.ALERT.id, null, earlyBaseDate, true), new EntryStats())
+	
+		assert testPlot(user, [Tag.look("bread").getId()], null, lateBaseDate, veryLateBaseDate) {
+		} == 1
+		
+		assert testEntries(user, timeZone, earlyBaseDate, earlyBaseDate) {
+			assert it['description'] == "bread"
+		} == 1
+	
+		assert testEntries(user, timeZone, earlyBaseDate + 1, earlyBaseDate + 1) {
+		} == 0
+	
+		assert testEntries(user, timeZone, earlyBaseDate + 7, earlyBaseDate + 7) {
+		} == 0
+	}
+	
+	@Test
 	void testUpdateToStart() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm", null, null, baseDate, true), new EntryStats())
 		
@@ -1278,27 +1317,6 @@ class EntryTests extends CuriousTestCase {
 		assert testEntries(user, timeZone, baseDate, currentTime) {
 			assert it['id'] != entry.getId()
 			assert it['amount'].intValue() == 5
-		} == 1
-	}
-	
-	@Test
-	void testUpdateRepeatOnFirstDayAllFuture() {
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
-		
-		Entry updated = entry.update(entryParserService.parse(currentTime, timeZone, "bread 8 at 2pm repeat daily", null, null, earlyBaseDate, true, 1), new EntryStats(), earlyBaseDate, true)
-
-		assert updated == entry && updated != null
-		
-		// verify old event updated on earlyBaseDate
-		assert testEntries(user, timeZone, earlyBaseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 8
-		} == 1
-		
-		// verify old event still at baseDate
-		assert testEntries(user, timeZone, baseDate, currentTime) {
-			assert it['id'] == entry.getId()
-			assert it['amount'].intValue() == 8
 		} == 1
 	}
 	

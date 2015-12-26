@@ -218,11 +218,11 @@ class DataRetriever {
 
 		queryStr = "select e.date, e.amount, e.tag_id, t.description, e.units " \
 				+ "from entry e, tag t where e.user_id = :userId and e.tag_id = t.id " \
-				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type_id is null or e.repeat_type_id = 0) " \
+				+ "and e.amount is not null and e.date >= :startDate and e.date < :endDate and (e.repeat_type_id is null or (e.repeat_type_id & :repeatAndContinuousBits = 0)) " \
 				+ "and e.tag_id in (:tagIds) order by e.date asc"
 
 
-		queryMap = [userId:userId, startDate:startDate, endDate:endDate, /* concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.CONCRETEGHOST_BIT), */ tagIds:tagIds ]
+		queryMap = [userId:userId, startDate:startDate, endDate:endDate, repeatAndContinuousBits:RepeatType.REPEAT_AND_CONTINUOUS_BITS, /* concreteRepeatBits:(RepeatType.REPEAT_BITS | RepeatType.CONCRETEGHOST_BIT), */ tagIds:tagIds ]
 
 		(queryStr, queryMap) = interpolateTagIds(queryStr, queryMap)
 		rawResults = databaseService.sqlRows(queryStr, queryMap)

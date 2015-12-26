@@ -113,19 +113,6 @@ class SprintTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testCreateLongSprintTags() {
-		Sprint sprint = Sprint.create(currentTime, user2, "This is a test of the emergency broadcast system. This is only a test. The quick brown fox jumps over the lazy dog.", Visibility.PUBLIC)
-		assert sprint.userId == user2.id
-		assert sprint.fetchTagName() == "this is a test of the emergency broadcast system this is only a test the quick experiment"
-		
-		sprint = Sprint.create(currentTime, user2, "abcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghi", Visibility.PUBLIC)
-		assert sprint.fetchTagName() == "abcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefgh experiment"
-
-		sprint = Sprint.create(currentTime, user2, "+++++", Visibility.PUBLIC)
-		assert sprint.fetchTagName() == "a experiment"
-	}
-	
-	@Test
 	void testCreateSprintTags() {
 		Sprint sprint = Sprint.create(currentTime, user2, "Caffeine + Sugar", Visibility.PUBLIC)
 		assert sprint.userId == user2.id
@@ -196,6 +183,19 @@ class SprintTests extends CuriousTestCase {
 		}
 		
 		assert sprintStop
+	}
+	
+	@Test
+	void testCreateLongSprintTags() {
+		Sprint sprint = Sprint.create(currentTime, user2, "This is a test of the emergency broadcast system. This is only a test. The quick brown fox jumps over the lazy dog.", Visibility.PUBLIC)
+		assert sprint.userId == user2.id
+		assert sprint.fetchTagName() == "this is a test of the emergency broadcast system this is only a test the quick experiment"
+		
+		sprint = Sprint.create(currentTime, user2, "abcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghi", Visibility.PUBLIC)
+		assert sprint.fetchTagName() == "abcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefghiabcdefgh experiment"
+
+		sprint = Sprint.create(currentTime, user2, "+++++", Visibility.PUBLIC)
+		assert sprint.fetchTagName() == "a experiment"
 	}
 	
 	@Test
