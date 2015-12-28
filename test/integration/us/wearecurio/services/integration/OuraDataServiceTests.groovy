@@ -164,28 +164,70 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataExercise with success as response and entries get merged if two consicutive same entries are encountered"() {
-		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
-				type: "exercise", eventTime: 1434440700, data: {duration_m: 5, classification: "sedentary"}},
-				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
-				type: "exercise", eventTime: 1434441000, data: {duration_m: 10, classification: "sedentary"}},
-				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
-				type: "exercise", eventTime: 1424440700, data: {duration_m: 20, classification: "light"}}]}"""
+	void "Test getDataExercise with success as response and entries get merged if two contiguous same entries are encountered"() {
+		String mockedResponseData = """{data: [
+					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+						type: "exercise", eventTime: 1434440700, data: {duration_m: 15, classification: "sedentary"}},
+					{dateCreated: "2015-11-04T12:43:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+						type: "exercise", eventTime: 1434441600, data: {duration_m: 10, classification: "sedentary"}},
+					{dateCreated: "2015-11-04T12:44:45.168Z", timeZone: "Asia/Kolkata", user: 1,
+						type: "exercise", eventTime: 1434442200, data: {duration_m: 20, classification: "light"}}
+				]}"""
 		ouraDataService.oauthService = [
 				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
 
-		Map result = ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false)
 		assert Entry.getCount() == 2
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].amount == 25
+		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+
+		assert entryList[1].amount == 20
+		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+	}
+
+	@Test
+	void "Test getDataExercise when contiguous entries do not get merged because of large gap between them"() {
+		String mockedResponseData = """{data: [
+					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+						type: "exercise", eventTime: 1434440700, data: {duration_m: 15, classification: "sedentary"}},
+					{dateCreated: "2015-11-04T12:43:45.168Z", timeZone: "Europe/Stockholm", user: 1,
+						type: "exercise", eventTime: 1434460700, data: {duration_m: 10, classification: "sedentary"}},
+					{dateCreated: "2015-11-04T12:44:45.168Z", timeZone: "Asia/Kolkata", user: 1,
+						type: "exercise", eventTime: 1434470700, data: {duration_m: 20, classification: "light"}}
+				]}"""
+		ouraDataService.oauthService = [
+				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
+					return new Response(new MockedHttpURLConnection(mockedResponseData))
+				}
+		]
+
+		ouraDataService.getDataExercise(account, new Date(), false)
+		assert Entry.getCount() == 3
 
 		List<Entry> entryList = Entry.getAll()
 		assert entryList[0].description == "sedentary exercise [duration]"
 		assert entryList[0].amount == 15
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryList[1].description == "light exercise [duration]"
-		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+		assert entryList[0].comment == "(Oura)"
+
+		assert entryList[1].description == "sedentary exercise [duration]"
+		assert entryList[1].amount == 10
+		assert entryList[1].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
+		assert entryList[1].comment == "(Oura)"
+
+		assert entryList[2].amount == 20
+		assert entryList[2].description == "light exercise [duration]"
+		assert entryList[2].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
+		assert entryList[2].comment == "(Oura)"
 	}
 
 	@Test
@@ -233,11 +275,11 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				}
 		]
 
-		Map result = ouraDataService.getDataActivity(account, new Date(), false)
+		ouraDataService.getDataActivity(account, new Date(), false)
 		assert Entry.getCount() == 10
 
-		Entry entry1 = Entry.get(1)
-		Entry entry2 = Entry.get(6)
+		Entry entry1 = Entry.first()
+		Entry entry2 = Entry.last()
 		assert entry1.timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entry2.timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}

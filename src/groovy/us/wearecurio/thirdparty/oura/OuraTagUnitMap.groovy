@@ -8,7 +8,6 @@ class OuraTagUnitMap extends TagUnitMap {
 
 	Map buckets
 
-	// TODO: need to verify tag names
 	static {
 		exerciseUnitMap = [
 			classification_light: [tag: "light $EXERCISE", unit: "mins"],

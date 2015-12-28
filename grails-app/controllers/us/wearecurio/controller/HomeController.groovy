@@ -1,14 +1,4 @@
 package us.wearecurio.controller
-
-import us.wearecurio.server.Session
-import us.wearecurio.services.OuraDataService
-import us.wearecurio.services.SecurityService
-
-import static org.springframework.http.HttpStatus.*
-import grails.converters.*
-import groovy.json.*
-import grails.gorm.DetachedCriteria
-
 import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.json.JSONObject
 import us.wearecurio.model.Discussion
@@ -16,12 +6,11 @@ import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
-import us.wearecurio.model.DurationType
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.JawboneService
 import us.wearecurio.services.MovesDataService
-import us.wearecurio.services.SearchService
+import us.wearecurio.services.OuraDataService
 import us.wearecurio.services.Twenty3AndMeDataService
 import us.wearecurio.services.TwitterDataService
 import us.wearecurio.services.WithingsDataService
@@ -126,7 +115,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Withings")
-		return
 	}
 
 	def register23andme() {
@@ -145,7 +133,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Twenty3AndMe")
-		return
 	}
 
 	def notifywithings() {
@@ -171,7 +158,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Moves")
-		return
 	}
 
 	def unregistermoves() {
@@ -189,7 +175,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Moves")
-		return
 	}
 
 	def registerJawboneUp() {
@@ -208,7 +193,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "JawboneUp")
-		return
 	}
 
 	def unregisterJawboneUp() {
@@ -226,7 +210,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "JawboneUp")
-		return
 	}
 
 	def polldevices() {
@@ -267,7 +250,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Fitbit")
-		return
 	}
 
 	def unregisterfitbit() {
@@ -290,7 +272,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Fitbit")
-		return
 	}
 
 	def registerOura() {
@@ -316,7 +297,6 @@ class HomeController extends DataController {
 		}
 
 		thirdPartyLinkResultHandler(result, "subscribe", "Oura")
-		return
 	}
 
 	def unregisterOura() {
@@ -338,7 +318,6 @@ class HomeController extends DataController {
 			result = [success: false, message: "No subscription found."]
 		}
 		thirdPartyLinkResultHandler(result, "unsubscribe", "Oura")
-		return
 	}
 
 	private void thirdPartyLinkResultHandler(Map result, String action, String thirdPartyType) {
@@ -372,7 +351,6 @@ class HomeController extends DataController {
 		} else {
 			render status: 500
 		}
-		return
 	}
 
 	/**

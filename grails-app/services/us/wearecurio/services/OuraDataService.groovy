@@ -1,11 +1,7 @@
 package us.wearecurio.services
-
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-import org.scribe.model.Token
 import org.springframework.transaction.annotation.Transactional
 import us.wearecurio.datetime.DateUtils
 import us.wearecurio.model.Entry
@@ -50,8 +46,8 @@ class OuraDataService extends DataService {
 	@Transactional
 	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		JSONObject notification = JSON.parse(notificationData)
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date notificationDate = simpleDateFormat.parse(notification.date);
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+		Date notificationDate = simpleDateFormat.parse(notification.date)
 
 		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
 				ownerType: "user", typeId: ThirdParty.OURA])
@@ -93,7 +89,7 @@ class OuraDataService extends DataService {
 
 		sleepData.each { sleepEntry ->
 			Date entryDate = new Date(new Long(sleepEntry["eventTime"]) * 1000)
-			Integer timeZoneIdNumber = sleepEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(sleepEntry["timeZone"]).id
+			Integer timeZoneIdNumber = sleepEntry["timeZone"] ? TimeZoneId.look(sleepEntry["timeZone"]).id : getTimeZoneId(account)
 			def sleepEntryData = sleepEntry["data"]
 
 			if (sleepEntryData) {
@@ -140,20 +136,40 @@ class OuraDataService extends DataService {
 
 		JSONObject previousEntry = null
 
-		exerciseData.each { exerciseEntry ->
-			if (exerciseEntry["data"]) {
+		int thresholdDuration = 15 * 60		// 15 minutes or 900 seconds
+
+		exerciseData.each { currentEntry ->
+			if (currentEntry["data"]) {
+				Long currentEntryDuration = Long.parseLong(currentEntry["data"]["duration_m"].toString())  // in minutes
+
 				if (!previousEntry) {
-					previousEntry = exerciseEntry
-					previousEntry["duration_m"] = Long.parseLong(exerciseEntry["data"]["duration_m"].toString())
+					previousEntry = currentEntry
+					previousEntry["duration_m"] = currentEntryDuration
 				} else {
-					Long duration = Long.parseLong(exerciseEntry["data"]["duration_m"].toString())
-					if (previousEntry["data"]["classification"] == exerciseEntry["data"]["classification"]) {
-						previousEntry["data"]["duration_m"] += duration
-					} else {
-						buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
-						previousEntry = exerciseEntry
-						previousEntry["data"]["duration_m"] = duration
+					// If type of previous entry is same as the current entry
+					if (previousEntry["data"]["classification"] == currentEntry["data"]["classification"]) {
+						// Then we have to merge the data of both the entries
+
+						long previousEntryStartTime = previousEntry["eventTime"]									// in seconds
+						long previousEntryEndTime = (previousEntryStartTime + (previousEntry["duration_m"] * 60))	// in seconds
+						long currentEntryStartTime = currentEntry["eventTime"]										// in seconds
+						long durationBeEntries = currentEntryStartTime - previousEntryEndTime						// in seconds
+
+						/*
+						 * There could be a situation that we receive two contiguous entries where previous entry
+						 * might be of morning and the current entry might be of evening. So adding a threshold value
+						 * of 15 minutes that the duration between end of the previous entry and start of current entry
+						 * should be between 15 minutes.
+						 */
+						if (durationBeEntries <= thresholdDuration) {
+							previousEntry["data"]["duration_m"] += currentEntryDuration
+							return
+						}
 					}
+
+					buildExerciseEntry(creationMap, stats, previousEntry, userId, setName, account)
+					previousEntry = currentEntry
+					previousEntry["data"]["duration_m"] = currentEntryDuration
 				}
 			}
 		}
@@ -175,7 +191,7 @@ class OuraDataService extends DataService {
 	private void buildExerciseEntry(EntryCreateMap creationMap, EntryStats stats, JSONObject exerciseEntry, Long userId, String setName, OAuthAccount account) {
 		def exerciseEntryData = exerciseEntry["data"]
 		Date entryDate = new Date(new Long(exerciseEntry["eventTime"]) * 1000)
-		Integer timeZoneIdNumber = exerciseEntry["timeZone"] == "null" ? getTimeZoneId(account) : TimeZoneId.look(exerciseEntry["timeZone"]).id
+		Integer timeZoneIdNumber = exerciseEntry["timeZone"] ? TimeZoneId.look(exerciseEntry["timeZone"]).id : getTimeZoneId(account)
 
 		if (exerciseEntryData["classification"] == "rest") {
 			tagUnitMap.buildEntry(creationMap, stats, "classification_rest", exerciseEntryData["duration_m"], userId, timeZoneIdNumber,
@@ -220,7 +236,7 @@ class OuraDataService extends DataService {
 
 		activityData.each { activityEntry ->
 			Date entryDate = new Date(new Long(activityEntry["eventTime"]) * 1000)
-			Integer timeZoneIdNumber = activityEntry["timeZone"] == "null" ? getTimeZoneId(account): TimeZoneId.look(activityEntry["timeZone"]).id
+			Integer timeZoneIdNumber = activityEntry["timeZone"] ? TimeZoneId.look(activityEntry["timeZone"]).id : getTimeZoneId(account)
 
 			def exerciseEntryData = activityEntry["data"]
 			if (exerciseEntryData) {
