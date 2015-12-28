@@ -61,16 +61,16 @@ class OuraDataService extends DataService {
 		return []
 	}
 
-	Map getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		log.debug "getDataSleep(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
 
 		String requestUrl = "/api/sleep"
 
-		return getDataSleep(account, refreshAll, requestUrl, forDay, 1)
+		getDataSleep(account, refreshAll, requestUrl, forDay, 1)
 	}
 
 	// Overloaded method to support pagination
-	Map getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
+	void getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -106,19 +106,15 @@ class OuraDataService extends DataService {
 			}
 		}
 
-		if (!stats.finish()) {
-			return [success: false]
-		}
+		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get sleep data for paginated URL"
-			return getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
+			getDataSleep(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
-
-		return [success: true]
 	}
 
-	Map getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		getDataExercise(account, refreshAll, "/api/exercise", forDay, 1)
 	}
 
@@ -167,16 +163,12 @@ class OuraDataService extends DataService {
 			previousEntry = null
 		}
 
-		if (!stats.finish()) {
-			return [success: false]
-		}
+		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get exercise data for paginated URL"
-			return getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
+			getDataExercise(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
-
-		return [success: true]
 	}
 
 
@@ -200,11 +192,11 @@ class OuraDataService extends DataService {
 		}
 	}
 
-	Map getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
 		getDataActivity(account, refreshAll, "/api/activity", forDay, 1)
 	}
 
-	Map getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
+	void getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
 		String accountId = account.accountId
 		Long userId = account.userId
 
@@ -241,15 +233,11 @@ class OuraDataService extends DataService {
 			}
 		}
 
-		if (!stats.finish()) {
-			return [success: false]
-		}
+		stats.finish()
 
 		if (apiResponse["links"] && apiResponse["links"]["nextPageURL"]) {
 			log.debug "Processing get activity data for paginated URL"
 			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
-
-		return [success: true]
 	}
 }

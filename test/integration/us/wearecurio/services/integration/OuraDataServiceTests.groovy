@@ -118,7 +118,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		Map result = ouraDataService.getDataSleep(account, new Date(), false)
-		assert result.success == true
 		assert Entry.getCount() == 12
 
 		List<Entry> entryList = Entry.getAll()
@@ -155,7 +154,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		Map result = ouraDataService.getDataExercise(account, new Date(), false)
-		assert result.success == true
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -180,7 +178,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		Map result = ouraDataService.getDataExercise(account, new Date(), false)
-		assert result.success == true
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -192,16 +189,20 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
-	void "Test getDataExercise when no entries are passed"() {
-		String mockedResponseData = """{}"""
+	void "Test getDataExercise when false entry is passed with timeZone and user missing"() {
+		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", type: "activity",
+				eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}}]}"""
 		ouraDataService.oauthService = [
 			getOuraResourceWithQuerystringParams: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
 
-		Map result = ouraDataService.getDataExercise(account, new Date(), false)
-		assert result.success == false
+		try {
+			Map result = ouraDataService.getDataExercise(account, new Date(), false)
+		} catch (e) {
+			assert e instanceof NumberFormatException
+		}
 	}
 
 	@Test
@@ -233,7 +234,6 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		]
 
 		Map result = ouraDataService.getDataActivity(account, new Date(), false)
-		assert result.success == true
 		assert Entry.getCount() == 10
 
 		Entry entry1 = Entry.get(1)
