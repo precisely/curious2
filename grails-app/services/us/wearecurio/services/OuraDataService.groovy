@@ -97,34 +97,11 @@ class OuraDataService extends DataService {
 			def sleepEntryData = sleepEntry["data"]
 
 			if (sleepEntryData) {
-				if (sleepEntryData["bedtime_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "bedtime_m", Long.parseLong(sleepEntryData["bedtime_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-
-				if (sleepEntryData["sleep_score"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "sleep_score", Long.parseLong(sleepEntryData["sleep_score"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-
-				if (sleepEntryData["awake_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "awake_m", Long.parseLong(sleepEntryData["awake_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-
-				if (sleepEntryData["rem_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "rem_m", Long.parseLong(sleepEntryData["rem_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-
-				if (sleepEntryData["light_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "light_m", Long.parseLong(sleepEntryData["light_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-
-				if (sleepEntryData["deep_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "deep_m", Long.parseLong(sleepEntryData["deep_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
+				["bedtime_m", "sleep_score", "awake_m", "rem_m", "light_m", "deep_m"].each { key ->
+					if (sleepEntryData[key]) {
+						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(sleepEntryData[key].toString()), userId, timeZoneIdNumber,
+								entryDate, COMMENT, setName)
+					}
 				}
 			}
 		}
@@ -255,25 +232,11 @@ class OuraDataService extends DataService {
 
 			def exerciseEntryData = activityEntry["data"]
 			if (exerciseEntryData) {
-				if (exerciseEntryData["non_wear_m"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "non_wear_m", Long.parseLong(exerciseEntryData["non_wear_m"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-				if (exerciseEntryData["steps"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "steps", Long.parseLong(exerciseEntryData["steps"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-				if (exerciseEntryData["eq_meters"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "eq_meters", Long.parseLong(exerciseEntryData["eq_meters"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-				if (exerciseEntryData["active_cal"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "active_cal", Long.parseLong(exerciseEntryData["active_cal"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
-				}
-				if (exerciseEntryData["total_cal"]) {
-					tagUnitMap.buildEntry(creationMap, stats, "total_cal", Long.parseLong(exerciseEntryData["total_cal"].toString()), userId, timeZoneIdNumber,
-							entryDate, COMMENT, setName)
+				["non_wear_m", "steps", "eq_meters", "active_cal", "total_cal"].each { key ->
+					if (exerciseEntryData[key]) {
+						tagUnitMap.buildEntry(creationMap, stats, key, Long.parseLong(exerciseEntryData[key].toString()), userId, timeZoneIdNumber,
+								entryDate, COMMENT, setName)
+					}
 				}
 			}
 		}
