@@ -559,7 +559,7 @@ class Sprint {
 	}
 	
 	// remove sprint entries from user account for current base date
-	// remove pinned entries outright
+	// remove bookmarked entries outright
 	// end repeat entries
 	// end remind entries
 	boolean stop(Long userId, Date baseDate, Date now, String timeZoneName, EntryStats stats) {

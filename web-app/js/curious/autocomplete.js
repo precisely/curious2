@@ -181,6 +181,10 @@ function AutocompleteWidget(autocompleteId, editId) {
 			this.freqTagList.push(term);
 		}
 	}
+	
+	this.close = function() {
+		this.editDiv.autocomplete("close");
+	}
 
 	// clear any cached state on logoff
 	registerLogoutCallback(function() {

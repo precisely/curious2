@@ -122,7 +122,7 @@ class EntryParserService {
 	 * 
 	 * If you update repeatPattern, you need to update repeatMap
 	 */
-	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|repeat monthly|repeat yearly|repeat annual|repeat annually|remind daily|remind weekly|remind monthly|remind yearly|remind annual|remind annually|button|repeat|pinned|favorite|remind|reminder|daily|weekly|monthly|yearly|annual|annually)\b\s*/
+	protected static final Pattern repeatPattern = ~/^(repeat daily|repeat weekly|repeat monthly|repeat yearly|repeat annual|repeat annually|remind daily|remind weekly|remind monthly|remind yearly|remind annual|remind annually|button|repeat|pinned|bookmark|remind|reminder|daily|weekly|monthly|yearly|annual|annually)\b\s*/
 	
 	protected static final int REPEATMAP_SYNONYM = 0
 	protected static final int REPEATMAP_TYPE = 1
@@ -135,9 +135,9 @@ class EntryParserService {
 		'repeat yearly':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 		'repeat annual':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
 		'repeat annually':['repeat yearly', RepeatType.YEARLYCONCRETEGHOST],
-		'button':['pinned', RepeatType.CONTINUOUSGHOST],
-		'pinned':['pinned', RepeatType.CONTINUOUSGHOST],
-		'favorite':['pinned', RepeatType.CONTINUOUSGHOST],
+		'button':['bookmark', RepeatType.CONTINUOUSGHOST],
+		'pinned':['bookmark', RepeatType.CONTINUOUSGHOST],
+		'bookmark':['bookmark', RepeatType.CONTINUOUSGHOST],
 		'remind':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind daily':['remind', RepeatType.REMINDDAILYGHOST],
 		'remind weekly':['remind weekly', RepeatType.REMINDWEEKLYGHOST],

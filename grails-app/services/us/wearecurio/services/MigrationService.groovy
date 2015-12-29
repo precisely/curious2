@@ -544,6 +544,9 @@ class MigrationService {
 				Utils.save(user, true)
 			}
 		}
+		tryMigration("Change continuous repeats to bookmark") {
+			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
+		}
 	}
 	
 	/**

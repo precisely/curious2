@@ -52,8 +52,8 @@
 							</a>
 							<a class="track-input-modifiers inputRepeatPosition" onclick="entryListWidget.modifyInput('repeat')">
 								<img alt="repeat" class="inputRepeat" src="/images/input-repeat.png">
-							</a>
-							<a class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('pinned')">
+							</a>ook
+							<a class="track-input-modifiers inputPinPosition" onclick="entryListWidget.modifyInput('bookmark')">
 								<img alt="repeat" class="inputPin" src="/images/input-pin.png">
 							</a>
 							--!>
@@ -65,7 +65,7 @@
 					<div style="clear: both"></div>
 				</div>
 				<div id="pinned-tags">
-					<img alt="One Click Tag Buttons" class="pin-header" src="/images/button-tags.png">
+					<!-- img alt="Bookmarks" class="pin-header" src="/images/bookmark-tags.png" -->
 					<span id="pinned-tag-list"></span>
 				</div>
 				<hr>

@@ -391,7 +391,8 @@ $(document).ready(function() {
 		var key = e.which;
 
 		if (key == 13) { // the enter key code
-			addEntryToSprint('sprint-tags', '');
+			addEntryToSprint('sprint-tags', 'bookmark');
+			autocompleteWidget.close();
 			return false;
 		}
 	});
