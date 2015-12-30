@@ -69,14 +69,14 @@ function addslashes(str) {
 function resetTextField(field) {
 	if (!field.data('textFieldAlreadyReset')) {
 		field.css('color','#000000');
-		field.val(''); 
+		field.val('');
 		field.data('textFieldAlreadyReset', true);
 	}
 }
 
 function initTextField(field, initText) {
 	field.css('color','#cccccc');
-	field.val(initText); 
+	field.val(initText);
 	field.data('textFieldAlreadyReset', false);
 }
 
@@ -201,27 +201,20 @@ $(document).ready(function() {
 		return false;
 	});
 
-	$('#help-carousel-content .left-carousel-control').hide();
-	$('#help-carousel-content .next-question').attr('type', 'button').text('NEXT (1 of 3)');
 	$('#help-carousel-content').on('slid.bs.carousel', '', function() {
-		var $this = $(this);
+		var $backButton = $('.left-carousel-control');
+		var $skipButton = $('.right-carousel-control');
+		var $nextButton = $('.next-question');
+		var activeSlideNumber = $('#help-carousel-content .carousel-inner .item.active').index() + 1;
 
-		if ($('#help-carousel-content .carousel-inner .item:first').hasClass('active')) {
-			$('.left-carousel-control').hide();
-			$('#help-carousel-content .right-carousel-control').show();
-			$('.next-question').attr('type', 'button').text('NEXT (1 of 3)');
-		} else if ($('#help-carousel-content .carousel-inner .item:last').hasClass('active')) {
-			$('.next-question').attr('type', 'submit').text('FINISH');
-			$('.right-carousel-control').hide();
-			$('.left-carousel-control').hide();
-		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(2)').hasClass('active')) {
-			$('.left-carousel-control').show();
-			$('.right-carousel-control').show();
-			$('.next-question').attr('type', 'button').text('NEXT (2 of 3)');
-		} else if ($('#help-carousel-content .carousel-inner .item:nth-child(3)')) {
-			$('.left-carousel-control').show();
-			$('.right-carousel-control').hide();
-			$('.next-question').attr('type', 'button').text('NEXT (3 of 3)');
+		if (activeSlideNumber >= 1 && activeSlideNumber <= 6) {
+			$nextButton.text('NEXT (' + activeSlideNumber + ' of 6)');
+			$backButton.toggle(activeSlideNumber !== 1);
+			$skipButton.toggle(activeSlideNumber !== 6);
+		} else if (activeSlideNumber === 7) {
+			$nextButton.text('FINISH');
+			$backButton.hide();
+			$skipButton.hide();
 		}
 	});
 
@@ -346,7 +339,7 @@ function nextQuestion() {
 	if ($('#helpWizardOverlay .carousel-inner .item:last').hasClass('active')) {
 		$('#helpWizardOverlay').modal('hide');
 		window.location.href = '/home/index'
-			return true;
+		return true;
 	} else {
 		createHelpEntry(function() {
 			$('#help-carousel-content').carousel('next');
@@ -389,7 +382,7 @@ function createHelpEntry(callback) {
 	}
 
 	if (entryText == '') {
-		queueJSON('Skipping questions', '/data/hideHelpData?' + getCSRFPreventionURI('hideHelpDataCSRF') + '&callback=?', 
+		queueJSON('Skipping questions', '/data/hideHelpData?' + getCSRFPreventionURI('hideHelpDataCSRF') + '&callback=?',
 				function(resp) {
 			callback();
 		});

@@ -607,9 +607,7 @@ ul.ui-autocomplete {
 #searchTags .showAll {
 	font-size:.8em;
 }
-.unstyled {
-	list-style: none;
-}
+
 .hide, .hid {
 	display: none;
 }
@@ -1820,11 +1818,11 @@ body.discuss-page .red-header {
 }
 
 .input-affordance .icon-bell-text {
-	right: -28;
+	right: -28px;
 }
 
 .input-affordance .icon-pin-text {
-	right: -5;
+	right: -5px;
 }
 .left-addon {
 	background-color: white;
@@ -4817,4 +4815,9 @@ input.cropit-image-zoom-input {
 	color: rgba(8, 8, 8, 0.32);;
 	font-size: 16px;
 	position: relative;
+}
+
+/* The "*" selector in the main.css is removing padding from all element which is preventing buttet items from showing up */
+.ul-fix {
+	padding-left: 40px;
 }
