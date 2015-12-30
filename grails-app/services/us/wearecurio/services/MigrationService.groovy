@@ -1,21 +1,28 @@
 package us.wearecurio.services
-
 import grails.util.Environment
-
+import grails.util.Holders
 import org.apache.commons.logging.LogFactory
 import org.grails.plugins.elasticsearch.ElasticSearchService
 import org.hibernate.SessionFactory
-import org.joda.time.*
-
 import org.springframework.transaction.annotation.Transactional
-
-import us.wearecurio.model.*
+import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
-import us.wearecurio.model.Entry.*
+import us.wearecurio.model.Identifier
+import us.wearecurio.model.Model
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagProperties
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TagUnitStats
+import us.wearecurio.model.TagValueStats
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.server.Migration
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
-import us.wearecurio.data.UnitGroupMap
 
 class MigrationService {
 
@@ -555,7 +562,12 @@ class MigrationService {
 	def doBackgroundMigrations() {
 		if (Environment.getCurrent().equals(Environment.TEST))
 			return; // don't run in test environment
-		
+
+		if (Environment.isDevelopmentMode() && Holders.getFlatConfig()["background.migration"] == false) {
+			// Don't run in development environment if a config "background.migration = false" is available
+			return
+		}
+
 		tryMigration(ADD_TAG_UNIT_STATS_AGAIN) {
 			try {
 				sql ("ALTER TABLE `tag_unit_stats` DROP COLUMN `unit_group`")
