@@ -276,37 +276,39 @@ class SearchService {
                 //fsqb.scoreMode("sum")
                 //fsqb.scoreMode("first")
 				
-                fsqb.add(
-                    andFilter(
-                        typeFilter("discussion"), 
-                        queryFilter(queryString("hasRecentPost:true AND followers:${user.id}"))
-                    ), linearDecayFunction("recentPostCreated", "7d").setWeight(100.0f)
-                )
-                
-                fsqb.add(
-                    andFilter(
-                        typeFilter("discussion"),
-                        orFilter(
-                            queryFilter(queryString("hasRecentPost:false")),
-                            andFilter(
-                                queryFilter(queryString("hasRecentPost:true")),
-                                queryFilter(queryString("NOT followers:${user.id}"))
+                if ((type & DISCUSSION_TYPE) > 0) {
+                    fsqb.add(
+                        andFilter(
+                            typeFilter("discussion"), 
+                            queryFilter(queryString("hasRecentPost:true AND followers:${user.id}"))
+                        ), linearDecayFunction("recentPostCreated", "7d").setWeight(100.0f)
+                    )
+
+                    fsqb.add(
+                        andFilter(
+                            typeFilter("discussion"),
+                            orFilter(
+                                queryFilter(queryString("hasRecentPost:false")),
+                                andFilter(
+                                    queryFilter(queryString("hasRecentPost:true")),
+                                    queryFilter(queryString("NOT followers:${user.id}"))
+                                )
                             )
-                        )
-                    ), linearDecayFunction("created", "7d").setWeight(100.0f)
-                )
-                
-//                fsqb.add(
-//                    typeFilter("sprint"), 
-//                    linearDecayFunction("lastInterestingActivityDate", "60d").setWeight(100.0f)
-//                )
-//                fsqb.add(
-//                    andFilter(
-//                        typeFilter("sprint"), 
-//                        existsFilter("userDiscusionAcivityDates.${user.id}")
-//                    ), linearDecayFunction("created", "7d").setWeight(100.0f)
-//                )
-				//fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
+                        ), linearDecayFunction("created", "7d").setWeight(100.0f)
+                    )
+                } else if((type & SPRINT_TYPE) > 0) {
+                    fsqb.add(
+                        typeFilter("sprint"), 
+                        linearDecayFunction("lastInterestingActivityDate", "60d").setWeight(100.0f)
+                    )
+    //                fsqb.add(
+    //                    andFilter(
+    //                        typeFilter("sprint"), 
+    //                        existsFilter("userDiscusionAcivityDates.${user.id}")
+    //                    ), linearDecayFunction("created", "7d").setWeight(100.0f)
+    //                )
+                }
+                //fsqb.add(ScoreFunctionBuilders.gaussDecayFunction("recentPostCreated", "1d"))
 								
 				def temp = client.prepareSearch("us.wearecurio.model_v0")
 				if ((type & DISCUSSION_TYPE) > 0) {
