@@ -8,6 +8,7 @@ import org.scribe.model.Token
 
 import us.wearecurio.model.OAuthAccount
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.ThirdPartyNotification
 import us.wearecurio.model.Twenty3AndMeData
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
@@ -90,7 +91,7 @@ class Twenty3AndMeDataService extends DataService {
 	}
 
 	@Override
-	void notificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		// Nothing to do. TwentyThreeAndMe API doesn't provide notification feature.
 	}
 

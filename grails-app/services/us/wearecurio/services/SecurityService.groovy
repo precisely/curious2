@@ -57,6 +57,7 @@ class SecurityService {
 	] as Set
 
 	// list of actions that are allowed without authentication
+	// TODO: Add @NoAuth annotation after it gets merged with social-share branch
 	static def noauthActions = [
 		'login',
 		'authenticateProvider',
@@ -75,6 +76,7 @@ class SecurityService {
 		'notifywithings',
 		'termsofservice_home',
 		'notifyfitbit',
+		'notifyOura',
 		'homepage',
 		'getPeopleData'
 	] as Set

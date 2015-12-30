@@ -89,6 +89,7 @@ class SecurityFilters {
 			before = {
 				if (actionName && (actionName.endsWith('Data') || actionName.endsWith('DataId') || request.forwardURI.contains('/api/')) && !idempotentActions.contains(actionName)) {
 					log.debug "duplicate filter: " + actionName
+
 					def p = new TreeMap(params)
 					if (params.date || params.dateToken || params.currentTime || params.currentDate) {
 						p.remove('_')

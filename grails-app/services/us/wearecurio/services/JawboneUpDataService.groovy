@@ -497,7 +497,7 @@ class JawboneUpDataService extends DataService {
 	}
 
 	@Override
-	void notificationHandler(String notificationData) {
+	List<ThirdPartyNotification> notificationHandler(String notificationData) {
 		log.debug "Received notification data: $notificationData"
 
 		if (!notificationData) {
@@ -511,6 +511,7 @@ class JawboneUpDataService extends DataService {
 
 		JSONObject notifications = JSON.parse(notificationData)
 
+		List<ThirdPartyNotification> notificationsList = []
 		notifications["events"].find { notification ->
 			log.debug "Saving $notification."
 
@@ -534,10 +535,14 @@ class JawboneUpDataService extends DataService {
 			params["date"] = new Date(notification["timestamp"].toLong() * 1000)
 
 			ThirdPartyNotification.withTransaction {
-				Utils.save(new ThirdPartyNotification(params), true)
+				ThirdPartyNotification thirdPartyNotificationInstance = new ThirdPartyNotification(params)
+				if (Utils.save(thirdPartyNotificationInstance, true)) {
+					notificationsList.add(thirdPartyNotificationInstance)
+				}
 			}
 
 			return false	// continue looping
 		}
+		return notificationsList
 	}
 }

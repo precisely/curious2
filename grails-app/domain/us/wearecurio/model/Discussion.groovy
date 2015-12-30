@@ -48,6 +48,7 @@ class Discussion {
 			'userIdFinal',
 			'userHash',
 			'publicUserName',
+			'username',
 			'userAvatarURL',
 			'firstPostId',
 			'firstPostMessage',
@@ -720,18 +721,18 @@ class Discussion {
 	String getPublicUserName() {
 		return User.get(fetchUserId())?.username
 	}
-	
+
 	String getUserAvatarURL() {
 		return User.get(fetchUserId())?.avatarURL
 	}
-    
-    String getUsername() {
-        return User.get(userId)?.username        
-    }
-    
-    String getPostUsernames() {
-        return DiscussionPost.findAllByDiscussionId(id)?.collect{ it.authorUsername }.unique().join(" ")
-    }
+
+	String getUsername() {
+		return User.get(userId)?.username
+	}
+
+	String getPostUsernames() {
+		return DiscussionPost.findAllByDiscussionId(id)?.collect { it.authorUsername }.unique().join(" ")
+	}
 
 	@Override
 	String toString() {

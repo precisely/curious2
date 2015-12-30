@@ -6,6 +6,7 @@ import org.scribe.model.Token
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
+import us.wearecurio.services.OuraDataService
 
 /**
  * A generic controller to handle all authentication made by oauth plugin.
@@ -29,6 +30,7 @@ class AuthenticationController extends SessionController {
 	def oauthService	// From OAuth Plugin
 	def twenty3AndMeDataService
 	def withingsDataService
+	OuraDataService ouraDataService
 
 	User currentUser
 	Long userId
@@ -113,6 +115,12 @@ class AuthenticationController extends SessionController {
 		Integer timeZoneId = TimeZoneId.look(userInfo.profile.currentTimeZone.id).id
 
 		oauthAccountService.createOrUpdate(ThirdParty.MOVES, userInfo.user_id.toString(), tokenInstance, userId, timeZoneId)
+	}
+
+	def ouraAuth() {
+		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
+
+		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
 	}
 
 	def twenty3andmeAuth() {

@@ -812,7 +812,7 @@ class User {
 		return this.interestTags?.collect { it.description }?.join(" ")
 	}
 
-	def validateUserPreferences(Map map, user) {
+	def validateUserPreferences(Map map, User user) {
 		def status
 
 		if (map.twitterDefaultToNow != 'on')

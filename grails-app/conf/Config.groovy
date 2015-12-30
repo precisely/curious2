@@ -4,6 +4,7 @@ import com.lucastex.grails.fileuploader.CDNProvider
 
 import us.wearecurio.thirdparty.fitbit.FitBitApi
 import us.wearecurio.thirdparty.human.HumanApi
+import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.jawbone.JawboneUpApi
 import us.wearecurio.thirdparty.moves.MovesApi
 import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
@@ -208,6 +209,10 @@ environments {
 				withings {
 					key = "74b17c41e567dc3451092829e04c342f5c68c04806980936e1ec9cfeb8f3"
 					secret = "78d839937ef5c44407b4996ed7c204ed6c55b3e76318d1371c608924b994db"
+				}
+				oura {
+					key = "curious-dev"
+					secret = "\$2a\$10\$T5yNKIVCsgODHh9XCSi63OaJNbMKofxdDKdyF0n5.QzcJScbUSQOq​"
 				}
 				/**withings {
 					key = "d2560d2384cd32bcf3d96b72bc25e4d802781cb935f9e18141269c92f"
@@ -499,6 +504,7 @@ log4j.main = {
 					'grails.app.controllers',
 					'grails.app.services.us.wearecurio',
 					'grails.app.jobs.us.wearecurio.jobs']
+				trace "org.scribe.model"
 			}
 		}
 	}
@@ -584,6 +590,15 @@ oauth {
 			successUri = "authentication/withings/success"
 			failureUri = "authentication/withings/fail"
 			signatureType = SignatureType.QueryString
+		}
+		oura {
+			api = OuraApi
+			key = "curious"
+			secret = "\$2a\$10\$eBxUN4gGeZV5V4lQdbeSEezI990aDJMEsqkW.4NLy2E6KKJtWyFHK"
+			callback = "${grails.serverURL}oauth/oura/callback"
+			successUri = "authentication/oura/success"
+			failureUri = "authentication/oura/fail"
+			scope = "read"
 		}
 	}
 	debug = true

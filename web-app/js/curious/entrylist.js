@@ -587,6 +587,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (setAlert) {
 			if (repeatTypeBit) {
 				repeatTypeBit = (RepeatType.REMIND_BIT | repeatTypeBit);
+			} else if (confirmRepeat) {
+				repeatTypeBit = RepeatType.REMIND_BIT | RepeatType.DAILYCONCRETEGHOST;
 			} else {
 				repeatTypeBit = RepeatType.REMIND_BIT;
 			}

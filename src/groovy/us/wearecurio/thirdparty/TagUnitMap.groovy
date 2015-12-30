@@ -30,6 +30,7 @@ abstract class TagUnitMap {
 	final static String NAP = "nap"
 	final static String SLEEP = "sleep"
 	final static String MEASUREMENT = "measurement"
+	final static String EXERCISE = "exercise"
 	// The above constants are used for common string across various tag maps.
 
 	final static int AVERAGE = 1
