@@ -39,6 +39,7 @@ class OuraTagUnitMap extends TagUnitMap {
 	}
 
 	OuraTagUnitMap() {
+		super("Oura", true)
 		// First keeping commonTagMap so that unit map from here can override the common
 		tagUnitMappings = initializeTagUnitMappings(commonTagMap + columnDetailMap)
 	}
