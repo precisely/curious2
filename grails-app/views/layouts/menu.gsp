@@ -129,9 +129,9 @@
 					}
 				});
 			}
-			/*if (showHelpModal) {
+			if (showHelpModal) {
 				$('#helpWizardOverlay').modal({show: true});
-			}*/
+			}
 		});
 		jQuery.curCSS = jQuery.css;
 	

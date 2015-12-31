@@ -106,3 +106,8 @@ grails.project.dependency.resolution = {
         //compile ":handlebars-asset-pipeline:1.3.0.3"
     }
 }
+
+grails.war.resources = { stagingDir, args ->
+	println "Deleting some files from WAR"
+	delete(file: "${stagingDir}/WEB-INF/classes/com/cc/DummyController.class")
+}
