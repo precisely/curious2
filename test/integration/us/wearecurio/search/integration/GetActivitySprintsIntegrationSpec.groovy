@@ -135,7 +135,7 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
 		
 		and: "single result is sprint3"
 		results.listItems[0].type == "spr"
-        results.listItems[0].hash == sprint3.hash
+        results.listItems[0].hash == sprint1.hash
 	}
 	
 	void "Test max and offset for getActivity for sprints"() {
@@ -163,14 +163,14 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
 		
 		and: "results are in correct order"
 		results.listItems[0].type == "spr"
-        results.listItems[0].hash == sprint3.hash
+        results.listItems[0].hash == sprint1.hash
 		results.listItems[1].type == "spr"
         results.listItems[1].hash == sprint2.hash
 		results.listItems[2].type == "spr"
-        results.listItems[2].hash == sprint1.hash
+        results.listItems[2].hash == sprint3.hash
 	}
 
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
     void "Test sprint creation date used in ordering sprint"() {
         given: "a first date"
         Date firstDate = (new Date()) - 1
@@ -198,7 +198,7 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
     
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
     void "Test discussion added date used in ordering sprint"() {
         given: "a first date"
         Date firstDate = (new Date()) - 2
@@ -231,7 +231,7 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintB.hash }
     }
     
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
     void "Test sprint start date not used in ordering sprint"() {
         given: "a first date"
         Date firstDate = (new Date()) - 2
@@ -265,7 +265,7 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
     
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
     void "Test sprint stop date used in ordering sprint"() {
         given: "a first date"
         Date firstDate = (new Date()) - 3
