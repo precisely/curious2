@@ -311,7 +311,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet pinned", null, null, baseDate, true), new EntryStats())
 		x = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:b, repeatType:768, repeatEnd:null)")
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T19:00:00, datePrecisionSecs:86400, timeZoneName:America/Los_Angeles, description:aspirin, amount:1.000000000, units:tablet, amountPrecision:3, comment:bookmark, repeatType:768, repeatEnd:null)")
 
 		entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "aspirin 1 tablet repeat daily", null, null, baseDate, true), new EntryStats())
 		x = entry.valueString()

@@ -148,7 +148,7 @@ class EntryTests extends CuriousTestCase {
 	@Test
 	void testMixedRepeatPlotData() {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm repeat", null, null, veryEarlyBaseDate, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 4pm repeat", null, null, baseDate, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 5pm repeat", null, null, baseDate, true), new EntryStats())
 		
 		int c = 0
 		def expected = [ 1, 1, 1, 1, 1, 1, 1, 2, 1, 2 ]
@@ -161,7 +161,7 @@ class EntryTests extends CuriousTestCase {
 		} == expected.size()
 	}
 	
-/*	@Test
+	@Test
 	void testUpdateRepeatOnFirstDayAllFuture() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 5 2pm repeat daily", null, null, earlyBaseDate, true), new EntryStats())
 		

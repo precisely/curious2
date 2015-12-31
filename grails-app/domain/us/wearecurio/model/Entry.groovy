@@ -1789,8 +1789,7 @@ class Entry implements Comparable {
 					desc['repeatType'] = entry.repeatTypeId
 				} else
 					continue
-			} else
-				desc['repeatType'] = null
+			}
 			desc['setName'] = entry.setIdentifier?.toString()
 			timedResults.add(desc)
 		}
