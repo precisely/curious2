@@ -1,4 +1,4 @@
-var autocompleteWidget, commentsArgs, ownedFeed = false, nextSuggestionOffset = 0;
+var autocompleteWidget, commentsArgs, ownedFeed = false, nextSuggestionOffset = 0, currentSprintsOffset = 0;
 var maxCommentsPerDiscussion = 5;
 var sprintListURL = '/home/sprint';
 var sprintShowURL = sprintListURL + '#';
@@ -64,6 +64,7 @@ function getURLSocialOwned(offset, max) {
 }
 
 function getURLSprintsAll(offset, max) {
+	currentSprintsOffset = offset;
 	return getSearchControllerURL(
 			"getAllSprintData",
 			{
@@ -75,6 +76,7 @@ function getURLSprintsAll(offset, max) {
 }
 
 function getURLSprintsOwned(offset, max) {
+	currentSprintsOffset = offset;
 	return getSearchControllerURL(
 			"getOwnedSprintData",
 			{
@@ -545,6 +547,12 @@ function addAllFeedItems(data, elementId, prepend) {
 	displayNoDataMessage(data.listItems);
 
 	elementId = elementId || '#feed';
+
+	$('#sprint-explanation-card').remove();
+	if ((location.pathname.indexOf('sprint') > -1) &&
+			(localStorage.getItem('showTrackathonExplanation') || ((!data.listItems || !data.listItems.length) && !currentSprintsOffset))) {
+		showExplanationCard(true);
+	}
 
 	$.each(data.listItems, function(index, item) {
 		var compiledHTML = '';

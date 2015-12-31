@@ -412,3 +412,24 @@ function createHelpEntry(callback) {
 	});
 	return false;
 }
+
+
+function closeExplanationCard(isSprintCard) {
+	if (isSprintCard) {
+		$('#sprint-explanation-card').remove();
+		localStorage.removeItem('showTrackathonExplanation');
+	} else {
+		$('#curiosity-explanation-card').remove();
+		localStorage.removeItem('showCuriositiesExplanation');
+	}
+}
+
+function showExplanationCard(isSprintCard) {
+	if (isSprintCard) {
+		var trackathonExplanationTemplate = $("script#_trackathonHelp").html();
+		$('.main.container-fluid').prepend(trackathonExplanationTemplate);
+	} else {
+		var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
+		$('.main.container-fluid').prepend(curiosityExplanationTemplate);
+	}
+}

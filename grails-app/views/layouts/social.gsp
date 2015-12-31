@@ -99,6 +99,7 @@
 		<c:renderJSTemplate template="/people/show" id="_peopleDetails" />
 		<c:renderJSTemplate template="/discussion/show" id="_showDiscussion" />
 		<c:renderJSTemplate template="/sprint/show" id="_showSprints" />
+		<c:renderJSTemplate template="/sprint/sprintExplanation" id="_trackathonHelp" />
 	</body>
 </html>
 </g:applyLayout>
