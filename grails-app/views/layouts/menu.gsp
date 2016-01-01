@@ -140,42 +140,32 @@
 <br>
 <div class="about-wrapper">
 	<div class="row footer-items"> <!-- "row (params.action == 'register' || params.action =='forgot')?'':'orange'">  -->
-	    <div class="col-xs-2 col-xs-offset-1">
-	    	<ul> 
-	    	<li> <span class="ul-head"> Company </span><br></li>
-	    		<li ><a href="#">About</a> </li>
-	    		<li ><a href="#">Jobs</a> </li>
-	    		<li ><a href="#">Contacts</a> </li>
-	    	</ul>
-	    </div>
-	    <div class="col-xs-2">
+	    <div class="col-xs-3">
 	    	<ul> 
 	    	 <li><span class="ul-head">Policies</span><br></li>
-	    		<li ><a href="#">Community Guideline</a> </li>
 	    		<li > <g:link controller='home' action="termsofservice" >Terms of Service</g:link></li>
-	    		<li ><a href="#">Privacy</a> </li>
 	    	</ul>
 	    </div>
-	    <div class="col-xs-2">
+	    <div class="col-xs-3">
 	    	<ul> 
 	    		<li> <span class="ul-head">Support</span> <br></li>
 	<c:ifLoggedin>
 	<li>
-		<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Help</a>
+		<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Tracking Tutorial</a>
 	</li>
 	</c:ifLoggedin>
-	       		<li><a href="mailto:support@wearecurio.us">Email Help</a> </li>
+	       		<li><a href="mailto:support@wearecurio.us">Contact Support</a> </li>
 	       	</ul>
 	       </div>
-	       <div class="col-xs-2">
+	       <div class="col-xs-3">
 	       	<ul>
 	       	<li> <span class="ul-head">Follow</span><br></li>
 	       		<li ><a href="http://soon.wearecurio.us/blog/"> Blog </a></li>
-	       		<li ><a href="#">Twitter</a> </li>
-	       		<li ><a href="#">Facebook</a> </li>
+	       		<li ><a href="https://twitter.com/wearecurious">Twitter</a> </li>
+	       		<li ><a href="https://facebook.com/wearecurious">Facebook</a> </li>
 	       	</ul>
 	       </div>
-	       <div class="col-xs-2">
+	       <div class="col-xs-3">
 	       	<ul>
 	<li> <span class="ul-head">Data</span><br></li>
 	<li ><g:link controller='home' action="upload">Import</g:link></li>
