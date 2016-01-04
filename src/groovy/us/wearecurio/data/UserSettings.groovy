@@ -11,7 +11,7 @@ class UserSettings extends BitSet {
 	private static final int CLOSED_EXPLANATION_CARD_TRACKATHON = 4
 
 	// Do not save following fields into the database
-	static transients = ["bioPublic", "namePublic", "value", "closedExplanationCardTrackathon", "closedExplanationCardCuriosities"]
+	static transients = ["bioPublic", "namePublic", "value"]
 
 	UserSettings() {
 		super(0)
