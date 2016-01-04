@@ -2294,7 +2294,7 @@ div.graph-header-container .red-header {
 .curiosity-card {
 	background-color: #fff;
 	padding: 10px;
-	margin: 10px 10px 20px 10px;
+	margin: 10px 0px;
 }
 
 .sprint {
@@ -3343,6 +3343,10 @@ body {
 .feed-item .sprint a, .curiosity-card a {
 	font-size: 15px;
 	font-weight: 800;
+}
+
+.curiosity-card a, #sprint-explanation-card a{
+	font-size: 16px;
 }
 
 .discussion-topic a:hover {
@@ -4835,12 +4839,11 @@ input.cropit-image-zoom-input {
 }
 
 .sprint-explanation, .curiosity-explanation {
-	margin: 0px 10px;
+	font-size: 15px;
 }
 
 .curiosity-explanation {
-	font-size: 15px;
-	margin-top: 25px;
+	margin: 0px 10px;
 }
 
 #sprint-explanation-card, #curiosity-explanation-card {
@@ -4854,4 +4857,24 @@ input.cropit-image-zoom-input {
 
 #input0 {
 	border: 2px #C15483 solid;
+}
+
+.curiosity-card .fa {
+	margin-right: -10px;
+}
+
+#sprint-explanation-card .fa {
+	margin-right: -5px;
+}
+
+.curiosity-card .close-col {
+	margin-top: -5px;
+}
+
+#sprint-explanation-card .close-col {
+	margin-top: -10px;
+}
+
+#sprint-explanation-card .sprint {
+	padding: 15px;
 }

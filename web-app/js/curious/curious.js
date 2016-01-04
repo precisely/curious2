@@ -460,6 +460,6 @@ function showExplanationCard(isSprintCard) {
 		$('.main.container-fluid').prepend(trackathonExplanationTemplate);
 	} else {
 		var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
-		$('.main.container-fluid').prepend(curiosityExplanationTemplate);
+		$('.red-header').after(curiosityExplanationTemplate);
 	}
 }
