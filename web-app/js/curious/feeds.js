@@ -550,7 +550,7 @@ function addAllFeedItems(data, elementId, prepend) {
 
 	$('#sprint-explanation-card').remove();
 	if ((location.pathname.indexOf('sprint') > -1) &&
-			(localStorage.getItem('showTrackathonExplanation') || ((!data.listItems || !data.listItems.length) && !currentSprintsOffset))) {
+			!closedExplanationCardTrackathon || ((!data.listItems || !data.listItems.length) && !currentSprintsOffset)) {
 		showExplanationCard(true);
 	}
 

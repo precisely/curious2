@@ -416,11 +416,41 @@ function createHelpEntry(callback) {
 
 function closeExplanationCard(isSprintCard) {
 	if (isSprintCard) {
-		$('#sprint-explanation-card').remove();
-		localStorage.removeItem('showTrackathonExplanation');
+		if (!closedExplanationCardTrackathon) {
+			queueJSON('Closing Trackathon explanation', '/api/user/action/closeExplanationCardTrackathon?' +
+					getCSRFPreventionURI('closeExplanationCardTrackathonCSRF') + '&callback=?', null, function(data) {
+				if (checkData(data)) {
+					if (data.success) {
+						$('#sprint-explanation-card').remove();
+						closedExplanationCardTrackathon = true;
+					} else {
+						showAlert(data.message);
+					}
+				}
+			}, function(xhr) {
+				console.log(xhr);
+			});
+		} else {
+			$('#sprint-explanation-card').remove();
+		}
 	} else {
-		$('#curiosity-explanation-card').remove();
-		localStorage.removeItem('showCuriositiesExplanation');
+		if (!closedExplanationCardCuriosity) {
+			queueJSON('Closing Trackathon explanation', '/api/user/action/closeExplanationCardCuriosity?' +
+					getCSRFPreventionURI('closeExplanationCardCuriosityCSRF') + '&callback=?', null, function(data) {
+				if (checkData(data)) {
+					if (data.success) {
+						$('#curiosity-explanation-card').remove();
+						closedExplanationCardCuriosity = true;
+					} else {
+						showAlert(data.message);
+					}
+				}
+			}, function(xhr) {
+				console.log(xhr);
+			});
+		} else {
+			$('#curiosity-explanation-card').remove();
+		}
 	}
 }
 

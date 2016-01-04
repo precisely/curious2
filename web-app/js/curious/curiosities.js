@@ -56,12 +56,11 @@ function initCuriosities() {
 		return success;
 	};
 
-	if (!isMobile) {
+	if(!isMobile && !closedExplanationCardCuriosity) {
 		$('#curiosity-explanation-card').remove();
-		if (localStorage.getItem('showCuriositiesExplanation')) {
-			showExplanationCard(false);
-		}
+		showExplanationCard(false);
 	}
+
 	var initSortOrder = function() {
 		try {
 			C.curiositiesSortOrder = JSON.parse(localStorage['curiositiesSortOrder']);

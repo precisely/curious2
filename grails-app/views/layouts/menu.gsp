@@ -56,11 +56,6 @@
 	var showModal = ${(session.survey == 'compass')? true: false};
 	var showHelpModal = ${session.showHelp?: false};
 
-	if (showHelpModal) {
-		localStorage.setItem('showTrackathonExplanation', true);
-		localStorage.setItem('showCuriositiesExplanation', true);
-	}
-
 	var processUserData = function(data) {
 		if (!checkData(data))
 			return;
@@ -74,8 +69,7 @@
 				setUserName(this['username']);
 				found = true;
 			}
-			addPerson(this['name'],
-					this['username'], this['id'], this['sex']);
+			addPerson(this['name'], this['username'], this['id'], this['sex']);
 			return true;
 		});
 	}

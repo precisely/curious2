@@ -7,9 +7,11 @@ class UserSettings extends BitSet {
 	 */
 	private static final int PRIVACY_BIO_POSITION = 1
 	private static final int PRIVACY_NAME_POSITION = 2
+	private static final int CLOSED_EXPLANATION_CARD_CURIOSITIES = 3
+	private static final int CLOSED_EXPLANATION_CARD_TRACKATHON = 4
 
 	// Do not save following fields into the database
-	static transients = ["bioPublic", "namePublic", "value"]
+	static transients = ["bioPublic", "namePublic", "value", "closedExplanationCardTrackathon", "closedExplanationCardCuriosities"]
 
 	UserSettings() {
 		super(0)
@@ -51,5 +53,21 @@ class UserSettings extends BitSet {
 
 	void makeNamePublic() {
 		set(PRIVACY_NAME_POSITION)
+	}
+
+	void closeCuriositiesExplanation() {
+		set(CLOSED_EXPLANATION_CARD_CURIOSITIES)
+	}
+
+	boolean hasClosedCuriositiesExplanation() {
+		return get(CLOSED_EXPLANATION_CARD_CURIOSITIES)
+	}
+
+	void closeTrackathonExplanation() {
+		set(CLOSED_EXPLANATION_CARD_TRACKATHON)
+	}
+
+	boolean hasClosedTrackathonExplanation() {
+		return get(CLOSED_EXPLANATION_CARD_TRACKATHON)
 	}
 }
