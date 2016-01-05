@@ -53,7 +53,7 @@
 							<strong>Experiment</strong> by tracking in a more structured way--by yourself or with others.
 						</div>
 
-							<div class="item">
+							<div class="item sleep">
 								<h4>Let's get started with three painless questions.</h4>
 								<p class="sub-heading">
 									These will help illustrate the Curious tracking feature.
@@ -85,7 +85,7 @@
 								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
 
-							<div class="item">
+							<div class="item exercise">
 								<div class="alert alert-danger hide help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
@@ -126,12 +126,14 @@
 						</div>
 						<br>
 
-						<a class="left-carousel-control hide" href="#help-carousel-content" role="button" data-slide="prev">
+					<div class="clearfix margin-top">
+						<a class="left-carousel-control hide pull-left text-white" href="#help-carousel-content" role="button" data-slide="prev">
 							<span>Back</span>
 						</a>
-						<a class="right-carousel-control" href="#help-carousel-content" role="button" onclick="skipQuestions()">
+						<a class="right-carousel-control pull-right text-white" href="#help-carousel-content" role="button" onclick="skipQuestions()">
 							<span>Skip Rest of Tutorial</span>
 						</a>
+					</div>
 					</div>
 					<div class="modal-footer">
 						<div class="wait-form-submit waiting-icon" hidden="true"></div>

@@ -148,9 +148,6 @@
 	    <div class="col-xs-3">
 	    	<ul> 
 	    		<li> <span class="ul-head">Support</span> <br></li>
-				<li>
-					<a href="#">Help</a>
-				</li>
 	<c:ifLoggedin>
 	<li>
 		<a data-toggle="modal" href="#" data-target="#helpWizardOverlay">Tracking Tutorial</a>
