@@ -119,6 +119,8 @@ class UserController extends LoginController {
 		}
 
 		currentUser.settings?.closeCuriositiesExplanation()
+
+		// Saving user as UserSettings is an embedded domain
 		if (Utils.save(currentUser, true)) {
 			renderJSONGet([success: true])
 		} else {
@@ -127,7 +129,6 @@ class UserController extends LoginController {
 	}
 
 	def closeExplanationCardTrackathon() {
-		println "ss"
 		User currentUser = sessionUser()
 		if (!currentUser) {
 			debug "auth failure"
@@ -136,6 +137,8 @@ class UserController extends LoginController {
 		}
 
 		currentUser.settings?.closeTrackathonExplanation()
+
+		// Saving user as UserSettings is an embedded domain
 		if (Utils.save(currentUser, true)) {
 			renderJSONGet([success: true])
 		} else {

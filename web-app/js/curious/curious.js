@@ -454,12 +454,12 @@ function closeExplanationCard(isSprintCard) {
 	}
 }
 
-function showExplanationCard(isSprintCard) {
-	if (isSprintCard) {
-		var trackathonExplanationTemplate = $("script#_trackathonHelp").html();
-		$('.main.container-fluid').prepend(trackathonExplanationTemplate);
-	} else {
-		var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
-		$('.red-header').after(curiosityExplanationTemplate);
-	}
+function showExplanationCardTrackathon() {
+	var trackathonExplanationTemplate = $("script#_trackathonHelp").html();
+	$('.main.container-fluid').prepend(trackathonExplanationTemplate);
+}
+
+function showExplanationCardCuriosity() {
+	var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
+	$('.red-header').after(curiosityExplanationTemplate);
 }

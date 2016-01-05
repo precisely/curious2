@@ -58,7 +58,7 @@ function initCuriosities() {
 
 	if(!isMobile && !closedExplanationCardCuriosity) {
 		$('#curiosity-explanation-card').remove();
-		showExplanationCard(false);
+		showExplanationCardCuriosity();
 	}
 
 	var initSortOrder = function() {
@@ -410,7 +410,7 @@ function initCuriosities() {
 					App.pageView.getCurrentView().addListItemsToScrollView([]);
 				} else {
 					$('#curiosity-explanation-card').remove();
-					showExplanationCard(false);
+					showExplanationCardCuriosity();
 				}
 			}
 			for (var i=0; i < data.length; i++) {

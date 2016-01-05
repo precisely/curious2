@@ -3,9 +3,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
-					<a onclick="return false">
-						<span>What is an Experiment?</span>
-					</a>
+					<span>What is an Experiment?</span>
 				</div>
 				<div class="col-xs-3 align-right close-col">
 					<i class="fa fa-times-circle" onclick="closeExplanationCard(true)"></i>

@@ -551,7 +551,7 @@ function addAllFeedItems(data, elementId, prepend) {
 	$('#sprint-explanation-card').remove();
 	if ((location.pathname.indexOf('sprint') > -1) &&
 			!closedExplanationCardTrackathon || ((!data.listItems || !data.listItems.length) && !currentSprintsOffset)) {
-		showExplanationCard(true);
+		showExplanationCardTrackathon();
 	}
 
 	$.each(data.listItems, function(index, item) {

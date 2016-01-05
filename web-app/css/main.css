@@ -3340,13 +3340,14 @@ body {
 	font-weight: 200;
 }
 
-.feed-item .sprint a, .curiosity-card a {
+.feed-item .sprint a {
 	font-size: 15px;
 	font-weight: 800;
 }
 
-.curiosity-card a, #sprint-explanation-card a{
+.curiosity-card span, #sprint-explanation-card span{
 	font-size: 16px;
+	font-weight: 800;
 }
 
 .discussion-topic a:hover {
