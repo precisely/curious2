@@ -1981,6 +1981,7 @@ body.discuss-page .red-header {
 
 .pin-button .dropdown > a {
 	vertical-align: middle;
+	padding: 5px;
 }
 
 .entry-checkbox {
@@ -3972,7 +3973,6 @@ body .modal-header button {
 #pinned-tag-list li {
 	display: inline-block;
 	height: 33px;
-	padding: 0 5px;
 	background-color: #c04f7f;
 	vertical-align: bottom;
 }
@@ -3995,6 +3995,7 @@ body .modal-header button {
 #pinned-tag-list .dropdown-menu li {
 	width: 64px;
 	height: 25px;
+	padding: 0 5px;
 }
 
 #pinned-tag-list .dropdown-menu li a {

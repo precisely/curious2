@@ -205,13 +205,15 @@ $(document).ready(function() {
 		var $backButton = $('.left-carousel-control');
 		var $skipButton = $('.right-carousel-control');
 		var $nextButton = $('.next-question');
+		var totalSlides = $('#help-carousel-content .carousel-inner .item').length;
+		var slidesWithNavigation = totalSlides - 1;     // The last slide does not include the "Back" or "Next" button
 		var activeSlideNumber = $('#help-carousel-content .carousel-inner .item.active').index() + 1;
 
-		if (activeSlideNumber >= 1 && activeSlideNumber <= 6) {
-			$nextButton.text('NEXT (' + activeSlideNumber + ' of 6)');
+		if (activeSlideNumber >= 1 && activeSlideNumber <= slidesWithNavigation) {
+			$nextButton.text('NEXT (' + activeSlideNumber + ' of ' + slidesWithNavigation + ')');
 			$backButton.toggle(activeSlideNumber !== 1);
-			$skipButton.toggle(activeSlideNumber !== 6);
-		} else if (activeSlideNumber === 7) {
+			$skipButton.toggle(activeSlideNumber !== slidesWithNavigation);
+		} else if (activeSlideNumber === totalSlides) {
 			$nextButton.text('FINISH');
 			$backButton.hide();
 			$skipButton.hide();

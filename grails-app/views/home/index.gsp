@@ -70,10 +70,10 @@
 				</div>
 				<hr>
 				<span class="sort-lable">Sort By:</span>
-				<a href="#" id="sort-by-description" onclick="entryListWidget.sortByDescription()" class="sort-entry">A-Z
+				<a href="#" id="sort-by-description" onclick="entryListWidget.sortByDescription(); return false;" class="sort-entry">A-Z
 					<img class="sort-arrow hide" src="" alt="sort"/> 
 				</a>
-				<a href="#" id="sort-by-time" onclick="entryListWidget.sortByTime()" class="sort-entry">TIME
+				<a href="#" id="sort-by-time" onclick="entryListWidget.sortByTime(); return false;" class="sort-entry">TIME
 					<img class="sort-arrow hide" src="" alt="sort"/> 
 				</a>
 				<div id="recordList">

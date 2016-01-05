@@ -168,7 +168,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
 				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' + 
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
-				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');">' + 
+				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
 			
