@@ -127,6 +127,6 @@
 <footer>
 </footer>
 
-
+<c:renderJSTemplate template="/curiosity/curiosityExplanation" id="_curiosityHelp" />
 </body>
 </html>

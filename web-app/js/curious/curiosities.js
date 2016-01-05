@@ -56,6 +56,11 @@ function initCuriosities() {
 		return success;
 	};
 
+	if(!isMobile && !closedExplanationCardCuriosity) {
+		$('#curiosity-explanation-card').remove();
+		showExplanationCardCuriosity();
+	}
+
 	var initSortOrder = function() {
 		try {
 			C.curiositiesSortOrder = JSON.parse(localStorage['curiositiesSortOrder']);
@@ -392,13 +397,22 @@ function initCuriosities() {
 		search(afterSuccess, q, pageNumber, filter, order1, order2);
 	};
 
-	var processSearchResults = function(searchId, afterSuccess) {
+	var processSearchResults = function(searchId, afterSuccess, pageNumber) {
 		return function(data) {
 			if (!checkData(data))
 				return;
 
 			log( "search results", data.length);
 			C.curiositiesNumSearchResults[searchId] = data.length;
+
+			if (data.length <= 0 && pageNumber && pageNumber == 1) {
+				if (isMobile) {
+					App.pageView.getCurrentView().addListItemsToScrollView([]);
+				} else {
+					$('#curiosity-explanation-card').remove();
+					showExplanationCardCuriosity();
+				}
+			}
 			for (var i=0; i < data.length; i++) {
 				// Aliases for readability.
 				var id = data[i].id;
@@ -454,7 +468,7 @@ function initCuriosities() {
 		var url = '/correlation/search';
 		log('search more data via AJAX', url);
 		var searchId = getSearchId(q)
-		queuePostJSON('search', url, {q: q, page: pageNumber, filter: filter, order1: order1, order2: order2}, processSearchResults(searchId, afterSuccess));
+		queuePostJSON('search', url, {q: q, page: pageNumber, filter: filter, order1: order1, order2: order2}, processSearchResults(searchId, afterSuccess, pageNumber));
 	};
 
 	var updateUISortOrder = function() {

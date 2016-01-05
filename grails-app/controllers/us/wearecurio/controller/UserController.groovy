@@ -109,4 +109,40 @@ class UserController extends LoginController {
 			renderJSONGet([success: true, message: validate.message, hash: validate.hash])
 		}
 	}
+
+	def closeExplanationCardCuriosity() {
+		User currentUser = sessionUser()
+		if (!currentUser) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		currentUser.settings?.closeCuriositiesExplanation()
+
+		// Saving user as UserSettings is an embedded domain
+		if (Utils.save(currentUser, true)) {
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
+		}
+	}
+
+	def closeExplanationCardTrackathon() {
+		User currentUser = sessionUser()
+		if (!currentUser) {
+			debug "auth failure"
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		currentUser.settings?.closeTrackathonExplanation()
+
+		// Saving user as UserSettings is an embedded domain
+		if (Utils.save(currentUser, true)) {
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
+		}
+	}
 }
