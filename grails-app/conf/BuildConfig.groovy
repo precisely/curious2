@@ -109,5 +109,5 @@ grails.project.dependency.resolution = {
 
 grails.war.resources = { stagingDir, args ->
 	println "Deleting some files from WAR"
-	delete(file: "${stagingDir}/WEB-INF/classes/com/cc/DummyController.class")
+	delete(file: "${stagingDir}/WEB-INF/classes/us/wearecurio/controller/DummyController.class")
 }

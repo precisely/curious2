@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat
 
 class OuraDataService extends DataService {
 
-	static final String BASE_URL = "https://ouracloud.ouraring.com"
+	static final String BASE_URL = "https://cloud.ouraring.com"
 	static final String SET_NAME = "OURA"
 	static final String COMMENT = "(Oura)"
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
