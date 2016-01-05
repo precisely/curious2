@@ -4200,23 +4200,14 @@ body .modal-header button {
 	width: 470px;
 }
 
+#helpWizardOverlay .carousel-inner .item:first-child .company-name {
+	margin-top: 5px;
+	margin-bottom: 20px;
+}
+
 #helpWizardOverlay p {
 	font-size: 12px;
 	color: #fff;
-}
-
-#helpWizardOverlay .left-carousel-control {
-	float: left;
-	color: #fff;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-
-#helpWizardOverlay .right-carousel-control {
-	float: right;
-	color: #fff;
-	margin-top: 20px;
-	margin-bottom: 20px;
 }
 
 #helpWizardOverlay .modal-footer {

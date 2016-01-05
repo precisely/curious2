@@ -1,7 +1,7 @@
 <div class="modal fade" id="helpWizardOverlay">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<div id="help-carousel-content" class="carousel slide"
+			<div id="help-carousel-content" class="carousel"
 					data-ride="carousel" data-interval="false" data-wrap="false">
 					<div class="modal-body">
 						<!-- Wrapper for slides -->
@@ -16,11 +16,10 @@
 							<div>
 								<small>Welcome to</small>
 							</div>
-							<h4>We Are Curious!</h4>
-							<br><br>
+							<h4 class="company-name">We Are Curious!</h4>
 							<div>
-								We Are Curious helps you investigate <strong>questions</strong> about yourself.<br>
-								For example,
+								We Are Curious helps you investigate <strong>questions</strong> about yourself.
+								For example,<br><br>
 								<ul class="ul-fix">
 									<li>Does caffeine affect my sleep?</li>
 									<li>Does exercise really affect my mood?</li>
@@ -130,7 +129,7 @@
 						<a class="left-carousel-control hide pull-left text-white" href="#help-carousel-content" role="button" data-slide="prev">
 							<span>Back</span>
 						</a>
-						<a class="right-carousel-control pull-right text-white" href="#help-carousel-content" role="button" onclick="skipQuestions()">
+						<a class="right-carousel-control pull-right text-white" href="#" role="button" onclick="skipQuestions()">
 							<span>Skip Rest of Tutorial</span>
 						</a>
 					</div>

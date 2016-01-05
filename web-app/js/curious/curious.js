@@ -361,7 +361,7 @@ function createHelpEntry(callback) {
 	var entryText;
 	var entryId;
 
-	if ($('#helpWizardOverlay .carousel-inner .item:first').hasClass('active')) {
+	if ($('#helpWizardOverlay .carousel-inner .item.sleep').hasClass('active')) {
 		entryInputElement = $('#sleep-hour-entry');
 		entryText = entryInputElement.val();
 		entryId = entryInputElement.data('id');
@@ -372,10 +372,10 @@ function createHelpEntry(callback) {
 		} else if (entryText != '') {
 			entryText = 'sleep ' + entryText;
 		}
-	}  else if ($('#helpWizardOverlay .carousel-inner .item:nth-child(3)').hasClass('active')) {
+	} else if ($('#helpWizardOverlay .carousel-inner .item.exercise').hasClass('active')) {
 		submitExerciseForm(callback);
 		return true;
-	} else {
+	} else if ($('#helpWizardOverlay .carousel-inner .item.mood').hasClass('active')) {
 		entryInputElement = $('#mood-entry');
 		entryText = entryInputElement.val();
 		entryId = entryInputElement.data('id');
