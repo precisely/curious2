@@ -168,7 +168,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				+',\'' + buttonText +'\',' + this.defaultToNow + ')">'+ 
 				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' + 
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
-				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');">' + 
+				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
 			$("#pinned-tag-list").append(pinnedTagButtonHTMLContent);
 			
@@ -258,20 +258,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			entryEditItem = $("#" + this.editId + "entryid" + id);
 		}
 		$("#entrydelid" + this.editId + id).click(function() {
-			console.log('deleting....');
 			self.deleteEntryId(id);
+			return false;       // Do not throw user back to the top
 		});
 
-		$('#' + id + '-remind-checkbox').change(function() {
-			if ($('#' + id + '-repeat-checkbox:checked').length > 0 && $(this).is(':checked')) {
-				$('#' + id + '-confirm-each-repeat').prop('checked', true);
-			}
-		});
-		
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
 		entryEditItem.data(data);
-	}
+	};
 
 	/*
 	 * This method iterates through list of entries and displays them
@@ -583,21 +577,23 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				frequencyBit = RepeatType.WEEKLY_BIT;
 			}
 			repeatTypeBit = RepeatType.CONCRETEGHOST_BIT | frequencyBit;
+
+			// Confirm repeat should only be applicable if repeat is enabled
+			if (confirmRepeat) {
+				repeatTypeBit = repeatTypeBit | RepeatType.GHOST_BIT;
+			}
 		}
+
 		if (setAlert) {
 			if (repeatTypeBit) {
 				repeatTypeBit = (RepeatType.REMIND_BIT | repeatTypeBit);
-			} else if (confirmRepeat) {
-				repeatTypeBit = RepeatType.REMIND_BIT | RepeatType.DAILYCONCRETEGHOST;
 			} else {
 				repeatTypeBit = RepeatType.REMIND_BIT;
 			}
 		}
-		if (confirmRepeat) {
-			return (repeatTypeBit | RepeatType.GHOST_BIT);
-		} 
+
 		return (repeatTypeBit);
-	}
+	};
 
 	this.createPinnedEntry = function(editId) {
 		editId = editId || this.editId;
@@ -816,7 +812,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		var $target = $(e.target);
 
-		if ($target[0].className == 'make-pin-button') {
+		if ($target[0].className == 'make-pin-button' || $target[0].className === 'bookmark-icon') {
 			if ($target.closest('#recordList').length == 0) {
 				self.createPinnedEntry();
 			} else {
@@ -856,8 +852,11 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		}
 
 		if (isAnyEntrySelected) {
-			console.debug('Mousedown: There is a selcted entry. Will now unselect.')
-			self.checkAndUpdateEntry($("li.entry.ui-selected"));
+			console.debug('Mousedown: There is a selected entry. Will now unselect.');
+			// Do nothing when user click outside https://github.com/syntheticzero/curious2/issues/783#issue-123920844
+			//self.checkAndUpdateEntry($("li.entry.ui-selected"));
+			// Just unselect the entry
+			self.unselectEntry($alreadySelectedEntry);
 			return;
 		}
 
@@ -919,6 +918,17 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					self.processInput();
 				}
 			});
+
+	$(document).on("click", ".save-entry", function() {
+		var $selectedEntry = $("li.ui-selected", "#" + self.listId);
+		if (!$selectedEntry || ($selectedEntry.length === 0)) {
+			// Means button is clicked for a new entry
+			self.processInput();
+			return;
+		}
+
+		self.checkAndUpdateEntry($selectedEntry);
+	});
 
 	/**
 	 * Keycode= 37:left, 38:up, 39:right, 40:down

@@ -18,6 +18,7 @@
 <script type="text/javascript" src="/js/curious/curious.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.json-2.2.js"></script>
 <!--[if IE]><script language="javascript" type="text/javascript" src="/lib/flot/excanvas.pack.js"></script><![endif]-->
+<link rel="stylesheet" href="/css/core.css?ver=22"/>
 <link rel="stylesheet" href="/css/main.css?ver=22"/>
 <%--<link rel="stylesheet" href="/css/sprite.css"/>--%>
 <link rel="stylesheet" href="/css/main-responsive.css?ver=22"/>

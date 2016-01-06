@@ -210,7 +210,7 @@ a,a:link,a:hover,a:visited {
 	border-width:0px 1px 1px 1px;
 }
 .body2 {
-	padding: 0px 4px;
+	padding: 0 4px;
 }
 
 .main, #feed .graphData .main {
@@ -220,7 +220,7 @@ a,a:link,a:hover,a:visited {
 }
 
 #feed .discussmain {
-	padding: 0px;
+	padding: 0;
 }
 
 #feed .graphData .main, #feed .discussmain {
@@ -276,7 +276,7 @@ a,a:link,a:hover,a:visited {
 	font-size: 12pt;
 }
 .header {
-	padding:30px 0px 10px 0px;
+	padding:30px 0 10px 0;
 }
 .header a.logo-link {
 	margin-bottom: 15px;
@@ -290,13 +290,13 @@ a,a:link,a:hover,a:visited {
 }
 .mainLinks {
 	display:inline-block;
-	padding: 15px 0px 0px 0px;
+	padding: 15px 0 0 0;
 	height: 70px;
 	text-align: center;
 }
 .mainLinks li {
 	display: inline;
-	padding: 0px 20px 5px 20px;
+	padding: 0 20px 5px 20px;
 	text-transform: uppercase;
 	font-size: 12px;
 	color: #2d2d2d;
@@ -314,7 +314,7 @@ a,a:link,a:hover,a:visited {
 	font-weight: 600;
 }
 .signin {
-	padding:14px 20px 0px 0px;
+	padding:14px 20px 0 0;
 	font-size:.8em;
 	color:#999999;
 	vertical-align:middle;
@@ -340,7 +340,7 @@ a,a:link,a:hover,a:visited {
 	right: 10px;
 	text-align: center;
 	width: 290px;
-	padding: 0px 15px 5px 15px;
+	padding: 0 15px;
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.175);
 	box-shadow: 0 1px 5px rgba(0,0,0,0.175);
 }
@@ -373,6 +373,14 @@ a,a:link,a:hover,a:visited {
 	margin-left: -36px;
 }
 
+.entry-details-form li:nth-last-child(2) {
+	margin-bottom: 10px !important;
+}
+
+.entry-details-form li:last-child {
+	margin: 10px 0 !important;
+}
+
 .entry-details-dropdown-menu form ::before {
 	display: none;
 }
@@ -391,7 +399,7 @@ body.graph-page .body1 {
 	height: 628px;
 }
 body.graph-page .querymain {
-	margin: 0px;
+	margin: 0;
 	width: 100%;
 }
 #plotLeftNav {
@@ -408,13 +416,13 @@ body.graph-page .querymain {
 	height: 100%;
 }
 body.graph-page .querycontrols {
-	margin:0px;
+	margin: 0;
 }
 #height-balancer {
 	height: 13px;
 }
 div.graphData.has-plot-data #height-balancer {
-	height: 0px;
+	height: 0;
 }
 /**
  * Styles for graph page ends here.
@@ -475,9 +483,9 @@ body.discuss-page input#discussTitleInput {
 }
 
 .footer {
-	clear:all;
+	clear: both;
 	margin-top:10px;
-	padding:20px 0px;
+	padding:20px 0;
 }
 .footer h2 {
 	padding-bottom:.7em;
@@ -503,7 +511,7 @@ body.discuss-page input#discussTitleInput {
 input.textInput {
 	color:#cccccc;
 	background-color:#ffffff;
-	margin:0px;
+	margin: 0;
 	padding-left:5px;
 	float:left;
 	border:1px solid #cccccc;
@@ -514,8 +522,8 @@ input.textInput {
 .cycleTag {
 	color:#cccccc;
 	background-color:#ffffff;
-	margin:0px;
-	border:0px;
+	margin: 0;
+	border: 0;
 	display:inline-block;
 	padding-top:7px;
 	height:29px;
@@ -524,7 +532,7 @@ input.textInput {
 .startdatepicker, .enddatepicker {
 	height: 30px;
 	width: 175px;
-	border: 0px;
+	border: 0;
 	font-size: 16px;
 }
 .startDate {
@@ -535,7 +543,7 @@ input.textInput {
 	float:right;
 }
 .endDate a.calendar {
-	margin:7px 10px 0px 0px;
+	margin:7px 10px 0 0;
 }
 input.buttonInput {
 	float:left;
@@ -553,13 +561,13 @@ ul.ui-autocomplete {
 }
 /* The autocomplete must match the text input width */
 .ui-autocomplete {
-	padding-left:0px;
+	padding-left: 0;
 	max-height: 200px;
 	overflow-y: auto;
 	/* prevent horizontal scrollbar */
 	overflow-x: hidden;
 	/* add padding to account for vertical scrollbar */
-	padding-right: 0px;
+	padding-right: 0;
 }
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
@@ -569,7 +577,7 @@ ul.ui-autocomplete {
 }
 #addData label {
 	font-size:.8em;
-	padding:8px 0px 10px 0px;
+	padding:8px 0 10px 0;
 	color:#999999;
 	display:inline-block;
 }
@@ -588,28 +596,26 @@ ul.ui-autocomplete {
 #searchTags h1 a {
 	color:#000000;
 	padding-left:1.3em;
-	background:url(/images/your_tags.gif) no-repeat 0px .2em;
+	background:url(/images/your_tags.gif) no-repeat 0 .2em;
 }
 #searchTags input.textInput {
 	width: 100%;
 	height:30px;
 	font-size:.9em;
 	border:2px solid #EF4B3A;
-	border-top:0px;
+	border-top: 0;
 	padding-left:5px;
 	float: none;
 }
 
 #searchTags form {
-	padding:0px;
+	padding: 0;
 	display:block;
 }
 #searchTags .showAll {
 	font-size:.8em;
 }
-.unstyled {
-	list-style: none;
-}
+
 .hide, .hid {
 	display: none;
 }
@@ -795,7 +801,7 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 
 .ui-dialog { overflow:hidden; position: relative; padding: 3px; width: 150px; z-index: 99999999999 !important; }
 .ui-dialog .ui-dialog-titlebar { overflow:hidden; height: 10px; padding: 0 0 0 0; position: relative;  }
-.ui-dialog .ui-dialog-title { float: left; margin: 0px 0 0px; }
+.ui-dialog .ui-dialog-title { float: left; margin: 0 0 0; }
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 5px; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 10px; }
 .ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
 .ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
@@ -816,12 +822,12 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 /* FIRST PAGE */
 
 body.track-page .date-controls hr, body.graph-page .red-header hr {
-	margin: 0px;
+	margin: 0;
 	width: 2px;
 	height: 60px;
 	position: absolute;
 	right: 227px;
-	top: 0px;
+	top: 0;
 	background-color: white;
 }
 
@@ -840,7 +846,7 @@ body.track-page .date-controls h1 .gear {
 	height:15px;
 	display:inline-block;
 	float:right;
-	margin:2px 12px 0px 0px;
+	margin:2px 12px 0 0;
 }
 body.track-page button {
 	background-color: #f3f3f3;
@@ -849,14 +855,14 @@ body.track-page button {
 	padding: 10px;
 	font-size: 11px;
 	border-radius: 2px;
-	line-height: 0px;
+	line-height: 0;
 }
 
 a.calendar {
 	background:url(/images/calendar.gif) no-repeat;
 	width:13px;
 	height:14px;
-	margin:7px 0px 0px 10px;
+	margin:7px 0 0 10px;
 	display:inline-block;
 }
 
@@ -905,7 +911,7 @@ a.calendar {
 }
 .calendarRange {
 	background-color:#EBEBEB;
-	padding-left:0px;
+	padding-left: 0;
 }
 .calendarRange .slider, .calendarRange .picker {
 	border:0px solid #999999;
@@ -917,7 +923,7 @@ a.calendar {
 }
 .calendarRange hr {
 	height:1px;
-	border:0px;
+	border: 0;
 	color:#ffffff;
 	background-color:#ffffff;
 }
@@ -983,7 +989,7 @@ div.plotLine:hover span {
 
 #preFooter .tagNav {
 	text-align:right;
-	border:0px;
+	border: 0;
 	padding-left: 30px;
 	padding-top:2px;
 	-moz-box-shadow: 3px 3px 3px #ffffff;
@@ -1020,7 +1026,7 @@ body.tags-displayed .floating-column {
 
 .entry-container hr {
 	height: 2px;
-	margin: 15 0;
+	margin: 15px 0;
 	color: #d8d8d8;
 }
 
@@ -1051,8 +1057,8 @@ body.tags-displayed .floating-column {
 	padding: 10px;
 	font-size: 18px;
 	background-color: #FFFFFF;
-	border-radius: 0px;
-	box-shadow: 0px 1px 0px 0px #E4E2E2;
+	border-radius: 0;
+	box-shadow: 0 1px 0 0 #E4E2E2;
 }
 
 .swatch {
@@ -1061,7 +1067,7 @@ body.tags-displayed .floating-column {
 }
 
 .swatch li {
-	margin:10px 0px;
+	margin:10px 0;
 }
 
 .swatch li span {
@@ -1069,10 +1075,10 @@ body.tags-displayed .floating-column {
 }
 
 .sharePage .leftNav, {
-	border:0px;
-	-moz-box-shadow: 0px 0px 0px;
-	-webkit-box-shadow: 0px 0px 0px;
-	box-shadow: 0px 0px 0px;
+	border: 0;
+	-moz-box-shadow: 0 0 0;
+	-webkit-box-shadow: 0 0 0;
+	box-shadow: 0 0 0;
 }
 
 body.discuss-page .red-header {
@@ -1080,7 +1086,7 @@ body.discuss-page .red-header {
 }
 
 .feed-body .container-fluid {
-	padding: 0px;
+	padding: 0;
 }
 
 .discuss-page .container-fluid {
@@ -1093,7 +1099,7 @@ body.discuss-page .red-header {
 	font-weight:normal;
 	text-transform:uppercase;
 	display:block;
-	padding:0px 0px 0px 0px;
+	padding:0px 0 0 0;
 }
 
 .sharePage h1 div {
@@ -1115,24 +1121,23 @@ body.discuss-page .red-header {
 	color:#666666;
 	font-size:12px;
 	font-weight:bold;
-	margin:2em 0px;
+	margin:2em 0;
 	border-top:2px solid #EF4B3A;
 	border-bottom:2px solid #EF4B3A;
 }
 
 .discusscomments .description p {
-	margin:1em 0px;
+	margin:1em 0;
 }
 
 .discusscomments .button {
 	text-align:right;
-	margin:2em 0px;
+	margin:2em 0;
 }
 
 .discusscomments .button a {
 	display:inline-block;
-	text-align:right;
-	padding:2px 0px;
+	padding:2px 0;
 	text-align:center;
 	width:230px;
 	background-color:#08BBF1;
@@ -1147,8 +1152,8 @@ body.discuss-page .red-header {
 	background-color:transparent;
 	color:#666666;
 	text-transform:uppercase;
-	padding:0px;
-	margin:1em 0px;
+	padding: 0;
+	margin:1em 0;
 }
 
 .commentList .comment {
@@ -1156,7 +1161,7 @@ body.discuss-page .red-header {
 	color:#666666;
 	font-size:12px;
 	font-weight:normal;
-	margin:2em 0px;
+	margin:2em 0;
 	border-bottom:1px solid #EAEAEA;
 }
 
@@ -1165,7 +1170,7 @@ body.discuss-page .red-header {
 }
 
 .commentList .comment .message p {
-	margin:0px 0px 1em 0px;
+	margin:0px 0 1em 0;
 }
 
 .commentList .comment .message {
@@ -1213,13 +1218,13 @@ body.discuss-page .red-header {
 
 #addComment input {
 	width:350px;
-	margin:2px 0px;
+	margin:2px 0;
 }
 
 #addComment textarea {
 	width:100%;
 	height:80px;
-	margin:2px 0px 0px 0px;
+	margin:2px 0 0 0;
 }
 
 #addComment .submitButton {
@@ -1233,7 +1238,7 @@ body.discuss-page .red-header {
 	font-size:10px;
 	width:70px;
 	text-align:center;
-	margin:0px;
+	margin: 0;
 	padding:2px 5px;
 }
 
@@ -1242,12 +1247,12 @@ body.discuss-page .red-header {
 	background-color:transparent;
 	color:#08BBF1;
 	text-transform:uppercase;
-	padding:0px;
-	margin:.7em 0px;
+	padding: 0;
+	margin:.7em 0;
 }
 
 #addComment p {
-	margin:.5em 0px;
+	margin:.5em 0;
 }
 
 #addComment p.decorate {
@@ -1275,7 +1280,7 @@ body.discuss-page .red-header {
 	display:none;
 	float:right;
 	padding-top:5px;
-	padding-bottom:0px;
+	padding-bottom: 0;
 	padding-left:8px;
 	color:#999999;
 }
@@ -1299,7 +1304,7 @@ body.discuss-page .red-header {
 	color: #ffffff;
 	text-transform: none;
 	height: 60px;
-	margin-left: 0px;
+	margin-left: 0;
 	width: 100%;
 	border-radius: 2px;
 	padding: 23px 15px 21px 20px;
@@ -1307,7 +1312,7 @@ body.discuss-page .red-header {
 
 .red-header .search-bar {
 	margin-top: -29px;
-	margin-right: 0px;
+	margin-right: 0;
 }
 
 .red-header .search-bar .fa {
@@ -1361,7 +1366,6 @@ body.discuss-page .red-header {
 
 #actions ul {
 	background: #fff;
-	display: block;
 	width: 272px;
 	padding: 10px;
 	z-index: 999;
@@ -1434,7 +1438,7 @@ body.discuss-page .red-header {
 	padding: 10px;
 	margin-bottom: 20px;
 	border: 1px solid #EF4B3A;
-	border-radius: 0px;
+	border-radius: 0;
 	font-weight: bold;
 }
 
@@ -1499,20 +1503,20 @@ body.discuss-page .red-header {
 	width: 100%;
 	height: 40px;
 	background-color: #fff;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 #answer {
 	width: 100%;
 	height: 200px;
 	resize: none;
-	border-radius: 0px;
+	border-radius: 0;
 	padding: 15px;
 	border: none;
 	color: #a4a4a4;;
 	margin-bottom: 10px;
 	background-color: #f7f7f7;
-	margin-left: 0px;
+	margin-left: 0;
 	font-size: 16px;
 	font-style: normal;
 }
@@ -1578,7 +1582,7 @@ body.discuss-page .red-header {
 	border: 1px rgb(221, 221, 221) solid;
 	color: white;
 	font-weight: 500;
-	margin: 0px 10px;
+	margin: 0 10px;
 	height: 30px;
 	vertical-align: middle;
 }
@@ -1594,7 +1598,7 @@ body.discuss-page .red-header {
 }
 
 .saved-survey-answers {
-	margin: 0px 10px;
+	margin: 0 10px;
 }
 
 .saved-survey-answers .col {
@@ -1649,7 +1653,7 @@ body.discuss-page .red-header {
 	margin-top: 1px;
 	border-radius: 8px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, .8);
 }
 
 .user-name {
@@ -1666,7 +1670,7 @@ body.discuss-page .red-header {
 	margin-top: 1px;
 	border-radius: 8px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, .8);
 }
 
 .bio-radio {
@@ -1702,7 +1706,7 @@ body.discuss-page .red-header {
 	margin-top: 1px;
 	border-radius: 8px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, .8);
 }
 
 .bio-radio input[type=radio] {
@@ -1785,13 +1789,13 @@ body.discuss-page .red-header {
 	padding: 5px;
 	font-size: 36px;
 	color: #fc3f28;
-	margin: 5px 0px 0px 30px;
+	margin: 5px 0 0 30px;
 	pointer-events: none;
 }
 
 .input-affordance .track-input-modifiers {
 	position: absolute;
-	margin: 10px 0px 0px 17px;
+	margin: 10px 0 0 17px;
 	height: 40px;
 	cursor: pointer;
 }
@@ -1807,7 +1811,7 @@ body.discuss-page .red-header {
 
 .input-affordance hr {
 	color: #d8d8d8;
-	margin: 0px 10px;
+	margin: 0 10px;
 }
 
 .input-affordance .text {
@@ -1815,22 +1819,19 @@ body.discuss-page .red-header {
 	position: absolute;
 	color: #B2B2B2;
 }
-.input-affordance .icon-repeat-text {
-	right: -12;
-}
 
 .input-affordance .icon-bell-text {
-	right: -28;
+	right: -28px;
 }
 
 .input-affordance .icon-pin-text {
-	right: -5;
+	right: -5px;
 }
 .left-addon {
 	background-color: white;
 }
 .left-addon .fa {
-	left: 0px;
+	left: 0;
 }
 
 .addon input {
@@ -1857,7 +1858,7 @@ body.discuss-page .red-header {
 	top: 15px;
 	height: 30px;
 	right: 135px;
-	padding: 0px;
+	padding: 0;
 }
 
 #addData .dropdown-menu .divider, #recordList .dropdown-menu .divider {
@@ -1935,22 +1936,52 @@ body.discuss-page .red-header {
 }
 
 .track-page .make-pin-button, .track-page .pin-entry {
-	height: 33px;
 	border: 1px solid #c04f7f;
-	border-radius: 2px;
-	box-shadow: 0px 2px 2px 0px #c04f7f;
+	box-shadow: 0 2px 2px 0 #c04f7f;
 	color: #c04f7f;
-	font-weight: 600;
-	background-color: #fff;
-	margin-top: 10px;
+	padding: 0 8px;
+	background: white;
 }
 
-.track-page .pin-entry:hover {
+.track-page .pin-entry {
+	height: 33px;
+}
+
+.track-page .make-pin-button > img {
+	width: 13px;
+}
+
+.bookmark-label {
+	margin-bottom: 0;
+	vertical-align: middle;
+}
+
+.track-page .save-entry {
+	border-width: 2px;
+	padding:7px 25px;
+	font-size: 15px;
+	line-height: 1.3333333;
+	height: auto;
+	font-weight: 600;
+}
+
+.track-page .pin-button:hover .pin-entry {
 	box-shadow: inset 0 0 5px #c04f7f;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }
 
 .pin-button {
 	margin-right: 10px;
+}
+
+.pin-button .dropdown {
+	border-top-right-radius: 2px;
+}
+
+.pin-button .dropdown > a {
+	vertical-align: middle;
+	padding: 5px;
 }
 
 .entry-checkbox {
@@ -1974,7 +2005,7 @@ body.discuss-page .red-header {
 	border-radius: 2px;
 	top: 2px;
 	left: 2px;
-	padding: 0px !important;
+	padding: 0 !important;
 	background: #f8f8f8;
 	border: 1px solid #d1d1d1;
 }
@@ -2019,14 +2050,14 @@ body.discuss-page .red-header {
 #addData li, #recordList .dropdown-menu li {
 	box-shadow: none;
 	font-size: 12px;
-	padding: 0px;
+	padding: 0;
 }
 
 #addData .label-bold, #recordList .label-bold {
 	font-size: 14px;
 	font-weight: 600;
 	color: #656565;
-	padding: 0px;
+	padding: 0;
 	margin-right: 10px;
 }
 
@@ -2229,7 +2260,7 @@ body.track-page ol#entry0 li.entry.ui-selected a.entryDelete {
 #pinned-tags .pin-header {
 	height: 16px;
 	display: block;
-	margin: -5px 0px 5px 0px;
+	margin: -5px 0 5px 0;
 }
 
 .hidden {
@@ -2270,7 +2301,7 @@ div.graph-header-container .red-header {
 .sprint .label-default {
 	background-color: white;
 	text-align: center;
-	padding: 5px 0px;
+	padding: 5px 0;
 	color: #f48d5b;
 }
 
@@ -2290,7 +2321,7 @@ div.graph-header-container .red-header {
 }
 
 .sprint button {
-	margin: 0px 10px 10px 10px;
+	margin: 0 10px 10px 10px;
 	text-transform: uppercase;
 	font-weight: 600;
 	color: dimgrey;
@@ -2325,12 +2356,12 @@ div.graph-header-container .red-header {
 #moreAvatars {
 	height: 80px;
 	width: auto;
-	padding: 0px 10px 10px 10px;
+	padding: 0 10px 10px 10px;
 	cursor: pointer;
 }
 
 .sprint h2 {
-	margin-top: 0px;
+	margin-top: 0;
 	font-size: 25px;
 }
 
@@ -2418,7 +2449,7 @@ div.graph-header-container .red-header {
 	width: 179px;
 	height: 726px;
 	border: 1px solid #c6c6c6;
-	border-right-width: 0px;
+	border-right-width: 0;
 }
 
 .feed .left-menu li {
@@ -2444,7 +2475,7 @@ div.graph-header-container .red-header {
 }
 
 .feed .left-menu li ul li {
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 .feed .left-menu li ul li a {
@@ -2488,7 +2519,7 @@ div.graph-header-container .red-header {
 	border: none;
 	width: 400px;
 	height: 30px;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 	font-weight: 500;
 }
 
@@ -2540,7 +2571,7 @@ div.graph-header-container .red-header {
 	margin-left: 10px;
 	margin-top: -3px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px #c04f7f, 0px 0px 0px 0px #c04f7f;
+	box-shadow: inset 0 0 0 1px #c04f7f, 0 0 0 0 #c04f7f;
 }
 
 .feed #createSprintOverlay .modal-dialog input[type=radio]:checked+label:after {
@@ -2564,7 +2595,7 @@ div.graph-header-container .red-header {
 }
 
 .modal-footer {
-	padding: 0px;
+	padding: 0;
 	height: 50px;
 }
 
@@ -2615,7 +2646,7 @@ div.graph-header-container .red-header {
 }
 
 .feed-body {
-	margin: 0px 0px;
+	margin: 0 0;
 }
 .feed .col-md-12 {
 	padding: 0;
@@ -2624,7 +2655,6 @@ div.graph-header-container .red-header {
 	list-style: none;
 }
 .new-post {
-	padding: 0 0 20 0;
 	text-align: right;
 }
 .new-post textarea {
@@ -2704,34 +2734,11 @@ div.graph-header-container .red-header {
 	padding-bottom: 5px;
 	display: inline-block;
 }
-#graphList .summary .unpublishButton {
-	width: 250px;
-	margin-left: 2px;
-	margin-right: 4px;
-	padding-top: 4px;
-	padding-right: 4px;
-	background-color: #08BBF1;
-	color: #FFFFFF;
-	padding-left: 4px;
-	padding-bottom: 4px;
-	font-size: 16px;
-}
-#graphList .summary .publishButton {
-	width: 250px;
-	margin-left: 2px;
-	margin-right: 4px;
-	padding-top: 4px;
-	padding-right: 4px;
-	background-color: #08BBF1;
-	color: #FFFFFF;
-	padding-left: 4px;
-	padding-bottom: 4px;
-	font-size: 16px;
-}
+
 #graphList .summary .update {
 	font-size: 80%;
 	display: inline-block;
-	width: 0px;
+	width: 0;
 	height: 21px;
 	text-align: center;
 	line-height: 21px;
@@ -2765,8 +2772,8 @@ div.graph-header-container .red-header {
 }
 #graphList .sidebar ul {
 	list-style-type: none;
-	padding: 0px;
-	margin: 0px;
+	padding: 0;
+	margin: 0;
 }
 #graphList .sidebar li a {
 	color: #666666 ! important
@@ -2809,7 +2816,7 @@ body.load-graph #graphList .summary .close {
 	height: 100%;
 	border-top: 500px solid transparent;
 	border-left: 2500px solid #ff935f;
-	border-right: 0px solid transparent;
+	border-right: 0 solid transparent;
 	z-index: -1;
 }
 .about-wrapper {
@@ -2905,8 +2912,8 @@ body {
 }
 
 .padding10 {
-	padding: 0px 10px;
-	margin: 0px 10px;
+	padding: 0 10px;
+	margin: 0 10px;
 }
 
 .right-icon {
@@ -2932,8 +2939,8 @@ body {
 	display: inline-block;
 	vertical-align:top;
 	width: 200px;
-	padding: 0px 10px;
-	margin: 0px 10px;
+	padding: 0 10px;
+	margin: 0 10px;
 }
 
 .curiosities .nav-box img {
@@ -2997,12 +3004,12 @@ body {
 
 .curiosities .right-icon {
 	position:absolute;
-	right: 0px;
+	right: 0;
 }
 
 .curiosities .right-icon a {
 	position:absolute;
-	right: 0px;
+	right: 0;
 }
 
 .curiosities td.nav-carousel-container {
@@ -3033,7 +3040,7 @@ body {
 }
 
 .curiosities .curiosities-row-top {
-	margin-top: 0px;
+	margin-top: 0;
 	border-top: 6px solid #f48d5b;
 	cursor: pointer;
 	padding-bottom: 15px;
@@ -3081,7 +3088,7 @@ body {
 		color: white;
 		font: bold 15px/13px Helvetica, Verdana, Tahoma;
 		height: 14px;
-		padding: 4px 3px 0px 3px;
+		padding: 4px 3px 0 3px;
 		text-align: center;
 		min-width: 14px;
 
@@ -3115,9 +3122,7 @@ body {
 
 	width: 400px;
 	background: #eee;
-	opacity: 0.9;
 	padding: 20px;
-
 	top: -1000px;
 	opacity: 1;
 	transition: opacity 0.3s ease-out 0s;
@@ -3161,7 +3166,7 @@ body {
 	border-radius: 20px;
 	margin-right: 10px;
 	background-color: #4092a5;
-	border-width: 0px;
+	border-width: 0;
 }
 
 .curiosities #garbage-can-icon {
@@ -3183,13 +3188,13 @@ body {
 	position:absolute;
 	width: 20000px;
 	overflow: hidden;
-	left: 0px;
+	left: 0;
 	transition: left 0.8s ease-out 0s;
 }
 
 .curiosities .row {
-	margin-left: 0px;
-	margin-right: 0px;
+	margin-left: 0;
+	margin-right: 0;
 }
 
 .curiosities .curiosities-name {
@@ -3206,7 +3211,7 @@ body {
 }
 
 .feed-item {
-	box-shadow: 0px 4px 5px #dddddd;
+	box-shadow: 0 4px 5px #dddddd;
 }
 
 .feed-item.discussion {
@@ -3240,12 +3245,12 @@ body {
 
 .feed-item .sprint {
 	padding: 18px 25px 20px 22px;
-	margin-right: 0px;
+	margin-right: 0;
 }
 
 .discussion-topic .top-left-margin {
 	margin-top: 10px;
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 .discussion-topic .group {
@@ -3286,14 +3291,14 @@ body {
 
 .discussion-header .dropdown .dropdown-menu {
 	background-color: #f3f3f3;
-	min-width: 0px;
+	min-width: 0;
 	max-width: 92px;
 	text-align: center;
 	margin-left: 85px;
 	margin-top: -2px;
 	box-shadow: none;
 	border: none;
-	padding-top: 0px;
+	padding-top: 0;
 }
 
 .discussion-header .dropdown .dropdown-menu li a {
@@ -3307,7 +3312,7 @@ body {
 
 .discussion-topic .title {
 	margin-top: 15px;
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 .discussion .discussion-topic a, .feed-item .sprint a {
@@ -3316,7 +3321,7 @@ body {
 }
 
 .discussion .discussion-topic a {
-	margin-top: 0px;
+	margin-top: 0;
 	font-weight: 600;
 }
 
@@ -3400,16 +3405,15 @@ body {
 .discussion .discussion-topic p {
 	font-style: normal;
 	font-size: 14px;
-	margin: 5px 0px 10px 0px;
+	margin: 5px 0 10px 0;
 	color: #2d2d2d;
 	text-align: justify;
 }
 
 .discussion .discussion-topic hr {
 	margin-bottom: 25px;
-	border-width: 2px;
-	border-color: #e9e9e9;
-	margin-top: 0px;
+	border: 1px solid #e9e9e9;
+	margin-top: 0;
 }
 
 .discussion-topic .contents .row {
@@ -3490,7 +3494,7 @@ body {
 .discussion-comments-wrapper .add-comment-to-discussion input {
 	width: 100%;
 	height: 44px;
-	padding: 0px 15px;
+	padding: 0 15px;
 	font-size: 13px;
 	color: #A4A4A4;
 }
@@ -3509,7 +3513,7 @@ body {
 }
 
 .discussion-comment .posting-time {
-	margin: 12px 0px 0px 10px;
+	margin: 12px 0 0 10px;
 	font-size: 11px;
 	color: #a8a8a8;
 }
@@ -3596,12 +3600,12 @@ body {
 	padding: 5px;
 	font-size: 16px;
 	color: #AAAAAA;
-	margin: 7px 10px 0px 15px;
+	margin: 7px 10px 0 15px;
 	pointer-events: none;
 }
 
 .search-bar .fa {
-	left: 0px;
+	left: 0;
 }
 
 .search-bar input {
@@ -3621,12 +3625,12 @@ body {
 	left: -85px;
 	width: 155px;
 	background-color: #7a7a7a;
-	border-radius: 0px;
+	border-radius: 0;
 	text-align: left;
 }
 .dropdown-menu li {
 	text-transform: none;
-	padding: 0px;
+	padding: 0;
 }
 
 .dropdown-menu li a {
@@ -3702,10 +3706,10 @@ body {
 	color: #ffffff;
 	text-transform: none;
 	height: 50px;
-	margin-left: 0px;
+	margin-left: 0;
 	width: 100%;
 	border-radius: 2px;
-	padding: 0px 15px 0px 20px;
+	padding: 0 15px 0 20px;
 }
 
 .curiosities .red-header span {
@@ -3713,7 +3717,7 @@ body {
 
 #plot-menu {
 	background-color: #ffffff;
-	padding: 0px 5px;
+	padding: 0 5px;
 	padding-top: 5px;
 	padding-bottom: 5px;
 	padding-left: 30px;
@@ -3730,8 +3734,7 @@ body {
 }
 
 #sort-by-row {
-	padding: 0px 10px;
-	padding-top: 15px;
+	padding: 15px 10px 0;
 }
 
 #sort-by-row li {
@@ -3798,7 +3801,7 @@ body {
 
 body .modal-header button {
 	background-color: transparent;
-	padding: 0px;
+	padding: 0;
 }
 
 .modal-body label {
@@ -3864,7 +3867,7 @@ body .modal-header button {
 	color: white;
 	width: 100%;
 	height: 100%;
-	border-radius: 0px;
+	border-radius: 0;
 	font-size: 18px;
 }
 
@@ -3874,7 +3877,7 @@ body .modal-header button {
 	width: 50%;
 	height: 100%;
 	float: left;
-	border-radius: 0px;
+	border-radius: 0;
 	font-size: 18px;
 }
 
@@ -3884,7 +3887,7 @@ body .modal-header button {
 	width: 50%;
 	height: 100%;
 	float: right;
-	border-radius: 0px;
+	border-radius: 0;
 	font-size: 18px;
 }
 
@@ -3936,7 +3939,7 @@ body .modal-header button {
 	margin-left: -40px;
 	margin-top: -3px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px #979797, 0px 0px 0px 0px #979797;
+	box-shadow: inset 0 0 0 1px #979797, 0 0 0 0 #979797;
 }
 
 .modal-dialog .carousel-inner input[type=radio]:checked+label {
@@ -3946,7 +3949,7 @@ body .modal-header button {
 .modal-dialog .carousel-inner input[type=radio]:checked+label:before {
 	background-color: #ff5513;
 	box-shadow: none;
-	box-shadow: inset 0px 0px 0px 1px #ff5513, 0px 0px 0px 0px #ff5513;
+	box-shadow: inset 0 0 0 1px #ff5513, 0 0 0 0 #ff5513;
 }
 .carousel-inner .item p {
 	color: #3b3b3b;
@@ -3970,7 +3973,6 @@ body .modal-header button {
 #pinned-tag-list li {
 	display: inline-block;
 	height: 33px;
-	padding: 0px 5px;
 	background-color: #c04f7f;
 	vertical-align: bottom;
 }
@@ -3982,10 +3984,10 @@ body .modal-header button {
 #pinned-tag-list .dropdown-menu {
 	left: -45px;
 	top: 30px;
-	min-width: 0px;
+	min-width: 0;
 	max-width: 65px;
-	padding: 0px;
-	border-radius: 0px;
+	padding: 0;
+	border-radius: 0;
 	text-align: left;
 	box-shadow: none;
 }
@@ -3993,12 +3995,13 @@ body .modal-header button {
 #pinned-tag-list .dropdown-menu li {
 	width: 64px;
 	height: 25px;
+	padding: 0 5px;
 }
 
 #pinned-tag-list .dropdown-menu li a {
 	color: white;
 	font-size: 11px;
-	padding: 0px;
+	padding: 0;
 	margin-top: 5px;
 }
 
@@ -4013,7 +4016,7 @@ body .modal-header button {
 }
 
 .survey-factory .btn {
-	border-radius: 0px;
+	border-radius: 0;
 }
 
 .survey-factory h1, .survey-factory h2 {
@@ -4160,12 +4163,12 @@ body .modal-header button {
 	border: none;
 	background-color: transparent;
 	text-align: left;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 #helpWizardOverlay .questions {
 	font-weight: 600;
-	margin: 40px 0px;
+	margin: 40px 0;
 }
 
 #helpWizardOverlay input {
@@ -4177,7 +4180,7 @@ body .modal-header button {
 }
 
 #helpWizardOverlay label {
-	margin: 15px 0px 10px 68px;
+	margin: 15px 0 10px 68px;
 	font-weight: 400;
 	font-size: 11px;
 	text-align: left;
@@ -4187,7 +4190,7 @@ body .modal-header button {
 }
 
 #helpWizardOverlay .exercise-details {
-	padding: 0px 20px;
+	padding: 0 20px;
 	height: 38px;
 	width: 426px;
 }
@@ -4198,23 +4201,14 @@ body .modal-header button {
 	width: 470px;
 }
 
+#helpWizardOverlay .carousel-inner .item:first-child .company-name {
+	margin-top: 5px;
+	margin-bottom: 20px;
+}
+
 #helpWizardOverlay p {
 	font-size: 12px;
 	color: #fff;
-}
-
-#helpWizardOverlay .left-carousel-control {
-	float: left;
-	color: #fff;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-
-#helpWizardOverlay .right-carousel-control {
-	float: right;
-	color: #fff;
-	margin-top: 20px;
-	margin-bottom: 20px;
 }
 
 #helpWizardOverlay .modal-footer {
@@ -4226,7 +4220,7 @@ body .modal-header button {
 	background-color: #e27c4a;
 	color: white;
 	height: 100%;
-	border-radius: 0px;
+	border-radius: 0;
 	font-size: 18px;
 }
 
@@ -4240,9 +4234,9 @@ body .modal-header button {
 	height: 13px;
 	width: 465px;
 	border-radius: 6px !important;
-	-webkit-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
-	-moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
-	box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+	-webkit-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.75);
+	box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
 #helpWizardOverlay input[type=range]::-moz-range-track {
@@ -4250,7 +4244,7 @@ body .modal-header button {
 	height: 13px;
 	width: 465px;
 	border-radius: 6px !important; 
-	-moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.75);
 	text-align: center; 
 }
 
@@ -4272,14 +4266,14 @@ body .modal-header button {
 #helpWizardOverlay .good-day {
 	float: left;
 	text-align: center;
-	margin: 30px 0px;
+	margin: 30px 0;
 	width: 90px;
 	display: inline-table;
 }
 
 #helpWizardOverlay .calm-day {
 	text-align: center;
-	margin: 30px 0px;
+	margin: 30px 0;
 	width: 80px;
 	display: inline-table;
 }
@@ -4287,7 +4281,7 @@ body .modal-header button {
 #helpWizardOverlay .super-day {
 	float: right;
 	text-align: center;
-	margin: 30px 0px;
+	margin: 30px 0;
 	display: inline-table;
 	width: 90px;
 }
@@ -4312,7 +4306,7 @@ body .modal-header button {
 }
 
 .feed-body .nav {
-	margin: 10px 0px 25px 0px;
+	margin: 10px 0 25px 0;
 }
 
 .feed-body .nav>li>a  {
@@ -4358,7 +4352,7 @@ body .modal-header button {
 	width: 100%;
 	padding: 15px 15px;
 	margin-bottom: 15px;
-	box-shadow: 0px 4px 5px #dddddd;
+	box-shadow: 0 4px 5px #dddddd;
 }
 
 .user-preference .container-fluid {
@@ -4458,7 +4452,7 @@ input[type = "number"] {
 	font-size: 12px;
 	font-weight: bold;
 	border-radius: 2px;
-	line-height: 0px;
+	line-height: 0;
 	margin-top: -2px;
 	margin-right: 30px;
 }
@@ -4474,7 +4468,7 @@ input[type = "number"] {
 	border: #cdcdcd;
 	border-style: solid;
 	border-width: 1px; 
-	line-height: 0px;
+	line-height: 0;
 	margin-left: 84px;
 	margin-bottom: 11px;
 }
@@ -4510,10 +4504,10 @@ input[type = "number"] {
 	width: 16px;
 	margin-left: -29px;
 	margin-right:10px;
-	margin-top: 0px;
+	margin-top: 0;
 	border-radius: 8px;
 	background-color: white;
-	box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.3), 0px 1px 0px 0px rgba(255, 255, 255, .8);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, .8);
 }
 
 .email-radio input[type=radio]:checked+label:before {
@@ -4560,9 +4554,9 @@ input[type = "number"] {
 
 .people-detail .upper-body {
 	background-color: #f6f6f6;
-	padding: 15px 0px;
+	padding: 15px 0;
 	position: relative;
-	margin-top: 0px;
+	margin-top: 0;
 	padding-top: 24px;
 }
 
@@ -4635,7 +4629,7 @@ input[type = "number"] {
 	display: block;
 	-webkit-box-orient: vertical;
 	display: -webkit-box;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 .people-label {
@@ -4720,7 +4714,7 @@ input[type = "number"] {
 .cropit-image-preview-container {
 	position: relative;
 	width: 250px;
-	margin: 0px auto;
+	margin: 0 auto;
 }
 
 /*
@@ -4770,7 +4764,7 @@ input.cropit-image-zoom-input {
 	background-color: #999;
 	height: 10px;
 	vertical-align: middle;
-	margin: 10px 0px;
+	margin: 10px 0;
 }
 
 .image-editor input[type='range']::-moz-range-track {
@@ -4817,4 +4811,9 @@ input.cropit-image-zoom-input {
 	color: rgba(8, 8, 8, 0.32);;
 	font-size: 16px;
 	position: relative;
+}
+
+/* The "*" selector in the main.css is removing padding from all element which is preventing buttet items from showing up */
+.ul-fix {
+	padding-left: 40px;
 }

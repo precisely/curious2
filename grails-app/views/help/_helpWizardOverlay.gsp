@@ -1,12 +1,58 @@
 <div class="modal fade" id="helpWizardOverlay">
 	<div class="modal-dialog">
 		<div class="modal-content">
-			<div id="help-carousel-content" class="carousel slide"
+			<div id="help-carousel-content" class="carousel"
 					data-ride="carousel" data-interval="false" data-wrap="false">
 					<div class="modal-body">
 						<!-- Wrapper for slides -->
 						<div class="carousel-inner" role="listbox">
-							<div class="item sleep active">
+						<div class="item active text-left">
+							<div class="row">
+								<div class="col-sm-6 col-sm-push-3 text-center">
+									<img src="/images/logo-wide-transparent.png" class="img-responsive" />
+								</div>
+							</div>
+							<hr>
+							<div>
+								<small>Welcome to</small>
+							</div>
+							<h4 class="company-name">We Are Curious!</h4>
+							<div>
+								We Are Curious helps you investigate <strong>questions</strong> about yourself.
+								For example,<br><br>
+								<ul class="ul-fix">
+									<li>Does caffeine affect my sleep?</li>
+									<li>Does exercise really affect my mood?</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="item text-left">
+							<br><br>
+							<div>
+								<strong>Track</strong> bits of your life for a few days or weeks using <strong>tags
+								</strong> based on your questions.
+								For instance, you could track your <strong><i>mood</i></strong>, how much <strong><i>
+								sleep</i></strong> you get, the <strong><i>coffee</i></strong> you drink, and the
+								<strong><i>steps</i></strong> you take. You can track automatically using <strong>
+								devices</strong> such as the Oura ring (via your user profile).
+							</div>
+						</div>
+
+						<div class="item text-left">
+							<br><br>
+							<div>
+								<strong>Chart</strong> your tags to look for patterns or jog your memory. Examine the
+								<strong>curiosities</strong> our algorithms find within your data.
+								<strong>Share</strong> your charts with others. Start, or join <strong>discussions
+								</strong> using our <strong>social</strong> features.
+							</div>
+							<br>
+							<br>
+							<strong>Experiment</strong> by tracking in a more structured way--by yourself or with others.
+						</div>
+
+							<div class="item sleep">
 								<h4>Let's get started with three painless questions.</h4>
 								<p class="sub-heading">
 									These will help illustrate the Curious tracking feature.
@@ -38,28 +84,28 @@
 								<input type="hidden" name="entry.1" id="mood-entry"/>
 							</div>
 
-							<div class="item">
+							<div class="item exercise">
 								<div class="alert alert-danger hide help-alert" role="alert">
 									Some error has occurred while performing the operation.
 								</div>
 								<h3 class="questions">What have you done today (all are optional)?</h3>
 								<form id="helpWizardExerciseForm">
-									<label for="drink">
+									<label for="cardio">
 										DRINK
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="cardio"
-											placeholder="e.g. coffee 1 cup 8am" /> 
-									<label for="exercise">
+											placeholder="e.g. coffee 1 cup 8am" autofocus />
+									<label for="resistance">
 										EXERCISE
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="resistance"
 											placeholder="e.g. walk 9500 steps" />
-									<label for="eat">
+									<label for="stretch">
 										WORK
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="stretch"
 											placeholder="e.g. work 7 hours 30 minutes" />
-									<label for="supplements">
+									<label for="metabolic">
 										SUPPLEMENTS
 									</label>
 									<input type="text" class="exercise-details" name="entry" id="metabolic"
@@ -79,18 +125,18 @@
 						</div>
 						<br>
 
-						<!-- Left and right controls -->
-						<a class="left-carousel-control" href="#help-carousel-content"
-								role="button" data-slide="prev"> 
+					<div class="clearfix margin-top">
+						<a class="left-carousel-control hide pull-left text-white" href="#help-carousel-content" role="button" data-slide="prev">
 							<span>Back</span>
 						</a>
-						<a class="right-carousel-control" href="#help-carousel-content" role="button" onclick="skipQuestions()">
+						<a class="right-carousel-control pull-right text-white" href="#" role="button" onclick="skipQuestions()">
 							<span>Skip Rest of Tutorial</span>
 						</a>
 					</div>
+					</div>
 					<div class="modal-footer">
 						<div class="wait-form-submit waiting-icon" hidden="true"></div>
-						<button class="next-question" onclick="nextQuestion()">ADD</button>
+						<button class="next-question" type="button" onclick="nextQuestion()">NEXT (1 of 6)</button>
 					</div>
 			</div>
 		</div>

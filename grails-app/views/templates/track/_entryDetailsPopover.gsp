@@ -61,7 +61,14 @@
 				Click below for on-the-go one click tracking. <br>This button will be under the 'Enter Tags' section
 			</li>
 			<li>
-				<button class="make-pin-button" type="button">MAKE TAG BUTTON</button>
+				<label class="label-bold bookmark-label">Bookmark</label>
+				<button class="make-pin-button" type="button">
+					<img src="/images/pinned-sm-dark.png" class="bookmark-icon" />
+				</button>
+			</li>
+			<li role="separator" class="divider"></li>
+			<li class="text-center">
+				<button class="btn btn-orange btn-outline save-entry" type="button">SAVE</button>
 			</li>
 		</form>
 	</ul>

@@ -92,7 +92,8 @@
 					$(this).parent().addClass("active");
 					return false;
 				}
-			})
+			});
+
 			if ((typeof showModal != 'undefined') && showModal) {
 				var interestTagList;
 				$.ajax({
@@ -101,9 +102,7 @@
 						if (data != null) {
 							$('#survey-carousel-content .carousel-inner').html(data);
 							var questionCount = $('#survey-carousel-content .carousel-inner').find('.item').length;
-							console.log(questionCount)
 							if (questionCount == 1) {
-								console.log('ha ha question count');
 								$('#navigate-right').html('<button type="submit" class="navigate-carousel-right">SUBMIT</button>');
 							}
 	
@@ -132,7 +131,7 @@
 	
 </script>
 <g:render template="/survey/takeSurveyModal" /> 
-<g:render template="/help/helpWizardOverlay" /> 
+<g:render template="/help/helpWizardOverlay" />
 
 <g:layoutBody/>
 
