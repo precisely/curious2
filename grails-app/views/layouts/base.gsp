@@ -95,7 +95,9 @@ function formatShortDate(d) {
 var actionName = '${actionName}';
 var controllerName = '${controllerName}';
 
+
 </script>
+<c:setExplanationCardUserPreferences></c:setExplanationCardUserPreferences>
 <g:layoutHead />
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
