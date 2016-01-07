@@ -699,6 +699,8 @@ class User {
 			website: website,
 			created: created,
 			type: "usr",
+			closedExplanationCardCuriousities: settings.hasClosedCuriositiesExplanation(),
+			closedExplanationCardTrackathon: settings.hasClosedTrackathonExplanation()
 		];
 	}
 

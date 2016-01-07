@@ -6,6 +6,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 
 import us.wearecurio.model.User
 import us.wearecurio.model.UserGroup
+import us.wearecurio.services.SecurityService
 
 class GenericTagLib {
 
@@ -117,6 +118,15 @@ class GenericTagLib {
 		out << """<script type="text/html" id="${attrs.id}">"""
 
 		out << g.render(template: "/templates" + attrs.template)
+
+		out << """</script>"""
+	}
+
+	def setExplanationCardUserPreferences = { attrs, body ->
+		out << """<script>"""
+
+		out << "closedExplanationCardTrackathon = ${securityService.currentUser?.settings?.hasClosedTrackathonExplanation()};"
+		out << "closedExplanationCardCuriosity = ${securityService.currentUser?.settings?.hasClosedCuriositiesExplanation()};"
 
 		out << """</script>"""
 	}
