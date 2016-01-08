@@ -304,4 +304,34 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintB.hash } < 
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
+    
+    //@spock.lang.IgnoreRest
+    void "Test getActivity does not return untitled sprint with empty name"() {
+        given: "an untitled sprint with empty string for title"
+        def untitled = Sprint.create(new Date(), user1, "", Visibility.PUBLIC)         
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+		
+        then: "untitled sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+	}
+    
+    //@spock.lang.IgnoreRest
+    void "Test getActivity does not return untitled sprint with null name"() {
+        given: "an untitled sprint with empty string for title"
+        def untitled = Sprint.create(new Date(), user1, null, Visibility.PUBLIC)         
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+		
+        then: "untitled sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+	}
 }
