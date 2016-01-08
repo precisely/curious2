@@ -67,7 +67,7 @@ class DiscussionController extends LoginController {
 
 		Map model = discussion.getJSONDesc()
 		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
-				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion),
+				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
 				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
 		if (user) {
@@ -129,6 +129,32 @@ class DiscussionController extends LoginController {
 			renderJSONGet([success: true, message: g.message(code: "default.updated.message", args: ["Discussion"])]) 
 		} else {
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])]) 
+		}
+	}
+
+	def follow() {
+		debug("DiscussionController.follow: with params ${params}")
+		User user = sessionUser()
+		Discussion discussion = Discussion.findByHash(params.id)
+		boolean unfollow = params.unfollow ? true : false
+		
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
+			return
+		} else if (!discussion) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])])
+			return
+		}
+
+		if (!unfollow) {
+			if (discussion.addFollower(user.id)) {
+				renderJSONGet([success: true])
+			} else {
+				renderJSONGet([success: false, message: g.message(code: "default.operation.failed")])
+			}
+		} else {
+			discussion.removeFollower(user.id)
+			renderJSONGet([success: true])
 		}
 	}
 }
