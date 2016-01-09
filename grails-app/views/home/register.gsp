@@ -1,27 +1,22 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
-		<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
-		rel="stylesheet">
-		<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
 		<script type="text/javascript" src="/js/jquery/jquery.validate.min.js"></script>
 		<script type="text/javascript" src="/js/jquery/signup.form.js"></script>
 	</head>
 </head>
 <body>
-
 	<br>
 	<br>
 	<br>
 	<div class="row">
 		<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
 			<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88" />
-			<p
-				style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
-				Track data, chart experience, find meaning.</p>
-			<p
-				style="font-size: 31px; color: #f14a42; text-align: right;">
-				<strong>We’ve got questions. </strong>
+			<p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
+				Track data, chart experience, find meaning.
+			</p>
+			<p style="font-size: 31px; color: #f14a42; text-align: right;">
+				<strong>We've got questions.</strong>
 			</p>
 			<br> <br>&nbsp;<br/>&nbsp;
 		</div>
@@ -29,66 +24,59 @@
 	<div class="shape-wrapper features">
 		<div class="features-background"></div>
 		<div class="row" id="features">
-			<div class="col-sm-3 col-sm-offset-1" style="color: white;">
-				<p style="font-size: 26px; text-transform: uppercase;">New User Signup</p>
+			<div class="col-sm-3 col-sm-offset-1 margin-bottom">
+				<p style="font-size: 26px;">New User Signup</p>
 			</div>
 		</div>
+
 		<div class="row">
-			<div class="col-sm-3 col-sm-offset-1 text-teal">
-				<form action="doregister" method="post" role="form" id="signupForm">
+			<div class="col-sm-3 col-sm-offset-1">
+				<div class="third-party-signup margin-bottom">
+					<g:link controller="authentication" action="thirdPartySignUp" params="[provider: 'oura']"
+						class="btn btn-default btn-moderate-pink btn-block">
+						Signup With Your Oura Account
+					</g:link>
+				</div>
+
+				<p class="margin-bottom" style="font-size: 18px;">OR</p>
+
+				<a class="btn btn-default btn-moderate-pink btn-block" href="#"
+					onclick="$('#signupForm').slideToggle(); return false;">
+					Signup With Your Email
+				</a>
+
+				<form action="doregister" method="post" role="form" id="signupForm" class="hide margin-top">
 					<input class="form-control" type="hidden" name="precontroller" value="${precontroller}" /> 
 					<input type="hidden" name="preaction" value="${preaction}" />
 
 					<div class="form-group">
-						<label for="username"
-								class="registerlabel ${hasErrors(bean:flash.user,field:'username','registererror')}">Social Username*:</label>
+						<label for="username">Social Username*:</label>
 						<input class="form-control" type="text" name="username" id="username" required
 								value="${fieldValue(bean:flash.user,field:'username')}" />
 					</div>
 
 					<div class="form-group">
-						<label for="password"
-								class="registerlabel ${flash.user?.hasErrors() ? 'registererror':''}">Password*:</label>
+						<label for="password">Password*:</label>
 						<input class="form-control"  type="password" name="password" id="password" value="" required/>
 					</div>
 
 					<div class="form-group">
-						<label for="email"
-								class="registerlabel ${hasErrors(bean:flash.user,field:'email','registererror')}">Email*:</label>
+						<label for="email">Email*:</label>
 						<input class="form-control" type="email" name="email" id="email" required
 								value="${fieldValue(bean:flash.user,field:'email')}" />
 					</div>
 
 					<div class="form-group">
-						<label for="confirm_email"
-								class="registerlabel ${hasErrors(bean:flash.user,field:'confirm_email','registererror')}">Confirm Email*:</label> 
+						<label for="confirm_email">Confirm Email*:</label>
 						<input class="form-control" type="email" name="confirm_email" id="confirm_email"
 								value="${fieldValue(bean:flash.user,field:'confirm_email')}" />
 					</div>
 
 					<div class="form-group">
-						<label for="name"
-								class="registerlabel ${hasErrors(bean:flash.user,field:'name','registererror')}">Full Name:</label> 
+						<label for="name">Full Name:</label>
 						<input class="form-control" type="text" name="name" id="name"
 								value="${fieldValue(bean:flash.user,field:'name')}" />
 					</div>
-
-					<!-- div class="form-group">
-					<label for="birthdate"
-						class="${hasErrors(bean:flash.user,field:'birthdate','registererror')}">Birthdate
-						(MM/DD/YYYY):</label> <input class="form-control" type="text"
-					name="birthdate" id="birthdate"
-					value="${fieldValue(bean:flash.user,field:'birthdate')}" />
-				</div>
-
-				<div class="form-group">
-					<label for="sex" class="${hasErrors(bean:flash.user,field:'sex','registererror')}">Sex:</label>
-					<g:radioGroup name="sex" id="sex" labels="['Male','Female']" values="['M','F']"
-							value="${fieldValue(bean:flash.user,field:'sex')}">
-						${it.label}
-						${it.radio}
-					</g:radioGroup>
-				</div>  --!>
 
 					<g:if test="${templateVer == 'lhp'}">
 						<div class="form-group">
@@ -105,25 +93,20 @@
 					</g:if>
 
 					<g:if test="${templateVer == 'lhp'}">
-						<input type="hidden" name="groups" 
-								value="['announce','lhp','lhp announce']">
+						<input type="hidden" name="groups" value="['announce','lhp','lhp announce']">
 					</g:if>
 					<g:else>
-						<input type="hidden" name="groups"
-								value="['announce','curious','curious announce']">
+						<input type="hidden" name="groups" value="['announce','curious','curious announce']">
 					</g:else>
 
-					<button class="btn pull-right" type="button" onclick="location.href = '/home/index'">Cancel</button>
-					<input class="btn pull-right" style="margin-right:5px;"
-							type="submit" name="register" value="Register" />
+					<div class="clearfix">
+						<a class="btn btn-default btn-moderate-pink pull-right" href="/home/index">Cancel</a>
+						<button class="btn btn-default pull-right" style="margin-right: 5px;" type="submit">Register</button>
+					</div>
 				</form>
 			</div>
-
 		</div>
-		<br> <br> <br> <br> <br> <br> <br>
+		<br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
 	</div>
-
-
-
 </body>
 </html>

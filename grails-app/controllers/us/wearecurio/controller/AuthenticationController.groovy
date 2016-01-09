@@ -19,8 +19,14 @@ class AuthenticationController extends SessionController {
 	private String provider
 	private Token tokenInstance
 
-	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback"]]
-	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback"]]
+	static final String AUTH_REASON_KEY = "thirdPartyAuthFor"
+	static final Integer SIGN_UP_AUTH = 1
+	static final Integer SIGN_IN_AUTH = 2
+
+	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback",
+			"thirdPartySignUp", "thirdPartySignIn"]]
+	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback",
+			"thirdPartySignUp", "thirdPartySignIn"]]
 
 	def fitBitDataService
 	def humanDataService
@@ -28,6 +34,7 @@ class AuthenticationController extends SessionController {
 	def movesDataService
 	def oauthAccountService
 	def oauthService	// From OAuth Plugin
+	def securityService
 	def twenty3AndMeDataService
 	def withingsDataService
 	OuraDataService ouraDataService
@@ -49,23 +56,30 @@ class AuthenticationController extends SessionController {
 		currentUser = sessionUser()
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
 
+		if (params.status == "fail" || !tokenInstance) {
+			log.warn "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
+			flash.message = "Unable to authenticate this time with $provider. Please try again in a bit."
+
+			if (session.deniedURI) {
+				redirect uri: session.deniedURI
+				session.deniedURI = null
+				return false
+			}
+
+			redirect url: toUrl([controller: "home", action: "login"])
+			return false
+		}
+
+		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+			return true
+		}
+
 		if (!currentUser) {
 			log.debug "Session expired after callback from $provider's authentication."
 			redirect url: toUrl([controller: "home", action: "login"])
 			return false
 		}
 		userId = currentUser.id
-
-		if (params.status == "fail" || !tokenInstance) {
-			log.info "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
-			if (session.deniedURI) {
-				redirect uri: session.deniedURI
-				session.deniedURI = null
-				return false
-			}
-			redirect url: toUrl([controller: "home", action: "login"])
-			return false
-		}
 
 		return true
 	}
@@ -120,6 +134,27 @@ class AuthenticationController extends SessionController {
 	def ouraAuth() {
 		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
 
+		// If authentication was for user signup with Oura
+		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+			User user = User.withCriteria {
+				or {
+					eq("username", userInfo["username"])
+					and {
+						eq("email", userInfo["username"])
+						eq("virtual", true)
+					}
+				}
+			}[0]
+
+			if (user) {
+				log.debug "$user associated with Oura"
+			} else {
+				log.debug "No user found associated with Oura username $userInfo.username"
+			}
+
+			userId = user.id
+		}
+
 		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
 	}
 
@@ -144,4 +179,26 @@ class AuthenticationController extends SessionController {
 		oauthAccountService.createOrUpdate(ThirdParty.WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
+	def thirdPartySignUp() {
+		handleSignUpSignInAuth(SIGN_UP_AUTH)
+	}
+
+	def thirdPartySignIn() {
+		handleSignUpSignInAuth(SIGN_IN_AUTH)
+	}
+
+	private void handleSignUpSignInAuth(Integer type) {
+		User user = sessionUser()
+
+		if (user) {
+			flash.message = "You are already logged in!"
+			redirect(url: toUrl(controller: "home", action: "index"))
+			return
+		}
+
+		session[AUTH_REASON_KEY] = type
+		session.returnURIWithToken = "home/index"
+		redirect(url: toUrl(action: "authenticate", controller: "oauth", params:
+				[provider: params.provider.toLowerCase()]))
+	}
 }

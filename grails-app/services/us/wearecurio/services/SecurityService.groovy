@@ -1,20 +1,14 @@
 package us.wearecurio.services
 
-import grails.converters.JSON
-
-import javax.servlet.http.HttpServletRequest
-
-import org.springframework.transaction.annotation.Transactional
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder
-
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.server.Session
-import grails.compiler.GrailsTypeChecked
 
-import org.apache.commons.logging.LogFactory
+import javax.servlet.http.HttpServletRequest
 
 class SecurityService {
 
@@ -78,7 +72,9 @@ class SecurityService {
 		'notifyfitbit',
 		'notifyOura',
 		'homepage',
-		'getPeopleData'
+		'getPeopleData',
+		'thirdPartySignUp',
+		'thirdPartySignIn'
 	] as Set
 
 	/**

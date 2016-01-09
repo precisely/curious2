@@ -80,7 +80,7 @@
 				<br>
 				<br>
 				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal">
+					class="col-sm-2 col-sm-offset-1 text-center">
 					<div class="">
 						<img class="img-responsive"
 						style="margin: 0 auto;"
@@ -95,7 +95,7 @@
 					</div>
 				</div>
 				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
+					class="col-sm-2 col-sm-offset-1 text-center"
 					style="margin-left: 60px;">
 					<div class="">
 						<img class="img-responsive"
@@ -113,7 +113,7 @@
 					</div>
 				</div>
 				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
+					class="col-sm-2 col-sm-offset-1 text-center"
 					style="margin-left: 60px;">
 					<div class="">
 						<img class="img-responsive"
@@ -128,7 +128,7 @@
 					</div>
 				</div>
 				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
+					class="col-sm-2 col-sm-offset-1 text-center"
 					style="margin-left: 60px;">
 					<div class="">
 						<img class="img-responsive"
@@ -144,7 +144,7 @@
 				</div>
 				</g:if>
 				<g:else>
-				<div class="col-sm-2 col-sm-offset-1 text-teal">
+				<div class="col-sm-2 col-sm-offset-1">
 					<form method="post" action="/home/dologin" id="curiousloginform">
 						<input type="hidden" name="precontroller"
 						value="${precontroller.encodeAsHTML()}" />

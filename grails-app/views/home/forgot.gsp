@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-2 col-sm-offset-1 text-center text-teal">
+            <div class="col-sm-2 col-sm-offset-1 text-center">
                 <div>
 
                     <form role="form" action="doforgot" method="post">

@@ -37,6 +37,16 @@ class UrlMappings {
 			}
 		}
 
+		"/third-party/sign-up/$provider" {
+			controller = "authentication"
+			action = "thirdPartySignUp"
+		}
+
+		"/third-party/sign-in/$provider" {
+			controller = "authentication"
+			action = "thirdPartySignIn"
+		}
+
 		/**
 		* This mapping is used to replicate grails rest default mapping. Request data can
 		* be passed as request body or as request URL depending on type of operation.

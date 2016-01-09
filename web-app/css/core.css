@@ -6,6 +6,10 @@
     margin-top: 15px;
 }
 
+.margin-bottom {
+    margin-bottom: 15px;
+}
+
 .btn-orange.btn-outline {
     color: #f48d5b;
     border: 1px solid #f48d5b;
@@ -14,4 +18,17 @@
 
 .text-purple {
     color: #c04f7f;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+.btn-moderate-pink {
+    color: white !important;
+}
+
+.btn-moderate-pink:hover, .btn-moderate-pink:active, .btn-moderate-pink:focus {
+    color: #c04f7f !important;
 }
