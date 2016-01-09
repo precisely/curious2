@@ -305,33 +305,37 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
     
-    //@spock.lang.IgnoreRest
-    void "Test getActivity does not return untitled sprint with empty name"() {
-        given: "an untitled sprint with empty string for title"
-        def untitled = Sprint.create(new Date(), user1, "", Visibility.PUBLIC)         
+    @spock.lang.IgnoreRest
+    void "Test getActivity does not return unedited sprint with empty description"() {
+        given: "an unedited sprint with empty string for description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        unedited.description = ""
+        Utils.save(unedited)
         
 		when: "getActivity is called"
 		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
         println "printing results..."
         print(results)
 		
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
     
-    //@spock.lang.IgnoreRest
-    void "Test getActivity does not return untitled sprint with null name"() {
-        given: "an untitled sprint with empty string for title"
-        def untitled = Sprint.create(new Date(), user1, null, Visibility.PUBLIC)         
+    @spock.lang.IgnoreRest
+    void "Test getActivity does not return unedited sprint with null description"() {
+        given: "an unedited sprint with null description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        unedited.description = null
+        Utils.save(unedited)
         
 		when: "getActivity is called"
 		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
         println "printing results..."
         print(results)
 		
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
 }

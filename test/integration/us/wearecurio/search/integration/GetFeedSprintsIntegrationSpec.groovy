@@ -31,76 +31,83 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
 
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return untitled sprint with empty name"() {
+    void "Test getFeed does not return unedited sprint with empty description"() {
 		given: "an interest tag for user1"
 		def tagText = "MyInterestTag"
 		def tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
-        and: "an untitled sprint with empty string for title, but tag match in description"
-        def untitled = Sprint.create(new Date(), user2, "", Visibility.PUBLIC)         
-        untitled.description = tagText
+        and: "an unedited sprint with empty description, but tag match in title"
+        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        unedited.description = ""
+        Utils.save(unedited)
         
 		when: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         println "printing results..."
         print(results)
 		
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
     
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return untitled sprint with null name"() {
+    void "Test getFeed does not return unedited sprint with null description"() {
 		given: "an interest tag for user1"
 		def tagText = "MyInterestTag"
 		def tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
-        and: "an untitled sprint with null for title, but tag match in description"
-        def untitled = Sprint.create(new Date(), user2, null, Visibility.PUBLIC)         
-        untitled.description = tagText
+        and: "an unedited sprint with null description, but tag match in name"
+        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        unedited.description = null
+        Utils.save(unedited)
         
 		when: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         println "printing results..."
         print(results)
         
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
 
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return untitled sprint with empty name"() {
-        given: "an untitled sprint with empty string for title"
-        def untitled = Sprint.create(new Date(), user1, "", Visibility.PUBLIC)         
+    void "Test getFeed does not return unedited sprint with empty description"() {
+        given: "an untitled sprint with empty description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)         
+        unedited.description = ""
+        Utils.save(unedited)
         
 		when: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
+        
         println "printing results..."
         print(results)
 		
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
     
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return untitled sprint with null name"() {
-        given: "an untitled sprint with empty string for title"
-        def untitled = Sprint.create(new Date(), user1, null, Visibility.PUBLIC)         
+    void "Test getFeed does not return unedited sprint with null description"() {
+        given: "an untitled sprint with null description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC) 
+        unedited.description = null
+        Utils.save(unedited)
         
 		when: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         println "printing results..."
         print(results)
 		
-        then: "untitled sprint is not returned"
+        then: "unedited sprint is not returned"
         results.success
-        results.listItems.find{it.type == "spr" && it.hash == untitled.hash} == null
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}    
 }

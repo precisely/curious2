@@ -211,7 +211,7 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size() > 0) {
-            return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND _exists_:name)"
+            return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND _exists_:description)"
 			//return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND hasRecentPost:true)"
 		} else {
 			return ""
