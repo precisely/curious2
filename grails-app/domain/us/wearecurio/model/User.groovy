@@ -728,6 +728,7 @@ class User {
 			interestTags: fetchInterestTagsJSON()*.description,
 			bio: bio,
 			updated: created,
+			linkedToOura: getAccessTokenForThirdParty(ThirdParty["OURA"]),
 			linkedToFitbit: getAccessTokenForThirdParty(ThirdParty["FITBIT"]),
 			linkedToWithings: getAccessTokenForThirdParty(ThirdParty["WITHINGS"]),
 			linkedToMoves: getAccessTokenForThirdParty(ThirdParty["MOVES"]),
