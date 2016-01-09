@@ -238,7 +238,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
 				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel +
-			'<button class="edit">Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' + 
+			'<button class="edit">Edit</button><button class="save save-entry hide">Save Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
 			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
 		var entryEditItem;
@@ -632,10 +632,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			}
 		}
 
-		var $button = $unselectee.find(".save");
-		$button.removeClass("save");
-		$button.addClass("edit");
-		$button.text("Edit");
+		$unselectee.find(".edit").show();
+		$unselectee.find(".save").hide();
 
 		$unselectee.removeClass("open");
 		$('#' + $unselectee.attr('id') + ' .track-input-dropdown').hide();
@@ -684,11 +682,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			$selectee.find('.comment-label').hide();
 		}
 		var $contentWrapper = $selectee.find(".content-wrapper");
-		var $button = $selectee.find(".edit");
-		$button.removeClass("edit");
-		$button.addClass("save");
-		$button.text("Save Edit");
-			
+		$selectee.find(".edit").hide();
+		$selectee.find(".save").show();
+
 		$selectee.data('contentHTML', $contentWrapper.html()); // store original HTML for later restoration
 		var currentEntryId = $selectee.data("entryId");
 		$selectee.addClass('ui-selected');
@@ -830,7 +826,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var isClickedOnEntry = $target.closest("li.entry").length > 0;
 
 		// If such elements are clicked, where we not have to do anything. (Like deleteEntry)
-		var isEventToCancel = $target.closest(".entryNoBlur").length > 0;
+		var isEventToCancel = ($target.closest(".entryNoBlur").length > 0) || $target.is(".save-entry");
 
 		if (isEventToCancel) {
 			return;

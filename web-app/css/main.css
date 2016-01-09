@@ -1965,7 +1965,7 @@ body.discuss-page .red-header {
 	vertical-align: middle;
 }
 
-.track-page .save-entry {
+.track-page .btn-orange.save-entry {
 	border-width: 2px;
 	padding:7px 25px;
 	font-size: 15px;
