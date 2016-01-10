@@ -6,7 +6,7 @@ import us.wearecurio.utility.*
 
 class DiscussionPostController extends LoginController{
 
-	static allowedMethods = [save: "POST", update: "POST", delete: "DELETE"]
+	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
 	def index(Integer offset, Integer max) {
 		Discussion discussion = Discussion.findByHash(params.discussionHash)
@@ -19,8 +19,10 @@ class DiscussionPostController extends LoginController{
 		params.offset = offset ?: 0
 
 		List<DiscussionPost> posts = discussion.getFollowupPosts(params)
+		User currentUser = sessionUser()
 
-		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(sessionUser(), discussion), canWrite: UserGroup.canWriteDiscussion(sessionUser(), discussion)]
+		Map discussionDetails = [isAdmin: UserGroup.canAdminDiscussion(currentUser, discussion), 
+				canWrite: UserGroup.canWriteDiscussion(currentUser, discussion), isFollowing: discussion.isFollower(currentUser.id)]
 
 		// Discussion details are only needed for the first page
 		if (params.offset == 0) {
@@ -88,5 +90,27 @@ class DiscussionPostController extends LoginController{
 	}
 
 	def update() {
+		debug ("UserController.update() params:" + params)
+		Map requestData = request.JSON
+		User user = sessionUser()
+		DiscussionPost discussionPost = DiscussionPost.get(params.id)
+		if (!discussionPost) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Post"])])
+			return
+		}
+
+		if (!user) {
+			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
+			return
+		}
+
+		if (user.id == discussionPost.authorUserId) {
+			discussionPost.message = requestData.message
+			Utils.save(discussionPost, true)
+			renderJSONGet([success: true])
+		} else {
+			renderJSONGet([success: false, message: g.message(code: "default.permission.denied")])
+			return
+		}
 	}
 }
