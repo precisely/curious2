@@ -304,4 +304,38 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintB.hash } < 
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
+    
+    @spock.lang.IgnoreRest
+    void "Test getActivity does not return unedited sprint with empty description"() {
+        given: "an unedited sprint with empty string for description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        unedited.description = ""
+        Utils.save(unedited)
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+		
+        then: "unedited sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
+	}
+    
+    @spock.lang.IgnoreRest
+    void "Test getActivity does not return unedited sprint with null description"() {
+        given: "an unedited sprint with null description"
+        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        unedited.description = null
+        Utils.save(unedited)
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+		
+        then: "unedited sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
+	}
 }

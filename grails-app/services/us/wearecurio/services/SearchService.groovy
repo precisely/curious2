@@ -348,7 +348,7 @@ class SearchService {
 			queries << "(_type:discussion AND visibility:PUBLIC)"
 		}
 		if( (type & SPRINT_TYPE) > 0) {
-			queries << "(_type:sprint AND visibility:PUBLIC)"
+			queries << "(_type:sprint AND visibility:PUBLIC AND _exists_:description)"
 		}
 		if ((type & USER_TYPE) > 0) {
 			queries << "(_type:user AND _id:(NOT ${user.id}) AND virtual:false)"
