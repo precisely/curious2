@@ -27,11 +27,11 @@
 <div id="tooltip-go-graph" class="nodisplay">View graph</div>
 
 <div id="tooltip-title-noise" class="nodisplay">Mark this interaction as noise.</div>
-<div id="tooltip-body-noise" class="nodisplay">This interaction is not interesting.  It's probably a false positive.	Maybe it's just an artifact of the computation, the experimental set-up, noisy data, or possibly an outlier.	Regard this interaction of tag pairs as uninteresting.</div>
+<div id="tooltip-body-noise" class="nodisplay">This interaction is not interesting.  It's probably a false positive.	Maybe it's just an artifact of the computation, the set-up, noisy data, or it's possibly an outlier.	Regard this relationship of tags as uninteresting.</div>
 <div id="tooltip-go-noise" class="nodisplay">Mark no</div>
 
 <div id="tooltip-title-save" class="nodisplay">Save this interaction</div>
-<div id="tooltip-body-save" class="nodisplay">This is interesting.	There could be something here.	Save this interaction for further investigation.</div>
+<div id="tooltip-body-save" class="nodisplay">This is interesting.	There could be something here.	Save this relationship for further investigation.</div>
 <div id="tooltip-go-save" class="nodisplay">Rate</div>
 
 

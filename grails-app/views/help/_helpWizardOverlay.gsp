@@ -49,7 +49,7 @@
 							</div>
 							<br>
 							<br>
-							<strong>Experiment</strong> by tracking in a more structured way--by yourself or with others.
+							Try tracking in a more structured way using <strong>trackathons</strong>--by yourself or with others.
 						</div>
 
 							<div class="item sleep">

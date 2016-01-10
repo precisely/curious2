@@ -3,7 +3,7 @@
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
-					<span>What is an Experiment?</span>
+					<span>What is a Trackathon?</span>
 				</div>
 				<div class="col-xs-3 align-right close-col">
 					<i class="fa fa-times-circle" onclick="closeExplanationCard(true)"></i>

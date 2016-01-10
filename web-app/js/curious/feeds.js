@@ -286,15 +286,15 @@ function displaySprintPage() {
 	
 	initializeListing();
 		
-	setQueryHeader("Tracking Sprints", false);
+	setQueryHeader("Trackathons", false);
 	
 	switch (window.location.hash) {
 	case "#all":
-		queueJSON("Getting sprints feed", getURLSprintsAll(0, 5), processResults)
+		queueJSON("Getting trackathons feed", getURLSprintsAll(0, 5), processResults)
 		registerScroll(getURLSprintsAll);
 		break;
 	case "#owned":
-		queueJSON("Getting owned sprints", getURLSprintsOwned(0, 5), processResults)
+		queueJSON("Getting owned trackathons", getURLSprintsOwned(0, 5), processResults)
 		registerScroll(getURLSprintsOwned);
 		break;
 	}

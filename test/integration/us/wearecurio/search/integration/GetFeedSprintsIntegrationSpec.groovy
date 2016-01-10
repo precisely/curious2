@@ -31,7 +31,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
 
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return unedited sprint with empty description"() {
+    void "Test getFeed does not return unedited sprint with empty description but tag match"() {
 		given: "an interest tag for user1"
 		def tagText = "MyInterestTag"
 		def tag1 = Tag.create(tagText)
@@ -54,7 +54,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
     
     //@spock.lang.IgnoreRest
-    void "Test getFeed does not return unedited sprint with null description"() {
+    void "Test getFeed does not return unedited sprint with null description but tag match"() {
 		given: "an interest tag for user1"
 		def tagText = "MyInterestTag"
 		def tag1 = Tag.create(tagText)
