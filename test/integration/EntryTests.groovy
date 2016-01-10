@@ -146,6 +146,35 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testAverageTimeOnlyRepeats() {
+		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
+		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
+		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
+		def startDate = dayOne
+		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
+		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
+		
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 1 1am repeat", null, null, dayOne, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 3 3am repeat", null, null, dayOne, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 2 2am repeat", null, null, dayTwo, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 6 9am repeat", null, null, dayThree, true), new EntryStats())
+		
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 1 1pm repeat", null, null, dayOne, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 3 5pm repeat", null, null, dayOne, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 2 7pm repeat", null, null, dayTwo, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 6 4pm repeat", null, null, dayThree, true), new EntryStats())
+		
+		def breadIds = [ Tag.look("bread").getId() ]
+		def circusIds = [ Tag.look("circus").getId() ]
+		
+		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
+		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
+		
+		assert Math.abs(breadResult - 9207) < 3000
+		assert Math.abs(circusResult - 58211) < 1000
+	}
+	
+	@Test
 	void testMixedRepeatPlotData() {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1 3pm repeat", null, null, veryEarlyBaseDate, true), new EntryStats())
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2 5pm repeat", null, null, baseDate, true), new EntryStats())
@@ -985,35 +1014,6 @@ class EntryTests extends CuriousTestCase {
 		
 		assert Math.abs(breadResult - 11968) < 1000
 		assert Math.abs(circusResult - 58651) < 1000
-	}
-	
-	@Test
-	void testAverageTimeOnlyRepeats() {
-		def dayOne = dateFormat.parse("July 1, 2010 12:00 am")
-		def dayTwo = dateFormat.parse("July 2, 2010 12:00 am")
-		def dayThree = dateFormat.parse("July 4, 2010 12:00 am")
-		def startDate = dayOne
-		def endDate = dateFormat.parse("July 5, 2010 12:00 am")
-		def currentDate = dateFormat.parse("July 7, 2010 12:00 am")
-		
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 1 1am repeat", null, null, dayOne, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 3 3am repeat", null, null, dayOne, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 2 2am repeat", null, null, dayTwo, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "bread 6 9am repeat", null, null, dayThree, true), new EntryStats())
-		
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 1 1pm repeat", null, null, dayOne, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 3 5pm repeat", null, null, dayOne, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 2 7pm repeat", null, null, dayTwo, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(veryLateBaseDate, timeZone, "circus 6 4pm repeat", null, null, dayThree, true), new EntryStats())
-		
-		def breadIds = [ Tag.look("bread").getId() ]
-		def circusIds = [ Tag.look("circus").getId() ]
-		
-		def breadResult = Entry.fetchAverageTime(user, breadIds, startDate, endDate, currentDate, dateTimeZone)
-		def circusResult = Entry.fetchAverageTime(user, circusIds, startDate, endDate, currentDate, dateTimeZone)
-		
-		assert Math.abs(breadResult - 9207) < 1000
-		assert Math.abs(circusResult - 58211) < 1000
 	}
 	
 	@Test

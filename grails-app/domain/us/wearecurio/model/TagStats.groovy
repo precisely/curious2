@@ -7,6 +7,7 @@ import java.sql.ResultSet
 import java.util.TreeSet
 import us.wearecurio.utility.Utils
 import us.wearecurio.services.DatabaseService
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.model.Entry
 import us.wearecurio.data.RepeatType
 
@@ -135,7 +136,7 @@ class TagStats {
 					firstPrecision = amount[1]
 					firstUnits = amount[2]
 					firstCount = 1
-					if (amount[3]?.isReminder()) {
+					if (amount[3]?.isGhost()) {
 						firstAmount = null
 						firstPrecision = -1
 					} else if (firstPrecision < 0)
@@ -148,7 +149,7 @@ class TagStats {
 						secondPrecision = amount[1]
 						secondUnits = amount[2]
 						
-						if (amount[3]?.isReminder()) {
+						if (amount[3]?.isGhost()) {
 							secondAmount = null
 							secondPrecision = -1
 						}
@@ -219,6 +220,188 @@ class TagStats {
 			Model.withTransaction {
 				createOrUpdate(userId, tagId)
 			}
+		}
+	}
+	
+	static sharedTagEntries = [
+		["floss", 10],
+		["mood 5", 10],
+		["heart rate 70 bpm", 10],
+		["sleep 8 hours", 10],
+		["exercise 2.5 hours", 10],
+		["walk 3.5 miles 11000 steps", 10],
+		["hike 5 miles 750 feet elevation 16500 steps", 10],
+		["bike ride 12 miles", 10],
+		["run 8 miles 12000 steps", 10],
+		["weight 150 lbs", 10],
+		["headache 5", 10],
+		["migraine 5", 10],
+		["migraine aura", 10],
+		["congestion", 10],
+		["energy 5", 10],
+		["blood pressure 120/80", 9],
+		["cough", 9],
+		["anxiety 5", 9],
+		["depression 5", 9],
+		["sore throat", 9],
+		["tremor", 9],
+		["dairy", 9],
+		["joint pain 5", 9],
+		["hot flash", 8],
+		["muscle pain 5", 8],
+		["pain 5", 8],
+		["skin flushing", 8],
+		["activity 10000 steps", 8],
+		["perspiring", 8],
+		["dream", 5],
+		["stomach ache 5", 5],
+		["co2 700 ppm", 5],
+		["dream intensity 5", 5],
+		["sugar", 5],
+		["caffeine", 5],
+		["coffee", 5],
+		["tea", 5],
+		["diarrhea", 4],
+		["alcohol", 4],
+		["yoga", 4],
+		["burpees", 4],
+		["tennis", 4],
+		["basketball", 4],
+		["football", 4],
+		["jog 8 miles 12000 steps", 4],
+		["itching", 4],
+		["treadmill", 4],
+		["leg pain 5", 3],
+		["arm pain 5", 3],
+		["dull pain 5", 3],
+		["lower back pain 5", 3],
+		["upper back pain 5", 3],
+		["neck pain 5", 3],
+		["shoulder pain 5", 3],
+		["forearm pain 5", 3],
+		["upper arm pain 5", 3],
+		["thigh pain 5", 3],
+		["calf pain 5", 3],
+		["fever 101 degrees", 3],
+		["foot pain 5", 3],
+		["right foot pain 5", 3],
+		["left foot pain 5", 3],
+		["right forearm pain 5", 3],
+		["left forearm pain 5", 3],
+		["numbness 5", 3],
+		["wrist numbness 5", 3],
+		["hand numbness 5", 3],
+		["finger tingling 5", 3],
+		["hand tingling 5", 3],
+		["hand numbness 5", 3],
+		["sleep quality 5", 3],
+		["stress 5", 3],
+		["fatigue 5", 3],
+		["period", 3],
+		["meditation 30 mins", 3],
+		["menstruation", 3],
+		["runny nose", 3],
+		["sneeze", 3],
+		["stomach pain 5", 3],
+		["abdominal pain 5", 3],
+		["temperature 74 degrees", 3],
+		["barometric pressure 1000 millibars", 3],
+		["rain", 3],
+		["sunny", 3],
+		["snow", 3],
+		["hail", 3],
+		["shortness of breath 5", 3],
+		["sweat", 3],
+		["water 1 glass", 3],
+		["tingling fingers 5", 2],
+		["tingling toes 5", 2],
+		["heart rate variability 20", 2],
+		["antibiotics", 2],
+		["multivitamin 500mg", 2],
+		["nausea 5", 2],
+		["exercise 1 hour", 2],
+		["heavy exercise 1.2 hours", 2],
+		["light exercise 50 minutes", 2],
+		["seizure", 2],
+		["chiropractic", 2],
+		["light sensitivity 5", 2],
+		["bath", 2],
+		["shower", 2],
+		["ibuprofin 200mg", 2],
+		["chocolate", 2],
+		["red wine 1 glass", 2],
+		["white wine 1 glass", 2],
+		["wine 1 glass", 2],
+		["acupuncture", 2],
+		["martial arts 1.5 hours", 2],
+		["tabata sprint", 2],
+		["chills", 2],
+		["chai 1 cup", 2],
+		["craving sweets", 2],
+		["fruit", 2],
+		["vegetables", 2],
+		["meat", 2],
+		["chicken", 2],
+		["fish", 2],
+		["gluten", 2],
+		["sex", 2],
+		["citrus", 2],
+		["alertness 5", 2],
+		["stretch", 2],
+		["prenatal vitamins", 2],
+		["mold count 30", 2],
+		["magnesium 100mg", 2],
+		["hives", 2],
+		["snore level 5", 2],
+		["probiotics", 2],
+		["insomnia", 2],
+		["studying 2 hours", 2],
+		["yogurt", 2],
+		["swim 1 hour", 2],
+		["stuffy nose", 2],
+	]
+	
+	static Date defaultEntryDate = new Date(1277942400L) // July 1, 2010 GMT
+	
+	static Map<String, TagStats> initialTagStats = new HashMap<String, TagStats>()
+	
+	/*		
+	Long userId
+	Long tagId
+	String description
+	Date mostRecentUsage
+	Date thirdMostRecentUsage
+	Long countLastThreeMonths
+	Long countLastYear
+	Long countAllTime
+	BigDecimal lastAmount
+	Integer lastAmountPrecision
+	Boolean typicallyNoAmount
+	String lastUnits
+	*/
+	
+	static initializeSharedTags() {
+		EntryParserService parser = EntryParserService.get()
+		
+		for (def entryDef in sharedTagEntries) {
+			String entryStr = entryDef[0]
+			def parsed = parser.parse(defaultEntryDate, "America/New_York", entryStr, null, null, defaultEntryDate, true)
+
+			TagStats stats = new TagStats()
+			
+			stats.tagId = parsed.baseTag.id
+			stats.description = parsed.baseTag.description
+			stats.mostRecentUsage = defaultEntryDate
+			stats.thirdMostRecentUsage = defaultEntryDate
+			stats.countLastThreeMonths = 0
+			stats.countLastYear = 0
+			stats.countAllTime = entryDef[1]
+			stats.lastAmount = parsed.amount == null ? null : new BigDecimal(parsed.amount)
+			stats.lastAmountPrecision = parsed.amounts[0].precision
+			stats.typicallyNoAmount = parsed.amount == null
+			stats.lastUnits = parsed.amounts[0].units
+			
+			initialTagStats[stats.description] = stats
 		}
 	}
 	

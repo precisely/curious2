@@ -45,10 +45,10 @@ class PasswordRecovery {
 		recovery.delete(flush:true)
 	}
 	
-	public static final long HOURTICKS = 60L * 60000L
+	public static final long DAYTICKS = 24L * 60L * 60000L
 	
-	protected static long getHourAgoTicks() {
-		return new Date().getTime() - HOURTICKS;
+	protected static long getStaleAgoTicks() {
+		return new Date().getTime() - DAYTICKS;
 	}
 	
 	// reset created to prevent expiration for another hour
@@ -61,7 +61,7 @@ class PasswordRecovery {
 		
 		PasswordRecovery retVal = PasswordRecovery.findByCode(code)
 		
-		if (retVal == null || retVal.getStart().getTime() < getHourAgoTicks()) {
+		if (retVal == null || retVal.getStart().getTime() < getStaleAgoTicks()) {
 			return null
 		}
 		
@@ -71,7 +71,7 @@ class PasswordRecovery {
 	static deleteStale() {
 		def c = PasswordRecovery.createCriteria()
 		
-		def hourAgo = new Date(getHourAgoTicks())
+		def hourAgo = new Date(getStaleAgoTicks())
 		
 		PasswordRecovery.executeUpdate("delete PasswordRecovery p where p.start < :hourAgo",
 				[hourAgo:hourAgo])

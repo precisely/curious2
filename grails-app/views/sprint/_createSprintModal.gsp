@@ -6,7 +6,7 @@
 				<button type="button" class="close" id="close-sprint-modal">
 					<i class="fa fa-times-circle-o"></i>
 				</button>
-				<h4 class="modal-title">Create Experiment</h4>
+				<h4 class="modal-title">Create Trackathon</h4>
 			</div>
 			<form id="submitSprint">
 				<div class="modal-body">
@@ -16,7 +16,7 @@
 					</div>
 					<div class="row">
 						<div class="col-md-11" style="font-size:11pt;font-style:italic;margin-bottom:5px;">
-						<p>Sprints are reusable tracking experiments</p>
+						<p>Trackathons are reusable tracking experiments</p>
 						</div>
 					</div>
 					<div class="row">
@@ -95,7 +95,7 @@
 					<input type="hidden" name="virtualGroupId" id="sprintVirtualGroupId">
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="submit-sprint">Create Experiment</button>
+					<button type="submit" class="submit-sprint">Create Trackathon</button>
 				</div>
 			</form>
 		</div>

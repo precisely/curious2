@@ -54,7 +54,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "PUT"
 		controller.update()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -65,7 +65,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "PUT"
 		controller.update()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -88,7 +88,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.delete()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -98,7 +98,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.delete()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -108,7 +108,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.request.method = "DELETE"
 		controller.delete()
 		assert controller.response.json.success == false
-		assert controller.response.json.message == "You don't have permission to delete this experiment."
+		assert controller.response.json.message == "You don't have permission to delete this trackathon."
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.show()
 		assert !controller.response.json.success
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -139,7 +139,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.show()
 		assert !controller.response.json.success
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -149,7 +149,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 
 		controller.show()
 		assert !controller.response.json.success
-		assert controller.response.json.message == "You don't have permission to edit this experiment."
+		assert controller.response.json.message == "You don't have permission to edit this trackathon."
 	}
 
 	@Test
@@ -170,7 +170,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.start()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -181,7 +181,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.start()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -203,7 +203,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -214,7 +214,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(user.getId(), new Date())
-		assert controller.response.json.message == "Experiment does not exist."
+		assert controller.response.json.message == "Trackathon does not exist."
 	}
 
 	@Test
@@ -225,7 +225,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		controller.stop()
 		assert controller.response.json.success == false
 		assert !dummySprint.hasStarted(dummyUser2.getId(), new Date())
-		assert controller.response.json.message == "You are not following this experiment."
+		assert controller.response.json.message == "You are not following this trackathon."
 	}
 
 	@Test
@@ -306,7 +306,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.addMember()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "You don't have permission to add members to this experiment."
+		assert controller.response.json.errorMessage == "You don't have permission to add members to this trackathon."
 		assert dummySprint.hasMember(dummyUser2.getId()) == false
 	}
 
@@ -372,7 +372,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.addAdmin()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "You don't have permission to add admins to this experiment."
+		assert controller.response.json.errorMessage == "You don't have permission to add admins to this trackathon."
 		assert dummySprint.hasAdmin(dummyUser2.getId()) == false
 	}
 
@@ -437,7 +437,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteMember()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "You don't have permission to remove followers from this experiment."
+		assert controller.response.json.errorMessage == "You don't have permission to remove followers from this trackathon."
 		assert dummySprint.hasMember(user.getId()) == true
 	}
 
@@ -449,7 +449,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteMember()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No such follower to delete from this experiment."
+		assert controller.response.json.errorMessage == "No such follower to delete from this trackathon."
 	}
 
 	@Test
@@ -514,7 +514,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteAdmin()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "You don't have permission to delete admins of this experiment."
+		assert controller.response.json.errorMessage == "You don't have permission to delete admins of this trackathon."
 		assert dummySprint.hasAdmin(user.getId()) == true
 	}
 
@@ -526,7 +526,7 @@ class SprintControllerTests extends CuriousControllerTestCase {
 		
 		controller.deleteAdmin()
 		assert controller.response.json.error == true
-		assert controller.response.json.errorMessage == "No such admin to delete from this experiment."
+		assert controller.response.json.errorMessage == "No such admin to delete from this trackathon."
 	}
 
 	@Test

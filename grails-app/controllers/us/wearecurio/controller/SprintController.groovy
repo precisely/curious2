@@ -22,7 +22,7 @@ class SprintController extends LoginController {
 	def save() {
 		User currentUser = sessionUser()
 
-		Sprint sprintInstance = Sprint.create(new Date(), currentUser, "Untitled Experiment", Model.Visibility.NEW);
+		Sprint sprintInstance = Sprint.create(new Date(), currentUser, "Untitled Trackathon", Model.Visibility.NEW);
 		JSON.use("jsonDate") {
 			render sprintInstance.getJSONDesc() as JSON
 		}

@@ -59,7 +59,7 @@
 					</g:if>
 					<g:if test="${isSearchListingPage}">
 						<li role="presentation">
-							<a href="#sprints">SPRINTS</a>
+							<a href="#sprints">TRACKATHONS</a>
 						</li>
 					</g:if>
 					<li role="presentation">
@@ -67,7 +67,7 @@
 					</li>
 					<g:if test="${isSprintsListingPage}">
 						<li id="feed-right-tab" role="presentation">
-							<a class="create-new-sprint" href="#">CREATE NEW EXPERIMENT</a>
+							<a class="create-new-sprint" href="#">CREATE NEW TRACKATHON</a>
 						<g>
 					</g:if>
 				</ul>

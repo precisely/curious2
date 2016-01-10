@@ -15,6 +15,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 
 import us.wearecurio.data.UnitGroupMap
 
+import us.wearecurio.model.TagStats
+
 class BootStrap {
 
 	MigrationService migrationService
@@ -51,6 +53,8 @@ class BootStrap {
 		BackgroundTask.launch {
 			migrationService.doBackgroundMigrations()
 		}
+
+		TagStats.initializeSharedTags()
 		
 		Utils.registerTestReset({ DataRetriever.resetCache() })
 

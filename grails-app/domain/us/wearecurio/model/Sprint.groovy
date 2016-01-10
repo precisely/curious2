@@ -405,7 +405,7 @@ class Sprint {
 	}
 	
 	protected createUserGroupFullName() {
-		return this.name + " Experiment"
+		return this.name + " Trackathon"
 	}
 	
 	Sprint(Date now, User user, String name, Visibility visibility) {
@@ -424,7 +424,7 @@ class Sprint {
 		virtualUserGroup.addReader(virtualUser)
 		this.virtualUserId = virtualUser.id
 		/*
-		Discussion discussion = Discussion.create(virtualUser, "Tracking Sprint: " + name, virtualUserGroup, null)
+		Discussion discussion = Discussion.create(virtualUser, "Trackathon: " + name, virtualUserGroup, null)
 		this.discussionId = discussion.id
 		*/
 		this.description = null
@@ -469,7 +469,7 @@ class Sprint {
 	}
 	
 	protected String entrySetName() {
-		return "experiment id: " + this.id
+		return "trackathon id: " + this.id
 	}
 	
 	void setName(String name) {
@@ -509,15 +509,15 @@ class Sprint {
 			.replaceAll(~/ +/, ' ')			// Replaces all multiple spaces with single space
 			.trim() // Removes spaces from the start and the end of the string
 		// find last space before 80 characters
-		if (tagName.length() > 80) {
-			int cutoffSpaceIndex = tagName.lastIndexOf(' ', 80)
-			if (cutoffSpaceIndex < 0) cutoffSpaceIndex = 80
+		if (tagName.length() > 40) {
+			int cutoffSpaceIndex = tagName.lastIndexOf(' ', 40)
+			if (cutoffSpaceIndex < 0) cutoffSpaceIndex = 40
 			tagName = tagName.substring(0, cutoffSpaceIndex)
 		}
 		if (tagName.length() == 0) {
 			tagName = "a"
 		}
-		tagName += ' experiment'
+		tagName += ' trackathon'
 		
 		return tagName
 	}
@@ -634,7 +634,7 @@ class Sprint {
 		return [
 			id: this.id,
 			hash: this.hash,
-			name: this.name?:'New Experiment',
+			name: this.name?:'New Trackathon',
 			userId: this.userId,
 			description: this.description,
 			totalParticipants: this.getParticipantsCount(),

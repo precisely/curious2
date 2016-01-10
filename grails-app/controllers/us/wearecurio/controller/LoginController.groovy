@@ -167,10 +167,10 @@ class LoginController extends SessionController {
 		
 		def recoveryLink = toUrl(controller:'home', action:'recover', params:[code:recovery.getCode()])
 		
-		emailService.send(user.getEmail(), "Password reset instructions",
-				"Click here to reset the password for username '" + user.getUsername() + "': " + recoveryLink)
+		emailService.send(user.getEmail(), "We Are Curious: password reset instructions",
+				"Someone requested a password reset on your account. If this wasn't you, you can ignore this email. Otherwise, please click here to reset the password for username '" + user.getUsername() + "': " + recoveryLink)
 		
-		debug "Password recovery link:" + recoveryLink
+		debug "Recovery link: " + recoveryLink
 		
 		return FORGOT_SUCCESS
 	}
@@ -198,7 +198,7 @@ class LoginController extends SessionController {
 		}
 		def forgotKey = params.username ?: params.email
 		if (forgotKey && execForgotPassword(forgotKey) == FORGOT_SUCCESS) {
-			flash.message = "Password recovery email sent; please check your email"
+			flash.message = "Password recovery email sent. Please check your email; and be sure to check your spam folder"
 			
 			redirect(url:toUrl(controller:name(), action:'login'))
 		} else {
