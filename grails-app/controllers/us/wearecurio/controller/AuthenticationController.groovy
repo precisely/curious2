@@ -2,7 +2,7 @@ package us.wearecurio.controller
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
-
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
@@ -34,7 +34,6 @@ class AuthenticationController extends SessionController {
 	def movesDataService
 	def oauthAccountService
 	def oauthService	// From OAuth Plugin
-	def securityService
 	def twenty3AndMeDataService
 	def withingsDataService
 	OuraDataService ouraDataService
@@ -136,20 +135,42 @@ class AuthenticationController extends SessionController {
 
 		// If authentication was for user signup with Oura
 		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+			String username = userInfo["username"].toLowerCase()
 			User user = User.withCriteria {
 				or {
-					eq("username", userInfo["username"])
+					eq("username", username)
 					and {
-						eq("email", userInfo["username"])
-						eq("virtual", true)
+						eq("email", username)
+						eq("virtual", false)
 					}
 				}
 			}[0]
 
 			if (user) {
 				log.debug "$user associated with Oura"
+				securityService.setLoginUser(user)
+
+				if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH) {
+					flash.message = "You already have an account with us associated with Oura."
+				}
 			} else {
 				log.debug "No user found associated with Oura username $userInfo.username"
+
+				if (session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+					flash.message = "Sorry!! We don't have an account associated with Oura."
+					return
+				}
+
+				Map signupData = [username: username, email: username, sex: "N", password:
+						new DefaultHashIDGenerator().generate(12), name: ""]
+				user = User.create(signupData)
+
+				if (user.hasErrors()) {
+					flash.message = "Error registering the user. Please try again later."
+					return
+				}
+
+				securityService.setLoginUser(user)
 			}
 
 			userId = user.id

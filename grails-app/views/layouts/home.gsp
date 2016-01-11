@@ -25,20 +25,20 @@
             }
 
             .header-button {
-                color: #9d9d9d;
-                -webkit-border-radius: 0 !important;
-                -moz-border-radius: 0 !important;
+                color: #9d9d9d !important;
                 border-radius: 2px !important;
-                font-size: 14px;
                 font-weight: bold;
                 border-color: #adadad;
-                border-top-right-radius: 0;
                 background-color: white;
+            }
+
+            .headerLinks .header-button {
                 margin-top: -8px;
             }
 
             .header-button:hover {
-                background-color: #f14a42;
+                background-color: #f14a42 !important;
+                color: black !important;
             }
         </style>
         <g:layoutHead/>

@@ -33,14 +33,14 @@
 			<div class="col-sm-3 col-sm-offset-1">
 				<div class="third-party-signup margin-bottom">
 					<g:link controller="authentication" action="thirdPartySignUp" params="[provider: 'oura']"
-						class="btn btn-default btn-moderate-pink btn-block">
+						class="btn btn-default header-button btn-block">
 						Signup With Your Oura Account
 					</g:link>
 				</div>
 
 				<p class="margin-bottom" style="font-size: 18px;">OR</p>
 
-				<a class="btn btn-default btn-moderate-pink btn-block" href="#"
+				<a class="btn btn-default header-button btn-block" href="#"
 					onclick="$('#signupForm').slideToggle(); return false;">
 					Signup With Your Email
 				</a>
@@ -100,7 +100,8 @@
 					</g:else>
 
 					<div class="clearfix">
-						<a class="btn btn-default btn-moderate-pink pull-right" href="/home/index">Cancel</a>
+						<button type="button" class="btn btn-default pull-right"
+							onclick="window.location = '/home/index'">Cancel</button>
 						<button class="btn btn-default pull-right" style="margin-right: 5px;" type="submit">Register</button>
 					</div>
 				</form>
