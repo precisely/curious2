@@ -73,7 +73,7 @@ class SearchService {
 	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
-                return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score)
+                return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score, user.id)
 //				return [
 //					type: "dis",
 //					id: hit.id.toLong(),
@@ -135,7 +135,7 @@ class SearchService {
 		return [:]
 	}
 
-	private Map toJSON(def id, def discussion, List adminDiscussionIds, boolean isNew, Float score = 0) {
+	private Map toJSON(def id, def discussion, List adminDiscussionIds, boolean isNew, Float score = 0, Long userId) {
         println "toJSON discussion: $discussion"
         return [
             type: "dis",
@@ -158,6 +158,8 @@ class SearchService {
             firstPostMessage: discussion.firstPostMessage,
             posts: discussion.posts,
             isNew: isNew,
+			// TODO: May be this can be optimized for ElasticSearch
+			isFollower: Discussion.get(id.toLong()).isFollower(userId)
         ]
 	}
 
@@ -905,7 +907,7 @@ class SearchService {
 //                posts: it.posts,
 //            ]
             
-            ret.listItems << toJSON(it.id, it, adminDiscussionIds, isNew)
+            ret.listItems << toJSON(it.id, it, adminDiscussionIds, isNew, 0, user.id)
         }
         
         return ret
