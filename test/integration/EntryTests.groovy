@@ -2,6 +2,7 @@ import static org.junit.Assert.*
 
 import java.math.MathContext
 import java.text.DateFormat
+import java.util.Date;
 
 import org.junit.After
 import org.junit.Before
@@ -143,6 +144,17 @@ class EntryTests extends CuriousTestCase {
 		}
 		
 		return c
+	}
+	
+	@Test
+	void testActivateBookmark() {
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread bookmark", null, null, baseDate, true), new EntryStats())
+
+		Entry activated = entry.activateContinuousEntry(baseDate, currentTime, timeZone, new EntryStats(userId))
+		
+		assert !activated.comment
+		assert activated.description == "bread"
+		assert !activated.repeatType
 	}
 	
 	@Test
