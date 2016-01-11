@@ -1,17 +1,10 @@
 package us.wearecurio.controller
-
-import java.text.SimpleDateFormat
-
 import grails.converters.JSON
-import grails.util.Environment
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
-import us.wearecurio.model.Tag
-import us.wearecurio.model.UserGroup
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
-
 /**
  * LoginController
  * 
@@ -302,15 +295,10 @@ class LoginController extends SessionController {
 	protected static final int REGISTER_DUPLICATE_EMAIL = 3
 	protected static final int REGISTER_EMAIL_AND_CONFIRM_EMAIL_DIFFERENT = 4
 	
-	protected def execRegister(params) {
-		def retVal = [:]
+	protected Map execRegister(Map<String, Object> params) {
+		Map retVal = [:], p = [:]
 		
-		def p = [:]
-		
-		for (param in params) {
-			def k = param.key
-			def v = param.value
-			
+		params.each { k, v ->
 			if (k.endsWith("_profile"))
 				p[k.substring(0, k.length() - 8)] = v
 			else
@@ -341,12 +329,13 @@ class LoginController extends SessionController {
 		}
 
 		debug "Creating user with params: " + p
-		
-		if (!p.sex) {
-			p.sex = 'N'
+
+		List<String> groups
+		if (p.groups) {
+			groups = JSON.parse(p.groups)
 		}
 
-		def user = User.create(p)
+		User user = User.create(p, groups)
 		
 		retVal['user'] = user
 		if (!user.validate()) {
@@ -360,22 +349,6 @@ class LoginController extends SessionController {
 		} else {
 			debug "Successful creation of new user: " + user
 			
-			user.addInterestTag(Tag.look("newuser"))
-			
-			Utils.save(user, true)
-			
-			def groups
-			
-			if (p.groups) {
-				groups = JSON.parse(p.groups)
-	
-				for (groupName in groups) {
-					def group = UserGroup.lookup(groupName)
-					
-					group?.addMember(user)
-				}
-			}
-					
 			if (p.metaTagName1 && p.metaTagValue1) {
 				user.addMetaTag(p.metaTagName1, p.metaTagValue1)
 			}

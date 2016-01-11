@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
+		<title>Login - We Are Curious</title>
 		<script type="text/javascript">
 		$(function() {
 			$("#curiousloginform").submit(function() {
@@ -33,21 +34,17 @@
 	<body>
 		<br>
 		<div class="row">
-			<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
+			<div class="col-sm-push-4 text-right col-sm-6" style="margin-left: 20px">
 				<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
-				<p style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+				<p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
 					Track data, chart experience, find meaning.</p>
-				<p style="font-size: 31px; color: #f14a42; text-align: right;">
-					<strong>We’ve got questions. </strong>
+				<p style="font-size: 31px; color: #f14a42;">
+					<strong>We’ve got questions.</strong>
 				</p>
 				<br> <br>
-				<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}">
-				<button type="button" class="btn"
-					style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
-					<p style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
-						Get Started
-					</p>
-				</button>
+				<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
+					class="btn btn-red btn-lg btn-flat">
+					Get Started
 				</g:link>
 			</div>
 		</div>
@@ -129,17 +126,17 @@
 				<div class="col-sm-3 col-sm-offset-1">
 					<div class="third-party-signup margin-bottom">
 						<g:link controller="authentication" action="thirdPartySignIn" params="[provider: 'oura']"
-								class="btn btn-default header-button btn-block">
+								class="btn btn-default btn-red-inverse btn-block">
 							Login With Your Oura Account
 						</g:link>
+
+						<p class="margin-bottom margin-top" style="font-size: 18px;">OR</p>
+
+						<a class="btn btn-default btn-red-inverse btn-block" href="#"
+							onclick="$('#curiousloginform').slideToggle(); return false;">
+							Login With Your Email
+						</a>
 					</div>
-
-					<p class="margin-bottom" style="font-size: 18px;">OR</p>
-
-					<a class="btn btn-default header-button btn-block" href="#"
-					   onclick="$('#curiousloginform').slideToggle(); return false;">
-						Login With Your Email
-					</a>
 
 					<form method="post" action="/home/dologin" id="curiousloginform" class="hide margin-top">
 						<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}" />
@@ -252,7 +249,5 @@
 			</div>
 		</div>
 		</g:if>
-
-
 	</body>
 </html>

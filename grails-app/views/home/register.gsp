@@ -10,12 +10,12 @@
 	<br>
 	<br>
 	<div class="row">
-		<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
+		<div class="col-sm-push-4 text-right col-sm-6" style="margin-left: 20px">
 			<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88" />
 			<p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
 				Track data, chart experience, find meaning.
 			</p>
-			<p style="font-size: 31px; color: #f14a42; text-align: right;">
+			<p style="font-size: 31px; color: #f14a42;">
 				<strong>We've got questions.</strong>
 			</p>
 			<br> <br>&nbsp;<br/>&nbsp;
@@ -33,17 +33,17 @@
 			<div class="col-sm-3 col-sm-offset-1">
 				<div class="third-party-signup margin-bottom">
 					<g:link controller="authentication" action="thirdPartySignUp" params="[provider: 'oura']"
-						class="btn btn-default header-button btn-block">
+						class="btn btn-default btn-red-inverse btn-block">
 						Signup With Your Oura Account
 					</g:link>
+
+					<p class="margin-bottom margin-top" style="font-size: 18px;">OR</p>
+
+					<a class="btn btn-default btn-red-inverse btn-block" href="#"
+					   onclick="$('#signupForm').slideToggle(); return false;">
+						Signup With Your Email
+					</a>
 				</div>
-
-				<p class="margin-bottom" style="font-size: 18px;">OR</p>
-
-				<a class="btn btn-default header-button btn-block" href="#"
-					onclick="$('#signupForm').slideToggle(); return false;">
-					Signup With Your Email
-				</a>
 
 				<form action="doregister" method="post" role="form" id="signupForm" class="hide margin-top">
 					<input class="form-control" type="hidden" name="precontroller" value="${precontroller}" /> 
@@ -100,9 +100,10 @@
 					</g:else>
 
 					<div class="clearfix">
-						<button type="button" class="btn btn-default pull-right"
+						<button type="button" class="btn btn-default btn-red-inverse pull-right"
 							onclick="window.location = '/home/index'">Cancel</button>
-						<button class="btn btn-default pull-right" style="margin-right: 5px;" type="submit">Register</button>
+						<button class="btn btn-default btn-red-inverse pull-right" style="margin-right: 5px;"
+								type="submit">Register</button>
 					</div>
 				</form>
 			</div>

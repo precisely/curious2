@@ -128,18 +128,47 @@ class User {
 	static User create(Map map) {
 		log.debug "User.create()"
 
+		if (!map.sex) {
+			map.sex = "N"
+		}
+
 		User user = new User()
 
 		user.created = new Date()
 		user.hash = new DefaultHashIDGenerator().generate(12)
 
 		user.update(map)
-		Utils.save(user, true)
+		if (!Utils.save(user, true)) {
+			return user
+		}
 
 		user.fetchVirtualUserGroupIdDiscussions()
 		user.fetchVirtualUserGroupIdFollowers()
 
 		UserActivity.create(UserActivity.ActivityType.CREATE, UserActivity.ObjectType.USER, user.id)
+
+		return user
+	}
+
+	/**
+	 * Create a new user with the given data and add the user to the given list of groups.
+	 * @param data Various required fields to create a new user
+	 * @param groups List of group names on which the newly created user has to be added
+	 * @return Created user instance
+	 */
+	static User create(Map data, List<String> groups) {
+		User user = create(data)
+		if (user.hasErrors()) {
+			return user
+		}
+
+		groups.each { groupName ->
+			UserGroup group = UserGroup.lookup(groupName)
+			group?.addMember(user)
+		}
+
+		user.addInterestTag(Tag.look("newuser"))
+		Utils.save(user, true)
 
 		return user
 	}
@@ -470,6 +499,25 @@ class User {
 
 	static lookup(String username, String password) {
 		return User.findByUsernameAndPasswordAndVirtualNotEqual(username, (password + passwordSalt + username).encodeAsMD5Hex(), (Boolean)true)
+	}
+
+	/**
+	 * Search a non virtual User having given username or email
+	 * @param usernameOrEmail The username or email to search the user for
+	 * @return Associated user instance
+	 */
+	static User lookup(String usernameOrEmail) {
+		User user = User.withCriteria {
+			or {
+				eq("username", usernameOrEmail)
+				and {
+					eq("email", usernameOrEmail)
+					ne("virtual", true)
+				}
+			}
+		}[0]
+
+		return user
 	}
 
 	boolean checkPassword(password) {

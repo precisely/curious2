@@ -19,6 +19,9 @@ class AuthenticationController extends SessionController {
 	private String provider
 	private Token tokenInstance
 
+	/**
+	 * The session key used to distinguish the reason for which the third party authentication is being performed.
+	 */
 	static final String AUTH_REASON_KEY = "thirdPartyAuthFor"
 	static final Integer SIGN_UP_AUTH = 1
 	static final Integer SIGN_IN_AUTH = 2
@@ -57,7 +60,6 @@ class AuthenticationController extends SessionController {
 
 		if (params.status == "fail" || !tokenInstance) {
 			log.warn "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
-			flash.message = "Unable to authenticate this time with $provider. Please try again in a bit."
 
 			if (session.deniedURI) {
 				redirect uri: session.deniedURI
@@ -133,43 +135,44 @@ class AuthenticationController extends SessionController {
 	def ouraAuth() {
 		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
 
-		// If authentication was for user signup with Oura
+		// If authentication was for user signup/signin with Oura
 		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
 			String username = userInfo["username"].toLowerCase()
-			User user = User.withCriteria {
-				or {
-					eq("username", username)
-					and {
-						eq("email", username)
-						eq("virtual", false)
-					}
-				}
-			}[0]
+			User user = User.lookup(username)
 
 			if (user) {
 				log.debug "$user associated with Oura"
 				securityService.setLoginUser(user)
-
-				if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH) {
-					flash.message = "You already have an account with us associated with Oura."
-				}
 			} else {
 				log.debug "No user found associated with Oura username $userInfo.username"
 
 				if (session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
-					flash.message = "Sorry!! We don't have an account associated with Oura."
+					session.returnURIWithToken = null
+					flash.message = g.message(code: "thirdparty.account.not.exists")
+					redirect(url: toUrl(action: "login", controller: "home"))
 					return
 				}
 
-				Map signupData = [username: username, email: username, sex: "N", password:
-						new DefaultHashIDGenerator().generate(12), name: ""]
-				user = User.create(signupData)
+				// Adding a random password
+				Map signupData = [username: username, email: username, name: "", password:
+						new DefaultHashIDGenerator().generate(12)]
+
+				List<String> groups
+				// TODO Make this group names DRY with "register.gsp"
+				if (urlService.template(request) == "lhp") {
+					groups = ["announce", "lhp", "lhp announce"]
+				} else {
+					groups = ["announce", "curious", "curious announce"]
+				}
+
+				user = User.create(signupData, groups)
 
 				if (user.hasErrors()) {
 					flash.message = "Error registering the user. Please try again later."
 					return
 				}
 
+				session.showHelp = true
 				securityService.setLoginUser(user)
 			}
 
@@ -212,7 +215,7 @@ class AuthenticationController extends SessionController {
 		User user = sessionUser()
 
 		if (user) {
-			flash.message = "You are already logged in!"
+			flash.message = g.message(code: "already.loggedin")
 			redirect(url: toUrl(controller: "home", action: "index"))
 			return
 		}
