@@ -63,7 +63,7 @@ class SearchUsersIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		and: "user2's name includes searchTerm"
 		user2.name += " $searchTerm"
 		Utils.save(user2, true)
-						
+
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
@@ -77,7 +77,72 @@ class SearchUsersIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems[0].hash == user2.hash
 	}
 	
-	void "Test search for users"() {
+    //@spock.lang.IgnoreRest
+	void "Test search for users by username does finds self"() {
+        given: "a new user"
+		User user = User.create(
+			[	username:'shaneMac1',
+				sex:'F',
+				name:'shane macgowen',
+				email:'shane@pogues.com',
+				birthdate:'01/01/1960',
+				password:'shanexyz',
+				action:'doregister',
+				controller:'home'	]
+		)
+
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+		and: "search is performed by user on user's username"
+		def results = searchService.search(user, user.username)
+		
+		then: "self is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == user.hash
+	}
+	
+    //@spock.lang.IgnoreRest
+	void "Test search for users by username finds other user"() {
+        given: "a new user"
+		User user = User.create(
+			[	username:'shaneMac1',
+				sex:'F',
+				name:'shane macgowen',
+				email:'shane@pogues.com',
+				birthdate:'01/01/1960',
+				password:'shanexyz',
+				action:'doregister',
+				controller:'home'	]
+		)
+        
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+		and: "search is performed by user1 on user's username"
+		def results = searchService.search(user1, user.username)
+		
+		then: "user1 is found"
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].hash == user.hash
+	}
+    
+	//@spock.lang.IgnoreRest
+	void "Test search for users by non-existing username returns no results"() {
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "search is performed for user2 on a non-existant username"
+        def results = searchService.search(user2, "${user1.username}_$uniqueName")
+		
+		then: "user1 is not found"
+		results.success
+		results.listItems.size == 0
 	}
 	
 	void "Test offset for search for users"() {

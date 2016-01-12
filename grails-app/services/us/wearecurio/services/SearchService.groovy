@@ -136,7 +136,6 @@ class SearchService {
 	}
 
 	private Map toJSON(def id, def discussion, List adminDiscussionIds, boolean isNew, Float score = 0, Long userId) {
-        println "toJSON discussion: $discussion"
         return [
             type: "dis",
             id: id.toLong(),
@@ -703,7 +702,10 @@ class SearchService {
 //		println "=============================================="
 //		println "=============================================="
 //		println "queryGroup1: $queryGroup1"
+//		println "=============================================="
 //		println "queryGroup2: $queryGroup2"
+//		println "=============================================="
+//		println "=============================================="
 		
 		def group1Count = searchCount(queryGroup1, type)
 		def group2Count = searchCount(queryGroup2, type)

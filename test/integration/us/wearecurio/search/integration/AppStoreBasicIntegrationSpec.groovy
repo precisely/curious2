@@ -377,8 +377,11 @@ class AppStoreBasicIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		then: "search returns 4 results"
 		def results = searchService.search(user1, tagText)
 		results.success
-		results.listItems.size() == 4
+		results.listItems.size() == 5
 		
+        and: "results include user1"
+		results.listItems.find{ it.type == "usr" && it.hash == user1.hash }
+        
 		and: "results includes user2"
 		results.listItems.find{ it.type == "usr" && it.hash == user2.hash }
 		

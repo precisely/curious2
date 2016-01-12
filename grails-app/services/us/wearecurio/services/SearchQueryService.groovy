@@ -13,10 +13,10 @@ class SearchQueryService {
 		}
 		
 		if (query.trim().matches(/^".*"$/)) {
-			return  query.replaceAll(/([\+-=><!&\|\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)
+			return  query.replaceAll(/([\+\-=><!&\|\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$)
 		}
 		
-		def tokens = query.replaceAll(/([\+-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$).split().toUnique()
+		def tokens = query.replaceAll(/([\+\-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$).split().toUnique()
 		def normalizedTokens = []
 		tokens.each {
 			if (it.matches($/(^[oO][rR]$|^[aA][nN][dD]$)/$)) {
@@ -305,13 +305,24 @@ class SearchQueryService {
 	}
 	
 	static String getUserSearchGroup1QueryString(Long userId, String query, List followedUsersIds) {
-		def followedSansUser = followedUsersIds.findAll{ it != userId }
-        
-		if (followedSansUser.size > 0) {
-			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query))) AND _type:user AND (_id:${Utils.orifyList(followedSansUser)}) AND virtual:false)"
+        def followedAndUser = followedUsersIds
+        if (followedAndUser.find{ it == userId } == null) {
+            followedAndUser << userId
+        }
+
+		if (followedAndUser.size > 0) {
+			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query)) OR (username:($query))) AND _type:user AND _id:${Utils.orifyList(followedAndUser)} AND virtual:false)"
 		} else {
 			return ""
 		}
+
+		//def followedSansUser = followedUsersIds.findAll{ it != userId }
+        
+//		if (followedSansUser.size > 0) {
+//			return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query)) OR (username:($query))) AND _type:user AND (_id:${Utils.orifyList(followedSansUser)}) AND virtual:false)"
+//		} else {
+//			return ""
+//		}
 	}
 			
 	static String getDiscussionSearchGroup2QueryString(
@@ -380,7 +391,7 @@ class SearchQueryService {
 			ignoreUserIds << userId
 		}
 		
-		return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query)))  AND virtual:false AND _type:user AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
+		return "(((publicName:($query)) OR (publicBio:($query)) OR (interestTagsString:($query)) OR (username:($query)))  AND virtual:false AND _type:user AND NOT (_id:${Utils.orifyList(ignoreUserIds)}))"
 	}
 			
 	static String getSearchQuery(
