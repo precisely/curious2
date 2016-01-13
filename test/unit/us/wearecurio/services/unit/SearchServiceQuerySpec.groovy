@@ -13,7 +13,7 @@ import us.wearecurio.services.SearchQueryService
 //@TestMixin(GrailsUnitTestMixin)
 class SearchServiceQuerySpec extends Specification {
 
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "test simple query generates wildcard and hash query string"(){
 		given: "a query string"
 		String query = "foo"
@@ -25,7 +25,7 @@ class SearchServiceQuerySpec extends Specification {
 		normalizedQuery == "(foo* OR #foo*)"
 	}
 	
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "test hash query generates only generates hash query string"(){
 		given: "a query string"
 		String query = "#foo"
@@ -37,7 +37,7 @@ class SearchServiceQuerySpec extends Specification {
 		normalizedQuery == "#foo*"
 	}
 	
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "test duplicates generates only generates single query string"(){
 		given: "a query string"
 		String query = "foo foo bar foo"

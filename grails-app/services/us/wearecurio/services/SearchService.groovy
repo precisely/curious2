@@ -1,7 +1,5 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory
-//import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
-//import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
@@ -412,7 +410,7 @@ class SearchService {
 			query = "_type:discussion AND userIdFinal:${user.id}"
 		} 
 		if ((type & SPRINT_TYPE) > 0){
-			query = "_type:sprint AND ((NOT _exists_:deleted) OR deleted:false) AND userId:${user.id}"
+			query = "_type:sprint AND ((NOT _exists_:deleted) OR deleted:false) AND userId:${user.id} AND _exists_:description"
 		}
 		
 		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
