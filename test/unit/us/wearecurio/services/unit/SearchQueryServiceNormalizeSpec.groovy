@@ -37,6 +37,7 @@ class SearchQueryServiceNormalizeSpec extends Specification {
 		'#foo #bar #baz'	|	"(#foo* AND #bar* AND #baz*)"
 		'"foo #bar baz"'	| 	"\"foo #bar baz\""
 		'foo "#bar baz"'	| 	/((foo* OR #foo*) AND (\"#bar* OR #\"#bar*) AND (baz\"* OR #baz\"*))/
+        'foo1'              |   "(foo1* OR #foo1*)"
 	}
 	
 	//@spock.lang.IgnoreRest

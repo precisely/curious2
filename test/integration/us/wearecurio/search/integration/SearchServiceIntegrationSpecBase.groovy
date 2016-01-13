@@ -31,7 +31,7 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 	
 	static AtomicInteger nameCount = new AtomicInteger(0)
 	static String getUniqueName() {
-		return "SearchServiceIntegrationSpecBase name" + nameCount.getAndIncrement()
+		return "SearchServiceIntegrationSpecBasename" + nameCount.getAndIncrement()
 	}
 	
 	static String getUniqueTerm() {
