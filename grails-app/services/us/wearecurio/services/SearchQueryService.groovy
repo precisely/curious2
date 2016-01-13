@@ -19,7 +19,7 @@ class SearchQueryService {
 		def tokens = query.replaceAll(/([\+\-=><!&\|"\(\)\{\}\[\]\^~\*\?:\/])/,$/\\$1/$).split().toUnique()
 		def normalizedTokens = []
 		tokens.each {
-			if (it.matches($/(^[oO][rR]$|^[aA][nN][dD]$)/$)) {
+			if (it.matches($/(^[oO][rR]$|^[aA][nN][dD]$|^[nN][oO][tT]$)/$)) {
 				def andOrNot = $/(^[oO][rR]$|^[aA][nN][dD]$|^[nN][oO][tT]$)/$
 				normalizedTokens << "(${it.replaceAll(andOrNot, $/"$1"*/$)} OR ${it.replaceAll(andOrNot, $/#$1*/$)})"
 			} else if (it.matches($/(^#.*$)/$)){
