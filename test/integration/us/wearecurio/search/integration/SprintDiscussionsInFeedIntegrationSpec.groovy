@@ -11,7 +11,7 @@ import us.wearecurio.utility.Utils
 
 class SprintDiscussionsInFeedIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
     void "Test feed includes followed sprint's non-followed discussion without post"() {
         given: "a new sprint"
         def sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
