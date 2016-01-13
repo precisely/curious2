@@ -79,7 +79,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "bandaid"
+		normalizedQuery == "(bandaid* OR #bandaid*)"
     }
 
     void "test single word with AND in name"() {
@@ -90,7 +90,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "bANDaid"
+		normalizedQuery == "(bANDaid* OR #bANDaid*)"
     }
 
     void "test single word with aNd in name"() {
@@ -101,7 +101,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "baNdaid"
+		normalizedQuery == "(baNdaid* OR #baNdaid*)"
     }
 
     void "test single word beginning with and"() {
@@ -112,7 +112,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "anderson"
+		normalizedQuery == "(anderson* OR #anderson*)"
     }
 
     void "test single word beginning with AND"() {
@@ -123,7 +123,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "ANDerson"
+		normalizedQuery == "(ANDerson* OR #ANDerson*)"
     }
 
     void "test single word beginning with aNd"() {
@@ -134,7 +134,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "aNderson"
+		normalizedQuery == "(aNderson* OR #aNderson*)"
     }
 
     void "test single word ending with and"() {
@@ -145,7 +145,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "band"
+		normalizedQuery == "(band* OR #band*)"
     }
 
     void "test single word ending with AND"() {
@@ -156,7 +156,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "bAND"
+		normalizedQuery == "(bAND* OR #bAND*)"
     }
 
     void "test single word ending with aNd"() {
@@ -167,7 +167,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "baNd"
+		normalizedQuery == "(baNd* OR #baNd*)"
     }
 
      void "test single word with or in name"() {
@@ -178,7 +178,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "bore"
+		normalizedQuery == "(bore* OR #bore*)"
     }
 
     void "test single word with OR in name"() {
@@ -189,7 +189,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "bORe"
+		normalizedQuery == "(bORe* OR #bORe*)"
     }
 
     void "test single word with oR in name"() {
@@ -200,7 +200,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "boRe"
+		normalizedQuery == "(boRe* OR #boRe*)"
     }
 
     void "test single word beginning with or"() {
@@ -211,7 +211,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "orson"
+		normalizedQuery == "(orson* OR #orson*)"
     }
 
     void "test single word beginning with OR"() {
@@ -222,7 +222,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "ORson"
+		normalizedQuery == "(ORson* OR #ORson*)"
     }
 
     void "test single word beginning with oR"() {
@@ -233,7 +233,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "oRson"
+		normalizedQuery == "(oRson* OR #oRson*)"
     }
 
     void "test single word ending with or"() {
@@ -244,7 +244,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "evaluator"
+		normalizedQuery == "(evaluator* OR #evaluator*)"
     }
 
     void "test single word ending with OR"() {
@@ -255,7 +255,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "evaluatOR"
+		normalizedQuery == "(evaluatOR* OR #evaluatOR*)"
     }
 
     void "test single word ending with oR"() {
@@ -266,7 +266,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "evaluatoR"
+		normalizedQuery == "(evaluatoR* OR #evaluatoR*)"
     }
 
   void "test single word with andor in name"() {
@@ -277,7 +277,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "blahandorblah"
+		normalizedQuery == "(blahandorblah* OR #blahandorblah*)"
     }
 
    void "test single word with andorand in name"() {
@@ -288,7 +288,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "blahandorandblah"
+		normalizedQuery == "(blahandorandblah* OR #blahandorandblah*)"
     }
 
    void "test single word with orandor in name"() {
@@ -299,7 +299,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "blahorandorblah"
+		normalizedQuery == "(blahorandorblah* OR #blahorandorblah*)"
     }
 
    void "test multiple words with first ending in or"() {
@@ -310,7 +310,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "evaluator AND in AND training"
+		normalizedQuery == "((evaluator* OR #evaluator*) AND (in* OR #in*) AND (training* OR #training*))"
     }
 
    void "test multiple words with first beginning in or"() {
@@ -321,7 +321,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "orson AND welles"
+		normalizedQuery == "((orson* OR #orson*) AND (welles* OR #welles*))"
     }
 
    void "test multiple words with last ending in or"() {
@@ -332,7 +332,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "music AND evaluator"
+		normalizedQuery == "((music* OR #music*) AND (evaluator* OR #evaluator*))"
     }
 
    void "test multiple words with first beginning in and"() {
@@ -343,7 +343,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "anderson AND cooper"
+		normalizedQuery == "((anderson* OR #anderson*) AND (cooper* OR #cooper*))"
     }
 
    void "test multiple words with last ending in and"() {
@@ -354,7 +354,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "big AND band"
+		normalizedQuery == "((big* OR #big*) AND (band* OR #band*))"
     }
 
    void "test multiple words with first beginning in or and last ending in and"() {
@@ -365,7 +365,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "orson AND welles AND big AND band"
+		normalizedQuery == "((orson* OR #orson*) AND (welles* OR #welles*) AND (big* OR #big*) AND (band* OR #band*))"
     }
 
     void "test single word"() {
@@ -376,7 +376,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "simple"
+		normalizedQuery == "(simple* OR #simple*)"
     }
 
     void "test two word query string"() {
@@ -387,7 +387,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (word2* OR #word2*))"
     }
 
     void "test three word query string"() {
@@ -398,7 +398,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test query with or in string"() {
@@ -409,7 +409,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"or\"* OR #or*) AND (word2* OR #word2*))"
     }
 
     void "test query with OR in string"() {
@@ -420,7 +420,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"OR\"* OR #OR*) AND (word2* OR #word2*))"
     }
 
     void "test query with oR in string"() {
@@ -431,7 +431,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"oR\"* OR #oR*) AND (word2* OR #word2*))"
     }
 
     void "test query with and in string"() {
@@ -442,7 +442,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"and\"* OR #and*) AND (word2* OR #word2*))"
     }
 
     void "test query with AND in string"() {
@@ -453,7 +453,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"AND\"* OR #AND*) AND (word2* OR #word2*))"
     }
 
     void "test query with aNd in string"() {
@@ -464,7 +464,40 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2"
+		normalizedQuery == "((word1* OR #word1*) AND (\"aNd\"* OR #aNd*) AND (word2* OR #word2*))"
+    }
+
+    void "test query with not in string"() {
+		given: "a query string"
+		String query = "word1 not word2"
+		
+		when: "SearchQueryService.normalizeQuery is called"
+		String normalizedQuery = SearchQueryService.normalizeQuery(query)
+		
+		then: "valid normalized query is produced"
+		normalizedQuery == "((word1* OR #word1*) AND (\"not\"* OR #not*) AND (word2* OR #word2*))"
+    }
+
+    void "test query with NOT in string"() {
+		given: "a query string"
+		String query = "word1 NOT word2"
+		
+		when: "SearchQueryService.normalizeQuery is called"
+		String normalizedQuery = SearchQueryService.normalizeQuery(query)
+		
+		then: "valid normalized query is produced"
+		normalizedQuery == "((word1* OR #word1*) AND (\"NOT\"* OR #NOT*) AND (word2* OR #word2*))"
+    }
+
+    void "test query with nOt in string"() {
+		given: "a query string"
+		String query = "word1 nOt word2"
+		
+		when: "SearchQueryService.normalizeQuery is called"
+		String normalizedQuery = SearchQueryService.normalizeQuery(query)
+		
+		then: "valid normalized query is produced"
+		normalizedQuery == "((word1* OR #word1*) AND (\"nOt\"* OR #nOt*) AND (word2* OR #word2*))"
     }
 
     void "test multiple words with trailing spaces"() {
@@ -475,7 +508,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test multiple words with leading spaces"() {
@@ -486,7 +519,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test single word with trailing spaces"() {
@@ -497,7 +530,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "simple"
+		normalizedQuery == "(simple* OR #simple*)"
     }
 
     void "test single word with leading spaces"() {
@@ -508,7 +541,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "simple"
+		normalizedQuery == "(simple* OR #simple*)"
     }
 
     void "test multiple words with trailing, middle and trailing spaces"() {
@@ -519,7 +552,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test multiple words with trailing, middle and trailing spaces with or in between"() {
@@ -530,7 +563,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (\"or\"* OR #or*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test multiple words with trailing, middle and trailing spaces with and in between"() {
@@ -541,7 +574,7 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((word1* OR #word1*) AND (\"and\"* OR #and*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 
     void "test multiple words with trailing, middle and trailing spaces with ors and ands in beginning, middle and end"() {
@@ -552,10 +585,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == "word1 AND word2 AND word3"
+		normalizedQuery == "((\"and\"* OR #and*) AND (\"or\"* OR #or*) AND (word1* OR #word1*) AND (word2* OR #word2*) AND (word3* OR #word3*))"
     }
 	
-	void "test query of and returns empty string"() {
+	void "test query of and returns query for word 'and'"() {
 		given: "a query string"
 		String query = "and"
 		
@@ -563,10 +596,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"and\"* OR #and*)"
 	}
 
-	void "test query of and with leading and trailing spaces returns empty string"() {
+	void "test query of and with leading and trailing spaces returns query for word 'and'"() {
 		given: "a query string"
 		String query = "            and        "
 		
@@ -574,10 +607,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"and\"* OR #and*)"
 	}
 
-	void "test query of or returns empty string"() {
+	void "test query of or returns query for word 'or'"() {
 		given: "a query string"
 		String query = "or"
 		
@@ -585,10 +618,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"or\"* OR #or*)"
 	}
 
-	void "test query of or with leading and trailing spaces returns empty string"() {
+	void "test query of or with leading and trailing spaces query for word 'or'"() {
 		given: "a query string"
 		String query = "            or        "
 		
@@ -596,10 +629,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"or\"* OR #or*)"
 	}
 
-	void "test query of with multiple ands and ors returns empty string"() {
+	void "test query of with multiple ands and ors returns query for words 'and' and 'or'"() {
 		given: "a query string"
 		String query = "and or or and and or"
 		
@@ -607,10 +640,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "((\"and\"* OR #and*) AND (\"or\"* OR #or*))"
 	}
 
-	void "test query of with all ors separated by spaces returns empty string"() {
+	void "test query of with all ors separated by spaces returns query for single word 'or'"() {
 		given: "a query string"
 		String query = "or or or"
 		
@@ -618,10 +651,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"or\"* OR #or*)"
 	}
 
-	void "test query of with all ors separated by spaces with space at beginning returns empty string"() {
+	void "test query of with all ors separated by spaces with space at beginning returns query for single word 'or'"() {
 		given: "a query string"
 		String query = " or or or"
 		
@@ -629,10 +662,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"or\"* OR #or*)"
 	}
 
-	void "test query of with all ors separated by spaces with space at end returns empty string"() {
+	void "test query of with all ors separated by spaces with space at end returns query for single word 'or'"() {
 		given: "a query string"
 		String query = "or or or "
 		
@@ -640,10 +673,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"or\"* OR #or*)"
 	}
 	
-	void "test query of with all ands separated by spaces returns empty string"() {
+	void "test query of with all ands separated by spaces returns query for single word 'and'"() {
 		given: "a query string"
 		String query = "and and and"
 		
@@ -651,10 +684,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"and\"* OR #and*)"
 	}
 
-	void "test query of with all ands separated by spaces with space at beginning returns empty string"() {
+	void "test query of with all ands separated by spaces with space at beginning returns query for single word 'and'"() {
 		given: "a query string"
 		String query = " and and and"
 		
@@ -662,10 +695,10 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"and\"* OR #and*)"
 	}
 
-	void "test query of with all ands separated by spaces with space at end returns empty string"() {
+	void "test query of with all ands separated by spaces with space at end returns query for single word 'and'"() {
 		given: "a query string"
 		String query = "and and and "
 		
@@ -673,6 +706,6 @@ class SearchServiceQuerySpec extends Specification {
 		String normalizedQuery = SearchQueryService.normalizeQuery(query)
 		
 		then: "valid normalized query is produced"
-		normalizedQuery == ""
+		normalizedQuery == "(\"and\"* OR #and*)"
 	}
 }
