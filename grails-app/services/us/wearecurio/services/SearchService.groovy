@@ -1,5 +1,7 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory
+//import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
+//import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
@@ -68,33 +70,19 @@ class SearchService {
 	void index(Object obj) {
 		elasticSearchService.index(obj)
 	}
+    
+    void deindex(Object obj) {
+        println "obj.class.simpleName.toLowerCase(): ${obj.class.simpleName.toLowerCase()}"
+		elasticSearchHelper.withElasticSearch{ client ->
+            client.prepareDelete("us.wearecurio.model_v0", obj.class.simpleName.toLowerCase(), obj.id.toString()).execute()
+		}        
+    }
 	
 	// user is the user viewing this search hit
 	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
                 return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score, user.id)
-//				return [
-//					type: "dis",
-//					id: hit.id.toLong(),
-//					hash: hit.source.hash,
-//					name: hit.source.name,
-//					userHash: hit.source.userHash,
-//					userName: hit.source.publicUserName,
-//					userAvatarURL: hit.source.userAvatarURL,
-//					isPublic: (hit.source.visibility == "PUBLIC"),
-//					created: hit.source.created,
-//					updated: hit.source.updated,
-//					totalComments: hit.source.postCount,
-//					isPlot: hit.source.isFirstPostPlot,
-//					firstPost: hit.source.firstPostId,
-//					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
-//					groupId: null,
-//					groupName: null,
-//					score: hit.score,
-//					firstPostMessage: hit.source.firstPostMessage,
-//					posts: hit.source.posts,
-//				]
 			case "sprint":
 				return [
 					type: "spr",

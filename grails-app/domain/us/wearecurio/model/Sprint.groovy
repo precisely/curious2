@@ -398,6 +398,7 @@ class Sprint {
 		
 		Utils.save(sprint, true)
 		UserActivity.create(new Date(), userId, UserActivity.ActivityType.DELETE, UserActivity.ObjectType.SPRINT, sprint.id)
+        SearchService.get().deindex(sprint)
 	}
 	
 	Sprint() {

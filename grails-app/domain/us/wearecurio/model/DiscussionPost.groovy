@@ -7,6 +7,8 @@ import us.wearecurio.utility.Utils
 import grails.converters.*
 import us.wearecurio.model.Model.Visibility
 
+import us.wearecurio.services.SearchService
+
 class DiscussionPost {
 	
 	private static def log = LogFactory.getLog(this)
@@ -197,6 +199,7 @@ class DiscussionPost {
 		def postId = post.id
 		post.delete(flush:true)
 		unComment(null, discussion.id, postId)
+        SearchService.get().deindex(post)
 	}
 	
 	static boolean deleteComment(Long clearPostId, User user, Discussion discussion) {
