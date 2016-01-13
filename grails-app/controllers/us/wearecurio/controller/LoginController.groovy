@@ -136,7 +136,7 @@ class LoginController extends SessionController {
 			def uuid = session.persistentSession.fetchUuid()
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
-			renderJSONGet([user:user, success:true, persistentSessionId:uuid, mobileSessionId:uuid])
+			renderJSONGet([user: user.getJSONDesc(), success:true, persistentSessionId:uuid, mobileSessionId:uuid])
 		} else {
 			debug "auth failure"
 			renderJSONGet([success:false])
