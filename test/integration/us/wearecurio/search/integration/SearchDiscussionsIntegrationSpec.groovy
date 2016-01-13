@@ -8,7 +8,7 @@ import us.wearecurio.utility.Utils
 
 class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test exact phrase found"() {
 		given: "a search phrase"
 		def searchPhrase = "check magnesium levels"
@@ -29,7 +29,7 @@ class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase 
 		results.listItems[0].hash == d.hash
 	}
 	
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test exact phrase not found even though words match"() {
 		given: "a search phrase"
 		def searchPhrase = "check magnesium levels"
@@ -49,7 +49,7 @@ class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase 
 		results.listItems.size == 0
 	}
 	
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test hash tag found even though words match"() {
 		given: "a search phrase"
 		def searchPhrase = "check magnesium levels"
@@ -111,27 +111,6 @@ class SearchDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase 
 		def results = searchService.search(user1, searchTerm)
 		
 		then: "single matched discussion is found"
-		results.success
-		results.listItems.size == 1
-		results.listItems[0].hash == d.hash
-	}
-	
-	//@spock.lang.IgnoreRest
-	void "Test search for discussion with wildcard"() {
-		given: "a search term"
-		def searchTerm = "magnesium"
-		
-		and: "a new public discussion"
-		Discussion d = Discussion.create(user2, "$uniqueTerm $searchTerm", Visibility.PUBLIC)
-		
-		when: "elasticsearch service is indexed"
-		elasticSearchService.index()
-		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-
-		and: "search is performed"
-		def results = searchService.search(user1, "mag*")
-		
-		then: "matched discussion is found"
 		results.success
 		results.listItems.size == 1
 		results.listItems[0].hash == d.hash

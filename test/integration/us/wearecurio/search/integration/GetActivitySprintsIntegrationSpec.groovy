@@ -6,6 +6,7 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.GroupMemberReader
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.Sprint
+import us.wearecurio.model.Tag
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.UserGroup
 
@@ -34,21 +35,28 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
 	def setup() {
         Date curDate = new Date()
         
-        sprint1 = Sprint.create(curDate, user1, "$uniqueName", Visibility.PUBLIC)
-        sprint2 = Sprint.create(curDate-1, user1, "$uniqueName", Visibility.PUBLIC)
-        sprint3 = Sprint.create(curDate-2, user1, "$uniqueName", Visibility.PUBLIC)
-        
+        sprint1 = Sprint.create(curDate, user1, uniqueName, Visibility.PUBLIC)
+		sprint1.description = uniqueName
+        sprint2 = Sprint.create(curDate-1, user1, uniqueName, Visibility.PUBLIC)
+		sprint2.description = uniqueName
+        sprint3 = Sprint.create(curDate-2, user1, uniqueName, Visibility.PUBLIC)
+        sprint3.description = uniqueName
+		
         sprint1.addWriter(user2.id)
         sprint2.addWriter(user2.id)
         sprint3.addWriter(user2.id)
 		
-        discussion1 = Discussion.create(user2, "$uniqueName", sprint1.fetchUserGroup(), curDate-6, Visibility.PUBLIC)
-		discussion2 = Discussion.create(user2, "$uniqueName", sprint2.fetchUserGroup(), curDate-7, Visibility.PUBLIC)
-		discussion3 = Discussion.create(user2, "$uniqueName", sprint3.fetchUserGroup(), curDate-8, Visibility.PUBLIC)
+		Utils.save(sprint1, true)
+		Utils.save(sprint2, true)
+		Utils.save(sprint3, true)
+		
+        discussion1 = Discussion.create(user2, uniqueName, sprint1.fetchUserGroup(), curDate-6, Visibility.PUBLIC)
+		discussion2 = Discussion.create(user2, uniqueName, sprint2.fetchUserGroup(), curDate-7, Visibility.PUBLIC)
+		discussion3 = Discussion.create(user2, uniqueName, sprint3.fetchUserGroup(), curDate-8, Visibility.PUBLIC)
         
-        post1 = discussion1.createPost(user2, "$uniqueName", curDate - 5)
-        post2 = discussion2.createPost(user2, "$uniqueName", curDate - 4)
-        post3 = discussion3.createPost(user2, "$uniqueName", curDate - 3)
+        post1 = discussion1.createPost(user2, uniqueName, curDate - 5)
+        post2 = discussion2.createPost(user2, uniqueName, curDate - 4)
+        post3 = discussion3.createPost(user2, uniqueName, curDate - 3)
                 
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")        
@@ -176,11 +184,15 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         Date firstDate = (new Date()) - 1
         
         and: "a new sprint (sprintA)"
-        def sprintA = Sprint.create(firstDate, user1, "$uniqueName", Visibility.PUBLIC)
+        def sprintA = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
+		sprintA.description = uniqueName
+		Utils.save(sprintA, true)
         
         and: "another new sprint (sprintB) created at later date"
-        def sprintB = Sprint.create(firstDate + 1, user1, "$uniqueName", Visibility.PUBLIC)
-        
+        def sprintB = Sprint.create(firstDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        sprintB.description = uniqueName
+		Utils.save(sprintB, true)
+		
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
@@ -204,14 +216,18 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         Date firstDate = (new Date()) - 2
         
         and: "a new sprint (sprintA)"
-        def sprintA = Sprint.create(firstDate, user1, "$uniqueName", Visibility.PUBLIC)
-        
+        def sprintA = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
+		sprintA.description = uniqueName
+		Utils.save(sprintA, true)
+		
         and: "another new sprint (sprintB) created at later date"
-        def sprintB = Sprint.create(firstDate + 1, user1, "$uniqueName", Visibility.PUBLIC)
-        
+        def sprintB = Sprint.create(firstDate + 1, user1, uniqueName, Visibility.PUBLIC)
+		sprintB.description = uniqueName
+		Utils.save(sprintB, true)
+		
         and: "a new discussion is added to first sprint at a later date"
         sprintA.addWriter(user2.id)
-        Discussion.create(user2, "$uniqueName", sprintA.fetchUserGroup(), firstDate + 2, Visibility.PUBLIC)
+        Discussion.create(user2, uniqueName, sprintA.fetchUserGroup(), firstDate + 2, Visibility.PUBLIC)
         Utils.save(sprintA, true)
         
 		when: "elasticsearch service is indexed"
@@ -238,9 +254,13 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         
         and: "a new sprint (sprintA)"
         def sprintA = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
+		sprintA.description = uniqueName
+		Utils.save(sprintA, true)
         
         and: "another new sprint (sprintB) created at later date"
         def sprintB = Sprint.create(firstDate + 1, user1, uniqueName, Visibility.PUBLIC)
+		sprintB.description = uniqueName
+		Utils.save(sprintB, true)
         
         when: "sprintA is started at a later date"
         Date startDate = firstDate + 2
@@ -272,6 +292,8 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         
         and: "a new sprint (sprintA)"
         def sprintA = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
+		sprintA.description = uniqueName
+		Utils.save(sprintA, true)
         
         and: "sprintA is started"
         Date startDate = firstDate + 1
@@ -281,6 +303,8 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         
         and: "another new sprint (sprintB) created at later date"
         def sprintB = Sprint.create(firstDate + 2, user1, uniqueName, Visibility.PUBLIC)
+		sprintB.description = uniqueName
+		Utils.save(sprintB, true)
         
         and: "sprintA is stopped at a later date"
         Date stopDate = firstDate + 3
@@ -305,7 +329,53 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
             results.listItems.findIndexOf{ it.type == "spr" && it.hash == sprintA.hash }
     }
     
-    @spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
+    void "Test getActivity does not return matched unedited sprint with empty description"() {
+		given: "an interest tag for user1"
+		def tagText = "MyInterestTag"
+		def tag1 = Tag.create(tagText)
+		user1.addInterestTag(tag1)
+		Utils.save(user1, true)
+        
+        and: "an unedited sprint with empty description, but tag match in title"
+        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        unedited.description = ""
+        Utils.save(unedited)
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+		
+        then: "unedited sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
+	}
+    
+    //@spock.lang.IgnoreRest
+    void "Test getActivity does not return matched unedited sprint with null description"() {
+		given: "an interest tag for user1"
+		def tagText = "MyInterestTag"
+		def tag1 = Tag.create(tagText)
+		user1.addInterestTag(tag1)
+		Utils.save(user1, true)
+        
+        and: "an unedited sprint with null description, but tag match in name"
+        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        unedited.description = null
+        Utils.save(unedited)
+        
+		when: "getActivity is called"
+		def results = searchService.getActivity(SearchService.SPRINT_TYPE, user1)
+        println "printing results..."
+        print(results)
+        
+        then: "unedited sprint is not returned"
+        results.success
+        results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
+	}
+
+    //@spock.lang.IgnoreRest
     void "Test getActivity does not return unedited sprint with empty description"() {
         given: "an unedited sprint with empty string for description"
         def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
@@ -322,7 +392,7 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
 	}
     
-    @spock.lang.IgnoreRest
+    //@spock.lang.IgnoreRest
     void "Test getActivity does not return unedited sprint with null description"() {
         given: "an unedited sprint with null description"
         def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)

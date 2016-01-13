@@ -422,7 +422,7 @@ class SearchService {
 			query = "_type:discussion AND userIdFinal:${user.id}"
 		} 
 		if ((type & SPRINT_TYPE) > 0){
-			query = "_type:sprint AND userId:${user.id}"
+			query = "_type:sprint AND userId:${user.id} AND _exists_:description"
 		}
 		
 		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
