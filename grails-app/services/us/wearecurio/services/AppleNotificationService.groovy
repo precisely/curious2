@@ -57,6 +57,7 @@ class AppleNotificationService {
 					
 			devices.each { token ->
 				service.push(token, payload);
+				debug("Sent push notification message '" + messageTxt + "' to " + token)
 			}
 		} catch(Exception e) {
 			debug("Exception occured while trying to send APNS message")
