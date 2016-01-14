@@ -1243,10 +1243,10 @@ class Entry implements Comparable {
 		return retVal
 	}
 
-	static def getAutocompleteTags(User user) {
+	static def getAutocompleteTags(User user, Date now) {
 		log.debug "Entry.getAutocompleteTags() userID:" + user.getId()
 
-		def tagStats = TagStats.activeForUser(user)
+		def tagStats = TagStats.activeForUser(user, now)
 
 		def freqTagStats = tagStats['freq']
 		def algTagStats = tagStats['alg']
@@ -1267,10 +1267,10 @@ class Entry implements Comparable {
 		return retVal
 	}
 
-	static def getAutocompleteTagsWithInfo(User user) {
+	static def getAutocompleteTagsWithInfo(User user, Date now) {
 		log.debug("Entry.getAutocompleteTagsWithInfo() userID:" + user.id)
 
-		def tagStats = TagStats.activeForUser(user)
+		def tagStats = TagStats.activeForUser(user, now)
 
 		def freqTagStats = tagStats['freq']
 		def algTagStats = tagStats['alg']

@@ -796,27 +796,27 @@ class DataController extends LoginController {
 	static String ALLAUTOTAGS = "**ALLTAGS**"
 	static String ALLAUTOTAGSWITHINFO = "**ALLTAGSINFO**"
 
-	protected def getAutocompleteTags(term) {
+	protected def getAutocompleteTags(term, Date now) {
 		debug "DataController.getAutocompleteTags() term " + term
 
 		def user = sessionUser()
 		if (user == null)
 			return null
-
+			
 		if (term.equals(ALLAUTOTAGS)) {
 			debug "ALLAUTOTAGS"
 			return getSessionCache("AUTOTAGS*" + term, {
-				return Entry.getAutocompleteTags(user)
+				return Entry.getAutocompleteTags(user, now)
 			})
 		}
 
 		if (term.equals(ALLAUTOTAGSWITHINFO)) {
 			debug "ALLAUTOTAGSWITHINFO"
-			return Entry.getAutocompleteTagsWithInfo(user)
+			return Entry.getAutocompleteTagsWithInfo(user, now)
 		}
 
 		return getSessionCache("AUTOTAGS*" + term, {
-			def tags = Entry.getAutocompleteTags(user)
+			def tags = Entry.getAutocompleteTags(user, now)
 			def algTags = tags['alg']
 			def freqTags = tags['freq']
 
@@ -850,6 +850,13 @@ class DataController extends LoginController {
 		debug "DataController.autocompleteData() params:" + params
 
 		def user = sessionUser()
+		
+		Date now
+		
+		if (params.currentTime) {
+			now = parseDate(params.currentTime)
+		} else
+			now = new Date()
 
 		if (user == null) {
 			debug "auth failure"
@@ -860,15 +867,15 @@ class DataController extends LoginController {
 		if (params.all != null) {
 			if (params.all.equals('info')) {
 				debug "Get all autocomplete tags by algorithm with units and last amount info"
-				renderJSONGet(getAutocompleteTags(ALLAUTOTAGSWITHINFO))
+				renderJSONGet(getAutocompleteTags(ALLAUTOTAGSWITHINFO, now))
 			} else {
 				debug "Get all autocomplete tags by algorithm"
-				renderJSONGet(getAutocompleteTags(ALLAUTOTAGS))
+				renderJSONGet(getAutocompleteTags(ALLAUTOTAGS, now))
 			}
 		} else {
 			// this is using an outdated algorithm; currently this is computed in the browser
 			debug "Autocomplete suggestions for " + params.partial
-			renderJSONGet(getAutocompleteTags(params.partial))
+			renderJSONGet(getAutocompleteTags(params.partial, now))
 		}
 	}
 

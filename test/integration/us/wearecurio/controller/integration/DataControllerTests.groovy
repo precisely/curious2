@@ -93,6 +93,65 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testAutocompleteData() {
+		DataController controller = new DataController()
+
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		stats.finish()
+		
+		controller.session.userId = userId
+
+		controller.params.clear()
+		controller.params.callback = 'callback'
+		controller.params.all = 'true'
+		controller.params.currentTime = "Sat, 11 Jul 2010 08:00:00 GMT"
+		
+		def retVal = controller.autocompleteData()
+
+		String str = controller.response.contentAsString
+		assert str.startsWith('callback({"freq":')
+		assert str.contains('"sleep"')
+		assert str.contains('"mood"')
+		assert str.contains('"bread"]})')
+	}
+
+	@Test
+	void testAutocompleteData2() {
+		DataController controller = new DataController()
+
+		EntryStats stats = new EntryStats(userId)
+		
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(currentTime - 1, timeZone, "bread 1", null, null, baseDate, true), stats)
+		Entry.create(userId, entryParserService.parse(currentTime - 2, timeZone, "bread 1", null, null, baseDate, true), stats)
+		
+		println entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
+
+		stats.finish()
+		
+		controller.session.userId = userId
+
+		controller.params.clear()
+		controller.params.callback = 'callback'
+		controller.params.all = 'true'
+		controller.params.currentTime = "Sat, 11 Jul 2010 08:00:00 GMT"
+		
+		def retVal = controller.autocompleteData()
+
+		String str = controller.response.contentAsString
+		assert str.startsWith('callback({"freq":')
+		assert str.contains('"sleep"')
+		assert str.contains('"mood"')
+		assert str.contains('"alg":["bread"')
+	}
+
+	@Test
 	void testLoadSnapshotDataId() {
 		PlotData plotData = PlotData.create(user, 'name', '{foo:foo}', true)
 		Utils.save(plotData, true)
@@ -573,29 +632,6 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def retVal = controller.setPreferencesData()
 
 		assert controller.response.contentAsString.equals('callback(1)')
-	}
-
-	@Test
-	void testAutocompleteData() {
-		DataController controller = new DataController()
-
-		EntryStats stats = new EntryStats(userId)
-		
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 1", null, null, baseDate, true), stats)
-		println entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T22:30:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:3, comment:, repeatType:null, repeatEnd:null)")
-
-		stats.finish()
-		
-		controller.session.userId = userId
-
-		controller.params.clear()
-		controller.params.callback = 'callback'
-		controller.params.all = 'true'
-
-		def retVal = controller.autocompleteData()
-
-		assert controller.response.contentAsString.equals('callback({"freq":["bread"],"alg":["bread"]})')
 	}
 
 	@Test

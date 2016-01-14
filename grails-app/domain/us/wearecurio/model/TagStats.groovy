@@ -224,12 +224,12 @@ class TagStats {
 	}
 	
 	static sharedTagEntries = [
+		["sleep 8 hours", 11],
+		["walk 3.5 miles 11000 steps", 11],
+		["mood 5", 11],
+		["exercise 2.5 hours", 11],
 		["floss", 10],
-		["mood 5", 10],
 		["heart rate 70 bpm", 10],
-		["sleep 8 hours", 10],
-		["exercise 2.5 hours", 10],
-		["walk 3.5 miles 11000 steps", 10],
 		["hike 5 miles 750 feet elevation 16500 steps", 10],
 		["bike ride 12 miles", 10],
 		["run 8 miles 12000 steps", 10],
@@ -363,7 +363,8 @@ class TagStats {
 	
 	static Date defaultEntryDate = new Date(1277942400L) // July 1, 2010 GMT
 	
-	static Map<String, TagStats> initialTagStats = new HashMap<String, TagStats>()
+	static Map<Long, TagStats> initialTagStats = new HashMap<Long, TagStats>()
+	static ArrayList<TagStats> initialTagStatsList = new ArrayList<TagStats>()
 	
 	/*		
 	Long userId
@@ -401,7 +402,8 @@ class TagStats {
 			stats.typicallyNoAmount = parsed.amount == null
 			stats.lastUnits = parsed.amounts[0].units
 			
-			initialTagStats[stats.description] = stats
+			initialTagStats[stats.tagId] = stats
+			initialTagStatsList.add(stats)
 		}
 	}
 	
@@ -410,7 +412,7 @@ class TagStats {
 	 * @param user
 	 * @return
 	 */
-	static def activeForUser(User user) {
+	static def activeForUser(User user, Date now) {
 		log.debug "TagStats.activeForUser() userId:" + user.getId()
 		
 		def cFreq = [ compare: {
@@ -461,8 +463,8 @@ class TagStats {
 		def freqTagStats = new TreeSet( cFreq )
 		def algTagStats = new TreeSet( cAlg )
 		
-		def userId = user.getId()
-		def monthAgo = new Date(new Date().getTime() - 1000L * 60 * 60 * 24 * 60)
+		Long userId = user.getId()
+		Date monthAgo = new Date(now.getTime() - 1000L * 60 * 60 * 24 * 60)
 
 		/* def c = Entry.createCriteria()
 
@@ -493,8 +495,15 @@ class TagStats {
 		
 		def tagStatsMap = [:]
 		
-		for (stats in allTagStats) {
-			tagStatsMap[stats.getTagId()] = stats
+		TagStats defaultTagStats
+		
+		for (TagStats stats in allTagStats) {
+			Long tagId = stats.getTagId()
+			tagStatsMap[tagId] = stats
+			defaultTagStats = initialTagStats[tagId]
+			if (defaultTagStats) {
+				stats.countAllTime = stats.countAllTime + defaultTagStats.countAllTime
+			}
 		}
 
 		def tags = Entry.getBaseTags(user, Entry.ONLYIDS)
@@ -502,7 +511,33 @@ class TagStats {
 		for (tagId in tags) {
 			/* if (!repeatingTagIds.contains(tagId)) { */
 			def stats = tagStatsMap[tagId]
-			if (stats == null) stats = createOrUpdate(user.getId(), tagId)
+			if (stats == null) {
+				stats = createOrUpdate(user.getId(), tagId)
+				tagStatsMap[tagId] = stats
+			}
+			freqTagStats.add(stats)
+			algTagStats.add(stats)
+		}
+		
+		for (TagStats initialStats in initialTagStatsList) {
+			if (tagStatsMap[initialStats.tagId] != null)
+				continue
+				
+			TagStats stats = new TagStats()
+			
+			stats.userId = userId
+			stats.tagId = initialStats.tagId
+			stats.description = initialStats.description
+			stats.mostRecentUsage = defaultEntryDate
+			stats.thirdMostRecentUsage = defaultEntryDate
+			stats.countLastThreeMonths = 0
+			stats.countLastYear = 0
+			stats.countAllTime = initialStats.countAllTime
+			stats.lastAmount = initialStats.lastAmount
+			stats.lastAmountPrecision = initialStats.lastAmountPrecision
+			stats.typicallyNoAmount = initialStats.typicallyNoAmount
+			stats.lastUnits = initialStats.lastUnits
+			
 			freqTagStats.add(stats)
 			algTagStats.add(stats)
 		}
