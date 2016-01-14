@@ -400,7 +400,7 @@ class TagStats {
 			stats.lastAmount = parsed.amount == null ? null : new BigDecimal(parsed.amount)
 			stats.lastAmountPrecision = parsed.amounts[0].precision
 			stats.typicallyNoAmount = parsed.amount == null
-			stats.lastUnits = parsed.amounts[0].units
+			stats.lastUnits = parsed.amounts[0].units ?: ""
 			
 			initialTagStats[stats.tagId] = stats
 			initialTagStatsList.add(stats)
