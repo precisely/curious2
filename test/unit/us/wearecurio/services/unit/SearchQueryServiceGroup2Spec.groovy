@@ -61,13 +61,13 @@ class SearchQueryServiceGroup2Spec extends Specification {
 		userId	| query	| readerGroupIds	| adminGroupIds	| followedUsersIds	| followedSprintsGroupIds	|
 		expected
 		34		| "foo"	| []				| []			| []					| []					| 
-		"(visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
+		"(visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		
 		578		| "foo"	| [3]				| [4]			| [378]					| [3]					| 
-		"((NOT (((virtualGroupId:3) OR (userId:378)))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
+		"((NOT (((virtualGroupId:3) OR (userId:378)))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		
 		4637	| "foo" | [6]				| [8]			| [5]					| []					| 
-		"((NOT ((userId:5))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint)"
+		"((NOT ((userId:5))) AND visibility:PUBLIC AND (name:(foo) OR description:(foo) OR username:(foo) OR discussionsUsernames:(foo)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 	}
 	
 	//@spock.lang.IgnoreRest
