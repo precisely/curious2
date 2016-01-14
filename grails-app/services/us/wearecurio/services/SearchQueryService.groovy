@@ -211,7 +211,7 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size() > 0) {
-            return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND _exists_:description)"
+            return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 			//return "(${Utils.orifyList(sprintQueries)} AND _type:sprint AND hasRecentPost:true)"
 		} else {
 			return ""
@@ -300,7 +300,7 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size() > 0) {
-			return "((${Utils.orifyList(sprintQueries)}) AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
+			return "((${Utils.orifyList(sprintQueries)}) AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		}
 	}
 	
@@ -379,9 +379,9 @@ class SearchQueryService {
 		}
 		
 		if (sprintQueries.size > 0) {
-			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
+			return "((NOT (${Utils.orifyList(sprintQueries)})) AND visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		} else {
-			return "(visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint)"
+			return "(visibility:PUBLIC AND (name:($query) OR description:($query) OR username:($query) OR discussionsUsernames:($query)) AND _type:sprint AND ((NOT _exists_:deleted) OR deleted:false))"
 		}
 	}
 	
@@ -454,7 +454,7 @@ class SearchQueryService {
             return ""
         }
         
-        return "userId:$userId _type:sprint"
+        return "userId:$userId _type:sprint AND ((NOT _exists_:deleted) OR deleted:false)"
     }
     
     

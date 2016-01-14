@@ -173,6 +173,7 @@ class Discussion {
 		//TODO: create delete DiscussionPost activities and write integration tests
 		DiscussionPost.executeUpdate("delete DiscussionPost p where p.discussionId = :id", [id:discussion.getId()]);
 		discussion.delete(flush: true)
+        SearchService.get().deindex(discussion)
 	}
 	
 	static boolean update(Discussion discussion, def params, User user) {

@@ -47,6 +47,7 @@ class Sprint {
 	Visibility visibility
 	String tagName
 	List<String> devices // list of devices supported by this sprint
+	boolean deleted
 	
 	static hasMany = [devices: String]
 	
@@ -73,6 +74,7 @@ class Sprint {
 		startDate(nullable:true)
 		tagName(nullable:true)
 		visibility(nullable:true)
+		deleted(nullable:true)
 	}
 	
 	static mapping = {
@@ -107,6 +109,7 @@ class Sprint {
             'username',
             'discussionsUsernames',
             'lastInterestingActivityDate',
+			'deleted',
 		]
 	}
 	
@@ -396,8 +399,12 @@ class Sprint {
 		UserGroup sprintUserGroup = sprint.fetchUserGroup()
 		sprintUserGroup?.removeAllParticipants()
 		
+		sprint.deleted = true
 		Utils.save(sprint, true)
+		
 		UserActivity.create(new Date(), userId, UserActivity.ActivityType.DELETE, UserActivity.ObjectType.SPRINT, sprint.id)
+        
+		SearchService.get().deindex(sprint)
 	}
 	
 	Sprint() {

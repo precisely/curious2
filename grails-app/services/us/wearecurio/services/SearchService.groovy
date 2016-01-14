@@ -1,5 +1,7 @@
 package us.wearecurio.services
 import org.apache.commons.logging.LogFactory
+//import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
+//import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
@@ -68,33 +70,21 @@ class SearchService {
 	void index(Object obj) {
 		elasticSearchService.index(obj)
 	}
+    
+    void deindex(Object obj) {
+		if (obj == null || obj.id == null) {
+			return
+		}
+		elasticSearchHelper.withElasticSearch{ client ->
+            client.prepareDelete("us.wearecurio.model_v0", obj.class.simpleName.toLowerCase(),obj.id.toString()).setRefresh(true).execute().actionGet()
+		}
+    }
 	
 	// user is the user viewing this search hit
 	private Map toJSON(def hit, List adminDiscussionIds, User user) {
 		switch (hit.type) {
 			case "discussion":
                 return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score, user.id)
-//				return [
-//					type: "dis",
-//					id: hit.id.toLong(),
-//					hash: hit.source.hash,
-//					name: hit.source.name,
-//					userHash: hit.source.userHash,
-//					userName: hit.source.publicUserName,
-//					userAvatarURL: hit.source.userAvatarURL,
-//					isPublic: (hit.source.visibility == "PUBLIC"),
-//					created: hit.source.created,
-//					updated: hit.source.updated,
-//					totalComments: hit.source.postCount,
-//					isPlot: hit.source.isFirstPostPlot,
-//					firstPost: hit.source.firstPostId,
-//					isAdmin: adminDiscussionIds.contains(hit.id.toLong()),
-//					groupId: null,
-//					groupName: null,
-//					score: hit.score,
-//					firstPostMessage: hit.source.firstPostMessage,
-//					posts: hit.source.posts,
-//				]
 			case "sprint":
 				return [
 					type: "spr",
@@ -349,7 +339,7 @@ class SearchService {
 			queries << "(_type:discussion AND visibility:PUBLIC)"
 		}
 		if( (type & SPRINT_TYPE) > 0) {
-			queries << "(_type:sprint AND visibility:PUBLIC AND _exists_:description)"
+			queries << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 		}
 		if ((type & USER_TYPE) > 0) {
 			queries << "(_type:user AND _id:(NOT ${user.id}) AND virtual:false)"
@@ -362,7 +352,7 @@ class SearchService {
 				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:${tagsOr}) OR (posts:${tagsOr})))"
 			}
 			if ((type & SPRINT_TYPE) > 0) {
-				filters << "(_type:sprint AND visibility:PUBLIC AND ((name:${tagsOr}) OR (description:${tagsOr})))"
+				filters << "(_type:sprint AND visibility:PUBLIC AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:${tagsOr}) OR (description:${tagsOr})))"
 			}
 			if ((type & USER_TYPE) > 0) {
 				filters << "(_type:user AND _id:(NOT ${user.id}) AND ((publicName:${tagsOr}) OR (publicBio:${tagsOr}) OR (interestTagsString:${tagsOr})))"
@@ -422,7 +412,7 @@ class SearchService {
 			query = "_type:discussion AND userIdFinal:${user.id}"
 		} 
 		if ((type & SPRINT_TYPE) > 0){
-			query = "_type:sprint AND userId:${user.id}"
+			query = "_type:sprint AND ((NOT _exists_:deleted) OR deleted:false) AND userId:${user.id}"
 		}
 		
 		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)

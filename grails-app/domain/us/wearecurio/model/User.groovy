@@ -245,6 +245,7 @@ class User {
 		log.debug "UserGroup.delete() userId:" + userId
 		user.delete(flush:true)
 		UserActivity.create(UserActivity.ActivityType.DELETE, UserActivity.ObjectType.USER, userId)
+        SearchService.get().deindex(user)
 	}
 
     void addOwnedDiscussion(Long ownedDiscussionId) {
