@@ -960,4 +960,61 @@ class SearchService {
     void resetNotificationsCheckDate(User user, Long type=DISCUSSION_TYPE){
         resetNotificationsCheckDate(user, type, new Date())
     }
+	
+	Map getStartedSprints(Long userId, int offset=0, int max=10) {
+		if ( max == 0 ) {
+			return [success: true, listItems: []]
+		}
+		
+		Long startType = UserActivity.toType(ActivityType.START, ObjectType.SPRINT)
+		Long stopType = UserActivity.toType(ActivityType.STOP, ObjectType.SPRINT)
+		def activities = UserActivity.search(searchType:'query_and_fetch', sort:'created', order:'desc') {
+			query_string(query: "typeId:($startType OR $stopType) AND userId:$userId")
+		}
+		
+		Map foundItems = [:]
+		List startedSprintIds = []
+		for (UserActivity ua : activities.searchResults) {
+			if (foundItems.containsKey(ua.objectId)) {
+				continue
+			}
+			
+			if (ua.typeId == startType) {
+				startedSprintIds << ua.objectId
+			}
+			foundItems[ua.objectId] = ua
+		}
+		
+		println "startedSprintIds: $startedSprintIds"
+	
+		if (startedSprintIds.size == 0 || offset >= startedSprintIds.size) {
+			return [success: true, listItems: []]
+		}
+		
+		int last = (max > (startedSprintIds.size - offset)) ? (startedSprintIds.size - 1) : (offset + max - 1)
+		println "last: $last"
+		println "max: $max"
+		println "offset: $offset"
+		println "startedSprintIds.size: ${startedSprintIds.size}"
+		List resizedStartedSprintIds = startedSprintIds.getAt(offset..last)
+		
+		def sprints = Sprint.search(
+			searchType:'query_and_fetch', 
+			offset:offset,
+            size:max
+		) {
+			query_string(query: "_id:${Utils.orifyList(resizedStartedSprintIds)}")
+		}
+		
+		//can't control order of sprint search results, so manually adjust order of results
+		Map results = [success: true, listItems: []]
+		for (Long id : resizedStartedSprintIds) {
+			Sprint s = sprints.searchResults.find{ it.id == id }
+			if (s != null) {
+				results.listItems << s
+			}
+		}
+		
+		return results
+	}
 }
