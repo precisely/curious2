@@ -200,7 +200,7 @@ $(document).ready(function() {
 	});
 
 	$(document).on("click", ".share-button", function() {
-		$(this).popover({html: true});
+		$(this).popover({html: true}).popover('show');
 		$('.share-link').select();
 	});
 
@@ -326,7 +326,7 @@ function discussionShow(hash) {
 		if (data.success) { 
 			$('.container-fluid').removeClass('main');
 			var discussionDetails = data.discussionDetails;
-			discussionDetails.serverURL = window.location.host;
+			discussionDetails.serverURL = serverURL;
 			var compiledHTML = compileTemplate("_showDiscussion", discussionDetails);
 			$('#feed').html(compiledHTML);
 

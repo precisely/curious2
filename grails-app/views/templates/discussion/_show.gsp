@@ -89,9 +89,8 @@
 							</p>
 							<hr>
 							<div class="buttons">
-								<button class="share-button" data-toggle="popover" data-placement="top" 
-											data-content="<input class='share-link' type='text' value='{{- serverURL}}home/social#discussions/{{- discussionHash }}'>"
-											title="Share:">
+								<button class="share-button" data-toggle="popover" data-placement="top" title="Share:"
+									data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
 									<img src="/images/share.png" alt="share"> Share
 								</button>
 								<button class="comment-button">

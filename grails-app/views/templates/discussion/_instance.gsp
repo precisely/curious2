@@ -32,24 +32,22 @@
 				{{- discussionData.groupName }}
 			</div>
 			<div class="row">
-				<div class="col-md-6">
+				<div class="col-md-5">
 					<div class="name">
 						<a href="/home/social#discussions/{{- discussionData.hash }}">
 							<span>{{- discussionData.name ? discussionData.name: '(No Title)' }}</span>
 						</a>
 					</div>
 				</div>
-				<div class="col-md-6">
+				<div class="col-md-7">
 					<div class="buttons">
 						<button>
 							<img src="/images/follow.png" alt="follow">Follow
 						</button>
-						{{ if (discussionData.isAdmin) {  }}
-							<button class="share-button" data-toggle="popover" title="Share:"
-								data-placement="top" data-content="<input class='share-link' type='text' value='{{- location.protocol+'//'+location.hostname+(location.port ? ':' + location.port : '') }}/home/social#discussions/{{- discussionData.hash }}'>">
-								<img src="/images/share.png" alt="share">Share
-							</button>
-						{{ } }}
+						<button class="share-button" data-toggle="popover" title="Share:"
+							data-placement="top" data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionData.hash }}'>">
+							<img src="/images/share.png" alt="share">Share
+						</button>
 						<button onclick="toggleCommentsList('{{- discussionData.hash }}')">
 							{{ if (!discussionData.totalComments || discussionData.totalComments < 1) {  }}
 								<img src="/images/comment.png" alt="comment"> Comment

@@ -13,10 +13,6 @@ function showDiscussionData(sprintDiscussions, sprintHash) {
 	var discussionData = sprintDiscussions;
 	if (discussionData.listItems) {
 		addAllFeedItems({listItems: discussionData.listItems}, '#sprint-discussions');
-		$(".share-button").popover({html:true});
-		$('.share-button').on('click', function () {
-			$('.share-link').select();
-		});
 	}
 }
 var offset = 10;
@@ -118,7 +114,7 @@ function sprintShow(hash) {
 			showAlert(data.message);
 			window.location.hash = 'sprints';
 		}
-		setQueryHeader('Tracking Sprint', true);
+		setQueryHeader('Trackathon', true);
 	}, function(data) {
 		showAlert('Internal server error occurred.');
 	});

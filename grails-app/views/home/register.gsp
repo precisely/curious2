@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
+		<title>Signup - We Are Curious</title>
 		<script type="text/javascript" src="/js/jquery/jquery.validate.min.js"></script>
 		<script type="text/javascript" src="/js/jquery/signup.form.js"></script>
 	</head>
