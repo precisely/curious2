@@ -124,7 +124,7 @@
 				</g:if>
 				<g:else>
 				<div class="col-sm-3 col-sm-offset-1">
-					<div class="third-party-signup margin-bottom">
+					<div class="third-party-signup margin-bottom hide">
 						<g:link controller="authentication" action="thirdPartySignIn" params="[provider: 'oura']"
 								class="btn btn-default btn-red-inverse btn-block">
 							Login With Your Oura Account
@@ -138,7 +138,11 @@
 						</a>
 					</div>
 
-					<form method="post" action="/home/dologin" id="curiousloginform" class="hide margin-top">
+					<!-- To test Oura login and the UI, remove "hide" class from above element and add "hide" class to
+					below form element.
+					-->
+
+					<form method="post" action="/home/dologin" id="curiousloginform" class="margin-top">
 						<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}" />
 						<input type="hidden" name="preaction" value="${preaction.encodeAsHTML()}" />
 						<input type="hidden" name="parm" value="${parm.encodeAsHTML()}" />

@@ -31,7 +31,7 @@
 
 		<div class="row">
 			<div class="col-sm-3 col-sm-offset-1">
-				<div class="third-party-signup margin-bottom">
+				<div class="third-party-signup margin-bottom hide">
 					<g:link controller="authentication" action="thirdPartySignUp" params="[provider: 'oura']"
 						class="btn btn-default btn-red-inverse btn-block">
 						Signup With Your Oura Account
@@ -45,7 +45,11 @@
 					</a>
 				</div>
 
-				<form action="doregister" method="post" role="form" id="signupForm" class="hide margin-top">
+				<!-- To test Oura signup and the UI, remove "hide" class from above element and add "hide" class to
+				below form element.
+				 -->
+
+				<form action="doregister" method="post" role="form" id="signupForm" class="margin-top">
 					<input class="form-control" type="hidden" name="precontroller" value="${precontroller}" /> 
 					<input type="hidden" name="preaction" value="${preaction}" />
 
