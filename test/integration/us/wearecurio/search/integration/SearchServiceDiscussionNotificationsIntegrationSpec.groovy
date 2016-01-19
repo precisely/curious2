@@ -484,7 +484,7 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         given: "a specified checkDate"
         Date checkDate = (new Date()) - 4
         
-        and: "discussions owned by user1 and user3"
+        and: "discussions owned by user1"
         Discussion discussionWithOldPost = Discussion.create(user1, uniqueName)
         Discussion discussionWithNewPost = Discussion.create(user1, uniqueName)
         
@@ -519,4 +519,101 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
             it.isNew==true
         }
     }
+	
+	//@spock.lang.IgnoreRest
+	void "Test getNewNotificationCount for single user"() {
+        given: "a specified checkDate"
+        Date checkDate = (new Date()) - 4
+        
+        and: "discussions owned by user1"
+        Discussion discussionWithOldPost = Discussion.create(user1, uniqueName)
+        Discussion discussionWithNewPost = Discussion.create(user1, uniqueName)
+        
+        when: "resetNotificationsCheckDate called for specified checkDate"
+        searchService.resetNotificationsCheckDate(user1, SearchService.DISCUSSION_TYPE, checkDate)
+        
+        and: "a new post is created before specified checkDate"
+        discussionWithOldPost.createPost(user2, uniqueName, checkDate - 1)
+        
+        and: "a new post is created after specified checkDate"
+        discussionWithNewPost.createPost(user3, uniqueName, checkDate + 1)
+    
+		and: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        then: "getNewNotificationCount returns 1 for user1"
+        searchService.getNewNotificationCount(user1, SearchService.DISCUSSION_TYPE) == 1        
+	}
+	
+	//@spock.lang.IgnoreRest
+    void "Test checkDate for one user does not affect new notification count for other user"() {
+        given: "a specified checkDate"
+        Date checkDate = (new Date()) - 4
+        
+        and: "discussions owned by user1"
+        Discussion discussionWithOldPost = Discussion.create(user1, uniqueName)
+        Discussion discussionWithNewPost = Discussion.create(user1, uniqueName)
+        
+        when: "resetNotificationsCheckDate called for other user with specified checkDate"
+        searchService.resetNotificationsCheckDate(user2, SearchService.DISCUSSION_TYPE, checkDate)
+        
+        and: "a new post is created before specified checkdate"
+        discussionWithOldPost.createPost(user2, uniqueName, checkDate - 1)
+        
+        and: "a new post is created after specified checkdate"
+        discussionWithNewPost.createPost(user3, uniqueName, checkDate + 1)
+    
+		and: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        then: "getNewNotificationCount returns 2 for owner"
+        searchService.getNewNotificationCount(user1, SearchService.DISCUSSION_TYPE) == 2        
+    }
+	
+	//@spock.lang.IgnoreRest
+	void "Test getNewNotificationCount for multiple users"() {
+        given: "a specified checkDate for user1"
+        Date checkDateUser1 = (new Date()) - 8
+        
+        and: "a specified checkDate for user2"
+        Date checkDateUser2 = (new Date()) - 4
+		
+        and: "discussions owned by user1"
+        Discussion discussionWithOldPostUser1 = Discussion.create(user1, uniqueName)
+        Discussion discussionWithNewPostUser1 = Discussion.create(user1, uniqueName)
+        
+        and: "discussions owned by user2"
+        Discussion discussionWithOldPostUser2 = Discussion.create(user2, uniqueName)
+        Discussion discussionWithNewPostUser2 = Discussion.create(user2, uniqueName)
+		
+        when: "resetNotificationsCheckDate called for user1's checkDate"
+        searchService.resetNotificationsCheckDate(user1, SearchService.DISCUSSION_TYPE, checkDateUser1)
+        
+        and: "resetNotificationsCheckDate called for user2's checkDate"
+        searchService.resetNotificationsCheckDate(user2, SearchService.DISCUSSION_TYPE, checkDateUser2)
+        
+        and: "a new post is created before user1's checkDate"
+        discussionWithOldPostUser1.createPost(user2, uniqueName, checkDateUser1 - 1)
+        
+        and: "a new post is created after user1's checkDate but before user2's checkdate"
+        discussionWithNewPostUser1.createPost(user3, uniqueName, checkDateUser1 + 1)
+    
+        and: "a new post is created before user2's checkDate but after user1's checkdate"
+        discussionWithOldPostUser2.createPost(user1, uniqueName, checkDateUser2 - 1)
+        
+        and: "a new post is created after user2's checkDate"
+        discussionWithNewPostUser2.createPost(user3, uniqueName, checkDateUser2 + 1)
+    
+		and: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        then: "getNewNotificationCount returns 1 for user1"
+        searchService.getNewNotificationCount(user1, SearchService.DISCUSSION_TYPE) == 1
+		
+        and: "getNewNotificationCount returns 1 for user2"
+        searchService.getNewNotificationCount(user2, SearchService.DISCUSSION_TYPE) == 1
+	}	
 }

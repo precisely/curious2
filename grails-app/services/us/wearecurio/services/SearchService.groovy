@@ -841,7 +841,7 @@ class SearchService {
             begin = checkedActivity.searchResults[0].created
         }
         
-        return getDiscussionNotificationCount(user, type, begin)
+        return getNotificationCount(user, type, begin)
     }
     
     def getNotifications(User user, Long type, Date curDate, int offset=0, int max=10, Date lastCheckedDate=null){
