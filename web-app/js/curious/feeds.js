@@ -560,7 +560,7 @@ function addAllFeedItems(data, elementId, prepend) {
 		if (item.type == 'spr') {
 			compiledHTML = compileTemplate("_sprints", {'sprint': item});
 		} else if (item.type == 'dis') {
-			compiledHTML = compileTemplate("_discussions", {'discussionData': item});
+			compiledHTML = compileTemplate("_discussions", {'discussionData': item, serverURL: serverURL});
 		} else if (item.type == 'usr') {
 			if (item.name) {
 				item.nameInfo = item.username + ' (' + item.name + ')';

@@ -1,10 +1,8 @@
 package us.wearecurio.services
-
-import org.springframework.transaction.annotation.Transactional
-
-import grails.util.Environment;
-
+import grails.util.Environment
 import org.apache.commons.logging.LogFactory
+
+import javax.servlet.http.HttpServletRequest
 
 class UrlService {
 
@@ -108,7 +106,7 @@ class UrlService {
 	 * @param req
 	 * @return
 	 */
-	def template(req) {
+	def template(HttpServletRequest req) {
 		def retVal = req.getAttribute(TEMPLATEVERSION)
 		
 		if (retVal != null)

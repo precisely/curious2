@@ -1,3 +1,4 @@
+var serverURL = window.location.protocol + "//" + window.location.host;
 var $messageDialog, $messageTextDialog;
 
 $(document).ready(function() {

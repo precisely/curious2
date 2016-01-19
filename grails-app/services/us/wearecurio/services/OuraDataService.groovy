@@ -14,6 +14,7 @@ import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
+import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.oura.OuraTagUnitMap
 import us.wearecurio.utility.Utils
 
@@ -21,7 +22,7 @@ import java.text.SimpleDateFormat
 
 class OuraDataService extends DataService {
 
-	static final String BASE_URL = "https://cloud.ouraring.com"
+	static final String BASE_URL = OuraApi.BASE_URL
 	static final String SET_NAME = "OURA"
 	static final String COMMENT = "(Oura)"
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()

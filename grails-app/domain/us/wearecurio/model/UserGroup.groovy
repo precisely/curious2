@@ -331,6 +331,7 @@ class UserGroup {
 	}
 
 	void addReader(User user) {
+		log.debug "Adding $user as a reader to $this"
 		if (!user) return;
 
 		GroupMemberReader.create(id, user.getId())
@@ -513,6 +514,7 @@ class UserGroup {
 	}
 
 	void addWriter(User user) {
+		log.debug "Adding $user as a writer to $this"
 		if (!user) return;
 
 		GroupMemberWriter.create(id, user.getId())
@@ -731,6 +733,7 @@ class UserGroup {
 	 * @return
 	 */
 	void addMember(User user) {
+		log.debug "Adding $user as a member to $this"
 		if (!user) return;
 
 		addReader(user)

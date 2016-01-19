@@ -2,7 +2,7 @@ package us.wearecurio.controller
 
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
-
+import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
 import us.wearecurio.model.ThirdParty
@@ -19,8 +19,17 @@ class AuthenticationController extends SessionController {
 	private String provider
 	private Token tokenInstance
 
-	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback"]]
-	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback"]]
+	/**
+	 * The session key used to distinguish the reason for which the third party authentication is being performed.
+	 */
+	static final String AUTH_REASON_KEY = "thirdPartyAuthFor"
+	static final Integer SIGN_UP_AUTH = 1
+	static final Integer SIGN_IN_AUTH = 2
+
+	def afterInterceptor = [action: this.&afterAuthentication, except: ["authenticateProvider", "withingCallback",
+			"thirdPartySignUp", "thirdPartySignIn"]]
+	def beforeInterceptor = [action: this.&checkAuthentication, except: ["authenticateProvider", "withingCallback",
+			"thirdPartySignUp", "thirdPartySignIn"]]
 
 	def fitBitDataService
 	def humanDataService
@@ -49,23 +58,29 @@ class AuthenticationController extends SessionController {
 		currentUser = sessionUser()
 		tokenInstance = session[oauthService.findSessionKeyForAccessToken(provider)]
 
+		if (params.status == "fail" || !tokenInstance) {
+			log.warn "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
+
+			if (session.deniedURI) {
+				redirect uri: session.deniedURI
+				session.deniedURI = null
+				return false
+			}
+
+			redirect url: toUrl([controller: "home", action: "login"])
+			return false
+		}
+
+		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+			return true
+		}
+
 		if (!currentUser) {
 			log.debug "Session expired after callback from $provider's authentication."
 			redirect url: toUrl([controller: "home", action: "login"])
 			return false
 		}
 		userId = currentUser.id
-
-		if (params.status == "fail" || !tokenInstance) {
-			log.info "Either user denied or no token found after authentication with [$provider]. Status: [$params.status]"
-			if (session.deniedURI) {
-				redirect uri: session.deniedURI
-				session.deniedURI = null
-				return false
-			}
-			redirect url: toUrl([controller: "home", action: "login"])
-			return false
-		}
 
 		return true
 	}
@@ -120,6 +135,50 @@ class AuthenticationController extends SessionController {
 	def ouraAuth() {
 		JSONObject userInfo = ouraDataService.getUserProfile(tokenInstance)
 
+		// If authentication was for user signup/signin with Oura
+		if (session[AUTH_REASON_KEY] == SIGN_UP_AUTH || session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+			String username = userInfo["username"].toLowerCase()
+			User user = User.lookup(username)
+
+			if (user) {
+				log.debug "$user associated with Oura"
+				securityService.setLoginUser(user)
+			} else {
+				log.debug "No user found associated with Oura username $userInfo.username"
+
+				if (session[AUTH_REASON_KEY] == SIGN_IN_AUTH) {
+					session.returnURIWithToken = null
+					flash.message = g.message(code: "thirdparty.account.not.exists")
+					redirect(url: toUrl(action: "login", controller: "home"))
+					return
+				}
+
+				// Adding a random password
+				Map signupData = [username: username, email: username, name: "", password:
+						new DefaultHashIDGenerator().generate(12)]
+
+				List<String> groups
+				// TODO Make this group names DRY with "register.gsp"
+				if (urlService.template(request) == "lhp") {
+					groups = ["announce", "lhp", "lhp announce"]
+				} else {
+					groups = ["announce", "curious", "curious announce"]
+				}
+
+				user = User.create(signupData, groups)
+
+				if (user.hasErrors()) {
+					flash.message = "Error registering the user. Please try again later."
+					return
+				}
+
+				session.showHelp = true
+				securityService.setLoginUser(user)
+			}
+
+			userId = user.id
+		}
+
 		oauthAccountService.createOrUpdate(ThirdParty.OURA, userInfo.id.toString(), tokenInstance, userId)
 	}
 
@@ -144,4 +203,26 @@ class AuthenticationController extends SessionController {
 		oauthAccountService.createOrUpdate(ThirdParty.WITHINGS, session.withingsUserId, tokenInstance, userId, timeZoneId)
 	}
 
+	def thirdPartySignUp() {
+		handleSignUpSignInAuth(SIGN_UP_AUTH)
+	}
+
+	def thirdPartySignIn() {
+		handleSignUpSignInAuth(SIGN_IN_AUTH)
+	}
+
+	private void handleSignUpSignInAuth(Integer type) {
+		User user = sessionUser()
+
+		if (user) {
+			flash.message = g.message(code: "already.loggedin")
+			redirect(url: toUrl(controller: "home", action: "index"))
+			return
+		}
+
+		session[AUTH_REASON_KEY] = type
+		session.returnURIWithToken = "home/index"
+		redirect(url: toUrl(action: "authenticate", controller: "oauth", params:
+				[provider: params.provider.toLowerCase()]))
+	}
 }

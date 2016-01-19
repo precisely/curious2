@@ -6,11 +6,13 @@ import us.wearecurio.thirdparty.PayloadTypeOAuth20ServiceImpl
 
 class OuraApi extends DefaultApi20 {
 
-	private static final String AUTHORIZE_URL = "https://cloud.ouraring.com/oauth/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s";
+	static final String BASE_URL = "https://cloud.ouraring.com"
+
+	private static final String AUTHORIZE_URL = "$BASE_URL/oauth/authorize?response_type=code&client_id=%s&scope=%s&redirect_uri=%s";
 
 	@Override
 	String getAccessTokenEndpoint() {
-		"https://cloud.ouraring.com/oauth/token"
+		"$BASE_URL/oauth/token"
 	}
 
 	@Override
@@ -20,7 +22,6 @@ class OuraApi extends DefaultApi20 {
 
 	@Override
 	String getAuthorizationUrl(OAuthConfig config) {
-		println "$config.callback"
 		/**
 		 * Spring Security OAuth2 release version 2.0.6.RELEASE has a bug which was double encoding the "redirect_uri"
 		 * parameter. That has been fixed in 2.0.7.RELEASE but upgrading that in Ouracloud application requires

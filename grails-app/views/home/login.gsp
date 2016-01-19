@@ -1,9 +1,7 @@
 <html>
 	<head>
 		<meta name="layout" content="home" />
-		<link type="text/css" href="/css/bootstrap/bootstrap.min.css"
-		rel="stylesheet">
-		<script type="text/javascript" src="/js/bootstrap/bootstrap.min.js"></script>
+		<title>Login - We Are Curious</title>
 		<script type="text/javascript">
 		$(function() {
 			$("#curiousloginform").submit(function() {
@@ -36,29 +34,23 @@
 	<body>
 		<br>
 		<div class="row">
-			<div class="col-sm-push-4 text-right col-sm-6 thumbnails" style="margin-left: 20px">
+			<div class="col-sm-push-4 text-right col-sm-6" style="margin-left: 20px">
 				<img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
-				<p
-					style=" font-size: 34px; color: #f14a42; text-align: right; margin-bottom: 0px; white-space: nowrap;">
+				<p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
 					Track data, chart experience, find meaning.</p>
-				<p
-					style="font-size: 31px; color: #f14a42; text-align: right;">
-					<strong>We’ve got questions. </strong>
+				<p style="font-size: 31px; color: #f14a42;">
+					<strong>We’ve got questions.</strong>
 				</p>
 				<br> <br>
-				<g:link action="register"
-				params="${['precontroller':precontroller,'preaction':preaction]}">
-				<button type="button" class="btn"
-					style="-webkit-border-radius: 0 !important; -moz-border-radius: 0 !important; border-radius: 0 !important; background-color: #f14a42; color: white;">
-					<p
-						style="margin-bottom: 3px; margin-top: 3px; margin-left: 12px; margin-right: 12px; font-size: 18px">
-						Get Started</p>
-				</button>
+				<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
+					class="btn btn-red btn-lg btn-flat">
+					Get Started
 				</g:link>
 			</div>
 		</div>
 		<div class="shape-wrapper features">
 			<div class="features-background"></div>
+
 			<div class="row" id="features">
 				<g:if test="${!params.login}">
 				<div class="col-sm-1 col-sm-offset-1"
@@ -67,24 +59,20 @@
 				</div>
 				</g:if>
 				<g:else>
-				<div class="col-sm-1 col-sm-offset-1"
-					style="color: white;">
-					<p style="font-size: 26px;text-transform: uppercase;">Login</p>
+				<div class="col-sm-1 col-sm-offset-1 margin-bottom">
+					<p style="font-size: 26px;">Login</p>
 				</div>
 				</g:else>
-
 			</div>
+
 			<div class="row">
 				<g:if test="${!params.login}">
 				<br>
 				<br>
 				<br>
-				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal">
+				<div class="col-sm-2 col-sm-offset-1 text-center">
 					<div class="">
-						<img class="img-responsive"
-						style="margin: 0 auto;"
-						src="/images/home/home-second-icon.png" />
+						<img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-second-icon.png" />
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Track</p>
 							Flexible, tag-based, adaptable. Easy-to-use
@@ -94,13 +82,10 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
-					style="margin-left: 60px;">
+
+				<div class="col-sm-2 col-sm-offset-1 text-center" style="margin-left: 60px;">
 					<div class="">
-						<img class="img-responsive"
-						style="margin: 0 auto;"
-						src="/images/home/home-third-icon.png" />
+						<img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-third-icon.png" />
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Curiosities</p>
 							Our software detects patterns and
@@ -112,13 +97,10 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
-					style="margin-left: 60px;">
+
+				<div class="col-sm-2 col-sm-offset-1 text-center" style="margin-left: 60px;">
 					<div class="">
-						<img class="img-responsive"
-						style="margin: 0 auto;"
-						src="/images/home/home-first-icon.png" />
+						<img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-first-icon.png" />
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Chart</p>
 							Easy graphical data visualization. Dynamic
@@ -127,13 +109,10 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="col-sm-2 col-sm-offset-1 text-center text-teal"
-					style="margin-left: 60px;">
+
+				<div class="col-sm-2 col-sm-offset-1 text-center" style="margin-left: 60px;">
 					<div class="">
-						<img class="img-responsive"
-						style="margin: 0 auto;"
-						src="/images/home/home-fourth-icon.png" />
+						<img class="img-responsive" style="margin: 0 auto;" src="/images/home/home-fourth-icon.png" />
 						<div class="caption" style="color: white;">
 							<p style="font-size: 26px;">Community</p>
 							Find others who share your questions, tags,
@@ -144,14 +123,29 @@
 				</div>
 				</g:if>
 				<g:else>
-				<div class="col-sm-2 col-sm-offset-1 text-teal">
-					<form method="post" action="/home/dologin" id="curiousloginform">
-						<input type="hidden" name="precontroller"
-						value="${precontroller.encodeAsHTML()}" />
-						<input type="hidden" name="preaction"
-						value="${preaction.encodeAsHTML()}" /> <input
-						type="hidden" name="parm"
-						value="${parm.encodeAsHTML()}" />
+				<div class="col-sm-3 col-sm-offset-1">
+					<div class="third-party-signup margin-bottom hide">
+						<g:link controller="authentication" action="thirdPartySignIn" params="[provider: 'oura']"
+								class="btn btn-default btn-red-inverse btn-block">
+							Login With Your Oura Account
+						</g:link>
+
+						<p class="margin-bottom margin-top" style="font-size: 18px;">OR</p>
+
+						<a class="btn btn-default btn-red-inverse btn-block" href="#"
+							onclick="$('#curiousloginform').slideToggle(); return false;">
+							Login With Your Email
+						</a>
+					</div>
+
+					<!-- To test Oura login and the UI, remove "hide" class from above element and add "hide" class to
+					below form element.
+					-->
+
+					<form method="post" action="/home/dologin" id="curiousloginform" class="margin-top">
+						<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}" />
+						<input type="hidden" name="preaction" value="${preaction.encodeAsHTML()}" />
+						<input type="hidden" name="parm" value="${parm.encodeAsHTML()}" />
 
 						<div class="form-group">
 							<label>Username:</label> <input
@@ -166,9 +160,7 @@
 						</div>
 
 						<div class="form-group">
-							<input class="btn"
-							style="margin-right: 5px;" type="submit"
-							value="Login" />
+							<input class="btn" style="margin-right: 5px;" type="submit" value="Login" />
 						</div>
 
 
@@ -183,26 +175,22 @@
 
 					</form>
 					<form method="post" action="/home/index" id="curiousindexform">
-						<input type="hidden" name="precontroller"
-						value="${precontroller.encodeAsHTML()}" />
-						<input type="hidden" name="preaction"
-						value="${preaction.encodeAsHTML()}" /> <input
-						type="hidden" name="parm"
-						value="${parm.encodeAsHTML()}" />
+						<input type="hidden" name="precontroller" value="${precontroller.encodeAsHTML()}" />
+						<input type="hidden" name="preaction" value="${preaction.encodeAsHTML()}" />
+						<input type="hidden" name="parm" value="${parm.encodeAsHTML()}" />
 						<input type="hidden" name="persistentSessionId" id="indexformpersistentsessionid" />
 					</form>
 				</div>
 				</g:else>
 
 			</div>
-			<br> <br> <br> <br> <br> <br> <br>
+			<br> <br> <br> <br> <br> <br> <br> <br> <br> <br>
 		</div>
 
 		<g:if test="${params.action == 'login' && !params.login}">
 		<div class="row">
 			<div class="col-sm-1 col-sm-offset-1 " style="color: white;">
-				<p
-					style="font-size: 24px; color: #f14a42; padding-top: 30px;">NEWS</p>
+				<p style="font-size: 24px; color: #f14a42; padding-top: 30px;">NEWS</p>
 			</div>
 		</div>
 		<br>
@@ -265,7 +253,5 @@
 			</div>
 		</div>
 		</g:if>
-
-
 	</body>
 </html>

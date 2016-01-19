@@ -1,17 +1,84 @@
 .padding {
-    padding: 15px;
+	padding: 15px;
 }
 
 .margin-top {
-    margin-top: 15px;
+	margin-top: 15px;
+}
+
+.margin-bottom {
+	margin-bottom: 15px;
+}
+
+.btn {
+	display: inline-block;
+	margin-bottom: 0;
+	font-weight: normal;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	background-image: none;
+	border: 1px solid transparent;
+	white-space: nowrap;
+	padding: 6px 12px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	border-radius: 4px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .btn-orange.btn-outline {
-    color: #f48d5b;
-    border: 1px solid #f48d5b;
-    background: white;
+	color: #f48d5b;
+	border: 1px solid #f48d5b;
+	background: white;
 }
 
 .text-purple {
-    color: #c04f7f;
+	color: #c04f7f;
+}
+
+.text-red {
+	color: #f14a42;
+}
+
+.btn-block {
+	display: block;
+	width: 100%;
+}
+
+.btn-lg {
+	padding: 10px 20px;
+	font-size: 18px;
+	line-height: 1.3333333;
+	border-radius: 6px;
+}
+
+.btn-flat {
+	-webkit-border-radius: 0 !important;
+	-moz-border-radius: 0 !important;
+	border-radius: 0 !important;
+}
+
+.btn-red {
+	background-color: #f14a42;
+	color: white !important;
+}
+
+.btn-red:hover {
+	background-color: #ED1D12;
+}
+
+.btn-red-inverse {
+	color: #9d9d9d !important;
+	border-radius: 2px;
+	font-weight: bold;
+	background-color: white;
+}
+
+.btn-red-inverse:hover {
+	background-color: #f14a42 !important;
+	color: white !important;
 }
