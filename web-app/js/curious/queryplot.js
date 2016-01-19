@@ -1739,6 +1739,9 @@ function PlotLine(p) {
 	this.calculateMinMaxTime = function() {
 		var entries = this.entries;
 		
+		if (entries == undefined)
+			return;
+		
 		var minTime = undefined;
 		var maxTime = undefined;
 
