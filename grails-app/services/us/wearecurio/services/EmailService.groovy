@@ -22,29 +22,28 @@ class EmailService {
 	
     void sendMail(Closure callable) {
 		BackgroundTask.launch {
+			log.debug "Calling mail service sendMail"
 			mailService.sendMail(callable)
 		}
     }
 
     void send(String toString, String subjectString, String bodyString) {
-		BackgroundTask.launch {
-			sendMail {
-				from "curious@wearecurio.us"
-				to toString
-				subject subjectString
-				body bodyString
-			}
+		log.debug "Sending email: " + toString + ", " + subjectString
+		sendMail {
+			from "curious@wearecurio.us"
+			to toString
+			subject subjectString
+			body bodyString
 		}
     }
 
     void send(String fromString, String toString, String subjectString, String bodyString) {
-		BackgroundTask.launch {
-			sendMail {
-				from fromString
-				to toString
-				subject subjectString
-				body bodyString
-			}
+		log.debug "Sending email: " + fromString + ", " + toString + ", " + subjectString
+		sendMail {
+			from fromString
+			to toString
+			subject subjectString
+			body bodyString
 		}
     }
 
