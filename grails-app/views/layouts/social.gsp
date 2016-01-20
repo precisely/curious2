@@ -62,6 +62,13 @@
 							<a href="#sprints">TRACKATHONS</a>
 						</li>
 					</g:if>
+					<g:if test="${!isSearchListingPage && isSocialListingPage}">
+						<li role="presentation">
+							<a href="#notifications" id="notifications-pill">
+								NOTIFICATIONS
+							</a>
+						</li>
+					</g:if>
 					<li role="presentation">
 						<a href="#owned">OWNED</a>
 					</li>

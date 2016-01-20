@@ -43,6 +43,16 @@ function getURLSocialDiscussions(offset, max) {
 		)
 }
 
+function getURLSocialNotifications(offset, max) {
+	return getSearchControllerURL(
+			"getSocialNotifications",
+			{
+				offset: offset, 
+				max: max
+			}
+		)	
+}
+
 function getURLSocialPeople(offset, max) {
 	return getSearchControllerURL(
 			"getPeopleSocialData",
@@ -226,6 +236,9 @@ function processResults(data) {
 	}
 
 	if (data.success) {
+		if (window.location.hash === "#notifications") {
+			setNotificationBadge(0);
+		}
 		nextSuggestionOffset = data.nextSuggestionOffset;
 		addAllFeedItems(data, parentElement);
 	} else {
@@ -249,7 +262,7 @@ function displaySocialPage() {
 		return;
 	}
 	
-	if (!isHash(["all", "discussions", "people", "owned"])) {
+	if (!isHash(["all", "discussions", "people", "notifications", "owned"])) {
 		displayDetail();
 		return;
 	}
@@ -270,6 +283,10 @@ function displaySocialPage() {
 	case "#people":
 		queueJSON("Getting people", getURLSocialPeople(0, 5), processResults)
 		registerScroll(getURLSocialPeople);
+		break;
+	case "#notifications":
+		queueJSON("Getting notifications", getURLSocialNotifications(0, 5), processResults)
+		registerScroll(getURLSocialNotifications);
 		break;
 	case "#owned":
 		queueJSON("Getting owned discussions", getURLSocialOwned(0, 5), processResults)

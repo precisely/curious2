@@ -30,6 +30,7 @@ import us.wearecurio.model.Sprint
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.SearchService
 import us.wearecurio.services.SecurityService.AuthenticationStatus
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryStats
@@ -40,6 +41,7 @@ class DataController extends LoginController {
 
 	def tokenService
 	EntryParserService entryParserService
+	SearchService searchService
 	
 	static debug(str) {
 		log.debug(str)
@@ -340,7 +342,9 @@ class DataController extends LoginController {
 
 		debug "user:" + user
 
-		renderJSONGet([user.getJSONDesc()])
+		Map userData = user.getJSONDesc()
+		userData["notificationCount"] = searchService.getNewNotificationCount(user)
+		renderJSONGet([userData])
 	}
 
 	// legacy support for obsolete call

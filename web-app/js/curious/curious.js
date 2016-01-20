@@ -458,3 +458,12 @@ function showExplanationCardCuriosity() {
 	var curiosityExplanationTemplate = $("script#_curiosityHelp").html();
 	$('.red-header').after(curiosityExplanationTemplate);
 }
+
+function setNotificationBadge(notificationCount) {
+	var badge = notificationCount ? '<a href="/home/social#notifications"><span class="badge">' + notificationCount + '</span></a>' : '';
+	$('#social-menu').html('SOCIAL' + badge)
+	var $notificationsPill = $('#notifications-pill');
+	if ($notificationsPill) {
+		$notificationsPill.html('NOTIFICATIONS' + badge);
+	}
+}

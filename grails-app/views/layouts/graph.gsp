@@ -31,6 +31,7 @@ function doLogout() {
 				// set first user id as the current
 				setUserId(this['id']);
 				setUserName(this['username']);
+				setNotificationBadge(this['notificationCount']);
 				plot = new PlotWeb(tagListWidget.list, this['id'], this['username'], "#plotArea", true, true, new PlotProperties({
 					'startDate':'#startdatepicker1',
 					'startDateInit':'start date and/or tag',

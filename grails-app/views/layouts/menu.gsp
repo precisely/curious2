@@ -29,7 +29,7 @@
 		<ul class="mainLinks headerLinks">
 			<li><g:link controller='home' action="index">Track</g:link></li>
 			<li><g:link controller='home' action="graph">Chart</g:link></li>
-			<li><a href="/home/social#all">Social</a></li>
+			<li><a href="/home/social#all" id="social-menu">Social</a></li>
 			<li><a href="/home/sprint#all">Trackathons</a></li>
 			<li><g:link controller='home' action="curiosities">Curiosities</g:link></li>
 			<c:ifAdmin>
@@ -55,6 +55,7 @@
 <script>
 	var showModal = ${(session.survey == 'compass')? true: false};
 	var showHelpModal = ${session.showHelp?: false};
+	var notificationCount;
 
 	var processUserData = function(data) {
 		if (!checkData(data))
@@ -67,6 +68,7 @@
 				// set first user id as the current
 				setUserId(this['id']);
 				setUserName(this['username']);
+				setNotificationBadge(this['notificationCount']);
 				found = true;
 			}
 			addPerson(this['name'], this['username'], this['id'], this['sex']);
