@@ -10,27 +10,27 @@ class OuraTagUnitMap extends TagUnitMap {
 
 	static {
 		exerciseUnitMap = [
-			classification_light: [tag: "light $EXERCISE", unit: "mins"],
-			classification_moderate: [tag: "moderate $EXERCISE", unit: "mins"],
-			classification_sedentary: [tag: "sedentary $EXERCISE", unit: "mins"],
-			classification_rest: [tag: "rest $EXERCISE", unit: "mins"]
+			classification_light: [tag: "light $EXERCISE", unit: "hours", convert: true, from: "mins"],
+			classification_moderate: [tag: "moderate $EXERCISE", unit: "hours", convert: true, from: "mins"],
+			classification_sedentary: [tag: "sedentary $EXERCISE", unit: "hours", convert: true, from: "mins"],
+			classification_rest: [tag: "rest $EXERCISE", unit: "hours", convert: true, from: "mins"]
 		]
 
 		activityUnitMap = [
-			non_wear_m: [tag: "$ACTIVITY non wear", unit: "mins"],
-			steps: [tag: "$ACTIVITY steps", unit: ""],
-			eq_meters: [tag: ACTIVITY, unit: "miles", convert: true, from: "meters"],
-			active_cal: [tag: "active $ACTIVITY", unit: "kcal", convert: true, from: "cal"],
-			total_cal: [tag: "total $ACTIVITY", unit: "kcal", convert: true, from: "cal"],
+			non_wear_m: [tag: ACTIVITY, unit: "hours non wear", convert: true, from: "mins"],
+			steps: [tag: ACTIVITY, unit: "steps"],
+			eq_meters: [tag: ACTIVITY, unit: "miles walk", convert: true, from: "meters"],
+			active_cal: [tag: ACTIVITY, unit: "kcal active", convert: true, from: "cal"],
+			total_cal: [tag: ACTIVITY, unit: "kcal total", convert: true, from: "cal"],
 		]
 
 		sleepUnitMap = [
-			bedtime_m: [tag: "$SLEEP bed time", unit: "mins"],
-			sleep_score: [tag: "$SLEEP score", unit: ""],
-			awake_m: [tag: "$SLEEP awake", unit: "mins"],
-			rem_m: [tag: "$SLEEP rem", unit: "mins"],
-			light_m: [tag: "$SLEEP light", unit: "mins"],
-			deep_m: [tag: "$SLEEP deep", unit: "mins"]
+			bedtime_m: [tag: SLEEP, unit: "hours total", convert: true, from: "mins"],
+			sleep_score: [tag: SLEEP, unit: "score"],
+			awake_m: [tag: SLEEP, unit: "hours awake", convert: true, from: "mins"],
+			rem_m: [tag: SLEEP, unit: "hours rem", convert: true, from: "mins"],
+			light_m: [tag: SLEEP, unit: "hours light", convert: true, from: "mins"],
+			deep_m: [tag: SLEEP, unit: "hours deep", convert: true, from: "mins"]
 		]
 
 		columnDetailMap.putAll(sleepUnitMap)
