@@ -26,6 +26,28 @@ class SearchController extends LoginController {
 		return user
 	}
 	
+	def getSocialNotifications(int offset, int max) {
+		log.debug "SearchController.getSocialNotifications $params"
+		User user = sessionUser()
+		params.max = Math.min(max ?: 10, 100)
+		params.offset = offset ?: 0
+		params.type = params.type ?: SearchService.DISCUSSION_TYPE
+		Map result = searchService.getNotifications(user, params.type, new Date(), params.offset, params.max)
+		if (result.success) {
+			searchService.resetNotificationsCheckDate(user, params.type)
+		}
+		renderJSONGet(result)
+	}
+
+	def getTotalNotificationsCount() {
+		User user = sessionUser()
+		if (!user) {
+			renderJSONGet([success: false])
+		} else {
+			renderJSONGet([success: true, totalNotificationCount: searchService.getNewNotificationCount(user)])
+		}
+	}
+
 	/**
 	 * AJAX endpoint which is called for the "ALL" sub-tab in the "SOCIAL" view
 	 */

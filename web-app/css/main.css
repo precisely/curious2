@@ -4858,3 +4858,23 @@ input.cropit-image-zoom-input {
 #sprint-explanation-card .sprint {
 	padding: 15px;
 }
+
+#social-menu {
+	position: relative;
+}
+
+#social-menu .badge, #notifications-pill .badge {
+	background-color: #f14a42;
+	color: #fff;
+}
+
+#social-menu .badge {
+	position: absolute;
+	top: -10px;
+	right: -28px;
+}
+
+#notifications-pill .badge {
+	margin-left: 5px;
+	margin-bottom: 3px;
+}

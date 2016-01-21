@@ -13,7 +13,7 @@
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
 			deleteDiscussionDataCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF ,
 			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
-			getSprintParticipantsDataCSRF, getUserDataCSRF,
+			getSprintParticipantsDataCSRF, getUserDataCSRF, followDiscussionCSRF,
 			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
 			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF" />
 	<g:layoutHead />
@@ -60,6 +60,13 @@
 					<g:if test="${isSearchListingPage}">
 						<li role="presentation">
 							<a href="#sprints">TRACKATHONS</a>
+						</li>
+					</g:if>
+					<g:if test="${!isSearchListingPage && isSocialListingPage}">
+						<li role="presentation">
+							<a href="#notifications" id="notifications-pill">
+								NOTIFICATIONS
+							</a>
 						</li>
 					</g:if>
 					<li role="presentation">

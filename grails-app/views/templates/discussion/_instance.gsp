@@ -41,8 +41,13 @@
 				</div>
 				<div class="col-md-7">
 					<div class="buttons">
-						<button>
+						{{ if (discussionData.isFollower) {  }}
+							<button id="follow-button-{{- discussionData.hash }}" onclick="followDiscussion({id: '{{- discussionData.hash }}', unfollow: true})">
+							<img src="/images/unfollow.png" alt="unfollow" >Unfollow
+						{{ } else { }}
+							<button id="follow-button-{{- discussionData.hash }}" onclick="followDiscussion({id: '{{- discussionData.hash }}' })">
 							<img src="/images/follow.png" alt="follow">Follow
+						{{ } }}
 						</button>
 						<button class="share-button" data-toggle="popover" title="Share:"
 							data-placement="top" data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionData.hash }}'>">

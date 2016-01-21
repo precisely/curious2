@@ -40,7 +40,7 @@ public class LoginControllerTests extends CuriousControllerTestCase {
 		
 		controller.dologinData()
 
-		assert controller.response.contentAsString.startsWith('callback({"user":{"class":"us.wearecurio.model.User","id"')
+		assert controller.response.contentAsString.startsWith('callback({"user":{"id":' + user.id + ',"virtual":false,"avatarURL":null,"username":"y"')
 	}
 
 	@Test

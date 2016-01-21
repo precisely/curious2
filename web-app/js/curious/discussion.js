@@ -86,6 +86,7 @@ function renderComments(discussionHash, posts, data, append) {
 	var compiledHTML = "";
 
 	$.each(posts, function(index, post) {
+		post.message = post.message.replace(/<br.*?>/g, '\n');
 		compiledHTML = compileTemplate('_comments', {discussionPost: post, discussionDetails: data.discussionDetails, userId: data.userId});
 		if (!append) {
 			$(compiledHTML).prependTo(discussionElementID + ' .comments').slideDown();
