@@ -204,52 +204,11 @@
 								<img src="/images/home/sleep-study.png" style="margin-left: 10px"/>
 							</div>
 							<div class="col-sm-10">
-								Sleep Study
-							</div>
-						</div>
-					</li>
-					<li>
-						<div class="row">
-							<div class="col-sm-2">
-								<img src="/images/home/migraines.png" />
-							</div>
-							<div class="col-sm-10">
-								What causes migraines?
-							</div>
-						</div>
-					</li>
-					<li>
-						<div class="row">
-							<div class="col-sm-2">
-								<img src="/images/home/tracked-tag.png" />
-							</div>
-							<div class="col-sm-10">
-								View your most tracked tag
+								<a href="http://blog.wearecurio.us/blog/index.php/2015/08/28/hello-world/Oura collaboration">Oura Collaboration</a>
 							</div>
 						</div>
 					</li>
 				</ul>
-
-				<div style="position: absolute; z-index: -2;">
-					<ul>
-						<li>
-							<div class="row">
-								<div class="col-sm-2">
-									<img src="/images/home/energy.png" />
-								</div>
-								<div class="col-sm-10">
-									How do I improve my energy level?
-								</div>
-							</div>
-						</li>
-						<li
-							style="list-style: none; padding-left: 80px; background-image: url(/images/home/sleep-study.png); background-repeat: no-repeat; background-position: 0 .5em; padding-top: 10px; padding-bottom: 40px; opacity: 0.3;">
-							<span
-								style=" font-size: 30px;">Learn
-								to maintain focus throughtout the day? </span>
-						</li>
-					</ul>
-				</div>
 			</div>
 		</div>
 		</g:if>

@@ -154,6 +154,7 @@ oauth {
 
 elasticSearch {
 	datastoreImpl = 'hibernateDatastore'
+	migration.strategy = 'delete'
 }
 
 environments {

@@ -73,6 +73,8 @@ class MigrationService {
 	WithingsDataService withingsDataService
 	ElasticSearchService elasticSearchService
 	EntryParserService entryParserService
+	def elasticSearchHelper
+	def elasticSearchAdminService
 	
 	boolean skipMigrations = false
 	
@@ -553,6 +555,10 @@ class MigrationService {
 		}
 		tryMigration("Change continuous repeats to bookmark") {
 			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
+		}
+		tryMigration("Reindex sprints") {
+			elasticSearchService.index()
+			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		}
 	}
 	
