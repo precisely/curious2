@@ -89,6 +89,13 @@
 							</p>
 							<hr>
 							<div class="buttons">
+								{{ if (isFollowing) {  }}
+									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
+									<img src="/images/unfollow.png" alt="unfollow" >Unfollow
+								{{ } else { }}
+									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}' })">
+									<img src="/images/follow.png" alt="follow">Follow
+								{{ } }}
 								<button class="share-button" data-toggle="popover" data-placement="top" title="Share:"
 									data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
 									<img src="/images/share.png" alt="share"> Share

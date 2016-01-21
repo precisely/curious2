@@ -932,3 +932,24 @@ function setQueryHeader(text, setGobackButton) {
 function getDiscussionElement(hash) {
 	return $('#discussion-' + hash);
 }
+
+
+function followDiscussion(args) {
+	var httpArgs = {requestMethod: 'GET'};
+	queueJSONAll('Following discussion', '/api/discussion/action/follow', getCSRFPreventionObject('followDiscussionCSRF', args),
+	function(data) {
+		if (checkData(data)) {
+			if (data.success) {
+				if (args.unfollow) {
+					$('#follow-button-' + args.id).attr("onclick", "followDiscussion({id: '" + args.id + "'})").html('<img src="/images/follow.png" alt="follow">Follow');
+				} else {
+					$('#follow-button-' + args.id).attr("onclick", "followDiscussion({id: '" + args.id + "', unfollow: true})").html('<img src="/images/unfollow.png" alt="unfollow">Unfollow');
+				}
+			} else {
+				showAlert(data.message);
+			}
+		}
+	}, function(error) {
+		console.log('error: ', error);
+	}, null, httpArgs);
+};

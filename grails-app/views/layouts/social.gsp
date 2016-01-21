@@ -13,7 +13,7 @@
 			deleteSprintMemberDataCSRF, deleteSprintAdminDataCSRF, updateSprintDataCSRF, getAutocompleteParticipantsDataCSRF, 
 			deleteDiscussionDataCSRF, getFeedsDataCSRF, createDiscussionDataCSRF, addCommentCSRF ,
 			deleteDiscussionPostDataCSRF, getDiscussionList, getPlotDescDataCSRF, getSumPlotDescDataCSRF, showTagGroupCSRF,
-			getSprintParticipantsDataCSRF, getUserDataCSRF,
+			getSprintParticipantsDataCSRF, getUserDataCSRF, followDiscussionCSRF,
 			getSprintDiscussionsDataCSRF, addMemberCSRF, addAdminCSRF, deleteMemberCSRF, deleteAdminCSRF, joinSprintDataCSRF,
 			leaveSprintDataCSRF, showsprintCSRF, followCSRF, closeExplanationCardTrackathonCSRF, closeExplanationCardCuriosityCSRF" />
 	<g:layoutHead />
