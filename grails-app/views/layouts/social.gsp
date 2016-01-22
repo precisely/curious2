@@ -69,6 +69,11 @@
 							</a>
 						</li>
 					</g:if>
+					<g:if test="${isSprintsListingPage}">
+						<li role="presentation">
+							<a href="#started">STARTED</a>
+						</li>
+					</g:if>
 					<li role="presentation">
 						<a href="#owned">OWNED</a>
 					</li>
