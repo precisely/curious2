@@ -845,6 +845,7 @@ class SearchService {
     }
     
     def getNotifications(User user, Long type, Date curDate, int offset=0, int max=10, Date lastCheckedDate=null){
+		println "getNotifications: user: $user, type: $type, curDate: $curDate, offset: $offset, max: $max, lastCheckedDate: $lastCheckedDate"
         //write query to find all sprint and discussion notifications (as per notes)
 		//if (type == null || (type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null || curDate == null) {
 		if (type == null || type != DISCUSSION_TYPE || user == null || curDate == null) {
@@ -857,11 +858,14 @@ class SearchService {
         //} else if (type == SPRINT_TYPE) {
         }
         
+		println "======================"
+		println "query: $query"
+		println "======================"
         def results = Discussion.search(
             searchType:'query_and_fetch', 
             sort:'recentPostCreated', 
             order:'desc',
-            offset:offset,
+            from:offset,
             size:max
         ) {
             query_string(query:query)
@@ -879,23 +883,6 @@ class SearchService {
             } else if (lastCheckedDate) {
                 isNew = (it.recentPostCreated >= lastCheckedDate)
             }
-            
-//            Map disMap = [
-//                id: it.id,
-//                hash: it.hash,
-//                name: it.name,
-//                userHash: it.userHash,
-//                publicUserName: it.publicUserName,
-//                userAvatarURL: it.userAvatarURL,
-//                visibility: (it.visibility == "PUBLIC"),
-//                created: it.created,
-//                updated: it.updated,
-//                postCount: it.postCount,
-//                isFirstPostPlot: it.isFirstPostPlot,
-//                firstPostId: it.firstPostId,
-//                firstPostMessage: it.firstPostMessage,
-//                posts: it.posts,
-//            ]
             
             ret.listItems << toJSON(it.id, it, adminDiscussionIds, isNew, 0, user.id)
         }
@@ -999,9 +986,7 @@ class SearchService {
 		List resizedStartedSprintIds = startedSprintIds.getAt(offset..last)
 		
 		def sprints = Sprint.search(
-			searchType:'query_and_fetch', 
-			offset:offset,
-            size:max
+			searchType:'query_and_fetch'
 		) {
 			query_string(query: "_id:${Utils.orifyList(resizedStartedSprintIds)}")
 		}
