@@ -332,6 +332,23 @@ class SearchController extends LoginController {
 	}
 	
 	/**
+	 * Ajax endpoint used for "STARTED" subtab in the Trackathon
+	 */
+	def getStartedSprintData(int offset, int max) {
+		log.debug "SearchController.getStartedSprintData $params"
+		User user = currentUser
+
+		if (!user) {
+			return
+		}
+
+		params.max = Math.min(max ?: 5, 100)
+		params.offset = offset ?: 0
+		
+		renderJSONGet(searchService.getStartedSprints(user.id, offset, max))
+	}
+	
+	/**
 	 * Action used only for rendering the search GSP
 	 */
 	def index() {

@@ -1011,7 +1011,7 @@ class SearchService {
 		for (Long id : resizedStartedSprintIds) {
 			Sprint s = sprints.searchResults.find{ it.id == id }
 			if (s != null) {
-				results.listItems << s
+				results.listItems << s.getJSONDesc()
 			}
 		}
 		

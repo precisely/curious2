@@ -96,6 +96,17 @@ function getURLSprintsOwned(offset, max) {
 		)
 }
 
+function getURLSprintsStarted(offset, max) {
+	currentSprintsOffset = offset;
+	return getSearchControllerURL(
+			"getStartedSprintData",
+			{
+				offset: offset, 
+				max: max
+			}
+		)
+}
+
 function getURLSearchAll(offset, max) {
 	return getSearchControllerURLSearch(
 			"searchAllData",
@@ -296,7 +307,7 @@ function displaySocialPage() {
 }
 
 function displaySprintPage() {
-	if (!isHash(["all", "owned"])) {
+	if (!isHash(["all", "owned", "started"])) {
 		displayDetail();
 		return;
 	}
@@ -313,6 +324,10 @@ function displaySprintPage() {
 	case "#owned":
 		queueJSON("Getting owned trackathons", getURLSprintsOwned(0, 5), processResults)
 		registerScroll(getURLSprintsOwned);
+		break;
+	case "#started":
+		queueJSON("Getting started trackathons", getURLSprintsStarted(0, 5), processResults)
+		registerScroll(getURLSprintsStarted);
 		break;
 	}
 }
@@ -571,9 +586,12 @@ function addAllFeedItems(data, elementId, prepend) {
 	elementId = elementId || '#feed';
 
 	$('#sprint-explanation-card').remove();
-	if ((location.pathname.indexOf('sprint') > -1) &&
-			!closedExplanationCardTrackathon || ((!data.listItems || !data.listItems.length) && !currentSprintsOffset)) {
-		showExplanationCardTrackathon();
+	if ((location.pathname.indexOf('sprint') > -1) && isHash(["all", "owned", "started"])) {
+		if (!closedExplanationCardTrackathon) {
+			showExplanationCardTrackathon();
+		} else if ((!data.listItems || !data.listItems.length) && !currentSprintsOffset && !isHash(["started"])) {
+			showExplanationCardTrackathon();
+		}
 	}
 
 	$.each(data.listItems, function(index, item) {
