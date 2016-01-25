@@ -4,6 +4,7 @@ import grails.test.spock.IntegrationSpec
 
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
+import us.wearecurio.model.Model.Visibility
 
 import us.wearecurio.services.SearchService
 
@@ -333,7 +334,7 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
         and: "getNotifications is called for follower"
         def result = searchService.getNotifications(user2, SearchService.DISCUSSION_TYPE)
         
-        then: "discussion is the only result"
+        then: "discussion's 1 through 4 are all in results"
         result.success
         result.listItems != null
         result.listItems.size == 4
@@ -615,5 +616,120 @@ class SearchServiceDiscussionNotificationsIntegrationSpec extends SearchServiceI
 		
         and: "getNewNotificationCount returns 1 for user2"
         searchService.getNewNotificationCount(user2, SearchService.DISCUSSION_TYPE) == 1
-	}	
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test getNewNotification with offset"() {
+		given: "a date in the past"
+		Date d = (new Date()) - 7
+		
+        and: "discussions owned by user1 and user3"
+        Discussion discussion1 = Discussion.create(user1, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion2 = Discussion.create(user3, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "discussions owned by user2"
+        Discussion discussion3 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion4 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "user2 follows discussion1 and discussion2"
+        discussion1.addFollower(user2.id)
+        discussion2.addFollower(user2.id)
+        
+        and: "new posts to all discussions"
+        discussion1.createPost(user2, uniqueName, d + 1)
+        discussion2.createPost(user3, uniqueName, d + 2)
+        discussion3.createPost(user1, uniqueName, d + 3)
+        discussion4.createPost(user3, uniqueName, d + 4)
+    
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        and: "getNotifications is called for follower, with offset of 1"
+        def result = searchService.getNotifications(user2, SearchService.DISCUSSION_TYPE, 1)
+
+		then: "first result is discussion with second most recent post (discussion3)"
+        result.success
+        result.listItems != null
+        result.listItems.size == 3
+        result.listItems[0].hash == discussion3.hash
+        result.listItems[1].hash == discussion2.hash
+        result.listItems[2].hash == discussion1.hash
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test getNewNotification with max"() {
+		given: "a date in the past"
+		Date d = (new Date()) - 7
+		
+        and: "discussions owned by user1 and user3"
+        Discussion discussion1 = Discussion.create(user1, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion2 = Discussion.create(user3, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "discussions owned by user2"
+        Discussion discussion3 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion4 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "user2 follows discussion1 and discussion2"
+        discussion1.addFollower(user2.id)
+        discussion2.addFollower(user2.id)
+        
+        and: "new posts to all discussions"
+        discussion1.createPost(user2, uniqueName, d + 1)
+        discussion2.createPost(user3, uniqueName, d + 2)
+        discussion3.createPost(user1, uniqueName, d + 3)
+        discussion4.createPost(user3, uniqueName, d + 4)
+    
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        and: "getNotifications is called for follower, with max of 2"
+        def result = searchService.getNotifications(user2, SearchService.DISCUSSION_TYPE, 0, 2)
+
+		then: "two most recent discussions are returned (discussion4 and discussion3)"
+        result.success
+        result.listItems != null
+        result.listItems.size == 2
+        result.listItems[0].hash == discussion4.hash
+        result.listItems[1].hash == discussion3.hash
+	}
+
+	//@spock.lang.IgnoreRest
+	void "Test getNewNotification with offset and max"() {
+		given: "a date in the past"
+		Date d = (new Date()) - 7
+		
+        and: "discussions owned by user1 and user3"
+        Discussion discussion1 = Discussion.create(user1, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion2 = Discussion.create(user3, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "discussions owned by user2"
+        Discussion discussion3 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        Discussion discussion4 = Discussion.create(user2, uniqueName, null, d, Visibility.PUBLIC)
+        
+        and: "user2 follows discussion1 and discussion2"
+        discussion1.addFollower(user2.id)
+        discussion2.addFollower(user2.id)
+        
+        and: "new posts to all discussions"
+        discussion1.createPost(user2, uniqueName, d + 1)
+        discussion2.createPost(user3, uniqueName, d + 2)
+        discussion3.createPost(user1, uniqueName, d + 3)
+        discussion4.createPost(user3, uniqueName, d + 4)
+    
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+        
+        and: "getNotifications is called for follower, with offset of 1"
+        def result = searchService.getNotifications(user2, SearchService.DISCUSSION_TYPE, 1, 2)
+
+		then: "first result is discussion with second and third most recent posts (discussion3 and discussion2)"
+        result.success
+        result.listItems != null
+        result.listItems.size == 2
+        result.listItems[0].hash == discussion3.hash
+        result.listItems[1].hash == discussion2.hash
+	}
 }
