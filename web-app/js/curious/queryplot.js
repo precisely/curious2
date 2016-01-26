@@ -552,8 +552,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			this.plotOptions['xaxis']['min'] = sliders[0];
 			this.plotOptions['xaxis']['max'] = sliders[1];
-			var span = sliders[1] - sliders[0];
-			this.plotOptions['xaxis']['timeformat'] = span < 172800000 ? '%l%p' : (span > 432000000 ? '%m/%d' : '%m/%d %l%p');
+			var now = new Date().getTime();
+			var begin = sliders[0];
+			var span = sliders[1] - begin;
+			var includeYear = now - begin > 12960000000;
+			this.plotOptions['xaxis']['timeformat'] = includeYear ? (span > 432000000 ? '%m/%d/%y' : '%m/%d/%y %l%p') : (span > 432000000 ? '%m/%d' : '%m/%d %l%p');
 		}
 
 		this.drawPlot();
@@ -732,7 +735,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			// SEE ALSO redrawPlot() DUPLICATED LOGIC FOR UPDATING THESE
 			// PARAMETERS
-			var span = sliders[1] - sliders[0];
+			var now = new Date().getTime();
+			var begin = sliders[0];
+			var span = sliders[1] - begin;
+			var includeYear = now - begin > 12960000000;
 			options = {
 				series: {
 					lines: { show: true },
@@ -740,7 +746,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				},
 				xaxis: {
 					mode: 'time',
-					timeformat: span < 172800000 ? '%l:%M%p' : (span > 432000000 ? '%m/%d' : '%m/%d %l%p'),
+					timeformat: includeYear ? (span > 432000000 ? '%m/%d/%y' : '%m/%d/%y %l%p') : (span > 432000000 ? '%m/%d' : '%m/%d %l%p'),
 					timezone: 'browser',
 					min: sliders[0],
 					max: sliders[1]
