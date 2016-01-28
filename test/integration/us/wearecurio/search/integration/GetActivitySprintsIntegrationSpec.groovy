@@ -79,8 +79,8 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         sprint2.delete(flush: true)
         sprint1.delete(flush: true)
     }
-        
-    def print() {
+	
+	def print() {
         println ""
         println "sprint1: hash:${sprint1.hash} userId:${sprint1.userId} hasRecentPost:${sprint1.hasRecentPost} visibility:${sprint1.visibility}"
         println "sprint3: hash:${sprint2.hash} userId:${sprint2.userId} hasRecentPost:${sprint2.hasRecentPost} visibility:${sprint2.visibility}"
@@ -93,17 +93,6 @@ class GetActivitySprintsIntegrationSpec extends SearchServiceIntegrationSpecBase
         println "post1.hash: ${post1.message}"
         println "post2.hash: ${post2.message}"
         println "post3.hash: ${post3.message}"    
-    }
-    
-    def print(def results) {
-        print()
-        println ""
-        if (results == null|| !results.success || results.listItems.size == 0) {
-            println "no results"
-            return
-        }
-        
-        results.listItems.each{ println "it.type:${it.type} it.hash:${it.hash}"}
     }
     
     void "Test getActivity for sprints"() {
