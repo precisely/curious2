@@ -204,7 +204,7 @@
 								<img src="/images/home/sleep-study.png" style="margin-left: 10px"/>
 							</div>
 							<div class="col-sm-10">
-								<a href="http://blog.wearecurio.us/blog/index.php/2015/08/28/hello-world/Oura collaboration">Oura Collaboration</a>
+								<a href="https://www.wearecurio.us/blog/index.php/2015/08/28/hello-world/Oura collaboration">Oura Collaboration</a>
 							</div>
 						</div>
 					</li>
