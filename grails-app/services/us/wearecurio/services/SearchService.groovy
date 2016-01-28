@@ -208,11 +208,9 @@ class SearchService {
 		return results
 	}
 
-	Map getActivity(Long type, User user, int offset = 0, int max = 10) {
-		log.debug "SearchService.getActivity called with type: $type; user: $user; offset: $offset; max: $max"
-		
+	private String getActivityQuery(Long type, User user) {
 		if (user == null || !((type == DISCUSSION_TYPE) || (type == SPRINT_TYPE)) ) {
-			return [listItems: false, success: false]
+			return ""
 		}
 		
 		def readerGroups = UserGroup.getGroupsForReader(user.id)
@@ -252,15 +250,29 @@ class SearchService {
 			}
 		}
 		
-        //println "activityQuery: ${Utils.orifyList(queries)}"
-		def result = [listItems: [], success: true]
+		String ret = ""
 		if (queries.size() > 0) {
-			
+			ret = Utils.orifyList(queries)
+		}
+		
+		return ret
+	}
+	
+	Map getActivity(Long type, User user, int offset = 0, int max = 10) {
+		log.debug "SearchService.getActivity called with type: $type; user: $user; offset: $offset; max: $max"
+		
+		if (user == null || !((type == DISCUSSION_TYPE) || (type == SPRINT_TYPE)) ) {
+			return [listItems: false, success: false]
+		}
+		
+		def result = [listItems: [], success: true]
+		def query = getActivityQuery(type, user)
+		if (query != null && query != "") {
 			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			
 			elasticSearchHelper.withElasticSearch{ client ->
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
-				FunctionScoreQueryBuilder fsqb = functionScoreQuery(constantScoreQuery(queryString(Utils.orifyList(queries))))
+				FunctionScoreQueryBuilder fsqb = functionScoreQuery(constantScoreQuery(queryString(query)))
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchAllQuery())
                 //fsqb.scoreMode("sum")
                 //fsqb.scoreMode("first")
@@ -305,6 +317,7 @@ class SearchService {
 				} else if((type & SPRINT_TYPE) > 0) {
 					temp.setTypes("sprint")
 				}
+				
 				SearchResponse sr = temp
 					.setQuery(fsqb)
 					.setExplain(false)
@@ -330,7 +343,16 @@ class SearchService {
 		if (user == null || ((type & (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
-		long seed = (sessionId != null && sessionId.isNumber()) ? sessionId.toLong() : 44 //arbitrary constant seed, needs to be same with each call for pagination
+		
+		//arbitrary constant seed, needs to be same with each call for pagination
+		Long seed
+		try {
+			seed = (sessionId as Long)
+		} catch (e) {
+			seed = 44 //arbitrary default seed
+		}
+		
+		//long seed = (sessionId != null && sessionId.isNumber()) ? sessionId.toLong() : 44 //arbitrary constant seed, needs to be same with each call for pagination
 		def queries = []
 		def filters = []
 		if( (type & DISCUSSION_TYPE) > 0) {
@@ -357,12 +379,20 @@ class SearchService {
 			}
 		}
 		
-		queries.addAll(filters) 
+		queries.addAll(filters)
+		String activityQuery = getActivityQuery(type, user)
+		String fullQuery
+		if (activityQuery == null || activityQuery == ""){
+			fullQuery = Utils.orifyList(queries)
+		} else {
+			fullQuery = "(${Utils.orifyList(queries)}) AND NOT ($activityQuery)"
+		}
 		
 		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 		def result = [listItems: [], success: true]
 		elasticSearchHelper.withElasticSearch{ client ->
-			FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
+			FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(fullQuery))
+			//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
 			fsqb.scoreMode("sum") 
 			fsqb.add(linearDecayFunction("created", "60d"))
 			if (filters.size > 0) {
@@ -845,7 +875,7 @@ class SearchService {
     }
     
     def getNotifications(User user, Long type, Date curDate, int offset=0, int max=10, Date lastCheckedDate=null){
-		println "getNotifications: user: $user, type: $type, curDate: $curDate, offset: $offset, max: $max, lastCheckedDate: $lastCheckedDate"
+		//println "getNotifications: user: $user, type: $type, curDate: $curDate, offset: $offset, max: $max, lastCheckedDate: $lastCheckedDate"
         //write query to find all sprint and discussion notifications (as per notes)
 		//if (type == null || (type != DISCUSSION_TYPE && type != SPRINT_TYPE) || user == null || curDate == null) {
 		if (type == null || type != DISCUSSION_TYPE || user == null || curDate == null) {
@@ -858,9 +888,9 @@ class SearchService {
         //} else if (type == SPRINT_TYPE) {
         }
         
-		println "======================"
-		println "query: $query"
-		println "======================"
+//		println "======================"
+//		println "query: $query"
+//		println "======================"
         def results = Discussion.search(
             searchType:'query_and_fetch', 
             sort:'recentPostCreated', 
@@ -972,17 +1002,17 @@ class SearchService {
 			foundItems[ua.objectId] = ua
 		}
 		
-		println "startedSprintIds: $startedSprintIds"
+		//println "startedSprintIds: $startedSprintIds"
 	
 		if (startedSprintIds.size == 0 || offset >= startedSprintIds.size) {
 			return [success: true, listItems: []]
 		}
 		
 		int last = (max > (startedSprintIds.size - offset)) ? (startedSprintIds.size - 1) : (offset + max - 1)
-		println "last: $last"
-		println "max: $max"
-		println "offset: $offset"
-		println "startedSprintIds.size: ${startedSprintIds.size}"
+//		println "last: $last"
+//		println "max: $max"
+//		println "offset: $offset"
+//		println "startedSprintIds.size: ${startedSprintIds.size}"
 		List resizedStartedSprintIds = startedSprintIds.getAt(offset..last)
 		
 		def sprints = Sprint.search(

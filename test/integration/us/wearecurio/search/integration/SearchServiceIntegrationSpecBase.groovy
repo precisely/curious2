@@ -143,6 +143,19 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 	}
 
+	def printModelObj(String name, def obj) {
+		println "$name: id: $obj.id, hash: $obj.hash"
+	}
+	
+    def print(def results) {
+        if (results == null|| !results.success || results.listItems.size == 0) {
+            println "no results"
+            return
+        }
+        
+        results.listItems.each{ println "it.type:${it.type} it.hash:${it.hash}"}
+    }
+
 	void printAllUserActivities() {
 		println ""
 		println "UserActivities:"
