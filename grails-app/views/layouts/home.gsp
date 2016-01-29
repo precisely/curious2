@@ -35,8 +35,8 @@
 	<body class="${pageProperty(name: 'body.class') ?: ''}">
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
-				<li><a href="/home/index">HOME</a></li>
-				<li><a href="/home/index/#features">FEATURES</a></li>
+				<li><a href="/home/login">HOME</a></li>
+				<li><a href="https://www.wearecurio.us/home/login/#features">FEATURES</a></li>
 				<li><a href="https://www.wearecurio.us/blog">BLOG</a></li>
 				<li style="display: none;"><a href="#">LEARN</a></li>
 				<li>
