@@ -45,6 +45,11 @@ class Utils {
 	}
 
 	static boolean save(obj, boolean flush) {
+		//quick workaround to avoid saving empty string sprint description
+		//alternative is to create an unanalyzed index for sprints so empty strings can be filtered
+		if (obj instanceof us.wearecurio.model.Sprint && obj.description == "") {
+			obj.description = null
+		}
 		if (!obj.save(flush: flush)) {
 			log.debug "Error saving $obj: $obj.errors"
 		   	def messageBody = "Error saving while executing Curious app:\n" + obj.errors

@@ -2,17 +2,25 @@ package us.wearecurio.search.integration
 
 import grails.test.spock.IntegrationSpec
 
+import java.text.DateFormat
+import java.util.Date
+
+import us.wearecurio.model.Entry
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.SearchService
+import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
 class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {    
+	EntryParserService entryParserService
+	
 	//@spock.lang.IgnoreRest
 	void "Test getFeed for sprints"() {
         given: "a new sprint"
-        def sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		sprint.description = uniqueName
 		Utils.save(sprint, true)
 
@@ -38,12 +46,12 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		Date origDate = new Date() - 2
 		
         and: "a new sprint (sprint1)"
-        def sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 
         and: "another sprint (sprint2)"
-        def sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
@@ -71,17 +79,17 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		Date origDate = new Date() - 5
 		
         and: "a new sprint (sprint1)"
-        def sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 
         and: "another sprint (sprint2)"
-        def sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
         and: "another sprint (sprint3)"
-        def sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
 		sprint3.description = uniqueName
 		Utils.save(sprint3, true)
 		
@@ -109,17 +117,17 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		Date origDate = new Date() - 5
 		
         and: "a new sprint (sprint1)"
-        def sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 
         and: "another sprint (sprint2)"
-        def sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
         and: "another sprint (sprint3)"
-        def sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
 		sprint3.description = uniqueName
 		Utils.save(sprint3, true)
 		
@@ -225,17 +233,17 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		def sessionId = 9999
 		
         and: "a new sprint (sprint1)"
-        def sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 
         and: "another sprint (sprint2)"
-        def sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
         and: "another sprint (sprint3)"
-        def sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
 		sprint3.description = uniqueName
 		Utils.save(sprint3, true)
 		
@@ -341,23 +349,23 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results1.listItems[2].hash == results10.listItems[2].hash 
 	}
 
-	//@spock.lang.IgnoreRest
+//	@spock.lang.IgnoreRest
 	void "Test nextSuggestionOffset is correct for getFeed for sprints"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
         and: "a sprint (sprint1) with tag match in name"
-        def sprint1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         sprint1.description = uniqueName
-        Utils.save(sprint1)
+        Utils.save(sprint1, true)
         
         and: "another sprint (sprint2) with tag match in name"
-        def sprint2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         sprint2.description = uniqueName
-        Utils.save(sprint2)
+        Utils.save(sprint2, true)
 		
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -376,31 +384,31 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.nextSuggestionOffset == 2
 	}
 	
-	//@spock.lang.IgnoreRest
+//	@spock.lang.IgnoreRest
 	void "Test suggestionOffset returns correct value for getFeed for sprints"() {
 		given: "an old date"
 		Date firstDate = new Date() - 5
 		
 		and: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
         and: "a sprint (sprint1) with tag match in name"
-        def sprint1 = Sprint.create(firstDate, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint1 = Sprint.create(firstDate, user2, tagText, Visibility.PUBLIC)         
         sprint1.description = uniqueName
-        Utils.save(sprint1)
+        Utils.save(sprint1, true)
         
         and: "another sprint (sprint2) with tag match in name"
-        def sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
         sprint2.description = uniqueName
-        Utils.save(sprint2)
+        Utils.save(sprint2, true)
         
         and: "another sprint (sprint3) with tag match in name"
-        def sprint3 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint3 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
         sprint3.description = uniqueName
-        Utils.save(sprint3)
+        Utils.save(sprint3, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -446,33 +454,52 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems[0].hash == nextHash
 	}
 	
+	def printSprint(String name, def s) {
+		println "$name:"
+		println "         id: $s.id"
+		println "         hash: $s.hash"
+		println "         virtualGroupId: $s.virtualGroupId"
+		println "         deleted: $s.deleted"
+		println "         description: $s.description"
+		println "         visibility: $s.visibility"
+		println "         userId: $s.userId"		
+	}
+	
+	def printSprintResults(def results) {
+		if (results.listItems == null || results.listItems.size == 0) {
+			println "results.listItems null or empty"
+		} else {
+			results.listItems.each{ printSprint("", it) }
+		}
+	}
+	
 	//@spock.lang.IgnoreRest
 	void "Test offset and suggestionOffset for getFeed for sprints"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
 		
 		and: "a sprint (owned1) owned by user1"
-        def owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned1.description = uniqueName
 		Utils.save(owned1, true)
 		
 		and: "another sprint (owned2) owned by user1"
-        def owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned2.description = uniqueName
 		Utils.save(owned2, true)
 		
 		and: "a sprint (suggestion1) with tag match in name"
-        def suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion1.description = uniqueName
-        Utils.save(suggestion1)
+        Utils.save(suggestion1, true)
         
         and: "another sprint (suggestion2) with tag match in name"
-        def suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion2.description = uniqueName
-        Utils.save(suggestion2)
+        Utils.save(suggestion2, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -496,38 +523,38 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 			(it.hash == suggestion2.hash) } == 1
 	}
 	
-	//@spock.lang.IgnoreRest
+//	@spock.lang.IgnoreRest
 	void "Test max and suggestionOffset for getFeed for sprints"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
 		
 		and: "a sprint (owned1) owned by user1"
-        def owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned1.description = uniqueName
 		Utils.save(owned1, true)
 		
 		and: "another sprint (owned2) owned by user1"
-        def owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned2.description = uniqueName
 		Utils.save(owned2, true)
 		
 		and: "a sprint (suggestion1) with tag match in name"
-        def suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion1.description = uniqueName
-        Utils.save(suggestion1)
+        Utils.save(suggestion1, true)
         
         and: "another sprint (suggestion2) with tag match in name"
-        def suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion2.description = uniqueName
-        Utils.save(suggestion2)
+        Utils.save(suggestion2, true)
         
         and: "another sprint (suggestion3) with tag match in name"
-        def suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion3.description = uniqueName
-        Utils.save(suggestion3)
+        Utils.save(suggestion3, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -558,17 +585,17 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		Date firstDate = new Date() - 5
 		
 		and: "a sprint (sprint1) owned by user1"
-        def sprint1 = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(firstDate, user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 		
 		and: "another sprint (sprint2) owned by user1"
-        def sprint2 = Sprint.create(firstDate + 1, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint2 = Sprint.create(firstDate + 1, user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
 		and: "another sprint (sprint3) owned by user1"
-        def sprint3 = Sprint.create(firstDate + 2, user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint3 = Sprint.create(firstDate + 2, user1, uniqueName, Visibility.PUBLIC)
 		sprint3.description = uniqueName
 		Utils.save(sprint3, true)
 		
@@ -586,43 +613,43 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems[0].hash == sprint2.hash
 	}
 
-	//@spock.lang.IgnoreRest
+//	@spock.lang.IgnoreRest
 	void "Test max, offset and suggestionOffset for getFeed for sprints"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
 		
 		and: "a sprint (owned1) owned by user1"
-        def owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned1.description = uniqueName
 		Utils.save(owned1, true)
 		
 		and: "another sprint (owned2) owned by user1"
-        def owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned2.description = uniqueName
 		Utils.save(owned2, true)
 		
 		and: "another sprint (owned3) owned by user1"
-        def owned3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned3.description = uniqueName
 		Utils.save(owned3, true)
 		
 		and: "a sprint (suggestion1) with tag match in name"
-        def suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion1.description = uniqueName
-        Utils.save(suggestion1)
+        Utils.save(suggestion1, true)
         
         and: "another sprint (suggestion2) with tag match in name"
-        def suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion2.description = uniqueName
-        Utils.save(suggestion2)
+        Utils.save(suggestion2, true)
         
         and: "another sprint (suggestion3) with tag match in name"
-        def suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion3.description = uniqueName
-        Utils.save(suggestion3)
+        Utils.save(suggestion3, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -648,53 +675,53 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 			(it.hash == suggestion3.hash) } == 2
 	}
 
-	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test max suggestions is 3 for getFeed for sprints"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
 		
 		and: "a sprint (owned1) owned by user1"
-        def owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned1.description = uniqueName
 		Utils.save(owned1, true)
 		
 		and: "another sprint (owned2) owned by user1"
-        def owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned2.description = uniqueName
 		Utils.save(owned2, true)
 		
 		and: "another sprint (owned3) owned by user1"
-        def owned3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint owned3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		owned3.description = uniqueName
 		Utils.save(owned3, true)
 		
 		and: "a sprint (suggestion1) with tag match in name"
-        def suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion1 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion1.description = uniqueName
-        Utils.save(suggestion1)
+        Utils.save(suggestion1, true)
         
         and: "another sprint (suggestion2) with tag match in name"
-        def suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion2 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion2.description = uniqueName
-        Utils.save(suggestion2)
+        Utils.save(suggestion2, true)
         
         and: "another sprint (suggestion3) with tag match in name"
-        def suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion3 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion3.description = uniqueName
-        Utils.save(suggestion3)
+        Utils.save(suggestion3, true)
         
         and: "another sprint (suggestion4) with tag match in name"
-        def suggestion4 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion4 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion4.description = uniqueName
-        Utils.save(suggestion4)
+        Utils.save(suggestion4, true)
         
         and: "another sprint (suggestion5) with tag match in name"
-        def suggestion5 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint suggestion5 = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         suggestion5.description = uniqueName
-        Utils.save(suggestion5)
+        Utils.save(suggestion5, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -725,7 +752,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	//@spock.lang.IgnoreRest
 	void "Test getFeed does not return duplicates of sprints when sprint edited"() {
         given: "a new sprint"
-        def sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		sprint.description = uniqueName
 		Utils.save(sprint, true)
 
@@ -751,17 +778,17 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	//@spock.lang.IgnoreRest
 	void "Test getFeed does not return duplicates of sprints when max sprints created and last sprint edited"() {
         given: "a new sprint (sprint1)"
-        def sprint1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+        Sprint sprint1 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		sprint1.description = uniqueName
 		Utils.save(sprint1, true)
 
 		and: "another new sprint (sprint2)"
-		def sprint2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+		Sprint sprint2 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		sprint2.description = uniqueName
 		Utils.save(sprint2, true)
 		
 		and: "another new sprint (sprint3)"
-		def sprint3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
+		Sprint sprint3 = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)
 		sprint3.description = uniqueName
 		Utils.save(sprint3, true)
 		
@@ -786,17 +813,21 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
     //@spock.lang.IgnoreRest
     void "Test getFeed does not return unedited sprint with empty description but tag match"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
         and: "an unedited sprint with empty description, but tag match in title"
-        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         unedited.description = ""
-        Utils.save(unedited)
+        Utils.save(unedited, true)
         
-		when: "getFeed is called"
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         //println "printing results..."
         //print(results)
@@ -809,17 +840,21 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
     //@spock.lang.IgnoreRest
     void "Test getFeed does not return unedited sprint with null description but tag match"() {
 		given: "an interest tag for user1"
-		def tagText = "MyInterestTag"
-		def tag1 = Tag.create(tagText)
+		String tagText = "MyInterestTag"
+		Tag tag1 = Tag.create(tagText)
 		user1.addInterestTag(tag1)
 		Utils.save(user1, true)
         
         and: "an unedited sprint with null description, but tag match in name"
-        def unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
+        Sprint unedited = Sprint.create(new Date(), user2, tagText, Visibility.PUBLIC)         
         unedited.description = null
-        Utils.save(unedited)
+        Utils.save(unedited, true)
         
-		when: "getFeed is called"
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         //println "printing results..."
         //print(results)
@@ -832,11 +867,15 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
     //@spock.lang.IgnoreRest
     void "Test getFeed does not return unedited sprint with empty description"() {
         given: "an untitled sprint with empty description"
-        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)         
+        Sprint unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC)         
         unedited.description = ""
-        Utils.save(unedited)
+        Utils.save(unedited, true)
         
-		when: "getFeed is called"
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+				
+		and: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         
         //println "printing results..."
@@ -850,11 +889,15 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
     //@spock.lang.IgnoreRest
     void "Test getFeed does not return unedited sprint with null description"() {
         given: "an untitled sprint with null description"
-        def unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC) 
+        Sprint unedited = Sprint.create(new Date(), user1, uniqueName, Visibility.PUBLIC) 
         unedited.description = null
-        Utils.save(unedited)
+        Utils.save(unedited, true)
         
-		when: "getFeed is called"
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getFeed is called"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
         //println "printing results..."
         //print(results)
@@ -862,5 +905,116 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         then: "unedited sprint is not returned"
         results.success
         results.listItems.find{it.type == "spr" && it.hash == unedited.hash} == null
-	}    
+	}
+	
+    //@spock.lang.IgnoreRest
+	void "Test totalParticipant"(){
+		given: "an interest tag"
+		String tagText = "MyInterestTag"
+		Tag tag = Tag.create(tagText)
+		
+		and: "user2 has that tag"
+		user2.addInterestTag(tag)
+		Utils.save(user2, true)
+		
+		and: "user3 has that tag"
+		user3.addInterestTag(tag)
+		Utils.save(user3, true)
+		
+		and: "a new public sprint (sprint1) created by user1 and name matches tag"
+        Sprint sprint1 = Sprint.create(new Date(), user1, "$tagText $uniqueName", Visibility.PUBLIC)
+		sprint1.description = uniqueName
+		Utils.save(sprint1, true)
+		
+		and: "another public sprint (sprint2) created by user1 and name matches tag"
+        Sprint sprint2 = Sprint.create(new Date(), user1, "$tagText $uniqueName", Visibility.PUBLIC) 
+		sprint2.description = uniqueName
+		Utils.save(sprint2, true)
+
+		and: "user2 follows the sprint1"
+		sprint1.fetchUserGroup().addReader(user2)
+		Utils.save(sprint1, true)
+		
+		and: "user3 follows the sprint2"
+		sprint2.fetchUserGroup().addReader(user3)
+		Utils.save(sprint2, true)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getFeed is called for user1"
+		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
+		
+		then: "2 sprints are successfully returned"
+		results.success
+		results.listItems.size == 2
+		results.listItems.find{ it.type == "spr" && it.hash == sprint1.hash }
+		results.listItems.find{ it.type == "spr" && it.hash == sprint2.hash }
+		
+		and: "participants count is 2 for sprint1 (user1-owner/follower, user2-follower)"
+		results.listItems.find{ it.type == "spr" && it.hash == sprint1.hash }.totalParticipants == 2
+			
+		and: "participants count is 2 for sprint2 (user1-owner/follower, user3-follower)"
+		results.listItems.find{ it.type == "spr" && it.hash == sprint2.hash }.totalParticipants == 2
+	}
+	
+    //@spock.lang.IgnoreRest
+	void "Test totalTags"(){
+		given: "an interest tag"
+		String tagText = "MyInterestTag"
+		Tag tag = Tag.create(tagText)
+		
+		and: "user2 has that tag"
+		user2.addInterestTag(tag)
+		Utils.save(user2, true)
+		
+		and: "user3 has that tag"
+		user3.addInterestTag(tag)
+		Utils.save(user3, true)
+		
+		and: "a new public sprint (sprint1) created by user1 and name matches tag"
+        Sprint sprint1 = Sprint.create(new Date(), user1, "$tagText $uniqueName", Visibility.PUBLIC)
+		sprint1.description = uniqueName
+		Utils.save(sprint1, true)
+		
+		and: "another public sprint (sprint2) created by user1 and name matches tag"
+        Sprint sprint2 = Sprint.create(new Date(), user1, "$tagText $uniqueName", Visibility.PUBLIC) 
+		sprint2.description = uniqueName
+		Utils.save(sprint2, true)
+
+		and: "a bookmark tag for sprint1"
+		Entry.create(sprint1.virtualUserId, entryParserService.parse(new Date(), "America/New_York", "tag1 bookmark", null, null, Sprint.sprintBaseDate, true), new EntryStats())
+		
+		and: "a repeat tag for sprint1"
+		Entry.create(sprint1.virtualUserId, entryParserService.parse(new Date(), "America/New_York", "tag2 1 2pm repeat", null, null, Sprint.sprintBaseDate, true), new EntryStats())
+		
+		and: "an alarm tag for sprint1"
+		Entry.create(sprint1.virtualUserId, entryParserService.parse(new Date(), "America/New_York", "tag3 1 5pm", null, null, Sprint.sprintBaseDate, true), new EntryStats())
+		
+		and: "a bookmark tag (bookmark2) for sprint2"
+		Entry.create(sprint2.virtualUserId, entryParserService.parse(new Date(), "America/New_York", "tag4 bookmark", null, null, Sprint.sprintBaseDate, true), new EntryStats())
+		
+		and: "a repeat tag (repeat2) for sprint2"
+		Entry.create(sprint2.virtualUserId, entryParserService.parse(new Date(), "America/New_York", "tag5 1 2pm repeat", null, null, Sprint.sprintBaseDate, true), new EntryStats())
+				
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+		and: "getFeed is called for user1"
+		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1)
+		
+		then: "2 sprints are successfully returned"
+		results.success
+		results.listItems.size == 2
+		results.listItems.find{ it.type == "spr" && it.hash == sprint1.hash }
+		results.listItems.find{ it.type == "spr" && it.hash == sprint2.hash }
+		
+		and: "tag count is 3 for user1 (bookmark, alarm, repeat)"
+		results.listItems.find{ it.type == "spr" && it.hash == sprint1.hash }.totalTags == 3
+		
+		and: "tag count is 3 for user2 (bookmark, repeat)"
+		results.listItems.find{ it.type == "spr" && it.hash == sprint2.hash }.totalTags == 2		
+	}	
 }

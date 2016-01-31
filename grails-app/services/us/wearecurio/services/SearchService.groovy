@@ -91,8 +91,8 @@ class SearchService {
 					name: hit.source.name,
 					userId: hit.source.userId,
 					description: hit.source.description,
-					totalParticipants: 0,
-					totalTags: 0,
+					totalParticipants: hit.source.participantsCount,
+					totalTags: hit.source.entriesCount,
 					virtualUserId: hit.source.virtualUserId,
 					virtualGroupId: hit.source.virtualGroupId,
 					virtualGroupName: hit.source.virtualGroupName,
@@ -339,7 +339,6 @@ class SearchService {
 
 	Map getSuggestions(Long type, User user, int offset = 0, int max = 10, def sessionId = null) {
 		log.debug "SearchService.getSuggestions called with type: $type; user: $user; offset: $offset; max: $max; sessionId: $sessionId"
-		
 		if (user == null || ((type & (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
@@ -372,7 +371,7 @@ class SearchService {
 				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:${tagsOr}) OR (posts:${tagsOr})))"
 			}
 			if ((type & SPRINT_TYPE) > 0) {
-				filters << "(_type:sprint AND visibility:PUBLIC AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:${tagsOr}) OR (description:${tagsOr})))"
+				filters << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:${tagsOr}) OR (description:${tagsOr})))"
 			}
 			if ((type & USER_TYPE) > 0) {
 				filters << "(_type:user AND _id:(NOT ${user.id}) AND ((publicName:${tagsOr}) OR (publicBio:${tagsOr}) OR (interestTagsString:${tagsOr})))"
