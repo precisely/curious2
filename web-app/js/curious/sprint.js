@@ -96,6 +96,7 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
+				sprintInstance.lines = sprintInstance.description.split("\n");
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 				showDiscussionData(data.discussions, sprintInstance.hash);
@@ -197,8 +198,8 @@ function joinSprint(sprintHash) {
 		if (data.success) {
 			$('#leave-sprint').show();
 			$('#join-sprint').hide();
-			$('#stop-sprint').show();
-			$('#start-sprint').hide();
+			$('#stop-sprint').hide();
+			$('#start-sprint').show();
 			getSprintElement(sprintHash).removeClass('not-following').addClass('following');
 		} else {
 			showAlert(data.message);

@@ -10,8 +10,10 @@
 						<h2>
 							{{- name }}
 						</h2>
-						<p>
-							{{- description }}
+						<p>{{ _.each(_.initial(lines), function(entry) { }}
+							{{- entry }}<br/>
+							{{ }) }}
+							{{- _.last(lines) }}
 						</p>
 					</div>
 				</div>
