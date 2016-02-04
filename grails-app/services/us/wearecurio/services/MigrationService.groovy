@@ -560,6 +560,10 @@ class MigrationService {
 			elasticSearchService.index()
 			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 		}
+		tryMigration("Reindex everything") {
+			elasticSearchService.index()
+			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		}
 	}
 	
 	/**
