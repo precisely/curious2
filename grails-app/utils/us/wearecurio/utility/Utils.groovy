@@ -52,7 +52,7 @@ class Utils {
 		}
 		if (!obj.save(flush: flush)) {
 			log.debug "Error saving $obj: $obj.errors"
-		   	def messageBody = "Error saving while executing Curious app:\n" + obj.errors
+		   	def messageBody = "Error saving while executing Curious app:\n" + obj.errors + "\n" + Arrays.toString(new Exception().getStackTrace())
 			def messageSubject = "CURIOUS SERVER SAVE ERROR: " + GrailsUtil.environment
 			EmailService.get().sendMail {
 				to "server@wearecurio.us"
