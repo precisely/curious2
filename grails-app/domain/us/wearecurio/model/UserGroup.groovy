@@ -64,9 +64,18 @@ class UserGroup {
 		this.description = description
 		this.isVirtual = false
 	}
+	
+	static UserGroup theSystemGroup
+	
+	static UserGroup getSystemGroup() {
+		return lookupOrCreateSystemGroup()
+	}
 
 	static UserGroup lookupOrCreateSystemGroup() {
-		createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
+		if (theSystemGroup == null)
+			theSystemGroup = createOrUpdate(SYSTEM_USER_GROUP_NAME, "system", "", [isSystemGroup: true])
+		
+		return theSystemGroup
 	}
 
 	static UserGroup createVirtual(String fullName, boolean isHidden = false) {
@@ -299,6 +308,8 @@ class UserGroup {
 			if (group.hasAdmin(user))
 				return true
 		}
+		if (User.isSystemAdmin(user.id))
+			return true
 
 		return false
 	}

@@ -43,10 +43,10 @@
 						<label class="inline-labels" for="sprint-tags" style="clear:both;">TAGS</label>
 						</div>
 						<div class="col-md-9" style="font-size:11pt;font-style:italic;">
-						<p>Enter all the tags users should track ("sleep quality", "exercise"), or:<br/>
+						<p>Enter the tags users should track, such as "sleep quality" or "headache", and:<br/>
 						Bookmark: bookmark a tag for one-tap tracking (the default) (&quot;headache <span class="pinnedDarkLabelImage"></span>&quot;).<br/>
 						Repeat: makes the tag show up every day (&quot;mood 5 <span class="repeatDarkLabelImage"></span>&quot;)<br/>
-						Remind: pop up a reminder alert (&quot;aspirin 8pm <span class="remindDarkLabelImage"></span>&quot;)<br/>&nbsp;
+						Remind: pop up a reminder alert every day (&quot;aspirin 8pm <span class="remindDarkLabelImage"></span>&quot;)<br/>&nbsp;
 						</div>
 					</div>
 					<div class="row">

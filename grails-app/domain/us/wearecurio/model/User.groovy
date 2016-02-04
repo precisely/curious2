@@ -172,6 +172,10 @@ class User {
 
 		return user
 	}
+	
+	static boolean isSystemAdmin(Long userId) {
+		return UserGroup.hasAdmin(UserGroup.getSystemGroup().id, userId)
+	}
 
 	//make virtual groups public so can be used by migration service
 	private Long fetchVirtualUserGroupIdDiscussions() {

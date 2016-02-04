@@ -64,10 +64,9 @@ class GenericTagLib {
 		if (!authorized || !session.userId) {
 			return
 		}
-
-		if (!UserGroup.hasAdmin(UserGroup.lookupOrCreateSystemGroup().id, session.userId)) {
+		
+		if (!User.isSystemAdmin(session.userId))
 			return
-		}
 
 		out << body()
 	}

@@ -203,7 +203,12 @@ class Sprint {
 	}
 	
 	boolean hasAdmin(Long userId) {
-		return fetchUserGroup()?.hasAdmin(userId)
+		if (fetchUserGroup()?.hasAdmin(userId))
+			return true
+		if (User.isSystemAdmin(userId))
+			return true
+		
+		return false
 	}
 	
 	void addAdmin(Long userId) {
