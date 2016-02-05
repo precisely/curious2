@@ -92,7 +92,7 @@ class HomeController extends DataController {
 		}
 
 		if (params.mobileRequest) {
-			session.deniedURI = "curious://?message=" + message + "&hash=" + user.hash
+			session.deniedURI = "success=" + result.success + "&message=" + message
 		} else {
 			flash.message = message
 			session.deniedURI = toUrl(controller: 'home', action: 'userpreferences', params: [userId: sessionUser().id])
@@ -333,7 +333,7 @@ class HomeController extends DataController {
 		}
 
 		if (params.mobileRequest) {
-			redirect(url: "curious://?message=" + flash.message + "&method=unsubscribe&hash=" + user.hash)
+			redirect(url: "success=" + result.success + "&message=" + flash.message)
 		} else {
 			redirect(url: toUrl(controller: 'home', action: 'userpreferences', params: [userId: user.id]))
 		}
