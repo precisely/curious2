@@ -17,6 +17,11 @@ function refreshPage() {
 function doLogout() {
 	callLogoutCallbacks();
 }
+
+function triggerChooseImageWindow() {
+	$('#cropit-image-input').click();
+}
+
 $(window).load(function() {
 	$('#image-cropper').cropit({ 
 		imageBackground: true,
@@ -320,16 +325,17 @@ function editUserDetails() {
 					<div class="modal-header">
 						Add/Edit Avatar
 					</div>
-					<div class="modal-body text-center">
+					<div class="modal-body">
 						<div class="image-editor">
 							<g:uploadForm name="saveAvatar" id="saveAvatar" class="form-horizontal" autocomplete="off">
 								<g:hiddenField name="userId" value="${user.id}" />
+								<button type="button" class="btn btn-primary choose-image-button" onclick="triggerChooseImageWindow()">Choose Image</button>
 								<div id="image-cropper">
-									<input type="file" class="cropit-image-input" id="cropit-image-input">
+									<input type="file" class="cropit-image-input hidden" id="cropit-image-input">
 									<div class="cropit-image-preview-container">
 										<div class="cropit-image-preview"></div>
 									</div>
-									<div class="image-size-label">
+									<div class="image-size-label text-center">
 										Resize image
 									</div>
 									<input type="range" class="cropit-image-zoom-input">

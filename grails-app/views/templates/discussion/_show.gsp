@@ -117,7 +117,7 @@
 									data-content="<input class='share-link' type='text' value='{{- serverURL}}/home/social#discussions/{{- discussionHash }}'>">
 									<img src="/images/share.png" alt="share"> Share
 								</button>
-								<button class="comment-button">
+								<button class="comment-button" data-total-comments="{{- totalPostCount }}">
 									<img src="/images/comment.png" alt="comment"> Comment
 								</button>
 									</div>
@@ -127,10 +127,12 @@
 					</div>
 					<div class="commentList">
 						<div class="discussion-comments-wrapper">
-							<div class="view-comment"
-								 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
+								{{ if ( totalPostCount > 5 ) { }}
+									<div class="view-comment"
+										data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
+								{{ } }}
 							<div class="comments media-list"></div>
-								<div class="add-comment">
+								<div class="add-comment {{- disableComments && (!isAdmin) ? 'hide' : ''}}">
 									{{var isCommentAllowed = !disableComments || isAdmin }}
 									<form method="post" class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 										{{ if (notLoggedIn) { }}

@@ -345,7 +345,7 @@ class SearchController extends LoginController {
 		params.max = Math.min(max ?: 5, 100)
 		params.offset = offset ?: 0
 		
-		renderJSONGet(searchService.getStartedSprints(user.id, offset, max))
+		renderJSONGet(searchService.getStartedSprints(user.id, params.offset, params.max))
 	}
 	
 	/**
