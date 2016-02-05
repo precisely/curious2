@@ -2396,6 +2396,7 @@ div.graph-header-container .red-header {
 .sprint .right-content {
 	width: calc(100% - 140px);
 	float: right;
+	padding-right: 10px;
 }
 
 .sprint .right-content .participants-wrapper {
@@ -4738,6 +4739,11 @@ input.cropit-image-zoom-input {
 /* Limit the background image by adding overflow: hidden */
 #image-cropper {
 	overflow: hidden;
+	padding-top: 60px;
+}
+
+.choose-image-button {
+	margin-bottom: 10px;
 }
 
 .cropit-image-background {
@@ -4749,6 +4755,10 @@ input.cropit-image-zoom-input {
 	position: relative;
 	z-index: 10;
 	display: block;
+}
+
+#cropit-image-input {
+	display: none;
 }
 
 .cropit-image-input {
