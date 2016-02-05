@@ -52,13 +52,20 @@ function showShareDialog(discussionHash) {
  */
 function getComments(discussionHash, args, callback) {
 	args.discussionHash = discussionHash;
+	var discussionElementID = '#discussion-' + discussionHash;
+	var totalComments = $('.comment-button', discussionElementID).data('totalComments');
 	var url = "/api/discussionPost?" + $.param(getCSRFPreventionObject("getCommentsCSRF", args)) + "&callback=?";
 
 	queueJSON("fetching more comments", url, function(data) {
 		if (!checkData(data)) {
 			return;
+		} else if (!data.posts) {
+			return;
 		}
 
+		if ((commentsArgs.offset + commentsArgs.max) >= totalComments) {
+			$('.view-comment', discussionElementID).hide();
+		}
 		renderComments(discussionHash, data.posts, data);
 
 		if (callback) {
@@ -77,12 +84,6 @@ function getComments(discussionHash, args, callback) {
  */
 function renderComments(discussionHash, posts, data, append) {
 	var discussionElementID = '#discussion-' + discussionHash;
-
-	if (!posts) {
-		$('.view-comment', discussionElementID).hide();
-		return;
-	}
-
 	var compiledHTML = "";
 
 	$.each(posts, function(index, post) {

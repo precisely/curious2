@@ -40,17 +40,17 @@ class HomeController extends DataController {
 	static debug(str) {
 		log.debug(str)
 	}
-	
+
 	def HomeController() {
 		debug "HomeController()"
 	}
-	
+
 	def causeexception() throws AuthenticationRequiredException {
 		debug "HomeController.causeexception() params:" + params
-		
+
 		throw new AuthenticationRequiredException("test only please ignore")
 	}
-		
+
 	def registerwithings() throws AuthenticationRequiredException {
 		debug "HomeController.registerwithings() params:" + params
 
@@ -60,7 +60,7 @@ class HomeController extends DataController {
 			return
 		}
 		Long userId = user.id
-		
+
 		debug "userId: $userId"
 
 
@@ -80,7 +80,7 @@ class HomeController extends DataController {
 			OAuthAccount account = result.account
 			if (!account.lastPolled) {	// Check to see if first time subscription.
 				log.info "Setting notification to get previous data for account: $account"
-				withingsDataService.saveNotificationForPreviousData(account)
+					withingsDataService.saveNotificationForPreviousData(account)
 			}
 			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Withings"])
 		} else {
@@ -138,9 +138,9 @@ class HomeController extends DataController {
 	def notifywithings() {
 		debug "HomeController.notifywithings() from IP: [$request.remoteAddr] with params:" + params
 
-		withingsDataService.notificationHandler(new JSONObject(params).toString())
+			withingsDataService.notificationHandler(new JSONObject(params).toString())
 
-		renderStringGet('success')
+			renderStringGet('success')
 	}
 
 	def registermoves() {
@@ -214,29 +214,29 @@ class HomeController extends DataController {
 
 	def polldevices() {
 		debug "HomeController.polldevices() request:" + request
-		
+
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
 
 		DataService.pollAllForUserId(user.getId())
-		
+
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
 
 	def registerfitbit() {
 		debug "HomeController.registerfitbit() params:" + params
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
 		Long userId = user.id
-		
+
 		debug "userId: $userId"
 
 		Map result = [:]
@@ -360,7 +360,7 @@ class HomeController extends DataController {
 		// Fitbit now sends notification data as request body
 		String notificationData = request.JSON.toString()
 		debug "HomeController.notifyfitbit() from IP: [$request.remoteAddr] with params: $params and data: $notificationData"
-		
+
 		fitBitDataService.notificationHandler(notificationData)
 		render status: 204
 		return
@@ -376,23 +376,23 @@ class HomeController extends DataController {
 
 		renderStringGet('success')
 	}
-	
+
 	def registertwitter() {
 		debug "HomeController.registertwitter() request:" + request
-		
+
 		redirect(url:twitterDataService.twitterAuthorizationURL(toUrl(controller:'home', action:'doregistertwitter')))
 	}
 
 	def doregistertwitter() {
 		debug "HomeController.doregistertwitter() params:" + params
-		
+
 		User user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			return
 		}
-		
+
 		debug "userId:" + user.getId()
 
 		def twitterUsername = null
@@ -412,45 +412,45 @@ class HomeController extends DataController {
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user, templateVer:urlService.template(request)])
 	}
-	
+
 	static processPrefs(prefs) {
 		def p = [:]
-		
+
 		for (param in prefs) {
 			def k = param.key
 			def v = param.value
-			
+
 			int i = k.indexOf("_profile_")
-			
+
 			if (i > 0)
 				p[k.substring(0, i)] = v
 			else
 				p[k] = v
 		}
-			
+
 		return p
 	}
 
 	def userpreferences() {
 		debug "HomeController.userpreferences() params:" + params
-		
+
 		User user = userFromIdStr(params.userId)
-		
+
 		if (user == null) {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
+
 		debug "Trying to edit user preferences for:" + user
-		
+
 		render(view:"/home/userpreferences",
 				model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-					prefs:user.getPreferences(), templateVer:urlService.template(request)])
+				prefs:user.getPreferences(), templateVer:urlService.template(request)])
 	}
 
 	def doupdateuserpreferences() {
 		debug "HomeController.doupdateuserpreferences() params:" + params
-		
+
 		User user = userFromIdStr(params.userId)
 
 		if (user == null) {
@@ -463,14 +463,14 @@ class HomeController extends DataController {
 
 		if (p.twitterDefaultToNow != 'on')
 			p.twitterDefaultToNow = 'off';
-			
+
 		if (p.password != null && p.password.length() > 0) {
 			if (!user.checkPassword(p.oldPassword)) {
 				flash.message = "Error updating user preferences: old password does not match"
 				log.warn "Error updating user preferences: old password does not match"
 				render(view:"/home/userpreferences",
 						model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-							prefs:user.getPreferences(), templateVer:urlService.template(request)])
+						prefs:user.getPreferences(), templateVer:urlService.template(request)])
 				return
 			}
 		}
@@ -478,13 +478,13 @@ class HomeController extends DataController {
 		user.update(p)
 
 		Utils.save(user, true)
-		
+
 		if (!user.validate()) {
 			flash.message = "Error updating user preferences: missing field or username/email already in use"
 			log.warn "Error updating user preferences: $user.errors"
 			render(view:"/home/userpreferences",
 					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
-						prefs:user.getPreferences(), templateVer:urlService.template(request)])
+					prefs:user.getPreferences(), templateVer:urlService.template(request)])
 		} else {
 			flash.message = "User preferences updated"
 			redirect(url:toUrl(controller:p.controller, action:p.preaction))
@@ -493,7 +493,7 @@ class HomeController extends DataController {
 
 	def doUpload() {
 		debug "HomeController.doUpload() params:" + params
-		
+
 		def user = sessionUser()
 
 		if (user == null) {
@@ -551,9 +551,9 @@ class HomeController extends DataController {
 
 	def download() {
 		debug "HomeController.download()"
-		
+
 		def user = sessionUser()
-		
+
 		if (user == null) {
 			debug "auth failure"
 			flash.message = "Must be logged in"
@@ -562,11 +562,11 @@ class HomeController extends DataController {
 		}
 
 		response.setHeader "Content-disposition", "attachment; filename=export.csv"
-			response.contentType = 'text/csv'
-		
+		response.contentType = 'text/csv'
+
 		doExportCSVAnalysis(response.outputStream, user)
-		
-				response.outputStream.flush()
+
+		response.outputStream.flush()
 	}
 
 	def termsofservice() {
@@ -581,7 +581,7 @@ class HomeController extends DataController {
 
 	def viewgraph() {
 		debug "HomeController.viewgraph()"
-		
+
 		def user = sessionUser()
 
 		if (user == null) {
@@ -590,10 +590,10 @@ class HomeController extends DataController {
 			redirect(url:toUrl(action:'index'))
 			return
 		}
-		
+
 		render(view:"/home/graph", model:[plotDataId:params.plotDataId, templateVer:urlService.template(request)])
 	}
-	
+
 	def homepage() {
 		render(view:"/home/homepage")
 	}
@@ -605,87 +605,25 @@ class HomeController extends DataController {
 	def community(String discussionHash, boolean unpublish, boolean publish) {
 		redirect(url:toUrl(action:'social'))
 	}
-	
+
 	def feed(String discussionHash, boolean unpublish, boolean publish) {
 		redirect(url:toUrl(action:'social'))
 	}
-	
-	def social(String discussionHash, Long userId, boolean unpublish, boolean publish, boolean listSprint, int max, int offset) {
-		debug "HomeController.social(): $params"
-		def user = sessionUser()
 
-		if (user == null) {
-			debug "auth failure"
-			flash.message = "Must be logged in"
-			redirect(url:toUrl(action:'index'))
-			return
-		} else if (userId && userId != user.id) {
-			debug "authorization failure"
-			flash.message = "You don't have permission to read these feeds."
-			redirect(url:toUrl(action:'index'))
-			return
-		}
+	def social() {
+		debug "HomeController.social(): $params"
 
 		Map model
-		params.max = Math.min(max ?: 5, 100)
-		params.offset = offset ?: 0
-
-		if (listSprint) {
-			// This is to get list of sprints the user belongs to or is admin of
-			List<Sprint> sprintList = Sprint.getSprintListForUser(sessionUser().id, params.max, params.offset)
-			if (!sprintList) {
-				renderJSONGet([listItems: false])
-				return
-			}
-			model = [sprintList: sprintList]
-			renderJSONGet([listItems: model])
-		} else {
-			if (discussionHash) {
-				Discussion discussion = Discussion.findByHash(discussionHash)
-				if (!discussion) {
-					debug "no discussion for discussionHash " + discussionHash
-					flash.message = "No discussion found"
-					return
-				}
-				
-				if (unpublish) {
-					if (UserGroup.canAdminDiscussion(user, discussion)) {
-						discussion.setIsPublic(false)
-						Utils.save(discussion, true)
-					}
-				}
-				if (publish) {
-					if (UserGroup.canAdminDiscussion(user, discussion)) {
-						discussion.setIsPublic(true)
-						Utils.save(discussion, true)
-					}
-				}
-			}
-			
-			List groupMemberships = UserGroup.getGroupsForReader(user)
-			List associatedGroups = UserGroup.getGroupsForWriter(user)
-			String groupName
-			String groupFullname = "Social Activity"
-					
-			groupMemberships.each { group ->
-				if (group[0]?.name.equals(params.userGroupNames)) {
-					groupFullname = group[0].fullName ?: group[0].name
-							groupName = group[0].name
-				}
-			}
-
-			log.debug("HomeController.social: User has read memberships for :" + groupMemberships.dump())
-
-			model = [
-				prefs: user.getPreferences(), 
-				userId: user.getId(), 
-				templateVer: urlService.template(request), 
-				offset: offset,
-				groupMemberships: groupMemberships, 
-				associatedGroups: associatedGroups, 
-				groupName: groupName, 
-				groupFullname: groupFullname
-				]
+		// TODO: protect private discussions
+		/*
+		 * If request is coming from facebook(i.e. while posting discussion to facebook), return model with discussion details to be used in og meta tags.
+		 * Og meta tags are used by facebook scrapper to scrap information about the post being shared
+		 */
+		if (params.hash && request.getHeader("User-Agent").contains("facebook")) {
+			Discussion discussion = Discussion.findByHash(params.hash)
+			model = discussion?.getJSONDesc()
+		} else if (params.hash) {
+			redirect(uri: "home/social#" + params.id + "/" + params.hash);
 		}
 
 		model
@@ -744,7 +682,7 @@ class HomeController extends DataController {
 
 		renderJSONPost([message: "Your share preferences for this discussion saved successfully."])
 	}
-	
+
 	def lgmd2iproject() {
 		def model = []
 		render(view:"/home/lgmd2iproject", model:model)
