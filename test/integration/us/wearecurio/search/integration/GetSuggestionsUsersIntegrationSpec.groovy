@@ -58,7 +58,7 @@ class GetSuggestionsUsersIntegrationSpec extends SearchServiceIntegrationSpecBas
 	
 	//@spock.lang.IgnoreRest
 	void "Test different sessionId for getSuggestions for users"() {		
-		given: "3 new users with successive created dates"
+		given: "users with successive created dates"
 		List users = createUsers()
 				
 		when: "elasticsearch service is indexed"
@@ -105,7 +105,7 @@ class GetSuggestionsUsersIntegrationSpec extends SearchServiceIntegrationSpecBas
 	
 	//@spock.lang.IgnoreRest
 	void "Test same sessionId for getSuggestions for users"() {		
-		given: "10 new users with successive created dates"
+		given: "users with successive created dates"
 		List users = createUsers()
 
 		and: "a sessionId"
@@ -126,6 +126,51 @@ class GetSuggestionsUsersIntegrationSpec extends SearchServiceIntegrationSpecBas
 		def results8 = searchService.getSuggestions(SearchService.USER_TYPE, user1, 0, 10, sessionId)
 		def results9 = searchService.getSuggestions(SearchService.USER_TYPE, user1, 0, 10, sessionId)
 		def results10 = searchService.getSuggestions(SearchService.USER_TYPE, user1, 0, 10, sessionId)		
+		
+		then: "all results are successfully return correct number"
+		successful(results1, users.size)
+		successful(results2, users.size)
+		successful(results3, users.size)
+		successful(results4, users.size)
+		successful(results5, users.size)
+		successful(results6, users.size)
+		successful(results7, users.size)
+		successful(results8, users.size)
+		successful(results9, users.size)
+		successful(results10, users.size)
+		
+		and: "all results are the same"
+		actualMatchesExpected(results1.listItems, results2.listItems)
+		actualMatchesExpected(results2.listItems, results3.listItems)
+		actualMatchesExpected(results3.listItems, results4.listItems)
+		actualMatchesExpected(results4.listItems, results5.listItems)
+		actualMatchesExpected(results5.listItems, results6.listItems)
+		actualMatchesExpected(results6.listItems, results7.listItems)
+		actualMatchesExpected(results7.listItems, results8.listItems)
+		actualMatchesExpected(results8.listItems, results9.listItems)
+		actualMatchesExpected(results9.listItems, results10.listItems)
+	}
+	
+	//@spock.lang.IgnoreRest
+	void "Test default sessionId for getSuggestions for users"() {		
+		given: "users with successive created dates"
+		List users = createUsers()
+
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		
+		and: "getSuggestions is called multiple times with the default sessionId"
+		def results1 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results2 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results3 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results4 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results5 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results6 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results7 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results8 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results9 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
+		def results10 = searchService.getSuggestions(SearchService.USER_TYPE, user1)
 		
 		then: "all results are successfully return correct number"
 		successful(results1, users.size)

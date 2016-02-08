@@ -346,11 +346,16 @@ class SearchService {
 		}
 		
 		//arbitrary constant seed, needs to be same with each call for pagination
+		Long defaultSeed = 44 //arbitrary default seed
 		Long seed
-		try {
-			seed = (sessionId as Long)
-		} catch (e) {
-			seed = 44 //arbitrary default seed
+		if (sessionId == null) {
+			seed = defaultSeed
+		} else {
+			try {
+				seed = (sessionId as Long)
+			} catch (e) {
+				seed = defaultSeed
+			}
 		}
 		
 		//long seed = (sessionId != null && sessionId.isNumber()) ? sessionId.toLong() : 44 //arbitrary constant seed, needs to be same with each call for pagination
