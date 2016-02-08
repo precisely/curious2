@@ -35,10 +35,10 @@ class SearchQueryServiceActivitySpec extends Specification {
 		"((userId:34 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) AND _type:discussion)"
 		
 		578		| [3]				| [4]			| [378]					| [3]						| [6]					| 
-		"(((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:4 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:378 AND visibility:PUBLIC) OR (groupIds:3 AND visibility:PUBLIC) OR (groupIds:6 AND visibility:PUBLIC)) AND _type:discussion)"
+		"(((userId:578 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:4 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:378 AND visibility:PUBLIC) OR (groupIds:3 AND visibility:PUBLIC) OR (groupIds:6 AND visibility:PUBLIC) OR (virtualUserGroupIdFollowers:3 AND visibility:PUBLIC)) AND _type:discussion)"
 		
 		4637	| [6]				| [8]			| [5]					| []						| []					| 
-		"(((userId:4637 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:6 AND visibility:(PUBLIC OR UNLISTED)) OR (groupIds:8 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:5 AND visibility:PUBLIC)) AND _type:discussion)"
+		"(((userId:4637 AND visibility:(PUBLIC OR PRIVATE OR UNLISTED OR NEW)) OR (groupIds:6 AND visibility:(PUBLIC OR UNLISTED)) OR (groupIds:8 AND visibility:(PUBLIC OR UNLISTED OR NEW)) OR (groupIds:5 AND visibility:PUBLIC) OR (virtualUserGroupIdFollowers:6 AND visibility:PUBLIC)) AND _type:discussion)"
 	}
 	
 	//@spock.lang.IgnoreRest

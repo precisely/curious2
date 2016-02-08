@@ -111,7 +111,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems[1].hash == sprint2.hash
 	}
 	
-	//@spock.lang.IgnoreRest
+	//@spock.lang.Ignore
 	void "Test different sessionId for getFeed for sprints"() {
 		given: "a date"
 		Date origDate = new Date() - 5
@@ -224,7 +224,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 			results1.listItems[1].hash != results10.listItems[1].hash )
 	}
 
-	//@spock.lang.IgnoreRest
+	//@spock.lang.Ignore
 	void "Test same sessionId for getFeed for sprints"() {
 		given: "a date"
 		Date origDate = new Date() - 5
@@ -406,9 +406,14 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         Utils.save(sprint2, true)
         
         and: "another sprint (sprint3) with tag match in name"
-        Sprint sprint3 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint3 = Sprint.create(firstDate + 2, user2, tagText, Visibility.PUBLIC)     
         sprint3.description = uniqueName
         Utils.save(sprint3, true)
+        
+        and: "another sprint (sprint4) with tag match in name"
+        def sprint4 = Sprint.create(firstDate + 3, user2, tagText, Visibility.PUBLIC)         
+        sprint4.description = uniqueName
+        Utils.save(sprint4)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -419,13 +424,14 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         //println "printing results..."
         //print(results)
         
-        then: "two sprints are returned"
+        then: "three suggested sprints are returned (3 suggestions always returned if available, despite max)"
         results.success
-		results.listItems.size == 2
+		results.listItems.size == 3
 		results.listItems.count{it.type == "spr" && 
 			(it.hash == sprint1.hash) ||
 			(it.hash == sprint2.hash) ||
-			(it.hash == sprint3.hash)} == 2
+			(it.hash == sprint3.hash) ||
+			(it.hash == sprint4.hash)} == 3
 			
 		when: "nextSuggestionOffset is used"
 		def next = results.nextSuggestionOffset
@@ -433,15 +439,18 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		and: "the hashes found in first call are gathered"
 		def hash1 = results.listItems[0].hash
 		def hash2 = results.listItems[1].hash
+		def hash3 = results.listItems[2].hash
 		
 		and: "the missing hash is found"
 		def nextHash
-		if (hash1 != sprint1.hash && hash2 != sprint1.hash) {
+		if (hash1 != sprint1.hash && hash2 != sprint1.hash && hash3 != sprint1.hash) {
 			nextHash = sprint1.hash
-		} else if (hash1 != sprint2.hash && hash2 != sprint2.hash) {
+		} else if (hash1 != sprint2.hash && hash2 != sprint2.hash && hash3 != sprint2.hash) {
 			nextHash = sprint2.hash
-		} else {
+		} else if (hash1 != sprint3.hash && hash2 != sprint3.hash && hash3 != sprint3.hash) {
 			nextHash = sprint3.hash
+		} else {
+			nextHash = sprint4.hash
 		}
 		
 		and: "getFeed is called with the nextSuggestionOffset"
