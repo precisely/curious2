@@ -349,9 +349,6 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results1.listItems[2].hash == results10.listItems[2].hash 
 	}
 
-<<<<<<< 63b5105b20fb964d8c968984860be1fb813ba4a5
-//	@spock.lang.IgnoreRest
-=======
 	//@spock.lang.IgnoreRest
 	void "Test default sessionId for getFeed for sprints"() {
 		given: "a date"
@@ -475,7 +472,6 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 	}
 
 	//@spock.lang.IgnoreRest
->>>>>>> re: #848 fixed the logic for random seed to change default of null to a constant.
 	void "Test nextSuggestionOffset is correct for getFeed for sprints"() {
 		given: "an interest tag for user1"
 		String tagText = "MyInterestTag"
