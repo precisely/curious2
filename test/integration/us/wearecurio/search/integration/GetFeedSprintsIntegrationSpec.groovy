@@ -506,7 +506,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.nextSuggestionOffset == 2
 	}
 	
-//	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test suggestionOffset returns correct value for getFeed for sprints"() {
 		given: "an old date"
 		Date firstDate = new Date() - 5
@@ -523,7 +523,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         Utils.save(sprint1, true)
         
         and: "another sprint (sprint2) with tag match in name"
-        Sprint sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)  
         sprint2.description = uniqueName
         Utils.save(sprint2, true)
         
@@ -533,9 +533,9 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         Utils.save(sprint3, true)
         
         and: "another sprint (sprint4) with tag match in name"
-        def sprint4 = Sprint.create(firstDate + 3, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint4 = Sprint.create(firstDate + 3, user2, tagText, Visibility.PUBLIC)
         sprint4.description = uniqueName
-        Utils.save(sprint4)
+        Utils.save(sprint4, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -543,9 +543,13 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		
 		and: "getFeed is called for user1 with max of 2"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 0, 2)
-        //println "printing results..."
-        //print(results)
-        
+        println "printing results..."
+        print(results)
+        printModelObj("sprint1", sprint1)
+        printModelObj("sprint2", sprint2)
+        printModelObj("sprint3", sprint3)
+        printModelObj("sprint4", sprint4)
+		
         then: "three suggested sprints are returned (3 suggestions always returned if available, despite max)"
         results.success
 		results.listItems.size == 3
@@ -557,6 +561,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 			
 		when: "nextSuggestionOffset is used"
 		def next = results.nextSuggestionOffset
+		println "next: $next"
 		
 		and: "the hashes found in first call are gathered"
 		def hash1 = results.listItems[0].hash
