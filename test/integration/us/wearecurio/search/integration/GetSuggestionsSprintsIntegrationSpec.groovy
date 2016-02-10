@@ -93,7 +93,7 @@ class GetSuggestionsSprintsIntegrationSpec extends SearchServiceIntegrationSpecB
 		results.listItems[1].hash == withoutTag.hash
 	}	
 	
-	void "Test getSuggestions does not return private sprint with no tag match"() {
+	void "Test getSuggestions does not return private sprint with no tag match 2"() {
 		given: "a private sprint owned by user1"
         Sprint sprint = Sprint.create(new Date(), user1, uniqueName, Visibility.PRIVATE)
 		sprint.description = uniqueName
