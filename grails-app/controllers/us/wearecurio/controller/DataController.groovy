@@ -381,7 +381,7 @@ class DataController extends LoginController {
 		def tagStats = stats.finish()
 		return [listEntries(sessionUser(), timeZoneName, baseDate, currentTime),
 			tagStats == null ? null : (tagStats[0]?.getJSONDesc()),
-			tagStats.size() > 1 ? tagStats[1].getJSONDesc() : null]
+			tagStats.size() > 1 ? tagStats[1]?.getJSONDesc() : null]
 	}
 
 
