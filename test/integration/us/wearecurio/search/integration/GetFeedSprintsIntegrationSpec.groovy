@@ -111,7 +111,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.listItems[1].hash == sprint2.hash
 	}
 	
-	//@spock.lang.IgnoreRest
+	//@spock.lang.Ignore
 	void "Test different sessionId for getFeed for sprints"() {
 		given: "a date"
 		Date origDate = new Date() - 5
@@ -224,7 +224,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 			results1.listItems[1].hash != results10.listItems[1].hash )
 	}
 
-	//@spock.lang.IgnoreRest
+	//@spock.lang.Ignore
 	void "Test same sessionId for getFeed for sprints"() {
 		given: "a date"
 		Date origDate = new Date() - 5
@@ -251,7 +251,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 				
-		and: "getFeed is called multiple times for user2 with same sessionIds"
+		and: "getFeed is called multiple times for user2 with same sessionId"
 		Random r = new Random()
 		def results1 = searchService.getFeed(SearchService.SPRINT_TYPE, user2, 0, 10, 0, sessionId)
 		def results2 = searchService.getFeed(SearchService.SPRINT_TYPE, user2, 0, 10, 0, sessionId)
@@ -349,7 +349,129 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results1.listItems[2].hash == results10.listItems[2].hash 
 	}
 
-//	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
+	void "Test default sessionId for getFeed for sprints"() {
+		given: "a date"
+		Date origDate = new Date() - 5
+		
+        and: "a new sprint (sprint1)"
+        def sprint1 = Sprint.create(origDate, user1, uniqueName, Visibility.PUBLIC)
+		sprint1.description = uniqueName
+		Utils.save(sprint1, true)
+
+        and: "another sprint (sprint2)"
+        def sprint2 = Sprint.create(origDate + 1, user1, uniqueName, Visibility.PUBLIC)
+		sprint2.description = uniqueName
+		Utils.save(sprint2, true)
+		
+        and: "another sprint (sprint3)"
+        def sprint3 = Sprint.create(origDate + 2, user1, uniqueName, Visibility.PUBLIC)
+		sprint3.description = uniqueName
+		Utils.save(sprint3, true)
+		
+		when: "elasticsearch service is indexed"
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+				
+		and: "getFeed is called multiple times for user2 with default sessionId"
+		Random r = new Random()
+		def results1 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results2 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results3 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results4 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results5 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results6 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results7 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results8 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results9 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		def results10 = searchService.getFeed(SearchService.SPRINT_TYPE, user2)
+		
+		//this is an imperfect test, and in theory could occassionally fail.
+		then: "all results return 3"
+		results1.success
+        results2.success
+        results3.success
+        results4.success
+        results5.success
+        results6.success
+        results7.success
+        results8.success
+        results9.success
+        results10.success
+		results1.listItems.size == 3
+		results2.listItems.size == 3
+		results3.listItems.size == 3
+		results4.listItems.size == 3
+		results5.listItems.size == 3
+		results6.listItems.size == 3
+		results7.listItems.size == 3
+		results8.listItems.size == 3
+		results9.listItems.size == 3
+		results10.listItems.size == 3
+		
+		and: "all results include all three sprints"
+		results1.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results1.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results1.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results2.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results2.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results2.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results3.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results3.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results3.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results4.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results4.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results4.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results5.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results5.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results5.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results6.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results6.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results6.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results7.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results7.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results7.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results8.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results8.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results8.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results9.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results9.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results9.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		results10.listItems.find{ it.type == "spr" && it.hash == sprint1.hash}
+		results10.listItems.find{ it.type == "spr" && it.hash == sprint2.hash}
+		results10.listItems.find{ it.type == "spr" && it.hash == sprint3.hash}
+		
+		and: "all results are in the same order"
+		results1.listItems[0].hash == results2.listItems[0].hash
+		results1.listItems[0].hash == results3.listItems[0].hash
+		results1.listItems[0].hash == results4.listItems[0].hash 
+		results1.listItems[0].hash == results5.listItems[0].hash 
+		results1.listItems[0].hash == results6.listItems[0].hash 
+		results1.listItems[0].hash == results7.listItems[0].hash 
+		results1.listItems[0].hash == results8.listItems[0].hash 
+		results1.listItems[0].hash == results9.listItems[0].hash 
+		results1.listItems[0].hash == results10.listItems[0].hash 
+		results1.listItems[1].hash == results2.listItems[1].hash
+		results1.listItems[1].hash == results3.listItems[1].hash
+		results1.listItems[1].hash == results4.listItems[1].hash 
+		results1.listItems[1].hash == results5.listItems[1].hash 
+		results1.listItems[1].hash == results6.listItems[1].hash 
+		results1.listItems[1].hash == results7.listItems[1].hash 
+		results1.listItems[1].hash == results8.listItems[1].hash 
+		results1.listItems[1].hash == results9.listItems[1].hash 
+		results1.listItems[1].hash == results10.listItems[1].hash 
+		results1.listItems[2].hash == results2.listItems[2].hash
+		results1.listItems[2].hash == results3.listItems[2].hash
+		results1.listItems[2].hash == results4.listItems[2].hash 
+		results1.listItems[2].hash == results5.listItems[2].hash 
+		results1.listItems[2].hash == results6.listItems[2].hash 
+		results1.listItems[2].hash == results7.listItems[2].hash 
+		results1.listItems[2].hash == results8.listItems[2].hash 
+		results1.listItems[2].hash == results9.listItems[2].hash 
+		results1.listItems[2].hash == results10.listItems[2].hash 
+	}
+
+	//@spock.lang.IgnoreRest
 	void "Test nextSuggestionOffset is correct for getFeed for sprints"() {
 		given: "an interest tag for user1"
 		String tagText = "MyInterestTag"
@@ -384,7 +506,7 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		results.nextSuggestionOffset == 2
 	}
 	
-//	@spock.lang.IgnoreRest
+	//@spock.lang.IgnoreRest
 	void "Test suggestionOffset returns correct value for getFeed for sprints"() {
 		given: "an old date"
 		Date firstDate = new Date() - 5
@@ -401,14 +523,19 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
         Utils.save(sprint1, true)
         
         and: "another sprint (sprint2) with tag match in name"
-        Sprint sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint2 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)  
         sprint2.description = uniqueName
         Utils.save(sprint2, true)
         
         and: "another sprint (sprint3) with tag match in name"
-        Sprint sprint3 = Sprint.create(firstDate + 1, user2, tagText, Visibility.PUBLIC)         
+        Sprint sprint3 = Sprint.create(firstDate + 2, user2, tagText, Visibility.PUBLIC)     
         sprint3.description = uniqueName
         Utils.save(sprint3, true)
+        
+        and: "another sprint (sprint4) with tag match in name"
+        Sprint sprint4 = Sprint.create(firstDate + 3, user2, tagText, Visibility.PUBLIC)
+        sprint4.description = uniqueName
+        Utils.save(sprint4, true)
         
 		when: "elasticsearch service is indexed"
 		elasticSearchService.index()
@@ -416,32 +543,41 @@ class GetFeedSprintsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 		
 		and: "getFeed is called for user1 with max of 2"
 		def results = searchService.getFeed(SearchService.SPRINT_TYPE, user1, 0, 2)
-        //println "printing results..."
-        //print(results)
-        
-        then: "two sprints are returned"
+        println "printing results..."
+        print(results)
+        printModelObj("sprint1", sprint1)
+        printModelObj("sprint2", sprint2)
+        printModelObj("sprint3", sprint3)
+        printModelObj("sprint4", sprint4)
+		
+        then: "three suggested sprints are returned (3 suggestions always returned if available, despite max)"
         results.success
-		results.listItems.size == 2
+		results.listItems.size == 3
 		results.listItems.count{it.type == "spr" && 
 			(it.hash == sprint1.hash) ||
 			(it.hash == sprint2.hash) ||
-			(it.hash == sprint3.hash)} == 2
+			(it.hash == sprint3.hash) ||
+			(it.hash == sprint4.hash)} == 3
 			
 		when: "nextSuggestionOffset is used"
 		def next = results.nextSuggestionOffset
+		println "next: $next"
 		
 		and: "the hashes found in first call are gathered"
 		def hash1 = results.listItems[0].hash
 		def hash2 = results.listItems[1].hash
+		def hash3 = results.listItems[2].hash
 		
 		and: "the missing hash is found"
 		def nextHash
-		if (hash1 != sprint1.hash && hash2 != sprint1.hash) {
+		if (hash1 != sprint1.hash && hash2 != sprint1.hash && hash3 != sprint1.hash) {
 			nextHash = sprint1.hash
-		} else if (hash1 != sprint2.hash && hash2 != sprint2.hash) {
+		} else if (hash1 != sprint2.hash && hash2 != sprint2.hash && hash3 != sprint2.hash) {
 			nextHash = sprint2.hash
-		} else {
+		} else if (hash1 != sprint3.hash && hash2 != sprint3.hash && hash3 != sprint3.hash) {
 			nextHash = sprint3.hash
+		} else {
+			nextHash = sprint4.hash
 		}
 		
 		and: "getFeed is called with the nextSuggestionOffset"

@@ -8,6 +8,32 @@ import us.wearecurio.utility.Utils
 
 class GetActivityDiscussionsIntegrationSpec extends SearchServiceIntegrationSpecBase {
 
+    //@spock.lang.IgnoreRest
+	void "Test followed discussion with activity returns from getActivity"() {
+		given: "a new discussion created by user2"
+        def d = Discussion.create(user2, uniqueName)
+		println "d.groupIds: $d.groupIds"
+		println "d.visibility: $d.visibility"
+		println "d.virtualUserGroupIdFollowers: $d.virtualUserGroupIdFollowers"
+		
+		when: "user1 follows discussion"
+		d.addFollower(user1.id)
+		
+        and: "post made to discussion"
+        d.createPost(user3, uniqueName)
+ 
+		and: "elasticsearch service is indexed"
+        elasticSearchService.index()
+        elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+
+        then: "getActivity returns discussion"
+        def results = searchService.getActivity(SearchService.DISCUSSION_TYPE, user1)
+		results.success
+		results.listItems.size == 1
+		results.listItems[0].type == "dis"
+		results.listItems[0].hash == d.hash
+ 	}
+	
     void "Test getActivity for discussions"() {
         given: "user1 with interest tag"
         def tagText = "MyInterestTag"

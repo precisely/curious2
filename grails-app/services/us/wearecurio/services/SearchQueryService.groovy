@@ -49,7 +49,8 @@ class SearchQueryService {
 		DISCUSSION_ADMIN(3),
 		DISCUSSION_READER(4),
 		USER_FOLLOWER(5),
-		SPRINT_OWNER(6)
+		SPRINT_OWNER(6),
+		DISCUSSION_FOLLOWER(7)
 		
 		final Integer id
 		
@@ -69,6 +70,8 @@ class SearchQueryService {
 					return USER_FOLLOWER
 				case 6:
 					return SPRINT_OWNER	
+				case 7:
+					return DISCUSSION_FOLLOWER
 				default:
 					return DISCUSSION_READER
 			}
@@ -170,6 +173,12 @@ class SearchQueryService {
 		groupIdsOr = Utils.orifyList(ownedSprintsGroupIds)
 		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
 			discussionQueries << ("(groupIds:${groupIdsOr} AND visibility:${visibilitiesOr})")
+		}
+		
+		visibilitiesOr = Utils.orifyList(getVisibilityForDiscussion(Role.DISCUSSION_FOLLOWER).collect{ it.toString()})
+		groupIdsOr = Utils.orifyList(readerGroupIds)
+		if (visibilitiesOr != null && visibilitiesOr != "" && groupIdsOr != null && groupIdsOr != "") {
+			discussionQueries << ("(virtualUserGroupIdFollowers:${groupIdsOr} AND visibility:${visibilitiesOr})")
 		}
 		
 		return "(${Utils.orifyList(discussionQueries)} AND _type:discussion)"

@@ -147,6 +147,13 @@ public class SearchServiceIntegrationSpecBase extends IntegrationSpec {
 		println "$name: id: $obj.id, hash: $obj.hash"
 	}
 	
+	def printUsers()
+	{
+		printModelObj("user1", user1)
+		printModelObj("user2", user2)
+		printModelObj("user3", user3)
+	}
+	
     def print(def results) {
         if (results == null|| !results.success || results.listItems.size == 0) {
             println "no results"

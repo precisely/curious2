@@ -24,7 +24,6 @@ import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.factorFunction;
 import static org.elasticsearch.search.builder.SearchSourceBuilder.searchSource;
 
-
 import us.wearecurio.model.OAuthAccount
 
 import java.text.DateFormat;
@@ -38,23 +37,28 @@ import org.joda.time.DateTimeZone;
 import org.junit.*
 import org.scribe.model.Response
 
-import us.wearecurio.model.Model
+import us.wearecurio.model.Discussion
+import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.Entry
+import us.wearecurio.model.GroupMemberAdmin
+import us.wearecurio.model.GroupMemberDiscussion
+import us.wearecurio.model.GroupMemberReader
+import us.wearecurio.model.GroupMemberWriter
+import us.wearecurio.model.Model
 import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.Tag
 import us.wearecurio.model.ThirdParty
 import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
+
 import us.wearecurio.services.DataService
 import us.wearecurio.services.FitBitDataService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.Discussion
-import us.wearecurio.model.DiscussionPost
-import us.wearecurio.model.UserGroup
-import us.wearecurio.model.GroupMemberReader
-
 
 import grails.test.mixin.integration.Integration
 import org.springframework.transaction.annotation.*
@@ -111,6 +115,50 @@ class ElasticSearchTests extends CuriousServiceTestCase {
 	@After
 	void tearDown() {
 		super.tearDown()
+        for (GroupMemberReader o in GroupMemberReader.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberWriter o in GroupMemberWriter.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberAdmin o in GroupMemberAdmin.list()) {
+            o.delete(flush:true)
+        }
+        for (GroupMemberDiscussion o in GroupMemberDiscussion.list()) {
+            o.delete(flush:true)
+        }
+        for (UserGroup o in UserGroup.list()) {
+            o.delete(flush:true)
+        }
+        for (DiscussionPost o in DiscussionPost.list()) {
+            o.delete(flush:true)
+        }
+        for (Discussion o in Discussion.list()) {
+            o.delete(flush:true)
+        }
+        for (Sprint o in Sprint.list()) {
+            o.delete(flush:true)
+        }
+        for (User o in User.list()) {
+            o.delete(flush:true)
+        }
+        for (Entry o in Entry.list()) {
+            o.delete(flush:true)
+        }
+        for (Tag o in Tag.list()) {
+            o.delete(flush:true)
+        }
+		GroupMemberReader.executeUpdate("delete GroupMemberReader r")
+		UserGroup.executeUpdate("delete UserGroup g")
+		
+		elasticSearchService.index()
+		
+		elasticSearchHelper.withElasticSearch{ client ->
+			client.prepareDeleteByQuery("us.wearecurio.model_v0").setQuery(matchAllQuery()).execute().actionGet()
+			client.admin().indices().prepareRefresh().execute().actionGet()
+		}
+		
+		elasticSearchAdminService.refresh("us.wearecurio.model_v0")
 	}
 	
 	private void testSimpleSearch(Object container, String fieldName) {

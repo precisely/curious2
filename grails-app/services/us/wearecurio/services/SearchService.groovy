@@ -172,9 +172,9 @@ class SearchService {
 			suggestionMax = max
 		} else if (results.listItems && results.listItems.size() < max) {
 			suggestionMax = max - results.listItems.size()
-			if (suggestionMax < defaultSuggestionMax) {
-				suggestionMax = defaultSuggestionMax
-			}
+		}
+		if (suggestionMax < defaultSuggestionMax) {
+			suggestionMax = defaultSuggestionMax
 		}
 		
 		def nextSuggestionOffset = suggestionOffset
@@ -255,6 +255,7 @@ class SearchService {
 			ret = Utils.orifyList(queries)
 		}
 		
+		//println "getActivityQuery returns '$ret'"
 		return ret
 	}
 	
@@ -339,42 +340,48 @@ class SearchService {
 
 	Map getSuggestions(Long type, User user, int offset = 0, int max = 10, def sessionId = null) {
 		log.debug "SearchService.getSuggestions called with type: $type; user: $user; offset: $offset; max: $max; sessionId: $sessionId"
+
 		if (user == null || ((type & (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) == 0)) {
 			return [listItems: false, success: false]
 		}
 		
 		//arbitrary constant seed, needs to be same with each call for pagination
+		Long defaultSeed = 44 //arbitrary default seed
 		Long seed
-		try {
-			seed = (sessionId as Long)
-		} catch (e) {
-			seed = 44 //arbitrary default seed
+		if (sessionId == null) {
+			seed = defaultSeed
+		} else {
+			try {
+				seed = (sessionId as Long)
+			} catch (e) {
+				seed = defaultSeed
+			}
 		}
 		
 		//long seed = (sessionId != null && sessionId.isNumber()) ? sessionId.toLong() : 44 //arbitrary constant seed, needs to be same with each call for pagination
 		def queries = []
 		def filters = []
 		if( (type & DISCUSSION_TYPE) > 0) {
-			queries << "(_type:discussion AND visibility:PUBLIC)"
+			queries << "(_type:discussion AND visibility:PUBLIC AND followers:(NOT $user.id))"
 		}
 		if( (type & SPRINT_TYPE) > 0) {
 			queries << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false))"
 		}
 		if ((type & USER_TYPE) > 0) {
-			queries << "(_type:user AND _id:(NOT ${user.id}) AND virtual:false)"
+			queries << "(_type:user AND _id:(NOT $user.id) AND virtual:false)"
 		}
 		
 		def tags = user.getInterestTags()
 		if (tags?.size() > 0) {
 			def tagsOr = Utils.orifyList(tags.collect{ it.description })
 			if ((type & DISCUSSION_TYPE) > 0) {
-				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:${tagsOr}) OR (posts:${tagsOr})))"
+				filters << "(_type:discussion AND visibility:PUBLIC AND ((name:$tagsOr) OR (posts:$tagsOr)))"
 			}
 			if ((type & SPRINT_TYPE) > 0) {
-				filters << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:${tagsOr}) OR (description:${tagsOr})))"
+				filters << "(_type:sprint AND visibility:PUBLIC AND _exists_:description AND ((NOT _exists_:deleted) OR deleted:false) AND ((name:$tagsOr) OR (description:$tagsOr)))"
 			}
 			if ((type & USER_TYPE) > 0) {
-				filters << "(_type:user AND _id:(NOT ${user.id}) AND ((publicName:${tagsOr}) OR (publicBio:${tagsOr}) OR (interestTagsString:${tagsOr})))"
+				filters << "(_type:user AND _id:(NOT $user.id) AND virtual:false AND ((publicName:$tagsOr) OR (publicBio:$tagsOr) OR (interestTagsString:$tagsOr)))"
 			}
 		}
 		
@@ -397,6 +404,7 @@ class SearchService {
 			if (filters.size > 0) {
 				fsqb.add(queryFilter(queryString(Utils.orifyList(filters))), weightFactorFunction(6)) 
 			}
+			//disabling until we can figure out how to make work properly
 			fsqb.add(randomFunction(seed))
 						
 			def temp = client.prepareSearch("us.wearecurio.model_v0")
