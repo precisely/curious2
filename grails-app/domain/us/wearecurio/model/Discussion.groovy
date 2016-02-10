@@ -232,13 +232,13 @@ class Discussion {
 		if (id) SearchService.get().index(this)
 	}
 	
-    private void createVirtualObjects() {
+    boolean createVirtualObjects() {
         if (this.virtualUserGroupIdFollowers != null && 
             this.virtualUserGroupIdFollowers > 0 &&
             this.virtualUserId != null &&
             this.virtualUserId > 0
            ) {
-            return
+            return false
         }
         
         UserGroup vUGFollowers
@@ -246,7 +246,7 @@ class Discussion {
             this.virtualUserGroupIdFollowers <= 0
            ) {
             vUGFollowers = UserGroup.createVirtual(
-                "'${(name?:"anonymous")}' virtual group for discussion followers"
+                "virtual discussion followers grouo for '${(name?:"anonymous")}'"
             )
             this.virtualUserGroupIdFollowers = vUGFollowers.id
         } else {
@@ -260,6 +260,8 @@ class Discussion {
         //virtual user only admins group, do not want to be follower
         vUGFollowers.removeReader(this.virtualUserId)
         vUGFollowers.removeWriter(this.virtualUserId)
+		
+		return true
     }
     
 	boolean isPublic() {

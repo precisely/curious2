@@ -725,5 +725,11 @@ class MigrationService {
 		tryMigration("Reclassify tag properties5") {
 			TagProperties.reclassifyAll()
 		}
+		tryMigration("Create virtual follower groups for discussions") {
+			for (Discussion discussion in Discussion.list()) {
+				if (discussion.createVirtualObjects())
+					Utils.save(discussion, true)
+			}
+		}
 	}
 }

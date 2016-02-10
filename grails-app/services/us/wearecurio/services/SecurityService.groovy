@@ -254,7 +254,7 @@ class SecurityService {
 	User login(String username, String password) {
 		log.debug "login() username: " + username
 		
-		username = username.toLowerCase()
+		username = username?.toLowerCase()
 		
 		boolean authorized = false
 		

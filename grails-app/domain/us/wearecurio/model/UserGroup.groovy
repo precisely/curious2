@@ -80,6 +80,9 @@ class UserGroup {
 
 	static UserGroup createVirtual(String fullName, boolean isHidden = false) {
 		UserGroup userGroup = new UserGroup()
+		
+		if (fullName.length() > 250)
+			fullName = fullName.substring(0, 250)
 
 		userGroup.name = "__virtual" + UUID.randomUUID().toString()
 		userGroup.fullName = fullName
