@@ -175,34 +175,32 @@ class TagGroup extends GenericTagGroup {
 	}
 	
 	static void processAndAddTagGroups(List existingTagGroups, List newTagGroups) {
-		TagGroup.withTransaction {
-			newTagGroups.each { newTagGroup ->
-				def existingGroup = existingTagGroups.find { it.id == newTagGroup.id && it.type == newTagGroup.type }
-	
-				if (existingGroup) {
-					existingGroup["groupName"] = newTagGroup["groupName"]
-					existingGroup["isReadOnly"] = newTagGroup["isReadOnly"]
-	
-					if (!existingGroup["isSystemGroup"]) {	// Only change state if existing tag is not already been marked as system group
-						existingGroup["isSystemGroup"] = newTagGroup["isSystemGroup"]
-					}
-					if (!existingGroup["isAdminOfTagGroup"]) { // Only change state if existing taggroup has not admin permission.
-						existingGroup["isAdminOfTagGroup"] = newTagGroup["isAdminOfTagGroup"]
-					}
-				} else {
-					existingTagGroups << newTagGroup
+		newTagGroups.each { newTagGroup ->
+			def existingGroup = existingTagGroups.find { it.id == newTagGroup.id && it.type == newTagGroup.type }
+
+			if (existingGroup) {
+				existingGroup["groupName"] = newTagGroup["groupName"]
+				existingGroup["isReadOnly"] = newTagGroup["isReadOnly"]
+
+				if (!existingGroup["isSystemGroup"]) {	// Only change state if existing tag is not already been marked as system group
+					existingGroup["isSystemGroup"] = newTagGroup["isSystemGroup"]
 				}
+				if (!existingGroup["isAdminOfTagGroup"]) { // Only change state if existing taggroup has not admin permission.
+					existingGroup["isAdminOfTagGroup"] = newTagGroup["isAdminOfTagGroup"]
+				}
+			} else {
+				existingTagGroups << newTagGroup
 			}
 		}
 	}
 
 	static List getAllTagGroupsForUser(Long userId) {
 		return TagGroup.withTransaction {
-			List tagGroups = getTagGroupsByUser(userId)
+			List tagGroups = getTagGroupsInfoByUser(userId)
 	
-			processAndAddTagGroups(tagGroups, getSystemTagGroups())
-			processAndAddTagGroups(tagGroups, getTagGroupsTheUserIsMemberOf(userId))
-			processAndAddTagGroups(tagGroups, getTagGroupsTheUserIsAnAdminOf(userId))
+			processAndAddTagGroups(tagGroups, getSystemTagGroupsInfo())
+			processAndAddTagGroups(tagGroups, getTagGroupsInfoTheUserIsMemberOf(userId))
+			processAndAddTagGroups(tagGroups, getTagGroupsInfoTheUserIsAnAdminOf(userId))
 	
 			List<Long> tagGroupPropertyIds = tagGroups.collect { it.propertyId }*.toLong()
 	
@@ -255,7 +253,7 @@ class TagGroup extends GenericTagGroup {
 	 * @param userId Identity of the user.
 	 * @return List of tag groups. (List of maps)
 	 */
-	static List getTagGroupsByUser(def userId) {
+	static List getTagGroupsInfoByUser(def userId) {
 		return TagGroup.withTransaction {
 			DatabaseService.get().sqlRows("$COMMON_QUERY where tgp.user_id = " + userId)
 		}
@@ -267,12 +265,12 @@ class TagGroup extends GenericTagGroup {
 	 * @param userId identity of the user
 	 * @return List of tag groups.
 	 */
-	static List getTagGroupsTheUserIsAnAdminOf(Long userId) {
+	static List getTagGroupsInfoTheUserIsAnAdminOf(Long userId) {
 		return TagGroup.withTransaction {
 			// Get all UserGroup ids, the user is an Admin of.
 			List<Long> adminUserGroupIds = UserGroup.getGroupsForAdmin(userId)*.getAt(0).id
 	
-			List adminTagGroups = getTagGroupsForUserGroupIds(adminUserGroupIds)
+			List adminTagGroups = getTagGroupsInfoForUserGroupIds(adminUserGroupIds)
 			adminTagGroups*.put("isAdminOfTagGroup", true)
 			adminTagGroups
 		}
@@ -284,12 +282,12 @@ class TagGroup extends GenericTagGroup {
 	 * @param userId identity of the user
 	 * @return
 	 */
-	static List getTagGroupsTheUserIsMemberOf(Long userId) {
+	static List getTagGroupsInfoTheUserIsMemberOf(Long userId) {
 		return TagGroup.withTransaction {
 			List<Long> memberUserGroupIds = UserGroup.getGroupsForReader(userId)*.getAt(0).id
 			memberUserGroupIds.addAll(UserGroup.getGroupsForWriter(userId)*.id)
 	
-			return getTagGroupsForUserGroupIds(memberUserGroupIds.unique())
+			return getTagGroupsInfoForUserGroupIds(memberUserGroupIds.unique())
 		}
 	}
 
@@ -299,9 +297,9 @@ class TagGroup extends GenericTagGroup {
 	 * Or list of map which must contain a field id, since Groovy doesn't respects the Java Generics.
 	 * @return List of tag groups.
 	 */
-	static List getTagGroupsForUserGroups(List<UserGroup> userGroups) {
+	static List getTagGroupsInfoForUserGroups(List<UserGroup> userGroups) {
 		return TagGroup.withTransaction {
-			getTagGroupsForUserGroupIds(userGroups*.id)
+			getTagGroupsInfoForUserGroupIds(userGroups*.id)
 		}
 	}
 
@@ -310,7 +308,7 @@ class TagGroup extends GenericTagGroup {
 	 * @param userGroupIds List of ids of UserGroup to get list of owned tag groups.
 	 * @return List of tag groups.
 	 */
-	static List getTagGroupsForUserGroupIds(List<Long> userGroupIds) {
+	static List getTagGroupsInfoForUserGroupIds(List<Long> userGroupIds) {
 		return TagGroup.withTransaction {
 			if (!userGroupIds) {
 				return []
@@ -321,19 +319,9 @@ class TagGroup extends GenericTagGroup {
 	}
 
 	// Get all Tag Groups which are owned by System UserGroups.
-	static List getSystemTagGroups() {
+	static List getSystemTagGroupsInfo() {
 		return TagGroup.withTransaction {
-			List<Long> systemGroupIds = UserGroup.withCriteria {
-				projections {
-					distinct("id")
-				}
-				or {
-					eq("name", UserGroup.SYSTEM_USER_GROUP_NAME)
-					eq("isSystemGroup", true)
-				}
-			}
-	
-			List tagGroups = getTagGroupsForUserGroupIds(systemGroupIds)
+			List tagGroups = getTagGroupsInfoForUserGroupIds([UserGroup.theSystemGroup.id])
 			tagGroups.each { tagGroup ->
 				tagGroup["isSystemGroup"] = true
 			}

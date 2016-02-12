@@ -84,12 +84,49 @@ class TagGroupTests extends CuriousTestCase {
 		tagGroupD = TagGroup.createOrLookupTagGroup("Tag Group D", null, announce.id, SharedTagGroup.class)
 		
 		systemGroup = UserGroup.lookupOrCreateSystemGroup()
+		boolean found = false
+		Long systemGroupId = UserGroup.theSystemGroup.id
+		assert systemGroup.id == systemGroupId
 		EmailService.set(emailService)
+	}
+	
+	private static User createUser(name, email) {
+		Map params = [username: name, sex: "F", name: "y y", email: email, birthdate: "01/01/2001", password: "y"]
+		
+		User user = User.create(params)
+		
+		Utils.save(user, true)
+		
+		return user
 	}
 	
 	@After
 	void tearDown() {
 		super.tearDown()
+	}
+	
+	@Test
+	void "test get system tag groups"() {
+		TagGroup systemTagGroup1 = TagGroup.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
+		TagGroup systemTagGroup2 = TagGroup.createOrLookupTagGroup("System Tag Group 2", null, systemGroup.id)
+		
+		List systemTagGroups = TagGroup.getSystemTagGroupsInfo()
+		
+		assert systemTagGroups.size() == 2
+		def tagGroupIds = [ systemTagGroup1.id, systemTagGroup2.id ]
+		assert systemTagGroups[0].id.longValue() in tagGroupIds
+		assert systemTagGroups[1].id.longValue() in tagGroupIds
+		assert systemTagGroups[0].id != systemTagGroups[1].id
+	}
+	
+	@Test
+	void "test the existence of generic property on same name tag groups"() {
+		TagGroup systemTagGroup1 = TagGroup.createOrLookupTagGroup("Tag Group 1", null, systemGroup.id)
+		TagGroup systemTagGroup2 = TagGroup.createOrLookupTagGroup("Tag Group 3", null, systemGroup.id)
+		
+		List allTagGroups = TagGroup.getAllTagGroupsForUser(schmoe.id)
+		assert allTagGroups.size() == 2
+		assert allTagGroups.find { it.description == "Tag Group 3" }.isSystemGroup == true
 	}
 	
 	@Test
@@ -177,27 +214,17 @@ class TagGroupTests extends CuriousTestCase {
 		assert tagGroupInstance.containsTagString(null, userId) == false
 	}
 	
-	private static User createUser(name, email) {
-		Map params = [username: name, sex: "F", name: "y y", email: email, birthdate: "01/01/2001", password: "y"]
-		
-		User user = User.create(params)
-		
-		Utils.save(user, true)
-		
-		return user
-	}
-	
 	@Test
 	void "get All TagGroups The User Is An Admin Of with no admin"() {
 		// user does not have any admin user group
-		List tagGroupList = TagGroup.getTagGroupsTheUserIsAnAdminOf(user2.id)
+		List tagGroupList = TagGroup.getTagGroupsInfoTheUserIsAnAdminOf(user2.id)
 		
 		assert tagGroupList.size() == 0
 	}
 	
 	@Test
 	void "test get All TagGroups The User Is An Admin Of"() {
-		List tagGroupList = TagGroup.getTagGroupsTheUserIsAnAdminOf(admin.id)
+		List tagGroupList = TagGroup.getTagGroupsInfoTheUserIsAnAdminOf(admin.id)
 		
 		assert tagGroupList.size() == 1
 		assert tagGroupList[0].id == tagGroupC.id
@@ -207,7 +234,7 @@ class TagGroupTests extends CuriousTestCase {
 	@Test
 	void "test get All TagGroups owned by given user groups with no owning tag group"() {
 		// userGroup1 doesn't have any owned tag group.
-		List tagGroupList = TagGroup.getTagGroupsForUserGroups([userGroup1])
+		List tagGroupList = TagGroup.getTagGroupsInfoForUserGroups([userGroup1])
 		
 		assert tagGroupList.size() == 0
 	}
@@ -215,7 +242,7 @@ class TagGroupTests extends CuriousTestCase {
 	@Test
 	void "test get All TagGroups owned by given user groups"() {
 		// userGroup1 doesn't have any owned tag group.
-		List tagGroupList = TagGroup.getTagGroupsForUserGroups([curious, announce])
+		List tagGroupList = TagGroup.getTagGroupsInfoForUserGroups([curious, announce])
 		
 		assert tagGroupList.size() == 2
 		def tagGroupIds = [ tagGroupC.id, tagGroupD.id ]
@@ -231,17 +258,17 @@ class TagGroupTests extends CuriousTestCase {
 	@Test
 	void "test get all TagGroups owned by the user with no owning tag groups"() {
 		// user is not owner of any tag groups
-		List tagGroupList = TagGroup.getTagGroupsByUser(anon.id)
+		List tagGroupList = TagGroup.getTagGroupsInfoByUser(anon.id)
 		
 		assert tagGroupList.size() == 0
 		
 		// user is admin of a UserGroup but not directly own any tag group
-		tagGroupList = TagGroup.getTagGroupsByUser(admin.id)
+		tagGroupList = TagGroup.getTagGroupsInfoByUser(admin.id)
 	}
 	
 	@Test
 	void "test get all TagGroups owned by the user"() {
-		List tagGroupList = TagGroup.getTagGroupsByUser(user2.id)
+		List tagGroupList = TagGroup.getTagGroupsInfoByUser(user2.id)
 		
 		assert tagGroupList.size() == 2
 		def tagGroupIds = [ tagGroupA.id, tagGroupB.id ]
@@ -272,30 +299,6 @@ class TagGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void "test get system tag groups"() {
-		TagGroup systemTagGroup1 = TagGroup.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
-		TagGroup systemTagGroup2 = TagGroup.createOrLookupTagGroup("System Tag Group 2", null, systemGroup.id)
-		
-		List systemTagGroups = TagGroup.getSystemTagGroups()
-		
-		assert systemTagGroups.size() == 2
-		def tagGroupIds = [ systemTagGroup1.id, systemTagGroup2.id ]
-		assert systemTagGroups[0].id.longValue() in tagGroupIds
-		assert systemTagGroups[1].id.longValue() in tagGroupIds
-		assert systemTagGroups[0].id != systemTagGroups[1].id
-	}
-	
-	@Test
-	void "test the existence of generic property on same name tag groups"() {
-		TagGroup systemTagGroup1 = TagGroup.createOrLookupTagGroup("Tag Group 1", null, systemGroup.id)
-		TagGroup systemTagGroup2 = TagGroup.createOrLookupTagGroup("Tag Group 3", null, systemGroup.id)
-		
-		List allTagGroups = TagGroup.getAllTagGroupsForUser(schmoe.id)
-		assert allTagGroups.size() == 2
-		assert allTagGroups.find { it.description == "Tag Group 3" }.isSystemGroup == true
-	}
-	
-	@Test
 	void "test exclusion list data"() {
 		Tag tag = Tag.look("Tag Test 1")
 		TagGroup systemTagGroup1 = TagGroup.createOrLookupTagGroup("System Tag Group 1", null, systemGroup.id)
@@ -314,4 +317,5 @@ class TagGroupTests extends CuriousTestCase {
 		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG.toString() }.objectId == tag.id
 		assert tagGroupData["excludes"].find { it.type == ExclusionType.TAG_GROUP.toString() }.objectId == tagGroupA.id
 	}
+/**/
 }
