@@ -13,6 +13,7 @@ import org.scribe.model.Token
 import org.scribe.model.Verifier
 import org.scribe.oauth.OAuth20ServiceImpl
 import us.wearecurio.thirdparty.oura.OuraApi
+import us.wearecurio.thirdparty.ttandme.Twenty3AndMeApi
 
 /**
  * By default scribe library sends parameter as query string. But some API's
@@ -38,6 +39,14 @@ class PayloadTypeOAuth20ServiceImpl extends OAuth20ServiceImpl {
 		Map queryParams = [:]
 
 		queryParams.put(OAuthConstants.CLIENT_ID, config.getApiKey())
+
+		if (api instanceof Twenty3AndMeApi) {
+			/*
+			 * The API is rejecting the request if User-Agent is missing
+			 * http://meta.stackexchange.com/questions/261741/cloudflare-error-1010-banned-access-based-on-your-browsers-signature
+			 */
+			request.addHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/47.0.2526.80 Safari/537.36")
+		}
 
 		// TODO: authentication is not working when client secret is passed for Oura. Need to fix that
 		if (!(api instanceof OuraApi)) {
