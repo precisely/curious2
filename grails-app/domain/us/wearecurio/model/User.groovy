@@ -836,7 +836,10 @@ class User {
 						[id: userId])
 	}
 
-	static List getAdminDiscussionIds(Long userId) {
+/* Deprecated - this method could result in large result set over time, and also doesn't represent editable
+ * logic correctly a la UserGroup.canAdminDiscussion()
+ 
+ 	static List getAdminDiscussionIds(Long userId) {
 		if (userId == null) { return null }
 
 		return User.executeQuery(
@@ -850,7 +853,7 @@ class User {
                 item.groupId = userGroup.id AND
 				dis.groupId = item.groupId""",
 						[id: userId])
-	}
+	}*/
 
 	List getAdminGroupIds() {
 		return getAdminGroupIds(id)

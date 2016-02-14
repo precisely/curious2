@@ -79,10 +79,10 @@ class SearchService {
     }
 	
 	// user is the user viewing this search hit
-	private Map toJSON(def hit, List adminDiscussionIds, User user) {
+	private Map toJSON(def hit, User user) {
 		switch (hit.type) {
 			case "discussion":
-                return toJSON(hit.id, hit.source, adminDiscussionIds, false, hit.score, user.id)
+                return toJSON(hit.id, hit.source, false, hit.score, user.id)
 			case "sprint":
 				return [
 					type: "spr",
@@ -123,7 +123,7 @@ class SearchService {
 		return [:]
 	}
 
-	private Map toJSON(def id, def discussion, List adminDiscussionIds, boolean isNew, Float score = 0, Long userId) {
+	private Map toJSON(def id, def discussion, boolean isNew, Float score = 0, Long userId) {
         return [
             type: "dis",
             id: id.toLong(),
@@ -138,7 +138,7 @@ class SearchService {
             totalComments: discussion.postCount,
             isPlot: discussion.isFirstPostPlot,
             firstPost: discussion.firstPostId,
-            isAdmin: adminDiscussionIds.contains(id.toLong()),
+            isAdmin: UserGroup.canAdminDiscussionId(userId, id.toLong(), discussion.userId),
             groupId: null,
             groupName: null,
             score: score,
@@ -269,8 +269,6 @@ class SearchService {
 		def result = [listItems: [], success: true]
 		def query = getActivityQuery(type, user)
 		if (query != null && query != "") {
-			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
-			
 			elasticSearchHelper.withElasticSearch{ client ->
 				//FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(Utils.orifyList(queries)))
 				FunctionScoreQueryBuilder fsqb = functionScoreQuery(constantScoreQuery(queryString(query)))
@@ -329,7 +327,7 @@ class SearchService {
 
 				if (sr.hits.hits.size() > 0) {
 					for ( def hit : sr.hits.hits ) {
-						result.listItems << toJSON(hit, adminDiscussionIds, user)
+						result.listItems << toJSON(hit, user)
 					}
 				}
 			}
@@ -394,7 +392,6 @@ class SearchService {
 			fullQuery = "(${Utils.orifyList(queries)}) AND NOT ($activityQuery)"
 		}
 		
-		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 		def result = [listItems: [], success: true]
 		elasticSearchHelper.withElasticSearch{ client ->
 			FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(fullQuery))
@@ -427,7 +424,7 @@ class SearchService {
 
 			if (sr.hits.hits.size() > 0) {
 				for ( def hit : sr.hits.hits ) {
-					result.listItems << toJSON(hit, adminDiscussionIds, user)
+					result.listItems << toJSON(hit, user)
 				}
 			}
 		}
@@ -450,8 +447,6 @@ class SearchService {
 			query = "_type:sprint AND ((NOT _exists_:deleted) OR deleted:false) AND userId:${user.id} AND _exists_:description"
 		}
 		
-		def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
-		
 		def result = [listItems: [], success: true]
 		elasticSearchHelper.withElasticSearch{ client ->
 			SearchResponse sr = client
@@ -468,7 +463,7 @@ class SearchService {
 
 			if (sr.hits.hits.size() > 0) {
 				for ( def hit : sr.hits.hits ) {
-					result.listItems << toJSON(hit, adminDiscussionIds, user)
+					result.listItems << toJSON(hit, user)
 				}
 			}
 		}
@@ -688,10 +683,9 @@ class SearchService {
 				.execute()
 				.actionGet()
 
-			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			if (sr.hits.hits.size() > 0) {
 				for(def hit : sr.hits.hits) {
-					result.listItems << toJSON(hit, adminDiscussionIds, user)
+					result.listItems << toJSON(hit, user)
 				}
 			}
 		}
@@ -813,10 +807,9 @@ class SearchService {
 				.execute()
 				.actionGet()
 
-			def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
 			if (sr.hits.hits.size() > 0) {
 				for(def hit : sr.hits.hits) {
-					result.listItems << toJSON(hit, adminDiscussionIds, user)
+					result.listItems << toJSON(hit, user)
 				}
 			}
 		}
@@ -909,7 +902,6 @@ class SearchService {
         }
 
 		def ret = [listItems: [], success: true]
-        def adminDiscussionIds = User.getAdminDiscussionIds(user.id)
         
         results.searchResults.each {
             boolean isNew = true
@@ -921,7 +913,7 @@ class SearchService {
                 isNew = (it.recentPostCreated >= lastCheckedDate)
             }
             
-            ret.listItems << toJSON(it.id, it, adminDiscussionIds, isNew, 0, user.id)
+            ret.listItems << toJSON(it.id, it, isNew, 0, user.id)
         }
         
         return ret

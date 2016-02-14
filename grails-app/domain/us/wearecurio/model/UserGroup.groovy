@@ -218,6 +218,11 @@ class UserGroup {
 						['id':discussion.getId()])
 	}
 
+	public static def getGroupsForDiscussionId(long discussionId) {
+		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id",
+						['id':discussionId])
+	}
+
 	public static def getPrimaryGroupForDiscussionId(Long discussionId) {
 		return UserGroup.executeQuery("select userGroup as userGroup from UserGroup userGroup, GroupMemberDiscussion item where item.memberId = :id and item.groupId = userGroup.id order by userGroup.created asc",
 						['id':discussionId], [max:1])
@@ -304,14 +309,19 @@ class UserGroup {
 			return false
 		if (!discussion)
 			return false
-		if (discussion.getUserId() == user.getId())
+		
+		return canAdminDiscussionId(user.id, discussion.id, discussion.userId)
+	}
+
+	static boolean canAdminDiscussionId(long userId, long discussionId, long discussionUserId) {
+		if (discussionUserId == userId)
 			return true
-		def groups = getGroupsForDiscussion(discussion)
+		def groups = getGroupsForDiscussionId(discussionId)
 		for (UserGroup group in groups) {
-			if (group.hasAdmin(user))
+			if (group.hasAdmin(userId))
 				return true
 		}
-		if (User.isSystemAdmin(user.id))
+		if (User.isSystemAdmin(userId))
 			return true
 
 		return false
