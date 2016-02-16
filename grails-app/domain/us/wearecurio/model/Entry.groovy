@@ -1441,9 +1441,9 @@ class Entry implements Comparable {
 
 		if (this.repeatType.isContinuous()) {
 			// search for matching continuous tag
-			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and tag.description = :desc and (entry.repeat_type_id & :continuousBit <> 0)"
+			String queryStr = "select entry.id from entry entry, tag tag where entry.id != :entryId and entry.tag_id = tag.id and entry.user_id = :userId and entry.amount = :amount and entry.comment = :comment and tag.description = :desc and (entry.repeat_type_id & :continuousBit <> 0)"
 
-			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
+			def entries = DatabaseService.get().sqlRows(queryStr, [entryId:this.id, desc:this.tag.description, amount:this.amount, comment:this.comment, userId:this.userId, continuousBit:RepeatType.CONTINUOUS_BIT])
 
 			for (def v in entries) {
 				if (v != null) {
