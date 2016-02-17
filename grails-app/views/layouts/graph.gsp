@@ -127,7 +127,7 @@ function doLogout() {
 							<li class="filter"><a href="#" onclick="plot.clearGraphs()">New</a></li>
 							<li class="filter"><a href="#" onclick="plot.save()">Save</a></li>
 							<li class="filter"><g:link action="load">Load</g:link></li>
-							<li class="filter"><a href="#" onclick="plot.saveSnapshot()">Publish</a></li>
+							<li class="filter"><a href="#" onclick="loadGroupsToPublish()">Publish</a></li>
 						</ul>
 				</ul>
 			</nav>
@@ -190,7 +190,7 @@ function doLogout() {
 	</script>
 	
 <g:layoutBody/>
-
+<g:render template="/templates/chart/publishGroupModal"/>
 </body>
 </html>
 </g:applyLayout>

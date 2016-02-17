@@ -234,7 +234,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		return plotDataStr;
 	}
-	this.saveSnapshot = function() {
+	this.saveSnapshot = function(group) {
 		var first = true;
 		var plotDataStr = this.storeSnapshot();
 		if (plotDataStr == null) {
@@ -243,7 +243,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		var plot = this;
 
-		this.queuePostJSON("sharing graph", this.makePostUrl("saveSnapshotData"), { name: this.getName() + ' (snapshot)', snapshotData: plotDataStr },
+		this.queuePostJSON("sharing graph", this.makePostUrl("saveSnapshotData"), {name: this.getName() + ' (snapshot)', snapshotData: plotDataStr, group: group},
 				function(data) {
 					if (this.checkData(data, '', "Error while saving snapshot")) {
 						if (data.success) {
@@ -254,6 +254,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 					}
 				});
 	}
+
 	this.load = function(plotData) {
 		$(document).trigger(beforeLinePlotEvent);
 		var version = plotData.version;
@@ -2025,3 +2026,14 @@ function PlotLine(p) {
 	if (this.entries)
 		this.parseEntries();
 }
+function loadGroupsToPublish() {
+	queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
+		if (checkData(data)) {
+			if (data.success) {
+				var modalHtml = _.template($('#publish-to-groups').html(), {groups: data.groups});
+				$('#publish-to-groups').html(modalHtml);
+				$('#publish-to-groups').modal("show");
+			}
+		}
+	});
+};

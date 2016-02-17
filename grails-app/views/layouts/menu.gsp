@@ -10,7 +10,7 @@
 <script type="text/javascript" src="/js/curious/interestTagList.js?ver=22"></script>
 <script type="text/javascript" src="/js/jquery/jquery.infinite.scroll.js"></script>
 <c:jsCSRFToken keys="createHelpEntriesDataCSRF, saveSurveyDataCSRF, getPeopleDataCSRF, hideHelpDataCSRF, 
-		getInterestTagsDataCSRF"/>
+		getGroupsList, getInterestTagsDataCSRF"/>
 </head>
 <body class="${pageProperty(name: 'body.class') ?: '' }">
 <content tag="menu">
