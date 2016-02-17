@@ -568,3 +568,8 @@ PlotLine.prototype.appendHTML = function() {
 		drop:function(event, ui) { plotLine.handleDropTag(event, ui); }
 	});
 }
+
+function publishChart() {
+	var groupName = $('input[name="group"]:checked').val();
+	plot.saveSnapshot(groupName);
+}

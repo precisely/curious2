@@ -679,7 +679,7 @@ function createAutocomplete(inputId, autocompleteId) {
 				return;
 
 			if (data.success) {
-				$('#' + inputId).autocomplete('option', 'source', data.usernameList);
+				$('#' + inputId).autocomplete('option', 'source', data.displayName);
 			}
 		}, function(xhr) {
 			console.log('error: ', xhr);
@@ -975,3 +975,4 @@ function followDiscussion(args) {
 		console.log('error: ', error);
 	}, null, httpArgs);
 };
+
