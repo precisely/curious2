@@ -6,12 +6,15 @@ import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
+import us.wearecurio.model.UserGroup
+import us.wearecurio.services.SearchService
 
 class UserController extends LoginController {
 
 	static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
 	FileUploaderService fileUploaderService
+	SearchService searchService
 
 	def index() {
 
@@ -205,5 +208,15 @@ class UserController extends LoginController {
 		stats.finish()
 
 		renderJSONGet([success: true])
+	}
+
+	def getGroupsToShare() {
+		debug "UserController.getGroupsToShare()"
+		Map sprintsGroups = searchService.getFollowedSprintsGroup(sessionUser())
+
+		List groups = sprintsGroups["startedSprintsGroupList"]
+		groups += [[name: "public", fullName: "Public"], [name: "private", fullName: "Private"]]
+		groups += sprintsGroups["followedSprintsGroupList"]
+		renderJSONGet([groups: groups, success: true]) 
 	}
 }

@@ -31,6 +31,7 @@ import us.wearecurio.model.TimeZoneId
 import us.wearecurio.model.SurveyQuestion
 import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.SearchService
+import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.SecurityService.AuthenticationStatus
 import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryStats
@@ -1048,13 +1049,18 @@ class DataController extends LoginController {
 		debug "Saving " + params.snapshotData
 
 		UserGroup group = null
+		Visibility visibility = Visibility.PUBLIC
 		
 		if (params.group) {
-			group = Discussion.loadGroup(params.group, user)
-	
-			if (!group) {
-				renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
-				return
+			if (params.group == "private") {
+				visibility = Visibility.PRIVATE
+			} else if (params.group != "public"){
+				group = Discussion.loadGroup(params.group, user)
+
+				if (!group) {
+					renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
+					return
+				}
 			}
 		}
 
@@ -1063,7 +1069,7 @@ class DataController extends LoginController {
 		Utils.save(plotDataObj, true)
 
 		String name = plotDataObj.getName()
-		Discussion discussion = Discussion.create(user, name)
+		Discussion discussion = Discussion.create(user, name, visibility)
 
 		if (discussion) {
 			if (group) {
@@ -1326,12 +1332,14 @@ class DataController extends LoginController {
 			List searchResults = User.withCriteria {
 				projections{
 					property("username")
+					property("name")
 					property("id")
+					property("settings")
 				}
 				and {
 					or {
 						ilike("username", "%${params.searchString}%")
-						ilike("email", "%${params.searchString}%")
+						ilike("name", "%${params.searchString}%")
 					}
 					or {
 						eq("virtual", false)
@@ -1340,7 +1348,15 @@ class DataController extends LoginController {
 				}
 				maxResults(params.max)
 			}
-			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(1)}])
+			
+			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(2)}, 
+					displayName: searchResults.collect{
+						if (it.getAt(3).isNamePublic()) {
+							[label: it.getAt(1) + "(" + it.getAt(0) + ")", value: it.getAt(0)]
+						} else {
+							[label: it.getAt(0), value: it.getAt(0)]
+						}
+					}])
 		} else {
 			renderJSONGet([success: false])
 		}

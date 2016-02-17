@@ -694,6 +694,30 @@ class SearchService {
 		return result
 	}	
 	
+	Map getFollowedSprintsGroup(User user) {
+		def readerGroups = UserGroup.getGroupsForReader(user.id)
+		def followedSprints = Sprint.search(searchType:'query_and_fetch') {
+			query_string(query:  "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
+		}
+
+		List startedSprints = followedSprints.searchResults.findAll {
+			it.hasStarted(user.id, new Date())
+		}
+		followedSprints.searchResults.removeAll(startedSprints as Object[])
+		startedSprints = startedSprints.sort{it.hasStarted(user.id, new Date())}
+		def followedSprintsGroupList = followedSprints.searchResults.collect {
+			UserGroup group = UserGroup.get(it.virtualGroupId)
+			[name: group?.name, fullName: group?.fullName]
+		}
+
+		def startedSprintGroupList = startedSprints.collect {
+			UserGroup group = UserGroup.get(it.virtualGroupId)
+			[name: group?.name, fullName: group?.fullName]
+		}
+
+		return [startedSprintsGroupList: startedSprintGroupList, followedSprintsGroupList: followedSprintsGroupList]
+	}
+
 	Map search(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {
 		log.debug "SearchService.search called with user: $user; query: $query; offset: $offset; max: $max; type: $type"
 		

@@ -96,7 +96,7 @@ function sprintShow(hash) {
 				}
 				sprintInstance.entries = entries;
 				sprintInstance.participants = data.participants;
-				sprintInstance.lines = sprintInstance.description.split("\n");
+				sprintInstance.lines = sprintInstance.description ? sprintInstance.description.split("\n") : [];
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
 				$('.new-post').toggle(!sprintInstance.disableComments);
