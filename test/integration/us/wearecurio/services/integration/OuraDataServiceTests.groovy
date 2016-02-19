@@ -194,6 +194,40 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
+	void "Test getDataExercise when entries get merged due to contiguous entries (not at the starting)"() {
+		String mockedResponseData = new File("./test/integration/test-files/oura/exercise-contiguous-1.json").text
+		ouraDataService.oauthService = [
+				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+					return new Response(new MockedHttpURLConnection(mockedResponseData))
+				}
+		]
+
+		ouraDataService.getDataExercise(account, new Date(), false)
+		// 6 entries should be created as pair of 2-2 entries will be merged into 1
+		assert Entry.getCount() == 6
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].amount == 0.333333333		// Minutes converted to hours
+		assert entryList[0].timeZoneId == TimeZoneId.look("America/New_York").id
+
+		assert entryList[1].amount == 0.166666667
+		assert entryList[1].description == "light exercise [duration]"
+
+		assert entryList[2].amount == 1.666666667
+		assert entryList[2].description == "sedentary exercise [duration]"
+
+		assert entryList[3].amount == 0.333333333
+		assert entryList[3].description == "light exercise [duration]"
+
+		assert entryList[4].amount == 0.833333333
+		assert entryList[4].description == "sedentary exercise [duration]"
+
+		assert entryList[5].amount == 0.083333333
+		assert entryList[5].description == "light exercise [duration]"
+	}
+
+	@Test
 	void "Test getDataExercise when contiguous entries do not get merged because of large gap between them"() {
 		String mockedResponseData = """{data: [
 					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
