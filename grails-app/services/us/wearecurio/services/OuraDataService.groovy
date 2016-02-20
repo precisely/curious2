@@ -1,5 +1,6 @@
 package us.wearecurio.services
 import grails.converters.JSON
+import groovyx.net.http.URIBuilder
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.transaction.annotation.Transactional
@@ -50,8 +51,10 @@ class OuraDataService extends DataService {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
 		Date notificationDate = simpleDateFormat.parse(notification.date)
 
-		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type, date: notificationDate, ownerId: notification.userId, subscriptionId: "",
+		ThirdPartyNotification thirdPartyNotification = new ThirdPartyNotification([collectionType: notification.type,
+				date: notificationDate, ownerId: notification.userId, subscriptionId: "",
 				ownerType: "user", typeId: ThirdParty.OURA])
+
 		if (Utils.save(thirdPartyNotification)) {
 			return [thirdPartyNotification]
 		}
@@ -59,33 +62,23 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataSleep(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		log.debug "getDataSleep(): account ${account.id} forDay: $forDay refreshAll: $refreshAll"
-
-		String requestUrl = "/api/sleep"
-
-		getDataSleep(account, refreshAll, requestUrl, forDay, 1)
+		getDataSleep(account, refreshAll, getRequestURL("sleep", forDay), forDay, 1)
 	}
 
 	// Overloaded method to support pagination
 	void getDataSleep(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
+		log.debug "Import sleep data for user id $account.userId for day $startDate"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		Long startTime = startDate.getTime()
-		Long endTime = DateUtils.getEndOfTheDay(startDate)
-
-		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "sleep", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
-
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray sleepData = apiResponse["data"]
 
 		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
 		String setName = SET_NAME + "s" + startDate + "-" + pageNumber
-		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+		unsetOldEntries(userId, setName)
 
 		sleepData.each { sleepEntry ->
 			Date entryDate = convertTimeToDate(sleepEntry)
@@ -111,27 +104,22 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataExercise(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataExercise(account, refreshAll, "/api/exercise", forDay, 1)
+		getDataExercise(account, refreshAll, getRequestURL("exercise", forDay), forDay, 1)
 	}
 
 	Map getDataExercise(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
+		log.debug "Import extercise data for user id $account.userId for day $startDate"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		Long startTime = startDate.getTime()
-		Long endTime = DateUtils.getEndOfTheDay(startDate)
-
-		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "exercise", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray exerciseData = apiResponse["data"]
 
 		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
 		String setName = SET_NAME + "e" + startDate + "-" + pageNumber
-		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+		unsetOldEntries(userId, setName)
 
 		JSONObject previousEntry = null
 
@@ -203,29 +191,22 @@ class OuraDataService extends DataService {
 	}
 
 	void getDataActivity(OAuthAccount account, Date forDay, boolean refreshAll) throws InvalidAccessTokenException {
-		getDataActivity(account, refreshAll, "/api/activity", forDay, 1)
+		getDataActivity(account, refreshAll, getRequestURL("activity", forDay), forDay, 1)
 	}
 
 	void getDataActivity(OAuthAccount account, boolean refreshAll, String requestURL, Date startDate, int pageNumber) throws InvalidAccessTokenException {
+		log.debug "Import activity data for user id $account.userId for day $startDate"
 		Long userId = account.userId
 
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 
-		Long startTime = startDate.getTime()
-
-		Long endTime = DateUtils.getEndOfTheDay(startDate)
-
-		// Dividing by 1000 to convert time into seconds, oura cloud stores data times in seconds
-		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL, "get",
-				[dataType: "activity", startTimestamp: Long.toString((long)(startTime/1000)), endTimestamp: Long.toString((long)(endTime/1000))])
-
+		JSONObject apiResponse = getResponse(account.tokenInstance, BASE_URL + requestURL)
 		JSONArray activityData = apiResponse["data"]
 
 		// pageNumber is only being used for changing the setName so that previous entries for the same date do not get deleted because of the pagination
 		String setName = SET_NAME + "ac" + startDate + "-" + pageNumber
-		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
+		unsetOldEntries(userId, setName)
 
 		activityData.each { activityEntry ->
 			Date entryDate = convertTimeToDate(activityEntry)
@@ -248,6 +229,30 @@ class OuraDataService extends DataService {
 			log.debug "Processing get activity data for paginated URL"
 			getDataActivity(account, refreshAll, apiResponse["links"]["nextPageURL"].toString(), startDate, ++pageNumber)
 		}
+	}
+
+	/**
+	 * Construct request URL with query string for API call for the given date.
+	 * @param dataType One of "sleep", "activity", "exercise"
+	 * @param startDate Date for which Ouracloud data needs to be pulled
+	 */
+	String getRequestURL(String dataType, Date startDate) {
+		Long startTime = startDate.getTime()
+		Long endTime = DateUtils.getEndOfTheDay(startDate)
+
+		URIBuilder builder = new URIBuilder("/api/$dataType")
+		builder.addQueryParam("max", 1000)
+		builder.addQueryParam("offset", 0)
+		// Ouracloud API accepts the timestamp in EPOCH time (i.e. in seconds)
+		builder.addQueryParam("startTimestamp", Long.toString((long)(startTime / 1000)))
+		builder.addQueryParam("endTimestamp", Long.toString((long)(endTime / 1000)))
+
+		return builder.toString()
+	}
+
+	void unsetOldEntries(Long userId, String setName) {
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 	}
 
 	Integer getTimeZoneId(OAuthAccount account, Map rawEntry) {
