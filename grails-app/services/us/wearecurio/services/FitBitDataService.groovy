@@ -23,6 +23,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.fitbit.FitBitTagUnitMap
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
 
 
@@ -32,7 +33,8 @@ class FitBitDataService extends DataService {
 	static final String BASE_URL = "https://api.fitbit.com/$API_VERSION/user%s"
 	static final String COMMENT = "(FitBit)"
 	static final String SET_NAME = "fitbit import"
-
+	static final String SOURCE_NAME = "FitBit Data"
+	
 	static transactional = true
 
 	FitBitTagUnitMap fitBitTagUnitMap = new FitBitTagUnitMap()
@@ -43,6 +45,7 @@ class FitBitDataService extends DataService {
 		provider = "FitBit"
 		typeId = ThirdParty.FITBIT
 		profileURL = String.format(BASE_URL, "/-/profile.json")
+		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	@Transactional

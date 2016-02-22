@@ -43,6 +43,17 @@ abstract class TagUnitMap {
 
 	static Map commonTagMap = [:]
 	static Map<String, TagUnitMap> theMaps = Collections.synchronizedMap([:])
+	static Map<String, String> theSourceSetIdentifiers = Collections.synchronizedMap([:]) // map from device set identifier to device group name in UI
+	
+	static void addSourceSetIdentifier(String setIdentifier, String deviceGroupName) {
+		theSourceSetIdentifiers.put(setIdentifier, deviceGroupName)
+	}
+	
+	static String setIdentifierToSource(String setIdentifier) {
+		if (setIdentifier == null) return null
+		
+		return theSourceSetIdentifiers.get(setIdentifier)
+	}
 
 	private static def log = LogFactory.getLog(this)
 	

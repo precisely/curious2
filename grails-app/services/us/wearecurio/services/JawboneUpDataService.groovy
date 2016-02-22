@@ -22,6 +22,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.jawbone.JawboneUpTagUnitMap
+import us.wearecurio.thirdparty.TagUnitMap
 
 class JawboneUpDataService extends DataService {
 
@@ -29,7 +30,8 @@ class JawboneUpDataService extends DataService {
 	static final String COMMON_BASE_URL = "/nudge/api%s"
 	static final String COMMENT = "(Jawbone Up)"
 	static final String SET_NAME = "JUP"
-
+	static final String SOURCE_NAME = "Jawbone Up Data"
+	
 	/**
 	 * Helper constant to represent an high activity data means the hourly data which has
 	 * active_time greater than 300.
@@ -60,6 +62,7 @@ class JawboneUpDataService extends DataService {
 		provider = "Jawboneup"
 		typeId = ThirdParty.JAWBONE
 		profileURL = String.format(BASE_URL + COMMON_BASE_URL, "/users/@me")
+		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	@Override

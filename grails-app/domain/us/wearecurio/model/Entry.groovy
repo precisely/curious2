@@ -25,6 +25,7 @@ import us.wearecurio.data.UnitGroupMap.UnitGroup
 import us.wearecurio.data.UnitRatio
 import us.wearecurio.data.DataRetriever
 import us.wearecurio.datetime.IncrementingDateTime
+import us.wearecurio.thirdparty.TagUnitMap
 
 import java.util.ArrayList
 import java.util.Date
@@ -556,6 +557,10 @@ class Entry implements Comparable {
 
 		def amounts = m['amounts']
 		Date date = m['date']
+
+		if (((String)m['setName'])?.length() > MAXSETNAMELENGTH) {
+			m['setName'] = ((String)m['setName']).substring(0, MAXSETNAMELENGTH)
+		}
 
 		// intercept duration creation --- if creating duration end, search for previous duration start
 		DurationType durationType = m['durationType']
@@ -1790,7 +1795,9 @@ class Entry implements Comparable {
 				} else
 					continue
 			}
-			desc['setName'] = entry.setIdentifier?.toString()
+			String setName = entry.setIdentifier?.toString()
+			desc['setName'] = setName
+			desc['sourceName'] = entry.sourceName
 			timedResults.add(desc)
 		}
 
@@ -1814,7 +1821,9 @@ class Entry implements Comparable {
 
 			desc['timeZoneName'] = timeZoneName
 			desc['repeatType'] = null
-			desc['setName'] = entry.setIdentifier?.toString()
+			String setName = entry.setIdentifier?.toString()
+			desc['setName'] = setName
+			desc['sourceName'] = entry.sourceName
 			timedResults.add(desc)
 		}
 
@@ -1889,6 +1898,11 @@ class Entry implements Comparable {
 		}
 
 		return results
+	}
+	
+	String getSourceName() {
+		String setName = this.setIdentifier?.toString()
+		return setName == null ? null : TagUnitMap.setIdentifierToSource(setName)
 	}
 
 	/**

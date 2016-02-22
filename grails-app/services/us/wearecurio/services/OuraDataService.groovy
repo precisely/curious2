@@ -17,6 +17,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.oura.OuraApi
 import us.wearecurio.thirdparty.oura.OuraTagUnitMap
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
 
 import java.text.SimpleDateFormat
@@ -25,6 +26,7 @@ class OuraDataService extends DataService {
 
 	static final String BASE_URL = OuraApi.BASE_URL
 	static final String SET_NAME = "OURA"
+	static final String SOURCE_NAME = "Oura Data"
 	static final String COMMENT = "(Oura)"
 	OuraTagUnitMap tagUnitMap = new OuraTagUnitMap()
 
@@ -32,6 +34,7 @@ class OuraDataService extends DataService {
 		provider = "Oura"
 		typeId = ThirdParty.OURA
 		profileURL = BASE_URL + "/api/userProfile/me"
+		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	@Override

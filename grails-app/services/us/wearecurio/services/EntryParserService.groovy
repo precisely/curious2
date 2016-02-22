@@ -25,7 +25,6 @@ import static us.wearecurio.model.Entry.DEFAULT_DATEPRECISION_SECS
 import static us.wearecurio.model.Entry.VAGUE_DATE_PRECISION_SECS
 import static us.wearecurio.model.Entry.MAXUNITSLENGTH
 import static us.wearecurio.model.Entry.MAXCOMMENTLENGTH
-import static us.wearecurio.model.Entry.MAXSETNAMELENGTH
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType
@@ -855,11 +854,7 @@ class EntryParserService {
 		}
 		
 		context.retVal['comment'] = comment
-
-		if (((String)context.retVal['setName'])?.length() > MAXSETNAMELENGTH) {
-			context.retVal['setName'] = ((String)context.retVal['setName']).substring(0, MAXSETNAMELENGTH)
-		}
-
+		
 		log.debug("retVal: parse " + context.retVal)
 
 		if (context.retVal['repeatType'] != null) {

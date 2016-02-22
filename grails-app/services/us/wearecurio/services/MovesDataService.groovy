@@ -23,6 +23,7 @@ import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.moves.MovesTagUnitMap
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
 
 class MovesDataService extends DataService {
@@ -32,13 +33,15 @@ class MovesDataService extends DataService {
 	static final String BASE_URL = "https://api.moves-app.com/api/1.1%s"
 	static final String COMMENT = "(Moves)"
 	static final String SET_NAME = "moves import"
-
+	static final String SOURCE_NAME = "Moves Data"
+	
 	MovesTagUnitMap tagUnitMap = new MovesTagUnitMap()
 
 	MovesDataService() {
 		provider = "Moves"
 		typeId = ThirdParty.MOVES
 		profileURL = String.format(BASE_URL, "/user/profile")
+		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	@Override

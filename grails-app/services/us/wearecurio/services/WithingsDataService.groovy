@@ -18,6 +18,7 @@ import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.thirdparty.TooManyRequestsException
 import us.wearecurio.thirdparty.withings.WithingsTagUnitMap
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
 import java.util.concurrent.PriorityBlockingQueue
 
@@ -26,6 +27,7 @@ class WithingsDataService extends DataService {
 	static final String BASE_URL = "http://wbsapi.withings.net"
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "WI"
+	static final String SOURCE_NAME = "Withings Data"
 	static Date intraDayOverQueryRateTimestamp = null
 	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
 	static transactional = false
@@ -33,6 +35,7 @@ class WithingsDataService extends DataService {
 	WithingsDataService() {
 		provider = "Withings"
 		typeId = ThirdParty.WITHINGS
+		TagUnitMap.addSourceSetIdentifier(SET_NAME, SOURCE_NAME)
 	}
 
 	WithingsTagUnitMap tagUnitMap = new WithingsTagUnitMap()

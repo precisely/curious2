@@ -34,6 +34,8 @@ import us.wearecurio.utility.Utils
 import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.IntegrationTestMixin
 
+import us.wearecurio.services.FitBitDataService
+
 @TestMixin(IntegrationTestMixin)
 class EntryTests extends CuriousTestCase {
 	static transactional = true
@@ -147,6 +149,23 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testSourceIdentifier() {
+		EntryStats stats = new EntryStats()
+		
+		def parsed = entryParserService.parse(currentTime, timeZone, "run 5 miles 2pm", null, null, baseDate, true)
+		
+		parsed['setName'] = FitBitDataService.SET_NAME
+		
+		Entry entry = Entry.create(userId, parsed, stats)
+		
+		assert entry.sourceName == FitBitDataService.SOURCE_NAME
+		
+		testEntries(user, timeZone, baseDate, currentTime) {
+			assert it['setName'] == FitBitDataService.SET_NAME
+		}
+	}
+	
+/*	@Test
 	void testActivateBookmark() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread bookmark", null, null, baseDate, true), new EntryStats())
 
