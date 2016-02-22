@@ -93,7 +93,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	@Test
 	void "Test GetDataSleep with failure status code"() {
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -112,12 +112,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 3,
 				type: "sleep", eventTime: 1424440700, data: {bedtime_m: 430, sleep_score: 76, awake_m: 42, rem_m: 68, light_m: 320, deep_m: 260}}]}"""
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
 
-		Map result = ouraDataService.getDataSleep(account, new Date(), false)
+		ouraDataService.getDataSleep(account, new Date(), false)
 		assert Entry.getCount() == 12
 
 		List<Entry> entryList = Entry.getAll()
@@ -129,7 +129,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	@Test
 	void "Test getDataExercise with failure status code"() {
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -148,12 +148,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Asia/Kolkata", user: 1,
 				type: "exercise", eventTime: 1424440700, data: {duration_m: 20, classification: "light"}}]}"""
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]
 
-		Map result = ouraDataService.getDataExercise(account, new Date(), false)
+		ouraDataService.getDataExercise(account, new Date(), false)
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
@@ -174,7 +174,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 						type: "exercise", eventTime: 1434442200, data: {duration_m: 20, classification: "light"}}
 				]}"""
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
@@ -194,6 +194,40 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	}
 
 	@Test
+	void "Test getDataExercise when entries get merged due to contiguous entries (not at the starting)"() {
+		String mockedResponseData = new File("./test/integration/test-files/oura/exercise-contiguous-1.json").text
+		ouraDataService.oauthService = [
+				getOuraResource: { token, url, p, header ->
+					return new Response(new MockedHttpURLConnection(mockedResponseData))
+				}
+		]
+
+		ouraDataService.getDataExercise(account, new Date(), false)
+		// 6 entries should be created as pair of 2-2 entries will be merged into 1
+		assert Entry.getCount() == 6
+
+		List<Entry> entryList = Entry.getAll()
+		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].amount == 0.333333333		// Minutes converted to hours
+		assert entryList[0].timeZoneId == TimeZoneId.look("America/New_York").id
+
+		assert entryList[1].amount == 0.166666667
+		assert entryList[1].description == "light exercise [duration]"
+
+		assert entryList[2].amount == 1.666666667
+		assert entryList[2].description == "sedentary exercise [duration]"
+
+		assert entryList[3].amount == 0.333333333
+		assert entryList[3].description == "light exercise [duration]"
+
+		assert entryList[4].amount == 0.833333333
+		assert entryList[4].description == "sedentary exercise [duration]"
+
+		assert entryList[5].amount == 0.083333333
+		assert entryList[5].description == "light exercise [duration]"
+	}
+
+	@Test
 	void "Test getDataExercise when contiguous entries do not get merged because of large gap between them"() {
 		String mockedResponseData = """{data: [
 					{dateCreated: "2015-11-04T12:42:45.168Z", timeZone: "Europe/Stockholm", user: 1,
@@ -204,7 +238,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 						type: "exercise", eventTime: 1434470700, data: {duration_m: 20, classification: "light"}}
 				]}"""
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					// TODO Extend MockedHttpURLConnection to MockedHttpURLConnectionResponse to read directly from a file
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
@@ -235,13 +269,13 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		String mockedResponseData = """{data: [{dateCreated: "2015-11-04T12:42:45.168Z", type: "activity",
 				eventTime: 1434440700, data: {non_wear_m: 481, steps: 9800, eq_meters: 1478, active_cal: 204, total_cal: 2162}}]}"""
 		ouraDataService.oauthService = [
-			getOuraResourceWithQuerystringParams: { token, url, p, header ->
+			getOuraResource: { token, url, p, header ->
 				return new Response(new MockedHttpURLConnection(mockedResponseData))
 			}
 		]
 
 		try {
-			Map result = ouraDataService.getDataExercise(account, new Date(), false)
+			ouraDataService.getDataExercise(account, new Date(), false)
 		} catch (e) {
 			assert e instanceof NumberFormatException
 		}
@@ -250,7 +284,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 	@Test
 	void "Test getDataActivity with failure status code"() {
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection("{}", 401))
 				}
 		]
@@ -270,7 +304,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 				type: "activity", eventTime: 1424440700, data: {non_wear_m: 441, steps: 10000, eq_meters: 1778, active_cal: 254, total_cal: 2262}}]}"""
 
 		ouraDataService.oauthService = [
-				getOuraResourceWithQuerystringParams: { token, url, p, header ->
+				getOuraResource: { token, url, p, header ->
 					return new Response(new MockedHttpURLConnection(mockedResponseData))
 				}
 		]

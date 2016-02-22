@@ -318,14 +318,17 @@ abstract class DataService {
 		List<ThirdPartyNotification> pendingNotifications = ThirdPartyNotification.createCriteria().list() {
 			eq("status", ThirdPartyNotification.Status.UNPROCESSED)
 			eq("typeId", typeId)
-			order ("date", "asc")
+			order("date", "asc")
 			maxResults(100)
 		}
 
 		log.debug "Found ${pendingNotifications.size()} pending notifications for $provider."
 
 		pendingNotifications.each { notification ->
+			log.debug "Processing $notification"
+
 			OAuthAccount.findAllByTypeIdAndAccountId(typeId, notification.ownerId).each { account ->
+				log.debug "Processing $notification for account id [$account.id]"
 				try {
 					DatabaseService.retry(notification) {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)

@@ -32,6 +32,10 @@ class ThirdPartyNotification {
 			this.id = id
 		}
 	}
+
+	String toString() {
+		return "ThirdPartyNotification{id=$id,type=$typeId,ownerId=$ownerId}"
+	}
 }
 
 /**

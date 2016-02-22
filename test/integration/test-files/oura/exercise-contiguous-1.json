@@ -1,0 +1,120 @@
+{
+    "data": [
+        {
+            "id": 15560,
+            "version": 19,
+            "eventTime": 1447372800,
+            "timeZone": "",
+            "dateCreated": "2015-11-15T17:26:44Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 20,
+                "classification": "sedentary"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 50090,
+            "version": 9,
+            "eventTime": 1447374000,
+            "timeZone": "",
+            "dateCreated": "2016-01-14T00:55:48Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 10,
+                "classification": "light"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 50091,
+            "version": 9,
+            "eventTime": 1447374600,
+            "timeZone": "",
+            "dateCreated": "2016-01-14T00:55:48Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 30,
+                "classification": "sedentary"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 15561,
+            "version": 9,
+            "eventTime": 1447376100,
+            "timeZone": "",
+            "dateCreated": "2015-11-15T17:26:44Z",
+            "lastUpdated": "2015-11-15T17:26:44Z",
+            "data": {
+                "duration_m": 70,
+                "classification": "sedentary"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 50092,
+            "version": 9,
+            "eventTime": 1447376400,
+            "timeZone": "",
+            "dateCreated": "2016-01-14T00:55:48Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 20,
+                "classification": "light"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 50093,
+            "version": 9,
+            "eventTime": 1447377600,
+            "timeZone": "",
+            "dateCreated": "2016-01-14T00:55:48Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 45,
+                "classification": "sedentary"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 15562,
+            "version": 19,
+            "eventTime": 1447378170,
+            "timeZone": "",
+            "dateCreated": "2015-11-15T17:26:44Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 5,
+                "classification": "sedentary"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        },
+        {
+            "id": 50094,
+            "version": 9,
+            "eventTime": 1447380600,
+            "timeZone": "",
+            "dateCreated": "2016-01-14T00:55:48Z",
+            "lastUpdated": "2016-01-14T00:55:49Z",
+            "data": {
+                "duration_m": 5,
+                "classification": "light"
+            },
+            "userID": 9,
+            "type": "EXERCISE"
+        }
+    ],
+    "totalCount": 8,
+    "links": {
+        "nextPageURL": ""
+    }
+}
