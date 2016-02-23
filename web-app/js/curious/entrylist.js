@@ -483,7 +483,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow, nullAmount) {
 		var tagStats = this.autocompleteWidget.tagStatsMap.get(text);
 		if (!tagStats) tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
-		if ((!tagStats) || tagStats.typicallyNoAmount) {
+
+		if ((!tagStats) || tagStats.typicallyNoAmount || (!tagStats.typicallyNoAmount && tagStats.amount)) {
 			if (nullAmount) {
 				this.addEntry(userId, text, defaultToNow, null, null, function() {
 					var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
