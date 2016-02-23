@@ -429,9 +429,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				if (checkData(entries, 'success', "Error deleting entry")) {
 					self.refreshEntries(entries[0]);
 					if (entries[1] != null)
-						self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+						self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3], entries[1][4]);
 					if (entries[2] != null) {
-						self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+						self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3], entries[2][4]);
 					}
 				}
 			});
@@ -457,9 +457,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					self.selectEntry(nextSelection);
 				}
 				if (entries[1] != null)
-					self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3]);
+					self.autocompleteWidget.update(entries[1][0], entries[1][1], entries[1][2], entries[1][3], entries[1][4]);
 				if (entries[2] != null) {
-					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3]);
+					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3], entries[2][4]);
 				}
 			}
 		});
