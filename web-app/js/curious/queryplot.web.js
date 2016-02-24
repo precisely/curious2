@@ -196,7 +196,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 					console.log('plotclick: activating line id: ' + plotLine.id);
 				}
 				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
-					console.log('plotclick: parent of a smoot line with line id: ' + plotLine.id);
+					console.log('plotclick: parent of a smooth line with line id: ' + plotLine.id);
 					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
 							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
 							+ ' (' + item.datapoint[1] + ')');

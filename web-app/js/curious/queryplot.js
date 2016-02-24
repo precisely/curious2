@@ -535,7 +535,9 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			return;
 		}
 		var canonicalWidth = Math.pow(2, Math.floor(Math.log(daysWidth) / this.log2));
-		this.rezeroWidth = (canonicalWidth / 15) * 86400000;
+		this.rezeroWidth = (canonicalWidth / 8) * 86400000;
+		if (this.rezeroWidth > 86400000)
+			this.rezeroWidth = 86400000;
 		
 		return this.rezeroWidth;
 	}
@@ -1709,6 +1711,12 @@ function PlotLine(p) {
 		this.parseEntries();
 	}
 	this.makePlotData = function(name, data) {
+		var plotLine = this;
+		var drawPoint = function(ctx, x, y, radius, shadow, origX) {
+			if (plotLine.rezeroTimes && plotLine.rezeroTimes[origX])
+				return; // don't draw rezero points
+			ctx.arc(x, y, radius, 0, shadow ? Math.PI : Math.PI * 2, false);
+		}
 		if (this.intervals) { //} || (!this.fill)) {
 			return {
 				popuplabel: name,
@@ -1718,7 +1726,8 @@ function PlotLine(p) {
 					show: this.isContinuous && this.smoothLine,
 				},
 				points: {
-					show: this.isSmoothLine() ? false : true
+					show: this.isSmoothLine() ? false : true,
+					symbol: drawPoint
 				},
 				yaxis: this.yaxis,
 				plotLine: this
@@ -1735,7 +1744,8 @@ function PlotLine(p) {
 					fillColor: this.plot.cycleTagLine ? this.cycleFillColor : this.fillColor
 				},
 				points: {
-					show: this.isSmoothLine() ? this.hasSmoothLine() : true
+					show: this.isSmoothLine() ? this.hasSmoothLine() : true,
+					symbol: drawPoint
 				},
 				yaxis: this.yaxis,
 				plotLine: this
@@ -1780,31 +1790,64 @@ function PlotLine(p) {
 		var maxVal = undefined;
 		var reZero = (this.isFreqLineFlag || this.isContinuous) ? false : (this.isSmoothLine() ? false : !this.isContinuous);
 
-		var lastTime = 0;
+		var lastTime = null;
 		var lastVal = undefined;
 		
 		var rezeroWidth = this.plot.rezeroWidth;
+		var slopeWidth = Math.floor(rezeroWidth / 10);
+		if (slopeWidth == 0) slopeWidth = 1;
+		
+		if (reZero)
+			this.rezeroTimes = {};
+		
+		var connectedCount = 0;
 
 		for (var i = 0; i < entries.length; ++i) {
 			var entry = entries[i];
+			var nextEntry;
+			var time = entry[0].getTime();
+			var nextRezero = 0;
+			if (i + 1 >= entries.length)
+				nextEntry = null;
+			else {
+				nextEntry = entries[i+1];
+				var nextTime = nextEntry[0].getTime();
+				if (nextTime - time >= 2 * rezeroWidth) {
+					nextRezero = 1;
+				}
+			}
 			if (entry[1] != 1.0)
 				plotLine.allUnity = false;
-			var time = entry[0].getTime();
 			// if space between two data points >= 2 * rezero width, rezero data
 			if (reZero && (time - lastTime >= 2 * rezeroWidth)) {
-				if (lastTime && lastVal != 0) {
-					// create additional null point at rezero width after last data
-					// point if it wasn't already zero
-					d1Data.push([new Date(lastTime + rezeroWidth), 0, {t:''}]);
+				if (connectedCount > 1) {
+					var rezeroDate = new Date(lastTime + slopeWidth);
+					d1Data.push([rezeroDate, null, {t:''}]);
+				} else {
+					if (lastTime != null) {
+						// create additional zero point at slope width after last data
+						// point if it wasn't already zero
+						var rezeroDate = new Date(lastTime + slopeWidth);
+						var rezeroNullDate = new Date(lastTime + slopeWidth * 2);
+						d1Data.push([rezeroDate, 0, {t:''}]);
+						d1Data.push([rezeroNullDate, null, {t:''}]);
+						this.rezeroTimes[rezeroDate.getTime()] = true;
+					}
+					if (entry[1] != 0) {
+						// before first data point if it isn't zero
+						var rezeroDate = new Date(time - slopeWidth);
+						var rezeroNullDate = new Date(time - slopeWidth * 2);
+						d1Data.push([rezeroNullDate, null, {t:''}]);
+						d1Data.push([rezeroDate, 0, {t:''}]);
+						this.rezeroTimes[rezeroDate.getTime()] = true;
+					}
 				}
-				if (entry[1] != 0) {
-					// before first data point if it isn't zero
-					d1Data.push([new Date(time - rezeroWidth), 0, {t:''}]);
-				}
+				connectedCount = 0;
 			}
 			if (minVal == undefined || entry[1] < minVal) minVal = entry[1];
 			if (maxVal == undefined || entry[1] > maxVal) maxVal = entry[1];
 			d1Data.push([entry[0], plotLine.flatten ? (entry[1] > 0.0 ? 1.0 : (entry[1] < 0 ? -1.0 : 0)) : entry[1], {t:entry[2] ? entry[2] : this.name}]);
+			++connectedCount;
 			if (plotLine.name == null)
 				plotLine.name = entry['description'];
 
@@ -1817,7 +1860,9 @@ function PlotLine(p) {
 			var dateRangeForToday = new DateUtil().getDateRangeForToday(); // See base.js
 			// Checking if last data point is not within a day of "now"
 			if(!(currentTime >= dateRangeForToday.start && currentTime <= dateRangeForToday.end)) {
-				d1Data.push([new Date(lastTime + rezeroWidth), 0, {t:''}]);
+				var rezeroDate = new Date(lastTime + slopeWidth);
+				d1Data.push([rezeroDate, 0, {t:''}]);
+				this.rezeroTimes[rezeroDate.getTime()] = true;
 			}
 		}
 

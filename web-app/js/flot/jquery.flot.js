@@ -2501,12 +2501,12 @@ Licensed under the MIT license.
                         continue;
 
                     ctx.beginPath();
-                    x = axisx.p2c(x);
+                    var x2 = axisx.p2c(x);
                     y = axisy.p2c(y) + offset;
                     if (symbol == "circle")
-                        ctx.arc(x, y, radius, 0, shadow ? Math.PI : Math.PI * 2, false);
+                        ctx.arc(x2, y, radius, 0, shadow ? Math.PI : Math.PI * 2, false);
                     else
-                        symbol(ctx, x, y, radius, shadow);
+                        symbol(ctx, x2, y, radius, shadow, x);
                     ctx.closePath();
 
                     if (fillStyle) {
