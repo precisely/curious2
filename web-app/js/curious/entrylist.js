@@ -171,8 +171,8 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			}
 			var pinnedTagButtonHTMLContent = '<div class="pin-button" id="' + this.editId + 'entryid' + id + '">' + 
 				' <button class="pin-entry" id="pin-button' + id + '" onclick="entryListWidget.createEntryFromPinnedEntry(' + currentUserId 
-				+',\'' + buttonText +'\',' + this.defaultToNow +',' + (nullAmount ? 'true' : 'false') + ')">'+ 
-				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' + 
+				+',' + id + ',\'' + buttonText +'\',' + this.defaultToNow +',' + (nullAmount ? 'true' : 'false') + ')">'+
+				buttonText + '</button>' + '<li class="dropdown hide-important"><a href="#" data-toggle="dropdown">' +
 				'<b class="caret"></b></a><ul class="dropdown-menu" role="menu"><li>' + 
 				'<a href="#" id="#entrydelid' + this.editId + id + '" onclick="entryListWidget.deleteEntryId(' + id + ');return false;">' +
 				'<img src="/images/pin-x.png" width="auto" height="23">Delete</a></li></ul></li></div>';
@@ -481,10 +481,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	}
 
 	this.createEntryFromPinnedEntry = function(userId, text, defaultToNow, nullAmount) {
+		var entries = [];
+		this.entryListItems.forEach(function(entryItem) {
+			if (entryItem.id == entryId) entries.push(entryItem);
+		});
+
 		var tagStats = this.autocompleteWidget.tagStatsMap.get(text);
 		if (!tagStats) tagStats = this.autocompleteWidget.tagStatsMap.getFromText(text);
 
-		if ((!tagStats) || tagStats.typicallyNoAmount || (!tagStats.typicallyNoAmount && tagStats.amount)) {
+		if ((!tagStats) || tagStats.typicallyNoAmount || (!tagStats.typicallyNoAmount && entries[0].amount)) {
 			if (nullAmount) {
 				this.addEntry(userId, text, defaultToNow, null, null, function() {
 					var selectee = $('#' + self.editId + 'entryid' + self.latestEntryId);
@@ -525,6 +530,20 @@ function EntryListWidget(divIds, autocompleteWidget) {
 					self.autocompleteWidget.update(entries[2][0], entries[2][1], entries[2][2], entries[2][3], entries[2][4]);
 				if (callBack && typeof callBack == 'function') {
 					callBack();
+				}
+				if (!RepeatType.isContinuous(entries[3].repeatType)) {
+					var entryContainer = $('#recordList'), scrollTo = $('#' + self.editId + 'entryid' + entries[3].id),
+					contentWrapper = $('#' + self.editId + 'entryid' + entries[3].id + ' .content-wrapper');
+					entryContainer.animate({
+						scrollTop: scrollTo.offset().top - entryContainer.offset().top + entryContainer.scrollTop()
+					});
+					var originalBackgroundColor = scrollTo.css('background-color');
+					scrollTo.css('background-color', '#F14A42');
+					contentWrapper.css('color', '#fff');
+					setTimeout(function() {
+						scrollTo.css('background-color', originalBackgroundColor);
+						contentWrapper.css('color', ''); 
+					}, 1000);
 				}
 			}
 		});
@@ -933,10 +952,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (!$selectedEntry || ($selectedEntry.length === 0)) {
 			// Means button is clicked for a new entry
 			self.processInput();
+			$('.entry-details-dropdown-menu').parent().removeClass('open');
 			return;
 		}
 
 		self.checkAndUpdateEntry($selectedEntry);
+		$('.entry-details-dropdown-menu').parent().removeClass('open');
 	});
 
 	/**
