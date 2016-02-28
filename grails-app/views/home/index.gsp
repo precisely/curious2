@@ -65,7 +65,7 @@
 					<div style="clear: both"></div>
 				</div>
 				<div id="pinned-tags">
-					<!-- img alt="Bookmarks" class="pin-header" src="/images/bookmark-tags.png" -->
+					<img alt="Bookmarks" class="pin-header" src="/images/bookmark-tags.png" />
 					<span id="pinned-tag-list"></span>
 				</div>
 				<hr>
