@@ -156,7 +156,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 		
 		assert entry.durationType == DurationType.NONE
 		assert entry.baseTag == Tag.look("testxyz")
-		assert entry.tag == Tag.look("testxyz [duration]")
+		assert entry.tag == Tag.look("testxyz [time]")
 		assert entry.date == endEntry.date
 		
 		testEntries(user, timeZone, baseDate, currentTime) {
@@ -208,7 +208,7 @@ class EntryParserServiceTests extends CuriousTestCase {
 		
 		assert entry.durationType == DurationType.NONE
 		assert entry.baseTag == Tag.look("sleep")
-		assert entry.tag == Tag.look("sleep [duration]")
+		assert entry.tag == Tag.look("sleep [time]")
 		assert entry.date == endEntry.date
 		
 		testEntries(user, timeZone, baseDate, currentTime) {

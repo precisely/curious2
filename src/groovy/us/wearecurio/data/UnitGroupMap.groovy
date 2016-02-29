@@ -244,7 +244,7 @@ class UnitGroupMap {
 	Map<String, DecoratedUnitRatio> unitToDecorated
 	
 	enum UnitGroup {
-		DURATION(1, "duration", 100, [
+		DURATION(1, "time", 100, [
 			'm':[MINUTE,SECOND,1,'minute'], 'min':[MINUTE,SECOND,5,'minute',SINGULAR], 'mins':[MINUTE,SECOND,6,'minute',PLURAL], 'minute':[MINUTE,SECOND,10,'minute'], 'minutes':[MINUTE,SECOND,10,'minute'],
 			'h':[HOUR,MINUTE,1,'hour'], 'hours':[HOUR,MINUTE,10,'hour'], 'hr':[HOUR,MINUTE,8,'hour',SINGULAR], 'hr.':[HOUR,MINUTE,8,'hour'], 'hrs':[HOUR,MINUTE,8,'hour',PLURAL], 'hrs.':[HOUR,MINUTE,8,'hour'], 'hour':[HOUR,MINUTE,10,'hour'],
 			'day':[DAY,HOUR,10,'day',SINGULAR], 'days':[DAY,HOUR,10,'day',PLURAL], 'd':[DAY,HOUR,1,'day',SINGULAR],
@@ -269,7 +269,7 @@ class UnitGroupMap {
 			'km':[KILOMETER,0,8,'kilometer',BOTH], 'kilometers':[KILOMETER,0,10,'kilometer'], 'kilometers':[KILOMETER,0,10,'kilometer'],
 			'kilometer':[KILOMETER,0,1,'kilometer'],'kilometre':[KILOMETER,0,10,'kilometer'], 'kilometres':[KILOMETER,0,10,'kilometer'],
 		]),
-		WEIGHT(3, "weight", 300, [
+		WEIGHT(3, "amount", 300, [
 			'g':[GRAM,0,2,'gram'], 'grams':[GRAM,0,10,'gram'], 'pound':[POUND,OUNCE,10,'pound'], 'lb':[POUND,OUNCE,5,'pound',BOTH], 'pounds':[POUND,OUNCE,10,'pound'], 'lbs':[POUND,OUNCE,10,'pound'],
 			'kg':[KILOGRAM,0,8,'kilogram',BOTH], 'kgs':[KILOGRAM,0,4,'kilogram'], 'kilograms':[KILOGRAM,0,10,'kilogram'], 'kilogram':[KILOGRAM,0,10,'kilogram'],
 			'ounce':[OUNCE,0,10,'ounce'], 'oz':[OUNCE,0,4,'ounce',BOTH], 'ounces':[OUNCE,0,10,'ounce'],
@@ -674,7 +674,7 @@ class UnitGroupMap {
 				ratio = lookupUnitRatio(units2.toLowerCase())
 				if (ratio != null) {
 					String suffix = matcher.group(3)
-					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, null, suffix, true, true)
 					
 					return decorated
 				}
@@ -686,8 +686,8 @@ class UnitGroupMap {
 				String units1 = matcher.group(1)
 				ratio = lookupUnitRatio(units1.toLowerCase())
 				if (ratio != null) {
-					String suffix = matcher.group(4)
-					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
+					String suffix = ratio.bareTagSuffix + ': ' + matcher.group(4)
+					decorated = DecoratedUnitRatio.lookupOrCreate(ratio, null, suffix, true, true)
 					
 					return decorated
 				}
@@ -821,7 +821,7 @@ class UnitGroupMap {
 			ratio = simpleLookupUnitRatioForUnits(units2.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(3)
-				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, null, suffix, true, true)
 				
 				return decorated
 			}
@@ -834,7 +834,7 @@ class UnitGroupMap {
 			ratio = simpleLookupUnitRatioForUnits(units1.toLowerCase())
 			if (ratio != null) {
 				String suffix = matcher.group(4)
-				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, suffix, true, true)
+				decorated = DecoratedUnitRatio.lookupOrCreate(ratio, ratio.bareTagSuffix, suffix, true, true)
 				
 				return decorated
 			}
@@ -922,6 +922,7 @@ class UnitRatio {
 	String canonicalUnit
 	String canonicalUnitString
 	String tagSuffix
+	String bareTagSuffix
 	BigDecimal subRatio
 	UnitRatio singularUnitRatio
 	UnitRatio pluralUnitRatio
@@ -939,18 +940,22 @@ class UnitRatio {
 		if (!tagSuffix.startsWith('['))
 			tagSuffix = '[' + tagSuffix + ']'
 		this.tagSuffix = tagSuffix
+		if (tagSuffix.length() > 2)
+			this.bareTagSuffix = tagSuffix.substring(1, tagSuffix.length() - 1)
+		else
+			this.bareTagSuffix = ""
 		this.subRatio = 0.0g
 		this.singularUnitRatio = null
 		this.pluralUnitRatio = null
 		this.subUnitRatio = null
-		this.decoratedUnitRatio = DecoratedUnitRatio.lookupOrCreate(this, null, initialize)
+		this.decoratedUnitRatio = DecoratedUnitRatio.lookupOrCreate(this, null, null, initialize)
 	}
 	
 	DecoratedUnitRatio unitSuffixToDecoratedUnitRatio(String unitSuffix) {
 		DecoratedUnitRatio decorated = decoratedMap.get(unitSuffix)
 		
 		if (decorated == null) {
-			return DecoratedUnitRatio.lookupOrCreate(this, unitSuffix, true)
+			return DecoratedUnitRatio.lookupOrCreate(this, null, unitSuffix, true)
 		}
 		
 		return decorated
@@ -959,7 +964,7 @@ class UnitRatio {
 	DecoratedUnitRatio getDecoratedUnitRatio() {
 		if (decoratedUnitRatio != null)
 			return decoratedUnitRatio
-		return DecoratedUnitRatio.lookupOrCreate(this, null, true)
+		return DecoratedUnitRatio.lookupOrCreate(this, null, null, true)
 	}
 	
 	UnitRatio bestRatio(UnitRatio other) {
@@ -1030,20 +1035,20 @@ class DecoratedUnitRatio {
 	DecoratedUnitRatio pluralUnitRatio
 	DecoratedUnitRatio subUnitRatio
 	
-	static DecoratedUnitRatio lookupOrCreate(UnitRatio ratio, String unitSuffix, boolean initialize, boolean customSuffix = false) {
+	static DecoratedUnitRatio lookupOrCreate(UnitRatio ratio, String bareSuffix, String unitSuffix, boolean initialize, boolean customSuffix = false) {
 		String unit = ratio.unit
 		String decoratedUnit = unitSuffix == null ? unit : unit + ' ' + unitSuffix
 		DecoratedUnitRatio decorated = ratio.unitGroup.simpleLookupDecoratedUnitRatio(decoratedUnit)
 		if (decorated != null) return decorated
-		return new DecoratedUnitRatio(ratio, unitSuffix, initialize, customSuffix)
+		return new DecoratedUnitRatio(ratio, bareSuffix, unitSuffix, initialize, customSuffix)
 	}
 	
-	DecoratedUnitRatio(UnitRatio unitRatio, String unitSuffix, boolean initialize, boolean customSuffix = false) {
+	DecoratedUnitRatio(UnitRatio unitRatio, String bareSuffix, String unitSuffix, boolean initialize, boolean customSuffix = false) {
 		this.unitRatio = unitRatio
 		this.unitSuffix = unitSuffix
 		this.customSuffix = customSuffix
 		if (unitSuffix) {
-			tagSuffix = '[' + unitSuffix + ']'
+			tagSuffix = '[' + (bareSuffix ? bareSuffix + ": " + unitSuffix : unitSuffix) + ']'
 		} else
 			tagSuffix = unitRatio.tagSuffix
 		unitRatio.unitGroup.registerDecoratedUnitRatio(this)
@@ -1065,20 +1070,20 @@ class DecoratedUnitRatio {
 			if (unitSuffix == null) {
 				subUnitRatio = unitRatio.subUnitRatio?.decoratedUnitRatio
 			} else
-				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, unitSuffix, true)
+				subUnitRatio = lookupOrCreate(unitRatio.subUnitRatio, null, unitSuffix, true)
 		}
 		if (unitRatio.singularUnitRatio != null) {
 			bareSingularUnitRatio = unitRatio.singularUnitRatio.decoratedUnitRatio
 			if (unitSuffix == null) {
 				bareSingularUnitRatio = singularUnitRatio
 				if (singularUnitRatio == null) {
-					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, null, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.singularUnitRatio.is(unitRatio)) {
 					singularUnitRatio = this
 				} else
-					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, unitSuffix, true)
+					singularUnitRatio = lookupOrCreate(unitRatio.singularUnitRatio, null, unitSuffix, true)
 			}
 		}
 		if (unitRatio.pluralUnitRatio != null) {
@@ -1086,13 +1091,13 @@ class DecoratedUnitRatio {
 			if (unitSuffix == null) {
 				barePluralUnitRatio = pluralUnitRatio
 				if (pluralUnitRatio == null) {
-					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, null, unitSuffix, true)
 				}
 			} else {
 				if (unitRatio.pluralUnitRatio.is(unitRatio)) {
 					pluralUnitRatio = this
 				} else
-					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, unitSuffix, true)
+					pluralUnitRatio = lookupOrCreate(unitRatio.pluralUnitRatio, null, unitSuffix, true)
 			}
 		}
 	}

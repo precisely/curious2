@@ -556,13 +556,17 @@ class MigrationService {
 		tryMigration("Change continuous repeats to bookmark") {
 			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
 		}
-		tryMigration("Reindex sprints") {
-			elasticSearchService.index()
-			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
-		}
-		tryMigration("Reindex everything") {
-			elasticSearchService.index()
-			elasticSearchAdminService.refresh("us.wearecurio.model_v0")
+		tryMigration("Rename [weight] and [duration] tags") {
+			for (Tag tag in Tag.list()) {
+				if (tag.description.endsWith('[weight]')) {
+					tag.description = tag.description.replaceAll('[weight]', '[amount]')
+					Utils.save(tag, true)
+				}
+				if (tag.description.endsWith('[duration]')) {
+					tag.description = tag.description.replaceAll('[duration]', '[time]')
+					Utils.save(tag, true)
+				}
+			}
 		}
 	}
 	

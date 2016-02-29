@@ -122,7 +122,7 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 
 		List<Entry> entryList = Entry.getAll()
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryList[0].description == "sleep [total]"
+		assert entryList[0].description == "sleep [time: total]"
 		assert entryList[6].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
@@ -157,9 +157,9 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
-		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].description == "light exercise [time]"
 		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
@@ -184,12 +184,12 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.getCount() == 2
 
 		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].amount == 0.416666667		// Minutes converted to hours
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 
 		assert entryList[1].amount == 0.333333333
-		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].description == "light exercise [time]"
 		assert entryList[1].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 	}
 
@@ -207,24 +207,24 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.getCount() == 6
 
 		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].amount == 0.333333333		// Minutes converted to hours
 		assert entryList[0].timeZoneId == TimeZoneId.look("America/New_York").id
 
 		assert entryList[1].amount == 0.166666667
-		assert entryList[1].description == "light exercise [duration]"
+		assert entryList[1].description == "light exercise [time]"
 
 		assert entryList[2].amount == 1.666666667
-		assert entryList[2].description == "sedentary exercise [duration]"
+		assert entryList[2].description == "sedentary exercise [time]"
 
 		assert entryList[3].amount == 0.333333333
-		assert entryList[3].description == "light exercise [duration]"
+		assert entryList[3].description == "light exercise [time]"
 
 		assert entryList[4].amount == 0.833333333
-		assert entryList[4].description == "sedentary exercise [duration]"
+		assert entryList[4].description == "sedentary exercise [time]"
 
 		assert entryList[5].amount == 0.083333333
-		assert entryList[5].description == "light exercise [duration]"
+		assert entryList[5].description == "light exercise [time]"
 	}
 
 	@Test
@@ -248,18 +248,18 @@ class OuraDataServiceTests  extends CuriousServiceTestCase {
 		assert Entry.getCount() == 3
 
 		List<Entry> entryList = Entry.getAll()
-		assert entryList[0].description == "sedentary exercise [duration]"
+		assert entryList[0].description == "sedentary exercise [time]"
 		assert entryList[0].amount == 0.250000000
 		assert entryList[0].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[0].comment == "(Oura)"
 
-		assert entryList[1].description == "sedentary exercise [duration]"
+		assert entryList[1].description == "sedentary exercise [time]"
 		assert entryList[1].amount == 0.166666667
 		assert entryList[1].timeZoneId == TimeZoneId.look("Europe/Stockholm").id
 		assert entryList[1].comment == "(Oura)"
 
 		assert entryList[2].amount == 0.333333333
-		assert entryList[2].description == "light exercise [duration]"
+		assert entryList[2].description == "light exercise [time]"
 		assert entryList[2].timeZoneId == TimeZoneId.look("Asia/Kolkata").id
 		assert entryList[2].comment == "(Oura)"
 	}

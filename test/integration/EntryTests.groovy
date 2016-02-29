@@ -165,7 +165,7 @@ class EntryTests extends CuriousTestCase {
 		}
 	}
 	
-/*	@Test
+	@Test
 	void testActivateBookmark() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread bookmark", null, null, baseDate, true), new EntryStats())
 

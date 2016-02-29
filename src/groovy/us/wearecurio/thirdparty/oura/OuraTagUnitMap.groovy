@@ -17,7 +17,7 @@ class OuraTagUnitMap extends TagUnitMap {
 		]
 
 		activityUnitMap = [
-			non_wear_m: [tag: ACTIVITY, unit: "hours non wear", convert: true, from: "mins"],
+			non_wear_m: [tag: ACTIVITY, unit: "hours nonwear", convert: true, from: "mins"],
 			steps: [tag: ACTIVITY, unit: "steps"],
 			eq_meters: [tag: ACTIVITY, unit: "miles walk", convert: true, from: "meters"],
 			active_cal: [tag: ACTIVITY, unit: "kcal active", convert: true, from: "cal"],

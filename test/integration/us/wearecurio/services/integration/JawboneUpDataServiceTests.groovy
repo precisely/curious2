@@ -80,24 +80,24 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
 		userEntries.size() == 4
 
-		userEntries.find { it.tag.description == "sleep [duration]" } != null
-		userEntries.find { it.tag.description == "sleep [duration]" }.amount.round(2) == 672.58g
-		userEntries.find { it.tag.description == "sleep [duration]" }.units == "mins"
+		userEntries.find { it.tag.description == "sleep [time]" } != null
+		userEntries.find { it.tag.description == "sleep [time]" }.amount.round(2) == 672.58g
+		userEntries.find { it.tag.description == "sleep [time]" }.units == "mins"
 
 		userEntries.find { it.tag.description == "sleep interruptions" } != null
 		userEntries.find { it.tag.description == "sleep interruptions" }.amount.round(0) == 2.0g
 		userEntries.find { it.tag.description == "sleep interruptions" }.units == ""
 
-		userEntries.find { it.tag.description == "sleep [awake]" } != null
-		userEntries.find { it.tag.description == "sleep [awake]" }.amount.round(2) == 53.30g
-		userEntries.find { it.tag.description == "sleep [awake]" }.units == "mins awake"
+		userEntries.find { it.tag.description == "sleep [time: awake]" } != null
+		userEntries.find { it.tag.description == "sleep [time: awake]" }.amount.round(2) == 53.30g
+		userEntries.find { it.tag.description == "sleep [time: awake]" }.units == "mins awake"
 
 		userEntries.find { it.tag.description == "sleep quality" } != null
 		userEntries.find { it.tag.description == "sleep quality" }.amount.round(2) == 80.00g.round(2)
 		userEntries.find { it.tag.description == "sleep quality" }.units == "%"
 	}
 
-/*	void "test get data body"() {
+	void "test get data body"() {
 		String mockedResponseData = new File(testDataPath("body")).text
 
 		jawboneUpDataService.oauthService = [
@@ -115,7 +115,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		List<Entry> userEntries = Entry.findAllByUserId(userId)
 		userEntries.size() == 1
 		userEntries[0].baseTag.description == "measurement"
-		userEntries[0].tag.description == "measurement [weight]"
+		userEntries[0].tag.description == "measurement [amount]"
 		userEntries[0].amount.setScale(2, BigDecimal.ROUND_HALF_UP) == 124.0g
 	}
 
@@ -157,7 +157,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		userEntries.size() == 19
 
 		userEntries.find { it.tag.description == "activity [distance]" } != null
-		userEntries.find { it.tag.description == "activity [duration]" } != null
+		userEntries.find { it.tag.description == "activity [time]" } != null
 		userEntries.find { it.tag.description == "activity [steps]" } != null
 
 		// High activity entries. First for timed group of hour 12th & second for 14th, 15th
@@ -171,7 +171,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		highActivityEntries[1].amount.round(0) == 878.toBigDecimal().round(0)
 		highActivityEntries[1].units == "steps"
 
-		List<Entry> highActivityDurationEntry = userEntries.findAll { it.tag.description == "high activity [duration]" }
+		List<Entry> highActivityDurationEntry = userEntries.findAll { it.tag.description == "high activity [time]" }
 		// Average of durations
 		// First is for hour 12th
 		highActivityDurationEntry[0].amount.round(2) == 10.82g.round(2)
@@ -213,7 +213,7 @@ class JawboneUpDataServiceTests extends IntegrationSpec {
 		lightActivityEntries[1].amount.round(0) == 82.0g.round(0)
 		lightActivityEntries[1].units == "steps"
 
-		List <Entry> lightActivityDurationEntries = userEntries.findAll { it.tag.description == "light activity [duration]" }
+		List <Entry> lightActivityDurationEntries = userEntries.findAll { it.tag.description == "light activity [time]" }
 		// Average of durations
 		// For timed group of hours 08th, 09th, 10th, 11th
 		lightActivityDurationEntries[0].amount.round(2) == 1.89g.round(2)

@@ -110,7 +110,7 @@ class EntryGroupTests extends CuriousTestCase {
 
 	@Test
 	void testMultiCreateSuffix() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles distance 1000 feet elevation", null, null, baseDate, true), new EntryStats())
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 5 miles 1000 feet elevation", null, null, baseDate, true), new EntryStats())
 		
 		Iterable<Entry> group = entry.fetchGroupEntries()
 		
@@ -121,7 +121,38 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run [elevation]:run:feet elevation:run [distance]:run:miles distance"
+		assert x == ":run [distance: elevation]:run:feet elevation:run [distance]:run:miles"
+	}
+	
+	@Test
+	void testMultiCreateUnitDecoratorDuration() {
+		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 30 minutes deep", null, null, baseDate, true), new EntryStats())
+		
+		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
+		int c = 0
+		for (entryDesc in entries) {
+			++c
+			def amounts = entryDesc['amounts']
+			assert amounts[0].amount.intValue() == 5
+			assert amounts[0].units == "hrs"
+			assert amounts[1].amount.intValue() == 30
+			assert amounts[1].units == "mins deep"
+		}
+		
+		assert c == 1
+	}
+	
+	@Test
+	void testTwoWordSuffix() {
+		EntryStats stats = new EntryStats()
+		
+		def parsed = entryParserService.parse(currentTime, timeZone, "run 5 miles elevation 2pm", null, null, baseDate, true)
+
+		assert parsed.amounts[0].tag.description == 'run [distance: elevation]'
+		
+		parsed = entryParserService.parse(currentTime, timeZone, "activity 5 mins nonactive 2pm", null, null, baseDate, true)
+
+		assert parsed.amounts[0].tag.description == 'activity [time: nonactive]'
 	}
 	
 	@Test
@@ -137,7 +168,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run [elevation]:run:feet elevation:run [weight]:run:pounds"
+		assert x == ":run [distance: elevation]:run:feet elevation:run [amount]:run:pounds"
 	}
 	
 	@Test
@@ -197,24 +228,6 @@ class EntryGroupTests extends CuriousTestCase {
 	}
 	
 	@Test
-	void testMultiCreateUnitDecoratorDuration() {
-		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "sleep 5 hours 30 minutes deep", null, null, baseDate, true), new EntryStats())
-		
-		def entries = Entry.fetchListData(user, timeZone, baseDate, currentTime)
-		int c = 0
-		for (entryDesc in entries) {
-			++c
-			def amounts = entryDesc['amounts']
-			assert amounts[0].amount.intValue() == 5
-			assert amounts[0].units == "hrs"
-			assert amounts[1].amount.intValue() == 30
-			assert amounts[1].units == "mins deep"
-		}
-		
-		assert c == 1
-	}
-	
-	@Test
 	// if units are the same with the same suffix, don't create duplicate entries but instead sum them together
 	void testMultiCreateAddSimilarUnits() {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone2, "run 2 hours 30 minutes", null, null, baseDate, true), new EntryStats())
@@ -229,7 +242,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run [duration]:run:2.500000000:hours"
+		assert x == ":run [time]:run:2.500000000:hours"
 	}
 	
 	@Test
@@ -247,7 +260,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":run [duration]:run:2.500000000:hours"
+		assert x == ":run [time]:run:2.500000000:hours"
 	}
 	
 	@Test
@@ -279,7 +292,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.baseTag.getDescription()
 		}
 		
-		assert x == ":sleep [duration]:sleep:sleep [deep]:sleep:sleep [rem]:sleep"
+		assert x == ":sleep [time]:sleep:sleep [time: deep]:sleep:sleep [time: rem]:sleep"
 	}
 	
 	@Test
@@ -382,7 +395,7 @@ class EntryGroupTests extends CuriousTestCase {
 			x += ":" + e.units
 		}
 		
-		assert x == ":swam [duration]:swam:40.500000000:minutes"
+		assert x == ":swam [time]:swam:40.500000000:minutes"
 	}
 	
 	@Test
