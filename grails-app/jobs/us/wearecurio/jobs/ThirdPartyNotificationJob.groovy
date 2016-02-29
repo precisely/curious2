@@ -1,7 +1,5 @@
 package us.wearecurio.jobs
 
-import us.wearecurio.model.ThirdPartyNotification
-
 import grails.util.Environment
 import us.wearecurio.services.OuraDataService
 
@@ -13,6 +11,7 @@ class ThirdPartyNotificationJob extends us.wearecurio.utility.TimerJob {
 	}
 
 	def group = "curious"
+	def concurrent = false
 
 	def fitBitDataService
 	def withingsDataService

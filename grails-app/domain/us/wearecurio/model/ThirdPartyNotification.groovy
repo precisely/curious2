@@ -24,7 +24,7 @@ class ThirdPartyNotification {
 	}
 
 	static enum Status {
-		UNPROCESSED(0), PROCESSED(1)
+		UNPROCESSED(0), PROCESSED(1), ALREADY_UNSUBSCRIBED(2)
 
 		final Integer id
 
