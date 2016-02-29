@@ -75,7 +75,7 @@
 						</li>
 					</g:if>
 					<li role="presentation">
-						<a href="#owned">OWNED</a>
+						<a href="#owned">AUTHORED</a>
 					</li>
 					<g:if test="${isSprintsListingPage}">
 						<li id="feed-right-tab" role="presentation">
