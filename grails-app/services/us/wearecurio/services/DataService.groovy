@@ -326,9 +326,17 @@ abstract class DataService {
 
 		pendingNotifications.each { notification ->
 			log.debug "Processing $notification"
+			int processedOAuthAccounts = 0
 
-			OAuthAccount.findAllByTypeIdAndAccountId(typeId, notification.ownerId).each { account ->
+			OAuthAccount.withCriteria {
+				eq("typeId", typeId)
+				eq("accountId", notification.ownerId)
+				// Only pull those records which have an access token
+				ne("accessToken", "")
+			}.each { account ->
 				log.debug "Processing $notification for account id [$account.id]"
+				processedOAuthAccounts++
+
 				try {
 					DatabaseService.retry(notification) {
 						this."getData${notification.collectionType.capitalize()}"(account, notification.date, false)
@@ -339,11 +347,25 @@ abstract class DataService {
 					log.warn "No method implementation found for collection type: [$account.typeId.providerName] for $provider.", e
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
+					// Clear the access token to not process this notification again until the user re-link the account
+					account.accessToken = ""
+					Utils.save(notification, true)
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
 				}
 				return notification
+			}
+
+			/*
+			 * If there were no OAuthAccounts for a particular notification (when user has unsubscribed) then mark it
+			 * as ALREADY_UNSUBSCRIBED otherwise the job will always be picking those records and new notifications
+			 * will never be processed.
+			 */
+			if (processedOAuthAccounts == 0) {
+				log.debug "No linked account found for $notification"
+				notification.status = ThirdPartyNotification.Status.ALREADY_UNSUBSCRIBED
+				Utils.save(notification, true)
 			}
 		}
 
