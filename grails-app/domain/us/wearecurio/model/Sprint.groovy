@@ -2,6 +2,7 @@ package us.wearecurio.model
 
 import java.util.Date
 import java.util.Locale
+import java.util.Map;
 
 import grails.converters.*
 import grails.gorm.DetachedCriteria
@@ -48,6 +49,7 @@ class Sprint {
 	String tagName
 	List<String> devices // list of devices supported by this sprint
 	boolean deleted
+	boolean disableComments
 	
 	static hasMany = [devices: String]
 	
@@ -128,6 +130,15 @@ class Sprint {
 	
 	void reindex() {
 		if (id) SearchService.get().index(this) // only reindex if this sprint has been saved
+	}
+	
+	void setDisableComments(boolean disable) {
+		this.disableComments = disable
+		UserGroup userGroup = fetchUserGroup()
+		if (userGroup) {
+			userGroup.isReadOnly = disable
+			Utils.save(userGroup, true)
+		}
 	}
 
 	void addDeviceName(String deviceName) {
@@ -358,6 +369,8 @@ class Sprint {
 	
 	void addDiscussion(Discussion discussion) {
 		if (hasDiscussion(discussion)) return null
+		
+		if (disableComments) return null
 		
 		fetchUserGroup()?.addDiscussion(discussion)
 		UserActivity.create(
@@ -656,6 +669,7 @@ class Sprint {
 			virtualGroupName: this.fetchUserGroup()?.name,
 			created: this.created,
 			updated: this.updated,
+			disableComments: this.disableComments,
 			type: "spr"
 		]
 	}

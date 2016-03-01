@@ -20,6 +20,7 @@ class Discussion {
 	Visibility visibility
 	Long virtualUserId // user id for virtual user (admin of virtual user group)
 	Long virtualUserGroupIdFollowers    
+	boolean disableComments
 	
 	static final int MAXPLOTDATALENGTH = 1024
 	
@@ -72,6 +73,13 @@ class Discussion {
             'virtualUserGroupIdFollowers',
             'followers'
 		]
+	}
+	
+	boolean disableComments(boolean disable) {
+		this.disableComments = disable
+		Utils.save(this, true)
+		
+		return disable
 	}
 	
 	static Discussion getDiscussionForPlotDataId(Long plotDataId) {
@@ -150,6 +158,17 @@ class Discussion {
 		}
 		
 		return discussion
+	}
+	
+	static Map disableComments(Discussion discussion, User user, boolean disable) {
+		if (!UserGroup.canAdminDiscussion(user, discussion)) {
+			return [success: false, message: "You don't have the right to modify this discussion."]
+		}
+		def discussionId = discussion.id
+		
+		discussion.disableComments(disable)
+
+		return [success: true, message: "Discussion comments disabled."]
 	}
 	
 	static Map delete(Discussion discussion, User user) {
@@ -429,16 +448,19 @@ class Discussion {
 
 	def createPost(User user, String message, Date createTime = null) {
 		log.debug "Discussion.createPost() userId:" + user.getId() + ", message:'" + message + "'" + ", createTime:" + createTime
+		if (disableComments) return null
 		return createPost(user, null, message, createTime)
 	}
 	
 	def createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", createTime:" + createTime
+		if (disableComments) return null
 		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment, createTime)
 	}
 	
 	def createPost(User author, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + ", createTime:" + createTime
+		if (disableComments) return null
 		if (createTime == null) createTime = new Date()
 		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, createTime)
 		Utils.save(this, true) // write new updated state
@@ -642,7 +664,7 @@ class Discussion {
 		return [discussionId: this.id, discussionTitle: this.name ?: 'New question or discussion topic?', hash: this.hash, 
 			discussionOwner: user?.username, discussionOwnerAvatarURL: user?.avatar?.path, discussionCreatedOn: this.created, updated: this.updated,
 			firstPost: firstPostInstance?.getJSONDesc(), isNew: isNew(), totalPostCount: totalPostCount, discussionOwnerHash: user?.hash,
-			isPublic: isPublic(), groupName: groupName]
+			isPublic: isPublic(), groupName: groupName, disableComments: this.disableComments]
 	}
 
 	//TODO: make sure discussion is re-indexed every time a post is made to a discussion

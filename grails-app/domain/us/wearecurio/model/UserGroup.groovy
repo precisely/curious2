@@ -817,6 +817,9 @@ class UserGroup {
 		if (!discussion) {
 			return false
 		}
+		
+		if (isReadOnly)
+			return false
 
 		Long userId = discussion.getUserId()
 		if (userId) {

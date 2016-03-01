@@ -81,6 +81,27 @@ class SprintController extends LoginController {
 			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions])
 	} 
 
+	def disableComments() {
+		Sprint sprintInstance = Sprint.findByHash(params.id)
+		User currentUser = sessionUser()
+		log.debug "$currentUser trying to disable comments for sprint with id [$params.id]"
+
+		if (!sprintInstance) {
+			renderJSONGet([success: false, message: g.message(code: "sprint.not.exist")])
+			return
+		}
+
+		if (!sprintInstance.hasAdmin(currentUser.id)) {
+			renderJSONGet([success: false, message: g.message(code: "edit.sprint.permission.denied")])
+			return
+		}
+
+		sprintInstance.disableComments = (params.disable == "true")
+		
+		Utils.save(sprintInstance, true)
+		renderJSONGet([success: true])
+	}
+
 	def delete() {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
