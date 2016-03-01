@@ -81,7 +81,7 @@ class SprintController extends LoginController {
 			totalParticipants: sprintInstance.getParticipantsCount(), discussions: sprintDiscussions])
 	} 
 
-	def disableComments() {
+	def disableComments(boolean disable) {
 		Sprint sprintInstance = Sprint.findByHash(params.id)
 		User currentUser = sessionUser()
 		log.debug "$currentUser trying to disable comments for sprint with id [$params.id]"
@@ -96,10 +96,17 @@ class SprintController extends LoginController {
 			return
 		}
 
-		sprintInstance.disableComments = (params.disable == "true")
+		sprintInstance.disableComments = disable
 		
 		Utils.save(sprintInstance, true)
-		renderJSONGet([success: true])
+
+		String message = ""
+		if (sprintInstance.disableComments) {
+			message = "Comments on trackathon disabled."
+		} else {
+			message = "Comments on trackathon enabled."
+		}
+		renderJSONGet([success: true, message: message, disableComments: sprintInstance.disableComments])
 	}
 
 	def delete() {

@@ -166,9 +166,13 @@ class Discussion {
 		}
 		def discussionId = discussion.id
 		
-		discussion.disableComments(disable)
-
-		return [success: true, message: "Discussion comments disabled."]
+		String message = ""
+		if (discussion.disableComments(disable)) {
+			message = "Discussion comments disabled."
+		} else {
+			message = "Discussion comments enabled."
+		}
+		return [success: true, message: message, disableComments: disable]
 	}
 	
 	static Map delete(Discussion discussion, User user) {

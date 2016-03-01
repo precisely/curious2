@@ -94,15 +94,14 @@ class DiscussionController extends LoginController {
 	def disableComments(boolean disable) {
 		debug("Attempting to disable comments on trackathon $params")
 
-		Sprint sprint = Sprint.findByHash(params.id)
-		if (!sprint) {
-			log.warn "SprintId not found: " + params.id
-			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Trackathon"])])
+		Discussion discussion = Discussion.findByHash(params.id)
+		if (!discussion) {
+			log.warn "discussionId not found: " + params.id
+			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Discussion"])])
 		} else {
 			Map result = Discussion.disableComments(discussion, sessionUser(), params.disable == "true")
 			renderJSONGet(result)
 		}
-
 	}
 
 	// Used to edit the discussion
