@@ -14,6 +14,8 @@
 							</div>
 							<hr>
 							<div>
+								<small>?${session.firstRun}?</small>
+								<small>?${prefs}?</small>
 								<small>Welcome to</small>
 							</div>
 							<h4 class="company-name">We Are Curious!</h4>

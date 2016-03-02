@@ -54,6 +54,8 @@
 </content>
 <script>
 	var showModal = ${(session.survey == 'compass')? true: false};
+	<g:set var="showHelp" value="${session.firstRun?: true}" scope="session"/>
+	<g:set var="firstRun" value="false" scope="session"/>
 	var showHelpModal = ${session.showHelp?: false};
 	var notificationCount;
 
