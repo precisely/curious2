@@ -1896,6 +1896,8 @@ class Entry implements Comparable {
 			results.add(result)
 			log.debug "Entry id: " + result['id'] + " description: " + result['description']
 		}
+		
+		Long userId = user.id
 
 		return results
 	}
@@ -1994,6 +1996,7 @@ class Entry implements Comparable {
 			date:date,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
+			tagId:tag.id,
 			description:((durationType?.isStartOrEnd()) && baseTag != null && (!repeatType?.isContinuous())) ? tag.getDescription() : baseTag.getDescription(),
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
@@ -2005,13 +2008,15 @@ class Entry implements Comparable {
 		Integer index = 0
 
 		Map amounts = [:]
-
+		Map normalizedAmounts = [:]
+		
 		for (Entry e : fetchGroupEntries()) {
-			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
+			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
 		}
 
 		retVal['amounts'] = amounts
-
+		retVal['normalizedAmounts'] = normalizedAmounts
+		
 		return retVal
 	}
 
@@ -2021,6 +2026,7 @@ class Entry implements Comparable {
 			date:startDate,
 			datePrecisionSecs:fetchDatePrecisionSecs(),
 			timeZoneName:this.fetchTimeZoneName(),
+			tagId:tag.id,
 			description:baseTag.getDescription() + " start",
 			amount:amount,
 			amountPrecision:fetchAmountPrecision(),
@@ -2032,12 +2038,14 @@ class Entry implements Comparable {
 		Integer index = 0
 
 		Map amounts = [:]
+		Map normalizedAmounts = [:]
 
 		for (Entry e : fetchGroupEntries()) {
-			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
+			UnitGroupMap.theMap.getJSONAmounts(userId, tag.id, amounts, normalizedAmounts, e.getAmount(), e.fetchAmountPrecision(), e.getUnits())
 		}
 
 		retVal['amounts'] = amounts
+		retVal['normalizedAmounts'] = normalizedAmounts
 
 		return retVal
 	}

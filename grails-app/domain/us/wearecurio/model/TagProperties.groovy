@@ -1,4 +1,4 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 
 import us.wearecurio.utility.Utils
@@ -67,7 +67,7 @@ class TagProperties {
 		dataTypeComputed = UNSPECIFIED
 	}
 
-	static def createOrLookup(long userId, long tagId) {
+	static TagProperties createOrLookup(long userId, long tagId) {
 		def props = TagProperties.findByTagIdAndUserId(tagId, userId)
 
 		if (!props) {
