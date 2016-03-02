@@ -6,6 +6,7 @@ import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import us.wearecurio.model.TagProperties
 
 import us.wearecurio.data.DataRetriever
 
@@ -857,13 +858,46 @@ class UnitGroupMap {
 		return lookupDecoratedUnitRatio(units)
 	}
 
-	void getJSONAmounts(Long userId, Long tagId, Map amounts, BigDecimal amount, int amountPrecision, String units) {
+	void getJSONAmounts(Long userId, Long tagId, Map amounts, Map normalizedAmounts, BigDecimal amount, int amountPrecision, String units) {
+		DecoratedUnitRatio mostUsedUnitRatioForTag = this.mostUsedUnitRatioForTagId(userId, tagId)
+		
+		TagProperties props = TagProperties.createOrLookup(userId, tagId)
+		
 		DecoratedUnitRatio decorated = decoratedUnitRatioForTagIdUnits(userId, tagId, units)
 		if (decorated == null) {
 			amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:units])
+			normalizedAmounts.put(normalizedAmounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:units, sum:false])
 		} else {
+			if (mostUsedUnitRatioForTag != null) {
+				double mostUsedUnitRatio = mostUsedUnitRatioForTag ? mostUsedUnitRatioForTag.ratio : 1.0d
+				
+				DecoratedUnitRatio unitRatio = mostUsedUnitRatioForTag?.lookupDecoratedUnitRatio(units)
+				if (unitRatio) {
+					BigDecimal normalizedAmount = (amount * unitRatio.ratio) / mostUsedUnitRatio
+					unitRatio.getNormalizedJSONAmounts(normalizedAmounts, amount, amountPrecision, props)
+				} else
+					decorated.getNormalizedJSONAmounts(normalizedAmounts, amount, amountPrecision, props)
+			}
 			decorated.getJSONAmounts(amounts, amount, amountPrecision)
 		}
+	}
+	
+	/**
+	 * Look through UnitGroups, or just use most used UnitGroup
+	 */
+	DecoratedUnitRatio mostUsedUnitRatioForTagId(Long userId, Long tagId) {
+		TagUnitStatsInterface mostUsed = DataRetriever.get().mostUsedTagUnitStats(userId, tagId)
+		if (mostUsed == null)
+			return null
+			
+		UnitGroup unitGroup = mostUsed?.getUnitGroup()
+		if (unitGroup != null) {
+			UnitRatio unitRatio = unitGroup.lookupUnitRatio(mostUsed.getUnit())
+			if (unitRatio != null) return unitRatio.decoratedUnitRatio
+		}
+		
+		// lookup cached unit ratio for the unit
+		return lookupDecoratedUnitRatio(mostUsed.getUnit())
 	}
 	
 	/**
@@ -1218,6 +1252,22 @@ class DecoratedUnitRatio {
 			
 			subUnitRatio.getJSONAmounts(amounts, subAmount, amountPrecision)
 		}
+	}
+	
+	void getNormalizedJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision, TagProperties props) {
+		boolean sum = false
+		
+		if ((!props.getIsContinuous()) && this.unit)
+			sum = true
+			
+		if (amount == null) {
+			amounts.put(amounts.size(), [amount:null, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(true, false), sum:sum])
+			return
+		}
+		
+		int compareToOne = amount.compareTo(SLIGHTLYLESSTHANONE)
+		
+		amounts.put(amounts.size(), [amount:amount.setScale(4, BigDecimal.ROUND_HALF_UP), amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(compareToOne != 0, false), sum:sum])
 	}
 }
 
