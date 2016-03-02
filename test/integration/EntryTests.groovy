@@ -166,7 +166,7 @@ class EntryTests extends CuriousTestCase {
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 111 steps 4pm", null, null, baseDate, true), new EntryStats())
 		
 		testEntries(user, timeZone, baseDate, currentTime) {
-			assert !it.normalizedAmounts[0].sum
+			assert it.normalizedAmounts[0].sum
 		}
 	}
 	
