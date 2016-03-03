@@ -1197,7 +1197,7 @@ class DataController extends LoginController {
 	}
 
 	def createSingleHelpEntrysData() {
-		debug("DataController.addEntrySData() params:" + params)
+		debug("DataController.createSingleHelpEntrysData() params:" + params)
 
 		def userId = userFromIdStr(params.userId)
 
@@ -1222,9 +1222,6 @@ class DataController extends LoginController {
 			result = doUpdateEntry(params)
 		} else {
 			result = doAddEntry(params)
-		}
-		if (!result[2]) {
-			
 		}
 		if (result[0] != null) {
 			renderJSONGet([
@@ -1284,7 +1281,7 @@ class DataController extends LoginController {
 					p.tutorial = true
 					def result = doAddEntry(p)
 					counter++;
-					if (!result[0] || result[0]?.description?.contains("cannot understand what you typed")) {
+					if (!result[0] || result[0].description?.contains("cannot understand what you typed")) {
 						operationSuccess = false
 						messageCode = !result[0] ? "not.saved.message" : "can.not.understand.entry"
 						if (result[0]) {
