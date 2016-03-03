@@ -52,18 +52,14 @@ class DataController extends LoginController {
 		systemFormat.setTimeZone(TimeZone.getDefault());
 	}
 
-	protected def doAddEntry(Map parms) {
+	private def getParsedEntry(Map params, User user) {
 		def p = [defaultToNow:'1']
-		p.putAll(parms)
+		p.putAll(params)
 		
 		boolean defaultToNow = (p.defaultToNow == '1')
 		
-		debug "DataController.doAddEntry() params:" + p
+		debug "DataController.getParsedEntry() params:" + p
 		
-		AuthenticationStatus authStatus = authFromUserIdStr(p.userId)
-		
-		User user = authStatus.user
-
 		Date currentTime = parseDate(p.currentTime)
 		Date baseDate = parseDate(p.baseDate)
 		Long repeatTypeId = parseLong(p.repeatTypeId)
@@ -73,6 +69,14 @@ class DataController extends LoginController {
 		debug("Current time " + currentTime + " baseDate " + baseDate);
 
 		def parsedEntry = entryParserService.parse(currentTime, timeZoneName, p.text, repeatTypeId, repeatEnd, baseDate, defaultToNow, p.tutorial ? EntryParserService.UPDATEMODE_TUTORIAL : 0)
+		return parsedEntry
+	}
+
+	protected def doAddEntry(Map params) {
+		AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
+		
+		User user = authStatus.user
+		def parsedEntry = getParsedEntry(params, user)
 
 		if (parsedEntry == null)
 			return 'Syntax error trying to parse entry'
@@ -1192,6 +1196,45 @@ class DataController extends LoginController {
 		}
 	}
 
+	def createSingleHelpEntrysData() {
+		debug("DataController.createSingleHelpEntrysData() params:" + params)
+
+		def userId = userFromIdStr(params.userId)
+
+		if (userId == null) {
+			renderStringGet(AUTH_ERROR_MESSAGE)
+			return
+		}
+
+		AuthenticationStatus authStatus = authFromUserIdStr(params.userId)
+		User user = authStatus.user
+		Date baseDate = parseDate(params.baseDate)
+		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
+		def parsedEntry = getParsedEntry(params, user)
+		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") || 
+				(parsedEntry.baseTag.description == "sleep" && parsedEntry.amounts.durationType[0] != DurationType.NONE)) {
+			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ? 
+					"You must enter a time duration, like 'sleep 8 hours 10 mins'" : "Can not understand what you typed"])
+			return
+		}
+		def result
+		if (params.entryId) {
+			result = doUpdateEntry(params)
+		} else {
+			result = doAddEntry(params)
+		}
+		if (result[0] != null) {
+			renderJSONGet([
+				listEntries(userId, params.timeZoneName, baseDate, currentTime),
+				result[1],
+				result[2]?.getJSONDesc(),
+				result[0].getJSONDesc()
+			])
+		} else {
+			renderStringGet('error')
+		}
+	}
+
 	def createHelpEntriesData() {
 		log.debug "Entries recieved to save: $params and entries: ${params['entries[]']}"
 
@@ -1212,6 +1255,7 @@ class DataController extends LoginController {
 		
 		boolean operationSuccess = true;
 		String messageCode = "default.create.label"
+		List messageArgs = ["Entries"]
 		List createdEntries = []
 
 		if (params.entryId) {
@@ -1229,15 +1273,34 @@ class DataController extends LoginController {
 		} else {
 			Map p = [userId:userIdStr]
 			p.putAll(params)
+			int counter = 0;
 			Entry.withTransaction { status ->
 				// Iterating over all the entries received and creating entries for them
 				entries.any({
 					p.text = it
 					p.tutorial = true
 					def result = doAddEntry(p)
-					if (!result[0]) {
+					counter++;
+					if (!result[0] || result[0].description?.contains("cannot understand what you typed")) {
 						operationSuccess = false
-						messageCode = "not.saved.message"
+						messageCode = !result[0] ? "not.saved.message" : "can.not.understand.entry"
+						if (result[0]) {
+							// Considering order of incomming entries for sendingeror message specific to the type of entry
+							switch(counter) {
+								case 1:
+									messageArgs = ["Drink"]
+									break
+								case 2:
+									messageArgs = ["Exercise"]
+									break
+								case 3:
+									messageArgs = ["Work"]
+									break
+								case 4:
+									messageArgs = ["Supplements"]
+									break
+							}
+						}
 						status.setRollbackOnly()
 						return true
 					} else {
@@ -1249,7 +1312,7 @@ class DataController extends LoginController {
 		}
 		JSON.use("jsonDate") {
 			renderJSONPost([success: operationSuccess, createdEntries: createdEntries, 
-				message: g.message(code: messageCode, args: ['Entries'])])
+				message: g.message(code: messageCode, args: messageArgs)])
 		}
 	}
 
