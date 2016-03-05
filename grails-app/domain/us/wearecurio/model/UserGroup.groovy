@@ -818,10 +818,16 @@ class UserGroup {
 			return false
 		}
 		
-		if (isReadOnly)
-			return false
-
 		Long userId = discussion.getUserId()
+		
+		if (isReadOnly) {
+			if (userId) {
+				if (!hasAdmin(userId)) {
+					return false
+				}
+			}
+		}
+
 		if (userId) {
 			if (!hasWriter(userId)) {
 				return false

@@ -70,7 +70,8 @@ class GroupMemberDiscussion {
 	}
 	
 	public static lookup(Long groupId, memberId) {
-		return GroupMemberDiscussion.findByGroupIdAndMemberId(groupId, memberId)
+		GroupMemberDiscussion discussion = GroupMemberDiscussion.findByGroupIdAndMemberId(groupId, memberId)
+		return discussion
 	}
 	
 	String toString() {

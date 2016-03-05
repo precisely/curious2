@@ -257,7 +257,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		def x = controller.response.contentAsString
 		
-		assert x.contains('[{"id":1,"userId":1,"date":new Date(1446229800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":170,"description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":')
+		assert x.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert x.contains(',"description":"request swing","amount":1.000000000,"amountPrecision":-1,"units":"","comment":"(Megan)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.000000000,"amountPrecision":-1,"units":""}},"normalizedAmounts":{"0":{"amount":1.000000000,"amountPrecision":-1,"units":"","sum":false')
 	}
 
 	@Test
@@ -293,7 +294,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		def entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "sleep 2 hours", null, null, baseDate, true), stats)
 		stats.finish()
 
-		assert Entry.get(entry.id).amount == 0.083333333g
+		assert Entry.get(entry.id).amount == 2.000000000g
 
 		controller.session.userId = userId
 		controller.params['entries[]'] = 'sleep 3 hours'
@@ -304,7 +305,7 @@ class DataControllerTests extends CuriousControllerTestCase {
 		
 		controller.createHelpEntriesData()
 		assert controller.response.json.success == true
-		assert Entry.get(entry.id).amount == 0.125000000g
+		assert Entry.get(entry.id).amount == 3.000000000g
 	}	
 
 	@Test
@@ -344,8 +345,14 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getListData()
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
+<<<<<<< Upstream, based on origin/master
 		assert controller.response.contentAsString.contains('{"id":22,"userId":27,"date":new Date(1278023400000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":185,"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.000000000,"amountPrecision":3,"units":""}},"normalizedAmounts":{"0":')
 		}
+=======
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
+	}
+>>>>>>> 6b138f5 Fixes #895 Fix data normalization for device duration data
 
 	@Test
 	void testGetListDataMultipleDate() {
@@ -373,11 +380,11 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.getListData()
 		println controller.response.contentAsString
-		def x = controller.response.contentAsString
-		assert controller.response.contentAsString.startsWith('callback({"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains('datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":196,"description":"bread","amount":1.000000000,"amountPrecision":3,"units":","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.000000000,"amountPrecision":3,"units":""}},"normalizedAmounts":{"0":{"amount":1.000000000,"amountPrecision":3,"units":"","sum":false}},"setName":null,"sourceName":null}')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 		assert controller.response.contentAsString.contains('"07/01/2010":[{"')
-		assert controller.response.contentAsString.contains('datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":196,"description":"bread","amount":7.000000000,"amountPrecision":3,"units":","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":7.000000000,"amountPrecision":3,"units":""}},"normalizedAmounts":{"0":')
+		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 	}
 
 	@Test
@@ -497,8 +504,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.addEntrySData()
 
-		assert controller.response.contentAsString.contains('[{"id":20,"userId":25,"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":180,"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":') \
-			|| controller.response.contentAsString.contains('[{"id":20,"userId":25,"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":180,"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295641800000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"testing","amount":25.000000000,"amountPrecision":3,"units":"units","comment":"(comment)","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":25.0000,"amountPrecision":3,"units":"units"}},"normalizedAmounts"')
 	}
 	
 	@Test
@@ -524,8 +531,8 @@ class DataControllerTests extends CuriousControllerTestCase {
 
 		controller.updateEntrySData()
 
-		assert controller.response.contentAsString.contains('"id":21,"userId":26,"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","tagId":184,"description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":') \
-			|| controller.response.contentAsString.contains('{"id":21,"userId":26,"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","tagId":184,"description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":') \
+		assert controller.response.contentAsString.contains(',"date":new Date(1295719200000),"datePrecisionSecs":86400,"timeZoneName":"America/Chicago","tagId":')
+		assert controller.response.contentAsString.contains(',"description":"updatetest voracious","amount":2.000000000,"amountPrecision":3,"units":"units","comment":"","repeatType":null')
 	}
 
 	@Test

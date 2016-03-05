@@ -162,8 +162,8 @@ class EntryTests extends CuriousTestCase {
 	@Test
 	void testNormalizedDataEvent() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "walk 143 steps 2pm", null, null, baseDate, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 1242 steps 3pm", null, null, baseDate, true), new EntryStats())
-		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 111 steps 4pm", null, null, baseDate, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "walk 1242 steps 3pm", null, null, baseDate, true), new EntryStats())
+		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "walk 111 steps 4pm", null, null, baseDate, true), new EntryStats())
 		
 		testEntries(user, timeZone, baseDate, currentTime) {
 			assert it.normalizedAmounts[0].sum

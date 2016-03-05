@@ -47,11 +47,8 @@ class Sprint {
 	Date startDate
 	Visibility visibility
 	String tagName
-	List<String> devices // list of devices supported by this sprint
 	boolean deleted
 	boolean disableComments
-	
-	static hasMany = [devices: String]
 	
 	static final int MAXPLOTDATALENGTH = 1024
 	
@@ -121,7 +118,6 @@ class Sprint {
 	
 	UserGroup fetchUserGroup() {
 		return UserGroup.get(virtualGroupId)
-		
 	}
 	
 	boolean isPublic() {
@@ -142,14 +138,39 @@ class Sprint {
 	}
 
 	void addDeviceName(String deviceName) {
-		this.addToDevices(deviceName)
+		ExternalServiceInfo info = ExternalServiceInfo.look(deviceName)
+		
+		SprintServiceInfoMember.create(this.id, info.id)
 	}
 
 	void removeDeviceName(String deviceName) {
-		this.removeFromDevices(deviceName)
+		ExternalServiceInfo info = ExternalServiceInfo.look(deviceName)
+		
+		SprintServiceInfoMember.delete(this.id, info.id)
 	}
 	
-	static Set<String> getDeviceNames() {
+	boolean containsDevice(String deviceName) {
+		ExternalServiceInfo info = ExternalServiceInfo.look(deviceName)
+		
+		return SprintServiceInfoMember.lookup(this.id, info.id) != null
+	}
+
+	Set<String> getDevices() {
+		Set<String> retVal = new HashSet<String>()
+		
+		def memberIds = SprintServiceInfoMember.lookupMemberIds(this.id)
+		
+		memberIds = memberIds
+		
+		for (Long infoId in memberIds) {
+			ExternalServiceInfo info = ExternalServiceInfo.get(infoId)
+			
+			retVal.add(info.name)
+		}
+		return retVal
+	}
+	
+	static Set<String> fetchDeviceNames() {
 		return TagUnitMap.theMaps.keySet()
 	}
 	

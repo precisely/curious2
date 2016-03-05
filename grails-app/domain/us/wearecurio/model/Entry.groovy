@@ -21,6 +21,7 @@ import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
 import us.wearecurio.data.TagUnitStatsInterface
 import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.data.DecoratedUnitRatio.AmountUnits
 import us.wearecurio.data.UnitGroupMap.UnitGroup
 import us.wearecurio.data.UnitRatio
 import us.wearecurio.data.DataRetriever
@@ -420,6 +421,7 @@ class Entry implements Comparable {
 	}
 	
 	static final BigDecimal DAYTICKSDECIMAL = (1000.0g * 60.0g * 60.0g * 24.0g).setScale(100, BigDecimal.ROUND_HALF_UP)
+	static protected DecoratedUnitRatio daysUnitRatio = null
 	
 	static Entry completeDurationEntry(Long userId, Map m, EntryStats stats, DurationType durationType, Closure findOtherEntry) {
 		Date date = m['date']
@@ -452,7 +454,10 @@ class Entry implements Comparable {
 				}
 			}
 			if (durationAmount == null) {
-				durationAmount = new ParseAmount(m['baseTag'], days, 3, "days", UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
+				AmountUnits newAmountUnits = UnitGroupMap.DAYSDURATIONRATIO.getRightSizedAmountUnits(days, 3)
+				Tag baseTag = m.baseTag
+				durationAmount = new ParseAmount(baseTag, newAmountUnits.amount, newAmountUnits.amountPrecision, newAmountUnits.units, newAmountUnits.unitRatio, DurationType.NONE)
+				TagUnitStats.createOrUpdate(userId, baseTag.id, newAmountUnits.units)
 				amounts.add(durationAmount)
 			}
 			m['durationType'] = DurationType.NONE
@@ -478,7 +483,9 @@ class Entry implements Comparable {
 						}
 						// complete this entry and rewrite it as a full duration entry
 						m['durationType'] = DurationType.NONE
-						amount.update(amount.tag, m['baseTag'], amount.durationInDays(), 3, "days" + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
+						AmountUnits newAmountUnits = UnitGroupMap.DAYSDURATIONRATIO.getRightSizedAmountUnits(amount.durationInDays(), 3)
+						amount.update(amount.tag, m['baseTag'], newAmountUnits.amount, newAmountUnits.amountPrecision,
+								newAmountUnits.units + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), newAmountUnits.unitRatio, DurationType.NONE)
 						return null
 					}
 				} else if (amount.unitRatio == null && amount.precision < 0) {
@@ -506,7 +513,8 @@ class Entry implements Comparable {
 					amount.tag = amount.baseTag
 				}
 			} else {
-				m['amount'] = new ParseAmount(amount.baseTag, days, 3, "days", UnitGroupMap.theMap.DAYSDURATIONRATIO, DurationType.NONE)
+				AmountUnits newAmountUnits = UnitGroupMap.DAYSDURATIONRATIO.getRightSizedAmountUnits(days, 3)
+				m['amount'] = new ParseAmount(amount.baseTag, newAmountUnits.amount, newAmountUnits.amountPrecision, newAmountUnits.units, newAmountUnits.unitRatio, DurationType.NONE)
 			}
 			other.doUpdateSingle(m, stats)
 			
@@ -527,7 +535,9 @@ class Entry implements Comparable {
 					}
 					// complete this entry and rewrite it as a full duration entry
 					amount.tag = amount.baseTag
-					amount.update(amount.baseTag, amount.durationInHours(), 3, "hours", UnitGroup.DURATION, DurationType.NONE)
+					AmountUnits newAmountUnits = UnitGroupMap.DAYSDURATIONRATIO.getRightSizedAmountUnits(amount.durationInDays(), 3)
+					amount.update(amount.baseTag, newAmountUnits.amount, newAmountUnits.amountPrecision,
+							newAmountUnits.units + (amount.unitSuffix ? ' ' + amount.unitSuffix : ''), newAmountUnits.unitRatio, DurationType.NONE)
 					return null
 				}
 			} else if (amount.unitRatio == null && amount.precision < 0) {

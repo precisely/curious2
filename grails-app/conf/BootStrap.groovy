@@ -30,6 +30,8 @@ class BootStrap {
 	EntryParserService entryParserService
 	AlertGenerationService alertGenerationService
 	
+	static protected initClosures = []
+	
 	def init = { servletContext ->
 		log.debug "Curious bootstrap started executing."
 		def current = Environment.current
@@ -82,7 +84,7 @@ class BootStrap {
 				log.debug "Bootstrap: Could not start IntraDayDataThread"
 			}
 		}
-
+		
 		log.debug "Curious bootstrap finished executing."
 	}
 

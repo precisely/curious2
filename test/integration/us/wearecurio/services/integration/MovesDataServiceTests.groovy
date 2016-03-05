@@ -1,6 +1,9 @@
 package us.wearecurio.services.integration
 
 import static org.junit.Assert.*
+import groovy.lang.Closure;
+
+import java.util.Date;
 
 import org.junit.After
 import org.junit.Before
@@ -47,8 +50,20 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		super.tearDown()
 	}
 
+	int testEntries(User user, String timeZoneName, Date baseDate, Date currentTime, Closure test) {
+		def list = Entry.fetchListData(user, timeZoneName, baseDate, currentTime)
+		
+		int c = 0
+		for (record in list) {
+			test(record)
+			++c
+		}
+		
+		return c
+	}
+	
 	@Test
-	void testGetDataDefaultForValidData() {
+	void testNormalizedData() {
 		/**
 		 * There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
 		 * Out of 4 valid entries, three of them having calories & others not. So according to code, 6 entries for each
@@ -56,6 +71,61 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		 * 
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
+
+		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"run","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"wlk","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"wlk","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"trp","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
+		//String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]}]}]"""
+
+		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
+				return new Response(new MockedHttpURLConnection(parsedResponse))
+			}]
+
+		Map response = movesDataService.getDataDefault(account, null, false)
+		assert response.success == true
+		Collection entries = Entry.findAllByUserId(user.getId())
+		Date date = null
+		for (def entry in entries) {
+			if (entry.getAmount().intValue() == 1353) {
+				assert entry.toString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, baseTag:run, description:run [steps], amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null, repeatEnd:null")
+			}
+			if (date == null || entry.date < date)
+				date = entry.date
+		}
+		assert Entry.count() == 15
+
+		// Ensuring entries of the same day will be replaced with new entries.
+		response = movesDataService.getDataDefault(account, null, false)
+		assert response.success == true
+		
+		testEntries(user, "America/Los_Angeles", date, date) {
+			def i = it
+			//assert !it.normalizedAmounts[0].sum
+			i = i
+		}
+	}
+
+/*	@Test
+	void testUnsubscribe() {
+		// If no OAuthAccount Exists
+		shouldFail(MissingOAuthAccountException) {
+			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
+		}
+		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
+
+		// If OAuthAccount Exists
+		Map response = movesDataService.unsubscribe(userId)
+		assertTrue response.success
+		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
+	}
+
+	@Test
+	void testGetDataDefaultForValidData() {
+		//
+		// There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
+		// Out of 4 valid entries, three of them having calories & others not. So according to code, 6 entries for each
+		// activity having calories & 5 entry for activity not having calories will be created. Total 23 entries will be created.
+		// 
+		// @see this in http://jsoneditoronline.org/index.html
+		//
 
 		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"run","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"wlk","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"wlk","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"trp","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
 		//String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]}]}]"""
@@ -80,20 +150,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		
 		entries = Entry.findAllByUserId(user.getId())
 		assert entries.size() == 15
-	}
-
-	@Test
-	void testUnsubscribe() {
-		// If no OAuthAccount Exists
-		shouldFail(MissingOAuthAccountException) {
-			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
-		}
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
-
-		// If OAuthAccount Exists
-		Map response = movesDataService.unsubscribe(userId)
-		assertTrue response.success
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import us.wearecurio.model.TagProperties
+import us.wearecurio.services.EntryParserService.ParseAmount
 
 import us.wearecurio.data.DataRetriever
 
@@ -859,11 +860,11 @@ class UnitGroupMap {
 	}
 
 	void getJSONAmounts(Long userId, Long tagId, Map amounts, Map normalizedAmounts, BigDecimal amount, int amountPrecision, String units) {
-		DecoratedUnitRatio mostUsedUnitRatioForTag = this.mostUsedUnitRatioForTagId(userId, tagId)
 		
 		TagProperties props = TagProperties.createOrLookup(userId, tagId)
 		
 		DecoratedUnitRatio decorated = decoratedUnitRatioForTagIdUnits(userId, tagId, units)
+		DecoratedUnitRatio mostUsedUnitRatioForTag = this.mostUsedUnitRatioForTagId(userId, tagId) ?: decorated
 		if (decorated == null) {
 			amounts.put(amounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:units])
 			normalizedAmounts.put(normalizedAmounts.size(), [amount:amount, amountPrecision:(Integer)amountPrecision, units:units, sum:false])
@@ -1221,6 +1222,45 @@ class DecoratedUnitRatio {
 	
 	static final BigDecimal SLIGHTLYLESSTHANONE = 0.9999g
 	
+	static class AmountUnits {
+		BigDecimal amount
+		int amountPrecision
+		String units
+		DecoratedUnitRatio unitRatio
+		
+		AmountUnits(BigDecimal amount, int amountPrecision, String units, DecoratedUnitRatio unitRatio) {
+			this.amount = amount
+			this.units = units
+			this.unitRatio = unitRatio
+		}
+	}
+	
+	AmountUnits getRightSizedAmountUnits(BigDecimal amount, int amountPrecision) {
+		if (amount == null) {
+			return new AmountUnits(null, amountPrecision, singularOrPluralUnitString(true, false), this)
+		}
+		
+		int compareToOne = amount.compareTo(SLIGHTLYLESSTHANONE)
+		
+		if ((!subRatio) || subUnitRatio == null || amountPrecision < 0) {
+			return new AmountUnits(amount.setScale(4, BigDecimal.ROUND_HALF_UP), amountPrecision, singularOrPluralUnitString(compareToOne != 0, false), this)
+		} else {
+			BigDecimal subAmount
+			
+			if (compareToOne >= 0) {
+				String baseUnitString
+				
+				BigDecimal primeVal = amount.setScale(100, BigDecimal.ROUND_HALF_UP)
+				return new AmountUnits(primeVal, amountPrecision, singularOrPluralUnitString(primeVal != 1.0g, false), this)
+			} else {
+				subAmount = (amount * ratio / subRatio).setScale(100, BigDecimal.ROUND_HALF_UP)
+			}
+			
+			subUnitRatio.getRightSizedAmountUnits(subAmount, amountPrecision)
+		}
+	}
+	
+
 	void getJSONAmounts(Map amounts, BigDecimal amount, int amountPrecision) {
 		if (amount == null) {
 			amounts.put(amounts.size(), [amount:null, amountPrecision:(Integer)amountPrecision, units:singularOrPluralUnitString(true, false)])

@@ -70,17 +70,6 @@ class UserGroupTests extends CuriousTestCase {
 	}
 
 	@Test
-	void testDefaultUserGroup() {
-
-		//Default UserGroup for a User if no default group present is curious
-		assert UserGroup.getDefaultGroupForUser(user) == curious
-		assert curious.hasReader(user)
-		assert curious.hasWriter(user)
-		assert !curious.hasNotified(user)
-		assert !curious.hasAdmin(user)
-	}
-
-	@Test
 	void testUserGroups() {
 		announce.addMember(user)
 
@@ -193,6 +182,17 @@ class UserGroupTests extends CuriousTestCase {
 		assert userGroups[1].id == curious2.id
 	}
 
+/*	@Test
+	void testDefaultUserGroup() {
+
+		//Default UserGroup for a User if no default group present is curious
+		assert UserGroup.getDefaultGroupForUser(user) == curious
+		assert curious.hasReader(user)
+		assert curious.hasWriter(user)
+		assert !curious.hasNotified(user)
+		assert !curious.hasAdmin(user)
+	}
+
 	@Test
 	void testVirtualUserGroup() {
 		UserGroup group = UserGroup.createVirtual("Test full name")
@@ -200,4 +200,5 @@ class UserGroupTests extends CuriousTestCase {
 		assert group.fullName == "Test full name"
 		assert group.isVirtual
 	}
+/**/
 }
