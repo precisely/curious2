@@ -321,7 +321,7 @@ class TagGroup extends GenericTagGroup {
 	// Get all Tag Groups which are owned by System UserGroups.
 	static List getSystemTagGroupsInfo() {
 		return TagGroup.withTransaction {
-			List tagGroups = getTagGroupsInfoForUserGroupIds([UserGroup.theSystemGroup.id])
+			List tagGroups = getTagGroupsInfoForUserGroupIds([UserGroup.getSystemGroup().id])
 			tagGroups.each { tagGroup ->
 				tagGroup["isSystemGroup"] = true
 			}

@@ -345,14 +345,9 @@ class DataControllerTests extends CuriousControllerTestCase {
 		controller.getListData()
 
 		assert controller.response.contentAsString.startsWith('callback([{"id":')
-<<<<<<< Upstream, based on origin/master
-		assert controller.response.contentAsString.contains('{"id":22,"userId":27,"date":new Date(1278023400000),"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":185,"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null,"repeatEnd":null,"amounts":{"0":{"amount":1.000000000,"amountPrecision":3,"units":""}},"normalizedAmounts":{"0":')
-		}
-=======
 		assert controller.response.contentAsString.contains(',"datePrecisionSecs":180,"timeZoneName":"America/Los_Angeles","tagId":')
 		assert controller.response.contentAsString.contains(',"description":"bread","amount":1.000000000,"amountPrecision":3,"units":"","comment":"","repeatType":null')
 	}
->>>>>>> 6b138f5 Fixes #895 Fix data normalization for device duration data
 
 	@Test
 	void testGetListDataMultipleDate() {
