@@ -24,4 +24,11 @@ class PublicController {
 		def model = []
 		render(view:"/public/lgmd2iproject", model:model)
 	}
+
+	def getSurveyOptions() {
+		debug "PublicController.getSurveyOptions()"
+		Map surveyOptions = ["Sleep": "sleep", "Mood": "mood", "Fitness": "fitness", 
+				"Productivity": "productivity", "Food": "food", "Supplements": "supplements"]
+		render "${params.callback}(${new JSON(surveyOptions)})"
+	}
 }
