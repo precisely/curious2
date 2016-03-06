@@ -556,18 +556,18 @@ class MigrationService {
 		tryMigration("Change continuous repeats to bookmark") {
 			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
 		}
-		/*tryMigration("Rename [weight] and [duration] tags") {
+		tryMigration("Rename [weight] and [duration] tags") {
 			for (Tag tag in Tag.list()) {
 				if (tag.description.endsWith('[weight]')) {
-					tag.description = tag.description.replaceAll('[weight]', '[amount]')
+					tag.description = tag.description.replaceAll('\\[weight\\]', '\\[amount\\]')
 					Utils.save(tag, true)
 				}
 				if (tag.description.endsWith('[duration]')) {
-					tag.description = tag.description.replaceAll('[duration]', '[time]')
+					tag.description = tag.description.replaceAll('\\[duration\\]', '\\[time\\]')
 					Utils.save(tag, true)
 				}
 			}
-		}*/
+		}
 	}
 	
 	/**
