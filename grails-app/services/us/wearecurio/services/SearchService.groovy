@@ -145,6 +145,7 @@ class SearchService {
             firstPostMessage: discussion.firstPostMessage,
             posts: discussion.posts,
             isNew: isNew,
+			disableComments: discussion.disableComments,
 			// TODO: May be this can be optimized for ElasticSearch
 			isFollower: Discussion.get(id.toLong())?.isFollower(userId)
         ]
