@@ -7,6 +7,24 @@ $(document).ready(function() {
 	wrapPagination();
 });
 
+/**
+ * Helper method to show an element (with message) for a second and immediately hide it using fade out animation.
+ * @param element Element to flash (default to "#flash-message" selector)
+ * @param timeout Time in millisecond to show the element (default to 400 milliseconds)
+ */
+function displayFlashMessage(element, timeout) {
+	element = element || "#flash-message";
+	$(element).show();
+	setTimeout(function() {
+		$(element).fadeOut({
+			duration: 600,
+			complete: function() {
+				$(element).hide();
+			}
+		})
+	}, timeout || 400);
+}
+
 function wrapPagination() {
 	$("a, span.step.gap", "ul.pagination").wrap('<li></li>');
 	$("span.currentStep", "ul.pagination").wrap('<li class="active"></li>')

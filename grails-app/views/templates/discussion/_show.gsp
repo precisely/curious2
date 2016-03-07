@@ -90,15 +90,20 @@
 							<hr>
 							<div class="buttons">
 								<div class="row">
-									<div class="col-sm-4 text-left">
-										<span class="orange-checkbox">
+									<div class="col-sm-6 text-left">
+										<span class="orange-checkbox {{- isAdmin ? '' : 'hide'}}">
 											<input type="checkbox" id="disable-comments" data-hash="{{- discussionHash }}"
 												{{- disableComments ? "checked" : "" }}>
 											<label for="disable-comments"></label>
+											<small>Disable Comments</small>
+
+											<small id="flash-message" class="text-red hide margin-left">
+												<i class="fa fa-check-square-o"> Preference saved!</i>
+											</small>
 										</span>
-										&nbsp;Disable Comments
 									</div>
-									<div class="col-sm-8">
+									<div class="col-sm-6">
+										<!-- Fix indentation after merge -->
 								{{ if (isFollowing) {  }}
 									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
 									<img src="/images/unfollow.png" alt="unfollow" >Unfollow

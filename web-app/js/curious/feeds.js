@@ -853,6 +853,7 @@ function editSprint(sprintHash) {
 			$('#sprint-details').val(data.sprint.description);
 			$('.submit-sprint').text('Update Sprint');
 			$('#createSprintOverlay .modal-title').text('Edit Sprint');
+			$('#disable-sprint-comments').prop('checked', data.sprint.disableComments);
 
 			if (data.sprint.visibility === 'PRIVATE') {
 				$('#closed').prop('checked', true);

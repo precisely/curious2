@@ -225,8 +225,7 @@ $(document).ready(function() {
 					return;
 				}
 
-				showAlert((disabled ? "Comments disabled" : "Comments enabled"));
-
+				displayFlashMessage();
 				$(".add-comment-to-discussion").toggle(!disabled);
 			});
 	});
