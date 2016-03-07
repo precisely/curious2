@@ -1,36 +1,39 @@
 package us.wearecurio.model
 
+import groovy.transform.AutoClone
+
 import us.wearecurio.utility.Utils
 
+@AutoClone
 class CustomLogin {
 
 	static final String defaultPromoCode = "default"
 	
 	String promoCode
-	String customQuestion1 = "Does caffeine affect my sleep?"
-	String customQuestion2 = "Does exercise really affect my mood?"
-	String trackExample1 = "your mood"
-	String trackExample2 = "how much sleep you get"
-	String trackExample3 = "the coffee you drink"
-	String deviceExample = "the Oura ring (via your user profile)"
-	String sampleQuestionDuration = "How many hours did you sleep last night?"
-	String sampleQuestionDurationExampleAnswers = "e.g. 8 hours 10 minutes or 8hrs 10 mins"
-	String sampleQuestionRating = "How's your mood right now?"
-	String sampleQuestionRatingRange = "a number from 1 to 10"
-	String sampleQuestionRatingExampleAnswer1 = "1 would mean 'Not the best day'"
-	String sampleQuestionRatingExampleAnswer2 = "2>5 would mean 'Just so-so'"
-	String sampleQuestionRatingExampleAnswer3 = "3>10 would mean 'Super stoked'"
-	String today1 = "DRINK"
-	String today1Example = "e.g. coffee 1 cup 8am"
-	String today2 = "EXERCISE"
-	String today2Example = "e.g. walk 9500 steps"
-	String today3 = "WORK"
-	String today3Example = "e.g. work 7 hours 30 minutes"
-	String today4 = "SUPPLEMENTS"
-	String today4Example = "e.g. aspirin 400 mg, or vitamin c 200 mg"
+	String customQuestion1
+	String customQuestion2
+	String trackExample1
+	String trackExample2
+	String trackExample3
+	String deviceExample
+	String sampleQuestionDuration
+	String sampleQuestionDurationExampleAnswers
+	String sampleQuestionRating
+	String sampleQuestionRatingRange
+	String sampleQuestionRatingExampleAnswer1
+	String sampleQuestionRatingExampleAnswer2
+	String sampleQuestionRatingExampleAnswer3
+	String today1
+	String today1Example
+	String today2
+	String today2Example
+	String today3
+	String today3Example
+	String today4
+	String today4Example
 
-	String[] interestTags = ["sleep", "coffee"]
-	String[] bookmarks = ["sleep 8 hrs", "swim 30 mins"]
+	List interestTags
+	List bookmarks
 	
 	static CustomLogin defaultCustomLogin() {
 		CustomLogin defaultCustomization = CustomLogin.findByPromoCode(defaultPromoCode)
@@ -38,10 +41,59 @@ class CustomLogin {
 		if (defaultCustomization == null) {
 			defaultCustomization = new CustomLogin()
 			defaultCustomization.promoCode = defaultPromoCode
+			defaultCustomization.customQuestion1 = "Does caffeine affect my sleep?"
+			defaultCustomization.customQuestion2 = "Does exercise really affect my mood?"
+			defaultCustomization.trackExample1 = "your mood"
+			defaultCustomization.trackExample2 = "how much sleep you get"
+			defaultCustomization.trackExample3 = "the coffee you drink"
+			defaultCustomization.deviceExample = "the Oura ring (via your user profile)"
+			defaultCustomization.sampleQuestionDuration = "How many hours did you sleep last night?"
+			defaultCustomization.sampleQuestionDurationExampleAnswers = "e.g. 8 hours 10 minutes or 8hrs 10 mins"
+			defaultCustomization.sampleQuestionRating = "How's your mood right now?"
+			defaultCustomization.sampleQuestionRatingRange = "a number from 1 to 10"
+			defaultCustomization.sampleQuestionRatingExampleAnswer1 = "1 would mean 'Not the best day'"
+			defaultCustomization.sampleQuestionRatingExampleAnswer2 = "2>5 would mean 'Just so-so'"
+			defaultCustomization.sampleQuestionRatingExampleAnswer3 = "3>10 would mean 'Super stoked'"
+			defaultCustomization.today1 = "DRINK"
+			defaultCustomization.today1Example = "e.g. coffee 1 cup 8am"
+			defaultCustomization.today2 = "EXERCISE"
+			defaultCustomization.today2Example = "e.g. walk 9500 steps"
+			defaultCustomization.today3 = "WORK"
+			defaultCustomization.today3Example = "e.g. work 7 hours 30 minutes"
+			defaultCustomization.today4 = "SUPPLEMENTS"
+			defaultCustomization.today4Example = "e.g. aspirin 400 mg, or vitamin c 200 mg"
+			
+			defaultCustomization.interestTags = ["sleep"]
+			defaultCustomization.bookmarks = ["sleep 8 hours"]
+			
 			Utils.save(defaultCustomization, true)
 		}
 		
 		return defaultCustomization
+	}
+	
+	
+	static CustomLogin createFromDefault() {
+		CustomLogin ret = defaultCustomLogin().clone()
+		
+		if (ret == null) {
+			ret = new CustomLogin()
+		} else {
+			ret.promoCode = ""
+		}
+		
+		return ret
+	}
+	
+	static CustomLogin createFromDefault(String promoCode, boolean save=false) {
+		CustomLogin ret = createFromDefault()
+		
+		ret.promoCode = promoCode
+		if (save) {
+			Utils.save(ret, true)
+		}
+		
+		return ret
 	}
 	
     static constraints = {
