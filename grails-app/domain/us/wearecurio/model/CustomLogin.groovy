@@ -32,6 +32,7 @@ class CustomLogin {
 	String today4
 	String today4Example
 
+	static hasMany = [interestTags: String, bookmarks: String]
 	List interestTags
 	List bookmarks
 	
