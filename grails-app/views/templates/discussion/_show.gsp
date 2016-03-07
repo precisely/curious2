@@ -89,6 +89,16 @@
 							</p>
 							<hr>
 							<div class="buttons">
+								<div class="row">
+									<div class="col-sm-4 text-left">
+										<span class="orange-checkbox">
+											<input type="checkbox" id="disable-comments" data-hash="{{- discussionHash }}"
+												{{- disableComments ? "checked" : "" }}>
+											<label for="disable-comments"></label>
+										</span>
+										&nbsp;Disable Comments
+									</div>
+									<div class="col-sm-8">
 								{{ if (isFollowing) {  }}
 									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
 									<img src="/images/unfollow.png" alt="unfollow" >Unfollow
@@ -103,6 +113,8 @@
 								<button class="comment-button">
 									<img src="/images/comment.png" alt="comment"> Comment
 								</button>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -111,7 +123,7 @@
 								<div class="view-comment"
 									 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
 								<div class="comments media-list"></div>
-								<div class="add-comment-to-discussion">
+								<div class="add-comment-to-discussion {{- disableComments ? 'hide' : ''}}">
 									<form method="post" class="comment-form">
 										{{ if (notLoggedIn) { }}
 											<p>Enter your details below</p>

@@ -1988,7 +1988,7 @@ body.discuss-page .red-header {
 	padding: 5px;
 }
 
-.entry-checkbox {
+.orange-checkbox {
 	display: inline-block;
 	position: relative;
 	vertical-align: text-bottom;
@@ -2001,7 +2001,7 @@ body.discuss-page .red-header {
 	margin-top: 15px;
 }
 
-.entry-checkbox label {
+.orange-checkbox label {
 	width: 22px;
 	height: 22px;
 	cursor: pointer;
@@ -2014,15 +2014,15 @@ body.discuss-page .red-header {
 	border: 1px solid #d1d1d1;
 }
 
-.entry-checkbox input[type=checkbox]:checked + label {
+.orange-checkbox input[type=checkbox]:checked + label {
 	border: 1px solid #F48D5B;
 }
 
-.entry-checkbox input[type=checkbox]:checked + label:after {
+.orange-checkbox input[type=checkbox]:checked + label:after {
 	opacity: 3;
 }
 
-.entry-checkbox label:after {
+.orange-checkbox label:after {
 	content: '';
 	width: 15px;
 	height: 8px;
@@ -2040,7 +2040,7 @@ body.discuss-page .red-header {
 	transform: rotate(-55deg);
 }
 
-.entry-checkbox input[type="checkbox"] {
+.orange-checkbox input[type="checkbox"] {
 	display: none;
 }
 

@@ -91,15 +91,15 @@ class DiscussionController extends LoginController {
 		}
 	}
 	
-	def disableComments(boolean disable) {
+	def disableComments(boolean disable, String id) {
 		debug("Attempting to disable comments on trackathon $params")
 
-		Discussion discussion = Discussion.findByHash(params.id)
+		Discussion discussion = Discussion.findByHash(id)
 		if (!discussion) {
-			log.warn "discussionId not found: " + params.id
+			log.warn "discussionId not found: " + id
 			renderJSONGet([success: false, message: g.message(code: "default.not.found.message", args: ["Discussion"])])
 		} else {
-			Map result = Discussion.disableComments(discussion, sessionUser(), params.disable == "true")
+			Map result = Discussion.disableComments(discussion, sessionUser(), disable)
 			renderJSONGet(result)
 		}
 	}

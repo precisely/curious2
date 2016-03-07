@@ -71,7 +71,7 @@
 	<div class="discussion-comments-wrapper hide">
 		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
 		<div class="comments media-list"></div>
-		<div class="row">
+		<div class="row {{- discussionData.disableComments ? 'hide' : ''}}">
 			<div class="col-md-6 add-comment">
 				<form class="comment-form">
 					{{ if (false) { }}

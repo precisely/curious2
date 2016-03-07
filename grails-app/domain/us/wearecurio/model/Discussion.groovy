@@ -71,7 +71,8 @@ class Discussion {
             'username',
             'postUsernames',
             'virtualUserGroupIdFollowers',
-            'followers'
+            'followers',
+			'disableComments'
 		]
 	}
 	
