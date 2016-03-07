@@ -728,7 +728,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				},
 				yaxes: yaxes,
 				grid: {
-					hoverable: true,
+					hoverable: false,
 					clickable: true,
 					autoHighlight: true,
 					mouseActiveRadius: 5
@@ -755,7 +755,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				},
 				yaxes: yaxes,
 				grid: {
-					hoverable: true,
+					hoverable: false,
 					clickable: true,
 					autoHighlight: true,
 					mouseActiveRadius: 5
@@ -1445,7 +1445,7 @@ function PlotLine(p) {
 		// loess smoothing
 		var smoothWidth = this.parentLine.smoothDataWidth;
 		
-		var bandwidth = 0.25 + 0.75 * (smoothWidth - 1) / 29;
+		var bandwidth = 0.01 + 0.25 * (smoothWidth - 1) / 29;
 		
 		var results = loess_pairs(data, bandwidth);
 

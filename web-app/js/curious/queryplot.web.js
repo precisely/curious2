@@ -207,7 +207,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			}
 		});
 
-		plotArea.off("plothover");
+		/*plotArea.off("plothover");
 		plotArea.on("plothover", function(event, pos, item) {
 			if (item) {
 				var now = new Date().getTime();
@@ -248,7 +248,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			} else {
 				console.log('plotclick: Item not found');
 			}
-		});
+		});*/
 
 		this.store();
 	}
