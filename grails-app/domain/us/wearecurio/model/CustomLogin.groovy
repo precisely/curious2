@@ -7,7 +7,7 @@ import us.wearecurio.utility.Utils
 @AutoClone
 class CustomLogin {
 
-	static final String defaultPromoCode = "default"
+	static final String DEFAULT_PROMO_CODE = "default"
 	
 	String promoCode
 	String customQuestion1
@@ -37,11 +37,11 @@ class CustomLogin {
 	List bookmarks
 	
 	static CustomLogin defaultCustomLogin() {
-		CustomLogin defaultCustomization = CustomLogin.findByPromoCode(defaultPromoCode)
+		CustomLogin defaultCustomization = CustomLogin.findByPromoCode(DEFAULT_PROMO_CODE)
 		
 		if (defaultCustomization == null) {
 			defaultCustomization = new CustomLogin()
-			defaultCustomization.promoCode = defaultPromoCode
+			defaultCustomization.promoCode = DEFAULT_PROMO_CODE
 			defaultCustomization.customQuestion1 = "Does caffeine affect my sleep?"
 			defaultCustomization.customQuestion2 = "Does exercise really affect my mood?"
 			defaultCustomization.trackExample1 = "your mood"

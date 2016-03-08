@@ -17,7 +17,7 @@ class CustomLoginSpec extends Specification {
 		CustomLogin login = CustomLogin.defaultCustomLogin()
 		
 		then: "defaults are set to hard-coded values since promo not in db"
-		login.promoCode == CustomLogin.defaultPromoCode
+		login.promoCode == CustomLogin.DEFAULT_PROMO_CODE
 		login.customQuestion1 == "Does caffeine affect my sleep?"
 		login.customQuestion2 == "Does exercise really affect my mood?"
 		login.trackExample1 == "your mood"
@@ -42,6 +42,95 @@ class CustomLoginSpec extends Specification {
 		login.interestTags.equals(["sleep"])
 		login.bookmarks.equals(["sleep 8 hours"])
     }
+
+	void "test defaultCustomLogin returns saved modified values"() {
+		given: "the default CustomLogin object"
+		CustomLogin login = CustomLogin.defaultCustomLogin()
+		
+		and: "default values"
+		String customQuestion1 = "Testing customQuestion1"
+		String customQuestion2 = "Testing customQuestion2"
+		String trackExample1 = "Testing trackExample1"
+		String trackExample2 = "Testing trackExample2"
+		String trackExample3 = "Testing trackExample3"
+		String deviceExample = "Testing deviceExample"
+		String sampleQuestionDuration = "Testing sampleQuestionDuration"
+		String sampleQuestionDurationExampleAnswers = "Testing sampleQuestionDurationExampleAnswers"
+		String sampleQuestionRating = "Testing sampleQuestionRating"
+		String sampleQuestionRatingRange = "Testing sampleQuestionRatingRange"
+		String sampleQuestionRatingExampleAnswer1 = "Testing sampleQuestionRatingExampleAnswer1"
+		String sampleQuestionRatingExampleAnswer2 = "Testing sampleQuestionRatingExampleAnswer2"
+		String sampleQuestionRatingExampleAnswer3 = "Testing sampleQuestionRatingExampleAnswer3"
+		String today1 = "Testing today1"
+		String today1Example = "Testing today1Example"
+		String today2 = "Testing today2"
+		String today2Example = "Testing today2Example"
+		String today3 = "Testing today3"
+		String today3Example = "Testing today3Example"
+		String today4 = "Testing today4"
+		String today4Example = "Testing today4Example"
+		List interestTags = ["testing-interest-tag"]
+		List bookmarks = ["testing-bookmark-text"]
+		
+		when: "default object is modified"
+		login.customQuestion1 = customQuestion1
+		login.customQuestion2 = customQuestion2
+		login.trackExample1 = trackExample1
+		login.trackExample2 = trackExample2
+		login.trackExample3 = trackExample3
+		login.deviceExample = deviceExample
+		login.sampleQuestionDuration = sampleQuestionDuration
+		login.sampleQuestionDurationExampleAnswers = sampleQuestionDurationExampleAnswers
+		login.sampleQuestionRating = sampleQuestionRating
+		login.sampleQuestionRatingRange = sampleQuestionRatingRange
+		login.sampleQuestionRatingExampleAnswer1 = sampleQuestionRatingExampleAnswer1
+		login.sampleQuestionRatingExampleAnswer2 = sampleQuestionRatingExampleAnswer2
+		login.sampleQuestionRatingExampleAnswer3 = sampleQuestionRatingExampleAnswer3
+		login.today1 = today1
+		login.today1Example = today1Example
+		login.today2 = today2
+		login.today2Example = today2Example
+		login.today3 = today3
+		login.today3Example = today3Example
+		login.today4 = today4
+		login.today4Example = today4Example
+		login.interestTags = interestTags
+		login.bookmarks = bookmarks
+		
+		and: "login object is saved"
+		login.save(true)
+		
+		and: "defaultCustomLogin is requested"
+		CustomLogin newDefault = CustomLogin.defaultCustomLogin()
+		
+		then: "returned CustomLogin has default promoCode"
+		newDefault.promoCode == CustomLogin.DEFAULT_PROMO_CODE
+		
+		and: "other values reflect the saved values"
+		newDefault.customQuestion1 == customQuestion1
+		newDefault.customQuestion2 == customQuestion2
+		newDefault.trackExample1 == trackExample1
+		newDefault.trackExample2 == trackExample2
+		newDefault.trackExample3 == trackExample3
+		newDefault.deviceExample == deviceExample
+		newDefault.sampleQuestionDuration == sampleQuestionDuration
+		newDefault.sampleQuestionDurationExampleAnswers == sampleQuestionDurationExampleAnswers
+		newDefault.sampleQuestionRating == sampleQuestionRating
+		newDefault.sampleQuestionRatingRange == sampleQuestionRatingRange
+		newDefault.sampleQuestionRatingExampleAnswer1 == sampleQuestionRatingExampleAnswer1
+		newDefault.sampleQuestionRatingExampleAnswer2 == sampleQuestionRatingExampleAnswer2
+		newDefault.sampleQuestionRatingExampleAnswer3 == sampleQuestionRatingExampleAnswer3
+		newDefault.today1 == today1
+		newDefault.today1Example == today1Example
+		newDefault.today2 == today2
+		newDefault.today2Example == today2Example
+		newDefault.today3 == today3
+		newDefault.today3Example == today3Example
+		newDefault.today4 == today4
+		newDefault.today4Example == today4Example
+		newDefault.interestTags.equals(interestTags)
+		newDefault.bookmarks.equals(bookmarks)
+	}
 	
 	void "test createFromDefault without promoCode"() {
 		given: "a default CustomLogin"
@@ -192,5 +281,5 @@ class CustomLoginSpec extends Specification {
 		result.today4Example == newLogin.today4Example
 		result.interestTags.equals(newLogin.interestTags)
 		result.bookmarks.equals(newLogin.bookmarks)
-	}	
+	}		
 }

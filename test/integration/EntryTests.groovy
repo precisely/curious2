@@ -1864,4 +1864,44 @@ class EntryTests extends CuriousTestCase {
 		def repeatEnd = entry.getRepeatEnd()
 		assert repeatEnd.equals(entry2.fetchPreviousDate())
 	}*/
+	
+	@Test
+	void "Test createBookmark minimum parameters"(){
+		Entry e = Entry.createBookmark(userId, "sleep 8 hrs")
+		println "e: $e"
+		assert e != null
+		assert e.baseTag != null
+		assert e.baseTag.description == "sleep"
+		assert e.description == "sleep [time]"
+		assert e.amount == 8.0
+		assert e.units == "hrs"
+		assert e.repeatTypeId == RepeatType.CONTINUOUSGHOST.id
+	}
+	
+	@Test
+	void "Test createBookmark with baseDate"(){
+		Entry e = Entry.createBookmark(userId, "sleep 8 hrs", new Date())
+		println "e: $e"
+		assert e != null
+		assert e.baseTag != null
+		assert e.baseTag.description == "sleep"
+		assert e.description == "sleep [time]"
+		assert e.amount == 8.0
+		assert e.units == "hrs"
+		assert e.repeatTypeId == RepeatType.CONTINUOUSGHOST.id
+	}
+
+	@Test
+	void "Test createBookmark with baseDate and entryStats"(){
+		Entry e = Entry.createBookmark(userId, "sleep 8 hrs", new Date(), new EntryStats())
+		println "e: $e"
+		assert e != null
+		assert e.baseTag != null
+		assert e.baseTag.description == "sleep"
+		assert e.description == "sleep [time]"
+		assert e.amount == 8.0
+		assert e.units == "hrs"
+		assert e.repeatTypeId == RepeatType.CONTINUOUSGHOST.id
+	}
+
 }
