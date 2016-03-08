@@ -1413,7 +1413,7 @@ function PlotLine(p) {
 		if (entries.length < 1) return; // don't calculate if parent line has no data
 		
 		if (entries.length == 1) {
-			this.entries = parentEntries;
+			this.entries = entries;
 			return;
 		}
 		
