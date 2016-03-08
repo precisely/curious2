@@ -227,7 +227,6 @@ $(document).ready(function() {
 					return;
 				}
 
-				displayFlashMessage();
 				$(".new-post").toggle(!disabled)
 			});
 	});
