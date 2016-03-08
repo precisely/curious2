@@ -418,8 +418,8 @@ abstract class DataService {
 	 * Used to poll all accounts data for respective API's.
 	 * Must be called from API data services.
 	 */
-	void pollAll(def refreshAll = false) {
-		OAuthAccount.findAllByTypeId(typeId).each { account ->
+	void pollAll(Boolean refreshAll = false) {
+		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
 					getDataDefault(account, null, refreshAll)

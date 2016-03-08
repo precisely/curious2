@@ -1,22 +1,18 @@
 package us.wearecurio.jobs
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
-
-import us.wearecurio.model.OAuthAccount;
-import us.wearecurio.model.ThirdParty;
-import us.wearecurio.model.TimeZoneId;
-import us.wearecurio.model.User;
-import us.wearecurio.thirdparty.InvalidAccessTokenException;
-import us.wearecurio.utility.TimerJob
-
 import grails.util.Environment
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDateTime
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.thirdparty.InvalidAccessTokenException
+import us.wearecurio.utility.TimerJob
 
 class DeviceIntegrationHourlyJob extends TimerJob {
 	static transactional = false
 
-	def humanDataService
 	def movesDataService
 	def withingsDataService
 
@@ -32,10 +28,10 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 			log.debug "Aborted DeviceIntegrationHourlyJob.."
 			return // don't send reminders in test or development mode
 		}
-		
+
 		movesDataService.pollAll()
-		def c = OAuthAccount.createCriteria()
-		def results = c.list {
+
+		List<Integer> results = OAuthAccount.createCriteria().list {
 			projections {
 				groupProperty('timeZoneId')
 			}
