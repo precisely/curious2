@@ -113,6 +113,10 @@ abstract class TagUnitMap {
 	 */
 	abstract Map getBuckets();
 
+	static BigDecimal convert(BigDecimal amount, BigDecimal ratio) {
+		return (amount * ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
+	}
+
 	Entry buildEntry(EntryCreateMap creationMap, EntryStats stats, String tagName, BigDecimal amount, Long userId,
 			Integer timeZoneId, Date date, String comment, String setName, Map args = [:]) {
 
@@ -126,7 +130,7 @@ abstract class TagUnitMap {
 		log.debug "The tag map is: $currentMapping"
 		
 		if (currentMapping.convert) {
-			amount = (amount * currentMapping.ratio).setScale(100, BigDecimal.ROUND_HALF_UP)
+			amount = convert(amount, currentMapping.ratio)
 		}
 		if (currentMapping.bucketKey) {
 			log.debug "Adding to bucket: " + getBuckets()[currentMapping.bucketKey]

@@ -537,7 +537,7 @@ abstract class DataService {
 	 * across the API.
 	 * @param userId Identifier of the user for which older entries need to be unset
 	 * @param setName Set name of the the entries
-     */
+	 */
 	void unsetOldEntries(Long userId, String setName) {
 		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
 				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])

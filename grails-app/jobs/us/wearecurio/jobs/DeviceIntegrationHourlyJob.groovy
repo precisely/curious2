@@ -15,6 +15,7 @@ class DeviceIntegrationHourlyJob extends TimerJob {
 
 	def movesDataService
 	def withingsDataService
+	def concurrent = false
 
 	static triggers = {
 		simple startDelay: 30 * MINUTE, repeatInterval: HOUR

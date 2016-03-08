@@ -1,30 +1,19 @@
 package us.wearecurio.services
 
-import us.wearecurio.model.ThirdPartyNotification
-
-import static us.wearecurio.model.OAuthAccount.*
-
-import org.springframework.transaction.annotation.Transactional
-
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
-
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Identifier
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.DurationType
+import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.model.*
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
-import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 import us.wearecurio.utility.Utils
+
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 class MovesDataService extends DataService {
 	
@@ -105,14 +94,52 @@ class MovesDataService extends DataService {
 			// Using new set name
 			unsetOldEntries(userId, setName)
 
+			List<JSONObject> activities = []
 			daySummary["segments"]?.each { currentSegment ->
-				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"
+				activities.addAll(currentSegment["activities"] ?: [])
+			}
 
-				currentSegment["activities"]?.each { currentActivity ->
-					log.debug "Processing activity for userId [$account.userId] of type [$currentActivity.activity]"
+			long thresholdDuration = 15 * 60 * 1000		// 15 minutes or 900 seconds
 
-					processActivity(creationMap, stats, currentActivity, userId, timeZoneId, currentActivity.activity, startEndTimeFormat, args)
+			JSONObject previousActivity = null
+			activities.each { currentActivity ->
+				if (!previousActivity) {
+					previousActivity = currentActivity
+					return
 				}
+
+				// IF type of previous and current activity is same
+				if ((previousActivity["activity"] == currentActivity["activity"])) {
+					Date previousActivityEndTime = startEndTimeFormat.parse(previousActivity["endTime"])
+					Date currentActivityStartTime = startEndTimeFormat.parse(currentActivity["startTime"])
+
+					/*
+					 * And if the duration between previous & current is less than 15 minutes,
+					 * then merge all the data of current entry to previous entry
+					 */
+					if ((currentActivityStartTime.getTime() - previousActivityEndTime.getTime()) <= thresholdDuration) {
+						// Not merging "duration" here as it is not used and the duration is calculated from start & end time
+						["distance", "calories", "steps"].each { String key ->
+							// First make sure there is no null values and values are integer for current entry
+							currentActivity[key] = (currentActivity[key] ?: 0).toInteger()
+							// Then make sure there is no null values and values are integer for previous entry
+							previousActivity[key] = (previousActivity[key] ?: 0).toInteger()
+							// And finally merge them
+							previousActivity[key] += currentActivity[key]
+						}
+
+						previousActivity["endTime"] = currentActivity["endTime"]
+						return
+					}
+				}
+
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
+				previousActivity = currentActivity
+			}
+
+			// Make sure to process the last previous activity after the above loop finishes
+			if (previousActivity) {
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
 			}
 		}
 		account.lastPolled = new Date()
@@ -134,7 +161,14 @@ class MovesDataService extends DataService {
 	}
 
 	@Transactional
-	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
+	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject activity, Long userId,
+				Integer timeZoneId, DateFormat timeFormat, Map args) {
+		processActivity(creationMap, stats, activity, userId, timeZoneId, activity["activity"].toString(), timeFormat, args)
+	}
+
+	@Transactional
+	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId,
+				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)
@@ -161,17 +195,23 @@ class MovesDataService extends DataService {
 			String comment = args.comment
 			String setName = args.setName
 			if (currentActivity.steps) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 			if (currentActivity.distance) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 			if (currentActivity.calories) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 
-			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
-			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime,
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
+
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime,
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
 		}
 	}
 }
