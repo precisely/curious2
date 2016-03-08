@@ -458,6 +458,17 @@ class LoginController extends SessionController {
 			if (p.metaTagName3 && p.metaTagValue3) {
 				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
 			}
+			//check promo code
+			//if value, lookup
+			//  if found, use values from db
+			//     flash.message = found
+			//  else get default and use those instead
+			//     flash.message = no promo exists, using default
+			//else
+			//  flash.message = no promocode specified, using default
+			//add interesttags (same as metaTag above? Investigate.)
+			//add bookmarks
+			//add CustomLogin object to params
 			setLoginUser(user)
 			execVerifyUser(user)
 			retVal['success'] = true
@@ -478,7 +489,7 @@ class LoginController extends SessionController {
 		def retVal = execRegister(params)
 		if (retVal['success']) {
 			session.showHelp = true
-			redirect(url:toUrl(controller: params.precontroller ?: 'home', action: params.preaction ?: 'index'))
+			redirect(url:toUrl(controller: params.precontroller ?: 'home', action: params.preaction ?: 'index'), params: [promoCode: promo_code])
 		} else if (retVal['errorCode'] == REGISTER_ERROR_USER_ALREADY_EXISTS) {
 			flash.message = "User " + params.username + " already exists"
 			redirect(url:toUrl(action:"register",
