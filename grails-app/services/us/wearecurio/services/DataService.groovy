@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 
 import javax.annotation.PostConstruct
 
@@ -528,5 +530,16 @@ abstract class DataService {
 		OAuthAccount.delete(account)
 
 		[code: parsedResponse.getCode(), body: parsedResponse]
+	}
+
+	/**
+	 * Unset the userId from the older entries for the given setName to remove duplicacy from the data import
+	 * across the API.
+	 * @param userId Identifier of the user for which older entries need to be unset
+	 * @param setName Set name of the the entries
+     */
+	void unsetOldEntries(Long userId, String setName) {
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 	}
 }

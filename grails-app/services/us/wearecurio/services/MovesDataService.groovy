@@ -66,7 +66,8 @@ class MovesDataService extends DataService {
 
 		log.info "Polling account with userId [$userId]"
 
-		Map args = [setName: SET_NAME, comment: COMMENT]
+		String setName = SET_NAME + " " + startDate.format("MM-dd-yyyy")
+		Map args = [setName: setName, comment: COMMENT]
 
 		Token tokenInstance = account.tokenInstance
 
@@ -82,7 +83,7 @@ class MovesDataService extends DataService {
 			return [success: false]
 		}
 		
-		Identifier setIdentifier = Identifier.look(SET_NAME)
+		Identifier oldSetIdentifier = Identifier.look(SET_NAME)
 
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
@@ -95,9 +96,14 @@ class MovesDataService extends DataService {
 			/**
 			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
 			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
+			 *
+			 * Using old set name for backward compatibility
 			 */
 			Entry.executeUpdate("update Entry e set e.userId = 0L where e.userId = :userId and e.setIdentifier = :identifier and e.date >= :currentDateA and e.date < :currentDateB",
-					[userId:userId, identifier:setIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
+					[userId:userId, identifier: oldSetIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
+
+			// Using new set name
+			unsetOldEntries(userId, setName)
 
 			daySummary["segments"]?.each { currentSegment ->
 				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"
@@ -111,9 +117,9 @@ class MovesDataService extends DataService {
 		}
 		account.lastPolled = new Date()
 		Utils.save(account, true)
-		
+
 		stats.finish()
-		
+
 		return [success: true]
 	}
 

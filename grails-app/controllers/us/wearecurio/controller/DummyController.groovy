@@ -37,4 +37,7 @@ class DummyController {
 		log.debug "Process Oura notifications"
 		ouraDataService.notificationProcessor()
 	}
+
+	def test() {
+	}
 }
