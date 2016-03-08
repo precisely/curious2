@@ -457,14 +457,14 @@ PlotLine.prototype.appendHTML = function() {
 	}
 	if (!this.isCycle) {
 		var smoothwidth = $("#plotlinesmoothwidth" + idSuffix);
-		smoothwidth.slider({min: 0, max: 30, value:this.smoothDataWidth});
+		smoothwidth.slider({min: 0, max: 90, value:this.smoothDataWidth});
 		var plotLine = this;
 		smoothwidth.off("slide");
 		smoothwidth.on("slide", function(event, ui) {
 			return plotLine.setSmoothDataWidth(ui.value);
 		})
 		var freqwidth = $("#plotlinefreqwidth" + idSuffix);
-		freqwidth.slider({min: 0, max: 30, value:this.freqDataWidth});
+		freqwidth.slider({min: 0, max: 90, value:this.freqDataWidth});
 		var plotLine = this;
 		freqwidth.off("slide");
 		freqwidth.on("slide", function(event, ui) {
