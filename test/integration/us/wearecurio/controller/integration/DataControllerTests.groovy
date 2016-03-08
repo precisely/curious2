@@ -93,6 +93,33 @@ class DataControllerTests extends CuriousControllerTestCase {
 	}
 
 	@Test
+	void testAddTutorialEntry() {
+		controller.session.userId = userId
+
+		controller.params.putAll([currentTime:'Fri, 30 Oct 2015 19:11:17 GMT',
+			text:'sleep 8 hours',
+			dateToken:'1446232277272',
+			userId:userId.toString(),
+			callback:'jQuery21105134934808593243_1446228256265',
+			_:'1446228256271',
+			SYNCHRONIZER_TOKEN:'12b3b03c-6062-47d2-9bf8-baee385e3b6e',
+			defaultToNow:'1',
+			timeZoneName:'America/Los_Angeles',
+			baseDate:'Fri, 30 Oct 2015 07:00:00 GMT',
+			SYNCHRONIZER_URI:'createSingleHelpEntrysDataCSRF',
+			action:'createSingleHelpEntrysData',
+			format:'null',
+			controller:'home'
+		])
+
+		controller.createSingleHelpEntrysData()
+
+		def x = controller.response.contentAsString
+		
+		assert !x.contains("success: false")
+	}
+
+	@Test
 	void testAutocompleteData() {
 		DataController controller = new DataController()
 

@@ -1211,8 +1211,9 @@ class DataController extends LoginController {
 		Date baseDate = parseDate(params.baseDate)
 		Date currentTime = parseDate(params.currentTime ?: params.date) ?: new Date()
 		def parsedEntry = getParsedEntry(params, user)
+		def amount = parsedEntry.amounts[0]
 		if (parsedEntry.tag?.description?.contains("cannot understand what you typed") || 
-				(parsedEntry.baseTag.description == "sleep" && parsedEntry.amounts.durationType[0] != DurationType.NONE)) {
+				(parsedEntry.baseTag.description == "sleep" && parsedEntry.amounts[0].durationType != DurationType.END)) {
 			renderJSONGet([success: false, message: parsedEntry.baseTag?.description == "sleep" ? 
 					"You must enter a time duration, like 'sleep 8 hours 10 mins'" : "Can not understand what you typed"])
 			return
