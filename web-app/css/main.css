@@ -27,6 +27,12 @@ input, optgroup, select, textarea {
 	list-style-type: none;
 }
 
+.ui-slider-horizontal .ui-state-default {
+  width: 10px;
+  margin-left: -5px;
+  color: #77BB77;
+}
+
 .interest-list input[type="text"] {
 	height:40px;
 	border-radius: 2px;

@@ -113,6 +113,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 		var zoomDiv = this.properties.getZoomControl();
 		if (!zoomDiv) return;
+		
+		zoomDiv.addClass("queryplotzoom");
 
 		var leftSlider, rightSlider;
 
@@ -145,21 +147,20 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			else rightSlider = (this.rightLinearSlider - startTime) * 20000 / span - 10000;
 		}
 
-		zoomDiv.slider({range: true, min:-10000, max: 10000, values: [leftSlider,rightSlider]});
-		zoomDiv.off("slide");
-		zoomDiv.on("slide", function(event, ui) {
-			return plot.slideCallback(ui.value == ui.values[0] ? 0 : 1, ui.value);
+		zoomDiv.dragslider({range: true, rangeDrag: true, animate: true, min:-10000, max: 10000, values: [leftSlider,rightSlider]});
+		zoomDiv.off("dragsliderslide");
+		zoomDiv.on("dragsliderslide", function(event, ui) {
+			return plot.slideCallback(ui.values[0], ui.values[1]);
 		})
 
 		var plot = this;
-		zoomDiv.off("slidestop");
-		zoomDiv.on("slidestop", function(event, ui) {
+		zoomDiv.off("dragsliderslidestop");
+		zoomDiv.on("dragsliderslidestop", function(event, ui) {
 			return plot.store();
 		})
 
 		if (this.cycleTagLine) {
-			plot.slideCallback(0, leftSlider);
-			plot.slideCallback(1, rightSlider);
+			plot.slideCallback(leftSlider, rightSlider);
 		}
 	}
 
@@ -278,39 +279,29 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		this.store();
 	}
 
-	this.slideCallback = function(handle, value) {
+	this.slideCallback = function(left, right) {
 		var lastRezeroWidth = this.rezeroWidth ? this.rezeroWidth : 0;
 		
 		if (this.cycleTagLine) {
-			if (handle == 0) {
-				this.leftCycleSlider = value;
-			} else {
-				this.rightCycleSlider = value;
-			}
-			if (handle == 0 && value > 0)
-				return false;
-			else if (handle == 1 && value < 0)
-				return false;
-			else {
-				if (handle == 0) {
-					if (value < 0)
-						this.minCycleRange = -Math.exp(4.362 * (-value/5000.0))/77.416;
-					else
-						this.minCycleRange = Math.exp(4.362 * (value/5000.0))/77.416;
-				} else {
-					if (value < 0)
-						this.maxCycleRange = -Math.exp(4.362 * (-value/5000.0))/77.416;
-					else
-						this.maxCycleRange = Math.exp(4.362 * (value/5000.0))/77.416;
-				}
-				this.refreshLinearSliders();
+			this.leftCycleSlider = left;
+			this.rightCycleSlider = right;
+			if (left > 0) left = 0;
+			if (right < 0) right = 0;
+			if (left < 0)
+				this.minCycleRange = -Math.exp(4.362 * (-left/5000.0))/77.416;
+			else
+				this.minCycleRange = Math.exp(4.362 * (left/5000.0))/77.416;
+			if (right < 0)
+				this.maxCycleRange = -Math.exp(4.362 * (-right/5000.0))/77.416;
+			else
+				this.maxCycleRange = Math.exp(4.362 * (right/5000.0))/77.416;
+			this.refreshLinearSliders();
 				
-				if (this.rezeroWidth != lastRezeroWidth)
-					this.refreshPlot();
-				else
-					this.redrawPlot();
-				return true;
-			}
+			if (this.rezeroWidth != lastRezeroWidth)
+				this.refreshPlot();
+			else
+				this.redrawPlot();
+			return true;
 		} else {
 			var startTime = this.properties.getStartTime();
 			var endTime = this.properties.getEndTime();
@@ -320,17 +311,17 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 			var span = endTime - startTime;
 
-			var handleTime = undefined;
-			if (!((handle == 0 && value == -10000) || (handle == 1 && value == 10000)))
-				handleTime = ((value + 10000) / 20000.0) * span + startTime;
+			var leftTime = undefined;
+			var rightTime = undefined;
+			if (left != -10000)
+				leftTime = ((left + 10000) / 20000.0) * span + startTime;
+			if (right != 10000)
+				rightTime = ((right + 10000) / 20000.0) * span + startTime;
 
-			if (handle == 0) {
-				this.leftLinearSlider = handleTime;
-				if (value == -10000) this.leftLinearSlider = null;
-			} else {
-				this.rightLinearSlider = handleTime;
-				if (value == 10000) this.rightLinearSlider = null;
-			}
+			this.leftLinearSlider = leftTime;
+			if (left == -10000) this.leftLinearSlider = null;
+			this.rightLinearSlider = rightTime;
+			if (right == 10000) this.rightLinearSlider = null;
 
 			this.refreshLinearSliders();
 			
