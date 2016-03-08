@@ -1472,7 +1472,7 @@ function PlotLine(p) {
 				continue;
 			
 			if (data.length == 1) {
-				retVal.push([new Date(data[i][0]), sum / w, lineName, 0]);
+				retVal.push([new Date(data[0][0]), data[0][1], lineName, 0]);
 				continue;
 			}
 			
