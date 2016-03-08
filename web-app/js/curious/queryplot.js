@@ -933,7 +933,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 		if ((!plotLine.isContinuous) && (!plotLine.hasSmoothLine())) {
 			plotLine.postLoadClosure = function() {
-				plotLine.setSmoothDataWidth(1, true);
+				plotLine.setSmoothDataWidth(4, true);
 			}
 		}
 		
