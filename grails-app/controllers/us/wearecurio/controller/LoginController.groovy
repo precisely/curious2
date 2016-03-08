@@ -471,6 +471,8 @@ class LoginController extends SessionController {
 			setLoginUser(user)
 			execVerifyUser(user)
 			retVal['success'] = true
+			params.precontroller = "home"
+			params.preaction = "sprint"
 			return retVal
 		}
 	}
