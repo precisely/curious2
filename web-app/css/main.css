@@ -36,7 +36,12 @@ input, optgroup, select, textarea {
 	box-shadow: none;
 	margin-top: 9px;
 }
-
+.basic-text {
+	font-size: 1em;
+	padding: 8px 0 15px 0;
+	color: #999999;
+	display: inline-block;
+}
 #addData textarea {
 	color: #5D5D5D;
 	font-size: 14px;

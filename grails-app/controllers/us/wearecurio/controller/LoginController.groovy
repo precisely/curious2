@@ -173,7 +173,7 @@ class LoginController extends SessionController {
 		
 		def verification = PasswordRecovery.createVerification(user.getId())
 		
-		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:recovery.getCode()])
+		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:verification.getCode()])
 		
 		emailService.send(user.getEmail(), "We Are Curious: account verification instructions",
 				"Welcome to We Are Curious! Please verify your email address before using the social features of our app. Click here to verify your account: " + verificationLink)
@@ -240,10 +240,15 @@ class LoginController extends SessionController {
 		
 		if (execVerifyUser(user) == EMAIL_CODE_SUCCESS) {
 			flash.message = "Account verification email sent. Please check your email; be sure to check your spam folder"
+			
+			render(view:"/home/userpreferences",
+					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+						prefs:user.getPreferences(), templateVer:urlService.template(request)])
 		} else {
 			flash.message = "Error sending verification email."
-			redirect(url:toUrl(action:"forgot",
-					model:[precontroller:params.precontroller, preaction:params.preaction]))
+			render(view:"/home/userpreferences",
+					model:[precontroller:flash.precontroller ?: 'home', preaction:flash.preaction ?: 'index', user:user,
+						prefs:user.getPreferences(), templateVer:urlService.template(request)])
 		}
 	}
 	
@@ -290,7 +295,7 @@ class LoginController extends SessionController {
 		if (verification == null) {
 			flash.message = "Invalid or expired email verification link, please try again"
 		
-			redirect(url:toUrl(controller:'home', action:'userpreferences'))
+			redirect(url:toUrl(controller:'home', action:'index'))
 			return
 		}
 		
@@ -299,7 +304,7 @@ class LoginController extends SessionController {
 		if (primeUser == null) {
 			flash.message = "Invalid email verification link, please try again"
 			
-			redirect(url:toUrl(controller:'home', action:'userpreferences'))
+			redirect(url:toUrl(controller:'home', action:'index'))
 			return
 		}
 		
@@ -441,6 +446,7 @@ class LoginController extends SessionController {
 				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
 			}
 			setLoginUser(user)
+			execVerifyUser(user)
 			retVal['success'] = true
 			return retVal
 		}

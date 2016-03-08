@@ -250,6 +250,9 @@ function editUserDetails() {
 											value="on" ${user.notifyOnComments ? "" : "checked"}>
 										<label for="private1" class="radio-private-label">Don't email me when someone comments</label>
 									</div>
+									<div>
+										<br/><g:link action="dosendverify" class="basic-text">Resend verification email</g:link><br>
+									</div>
 								</div>
 
 								<div class="form-group">
