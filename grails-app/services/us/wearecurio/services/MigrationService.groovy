@@ -568,6 +568,28 @@ class MigrationService {
 				}
 			}
 		}
+		tryMigration("Merge duplicate tags") {
+			Map<String, Tag> map = new HashMap<String, Tag>()
+			Set<Tag> duplicates = new HashSet<Tag>()
+			for (Tag tag in Tag.list()) {
+				Tag other = map.get(tag.description)
+				if (other != null) {
+					duplicates.add(tag)
+				} else {
+					map.put(tag.description, tag)
+				}
+			}
+			for (Tag duplicate in duplicates) {
+				Tag originalTag = map.getAt(duplicate.description)
+				def duplicateEntries = Entry.findAllByTag(duplicate)
+				for (Entry entry in duplicateEntries) {
+					entry.tag = originalTag
+					Utils.save(entry, true)
+				}
+				duplicate.delete(flush:true)
+			}
+			map = map
+		}
 	}
 	
 	/**

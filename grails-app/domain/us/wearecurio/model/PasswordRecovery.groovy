@@ -14,6 +14,10 @@ class PasswordRecovery {
 	Date start
 	Long userId
 	String code
+	Integer type
+	
+	static final Integer PASSWORD_TYPE = 1
+	static final Integer VERIFICATION_TYPE = 2
 	
 	static constraints = {
 		code(maxSize:50)
@@ -27,15 +31,23 @@ class PasswordRecovery {
 	
 	PasswordRecovery() {}
 
-	PasswordRecovery(long userId) {
+	PasswordRecovery(long userId, Integer type = PASSWORD_TYPE) {
 		this.start = new Date()
 		this.userId = userId
 		Random random = new Random(start.getTime() - 91242273L)
 		this.code = '' + (random.nextLong() + start.getTime()) + (random.nextLong() + 1429L) + userId
+		this.type = type
 	}
 	
-	static PasswordRecovery create(long userId) {
-		def recovery = new PasswordRecovery(userId)
+	static PasswordRecovery create(long userId, Integer type = PASSWORD_TYPE) {
+		def recovery = new PasswordRecovery(userId, type)
+		Utils.save(recovery, true)
+		
+		return recovery
+	}
+	
+	static PasswordRecovery createVerification(long userId, Integer type = VERIFICATION_TYPE) {
+		def recovery = new PasswordRecovery(userId, type)
 		Utils.save(recovery, true)
 		
 		return recovery
@@ -56,16 +68,20 @@ class PasswordRecovery {
 		start = new Date()
 	}
 	
-	static PasswordRecovery look(String code) {
+	static PasswordRecovery look(String code, Integer type = PASSWORD_TYPE) {
 		Date now = new Date()
 		
-		PasswordRecovery retVal = PasswordRecovery.findByCode(code)
+		PasswordRecovery retVal = PasswordRecovery.findByCodeAndType(code, type)
 		
 		if (retVal == null || retVal.getStart().getTime() < getStaleAgoTicks()) {
 			return null
 		}
 		
 		return retVal
+	}
+	
+	static PasswordRecovery lookVerification(String code) {
+		return look(code, VERIFICATION_TYPE)
 	}
 	
 	static deleteStale() {

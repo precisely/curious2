@@ -46,7 +46,7 @@ class User {
 	UserSettings settings = new UserSettings()
 	UFile avatar
 	private String avatarURL
-	boolean isVerified
+	boolean isVerified = false
 	
 	static transients = ['avatarURL']
 

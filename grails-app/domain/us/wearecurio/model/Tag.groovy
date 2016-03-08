@@ -42,7 +42,15 @@ class Tag implements Serializable, Comparable {
 	static Tag create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
-		Utils.save(tag, true)
+		if (!Utils.save(tag, true)) {
+			Thread.sleep(1000)
+			tag = Tag.findByDescription(d)
+			if (tag != null) {
+				addToCache(tag)
+				return tag
+			}
+			return null
+		}
 		addToCache(tag)
 		return tag
 	}

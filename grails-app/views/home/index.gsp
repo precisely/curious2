@@ -57,7 +57,7 @@
 								<img alt="repeat" class="inputPin" src="/images/input-pin.png">
 							</a>
 							--!>
-							<input class="full-width" type="text" placeholder="aspirin 200 mg 10:01am (slight headache)"
+							<input class="full-width" type="text" placeholder="sleep 8 hours 8:15am (good dreams)"
 									name="data" id="input0" required />
 							<input type="hidden" name="repeatTypeId" id="input0RepeatTypeId" />
 							<input type="hidden" name="repeatEnd" id="inpiut0RepeatEnd" />

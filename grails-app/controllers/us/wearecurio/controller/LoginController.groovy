@@ -150,10 +150,10 @@ class LoginController extends SessionController {
 				model:[precontroller:params.precontroller, preaction:params.preaction])
 	}
 	
-	protected static final int FORGOT_SUCCESS = 0
-	protected static final int FORGOT_ERROR_EMAIL_NOT_RECOGNIZED = 1
+	protected static final int EMAIL_CODE_SUCCESS = 0
+	protected static final int EMAIL_CODE_ERROR_EMAIL_NOT_RECOGNIZED = 1
 
-	protected def execForgot(User user) {
+	protected def execForgotUser(User user) {
 		debug "Sending password recovery email for: " + user.getEmail()
 		
 		def recovery = PasswordRecovery.create(user.getId())
@@ -165,7 +165,22 @@ class LoginController extends SessionController {
 		
 		debug "Recovery link: " + recoveryLink
 		
-		return FORGOT_SUCCESS
+		return EMAIL_CODE_SUCCESS
+	}
+	
+	protected def execVerifyUser(User user) {
+		debug "Sending account recovery email for: " + user.getEmail()
+		
+		def verification = PasswordRecovery.createVerification(user.getId())
+		
+		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:recovery.getCode()])
+		
+		emailService.send(user.getEmail(), "We Are Curious: account verification instructions",
+				"Welcome to We Are Curious! Please verify your email address before using the social features of our app. Click here to verify your account: " + verificationLink)
+		
+		debug "Verification link: " + verificationLink
+		
+		return EMAIL_CODE_SUCCESS
 	}
 	
 	protected def execForgotPassword(String emailOrUsername) {
@@ -175,10 +190,10 @@ class LoginController extends SessionController {
 			user = User.findByEmailAndVirtual(emailOrUsername, false)
 			if (user == null) {
 				debug "Error recovering password '" + emailOrUsername + "' not found'"
-				return FORGOT_ERROR_EMAIL_NOT_RECOGNIZED
+				return EMAIL_CODE_ERROR_EMAIL_NOT_RECOGNIZED
 			}
 		}
-		return execForgot(user)
+		return execForgotUser(user)
 	}
 	
 	def doforgot() {
@@ -190,7 +205,7 @@ class LoginController extends SessionController {
 			return
 		}
 		def forgotKey = params.username ?: params.email
-		if (forgotKey && execForgotPassword(forgotKey) == FORGOT_SUCCESS) {
+		if (forgotKey && execForgotPassword(forgotKey) == EMAIL_CODE_SUCCESS) {
 			flash.message = "Password recovery email sent. Please check your email; and be sure to check your spam folder"
 			
 			redirect(url:toUrl(controller:name(), action:'login'))
@@ -205,10 +220,46 @@ class LoginController extends SessionController {
 		debug "LoginController.doForgotData()"
 		
 		def forgotKey = params.username ?: params.email
-		if (forgotKey && execForgotPassword(forgotKey) == FORGOT_SUCCESS) {
+		if (forgotKey && execForgotPassword(forgotKey) == EMAIL_CODE_SUCCESS) {
 			renderJSONGet([success:true])
 		} else {
 			renderJSONGet([message:"We don't recognize that user.",success:false])
+		}
+	}
+	
+	def dosendverify() {
+		debug "LoginController.dosendverify()"
+		
+		User user = sessionUser()
+		if (!user) {
+			debug "auth failure"
+			return
+		}
+		
+		Long userId = user.id
+		
+		if (execVerifyUser(user) == EMAIL_CODE_SUCCESS) {
+			flash.message = "Account verification email sent. Please check your email; be sure to check your spam folder"
+		} else {
+			flash.message = "Error sending verification email."
+			redirect(url:toUrl(action:"forgot",
+					model:[precontroller:params.precontroller, preaction:params.preaction]))
+		}
+	}
+	
+	def dosendverifyData() {
+		debug "LoginController.dosendverifyData()"
+		
+		User user = sessionUser()
+		if (!user) {
+			debug "auth failure"
+			return
+		}
+		
+		if (execVerifyUser(user) == EMAIL_CODE_SUCCESS) {
+			renderJSONGet([success:true])
+		} else {
+			renderJSONGet([message:"Error sending verification email.",success:false])
 		}
 	}
 	
@@ -229,6 +280,37 @@ class LoginController extends SessionController {
 
 		render(view:"/" + name() + "/recover",
 				model:[precontroller:params.precontroller, preaction:params.preaction, code:params.code, templateVer:urlService.template(request)])
+	}
+	
+	def verify() {
+		debug "LoginController.verify()"
+		
+		PasswordRecovery verification = PasswordRecovery.lookVerification(params.code)
+		
+		if (verification == null) {
+			flash.message = "Invalid or expired email verification link, please try again"
+		
+			redirect(url:toUrl(controller:'home', action:'userpreferences'))
+			return
+		}
+		
+		User primeUser = User.get(verification.getUserId())
+		
+		if (primeUser == null) {
+			flash.message = "Invalid email verification link, please try again"
+			
+			redirect(url:toUrl(controller:'home', action:'userpreferences'))
+			return
+		}
+		
+		PasswordRecovery.delete(verification)
+		
+		primeUser.isVerified = true
+		Utils.save(user, true)
+		
+		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + user.username
+			
+		redirect(url:toUrl(controller:'home', action:'index'))
 	}
 	
 	def setLoginUser(user) {

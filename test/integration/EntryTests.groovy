@@ -181,7 +181,7 @@ class EntryTests extends CuriousTestCase {
 		}
 	}
 	
-/*	@Test
+	@Test
 	void testSourceIdentifier() {
 		EntryStats stats = new EntryStats()
 		
