@@ -114,7 +114,7 @@ class UserController extends LoginController {
 		User currentUser = sessionUser()
 		if (!currentUser) {
 			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
+			renderJSONGet([success: false])
 			return
 		}
 
@@ -132,7 +132,7 @@ class UserController extends LoginController {
 		User currentUser = sessionUser()
 		if (!currentUser) {
 			debug "auth failure"
-			renderStringGet(AUTH_ERROR_MESSAGE)
+			renderJSONGet([success: false])
 			return
 		}
 
@@ -144,5 +144,16 @@ class UserController extends LoginController {
 		} else {
 			renderJSONGet([success: false, message: g.message(code: "default.not.updated.message", args: ["User", "preferences"])])
 		}
+	}
+	
+	def addTutorialTags() {
+		User currentUser = sessionUser()
+		if (!currentUser) {
+			debug "auth failure"
+			renderJSONGet([success: false])
+			return
+		}
+
+		renderJSONGet([success: true])
 	}
 }
