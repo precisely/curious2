@@ -180,11 +180,15 @@ input:focus::-webkit-input-placeholder, input:focus::-moz-placeholder, input:foc
 }
 
 #input0::-webkit-input-placeholder {
-	color: #C04F7F !important;
+	color: #d9adbf !important;
 }
 
 #input0::-moz-placeholder {
-	color: #C04F7F !important;
+	color: #d9adbf !important;
+}
+
+#input0::-ms-input-placeholder {
+	color: #d9adbf !important;
 }
 
 .postcomment textarea {

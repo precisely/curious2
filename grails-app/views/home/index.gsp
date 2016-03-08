@@ -126,7 +126,7 @@
 			
 			$('#addData').prepend(newEntryDetailsPopover);
 			$('#addData .track-input-dropdown').show();
-			$("#addData .choose-date-input").datepicker();
+			$("#addData .choose-date-input").datepicker({changeYear: true, changeMonth: true});
 
 			$('#addData .repeat-entry-checkbox').change(function() {
 				$('#addData .repeat-modifiers').toggleClass('hide');

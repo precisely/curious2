@@ -55,7 +55,7 @@
 					<input type="hidden" name="preaction" value="${preaction}" />
 
 					<div class="form-group">
-						<label for="username">Social Username*:</label>
+						<label for="username">Public Username*:</label>
 						<input class="form-control" type="text" name="username" id="username" required
 								value="${fieldValue(bean:flash.user,field:'username')}" />
 					</div>

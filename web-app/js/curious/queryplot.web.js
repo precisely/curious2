@@ -45,8 +45,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			if (dateText == "") {
 				properties.initStartDate();
 				plot.loadAllData();
-			}
-		}
+			} else
+				plot.queueClearStartSlider();
+		},
+		changeYear: true,
+		changeMonth: true
 	});
 
 	datepicker.change(function () {
@@ -65,8 +68,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			if (dateText == "") {
 				plot.properties.initEndDate();
 				plot.loadAllData();
-			}
-		}
+			} else
+				plot.queueClearEndSlider();
+		},
+		changeYear: true,
+		changeMonth: true
 	});
 
 	datepicker.change(function () {
@@ -93,7 +99,15 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			renameField.on('mouseup', renameFunction);
 		}
 	}
-
+	
+	this.queueClearStartSlider = function() {
+		this.resetStartSlider = true;
+	}
+	
+	this.queueClearEndSlider = function() {
+		this.resetEndSlider = true;
+	}
+	
 	this.setupSlider = function() {
 		if (!this.interactive) return;
 
@@ -111,6 +125,17 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 			if (!startTime) startTime = this.minTime;
 			if (!endTime) endTime = this.maxTime;
+			
+			if (this.resetStartSlider) {
+				this.resetStartSlider = false;
+				this.leftLinearSlider = -10000;
+				startTime = this.minTime;
+			}
+			if (this.resetEndSlider) {
+				this.resetEndSlider = false;
+				this.rightLinearSlider = 10000;
+				endTime = this.maxTime;
+			}
 
 			var span = endTime - startTime;
 
