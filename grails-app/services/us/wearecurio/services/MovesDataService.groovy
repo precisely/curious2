@@ -95,8 +95,14 @@ class MovesDataService extends DataService {
 			unsetOldEntries(userId, setName)
 
 			List<JSONObject> activities = []
+			List<String> allowedTypes = ["walking", "running", "cycling"]
+
 			daySummary["segments"]?.each { currentSegment ->
-				activities.addAll(currentSegment["activities"] ?: [])
+				currentSegment["activities"].each { activityData ->
+					if (allowedTypes.contains(activityData["activity"])) {
+						activities.addAll(activityData)
+					}
+				}
 			}
 
 			long thresholdDuration = 15 * 60 * 1000		// 15 minutes or 900 seconds

@@ -62,8 +62,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
 
-		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"run","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"wlk","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"wlk","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"trp","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
-		//String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]}]}]"""
+		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"running","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"walking","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"walking","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"transport","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cycling","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
@@ -105,7 +104,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		assert response.success == true
 		List<Entry> entries = Entry.findAllByUserId(user.getId(), [sort: "id", order: "asc"])
 
-		assert Entry.count() == 24
+		assert Entry.count() == 21
 
 		/*
 		 * Constructed this list of final values from the file "./test/integration/test-files/moves/default-data-1.json"
@@ -117,8 +116,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 				[distance: 94, duration: 189],
 				[calories: 120, duration: 241],
 				[distance: 43, duration: 38],
-				[steps: 1439, distance: 1112, duration: 1278],		// Merged entry
-				[steps: 301, distance: 225, duration: 200],
+				[steps: 1740, distance: 1337, duration: 2119],		// Merged entry
 				[steps: 978, distance: 734, duration: 801],			// Merged entry
 				[steps: 377, distance: 295, duration: 298],			// Merged entry
 				[steps: 2304, distance: 1942, duration: 2201],		// Merged entry
