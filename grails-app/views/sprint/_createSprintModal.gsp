@@ -90,14 +90,11 @@
 						</div>
 					</div>
 					<div class="margin-top">
-						<span class="orange-checkbox">
+						<span class="checkbox-orange checkbox-sm">
 							<input type="checkbox" id="disable-sprint-comments"
 								{{- disableComments ? "checked" : "" }} >
 							<label for="disable-sprint-comments"></label>
-							<small>Disable Comments</small>
-							<small id="flash-message" class="text-purple hide margin-left">
-								<i class="fa fa-check-square-o"> Preference saved!</i>
-							</small>
+							<small>Disable new discussions</small>
 						</span>
 					</div>
 					<input type="hidden" name="error" value="false">

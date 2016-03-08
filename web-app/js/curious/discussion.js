@@ -226,7 +226,7 @@ $(document).ready(function() {
 				}
 
 				displayFlashMessage();
-				$(".add-comment-to-discussion").toggle(!disabled);
+				$(".add-comment").toggle(!disabled);
 			});
 	});
 });
