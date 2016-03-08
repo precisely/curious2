@@ -74,7 +74,8 @@ class SecurityService {
 		'homepage',
 		'getPeopleData',
 		'thirdPartySignUp',
-		'thirdPartySignIn'
+		'thirdPartySignIn',
+		'verify'
 	] as Set
 
 	/**

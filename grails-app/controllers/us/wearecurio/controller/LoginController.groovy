@@ -176,7 +176,7 @@ class LoginController extends SessionController {
 		def verificationLink = toUrl(controller:'home', action:'verify', params:[code:verification.getCode()])
 		
 		emailService.send(user.getEmail(), "We Are Curious: account verification instructions",
-				"Welcome to We Are Curious! Please verify your email address before using the social features of our app. Click here to verify your account: " + verificationLink)
+				"Welcome to We Are Curious! We are looking forward to your participation in our community. Please go to the Trackathon tab on your app or on the website to find ideas for how to use We Are Curious.\nBefore you post messages to our community, we'd like to ask that you verify your email address by clicking here: " + verificationLink + "\nThank you, and again. welcome!")
 		
 		debug "Verification link: " + verificationLink
 		
