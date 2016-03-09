@@ -311,9 +311,9 @@ class LoginController extends SessionController {
 		PasswordRecovery.delete(verification)
 		
 		primeUser.isVerified = true
-		Utils.save(user, true)
+		Utils.save(primeUser, true)
 		
-		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + user.username
+		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + primeUser.username
 			
 		redirect(url:toUrl(controller:'home', action:'index'))
 	}
