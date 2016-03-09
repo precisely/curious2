@@ -50,15 +50,15 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-11" style="font-size:11pt;font-style:italic;padding:0px;">
+						<div class="col-md-11" style="font-size:11pt;font-style:italic;padding:0;">
 							<div class="inline-labels" id="autocomplete1"></div>
 							<div class="input-group">
 								<input type="text" placeholder="Ex.: &quot;headache&quot;, &quot;mood&quot;" id="sprint-tags">
-								<span class="input-group-addon pinnedDarkLabelImage" id="basic-addon2" 
+								<span class="input-group-addon pinnedDarkLabelImage"
 									onclick="addEntryToSprint('sprint-tags', 'bookmark')"></span>
-								<span class="input-group-addon repeatDarkLabelImage" id="basic-addon2"
+								<span class="input-group-addon repeatDarkLabelImage"
 									onclick="addEntryToSprint('sprint-tags', 'repeat')"></span>
-								<span class="input-group-addon remindDarkLabelImage" id="basic-addon2"
+								<span class="input-group-addon remindDarkLabelImage"
 									onclick="addEntryToSprint('sprint-tags', 'remind')"></span>
 							</div>
 						</div>
@@ -88,6 +88,14 @@
 							<input type="text" placeholder="Add Admin" id="sprint-admins">
 							<ul id="sprint-admins-list"></ul>
 						</div>
+					</div>
+					<div class="margin-top">
+						<span class="checkbox-orange checkbox-sm">
+							<input type="checkbox" id="disable-sprint-comments"
+								{{- disableComments ? "checked" : "" }} >
+							<label for="disable-sprint-comments"></label>
+							<small>Disable new discussions</small>
+						</span>
 					</div>
 					<input type="hidden" name="error" value="false">
 					<input type="hidden" name="id" id="sprintIdField">

@@ -167,7 +167,7 @@ $(document).ready(function() {
 				} else {
 					showAlert(data.message);
 				}
-			}, function(xhr) {
+			}, function() {
 				showAlert('Internal server error occurred.');
 			}, null, httpArgs);
 		});
@@ -211,6 +211,24 @@ $(document).ready(function() {
 		$(this).parents(".discussion").find("input[name=message]").focus();
 		return false;
 	});
+
+	$(document).on("change", "#disable-comments", function() {
+		var disabled = $(this).is(":checked");
+		var params = {
+			id: $(this).data("hash"),
+			disable: disabled
+		};
+
+		queueJSON('Adding Comment', '/api/discussion/action/disableComments', params,
+			function(data) {
+				if (!checkData(data)) {
+					return;
+				}
+
+				displayFlashMessage();
+				$(".add-comment").toggle(!disabled);
+			});
+	});
 });
 
 var plot = null;
@@ -252,18 +270,18 @@ $(function() {
 			} else if (closure && (!preventCommentSubmit))
 				closure();
 		}
-	}
+	};
 
 	var renameDiscussionHandler = function(e) {
 		if (e.keyCode == 13) {
 			saveTitle();
 			$("#postcommentarea").focus();
 		}
-	}
+	};
 
 	var discussTitleRename = function(e) {
 		discussTitleArea.off('mouseup');
-		discussTitle.html('<input type="text" id="discussTitleInput"></input>');
+		discussTitle.html('<input type="text" id="discussTitleInput" />');
 		var discussTitleInput = $("#discussTitleInput");
 		discussTitleInput.val(discussionTitle);
 		discussTitleInput.keyup(renameDiscussionHandler);
@@ -271,7 +289,7 @@ $(function() {
 		discussTitleInput.blur(function() {
 			saveTitle();
 		});
-	}
+	};
 
 	discussTitle.data('rename', discussTitleRename);
 

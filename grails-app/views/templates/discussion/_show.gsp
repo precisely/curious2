@@ -89,6 +89,23 @@
 							</p>
 							<hr>
 							<div class="buttons">
+								<div class="row">
+									<div class="col-sm-6 text-left">
+										{{ if (isAdmin) { }}
+											<span class="checkbox-orange checkbox-sm">
+												<input type="checkbox" id="disable-comments" data-hash="{{- discussionHash }}"
+													{{- disableComments ? "checked" : "" }}>
+												<label for="disable-comments"></label>
+												<small>Disable Comments</small>
+
+												<small id="flash-message" class="text-red hide margin-left">
+													<i class="fa fa-check-square-o"> Preference saved!</i>
+												</small>
+											</span>
+										{{ } }}
+									</div>
+									<div class="col-sm-6">
+										<!-- Fix indentation after merge -->
 								{{ if (isFollowing) {  }}
 									<button id="follow-button-{{- discussionHash }}" onclick="followDiscussion({id: '{{- discussionHash }}', unfollow: true})">
 									<img src="/images/unfollow.png" alt="unfollow" >Unfollow
@@ -103,6 +120,8 @@
 								<button class="comment-button">
 									<img src="/images/comment.png" alt="comment"> Comment
 								</button>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -111,16 +130,16 @@
 								<div class="view-comment"
 									 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
 								<div class="comments media-list"></div>
-								<div class="add-comment-to-discussion">
+								<div class="add-comment {{- disableComments ? 'hide' : ''}}">
 									<form method="post" class="comment-form">
 										{{ if (notLoggedIn) { }}
 											<p>Enter your details below</p>
 
-											<div id="postname">
+											<div>
 												<input type="text" id="postname" name="postname" value=""
 														class="postInput" /> Name
 											</div>
-											<div id="postemail">
+											<div>
 												<input type="text" id="postemail" name="postemail" value=""
 														class="postInput" /> Email (not publicly visible)
 											</div>

@@ -13,7 +13,7 @@
 			<li>
 				<img src="/images/orange-repeat.png" class="orange-bell" alt="repeat" height="18" />
 				<label class="label-bold">Repeat Tag</label>
-				<span class="entry-checkbox">
+				<span class="checkbox-orange">
 					<input type="checkbox" name="repeat" class="repeat-entry-checkbox" value="repeat" id="{{= editType  }}repeat-checkbox">
 					<label for="{{= editType  }}repeat-checkbox"></label>
 				</span>
@@ -40,7 +40,7 @@
 					</li>
 					<li>
 						<label class="label-bold">Confirm Each Repeat</label>
-						<span class="entry-checkbox">
+						<span class="checkbox-orange">
 							<input type="checkbox" name="repeat" value="repeat" id="{{= editType  }}confirm-each-repeat">
 							<label for="{{= editType  }}confirm-each-repeat"></label>
 						</span>
@@ -51,7 +51,7 @@
 			<li>
 				<img src="/images/orange-bell.png" alt="remind" height="18"> 
 				<label class="label-bold">Set an Alert</label>
-				<span class="entry-checkbox">
+				<span class="checkbox-orange">
 					<input type="checkbox" name="remind" value="remind" id="{{= editType  }}remind-checkbox">
 					<label for="{{= editType  }}remind-checkbox"></label>
 				</span>

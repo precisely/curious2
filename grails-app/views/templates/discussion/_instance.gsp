@@ -71,15 +71,16 @@
 	<div class="discussion-comments-wrapper hide">
 		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
 		<div class="comments media-list"></div>
-		<div class="row">
-			<div class="col-md-6 add-comment">
+
+			<!-- Fix indentation after merge -->
+			<div class="add-comment {{- discussionData.disableComments ? 'hide' : ''}}">
 				<form class="comment-form">
 					{{ if (false) { }}
 						<p>Enter your details below</p>
-						<div id="postname">
+						<div>
 							<input type="text" id="postname" name="postname" value="" class="postInput" />Name
 						</div>
-						<div id="postemail">
+						<div>
 							<input type="text" id="postemail" name="postemail" value="" class="postInput" />
 							Email (not publicly visible)
 						</div>
@@ -98,6 +99,6 @@
 					<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 				</form>
 			</div>
-		</div>
+
 	</div>
 </div>
