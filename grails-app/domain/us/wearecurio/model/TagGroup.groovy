@@ -411,7 +411,7 @@ class TagGroup extends GenericTagGroup {
 	 */
 	TagGroup addTags(String tagIds) {
 		tagIds.tokenize(",").each { tagId ->
-			addTag(Tag.get(tagId.trim()))
+			addTag(Tag.look(tagId.trim()))
 		}
 		Utils.save(this, true)
 		this
