@@ -253,11 +253,6 @@ class OuraDataService extends DataService {
 		return builder.toString()
 	}
 
-	void unsetOldEntries(Long userId, String setName) {
-		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
-				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
-	}
-
 	Integer getTimeZoneId(OAuthAccount account, Map rawEntry) {
 		return rawEntry["timeZone"] ? TimeZoneId.look(rawEntry["timeZone"]).id : getTimeZoneId(account)
 	}

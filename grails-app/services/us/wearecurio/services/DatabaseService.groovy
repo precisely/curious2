@@ -1,27 +1,16 @@
 package us.wearecurio.services
 
-import java.util.Date
-
-import javax.persistence.TemporalType
-
-import org.springframework.transaction.annotation.Transactional
-import org.hibernate.StaleObjectStateException
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
-
-import java.lang.reflect.UndeclaredThrowableException
-
 import org.apache.commons.logging.LogFactory
 import org.hibernate.Query
 import org.hibernate.Session
 import org.hibernate.SessionFactory
+import org.hibernate.StaleObjectStateException
 import org.hibernate.transform.AliasToEntityMapResultTransformer
-
-import us.wearecurio.server.Migration
-import us.wearecurio.utility.Utils
-import us.wearecurio.model.*
-import grails.util.Environment
+import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 import us.wearecurio.data.DatabaseServiceInterface
-import groovy.sql.Sql
+import us.wearecurio.model.Model
+
+import java.lang.reflect.UndeclaredThrowableException
 
 class DatabaseService implements DatabaseServiceInterface {
 

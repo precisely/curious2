@@ -1,23 +1,27 @@
 package us.wearecurio.services.integration
 
 import org.apache.commons.logging.LogFactory
-
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.User
-import static org.junit.Assert.*
-import grails.test.mixin.*
-
-import org.junit.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.scribe.model.Response
-
-import us.wearecurio.model.*
+import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.Entry
+import us.wearecurio.model.IntraDayQueueItem
+import us.wearecurio.model.OAuthAccount
+import us.wearecurio.model.ThirdParty
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
 import us.wearecurio.services.UrlService
 import us.wearecurio.services.WithingsDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
 import us.wearecurio.utility.Utils
-import us.wearecurio.hashids.DefaultHashIDGenerator
+
+import static org.junit.Assert.assertNotNull
+import static org.junit.Assert.assertNull
+import static org.junit.Assert.assertTrue
 
 class WithingsDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -104,8 +108,9 @@ class WithingsDataServiceTests extends CuriousServiceTestCase {
 		// Checking for non zero status code.
 		setWithingsResourceRepsoneWithQS(new MockedHttpURLConnection("""{"status": 2554}"""))
 		
-		withingsDataService.subscribe(userId)
-		assert OAuthAccount.findByUserId(userId).accessToken == ""
+		Map result = withingsDataService.subscribe(userId)
+		assert result.success == false
+		assert result.status == 2554
 	}
 	
 	@Test

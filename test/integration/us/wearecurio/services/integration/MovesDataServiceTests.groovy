@@ -1,27 +1,18 @@
 package us.wearecurio.services.integration
 
-import static org.junit.Assert.*
-import groovy.lang.Closure;
-
-import java.util.Date;
-
 import org.junit.After
 import org.junit.Before
-import org.junit.Test;
+import org.junit.Test
 import org.scribe.model.Response
-
-import uk.co.desirableobjects.oauth.scribe.OauthService
-import us.wearecurio.model.Entry
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.User
+import us.wearecurio.data.UnitGroupMap
+import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.model.*
 import us.wearecurio.services.MovesDataService
 import us.wearecurio.test.common.MockedHttpURLConnection
-import us.wearecurio.thirdparty.InvalidAccessTokenException
-import us.wearecurio.thirdparty.MissingOAuthAccountException;
-import us.wearecurio.hashids.DefaultHashIDGenerator
+import us.wearecurio.thirdparty.TagUnitMap
 import us.wearecurio.utility.Utils
+
+import java.math.RoundingMode
 
 class MovesDataServiceTests extends CuriousServiceTestCase {
 	static transactional = true
@@ -29,7 +20,6 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 	User user2
 	OAuthAccount account
 
-	OauthService oauthService
 	MovesDataService movesDataService
 
 	@Before
@@ -72,8 +62,7 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		 * @see this in http://jsoneditoronline.org/index.html
 		 */
 
-		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"run","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"wlk","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"wlk","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"trp","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
-		//String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]}]}]"""
+		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"running","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"walking","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"walking","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"transport","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cycling","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
 				return new Response(new MockedHttpURLConnection(parsedResponse))
@@ -103,94 +92,69 @@ class MovesDataServiceTests extends CuriousServiceTestCase {
 		}
 	}
 
-/*	@Test
-	void testUnsubscribe() {
-		// If no OAuthAccount Exists
-		shouldFail(MissingOAuthAccountException) {
-			Map response = movesDataService.unsubscribe(user2.id)	// Passing user id, whose OAuthAccount not exists.
-		}
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 1
-
-		// If OAuthAccount Exists
-		Map response = movesDataService.unsubscribe(userId)
-		assertTrue response.success
-		assert OAuthAccount.countByTypeId(ThirdParty.MOVES) == 0
-	}
-
 	@Test
-	void testGetDataDefaultForValidData() {
-		//
-		// There are 5 activities in the mocked response, out of which four are valid & one is of type "trp" (invalid).
-		// Out of 4 valid entries, three of them having calories & others not. So according to code, 6 entries for each
-		// activity having calories & 5 entry for activity not having calories will be created. Total 23 entries will be created.
-		// 
-		// @see this in http://jsoneditoronline.org/index.html
-		//
-
-		String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430-0800","endTime":"20121212T074617-0800","activities":[{"activity":"run","startTime":"20121212T071430-0800","endTime":"20121212T072732-0800","duration":782,"distance":1251,"steps":1353}]},{"type":"place","startTime":"20121212T074617-0800","endTime":"20121212T100051-0800","activities":[{"activity":"wlk","startTime":"20121212T074804-0800","endTime":"20121212T075234-0800","duration":270,"distance":227,"steps":303,"calories":99}]},{"type":"move","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","activities":[{"activity":"wlk","startTime":"20121212T100051-0800","endTime":"20121212T100715-0800","duration":384,"distance":421,"steps":488,"calories":99}]},{"type":"move","startTime":"20121212T153638-0800","endTime":"20121212T160744-0800","activities":[{"activity":"trp","startTime":"20121212T153638-0800","endTime":"20121212T155321-0800","duration":1003,"distance":8058},{"activity":"cyc","startTime":"20121212T155322-0800","endTime":"20121212T160744-0800","duration":862,"distance":1086,"steps":1257,"calories":99}]}]}]"""
-		//String parsedResponse = """[{"date":"20121212","segments":[{"type":"move","startTime":"20121212T071430Z","endTime":"20121212T074617Z","activities":[{"activity":"run","startTime":"20121212T071430Z","endTime":"20121212T072732Z","duration":782,"distance":1251,"steps":1353}]}]}]"""
+	void testMergedData() {
+		String parsedResponse = new File("./test/integration/test-files/moves/default-data-1.json").text
 
 		movesDataService.oauthService = [getMovesResource: {token, url, param, header ->
-				return new Response(new MockedHttpURLConnection(parsedResponse))
-			}]
+			return new Response(new MockedHttpURLConnection(parsedResponse))
+		}]
 
 		Map response = movesDataService.getDataDefault(account, null, false)
 		assert response.success == true
-		Collection entries = Entry.findAllByUserId(user.getId())
-		for (def entry in entries) {
-			if (entry.getAmount().intValue() == 1353) {
-				assert entry.toString().contains("datePrecisionSecs:180, timeZoneName:America/Los_Angeles, baseTag:run, description:run [steps], amount:1353.000000000, units:steps, amountPrecision:3, comment:(Moves), repeatType:null, repeatEnd:null")
+		List<Entry> entries = Entry.findAllByUserId(user.getId(), [sort: "id", order: "asc"])
+
+		assert Entry.count() == 21
+
+		/*
+		 * Constructed this list of final values from the file "./test/integration/test-files/moves/default-data-1.json"
+		 * which should be finally constructed as entries.
+		 *
+		 * These values are written in the order of Entries being created.
+		 */
+		List<Map> groupedAmounts = [
+				[distance: 94, duration: 189],
+				[calories: 120, duration: 241],
+				[distance: 43, duration: 38],
+				[steps: 1740, distance: 1337, duration: 2119],		// Merged entry
+				[steps: 978, distance: 734, duration: 801],			// Merged entry
+				[steps: 377, distance: 295, duration: 298],			// Merged entry
+				[steps: 2304, distance: 1942, duration: 2201],		// Merged entry
+				[steps: 91, distance: 45, duration: 61]
+		]
+
+		int index = 0
+		UnitGroupMap theMap = UnitGroupMap.fetchTheMap()
+		groupedAmounts.each { data ->
+			data.each { key, amount ->
+				Entry entry = entries[index]
+
+				if (key == "distance") {
+					BigDecimal ratio = theMap.fetchConversionRatio("meter", "miles")
+					assert entry.amount.setScale(2, RoundingMode.HALF_UP) == TagUnitMap.convert(amount, ratio).setScale(2, RoundingMode.HALF_UP)
+					assert entry.units == "miles"
+					assert entry.tag.description == "walk [distance]"
+				} else if (key == "duration") {
+					if (amount >= 60) {
+						BigDecimal ratio = theMap.fetchConversionRatio("seconds", "minutes")
+						assert entry.amount.setScale(2, RoundingMode.HALF_UP) == TagUnitMap.convert(amount, ratio).setScale(2, RoundingMode.HALF_UP)
+						assert entry.units == "mins"
+					} else {
+						assert entry.amount == amount
+						assert entry.units == "secs"
+					}
+					assert entry.tag.description == "walk [time]"
+				} else if (key == "steps") {
+					assert entry.amount == amount
+					assert entry.units == "steps"
+					assert entry.tag.description == "walk [steps]"
+				} else if (key == "calories") {
+					assert entry.amount == amount
+					assert entry.units == "kcal"
+					assert entry.tag.description == "walk [calories]"
+				}
+				index++
 			}
 		}
-		assert Entry.count() == 15
-
-		// Ensuring entries of the same day will be replaced with new entries.
-		response = movesDataService.getDataDefault(account, null, false)
-		assert response.success == true
-		
-		entries = Entry.findAllByUserId(user.getId())
-		assert entries.size() == 15
 	}
-
-	@Test
-	void testPollIfNullDataInSegments() {
-		String parsedResponse = """[{"date":"20121213","segments":null,"caloriesIdle":1785}]"""
-
-		movesDataService.oauthService = [getMovesResource: {token, url, params, header ->
-				return new Response(new MockedHttpURLConnection(parsedResponse))
-			}]
-
-		Map response = movesDataService.getDataDefault(account, null, false)
-		assert response.success == true
-		assert Entry.count() == 0
-	}
-
-	@Test
-	void testPollWithMovesAPIDirectly() {
-		Map response = movesDataService.getDataDefault(account, null, false)
-		assert response.success == true
-	}
-
-	@Test
-	void testPollWithMovesAPIForAuthFail() {
-		// Testing with mock
-		movesDataService.oauthService = [getMovesResource: {token, url, p, header ->
-				return new Response(new MockedHttpURLConnection("""{"error": "expired_access_token"}""", 201))
-			}]
-
-		Map response = movesDataService.getDataDefault(account, null, false)
-		assert response.success == false
-
-		// Testing live after token expires
-		account.accessToken = "expired-token"
-		Utils.save(account, true)
-
-		movesDataService.oauthService = oauthService
-		try {
-			movesDataService.getDataDefault(account, null, false)
-		} catch (e) {
-			assert e instanceof InvalidAccessTokenException
-		}
-	}
-	/**/
 }

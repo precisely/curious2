@@ -28,7 +28,7 @@ class WithingsDataService extends DataService {
 	static final String COMMENT = "(Withings)"
 	static final String SET_NAME = "WI"
 	static final String SOURCE_NAME = "Withings Data"
-	static Date intraDayOverQueryRateTimestamp = null
+
 	static PriorityBlockingQueue<IntraDayQueueItem> intraDayQueue = new PriorityBlockingQueue<IntraDayQueueItem>(600)
 	static transactional = false
 
@@ -71,7 +71,7 @@ class WithingsDataService extends DataService {
 		Integer offset = 0
 		boolean more = true
 		long serverTimestamp = 0
-		def setName = SET_NAME
+		String setName
 		Long userId = account.getUserId()
 		startDate = startDate ?: account.getLastPolled() ?: earlyStartDate
 		log.debug "WithingsDataService.getData() start date:" + startDate
@@ -116,8 +116,7 @@ class WithingsDataService extends DataService {
 				Date date = new Date(group.date * 1000L)
 				setName = SET_NAME + "m" + date
 				JSONArray measures = group.measures
-				Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
-					[setIdentifier: Identifier.look(setName) , userId: userId]) 
+				unsetOldEntries(userId, setName)
 
 				for (measure in measures) {
 					BigDecimal value = new BigDecimal(measure.value, -measure.unit)
@@ -164,7 +163,7 @@ class WithingsDataService extends DataService {
 
 		if(account.lastPolled) {
 			getDataActivityMetrics(account, account.lastPolled - 1, new Date() + 1)
-		} else {			
+		} else {
 			getDataActivityMetrics(account, startDate - 1, new Date() + 1)
 		}
 
@@ -189,14 +188,10 @@ class WithingsDataService extends DataService {
 	 * @param forDay The date for the activity data. Optional if date range is given.
 	 * @return dateRange Date range for to retrieve data against. Optional if forDay param is given
 	 *
-	 * @see Activity Metrics documentation at http://www.withings.com/en/api
+	 * @see "Activity Metrics documentation at http://www.withings.com/en/api"
 	 */
 	Map getDataActivityMetrics(OAuthAccount account, Date startDate, Date endDate) throws InvalidAccessTokenException {
 		log.debug "WithingsDataService.getDataActivityMetrics() account:" + account + " dateRange:" + (startDate?:'null') + ":" + (endDate?:'null')
-		
-		BigDecimal value
-
-		String description, units
 		
 		if (startDate == null || endDate == null) {
 			return [success: false]
@@ -223,8 +218,8 @@ class WithingsDataService extends DataService {
 
 		JSONArray activities = data["body"]["activities"]
 
-		def datesWithSummaryData = []
-		def setName = SET_NAME
+		List datesWithSummaryData = []
+		String setName = SET_NAME
 
 		activities.each { JSONObject activity ->
 			log.debug "Parsing entry with data: $activity"
@@ -241,10 +236,10 @@ class WithingsDataService extends DataService {
 			}
 			entryDate = new Date(entryDate.getTime() + 12 * 60 * 60000L) // move activity time 12 hours later to make data appear at noon
 			setName = SET_NAME + "a" + entryDate.getTime()/1000
-			Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
-				[setIdentifier: Identifier.look(setName), userId: userId]) 
-			def args = ['isSummary':true] // Indicating that these entries are summary entries
-			
+			unsetOldEntries(userId, setName)
+
+			Map args = [isSummary: true] // Indicating that these entries are summary entries
+
 			if (activity["steps"]) {
 				tagUnitMap.buildEntry(creationMap, stats, "activitySteps", activity["steps"], userId, 
 					timeZoneIdNumber, entryDate, COMMENT, setName, args)
@@ -284,8 +279,7 @@ class WithingsDataService extends DataService {
 		[success: true]
 	}
 
-
-	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate) 
+	Map getDataIntraDayActivity(OAuthAccount account, Date startDate, Date endDate)
 			throws InvalidAccessTokenException, TooManyRequestsException {
 		def intraDayResponse = fetchActivityData(account, account.accountId, startDate, endDate, true)
 		def userId = account.userId
@@ -293,8 +287,8 @@ class WithingsDataService extends DataService {
 		EntryCreateMap creationMap = new EntryCreateMap()
 		EntryStats stats = new EntryStats(userId)
 		
-		def entryDate
-		def setName
+		Date entryDate
+		String setName
 		Integer timeZoneIdNumber = account.timeZoneId
 
 		if (intraDayResponse.status == 601) {
@@ -315,9 +309,8 @@ class WithingsDataService extends DataService {
 			setName = SET_NAME + "i" + timestamp
 			try {
 				DatabaseService.retry(account) {
-					Entry.executeUpdate("update Entry e set e.userId = null where e.setIdentifier = :setIdentifier and e.userId = :userId",
-							[setIdentifier: Identifier.look(setName), userId: userId]) 
-				}				
+					unsetOldEntries(userId, setName)
+				}
 			} catch (org.springframework.dao.CannotAcquireLockException le) {
 				log.debug("WithingsDataService.getDataIntraDayActivity: CannotAcquireLockException")
 				le.printStackTrace()
@@ -357,7 +350,8 @@ class WithingsDataService extends DataService {
 		return ['steps': 0, 'distance': 0, 'calories': 0, 'elevation': 0,'duration': 0 ]
 	}
 	
-	def aggregatedDataToEntries(EntryCreateMap creationMap, EntryStats stats, def data, def userId, def timeZoneIdNumber, def entryDate, def comment, def setName) {
+	void aggregatedDataToEntries(EntryCreateMap creationMap, EntryStats stats, def data, Long userId, Integer
+			timeZoneIdNumber, Date entryDate, String comment, String setName) {
 		data.each { metric, amount ->
 			log.debug("WithingsDataService.getDataIntraDayActivity: Creating entry for ${metric} ${amount}")
 			if (amount == 0)
@@ -498,21 +492,24 @@ class WithingsDataService extends DataService {
 		log.info "Subscription list response, code: [$response.code], body: [$response.body]"
 	}
 
-	def refreshSubscriptions() {
+	void refreshSubscriptions() {
 		log.debug "refreshSubscriptions()"
-		def c = OAuthAccount.createCriteria()
 
 		def now = new Date()
 		def weekAgo = new Date(now.getTime() - 7L * 24 * 60 * 60 * 1000)
 
-		def results = c {
+		List results = OAuthAccount.withCriteria {
 			eq("typeId", ThirdParty.WITHINGS)
 			ne("accessToken", "")
 			lt("lastSubscribed", weekAgo)
 		}
 
 		for (OAuthAccount account in results) {
-			subscribe(account)
+			try {
+				subscribe(account)
+			} catch (InvalidAccessTokenException) {
+				account.clearAccessToken()
+			}
 		}
 	}
 
@@ -550,13 +547,10 @@ class WithingsDataService extends DataService {
 					result.message = "Please try again after some time"
 					break
 				case 342:
+					account.clearAccessToken()
 					throw new InvalidAccessTokenException("withings", account)
-					break
 			}
-	
-			account.removeAccessToken()		// confirms that subscription is not successful.
-			Utils.save(account, true)
-			
+
 			return result
 		}
 	}
@@ -584,5 +578,4 @@ class WithingsDataService extends DataService {
 		log.warn "Unsubscribe failed, status: $withingsResponseCode"
 		[success: false]
 	}
-
 }

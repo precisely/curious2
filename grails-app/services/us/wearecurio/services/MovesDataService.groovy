@@ -1,30 +1,19 @@
 package us.wearecurio.services
 
-import us.wearecurio.model.ThirdPartyNotification
-
-import static us.wearecurio.model.OAuthAccount.*
-
-import org.springframework.transaction.annotation.Transactional
-
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.scribe.model.Token
-
-import us.wearecurio.model.Entry
-import us.wearecurio.model.Identifier
-import us.wearecurio.model.OAuthAccount
-import us.wearecurio.model.ThirdParty
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.DurationType
+import org.springframework.transaction.annotation.Transactional
+import us.wearecurio.model.*
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
 import us.wearecurio.thirdparty.InvalidAccessTokenException
 import us.wearecurio.thirdparty.MissingOAuthAccountException
-import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 import us.wearecurio.thirdparty.TagUnitMap
+import us.wearecurio.thirdparty.moves.MovesTagUnitMap
 import us.wearecurio.utility.Utils
+
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 class MovesDataService extends DataService {
 	
@@ -66,7 +55,8 @@ class MovesDataService extends DataService {
 
 		log.info "Polling account with userId [$userId]"
 
-		Map args = [setName: SET_NAME, comment: COMMENT]
+		String setName = SET_NAME + " " + startDate.format("MM-dd-yyyy")
+		Map args = [setName: setName, comment: COMMENT]
 
 		Token tokenInstance = account.tokenInstance
 
@@ -82,7 +72,7 @@ class MovesDataService extends DataService {
 			return [success: false]
 		}
 		
-		Identifier setIdentifier = Identifier.look(SET_NAME)
+		Identifier oldSetIdentifier = Identifier.look(SET_NAME)
 
 		parsedResponse.each { daySummary ->
 			Date currentDate = format.parse(daySummary.date)
@@ -95,25 +85,74 @@ class MovesDataService extends DataService {
 			/**
 			 * Checking date > start date-time (exa. 2013-12-13 00:00:00) and date < (start date-tim + 1)
 			 * instead of checking for date <= end data-time (exa. 2013-12-13 23:59:59)
+			 *
+			 * Using old set name for backward compatibility
 			 */
 			Entry.executeUpdate("update Entry e set e.userId = 0L where e.userId = :userId and e.setIdentifier = :identifier and e.date >= :currentDateA and e.date < :currentDateB",
-					[userId:userId, identifier:setIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
+					[userId:userId, identifier: oldSetIdentifier, currentDateA:currentDate, currentDateB: currentDate + 1])
+
+			// Using new set name
+			unsetOldEntries(userId, setName)
+
+			List<JSONObject> activities = []
+			List<String> allowedTypes = ["walking", "running", "cycling"]
 
 			daySummary["segments"]?.each { currentSegment ->
-				log.debug "Processing segment for userId [$account.userId] of type [$currentSegment.type]"
-
-				currentSegment["activities"]?.each { currentActivity ->
-					log.debug "Processing activity for userId [$account.userId] of type [$currentActivity.activity]"
-
-					processActivity(creationMap, stats, currentActivity, userId, timeZoneId, currentActivity.activity, startEndTimeFormat, args)
+				currentSegment["activities"].each { activityData ->
+					if (allowedTypes.contains(activityData["activity"])) {
+						activities.addAll(activityData)
+					}
 				}
+			}
+
+			long thresholdDuration = 15 * 60 * 1000		// 15 minutes or 900 seconds
+
+			JSONObject previousActivity = null
+			activities.each { currentActivity ->
+				if (!previousActivity) {
+					previousActivity = currentActivity
+					return
+				}
+
+				// IF type of previous and current activity is same
+				if ((previousActivity["activity"] == currentActivity["activity"])) {
+					Date previousActivityEndTime = startEndTimeFormat.parse(previousActivity["endTime"])
+					Date currentActivityStartTime = startEndTimeFormat.parse(currentActivity["startTime"])
+
+					/*
+					 * And if the duration between previous & current is less than 15 minutes,
+					 * then merge all the data of current entry to previous entry
+					 */
+					if ((currentActivityStartTime.getTime() - previousActivityEndTime.getTime()) <= thresholdDuration) {
+						// Not merging "duration" here as it is not used and the duration is calculated from start & end time
+						["distance", "calories", "steps"].each { String key ->
+							// First make sure there is no null values and values are integer for current entry
+							currentActivity[key] = (currentActivity[key] ?: 0).toInteger()
+							// Then make sure there is no null values and values are integer for previous entry
+							previousActivity[key] = (previousActivity[key] ?: 0).toInteger()
+							// And finally merge them
+							previousActivity[key] += currentActivity[key]
+						}
+
+						previousActivity["endTime"] = currentActivity["endTime"]
+						return
+					}
+				}
+
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
+				previousActivity = currentActivity
+			}
+
+			// Make sure to process the last previous activity after the above loop finishes
+			if (previousActivity) {
+				processActivity(creationMap, stats, previousActivity, userId, timeZoneId, startEndTimeFormat, args)
 			}
 		}
 		account.lastPolled = new Date()
 		Utils.save(account, true)
-		
+
 		stats.finish()
-		
+
 		return [success: true]
 	}
 
@@ -128,7 +167,14 @@ class MovesDataService extends DataService {
 	}
 
 	@Transactional
-	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId, Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
+	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject activity, Long userId,
+				Integer timeZoneId, DateFormat timeFormat, Map args) {
+		processActivity(creationMap, stats, activity, userId, timeZoneId, activity["activity"].toString(), timeFormat, args)
+	}
+
+	@Transactional
+	void processActivity(EntryCreateMap creationMap, EntryStats stats, JSONObject currentActivity, Long userId,
+				Integer timeZoneId, String activityType, DateFormat timeFormat, Map args) {
 		String baseType
 
 		Date startTime = timeFormat.parse(currentActivity.startTime)
@@ -155,17 +201,23 @@ class MovesDataService extends DataService {
 			String comment = args.comment
 			String setName = args.setName
 			if (currentActivity.steps) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Step", currentActivity.steps, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 			if (currentActivity.distance) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Distance", currentActivity.distance, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 			if (currentActivity.calories) {
-				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId, timeZoneId, startTime, comment, setName, args)
+				tagUnitMap.buildEntry(creationMap, stats, "${baseType}Calories", currentActivity.calories, userId,
+						timeZoneId, startTime, comment, setName, args)
 			}
 
-			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
-			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime, comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}Start", 1, userId, timeZoneId, startTime,
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.START]))
+
+			tagUnitMap.buildEntry(creationMap, stats, "${baseType}End", 1, userId, timeZoneId, endTime,
+					comment, setName, args.plus([amountPrecision: -1, durationType: DurationType.END]))
 		}
 	}
 }

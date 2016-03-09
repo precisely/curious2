@@ -1,24 +1,8 @@
-package us.wearecurio.model;
-
-import groovy.time.*
-import grails.converters.*
+package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
-
-import us.wearecurio.datetime.LocalTimeRepeater
-import us.wearecurio.parse.PatternScanner
-import us.wearecurio.services.DatabaseService
-import us.wearecurio.utility.Utils
 import us.wearecurio.cache.BoundedCache
-import us.wearecurio.model.Tag
-
-import java.util.regex.Pattern
-import java.math.MathContext
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
-import org.joda.time.*
-import org.junit.Before;
+import us.wearecurio.utility.Utils
 
 class Identifier {
 

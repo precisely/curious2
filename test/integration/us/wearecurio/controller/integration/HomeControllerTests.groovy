@@ -343,7 +343,6 @@ public class HomeControllerTests extends CuriousControllerTestCase {
 			}
 		]
 		controller.registerwithings()
-		assert account.accessToken == ""
 		assert controller.flash.message == messageSource.getMessage("thirdparty.subscribe.failure.message",
 				["Withings"] as Object[], null)
 		assert controller.response.redirectUrl.contains("home/userpreferences")

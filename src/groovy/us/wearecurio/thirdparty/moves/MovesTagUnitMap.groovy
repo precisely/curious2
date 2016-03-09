@@ -15,7 +15,7 @@ class MovesTagUnitMap extends TagUnitMap {
 	static {
 		bikeUnitMap = [
 			bikeStep: [tag: "$BIKE", unit: "steps"],
-			bikeDistance: [tag: "$BIKE", unit: "km", convert: true, from: "meter"],
+			bikeDistance: [tag: "$BIKE", unit: "miles", convert: true, from: "meter"],
 			bikeCalories: [tag: "$BIKE", unit: "kcal"],
 			bikeStart: [tag: "$BIKE", suffix: "start", unit: "", durationType: DurationType.START, amountPrecision:-1],
 			bikeEnd: [tag: "$BIKE", suffix: "end", unit: "", durationType: DurationType.END, amountPrecision:-1],
@@ -23,7 +23,7 @@ class MovesTagUnitMap extends TagUnitMap {
 
 		runUnitMap = [
 			runStep: [tag: "$RUN", unit: "steps"],
-			runDistance: [tag: "$RUN", unit: "km", convert: true, from: "meter"],
+			runDistance: [tag: "$RUN", unit: "miles", convert: true, from: "meter"],
 			runCalories: [tag: "$RUN", unit: "kcal"],
 			runStart: [tag: "$RUN", suffix: "start", unit: "", durationType: DurationType.START, amountPrecision:-1],
 			runEnd: [tag: "$RUN", suffix: "end", unit: "", durationType: DurationType.END, amountPrecision:-1],
@@ -31,7 +31,7 @@ class MovesTagUnitMap extends TagUnitMap {
 
 		walkUnitMap = [
 			walkStep: [tag: "$WALK", unit: "steps"],
-			walkDistance: [tag: "$WALK", unit: "km", convert: true, from: "meter"],
+			walkDistance: [tag: "$WALK", unit: "miles", convert: true, from: "meter"],
 			walkCalories: [tag: "$WALK", unit: "kcal"],
 			walkStart: [tag: "$WALK", suffix: "start", unit: "", durationType: DurationType.START, amountPrecision:-1],
 			walkEnd: [tag: "$WALK", suffix: "end", unit: "", durationType: DurationType.END, amountPrecision:-1],

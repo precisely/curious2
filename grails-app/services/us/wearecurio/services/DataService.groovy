@@ -2,6 +2,8 @@ package us.wearecurio.services
 
 import grails.converters.JSON
 import grails.util.Environment
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Identifier
 
 import javax.annotation.PostConstruct
 
@@ -26,7 +28,7 @@ abstract class DataService {
 
 	static transactional = false
 
-	private static def log = LogFactory.getLog(this)
+	static def log = LogFactory.getLog(this)
 
 	static debug(str) {
 		log.debug(str)
@@ -319,7 +321,7 @@ abstract class DataService {
 			eq("status", ThirdPartyNotification.Status.UNPROCESSED)
 			eq("typeId", typeId)
 			order("date", "asc")
-			maxResults(100)
+			maxResults(1000)
 		}
 
 		log.debug "Found ${pendingNotifications.size()} pending notifications for $provider."
@@ -348,8 +350,7 @@ abstract class DataService {
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
 					// Clear the access token to not process this notification again until the user re-link the account
-					account.accessToken = ""
-					Utils.save(notification, true)
+					account.clearAccessToken()
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
@@ -418,15 +419,15 @@ abstract class DataService {
 	 * Used to poll all accounts data for respective API's.
 	 * Must be called from API data services.
 	 */
-	void pollAll(def refreshAll = false) {
-		OAuthAccount.findAllByTypeId(typeId).each { account ->
+	void pollAll(Boolean refreshAll = false) {
+		OAuthAccount.findAllByTypeId(typeId).each { OAuthAccount account ->
 			DatabaseService.retry(account) {
 				try {
 					getDataDefault(account, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
+					account.clearAccessToken()
 				}
-				return account
 			}
 		}
 	}
@@ -528,5 +529,16 @@ abstract class DataService {
 		OAuthAccount.delete(account)
 
 		[code: parsedResponse.getCode(), body: parsedResponse]
+	}
+
+	/**
+	 * Unset the userId from the older entries for the given setName to remove duplicacy from the data import
+	 * across the API.
+	 * @param userId Identifier of the user for which older entries need to be unset
+	 * @param setName Set name of the the entries
+	 */
+	void unsetOldEntries(Long userId, String setName) {
+		Entry.executeUpdate("""UPDATE Entry e SET e.userId = null WHERE e.setIdentifier = :setIdentifier AND
+				e.userId = :userId""", [setIdentifier: Identifier.look(setName), userId: userId])
 	}
 }
