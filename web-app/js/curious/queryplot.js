@@ -1434,6 +1434,9 @@ function PlotLine(p) {
 		var data = [];
 		segments.push(data);
 		
+		var lastTime;
+		var lastValues = [];
+				
 		for (var i = 0; i < entries.length; ++i) {
 			var entry = entries[i];
 			var nextEntry;
@@ -1442,25 +1445,36 @@ function PlotLine(p) {
 			if (i > 0 && time == lastTime && lastValues.indexOf(value) >= 0) {
 				continue; // same data point in a row blows up LOESS algorithm
 			}
-			var nextRezero = 0;
-			if (i + 1 >= entries.length)
-				nextEntry = null;
-			else {
-				nextEntry = entries[i+1];
-				var nextTime = nextEntry[0].getTime();
-				if (nextTime - time >= 2 * rezeroWidth) {
-					nextRezero = 1;
+			if (reZero) {
+				var nextRezero = 0;
+				if (i + 1 >= entries.length)
+					nextEntry = null;
+				else {
+					nextEntry = entries[i+1];
+					var nextTime = nextEntry[0].getTime();
+					if (nextTime - time >= 2 * rezeroWidth) {
+						nextRezero = 1;
+					}
+				}
+				// if space between two data points >= 2 * rezero width, create new smoothing segment
+				if (time - lastTime >= 2 * rezeroWidth) {
+					data = [];
+					segments.push(data);
 				}
 			}
-			// if space between two data points >= 2 * rezero width, create new smoothing segment
-			if (reZero && (time - lastTime >= 2 * rezeroWidth)) {
-				data = [];
-				segments.push(data);
-			}
 
-			data.push([time, value]);
-			
+			if (time != lastTime) {
+				lastValues = [];
+				data.push([time, value]);
+			} else {
+				var total = 0;
+				for (var j = 0; j < lastValues.length; ++j) {
+					total += lastValues[j];
+				}
+				data[data.length - 1] = [time, total / lastValues.length];
+			}
 			lastTime = time;
+			lastValues.push(value);
 		}
 		
 		var retVal = [];
@@ -1479,7 +1493,7 @@ function PlotLine(p) {
 			// loess smoothing
 			var smoothWidth = this.parentLine.smoothDataWidth;
 			
-			var bandwidth = 0.001 + 0.05 * (smoothWidth - 1) / 29;
+			var bandwidth = 0.001 + 0.1 * (smoothWidth - 1) / 29;
 			
 			var results = loess_pairs(data, bandwidth);
 
