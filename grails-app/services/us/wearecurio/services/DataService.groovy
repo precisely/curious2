@@ -28,7 +28,7 @@ abstract class DataService {
 
 	static transactional = false
 
-	private static def log = LogFactory.getLog(this)
+	static def log = LogFactory.getLog(this)
 
 	static debug(str) {
 		log.debug(str)
@@ -321,7 +321,7 @@ abstract class DataService {
 			eq("status", ThirdPartyNotification.Status.UNPROCESSED)
 			eq("typeId", typeId)
 			order("date", "asc")
-			maxResults(100)
+			maxResults(1000)
 		}
 
 		log.debug "Found ${pendingNotifications.size()} pending notifications for $provider."
@@ -350,8 +350,7 @@ abstract class DataService {
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while processing notification of type: [$account.typeId.providerName] for $provider."
 					// Clear the access token to not process this notification again until the user re-link the account
-					account.accessToken = ""
-					Utils.save(notification, true)
+					account.clearAccessToken()
 				} catch (Throwable t) {
 					log.error "Unknown exception thrown during notification processing " + t
 					t.printStackTrace()
@@ -427,8 +426,8 @@ abstract class DataService {
 					getDataDefault(account, null, refreshAll)
 				} catch (InvalidAccessTokenException e) {
 					log.warn "Token expired while polling account: [$account] for $typeId."
+					account.clearAccessToken()
 				}
-				return account
 			}
 		}
 	}

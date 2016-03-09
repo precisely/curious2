@@ -1,23 +1,15 @@
 package us.wearecurio.thirdparty
 
-import java.math.BigDecimal
-
-import us.wearecurio.data.UnitRatio
-import us.wearecurio.data.DecoratedUnitRatio
-
-import java.math.MathContext
-import java.math.RoundingMode
 import org.apache.commons.logging.LogFactory
-
+import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
-import us.wearecurio.model.TimeZoneId
+import us.wearecurio.services.DatabaseService
+import us.wearecurio.services.EntryParserService
+import us.wearecurio.services.EntryParserService.ParseAmount
 import us.wearecurio.support.EntryCreateMap
 import us.wearecurio.support.EntryStats
-import us.wearecurio.services.*
-import us.wearecurio.services.EntryParserService.ParseAmount
-import us.wearecurio.data.UnitGroupMap
 
 abstract class TagUnitMap {
 	

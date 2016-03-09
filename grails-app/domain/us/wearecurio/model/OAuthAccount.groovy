@@ -1,9 +1,6 @@
 package us.wearecurio.model
 
-import static us.wearecurio.model.ThirdParty.*
-
 import org.scribe.model.Token
-
 import us.wearecurio.services.DataService
 import us.wearecurio.utility.Utils
 
@@ -82,5 +79,10 @@ class OAuthAccount {
 	// Used to set accessToken with blank value to represent expired accessToken & not-linked account case.
 	void removeAccessToken() {
 		this.accessToken = ""
+	}
+
+	void clearAccessToken() {
+		removeAccessToken()
+		Utils.save(this, true)
 	}
 }
