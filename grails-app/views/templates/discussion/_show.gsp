@@ -1,9 +1,9 @@
 <div class="discuss-page">
 	<div id="container" class="sharePage">
-		<div id="plotLeftNav">
-			<div class="discussPlotLines plotlines" id="plotLinesplotDiscussArea"></div>
-		</div>
 		{{ if (firstPost && firstPost.plotDataId) { }}
+			<div id="plotLeftNav" style="margin-top: 4px;">
+				<div class="discussPlotLines plotlines clearfix" id="plotLinesplotDiscussArea"></div>
+			</div>
 			<div class="row row-custom">
 				<div class="col-xs-12">
 					<!-- /LEFT NAV-->

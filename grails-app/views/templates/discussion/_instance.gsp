@@ -69,7 +69,9 @@
 		</div>
 	</div>
 	<div class="discussion-comments-wrapper hide">
-		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
+		{{ if ( discussionData.totalComments > 5 ) { }}
+			<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
+		{{ } }}
 		<div class="comments media-list"></div>
 		{{var isCommentAllowed = discussionData.isAdmin || !discussionData.disableComments}}
 			<!-- TODO Fix indentation after merge -->
