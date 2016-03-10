@@ -80,7 +80,7 @@ class HomeController extends DataController {
 			OAuthAccount account = result.account
 			if (!account.lastPolled) {	// Check to see if first time subscription.
 				log.info "Setting notification to get previous data for account: $account"
-					withingsDataService.saveNotificationForPreviousData(account)
+				withingsDataService.saveNotificationForPreviousData(account)
 			}
 			message = g.message(code: "thirdparty.subscribe.success.message", args: ["Withings"])
 		} else {
@@ -138,9 +138,9 @@ class HomeController extends DataController {
 	def notifywithings() {
 		debug "HomeController.notifywithings() from IP: [$request.remoteAddr] with params:" + params
 
-			withingsDataService.notificationHandler(new JSONObject(params).toString())
+		withingsDataService.notificationHandler(new JSONObject(params).toString())
 
-			renderStringGet('success')
+		renderStringGet('success')
 	}
 
 	def registermoves() {

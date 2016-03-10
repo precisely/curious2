@@ -48,6 +48,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	queryPlots[this.id] = this;
 	this.doStore = store;
 	this.plotArea = $(plotAreaDivId);
+	this.plottedTags = [];
 	this.properties = properties;
 	this.pendingLoads = 0;
 	this.tagList = tagList;
@@ -379,7 +380,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		if (plotLine.showYAxis) {
 			plotLine.activate();
 		}
-		
+
 		return plotLine;
 	}
 
@@ -543,7 +544,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.rezeroWidth = (canonicalWidth / 4) * 86400000;
 		if (this.rezeroWidth > 86400000)
 			this.rezeroWidth = 86400000;
-		
+
 		return this.rezeroWidth;
 	}
 	this.sliderTimes = function() {
@@ -1839,10 +1840,10 @@ function PlotLine(p) {
 	}
 	this.calculateMinMaxTime = function() {
 		var entries = this.entries;
-		
+
 		if (entries == undefined)
 			return;
-		
+
 		var minTime = undefined;
 		var maxTime = undefined;
 
@@ -1861,9 +1862,9 @@ function PlotLine(p) {
 	}
 	this.postprocessEntries = function() {
 		if (!this.entries) return;
-		
+
 		var d1Data = [];
-		
+
 		var entries = this.entries;
 
 		var plotLine = this;
@@ -1877,7 +1878,7 @@ function PlotLine(p) {
 
 		var lastTime = null;
 		var lastVal = undefined;
-		
+
 		var rezeroWidth = this.plot.rezeroWidth;
 		var slopeWidth = Math.floor(rezeroWidth / 10);
 		if (slopeWidth == 0) slopeWidth = 1;
@@ -2026,14 +2027,3 @@ function PlotLine(p) {
 	if (this.entries)
 		this.parseEntries();
 }
-function loadGroupsToPublish() {
-	queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
-		if (checkData(data)) {
-			if (data.success) {
-				var modalHtml = _.template($('#publish-to-groups').html(), {groups: data.groups});
-				$('#publish-to-groups').html(modalHtml);
-				$('#publish-to-groups').modal("show");
-			}
-		}
-	});
-};

@@ -695,8 +695,8 @@ class SearchService {
 	}	
 	
 	Map getFollowedSprintsGroup(User user) {
-		def readerGroups = UserGroup.getGroupsForReader(user.id)
-		def followedSprints = Sprint.search(searchType:'query_and_fetch') {
+		List<UserGroup> readerGroups = UserGroup.getGroupsForReader(user.id)
+		Map followedSprints = Sprint.search(searchType:'query_and_fetch') {
 			query_string(query:  "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
 		}
 
@@ -705,12 +705,12 @@ class SearchService {
 		}
 		followedSprints.searchResults.removeAll(startedSprints as Object[])
 		startedSprints = startedSprints.sort{it.hasStarted(user.id, new Date())}
-		def followedSprintsGroupList = followedSprints.searchResults.collect {
+		List followedSprintsGroupList = followedSprints.searchResults.collect {
 			UserGroup group = UserGroup.get(it.virtualGroupId)
 			[name: group?.name, fullName: group?.fullName]
 		}
 
-		def startedSprintGroupList = startedSprints.collect {
+		List startedSprintGroupList = startedSprints.collect {
 			UserGroup group = UserGroup.get(it.virtualGroupId)
 			[name: group?.name, fullName: group?.fullName]
 		}
@@ -731,8 +731,8 @@ class SearchService {
 			return [success: false, message: messageSource.getMessage("search.query.empty", null, null)]
 		}
 
-		def readerGroups = UserGroup.getGroupsForReader(user.id)
-		def adminGroups = UserGroup.getGroupsForAdmin(user.id)
+		List<UserGroup> readerGroups = UserGroup.getGroupsForReader(user.id)
+		List<UserGroup> adminGroups = UserGroup.getGroupsForAdmin(user.id)
 		def followedUsers = User.search(searchType:'query_and_fetch') {
 			query_string(query:  "virtualUserGroupIdFollowers:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
 		}

@@ -571,5 +571,16 @@ PlotLine.prototype.appendHTML = function() {
 
 function publishChart() {
 	var groupName = $('input[name="group"]:checked').val();
+	plot.setName($('#new-chart-name').val());
 	plot.saveSnapshot(groupName);
 }
+
+function loadGroupsToPublish() {
+	queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
+		if (checkData(data) && data.success) {
+				var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups});
+				$('#publish-to-groups').html(modalHTML);
+				$('#publish-to-groups').modal("show");
+		}
+	});
+};

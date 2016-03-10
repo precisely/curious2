@@ -676,7 +676,7 @@ function createAutocomplete(inputId, autocompleteId) {
 				return;
 
 			if (data.success) {
-				$('#' + inputId).autocomplete('option', 'source', data.displayName);
+				$('#' + inputId).autocomplete('option', 'source', data.displayNames);
 			}
 		}, function(xhr) {
 			console.log('error: ', xhr);
