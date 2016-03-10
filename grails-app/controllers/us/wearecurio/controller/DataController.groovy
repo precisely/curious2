@@ -952,7 +952,7 @@ class DataController extends LoginController {
 
 		debug "Trying to load plot data " + params.id
 
-		def plotData = PlotData.get(Long.valueOf(params.id))
+		PlotData plotData = PlotData.get(Long.valueOf(params.id))
 		
 		if (plotData.userId != user.id) {
 			renderStringGet('Not authorized to load this graph');
@@ -964,14 +964,12 @@ class DataController extends LoginController {
 			return;
 		}
 
-		debug "PlotData: " + plotData.getJsonPlotData()
-
 		if (!plotData.getIsDynamic()) {
 			renderStringGet('Not a live graph')
 			return;
 		}
 
-		renderDataGet(plotData.getJsonPlotData())
+		renderDataGet(plotData.fetchJsonPlotData())
 	}
 
 	def deletePlotDataId() {
@@ -1129,14 +1127,12 @@ class DataController extends LoginController {
 			return
 		}
 
-		debug "PlotData: " + plotData.getJsonPlotData()
-
 		if (!plotData.getIsSnapshot()) {
 			renderStringGet('Graph is not a snapshot')
 			return;
 		}
 
-		renderDataGet(plotData.getJsonPlotData())
+		renderDataGet(plotData.fetchJsonPlotData())
 	}
 
 	def deleteSnapshotDataId() {

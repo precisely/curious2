@@ -535,7 +535,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			return;
 		}
 		var canonicalWidth = Math.pow(2, Math.floor(Math.log(daysWidth) / this.log2));
-		this.rezeroWidth = (canonicalWidth / 8) * 86400000;
+		this.rezeroWidth = (canonicalWidth / 4) * 86400000;
 		if (this.rezeroWidth > 86400000)
 			this.rezeroWidth = 86400000;
 		
@@ -1493,7 +1493,7 @@ function PlotLine(p) {
 			// loess smoothing
 			var smoothWidth = this.parentLine.smoothDataWidth;
 			
-			var bandwidth = 0.001 + 0.1 * (smoothWidth - 1) / 29;
+			var bandwidth = 0.001 + 0.05 * (smoothWidth - 1) / 29;
 			
 			var results = loess_pairs(data, bandwidth);
 

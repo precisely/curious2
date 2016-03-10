@@ -1,4 +1,4 @@
-package us.wearecurio.model;
+package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
 
@@ -17,7 +17,7 @@ class PlotData {
 	String jsonPlotData
 	Boolean isSnapshot
 
-	public static final int MAXPLOTDATALENGTH = 1000000
+	static final int MAXPLOTDATALENGTH = 1000000
 
 	static constraints = {
 		jsonPlotData(maxSize:MAXPLOTDATALENGTH)
@@ -30,43 +30,54 @@ class PlotData {
 		table 'plot_data'
 		userId column: 'user_id', index:'user_id_index'
 		name column:'name', index:'name_index'
-		jsonPlotData column:'json_plot_data'
+		jsonPlotData column:'json_plot_data', sqlType: 'mediumtext'
 		isSnapshot column: 'is_snapshot'
 	}
 	
-	public static create(User user, String name, String jsonPlotData, Boolean isSnapshot) {
+	static create(User user, String name, String jsonPlotData, Boolean isSnapshot) {
 		log.debug "PlotData.create() userId:" + user.getId() + ", name:" + name + ", jsonPlotData(length):" + jsonPlotData.length() + ", isSnapshot:" + isSnapshot
 
 		def plotData = JSON.parse(jsonPlotData)
 
 		plotData.username = user.getUsername()
 		
-		return new PlotData(user.getId(), name, plotData.encodeAsJSON(), isSnapshot)
+		return new PlotData(user.getId(), name, (String) plotData.encodeAsJSON(), isSnapshot)
 	}
 	
-	public static delete(PlotData plotData) {
+	static delete(PlotData plotData) {
 		log.debug "PlotData.delete() plotDataId:" + plotData.getId()
 		plotData.delete(flush: true)
 	}
 
-	public static deleteId(long id) {
+	static deleteId(long id) {
 		log.debug "PlotData.deleteId() id:" + id
 		PlotData plotData = PlotData.get(id)
 		plotData.delete(flush: true)
 	}
 
-	public PlotData() {
-	}
+	PlotData() {
+	}	
 	
-	public PlotData(userId, name, jsonPlotData, isSnapshot) {
+	PlotData(Long userId, String name, String jsonPlotData, boolean isSnapshot) {
 		Date now = new Date()
 		
 		this.userId = userId
 		this.name = name
 		this.created = now
 		this.modified = now
-		this.jsonPlotData = jsonPlotData
+		this.jsonPlotData = Utils.zip(jsonPlotData)
 		this.isSnapshot = isSnapshot
+	}
+	
+	def recompressAndSave() {
+		if (this.jsonPlotData.startsWith("{")) {
+			this.jsonPlotData = Utils.zip(this.jsonPlotData)
+			Utils.save(this, true)
+		}
+	}
+	
+	String fetchJsonPlotData() {
+		return Utils.unzip(this.jsonPlotData)
 	}
 	
 	/**

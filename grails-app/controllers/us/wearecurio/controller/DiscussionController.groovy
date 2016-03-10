@@ -68,9 +68,9 @@ class DiscussionController extends LoginController {
 		Map model = discussion.getJSONDesc()
 		model.putAll([notLoggedIn: user ? false : true, userId: user?.id, associatedGroups: [],		// Public discussion
 				username: user ? user.getUsername() : '(anonymous)', isAdmin: UserGroup.canAdminDiscussion(user, discussion), isFollowing: discussion.isFollower(user.id),
-				templateVer: urlService.template(request), discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
+				templateVer: urlService.template(request), associatedGroups: [], discussionHash: discussion.hash, canWrite: UserGroup.canWriteDiscussion(user, discussion)])
 
-		if (user) {
+		/*if (user) {
 			List associatedGroups = UserGroup.getGroupsForWriter(user)
 			List alreadySharedGroups = [], otherGroups = []
 
@@ -84,7 +84,7 @@ class DiscussionController extends LoginController {
 			associatedGroups = alreadySharedGroups.sort { it.name }
 			associatedGroups.addAll(otherGroups.sort { it.name })
 			model.put("associatedGroups", associatedGroups)
-		}
+		}*/
 
 		JSON.use("jsonDate") {
 			renderJSONGet([success: true, discussionDetails: model])

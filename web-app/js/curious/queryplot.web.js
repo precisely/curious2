@@ -85,9 +85,9 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			var newName = prompt("Rename plot:", plot.getName());
 
 			if (newName) {
-				this.setManualName(true);
-				this.setName(newName);
-				this.store();
+				plot.setManualName(true);
+				plot.setName(newName);
+				plot.store();
 				$(document).trigger(afterQueryTitleChangeEvent);
 			}
 		};

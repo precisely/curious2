@@ -124,7 +124,7 @@ function doLogout() {
 			<nav class="row disable-select" id="plot-menu" >
 				<ul class="disable-select">
 						<ul>
-							<li class="filter"><a Ref="#" onclick="plot.clearGraphs()">New</a></li>
+							<li class="filter"><a href="#" onclick="plot.clearGraphs()">New</a></li>
 							<li class="filter"><a href="#" onclick="plot.save()">Save</a></li>
 							<li class="filter"><g:link action="load">Load</g:link></li>
 							<li class="filter"><a href="#" onclick="plot.saveSnapshot()">Publish</a></li>

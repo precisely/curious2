@@ -637,7 +637,7 @@ class Discussion {
 	}
 
 	static String GROUP_NAME_QUERY = "SELECT ug.full_name FROM user_group ug INNER JOIN group_member_discussion gmd" +
-			" on ug.id = gmd.group_id where gmd.member_id = :id ORDER BY gmd.created DESC"
+			" on ug.id = gmd.group_id where gmd.member_id = :id and is_virtual = 0 ORDER BY gmd.created DESC"
 
 	Map getJSONDesc() {
 		DiscussionPost firstPostInstance = getFirstPost()
