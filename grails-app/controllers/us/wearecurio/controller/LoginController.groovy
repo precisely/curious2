@@ -295,7 +295,8 @@ class LoginController extends SessionController {
 		if (verification == null) {
 			flash.message = "Invalid or expired email verification link, please try again"
 		
-			redirect(url:toUrl(controller:'home', action:'index'))
+			render(view:loginView(),
+				model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
 			return
 		}
 		
@@ -304,7 +305,8 @@ class LoginController extends SessionController {
 		if (primeUser == null) {
 			flash.message = "Invalid email verification link, please try again"
 			
-			redirect(url:toUrl(controller:'home', action:'index'))
+			render(view:loginView(),
+				model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
 			return
 		}
 		
@@ -315,7 +317,9 @@ class LoginController extends SessionController {
 		
 		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + primeUser.username
 			
-		redirect(url:toUrl(controller:'home', action:'index'))
+		render(view:loginView(),
+			model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
+		return
 	}
 	
 	def setLoginUser(user) {
