@@ -112,6 +112,27 @@
 		<c:renderJSTemplate template="/discussion/show" id="_showDiscussion" />
 		<c:renderJSTemplate template="/sprint/show" id="_showSprints" />
 		<c:renderJSTemplate template="/sprint/sprintExplanation" id="_trackathonHelp" />
+		<div class="modal fade publish-group-select" tabindex="-1" role="dialog" id="edit-discussion-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+							<i class="fa fa-times-circle-o"></i>
+						</button>
+						<h3 class="modal-title">Edit Discussion</h3>
+					</div>
+					<form action="#" id="edit-discussion-form">
+						<div class="modal-body">
+							<p>New Name</p>
+							<input type="text" class="form-control margin-bottom" id="new-discussion-name" required>
+						</div>
+						<div class="modal-footer">
+							<button type="submit">Save Edit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
 </g:applyLayout>

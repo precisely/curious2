@@ -1,4 +1,3 @@
-<div class="feed">
 	<div class="sprint {{- hasMember ? 'following' : 'not-following' }} {{- hasAdmin ? 'admin': 'not-admin'}}" id="sprint-{{- hash}}">
 		<div class="row">
 			<div class="col-xs-10 sprint-content">
@@ -124,4 +123,3 @@
 			</div>
 		</div>
 	</div>
-</div>
