@@ -60,7 +60,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	});
 
 	this.nextLineId = 0;
-	this.lines = [];
+	this.lines = {};
 
 	this.cycleTagLine = null;
 
