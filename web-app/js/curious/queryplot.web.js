@@ -12,27 +12,27 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 
 	this.queueJSON = function(description, url, args, successCallback, failCallback, delay, post, background) {
 		queueJSON(description, url, args, successCallback, failCallback, delay, post, background);
-	}
+	};
 
 	this.makeGetUrl = function(url) {
 		return makeGetUrl(url);
-	}
+	};
 
 	this.makePlainUrl = function(url) {
 		return makePlainUrl(url);
-	}
+	};
 
 	this.makePostUrl = function(url) {
 		return makePostUrl(url);
-	}
+	};
 
 	this.checkData = function(data, status, errorMessage, successMessage) {
 		return checkData(data, status, errorMessage, successMessage);
-	}
+	};
 
 	this.makeGetArgs = function(args) {
 		return makeGetArgs(args);
-	}
+	};
 	var datepicker = this.properties.getStartDatePicker();
 
 	datepicker.datepicker({dateFormat: 'DD MM dd, yy', disabled:!this.interactive,
@@ -102,11 +102,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	
 	this.queueClearStartSlider = function() {
 		this.resetStartSlider = true;
-	}
+	};
 	
 	this.queueClearEndSlider = function() {
 		this.resetEndSlider = true;
-	}
+	};
 	
 	this.setupSlider = function() {
 		if (!this.interactive) return;
@@ -155,21 +155,21 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		zoomDiv.off("dragsliderslide");
 		zoomDiv.on("dragsliderslide", function(event, ui) {
 			return plot.slideCallback(ui.values[0], ui.values[1]);
-		})
+		});
 
 		var plot = this;
 		zoomDiv.off("dragsliderslidestop");
 		zoomDiv.on("dragsliderslidestop", function(event, ui) {
 			return plot.store();
-		})
+		});
 
 		if (this.cycleTagLine) {
 			plot.slideCallback(leftSlider, rightSlider);
 		}
-		
 		if (refresh)
 			this.refreshAll();
 	}
+	};
 
 	this.drawPlot = function() {
 		var plotArea = this.plotArea;
@@ -241,7 +241,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		});
 
 		this.store();
-	}
+	};
 
 	this.slideCallback = function(left, right) {
 		var lastRezeroWidth = this.rezeroWidth ? this.rezeroWidth : 0;
@@ -297,7 +297,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		}
 
 		return true;
-	}
+	};
 
 	if (this.interactive) {
 		var replotDataOnEntry = function(e) {
@@ -335,7 +335,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		else end = this.rightLinearSlider ? this.rightLinearSlider : endTime;
 
 		return [start, end];
-	}
+	};
 
 	this.save = function() {
 		var first = true;
@@ -365,12 +365,31 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 				plot.addLine(tagListItem);
 			});
 		}
-	}
+	};
 
 	this.clearGraphs = function () {
 		if (confirm("Are you sure you want to clear the graph and start over?")) {
 			this.clear();
 		}
+	};
+
+	this.saveSnapshot = function(group) {
+		var plotDataStr = this.storeSnapshot();
+		if (plotDataStr == null) {
+			this.showAlert("No plotted data to save");
+			return;
+		}
+
+		this.queuePostJSON("sharing graph", this.makePostUrl("saveSnapshotData"), {name: this.getName() + ' (snapshot)', snapshotData: plotDataStr, group: group},
+				function(data) {
+					if (this.checkData(data, '', "Error while saving snapshot")) {
+						if (data.success) {
+							window.location = this.makePlainUrl('social#discussions/' + data.discussionHash);
+						} else {
+							this.showAlert(data.message);
+						}
+					}
+				});
 	};
 
 	/**
@@ -422,7 +441,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			var lastTag = plottedTags.pop();
 			placeholder += plottedTags.join(", ") + ' and ' + lastTag;
 		}
-		placeholder += ' ?';
+		placeholder += '?';
 
 		var $modal = this.getPublishModal();
 		$("#new-chart-name", $modal).attr("placeholder", placeholder);
@@ -518,8 +537,8 @@ PlotLine.prototype.appendHTML = function() {
 		html += '<h4 style="margin-top:15px">OPERATIONS</h4> <div class="form-group"><input type="checkbox" name="plotlinesum' + idSuffix + '" id="plotlinesum' + idSuffix + '"'
 				+ (this.sumData ? 'checked' : '') + '/> <label>SUM</label></div> ';
 	if (!this.isCycle) {
-		html += '<label>SMOOTH</label>'
-		html += '<div style="display:inline-block;margin-left:10px;width:90%;display:relative;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div>';
+		html += '<label>SMOOTH</label>';
+		html += '<div style="display:inline-block;margin-left:10px;width:90%;top:3px;" id="plotlinesmoothwidth' + idSuffix + '"></div>';
 		//html += '<div style="display:inline-block;">frequency <div style="display:inline-block;margin-left:10px;width:70px;display:relative;top:3px;" id="plotlinefreqwidth' + idSuffix + '"></div></div>';
 	}
 	html += '<ul class="tags" id="plotline' + idSuffix + 'list"></ul></div></div>';
@@ -540,7 +559,7 @@ PlotLine.prototype.appendHTML = function() {
 		smoothwidth.off("slide");
 		smoothwidth.on("slide", function(event, ui) {
 			return plotLine.setSmoothDataWidth(ui.value);
-		})
+		});
 		var freqwidth = $("#plotlinefreqwidth" + idSuffix);
 		freqwidth.slider({min: 0, max: 90, value:this.freqDataWidth});
 		var plotLine = this;

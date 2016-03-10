@@ -112,7 +112,7 @@
 		<c:renderJSTemplate template="/discussion/show" id="_showDiscussion" />
 		<c:renderJSTemplate template="/sprint/show" id="_showSprints" />
 		<c:renderJSTemplate template="/sprint/sprintExplanation" id="_trackathonHelp" />
-		<div class="modal fade publish-group-select" tabindex="-1" role="dialog" id="edit-discussion-modal">
+		<div class="modal fade" tabindex="-1" role="dialog" id="edit-discussion-modal">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">

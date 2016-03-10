@@ -4,7 +4,6 @@
 
 var beforeLinePlotEvent = "curious.before.line.plot";
 var afterLinePlotEvent = "curious.after.line.plot";
-var beforeLineRemoveEvent = "curious.before.line.remove";
 var afterLineRemoveEvent = "curious.after.line.remove";
 var afterQueryTitleChangeEvent = "curious.after.title.change";
 
@@ -40,7 +39,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		localStorage['plotUserId' + this.id] = null;
 		localStorage['plotData' + this.id] = '';
 		localStorage['plotSnapshotData' + this.id] = '';
-	}
+	};
 
 	this.userId = userId;
 	this.userName = userName;
@@ -48,7 +47,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	queryPlots[this.id] = this;
 	this.doStore = store;
 	this.plotArea = $(plotAreaDivId);
-	this.plottedTags = [];
 	this.properties = properties;
 	this.pendingLoads = 0;
 	this.tagList = tagList;
@@ -70,7 +68,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 	this.setManualName = function(manualName) {
 		this.manualName = manualName;
-	}
+	};
 
 	this.refreshName = function() {
 		var i, empty = true;
@@ -107,22 +105,22 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.setName(name);
 
 		return name;
-	}
+	};
 
 	this.getNextLineId = function() {
 		return this.nextLineId++;
-	}
+	};
 	this.getName = function() {
 		return this.properties.getName();
-	}
+	};
 	this.setName = function(name) {
 		this.properties.setName(name);
-	}
+	};
 	this.getLine = function(plotLineId) {
 		if (plotLineId == 'cycle')
 			return this.cycleTagLine;
 		return this.lines['id' + plotLineId];
-	}
+	};
 	this.doRemoveLine = function(plotLineId) {
 		// remove line but don't refresh interface
 		if (plot.activeLineId == plotLineId)
@@ -147,7 +145,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			}
 			delete this.lines['id' + plotLineId];
 		}
-	}
+	};
 	this.clear = function() {
 		for (var i in this.lines) {
 			var line = this.lines[i];
@@ -157,7 +155,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.refreshAll();
 		this.setupSlider();
 		this.store();
-	}
+	};
 	this.removeLine = function(plotLineId) {
 		this.doRemoveLine(plotLineId);
 		this.refreshName();
@@ -165,13 +163,13 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.setupSlider();
 		this.store();
 		$(document).trigger(afterLineRemoveEvent, this);
-	}
+	};
 	this.getCycleTagLine = function() {
 		return this.cycleTagLine;
-	}
+	};
 	this.getCycleTagDiv = function() {
 		return this.properties.getCycleTagDiv();
-	}
+	};
 	this.removeTagNameFromLine = function(plotLineId, tagName) {
 		var plotLine = this.getLine(plotLineId);
 		plotLine.removeTagName(tagName);
@@ -180,7 +178,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			plotLine.loadPlotData();
 		}
-	}
+	};
 	this.store = function() {
 		var plotData = [];
 		localStorage['plotUserId' + this.id] = this.userId;
@@ -208,7 +206,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			localStorage['plotData' + this.id] = plotDataStr;
 		}
 		return plotDataStr;
-	}
+	};
 	this.storeSnapshot = function() {
 		var plotData = [];
 		localStorage['plotUserId' + this.id] = this.userId;
@@ -234,27 +232,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			localStorage['plotSnapshotData' + this.id] = plotDataStr;
 		}
 		return plotDataStr;
-	}
-	this.saveSnapshot = function(group) {
-		var first = true;
-		var plotDataStr = this.storeSnapshot();
-		if (plotDataStr == null) {
-			this.showAlert("No plotted data to save");
-			return;
-		}
-		var plot = this;
-
-		this.queuePostJSON("sharing graph", this.makePostUrl("saveSnapshotData"), {name: this.getName() + ' (snapshot)', snapshotData: plotDataStr, group: group},
-				function(data) {
-					if (this.checkData(data, '', "Error while saving snapshot")) {
-						if (data.success) {
-							window.location = this.makePlainUrl('social#discussions/' + data.discussionHash);
-						} else {
-							this.showAlert(data.message);
-						}
-					}
-				});
-	}
+	};
 
 	this.load = function(plotData) {
 		$(document).trigger(beforeLinePlotEvent);
@@ -286,7 +264,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.rightLinearSlider = plotData.rightLinearSlider;
 		this.activeLineId = plotData.activeLineId;
 		$(document).trigger(afterLinePlotEvent);
-	}
+	};
 
 	this.loadLine = function(save,version) {
 		var parentLine = null;
@@ -317,7 +295,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				tagInstance = tagList.store.createOrUpdate(tagInstance);
 				save.tag = tagInstance;
 			} else if (save.tags.length > 1) {
-				var tagInstance = new TagGroup({
+				tagInstance = new TagGroup({
 					id: "tagGroup"+save.name+i,
 					description: save.name,
 					type: "TagGroup",
@@ -354,7 +332,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			this.createPlotLine(save, parentLine);
 		}
-	}
+	};
 
 	this.createPlotLine = function(save, parentLine) {
 		var plotLine = new PlotLine(save);
@@ -382,7 +360,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return plotLine;
-	}
+	};
 
 	this.restoreTag = function(tag) {
 		tag = new Tag({
@@ -393,7 +371,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			state: TREEITEM_SNAPSHOT});
 		tag = tagList.store.createOrUpdate(tag);
 		return tag;
-	}
+	};
 
 	this.restoreTagGroup = function(tagGroup) {
 		/**
@@ -422,7 +400,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			tagGroupInstance.addChild(child);
 		}
 		return tagGroupInstance;
-	}
+	};
 
 	this.restore = function() {
 		if (this.doStore && supportsLocalStorage() && localStorage['plotData' + this.id]) {
@@ -432,7 +410,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				this.load($.evalJSON(localStorage['plotData' + this.id]));
 			}
 		}
-	}
+	};
 	this.restoreSnapshot = function() {
 		if (this.doStore && supportsLocalStorage() && localStorage['plotSnapshotData' + this.id]) {
 			if (localStorage['plotUserId'] != this.userId) {
@@ -441,7 +419,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				this.loadSnapshot($.evalJSON(localStorage['plotSnapshotData' + this.id]));
 			}
 		}
-	}
+	};
 	this.loadSnapshot = function(plotData) {
 		var version = plotData.version;
 		if (plotData.startTime) {
@@ -475,7 +453,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.refreshPlot();
 		this.setupSlider();
 		this.store();
-	}
+	};
 	this.loadId = function(id) {
 		var plot = this;
 		this.queueJSON("loading graph", this.makeGetUrl("loadPlotDataId"), this.makeGetArgs({ id:id }), function(plotData) {
@@ -484,7 +462,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			} else
 				this.showAlert("Error while loading");
 		});
-	}
+	};
 	this.loadSnapshotId = function(id, discussionHash) {
 		var plot = this;
 		this.queueJSON("loading graph", this.makeGetUrl("loadSnapshotDataId"), this.makeGetArgs({ id:id, discussionHash:discussionHash }), function(plotData) {
@@ -494,23 +472,23 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				this.showAlert("Error while loading");
 			}
 		});
-	}
+	};
 	this.loadAllData = function() {
 		// redraw left nav
 		for (var i in this.lines) {
 			this.lines[i].loadPlotData();
 		}
-	}
+	};
 	this.postprocessAllLines = function() {
 		// redraw left nav
 		for (var i in this.lines) {
 			this.lines[i].postprocessEntries();
 		}
-	}
+	};
 	this.refreshAll = function() {
 		this.refreshNav();
 		this.refreshPlot();
-	}
+	};
 	this.refreshNav = function() {
 		// redraw left nav
 		$("#plotLines" + this.id).html('');
@@ -529,7 +507,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			cycleTagDiv.css('padding-top','7px');
 			cycleTagDiv.css('height','23px');
 		}
-	}
+	};
 	// refresh slider positions, return true if need to recalculate plot if rezero threshold changes
 	this.log2 = Math.log(2);
 	this.refreshLinearSliders = function() {
@@ -546,11 +524,11 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.rezeroWidth = 86400000;
 
 		return this.rezeroWidth;
-	}
+	};
 	this.sliderTimes = function() {
 		var sliders = this.linearSliders;
 		return [sliders[0], sliders[1]];
-	}
+	};
 	// redraw plot but don't recompute it, only change min/max if needed
 	this.redrawPlot = function() {
 		if (this.plotData == null || this.plotData[0] == undefined)
@@ -572,10 +550,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		this.drawPlot();
-	}
+	};
 	this.prepAllLines = function() {
 		// deprecated, replaced by refreshPlot
-	}
+	};
 	this.refreshPlot = function() {
 		var minTime = undefined, maxTime = undefined;
 		
@@ -618,8 +596,6 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			return;
 		}
 
-		var d1Data = [];
-
 		var plotData = [];
 
 		var yaxes = [];
@@ -628,14 +604,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 
 		for (i in this.lines) {
 			var line = this.lines[i];
-			var valueScale = line.valueScale;
-
-			var scaleMin, scaleMax;
 
 			var min = line.minTotal;
 			var max = line.maxTotal;
 			var delta = max - min;
-			var unitGroupId = line.unitGroupId;
 
 			if (delta == 0) {
 				if (max == 0) {
@@ -792,14 +764,14 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		this.plotOptions = options;
 
 		this.drawPlot();
-	}
+	};
 	this.getDialogDiv = function() {
 		return $('#dialogDiv' + plot.id);
-	}
+	};
 
 	this.addPendingLoad = function() {
 		++this.pendingLoads;
-	}
+	};
 	/**
 	 * Deactivate any active line determined by activateLineId in Plot instance.
 	 * The passed-in plotLine is the line currently clicked on, if any
@@ -826,7 +798,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		} else {
 			console.log('plot.deactivateActivatedLine: No active line to deactivate');
 		}
-	}
+	};
 	this.removePendingLoad = function() {
 		if (!--this.pendingLoads) {
 			this.refreshPlot();
@@ -835,7 +807,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 		if (this.pendingLoads < 0)
 			this.pendingLoads = 0; // error check
-	}
+	};
 	this.leastUsedPlotLineColor = function() {
 		var colorMap = [];
 		var color;
@@ -858,7 +830,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return minColor;
-	}
+	};
 	this.leastUsedOffset = function() {
 		var offsetMap = [];
 		var offset;
@@ -885,7 +857,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return minOffset;
-	}
+	};
 	this.countYAxesShowing = function() {
 		var count = 0;
 
@@ -895,7 +867,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return count;
-	}
+	};
 	this.getLineByTag = function(tag) {
 		for (var i in this.lines) {
 			var line = this.lines[i];
@@ -904,7 +876,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return null;
-	}
+	};
 	this.getLineByTagName = function(tagName) {
 		for (var i in this.lines) {
 			var line = this.lines[i];
@@ -913,7 +885,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 		}
 
 		return null;
-	}
+	};
 
 	this.drawLine = function($elt) {
 		var tagListItem = $elt.data(DATA_KEY_FOR_ITEM_VIEW).getData();
@@ -927,7 +899,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 				plot.addLine(tagListItem);
 			});
 		}
-	}
+	};
 
 	this.addLine = function(initialTag) {
 		// prevent adding duplicate lines
@@ -957,7 +929,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			plot.store();
 			$(document).trigger(afterLinePlotEvent, [initialTag]);
 		});
-	}
+	};
 	this.addCycleLine = function(initialTag) {
 		if (this.cycleTagLine != null) {
 			this.cycleTagLine.addTag(initialTag);
@@ -966,7 +938,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.refreshName();
 			this.cycleTagLine.loadPlotData();
 		}
-	}
+	};
 	this.addSmoothLine = function(parentLine, smoothValue, hidden) {
 		if (parentLine.smoothLine == null) {
 			var smoothLine = new PlotLine({plot:this,name:parentLine.name + ' (smooth)',color:parentLine.color,
@@ -980,7 +952,7 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.refreshName();
 			this.store();
 		}
-	}
+	};
 	this.addFreqLine = function(parentLine, freqValue) {
 		if (parentLine.freqLine == null) {
 			var freqLine = new PlotLine({plot:this,name:parentLine.name + ' (freq)',color:parentLine.color,
@@ -994,32 +966,32 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.refreshName();
 			this.store();
 		}
-	}
+	};
 	// delegation methods for PlotProperties
 	this.getName = function() {
 		return this.properties.getName();
-	}
+	};
 	this.setName = function(name) {
 		return this.properties.setName(name);
-	}
+	};
 	this.setUsername = function(name) {
 		return this.properties.setUsername(name);
-	}
+	};
 	this.getStartDate = function() {
 		return this.properties.getStartDate();
-	}
+	};
 	this.getStartTime = function() {
 		return this.properties.getStartTime();
-	}
+	};
 	this.setStartDate = function(date) {
 		return this.properties.setStartDate(date);
-	}
+	};
 	this.getEndDate = function() {
 		return this.properties.getEndDate();
-	}
+	};
 	this.getEndTime = function() {
 		return this.properties.getEndTime();
-	}
+	};
 	this.setEndDate = function(date) {
 		return this.properties.setEndDate(date);
 	}
@@ -1134,7 +1106,7 @@ function PlotLine(p) {
 			tagNames.push(tags[i].description);
 		}
 		return tagNames;
-	}
+	};
 
 	this.bindTagEventListeners = function() {
 		if (!this.tag) return;
@@ -1156,7 +1128,7 @@ function PlotLine(p) {
 			this.refreshTagList();
 			this.plot.refreshPlot();
 		}.bind(this));
-	}
+	};
 
 	if(!this.snapshot) {
 		this.bindTagEventListeners();
@@ -1164,21 +1136,21 @@ function PlotLine(p) {
 
 	this.matchTag = function(tag) { // Tag or TagGroup argument
 		return tag.matchNameList(tags); // in future when query plot uses real tag references, this will use unique id comparison
-	}
+	};
 	this.getName = function() {
 		return this.name;
-	}
+	};
 	this.setName = function(newName) {
 		this.name = newName;
 		var div = this.getDiv();
 		$(".description",div).html(newName);
-	}
+	};
 	this.getDiv = function() {
 		return $("#plotline" + this.plot.id + this.id);
-	}
+	};
 	this.getNumTags = function() {
 		return tags.length;
-	}
+	};
 	this.getSaveData = function() {
 		var data = {name:this.name,color:this.color,sumData:this.sumData,
 				tag:this.tag,showYAxis:this.showYAxis,hidden:this.hidden,showLines:this.showLines,isCycle:this.isCycle,
@@ -1190,7 +1162,7 @@ function PlotLine(p) {
 		if (this.minRange != undefined) data.minRange = this.minRange;
 		if (this.maxRange != undefined) data.maxRange = this.maxRange;
 		return data;
-	}
+	};
 	this.getSaveSnapshotData = function() {
 		var save = this.getSaveData();
 		var len = this.entries.length;
@@ -1224,7 +1196,7 @@ function PlotLine(p) {
 		}
 		save.entries = saveEntries;
 		return save;
-	}
+	};
 
 	this.displayTag = function(tag) {
 		if (!this.snapshot && typeof tag == 'string') {
@@ -1242,11 +1214,11 @@ function PlotLine(p) {
 			$(viewInstance.getDOMElement()).data(DATA_KEY_FOR_ITEM_VIEW, viewInstance);
 		}
 
-	}
+	};
 
 	this.addTagName = function(tagName) {
 		// TODO evaluate if this is still needed
-	}
+	};
 
 	this.addTag = function(tag) {
 		if (this.isSmoothLine() || this.isFreqLine()) return; // cannot add or remove tags from
@@ -1267,14 +1239,14 @@ function PlotLine(p) {
 
 		this.loadPlotData();
 		this.plot.store();
-	}
+	};
 
 	this.removeTagName = function(tagName) {
 		if (this.tag && this.tag instanceof TagGroup) {
 			return this.tag.removeTagByName(tagName);
 		}
 		return false;
-	}
+	};
 
 	this.createTagGroupCallback = function(tagGroup) {
 		this.tag = tagGroup;
@@ -1282,7 +1254,7 @@ function PlotLine(p) {
 		this.refreshTagList();
 		this.loadPlotData();
 		this.plot.store();
-	}
+	};
 
 	this.refreshTagList = function () {
 		$("#plotline" + this.plot.id + this.id + 'list').html('');
@@ -1298,36 +1270,36 @@ function PlotLine(p) {
 		}
 
 
-	}
+	};
 	this.hasSmoothLine = function() {
 		return this.smoothLine && this.smoothLine != 1;
-	}
+	};
 	this.isSmoothLine = function() {
 		return this.parentLine != null && (!this.isFreqLineFlag);
-	}
+	};
 	this.isFreqLine = function() {
 		return this.parentLine != null && this.isFreqLineFlag;
-	}
+	};
 	this.getIdSuffix = function() {
 		return this.plot.id + this.id;
-	}
+	};
 	this.setHideCheckbox = function(val) {
 		$("#plotlinehide" + this.getIdSuffix()).attr('checked', val);
-	}
+	};
 	this.setContinuousCheckbox = function(val) {
 		$("input[name='plotlinecontinuous" + this.getIdSuffix() + "']").each(function(index, radio) {
 			if ($(radio).val() == 'continuous') {
 				$(radio).prop('checked', val);
 			}
 		});
-	}
+	};
 	this.setShowPointsCheckbox = function(val) {
 		$("input[name='plotlinepoints" + this.getIdSuffix() + "']").each(function(index, radio) {
 			if ($(radio).val() == 'points') {
 				$(radio).prop('checked', val);
 			}
 		});
-	}
+	};
 	this.setIsContinuous = function(val) {
 		if (this.parentLine)
 			return this.parentLine.setIsContinuous(val);
@@ -1347,7 +1319,7 @@ function PlotLine(p) {
 						}
 					});
 		}
-	}
+	};
 	this.setShowPoints = function(val) {
 		if (this.showPoints != val) {
 			this.showPoints = val;
@@ -1360,13 +1332,13 @@ function PlotLine(p) {
 						}
 					});
 		}
-	}
+	};
 	this.getMinRange = function() {
 		return (this.minRange / 10000.0) * (this.maxVal - this.minVal) + this.minVal;
-	}
+	};
 	this.getMaxRange = function() {
 		return (this.maxRange / 10000.0) * (this.maxVal - this.minVal) + this.minVal;
-	}
+	};
 	this.setRange = function(handle, value) {
 		var idSuffix = this.getIdSuffix();
 		if (handle == 0) {
@@ -1378,11 +1350,11 @@ function PlotLine(p) {
 			$('#plotlinerangemax' + idSuffix).html('' + Math.ceil(this.getMaxRange() * 10.0) / 10.0);
 			this.plot.refreshPlot();
 		}
-	}
+	};
 	this.yAxisVisible = function() {
 		//if (this.parentLine) return (this.parentLine.hidden || this.parentLine.activated) && this.parentLine.showYAxis;
 		return this.showYAxis;
-	}
+	};
 	/**
 	 * Loading all innner tag groups so that snapshots persists them
 	 */
@@ -1390,7 +1362,7 @@ function PlotLine(p) {
 		if (tagGroup instanceof TagGroup) {
 			tagGroup.fetchAll();
 		}
-	}
+	};
 
 	this.getPlotData = function() {
 		if (this.isHidden()) {
@@ -1398,7 +1370,7 @@ function PlotLine(p) {
 		}
 
 		return this.plotData;
-	}
+	};
 	this.loadPlotData = function() {
 		var plot = this.plot;
 		if (this.snapshot) {
@@ -1439,7 +1411,7 @@ function PlotLine(p) {
 					}
 				}
 			});
-	}
+	};
 
 	this.calculateSmoothEntries = function() {
 		var parentLine = this.parentLine;
@@ -1459,13 +1431,7 @@ function PlotLine(p) {
 		var segments = []; // break smoothing into segments
 		
 		var reZero = (parentLine.isFreqLineFlag || parentLine.isContinuous) ? false : (parentLine.isSmoothLine() ? false : !parentLine.isContinuous);
-		
-		var minTime = entries[0][0].getTime()
-		var maxTime = entries[entries.length - 1][0].getTime()
-		var deltaT = maxTime - minTime;
-		
-		var lastTime;
-		
+
 		var rezeroWidth = this.plot.rezeroWidth;
 		var slopeWidth = Math.floor(rezeroWidth / 10);
 		if (slopeWidth == 0) slopeWidth = 1;
@@ -1559,7 +1525,7 @@ function PlotLine(p) {
 			
 			// take moving average
 			
-			var movingAverage = function(data, r, third, fourth) {
+			var movingAverage = function(data, r) {
 				var dataLen = data.length;
 				
 				var results = [];
@@ -1590,7 +1556,7 @@ function PlotLine(p) {
 		}
 
 		this.entries = retVal;
-	}
+	};
 	this.calculateFreqEntries = function() {
 		var parentLine = this.parentLine;
 		var parentEntries = parentLine.entries;
@@ -1623,7 +1589,6 @@ function PlotLine(p) {
 				sum += vl;
 				++trailingEdge;
 				entries.push([new Date(tl), sum]);
-				continue;
 			} else {
 				var tt = parentEntries[trailingEdge][0].getTime() + halfwidth;
 				var vt = flatten ? (parentEntries[trailingEdge][1] > 0 ? 1 : 0) : parentEntries[trailingEdge][1];
@@ -1631,13 +1596,11 @@ function PlotLine(p) {
 					sum += vl;
 					++leadingEdge;
 					entries.push([new Date(tl), sum]);
-					continue;
 				} else if (tl == tt) {
 					sum += vl - vt;
 					++leadingEdge;
 					++trailingEdge;
 					entries.push([new Date(tl), sum]);
-					continue;
 				} else {
 					sum -= vt;
 					++trailingEdge;
@@ -1647,13 +1610,13 @@ function PlotLine(p) {
 		}
 
 		this.entries = entries;
-	}
+	};
 	this.generateSmoothLine = function(smoothValue, hidden) {
 		this.plot.addSmoothLine(this, smoothValue, hidden);
-	}
+	};
 	this.generateFreqLine = function(freqValue) {
 		this.plot.addFreqLine(this, freqValue);
-	}
+	};
 	this.activate = function() {
 		this.showYAxis = true;
 		// should show parent line and show smooth line
@@ -1671,7 +1634,7 @@ function PlotLine(p) {
 		}
 		this.plot.store();
 		this.plot.refreshPlot();
-	}
+	};
 	this.deactivate = function() {
 		this.showYAxis = false;
 		this.activated = false;
@@ -1702,13 +1665,13 @@ function PlotLine(p) {
 		}
 		this.plot.store();
 		this.plot.refreshPlot();
-	}
+	};
 	this.smoothActive = function() {
 		return this.smoothLine && this.smoothDataWidth > 0 && (!this.smoothLine.hidden);
-	}
+	};
 	this.smoothWouldBeActive = function() {
 		return this.smoothLine && this.smoothDataWidth > 0;
-	}
+	};
 	this.isHidden = function() {
 		if (this.isSmoothLine()) {
 			return (this.parentLine.smoothDataWidth < 1) || this.hidden;
@@ -1718,7 +1681,7 @@ function PlotLine(p) {
 			return this.freqLine.hidden;
 		} else
 			return this.hidden && (this.isContinuous || (!this.hasSmoothLine()));
-	}
+	};
 	this.setHidden = function(hidden) {
 		if (this.smoothLine && this.smoothDataWidth > 0) {
 			this.smoothLine.hidden = hidden;
@@ -1726,10 +1689,9 @@ function PlotLine(p) {
 			this.freqLine.hidden = hidden;
 		} else
 			this.hidden = hidden;
-	}
+	};
 	this.setSmoothDataWidth = function(value, hidden) {
 		if (value != this.smoothDataWidth) {
-			var oldSmoothValue = this.smoothDataWidth;
 			this.smoothDataWidth = value;
 			if (value > 0) {
 				// create smooth line
@@ -1753,7 +1715,7 @@ function PlotLine(p) {
 			}
 			this.plot.refreshPlot();
 		}
-	}
+	};
 	this.setFreqDataWidth = function(value) {
 		if (value != this.freqDataWidth) {
 			var oldFreqValue = this.freqDataWidth;
@@ -1778,7 +1740,7 @@ function PlotLine(p) {
 			}
 			this.plot.refreshPlot();
 		}
-	}
+	};
 	this.parseEntries = function() {
 		var entries = this.entries;
 		// parse times if needed
@@ -1787,7 +1749,7 @@ function PlotLine(p) {
 				entries[i][0] = parseISO8601(entries[i][0]);
 			}
 		}
-	}
+	};
 	this.loadEntries = function(plotDesc) {
 		this.entries = plotDesc.entries;
 		this.minSeriesVal = plotDesc.min;
@@ -1795,21 +1757,21 @@ function PlotLine(p) {
 		this.unitGroupId = plotDesc.unitGroupId;
 		this.valueScale = plotDesc.valueScale;
 		this.parseEntries();
-	}
+	};
 	this.makePlotData = function(name, data) {
 		var plotLine = this;
 		var drawPoint = function(ctx, x, y, radius, shadow, origX) {
 			if (plotLine.rezeroTimes && plotLine.rezeroTimes[origX])
 				return; // don't draw rezero points
 			ctx.arc(x, y, radius, 0, shadow ? Math.PI : Math.PI * 2, false);
-		}
+		};
 		if (this.intervals) { //} || (!this.fill)) {
 			return {
 				popuplabel: name,
 				data: data,
 				color: this.color, //((this.smoothLine && this.smoothDataWidth > 0) || (this.freqLine && this.freqDataWidth > 0)) ? colorToFillColor(this.color,"0.25") : this.color,
 				lines: {
-					show: this.isContinuous && this.smoothLine,
+					show: this.isContinuous && this.smoothLine
 				},
 				points: {
 					show: this.isSmoothLine() ? false : true,
@@ -1837,7 +1799,7 @@ function PlotLine(p) {
 				plotLine: this
 			};
 		}
-	}
+	};
 	this.calculateMinMaxTime = function() {
 		var entries = this.entries;
 
@@ -1859,7 +1821,7 @@ function PlotLine(p) {
 		}
 		this.minTime = minTime;
 		this.maxTime = maxTime;
-	}
+	};
 	this.postprocessEntries = function() {
 		if (!this.entries) return;
 
@@ -1973,7 +1935,7 @@ function PlotLine(p) {
 		this.maxTotal = this.maxSeriesVal < this.maxVal ? this.maxSeriesVal : this.maxVal;
 		if (this.minTotal == undefined) this.minTotal = this.minVal;
 		if (this.maxTotal == undefined) this.maxTotal = this.maxVal;
-	}
+	};
 	this.getCyclicData = function(cyclicPlotLine) {
 		var multiCyclicData = [];
 
@@ -1981,8 +1943,6 @@ function PlotLine(p) {
 
 		var minRange = cyclicPlotLine.getMinRange();
 		var maxRange = cyclicPlotLine.getMaxRange();
-
-		var plotLine = this;
 
 		if (this.hidden) return [];
 
@@ -2013,7 +1973,7 @@ function PlotLine(p) {
 		}
 
 		return multiCyclicData;
-	}
+	};
 	if (this.appendHTML) {
 		this.appendHTML();
 	}

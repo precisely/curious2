@@ -1,13 +1,13 @@
 package us.wearecurio.controller
+
 import com.lucastex.grails.fileuploader.FileUploaderService
 import com.lucastex.grails.fileuploader.UFile
-import us.wearecurio.model.User
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
+import us.wearecurio.model.User
+import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
-import us.wearecurio.model.UserGroup
-import us.wearecurio.services.SearchService
 
 class UserController extends LoginController {
 
@@ -28,7 +28,8 @@ class UserController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
 			return
 		}
-		Map userDetails = [:]
+
+		Map userDetails
 		User sessionUser = sessionUser()
 		if (user.id != sessionUser.id) {
 			userDetails = user.getPublicJSONDesc()
@@ -95,7 +96,6 @@ class UserController extends LoginController {
 	def update() {
 		debug ("UserController.update() params:" + params)
 		Map requestData = request.JSON
-		def validate = [:]
 		User user = User.findByHash(params.id)
 
 		if (!user) {
@@ -107,7 +107,7 @@ class UserController extends LoginController {
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied")])
 			return
 		}
-		validate = user.validateUserPreferences(requestData, user)
+		Map validate = user.validateUserPreferences(requestData, user)
 
 		if (!validate.status) {
 			renderJSONGet([success: false, message: validate.message])

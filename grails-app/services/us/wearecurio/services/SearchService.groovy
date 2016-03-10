@@ -1,14 +1,13 @@
 package us.wearecurio.services
+
 import org.apache.commons.logging.LogFactory
+import org.elasticsearch.action.count.CountResponse
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
-
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.GroupMemberDiscussion
-import us.wearecurio.model.Model
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.User
 import us.wearecurio.model.UserActivity
@@ -17,22 +16,16 @@ import us.wearecurio.model.UserActivity.ObjectType
 import us.wearecurio.model.UserGroup
 import us.wearecurio.utility.Utils
 
-
-import org.elasticsearch.action.count.CountResponse
-
 import static org.elasticsearch.index.query.FilterBuilders.andFilter
-import static org.elasticsearch.index.query.FilterBuilders.existsFilter
-import static org.elasticsearch.index.query.FilterBuilders.notFilter
 import static org.elasticsearch.index.query.FilterBuilders.orFilter
 import static org.elasticsearch.index.query.FilterBuilders.queryFilter
-import static org.elasticsearch.index.query.FilterBuilders.termsFilter
 import static org.elasticsearch.index.query.FilterBuilders.typeFilter
 import static org.elasticsearch.index.query.QueryBuilders.constantScoreQuery
 import static org.elasticsearch.index.query.QueryBuilders.functionScoreQuery
 import static org.elasticsearch.index.query.QueryBuilders.queryString
-import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.weightFactorFunction
 import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.linearDecayFunction
 import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.randomFunction
+import static org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders.weightFactorFunction
 
 class SearchService {
 	
@@ -696,15 +689,15 @@ class SearchService {
 	
 	Map getFollowedSprintsGroup(User user) {
 		List<UserGroup> readerGroups = UserGroup.getGroupsForReader(user.id)
-		Map followedSprints = Sprint.search(searchType:'query_and_fetch') {
-			query_string(query:  "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
+		Map followedSprints = Sprint.search(searchType: 'query_and_fetch') {
+			query_string(query: "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
 		}
 
 		List startedSprints = followedSprints.searchResults.findAll {
 			it.hasStarted(user.id, new Date())
 		}
 		followedSprints.searchResults.removeAll(startedSprints as Object[])
-		startedSprints = startedSprints.sort{it.hasStarted(user.id, new Date())}
+		startedSprints = startedSprints.sort {it.hasStarted(user.id, new Date())}
 		List followedSprintsGroupList = followedSprints.searchResults.collect {
 			UserGroup group = UserGroup.get(it.virtualGroupId)
 			[name: group?.name, fullName: group?.fullName]
