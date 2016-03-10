@@ -72,7 +72,12 @@
 											<ul class="dropdown-menu" role="menu">
 												<li>
 													<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}"> 
-														<img src="/images/x.png" width="auto" height="23">Delete
+														<i class="fa fa-trash fa-fw"></i> Delete
+													</a>
+												</li>
+												<li>
+													<a href="#" class="edit-discussion" data-discussion-hash="{{- discussionHash }}">
+														<i class="fa fa-pencil-square fa-fw"></i> Edit
 													</a>
 												</li>
 											</ul>
@@ -83,7 +88,10 @@
 							<div class="group">
 								{{- (associatedGroups[0] && associatedGroups[0].shared) ? associatedGroups[0].fullName : '' }}
 							</div>
-							<a href="javascript:void(0);"> {{- discussionTitle || '(No Title)' }}</a>
+							<span class="discussion-title"> {{- discussionTitle || '(No Title)' }}</span>
+							<small id="title-updated" class="text-red hide margin-left">
+								<i class="fa fa-check-square-o"> Title updated!</i>
+							</small>
 							<p>
 								{{- firstPost ? firstPost.message : '' }}
 							</p>

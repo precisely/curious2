@@ -2512,7 +2512,7 @@ div.graph-header-container .red-header {
 	font-size: 12px;
 }
 
-.feed #createSprintOverlay .modal-body label {
+#createSprintOverlay .modal-body label {
 	display: block;
 	font-weight: normal;
 	font-size: 14px;
@@ -2520,7 +2520,7 @@ div.graph-header-container .red-header {
 	margin-bottom: 15px;
 }
 
-.feed .modal-body textarea {
+#createSprintOverlay .modal-body textarea {
 	resize: none;
 	border-radius: 2px;
 	padding: 10px;
@@ -2531,7 +2531,7 @@ div.graph-header-container .red-header {
 	margin-bottom: 30px;
 }
 
-.feed .modal-body input {
+#createSprintOverlay .modal-body input {
 	border-radius: 2px;
 	padding: 10px;
 	font-size: 13px;
@@ -2542,7 +2542,7 @@ div.graph-header-container .red-header {
 	margin-bottom: 30px;
 }
 
-.feed .modal-body #sprint-tags {
+#createSprintOverlay .modal-body #sprint-tags {
 	border: none;
 	width: 400px;
 	height: 30px;
@@ -2550,7 +2550,7 @@ div.graph-header-container .red-header {
 	font-weight: 500;
 }
 
-.feed .modal-body #sprint-participants, .feed .modal-body #sprint-admins {
+#createSprintOverlay .modal-body #sprint-participants, .feed .modal-body #sprint-admins {
 	width: 160px;
 	height: 30px;
 	border-color: #c04f7f;
@@ -3303,13 +3303,21 @@ body {
 
 .discussion-header .dropdown {
 	display: inline-block;
-	background-color: #f3f3f3;
 	margin-left: 20px;
 }
 
-.discussion-header .open {
-	width: 92px;
+.discussion-header .dropdown > a {
+	display: inline-block;
+	background-color: #f3f3f3;
 }
+
+.discussion-header .dropdown.open > a {
+	border: 1px solid rgba(0,0,0,0.15);
+	border-bottom: 0;
+	position: relative;
+	z-index: 1001;
+}
+
 .discussion-header .dropdown a b {
 	margin: 10px 12px;
 	color: #c8c8c8;
@@ -3322,19 +3330,18 @@ body {
 
 .discussion-header .dropdown .dropdown-menu {
 	background-color: #f3f3f3;
-	min-width: 0;
-	max-width: 92px;
-	text-align: center;
-	margin-left: 85px;
-	margin-top: -2px;
-	box-shadow: none;
-	border: none;
-	padding-top: 0;
+	margin-top: -1px;
+	right: 0;
+	left: auto;
+	z-index: 1000;
 }
 
 .discussion-header .dropdown .dropdown-menu li a {
-	padding: 2px;
 	color: #a8a8a8;
+}
+
+.discussion-header .dropdown .dropdown-menu li:hover a {
+	color: #828282;
 }
 
 .discussion-header .dropdown .dropdown-menu li a img {

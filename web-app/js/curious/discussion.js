@@ -228,83 +228,49 @@ $(document).ready(function() {
 				$(".add-comment").toggle(!disabled);
 			});
 	});
+
+	var $modal = $("#edit-discussion-modal");
+
+	$(document).on("click", ".edit-discussion", function() {
+		var existingText = $(".discussion-title").text().trim();
+		$("#new-discussion-name").val(existingText);
+		$modal.modal("show");
+		return false;
+	});
+
+	$(document).on("shown.bs.modal", "#edit-discussion-modal", function() {
+		$("#new-discussion-name").focus().select();
+	});
+
+	$(document).on("submit", "#edit-discussion-form", function() {
+		var newName = $("#new-discussion-name").val();
+		var existingName = $(".discussion-title").text();
+		var discussionHash = $("input[name=discussionHash]").val();
+
+		if (newName != existingName && newName !== undefined) {
+			queueJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash: discussionHash, name:newName }), function(data) {
+				if (checkData(data)) {
+					$(".discussion-title").text(newName);
+					displayFlashMessage("#title-updated", 1000);
+				} else {
+					showAlert('Failed to set name');
+				}
+			});
+		}
+
+		$("#edit-discussion-modal").modal("hide");
+		return false;
+	})
 });
 
 var plot = null;
 var tagList = null;
-var discussionTitle = "${discussionTitle}";
-var alreadySentName = null;
-var preventCommentSubmit = false;
-
 function doLogout() {
 	callLogoutCallbacks();
 }
 
 $(function() {
 	initTagListOnly();
-
-	// plot.loadSnapshotId(${firstPost.plotDataId});
-	var discussTitleArea = $("#discussTitleArea");
-	var discussTitle = $("#discussTitleSpan");
-
-	var saveTitle = function(closure) {
-		var discussTitleInput = $("#discussTitleInput");
-		if (discussTitleInput) {
-			var newName = discussTitleInput.val();
-			if (newName != alreadySentName && newName != discussionTitle && newName !== undefined) {
-				alreadySentName = newName;
-				preventCommentSubmit = true; // for some reason, comment submission happening twice?
-				backgroundJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash:"${discussionHash}", name:newName }), function(data) {
-					if (checkData(data)) {
-						preventCommentSubmit = false;
-						discussionTitle = newName;
-						discussTitle.html(newName);
-						discussTitle.off('mouseup');
-						discussTitle.on('mouseup', discussTitle.data('rename'));
-						if (closure) closure();
-					} else {
-						showAlert('Failed to set name');
-					}
-				});
-			} else if (closure && (!preventCommentSubmit))
-				closure();
-		}
-	};
-
-	var renameDiscussionHandler = function(e) {
-		if (e.keyCode == 13) {
-			saveTitle();
-			$("#postcommentarea").focus();
-		}
-	};
-
-	var discussTitleRename = function(e) {
-		discussTitleArea.off('mouseup');
-		discussTitle.html('<input type="text" id="discussTitleInput" />');
-		var discussTitleInput = $("#discussTitleInput");
-		discussTitleInput.val(discussionTitle);
-		discussTitleInput.keyup(renameDiscussionHandler);
-		discussTitleInput.focus();
-		discussTitleInput.blur(function() {
-			saveTitle();
-		});
-	};
-
-	discussTitle.data('rename', discussTitleRename);
-
-	$("#postcommentarea").keyup(function(e) {
-		if (e.keyCode == 13) {
-			saveTitle(function() {
-				$(".comment-form").submit();
-			});
-		}
-	});
-
-	$("#commentSubmitButton").click(function() {
-		saveTitle(function() {
-			$(".comment-form").submit();
-		});
-	});
 
 	$('li#share-discussion').on('click', function() {
 		showShareDialog(null);
