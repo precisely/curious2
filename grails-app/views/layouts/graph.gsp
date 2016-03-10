@@ -189,8 +189,8 @@ function doLogout() {
 		});
 	</script>
 	
-<g:layoutBody/>
-<g:render template="/templates/chart/publishGroupModal"/>
+	<g:layoutBody/>
+	<g:render template="/templates/chart/publishGroupModal"/>
 </body>
 </html>
 </g:applyLayout>

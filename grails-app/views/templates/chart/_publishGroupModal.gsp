@@ -3,15 +3,23 @@
 		<div class="modal-content">
 
 			<div class="modal-header">
-				<h3 class="modal-title">Publish chart</h3>
+				<button type="button" class="close" data-dismiss="modal">
+					<i class="fa fa-times-circle-o"></i>
+				</button>
+				<h4 class="modal-title">Publish chart</h4>
 			</div>
 			<form action="#" id="publish-chart-form">
 				<div class="modal-body">
-					<h4 class="page-header" style="margin-top:0px">Title</h4>
+					<div class="alert hide alert-danger">
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<span class="message"></span>
+					</div>
+					<h4 class="page-subheader">Title</h4>
 					<p><small>Please title this shared chart in the form of a question</small></p>
-					<input type="text" class="form-control hide-placeholder" id="new-chart-name" required>
+					<input type="text" class="form-control hide-placeholder" id="new-chart-name">
+					<br>
 
-					<h4 class="page-header">Groups</h4>
+					<p><h4 class="page-subheader">Groups</h4></p>
 					{{ _.each(groups, function(groupName, index) { }}
 						<input type="radio" id="group-{{- index }}" name="group" value="{{- groupName.name }}">
 						<label for="group-{{- index }}">{{- groupName.fullName }}</label> <br>

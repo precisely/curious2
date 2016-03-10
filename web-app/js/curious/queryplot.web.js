@@ -379,7 +379,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	this.loadGroupsToPublish = function() {
 		// If no tag are added to the chart
 		if ($.isEmptyObject(this.lines)) {
-			showAlert("Please drag at least one tag to share the chart.");
+			showAlert("Please drag at least one tag to publish the chart.");
 			return;
 		}
 
@@ -438,15 +438,20 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	 * to share the chart.
 	 */
 	this.publishChart = function() {
-		var $modal = plot.getPublishModal();
+		var $modal = this.getPublishModal();
+		var chartName = $("#new-chart-name", $modal).val();
+		if (!chartName) {
+			showBootstrapAlert($modal.find(".alert"), "Please enter a title for the chart to publish.");
+			return;
+		}
 
 		var groupName = $('input[name="group"]:checked').val();
 		if (!groupName) {
-			showAlert("Please select a group name to share this graph.");
+			showBootstrapAlert($modal.find(".alert"), "Please select a group name to publish this chart.");
 			return false;
 		}
 
-		this.setName($("#new-chart-name", $modal).val());
+		this.setName(chartName);
 		this.saveSnapshot(groupName);
 	};
 
@@ -478,24 +483,26 @@ PlotLine.prototype.handleDropTag = function(event, ui) {
 
 PlotLine.prototype.appendHTML = function() {
 	if (this.isSmoothLine() || this.isFreqLine()) return; // don't show controls for smooth line
-	var makeActive = false;
 	var idSuffix = this.getIdSuffix();
 	if (!this.isContinuous) this.isContinuous = false;
 	if (!this.showPoints) this.showPoints = false;
+
 	var html = '<div id="plotline' + idSuffix + '" class="'+plotColorClass[this.color]+'">\
 			<h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 			+ escapehtml(this.name) + '</span></div>' +
-			' <span class="plotGroup-edit-options">' + (this.snapshot ? '' : '<img class="edit" onclick="renamePlotLine(\'' + this.plot.id
-			+ "','" + this.id + '\')" src="/images/edit.gif"/><span class="delete" onclick="removePlotLine(\'' +
-			this.plot.id + "','" + this.id + '\')" >x</span>')
+			'<span class="plotGroup-edit-options">' + (this.snapshot ? '' : '<span title="Edit name" class="edit-name" onclick="renamePlotLine(\'' + this.plot.id
+			+ "','" + this.id + '\')"><img class="edit" src="/images/edit.gif" /></span><span class="remove-line" onclick="removePlotLine(\'' +
+			this.plot.id + "','" + this.id + '\')" title="Remove line"><i class="fa fa-times-circle"></i></span>')
 			+ '</span></h3><div class="plotlineinfo hide"><div id="editplotline'
 			+ idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
+
 	if (this.isCycle) {
 		html += '<div style="display:inline-block;">range <div style="display:inline-block;" id="plotlinerangemin' + idSuffix
 				+ '"></div><div style="display:inline-block;margin-left:10px;width:50px;display:relative;top:3px;" id="plotlinecyclerange'
 				+ idSuffix + '"></div><div style="display:inline-block;margin-left:15px;" id="plotlinerangemax' + idSuffix
 				+ '"></div></div>';
 	}
+
 	html += '<h4 style="margin-top:15px">DATA TYPE</h4><div class="form-group"><div class="widget"><input type="radio"'
 			+ 'value="continuous" name="plotlinecontinuous' + idSuffix + '" id="plotlinecontinuous' + idSuffix + '"'
 			+ (this.isContinuous ? 'checked' : '') + '/> <label>CONTINUOUS</label></div> \

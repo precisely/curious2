@@ -896,12 +896,8 @@ h3.ui-accordion-header.ui-state-active { background-color: #ffffff !important; }
 .ui-dialog { overflow:hidden; position: relative; padding: 3px; width: 150px; z-index: 99999999999 !important; }
 .ui-dialog .ui-dialog-titlebar { overflow:hidden; height: 10px; padding: 0 0 0 0; position: relative;  }
 .ui-dialog .ui-dialog-title { float: left; margin: 0 0 0; }
-.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 5px; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 10px; }
-.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
-.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
 .ui-dialog .ui-dialog-content { border: 0; padding: 5px 5px; background: none; overflow: auto; font-size: 8pt; }
 .ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: 0 0 0 0; padding: 0 0 0 0; }
-.ui-dialog .ui-dialog-buttonpane button { float: right; margin: 0 0 0 0; cursor: pointer; padding: 0 0 0 0; line-height: 1em; width:auto; overflow:visible; }
 .ui-dialog .ui-resizable-se { width: 14px; height: 14px; right: 3px; bottom: 3px; }
 .ui-draggable .ui-dialog-titlebar { cursor: move; }
 
@@ -1021,8 +1017,17 @@ a.calendar {
 	color:#ffffff;
 	background-color:#ffffff;
 }
-div.plotGroup {
-	padding: 5px;
+
+.plotGroup {
+	padding: 5px 2.5px 5px 5px;
+}
+
+.edit-name img {
+	margin: 5px 2.5px;
+}
+.remove-line i.fa {
+	color: #bbb;
+	margin: 5px 5px 5px 2.5px;
 }
 
 span.delete {
