@@ -127,7 +127,7 @@ function doLogout() {
 							<li class="filter"><a href="#" onclick="plot.clearGraphs()">New</a></li>
 							<li class="filter"><a href="#" onclick="plot.save()">Save</a></li>
 							<li class="filter"><g:link action="load">Load</g:link></li>
-							<li class="filter"><a href="#" onclick="loadGroupsToPublish()">Publish</a></li>
+							<li class="filter"><a href="#" id="publish-chart">Publish</a></li>
 						</ul>
 				</ul>
 			</nav>
