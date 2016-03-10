@@ -888,7 +888,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	var $datepicker = $("#" + self.calendarId);
 
 	$datepicker
-			.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true})
+			.datepicker({defaultDate: currentDate, dateFormat: 'DD MM dd, yy', showButtonPanel: true, changeYear: true, changeMonth: true})
 			.val($.datepicker.formatDate('DD MM dd, yy', currentDate))
 			.datepicker("hide")
 			.change(function () {
