@@ -90,3 +90,8 @@
 	background-color: #f14a42 !important;
 	color: white !important;
 }
+
+.page-subheader {
+	padding-bottom: 9px;
+	margin: 0 0 5px;
+}

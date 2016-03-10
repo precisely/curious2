@@ -20,7 +20,7 @@
 							<ul class="dropdown-menu" role="menu">
 								<li>
 									<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionData.hash }}">
-										<img src="/images/x.png" width="auto" height="23">Delete
+										<i class="fa fa-trash fa-fw"></i> Delete
 									</a>
 								</li>
 							</ul>
