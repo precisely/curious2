@@ -12,6 +12,7 @@ import us.wearecurio.model.DurationType
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Identifier
 import us.wearecurio.model.Model
+import us.wearecurio.model.PlotData
 import us.wearecurio.model.Sprint
 import us.wearecurio.model.Tag
 import us.wearecurio.model.TagProperties
@@ -556,18 +557,6 @@ class MigrationService {
 		tryMigration("Change continuous repeats to bookmark") {
 			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
 		}
-		tryMigration("Rename [weight] and [duration] tags") {
-			for (Tag tag in Tag.list()) {
-				if (tag.description.endsWith('[weight]')) {
-					tag.description = tag.description.replaceAll('\\[weight\\]', '\\[amount\\]')
-					Utils.save(tag, true)
-				}
-				if (tag.description.endsWith('[duration]')) {
-					tag.description = tag.description.replaceAll('\\[duration\\]', '\\[time\\]')
-					Utils.save(tag, true)
-				}
-			}
-		}
 		tryMigration("Merge duplicate tags") {
 			Map<String, Tag> map = new HashMap<String, Tag>()
 			Set<Tag> duplicates = new HashSet<Tag>()
@@ -589,6 +578,26 @@ class MigrationService {
 				duplicate.delete(flush:true)
 			}
 			map = map
+		}
+		tryMigration("Rename [weight] and [duration] tags 2") {
+			for (Tag tag in Tag.list()) {
+				if (tag.description.endsWith('[weight]')) {
+					tag.description = tag.description.replaceAll('\\[weight\\]', '\\[amount\\]')
+					Utils.save(tag, true)
+				}
+				if (tag.description.endsWith('[duration]')) {
+					tag.description = tag.description.replaceAll('\\[duration\\]', '\\[time\\]')
+					Utils.save(tag, true)
+				}
+			}
+		}
+		tryMigration("Migrate PlotData") {
+			for (PlotData plotData in PlotData.list()) {
+				plotData.recompressAndSave()
+			}
+		}
+		tryMigration("Migrate PlotData 2") {
+			sql("ALTER TABLE `plot_data` CHANGE COLUMN `json_plot_data` `json_plot_data` MEDIUMTEXT NULL DEFAULT NULL")
 		}
 	}
 	

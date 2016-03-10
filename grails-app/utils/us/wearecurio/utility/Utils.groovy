@@ -16,6 +16,11 @@ import us.wearecurio.services.EmailService
 import us.wearecurio.services.SearchService;
 import grails.util.GrailsUtil
 
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.zip.GZIPOutputStream
+import java.util.zip.*
+
 /**
  * @author mitsu
  */
@@ -38,6 +43,22 @@ class Utils {
 		}
 
 		return retVal;
+	}
+
+	static String zip(String s) {
+		ByteArrayOutputStream targetStream = new ByteArrayOutputStream()
+		def zipStream = new GZIPOutputStream(targetStream)
+		zipStream.write(s.getBytes())
+		zipStream.close()
+		def zipped = targetStream.toByteArray()
+		targetStream.close()
+		return zipped.encodeBase64()
+	}
+
+	static String unzip(String compressed) {
+		def inflaterStream = new GZIPInputStream(new ByteArrayInputStream(compressed.decodeBase64()))
+		def uncompressedStr = inflaterStream.getText('UTF-8')
+		return uncompressedStr
 	}
 
 	static def save(obj) {

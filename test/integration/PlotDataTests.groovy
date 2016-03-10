@@ -28,7 +28,7 @@ class PlotDataTests extends CuriousUserTestCase {
 		
 		assert plotData.getUserId() == userId
 		assert plotData.getName().equals("Name of Plot")
-		assert plotData.getJsonPlotData().equals('{"username":"y"}')
+		assert plotData.fetchJsonPlotData().equals('{"username":"y"}')
 		assert !plotData.getIsSnapshot()
 		
 		Utils.save(plotData, true)
@@ -48,7 +48,7 @@ class PlotDataTests extends CuriousUserTestCase {
 		
 		assert plotData.getUserId() == userId
 		assert plotData.getName().equals("Name of Plot")
-		assert plotData.getJsonPlotData().equals('{"username":"y"}')
+		assert plotData.fetchJsonPlotData().equals('{"username":"y"}')
 		assert !plotData.getIsSnapshot()
 		
 		Utils.save(plotData, true)
