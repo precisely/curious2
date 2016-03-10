@@ -371,7 +371,98 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		if (confirm("Are you sure you want to clear the graph and start over?")) {
 			this.clear();
 		}
-	}
+	};
+
+	/**
+	 * Invokes when a user clicks on the "Publish" link in the Graph page to publish/share a chart.
+	 */
+	this.loadGroupsToPublish = function() {
+		// If no tag are added to the chart
+		if ($.isEmptyObject(this.lines)) {
+			showAlert("Please drag at least one tag to share the chart.");
+			return;
+		}
+
+		// If we have already fetched the list of groups (to publish) and compiled the HTML
+		if (this.publishGroupsTemplateComplied) {
+			// Then directly open the publish chart overlay
+			this.displayPublishModal();
+			return;
+		}
+
+		queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
+			if (!checkData(data) || !data.success) {
+				// TODO display a message
+				return
+			}
+
+			var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups});
+			$('#publish-to-groups').html(modalHTML);
+			this.publishGroupsTemplateComplied = true;
+			this.displayPublishModal();
+		}.bind(this));
+	};
+
+	/**
+	 * Used to open the modal which contains the list of groups to publish the current chart and also
+	 * the text field to set the name of the title.
+	 */
+	this.displayPublishModal = function() {
+		var plottedTags = [];
+		$.each(this.lines, function(key, plottedLine) {
+			if (!plottedLine.hidden) {
+				plottedTags.push(plottedLine.name);
+			}
+		});
+
+		var placeholder = "Ex: What's the relationship between ";
+		if (plottedTags.length === 1) {
+			placeholder += "my health and " + plottedTags[0];
+		} else {
+			var lastTag = plottedTags.pop();
+			placeholder += plottedTags.join(", ") + ' and ' + lastTag;
+		}
+		placeholder += ' ?';
+
+		var $modal = this.getPublishModal();
+		$("#new-chart-name", $modal).attr("placeholder", placeholder);
+		$modal.modal("show");
+	};
+
+	this.getPublishModal = function() {
+		return $("#publish-to-groups");
+	};
+
+	/**
+	 * Invokes when the user submits the form (inside the overlay) to set the title of chart and a group
+	 * to share the chart.
+	 */
+	this.publishChart = function() {
+		var $modal = plot.getPublishModal();
+
+		var groupName = $('input[name="group"]:checked').val();
+		if (!groupName) {
+			showAlert("Please select a group name to share this graph.");
+			return false;
+		}
+
+		this.setName($("#new-chart-name", $modal).val());
+		this.saveSnapshot(groupName);
+	};
+
+	this.registerEvents = function() {
+		$(document).on("click", "#publish-chart", function() {
+			this.loadGroupsToPublish();
+			return false;
+		}.bind(this));
+
+		$(document).on("submit", "#publish-chart-form", function() {
+			this.publishChart();
+			return false;
+		}.bind(this));
+	};
+
+	this.registerEvents();
 }
 
 PlotWeb.prototype = Object.create(Plot);
@@ -566,21 +657,5 @@ PlotLine.prototype.appendHTML = function() {
 
 	div.droppable({
 		drop:function(event, ui) { plotLine.handleDropTag(event, ui); }
-	});
-}
-
-function publishChart() {
-	var groupName = $('input[name="group"]:checked').val();
-	plot.setName($('#new-chart-name').val());
-	plot.saveSnapshot(groupName);
-}
-
-function loadGroupsToPublish() {
-	queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
-		if (checkData(data) && data.success) {
-				var modalHTML = _.template($('#publish-to-groups').html(), {groups: data.groups});
-				$('#publish-to-groups').html(modalHTML);
-				$('#publish-to-groups').modal("show");
-		}
 	});
 };
