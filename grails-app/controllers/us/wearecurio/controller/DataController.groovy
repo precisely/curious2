@@ -1040,7 +1040,7 @@ class DataController extends LoginController {
 
 		def user = sessionUser()
 
-		if (user == null) {
+		if (!user) {
 			debug "auth failure"
 			renderStringGet(AUTH_ERROR_MESSAGE)
 			return
@@ -1052,9 +1052,9 @@ class DataController extends LoginController {
 		Visibility visibility = Visibility.PUBLIC
 		
 		if (params.group) {
-			if (params.group == "private") {
+			if (params.group == Visibility.PRIVATE.name().toLowerCase()) {
 				visibility = Visibility.PRIVATE
-			} else if (params.group != "public"){
+			} else if (params.group != Visibility.PUBLIC.name().toLowerCase()){
 				group = Discussion.loadGroup(params.group, user)
 
 				if (!group) {
@@ -1348,15 +1348,18 @@ class DataController extends LoginController {
 				}
 				maxResults(params.max)
 			}
-			
-			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(2)}, 
-					displayName: searchResults.collect{
-						if (it.getAt(3).isNamePublic()) {
-							[label: it.getAt(1) + "(" + it.getAt(0) + ")", value: it.getAt(0)]
-						} else {
-							[label: it.getAt(0), value: it.getAt(0)]
-						}
-					}])
+
+			def displayNames = searchResults.collect {
+				// Sending the name in the form name (username) if the name is public and sending only the username otherwise.
+				if (it.getAt(3).isNamePublic()) {
+					[label: it.getAt(1) + "(" + it.getAt(0) + ")", value: it.getAt(0)]
+				} else {
+					[label: it.getAt(0), value: it.getAt(0)]
+				}
+			}
+
+			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(2)},
+					displayName: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}

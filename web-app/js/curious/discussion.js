@@ -57,9 +57,7 @@ function getComments(discussionHash, args, callback) {
 	var url = "/api/discussionPost?" + $.param(getCSRFPreventionObject("getCommentsCSRF", args)) + "&callback=?";
 
 	queueJSON("fetching more comments", url, function(data) {
-		if (!checkData(data)) {
-			return;
-		} else if (!data.posts) {
+		if (!checkData(data) || !data.posts) {
 			return;
 		}
 
