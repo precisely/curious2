@@ -1355,7 +1355,7 @@ class DataController extends LoginController {
 			}
 
 			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
-					userIdList: searchResults.collect { it.getAt(2) }, displayName: displayNames])
+					userIdList: searchResults.collect { it.getAt(2) }, displayNames: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}
