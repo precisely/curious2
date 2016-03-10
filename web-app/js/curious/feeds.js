@@ -975,4 +975,3 @@ function followDiscussion(args) {
 		console.log('error: ', error);
 	}, null, httpArgs);
 };
-
