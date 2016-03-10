@@ -1,42 +1,38 @@
 package us.wearecurio.controller
 
-import static org.springframework.http.HttpStatus.*
 import grails.converters.JSON
-
-import java.math.MathContext
-import java.text.SimpleDateFormat
-
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-
 import us.wearecurio.data.DecoratedUnitRatio
 import us.wearecurio.data.RepeatType
-import us.wearecurio.data.UnitRatio
+import us.wearecurio.data.UnitGroupMap
 import us.wearecurio.model.Discussion
 import us.wearecurio.model.DiscussionPost
 import us.wearecurio.model.DurationType
-import us.wearecurio.model.User
-import us.wearecurio.model.Tag
-import us.wearecurio.model.TagStats
 import us.wearecurio.model.Entry
-import us.wearecurio.model.TagProperties
-import us.wearecurio.model.UserGroup
-import us.wearecurio.model.PlotData
-import us.wearecurio.model.UserSurveyAnswer
-import us.wearecurio.model.Sprint
-import us.wearecurio.model.TimeZoneId
-import us.wearecurio.model.SurveyQuestion
-import us.wearecurio.services.EntryParserService
-import us.wearecurio.services.SearchService
 import us.wearecurio.model.Model.Visibility
-import us.wearecurio.services.SecurityService.AuthenticationStatus
+import us.wearecurio.model.PlotData
+import us.wearecurio.model.Sprint
+import us.wearecurio.model.SurveyQuestion
+import us.wearecurio.model.Tag
+import us.wearecurio.model.TagProperties
+import us.wearecurio.model.TagStats
+import us.wearecurio.model.TimeZoneId
+import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
+import us.wearecurio.model.UserSurveyAnswer
+import us.wearecurio.services.EntryParserService
 import us.wearecurio.services.EntryParserService.ParseAmount
+import us.wearecurio.services.SearchService
+import us.wearecurio.services.SecurityService.AuthenticationStatus
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
-import us.wearecurio.data.UnitGroupMap
+
+import java.math.MathContext
+import java.text.SimpleDateFormat
 
 class DataController extends LoginController {
 
@@ -1349,8 +1345,8 @@ class DataController extends LoginController {
 				maxResults(params.max)
 			}
 
-			def displayNames = searchResults.collect {
-				// Sending the name in the form name (username) if the name is public and sending only the username otherwise.
+			List displayNames = searchResults.collect {
+				// Sending the name in the form "John (johny)" if the name is public. Sending only the username otherwise.
 				if (it.getAt(3).isNamePublic()) {
 					[label: it.getAt(1) + "(" + it.getAt(0) + ")", value: it.getAt(0)]
 				} else {
@@ -1358,8 +1354,8 @@ class DataController extends LoginController {
 				}
 			}
 
-			renderJSONGet([success: true, usernameList: searchResults.collect{it.getAt(0)}, userIdList: searchResults.collect{it.getAt(2)},
-					displayName: displayNames])
+			renderJSONGet([success: true, usernameList: searchResults.collect { it.getAt(0) },
+					userIdList: searchResults.collect { it.getAt(2) }, displayName: displayNames])
 		} else {
 			renderJSONGet([success: false])
 		}
