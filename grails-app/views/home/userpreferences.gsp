@@ -302,16 +302,6 @@ function editUserDetails() {
 										</g:else>
 										<br>
 									</oauth:checkSubscription>
-									<!--  g:link action="register23andme">
-										<oauth:checkSubscription userId="${user.id}" typeId="TWENTY_THREE_AND_ME">
-											<g:if test="${it }">
-												Re-import from 23andMe Account
-											</g:if>
-											<g:else>
-												Import from 23andMe Account
-											</g:else>
-										</oauth:checkSubscription>
-									</g:link -->
 								</div>
 							</div>
 						</div>
