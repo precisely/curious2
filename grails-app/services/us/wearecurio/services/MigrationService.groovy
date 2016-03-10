@@ -557,7 +557,17 @@ class MigrationService {
 		tryMigration("Change continuous repeats to bookmark") {
 			sql("update entry set comment = 'bookmark' where comment = 'pinned'")
 		}
-		tryMigration("Merge duplicate tags") {
+		tryMigration("Rename [weight] and [duration] tags 3") {
+			for (Tag tag in Tag.list()) {
+				if (tag.description.endsWith('[weight]')) {
+					tag.description = tag.description.replaceAll('\\[weight\\]', '\\[amount\\]')
+					Utils.save(tag, true)
+				}
+				if (tag.description.endsWith('[duration]')) {
+					tag.description = tag.description.replaceAll('\\[duration\\]', '\\[time\\]')
+					Utils.save(tag, true)
+				}
+			}
 			Map<String, Tag> map = new HashMap<String, Tag>()
 			Set<Tag> duplicates = new HashSet<Tag>()
 			for (Tag tag in Tag.list()) {
@@ -578,18 +588,6 @@ class MigrationService {
 				duplicate.delete(flush:true)
 			}
 			map = map
-		}
-		tryMigration("Rename [weight] and [duration] tags 2") {
-			for (Tag tag in Tag.list()) {
-				if (tag.description.endsWith('[weight]')) {
-					tag.description = tag.description.replaceAll('\\[weight\\]', '\\[amount\\]')
-					Utils.save(tag, true)
-				}
-				if (tag.description.endsWith('[duration]')) {
-					tag.description = tag.description.replaceAll('\\[duration\\]', '\\[time\\]')
-					Utils.save(tag, true)
-				}
-			}
 		}
 		tryMigration("Migrate PlotData") {
 			for (PlotData plotData in PlotData.list()) {
