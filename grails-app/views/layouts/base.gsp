@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title><g:layoutTitle default="We Are Curious"/></title>
+	<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
 	<meta name="description" content="A platform for health hackers"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link type="text/css" href="/css/bootstrap/bootstrap.min.css" rel="stylesheet">
