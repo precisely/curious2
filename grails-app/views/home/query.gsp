@@ -118,8 +118,7 @@ $(function() {
 		<div class="graphData">
 
 			<h1>
-				<span id="queryTitle"></span> <span id="queryTitleEdit"><img
-					src="/images/edit.gif"></span>
+				<span id="queryTitleEdit" class="pointer"><i class="fa fa-fw fa-pencil"></i></span>
 				<div id="debug"></div>
 			</h1>
 

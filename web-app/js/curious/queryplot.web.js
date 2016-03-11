@@ -479,7 +479,7 @@ PlotLine.prototype.appendHTML = function() {
 			<h3><div class="plotGroup"><span id="plotline' + idSuffix + '" class="description">'
 			+ escapehtml(this.name) + '</span></div>' +
 			'<span class="plotGroup-edit-options">' + (this.snapshot ? '' : '<span title="Edit name" class="edit-name" onclick="renamePlotLine(\'' + this.plot.id
-			+ "','" + this.id + '\')"><img class="edit" src="/images/edit.gif" /></span><span class="remove-line" onclick="removePlotLine(\'' +
+			+ "','" + this.id + '\')"><i class="fa fa-pencil"></i></span><span class="remove-line" onclick="removePlotLine(\'' +
 			this.plot.id + "','" + this.id + '\')" title="Remove line"><i class="fa fa-times-circle"></i></span>')
 			+ '</span></h3><div class="plotlineinfo hide"><div id="editplotline'
 			+ idSuffix + '" style="position:absolute;left:15px;top:15px"></div>';
