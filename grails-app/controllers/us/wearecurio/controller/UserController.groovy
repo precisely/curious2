@@ -154,7 +154,13 @@ class UserController extends LoginController {
 			return
 		}
 		
-		log.debug "Saving tutorial tags, params: " + params
+		log.debug "Saving tutorial tags, params: " + params['tags[]']
+		
+		def tags = params['tags[]']
+		
+		for (String tag in tags) {
+			log.debug "Tag: " + tag
+		}
 
 		renderJSONGet([success: true])
 	}
