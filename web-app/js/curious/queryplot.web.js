@@ -42,11 +42,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			}, 0);
 		},
 		onClose: function(dateText, inst) {
+			plot.queueClearStartSlider();
 			if (dateText == "") {
 				properties.initStartDate();
 				plot.loadAllData();
-			} else
-				plot.queueClearStartSlider();
+			}
 		},
 		changeYear: true,
 		changeMonth: true
@@ -65,11 +65,11 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			}, 0);
 		},
 		onClose: function(dateText, inst) {
+			plot.queueClearEndSlider();
 			if (dateText == "") {
 				plot.properties.initEndDate();
 				plot.loadAllData();
-			} else
-				plot.queueClearEndSlider();
+			}
 		},
 		changeYear: true,
 		changeMonth: true
@@ -110,6 +110,8 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 	
 	this.setupSlider = function() {
 		if (!this.interactive) return;
+		
+		var refresh = false;
 
 		var zoomDiv = this.properties.getZoomControl();
 		if (!zoomDiv) return;
@@ -129,14 +131,16 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 			if (!endTime) endTime = this.maxTime;
 			
 			if (this.resetStartSlider) {
-				this.resetStartSlider = false;
-				this.leftLinearSlider = -10000;
 				startTime = this.minTime;
+				this.resetStartSlider = false;
+				this.leftLinearSlider = startTime;
+				refresh = true;
 			}
 			if (this.resetEndSlider) {
-				this.resetEndSlider = false;
-				this.rightLinearSlider = 10000;
 				endTime = this.maxTime;
+				this.resetEndSlider = false;
+				this.rightLinearSlider = endTime;
+				refresh = true;
 			}
 
 			var span = endTime - startTime;
@@ -162,6 +166,9 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 		if (this.cycleTagLine) {
 			plot.slideCallback(leftSlider, rightSlider);
 		}
+		
+		if (refresh)
+			this.refreshAll();
 	}
 
 	this.drawPlot = function() {
@@ -232,49 +239,6 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 				console.log('plotclick: Item not found');
 			}
 		});
-
-		/*plotArea.off("plothover");
-		plotArea.on("plothover", function(event, pos, item) {
-			if (item) {
-				var now = new Date().getTime();
-				//if (plot.lastItemClicked == null) {
-				//	plot.lastItemClicked = item;
-				//	plot.lastItemClickTime = now;
-				//} else if (plot.lastItemClicked.datapoint[0] == item.datapoint[0] && plot.lastItemClicked.pageY == item.pageY
-				//			&& now - plot.lastItemClickTime < 1000 && now - plot.lastItemClickTime > 30) {
-				//	plot.lastItemClicked = null;
-				//	plot.lastItemClickTime = null;
-				//	if (plot.interactive) {
-				//		plot.properties.showData(plot.userId, plot.userName, item.datapoint[0]);
-				//	}
-				//	return;
-				//}
-				plot.lastItemClicked = item;
-				plot.lastItemClickTime = now;
-				var dialogDiv = plot.getDialogDiv();
-				var plotLine = plot.plotData[item.seriesIndex]['plotLine'];
-				//plot.ignoreClick = true;
-				plot.deactivateActivatedLine(plotLine);
-				if (plotLine.hasSmoothLine()) {	//means there is a smooth line of this accordion line
-					plot.activeLineId = plotLine.smoothLine.id;
-					plotLine.smoothLine.activate();
-					console.log('plotclick: activating line id: ' + plotLine.id);
-				} else {
-					plot.activeLineId = plotLine.id;
-					plotLine.activate();
-					console.log('plotclick: activating line id: ' + plotLine.id);
-				}
-				if (!plotLine.isSmoothLine()) {	// If current line clicked is a actual line (parent line)
-					console.log('plotclick: parent of a smooth line with line id: ' + plotLine.id);
-					dialogDiv.html(item.series.data[item.dataIndex][2].t + ': <a href="' + plot.properties.showDataUrl(plot.userId, plot.userName, item.datapoint[0])
-							+ '">' + $.datepicker.formatDate('M d', new Date(item.datapoint[0])) + "</a>"
-							+ ' (' + item.datapoint[1] + ')');
-					dialogDiv.dialog({ position: { my: "left+3 bottom-5", at: "left+" + pos.pageX + " top+" + pos.pageY, of: ".container", collision: "fit"}, width: 140, height: 62});
-				}
-			} else {
-				console.log('plotclick: Item not found');
-			}
-		});*/
 
 		this.store();
 	}

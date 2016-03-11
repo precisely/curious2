@@ -152,6 +152,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			var line = this.lines[i];
 			removePlotLine(this.id, line.id);
 		}
+		this.refreshName();
+		this.refreshAll();
+		this.setupSlider();
+		this.store();
 	}
 	this.removeLine = function(plotLineId) {
 		this.doRemoveLine(plotLineId);
@@ -540,6 +544,10 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 			this.rezeroWidth = 86400000;
 		
 		return this.rezeroWidth;
+	}
+	this.sliderTimes = function() {
+		var sliders = this.linearSliders;
+		return [sliders[0], sliders[1]];
 	}
 	// redraw plot but don't recompute it, only change min/max if needed
 	this.redrawPlot = function() {
@@ -1183,7 +1191,36 @@ function PlotLine(p) {
 	}
 	this.getSaveSnapshotData = function() {
 		var save = this.getSaveData();
-		save.entries = this.entries;
+		var len = this.entries.length;
+		var entries = this.entries;
+		var sliderTimes = this.plot.sliderTimes();
+		var min = sliderTimes[0];
+		var max = sliderTimes[1];
+		var maxDate = new Date(max);
+		var lastEntry = null;
+		var insideRange = false;
+		var saveEntries = [];
+		for (var i = 0; i < len; ++i) {
+			var entry = entries[i];
+			if (!insideRange) {
+				if (entry[0].getTime() > min) {
+					insideRange = true;
+					if (lastEntry != null) {
+						saveEntries.push(lastEntry);
+					}
+					saveEntries.push(entry);
+					if (entry[0].getTime() > max)
+						break;
+				} else
+					lastEntry = entry;
+			} else {
+				saveEntries.push(entry);
+				if (entry[0].getTime() > max) 
+					break;
+				lastEntry = entry;
+			}
+		}
+		save.entries = saveEntries;
 		return save;
 	}
 
