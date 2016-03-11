@@ -1048,9 +1048,9 @@ class DataController extends LoginController {
 		Visibility visibility = Visibility.PUBLIC
 		
 		if (params.group) {
-			if (params.group == Visibility.PRIVATE.name().toLowerCase()) {
+			if (params.group == Visibility.PRIVATE.name()) {
 				visibility = Visibility.PRIVATE
-			} else if (params.group != Visibility.PUBLIC.name().toLowerCase()){
+			} else if (params.group != Visibility.PUBLIC.name()) {
 				group = Discussion.loadGroup(params.group, user)
 
 				if (!group) {
@@ -1060,7 +1060,7 @@ class DataController extends LoginController {
 			}
 		}
 
-		def plotDataObj = PlotData.create(user, params.name, params.snapshotData, true)
+		PlotData plotDataObj = PlotData.create(user, params.name, params.snapshotData, true)
 
 		Utils.save(plotDataObj, true)
 
