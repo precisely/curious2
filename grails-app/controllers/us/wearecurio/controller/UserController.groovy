@@ -2,6 +2,9 @@ package us.wearecurio.controller
 import com.lucastex.grails.fileuploader.FileUploaderService
 import com.lucastex.grails.fileuploader.UFile
 import us.wearecurio.model.User
+import us.wearecurio.model.Entry
+import us.wearecurio.model.Tag
+import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
 
 class UserController extends LoginController {
@@ -147,8 +150,8 @@ class UserController extends LoginController {
 	}
 	
 	def addTutorialTags() {
-		User currentUser = sessionUser()
-		if (!currentUser) {
+		User user = sessionUser()
+		if (!user) {
 			debug "auth failure"
 			renderJSONGet([success: false])
 			return
@@ -156,11 +159,50 @@ class UserController extends LoginController {
 		
 		log.debug "Saving tutorial tags, params: " + params['tags[]']
 		
+		Long userId = user.id
+		
+		EntryStats stats = new EntryStats(userId)
+		
 		def tags = params['tags[]']
 		
 		for (String tag in tags) {
 			log.debug "Tag: " + tag
+			if (tag == 'sleep') {
+				Entry.createBookmark(userId, "sleep", stats)
+				Entry.createBookmark(userId, "sleep quality", stats)
+				user.addInterestTag(Tag.look("sleep"))
+			} else if (tag == 'mood') {
+				Entry.createBookmark(userId, "mood", stats)
+				Entry.createBookmark(userId, "stress level", stats)
+				user.addInterestTag(Tag.look("mood"))
+				user.addInterestTag(Tag.look("stress"))
+			} else if (tag == 'fitness') {
+				Entry.createBookmark(userId, "exercise", stats)
+				Entry.createBookmark(userId, "bike", stats)
+				Entry.createBookmark(userId, "walk", stats)
+				Entry.createBookmark(userId, "run", stats)
+				user.addInterestTag(Tag.look("exercise"))
+				user.addInterestTag(Tag.look("biking"))
+				user.addInterestTag(Tag.look("walking"))
+				user.addInterestTag(Tag.look("running"))
+			} else if (tag == 'food') {
+				Entry.createBookmark(userId, "weight", stats)
+				Entry.createBookmark(userId, "coffee", stats)
+				Entry.createBookmark(userId, "carbs", stats)
+				Entry.createBookmark(userId, "vegetables", stats)
+				Entry.createBookmark(userId, "fruits", stats)
+				user.addInterestTag(Tag.look("food"))
+				user.addInterestTag(Tag.look("diet"))
+			} else if (tag == 'supplements') {
+				Entry.createBookmark(userId, "fish oil", stats)
+				Entry.createBookmark(userId, "vitamin c", stats)
+				Entry.createBookmark(userId, "magnesium", stats)
+				Entry.createBookmark(userId, "probiotics", stats)
+				user.addInterestTag(Tag.look("supplements"))
+			}
 		}
+		
+		stats.finish()
 
 		renderJSONGet([success: true])
 	}

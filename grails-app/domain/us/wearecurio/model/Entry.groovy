@@ -112,6 +112,15 @@ class Entry implements Comparable {
 	Identifier setIdentifier
 
 	static transients = ['repeatType']
+	
+	static Date theBookmarkBaseDate
+	
+	static {
+		def entryTimeZone = Utils.createTimeZone(0, "GMT", true)
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		dateFormat.setTimeZone(entryTimeZone)
+		theBookmarkBaseDate = dateFormat.parse("January 1, 2000 12:00 am")
+	}
 
 	RepeatType getRepeatType() { repeatTypeId == null ? null : RepeatType.look(repeatTypeId) }
 
@@ -280,6 +289,10 @@ class Entry implements Comparable {
 		return false
 	}
 
+	static Entry createBookmark(Long userId, String entryText, EntryStats stats) {
+		return Entry.create(userId, EntryParserService.get().parse(theBookmarkBaseDate, "Etc/UTC", entryText, RepeatType.CONTINUOUSGHOST.id, null, theBookmarkBaseDate), stats)
+	}
+	
 	protected static void checkAmount(Map m) {
 		BigDecimal amount = m['amount'].amount
 
