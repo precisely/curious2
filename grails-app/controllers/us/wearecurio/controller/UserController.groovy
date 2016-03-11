@@ -165,6 +165,9 @@ class UserController extends LoginController {
 		
 		def tags = params['tags[]']
 		
+		if (tags instanceof String)
+			tags = [tags]
+		
 		for (String tag in tags) {
 			log.debug "Tag: " + tag
 			if (tag == 'sleep') {
@@ -203,7 +206,7 @@ class UserController extends LoginController {
 		}
 		
 		stats.finish()
-
+		
 		renderJSONGet([success: true])
 	}
 }
