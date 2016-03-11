@@ -19,8 +19,8 @@ class Tag implements Serializable, Comparable {
 
 	public static final int MAXLENGTH = 100
 
-	public static BoundedCache<String, Tag> tagCache = Collections.synchronizedMap(new BoundedCache<String, Tag>(100000))
-	public static BoundedCache<String, Tag> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Tag>(100000))
+	/*public static BoundedCache<String, Tag> tagCache = Collections.synchronizedMap(new BoundedCache<String, Tag>(100000))
+	public static BoundedCache<String, Tag> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Tag>(100000))*/
 	
 	static constraints = { description(maxSize:MAXLENGTH) }
 
@@ -30,67 +30,25 @@ class Tag implements Serializable, Comparable {
 		description column:'description', index:'description_idx'
 	}
 
-	static {
-		Utils.registerTestReset {
-			synchronized(tagCache) {
-				tagCache.clear()
-				tagIdCache.clear()
-			}
-		}
-	}
-
 	static Tag create(String d) {
 		log.debug "Tag.create() description:'" + d + "'"
 		def tag = new Tag(description:d)
 		if (!Utils.save(tag, true)) {
 			Thread.sleep(1000)
-			tag = Tag.findByDescription(d)
-			if (tag != null) {
-				addToCache(tag)
-				return tag
-			}
-			return null
+			return Tag.findByDescription(d)
 		}
-		addToCache(tag)
 		return tag
 	}
 
-	static Tag addToCache(Tag tagInstance) {
-		synchronized(tagCache) {
-			tagCache.put(tagInstance.description, tagInstance)
-			tagIdCache.put(tagInstance.id, tagInstance)
-		}
-		
-		tagInstance
-	}
-
-	
 	static Tag fetch(Long id) {
-		def tag = tagIdCache.get(id)
-		
-		if (tag != null) return tag
-		
 		return Tag.get(id)
-	}
-
-	static Tag fetchAndAddToCache(Long id) {
-		Tag tag = tagIdCache.get(id)
-		
-		if (tag != null) return tag
-		
-		tag = Tag.get(id)
-		
-		if (tag)
-			addToCache(tag)
-		
-		tag
 	}
 
 	static List<Tag> fetchAll(Collection<Long> ids) {
 		List<Tag> retVal = new ArrayList<Tag>()
 		
 		ids.each { id ->
-			retVal.add(Tag.fetchAndAddToCache(id))
+			retVal.add(Tag.get(id))
 		}
 		
 		retVal
@@ -98,21 +56,13 @@ class Tag implements Serializable, Comparable {
 
 	static Tag look(String d) {
 		log.debug "Tag.look() description:'" + d + "'"
-		def tag = tagCache.get(d)
-		if (tag != null) return tag
 		
 		if (d.length() > MAXLENGTH)
 			d = d.substring(0, MAXLENGTH)
 		
-		tag = Tag.findByDescription(d)
-
-		if (tag != null) {
-			synchronized(tagCache) {
-				tagCache.put(d, tag)
-				tagIdCache.put(tag.id, tag)
-				return tag
-			}
-		}
+		Tag tag = Tag.findByDescription(d)
+		
+		if (tag != null) return tag
 
 		return Tag.create(d)
 	}

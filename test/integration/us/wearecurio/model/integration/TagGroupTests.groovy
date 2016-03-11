@@ -36,12 +36,12 @@ class TagGroupTests extends CuriousTestCase {
 		
 		super.setUp()
 		
-		tag1 = Tag.create("tag1")
-		tag2 = Tag.create("tag2")
-		tag3 = Tag.create("tag3")
-		tag4 = Tag.create("tag4")
-		tag5 = Tag.create("tag5")
-		tag6 = Tag.create("tag6")
+		tag1 = Tag.look("tag1")
+		tag2 = Tag.look("tag2")
+		tag3 = Tag.look("tag3")
+		tag4 = Tag.look("tag4")
+		tag5 = Tag.look("tag5")
+		tag6 = Tag.look("tag6")
 		
 		tagGroup1 = TagGroup.createOrLookupTagGroup("taggroup1", userId, null)
 		tagGroup2 = TagGroup.createOrLookupTagGroup("taggroup2", userId, null)

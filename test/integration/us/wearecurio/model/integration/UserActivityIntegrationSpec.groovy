@@ -73,11 +73,6 @@ class UserActivityIntegrationSpec extends IntegrationSpec {
     }
 	
 	def cleanup() {
-		//User.executeUpdate("delete User u")
-		synchronized(Tag.tagCache) {
-			Tag.tagCache.clear()
-			Tag.tagIdCache.clear()
-		}
 	}
 	
 	UserActivity findUserActivity(ActivityType activityType, ObjectType objectType, Long objectId = null) {
