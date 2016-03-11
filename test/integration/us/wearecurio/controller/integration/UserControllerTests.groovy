@@ -72,18 +72,33 @@ class UserControllerTests extends CuriousControllerTestCase {
 	void "Test add tutorial tags"() {
 		controller.params["id"] = dummyUser2.hash
 		controller.session.userId = dummyUser2.id
+		controller.params["tags[]"] = 'sleep'
+
+		controller.addTutorialTags()
+		assert controller.response.json.success
+		assert dummyUser2.hasInterestTag(Tag.look('sleep'))
+		def entries = Entry.fetchListData(dummyUser2, "Etc/UTC", new Date(), new Date())
+		int found = 0
+		for (entry in entries) {
+			if (entry.description == 'sleep')
+				++found
+		}
+		assert found == 1
+		
+		controller.params["id"] = dummyUser2.hash
+		controller.session.userId = dummyUser2.id
 		controller.params["tags[]"] = ['sleep','supplements']
 
 		controller.addTutorialTags()
 		assert controller.response.json.success
 		assert dummyUser2.hasInterestTag(Tag.look('sleep'))
 		assert dummyUser2.hasInterestTag(Tag.look('supplements'))
-		def entries = Entry.fetchListData(dummyUser2, "Etc/UTC", new Date(), new Date())
-		boolean found = false
+		entries = Entry.fetchListData(dummyUser2, "Etc/UTC", new Date(), new Date())
+		found = 0
 		for (entry in entries) {
-			if (entry.description == 'sleep quality')
-				found = true
+			if (entry.description == 'sleep')
+				++found
 		}
-		assert found
+		assert found == 1
 	}
 }
