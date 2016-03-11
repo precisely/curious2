@@ -994,8 +994,79 @@ function Plot(tagList, userId, userName, plotAreaDivId, store, interactive, prop
 	};
 	this.setEndDate = function(date) {
 		return this.properties.setEndDate(date);
-	}
+	};
+	/**
+	 * Get the placeholder text for the input box to set the chart title by using the plotted tags.
+	 */
+	this.getChartTitlePlaceholder = function() {
+		var plottedTags = [];
+		$.each(this.lines, function(key, plottedLine) {
+			if (!plottedLine.hidden) {
+				plottedTags.push(plottedLine.name);
+			}
+		});
+
+		var placeholder = "Ex: What's the relationship between ";
+		if (plottedTags.length === 1) {
+			placeholder += "my health and " + plottedTags[0];
+		} else {
+			var lastTag = plottedTags.pop();
+			placeholder += plottedTags.join(", ") + ' and ' + lastTag;
+		}
+		placeholder += '?';
+
+		return placeholder;
+	};
+	/**
+	 * Get the list of groups to publish the current chart.
+	 * @param successCallback Callback function which will be invoked when the data fetched from the server.
+	 */
+	this.getGroupsToShare = function(successCallback) {
+		queueJSON('Loading group list', '/api/user/action/getGroupsToShare?' +  getCSRFPreventionURI('getGroupsList') + '&callback=?', function(data) {
+			if (!checkData(data) || !data.success) {
+				return
+			}
+
+			var groups = [];
+			// https://github.com/syntheticzero/curious2/issues/688#issuecomment-164689115
+			if (data.groups.length > 0) {
+				groups.push(data.groups[0]);
+			}
+			groups.push({name: "PUBLIC", fullName: "Public"}, {name: "PRIVATE", fullName: "Private"});
+			if (data.groups.length > 0) {
+				// Adding the rest of all the groups to the array.
+				groups.push.apply(groups, data.groups.slice(1));
+			}
+
+			data.groups = groups;
+
+			successCallback(data);
+			this.publishGroupsTemplateComplied = true;
+		}.bind(this));
+	};
+
+	this.displayPublishModal = function() {
+		throw "Implement this method";
+	};
 }
+
+// Defining the method with "prototype" to allow calling this method from child classes
+Plot.prototype.beginPublish = function() {
+	// If no tag are added to the chart
+	if ($.isEmptyObject(this.lines)) {
+		showAlert("Please drag at least one tag to publish the chart.");
+		return false;
+	}
+
+	// If we have already fetched the list of groups (to publish) and compiled the HTML
+	if (this.publishGroupsTemplateComplied) {
+		// Then directly open the publish chart overlay
+		this.displayPublishModal();
+		return false;
+	}
+
+	return true;
+};
 
 function parseISO8601(str) {
 	// we assume str is a UTC date ending in 'Z'

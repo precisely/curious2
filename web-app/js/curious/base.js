@@ -126,7 +126,8 @@ function inherit(subclass, superclass) {
 	function TempClass() {}
 	TempClass.prototype = superclass.prototype;
 	var newSubPrototype = new TempClass();
-	newSubPrototype.constructor = subclass; 
+	newSubPrototype.$super = superclass.prototype;
+	newSubPrototype.constructor = subclass;
 	subclass.prototype = newSubPrototype;
 }
 
