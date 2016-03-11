@@ -153,6 +153,8 @@ class UserController extends LoginController {
 			renderJSONGet([success: false])
 			return
 		}
+		
+		log.debug "Saving tutorial tags: " + params.tags
 
 		renderJSONGet([success: true])
 	}
