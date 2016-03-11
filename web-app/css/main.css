@@ -1022,11 +1022,17 @@ a.calendar {
 	padding: 5px 2.5px 5px 5px;
 }
 
-.edit-name img {
+.edit-name i.fa, .remove-line i.fa {
+	color: #aaa;
+}
+.edit-name:hover i.fa, .remove-line:hover i.fa {
+	color: #787878;
+}
+
+.edit-name i.fa {
 	margin: 5px 2.5px;
 }
 .remove-line i.fa {
-	color: #bbb;
 	margin: 5px 5px 5px 2.5px;
 }
 

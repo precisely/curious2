@@ -109,7 +109,7 @@ function doLogout() {
 		<h1 class="clearfix">
 			<span id="queryTitle">PLOT</span>
 			<span id="mobileQueryTitle" class="hid">PLOT</span>
-			<span id="queryTitleEdit"><img src="/images/edit.gif"></span>
+			<span id="queryTitleEdit" class="pointer"><i class="fa fa-fw fa-pencil"></i></span>
 			<div id="debug"></div>
 		</h1>
 
