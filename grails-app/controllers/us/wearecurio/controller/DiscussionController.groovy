@@ -18,6 +18,7 @@ class DiscussionController extends LoginController {
 	}
 
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
+		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility
 		def user = sessionUser()
 		UserGroup group = null
 		
@@ -25,6 +26,7 @@ class DiscussionController extends LoginController {
 			group = Discussion.loadGroup(params.group, user)
 
 			if (!group) {
+				log.debug "Failure: cannot post to this group"
 				renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
 				return
 			}
@@ -42,25 +44,33 @@ class DiscussionController extends LoginController {
 
 			Map model = discussion.getJSONDesc()
 			DateFormat df = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ssZ");
+			
+			log.debug "Successfully created new discussion: " + discussion.id
 
 			renderJSONPost([discussion: [name: model.discussionTitle, hash: model.hash, created: df.format(model.discussionCreatedOn), 
 					type: "dis", userAvatarURL: model.discussionOwnerAvatarURL, userName: model.discussionOwner, userHash: model.discussionOwnerHash, 
 				isAdmin: true, totalComments: model.totalPostCount, groupName: model.groupName, id: model.discussionId], success: true])
 		} else {
+			log.debug "Failed to create discussion"
+
 			renderJSONPost([success: false, message: "Failed to create new discussion topic: internal error"])
 		}
 	}
 
 	def show() {
 		User user = sessionUser()
+		
+		log.debug "Showing discussion:" + params.id
 
 		Discussion discussion = Discussion.findByHash(params.id)
 		if (!discussion){
+			log.debug "Discussion not found"
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])])
 			return
 		}
 
 		if (!discussion.getIsPublic() && !user) {
+			log.debug "Cannot show non-public discussion to anonymous user"
 			renderJSONGet([success: false, message: g.message(code: "default.login.message")])
 			return
 		}
@@ -87,6 +97,7 @@ class DiscussionController extends LoginController {
 		}*/
 
 		JSON.use("jsonDate") {
+			log.debug "Rendering discussion:" + model
 			renderJSONGet([success: true, discussionDetails: model])
 		}
 	}
@@ -129,6 +140,7 @@ class DiscussionController extends LoginController {
 	}
 
 	def publish(Discussion discussion) {
+		log.debug "Publishing discussion: " + discussion?.id
 		User user = sessionUser()
 
 		if (!discussion) {
@@ -141,6 +153,7 @@ class DiscussionController extends LoginController {
 			Utils.save(discussion, true)
 			renderJSONGet([success: true, message: g.message(code: "default.updated.message", args: ["Discussion"])]) 
 		} else {
+			log.debug "Failed to publish discussion: user ID does not match owner"
 			renderJSONGet([success: false, message: g.message(code: "default.permission.denied", args: ["Discussion"])]) 
 		}
 	}
@@ -152,9 +165,11 @@ class DiscussionController extends LoginController {
 		boolean unfollow = params.unfollow ? true : false
 		
 		if (!user) {
+			log.debug "Failed to follow discussion: not logged in"
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["User"])])
 			return
 		} else if (!discussion) {
+			log.debug "Failed to follow discussion: discussion does not exist"
 			renderJSONGet([success: false, message: g.message(code: "not.exist.message", args: ["Discussion"])])
 			return
 		}
@@ -163,10 +178,12 @@ class DiscussionController extends LoginController {
 			if (discussion.addFollower(user.id)) {
 				renderJSONGet([success: true])
 			} else {
+				log.debug "Failed to follow discussion: internal error"
 				renderJSONGet([success: false, message: g.message(code: "default.operation.failed")])
 			}
 		} else {
 			discussion.removeFollower(user.id)
+			log.debug "Unfollowed discussion"
 			renderJSONGet([success: true])
 		}
 	}
