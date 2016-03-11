@@ -5,6 +5,7 @@ import com.lucastex.grails.fileuploader.UFile
 import us.wearecurio.model.Entry
 import us.wearecurio.model.Tag
 import us.wearecurio.model.User
+import us.wearecurio.model.UserGroup
 import us.wearecurio.services.SearchService
 import us.wearecurio.support.EntryStats
 import us.wearecurio.utility.Utils
@@ -212,11 +213,8 @@ class UserController extends LoginController {
 
 	def getGroupsToShare() {
 		debug "UserController.getGroupsToShare()"
-		Map sprintsGroups = searchService.getFollowedSprintsGroup(sessionUser())
+		List groups = UserGroup.getConcreteGroupsForWriter(sessionUser())
 
-		List groups = sprintsGroups["startedSprintsGroupList"]
-		groups += [[name: "public", fullName: "Public"], [name: "private", fullName: "Private"]]
-		groups += sprintsGroups["followedSprintsGroupList"]
-		renderJSONGet([groups: groups, success: true]) 
+		renderJSONGet([groups: groups, success: true])
 	}
 }

@@ -626,20 +626,20 @@ class SearchService {
 		
 	private Map searchWithESQuery(User user, String fullQuery, String userQuery, int offset, int max, def type) {
 		def result = [listItems: [], success: true]
-		
+
 		if (fullQuery == null || fullQuery == "" || userQuery == null || userQuery == "") {
 			return result
 		}
-		
+
 		elasticSearchHelper.withElasticSearch{ client ->
 			//TODO: work on scoring
 			FunctionScoreQueryBuilder fsqb = functionScoreQuery(queryString(fullQuery))
 			//FunctionScoreQueryBuilder fsqb = functionScoreQuery(matchAllQuery())
 			fsqb.scoreMode("sum")
 			fsqb.boostMode("replace")
-			
+
 			scoreSearch(fsqb, user, userQuery)
-			
+
 			if ((type & DISCUSSION_TYPE) > 0) {
 				scoreDiscussionSearch(fsqb, user, userQuery)
 			}
@@ -649,9 +649,9 @@ class SearchService {
 			if ((type & USER_TYPE) > 0) {
 				scoreUserSearch(fsqb, user, userQuery)
 			}
-			
+
 			def temp = client.prepareSearch("us.wearecurio.model_v0")
-			
+
 			if (type == DISCUSSION_TYPE) {
 				temp.setTypes("discussion")
 			} else if (type == SPRINT_TYPE) {
@@ -678,37 +678,13 @@ class SearchService {
 				.actionGet()
 
 			if (sr.hits.hits.size() > 0) {
-				for(def hit : sr.hits.hits) {
+				for (def hit : sr.hits.hits) {
 					result.listItems << toJSON(hit, user)
 				}
 			}
 		}
-		
+
 		return result
-	}	
-	
-	Map getFollowedSprintsGroup(User user) {
-		List<UserGroup> readerGroups = UserGroup.getGroupsForReader(user.id)
-		Map followedSprints = Sprint.search(searchType: 'query_and_fetch') {
-			query_string(query: "virtualGroupId:${Utils.orifyList(readerGroups.collect{ it[0].id })}")
-		}
-
-		List startedSprints = followedSprints.searchResults.findAll {
-			it.hasStarted(user.id, new Date())
-		}
-		followedSprints.searchResults.removeAll(startedSprints as Object[])
-		startedSprints = startedSprints.sort {it.hasStarted(user.id, new Date())}
-		List followedSprintsGroupList = followedSprints.searchResults.collect {
-			UserGroup group = UserGroup.get(it.virtualGroupId)
-			[name: group?.name, fullName: group?.fullName]
-		}
-
-		List startedSprintGroupList = startedSprints.collect {
-			UserGroup group = UserGroup.get(it.virtualGroupId)
-			[name: group?.name, fullName: group?.fullName]
-		}
-
-		return [startedSprintsGroupList: startedSprintGroupList, followedSprintsGroupList: followedSprintsGroupList]
 	}
 
 	Map search(User user, String query, int offset = 0, int max = 10, type = (DISCUSSION_TYPE | USER_TYPE | SPRINT_TYPE)) {

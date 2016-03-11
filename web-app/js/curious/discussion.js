@@ -251,7 +251,7 @@ $(document).ready(function() {
 			queueJSON("setting discussion name", makeGetUrl('setDiscussionNameData'), makeGetArgs({ discussionHash: discussionHash, name:newName }), function(data) {
 				if (checkData(data)) {
 					$(".discussion-title").text(newName);
-					displayFlashMessage("#title-updated", 1000);
+					displayFlashMessage("#title-updated", 2500);
 				} else {
 					showAlert('Failed to set name');
 				}
