@@ -874,7 +874,6 @@ class UnitGroupMap {
 				
 				DecoratedUnitRatio unitRatio = mostUsedUnitRatioForTag?.lookupDecoratedUnitRatio(units)
 				if (unitRatio) {
-					BigDecimal normalizedAmount = (amount * unitRatio.ratio) / mostUsedUnitRatio
 					unitRatio.getNormalizedJSONAmounts(normalizedAmounts, amount, amountPrecision, props)
 				} else
 					decorated.getNormalizedJSONAmounts(normalizedAmounts, amount, amountPrecision, props)

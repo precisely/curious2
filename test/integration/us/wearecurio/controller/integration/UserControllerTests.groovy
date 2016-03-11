@@ -1,5 +1,9 @@
 package us.wearecurio.controller.integration
 
+import java.util.Date
+
+import us.wearecurio.model.User
+
 import static org.junit.Assert.*
 import org.junit.*
 import org.scribe.model.Response
@@ -62,5 +66,24 @@ class UserControllerTests extends CuriousControllerTestCase {
 		assert controller.response.json.success
 		assert controller.response.json.user.username == "a"
 		assert controller.response.json.user.email == 'a@a.com'
+	}
+	
+	@Test
+	void "Test add tutorial tags"() {
+		controller.params["id"] = dummyUser2.hash
+		controller.session.userId = dummyUser2.id
+		controller.params["tags[]"] = ['sleep','supplements']
+
+		controller.addTutorialTags()
+		assert controller.response.json.success
+		assert dummyUser2.hasInterestTag(Tag.look('sleep'))
+		assert dummyUser2.hasInterestTag(Tag.look('supplements'))
+		def entries = Entry.fetchListData(dummyUser2, "Etc/UTC", new Date(), new Date())
+		boolean found = false
+		for (entry in entries) {
+			if (entry.description == 'sleep quality')
+				found = true
+		}
+		assert found
 	}
 }
