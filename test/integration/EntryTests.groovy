@@ -149,6 +149,39 @@ class EntryTests extends CuriousTestCase {
 	}
 	
 	@Test
+	void testRemind() {
+		EntryStats stats = new EntryStats()
+		
+		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm remind", null, null, baseDate, true), stats)
+		String v = entry.valueString()
+		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517, repeatEnd:null)")
+
+		// tag stats for reminders should be "none" value for the amount
+		def tagStats = stats.finish()[0]
+		assert tagStats.getLastAmount() == null
+		assert tagStats.getLastAmountPrecision() < 0
+		assert tagStats.getTypicallyNoAmount()
+		
+		// query for reminder should generate the ghost entry only
+		testEntries(user, timeZone, lateBaseDate, lateCurrentTime) {
+			assert it['id'] == entry.getId()
+			assert Utils.dateToGMTString(it['date']).equals("2010-07-03T21:00:00")
+		}
+		
+		// repeat should be here
+		def entryIds = Entry.fetchReminders(user, microlateCurrentTime, 5 * 60)
+		for (entryId in entryIds) {
+			assert entryId['id'] == entry.getId()
+		}
+		
+		// should be no repeats here
+		entryIds = Entry.fetchReminders(user, microlateCurrentTime, 100L)
+		for (entryId in entryIds) {
+			assert false
+		}
+	}
+
+/*	@Test
 	void testNormalizedDataContinuous() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 122lbs 2000 feet 2pm", null, null, baseDate, true), new EntryStats())	
 		Entry.create(userId, entryParserService.parse(currentTime, timeZone, "weight 110lbs 3pm", null, null, baseDate, true), new EntryStats())
@@ -1596,39 +1629,6 @@ class EntryTests extends CuriousTestCase {
 		assert activated3 == entry
 	}
 	
-	@Test
-	void testRemind() {
-		EntryStats stats = new EntryStats()
-		
-		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 2pm remind", null, null, baseDate, true), stats)
-		String v = entry.valueString()
-		assert entry.valueString().equals("Entry(userId:" + userId + ", date:2010-07-01T21:00:00, datePrecisionSecs:180, timeZoneName:America/Los_Angeles, description:bread, amount:1.000000000, units:, amountPrecision:-1, comment:remind, repeatType:517, repeatEnd:null)")
-
-		// tag stats for reminders should be "none" value for the amount
-		def tagStats = stats.finish()[0]
-		assert tagStats.getLastAmount() == null
-		assert tagStats.getLastAmountPrecision() < 0
-		assert tagStats.getTypicallyNoAmount()
-		
-		// query for reminder should generate the ghost entry only
-		testEntries(user, timeZone, lateBaseDate, lateCurrentTime) {
-			assert it['id'] == entry.getId()
-			assert Utils.dateToGMTString(it['date']).equals("2010-07-03T21:00:00")
-		}
-		
-		// repeat should be here
-		def entryIds = Entry.fetchReminders(user, microlateCurrentTime, 5 * 60)
-		for (entryId in entryIds) {
-			assert entryId['id'] == entry.getId()
-		}
-		
-		// should be no repeats here
-		entryIds = Entry.fetchReminders(user, microlateCurrentTime, 100L)
-		for (entryId in entryIds) {
-			assert false
-		}
-	}
-
 	@Test
 	void testRemindList() {
 		Entry entry = Entry.create(userId, entryParserService.parse(currentTime, timeZone, "bread 75 2pm remind", null, null, baseDate, true), new EntryStats())

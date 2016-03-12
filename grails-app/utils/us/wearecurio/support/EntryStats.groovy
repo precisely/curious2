@@ -68,6 +68,7 @@ class EntryStats {
 			TagStats stats = TagStats.createOrUpdate(userId, baseTagId)
 			if (stats.isEmpty())
 				recache = true
+			tagStats.add(stats)
 		}
 
 		for (Long tagId: tagIds) {
