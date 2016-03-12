@@ -32,7 +32,7 @@
 		<g:layoutHead/>
 	</head>
 
-	<body class="${pageProperty(name: 'body.class') ?: ''}">
+	<body class="${pageProperty(name: 'body.class') ?: 'home'}">
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
@@ -82,25 +82,29 @@
 			<br>
 			<br>
 
-			<div class="row" style="height: 100px">
-				<div class="col-xs-9 col-xs-offset-1">
-					<ul class="mainLinks footerLinks">
-						<li style="font-size: 16px; padding-left: 0px;">
-							<a href="https://geo.itunes.apple.com/us/app/we-are-curious/id1063805457?mt=8"><img width="86" height="31" src="/images/appstore.png"></a>
-						</li>
-						<li style="font-size: 16px;">
-							<g:link controller="home" action="termsofservice_home">PRIVACY / TERMS</g:link>
-						</li>
-					</ul>
-				</div>
+			<div class="row">
+				<div class="col-sm-10 col-sm-offset-1">
+					<div class="row" style="height: 100px">
+						<div class="col-xs-7">
+							<ul class="mainLinks footerLinks">
+								<li style="font-size: 16px; padding-left: 0px;">
+									<a href="http://bit.ly/curious-app-store"><img width="86" height="31" src="/images/appstore.png"></a>
+								</li>
+								<li style="font-size: 16px;">
+									<g:link controller="home" action="termsofservice_home">PRIVACY / TERMS</g:link>
+								</li>
+							</ul>
+						</div>
 
-				<div class="col-xs-2 text-center" style="color: white;">
-					<a href="https://twitter.com/wearecurious">
-						<img src="/images/home/twitter.png" style="padding-right: 15px; height: 30px"/>
-					</a>
-					<a href="https://facebook.com/wearecurious">
-						<img src="/images/home/facebook.png" style="height: 30px"/>
-					</a>
+						<div class="social-icons col-xs-4 text-right" style="color: white;">
+							<a href="https://twitter.com/wearecurious">
+								<img src="/images/home/twitter.png" style="padding-right: 15px; height: 30px"/>
+							</a>
+							<a href="https://facebook.com/wearecurious">
+								<img src="/images/home/facebook.png" style="height: 30px"/>
+							</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
