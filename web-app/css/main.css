@@ -456,7 +456,7 @@ body.discuss-page input#discussTitleInput {
 }
 
 .home-logo-wrapper {
-	width: 94%;
+	width: 79%;
 
 }
 
@@ -464,6 +464,10 @@ body.discuss-page input#discussTitleInput {
 @media (max-width: 970px) {
 	body.discuss-page input#discussTitleInput {
 		width: 100%;
+	}
+	.home-logo-wrapper {
+		width: 94%;
+
 	}
 }
 
