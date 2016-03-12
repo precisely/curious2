@@ -160,7 +160,9 @@
 	       <div class="col-xs-3">
 	       	<ul>
 	       	<li> <span class="ul-head">Follow</span><br></li>
-	       		<li ><a href="http://soon.wearecurio.us/blog/"> Blog </a></li>
+	       		<li ><a href="https://geo.itunes.apple.com/us/app/we-are-curious/id1063805457?mt=8">iOS App</a></li>
+	       		<li ><a href="#">Android Coming Soon</a></li>
+	       		<li ><a href="http://www.wearecurio.us/blog/">Blog</a></li>
 	       		<li ><a href="https://twitter.com/wearecurious">Twitter</a> </li>
 	       		<li ><a href="https://facebook.com/wearecurious">Facebook</a> </li>
 	       	</ul>

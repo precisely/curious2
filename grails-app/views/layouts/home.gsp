@@ -85,17 +85,11 @@
 			<div class="row" style="height: 100px">
 				<div class="col-xs-9 col-xs-offset-1">
 					<ul class="mainLinks footerLinks">
-						<li style="font-size: 16px; padding-left: 0px; display: none">
-							<a href="#">GET THE APP</a>
-						</li>
-						<li style="font-size: 16px; display: none">
-							<a href="#">TUTORIALS</a>
-						</li>
-						<li style="font-size: 16px; display:none; padding-left: 0px; margin-left: -15px">
-							<a href="http://www.wearecurio.us/">PRIVACY</a>
+						<li style="font-size: 16px; padding-left: 0px;">
+							<a href="https://geo.itunes.apple.com/us/app/we-are-curious/id1063805457?mt=8"><img width="86" height="31" src="/images/appstore.png"></a>
 						</li>
 						<li style="font-size: 16px;">
-							<g:link controller="home" action="termsofservice_home">TERMS</g:link>
+							<g:link controller="home" action="termsofservice_home">PRIVACY / TERMS</g:link>
 						</li>
 					</ul>
 				</div>

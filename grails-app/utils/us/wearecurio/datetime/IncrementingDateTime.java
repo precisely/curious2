@@ -51,43 +51,117 @@ public class IncrementingDateTime {
 				if (initialMinute < startMinute) {
 					newRepeatLocalTime = newRepeatLocalTime.plusHours(1);
 				}
-				return startLocalDate.toDateTime(newRepeatLocalTime, initialDateTimeZone);
+				DateTime retVal;
+				try {
+					retVal = startLocalDate.toDateTime(newRepeatLocalTime, initialDateTimeZone);
+				} catch (IllegalFieldValueException e) {
+					retVal = startLocalDate.toDateTime(newRepeatLocalTime.plusHours(1), initialDateTimeZone);
+				}
+				return retVal;
 			}
 		} else {
 			switch (intervalCode) {
 				case DAILY_BIT:
 				default:
 					
-				if (initialLocalTime.compareTo(startLocalTime) <= 0)
-					return startLocalDate.plusDays(1).toDateTime(initialLocalTime, initialDateTimeZone);
-				return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
-
+				if (initialLocalTime.compareTo(startLocalTime) <= 0) {
+					DateTime retVal;
+					try {
+						retVal = startLocalDate.plusDays(1).toDateTime(initialLocalTime, initialDateTimeZone);
+					} catch (IllegalFieldValueException e) {
+						retVal = startLocalDate.plusDays(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+					}
+					return retVal;
+				} else {
+					DateTime retVal;
+					try {
+						retVal = startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+					} catch (IllegalFieldValueException e) {
+						retVal = startLocalDate.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+					}
+					return retVal;
+				}
+				
 				case WEEKLY_BIT:
 					
 				int initialDayOfWeek = initialLocalDate.getDayOfWeek();
 				int limitDayOfWeek = startLocalDate.getDayOfWeek();
 				
 				if (initialDayOfWeek == limitDayOfWeek) {
-					if (initialLocalTime.compareTo(startLocalTime) <= 0)
-						return startLocalDate.plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
-					return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+					if (initialLocalTime.compareTo(startLocalTime) <= 0) {
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.plusWeeks(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					} else {
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					}
 				} else if (initialDayOfWeek > limitDayOfWeek) {
-					return startLocalDate.withDayOfWeek(initialDayOfWeek).plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
-				} else
-					return startLocalDate.withDayOfWeek(initialDayOfWeek).toDateTime(initialLocalTime, initialDateTimeZone);
+					DateTime retVal;
+					try {
+						retVal = startLocalDate.withDayOfWeek(initialDayOfWeek).plusWeeks(1).toDateTime(initialLocalTime, initialDateTimeZone);
+					} catch (IllegalFieldValueException e) {
+						retVal = startLocalDate.withDayOfWeek(initialDayOfWeek).plusWeeks(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+					}
+					return retVal;
+				} else {
+					DateTime retVal;
+					try {
+						retVal = startLocalDate.withDayOfWeek(initialDayOfWeek).toDateTime(initialLocalTime, initialDateTimeZone);
+					} catch (IllegalFieldValueException e) {
+						retVal = startLocalDate.withDayOfWeek(initialDayOfWeek).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+					}
+					return retVal;
+				}
 				
 				case MONTHLY_BIT: {
 					int initialDayOfMonth = initialLocalDate.getDayOfMonth();
 					int limitDayOfMonth = startLocalDate.getDayOfMonth();
 					
 					if (initialDayOfMonth == limitDayOfMonth) {
-						if (initialLocalTime.compareTo(startLocalTime) <= 0)
-							return startLocalDate.plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
-						return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+						if (initialLocalTime.compareTo(startLocalTime) <= 0) {
+							DateTime retVal;
+							try {
+								retVal = startLocalDate.plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
+							} catch (IllegalFieldValueException e) {
+								retVal = startLocalDate.plusMonths(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+							}
+							return retVal;
+						} else {
+							DateTime retVal;
+							try {
+								retVal = startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+							} catch (IllegalFieldValueException e) {
+								retVal = startLocalDate.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+							}
+							return retVal;
+						}
 					} else if (initialDayOfMonth < limitDayOfMonth) {
-						return startLocalDate.withDayOfMonth(initialDayOfMonth).plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
-					} else
-						return startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).plusMonths(1).toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).plusMonths(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					} else {
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					}
 				}
 				
 				case YEARLY_BIT: {
@@ -98,18 +172,63 @@ public class IncrementingDateTime {
 
 					if (initialMonthOfYear == limitMonthOfYear) {
 						if (initialDayOfMonth == limitDayOfMonth) {
-							if (initialLocalTime.compareTo(startLocalTime) <= 0)
-								return startLocalDate.plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
-							return startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
-						} else if (initialDayOfMonth < limitDayOfMonth)
-							return startLocalDate.withDayOfMonth(initialDayOfMonth).plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
-						else
-							return startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
-					} else if (initialMonthOfYear > limitMonthOfYear)
-						return startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).minusYears(1)
-								.toDateTime(initialLocalTime, initialDateTimeZone);
-					else
-						return startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+							if (initialLocalTime.compareTo(startLocalTime) <= 0) {
+								DateTime retVal;
+								try {
+									retVal = startLocalDate.plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
+								} catch (IllegalFieldValueException e) {
+									retVal = startLocalDate.plusYears(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+								}
+								return retVal;
+							} else {
+								DateTime retVal;
+								try {
+									retVal = startLocalDate.toDateTime(initialLocalTime, initialDateTimeZone);
+								} catch (IllegalFieldValueException e) {
+									retVal = startLocalDate.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+								}
+								return retVal;
+							}
+						} else if (initialDayOfMonth < limitDayOfMonth) {
+							DateTime retVal;
+							try {
+								retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).plusYears(1).toDateTime(initialLocalTime, initialDateTimeZone);
+							} catch (IllegalFieldValueException e) {
+								retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).plusYears(1).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+							}
+							return retVal;
+						}
+						else {
+							DateTime retVal;
+							try {
+								retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime, initialDateTimeZone);
+							} catch (IllegalFieldValueException e) {
+								retVal = startLocalDate.withDayOfMonth(initialDayOfMonth).toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+							}
+							return retVal;
+						}
+					} else if (initialMonthOfYear > limitMonthOfYear) {
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).minusYears(1)
+									.toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth).minusYears(1)
+									.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					}
+					else {
+						DateTime retVal;
+						try {
+							retVal = startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth)
+									.toDateTime(initialLocalTime, initialDateTimeZone);
+						} catch (IllegalFieldValueException e) {
+							retVal = startLocalDate.withMonthOfYear(initialMonthOfYear).withDayOfMonth(initialDayOfMonth)
+									.toDateTime(initialLocalTime.plusHours(1), initialDateTimeZone);
+						}
+						return retVal;
+					}
 				}
 			}
 		}

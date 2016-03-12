@@ -17,7 +17,7 @@
 				Track data, chart experience, find meaning.
 			</p>
 			<p style="font-size: 31px; color: #f14a42;">
-				<strong>We've got questions.</strong>
+				<strong>We've all got questions.</strong>
 			</p>
 			<br> <br>&nbsp;<br/>&nbsp;
 		</div>

@@ -110,8 +110,8 @@ class User {
 		interestTags: Tag
 	]
 
-	static Map<Long, List<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
-	static Map<Long, List<Long>> tagGroupIdCache = Collections.synchronizedMap(new BoundedCache<Long, List<Long>>(100000))
+	static Map<Long, Set<Long>> tagIdCache = Collections.synchronizedMap(new BoundedCache<Long, Set<Long>>(100000))
+	static Map<Long, Set<Long>> tagGroupIdCache = Collections.synchronizedMap(new BoundedCache<Long, Set<Long>>(100000))
 
 	static {
 		Utils.registerTestReset {
@@ -592,10 +592,21 @@ class User {
 				}
 			}
 
-			tagIdCache[userId] = usersTagIds
+			tagIdCache[userId] = usersTagIds as Set
 
 			Tag.fetchAll(usersTagIds)
 		}
+	}
+	
+	static boolean hasCachedTagId(Long userId, Long tagId) {
+		return tagIdCache[userId] && tagIdCache[userId].contains(tagId)
+	}
+	
+	static boolean recacheTagIds(Long userId) {
+		tagIdCache[userId] = null
+		tagGroupIdCache[userId] = null
+		getTags(userId)
+		getTagGroups(userId)
 	}
 
 	static def getTagData(def userId) {
@@ -618,7 +629,7 @@ class User {
 
 	static void addToCache(Long userId, Tag tagInstance) {
 		if (tagIdCache[userId]) {
-			tagIdCache[userId] << tagInstance.id
+			tagIdCache[userId].add(tagInstance.id)
 		}
 	}
 
@@ -630,7 +641,7 @@ class User {
 
 	static void addToCache(Long userId, GenericTagGroup tagInstance) {
 		if (tagGroupIdCache[userId]) {
-			tagGroupIdCache[userId] << tagInstance.id
+			tagGroupIdCache[userId].add(tagInstance.id)
 		}
 	}
 
@@ -651,7 +662,7 @@ class User {
 			}
 
 			List<Long> usersTagGroupIds = TagGroup.getAllTagGroupsForUser(userId)*.id
-			tagGroupIdCache[userId] = usersTagGroupIds
+			tagGroupIdCache[userId] = usersTagGroupIds as Set
 
 			GenericTagGroup.getAll(usersTagGroupIds)
 		}

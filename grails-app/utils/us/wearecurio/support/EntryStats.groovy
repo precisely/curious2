@@ -60,12 +60,23 @@ class EntryStats {
 	ArrayList<TagStats> finish() { // after finalizing all entry creation, call this to update statistics
 		ArrayList<TagStats> tagStats = new ArrayList<TagStats>()
 		
+		boolean recache = false
+		
 		for (Long baseTagId: baseTagIds) {
-			tagStats.add(TagStats.createOrUpdate(userId, baseTagId))
+			if (!User.hasCachedTagId(userId, baseTagId))
+				recache = true
+			TagStats stats = TagStats.createOrUpdate(userId, baseTagId)
+			if (stats.isEmpty())
+				recache = true
+			tagStats.add()
 		}
 
 		for (Long tagId: tagIds) {
-			TagValueStats.createOrUpdate(userId, tagId, startDate)
+			if (!User.hasCachedTagId(userId, tagId))
+				recache = true
+			TagValueStats stats = TagValueStats.createOrUpdate(userId, tagId, startDate)
+			if (stats.isEmpty())
+			recache = true
 		}
 
 		if (timeZoneId != null)
@@ -73,6 +84,10 @@ class EntryStats {
 		
 		if (alertEdited) {
 			AlertGenerationService.get().regenerate(userId, new Date())
+		}
+		
+		if (recache) {
+			
 		}
 		
 		if (tagStats.size() > 0)

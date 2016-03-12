@@ -31,13 +31,13 @@ class WildcardTagGroupTests extends CuriousTestCase {
 		Date baseDate = new Date() - 5
 		String timeZone = "America/Los_Angeles"
 
-		tag1 = Tag.create("almond")
-		tag2 = Tag.create("grilled chicken")
-		tag3 = Tag.create("pasta tomato chicken")
-		tag4 = Tag.create("dinner cobb salad with grilled chicken")
-		tag5 = Tag.create("chicken")
-		tag6 = Tag.create("bike")
-		tag7 = Tag.create("chicken mole poblano")
+		tag1 = Tag.look("almond")
+		tag2 = Tag.look("grilled chicken")
+		tag3 = Tag.look("pasta tomato chicken")
+		tag4 = Tag.look("dinner cobb salad with grilled chicken")
+		tag5 = Tag.look("chicken")
+		tag6 = Tag.look("bike")
+		tag7 = Tag.look("chicken mole poblano")
 		
 		EntryStats stats = new EntryStats(userId)
 

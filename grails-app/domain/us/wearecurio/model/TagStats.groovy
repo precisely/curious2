@@ -51,6 +51,10 @@ class TagStats {
 	TagStats() {
 	}
 	
+	boolean isEmpty() {
+		return countAllTime == 0
+	}
+	
 	static final MathContext mc = new MathContext(9)
 	
 	static def createOrUpdate(long userId, long tagId) {

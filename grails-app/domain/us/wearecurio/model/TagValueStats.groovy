@@ -51,6 +51,10 @@ class TagValueStats {
 		
 		return stats
 	}
+	
+	boolean isEmpty() {
+		return minimum == null
+	}
 
 	static def createOrUpdate(Long userId, Long tagId, Date startDate) {
 		log.debug "TagValueStats.createOrUpdate() userId:" + userId + ", tag:" + Tag.get(tagId) + ", startDate:" + startDate

@@ -10,7 +10,7 @@
         <div class="col-sm-push-4 text-right col-sm-6" style="margin-left: 20px">
             <img class="" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
             <p style=" font-size: 34px; color: #f14a42; margin-bottom: 0px; white-space: nowrap;">
-                We've got questions.</p>
+                We've all got questions.</p>
             <p style="font-size: 31px; color: #f14a42;">
                 <strong>Do you?</strong>
             </p>

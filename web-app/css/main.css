@@ -161,6 +161,7 @@ body {
 	color: rgb(0, 0, 0);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	min-width: 770px;
 }
 input {
 	line-height: normal;
