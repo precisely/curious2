@@ -82,31 +82,38 @@
 			<br>
 			<br>
 
-			<div class="row" style="height: 100px">
-				<div class="col-xs-9 col-xs-offset-1">
-					<ul class="mainLinks footerLinks">
-						<li style="font-size: 16px; padding-left: 0px; display: none">
-							<a href="#">GET THE APP</a>
-						</li>
-						<li style="font-size: 16px; display: none">
-							<a href="#">TUTORIALS</a>
-						</li>
-						<li style="font-size: 16px; display:none; padding-left: 0px; margin-left: -15px">
-							<a href="http://www.wearecurio.us/">PRIVACY</a>
-						</li>
-						<li style="font-size: 16px;">
-							<g:link controller="home" action="termsofservice_home">TERMS</g:link>
-						</li>
-					</ul>
-				</div>
+			<div class="row">
+				<div class="col-sm-10 col-sm-offset-1">
+					<div class="row" style="height: 100px">
+						<div class="col-xs-6">
+							<ul class="mainLinks footerLinks">
+								<li style="font-size: 16px; padding-left: 0px; display: none">
+									<a href="#">GET THE APP</a>
+								</li>
+								<li style="font-size: 16px; display: none">
+									<a href="#">TUTORIALS</a>
+								</li>
+								<li style="font-size: 16px; display:none; padding-left: 0px; margin-left: -15px">
+									<a href="http://www.wearecurio.us/">PRIVACY</a>
+								</li>
+								<li style="font-size: 16px; padding-left: 0">
+									<g:link controller="home" action="termsofservice_home">TERMS</g:link>
+								</li>
+							</ul>
+						</div>
 
-				<div class="col-xs-2 text-center" style="color: white;">
-					<a href="https://twitter.com/wearecurious">
-						<img src="/images/home/twitter.png" style="padding-right: 15px; height: 30px"/>
-					</a>
-					<a href="https://facebook.com/wearecurious">
-						<img src="/images/home/facebook.png" style="height: 30px"/>
-					</a>
+						<div class="col-xs-6 text-right" style="color: white;">
+							<a href="http://bit.ly/curious-app-store">
+								<img src="/images/curious-app-store.png" style="margin-right: 15px;"/>
+							</a>
+							<a href="https://twitter.com/wearecurious">
+								<img src="/images/home/twitter.png" style="padding-right: 15px; height: 30px"/>
+							</a>
+							<a href="https://facebook.com/wearecurious">
+								<img src="/images/home/facebook.png" style="height: 30px"/>
+							</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
