@@ -459,7 +459,9 @@ body.discuss-page input#discussTitleInput {
 	width: 79%;
 
 }
-
+.social-icons {
+	padding: 10px 0 0 0;
+}
 
 @media (max-width: 970px) {
 	body.discuss-page input#discussTitleInput {
@@ -510,9 +512,7 @@ body.discuss-page input#discussTitleInput {
 		margin-left: 15px;
 	}
 
-	.social-icons {
-		padding: 10px 0 0 0;
-	}
+
 
 	.features .col-sm-2 {
 		margin-left: 0px !important;
