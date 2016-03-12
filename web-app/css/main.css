@@ -437,9 +437,87 @@ div.graphData.has-plot-data #height-balancer {
 body.discuss-page input#discussTitleInput {
 	width: 800px;
 }
+
+.home-logo {
+	width: 583px;
+	height:auto;
+}
+.logo-text-1 {
+	font-size:34px;
+	color: #f14a42;
+	margin-bottom: 0px;
+	white-space: nowrap;
+}
+
+.logo-text-2 {
+	font-size: 31px;
+	color: #f14a42;
+}
+
+.home-logo-wrapper {
+	width: 94%;
+
+}
+
+
 @media (max-width: 970px) {
 	body.discuss-page input#discussTitleInput {
 		width: 100%;
+	}
+}
+
+@media (max-width: 768px) {
+	body {
+		min-width: 770px;
+	}
+}
+
+@media (max-width: 375px) {
+	.home {
+		width: auto !important;
+		min-width: 0px;
+	}
+
+	.mainLinks {
+		margin-right: 0px !important;
+	}
+	.home-logo {
+		width: 80%;
+	}
+	.features-background {
+		width: 110% !important;
+	}
+	.home .btn-red {
+		padding: 5px 10px;
+		font-size: 12px;
+	}
+	.logo-text-1 {
+		font-size: 15px;
+	}
+	.logo-text-2 {
+		font-size: 12px;
+	}
+	.caption {
+		width: 80%;
+		margin: 30px auto;
+	}
+	.news .col-sm-1, .news .col-sm-7, .about-wrapper .col-sm-1, .about-wrapper .col-sm-5 {
+		margin-left: 15px;
+	}
+
+	.social-icons {
+		padding: 10px 0 0 0;
+	}
+
+	.features .col-sm-2 {
+		margin-left: 0px !important;
+	}
+	.features .col-sm-1 {
+		margin: 0 23px;
+	}
+
+	.mainLinks li {
+		padding: 0px 0 0 12px !important
 	}
 }
 .discussmain .cycleTagInput {

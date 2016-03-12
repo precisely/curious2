@@ -32,7 +32,7 @@
 		<g:layoutHead/>
 	</head>
 
-	<body class="${pageProperty(name: 'body.class') ?: ''}">
+	<body class="${pageProperty(name: 'body.class') ?: 'home'}">
 		<div class="headLinks">
 			<ul class="mainLinks headerLinks">
 				<li><a href="/home/login">HOME</a></li>
@@ -85,7 +85,7 @@
 			<div class="row">
 				<div class="col-sm-10 col-sm-offset-1">
 					<div class="row" style="height: 100px">
-						<div class="col-xs-6">
+						<div class="col-xs-3">
 							<ul class="mainLinks footerLinks">
 								<li style="font-size: 16px; padding-left: 0px; display: none">
 									<a href="#">GET THE APP</a>
@@ -96,13 +96,13 @@
 								<li style="font-size: 16px; display:none; padding-left: 0px; margin-left: -15px">
 									<a href="http://www.wearecurio.us/">PRIVACY</a>
 								</li>
-								<li style="font-size: 16px; padding-left: 0">
+								<li style="font-size: 16px;">
 									<g:link controller="home" action="termsofservice_home">TERMS</g:link>
 								</li>
 							</ul>
 						</div>
 
-						<div class="col-xs-6 text-right" style="color: white;">
+						<div class="social-icons col-xs-8 text-right" style="color: white;">
 							<a href="http://bit.ly/curious-app-store">
 								<img src="/images/curious-app-store.png" style="margin-right: 15px;"/>
 							</a>
