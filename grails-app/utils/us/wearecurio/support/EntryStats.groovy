@@ -68,7 +68,6 @@ class EntryStats {
 			TagStats stats = TagStats.createOrUpdate(userId, baseTagId)
 			if (stats.isEmpty())
 				recache = true
-			tagStats.add()
 		}
 
 		for (Long tagId: tagIds) {
@@ -76,7 +75,7 @@ class EntryStats {
 				recache = true
 			TagValueStats stats = TagValueStats.createOrUpdate(userId, tagId, startDate)
 			if (stats.isEmpty())
-			recache = true
+				recache = true
 		}
 
 		if (timeZoneId != null)
@@ -87,7 +86,7 @@ class EntryStats {
 		}
 		
 		if (recache) {
-			
+			User.recacheTagIds(userId)
 		}
 		
 		if (tagStats.size() > 0)
