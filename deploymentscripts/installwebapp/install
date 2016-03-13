@@ -2,6 +2,8 @@ INSTALLDIR=~/installwebapp
 chmod +x ~/deploymentbin/*
 
 #!/bin/bash
+echo "MUST COPY DEPLOYMENT APACHE CERTS TO ~/deploymentcerts
+
 echo "Enter the hostname of this server, i.e., 'www.wearecurio.us'"
 
 read APPHOSTNAME
@@ -102,10 +104,10 @@ su -l curious -c /home/curious/installcurious/installcurious
 
 # install jetty
 
-wget http://download.eclipse.org/jetty/9.3.2.v20150730/dist/jetty-distribution-9.3.2.v20150730.zip
+wget http://download.eclipse.org/jetty/9.3.7.v20160115/dist/jetty-distribution-9.3.7.v20160115.tar.gz
 rm -rf /opt/jetty
-tar zxvf jetty-distribution-9.3.2.v20150730.tar.gz -C /opt/
-mv /opt/jetty-distribution-9.3.2.v20150730 /opt/jetty
+tar zxvf jetty-distribution-9.3.7.v20160115.tar.gz -C /opt/
+mv /opt/jetty-distribution-9.3.7.v20160115 /opt/jetty
 mkdir /opt/jetty/work
 chown -R curious:curious /opt/jetty/
 ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty
