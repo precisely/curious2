@@ -86,3 +86,9 @@
 	background-color: #f14a42 !important;
 	color: white !important;
 }
+
+/* http://stackoverflow.com/a/11395372 */
+.no-whitespace {
+	line-height: 0;
+	font-size: 0;
+}
