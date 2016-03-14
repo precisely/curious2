@@ -182,21 +182,17 @@
 	}
 	.header .mainLinks {
 		padding-top: 10px;
-		margin-right: 0px;
+		margin-right: 0;
 	}
 	.mainLinks li {
 		display:block;
-		padding: 0px 10px 0px 10px;
-	}
-	.footer ul {
-		width: 25%;
-		text-align: center;
+		padding: 0 10px 0 10px;
 	}
 	body.track-page .date-controls hr, body.graph-page .red-header hr {
 		right: 33%
 	}
 	.tags-header-container {
-		padding-left: 0px;
+		padding-left: 0;
 	}
 	.tags-header-container h1 {
 		font-size: 14px;
@@ -204,9 +200,6 @@
 }
 
 @media (max-width: 992px) {
-	.footer ul {
-		width: 20%;
-	}
 		.container {
 				padding: 0;
 				margin-left: 10px;
@@ -214,8 +207,8 @@
 		}
 		.curiosities .container {
 				padding: 10px;
-				margin-left: 0px;
-				margin-right: 0px;
+				margin-left: 0;
+				margin-right: 0;
 		}
 		.curiosities .arrow-box {
 			display: none;
