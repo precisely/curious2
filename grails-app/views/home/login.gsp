@@ -33,7 +33,6 @@
 	</head>
 	<body>
 		<br>
-		<div class="row">
 			<div class="text-right home-logo-wrapper">
 				<img class="home-logo" src="/images/home/home-logo-wide.jpg" width="583" height="88"/>
 				<p class="logo-text-1">
@@ -41,13 +40,17 @@
 				<p class="logo-text-2">
 					<strong>We’ve all got questions.</strong>
 				</p>
-				<br> <br>
-				<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
-					class="btn btn-red btn-lg btn-flat">
-					Get Started
-				</g:link>
+				<div class="get-started-buttons">
+					<a href="http://bit.ly/curious-app-store" class="ios-app-link">
+						<img src="/images/appstore.png">
+					</a>
+					<g:link action="register" params="${['precontroller':precontroller,'preaction':preaction]}"
+						class="btn btn-red btn-lg btn-flat">
+						Get Started
+					</g:link>
+				</div>
 			</div>
-		</div>
+
 		<div class="shape-wrapper features">
 			<div class="features-background"></div>
 

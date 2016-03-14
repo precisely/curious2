@@ -1,3 +1,104 @@
+
+/*
+ * For all tabs in landscape orientation or for all small devices like Tablets and below.
+ */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape), (max-width: 991px) {
+	.home-logo-wrapper .get-started-buttons {
+		margin-top: 15px;
+		margin-bottom: 45px;
+	}
+}
+
+@media only screen and (max-device-width : 767px) and (orientation : portrait) {
+	.get-started-buttons .ios-app-link img {
+		height: 28px;
+	}
+}
+
+/*
+ * For extra small devices (< 768px) like Phones and below.
+ */
+@media (max-width: 767px) {
+	body {
+		min-width: 770px;
+	}
+
+	.social-icons .facebook img {
+		margin-right: 10px;
+	}
+}
+
+@media (max-width: 970px) {
+	.home-logo-wrapper {
+		width: 94%;
+	}
+}
+
+@media (max-width: 375px) {
+	.footer-wrap .col-xs-6 {
+		width: 100%;
+		float: none;
+	}
+
+	.footer-wrap .mainLinks {
+		height: auto;
+		display: inline-block;
+	}
+
+	.footer-wrap .ios-app-link {
+		display: block;
+		margin-bottom: 15px;
+	}
+
+	.social-icons {
+		padding-left: 20px;
+		text-align: left !important;
+	}
+
+	.home {
+		width: auto !important;
+		min-width: 0;
+	}
+
+	.mainLinks {
+		margin-right: 0 !important;
+	}
+	.home-logo {
+		width: 80%;
+	}
+	.features-background {
+		width: 110% !important;
+	}
+	.home .btn-red {
+		padding: 5px 10px;
+		font-size: 12px;
+	}
+	.logo-text-1 {
+		font-size: 15px;
+	}
+	.logo-text-2 {
+		font-size: 12px;
+	}
+	.caption {
+		width: 80%;
+		margin: 30px auto;
+	}
+	.news .col-sm-1, .news .col-sm-7, .about-wrapper .col-sm-1, .about-wrapper .col-sm-5 {
+		margin-left: 15px;
+	}
+
+	.features .col-sm-2 {
+		margin-left: 0 !important;
+	}
+	.features .col-sm-1 {
+		margin: 0 23px;
+	}
+
+	.mainLinks li {
+		padding: 0 0 0 12px !important
+	}
+}
+
 @media (max-width: 480px) {
 	div.red-header.date-controls input#datepicker {
 		width: 120px;
@@ -103,6 +204,9 @@
 }
 
 @media (max-width: 992px) {
+	.footer ul {
+		width: 20%;
+	}
 		.container {
 				padding: 0;
 				margin-left: 10px;

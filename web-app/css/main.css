@@ -199,7 +199,7 @@ input:focus::-webkit-input-placeholder, input:focus::-moz-placeholder, input:foc
 	color: #d9adbf !important;
 }
 
-#input0::-ms-input-placeholder {
+#input0:-ms-input-placeholder {
 	color: #d9adbf !important;
 }
 
@@ -435,10 +435,6 @@ div.graphData.has-plot-data #height-balancer {
 /**
  * Styles for discuss page starts here.
  */
-body.discuss-page input#discussTitleInput {
-	width: 800px;
-}
-
 .home-logo {
 	width: 583px;
 	height:auto;
@@ -446,7 +442,7 @@ body.discuss-page input#discussTitleInput {
 .logo-text-1 {
 	font-size:34px;
 	color: #f14a42;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 	white-space: nowrap;
 }
 
@@ -459,72 +455,26 @@ body.discuss-page input#discussTitleInput {
 	width: 79%;
 
 }
+
+.home-logo-wrapper .get-started-buttons {
+	margin-top: 44px;
+	margin-bottom: 20px;
+}
+
+.get-started-buttons .ios-app-link img {
+	height: 46px;
+	margin-right: 15px;
+}
+
 .social-icons {
-	padding: 10px 0 0 0;
+	padding-top: 10px;
 }
 
-@media (max-width: 970px) {
-	body.discuss-page input#discussTitleInput {
-		width: 100%;
-	}
-	.home-logo-wrapper {
-		width: 94%;
-
-	}
+.social-icons a {
+	vertical-align: middle;
+	display: inline-block;
 }
 
-@media (max-width: 768px) {
-	body {
-		min-width: 770px;
-	}
-}
-
-@media (max-width: 375px) {
-	.home {
-		width: auto !important;
-		min-width: 0px;
-	}
-
-	.mainLinks {
-		margin-right: 0px !important;
-	}
-	.home-logo {
-		width: 80%;
-	}
-	.features-background {
-		width: 110% !important;
-	}
-	.home .btn-red {
-		padding: 5px 10px;
-		font-size: 12px;
-	}
-	.logo-text-1 {
-		font-size: 15px;
-	}
-	.logo-text-2 {
-		font-size: 12px;
-	}
-	.caption {
-		width: 80%;
-		margin: 30px auto;
-	}
-	.news .col-sm-1, .news .col-sm-7, .about-wrapper .col-sm-1, .about-wrapper .col-sm-5 {
-		margin-left: 15px;
-	}
-
-
-
-	.features .col-sm-2 {
-		margin-left: 0px !important;
-	}
-	.features .col-sm-1 {
-		margin: 0 23px;
-	}
-
-	.mainLinks li {
-		padding: 0px 0 0 12px !important
-	}
-}
 .discussmain .cycleTagInput {
 		width: 100%;
 }
@@ -589,11 +539,7 @@ body.discuss-page input#discussTitleInput {
 	line-height:1.4em;
 	font-size: 15px;
 }
-@media (max-width: 992px) {
-	.footer ul {
-		width: 20%;
-	}
-}
+
 input.textInput {
 	color:#cccccc;
 	background-color:#ffffff;
@@ -1001,7 +947,7 @@ a.calendar {
 }
 .calendarRange .slider, .calendarRange .picker {
 	border: 0 solid #999999;
-	border-width:0px 10px;
+	border-width: 0 10px;
 	height:30px;
 }
 .calendarRange .slider {
