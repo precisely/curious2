@@ -1,8 +1,8 @@
-<div class="feed-item">
-	<div class="sprint">
+<div class="feed-item sprint">
 		<div class="contents">
 			<div class="row">
 				<div class="col-xs-9">
+					<img src="/images/feed/trackathon.png" class="helper-icon" />
 					<a href="/home/sprint#{{- sprint.hash }}">
 						<span> {{- sprint.name }}</span>
 					</a>
@@ -32,5 +32,4 @@
 				</div>
 			</div>
 		</div>
-	</div>
 </div>
