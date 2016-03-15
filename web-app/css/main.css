@@ -3251,6 +3251,10 @@ body {
 	display: none;
 }
 
+.feed-item {
+	background-color: #fff;
+}
+
 .feed-items .feed-item {
 	box-shadow: 0 4px 5px #dddddd;
 	margin-bottom: 20px;
@@ -3292,9 +3296,8 @@ body {
 }
 
 .discussion-topic, .feed-item.sprint {
-	background-color: white;
 	color: #2d2d2d;
-	padding: 10px 7px;
+	padding: 15px;
 	font-size: 16px;
 }
 
@@ -3307,7 +3310,7 @@ body {
 }
 
 .feed-item.sprint {
-	padding: 18px 25px 20px 22px;
+	padding: 15px;
 	margin-right: 0;
 }
 
@@ -3327,10 +3330,6 @@ body {
 	color: #2d2d2d;
 	font-size: 15px;
 	font-weight: 600;
-}
-
-.discussion-header {
-	padding-left: 5px;
 }
 
 .discussion-header .dropdown {
@@ -3538,10 +3537,6 @@ body {
 	height: 24px;
 	width: auto;
 	margin-right: 10px;
-}
-
-.discussion-topic .contents {
-	padding: 6px 14px;
 }
 
 .discussion-comments-wrapper {
@@ -4410,9 +4405,7 @@ body .modal-header button {
 }
 
 .feed-item.user {
-	background-color: #fff;
-	width: 100%;
-	padding: 15px 15px;
+	padding: 15px;
 }
 
 .user-preference .container-fluid {
@@ -4469,7 +4462,7 @@ body .modal-header button {
 }
 
 .user-details-content {
-	margin: 5px 7px;
+	margin: 5px 0;
 	font-size: 12px;
 	color: #cacaca;
 }
