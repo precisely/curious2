@@ -89,7 +89,7 @@
 				{{ } }}
 				<div class="row">
 					<div class="right-content discussions-wrapper">
-						<div id="sprint-discussions" class="discussions"></div>
+						<div id="sprint-discussions" class="discussions feed-items"></div>
 					</div>
 				</div>
 			</div>

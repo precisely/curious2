@@ -367,6 +367,7 @@ function displaySearchPage() {
 }
 
 function displayDetail() {
+	$("#feed").removeClass("feed-items");
 	$(".nav").hide();
 	var hash = window.location.hash;
 
@@ -394,6 +395,8 @@ function checkAndDisplayTabData() {
 	// Make sure to remove existing infinite scroll so that feeds can be reloaded based on the new selected tab and
 	// the search filter.
 	$('#feed').infiniteScroll('stop');
+
+	$("#feed").addClass("feed-items");
 		
 	// If no "hash" is specified or hash is empty
 	if (!window.location.hash) {

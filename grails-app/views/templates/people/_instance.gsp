@@ -1,5 +1,6 @@
-<div class="people-wrapper">
+<div class="feed-item user">
 	<div class="user-details-header">
+		<img src="/images/feed/people.png" class="helper-icon" />
 		<a href="/home/social#people/{{- user.hash }}">
 			<img src="{{- user.avatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 			<span class="username">{{- user.nameInfo }}</span>
