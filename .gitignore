@@ -12,6 +12,7 @@
 /cobertura.ser
 /out/
 /web-app/plugins
+web-app/www
 /web-app/WEB-INF/classes
 .DS_Store
 .groovy/**
