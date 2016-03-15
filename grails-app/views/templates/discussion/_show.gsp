@@ -130,9 +130,9 @@
 							<div class="view-comment"
 								 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
 							<div class="comments media-list"></div>
-							{{ if (!disableComments || isAdmin) { }}
 								<div class="add-comment">
-									<form method="post" class="comment-form">
+									{{var isCommentAllowed = !disableComments || isAdmin }}
+									<form method="post" class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 										{{ if (notLoggedIn) { }}
 											<p>Enter your details below</p>
 
@@ -156,16 +156,18 @@
 											<input type="button" class="submitButton"
 													id="commentSubmitButton" value="submit" />
 													<!--p class="decorate">Comments must be approved, so will not appear immediately. </p> -->
-										{{ } else { }}
-											{{ if (canWrite) { }}
+										{{ } else if (canWrite) { }}
+											{{ if (isCommentAllowed) { }}
 												<input type="text" placeholder="Add Comment to this discussion..."
-														id="post-comment" name="message" required>
+													id="post-comment" name="message" required>
+											{{ } else { }}
+												<input type="text" placeholder="&#xf05e;  Comments disabled"
+													id="post-comment" name="message" required>
 											{{ } }}
 										{{ } }}
 										<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 									</form>
 								</div>
-							{{ } }}
 						</div>
 					</div>
 				</div>

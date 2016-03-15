@@ -1,10 +1,11 @@
 package us.wearecurio.controller
 
+import org.springframework.http.HttpStatus
+import us.wearecurio.exception.CreationNotAllowedException
+
 import java.text.SimpleDateFormat
 import java.text.DateFormat
 import grails.converters.JSON
-import org.springframework.transaction.annotation.Transactional	 
-import org.springframework.dao.DataIntegrityViolationException
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 import us.wearecurio.model.Model.Visibility
@@ -33,7 +34,15 @@ class DiscussionController extends LoginController {
 		}
 		Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
 		Visibility discussionVisibility = visibility ? visibility.toUpperCase() : Visibility.PUBLIC
-		discussion = discussion ?: Discussion.create(user, name, group, null, discussionVisibility)
+
+		if (!discussion) {
+			try {
+				discussion = Discussion.create(user, name, group, null, discussionVisibility)
+			} catch (CreationNotAllowedException e) {
+				respond([message: g.message(code: "discussion.creation.disabled")], HttpStatus.NOT_ACCEPTABLE)
+				return
+			}
+		}
 
 		if (discussion != null) {
 			Utils.save(discussion, true)
