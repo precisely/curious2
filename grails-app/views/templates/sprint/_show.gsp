@@ -66,6 +66,8 @@
 						<i class="nav fa fa-chevron-right fa-4x pull-right" onclick="showMoreParticipants('{{- hash }}')"></i>
 					</div>
 				</div>
+				{{ if (hasAdmin || !disableComments) { }}
+				<!-- TODO Fix indentation after merge -->
 				<div class="row">
 					<div class="right-content">
 						<div class="new-post">
@@ -86,6 +88,7 @@
 						</div>
 					</div>
 				</div>
+				{{ } }}
 				<div class="row">
 					<div class="right-content discussions-wrapper">
 						<div id="sprint-discussions" class="discussions"></div>

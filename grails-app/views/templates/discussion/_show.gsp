@@ -71,7 +71,7 @@
 											</a>
 											<ul class="dropdown-menu" role="menu">
 												<li>
-													<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}"> 
+													<a href="#" class="delete-discussion" data-discussion-hash="{{- discussionHash }}">
 														<img src="/images/x.png" width="auto" height="23">Delete
 													</a>
 												</li>
@@ -127,10 +127,11 @@
 					</div>
 					<div class="commentList">
 						<div class="discussion-comments-wrapper">
-								<div class="view-comment"
-									 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
-								<div class="comments media-list"></div>
-								<div class="add-comment {{- disableComments ? 'hide' : ''}}">
+							<div class="view-comment"
+								 data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
+							<div class="comments media-list"></div>
+							{{ if (!disableComments || isAdmin) { }}
+								<div class="add-comment">
 									<form method="post" class="comment-form">
 										{{ if (notLoggedIn) { }}
 											<p>Enter your details below</p>
@@ -164,7 +165,7 @@
 										<input type="hidden" name="discussionHash" value="{{- discussionHash }}">
 									</form>
 								</div>
-							</div>
+							{{ } }}
 						</div>
 					</div>
 				</div>

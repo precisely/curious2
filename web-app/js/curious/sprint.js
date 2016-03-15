@@ -99,7 +99,7 @@ function sprintShow(hash) {
 				sprintInstance.lines = sprintInstance.description.split("\n");
 				var compiledHTML = compileTemplate("_showSprints", sprintInstance);
 				$('#feed').html(compiledHTML);
-				$('.new-post').toggle(!sprintInstance.disableComments);
+
 				showDiscussionData(data.discussions, sprintInstance.hash);
 				$('#participants-list ul>li>ul').infiniteScroll({
 					bufferPx: 15,
@@ -216,6 +216,7 @@ $(document).ready(function() {
 	$(document).on("change", "#disable-sprint-comments", function() {
 		var disabled = $(this).is(":checked");
 
+
 		var params = {
 			id: $('#sprintIdField').val(),
 			disable: disabled
@@ -227,7 +228,6 @@ $(document).ready(function() {
 					return;
 				}
 
-				$(".new-post").toggle(!disabled)
 			});
 	});
 

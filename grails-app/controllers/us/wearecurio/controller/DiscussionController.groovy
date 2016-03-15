@@ -18,8 +18,8 @@ class DiscussionController extends LoginController {
 	}
 
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
-		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility
-		def user = sessionUser()
+		User user = sessionUser()
+		log.debug "$user creating new discussion $params"
 		UserGroup group = null
 		
 		if (params.group) {

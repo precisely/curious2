@@ -128,7 +128,7 @@ class Discussion {
 	
 	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime + ", visibility: " + visibility
-		Discussion discussion = null
+		Discussion discussion
 		
 		if (group == null) {
 			discussion = new Discussion(user, name, createTime, visibility)
@@ -140,11 +140,11 @@ class Discussion {
             discussion.addFollower(user.id, true)
             
 			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
-			            
+
 			return discussion
 		}
-		
-		if (group.hasWriter(user)) {
+
+		if (group.hasAdmin(user) || (!group.isReadOnly && group.hasWriter(user))) {
 			discussion = new Discussion(user, name, createTime, visibility)
 			Utils.save(discussion, true)
 			group.addDiscussion(discussion)
@@ -165,9 +165,8 @@ class Discussion {
 		if (!UserGroup.canAdminDiscussion(user, discussion)) {
 			return [success: false, message: "You don't have the right to modify this discussion."]
 		}
-		def discussionId = discussion.id
-		
-		String message = ""
+
+		String message
 		if (discussion.disableComments(disable)) {
 			message = "Discussion comments disabled."
 		} else {
@@ -456,16 +455,28 @@ class Discussion {
 		if (disableComments) return null
 		return createPost(user, null, message, createTime)
 	}
-	
-	def createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
+
+	/**
+	 * Check if the commenting is allowed in the current discussion by checking field {#disableComments disableComments}
+	 * is either true and the user can not admin the discussion.
+	 * @param author Instance of user who is trying to add a comment
+	 * @return True or false based on the above description.
+     */
+	boolean isCommentingAllowed(User author) {
+		return !disableComments || UserGroup.canAdminDiscussion(author, this)
+	}
+
+	DiscussionPost createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", createTime:" + createTime
 		if (disableComments) return null
 		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment, createTime)
 	}
-	
-	def createPost(User author, Long plotDataId, String comment, Date createTime = null) {
+
+	DiscussionPost createPost(User author, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + ", createTime:" + createTime
-		if (disableComments) return null
+		if (!isCommentingAllowed(author)) {
+			return null
+		}
 		if (createTime == null) createTime = new Date()
 		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, createTime)
 		Utils.save(this, true) // write new updated state
@@ -495,7 +506,7 @@ class Discussion {
 			UserActivity.ObjectType.DISCUSSION_POST,
 			post.id
 		)
-				
+
 		return post
 	}
 	

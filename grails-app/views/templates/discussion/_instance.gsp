@@ -71,9 +71,8 @@
 	<div class="discussion-comments-wrapper hide">
 		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
 		<div class="comments media-list"></div>
-
-			<!-- Fix indentation after merge -->
-			<div class="add-comment {{- discussionData.disableComments ? 'hide' : ''}}">
+		{{ if (discussionData.isAdmin || !discussionData.disableComments) { }}
+			<div class="add-comment">
 				<form class="comment-form">
 					{{ if (false) { }}
 						<p>Enter your details below</p>
@@ -99,6 +98,6 @@
 					<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 				</form>
 			</div>
-
+		{{ } }}
 	</div>
 </div>

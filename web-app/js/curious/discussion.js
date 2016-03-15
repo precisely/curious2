@@ -219,14 +219,13 @@ $(document).ready(function() {
 			disable: disabled
 		};
 
-		queueJSON('Adding Comment', '/api/discussion/action/disableComments', params,
+		queueJSON('Disallowing commenting', '/api/discussion/action/disableComments', params,
 			function(data) {
 				if (!checkData(data)) {
 					return;
 				}
 
 				displayFlashMessage();
-				$(".add-comment").toggle(!disabled);
 			});
 	});
 });

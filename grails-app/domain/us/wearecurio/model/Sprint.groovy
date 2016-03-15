@@ -389,10 +389,10 @@ class Sprint {
 	}
 	
 	void addDiscussion(Discussion discussion) {
-		if (hasDiscussion(discussion)) return null
-		
-		if (disableComments) return null
-		
+		if (hasDiscussion(discussion)) return
+
+		if (disableComments) return
+
 		fetchUserGroup()?.addDiscussion(discussion)
 		UserActivity.create(
 			null,
@@ -406,7 +406,7 @@ class Sprint {
 	}
 	
 	void removeDiscussion(Discussion discussion) {
-		if (!hasDiscussion(discussion)) return null
+		if (!hasDiscussion(discussion)) return
 		
 		fetchUserGroup()?.removeDiscussion(discussion)
 		UserActivity.create(
