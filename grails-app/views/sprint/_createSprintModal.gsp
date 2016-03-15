@@ -26,9 +26,9 @@
 						</div>
 						<div class="col-md-6">
 							<label class="">PRIVACY</label>
-							<input type="radio" class="radio-open" name="visibility" id="open" value="${Visibility.PUBLIC}">
+							<input type="radio" class="radio-open" name="visibility" id="open" value="${Visibility.PUBLIC.name()}">
 							<label for="open" class="radio-label">Open</label>
-							<input type="radio" class="radio-closed" name="visibility" id="closed" value="${Visibility.PRIVATE}" checked>
+							<input type="radio" class="radio-closed" name="visibility" id="closed" value="${Visibility.PRIVATE.name()}" checked>
 							<label for="closed" class="radio-label">Closed</label>
 						</div>
 					</div>

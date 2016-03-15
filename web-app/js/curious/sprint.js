@@ -216,7 +216,6 @@ $(document).ready(function() {
 	$(document).on("change", "#disable-sprint-comments", function() {
 		var disabled = $(this).is(":checked");
 
-
 		var params = {
 			id: $('#sprintIdField').val(),
 			disable: disabled

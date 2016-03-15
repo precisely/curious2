@@ -691,7 +691,8 @@ class Sprint {
 			created: this.created,
 			updated: this.updated,
 			disableComments: this.disableComments,
-			type: "spr"
+			type: "spr",
+			visibility: this.visibility
 		]
 	}
 	
