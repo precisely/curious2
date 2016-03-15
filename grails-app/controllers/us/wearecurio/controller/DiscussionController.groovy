@@ -19,18 +19,14 @@ class DiscussionController extends LoginController {
 	}
 
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
-		User user = sessionUser()
-		log.debug "$user creating new discussion $params"
-		UserGroup group = null
-		
-		if (params.group) {
-			group = Discussion.loadGroup(params.group, user)
+		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility
+		def user = sessionUser()
+		UserGroup group = Discussion.loadGroup(params.group, user)
 
-			if (!group) {
-				log.debug "Failure: cannot post to this group"
-				renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
-				return
-			}
+		if (!group) {
+			log.debug "Failure: cannot post to this group"
+			renderJSONPost([success: false, message: "Failed to create new discussion topic: can't post to this group"])
+			return
 		}
 		Discussion discussion = Discussion.loadDiscussion(id, plotDataId, user)
 		Visibility discussionVisibility = visibility ? visibility.toUpperCase() : Visibility.PUBLIC
