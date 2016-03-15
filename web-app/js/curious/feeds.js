@@ -513,7 +513,7 @@ $(document).ready(function() {
 
 			// See base.js for implementation details of $.serializeObject()
 			var params = $('#create-discussion').serializeObject();
-			params.name = data.name
+			params.name = data.name;
 			params.discussionPost = data.post;
 
 			queuePostJSON('Creating discussion', '/api/discussion', getCSRFPreventionObject('createDiscussionDataCSRF', params),
@@ -525,7 +525,10 @@ $(document).ready(function() {
 					$('#create-discussion')[0].reset();
 				}
 			}, function(xhr) {
-				console.log('Internal server error');
+				console.log('Internal server error', xhr);
+				if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+					showAlert(xhr.responseJSON.message);
+				}
 			});
 
 			return false;

@@ -1,6 +1,8 @@
 package us.wearecurio.controller
 
 import grails.converters.JSON
+import org.springframework.http.HttpStatus
+import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.model.*
 import us.wearecurio.utility.*
 
@@ -46,7 +48,13 @@ class DiscussionPostController extends LoginController{
 		}
 
 		User user = sessionUser()
-		def comment = DiscussionPost.createComment(params.message, user, discussion, params.plotIdMessage, params)
+		def comment
+		try {
+			comment = DiscussionPost.createComment(params.message, user, discussion, params.plotIdMessage, params)
+		} catch (CreationNotAllowedException e) {
+			respond([message: g.message(code: "discussion.comment.disabled")], HttpStatus.NOT_ACCEPTABLE)
+			return
+		}
 
 		// If user does not have permission to add comment response will be 'false'
 		if (comment instanceof String) {

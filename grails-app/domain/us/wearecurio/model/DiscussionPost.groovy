@@ -2,7 +2,7 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
-
+import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.utility.Utils
 import grails.converters.*
 import us.wearecurio.model.Model.Visibility
@@ -217,7 +217,8 @@ class DiscussionPost {
 		return true
 	}
 	
-	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params) {
+	static def createComment(String message, User user, Discussion discussion, Long plotIdMessage, Map params)
+			throws CreationNotAllowedException {
 		return Discussion.withTransaction {
 			if (!UserGroup.canWriteDiscussion(user, discussion)) {
 				return "No permissions"

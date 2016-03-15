@@ -1,6 +1,6 @@
 <div class="people-wrapper">
 	<div class="user-details-header">
-		<a href="#people/{{- user.hash }}">
+		<a href="/home/social#people/{{- user.hash }}">
 			<img src="{{- user.avatarURL || '/images/avatar.png' }}" alt="avatar" class="avatar img-circle">
 			<span class="username">{{- user.nameInfo }}</span>
 		</a>

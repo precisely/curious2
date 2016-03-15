@@ -1,5 +1,6 @@
 package us.wearecurio.controller
 import grails.converters.JSON
+import org.springframework.http.HttpStatus
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
@@ -48,6 +49,11 @@ class LoginController extends SessionController {
 		debug "LoginController.execLogout()"
 		
 		return securityService.logout()
+	}
+
+	protected def respond(Map data, HttpStatus status) {
+		response.status = status.value()
+		render(data as JSON)
 	}
 	
 	protected def renderJSONPost(data) {

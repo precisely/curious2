@@ -187,14 +187,20 @@ $(document).ready(function() {
 			if (!checkData(data)) {
 				return;
 			}
-
+			if (!data.success) {
+				showAlert(data.message);
+				return;
+			}
 			renderComments(params.discussionHash, [data.post], data, true);
 			$form[0].reset();
 			var discussionElement = getDiscussionElement(params.discussionHash);
 			var currentOffset = discussionElement.data('offset') || maxCommentsPerDiscussion;
 			discussionElement.data('offset', ++currentOffset);
-		}, function() {
+		}, function(xhr) {
 			console.log('Internal server error');
+			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+				showAlert(xhr.responseJSON.message);
+			}
 		});
 
 		return false;
@@ -219,14 +225,13 @@ $(document).ready(function() {
 			disable: disabled
 		};
 
-		queueJSON('Adding Comment', '/api/discussion/action/disableComments', params,
+		queueJSON('Disallowing commenting', '/api/discussion/action/disableComments', params,
 			function(data) {
 				if (!checkData(data)) {
 					return;
 				}
 
 				displayFlashMessage();
-				$(".add-comment").toggle(!disabled);
 			});
 	});
 });

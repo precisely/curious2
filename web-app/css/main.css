@@ -3257,6 +3257,11 @@ body {
 	margin-right: 7px;
 }
 
+.comment-disabled input[type=text] {
+	pointer-events: none;
+	font-family: 'Open Sans', sans, sans-serif, 'FontAwesome';
+}
+
 .discussion-topic, .feed-item .sprint {
 	background-color: white;
 	color: #2d2d2d;

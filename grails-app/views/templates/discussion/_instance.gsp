@@ -71,10 +71,10 @@
 	<div class="discussion-comments-wrapper hide">
 		<div class="view-comment" data-discussion-hash="{{- discussionData.hash}}">VIEW MORE COMMENTS</div>
 		<div class="comments media-list"></div>
-
-			<!-- Fix indentation after merge -->
-			<div class="add-comment {{- discussionData.disableComments ? 'hide' : ''}}">
-				<form class="comment-form">
+		{{var isCommentAllowed = discussionData.isAdmin || !discussionData.disableComments}}
+			<!-- TODO Fix indentation after merge -->
+			<div class="add-comment">
+				<form class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 					{{ if (false) { }}
 						<p>Enter your details below</p>
 						<div>
@@ -94,11 +94,14 @@
 						<input type="button" class="submitButton" id="commentSubmitButton" value="submit" />
 						<!--p class="decorate">Comments must be approved, so will not appear immediately. </p-->
 					{{ } else { }}
-						<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required autofocus>
+						{{ if (isCommentAllowed) { }}
+							<input type="text" placeholder="Add Comment..." id="post-comment" name="message" required autofocus>
+						{{ } else { }}
+							<input type="text" placeholder="&#xf05e;  Comments disabled" id="post-comment" name="message" required>
+						{{ } }}
 					{{ } }}
 					<input type="hidden" name="discussionHash" value="{{- discussionData.hash }}">
 				</form>
 			</div>
-
 	</div>
 </div>

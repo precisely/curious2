@@ -1,6 +1,7 @@
 package us.wearecurio.model
 
 import org.apache.commons.logging.LogFactory
+import us.wearecurio.exception.CreationNotAllowedException
 import us.wearecurio.hashids.DefaultHashIDGenerator
 import us.wearecurio.model.Model.Visibility
 import us.wearecurio.services.DatabaseService
@@ -110,64 +111,55 @@ class Discussion {
 	private static createUserActivity(Long userId, UserActivity.ActivityType activityType, Long objectId) {
 		UserActivity.create(userId, activityType, UserActivity.ObjectType.DISCUSSION, objectId)
 	}
-	
+
 	static Discussion create(User user, String name, Visibility visibility = Visibility.PUBLIC) {
+		return create(user, name, new Date(), visibility)
+	}
+
+	static Discussion create(User user, String name, Date createTime, Visibility visibility = Visibility.PUBLIC) {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", visibility: " + visibility
-		def discussion = new Discussion(user, name, new Date(), visibility)
+		Discussion discussion = new Discussion(user, name, createTime, visibility)
 
 		Utils.save(discussion, true)
-		
-        user.addOwnedDiscussion(discussion.id)
-        discussion.createVirtualObjects()
-        discussion.addFollower(user.id, true)
-        
+
+		user.addOwnedDiscussion(discussion.id)
+		discussion.createVirtualObjects()
+		discussion.addFollower(user.id, true)
+
 		createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id )
-		
+
 		return discussion
 	}
-	
-	static Discussion create(User user, String name, UserGroup group, Date createTime = null, Visibility visibility = Visibility.PUBLIC) {
+
+	static Discussion create(User user, String name, UserGroup group, Date createTime = null,
+				Visibility visibility = Visibility.PUBLIC) throws CreationNotAllowedException {
 		log.debug "Discussion.create() userId:" + user?.getId() + ", name:" + name + ", group:" + group + ", createTime:" + createTime + ", visibility: " + visibility
-		Discussion discussion = null
-		
-		if (group == null) {
-			discussion = new Discussion(user, name, createTime, visibility)
-			
-			Utils.save(discussion, true)
-			
-            user.addOwnedDiscussion(discussion.id)
-            discussion.createVirtualObjects()
-            discussion.addFollower(user.id, true)
-            
-			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
-			            
-			return discussion
+
+		if (!group) {
+			return create(user, name, createTime, visibility)
 		}
-		
-		if (group.hasWriter(user)) {
-			discussion = new Discussion(user, name, createTime, visibility)
-			Utils.save(discussion, true)
-			group.addDiscussion(discussion)
-			group.updateWriter(user)
-            discussion.createVirtualObjects()
-            user.addOwnedDiscussion(discussion.id)
-            discussion.addFollower(user.id, true)
+
+		/*
+		 * Only allow creating a discussion if the author is admin of the group or the author has write permission to
+		 * the group and the group is not read only.
+		 */
+		if (!group.hasAdmin(user) && (group.isReadOnly || !group.hasWriter(user))) {
+			throw new CreationNotAllowedException()
 		}
-		
-		if (discussion != null) {
-			createUserActivity(user.id, UserActivity.ActivityType.CREATE, discussion.id)
-		}
-		
+
+		Discussion discussion = create(user, name, createTime, visibility)
+		group.addDiscussion(discussion)
+		group.updateWriter(user)
+
 		return discussion
 	}
-	
+
 	static Map disableComments(Discussion discussion, User user, boolean disable) {
 		if (!UserGroup.canAdminDiscussion(user, discussion)) {
 			return [success: false, message: "You don't have the right to modify this discussion."]
 		}
-		def discussionId = discussion.id
-		
-		String message = ""
+
+		String message
 		if (discussion.disableComments(disable)) {
 			message = "Discussion comments disabled."
 		} else {
@@ -456,16 +448,30 @@ class Discussion {
 		if (disableComments) return null
 		return createPost(user, null, message, createTime)
 	}
-	
-	def createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
+
+	/**
+	 * Check if the commenting is allowed in the current discussion by checking field {#disableComments disableComments}
+	 * is either true and the user can not admin the discussion.
+	 * @param author Instance of user who is trying to add a comment
+	 * @return True or false based on the above description.
+	 */
+	boolean isCommentingAllowed(User author) {
+		return !disableComments || UserGroup.canAdminDiscussion(author, this)
+	}
+
+	DiscussionPost createPost(String name, String email, String site, Long plotDataId, String comment, Date createTime = null) {
 		log.debug "Discussion.createPost() name:" + name + ", email:" + email + ", plotDataId:" + plotDataId + ", comment:'" + comment + "'" + ", createTime:" + createTime
 		if (disableComments) return null
 		return createPost(User.lookupOrCreateVirtualEmailUser(name, email, site), plotDataId, comment, createTime)
 	}
-	
-	def createPost(User author, Long plotDataId, String comment, Date createTime = null) {
+
+	DiscussionPost createPost(User author, Long plotDataId, String comment, Date createTime = null)
+			throws CreationNotAllowedException {
 		log.debug "Discussion.createPost() author:" + author + ", plotDataId:" + plotDataId + ", comment:'" + comment + ", createTime:" + createTime
-		if (disableComments) return null
+		if (!isCommentingAllowed(author)) {
+			throw new CreationNotAllowedException()
+		}
+
 		if (createTime == null) createTime = new Date()
 		DiscussionPost post = DiscussionPost.create(this, author.getId(), plotDataId, comment, createTime)
 		Utils.save(this, true) // write new updated state
@@ -495,7 +501,7 @@ class Discussion {
 			UserActivity.ObjectType.DISCUSSION_POST,
 			post.id
 		)
-				
+
 		return post
 	}
 	
