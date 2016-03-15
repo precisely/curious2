@@ -216,8 +216,12 @@ class UserController extends LoginController {
 
 	def getGroupsToShare() {
 		debug "UserController.getGroupsToShare()"
-		List groups = UserGroup.getConcreteGroupsForWriter(sessionUser())
-
-		renderJSONGet([groups: groups, success: true])
+		User user = sessionUser()
+		
+		UserGroup defaultGroup = UserGroup.getDefaultGroupForUser(user)
+		
+		List groups = UserGroup.getConcreteGroupsForWriter(user)
+		
+		renderJSONGet([groups: groups.findAll { it.id != defaultGroup.id }, success: true])
 	}
 }

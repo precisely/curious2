@@ -1050,7 +1050,7 @@ class DataController extends LoginController {
 		if (params.group) {
 			if (params.group == Visibility.PRIVATE.name()) {
 				visibility = Visibility.PRIVATE
-			} else if (params.group != Visibility.PUBLIC.name()) {
+			} else {
 				group = Discussion.loadGroup(params.group, user)
 
 				if (!group) {
