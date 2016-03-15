@@ -1051,7 +1051,10 @@ class DataController extends LoginController {
 			if (params.group == Visibility.PRIVATE.name()) {
 				visibility = Visibility.PRIVATE
 			} else {
-				group = Discussion.loadGroup(params.group, user)
+				String groupName = params.group
+				if (groupName == Visibility.PUBLIC.name())
+					groupName = null
+				group = Discussion.loadGroup(groupName, user)
 
 				if (!group) {
 					renderJSONPost([success: false, message: g.message(code: "default.permission.denied")])
