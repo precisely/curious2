@@ -233,11 +233,18 @@ function initializeListing() {
 function processResults(data) {
 	var parentElement;
 
-	if (window.location.hash === "#discussions") {
-		//special handling for discussions social page
+	if (window.location.hash === "#discussions" || isSocialGSP) {
+		/*
+		 * Adding "Create discussion" form on every sub tab of the social page and the discussions tab in the
+		 * social page and search results.
+		 */
 		var createDiscussionForm = compileTemplate("_createDiscussionForm", {groupName: data.groupName});
-		$("#feed").html(createDiscussionForm).append('<div class="discussions"></div>');
-		parentElement = ".discussions";
+		$("#feed").html(createDiscussionForm);
+		if (window.location.hash === "#discussions") {
+			//special handling for discussions tab.
+			$("#feed").append('<div class="discussions"></div>');
+			parentElement = ".discussions";
+		}
 	} else {
 		$("#feed").html("");      // Remove spinner
 	}
@@ -525,7 +532,10 @@ $(document).ready(function() {
 					return;
 				if (data.success) {
 					addAllFeedItems({listItems: [data.discussion]}, '.discussions', true);
-					$('#create-discussion')[0].reset();
+					var $discussionForm = $('#create-discussion')[0];
+					if ($discussionForm) {
+						$discussionForm.reset();
+					}
 				}
 			}, function(xhr) {
 				console.log('Internal server error', xhr);
