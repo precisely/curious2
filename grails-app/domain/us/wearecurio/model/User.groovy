@@ -47,6 +47,7 @@ class User {
 	UFile avatar
 	private String avatarURL
 	boolean isVerified = false
+	VerificationStatus emailVerified = VerificationStatus.UNVERIFIED
 	
 	static transients = ['avatarURL']
 
@@ -905,5 +906,20 @@ class User {
 		} else {
 			return [status: true, message: "User preferences updated", hash: user.hash]
 		}
+	}
+}
+
+enum VerificationStatus {
+	UNVERIFIED(1),
+	VERIFIED(2),
+	BANNED(3)
+
+	final int id
+	VerificationStatus(int id) {
+		this.id = id
+	}
+
+	String toString() {
+		return "${this.name()}($this.id)"
 	}
 }
