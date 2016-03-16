@@ -140,7 +140,7 @@
 										data-discussion-hash="{{- discussionHash }}">VIEW MORE COMMENTS</div>
 								{{ } }}
 							<div class="comments media-list"></div>
-								<div class="add-comment {{- disableComments && (!isAdmin) ? 'hide' : ''}}">
+								<div class="add-comment">
 									{{var isCommentAllowed = !disableComments || isAdmin }}
 									<form method="post" class="comment-form {{- isCommentAllowed ? '' : 'comment-disabled' }}">
 										{{ if (notLoggedIn) { }}
