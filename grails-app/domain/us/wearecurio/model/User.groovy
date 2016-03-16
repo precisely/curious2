@@ -765,7 +765,8 @@ class User {
 			created: created,
 			type: "usr",
 			closedExplanationCardCuriousities: settings.hasClosedCuriositiesExplanation(),
-			closedExplanationCardTrackathon: settings.hasClosedTrackathonExplanation()
+			closedExplanationCardTrackathon: settings.hasClosedTrackathonExplanation(),
+			hasVisitedTrackathon: settings.hasVisitedTrackathon()
 		];
 	}
 
