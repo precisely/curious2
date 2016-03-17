@@ -5,7 +5,7 @@ import groovy.transform.AutoClone
 import us.wearecurio.utility.Utils
 
 @AutoClone
-class CustomLogin {
+class InitialLoginConfiguration {
 
 	static final String DEFAULT_PROMO_CODE = "default"
 	
@@ -36,49 +36,49 @@ class CustomLogin {
 	List interestTags
 	List bookmarks
 	
-	static CustomLogin defaultCustomLogin() {
-		CustomLogin defaultCustomization = CustomLogin.findByPromoCode(DEFAULT_PROMO_CODE)
+	static InitialLoginConfiguration defaultConfiguration() {
+		InitialLoginConfiguration ret = InitialLoginConfiguration.findByPromoCode(DEFAULT_PROMO_CODE)
 		
-		if (defaultCustomization == null) {
-			defaultCustomization = new CustomLogin()
-			defaultCustomization.promoCode = DEFAULT_PROMO_CODE
-			defaultCustomization.customQuestion1 = "Does caffeine affect my sleep?"
-			defaultCustomization.customQuestion2 = "Does exercise really affect my mood?"
-			defaultCustomization.trackExample1 = "your mood"
-			defaultCustomization.trackExample2 = "how much sleep you get"
-			defaultCustomization.trackExample3 = "the coffee you drink"
-			defaultCustomization.deviceExample = "the Oura ring (via your user profile)"
-			defaultCustomization.sampleQuestionDuration = "How many hours did you sleep last night?"
-			defaultCustomization.sampleQuestionDurationExampleAnswers = "e.g. 8 hours 10 minutes or 8hrs 10 mins"
-			defaultCustomization.sampleQuestionRating = "How's your mood right now?"
-			defaultCustomization.sampleQuestionRatingRange = "a number from 1 to 10"
-			defaultCustomization.sampleQuestionRatingExampleAnswer1 = "1 would mean 'Not the best day'"
-			defaultCustomization.sampleQuestionRatingExampleAnswer2 = "2>5 would mean 'Just so-so'"
-			defaultCustomization.sampleQuestionRatingExampleAnswer3 = "3>10 would mean 'Super stoked'"
-			defaultCustomization.today1 = "DRINK"
-			defaultCustomization.today1Example = "e.g. coffee 1 cup 8am"
-			defaultCustomization.today2 = "EXERCISE"
-			defaultCustomization.today2Example = "e.g. walk 9500 steps"
-			defaultCustomization.today3 = "WORK"
-			defaultCustomization.today3Example = "e.g. work 7 hours 30 minutes"
-			defaultCustomization.today4 = "SUPPLEMENTS"
-			defaultCustomization.today4Example = "e.g. aspirin 400 mg, or vitamin c 200 mg"
+		if (ret == null) {
+			ret = new InitialLoginConfiguration()
+			ret.promoCode = DEFAULT_PROMO_CODE
+			ret.customQuestion1 = "Does caffeine affect my sleep?"
+			ret.customQuestion2 = "Does exercise really affect my mood?"
+			ret.trackExample1 = "your mood"
+			ret.trackExample2 = "how much sleep you get"
+			ret.trackExample3 = "the coffee you drink"
+			ret.deviceExample = "the Oura ring (via your user profile)"
+			ret.sampleQuestionDuration = "How many hours did you sleep last night?"
+			ret.sampleQuestionDurationExampleAnswers = "e.g. 8 hours 10 minutes or 8hrs 10 mins"
+			ret.sampleQuestionRating = "How's your mood right now?"
+			ret.sampleQuestionRatingRange = "a number from 1 to 10"
+			ret.sampleQuestionRatingExampleAnswer1 = "1 would mean 'Not the best day'"
+			ret.sampleQuestionRatingExampleAnswer2 = "2>5 would mean 'Just so-so'"
+			ret.sampleQuestionRatingExampleAnswer3 = "3>10 would mean 'Super stoked'"
+			ret.today1 = "DRINK"
+			ret.today1Example = "e.g. coffee 1 cup 8am"
+			ret.today2 = "EXERCISE"
+			ret.today2Example = "e.g. walk 9500 steps"
+			ret.today3 = "WORK"
+			ret.today3Example = "e.g. work 7 hours 30 minutes"
+			ret.today4 = "SUPPLEMENTS"
+			ret.today4Example = "e.g. aspirin 400 mg, or vitamin c 200 mg"
 			
-			defaultCustomization.interestTags = ["sleep"]
-			defaultCustomization.bookmarks = ["sleep 8 hours"]
+			ret.interestTags = ["sleep"]
+			ret.bookmarks = ["sleep 8 hours"]
 			
-			Utils.save(defaultCustomization, true)
+			Utils.save(ret, true)
 		}
 		
-		return defaultCustomization
+		return ret
 	}
 	
 	
-	static CustomLogin createFromDefault() {
-		CustomLogin ret = defaultCustomLogin().clone()
+	static InitialLoginConfiguration createFromDefault() {
+		InitialLoginConfiguration ret = defaultConfiguration().clone()
 		
 		if (ret == null) {
-			ret = new CustomLogin()
+			ret = new InitialLoginConfiguration()
 		} else {
 			ret.promoCode = ""
 		}
@@ -86,8 +86,8 @@ class CustomLogin {
 		return ret
 	}
 	
-	static CustomLogin createFromDefault(String promoCode, boolean save=false) {
-		CustomLogin ret = createFromDefault()
+	static InitialLoginConfiguration createFromDefault(String promoCode, boolean save=false) {
+		InitialLoginConfiguration ret = createFromDefault()
 		
 		ret.promoCode = promoCode
 		if (save) {
