@@ -166,9 +166,12 @@ $(document).ready(function() {
 				} else {
 					showAlert(data.message);
 				}
-			}, function() {
-				showAlert('Internal server error occurred.');
-			}, null, httpArgs);
+			}, function(xhr) {
+					console.log('Internal server error', xhr);
+					if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+						showAlert(xhr.responseJSON.message);
+					}
+				}, null, httpArgs);
 		});
 		return false;
 	});

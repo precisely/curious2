@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
+import us.wearecurio.model.VerificationStatus
 import us.wearecurio.services.EmailService
 import us.wearecurio.utility.Utils
 /**
@@ -297,7 +298,7 @@ class LoginController extends SessionController {
 		debug "LoginController.verify()"
 		
 		PasswordRecovery verification = PasswordRecovery.lookVerification(params.code)
-		
+
 		if (verification == null) {
 			flash.message = "Invalid or expired email verification link, please try again"
 		
@@ -319,6 +320,7 @@ class LoginController extends SessionController {
 		PasswordRecovery.delete(verification)
 		
 		primeUser.isVerified = true
+		primeUser.emailVerified = VerificationStatus.VERIFIED
 		Utils.save(primeUser, true)
 		
 		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + primeUser.username

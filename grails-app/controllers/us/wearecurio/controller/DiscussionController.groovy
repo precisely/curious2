@@ -1,6 +1,7 @@
 package us.wearecurio.controller
 
 import org.springframework.http.HttpStatus
+import us.wearecurio.annotations.EmailVerificationRequired
 import us.wearecurio.exception.CreationNotAllowedException
 
 import java.text.SimpleDateFormat
@@ -18,6 +19,7 @@ class DiscussionController extends LoginController {
 	def index() {
 	}
 
+	@EmailVerificationRequired
 	def save(Long plotDataId, String name, Long id, String discussionPost, String visibility) {
 		log.debug "saving plotDataId:" + plotDataId + ", name:" + name + ", id:" + id + ", visibility:" + visibility
 		def user = sessionUser()

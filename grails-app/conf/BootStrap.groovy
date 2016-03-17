@@ -2,6 +2,7 @@ import grails.converters.JSON
 import grails.util.Environment
 
 import org.joda.time.DateTimeZone
+import us.wearecurio.filters.EmailVerificationCheckFilters
 import us.wearecurio.thirdparty.withings.IntraDayDataThread
 
 import us.wearecurio.server.BackgroundTask
@@ -47,6 +48,8 @@ class BootStrap {
 		DataRetriever.setDatabaseService(databaseService)
 		
 		UnitGroupMap.initialize()
+
+		EmailVerificationCheckFilters.populateEmailVerificationEndpoints()
 		
 		migrationService.doMigrations()
 		JSON.registerObjectMarshaller(new EnumMarshaller())
