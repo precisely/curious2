@@ -1,6 +1,7 @@
 package us.wearecurio.controller
 import grails.converters.JSON
 import org.springframework.http.HttpStatus
+import us.wearecurio.model.InitialLoginConfiguration
 import us.wearecurio.model.PasswordRecovery
 import us.wearecurio.model.PushNotificationDevice
 import us.wearecurio.model.User
@@ -468,6 +469,25 @@ class LoginController extends SessionController {
 			if (p.metaTagName3 && p.metaTagValue3) {
 				user.addMetaTag(p.metaTagName3, p.metaTagValue3)
 			}
+			
+			String promo = p.promo_code?.trim().toLowerCase()
+			InitialLoginConfiguration promoLogin
+			if( promo != null && promo != "") {
+				promoLogin = InitialLoginConfiguration.findByPromoCode(promo)
+				if (promoLogin == null) {
+					flash.message = "'$promo' is an invalid promo code"
+				} else {
+					flash.message = "registered with promo code:'$promo'"
+				}
+			} else {
+				flash.message = "registered without promo code"
+			}
+			if (promoLogin == null) {
+				promoLogin = InitialLoginConfiguration.createFromDefault()
+			}
+			promoLogin.interestTags?.each{user.addInterestTag(Tag.create(it))}
+			promoLogin.bookmarks?.each{Entry.addBookmark(user.id,it)}
+			
 			//check promo code
 			//if value, lookup
 			//  if found, use values from db
@@ -478,7 +498,7 @@ class LoginController extends SessionController {
 			//  flash.message = no promocode specified, using default
 			//add interesttags (same as metaTag above? Investigate.)
 			//add bookmarks
-			//add CustomLogin object to params
+			//add InitialLoginConfiguration object to params
 			setLoginUser(user)
 			execVerifyUser(user)
 			retVal['success'] = true
