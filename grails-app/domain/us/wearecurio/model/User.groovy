@@ -46,7 +46,6 @@ class User {
 	UserSettings settings = new UserSettings()
 	UFile avatar
 	private String avatarURL
-	boolean isVerified = false
 	VerificationStatus emailVerified = VerificationStatus.UNVERIFIED
 	
 	static transients = ['avatarURL']
@@ -920,6 +919,6 @@ enum VerificationStatus {
 	}
 
 	String toString() {
-		return "${this.name()}($this.id)"
+		return "${this.name()}(${this.id})"
 	}
 }

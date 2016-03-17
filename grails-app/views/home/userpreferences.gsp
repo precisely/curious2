@@ -256,7 +256,6 @@ function editUserDetails() {
 										<label for="private1" class="radio-private-label">Don't email me when someone comments</label>
 									</div>
 									<div>
-										<br/><g:link action="dosendverify" class="basic-text">Resend verification email</g:link><br>
 									</div>
 								</div>
 
@@ -307,6 +306,11 @@ function editUserDetails() {
 										</g:else>
 										<br>
 									</oauth:checkSubscription>
+								</div>
+								<div class="form-group">
+									<g:if test="${user.emailVerified == us.wearecurio.model.VerificationStatus.UNVERIFIED}">
+										<g:link action="dosendverify" class="basic-text">Resend verification email</g:link>
+									</g:if>
 								</div>
 							</div>
 						</div>

@@ -31,7 +31,7 @@ function wrapPagination() {
 }
 
 function showAlert(alertText, onAlertClose) {
-	$messageTextDialog.text(alertText);
+	$messageTextDialog.html(alertText);
 	$messageDialog.dialog({
 		dialogClass: "no-close",
 		modal: false,

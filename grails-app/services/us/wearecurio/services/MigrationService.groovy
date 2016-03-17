@@ -68,6 +68,7 @@ class MigrationService {
 	public static final long ADD_TAG_UNIT_STATS_AGAIN = 90L
 	public static final long SHARED_TAG_GROUP = 91L
 	public static final long MIGRATION_CODES = 92L
+	public static final long MARK_EXISTING_USERS_VERIFIED = 93L
 	
 	SessionFactory sessionFactory
 	DatabaseService databaseService
@@ -596,6 +597,10 @@ class MigrationService {
 		}
 		tryMigration("Migrate PlotData 2") {
 			sql("ALTER TABLE `plot_data` CHANGE COLUMN `json_plot_data` `json_plot_data` MEDIUMTEXT NULL DEFAULT NULL")
+		}
+		tryMigration(MARK_EXISTING_USERS_VERIFIED) {
+			sql("alter table _user drop column is_verified")
+			sql("update _user set email_verified=2 where email_verified=0")
 		}
 	}
 	

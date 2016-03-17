@@ -18,15 +18,17 @@ class EmailVerificationCheckFilters {
     HttpServletResponse response
 
     def filters = {
-        all(controller:'*', action:'*') {
+        all(controller: '*', action: '*') {
             before = {
-                if (emailVerificationEndpoints.any {it.controller == controllerName &&
-                        (!it.actions || it.actions.contains(actionName))}) {
+                if (emailVerificationEndpoints.any {
+                    it.controller == controllerName &&
+                            (!it.actions || it.actions.contains(actionName))
+                }) {
                     User currentUserInstance = securityService.getCurrentUser()
-                    if(currentUserInstance?.emailVerified == VerificationStatus.UNVERIFIED) {
+                    if (currentUserInstance?.emailVerified == VerificationStatus.UNVERIFIED) {
                         response.status = HttpStatus.SC_NOT_ACCEPTABLE
                         render([emailVerified: VerificationStatus.UNVERIFIED, message: "You must verify your email address before you can do that, " +
-                                "please see profile to resend verification email" ] as JSON)
+                                "please see profile to resend verification email"] as JSON)
                         return false
                     }
                 }
@@ -38,22 +40,25 @@ class EmailVerificationCheckFilters {
         GrailsApplication grailsApplication = Holders.getGrailsApplication()
         emailVerificationEndpoints = []
 
-        grailsApplication.controllerClasses.each {controllerArtefact ->
+        grailsApplication.controllerClasses.each { controllerArtefact ->
             Class controllerClass = controllerArtefact.getClazz()
             String controllerName = controllerArtefact.getLogicalPropertyName()
 
             if (controllerClass.isAnnotationPresent(EmailVerificationRequired)) {
-                emailVerificationEndpoints.push([controller: controllerName, actions: []])
+                emailVerificationEndpoints.push([controller: controllerName])
             }
 
             controllerClass.methods.each { method ->
                 if (method.isAnnotationPresent(EmailVerificationRequired)) {
-                    def controllerEndpoint = emailVerificationEndpoints.find { it.controller == controllerName }
-                    if (controllerEndpoint) {
-                        controllerEndpoint.actions.push(method.name)
-                    } else {
-                        emailVerificationEndpoints.push([controller: controllerName, actions: [method.name]])
+                    Map controllerEndpoint = emailVerificationEndpoints.find { it.controller == controllerName }
+                    if (!controllerEndpoint) {
+                        controllerEndpoint = [controller: controllerName]
+                        emailVerificationEndpoints.push(controllerEndpoint)
                     }
+
+                    controllerEndpoint.actions = controllerEndpoint.actions ?: new HashSet<String>()
+
+                    controllerEndpoint.actions.add(method.name)
                 }
             }
         }

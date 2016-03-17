@@ -140,6 +140,11 @@ class LoginController extends SessionController {
 		
 		def user = execLogin()
 		if (user) {
+			if (user.emailVerified == VerificationStatus.BANNED) {
+				renderJSONGet([success:false, message: "Sorry but your Account has been Blocked for some Security Reasons. " +
+						"\nPlease contact <a style='color:#428bca' href='mailto:support@wearecurio.us'>support@wearecurio.us</a> for further details"])
+				return
+			}
 			def uuid = session.persistentSession.fetchUuid()
 			debug "Logged in, persistent session ID " + uuid
 			// TODO: mobileSessionId is deprecated, will be removed eventually
@@ -319,7 +324,6 @@ class LoginController extends SessionController {
 		
 		PasswordRecovery.delete(verification)
 		
-		primeUser.isVerified = true
 		primeUser.emailVerified = VerificationStatus.VERIFIED
 		Utils.save(primeUser, true)
 		
