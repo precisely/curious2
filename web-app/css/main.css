@@ -350,7 +350,7 @@ a, a:link,a:hover, a:visited {
 	padding-left:2px;
 }
 
-#trackmain .dropdown-menu {
+.entry-container .dropdown-menu {
 	background-color: #fff;
 	left: auto;
 	right: 10px;
@@ -1079,7 +1079,6 @@ body.tags-displayed .floating-column {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
-	width: 100%;
 	height: 505px;
 	background: url(/images/track-list-bg.png);
 }
@@ -1092,19 +1091,19 @@ body.tags-displayed .floating-column {
 	background-color: #FFFFFF;
 	border-radius: 0;
 	box-shadow: 0 1px 0 0 #E4E2E2;
+	height: 60px;
 }
 
-.swatch {
-	padding-left:20px;
-	list-style-type:square;
+#entry0 .device-summary-entry {
+	padding-left: 34px;
 }
 
-.swatch li {
-	margin:10px 0;
+#entry0 .device-tag-entry {
+	padding-left: 51px;
 }
 
-.swatch li span {
-	color:#000000;
+.device-entry, .device-summary-entry {
+	cursor: pointer;
 }
 
 .feed-body .container-fluid {
@@ -2047,9 +2046,7 @@ body.track-page #datepicker {
 body.track-page #area0 .panel-wrapper {
 	border-bottom: 0;
 }
-body.track-page ol#entry0 li.entry.ghost:not(.ui-selected) {
-	
-}
+
 .comment-label {
 	color: #C0C8C9;
 	font-size: 12px;

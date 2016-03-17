@@ -4,14 +4,15 @@ function EntryDeviceData(deviceEntries) {
 
     /* Private members start */
 
-    var groupedData = [];
+    var groupedData = {};
+    var collapsed = false;
 
     /* Private members end */
 
     /* Getters start */
 
     this.getTriangle = function () {
-        if (this.collapsed) {
+        if (collapsed) {
             return '<i class="fa fa-chevron-right"></i>';
         }
 
@@ -36,6 +37,6 @@ function EntryDeviceData(deviceEntries) {
             currentGroup.push(entry);
         });
 
-        console.log(groupedData)
+        return groupedData;
     }
 }

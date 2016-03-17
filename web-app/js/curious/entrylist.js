@@ -108,15 +108,27 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	});
 	
 	this.displayEntry = function(entry, isUpdating, args) {
-		this.entryListItems.push(entry);
+		args = args || {};
+
+		var isDeviceSummaryEntry = entry instanceof EntryDeviceDataSummary;
+		var isDeviceTagEntry = args.deviceTagEntry;     // Boolean
+
+		if (isDeviceSummaryEntry) {
+			entry = entry.group();
+		} else {
+			this.entryListItems.push(entry);
+		}
+
 		var id = entry.id;
 		var date = entry.date;
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry full-width " + ((entry.repeatType)?'' : 'no-tag') + " ";
+		var classes = "entry " + ((entry.repeatType)?'' : 'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
-		if (args && args instanceof Object) {
+
+		args = args || {};
+		if (args) {
 			if (args.replaceEntry) {
 				$entryToReplace = $(args.replaceEntry);
 			}
@@ -160,6 +172,12 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		if (isPlain) {
 			classes += " plain"
 		}
+		if (isDeviceSummaryEntry) {
+			classes += " device-summary-entry";
+		}
+		if (isDeviceTagEntry) {
+			classes += " device-tag-entry " + this.getDeviceTagEntryClass(entry);
+		}
 
 		if (isContinuous) {
 			var buttonText = escapehtml(description);
@@ -198,9 +216,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			}
 		}
 		
-		var innerHTMLContent = '<div class="content-wrapper '+ ((entry.repeatType) ? '' : 'no-tag') +'">' + (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
+		var innerHTMLContent = '<div class="content-wrapper '+ ((entry.repeatType) ? '' : 'no-tag') +'">';
+
+		if (isDeviceSummaryEntry) {
+			innerHTMLContent += '<i class="fa fa-chevron-right"></i> ';
+		}
+
+		innerHTMLContent += (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
 				+ escapehtml(description) + '</span>';
-		
+
 		var amounts = entry.amounts;
 		
 		var selectStart = null;
@@ -244,11 +268,16 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			commentLabel = '<div class="comment-label "></div>';
 		}
 
-		var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
 		innerHTMLContent += (timeAfterTag ? '<span class="entryTime">'
-				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel +
-			'<button class="edit">Edit</button><button class="save save-entry hide">Save Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
-			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
+				+ escapehtml(dateStr) + '</span>' : '') + commentHTML + '</div>' + commentLabel;
+
+		if (!isDeviceSummaryEntry) {
+			var entryDetailsPopover = _.template($('#entry-details-popover').clone().html())({'editType': id + '-'});
+
+			innerHTMLContent += '<button class="edit">Edit</button><button class="save save-entry hide">Save' +
+					' Edit</button><a href="#" style="padding-left:0;" class="entryDelete entryNoBlur" id="entrydelid' +
+					this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
+		}
 		
 		var entryEditItem;
 
@@ -275,17 +304,32 @@ function EntryListWidget(divIds, autocompleteWidget) {
 
 		var data = {entry: entry, entryId:id, isGhost:isGhost, isConcreteGhost:isConcreteGhost, isAnyGhost:isAnyGhost, isContinuous:isContinuous,
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
+
+		if (isDeviceSummaryEntry) {
+			data.associatedEntriesClass = this.getDeviceTagEntryClass(data);
+		}
 		entryEditItem.data(data);
 	};
 
 	this.displayDeviceNameEntry = function(deviceEntry) {
 		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry);
-		entryDeviceDataInstance.group();
+		var groupedData = entryDeviceDataInstance.group();
 
-		var html = '<li class="entry full-width no-tag plain"><div class="no-tag">' +
+		var html = '<li class="entry no-tag device-entry plain"><div class="no-tag">' +
 				entryDeviceDataInstance.getDisplayText() + '</div></li>';
 
 		$("#" + this.listId).append(html);
+		jQuery.each(groupedData, function(index, groupedEntry) {
+			this.displayDeviceSummaryEntry(groupedEntry);
+		}.bind(this));
+	};
+
+	this.displayDeviceSummaryEntry = function(groupedEntry) {
+		var deviceDataSummaryEntry = new EntryDeviceDataSummary(groupedEntry);
+		this.displayEntry(deviceDataSummaryEntry);
+		groupedEntry.forEach(function(entry) {
+			this.displayEntry(entry, false, {deviceTagEntry: true});
+		}.bind(this));
 	};
 
 	/*
@@ -331,6 +375,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$("#pinned-tag-list").html('');
 		this.displayEntries(entries, true);
 	}
+
+	this.getDeviceTagEntryClass = function(entry) {
+		// Source name to snake case like "Moves Data" to "moves-data"
+		var deviceEntryClass = entry.sourceName.toLowerCase().replace(/\s/g, '-');
+		deviceEntryClass += "-" + entry.description;
+
+		return deviceEntryClass;
+	};
 
 	this.getEntryElement = function(entryId) {
 		return $("#" + this.editId + "entryid" + entryId);
@@ -873,6 +925,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 
+		if ($target.closest(".device-entry").length !== 0 || $target.closest(".device-summary-entry").length !== 0) {
+			return false;
+		}
+
 		var $alreadySelectedEntry = $("li.entry.ui-selected");
 
 		// Checking if any entry is already selected when mousedown event triggered.
@@ -1011,4 +1067,3 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	
 	self.refresh();
 }
-

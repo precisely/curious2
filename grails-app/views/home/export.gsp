@@ -1,14 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <g:setProvider library="jquery"/>
 <html>
 <head>
 <meta name="layout" content="menu" />
-<style type="text/css">
-#entry0 .ui-selecting { background: #99CCFF; }
-#entry0 .ui-selected { background: #3399FF; color: white; }
-#entry0 { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-#entry0 li { margin: 0px; padding: 1px; font-size: 12pt; }
-</style>
 <script type="text/javascript">
 function doLogout() {
 	callLogoutCallbacks();
