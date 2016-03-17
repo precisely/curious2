@@ -72,6 +72,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	this.refresh = function() {
 		this.cacheNow();
 
+		// TODO Remove this later. This is to save time by hardcoding the server response
+		self.refreshEntries(testEntries);
+		return;
 		queueJSON("getting entries", "/home/getListData?date="+ this.cachedDateUTC + "&currentTime=" + this.currentTimeUTC + "&userId=" + currentUserId + "&timeZoneName=" + this.timeZoneName + "&callback=?",
 				getCSRFPreventionObject("getListDataCSRF"),
 				function(entries) {
@@ -111,7 +114,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var datePrecisionSecs = entry.datePrecisionSecs;
 		var description = entry.description;
 		var comment = entry.comment;
-		var classes = "entry full-width " + ((entry.repeatType)?'':'no-tag') + " ";
+		var classes = "entry full-width " + ((entry.repeatType)?'' : 'no-tag') + " ";
 		var $entryToReplace, $appendAfterEntry;
 		if (args && args instanceof Object) {
 			if (args.replaceEntry) {
@@ -248,12 +251,14 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			this.editId + id + '"><img class="entryModify edit-delete" src="/images/x.png"></a>' + entryDetailsPopover;
 		
 		var entryEditItem;
-		
+
+		var elementId = "" + this.editId + "entryid" + id;
+
 		if (isUpdating) {
-			entryEditItem = $("#" + this.editId + "entryid" + id);
+			entryEditItem = $("#" + elementId);
 			entryEditItem.html(innerHTMLContent);
 		} else {
-			var newEntryContent = '<li id="' + this.editId + "entryid" + id + '" class="' + classes + '">' + innerHTMLContent + '</li>';
+			var newEntryContent = '<li id="' + elementId + '" class="' + classes + '">' + innerHTMLContent + '</li>';
 			if ($entryToReplace) {
 				$entryToReplace.replaceWith(newEntryContent);
 			} else if ($appendAfterEntry) {
@@ -261,7 +266,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			} else {
 				$("#" + this.listId).append(newEntryContent);
 			}
-			entryEditItem = $("#" + this.editId + "entryid" + id);
+			entryEditItem = $("#" + elementId);
 		}
 		$("#entrydelid" + this.editId + id).click(function() {
 			self.deleteEntryId(id);
@@ -273,6 +278,16 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		entryEditItem.data(data);
 	};
 
+	this.displayDeviceNameEntry = function(deviceEntry) {
+		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry);
+		entryDeviceDataInstance.group();
+
+		var html = '<li class="entry full-width no-tag plain"><div class="no-tag">' +
+				entryDeviceDataInstance.getDisplayText() + '</div></li>';
+
+		$("#" + this.listId).append(html);
+	};
+
 	/*
 	 * This method iterates through list of entries and displays them
 	 * @param entries list of entries to display
@@ -280,13 +295,22 @@ function EntryListWidget(divIds, autocompleteWidget) {
 	 */
 	this.displayEntries = function(entries, onlyPinned) {
 		self.entrySelectData = {};
-		jQuery.each(entries, function() {
+		self.groupedData = {};
+		var entryDataInstance = new EntryData(entries);
+		entryDataInstance.collectDeviceEntries();
+
+		jQuery.each(entryDataInstance.getNormalEntries(), function() {
 			if (onlyPinned && !RepeatType.isContinuous(this.repeatType)) {
 				return;
-			} 
+			}
 			self.displayEntry(this, false);
 			return true;
 		});
+
+		jQuery.each(entryDataInstance.getDeviceEntries(), function(index, deviceEntry) {
+			this.displayDeviceNameEntry(deviceEntry);
+		}.bind(this));
+
 		$('#pinned-tag-list').children('div').each(function () {
 			$(this).hover(
 				function() {
@@ -296,7 +320,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				}
 			);
 		});
-	}
+	};
 
 	this.refreshEntries = function(entries) {
 		this.clearEntries();
@@ -734,7 +758,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		$contentWrapper.hide();
 
 		$selectee.append('<span id="' + this.editId + 'tagTextEdit"><input type="text" class="entryNoBlur" id="' + 
-				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0px; width: calc(100% - 75px);"></input></span>');
+				this.editId + 'tagTextInput" style="margin: 8px 2px 2px 0; width: calc(100% - 75px);" /></span>');
 		$('#' + $selectee.attr('id') + ' .track-input-dropdown').show();
 
 		if (RepeatType.isRemind(repeatType)) {

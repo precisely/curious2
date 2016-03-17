@@ -221,6 +221,12 @@ environments {
 			}
 			debug = true
 		}
+		// http://stackoverflow.com/a/36035330/2405040
+		beans {
+			cacheManager {
+				shared = true
+			}
+		}
     }
     qa {
         grails.logging.jul.usebridge = false
