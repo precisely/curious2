@@ -98,7 +98,7 @@ class Entry implements Comparable {
 	
 	static {
 		def entryTimeZone = Utils.createTimeZone(0, "GMT", true)
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
 		dateFormat.setTimeZone(entryTimeZone)
 		theBookmarkBaseDate = dateFormat.parse("January 1, 2000 12:00 am")
 	}
