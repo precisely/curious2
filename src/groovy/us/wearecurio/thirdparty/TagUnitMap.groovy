@@ -48,6 +48,8 @@ abstract class TagUnitMap {
 		/*
 		 * Set name defined in the data service of each device are prefix for the actual set name or set identifier
 		 * used in the entries. So searching the source name based on the matching initials of the set identifier.
+		 *
+		 * TODO Move this to ThirdParty enum
 		 */
 		return theSourceSetIdentifiers.find { setIdentifier.startsWith(it.key) }?.value
 	}
