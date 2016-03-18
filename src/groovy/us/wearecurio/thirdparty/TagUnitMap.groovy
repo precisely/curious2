@@ -39,12 +39,17 @@ abstract class TagUnitMap {
 	
 	static void addSourceSetIdentifier(String setIdentifier, String deviceGroupName) {
 		theSourceSetIdentifiers.put(setIdentifier, deviceGroupName)
+		log.debug "Source set identifier added. $theSourceSetIdentifiers"
 	}
 	
 	static String setIdentifierToSource(String setIdentifier) {
 		if (setIdentifier == null) return null
-		
-		return theSourceSetIdentifiers.get(setIdentifier)
+
+		/*
+		 * Set name defined in the data service of each device are prefix for the actual set name or set identifier
+		 * used in the entries. So searching the source name based on the matching initials of the set identifier.
+		 */
+		return theSourceSetIdentifiers.find { setIdentifier.startsWith(it.key) }?.value
 	}
 
 	private static def log = LogFactory.getLog(this)
