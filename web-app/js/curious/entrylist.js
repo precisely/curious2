@@ -107,14 +107,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		self.currentDragTag = null;
 	});
 	
-	this.displayEntry = function(entry, isUpdating, args) {
+	this.displayEntry = function(entryInstance, isUpdating, args) {
 		args = args || {};
 
-		var isDeviceSummaryEntry = entry instanceof EntryDeviceDataSummary;
+		var isDeviceSummaryEntry = entryInstance instanceof EntryDeviceDataSummary;
 		var isDeviceTagEntry = args.deviceTagEntry;     // Boolean
 
+		var entry = entryInstance;
 		if (isDeviceSummaryEntry) {
-			entry = entry.group();
+			entry = entryInstance.group();
 		} else {
 			this.entryListItems.push(entry);
 		}
@@ -173,10 +174,10 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			classes += " plain"
 		}
 		if (isDeviceSummaryEntry) {
-			classes += " device-summary-entry";
+			classes += " device-summary-entry " + entry.sourceName.sanitizeTitle();
 		}
 		if (isDeviceTagEntry) {
-			classes += " device-tag-entry " + this.getDeviceTagEntryClass(entry);
+			classes += " device-tag-entry hide " + args.deviceDataSummaryInstance.getAssociatedEntriesClass();
 		}
 
 		if (isContinuous) {
@@ -219,7 +220,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var innerHTMLContent = '<div class="content-wrapper '+ ((entry.repeatType) ? '' : 'no-tag') +'">';
 
 		if (isDeviceSummaryEntry) {
-			innerHTMLContent += '<i class="fa fa-chevron-right"></i> ';
+			innerHTMLContent += entryInstance.getTriangle() + ' ';
 		}
 
 		innerHTMLContent += (timeAfterTag ? '' : '<span class="entryTime">' + escapehtml(dateStr) + '</span>') + '<span class="entryDescription">'
@@ -282,6 +283,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var entryEditItem;
 
 		var elementId = "" + this.editId + "entryid" + id;
+		if (isDeviceSummaryEntry) {
+			elementId = entryInstance.getAssociatedEntriesClass();
+		}
 
 		if (isUpdating) {
 			entryEditItem = $("#" + elementId);
@@ -306,7 +310,9 @@ function EntryListWidget(divIds, autocompleteWidget) {
 				isTimed:isTimed, isRepeat:isRepeat, isRemind:isRemind};
 
 		if (isDeviceSummaryEntry) {
-			data.associatedEntriesClass = this.getDeviceTagEntryClass(data);
+			data.instance = entryInstance;
+		} else if (isDeviceTagEntry) {
+			data.instance = args.deviceDataSummaryInstance;
 		}
 		entryEditItem.data(data);
 	};
@@ -315,10 +321,13 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var entryDeviceDataInstance = new EntryDeviceData(deviceEntry);
 		var groupedData = entryDeviceDataInstance.group();
 
-		var html = '<li class="entry no-tag device-entry plain"><div class="no-tag">' +
+		var id = deviceEntry[0].sourceName.sanitizeTitle();
+		var html = '<li class="entry no-tag device-entry plain" id="' + id + '"><div class="no-tag">' +
 				entryDeviceDataInstance.getDisplayText() + '</div></li>';
 
 		$("#" + this.listId).append(html);
+		$("#" + id).data({instance: entryDeviceDataInstance});
+
 		jQuery.each(groupedData, function(index, groupedEntry) {
 			this.displayDeviceSummaryEntry(groupedEntry);
 		}.bind(this));
@@ -328,7 +337,7 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		var deviceDataSummaryEntry = new EntryDeviceDataSummary(groupedEntry);
 		this.displayEntry(deviceDataSummaryEntry);
 		groupedEntry.forEach(function(entry) {
-			this.displayEntry(entry, false, {deviceTagEntry: true});
+			this.displayEntry(entry, false, {deviceTagEntry: true, deviceDataSummaryInstance: deviceDataSummaryEntry});
 		}.bind(this));
 	};
 
@@ -376,12 +385,49 @@ function EntryListWidget(divIds, autocompleteWidget) {
 		this.displayEntries(entries, true);
 	}
 
-	this.getDeviceTagEntryClass = function(entry) {
-		// Source name to snake case like "Moves Data" to "moves-data"
-		var deviceEntryClass = entry.sourceName.toLowerCase().replace(/\s/g, '-');
-		deviceEntryClass += "-" + entry.description;
+	/**
+	 * Click handler to execute when someone clicks on the top level device entry like "Moves Data".
+	 *
+	 * @param $target jQuery DOM element object for above said entry
+	 */
+	this.toggleDeviceEntry = function($target) {
+		var entryDeviceDataInstance = $target.data("instance");        // Instance of EntryDeviceData
+		var elementsToToggle = $(".device-summary-entry." + $target.attr("id"));
 
-		return deviceEntryClass;
+		if (entryDeviceDataInstance.isCollapsed()) {
+			entryDeviceDataInstance.expand();
+			elementsToToggle.slideDown();
+		} else {
+			entryDeviceDataInstance.collapse();
+			elementsToToggle.slideUp();
+			jQuery.each(elementsToToggle, function(index, element) {
+				this.toggleDeviceSummaryEntry($(element), true);
+			}.bind(this));
+		}
+
+		$target.find(".toggle-icon").replaceWith(entryDeviceDataInstance.getTriangle());
+	};
+
+	/**
+	 * Click handler to execute when someone clicks on the 2nd level device summary entry like
+	 * "walk 3760 steps 70.23 mins 1.6 mi 12:28am (Moves)"
+	 *
+	 * @param $target jQuery DOM element object for above said entry
+	 * @param forceCollapse Confirms the entries are collapsed
+	 */
+	this.toggleDeviceSummaryEntry = function($target, forceCollapse) {
+		var entryDeviceSummaryInstance = $target.data("instance");        // Instance of EntryDeviceDataSummary
+		var elementsToToggle = $(".device-tag-entry." + $target.attr("id"));
+
+		if (!forceCollapse && entryDeviceSummaryInstance.isCollapsed()) {
+			entryDeviceSummaryInstance.expand();
+			elementsToToggle.slideDown();
+		} else {
+			entryDeviceSummaryInstance.collapse();
+			elementsToToggle.slideUp();
+		}
+
+		$target.find(".toggle-icon").replaceWith(entryDeviceSummaryInstance.getTriangle());
 	};
 
 	this.getEntryElement = function(entryId) {
@@ -925,7 +971,15 @@ function EntryListWidget(divIds, autocompleteWidget) {
 			return;
 		}
 
-		if ($target.closest(".device-entry").length !== 0 || $target.closest(".device-summary-entry").length !== 0) {
+		var $deviceEntry = $target.closest(".device-entry");
+		if ($deviceEntry.length) {
+			self.toggleDeviceEntry($deviceEntry);
+			return false;
+		}
+
+		var $deviceSummaryEntry = $target.closest(".device-summary-entry");
+		if ($deviceSummaryEntry.length !== 0) {
+			self.toggleDeviceSummaryEntry($deviceSummaryEntry);
 			return false;
 		}
 

@@ -13,10 +13,10 @@ function EntryDeviceData(deviceEntries) {
 
     this.getTriangle = function () {
         if (collapsed) {
-            return '<i class="fa fa-chevron-right"></i>';
+            return '<i class="fa toggle-icon fa-chevron-right"></i>';
         }
 
-        return '<i class="fa fa-chevron-down"></i>';
+        return '<i class="fa toggle-icon fa-chevron-down"></i>';
     };
 
     this.getDisplayText = function () {
@@ -38,5 +38,17 @@ function EntryDeviceData(deviceEntries) {
         });
 
         return groupedData;
+    };
+
+    this.collapse = function() {
+        collapsed = true;
+    };
+
+    this.expand = function() {
+        collapsed = false;
+    };
+
+    this.isCollapsed = function() {
+        return collapsed;
     }
 }

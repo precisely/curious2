@@ -9,14 +9,33 @@ function EntryDeviceDataSummary(deviceTagEntries) {
 
     var aggregatedUnitAmounts;
     var groupedData = {};
-    var collapsed = false;
+    var collapsed = true;
+    var baseTag = "";
+    var deviceName = "";
+
+    if (deviceTagEntries && deviceTagEntries[0]) {
+        baseTag = deviceTagEntries[0].description;
+        deviceName = deviceTagEntries[0].sourceName;
+    }
+
+    this.getBaseTag = function() {
+        return baseTag;
+    };
+
+    this.getDeviceName = function() {
+        return deviceName;
+    };
+
+    this.getAssociatedEntriesClass = function() {
+        return this.getDeviceName().sanitizeTitle() + "-" + this.getBaseTag();
+    };
 
     this.getTriangle = function () {
         if (collapsed) {
-            return '<i class="fa fa-chevron-right"></i>';
+            return '<i class="fa toggle-icon fa-chevron-right"></i>';
         }
 
-        return '<i class="fa fa-chevron-down"></i>';
+        return '<i class="fa toggle-icon fa-chevron-down"></i>';
     };
 
     this.group = function () {

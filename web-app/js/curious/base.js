@@ -118,6 +118,13 @@ String.prototype.indexOfRegex = function(regex) {
 	return match ? this.indexOf(match[0]) : -1;
 }
 
+/**
+ * Convert any string to sanitized string. For example: "We Are Curious".sanitizeTitle() == "we-are-curious"
+ */
+String.prototype.sanitizeTitle = function(){
+	return this.toLowerCase().replace(/\s/g, '-');
+};
+
 /* 
  * This function will capitalize first letter of a String
  * Reference: http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
