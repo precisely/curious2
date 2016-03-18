@@ -27,8 +27,8 @@ class EmailVerificationCheckFilters {
                     User currentUserInstance = securityService.getCurrentUser()
                     if (currentUserInstance?.emailVerified == VerificationStatus.UNVERIFIED) {
                         response.status = HttpStatus.SC_NOT_ACCEPTABLE
-                        render([emailVerified: VerificationStatus.UNVERIFIED, message: "You must verify your email address before you can do that, " +
-                                "please see profile to resend verification email"] as JSON)
+                        render([emailVerified: VerificationStatus.UNVERIFIED, message: "You must verify your email " +
+                                "address before you can do that, please see profile to resend verification email"] as JSON)
                         return false
                     }
                 }

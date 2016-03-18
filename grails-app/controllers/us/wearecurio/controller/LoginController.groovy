@@ -141,8 +141,8 @@ class LoginController extends SessionController {
 		def user = execLogin()
 		if (user) {
 			if (user.emailVerified == VerificationStatus.BANNED) {
-				renderJSONGet([success:false, message: "Sorry but your Account has been Blocked for some Security Reasons. " +
-						"\nPlease contact <a style='color:#428bca' href='mailto:support@wearecurio.us'>support@wearecurio.us</a> for further details"])
+				renderJSONGet([success:false, message: "Sorry but your account has been blocked for some security reasons. " +
+						"\nPlease contact <a style='color:#428bca' href='mailto:support@wearecurio.us'>support@wearecurio.us</a> for further details."])
 				return
 			}
 			def uuid = session.persistentSession.fetchUuid()
@@ -327,10 +327,10 @@ class LoginController extends SessionController {
 		primeUser.emailVerified = VerificationStatus.VERIFIED
 		Utils.save(primeUser, true)
 		
-		flash.message = "Account email verified: " + primeUser.getEmail() + " for username: " + primeUser.username
-			
-		render(view:loginView(),
-			model:[precontroller:flash.precontroller ?: name(), preaction:flash.preaction ?: 'index', parm:flash.parm ?: [:], message:flash.message, templateVer:urlService.template(request)])
+		flash.message = "Account verification successful!"
+
+		setLoginUser(primeUser)
+		redirect(uri: urlService.make([controller: "home", action: "index"]))
 		return
 	}
 	
