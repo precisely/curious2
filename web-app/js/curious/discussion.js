@@ -198,11 +198,6 @@ $(document).ready(function() {
 			var discussionElement = getDiscussionElement(params.discussionHash);
 			var currentOffset = discussionElement.data('offset') || maxCommentsPerDiscussion;
 			discussionElement.data('offset', ++currentOffset);
-		}, function(xhr) {
-			console.log('Internal server error');
-			if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-				showAlert(xhr.responseJSON.message);
-			}
 		});
 
 		return false;

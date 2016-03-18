@@ -388,12 +388,7 @@ function PlotWeb(tagList, userId, userName, plotAreaDivId, store, interactive, p
 							this.showAlert(data.message);
 						}
 					}
-				}, function(xhr) {
-				console.log('Internal server error', xhr);
-				if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-					showAlert(xhr.responseJSON.message);
-				}
-			});
+				});
 	};
 
 	/**
